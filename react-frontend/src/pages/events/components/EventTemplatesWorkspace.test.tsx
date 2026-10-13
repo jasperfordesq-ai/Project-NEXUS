@@ -23,6 +23,7 @@ const mockToast = vi.hoisted(() => ({
 }));
 
 vi.mock('@/contexts/ToastContext', () => ({ useToast: () => mockToast }));
+vi.mock('@/contexts/TenantContext', () => ({ useTenant: () => ({ tenantPath: (path: string) => `/test${path}` }) }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('react-i18next', () => {
   const labels: Record<string, string> = {

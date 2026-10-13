@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getFormattingLocale } from '@/lib/helpers';
@@ -684,6 +684,37 @@ describe('EventDetailPage', () => {
     expect(screen.getByRole('textbox', { name: /Reason for cancellation/i })).toBeRequired();
   });
 
+  // E-104: a refused "leave waitlist" produced no feedback at all.
+  it('tells the member why leaving the waitlist was refused', async () => {
+    const waitlisted = createCanonicalEventFixture();
+    waitlisted.relationship.registration.state = 'waitlisted';
+    waitlisted.relationship.registration.waitlist_position = 2;
+    waitlisted.relationship.registration.can_leave_waitlist = true;
+    waitlisted.relationship.registration.can_register = false;
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees') || url.startsWith('/v2/polls?')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
+      return Promise.resolve({ success: true, data: waitlisted });
+    });
+    mockApi.delete.mockResolvedValue({
+      success: false,
+      errors: [{ code: 'EVENT_WAITLIST_CLOSED', message: 'The waitlist closed an hour before the event.', reason: 'cutoff' }],
+    });
+
+    renderEventRoute(<EventDetailPage />, { route: '/test/events/1', path: '/:tenantSlug/events/:id' });
+    const [leave] = await screen.findAllByRole('button', { name: /leave the waitlist/i });
+    expect(leave).toBeDefined();
+    fireEvent.click(leave!);
+
+    await waitFor(() => {
+      expect(mockApi.delete).toHaveBeenCalledWith('/v2/events/1/waitlist', expect.anything());
+    });
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('The waitlist closed an hour before the event.');
+    });
+  });
+
   it('shows an error state when the API rejects', async () => {
     mockApi.get.mockImplementation((url: string) => {
       if (url.includes('/attendees')) return Promise.resolve({ success: true, data: [] });
@@ -748,7 +779,8 @@ describe('EventDetailPage', () => {
     await user.click(screen.getByRole('radio', { name: 'Mark yourself as not going' }));
 
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'RSVP for this event',
+      title: 'Give up your place?',
+      body: expect.stringContaining('your place is released'),
       confirmLabel: 'Not Going',
       status: 'warning',
     }));
@@ -783,7 +815,7 @@ describe('EventDetailPage', () => {
       expect.objectContaining({ headers: expect.any(Headers) }),
     ));
     expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'RSVP for this event',
+      title: 'Change your response?',
       confirmLabel: 'Not Going',
       status: 'warning',
     }));

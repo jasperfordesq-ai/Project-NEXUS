@@ -178,6 +178,22 @@ describe('EventReminderPanel', () => {
     deleteMock.mockResolvedValue({ success: true, data: preferences(0) });
   });
 
+  // E-104: with reminders switched off for the community the server answers
+  // 403; the attendee must not see a reminder switch plus a red error.
+  it('renders nothing when the community has switched reminders off', async () => {
+    readMock.mockResolvedValue({ success: false, code: 'FORBIDDEN' });
+
+    const { container } = render(<EventReminderPanel eventId={7} />);
+
+    await waitFor(() => {
+      expect(readMock).toHaveBeenCalledWith(7);
+    });
+    await waitFor(() => {
+      expect(container).toBeEmptyDOMElement();
+    });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('saves bounded rules and independent channels against the loaded revision', async () => {
     render(<EventReminderPanel eventId={101} />);
 

@@ -269,7 +269,9 @@ describe('EventRegistrationWorkspace', () => {
     await user.type(within(dialog).getByRole('textbox', { name: 'Reason for accessing these answers' }), 'Catering safety review');
     await user.click(within(dialog).getByRole('button', { name: 'Open answers' }));
 
-    expect(await within(dialog).findByText('"No peanuts"')).toBeInTheDocument();
+    // E-104: answers are shown as written, not as JSON-quoted strings.
+    expect(await within(dialog).findByText('No peanuts')).toBeInTheDocument();
+    expect(within(dialog).queryByText('"No peanuts"')).not.toBeInTheDocument();
     expect(review).toHaveBeenCalledWith(42, 71, expect.objectContaining({
       purpose: 'Catering safety review',
       include_sensitive: false,

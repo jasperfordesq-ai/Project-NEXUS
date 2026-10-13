@@ -5,10 +5,12 @@
     "cancel": "Cancelar",
     "close": "Fechar",
     "loading": "Carregando espaço de trabalho de registro",
+    "no": "Não",
     "not_recorded": "Não gravado",
     "refresh": "Atualizar",
     "retry": "Tente novamente",
-    "save": "Salvar"
+    "save": "Salvar",
+    "yes": "Sim"
   },
   "load_error": {
     "title": "Não foi possível carregar o espaço de trabalho de registro",

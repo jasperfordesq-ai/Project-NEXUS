@@ -35,6 +35,9 @@ import {
 import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
+/** A refusal whose message is the server's explained reason (E-104). */
+class ExplainedFailure extends Error {}
+
 interface EventRegistrationAttendeeCardProps {
   eventId: number;
 }
@@ -196,7 +199,7 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
         expected_revision: submission?.status === 'draft' ? submission.revision : null,
         answers: visibleAnswers,
       });
-      if (!saved.success || !saved.data) throw new Error(saved.message);
+      if (!saved.success || !saved.data) throw new ExplainedFailure(explainedApiError(saved) ?? '');
       setSubmissionOverride(saved.data.value);
       if (!submitAfterSave) {
         toast.success(t('messages.draft_saved'));
@@ -207,13 +210,13 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
         saved.data.value.id,
         saved.data.value.revision,
       );
-      if (!submitted.success || !submitted.data) throw new Error(submitted.message);
+      if (!submitted.success || !submitted.data) throw new ExplainedFailure(explainedApiError(submitted) ?? '');
       setSubmissionOverride(submitted.data.value);
       toast.success(t('messages.answers_submitted'));
       await load();
     } catch (error) {
       logError('Failed to save attendee event registration answers', error);
-      toast.error(t('messages.form_save_error'));
+      toast.error(error instanceof ExplainedFailure && error.message ? error.message : t('messages.form_save_error'));
     } finally {
       setPendingAction(null);
     }
@@ -224,13 +227,13 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
     setPendingAction('amend');
     try {
       const response = await eventRegistrationApi.amend(eventId, submission.id, submission.revision);
-      if (!response.success || !response.data) throw new Error(response.message);
+      if (!response.success || !response.data) throw new ExplainedFailure(explainedApiError(response) ?? '');
       setSubmissionOverride(response.data.submission);
       setAnswers({});
       toast.success(t('messages.amendment_started'));
     } catch (error) {
       logError('Failed to create event registration amendment', error);
-      toast.error(t('messages.amendment_error'));
+      toast.error(error instanceof ExplainedFailure && error.message ? error.message : t('messages.amendment_error'));
     } finally {
       setPendingAction(null);
     }
@@ -256,7 +259,7 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
           : undefined,
         notification_consent_version: guestNotificationConsent ? '2026-07-12' : undefined,
       });
-      if (!response.success) throw new Error(response.message);
+      if (!response.success) throw new ExplainedFailure(explainedApiError(response) ?? '');
       setGuestName('');
       setGuestEmail('');
       setGuestPhone('');
@@ -266,7 +269,7 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
       await load();
     } catch (error) {
       logError('Failed to add event registration guest', error);
-      toast.error(t('messages.guest_add_error'));
+      toast.error(error instanceof ExplainedFailure && error.message ? error.message : t('messages.guest_add_error'));
     } finally {
       setPendingAction(null);
     }
@@ -302,12 +305,12 @@ export default function EventRegistrationAttendeeCard({ eventId }: EventRegistra
         revision,
         t('guests.cancel_reason_default'),
       );
-      if (!response.success) throw new Error(response.message);
+      if (!response.success) throw new ExplainedFailure(explainedApiError(response) ?? '');
       toast.success(t('messages.guest_cancelled'));
       await load();
     } catch (error) {
       logError('Failed to cancel event registration guest', error);
-      toast.error(t('messages.guest_cancel_error'));
+      toast.error(error instanceof ExplainedFailure && error.message ? error.message : t('messages.guest_cancel_error'));
     } finally {
       setPendingAction(null);
     }

@@ -5,10 +5,12 @@
     "cancel": "Anuluj",
     "close": "Zamknij",
     "loading": "Ładowanie obszaru roboczego rejestracji",
+    "no": "Nie",
     "not_recorded": "Nie nagrano",
     "refresh": "Odśwież",
     "retry": "Spróbuj ponownie",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "yes": "Tak"
   },
   "load_error": {
     "title": "Nie można załadować obszaru roboczego rejestracji",

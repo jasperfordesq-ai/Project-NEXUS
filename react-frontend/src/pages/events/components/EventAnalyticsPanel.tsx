@@ -209,8 +209,8 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
             <BarChart3 aria-hidden="true" className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold text-foreground">{t('analytics.title')}</h2>
           </div>
-          <p className="mt-1 text-sm text-default-600">{t('analytics.subtitle')}</p>
-          <p className="mt-2 text-xs text-default-500">
+          <p className="mt-1 text-sm text-theme-muted">{t('analytics.subtitle')}</p>
+          <p className="mt-2 text-xs text-theme-subtle">
             {t('analytics.generated_at', {
               date: new Intl.DateTimeFormat(getFormattingLocale(), {
                 dateStyle: 'medium',
@@ -236,7 +236,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
           <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <div>
             <p className="font-medium text-foreground">{t('analytics.privacy_title')}</p>
-            <p className="text-sm text-default-600">
+            <p className="text-sm text-theme-muted">
               {t('analytics.privacy_note', { count: summary.privacy_threshold })}
             </p>
           </div>
@@ -247,7 +247,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
         {sections.map((section) => (
           <Card key={section.key}>
             <CardBody className="p-0">
-              <div className="flex items-center justify-between border-b border-divider px-5 py-4">
+              <div className="flex items-center justify-between border-b border-theme-default px-5 py-4">
                 <h3 className="font-semibold text-foreground">{section.title}</h3>
                 {section.key === 'funnel' && (
                   <Chip size="sm" variant="soft">{t('analytics.consent_bound')}</Chip>
@@ -257,7 +257,7 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
                 <table className="w-full text-sm">
                   <caption className="sr-only">{section.title}</caption>
                   <thead>
-                    <tr className="text-left text-default-500">
+                    <tr className="text-left text-theme-subtle">
                       <th className="px-5 py-3 font-medium" scope="col">
                         {t('analytics.columns.metric')}
                       </th>
@@ -266,10 +266,10 @@ export function EventAnalyticsPanel({ eventId }: { eventId: number }) {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-divider">
+                  <tbody className="divide-y divide-theme-default">
                     {section.rows.map((row) => (
                       <tr key={row.label}>
-                        <th className="px-5 py-3 text-left font-normal text-default-700" scope="row">
+                        <th className="px-5 py-3 text-left font-normal text-theme-primary" scope="row">
                           {row.label}
                         </th>
                         <td className="px-5 py-3 text-right font-semibold tabular-nums text-foreground">

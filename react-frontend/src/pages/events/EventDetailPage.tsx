@@ -34,6 +34,7 @@ import Edit from 'lucide-react/icons/square-pen';
 import Archive from 'lucide-react/icons/archive';
 import ExternalLink from 'lucide-react/icons/external-link';
 import AlertCircle from 'lucide-react/icons/circle-alert';
+import { EventSeriesTemplateNotice } from './components/EventSeriesTemplateNotice';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
 import Heart from 'lucide-react/icons/heart';
@@ -163,8 +164,14 @@ export function EventDetailPage() {
   const [votingPollId, setVotingPollId] = useState<number | null>(null);
   const [calendarActions, setCalendarActions] = useState<EventCalendarActions | null>(null);
   const [isDownloadingCalendar, setIsDownloadingCalendar] = useState(false);
+  // A recurring series' template is what the list links to, but registration,
+  // safety, tickets, check-in and calendar links live on each concrete date
+  // (the APIs refuse the template). Hide those cards there and point at the
+  // dates instead of rendering their error states (E-104).
+  const isSeriesTemplate = event?.series.recurrence?.is_template === true;
   const canViewTickets = Boolean(
     isAuthenticated
+    && !isSeriesTemplate
     && event?.schedule.start_at
     && (event.relationship.registration.state === 'confirmed'
       || event.permissions.manage_finance
@@ -313,7 +320,7 @@ export function EventDetailPage() {
   }, [loadEvent]);
 
   useEffect(() => {
-    if (!id || !isAuthenticated) {
+    if (!id || !isAuthenticated || isSeriesTemplate) {
       setCalendarActions(null);
       return;
     }
@@ -431,13 +438,14 @@ export function EventDetailPage() {
         ? newStatus !== 'going' || isClearingCurrentStatus
         : false;
     if (isLeavingActiveRsvp) {
+      // Say what will happen, not just the current status (E-104).
       const accepted = await confirm({
-        title: tRef.current('detail.rsvp_panel_title'),
+        title: rsvpStatus === 'going'
+          ? tRef.current('detail.rsvp_leave_going_title')
+          : tRef.current('detail.rsvp_leave_interested_title'),
         body: rsvpStatus === 'going'
-          ? tRef.current('detail.rsvp_going')
-          : rsvpStatus === 'interested'
-            ? tRef.current('detail.rsvp_interested')
-            : tRef.current('detail.rsvp_not_going'),
+          ? tRef.current('detail.rsvp_leave_going_body')
+          : tRef.current('detail.rsvp_leave_interested_body'),
         confirmLabel: isClearingCurrentStatus
           ? tRef.current('detail.not_going_btn')
           : newStatus === 'interested'
@@ -481,6 +489,9 @@ export function EventDetailPage() {
         if (rsvpData.relationship.registration.state === 'waitlisted') {
           setIsWaitlisted(true);
           setWaitlistPosition(rsvpData.relationship.registration.waitlist_position);
+          // Reload first: the page still holds the pre-request relationship
+          // (can_register, counters, RSVP toggle), see E-104.
+          await loadEvent();
           toastRef.current.info(rsvpData.message || tRef.current('toast.added_to_waitlist'));
           return;
         }
@@ -535,7 +546,7 @@ export function EventDetailPage() {
         toastRef.current.success(tRef.current('toast.archived'));
         navigate(tenantPath('/events'));
       } else {
-        toastRef.current.error(tRef.current('toast.archive_failed'));
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.archive_failed'));
       }
     } catch (err) {
       logError('Failed to archive event', err);
@@ -575,7 +586,7 @@ export function EventDetailPage() {
         toastRef.current.success(tRef.current('toast.event_cancelled'));
         setShowCancelModal(false);
       } else {
-        toastRef.current.error(tRef.current('toast.cancel_failed'));
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.cancel_failed'));
       }
     } catch (err) {
       logError('Failed to cancel event', err);
@@ -607,7 +618,7 @@ export function EventDetailPage() {
         ? await eventsApi.submitForReview(event.id)
         : await eventsApi.publish(event.id);
       if (!response.success || !response.data) {
-        toast.error(t('detail.publication_failed'));
+        toast.error(explainedApiError(response) ?? t('detail.publication_failed'));
         return;
       }
       setEvent(response.data);
@@ -634,7 +645,7 @@ export function EventDetailPage() {
         await loadEvent();
         toastRef.current.success(tRef.current('toast.added_to_waitlist'));
       } else {
-        toastRef.current.error(tRef.current('toast.waitlist_join_failed'));
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.waitlist_join_failed'));
       }
     } catch (err) {
       logError('Failed to join waitlist', err);
@@ -664,6 +675,9 @@ export function EventDetailPage() {
         setWaitlistPosition(null);
         await loadEvent();
         toastRef.current.success(tRef.current('toast.removed_from_waitlist'));
+      } else {
+        // A refusal used to produce no feedback at all (E-104).
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('toast.something_wrong'));
       }
     } catch (err) {
       logError('Failed to leave waitlist', err);
@@ -690,7 +704,7 @@ export function EventDetailPage() {
         await loadEvent();
         toastRef.current.success(tRef.current('detail.offer_accepted'));
       } else {
-        toastRef.current.error(tRef.current('detail.offer_accept_failed'));
+        toastRef.current.error(explainedApiError(response) ?? tRef.current('detail.offer_accept_failed'));
       }
     } catch (err) {
       logError('Failed to accept event waitlist offer', err);
@@ -700,7 +714,7 @@ export function EventDetailPage() {
     }
   }
 
-  const canCheckIn = event?.permissions.check_in ?? false;
+  const canCheckIn = (event?.permissions.check_in ?? false) && !isSeriesTemplate;
   const canOpenManagement = Boolean(event && (
     event.permissions.edit
     || event.permissions.cancel
@@ -1844,6 +1858,16 @@ export function EventDetailPage() {
           </div>
         )}
 
+        {isSeriesTemplate && (
+          <EventSeriesTemplateNotice
+            className="mt-4"
+            variant="detail"
+            occurrences={event.series.recurrence?.occurrences ?? []}
+            timezone={event.schedule.timezone}
+            hrefFor={(occurrenceId) => tenantPath(`/events/${occurrenceId}`)}
+          />
+        )}
+
         {isAuthenticated && calendarActions && (
           <section aria-labelledby="event-calendar-actions" className="mt-4 rounded-xl border border-theme-default bg-theme-elevated p-4">
             <div>
@@ -1885,19 +1909,19 @@ export function EventDetailPage() {
           </section>
         )}
 
-        {isAuthenticated && (
+        {isAuthenticated && !isSeriesTemplate && (
           <div className="mt-4">
             <EventRegistrationAttendeeCard eventId={event.id} />
           </div>
         )}
 
-        {isAuthenticated && !event.permissions.edit && (
+        {isAuthenticated && !isSeriesTemplate && !event.permissions.edit && (
           <div className="mt-4">
             <EventSafetyAttendeeCard eventId={event.id} />
           </div>
         )}
 
-        {isAuthenticated && event.relationship.registration.state === 'confirmed' && (
+        {isAuthenticated && !isSeriesTemplate && event.relationship.registration.state === 'confirmed' && (
           <div className="mt-4 space-y-4">
             <EventCheckinCredentialCard eventId={event.id} />
             <EventReminderPanel eventId={event.id} />
@@ -2084,7 +2108,7 @@ export function EventDetailPage() {
             <p className="text-theme-muted">
               {t('detail.archive_confirm', { title: event.title })}
             </p>
-            {!!(event as { is_recurring_template?: number | boolean }).is_recurring_template && (
+            {event.series.recurrence?.is_template && (
               <p className="text-sm text-[var(--color-warning)]">
                 {t('detail.archive_series_note')}
               </p>
@@ -2139,7 +2163,7 @@ export function EventDetailPage() {
             <p className="text-theme-muted mb-4">
               {t('detail.cancel_confirm', { title: event.title })}
             </p>
-            {!!(event as { is_recurring_template?: number | boolean }).is_recurring_template && (
+            {event.series.recurrence?.is_template && (
               <p className="text-sm text-[var(--color-warning)] mb-4">
                 {t('detail.cancel_series_note')}
               </p>

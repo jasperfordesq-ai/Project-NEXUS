@@ -50,7 +50,7 @@
     "other": "Ander"
   },
   "detail": {
-    "submit_for_review_confirm": "Dit evenement naar de moderatiewachtrij sturen? Organisatoren kunnen het tijdens de beoordeling blijven bewerken.",
+    "submit_for_review_confirm": "Dit evenement indienen bij de moderatiewachtrij? Het kan niet worden bewerkt zolang het op beoordeling wacht.",
     "publish_event_confirm": "Dit evenement nu publiceren? Het wordt zichtbaar voor bevoegde leden en kan meldingen en federatie activeren.",
     "offer_state_chip": "Plaats beschikbaar",
     "offer_available_title": "Er is een plaats voor u beschikbaar",
@@ -120,6 +120,10 @@
     "check_in": "Inchecken",
     "rsvp_aria": "RSVP-opties",
     "rsvp_panel_title": "Reageer op dit evenement",
+    "rsvp_leave_going_title": "Je plek vrijgeven?",
+    "rsvp_leave_going_body": "Je bent ingeschreven voor dit evenement. Als je doorgaat, komt je plek vrij en kan iemand anders die innemen.",
+    "rsvp_leave_interested_title": "Je reactie wijzigen?",
+    "rsvp_leave_interested_body": "Je wordt niet langer getoond als geïnteresseerd in dit evenement.",
     "rsvp_panel_desc": "Laat de organisator weten of je van plan bent te komen.",
     "rsvp_going_aria": "Markeer jezelf als aanwezig",
     "rsvp_interested_aria": "Markeer jezelf als geïnteresseerd",
@@ -176,13 +180,13 @@
     "events_in_series_other": "{{count}} gebeurtenissen in serie",
     "max_capacity_one": "{{count}} maximale capaciteit",
     "max_capacity_other": "{{count}} maximale capaciteit",
-    "spots_left_one": "{{count}} plekjes vrij",
+    "spots_left_one": "{{count}} plekje vrij",
     "spots_left_other": "{{count}} plekjes vrij",
     "waitlist_count_one": "{{count}} op wachtlijst",
     "waitlist_count_other": "{{count}} op wachtlijst",
     "more_attendees_one": "+{{count}} meer",
     "more_attendees_other": "+{{count}} meer",
-    "attendance_total_one": "{{count}} reacties",
+    "attendance_total_one": "{{count}} reactie",
     "attendance_total_other": "{{count}} reacties",
     "view_all_series_one": "Bekijk alle {{count}} gebeurtenissen in series",
     "view_all_series_other": "Bekijk alle {{count}} gebeurtenissen in series",
@@ -200,7 +204,7 @@
     "repeats_generic": "Recurring",
     "series_dates_one": "{{count}} datum",
     "series_dates_other": "{{count}} datums",
-    "spots_left_one": "{{count}} plekjes vrij",
+    "spots_left_one": "{{count}} plekje vrij",
     "spots_left_other": "{{count}} plekjes vrij"
   },
   "form": {
@@ -341,6 +345,16 @@
     "revision_impact_customized": "{{count}} aangepaste gebeurtenis(sen) behouden hun overschreven velden",
     "revision_blocked": "Los {{count}} conflict(en) op voordat je deze wijzigingen toepast.",
     "revision_confirm": "Toepassen op dit en toekomstige evenementen"
+  },
+  "series_template": {
+    "detail_title": "Dit is een terugkerende reeks",
+    "detail_desc": "Inschrijving, veiligheidsstappen, tickets, inchecken en agendalinks staan op de pagina van elke datum. Kies een datum om verder te gaan.",
+    "manage_title": "Een terugkerende reeks beheren",
+    "manage_desc": "Mensen, inschrijving, veiligheid, tickets en inchecken worden per datum beheerd. Kies een datum om de bijbehorende hulpmiddelen te openen.",
+    "dates_label": "Data in deze reeks",
+    "more_dates_one": "en nog {{count}} datum",
+    "more_dates_other": "en nog {{count}} data",
+    "no_dates": "Er zijn nog geen komende data aangemaakt."
   },
   "manage": {
     "page_title": "Beheer {{title}}",
@@ -857,6 +871,7 @@
     "revoke_confirm_identity": "Abonnement: {{label}} (voorvoegsel {{prefix}})",
     "close": "Sluiten",
     "load_error": "Kalenderabonnementen konden niet worden geladen.",
+    "unavailable": "Agendafeeds zijn in deze gemeenschap uitgeschakeld.",
     "create_error": "Het kalenderabonnement kon niet worden gemaakt.",
     "created": "Kalenderabonnement gemaakt.",
     "revoke_error": "Het kalenderabonnement kon niet worden ingetrokken.",
@@ -913,6 +928,8 @@
     "title": "Wat is er aan de hand",
     "meta_description": "Community-evenementen en -activiteiten zijn voor iedereen toegankelijk in {{community}}.",
     "intro": "Community-evenementen en -activiteiten bij u in de buurt. Meld u aan om een ​​plaats te reserveren.",
+    "load_error": "De evenementen konden op dit moment niet worden geladen.",
+    "retry": "Opnieuw proberen",
     "loading": "Gebeurtenissen laden…",
     "empty": "Er zijn momenteel geen aankomende evenementen vermeld. Kom binnenkort nog eens terug.",
     "online": "Online evenement",

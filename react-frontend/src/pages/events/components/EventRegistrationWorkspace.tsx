@@ -344,6 +344,22 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     }
   }
 
+  const readableAnswer = useCallback((value: unknown): string => {
+    if (value === null || value === undefined || value === '') return '—';
+    if (typeof value === 'boolean') return t(value ? 'common.yes' : 'common.no');
+    if (Array.isArray(value)) return value.map((item) => (typeof item === 'string' ? item : JSON.stringify(item))).join(', ');
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    return JSON.stringify(value);
+  }, [t]);
+  const questionPrompts = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const form of overview?.forms ?? []) {
+      for (const question of form.questions ?? []) {
+        if (!map.has(question.stable_key)) map.set(question.stable_key, question.prompt);
+      }
+    }
+    return map;
+  }, [overview]);
   const publishedForm = useMemo(
     () => overview?.forms.find((form) => form.status === 'published') ?? null,
     [overview?.forms],
@@ -476,7 +492,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
           expected_settings_revision: overview.settings.revision,
         });
       if (!response.success || !response.data) {
-        toast.error(t('messages.form_save_error'));
+        toast.error(explainedApiError(response) ?? t('messages.form_save_error'));
         return;
       }
       toast.success(t('messages.form_saved'));
@@ -501,7 +517,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
         overview.settings.revision,
       );
       if (!response.success) {
-        toast.error(t('messages.form_publish_error'));
+        toast.error(explainedApiError(response) ?? t('messages.form_publish_error'));
         return;
       }
       toast.success(t('messages.form_published'));
@@ -520,7 +536,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.forkForm(eventId, form.id, overview.settings.revision);
       if (!response.success) {
-        toast.error(t('messages.form_fork_error'));
+        toast.error(explainedApiError(response) ?? t('messages.form_fork_error'));
         return;
       }
       toast.success(t('messages.form_forked'));
@@ -544,7 +560,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
         include_sensitive: includeSensitive,
       });
       if (!response.success || !response.data) {
-        toast.error(t('messages.review_error'));
+        toast.error(explainedApiError(response) ?? t('messages.review_error'));
         return;
       }
       setReview(response.data);
@@ -600,7 +616,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.previewCampaign(eventId, campaignType, source, campaignLocale);
       if (!response.success || !response.data) {
-        toast.error(t('messages.preview_error'));
+        toast.error(explainedApiError(response) ?? t('messages.preview_error'));
         return;
       }
       setPreviewCampaign(response.data.value);
@@ -666,7 +682,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
         cancelReason.trim(),
       );
       if (!response.success) {
-        toast.error(t('messages.cancel_error'));
+        toast.error(explainedApiError(response) ?? t('messages.cancel_error'));
         return;
       }
       toast.success(t('messages.campaign_cancelled'));
@@ -690,7 +706,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     try {
       const response = await eventRegistrationApi.transitionGuestAttendance(eventId, guestId, action, version);
       if (!response.success) {
-        toast.error(t('messages.attendance_error'));
+        toast.error(explainedApiError(response) ?? t('messages.attendance_error'));
         return;
       }
       toast.success(t('messages.attendance_updated'));
@@ -1577,11 +1593,12 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                     {Object.entries(review.answers).map(([key, answer]) => (
                       <div key={key} className="rounded-xl border border-theme-default p-3">
                         <dt className="flex flex-wrap items-center justify-between gap-2 text-sm font-medium text-theme-primary">
-                          <span>{key}</span>
+                          {/* The key is the question's stable key; show its prompt (E-104). */}
+                          <span>{questionPrompts.get(key) ?? key}</span>
                           <Chip size="sm" variant="flat">{t(`classifications.${answer.classification}`)}</Chip>
                         </dt>
                         <dd className="mt-2 whitespace-pre-wrap break-words text-sm text-theme-muted">
-                          {answer.purged ? t('submissions.purged') : JSON.stringify(answer.value)}
+                          {answer.purged ? t('submissions.purged') : readableAnswer(answer.value)}
                         </dd>
                       </div>
                     ))}

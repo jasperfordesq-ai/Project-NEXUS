@@ -36,12 +36,18 @@ function formatWhen(event: PublicEvent): string {
 
   // getFormattingLocale() is called inline rather than passed in: the
   // locale-formatting contract requires it at the toLocaleString call site.
-  return start.toLocaleString(getFormattingLocale(), {
+  // The time is the event's own zone, never the visitor's (E-104).
+  const options: Intl.DateTimeFormatOptions = {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
-    ...(event.all_day ? {} : { hour: '2-digit', minute: '2-digit' }),
-  });
+    ...(event.all_day ? {} : { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }),
+  };
+  try {
+    return start.toLocaleString(getFormattingLocale(), { ...options, timeZone: event.timezone ?? 'UTC' });
+  } catch {
+    return start.toLocaleString(getFormattingLocale(), options);
+  }
 }
 
 export default function PublicEventsListPage() {
@@ -54,11 +60,17 @@ export default function PublicEventsListPage() {
   const navigate = useNavigate();
   const [events, setEvents] = useState<PublicEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
     const res = await publicEventsApi.list();
     if (res.success && Array.isArray(res.data)) {
       setEvents(res.data);
+      setLoadFailed(false);
+    } else {
+      // An outage must not read as "nothing is on" (E-104).
+      setLoadFailed(true);
     }
     setLoading(false);
   }, []);
@@ -83,6 +95,12 @@ export default function PublicEventsListPage() {
         <div className="py-20 text-center">
           <Spinner className="mx-auto" aria-label={t('public.loading')} />
         </div>
+      ) : loadFailed ? (
+        <Card className="p-12 text-center space-y-3" role="alert">
+          <Calendar className="w-10 h-10 text-theme-muted mx-auto" aria-hidden="true" />
+          <p className="text-theme-muted">{t('public.load_error')}</p>
+          <Button variant="secondary" onPress={() => { void load(); }}>{t('public.retry')}</Button>
+        </Card>
       ) : events.length === 0 ? (
         <Card className="p-12 text-center space-y-3">
           <Calendar className="w-10 h-10 text-theme-muted mx-auto" aria-hidden="true" />

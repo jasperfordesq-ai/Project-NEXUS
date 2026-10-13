@@ -5,10 +5,12 @@
     "cancel": "Stornieren",
     "close": "Schließen",
     "loading": "Registrierungsarbeitsbereich wird geladen",
+    "no": "Nein",
     "not_recorded": "Nicht aufgezeichnet",
     "refresh": "Aktualisieren",
     "retry": "Versuchen Sie es erneut",
-    "save": "Speichern"
+    "save": "Speichern",
+    "yes": "Ja"
   },
   "load_error": {
     "title": "Der Registrierungsarbeitsbereich konnte nicht geladen werden",

@@ -723,7 +723,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
         </CardBody>
       </Card>
 
-      <Modal isOpen={pendingAction !== null} onClose={() => setPendingAction(null)} size="md">
+      <Modal isOpen={pendingAction !== null} onClose={() => { setPendingAction(null); setActionReason(''); }} size="md">
         <ModalContent>
           <ModalHeader>{pendingAction ? t(`manage.people.confirm.${pendingAction.action}_title`) : ''}</ModalHeader>
           <ModalBody>
@@ -743,7 +743,7 @@ export function EventPeopleWorkspace({ eventId }: { eventId: number }) {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant="tertiary" isDisabled={isMutating} onPress={() => setPendingAction(null)}>
+            <Button variant="tertiary" isDisabled={isMutating} onPress={() => { setPendingAction(null); setActionReason(''); }}>
               {t('manage.people.keep_unchanged')}
             </Button>
             <Button

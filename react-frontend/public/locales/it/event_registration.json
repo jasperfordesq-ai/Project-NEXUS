@@ -5,10 +5,12 @@
     "cancel": "Cancellare",
     "close": "Vicino",
     "loading": "Caricamento dell'area di lavoro di registrazione",
+    "no": "No",
     "not_recorded": "Non registrato",
     "refresh": "Aggiorna",
     "retry": "Riprova",
-    "save": "Salva"
+    "save": "Salva",
+    "yes": "Sì"
   },
   "load_error": {
     "title": "Impossibile caricare l'area di lavoro di registrazione",

@@ -1055,6 +1055,18 @@ class EventService
                     $visibleOccurrenceIds[(int) $occurrence->getKey()],
                 ))
                 ->values();
+            // A generated series' template row carries the same start as its
+            // first generated occurrence, so listing both showed that date
+            // twice (E-104). Drop the template only when a visible occurrence
+            // already stands for the same moment.
+            $concreteStarts = $allVisibleOccurrences
+                ->reject(static fn (Event $occurrence): bool => (bool) $occurrence->getAttribute('is_recurring_template'))
+                ->map(static fn (Event $occurrence): string => (string) $occurrence->getRawOriginal('start_time'))
+                ->flip();
+            $allVisibleOccurrences = $allVisibleOccurrences
+                ->reject(static fn (Event $occurrence): bool => (bool) $occurrence->getAttribute('is_recurring_template')
+                    && isset($concreteStarts[(string) $occurrence->getRawOriginal('start_time')]))
+                ->values();
             $visibleOccurrences = $allVisibleOccurrences->take(50)->values();
             $data['series_occurrences'] = $visibleOccurrences
                 ->map(static fn (Event $occurrence): array => [

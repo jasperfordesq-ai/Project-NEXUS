@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 vi.mock('@/lib/api', () => ({
@@ -84,6 +84,35 @@ describe('PublicEventsListPage', () => {
     expect(screen.queryByRole('button', { name: /going|rsvp|book/i })).not.toBeInTheDocument();
   });
 
+  // E-104: an outage must not read as "nothing is on".
+  it('shows a retry-able error rather than the empty state when the list cannot load', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'boom' });
+
+    render(<PublicEventsListPage />);
+
+    expect(await screen.findByText('Events could not be loaded right now.')).toBeInTheDocument();
+    expect(screen.queryByText(/nothing/i)).not.toBeInTheDocument();
+
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [EVENT] });
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('Wassail in the Orchard')).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  // E-104: the time must be the event's own, not the visitor's browser zone.
+  it('shows each start time in the event time zone', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: [{ ...EVENT, start_time: '2026-12-14T18:00:00Z', timezone: 'Pacific/Auckland' }],
+    });
+
+    render(<PublicEventsListPage />);
+    await screen.findByText('Wassail in the Orchard');
+
+    expect(screen.getByText(/15 Dec/)).toBeInTheDocument();
+    expect(screen.getByText(/07:00/)).toBeInTheDocument();
+  });
+
   it('shows an empty state rather than an error when nothing is listed', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: [] });
 
@@ -97,6 +126,8 @@ describe('PublicEventsListPage', () => {
 
     render(<PublicEventsListPage />);
 
-    expect(await screen.findByText(/no upcoming events/i)).toBeInTheDocument();
+    // Since E-104 a failed load is reported as such, never as "nothing is on".
+    expect(await screen.findByText('Events could not be loaded right now.')).toBeInTheDocument();
+    expect(screen.queryByText(/no upcoming events/i)).not.toBeInTheDocument();
   });
 });

@@ -50,7 +50,7 @@
     "other": "Eile"
   },
   "detail": {
-    "submit_for_review_confirm": "An t-imeacht seo a chur chuig an scuaine modhnóireachta? Is féidir leis na heagraithe é a chur in eagar fad atá sé faoi athbhreithniú.",
+    "submit_for_review_confirm": "An bhfuil tú ag iarraidh an ócáid seo a chur faoi bhráid na modhnóireachta? Ní féidir í a chur in eagar fad atá sí ag fanacht le hathbhreithniú.",
     "publish_event_confirm": "An t-imeacht seo a fhoilsiú anois? Beidh sé infheicthe ag baill incháilithe agus d’fhéadfadh sé fógraí agus an líonra comhpháirtíochta a spreagadh.",
     "offer_state_chip": "Áit ar fáil",
     "offer_available_title": "Tá áit ar fáil duit",
@@ -120,6 +120,10 @@
     "check_in": "Cláraigh Isteach",
     "rsvp_aria": "Roghanna RSVP",
     "rsvp_panel_title": "Freagair don imeacht seo",
+    "rsvp_leave_going_title": "An bhfuil tú ag iarraidh d’áit a scaoileadh?",
+    "rsvp_leave_going_body": "Tá tú cláraithe don ócáid seo. Má leanann tú ar aghaidh, scaoilfear d’áit agus beidh duine eile in ann í a ghlacadh.",
+    "rsvp_leave_interested_title": "An bhfuil tú ag iarraidh do fhreagra a athrú?",
+    "rsvp_leave_interested_body": "Ní thaispeánfar a thuilleadh go bhfuil suim agat san ócáid seo.",
     "rsvp_panel_desc": "Cuir in iúl don eagraí an bhfuil sé ar intinn agat freastal.",
     "rsvp_going_aria": "Marcáil go bhfuil tú ag dul ann",
     "rsvp_interested_aria": "Marcáil go bhfuil suim agat ann",
@@ -368,6 +372,19 @@
     "revision_impact_customized": "Coinníonn {{count}} tarlú saincheaptha na réimsí a athraíodh go sonrach iontu",
     "revision_blocked": "Réitigh {{count}} coimhlint sula gcuirtear na hathruithe seo i bhfeidhm.",
     "revision_confirm": "Cuir i bhfeidhm ar an imeacht seo agus ar imeachtaí amach anseo"
+  },
+  "series_template": {
+    "detail_title": "Sraith athfhillteach í seo",
+    "detail_desc": "Tá clárú, céimeanna sábháilteachta, ticéid, seiceáil isteach agus naisc féilire ar leathanach gach dáta féin. Roghnaigh dáta le leanúint ar aghaidh.",
+    "manage_title": "Sraith athfhillteach á bainistiú",
+    "manage_desc": "Láimhseáiltear daoine, clárú, sábháilteacht, ticéid agus seiceáil isteach de réir dáta. Roghnaigh dáta chun a uirlisí a oscailt.",
+    "dates_label": "Dátaí sa tsraith seo",
+    "more_dates_one": "agus {{count}} dáta eile",
+    "more_dates_two": "agus {{count}} dháta eile",
+    "more_dates_few": "agus {{count}} dháta eile",
+    "more_dates_many": "agus {{count}} ndáta eile",
+    "more_dates_other": "agus {{count}} dáta eile",
+    "no_dates": "Níor gineadh aon dátaí atá le teacht go fóill."
   },
   "manage": {
     "page_title": "Bainistigh {{title}}",
@@ -887,6 +904,7 @@
     "revoke_confirm_identity": "Síntiús: {{label}} (réimír {{prefix}})",
     "close": "Dún",
     "load_error": "Níorbh fhéidir síntiúis féilire a lódáil.",
+    "unavailable": "Tá fothaí féilire múchta sa phobal seo.",
     "create_error": "Níorbh fhéidir an síntiús féilire a chruthú.",
     "created": "Síntiús féilire cruthaithe.",
     "revoke_error": "Níorbh fhéidir an síntiús féilire a chúlghairm.",
@@ -943,6 +961,8 @@
     "title": "Cad atá ar siúl",
     "meta_description": "Imeachtaí agus gníomhaíochtaí pobail oscailte do gach duine i {{community}}.",
     "intro": "Imeachtaí agus gníomhaíochtaí pobail in aice leat. Sínigh isteach chun áit a chur in áirithe.",
+    "load_error": "Níorbh fhéidir na hócáidí a lódáil faoi láthair.",
+    "retry": "Bain triail eile as",
     "loading": "Imeachtaí á lódáil…",
     "empty": "Níl aon imeacht le teacht liostaithe faoi láthair. Fill ar an leathanach seo ar ball.",
     "online": "Imeacht ar líne",

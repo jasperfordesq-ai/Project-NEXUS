@@ -28,6 +28,7 @@ import {
   type EventCalendarFeedToken,
 } from '@/lib/events-api';
 import { formatDateTime } from '@/lib/helpers';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
 export function CalendarSubscriptionPanel() {
@@ -43,15 +44,23 @@ export function CalendarSubscriptionPanel() {
   const [isCreating, setIsCreating] = useState(false);
   const [revokingId, setRevokingId] = useState<number | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  // The community can switch calendar feeds off; the server then answers 403
+  // for every feed call, so say so instead of a generic failure (E-104).
+  const [unavailable, setUnavailable] = useState(false);
 
   const loadTokens = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await eventsApi.calendarFeedTokens();
       if (!response.success || !response.data) {
-        toast.error(t('calendar_subscriptions.load_error'));
+        if (response.code === 'FORBIDDEN' || response.code === 'HTTP_403') {
+          setUnavailable(true);
+          return;
+        }
+        toast.error(explainedApiError(response) ?? t('calendar_subscriptions.load_error'));
         return;
       }
+      setUnavailable(false);
       setTokens(response.data);
     } catch (error) {
       logError('Failed to load calendar subscriptions', error);
@@ -72,7 +81,7 @@ export function CalendarSubscriptionPanel() {
     try {
       const response = await eventsApi.createCalendarFeedToken(label);
       if (!response.success || !response.data) {
-        toast.error(t('calendar_subscriptions.create_error'));
+        toast.error(explainedApiError(response) ?? t('calendar_subscriptions.create_error'));
         return;
       }
       setCreatedFeedUrl(response.data.feed_url);
@@ -175,6 +184,11 @@ export function CalendarSubscriptionPanel() {
             <>
               <ModalHeader>{t('calendar_subscriptions.title')}</ModalHeader>
               <ModalBody className="space-y-5">
+                {unavailable && (
+                  <p role="status" className="rounded-lg bg-warning/10 p-3 text-sm text-theme-primary">
+                    {t('calendar_subscriptions.unavailable')}
+                  </p>
+                )}
                 <p className="text-sm text-theme-muted">{t('calendar_subscriptions.description')}</p>
 
                 <section aria-labelledby="tenant-calendar-heading" className="rounded-xl border border-theme-default bg-theme-elevated p-4">

@@ -139,7 +139,11 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
 
   function updateContent(next: Partial<EventBroadcastContentInput>) {
     setContent((current) => ({ ...current, ...next }));
-    setPreview(null);
+    // The audience preview depends on variant, segments and channels only;
+    // clearing it on every keystroke in the body blocked "Save draft" (E-104).
+    if ('variant' in next || 'segments' in next || 'channels' in next) {
+      setPreview(null);
+    }
   }
 
   function openNewComposer() {
@@ -291,7 +295,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
         newIdempotencyKey('cancel'),
       );
       if (!response.success || !response.data) {
-        toast.error(t('cancel_error'));
+        toast.error(explainedApiError(response) ?? t('cancel_error'));
         return;
       }
       replaceBroadcast(response.data.broadcast);
@@ -315,7 +319,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
         newIdempotencyKey('retry'),
       );
       if (!response.success || !response.data) {
-        toast.error(t('retry_error'));
+        toast.error(explainedApiError(response) ?? t('retry_error'));
         return;
       }
       replaceBroadcast(response.data.broadcast);
@@ -338,7 +342,7 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
       const response = await eventCommunicationsApi.get(broadcast.id, 1, 50);
       if (requestGeneration !== auditGeneration.current) return;
       if (!response.success || !response.data) {
-        toast.error(t('load_history_error'));
+        toast.error(explainedApiError(response) ?? t('load_history_error'));
         return;
       }
       setAuditDetail(response.data);

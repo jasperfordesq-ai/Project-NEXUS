@@ -50,7 +50,7 @@
     "other": "Other"
   },
   "detail": {
-    "submit_for_review_confirm": "Submit this event to the moderation queue? Organisers can still edit it while it is awaiting review.",
+    "submit_for_review_confirm": "Submit this event to the moderation queue? It cannot be edited while it is awaiting review.",
     "publish_event_confirm": "Publish this event now? It will become visible to eligible members and may trigger notifications and federation.",
     "offer_state_chip": "Place available",
     "offer_available_title": "A place is available for you",
@@ -120,6 +120,10 @@
     "check_in": "Check in",
     "rsvp_aria": "RSVP options",
     "rsvp_panel_title": "RSVP for this event",
+    "rsvp_leave_going_title": "Give up your place?",
+    "rsvp_leave_going_body": "You are registered for this event. If you continue, your place is released and someone else can take it.",
+    "rsvp_leave_interested_title": "Change your response?",
+    "rsvp_leave_interested_body": "You will no longer be shown as interested in this event.",
     "rsvp_panel_desc": "Let the organizer know whether you plan to attend.",
     "rsvp_going_aria": "Mark yourself as going",
     "rsvp_interested_aria": "Mark yourself as interested",
@@ -176,13 +180,13 @@
     "events_in_series_other": "{{count}} events in series",
     "max_capacity_one": "{{count}} max capacity",
     "max_capacity_other": "{{count}} max capacity",
-    "spots_left_one": "{{count}} spots left",
+    "spots_left_one": "{{count}} spot left",
     "spots_left_other": "{{count}} spots left",
     "waitlist_count_one": "{{count}} on waitlist",
     "waitlist_count_other": "{{count}} on waitlist",
     "more_attendees_one": "+{{count}} more",
     "more_attendees_other": "+{{count}} more",
-    "attendance_total_one": "{{count}} responses",
+    "attendance_total_one": "{{count}} response",
     "attendance_total_other": "{{count}} responses",
     "view_all_series_one": "View all {{count}} events in series",
     "view_all_series_other": "View all {{count}} events in series",
@@ -200,7 +204,7 @@
     "repeats_generic": "Recurring",
     "series_dates_one": "{{count}} date",
     "series_dates_other": "{{count}} dates",
-    "spots_left_one": "{{count}} spots left",
+    "spots_left_one": "{{count}} spot left",
     "spots_left_other": "{{count}} spots left"
   },
   "form": {
@@ -341,6 +345,16 @@
     "revision_impact_customized": "{{count}} customized occurrence(s) keep their overridden fields",
     "revision_blocked": "Resolve {{count}} conflict(s) before applying these changes.",
     "revision_confirm": "Apply to this and future events"
+  },
+  "series_template": {
+    "detail_title": "This is a recurring series",
+    "detail_desc": "Registration, safety steps, tickets, check-in and calendar links are on each date’s own page. Choose a date to continue.",
+    "manage_title": "Managing a recurring series",
+    "manage_desc": "People, registration, safety, tickets and check-in are handled on each date. Choose a date to open its tools.",
+    "dates_label": "Dates in this series",
+    "more_dates_one": "and {{count}} more date",
+    "more_dates_other": "and {{count}} more dates",
+    "no_dates": "No upcoming dates have been generated yet."
   },
   "manage": {
     "page_title": "Manage {{title}}",
@@ -857,6 +871,7 @@
     "revoke_confirm_identity": "Subscription: {{label}} (prefix {{prefix}})",
     "close": "Close",
     "load_error": "Calendar subscriptions could not be loaded.",
+    "unavailable": "Calendar feeds are switched off in this community.",
     "create_error": "The calendar subscription could not be created.",
     "created": "Calendar subscription created.",
     "revoke_error": "The calendar subscription could not be revoked.",
@@ -913,6 +928,8 @@
     "title": "What's on",
     "meta_description": "Community events and activities open to everyone in {{community}}.",
     "intro": "Community events and activities near you. Sign in to book a place.",
+    "load_error": "Events could not be loaded right now.",
+    "retry": "Try again",
     "loading": "Loading events…",
     "empty": "There are no upcoming events listed right now. Please check back soon.",
     "online": "Online event",

@@ -5,10 +5,12 @@
     "cancel": "Cancel",
     "close": "Close",
     "loading": "Loading registration workspace",
+    "no": "No",
     "not_recorded": "Not recorded",
     "refresh": "Refresh",
     "retry": "Try again",
-    "save": "Save"
+    "save": "Save",
+    "yes": "Yes"
   },
   "load_error": {
     "title": "Registration workspace could not be loaded",

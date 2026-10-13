@@ -110,6 +110,13 @@ interface FormData {
 }
 
 const WEEKDAY_KEYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const;
+
+/** The start date's weekday, so a weekly series starts on the chosen day by default (E-104). */
+function startWeekday(start: { year: number; month: number; day: number } | null): string | null {
+  if (!start) return null;
+  const sundayFirst = new Date(Date.UTC(start.year, start.month - 1, start.day)).getUTCDay();
+  return WEEKDAY_KEYS[(sundayFirst + 6) % 7] ?? null;
+}
 const WEEKDAY_LABEL_KEYS = ['weekday_mon', 'weekday_tue', 'weekday_wed', 'weekday_thu', 'weekday_fri', 'weekday_sat', 'weekday_sun'] as const;
 
 const initialFormData: FormData = {
@@ -1293,8 +1300,10 @@ export function CreateEventPage() {
           {/* Recurring Event Toggle */}
           <div className="space-y-4">
             {/* Hidden when the community has switched recurring events off:
-                the server then offers no frequency and refuses a new series. */}
-            {recurrenceAvailable && (
+                the server then offers no frequency and refuses a new series.
+                Also hidden while editing: the update endpoint does not read
+                recurrence fields, so the switch would silently do nothing (E-104). */}
+            {recurrenceAvailable && !isEditing && (
             <div className="flex items-center justify-between p-4 rounded-xl bg-theme-elevated border border-theme-default">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-accent/20">
@@ -1312,7 +1321,14 @@ export function CreateEventPage() {
               <Switch
                 aria-label={t('form.recurring_toggle_aria')}
                 isSelected={formData.isRecurring}
-                onValueChange={(checked) => setFormData((prev) => ({ ...prev, isRecurring: checked }))}
+                onValueChange={(checked) => setFormData((prev) => {
+                  const weekday = startWeekday(prev.startDate);
+                  return {
+                    ...prev,
+                    isRecurring: checked,
+                    recurrenceDays: checked && prev.recurrenceDays.length === 0 && weekday ? [weekday] : prev.recurrenceDays,
+                  };
+                })}
                 classNames={{
                   wrapper: 'group-data-[selected=true]:bg-accent',
                 }}

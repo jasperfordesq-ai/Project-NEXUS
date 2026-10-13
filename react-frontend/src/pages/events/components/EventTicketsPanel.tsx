@@ -352,7 +352,7 @@ export function EventTicketsPanel({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2"><Ticket className="h-5 w-5 text-primary" aria-hidden="true" /><h2 className="text-xl font-semibold">{t('tickets.title')}</h2></div>
-          <p className="mt-1 text-sm text-default-600">{t('tickets.subtitle')}</p>
+          <p className="mt-1 text-sm text-theme-muted">{t('tickets.subtitle')}</p>
         </div>
         {catalogue.permissions.manage && (
           <div className="flex flex-wrap gap-2">
@@ -365,7 +365,7 @@ export function EventTicketsPanel({
       {!catalogue.payment_gateway.time_credit_supported && (
         <Card className="border border-warning/30 bg-warning/5"><CardBody className="flex-row items-start gap-3 p-4">
           <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
-          <div><p className="font-medium">{t('tickets.gateway_title')}</p><p className="text-sm text-default-600">{t('tickets.gateway_notice')}</p></div>
+          <div><p className="font-medium">{t('tickets.gateway_title')}</p><p className="text-sm text-theme-muted">{t('tickets.gateway_notice')}</p></div>
         </CardBody></Card>
       )}
 
@@ -378,7 +378,7 @@ export function EventTicketsPanel({
       )}
 
       {catalogue.ticket_types.length === 0 ? (
-        <Card><CardBody className="p-6 text-sm text-default-600">{t('tickets.empty')}</CardBody></Card>
+        <Card><CardBody className="p-6 text-sm text-theme-muted">{t('tickets.empty')}</CardBody></Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {catalogue.ticket_types.map((type) => {
@@ -392,14 +392,14 @@ export function EventTicketsPanel({
               <Card key={type.id}>
                 <CardBody className="gap-4 p-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div><h3 className="font-semibold">{type.name}</h3>{type.description && <p className="mt-1 text-sm text-default-600">{type.description}</p>}</div>
+                    <div><h3 className="font-semibold">{type.name}</h3>{type.description && <p className="mt-1 text-sm text-theme-muted">{type.description}</p>}</div>
                     <Chip size="sm" variant="soft">{t(`tickets.status.${type.status}`)}</Chip>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 text-sm">
-                    <div><dt className="text-default-500">{t('tickets.kind_label')}</dt><dd className="font-medium">{t(`tickets.kind.${type.kind}`)}</dd></div>
-                    <div><dt className="text-default-500">{t('tickets.remaining')}</dt><dd className="font-medium tabular-nums">{new Intl.NumberFormat(getFormattingLocale()).format(type.availability.allocation_remaining)}</dd></div>
-                    <div><dt className="text-default-500">{t('tickets.per_member')}</dt><dd className="font-medium tabular-nums">{type.per_member_limit}</dd></div>
-                    <div><dt className="text-default-500">{t('tickets.price')}</dt><dd className="font-medium tabular-nums">{type.kind === 'free' ? t('tickets.free') : t('tickets.credit_price', { value: type.unit_price_credits })}</dd></div>
+                    <div><dt className="text-theme-subtle">{t('tickets.kind_label')}</dt><dd className="font-medium">{t(`tickets.kind.${type.kind}`)}</dd></div>
+                    <div><dt className="text-theme-subtle">{t('tickets.remaining')}</dt><dd className="font-medium tabular-nums">{new Intl.NumberFormat(getFormattingLocale()).format(type.availability.allocation_remaining)}</dd></div>
+                    <div><dt className="text-theme-subtle">{t('tickets.per_member')}</dt><dd className="font-medium tabular-nums">{type.per_member_limit}</dd></div>
+                    <div><dt className="text-theme-subtle">{t('tickets.price')}</dt><dd className="font-medium tabular-nums">{type.kind === 'free' ? t('tickets.free') : t('tickets.credit_price', { value: type.unit_price_credits })}</dd></div>
                   </dl>
                   {!type.availability.materialization_supported && <p className="text-sm text-warning">{t('tickets.not_purchasable')}</p>}
                   {catalogue.permissions.manage ? (
@@ -423,11 +423,11 @@ export function EventTicketsPanel({
         <section aria-labelledby="event-own-tickets"><h3 id="event-own-tickets" className="mb-3 text-lg font-semibold">{t('tickets.yours')}</h3>
           <div className="space-y-2">{catalogue.own_entitlements.map((entitlement) => (
             <Card key={entitlement.id}><CardBody className="flex-row items-center justify-between gap-4 p-4">
-              <div><p className="font-medium">{names.get(entitlement.ticket_type_id) ?? t('tickets.ticket_fallback')}</p><p className="text-sm text-default-600">{t('tickets.units', { count: entitlement.units })}</p></div>
+              <div><p className="font-medium">{names.get(entitlement.ticket_type_id) ?? t('tickets.ticket_fallback')}</p><p className="text-sm text-theme-muted">{t('tickets.units', { count: entitlement.units })}</p></div>
               {entitlement.status === 'confirmed' && entitlement.kind === 'free'
                 ? <Button size="sm" variant="danger-soft" onPress={() => setCancelTarget(entitlement)}>{t('tickets.cancel')}</Button>
                 : entitlement.status === 'confirmed'
-                  ? <p className="max-w-sm text-sm text-default-600">{t('tickets.time_credit_cancel_disabled')}</p>
+                  ? <p className="max-w-sm text-sm text-theme-muted">{t('tickets.time_credit_cancel_disabled')}</p>
                   : <Chip size="sm" variant="soft">{t('tickets.cancelled')}</Chip>}
             </CardBody></Card>
           ))}</div>
@@ -510,7 +510,7 @@ function TicketTypeEditor({ isOpen, editing, draft, setDraft, error, isSaving, t
           {draft.kind === 'time_credit' && <Input type="datetime-local" label={t('tickets.refund_cutoff')} value={draft.refundCutoff} onChange={(event) => setDraft((current) => ({ ...current, refundCutoff: event.target.value }))} />}
           <Input type="number" min="0" label={t('tickets.account_age')} value={draft.accountAgeDays} onChange={(event) => setDraft((current) => ({ ...current, accountAgeDays: event.target.value }))} />
         </div>
-        <p className="text-xs text-default-500">{t('tickets.timezone_hint', { timezone: timeZone })}</p>
+        <p className="text-xs text-theme-subtle">{t('tickets.timezone_hint', { timezone: timeZone })}</p>
         <Input label={t('tickets.group_ids')} description={t('tickets.group_ids_hint')} value={draft.groupIds} onChange={(event) => setDraft((current) => ({ ...current, groupIds: event.target.value }))} />
         <Checkbox isSelected={draft.approvedOnly} onValueChange={(value) => setDraft((current) => ({ ...current, approvedOnly: value }))}>{t('tickets.approved_only')}</Checkbox>
         {draft.kind === 'time_credit' && <Checkbox isSelected={draft.organizerRefundable} onValueChange={(value) => setDraft((current) => ({ ...current, organizerRefundable: value }))}>{t('tickets.organizer_refundable')}</Checkbox>}

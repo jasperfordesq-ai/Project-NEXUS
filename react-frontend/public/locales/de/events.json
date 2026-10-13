@@ -50,7 +50,7 @@
     "other": "Sonstiges"
   },
   "detail": {
-    "submit_for_review_confirm": "Dieses Event zur Moderation einreichen? Organisatoren können es während der Prüfung weiterhin bearbeiten.",
+    "submit_for_review_confirm": "Diese Veranstaltung zur Moderation einreichen? Solange sie auf die Prüfung wartet, kann sie nicht bearbeitet werden.",
     "publish_event_confirm": "Dieses Event jetzt veröffentlichen? Es wird für berechtigte Mitglieder sichtbar und kann Benachrichtigungen sowie Föderation auslösen.",
     "offer_state_chip": "Platz angeboten",
     "offer_available_title": "Ein Platz ist für Sie frei",
@@ -120,6 +120,10 @@
     "check_in": "Einchecken",
     "rsvp_aria": "RSVP-Optionen",
     "rsvp_panel_title": "Für diese Veranstaltung zusagen",
+    "rsvp_leave_going_title": "Platz freigeben?",
+    "rsvp_leave_going_body": "Sie sind für diese Veranstaltung angemeldet. Wenn Sie fortfahren, wird Ihr Platz freigegeben und kann von jemand anderem genutzt werden.",
+    "rsvp_leave_interested_title": "Antwort ändern?",
+    "rsvp_leave_interested_body": "Sie werden nicht mehr als interessiert an dieser Veranstaltung angezeigt.",
     "rsvp_panel_desc": "Teilen Sie dem Organisator mit, ob Sie teilnehmen möchten.",
     "rsvp_going_aria": "Als teilnehmend markieren",
     "rsvp_interested_aria": "Als interessiert markieren",
@@ -176,13 +180,13 @@
     "events_in_series_other": "{{count}} Veranstaltungen in der Reihe",
     "max_capacity_one": "Max. {{count}} Personen",
     "max_capacity_other": "Max. {{count}} Personen",
-    "spots_left_one": "{{count}} Plätze frei",
+    "spots_left_one": "{{count}} Platz frei",
     "spots_left_other": "{{count}} Plätze frei",
     "waitlist_count_one": "{{count}} auf der Warteliste",
     "waitlist_count_other": "{{count}} auf der Warteliste",
     "more_attendees_one": "+{{count}} weitere",
     "more_attendees_other": "+{{count}} weitere",
-    "attendance_total_one": "{{count}} Antworten",
+    "attendance_total_one": "{{count}} Antwort",
     "attendance_total_other": "{{count}} Antworten",
     "view_all_series_one": "Alle {{count}} Veranstaltungen der Reihe anzeigen",
     "view_all_series_other": "Alle {{count}} Veranstaltungen der Reihe anzeigen",
@@ -200,7 +204,7 @@
     "repeats_generic": "Recurring",
     "series_dates_one": "{{count}} Termin",
     "series_dates_other": "{{count}} Termine",
-    "spots_left_one": "{{count}} Plätze frei",
+    "spots_left_one": "{{count}} Platz frei",
     "spots_left_other": "{{count}} Plätze frei"
   },
   "form": {
@@ -341,6 +345,16 @@
     "revision_impact_customized": "{{count}} angepasste(r) Termin(e) behalten überschriebene Felder",
     "revision_blocked": "Lösen Sie {{count}} Konflikt(e), bevor Sie diese Änderungen anwenden.",
     "revision_confirm": "Auf diesen und zukünftige Termine anwenden"
+  },
+  "series_template": {
+    "detail_title": "Dies ist eine wiederkehrende Reihe",
+    "detail_desc": "Anmeldung, Sicherheitsschritte, Tickets, Check-in und Kalenderlinks finden Sie auf der Seite des jeweiligen Termins. Wählen Sie einen Termin, um fortzufahren.",
+    "manage_title": "Verwaltung einer wiederkehrenden Reihe",
+    "manage_desc": "Personen, Anmeldung, Sicherheit, Tickets und Check-in werden je Termin verwaltet. Wählen Sie einen Termin, um dessen Werkzeuge zu öffnen.",
+    "dates_label": "Termine dieser Reihe",
+    "more_dates_one": "und {{count}} weiterer Termin",
+    "more_dates_other": "und {{count}} weitere Termine",
+    "no_dates": "Es wurden noch keine kommenden Termine erzeugt."
   },
   "manage": {
     "page_title": "Verwalten Sie {{title}}",
@@ -857,6 +871,7 @@
     "revoke_confirm_identity": "Abonnement: {{label}} (Präfix {{prefix}})",
     "close": "Schließen",
     "load_error": "Kalenderabonnements konnten nicht geladen werden.",
+    "unavailable": "Kalender-Feeds sind in dieser Community abgeschaltet.",
     "create_error": "Das Kalenderabonnement konnte nicht erstellt werden.",
     "created": "Kalenderabonnement erstellt.",
     "revoke_error": "Das Kalenderabonnement konnte nicht widerrufen werden.",
@@ -913,6 +928,8 @@
     "title": "Was ist los",
     "meta_description": "Community-Veranstaltungen und -Aktivitäten, die allen in {{community}} offen stehen.",
     "intro": "Community-Events und Aktivitäten in Ihrer Nähe. Melden Sie sich an, um einen Platz zu buchen.",
+    "load_error": "Die Veranstaltungen konnten gerade nicht geladen werden.",
+    "retry": "Erneut versuchen",
     "loading": "Ereignisse werden geladen…",
     "empty": "Derzeit sind keine bevorstehenden Veranstaltungen aufgeführt. Bitte schauen Sie bald wieder vorbei.",
     "online": "Online-Veranstaltung",

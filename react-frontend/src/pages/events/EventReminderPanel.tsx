@@ -52,6 +52,9 @@ export function EventReminderPanel({ eventId }: { eventId: number }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
+  // The community can switch reminders off; the server then answers 403 and
+  // there is nothing for the attendee to configure (E-104).
+  const [unavailable, setUnavailable] = useState(false);
 
   const apply = useCallback((next: EventReminderPreferences) => {
     setPreferences(next);
@@ -77,6 +80,8 @@ export function EventReminderPanel({ eventId }: { eventId: number }) {
       setMessage(conflict
         ? { tone: 'error', text: t('reminders.conflict_refreshed') }
         : null);
+    } else if (response.code === 'FORBIDDEN' || response.code === 'HTTP_403') {
+      setUnavailable(true);
     } else {
       setMessage({ tone: 'error', text: t('reminders.load_error') });
     }
@@ -174,6 +179,10 @@ export function EventReminderPanel({ eventId }: { eventId: number }) {
     }
     setIsSaving(false);
   };
+
+  if (unavailable) {
+    return null;
+  }
 
   return (
     <Card className="mt-4 border border-theme-default bg-theme-elevated shadow-none">

@@ -49,6 +49,7 @@ import {
   type EventAgendaResourceInput,
 } from '@/lib/events-api';
 import { getFormattingLocale } from '@/lib/helpers';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 import { safeHref } from '@/lib/safeHref';
 
@@ -345,7 +346,7 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
           )
         : await eventsApi.createAgendaSession(event.id, payload, idempotencyKey());
       if (!response.success || !response.data) {
-        setFormError(t('manage.agenda.save_error'));
+        setFormError(explainedApiError(response) ?? t('manage.agenda.save_error'));
         await loadAgenda();
         return;
       }
@@ -372,7 +373,7 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
         idempotencyKey(),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.agenda.cancel_error'));
+        toast.error(explainedApiError(response) ?? t('manage.agenda.cancel_error'));
         await loadAgenda();
         return;
       }
@@ -408,7 +409,7 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
         idempotencyKey(),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.agenda.reorder_error'));
+        toast.error(explainedApiError(response) ?? t('manage.agenda.reorder_error'));
       }
       await loadAgenda();
     } catch (caught) {

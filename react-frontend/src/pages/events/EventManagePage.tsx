@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { Spinner } from '@/components/ui/Spinner';
+import { EventSeriesTemplateNotice } from './components/EventSeriesTemplateNotice';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import {
@@ -117,7 +118,10 @@ export function EventManagePage() {
     'event_recurrence_blueprints',
   ]);
   const { id, section } = useParams<{ id: string; section?: string }>();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
+  // Federation sharing is a community feature; without it the tab could only
+  // ever say "no partners configured" (E-104).
+  const federationVisible = hasFeature('federation');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState<Event | null>(null);
@@ -243,7 +247,7 @@ export function EventManagePage() {
   const allowedSections = useMemo(() => new Set([
     'overview',
     ...(event?.permissions.edit ? ['safety'] : []),
-    ...(event?.permissions.edit ? ['federation'] : []),
+    ...(event?.permissions.edit && federationVisible ? ['federation'] : []),
     ...(event?.permissions.edit ? ['templates'] : []),
     ...(event?.permissions.edit ? ['analytics'] : []),
     ...((event?.permissions.manage_finance || event?.permissions.reconcile_tickets)
@@ -257,7 +261,7 @@ export function EventManagePage() {
     ...(canUseDefinitionBlueprints(event, recurrenceCapabilities, definitionBlueprintsSuppressed)
       ? ['series-definitions']
       : []),
-  ]), [definitionBlueprintsSuppressed, event, recurrenceCapabilities]);
+  ]), [definitionBlueprintsSuppressed, event, federationVisible, recurrenceCapabilities]);
 
   const suppressDefinitionBlueprints = useCallback(() => {
     setDefinitionBlueprintsSuppressed(true);
@@ -265,6 +269,18 @@ export function EventManagePage() {
   }, []);
 
   const selectedTab = section && allowedSections.has(section) ? section : 'overview';
+  // Registration, safety, tickets, check-in and people exist per concrete
+  // date; on the series template those APIs refuse, so show the dates
+  // instead of a misleading "check your connection" error (E-104).
+  const isSeriesTemplate = event?.series.recurrence?.is_template === true;
+  const seriesTemplateNotice = event ? (
+    <EventSeriesTemplateNotice
+      variant="manage"
+      occurrences={event.series.recurrence?.occurrences ?? []}
+      timezone={event.schedule.timezone}
+      hrefFor={(occurrenceId) => tenantPath(`/events/${occurrenceId}/manage/${selectedTab}`)}
+    />
+  ) : null;
 
   useEffect(() => {
     if (!event || !id || !section || allowedSections.has(section)) return;
@@ -448,7 +464,7 @@ export function EventManagePage() {
                 {t('event_safety:manage.tab')}
               </Tabs.Tab>
             )}
-            {event.permissions.edit && (
+            {event.permissions.edit && federationVisible && (
               <Tabs.Tab
                 id="federation"
                 data-management-section="federation"
@@ -547,20 +563,20 @@ export function EventManagePage() {
         </Tabs.Panel>
         {event.permissions.manage_people && (
           <Tabs.Panel id="people" className="pt-5 outline-none">
-            {selectedTab === 'people' && <EventPeopleWorkspace eventId={event.id} />}
+            {selectedTab === 'people' && (isSeriesTemplate ? seriesTemplateNotice : <EventPeopleWorkspace eventId={event.id} />)}
           </Tabs.Panel>
         )}
         {event.permissions.manage_registration && (
           <Tabs.Panel id="registration" className="pt-5 outline-none">
-            {selectedTab === 'registration' && <EventRegistrationWorkspace eventId={event.id} />}
+            {selectedTab === 'registration' && (isSeriesTemplate ? seriesTemplateNotice : <EventRegistrationWorkspace eventId={event.id} />)}
           </Tabs.Panel>
         )}
         {event.permissions.edit && (
           <Tabs.Panel id="safety" className="pt-5 outline-none">
-            {selectedTab === 'safety' && <EventSafetyWorkspace eventId={event.id} />}
+            {selectedTab === 'safety' && (isSeriesTemplate ? seriesTemplateNotice : <EventSafetyWorkspace eventId={event.id} />)}
           </Tabs.Panel>
         )}
-        {event.permissions.edit && (
+        {event.permissions.edit && federationVisible && (
           <Tabs.Panel id="federation" className="pt-5 outline-none">
             {selectedTab === 'federation' && <EventFederationStatusPanel eventId={event.id} />}
           </Tabs.Panel>
@@ -580,18 +596,18 @@ export function EventManagePage() {
         {(event.permissions.manage_finance || event.permissions.reconcile_tickets)
           && event.schedule.start_at && (
             <Tabs.Panel id="tickets" className="pt-5 outline-none">
-              {selectedTab === 'tickets' && (
+              {selectedTab === 'tickets' && (isSeriesTemplate ? seriesTemplateNotice : (
                 <EventTicketsPanel
                   eventId={event.id}
                   eventStart={event.schedule.start_at}
                   eventTimezone={event.schedule.timezone}
                 />
-              )}
+              ))}
             </Tabs.Panel>
           )}
         {event.permissions.check_in && (
           <Tabs.Panel id="check-in" className="pt-5 outline-none">
-            {selectedTab === 'check-in' && <EventOfflineCheckinWorkspace eventId={event.id} />}
+            {selectedTab === 'check-in' && (isSeriesTemplate ? seriesTemplateNotice : <EventOfflineCheckinWorkspace eventId={event.id} />)}
           </Tabs.Panel>
         )}
         {event.permissions.broadcast && (
@@ -641,6 +657,7 @@ export function EventManagePage() {
 }
 
 function EventManagementOverview({ event }: { event: Event }) {
+  const { hasFeature } = useTenant();
   const { t } = useTranslation([
     'events',
     'event_safety',
@@ -710,7 +727,7 @@ function EventManagementOverview({ event }: { event: Event }) {
                 {t('event_safety:manage.overview')}
               </Button>
             )}
-            {event.permissions.edit && (
+            {event.permissions.edit && hasFeature('federation') && (
               <Button as={Link} to={tenantPath(`/events/${event.id}/manage/federation`)} variant="outline" className="justify-start">
                 <Network className="h-4 w-4" aria-hidden="true" />
                 {t('event_federation:manage.federation.overview')}

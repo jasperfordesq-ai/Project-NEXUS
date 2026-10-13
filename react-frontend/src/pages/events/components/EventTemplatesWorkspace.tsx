@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTenant } from '@/contexts/TenantContext';
 import Archive from 'lucide-react/icons/archive';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
@@ -30,6 +31,7 @@ import {
   type EventTemplateCapturePreview,
 } from '@/lib/event-templates-api';
 import { getFormattingLocale } from '@/lib/helpers';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 import { EventTemplateMaterializationModal } from './EventTemplateMaterializationModal';
 
@@ -58,6 +60,7 @@ export function EventTemplatesWorkspace({
 }: EventTemplatesWorkspaceProps) {
   const { t } = useTranslation('event_templates');
   const navigate = useNavigate();
+  const { tenantPath } = useTenant();
   const toast = useToast();
   const loadGeneration = useRef(0);
   const [templates, setTemplates] = useState<EventTemplate[]>([]);
@@ -131,7 +134,7 @@ export function EventTemplatesWorkspace({
     try {
       const response = await eventTemplatesApi.previewCapture(target.sourceEventId);
       if (!response.success || !response.data) {
-        toast.error(t('manage.templates.capture.preview_error'));
+        toast.error(explainedApiError(response) ?? t('manage.templates.capture.preview_error'));
         setCaptureTarget(null);
         return;
       }
@@ -160,7 +163,7 @@ export function EventTemplatesWorkspace({
           idempotencyKey('revise'),
         );
       if (!response.success || !response.data) {
-        toast.error(t('manage.templates.capture.save_error'));
+        toast.error(explainedApiError(response) ?? t('manage.templates.capture.save_error'));
         return;
       }
       const saved = response.data.template;
@@ -193,7 +196,7 @@ export function EventTemplatesWorkspace({
         idempotencyKey('archive'),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.templates.archive.error'));
+        toast.error(explainedApiError(response) ?? t('manage.templates.archive.error'));
         return;
       }
       setTemplates((current) => status === 'active'
@@ -282,7 +285,8 @@ export function EventTemplatesWorkspace({
 
   function handleDraftCreated(editPath: string) {
     if (onDraftCreated) onDraftCreated(editPath);
-    else navigate(editPath);
+    // The API path is slug-less; slug-routed communities need the prefix (E-104).
+    else navigate(tenantPath(editPath));
   }
 
   return (

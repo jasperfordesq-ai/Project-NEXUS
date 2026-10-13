@@ -290,7 +290,7 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
         expected_version: expectedReviewVersion,
       }, mutationKey('event-safety-review'));
       if (!response.success || !response.data) {
-        toast.error(t('safety.reviews.action_error'));
+        toast.error(explainedApiError(response) ?? t('safety.reviews.action_error'));
         return;
       }
       setReviews(response.data);
@@ -337,7 +337,7 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
         mutationKey('event-safety-review-withdraw'),
       );
       if (!response.success || !response.data) {
-        toast.error(t('safety.reviews.action_error'));
+        toast.error(explainedApiError(response) ?? t('safety.reviews.action_error'));
         return;
       }
       setReviews(response.data);

@@ -22,6 +22,7 @@ import {
   type EventTemplateMaterializationPreview,
   type EventTemplateOverrides,
 } from '@/lib/event-templates-api';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
 interface EventTemplateMaterializationModalProps {
@@ -149,7 +150,7 @@ export function EventTemplateMaterializationModal({
     try {
       const response = await eventTemplatesApi.previewMaterialization(template.id, input);
       if (!response.success || !response.data) {
-        toast.error(t('manage.templates.materialize.preview_error'));
+        toast.error(explainedApiError(response) ?? t('manage.templates.materialize.preview_error'));
         return;
       }
       setConfirmedInput(input);
@@ -172,7 +173,7 @@ export function EventTemplateMaterializationModal({
         idempotencyKey(),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.templates.materialize.create_error'));
+        toast.error(explainedApiError(response) ?? t('manage.templates.materialize.create_error'));
         return;
       }
       toast.success(t('manage.templates.materialize.created'));

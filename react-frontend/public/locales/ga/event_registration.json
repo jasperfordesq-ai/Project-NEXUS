@@ -5,10 +5,12 @@
     "cancel": "Cealaigh",
     "close": "Dún",
     "loading": "Ag lódáil spás oibre clárúcháin",
+    "no": "Ní hea",
     "not_recorded": "Gan taifeadadh",
     "refresh": "Athnuaigh",
     "retry": "Bain triail eile as",
-    "save": "Sábháil"
+    "save": "Sábháil",
+    "yes": "Is ea"
   },
   "load_error": {
     "title": "Níorbh fhéidir spás oibre clárúcháin a lódáil",

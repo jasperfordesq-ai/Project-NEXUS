@@ -37,6 +37,7 @@ import {
   type EventStaffRole,
 } from '@/lib/events-api';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
+import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 
 const ALL_STAFF_ROLES = [
@@ -217,7 +218,7 @@ export function EventStaffWorkspace({
         idempotencyKey(),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.team.assign_error'));
+        toast.error(explainedApiError(response) ?? t('manage.team.assign_error'));
         return;
       }
 
@@ -243,7 +244,7 @@ export function EventStaffWorkspace({
         idempotencyKey(),
       );
       if (!response.success || !response.data) {
-        toast.error(t('manage.team.revoke_error'));
+        toast.error(explainedApiError(response) ?? t('manage.team.revoke_error'));
         return;
       }
 

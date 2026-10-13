@@ -50,7 +50,7 @@
     "other": "他の"
   },
   "detail": {
-    "submit_for_review_confirm": "このイベントをモデレーションキューに送信しますか？レビュー待ちの間も主催者は編集できます。",
+    "submit_for_review_confirm": "このイベントをモデレーションの待ち行列に送信しますか？ 審査待ちの間は編集できません。",
     "publish_event_confirm": "このイベントを今すぐ公開しますか？対象メンバーに表示され、通知やフェデレーションが実行される場合があります。",
     "offer_state_chip": "参加枠あり",
     "offer_available_title": "参加枠をご用意できました",
@@ -120,6 +120,10 @@
     "check_in": "チェックイン",
     "rsvp_aria": "出欠確認オプション",
     "rsvp_panel_title": "このイベントに出欠を回答",
+    "rsvp_leave_going_title": "参加枠を手放しますか？",
+    "rsvp_leave_going_body": "このイベントに登録済みです。続けると枠が空き、他の人が参加できるようになります。",
+    "rsvp_leave_interested_title": "回答を変更しますか？",
+    "rsvp_leave_interested_body": "このイベントに「興味あり」として表示されなくなります。",
     "rsvp_panel_desc": "主催者に参加の予定をお知らせください。",
     "rsvp_going_aria": "参加するとマーク",
     "rsvp_interested_aria": "興味ありとマーク",
@@ -341,6 +345,16 @@
     "revision_impact_customized": "カスタマイズ済みの {{count}} 件は上書き項目を保持します",
     "revision_blocked": "変更を適用する前に {{count}} 件の競合を解決してください。",
     "revision_confirm": "この回以降に適用"
+  },
+  "series_template": {
+    "detail_title": "これは定期開催のシリーズです",
+    "detail_desc": "申し込み、安全確認、チケット、チェックイン、カレンダーのリンクは各開催日のページにあります。続けるには日付を選んでください。",
+    "manage_title": "定期開催シリーズの管理",
+    "manage_desc": "参加者、申し込み、安全、チケット、チェックインは開催日ごとに管理します。ツールを開くには日付を選んでください。",
+    "dates_label": "このシリーズの開催日",
+    "more_dates_one": "ほか{{count}}件",
+    "more_dates_other": "ほか{{count}}件",
+    "no_dates": "今後の開催日はまだ生成されていません。"
   },
   "manage": {
     "page_title": "{{title}} を管理する",
@@ -857,6 +871,7 @@
     "revoke_confirm_identity": "購読: {{label}}（接頭辞 {{prefix}}）",
     "close": "閉じる",
     "load_error": "カレンダー購読を読み込めませんでした。",
+    "unavailable": "このコミュニティではカレンダーフィードが無効になっています。",
     "create_error": "カレンダー購読を作成できませんでした。",
     "created": "カレンダー購読を作成しました。",
     "revoke_error": "カレンダー購読を取り消せませんでした。",
@@ -913,6 +928,8 @@
     "title": "何が起こっているのか",
     "meta_description": "{{community}} の誰もが参加できるコミュニティ イベントやアクティビティ。",
     "intro": "近くのコミュニティイベントやアクティビティ。サインインして場所を予約します。",
+    "load_error": "現在イベントを読み込めませんでした。",
+    "retry": "再試行",
     "loading": "イベントを読み込み中…",
     "empty": "現在、予定されているイベントはありません。すぐにもう一度ご確認ください。",
     "online": "オンラインイベント",

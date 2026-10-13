@@ -5,10 +5,12 @@
     "cancel": "Annuler",
     "close": "Fermer",
     "loading": "Chargement de l'espace de travail d'inscription",
+    "no": "Non",
     "not_recorded": "Non enregistré",
     "refresh": "Rafraîchir",
     "retry": "Essayer à nouveau",
-    "save": "Sauvegarder"
+    "save": "Sauvegarder",
+    "yes": "Oui"
   },
   "load_error": {
     "title": "L'espace de travail d'inscription n'a pas pu être chargé",

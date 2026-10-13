@@ -5,10 +5,12 @@
     "cancel": "Annuleren",
     "close": "Dichtbij",
     "loading": "Registratiewerkruimte laden",
+    "no": "Nee",
     "not_recorded": "Niet opgenomen",
     "refresh": "Vernieuwen",
     "retry": "Probeer het opnieuw",
-    "save": "Opslaan"
+    "save": "Opslaan",
+    "yes": "Ja"
   },
   "load_error": {
     "title": "Registratiewerkruimte kan niet worden geladen",
