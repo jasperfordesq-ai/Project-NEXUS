@@ -112,6 +112,8 @@
   "audit_restored": "Se restauraron los valores predeterminados de la política de eventos",
   "audit_actor_version": "{{actor}} · versión {{version}}",
   "audit_unknown_actor": "Administrador desconocido",
+  "audit_actor_parent_community": "Un administrador de una comunidad superior",
+  "audit_actor_platform": "Un administrador de la plataforma",
   "save": "Guardar configuración de evento",
   "rewards_title": "Recompensas por asistencia",
   "rewards_desc": "Créditos de tiempo emitidos del tesoro comunitario cuando se verifica la asistencia. Los montos por evento se establecen en cada evento en el administrador de Eventos.",

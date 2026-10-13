@@ -112,6 +112,8 @@
   "audit_restored": "Standaardwaarden voor gebeurtenisbeleid hersteld",
   "audit_actor_version": "{{actor}} · versie {{version}}",
   "audit_unknown_actor": "Onbekende beheerder",
+  "audit_actor_parent_community": "Een beheerder van een bovenliggende gemeenschap",
+  "audit_actor_platform": "Een platformbeheerder",
   "save": "Gebeurtenisinstellingen opslaan",
   "rewards_title": "Beloningen voor aanwezigheid",
   "rewards_desc": "Tijdskredieten die uit de schatkist van de gemeenschap worden gehaald wanneer de aanwezigheid is geverifieerd. Bedragen per gebeurtenis worden voor elke gebeurtenis ingesteld in het Evenementenbeheer.",

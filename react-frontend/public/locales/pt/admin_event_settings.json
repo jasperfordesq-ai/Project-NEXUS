@@ -112,6 +112,8 @@
   "audit_restored": "Padrões de política de eventos restaurados",
   "audit_actor_version": "{{actor}} · versão {{version}}",
   "audit_unknown_actor": "Administrador desconhecido",
+  "audit_actor_parent_community": "Um administrador de uma comunidade superior",
+  "audit_actor_platform": "Um administrador da plataforma",
   "save": "Salvar configurações do evento",
   "rewards_title": "Recompensas de participação",
   "rewards_desc": "Créditos de tempo emitidos pelo tesouro comunitário quando a frequência é verificada. Os valores por evento são definidos em cada evento no administrador de eventos.",

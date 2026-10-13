@@ -112,6 +112,8 @@
   "audit_restored": "Athchóiríodh mainneachtainí polasaí imeachta",
   "audit_actor_version": "{{actor}} · leagan {{version}}",
   "audit_unknown_actor": "Riarthóir anaithnid",
+  "audit_actor_parent_community": "Riarthóir ó phobal máthar",
+  "audit_actor_platform": "Riarthóir ardáin",
   "save": "Sábháil socruithe Imeachta",
   "rewards_title": "Luaíochtaí tinrimh",
   "rewards_desc": "Buaitear creidmheasanna ama ón gciste pobail nuair a dheimhnítear tinreamh. Socraítear méideanna in aghaidh na hócáide ar gach imeacht i admin Imeachtaí.",

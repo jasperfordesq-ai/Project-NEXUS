@@ -450,6 +450,9 @@ export interface EventConfigurationAuditEntry {
   action: 'events_configuration_updated' | 'events_configuration_defaults_restored';
   actor_id: number | null;
   actor_name: string | null;
+  /** Where the actor sits relative to this community. The name and id are
+   *  withheld from viewers who cannot reach the actor's community (O-213). */
+  actor_scope?: 'community' | 'parent_community' | 'platform' | 'unknown';
   reason: string | null;
   version: number;
   changes: Record<string, { from: unknown; to: unknown }>;

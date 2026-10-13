@@ -62,6 +62,15 @@ function settingsRefusal(response: ApiResponse<unknown>): { field: string | null
 
 export default function EventSettings() {
   const { t } = useTranslation('admin_event_settings');
+  // The server withholds the name of an administrator this viewer cannot
+  // reach (a manager from a parent community, or the platform owner) and says
+  // only where they sit (register O-213).
+  const auditActorLabel = (entry: EventConfigurationAuditEntry): string => {
+    if (entry.actor_name) return entry.actor_name;
+    if (entry.actor_scope === 'parent_community') return t('audit_actor_parent_community');
+    if (entry.actor_scope === 'platform') return t('audit_actor_platform');
+    return t('audit_unknown_actor');
+  };
   usePageTitle(t('title'));
   useAdminPageMeta({ title: t('title') });
   const toast = useToast();
@@ -488,7 +497,7 @@ export default function EventSettings() {
                       <p className="text-sm font-medium">{t(entry.action === 'events_configuration_defaults_restored' ? 'audit_restored' : 'audit_updated')}</p>
                       <time className="text-xs text-muted" dateTime={entry.created_at}>{new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.created_at))}</time>
                     </div>
-                    <p className="text-xs text-muted">{t('audit_actor_version', { actor: entry.actor_name ?? t('audit_unknown_actor'), version: entry.version })}</p>
+                    <p className="text-xs text-muted">{t('audit_actor_version', { actor: auditActorLabel(entry), version: entry.version })}</p>
                     {entry.reason ? <p className="text-sm">{entry.reason}</p> : null}
                   </li>
                 ))}

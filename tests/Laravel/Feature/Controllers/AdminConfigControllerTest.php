@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Event;
 use App\Services\AuthenticationConfigurationService;
@@ -1269,5 +1270,76 @@ class AdminConfigControllerTest extends TestCase
             ->whereIn('setting_key', array_keys(AuthenticationConfigurationService::DEFAULTS))
             ->delete();
         AuthenticationConfigurationService::clearCache($this->testTenantId);
+    }
+
+    // ================================================================
+    // EVENTS SETTINGS HISTORY — who may see the name of the person who
+    // changed the settings (register O-213; owner rule 13 Oct 2026: "Tenant
+    // super admins can only see things in their tenant and below their
+    // tenants." God sees everything).
+    // ================================================================
+
+    public function test_events_settings_history_hides_names_from_above_and_shows_them_to_those_who_reach_them(): void
+    {
+        // Put the test community under a new hub so it has a parent.
+        $hub = Tenant::factory()->create([
+            'domain' => null, 'parent_id' => null, 'depth' => 0,
+            'allows_subtenants' => true, 'is_active' => true,
+        ]);
+        $hubId = (int) $hub->id;
+        Tenant::whereKey($hubId)->update(['path' => '/' . $hubId . '/']);
+        Tenant::whereKey($this->testTenantId)->update([
+            'parent_id' => $hubId,
+            'path' => '/' . $hubId . '/' . $this->testTenantId . '/',
+        ]);
+
+        $localAdmin = User::factory()->forTenant($this->testTenantId)->admin()->create(['name' => 'Local Admin', 'first_name' => 'Local', 'last_name' => 'Admin']);
+        $hubManager = User::factory()->forTenant($hubId)->admin()->create([
+            'name' => 'Hub Manager', 'first_name' => 'Hub', 'last_name' => 'Manager',
+            'is_tenant_super_admin' => 1,
+        ]);
+        $platformOwner = User::factory()->forTenant($hubId)->admin()->create([
+            'name' => 'Platform Owner', 'first_name' => 'Platform', 'last_name' => 'Owner',
+            'is_super_admin' => 1,
+            'is_god' => 1,
+        ]);
+
+        foreach ([$platformOwner, $hubManager, $localAdmin] as $actor) {
+            DB::table('org_audit_log')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $actor->id,
+                'action' => 'events_configuration_updated',
+                'details' => json_encode(['reason' => 'Changed by ' . $actor->name, 'version' => 1, 'changes' => []]),
+                'created_at' => now(),
+            ]);
+        }
+
+        // Newest first: local admin, hub manager, platform owner.
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $localAdmin->id, $localAdmin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->apiGet('/v2/admin/config/events/audit-log')
+            ->assertOk()
+            ->assertJsonPath('data.0.actor_name', 'Local Admin')
+            ->assertJsonPath('data.0.actor_id', $localAdmin->id)
+            ->assertJsonPath('data.0.actor_scope', 'community')
+            // The community's own admin sits below both: no name, no account id.
+            ->assertJsonPath('data.1.actor_name', null)
+            ->assertJsonPath('data.1.actor_id', null)
+            ->assertJsonPath('data.1.actor_scope', 'parent_community')
+            ->assertJsonPath('data.2.actor_name', null)
+            ->assertJsonPath('data.2.actor_id', null)
+            ->assertJsonPath('data.2.actor_scope', 'platform');
+
+        // The platform owner reaches every community, so sees every name.
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $platformOwner->id, $this->testTenantId, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->apiGet('/v2/admin/config/events/audit-log')
+            ->assertOk()
+            ->assertJsonPath('data.0.actor_name', 'Local Admin')
+            ->assertJsonPath('data.1.actor_name', 'Hub Manager')
+            ->assertJsonPath('data.1.actor_scope', 'parent_community')
+            ->assertJsonPath('data.2.actor_name', 'Platform Owner');
     }
 }

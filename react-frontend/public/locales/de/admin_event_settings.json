@@ -112,6 +112,8 @@
   "audit_restored": "Standardeinstellungen für Ereignisrichtlinien wiederhergestellt",
   "audit_actor_version": "{{actor}} · Version {{version}}",
   "audit_unknown_actor": "Unbekannter Administrator",
+  "audit_actor_parent_community": "Ein Administrator einer übergeordneten Gemeinschaft",
+  "audit_actor_platform": "Ein Plattform-Administrator",
   "save": "Ereigniseinstellungen speichern",
   "rewards_title": "Anwesenheitsprämien",
   "rewards_desc": "Zeitguthaben aus der Gemeindekasse, wenn die Anwesenheit überprüft wird. Die Beträge pro Veranstaltung werden für jede Veranstaltung in der Veranstaltungsverwaltung festgelegt.",

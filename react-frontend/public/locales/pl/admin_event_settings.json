@@ -112,6 +112,8 @@
   "audit_restored": "Przywrócono ustawienia domyślne zasad zdarzeń",
   "audit_actor_version": "{{actor}} · wersja {{version}}",
   "audit_unknown_actor": "Nieznany administrator",
+  "audit_actor_parent_community": "Administrator społeczności nadrzędnej",
+  "audit_actor_platform": "Administrator platformy",
   "save": "Zapisz ustawienia wydarzenia",
   "rewards_title": "Nagrody za obecność",
   "rewards_desc": "Kredyty czasowe wybijane ze skarbca gminy po zweryfikowaniu obecności. Kwoty na wydarzenie są ustawiane dla każdego wydarzenia w panelu administracyjnym wydarzeń.",

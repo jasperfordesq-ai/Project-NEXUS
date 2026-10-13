@@ -112,6 +112,8 @@
   "audit_restored": "Event policy defaults restored",
   "audit_actor_version": "{{actor}} · version {{version}}",
   "audit_unknown_actor": "Unknown administrator",
+  "audit_actor_parent_community": "An administrator from a parent community",
+  "audit_actor_platform": "A platform administrator",
   "save": "Save Event settings",
   "rewards_title": "Attendance rewards",
   "rewards_desc": "Time credits minted from the community treasury when attendance is verified. Per-event amounts are set on each event in Events admin.",

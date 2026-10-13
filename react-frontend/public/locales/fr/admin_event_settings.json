@@ -112,6 +112,8 @@
   "audit_restored": "Paramètres par défaut de la stratégie d'événement restaurés",
   "audit_actor_version": "{{actor}} · version {{version}}",
   "audit_unknown_actor": "Administrateur inconnu",
+  "audit_actor_parent_community": "Un administrateur d’une communauté parente",
+  "audit_actor_platform": "Un administrateur de la plateforme",
   "save": "Enregistrer les paramètres de l'événement",
   "rewards_title": "Récompenses de présence",
   "rewards_desc": "Crédits de temps extraits de la trésorerie de la communauté lorsque la présence est vérifiée. Les montants par événement sont définis pour chaque événement dans l'administrateur des événements.",

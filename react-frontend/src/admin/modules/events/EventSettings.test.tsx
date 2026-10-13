@@ -156,4 +156,22 @@ describe('EventSettings', () => {
     expect(screen.queryByText('Attendance rewards are switched off for this community')).not.toBeInTheDocument();
     expect(screen.queryByText('Off for this community')).not.toBeInTheDocument();
   });
+
+  it('names local administrators but only says where an administrator from above sits (O-213)', async () => {
+    const entry = { action: 'events_configuration_updated' as const, reason: null, version: 1, changes: {}, created_at: '2026-10-13T12:00:00+00:00' };
+    vi.mocked(adminConfig.getEventConfigAuditLog).mockResolvedValueOnce({
+      success: true,
+      data: [
+        { ...entry, id: 3, actor_id: 7, actor_name: 'Local Admin', actor_scope: 'community' },
+        { ...entry, id: 2, actor_id: null, actor_name: null, actor_scope: 'parent_community' },
+        { ...entry, id: 1, actor_id: null, actor_name: null, actor_scope: 'platform' },
+      ],
+    });
+    render(<EventSettings />);
+
+    await waitFor(() => expect(screen.getByText(/Local Admin/)).toBeInTheDocument());
+    expect(screen.getByText(/An administrator from a parent community/)).toBeInTheDocument();
+    expect(screen.getByText(/A platform administrator/)).toBeInTheDocument();
+    expect(screen.queryByText(/Unknown administrator/)).not.toBeInTheDocument();
+  });
 });

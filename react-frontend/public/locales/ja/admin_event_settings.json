@@ -112,6 +112,8 @@
   "audit_restored": "イベントポリシーのデフォルトが復元されました",
   "audit_actor_version": "{{actor}} · バージョン {{version}}",
   "audit_unknown_actor": "不明な管理者",
+  "audit_actor_parent_community": "上位コミュニティの管理者",
+  "audit_actor_platform": "プラットフォーム管理者",
   "save": "イベント設定の保存",
   "rewards_title": "出席報酬",
   "rewards_desc": "出席が確認されると、コミュニティの財務省からタイムクレジットが発行されます。イベントごとの金額は、イベント管理で各イベントに設定されます。",

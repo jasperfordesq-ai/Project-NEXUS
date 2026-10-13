@@ -28,6 +28,7 @@ use App\Services\SmartMatchingEngine;
 use App\Services\TenantFeatureConfig;
 use App\Services\TenantSettingsService;
 use App\Services\TenantHierarchyService;
+use App\Support\Authorization\TenantAdminScope;
 use App\Support\OutboundUrlGuard;
 use App\Jobs\RunAdminCronJob;
 use Illuminate\Http\JsonResponse;
@@ -2865,16 +2866,55 @@ class AdminConfigController extends BaseApiController
         );
     }
 
+    /**
+     * Where the settings-history actor sits relative to this community, and
+     * whether the viewer may see who it was (register O-213).
+     *
+     * @return array{0: string, 1: bool}
+     */
+    private function eventConfigAuditActorVisibility(object $entry, int $tenantId, object $viewer): array
+    {
+        if ($entry->user_id === null || $entry->actor_tenant_id === null) {
+            return ['unknown', false];
+        }
+
+        $actorTenantId = (int) $entry->actor_tenant_id;
+        if ($actorTenantId === $tenantId) {
+            return ['community', true];
+        }
+
+        $actor = (object) [
+            'tenant_id' => $actorTenantId,
+            'role' => $entry->actor_role,
+            'is_admin' => $entry->actor_is_admin,
+            'is_super_admin' => $entry->actor_is_super_admin,
+            'is_god' => $entry->actor_is_god,
+        ];
+        $scope = match (true) {
+            TenantAdminScope::isPlatformOwner($actor) => 'platform',
+            TenantAdminScope::isDescendant($actorTenantId, $tenantId) => 'parent_community',
+            default => 'unknown',
+        };
+
+        return [$scope, TenantAdminScope::allows($viewer, $actorTenantId)];
+    }
+
     /** GET /api/v2/admin/config/events/audit-log */
     public function getEventConfigAuditLog(): JsonResponse
     {
         $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+        $viewer = $this->resolveUser();
+        // The actor may belong to a community above this one (a tenant super
+        // admin managing from above) or be the platform owner. Whether the
+        // viewer may see that person's name follows the admin reach rule
+        // (owner, 13 Oct 2026: "Tenant super admins can only see things in
+        // their tenant and below their tenants." God sees everything) — so a
+        // community's own admins get a neutral label, never a name or account
+        // id from above (register O-213).
         $entries = DB::table('org_audit_log as audit')
-            ->leftJoin('users as actor', function ($join): void {
-                $join->on('actor.id', '=', 'audit.user_id')
-                    ->on('actor.tenant_id', '=', 'audit.tenant_id');
-            })
-            ->where('audit.tenant_id', $this->getTenantId())
+            ->leftJoin('users as actor', 'actor.id', '=', 'audit.user_id')
+            ->where('audit.tenant_id', $tenantId)
             ->whereIn('audit.action', [
                 'events_configuration_updated',
                 'events_configuration_defaults_restored',
@@ -2888,14 +2928,22 @@ class AdminConfigController extends BaseApiController
                 'audit.created_at',
                 'audit.user_id',
                 'actor.name as actor_name',
+                'actor.tenant_id as actor_tenant_id',
+                'actor.role as actor_role',
+                'actor.is_admin as actor_is_admin',
+                'actor.is_super_admin as actor_is_super_admin',
+                'actor.is_god as actor_is_god',
             ])
-            ->map(static function (object $entry): array {
+            ->map(function (object $entry) use ($tenantId, $viewer): array {
                 $details = is_string($entry->details) ? json_decode($entry->details, true) : null;
+                [$scope, $visible] = $this->eventConfigAuditActorVisibility($entry, $tenantId, $viewer);
                 return [
                     'id' => (int) $entry->id,
                     'action' => (string) $entry->action,
-                    'actor_id' => $entry->user_id === null ? null : (int) $entry->user_id,
-                    'actor_name' => is_string($entry->actor_name) ? $entry->actor_name : null,
+                    'actor_id' => $visible && $entry->user_id !== null ? (int) $entry->user_id : null,
+                    'actor_name' => $visible && is_string($entry->actor_name) ? $entry->actor_name : null,
+                    // community | parent_community | platform | unknown
+                    'actor_scope' => $scope,
                     'reason' => is_array($details) && is_string($details['reason'] ?? null)
                         ? $details['reason']
                         : null,

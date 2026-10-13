@@ -112,6 +112,8 @@
   "audit_restored": "Le impostazioni predefinite della policy eventi sono state ripristinate",
   "audit_actor_version": "{{actor}} · versione {{version}}",
   "audit_unknown_actor": "Amministratore sconosciuto",
+  "audit_actor_parent_community": "Un amministratore di una comunità superiore",
+  "audit_actor_platform": "Un amministratore della piattaforma",
   "save": "Salva le impostazioni dell'evento",
   "rewards_title": "Premi per la partecipazione",
   "rewards_desc": "Crediti temporali coniati dalla tesoreria della comunità al momento della verifica della presenza. Gli importi per evento vengono impostati per ciascun evento nell'amministrazione Eventi.",
