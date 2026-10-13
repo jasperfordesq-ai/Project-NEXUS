@@ -1761,7 +1761,10 @@ class AdminCrmController extends BaseApiController
     {
         $prefix = $alias !== '' ? $alias . '.' : '';
 
-        return "{$prefix}tenant_id = ? AND {$prefix}is_approved = 1 AND ({$prefix}status IS NULL OR {$prefix}status = 'active')";
+        // Deleted accounts are never members, whatever their status says: the
+        // same rule as the Users page's "Deleted" tab and the admin dashboard.
+        return "{$prefix}tenant_id = ? AND {$prefix}is_approved = 1 AND ({$prefix}status IS NULL OR {$prefix}status = 'active')"
+            . " AND {$prefix}deleted_at IS NULL AND {$prefix}anonymized_at IS NULL";
     }
 
     private function recentMemberActivityWhere(string $alias = 'u'): string
