@@ -165,5 +165,20 @@
   "stale_reload": "Iemand anders heeft deze instellingen gewijzigd. De pagina is opnieuw geladen; controleer haar en sla opnieuw op.",
   "nothing_to_restore": "Niets te herstellen: dit onderdeel gebruikt al de standaardwaarden.",
   "blocked_by_platform": "Op platformniveau uitgeschakeld, dus hier ook uit.",
-  "capability_recurrence_definition_blueprints": "Reeksblauwdrukken"
+  "capability_recurrence_definition_blueprints": "Reeksblauwdrukken",
+  "community_off": "Uit voor deze community",
+  "rewards_feature_off_title": "Deelnamebeloningen staan uit voor deze community",
+  "rewards_feature_off_desc": "Het beloningsplafond en de beloningsbedragen per evenement blijven verborgen tot ze worden ingeschakeld. Open hiervoor Moduleconfiguratie en zet „Deelnamebeloningen” aan.",
+  "rewards_feature_off_platform_note": "Deelnametegoeden staan ook op platformniveau uit, dus er worden geen beloningen uitbetaald tot ook dat is ingeschakeld.",
+  "rewards_open_module_config": "Moduleconfiguratie openen",
+  "claims_feature_off_desc": "Het grootboek blijft leesbaar en beloningen kunnen nog worden teruggedraaid, maar mislukte beloningen kunnen pas opnieuw worden geprobeerd als „Deelnamebeloningen” in Moduleconfiguratie aanstaat.",
+  "claims_code_monthly_cap_reached": "Maandelijks beloningsplafond bereikt",
+  "claims_code_mint_failed": "Betaling kon niet worden uitgevoerd",
+  "claims_code_reclaim_failed": "Tegoed kon niet worden teruggehaald",
+  "claims_code_admin_reversal": "Teruggedraaid door een beheerder",
+  "claims_code_attendance_undone": "Inchecken is ongedaan gemaakt",
+  "claims_code_unknown": "Andere reden:",
+  "claims_filtered_empty_title": "Geen claims komen overeen met deze filters",
+  "claims_filtered_empty_desc": "Probeer een andere status, een ander type of een andere periode, of wis de filters om alle claims te zien.",
+  "claims_clear_filters": "Filters wissen"
 }

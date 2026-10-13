@@ -165,5 +165,20 @@
   "stale_reload": "Qualcun altro ha modificato queste impostazioni. La pagina è stata ricaricata; controllala e salva di nuovo.",
   "nothing_to_restore": "Niente da ripristinare: questa sezione usa già i valori predefiniti.",
   "blocked_by_platform": "Disattivato a livello di piattaforma, quindi disattivato anche qui.",
-  "capability_recurrence_definition_blueprints": "Modelli di serie"
+  "capability_recurrence_definition_blueprints": "Modelli di serie",
+  "community_off": "Disattivato per questa comunità",
+  "rewards_feature_off_title": "Le ricompense per la partecipazione sono disattivate per questa comunità",
+  "rewards_feature_off_desc": "Il tetto delle ricompense e gli importi per evento restano nascosti finché non vengono attivate. Per attivarle, apri Configurazione del modulo e attiva «Ricompense per la partecipazione».",
+  "rewards_feature_off_platform_note": "Anche i crediti di partecipazione sono disattivati a livello di piattaforma, quindi nessuna ricompensa verrà pagata finché non verranno attivati anche lì.",
+  "rewards_open_module_config": "Apri Configurazione del modulo",
+  "claims_feature_off_desc": "Il registro resta consultabile e le ricompense possono ancora essere stornate, ma le ricompense non riuscite non possono essere ritentate finché «Ricompense per la partecipazione» non viene attivato in Configurazione del modulo.",
+  "claims_code_monthly_cap_reached": "Tetto mensile delle ricompense raggiunto",
+  "claims_code_mint_failed": "Non è stato possibile effettuare il pagamento",
+  "claims_code_reclaim_failed": "Non è stato possibile recuperare i crediti",
+  "claims_code_admin_reversal": "Stornata da un amministratore",
+  "claims_code_attendance_undone": "Il check-in è stato annullato",
+  "claims_code_unknown": "Altro motivo:",
+  "claims_filtered_empty_title": "Nessuna richiesta corrisponde a questi filtri",
+  "claims_filtered_empty_desc": "Prova un altro stato, tipo o intervallo di date, oppure cancella i filtri per vedere tutte le richieste.",
+  "claims_clear_filters": "Cancella filtri"
 }

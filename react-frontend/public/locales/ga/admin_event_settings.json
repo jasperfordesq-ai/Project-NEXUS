@@ -165,5 +165,20 @@
   "stale_reload": "D’athraigh duine eile na socruithe seo. Athlódáladh an leathanach; déan athbhreithniú air agus sábháil arís.",
   "nothing_to_restore": "Níl aon rud le hathchóiriú: úsáideann an chuid seo na réamhshocruithe cheana.",
   "blocked_by_platform": "Múchta ar leibhéal an ardáin, mar sin tá sé múchta anseo freisin.",
-  "capability_recurrence_definition_blueprints": "Treoirphleananna sraithe"
+  "capability_recurrence_definition_blueprints": "Treoirphleananna sraithe",
+  "community_off": "Múchta don phobal seo",
+  "rewards_feature_off_title": "Tá luach saothair freastail múchta don phobal seo",
+  "rewards_feature_off_desc": "Fanann uasteorainn an luach saothair agus suimeanna an luach saothair in aghaidh an imeachta i bhfolach go dtí go gcastar air iad. Chun iad a chasadh air, oscail Cumraíocht an Mhodúil agus cas air “Luach Saothair Freastail”.",
+  "rewards_feature_off_platform_note": "Tá creidmheasanna freastail múchta ar leibhéal an ardáin freisin, mar sin ní íocfar aon luach saothair go dtí go gcastar é sin air freisin.",
+  "rewards_open_module_config": "Oscail Cumraíocht an Mhodúil",
+  "claims_feature_off_desc": "Is féidir an mórleabhar a léamh fós agus is féidir luach saothair a aisiompú fós, ach ní féidir luach saothair a theip a thriail arís go dtí go gcastar air “Luach Saothair Freastail” i gCumraíocht an Mhodúil.",
+  "claims_code_monthly_cap_reached": "Sroicheadh uasteorainn mhíosúil an luach saothair",
+  "claims_code_mint_failed": "Níorbh fhéidir an íocaíocht a dhéanamh",
+  "claims_code_reclaim_failed": "Níorbh fhéidir na creidmheasanna a fháil ar ais",
+  "claims_code_admin_reversal": "Aisiompaithe ag riarthóir",
+  "claims_code_attendance_undone": "Cealaíodh an clárú isteach",
+  "claims_code_unknown": "Cúis eile:",
+  "claims_filtered_empty_title": "Níl aon éileamh a mheaitseálann na scagairí seo",
+  "claims_filtered_empty_desc": "Bain triail as stádas, cineál nó raon dátaí eile, nó glan na scagairí chun gach éileamh a fheiceáil.",
+  "claims_clear_filters": "Glan na scagairí"
 }

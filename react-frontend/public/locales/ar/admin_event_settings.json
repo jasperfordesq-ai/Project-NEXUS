@@ -165,5 +165,20 @@
   "stale_reload": "غيّر شخص آخر هذه الإعدادات. أُعيد تحميل الصفحة؛ راجعها ثم احفظ مرة أخرى.",
   "nothing_to_restore": "لا يوجد ما يُستعاد: هذا القسم يستخدم القيم الافتراضية بالفعل.",
   "blocked_by_platform": "معطّل على مستوى المنصة، لذا فهو معطّل هنا أيضًا.",
-  "capability_recurrence_definition_blueprints": "مخططات السلاسل"
+  "capability_recurrence_definition_blueprints": "مخططات السلاسل",
+  "community_off": "معطّل لهذا المجتمع",
+  "rewards_feature_off_title": "مكافآت الحضور معطّلة لهذا المجتمع",
+  "rewards_feature_off_desc": "يبقى الحد الأقصى للمكافآت ومبالغ المكافأة لكل فعالية مخفيين حتى يتم تفعيلها. لتفعيلها، افتح تكوين الوحدة وشغّل «مكافآت الحضور».",
+  "rewards_feature_off_platform_note": "أرصدة الحضور معطّلة أيضًا على مستوى المنصة، لذا لن تُدفع أي مكافآت حتى يتم تفعيلها هناك أيضًا.",
+  "rewards_open_module_config": "فتح تكوين الوحدة",
+  "claims_feature_off_desc": "يبقى السجل قابلًا للقراءة ويمكن عكس المكافآت، لكن لا يمكن إعادة محاولة المكافآت الفاشلة حتى يتم تشغيل «مكافآت الحضور» في تكوين الوحدة.",
+  "claims_code_monthly_cap_reached": "تم بلوغ الحد الشهري للمكافآت",
+  "claims_code_mint_failed": "تعذّر إجراء الدفع",
+  "claims_code_reclaim_failed": "تعذّر استرداد الأرصدة",
+  "claims_code_admin_reversal": "عُكست بواسطة مسؤول",
+  "claims_code_attendance_undone": "تم التراجع عن تسجيل الحضور",
+  "claims_code_unknown": "سبب آخر:",
+  "claims_filtered_empty_title": "لا توجد مطالبات تطابق عوامل التصفية هذه",
+  "claims_filtered_empty_desc": "جرّب حالة أو نوعًا أو نطاقًا زمنيًا مختلفًا، أو امسح عوامل التصفية لرؤية جميع المطالبات.",
+  "claims_clear_filters": "مسح عوامل التصفية"
 }

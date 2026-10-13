@@ -165,5 +165,20 @@
   "stale_reload": "Someone else changed these settings. The page has been reloaded; review it and save again.",
   "nothing_to_restore": "Nothing to restore: this section already uses the defaults.",
   "blocked_by_platform": "Switched off at platform level, so it is off here too.",
-  "capability_recurrence_definition_blueprints": "Series blueprints"
+  "capability_recurrence_definition_blueprints": "Series blueprints",
+  "community_off": "Off for this community",
+  "rewards_feature_off_title": "Attendance rewards are switched off for this community",
+  "rewards_feature_off_desc": "The reward cap and per-event reward amounts stay hidden until they are switched on. To switch them on, open Module Configuration and turn on “Attendance Rewards”.",
+  "rewards_feature_off_platform_note": "Attendance credits are also switched off at platform level, so no rewards will be paid until that is turned on too.",
+  "rewards_open_module_config": "Open Module Configuration",
+  "claims_feature_off_desc": "The ledger stays readable and rewards can still be reversed, but failed rewards cannot be retried until “Attendance Rewards” is turned on in Module Configuration.",
+  "claims_code_monthly_cap_reached": "Monthly reward cap reached",
+  "claims_code_mint_failed": "Payment could not be made",
+  "claims_code_reclaim_failed": "Credits could not be taken back",
+  "claims_code_admin_reversal": "Reversed by an admin",
+  "claims_code_attendance_undone": "Check-in was undone",
+  "claims_code_unknown": "Other reason:",
+  "claims_filtered_empty_title": "No claims match these filters",
+  "claims_filtered_empty_desc": "Try a different status, type or date range, or clear the filters to see every claim.",
+  "claims_clear_filters": "Clear filters"
 }

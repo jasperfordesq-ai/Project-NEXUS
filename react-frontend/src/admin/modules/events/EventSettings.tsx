@@ -11,6 +11,7 @@ import Gift from 'lucide-react/icons/gift';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Save from 'lucide-react/icons/save';
 import ShieldCheck from 'lucide-react/icons/shield-check';
+import ToggleLeft from 'lucide-react/icons/toggle-left';
 import { PageHeader } from '../../components/PageHeader';
 import { adminConfig, type EventConfiguration, type EventConfigurationAuditEntry, type EventConfigurationResponse } from '../../api/adminApi';
 import { useTenant, useToast } from '@/contexts';
@@ -222,10 +223,18 @@ export default function EventSettings() {
     return <div className="flex min-h-[420px] items-center justify-center" role="status" aria-label={t('loading')}><Spinner size="lg" /></div>;
   }
   if (loadError || !snapshot || !draft) {
-    return <div className="mx-auto max-w-5xl px-4"><Alert color="danger" title={t('load_failed')}><Button size="sm" variant="secondary" onPress={load}>{t('retry')}</Button></Alert></div>;
+    // Title + endContent, not children: the Alert wrapper drops `title` when
+    // given children, which left this as a bare Retry button with no message.
+    return <div className="mx-auto max-w-5xl px-4"><Alert color="danger" title={t('load_failed')} endContent={<Button size="sm" variant="secondary" onPress={load}>{t('retry')}</Button>} /></div>;
   }
 
   const capabilities = snapshot.capabilities;
+  // Attendance rewards need BOTH the platform capability and this community's
+  // own feature switch. The readiness card used to say "Available" while the
+  // community switch was off and the rewards card simply vanished (E-104
+  // FN-15) — so say which of the two is off, and where to turn it on.
+  const rewardsCommunityOn = hasFeature('event_attendance_credits');
+  const openModuleConfiguration = () => navigate(tenantPath('/admin/module-configuration'));
   // Every change here is recorded with a justification, so Save stays disabled
   // until a reason is given. That is deliberate, but a silently dead button
   // reads as a broken page — so say which of the two things is missing, and
@@ -272,12 +281,17 @@ export default function EventSettings() {
             ['broadcast_delivery', capabilities.broadcast_delivery],
             ['safety_evidence', capabilities.safety_evidence],
             ['federation_delivery', capabilities.federation_delivery],
-          ] as Array<[string, boolean]>).map(([key, available]) => (
-            <div key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-secondary p-3">
-              <span className="text-sm font-medium">{t(`capability_${key}`)}</span>
-              <Chip size="sm" variant="soft" color={available ? 'success' : 'default'}>{t(available ? 'available' : 'platform_off')}</Chip>
-            </div>
-          ))}
+          ] as Array<[string, boolean]>).map(([key, available]) => {
+            const communityOff = key === 'attendance_credits' && available && !rewardsCommunityOn;
+            return (
+              <div key={key} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-secondary p-3">
+                <span className="text-sm font-medium">{t(`capability_${key}`)}</span>
+                <Chip size="sm" variant="soft" color={communityOff ? 'warning' : (available ? 'success' : 'default')}>
+                  {t(communityOff ? 'community_off' : (available ? 'available' : 'platform_off'))}
+                </Chip>
+              </div>
+            );
+          })}
         </Card.Content>
       </Card>
 
@@ -358,7 +372,38 @@ export default function EventSettings() {
           <Card.Footer className="flex flex-wrap items-center justify-end gap-3">{reasonMissing && <p className="mr-auto text-xs text-muted">{t('restore_needs_reason')}</p>}<Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(['safety_enforcement_mode', 'notification_delivery_mode'])}>{t('restore_section')}</Button></Card.Footer>
         </Card>
 
-        {hasFeature('event_attendance_credits') && (
+        {!rewardsCommunityOn && (
+          <Card data-testid="rewards-community-off">
+            <Card.Header>
+              <div>
+                <h2 className="flex items-center gap-2 text-base font-semibold"><Gift size={18} />{t('rewards_title')}</h2>
+                <p className="text-sm text-muted">{t('rewards_desc')}</p>
+              </div>
+            </Card.Header>
+            <Card.Content className="space-y-3">
+              <Alert
+                color="warning"
+                title={t('rewards_feature_off_title')}
+                description={(
+                  <>
+                    {t('rewards_feature_off_desc')}
+                    {!capabilities.attendance_credits && <> {t('rewards_feature_off_platform_note')}</>}
+                  </>
+                )}
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="secondary" startContent={<ToggleLeft size={14} aria-hidden="true" />} onPress={openModuleConfiguration}>
+                  {t('rewards_open_module_config')}
+                </Button>
+                <Button size="sm" variant="tertiary" onPress={() => navigate(tenantPath('/admin/events/attendance-rewards'))}>
+                  {t('rewards_open_ledger')}
+                </Button>
+              </div>
+            </Card.Content>
+          </Card>
+        )}
+
+        {rewardsCommunityOn && (
           <Card>
             <Card.Header>
               <div>

@@ -165,5 +165,20 @@
   "stale_reload": "Ktoś inny zmienił te ustawienia. Strona została przeładowana; sprawdź ją i zapisz ponownie.",
   "nothing_to_restore": "Nie ma czego przywracać: ta sekcja już używa wartości domyślnych.",
   "blocked_by_platform": "Wyłączone na poziomie platformy, więc tutaj również jest wyłączone.",
-  "capability_recurrence_definition_blueprints": "Szablony serii"
+  "capability_recurrence_definition_blueprints": "Szablony serii",
+  "community_off": "Wyłączone dla tej społeczności",
+  "rewards_feature_off_title": "Nagrody za udział są wyłączone dla tej społeczności",
+  "rewards_feature_off_desc": "Limit nagród i kwoty nagród dla poszczególnych wydarzeń pozostają ukryte, dopóki nagrody nie zostaną włączone. Aby je włączyć, otwórz Konfigurację modułu i włącz „Nagrody za udział”.",
+  "rewards_feature_off_platform_note": "Kredyty za udział są też wyłączone na poziomie platformy, więc żadne nagrody nie zostaną wypłacone, dopóki również tam nie zostaną włączone.",
+  "rewards_open_module_config": "Otwórz Konfigurację modułu",
+  "claims_feature_off_desc": "Rejestr pozostaje dostępny do odczytu, a nagrody nadal można cofać, ale nieudanych nagród nie można ponowić, dopóki „Nagrody za udział” nie zostaną włączone w Konfiguracji modułu.",
+  "claims_code_monthly_cap_reached": "Osiągnięto miesięczny limit nagród",
+  "claims_code_mint_failed": "Nie udało się dokonać płatności",
+  "claims_code_reclaim_failed": "Nie udało się odebrać kredytów",
+  "claims_code_admin_reversal": "Cofnięte przez administratora",
+  "claims_code_attendance_undone": "Zameldowanie zostało cofnięte",
+  "claims_code_unknown": "Inny powód:",
+  "claims_filtered_empty_title": "Żadne roszczenia nie pasują do tych filtrów",
+  "claims_filtered_empty_desc": "Wypróbuj inny status, typ lub zakres dat albo wyczyść filtry, aby zobaczyć wszystkie roszczenia.",
+  "claims_clear_filters": "Wyczyść filtry"
 }

@@ -165,5 +165,20 @@
   "stale_reload": "Outra pessoa alterou estas definições. A página foi recarregada; reveja-a e guarde novamente.",
   "nothing_to_restore": "Nada a restaurar: esta secção já usa os valores predefinidos.",
   "blocked_by_platform": "Desativado ao nível da plataforma, por isso também está desativado aqui.",
-  "capability_recurrence_definition_blueprints": "Modelos de série"
+  "capability_recurrence_definition_blueprints": "Modelos de série",
+  "community_off": "Desativado para esta comunidade",
+  "rewards_feature_off_title": "As recompensas de participação estão desativadas para esta comunidade",
+  "rewards_feature_off_desc": "O limite de recompensas e os montantes por evento permanecem ocultos até serem ativados. Para as ativar, abra Configuração do módulo e ative «Recompensas de participação».",
+  "rewards_feature_off_platform_note": "Os créditos de participação também estão desativados ao nível da plataforma, por isso nenhuma recompensa será paga até que também sejam ativados aí.",
+  "rewards_open_module_config": "Abrir Configuração do módulo",
+  "claims_feature_off_desc": "O registo continua legível e as recompensas ainda podem ser revertidas, mas as recompensas falhadas não podem ser repetidas até que «Recompensas de participação» seja ativado em Configuração do módulo.",
+  "claims_code_monthly_cap_reached": "Limite mensal de recompensas atingido",
+  "claims_code_mint_failed": "Não foi possível efetuar o pagamento",
+  "claims_code_reclaim_failed": "Não foi possível recuperar os créditos",
+  "claims_code_admin_reversal": "Revertida por um administrador",
+  "claims_code_attendance_undone": "O check-in foi anulado",
+  "claims_code_unknown": "Outro motivo:",
+  "claims_filtered_empty_title": "Nenhum pedido corresponde a estes filtros",
+  "claims_filtered_empty_desc": "Experimente outro estado, tipo ou intervalo de datas, ou limpe os filtros para ver todos os pedidos.",
+  "claims_clear_filters": "Limpar filtros"
 }

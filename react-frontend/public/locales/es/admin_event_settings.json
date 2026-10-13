@@ -165,5 +165,20 @@
   "stale_reload": "Otra persona ha cambiado esta configuración. La página se ha recargado; revísala y vuelve a guardar.",
   "nothing_to_restore": "Nada que restaurar: esta sección ya usa los valores predeterminados.",
   "blocked_by_platform": "Desactivado a nivel de plataforma, así que también está desactivado aquí.",
-  "capability_recurrence_definition_blueprints": "Plantillas de serie"
+  "capability_recurrence_definition_blueprints": "Plantillas de serie",
+  "community_off": "Desactivado para esta comunidad",
+  "rewards_feature_off_title": "Las recompensas por asistencia están desactivadas para esta comunidad",
+  "rewards_feature_off_desc": "El límite de recompensas y los importes por evento permanecen ocultos hasta que se activen. Para activarlas, abre Configuración del módulo y activa «Recompensas por asistencia».",
+  "rewards_feature_off_platform_note": "Los créditos por asistencia también están desactivados a nivel de plataforma, así que no se pagará ninguna recompensa hasta que también se activen allí.",
+  "rewards_open_module_config": "Abrir Configuración del módulo",
+  "claims_feature_off_desc": "El registro sigue siendo legible y las recompensas aún pueden revertirse, pero las recompensas fallidas no pueden reintentarse hasta que se active «Recompensas por asistencia» en Configuración del módulo.",
+  "claims_code_monthly_cap_reached": "Se alcanzó el límite mensual de recompensas",
+  "claims_code_mint_failed": "No se pudo realizar el pago",
+  "claims_code_reclaim_failed": "No se pudieron recuperar los créditos",
+  "claims_code_admin_reversal": "Revertida por un administrador",
+  "claims_code_attendance_undone": "Se deshizo el registro de asistencia",
+  "claims_code_unknown": "Otro motivo:",
+  "claims_filtered_empty_title": "Ninguna solicitud coincide con estos filtros",
+  "claims_filtered_empty_desc": "Prueba con otro estado, tipo o rango de fechas, o borra los filtros para ver todas las solicitudes.",
+  "claims_clear_filters": "Borrar filtros"
 }

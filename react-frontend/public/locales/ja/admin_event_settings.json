@@ -165,5 +165,20 @@
   "stale_reload": "別の人がこの設定を変更しました。ページを再読み込みしたので、確認してからもう一度保存してください。",
   "nothing_to_restore": "復元するものはありません。このセクションは既に既定値を使用しています。",
   "blocked_by_platform": "プラットフォームでオフになっているため、ここでもオフです。",
-  "capability_recurrence_definition_blueprints": "シリーズの設計図"
+  "capability_recurrence_definition_blueprints": "シリーズの設計図",
+  "community_off": "このコミュニティではオフ",
+  "rewards_feature_off_title": "このコミュニティでは参加報酬がオフになっています",
+  "rewards_feature_off_desc": "報酬の上限とイベントごとの報酬額は、オンにするまで表示されません。オンにするには、モジュール構成を開いて「参加報酬」をオンにしてください。",
+  "rewards_feature_off_platform_note": "参加クレジットはプラットフォームでもオフになっているため、そちらもオンになるまで報酬は支払われません。",
+  "rewards_open_module_config": "モジュール構成を開く",
+  "claims_feature_off_desc": "台帳は引き続き閲覧でき、報酬の取り消しもできますが、失敗した報酬はモジュール構成で「参加報酬」をオンにするまで再試行できません。",
+  "claims_code_monthly_cap_reached": "月間の報酬上限に達しました",
+  "claims_code_mint_failed": "支払いを実行できませんでした",
+  "claims_code_reclaim_failed": "クレジットを回収できませんでした",
+  "claims_code_admin_reversal": "管理者が取り消しました",
+  "claims_code_attendance_undone": "チェックインが取り消されました",
+  "claims_code_unknown": "その他の理由:",
+  "claims_filtered_empty_title": "これらのフィルターに一致する請求はありません",
+  "claims_filtered_empty_desc": "別のステータス、種類、期間を試すか、フィルターをクリアしてすべての請求を表示してください。",
+  "claims_clear_filters": "フィルターをクリア"
 }

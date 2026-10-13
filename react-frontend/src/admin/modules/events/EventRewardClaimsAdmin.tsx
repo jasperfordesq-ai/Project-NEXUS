@@ -14,14 +14,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import Gift from 'lucide-react/icons/gift';
+import SearchX from 'lucide-react/icons/search-x';
+import ToggleLeft from 'lucide-react/icons/toggle-left';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Undo2 from 'lucide-react/icons/undo-2';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { useTenant, useToast } from '@/contexts';
 import { PageHeader } from '../../components/PageHeader';
 import { DataTable, type Column } from '../../components/DataTable';
-import { EmptyState } from '../../components/EmptyState';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { getFormattingLocale } from '@/lib/helpers';
 import {
@@ -29,6 +31,7 @@ import {
   type AdminAttendanceClaim,
 } from '../../api/adminApi';
 import {
+  Alert,
   Button,
   Chip,
   Input,
@@ -51,6 +54,25 @@ const STATUS_COLORS: Record<AdminAttendanceClaim['status'], 'success' | 'danger'
   reversed: 'default',
 };
 
+/**
+ * Every failure_code / reversal_code EventCreditService writes to
+ * event_attendance_credit_claims. A code missing here still renders, under a
+ * generic label with the raw code beside it, so a new server code is never
+ * hidden — it just reads as "other reason" until it is added.
+ */
+const KNOWN_CLAIM_CODES = [
+  'monthly_cap_reached',
+  'mint_failed',
+  'reclaim_failed',
+  'admin_reversal',
+  'attendance_undone',
+] as const;
+type KnownClaimCode = typeof KNOWN_CLAIM_CODES[number];
+
+function isKnownClaimCode(code: string): code is KnownClaimCode {
+  return (KNOWN_CLAIM_CODES as readonly string[]).includes(code);
+}
+
 export default function EventRewardClaimsAdmin() {
   const { t } = useTranslation('admin_event_settings');
   useAdminPageMeta({ title: t('claims_title') });
@@ -58,7 +80,7 @@ export default function EventRewardClaimsAdmin() {
   const confirm = useConfirm();
   // Retrying a failed mint is behind the community's attendance-credits
   // feature; without it the server refuses every retry (E-104).
-  const { hasFeature } = useTenant();
+  const { hasFeature, tenantPath } = useTenant();
   const canRetry = hasFeature('event_attendance_credits');
 
   const [claims, setClaims] = useState<AdminAttendanceClaim[]>([]);
@@ -72,6 +94,15 @@ export default function EventRewardClaimsAdmin() {
   const [busyClaimId, setBusyClaimId] = useState<number | null>(null);
   const [reverseTarget, setReverseTarget] = useState<AdminAttendanceClaim | null>(null);
   const [reverseReason, setReverseReason] = useState('');
+
+  const filtersActive = status !== 'all' || claimType !== 'all' || from !== '' || to !== '';
+  const clearFilters = () => {
+    setStatus('all');
+    setClaimType('all');
+    setFrom('');
+    setTo('');
+    setPage(1);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -186,9 +217,19 @@ export default function EventRewardClaimsAdmin() {
           <Chip size="sm" variant="soft" color={STATUS_COLORS[item.status]}>
             {t(`claims_status_${item.status}`)}
           </Chip>
-          {(item.failure_code || item.reversal_code) && (
-            <span className="text-xs text-muted">{item.failure_code ?? item.reversal_code}</span>
-          )}
+          {(() => {
+            const code = item.failure_code ?? item.reversal_code;
+            if (!code) return null;
+            if (isKnownClaimCode(code)) {
+              return <span className="text-xs text-muted">{t(`claims_code_${code}`)}</span>;
+            }
+            return (
+              <span className="text-xs text-muted">
+                {t('claims_code_unknown')}{' '}
+                <code className="font-mono text-[11px] opacity-70">{code}</code>
+              </span>
+            );
+          })()}
         </div>
       ),
     },
@@ -232,6 +273,26 @@ export default function EventRewardClaimsAdmin() {
         description={t('claims_desc')}
         icon={<Gift size={22} />}
       />
+
+      {!canRetry && (
+        <Alert
+          color="warning"
+          className="mb-4"
+          title={t('rewards_feature_off_title')}
+          description={t('claims_feature_off_desc')}
+          endContent={(
+            <Button
+              as={Link}
+              to={tenantPath('/admin/module-configuration')}
+              size="sm"
+              variant="secondary"
+              startContent={<ToggleLeft size={14} aria-hidden="true" />}
+            >
+              {t('rewards_open_module_config')}
+            </Button>
+          )}
+        />
+      )}
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Select
@@ -278,21 +339,36 @@ export default function EventRewardClaimsAdmin() {
         />
       </div>
 
-      {!loading && claims.length === 0 ? (
-        <EmptyState icon={Gift} title={t('claims_empty_title')} description={t('claims_empty_desc')} />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={claims}
-          isLoading={loading}
-          searchable={false}
-          totalItems={total}
-          page={page}
-          pageSize={PAGE_SIZE}
-          onPageChange={setPage}
-          onRefresh={() => void load()}
-        />
-      )}
+      {/* The table stays mounted when empty so Refresh is always reachable,
+          and an empty FILTERED result says so — "No claims yet" there read as
+          if the ledger itself were empty. */}
+      <DataTable
+        columns={columns}
+        data={claims}
+        isLoading={loading}
+        searchable={false}
+        totalItems={total}
+        page={page}
+        pageSize={PAGE_SIZE}
+        onPageChange={setPage}
+        onRefresh={() => void load()}
+        emptyContent={filtersActive ? (
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <SearchX size={28} className="text-muted" aria-hidden="true" />
+            <p className="text-base font-semibold text-foreground">{t('claims_filtered_empty_title')}</p>
+            <p className="max-w-md text-sm text-muted">{t('claims_filtered_empty_desc')}</p>
+            <Button size="sm" variant="secondary" className="mt-2" onPress={clearFilters}>
+              {t('claims_clear_filters')}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <Gift size={28} className="text-muted" aria-hidden="true" />
+            <p className="text-base font-semibold text-foreground">{t('claims_empty_title')}</p>
+            <p className="max-w-md text-sm text-muted">{t('claims_empty_desc')}</p>
+          </div>
+        )}
+      />
 
       <Modal isOpen={reverseTarget !== null} onOpenChange={(open) => { if (!open) setReverseTarget(null); }}>
         <ModalContent>

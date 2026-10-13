@@ -165,5 +165,20 @@
   "stale_reload": "Quelqu’un d’autre a modifié ces paramètres. La page a été rechargée ; vérifiez-la puis enregistrez à nouveau.",
   "nothing_to_restore": "Rien à restaurer : cette section utilise déjà les valeurs par défaut.",
   "blocked_by_platform": "Désactivé au niveau de la plateforme, donc désactivé ici aussi.",
-  "capability_recurrence_definition_blueprints": "Modèles de série"
+  "capability_recurrence_definition_blueprints": "Modèles de série",
+  "community_off": "Désactivé pour cette communauté",
+  "rewards_feature_off_title": "Les récompenses de participation sont désactivées pour cette communauté",
+  "rewards_feature_off_desc": "Le plafond des récompenses et les montants par événement restent masqués tant qu’elles ne sont pas activées. Pour les activer, ouvrez Configuration des modules et activez « Récompenses de participation ».",
+  "rewards_feature_off_platform_note": "Les crédits de participation sont aussi désactivés au niveau de la plateforme : aucune récompense ne sera versée tant qu’ils n’y seront pas activés également.",
+  "rewards_open_module_config": "Ouvrir Configuration des modules",
+  "claims_feature_off_desc": "Le registre reste consultable et les récompenses peuvent toujours être annulées, mais les récompenses en échec ne peuvent pas être relancées tant que « Récompenses de participation » n’est pas activé dans Configuration des modules.",
+  "claims_code_monthly_cap_reached": "Plafond mensuel de récompenses atteint",
+  "claims_code_mint_failed": "Le paiement n’a pas pu être effectué",
+  "claims_code_reclaim_failed": "Les crédits n’ont pas pu être récupérés",
+  "claims_code_admin_reversal": "Annulée par un administrateur",
+  "claims_code_attendance_undone": "L’enregistrement de présence a été annulé",
+  "claims_code_unknown": "Autre motif :",
+  "claims_filtered_empty_title": "Aucune demande ne correspond à ces filtres",
+  "claims_filtered_empty_desc": "Essayez un autre statut, type ou une autre période, ou effacez les filtres pour voir toutes les demandes.",
+  "claims_clear_filters": "Effacer les filtres"
 }

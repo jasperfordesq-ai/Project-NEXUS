@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -45,13 +45,42 @@ vi.mock('../../api/adminApi', () => ({
 }));
 
 const mockToast = { success: vi.fn(), error: vi.fn() };
+const { mockHasFeature, mockNavigate } = vi.hoisted(() => ({
+  mockHasFeature: vi.fn((_key: string) => true),
+  mockNavigate: vi.fn(),
+}));
 vi.mock('@/contexts', () => createMockContexts({
   useToast: () => mockToast,
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: mockHasFeature,
+    hasModule: vi.fn((_key: string) => true),
+  }),
+}));
+vi.mock('react-router-dom', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router-dom')>()),
+  useNavigate: () => mockNavigate,
 }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/ui/ConfirmDialog', () => ({ useConfirm: () => vi.fn() }));
 
 import EventSettings from './EventSettings';
+import { adminConfig } from '../../api/adminApi';
+
+/** The shared fixture, with attendance credits ready at platform level. */
+async function withPlatformAttendanceCredits() {
+  const base = await adminConfig.getEventConfig();
+  vi.mocked(adminConfig.getEventConfig).mockResolvedValueOnce({
+    ...base,
+    data: { ...base.data!, capabilities: { ...base.data!.capabilities, attendance_credits: true } },
+  });
+}
+
+beforeEach(() => {
+  mockHasFeature.mockImplementation(() => true);
+  mockNavigate.mockReset();
+});
 
 describe('EventSettings', () => {
   it('renders the enterprise configuration surface without invalid compound components', async () => {
@@ -92,5 +121,39 @@ describe('EventSettings', () => {
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Save Event settings' })).toBeEnabled());
     expect(screen.queryByText(/Your changes are not live yet/)).not.toBeInTheDocument();
+  });
+
+  it('says attendance rewards are off for THIS community when the platform has them ready', async () => {
+    mockHasFeature.mockImplementation((key: string) => key !== 'event_attendance_credits');
+    await withPlatformAttendanceCredits();
+    render(<EventSettings />);
+
+    await waitFor(() => expect(screen.getByText('Off for this community')).toBeInTheDocument());
+    // Readiness no longer claims "Available" for attendance credits alone.
+    expect(screen.getByText('Attendance rewards are switched off for this community')).toBeInTheDocument();
+    expect(screen.queryByText(/also switched off at platform level/)).not.toBeInTheDocument();
+    // The cap field stays hidden while the feature is off.
+    expect(screen.queryByText('Monthly reward cap (credits)')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Open Module Configuration' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/module-configuration');
+  });
+
+  it('adds the platform note when the platform switch is off as well', async () => {
+    mockHasFeature.mockImplementation((key: string) => key !== 'event_attendance_credits');
+    render(<EventSettings />);
+
+    await waitFor(() => expect(screen.getByText('Attendance rewards are switched off for this community')).toBeInTheDocument());
+    expect(screen.getByText(/also switched off at platform level/)).toBeInTheDocument();
+    expect(screen.queryByText('Off for this community')).not.toBeInTheDocument();
+  });
+
+  it('shows the rewards settings and no feature-off notice when the community feature is on', async () => {
+    await withPlatformAttendanceCredits();
+    render(<EventSettings />);
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Attendance rewards' })).toBeInTheDocument());
+    expect(screen.queryByText('Attendance rewards are switched off for this community')).not.toBeInTheDocument();
+    expect(screen.queryByText('Off for this community')).not.toBeInTheDocument();
   });
 });

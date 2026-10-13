@@ -165,5 +165,20 @@
   "stale_reload": "Jemand anderes hat diese Einstellungen geändert. Die Seite wurde neu geladen; prüfen Sie sie und speichern Sie erneut.",
   "nothing_to_restore": "Nichts wiederherzustellen: Dieser Bereich nutzt bereits die Standardwerte.",
   "blocked_by_platform": "Auf Plattformebene abgeschaltet, daher auch hier aus.",
-  "capability_recurrence_definition_blueprints": "Reihen-Vorlagen"
+  "capability_recurrence_definition_blueprints": "Reihen-Vorlagen",
+  "community_off": "Für diese Community aus",
+  "rewards_feature_off_title": "Teilnahmebelohnungen sind für diese Community ausgeschaltet",
+  "rewards_feature_off_desc": "Die Belohnungsobergrenze und die Belohnungsbeträge pro Veranstaltung bleiben ausgeblendet, bis sie eingeschaltet werden. Öffnen Sie dazu die Modulkonfiguration und schalten Sie „Teilnahmebelohnungen“ ein.",
+  "rewards_feature_off_platform_note": "Teilnahmeguthaben sind außerdem auf Plattformebene ausgeschaltet, daher werden erst Belohnungen ausgezahlt, wenn auch das eingeschaltet ist.",
+  "rewards_open_module_config": "Modulkonfiguration öffnen",
+  "claims_feature_off_desc": "Das Journal bleibt lesbar und Belohnungen können weiterhin rückgängig gemacht werden, aber fehlgeschlagene Belohnungen können erst erneut versucht werden, wenn „Teilnahmebelohnungen“ in der Modulkonfiguration eingeschaltet ist.",
+  "claims_code_monthly_cap_reached": "Monatliche Belohnungsobergrenze erreicht",
+  "claims_code_mint_failed": "Zahlung konnte nicht ausgeführt werden",
+  "claims_code_reclaim_failed": "Guthaben konnte nicht zurückgeholt werden",
+  "claims_code_admin_reversal": "Von einem Admin rückgängig gemacht",
+  "claims_code_attendance_undone": "Check-in wurde rückgängig gemacht",
+  "claims_code_unknown": "Anderer Grund:",
+  "claims_filtered_empty_title": "Keine Ansprüche entsprechen diesen Filtern",
+  "claims_filtered_empty_desc": "Versuchen Sie einen anderen Status, Typ oder Zeitraum, oder setzen Sie die Filter zurück, um alle Ansprüche zu sehen.",
+  "claims_clear_filters": "Filter zurücksetzen"
 }

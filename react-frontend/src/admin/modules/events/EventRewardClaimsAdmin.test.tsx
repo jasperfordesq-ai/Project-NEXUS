@@ -10,12 +10,13 @@ import { createMockContexts } from '@/test/mock-contexts';
 import type { AdminAttendanceClaim } from '../../api/adminApi';
 
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
-const { mockRewards } = vi.hoisted(() => ({
+const { mockRewards, mockHasFeature } = vi.hoisted(() => ({
   mockRewards: {
     listClaims: vi.fn(),
     retryClaim: vi.fn(),
     reverseClaim: vi.fn(),
   },
+  mockHasFeature: vi.fn((_key: string) => true),
 }));
 
 vi.mock('../../api/adminApi', () => ({
@@ -28,6 +29,12 @@ const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useTenant: () => ({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+      tenantPath: (p: string) => `/test${p}`,
+      hasFeature: mockHasFeature,
+      hasModule: vi.fn((_key: string) => true),
+    }),
   })
 );
 
@@ -79,6 +86,7 @@ const page = (claims: AdminAttendanceClaim[], total = claims.length) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockHasFeature.mockImplementation(() => true);
   mockRewards.listClaims.mockResolvedValue(page([]));
 });
 
@@ -158,11 +166,79 @@ describe('EventRewardClaimsAdmin', () => {
     expect(screen.queryByRole('button', { name: 'Reverse' })).not.toBeInTheDocument();
   });
 
-  it('shows the empty state when there are no claims', async () => {
+  it('shows the empty state when there are no claims, keeping Refresh available', async () => {
     render(<EventRewardClaimsAdmin />);
 
     await waitFor(() => {
       expect(screen.getByText('No claims yet')).toBeInTheDocument();
     });
+    expect(screen.queryByText('No claims match these filters')).not.toBeInTheDocument();
+    // Refresh used to vanish with the table whenever the list was empty.
+    const callsBefore = mockRewards.listClaims.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: /refresh/i }));
+    await waitFor(() => {
+      expect(mockRewards.listClaims.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  it('says the FILTERS matched nothing, and clearing them restores the unfiltered list', async () => {
+    render(<EventRewardClaimsAdmin />);
+    await screen.findByText('No claims yet');
+
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-09-01' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('No claims match these filters')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('No claims yet')).not.toBeInTheDocument();
+    expect(mockRewards.listClaims).toHaveBeenLastCalledWith(expect.objectContaining({ from: '2026-09-01' }));
+    expect(screen.getByRole('button', { name: /refresh/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('No claims yet')).toBeInTheDocument();
+    });
+    expect(mockRewards.listClaims).toHaveBeenLastCalledWith(expect.not.objectContaining({ from: expect.anything() }));
+  });
+
+  it('labels known failure and reversal codes, and keeps an unknown code visible', async () => {
+    mockRewards.listClaims.mockResolvedValue(page([
+      makeClaim({ id: 51, status: 'failed', failure_code: 'monthly_cap_reached', transaction_id: null }),
+      makeClaim({ id: 52, status: 'reversed', reversal_code: 'attendance_undone' }),
+      makeClaim({ id: 53, status: 'failed', failure_code: 'something_new', transaction_id: null }),
+    ]));
+
+    render(<EventRewardClaimsAdmin />);
+
+    expect(await screen.findByText('Monthly reward cap reached')).toBeInTheDocument();
+    expect(screen.getByText('Check-in was undone')).toBeInTheDocument();
+    expect(screen.getByText('Other reason:')).toBeInTheDocument();
+    expect(screen.getByText('something_new')).toBeInTheDocument();
+    // Known codes are never shown raw.
+    expect(screen.queryByText('monthly_cap_reached')).not.toBeInTheDocument();
+    expect(screen.queryByText('attendance_undone')).not.toBeInTheDocument();
+  });
+
+  it('explains that the community feature is off, and where to switch it on', async () => {
+    mockHasFeature.mockImplementation((key: string) => key !== 'event_attendance_credits');
+    mockRewards.listClaims.mockResolvedValue(
+      page([makeClaim({ id: 61, status: 'failed', failure_code: 'mint_failed', transaction_id: null })])
+    );
+
+    render(<EventRewardClaimsAdmin />);
+
+    expect(await screen.findByText('Attendance rewards are switched off for this community')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /Open Module Configuration/ });
+    expect(link).toHaveAttribute('href', '/test/admin/module-configuration');
+    // The ledger still renders, but retry needs the feature.
+    expect(await screen.findByText('Payment could not be made')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+  });
+
+  it('shows no feature-off notice when the community feature is on', async () => {
+    render(<EventRewardClaimsAdmin />);
+    await screen.findByText('No claims yet');
+    expect(screen.queryByText('Attendance rewards are switched off for this community')).not.toBeInTheDocument();
   });
 });
