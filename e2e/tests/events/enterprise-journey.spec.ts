@@ -648,9 +648,9 @@ test.describe('Events enterprise lifecycle @events @enterprise @journey', () => 
     await detailPage.rsvpGoing();
     const registrationResponse = await registrationPromise;
     expect(registrationResponse.status(), JSON.stringify(await responseBody(registrationResponse))).toBe(200);
-    // A successful RSVP deliberately re-fetches the detail and roster, which
-    // replaces the page with its loading skeleton. Synchronize on that state
-    // transition instead of racing a five-second assertion against the reload.
+    // A successful RSVP re-fetches the detail and roster in place (O-214: the
+    // page no longer returns to its loading skeleton), so the title stays up
+    // and the chip assertion below retries until the refreshed state lands.
     await detailPage.waitForLoad();
     // Confirmed registrations replace the Going radio with a status chip and
     // retain only actions the member can still take (for example withdrawal).
