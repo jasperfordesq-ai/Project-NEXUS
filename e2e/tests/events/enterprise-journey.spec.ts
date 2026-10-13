@@ -675,7 +675,7 @@ test.describe('Events enterprise lifecycle @events @enterprise @journey', () => 
     await detailPage.notGoingButton.click();
 
     const confirmation = page.getByRole('alertdialog');
-    await expect(confirmation.getByRole('heading', { name: 'RSVP for this event' })).toBeVisible();
+    await expect(confirmation.getByRole('heading', { name: 'Give up your place?' })).toBeVisible();
     const withdrawalPromise = page.waitForResponse(
       (response) => isEventResponse(response, 'POST', `/v2/events/${event.id}/rsvp`),
     );
