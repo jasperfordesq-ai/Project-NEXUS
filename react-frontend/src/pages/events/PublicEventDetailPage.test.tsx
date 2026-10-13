@@ -64,6 +64,40 @@ describe('PublicEventDetailPage', () => {
     vi.mocked(useParams).mockReturnValue({ id: '12' });
   });
 
+  // E-104: the public page is unauthenticated and the description is
+  // organiser-written, so the structured-data script must not be breakable.
+  it('escapes "<" in the structured data so a description cannot close the script', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...DETAIL, description: 'Bring tools </script><script>alert(1)</script>' },
+    });
+
+    render(<PublicEventDetailPage />);
+    await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+    await waitFor(() => {
+      const script = document.querySelector('script[type="application/ld+json"]');
+      expect(script).not.toBeNull();
+      expect(script?.textContent ?? '').not.toContain('</script>');
+      expect(script?.textContent ?? '').toContain('\\u003c/script');
+    });
+  });
+
+  // E-104: the time must be the event's own, not the visitor's browser zone.
+  it('shows the start time in the event time zone', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      success: true,
+      data: { ...DETAIL, start_time: '2026-12-14T18:00:00Z', timezone: 'Pacific/Auckland' },
+    });
+
+    render(<PublicEventDetailPage />);
+    await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+    // 18:00 UTC on 14 December is 07:00 on 15 December in Auckland.
+    expect(screen.getByText(/15 December 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/07:00/)).toBeInTheDocument();
+  });
+
   it('reads the public detail endpoint', async () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: DETAIL });
 

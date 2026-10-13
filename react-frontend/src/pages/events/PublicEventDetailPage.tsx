@@ -90,16 +90,23 @@ export default function PublicEventDetailPage() {
   }
 
   const start = event.start_time ? new Date(event.start_time) : null;
-  // getFormattingLocale() inline, per the locale-formatting contract.
-  const whenLabel = start && !Number.isNaN(start.getTime())
-    ? start.toLocaleString(getFormattingLocale(), {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        ...(event.all_day ? {} : { hour: '2-digit', minute: '2-digit' }),
-      })
-    : '';
+  // getFormattingLocale() inline, per the locale-formatting contract. The
+  // time is the event's own (its venue's zone), never the visitor's (E-104).
+  const whenOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    ...(event.all_day ? {} : { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' }),
+  };
+  let whenLabel = '';
+  if (start && !Number.isNaN(start.getTime())) {
+    try {
+      whenLabel = start.toLocaleString(getFormattingLocale(), { ...whenOptions, timeZone: event.timezone ?? 'UTC' });
+    } catch {
+      whenLabel = start.toLocaleString(getFormattingLocale(), whenOptions);
+    }
+  }
 
   const accessibility = event.accessibility;
   const accessibilityItems = accessibility
@@ -148,7 +155,10 @@ export default function PublicEventDetailPage() {
         description={event.description?.slice(0, 160) ?? undefined}
       />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        <script type="application/ld+json">
+          {/* "<" is escaped so organiser text can never close the script (E-104). */}
+          {JSON.stringify(jsonLd).replace(/</g, '\\u003c')}
+        </script>
       </Helmet>
 
       {event.image_url && (
