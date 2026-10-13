@@ -336,7 +336,7 @@ export function EventDetailPage() {
       }
     });
     return () => controller.abort();
-  }, [id, isAuthenticated]);
+  }, [id, isAuthenticated, isSeriesTemplate]);
 
   // Fetch other events in the same series.
   // Depend on the ids (not the whole event object) so an RSVP refetch of the

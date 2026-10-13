@@ -288,6 +288,8 @@ export function EventsAdmin() {
         toast.success(t('events.reward_saved'));
         setRewardModal(null);
       } else {
+        // admin-i18n-ignore: localized server message — AdminEventAttendanceRewardController
+        // renders every refusal through __() in the caller's locale.
         toast.error(res.error ?? t('events.reward_save_failed'));
       }
     } finally {
@@ -325,6 +327,8 @@ export function EventsAdmin() {
       } else {
         // A failed load must never read as "no events" (E-104): keep the last
         // list and show the failure with a retry.
+        // admin-i18n-ignore: localized server message — AdminEventsController
+        // renders every refusal through __() in the caller's locale.
         setLoadError(res.error ?? t('events.failed_to_load_events'));
       }
     } catch {
@@ -336,7 +340,7 @@ export function EventsAdmin() {
         setLoading(false);
       }
     }
-  }, [page, publicationState, search, toast, t]);
+  }, [page, publicationState, search, t]);
 
 
   useEffect(() => {
@@ -387,6 +391,8 @@ export function EventsAdmin() {
       } else {
         // The usual cause is another admin having moved the event already
         // (409); show the server's reason and refresh the row (E-104).
+        // admin-i18n-ignore: localized server message — AdminEventsController
+        // renders every refusal through __() in the caller's locale.
         toast.error(res?.error ?? t('events.action_failed', {
           action: t(`events.action_${actionModal.action}`),
         }));

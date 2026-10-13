@@ -111,6 +111,8 @@ export default function EventRewardClaimsAdmin() {
       if (res.success && res.data?.status === 'settled') {
         toast.success(t('claims_retry_success'));
       } else {
+        // admin-i18n-ignore: localized server message — AdminEventAttendanceRewardController
+        // renders every refusal through __() in the caller's locale.
         toast.error(res.error ?? t('claims_retry_failed'));
       }
       await load();
@@ -128,6 +130,8 @@ export default function EventRewardClaimsAdmin() {
       if (res.success && res.data?.status === 'reversed') {
         toast.success(t('claims_reverse_success'));
       } else {
+        // admin-i18n-ignore: localized server message — AdminEventAttendanceRewardController
+        // renders every refusal through __() in the caller's locale.
         toast.error(res.error ?? t('claims_reverse_failed'));
       }
       setReverseTarget(null);
