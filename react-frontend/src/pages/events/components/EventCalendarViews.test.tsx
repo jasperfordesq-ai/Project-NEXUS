@@ -93,13 +93,15 @@ vi.mock('@heroui/react/calendar', async () => {
   type CalendarProps = ChildProps & {
     focusedValue: FocusedDate;
     onFocusChange?: (date: FocusedDate) => void;
+    minValue?: { toString: () => string };
+    maxValue?: { toString: () => string };
   };
   const container = ({ children }: ChildProps) => ReactModule.createElement('div', null, children);
   const empty = () => null;
-  const CalendarRoot = ({ children, focusedValue, onFocusChange }: CalendarProps) => (
+  const CalendarRoot = ({ children, focusedValue, onFocusChange, minValue, maxValue }: CalendarProps) => (
     ReactModule.createElement(
       'div',
-      null,
+      { 'data-testid': 'month-calendar', 'data-min': minValue?.toString(), 'data-max': maxValue?.toString() },
       ReactModule.createElement('button', {
         type: 'button',
         'aria-label': 'mock next month',
@@ -245,6 +247,16 @@ describe('EventCalendarViews', () => {
       '2026-04-01',
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     ));
+  });
+
+  it('bounds the month view to five years either side of today, not 1900–2099 (E-104 FN-10)', async () => {
+    calendarMock.mockResolvedValue({ success: true, data: [] });
+    renderCalendar('month', '/events?month=2026-02&date=2026-02-01');
+
+    const calendar = await screen.findByTestId('month-calendar');
+    const year = new Date().getFullYear();
+    expect(calendar).toHaveAttribute('data-min', `${year - 5}-01-01`);
+    expect(calendar).toHaveAttribute('data-max', `${year + 5}-12-31`);
   });
 
   it('surfaces load failure and retries with the same bounded agenda interval', async () => {

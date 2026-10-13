@@ -55,7 +55,8 @@ import {
 } from '@/lib/events-api';
 import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
 import { logError } from '@/lib/logger';
-import { resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
+import { getFormattingLocale, resolveAssetUrl, responsiveThumbnailProps } from '@/lib/helpers';
+import type { TFunction } from 'i18next';
 import {
   EMPTY_VENUE_ACCESSIBILITY,
   EventVenueAccessibilityFields,
@@ -142,6 +143,11 @@ const initialFormData: FormData = {
   recurrenceEndDate: null,
 };
 
+/** How far ahead an Event (or the end of its series) can be scheduled from the pickers. */
+const EVENT_DATE_YEARS_AHEAD = 5;
+/** A community's recurrence settings rarely change; reuse one answer briefly. */
+const RECURRENCE_CAPABILITIES_CACHE_MS = 60_000;
+
 function wallClockValue(date: DateInputValue, time: TimeInputValue | null, allDay: boolean): string {
   const hour = allDay ? '00' : String(time?.hour ?? 0).padStart(2, '0');
   const minute = allDay ? '00' : String(time?.minute ?? 0).padStart(2, '0');
@@ -155,42 +161,67 @@ function shiftCalendarDate(value: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
-/** Build an RRULE string from recurrence form data */
-function buildRecurrenceRule(data: FormData): string | null {
-  if (!data.isRecurring) return null;
+type ListFormatter = new (
+  locale: string,
+  options: { style: 'long'; type: 'conjunction' },
+) => { format(items: string[]): string };
 
-  const parts: string[] = [];
+/** "Monday, Wednesday and Friday" in the reader's language (Intl.ListFormat is ES2021). */
+function formatList(items: string[], locale: string): string {
+  const ListFormat = (Intl as unknown as { ListFormat?: ListFormatter }).ListFormat;
+  return ListFormat
+    ? new ListFormat(locale, { style: 'long', type: 'conjunction' }).format(items)
+    : items.join(', ');
+}
 
-  // Frequency
-  if (data.recurrenceFrequency === 'biweekly') {
-    parts.push('FREQ=WEEKLY');
-    parts.push('INTERVAL=2');
-  } else {
-    parts.push(`FREQ=${data.recurrenceFrequency.toUpperCase()}`);
-  }
+/** A weekday code's name in the reader's language (2024-01-01 was a Monday). */
+function weekdayName(code: (typeof WEEKDAY_KEYS)[number]): string {
+  const offset = WEEKDAY_KEYS.indexOf(code);
+  return new Intl.DateTimeFormat(getFormattingLocale(), { weekday: 'long', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(2024, 0, 1 + offset)));
+}
 
-  // Days of week (for weekly/biweekly)
-  if (
-    (data.recurrenceFrequency === 'weekly' || data.recurrenceFrequency === 'biweekly') &&
-    data.recurrenceDays.length > 0
-  ) {
-    parts.push(`BYDAY=${data.recurrenceDays.join(',')}`);
-  }
+/**
+ * The recurrence as a member reads it — "Every week on Monday and Thursday,
+ * 10 times" — in their language. The form used to print the raw iCalendar
+ * rule (`RRULE:FREQ=WEEKLY;COUNT=3`) here (E-104 FN-11). The server owns the
+ * structured recurrence contract; this is only the on-screen summary.
+ */
+function describeRecurrence(data: FormData, t: TFunction<'events'>, locale: string): string {
+  const days = (data.recurrenceFrequency === 'weekly' || data.recurrenceFrequency === 'biweekly')
+    ? WEEKDAY_KEYS.filter((code) => data.recurrenceDays.includes(code))
+    : [];
+  const dayList = days.length > 0 ? formatList(days.map((code) => weekdayName(code)), locale) : null;
 
-  // End condition
-  if (data.recurrenceEndType === 'after_count' && data.recurrenceCount) {
-    const count = parseInt(data.recurrenceCount);
-    if (!isNaN(count) && count > 0) {
-      parts.push(`COUNT=${count}`);
+  const rule = (() => {
+    switch (data.recurrenceFrequency) {
+      case 'daily': return t('form.recurrence_summary.daily');
+      case 'weekly': return dayList
+        ? t('form.recurrence_summary.weekly_on', { days: dayList })
+        : t('form.recurrence_summary.weekly');
+      case 'biweekly': return dayList
+        ? t('form.recurrence_summary.biweekly_on', { days: dayList })
+        : t('form.recurrence_summary.biweekly');
+      case 'monthly': return t('form.recurrence_summary.monthly');
+      case 'yearly': return t('form.recurrence_summary.yearly');
     }
-  } else if (data.recurrenceEndType === 'on_date' && data.recurrenceEndDate) {
-    // Keep the preview date-only so it does not imply a UTC boundary that the
-    // server-owned recurrence contract did not receive.
-    const dateStr = data.recurrenceEndDate.toString().replace(/-/g, '');
-    parts.push(`UNTIL=${dateStr}`);
-  }
+  })();
 
-  return `RRULE:${parts.join(';')}`;
+  if (data.recurrenceEndType === 'after_count') {
+    const count = Number.parseInt(data.recurrenceCount, 10);
+    return Number.isInteger(count) && count > 0
+      ? t('form.recurrence_summary.count', { rule, count })
+      : rule;
+  }
+  if (data.recurrenceEndType === 'on_date' && data.recurrenceEndDate) {
+    const until = new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'long', timeZone: 'UTC' })
+      .format(new Date(`${data.recurrenceEndDate.toString().slice(0, 10)}T00:00:00Z`));
+    return t('form.recurrence_summary.until', { rule, date: until });
+  }
+  if (data.recurrenceEndType === 'never') {
+    return t('form.recurrence_summary.never', { rule });
+  }
+  return rule;
 }
 
 function handleDragOver(e: React.DragEvent) {
@@ -228,6 +259,9 @@ export function CreateEventPage() {
   const [recurrenceCapabilities, setRecurrenceCapabilities] = useState<EventRecurrenceCapabilities>(
     SAFE_RECURRENCE_CAPABILITIES,
   );
+  // The dates of the Event being edited, so the pickers' bounds never refuse
+  // a date it already has (an edit of a past event keeps its past start).
+  const [loadedEventDates, setLoadedEventDates] = useState<{ start: string; end: string | null } | null>(null);
 
   // Image upload state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -285,6 +319,9 @@ export function CreateEventPage() {
         const visibleEndDate = event.schedule.all_day && endBoundaryLocal
           ? shiftCalendarDate(endBoundaryLocal.slice(0, 10), -1)
           : endBoundaryLocal.slice(0, 10);
+        setLoadedEventDates(startDateValue
+          ? { start: startDateValue, end: visibleEndDate || null }
+          : null);
         loadedScheduleRef.current = {
           timezone,
           allDay: event.schedule.all_day,
@@ -354,22 +391,28 @@ export function CreateEventPage() {
     }
   }, [isEditing, loadEvent]);
 
+  // Categories and recurrence capabilities are community settings, not per
+  // form. They are requested WITHOUT an abort signal on purpose: the API client
+  // only shares an in-flight request (and, with a TTL, its answer) between
+  // callers that cannot cancel it, so a remount — React's development
+  // double-mount, or the route re-rendering — reuses one request instead of
+  // firing another (E-104 FN-12: capabilities were fetched seven times).
   useEffect(() => {
-    const controller = new AbortController();
-    eventsApi.categories({ signal: controller.signal }).then((response) => {
-      if (!controller.signal.aborted && response.success && response.data) {
+    let cancelled = false;
+    eventsApi.categories().then((response) => {
+      if (!cancelled && response.success && response.data) {
         setCategories(response.data);
       }
     }).catch((error) => {
-      if (!controller.signal.aborted) logError('Failed to load event categories', error);
+      if (!cancelled) logError('Failed to load event categories', error);
     });
-    return () => controller.abort();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    eventsApi.recurrenceCapabilities({ signal: controller.signal }).then((response) => {
-      if (controller.signal.aborted || !response.success || !response.data) return;
+    let cancelled = false;
+    eventsApi.recurrenceCapabilities({ cacheTtlMs: RECURRENCE_CAPABILITIES_CACHE_MS }).then((response) => {
+      if (cancelled || !response.success || !response.data) return;
       const capabilities = response.data;
       setRecurrenceCapabilities(capabilities);
       setFormData((current) => {
@@ -403,11 +446,11 @@ export function CreateEventPage() {
         };
       });
     }).catch((error) => {
-      if (!controller.signal.aborted) {
+      if (!cancelled) {
         logError('Failed to negotiate event recurrence capabilities', error);
       }
     });
-    return () => controller.abort();
+    return () => { cancelled = true; };
   }, []);
 
   // Load available polls for attachment
@@ -751,10 +794,10 @@ export function CreateEventPage() {
         revisionPatch.local_end_time = currentEndClock;
       }
 
-      // Recurrence uses only the server-owned structured contract. The RRULE
-      // below is a human-readable preview and is deliberately not submitted.
-      const recurrenceRule = buildRecurrenceRule(formData);
-      if (recurrenceRule) {
+      // Recurrence uses only the server-owned structured contract; no RRULE
+      // string is built or submitted.
+      const isRecurringSubmission = formData.isRecurring;
+      if (isRecurringSubmission) {
         payload.recurrence_frequency = formData.recurrenceFrequency === 'biweekly' ? 'weekly' : formData.recurrenceFrequency;
         payload.recurrence_interval = formData.recurrenceFrequency === 'biweekly' ? 2 : 1;
         if (
@@ -782,7 +825,7 @@ export function CreateEventPage() {
           return; // finally{} clears isSubmitting
         }
         response = await eventsApi.update(id!, payload);
-      } else if (recurrenceRule) {
+      } else if (isRecurringSubmission) {
         // Recurrence-aware endpoint — creates the template event AND its
         // occurrences. Plain POST /v2/events ignores recurrence fields.
         response = await eventsApi.createRecurring(payload);
@@ -797,11 +840,11 @@ export function CreateEventPage() {
           : (responseData?.template?.id ?? responseData?.id);
 
         if (imageFile && eventId) {
-          await uploadImage(eventId, recurrenceRule ? 'all' : undefined);
+          await uploadImage(eventId, isRecurringSubmission ? 'all' : undefined);
         }
 
         toast.success(isEditing ? t('form.toast.updated') : t('form.toast.created'));
-        navigate(tenantPath(!isEditing && eventId && !recurrenceRule ? `/events/${eventId}` : '/events'));
+        navigate(tenantPath(!isEditing && eventId && !isRecurringSubmission ? `/events/${eventId}` : '/events'));
       } else {
         toast.error(response.error || t('form.toast.error'));
       }
@@ -990,6 +1033,16 @@ export function CreateEventPage() {
   const supportedRecurrenceEndTypes = recurrenceCapabilities.supported_end_types.filter(
     (endType) => (endType !== 'never' || recurrenceCapabilities.supports_rolling_never)
       && (endType !== 'after_count' || recurrenceCapabilities.max_occurrences >= 2),
+  );
+  // Date picker bounds: from today (or the edited Event's own earlier start)
+  // up to EVENT_DATE_YEARS_AHEAD years out — not HeroUI's 1900–2099 default.
+  const todayDate = today(getLocalTimeZone());
+  const loadedStartDate = loadedEventDates ? parseDate(loadedEventDates.start) : null;
+  const loadedEndDate = loadedEventDates?.end ? parseDate(loadedEventDates.end) : null;
+  const startDateMin = loadedStartDate && loadedStartDate.compare(todayDate) < 0 ? loadedStartDate : todayDate;
+  const eventDateMax = [loadedStartDate, loadedEndDate].reduce<DateInputValue>(
+    (latest, date) => (date && date.compare(latest) > 0 ? date : latest),
+    todayDate.add({ years: EVENT_DATE_YEARS_AHEAD }),
   );
 
   return (
@@ -1230,7 +1283,8 @@ export function CreateEventPage() {
                   setFormData((prev) => ({ ...prev, startDate: val }));
                   if (errors.startDate) setErrors((prev) => ({ ...prev, startDate: '' }));
                 }}
-                minValue={today(getLocalTimeZone())}
+                minValue={startDateMin}
+                maxValue={eventDateMax}
                 isInvalid={!!errors.startDate}
                 errorMessage={errors.startDate}
                 classNames={{
@@ -1269,7 +1323,8 @@ export function CreateEventPage() {
                   setFormData((prev) => ({ ...prev, endDate: val }));
                   if (errors.endDate) setErrors((prev) => ({ ...prev, endDate: '' }));
                 }}
-                minValue={formData.startDate || today(getLocalTimeZone())}
+                minValue={formData.startDate || startDateMin}
+                maxValue={eventDateMax}
                 isInvalid={!!errors.endDate}
                 errorMessage={errors.endDate}
                 classNames={{
@@ -1459,7 +1514,8 @@ export function CreateEventPage() {
                         setFormData((prev) => ({ ...prev, recurrenceEndDate: val }));
                         if (errors.recurrenceEndDate) setErrors((prev) => ({ ...prev, recurrenceEndDate: '' }));
                       }}
-                      minValue={formData.startDate || today(getLocalTimeZone())}
+                      minValue={formData.startDate || startDateMin}
+                      maxValue={eventDateMax}
                       isInvalid={!!errors.recurrenceEndDate}
                       errorMessage={errors.recurrenceEndDate}
                       classNames={{
@@ -1472,11 +1528,15 @@ export function CreateEventPage() {
                   )}
                 </div>
 
-                {/* Preview of generated RRULE (for transparency) */}
+                {/* Plain-language summary of the repeat pattern */}
                 {formData.isRecurring && (
-                  <div className="text-xs text-theme-subtle p-2 rounded-lg bg-theme-elevated font-mono break-all">
-                    {buildRecurrenceRule(formData) || t('form.recurrence_preview_empty')}
-                  </div>
+                  <p
+                    className="text-sm text-theme-muted p-2 rounded-lg bg-theme-elevated"
+                    aria-live="polite"
+                    data-testid="recurrence-summary"
+                  >
+                    {describeRecurrence(formData, t, getFormattingLocale())}
+                  </p>
                 )}
               </motion.div>
             )}

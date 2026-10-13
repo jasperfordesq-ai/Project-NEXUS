@@ -29,6 +29,13 @@ export type EventCalendarView = 'month' | 'agenda';
 
 const AGENDA_DAYS = 30;
 const MAX_CALENDAR_RANGE_DAYS = 366;
+/**
+ * How far the month view's year picker reaches either side of today. HeroUI's
+ * Calendar otherwise offers 1900–2099, which is noise for a community diary.
+ * Forward matches how far ahead the create form lets an Event be scheduled.
+ */
+const MONTH_VIEW_YEARS_BACK = 5;
+const MONTH_VIEW_YEARS_AHEAD = 5;
 
 function todayValue(): CalendarDate {
   const now = new Date();
@@ -296,6 +303,8 @@ export function EventCalendarViews({ view }: { view: EventCalendarView }) {
         <GlassCard className="p-4 sm:p-5">
           <HeroCalendar
             aria-label={t('calendar.month_aria')}
+            minValue={todayValue().subtract({ years: MONTH_VIEW_YEARS_BACK }).set({ month: 1, day: 1 })}
+            maxValue={todayValue().add({ years: MONTH_VIEW_YEARS_AHEAD }).set({ month: 12, day: 31 })}
             value={selectedDate}
             focusedValue={focusedDate}
             onFocusChange={(date) => {

@@ -221,6 +221,27 @@ describe('EventsPage', () => {
     expect(screen.getByText('Pending review')).toBeInTheDocument();
   });
 
+  it('formats a nearby event distance in the reader locale, not hard-coded English units', async () => {
+    const near = { ...createCanonicalEventFixture(), distance_km: 0.35 };
+    const far = { ...createCanonicalEventFixture({ id: 102, title: 'Riverside Walk' }), distance_km: 2.44 };
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [near, far],
+      meta: { has_more: false, total_items: 2 },
+    });
+
+    renderEventRoute(<EventsPage />);
+    await screen.findByRole('heading', { name: 'Riverside Walk' });
+
+    const locale = getFormattingLocale();
+    const metres = new Intl.NumberFormat(locale, { style: 'unit', unit: 'meter', unitDisplay: 'short' }).format(350);
+    const kilometres = new Intl.NumberFormat(locale, {
+      style: 'unit', unit: 'kilometer', unitDisplay: 'short', minimumFractionDigits: 1, maximumFractionDigits: 1,
+    }).format(2.4);
+    expect(screen.getByText(metres)).toBeInTheDocument();
+    expect(screen.getByText(kilometres)).toBeInTheDocument();
+  });
+
   describe('phone layout', () => {
     beforeEach(() => {
       isPhoneViewport = true;

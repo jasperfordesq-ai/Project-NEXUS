@@ -1191,6 +1191,90 @@ describe('EventDetailPage', () => {
     expect(mockToast.success).toHaveBeenCalledWith('Your place at the event is confirmed.');
   });
 
+  it('refreshes the event in place after an RSVP instead of flashing the loading screen (E-104 FN-12)', async () => {
+    const confirmedRelationship = {
+      ...mockEvent.relationship,
+      registration: {
+        ...mockEvent.relationship.registration,
+        state: 'confirmed' as const,
+        can_register: false,
+        can_withdraw: true,
+      },
+    };
+    mockApi.post.mockResolvedValueOnce({
+      success: true,
+      data: {
+        contract_version: 2,
+        event_id: 1,
+        relationship: confirmedRelationship,
+        metrics: mockEvent.metrics,
+        status: 'going',
+        rsvp_counts: { going: 1, interested: 0 },
+        waitlist_position: null,
+        message: null,
+      },
+    });
+    const user = userEvent.setup();
+    await renderLoadedEvent();
+
+    // Hold the post-RSVP reload open so the in-between state can be inspected.
+    let resolveReload!: (value: { success: boolean; data: typeof mockEvent }) => void;
+    const reload = new Promise<{ success: boolean; data: typeof mockEvent }>((resolve) => {
+      resolveReload = resolve;
+    });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/events/1') return reload;
+      return Promise.resolve({ success: true, data: [] });
+    });
+
+    await user.click(screen.getByRole('radio', { name: 'Mark yourself as going' }));
+    await waitFor(() => expect(mockApi.get).toHaveBeenCalledWith(
+      '/v2/events/1',
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    ));
+
+    // The page stays on screen while it refreshes: no loading skeleton.
+    expect(screen.getByRole('heading', { level: 1, name: 'Community Garden Day' })).toBeInTheDocument();
+    expect(screen.queryByText('Loading event...')).not.toBeInTheDocument();
+
+    await act(async () => {
+      resolveReload({ success: true, data: { ...mockEvent, relationship: confirmedRelationship } });
+    });
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith("You're going!"));
+    expect(screen.getByRole('heading', { level: 1, name: 'Community Garden Day' })).toBeInTheDocument();
+  });
+
+  it('keeps the event on screen and says so when a post-action refresh fails', async () => {
+    mockApi.post.mockResolvedValueOnce({
+      success: true,
+      data: {
+        contract_version: 2,
+        event_id: 1,
+        relationship: mockEvent.relationship,
+        metrics: mockEvent.metrics,
+        status: 'interested',
+        rsvp_counts: { going: 0, interested: 1 },
+        waitlist_position: null,
+        message: null,
+      },
+    });
+    const user = userEvent.setup();
+    await renderLoadedEvent();
+
+    mockApi.get.mockImplementation((url: string) => {
+      if (url === '/v2/events/1') return Promise.reject(new Error('network down'));
+      return Promise.resolve({ success: true, data: [] });
+    });
+
+    await user.click(screen.getByRole('radio', { name: 'Mark yourself as interested' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+      "Couldn't refresh this event. What you see may be out of date.",
+    ));
+    expect(screen.getByRole('heading', { level: 1, name: 'Community Garden Day' })).toBeInTheDocument();
+    expect(screen.queryByText('Unable to Load Event')).not.toBeInTheDocument();
+  });
+
   it('clears a loaded event after navigation to an event that fails to load', async () => {
     const { router } = await renderLoadedEvent();
 

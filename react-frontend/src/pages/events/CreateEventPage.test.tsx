@@ -77,17 +77,21 @@ vi.mock('@/components/feedback', () => ({
 vi.mock('@/components/ui/DatePicker', async () => {
   const { parseDate } = await import('@internationalized/date');
   return {
-    DatePicker: ({ label, value, onChange, isInvalid, errorMessage }: {
+    DatePicker: ({ label, value, onChange, isInvalid, errorMessage, minValue, maxValue }: {
       label: string;
       value?: { toString(): string } | null;
       onChange?: (value: ReturnType<typeof parseDate>) => void;
       isInvalid?: boolean;
       errorMessage?: React.ReactNode;
+      minValue?: { toString(): string } | null;
+      maxValue?: { toString(): string } | null;
     }) => (
       <label>
         {label}
         <input
           aria-label={label}
+          data-min={minValue?.toString()}
+          data-max={maxValue?.toString()}
           aria-invalid={isInvalid || undefined}
           value={value?.toString() ?? ''}
           onChange={(event) => event.target.value && onChange?.(parseDate(event.target.value))}
@@ -242,6 +246,39 @@ describe('CreateEventPage', () => {
     expect(screen.queryByText(/only staff can create events here/i)).not.toBeInTheDocument();
   });
 
+  it('bounds the start date from today to five years ahead (E-104 FN-10)', async () => {
+    await renderCreateEventPage();
+
+    const { today, getLocalTimeZone } = await import('@internationalized/date');
+    const now = today(getLocalTimeZone());
+    const start = screen.getByRole('textbox', { name: 'Start Date' });
+    expect(start).toHaveAttribute('data-min', now.toString());
+    expect(start).toHaveAttribute('data-max', now.add({ years: 5 }).toString());
+  });
+
+  it('does not refuse the existing past start date when editing a past Event', async () => {
+    const past = createCanonicalEventFixture({
+      id: 5,
+      title: 'Past Event',
+      schedule: {
+        ...createCanonicalEventFixture().schedule,
+        start_at: '2020-03-04T10:00:00Z',
+        end_at: '2020-03-04T12:00:00Z',
+        timezone: 'UTC',
+      },
+    });
+    mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+      endpoint.startsWith('/v2/events/5')
+        ? { success: true, data: past }
+        : { success: true, data: [] },
+    ));
+
+    await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+    expect(await screen.findByDisplayValue('Past Event')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Start Date' })).toHaveAttribute('data-min', '2020-03-04');
+  });
+
   it('renders the create-event heading', async () => {
     await renderCreateEventPage();
 
@@ -349,6 +386,38 @@ describe('CreateEventPage', () => {
     expect(recurringPayload).not.toHaveProperty('recurrence_rule');
     expect(recurringPayload).not.toHaveProperty('recurrence_rrule');
     expect(recurringPayload).not.toHaveProperty('recurrence_days');
+  });
+
+  it('summarises the repeat pattern in words, never as a raw RRULE (E-104 FN-11)', async () => {
+    await renderCreateEventPage();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle recurring event' }));
+    await screen.findByRole('option', { name: 'Never (rolling schedule)' });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Mon' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Thu' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Number of occurrences' }), { target: { value: '3' } });
+
+    const summary = screen.getByTestId('recurrence-summary');
+    const days = new Intl.DateTimeFormat('en', { weekday: 'long', timeZone: 'UTC' });
+    const monday = days.format(new Date(Date.UTC(2024, 0, 1)));
+    const thursday = days.format(new Date(Date.UTC(2024, 0, 4)));
+    expect(summary).toHaveTextContent(`Every week on ${monday} and ${thursday}, 3 times`);
+    expect(summary.textContent).not.toMatch(/RRULE|FREQ=|COUNT=/);
+
+    fireEvent.change(screen.getByRole('combobox', { name: 'How the series ends' }), { target: { value: 'never' } });
+    expect(screen.getByTestId('recurrence-summary')).toHaveTextContent('with no end date');
+  });
+
+  it('asks for recurrence capabilities through the shared, cached request (E-104 FN-12)', async () => {
+    await renderCreateEventPage();
+
+    const capabilityCalls = mockApi.get.mock.calls.filter(([endpoint]) => endpoint === '/v2/events/recurrence-capabilities');
+    expect(capabilityCalls).toHaveLength(1);
+    // No abort signal: the API client only shares an in-flight request (and
+    // its cached answer) between callers that cannot cancel it.
+    const capabilityOptions = capabilityCalls[0]?.[1];
+    expect(capabilityOptions).not.toHaveProperty('signal');
+    expect(capabilityOptions).toEqual(expect.objectContaining({ cacheTtlMs: expect.any(Number) }));
   });
 
   it('does not offer a repeating event when the community has switched recurring events off', async () => {

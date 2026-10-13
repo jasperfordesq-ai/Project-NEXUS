@@ -893,6 +893,28 @@ interface EventCardProps {
   event: Event;
 }
 
+/**
+ * "350 m" / "2.4 km" in the reader's locale — the unit names and the decimal
+ * separator both vary (e.g. "2,4 km", "2.4 كم"), so never hard-code them.
+ */
+function formatEventDistance(distanceKm: number): string {
+  if (distanceKm < 1) {
+    return new Intl.NumberFormat(getFormattingLocale(), {
+      style: 'unit',
+      unit: 'meter',
+      unitDisplay: 'short',
+      maximumFractionDigits: 0,
+    }).format(Math.round(distanceKm * 1000));
+  }
+  return new Intl.NumberFormat(getFormattingLocale(), {
+    style: 'unit',
+    unit: 'kilometer',
+    unitDisplay: 'short',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(distanceKm);
+}
+
 const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const { t } = useTranslation('events');
   const { tenantPath } = useTenant();
@@ -1057,9 +1079,7 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
                 {event.distance_km !== undefined && (
                   <span className="flex items-center gap-1.5 text-accent font-medium">
                     <MapPin className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                    {event.distance_km < 1
-                      ? `${Math.round(event.distance_km * 1000)} m`
-                      : `${event.distance_km.toFixed(1)} km`}
+                    {formatEventDistance(event.distance_km)}
                   </span>
                 )}
                 <span className="flex items-center gap-1.5">

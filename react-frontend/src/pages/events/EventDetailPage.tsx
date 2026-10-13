@@ -198,6 +198,8 @@ export function EventDetailPage() {
   const abortRef = useRef<AbortController | null>(null);
   const rosterAbortRef = useRef<AbortController | null>(null);
   const eventRequestGeneration = useRef(0);
+  /** Route id of the event currently held in state (null until one loads). */
+  const loadedEventIdRef = useRef<string | null>(null);
   const rosterRequestGeneration = useRef(0);
 
   // Stable refs for t/toast — avoids re-creating callbacks when i18n namespace loads
@@ -267,13 +269,21 @@ export function EventDetailPage() {
       && abortRef.current === controller
       && !controller.signal.aborted
     );
+    // A reload of the event already on screen (after an RSVP, a waitlist
+    // change, a cancellation...) refreshes it in place. Only a first load, or
+    // a load of a different event, replaces the page with the loading state —
+    // otherwise every action flashed "Loading event…" and remounted every card
+    // on the page, which then fetched its own data again (E-104 FN-12).
+    const refreshInPlace = loadedEventIdRef.current === id;
 
     try {
-      setIsLoading(true);
+      if (!refreshInPlace) {
+        setIsLoading(true);
+        setAttendees([]);
+        setRosterCursor(null);
+        setRosterHasMore(false);
+      }
       setError(null);
-      setAttendees([]);
-      setRosterCursor(null);
-      setRosterHasMore(false);
       setRosterLoadError(false);
       void loadRosterPage(null, false);
       const eventRes = await eventsApi.get(id, { signal: controller.signal });
@@ -281,6 +291,7 @@ export function EventDetailPage() {
       if (!isCurrentRequest()) return;
 
       if (eventRes.success && eventRes.data) {
+        loadedEventIdRef.current = id;
         setEvent(eventRes.data);
         setRsvpStatus(relationshipRsvpStatus(eventRes.data));
         setIsWaitlisted(['waitlisted', 'offered'].includes(eventRes.data.relationship.registration.state));
@@ -290,14 +301,22 @@ export function EventDetailPage() {
         // this, navigating from a loaded event to one that fails to load (404/5xx)
         // leaves the prior event in state, and the `error && !event` render guard
         // stays false — so the stale event renders under the new URL.
+        loadedEventIdRef.current = null;
         setEvent(null);
         setError(tRef.current('detail.not_found_desc'));
       }
     } catch (err) {
       if (!isCurrentRequest()) return;
       logError('Failed to load event', err);
+      if (refreshInPlace) {
+        // The event on screen is still the right one; keep it and say the
+        // refresh failed rather than throwing the member onto an error page.
+        toastRef.current.error(tRef.current('detail.refresh_failed'));
+        return;
+      }
       // Clear stale event data (see the else branch above) so a failed reload
       // shows the error screen instead of the previously-loaded event.
+      loadedEventIdRef.current = null;
       setEvent(null);
       setError(tRef.current('detail.unable_to_load'));
     } finally {
@@ -1144,11 +1163,11 @@ export function EventDetailPage() {
         {isCancelled && (
           <div role="alert" className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30">
             <div className="flex items-center gap-3">
-              <Ban className="w-5 h-5 text-red-400 flex-shrink-0" aria-hidden="true" />
+              <Ban className="w-5 h-5 text-theme-danger flex-shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-theme-danger font-semibold">{t('detail.event_cancelled')}</p>
                 {event.schedule.cancellation_reason && (
-                  <p className="text-red-300/80 text-sm mt-1">{t('detail.cancellation_reason', { reason: event.schedule.cancellation_reason })}</p>
+                  <p className="text-theme-danger text-sm mt-1">{t('detail.cancellation_reason', { reason: event.schedule.cancellation_reason })}</p>
                 )}
               </div>
             </div>
@@ -1799,7 +1818,7 @@ export function EventDetailPage() {
                 )}
                 {canLeaveWaitlist && !hasActiveWaitlistOffer && (
                   <Button
-                    className="bg-amber-500/10 text-amber-400"
+                    className="bg-amber-500/10 text-theme-warning"
                     variant="flat"
                     startContent={<XCircle className="w-4 h-4" aria-hidden="true" />}
                     onPress={handleLeaveWaitlist}

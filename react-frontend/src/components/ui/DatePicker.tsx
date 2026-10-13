@@ -142,6 +142,13 @@ export function DatePicker({
           >
             <Calendar
               {...calendarProps}
+              // HeroUI's Calendar fills in 1900–2099 when it gets no bounds of
+              // its own, and React Aria lets those local props beat the bounds
+              // the DatePicker hands down through context. Pass the picker's
+              // bounds explicitly or the popover ignores them (and its year
+              // picker lists two centuries).
+              minValue={calendarProps?.minValue ?? props.minValue}
+              maxValue={calendarProps?.maxValue ?? props.maxValue}
               aria-label={calendarAriaLabel}
               className={combineClasses(classNames?.calendar, calendarProps?.className)}
               visibleDuration={visibleMonths ? { months: visibleMonths } : calendarProps?.visibleDuration}

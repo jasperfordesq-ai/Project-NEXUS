@@ -120,6 +120,28 @@ describe('DatePicker', () => {
     }).not.toThrow();
   });
 
+  it('hands the picker min/max bounds to its calendar (HeroUI otherwise defaults to 1900–2099)', async () => {
+    render(
+      <DatePicker
+        aria-label="Pick a date"
+        defaultOpen
+        value={new CalendarDate(2026, 6, 15)}
+        minValue={new CalendarDate(2026, 6, 10)}
+        maxValue={new CalendarDate(2026, 6, 20)}
+      />
+    );
+
+    const grid = await screen.findByRole('grid');
+    const cellFor = (day: number) => Array.from(grid.querySelectorAll('[role="gridcell"]'))
+      .find((cell) => cell.textContent?.trim() === String(day));
+    // Outside the bounds the calendar refuses the day; inside it offers it.
+    expect(cellFor(5)?.querySelector('[aria-disabled="true"]') ?? cellFor(5)?.getAttribute('aria-disabled'))
+      .toBeTruthy();
+    expect(cellFor(25)?.querySelector('[aria-disabled="true"]') ?? cellFor(25)?.getAttribute('aria-disabled'))
+      .toBeTruthy();
+    expect(cellFor(12)?.querySelector('[aria-disabled="true"]')).toBeNull();
+  });
+
   // SKIPPED: Opening the calendar popover via pointer events in jsdom is not
   // reliable — React Aria's FocusScope + portal-based Popover requires a real
   // browser environment. Calendar grid interaction is therefore not tested here.
