@@ -420,7 +420,7 @@ describe('MarketplaceListingPage', () => {
     await waitFor(() => {
       const script = document.querySelector('script[type="application/ld+json"]');
       expect(script).toBeTruthy();
-      expect(script?.textContent).toContain('\\u003c/script>');
+      expect(script?.textContent).toContain('\\u003c/script\\u003e');
       expect(script?.textContent).not.toContain('</script>');
     });
   });

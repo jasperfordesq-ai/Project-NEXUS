@@ -51,6 +51,7 @@ import { logError } from '@/lib/logger';
 import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
 import { extractCollectionItems } from '@/pages/volunteering/extractCollectionItems';
 import { safeHref } from '@/lib/safeHref';
+import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -321,14 +322,14 @@ export function OrganisationDetailPage() {
       />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: organisation?.name,
             ...(organisation?.description ? { description: organisation.description.substring(0, 300) } : {}),
             ...(organisation?.logo_url ? { logo: organisation.logo_url } : {}),
             ...(organisation?.website ? { url: organisation.website } : {}),
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
       {/* Breadcrumbs */}

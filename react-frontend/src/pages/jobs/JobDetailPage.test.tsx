@@ -437,4 +437,23 @@ describe('JobDetailPage', () => {
       expect(screen.getByText('detail.check_qualification')).toBeInTheDocument();
     });
   });
+  // F-595 follow-up (E-104): member-written text must not be able to close the
+  // structured-data block early in a prerendered snapshot.
+  it('escapes "<" in the JobPosting structured data', async () => {
+    const hostile = 'Gardener</script><img src=x onerror=alert(1)>';
+    vi.mocked(api.get).mockImplementation(((url: string) => {
+      if (url.includes('/match')) return Promise.resolve({ success: false, data: null, meta: {} });
+      if (url.includes('/applications')) return Promise.resolve({ success: true, data: [], meta: {} });
+      if (url.includes('/history')) return Promise.resolve({ success: true, data: [], meta: {} });
+      return Promise.resolve({ success: true, data: makeVacancy({ title: hostile, description: hostile }), meta: {} });
+    }) as never);
+    render(<JobDetailPage />);
+    await waitFor(() => {
+      expect(document.querySelector('script[type="application/ld+json"]')).not.toBeNull();
+    });
+    const raw = document.querySelector('script[type="application/ld+json"]')?.textContent ?? '';
+    expect(raw).not.toContain('</script>');
+    expect(raw).toContain('\\u003c/script');
+    expect(JSON.parse(raw).title).toBe(hostile);
+  });
 });

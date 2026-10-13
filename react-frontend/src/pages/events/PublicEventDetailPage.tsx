@@ -32,6 +32,7 @@ import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEventDetail } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 export default function PublicEventDetailPage() {
   const { t } = useTranslation('events');
@@ -156,8 +157,8 @@ export default function PublicEventDetailPage() {
       />
       <Helmet>
         <script type="application/ld+json">
-          {/* "<" is escaped so organiser text can never close the script (E-104). */}
-          {JSON.stringify(jsonLd).replace(/</g, '\\u003c')}
+          {/* Escaped so organiser text can never close the script (F-595, E-104). */}
+          {toJsonLd(jsonLd)}
         </script>
       </Helmet>
 

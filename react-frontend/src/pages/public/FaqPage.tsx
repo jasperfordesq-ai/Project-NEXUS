@@ -26,6 +26,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
+import { toJsonLd } from '@/lib/json-ld';
 
 interface FaqItem {
   question: string;
@@ -381,7 +382,7 @@ export function FaqPage() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <PageMeta title={t('faq.page_title')} description={t('faq.meta_description')} />
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqSchema).replace(/</g, '\\u003c')}</script>
+        <script type="application/ld+json">{toJsonLd(faqSchema)}</script>
       </Helmet>
       <motion.div
         variants={containerVariants}

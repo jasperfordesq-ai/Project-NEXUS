@@ -69,6 +69,7 @@ import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volu
 import { ShiftManager } from '@/components/volunteering/ShiftManager';
 
 import { useTranslation } from 'react-i18next';
+import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -1089,7 +1090,7 @@ export function OpportunityDetailPage() {
       />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'VolunteerAction',
             name: opp.title,
@@ -1098,7 +1099,7 @@ export function OpportunityDetailPage() {
             ...(opp.organization ? { agent: { '@type': 'Organization', name: opp.organization.name } } : {}),
             ...(opp.start_date ? { startTime: opp.start_date } : {}),
             ...(opp.end_date ? { endTime: opp.end_date } : {}),
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
 

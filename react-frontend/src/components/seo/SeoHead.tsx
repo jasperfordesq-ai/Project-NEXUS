@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts/TenantContext';
+import { toJsonLd } from '@/lib/json-ld';
 
 /**
  * SeoHead — Global SEO tags rendered on every page via Layout.
@@ -178,13 +179,13 @@ export function SeoHead() {
           Contains address, contact, sameAs links — used by Google Knowledge
           Graph, Bing, and AI assistants to identify and describe the org. */}
       <script type="application/ld+json">
-        {JSON.stringify(orgSchema).replace(/</g, '\\u003c')}
+        {toJsonLd(orgSchema)}
       </script>
 
       {/* WebSite JSON-LD with SearchAction — enables sitelinks searchbox
           in Google results. */}
       <script type="application/ld+json">
-        {JSON.stringify(webSiteSchema).replace(/</g, '\\u003c')}
+        {toJsonLd(webSiteSchema)}
       </script>
 
       {/* Geo meta tags — help Google and Bing assign geographic context to
@@ -203,7 +204,7 @@ export function SeoHead() {
       {/* BreadcrumbList JSON-LD (only on non-homepage routes) */}
       {pathSegments.length > 0 && (
         <script type="application/ld+json">
-          {JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c')}
+          {toJsonLd(breadcrumbSchema)}
         </script>
       )}
     </Helmet>

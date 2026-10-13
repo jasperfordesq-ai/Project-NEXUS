@@ -86,6 +86,7 @@ import { logError } from '@/lib/logger';
 import { explainedApiError } from '@/lib/explained-api-error';
 import { EventReminderPanel } from './EventReminderPanel';
 import { formatDateTime, formatDateValue, getFormattingLocale, resolveAvatarUrl, resolveThumbnailUrl, responsiveThumbnailProps } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 type RsvpOption = 'going' | 'interested' | 'not_going';
 
@@ -910,7 +911,7 @@ export function EventDetailPage() {
       />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Event',
             name: event.title,
@@ -923,7 +924,7 @@ export function EventDetailPage() {
               '@type': 'Person',
               name: organizerName,
             },
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
 

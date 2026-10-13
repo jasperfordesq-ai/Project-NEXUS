@@ -316,4 +316,21 @@ describe('IdeaDetailPage', () => {
       expect.stringContaining('/v2/ideation-ideas/201/comments'),
     );
   });
+  // F-595 follow-up (E-104): member-written text must not be able to close the
+  // structured-data block early in a prerendered snapshot.
+  it('escapes "<" in the structured data', async () => {
+    const hostile = 'Name</script><img src=x onerror=alert(1)>';
+    vi.mocked(api.get).mockImplementation(((url: string) => {
+      if (url.includes('/comments')) return Promise.resolve(mockCommentsResponse);
+      return Promise.resolve({ success: true, data: { ...mockIdea, title: hostile, description: hostile } });
+    }) as never);
+    render(<IdeaDetailPage />);
+    await waitFor(() => {
+      expect(document.querySelector('script[type="application/ld+json"]')).not.toBeNull();
+    });
+    const raw = document.querySelector('script[type="application/ld+json"]')?.textContent ?? '';
+    expect(raw).not.toContain('</script>');
+    expect(raw).toContain('\\u003c/script');
+    expect(JSON.parse(raw).name).toBe(hostile);
+  });
 });

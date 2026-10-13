@@ -53,6 +53,7 @@ import { logError } from '@/lib/logger';
 import { formatRelativeTime } from '@/lib/helpers';
 
 import { useTranslation } from 'react-i18next';
+import { toJsonLd } from '@/lib/json-ld';
 /* ───────────────────────── Types ───────────────────────── */
 
 interface KBAttachment {
@@ -251,14 +252,14 @@ export function KBArticlePage() {
       <PageMeta title={article?.title} description={article?.content?.replace(/<[^>]*>/g, '').substring(0, 160)} />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Article',
             headline: article?.title,
             ...(article?.excerpt ? { description: article.excerpt } : {}),
             ...(article?.updated_at ? { dateModified: article.updated_at } : {}),
             ...(article?.created_at ? { datePublished: article.created_at } : {}),
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
       {/* Breadcrumb */}

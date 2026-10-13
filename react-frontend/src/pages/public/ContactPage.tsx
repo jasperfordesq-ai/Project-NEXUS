@@ -29,6 +29,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveUserDisplayName } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 export function ContactPage() {
   const { t } = useTranslation('public');
@@ -125,7 +126,7 @@ export function ContactPage() {
       {contactPointSchema && (
         <Helmet>
           <script type="application/ld+json">
-            {JSON.stringify(contactPointSchema).replace(/</g, '\\u003c')}
+            {toJsonLd(contactPointSchema)}
           </script>
         </Helmet>
       )}

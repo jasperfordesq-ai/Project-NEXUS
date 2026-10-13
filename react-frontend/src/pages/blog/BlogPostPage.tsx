@@ -36,6 +36,7 @@ import { usePrerenderReady } from '@/hooks/usePrerenderReady';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAssetUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -258,7 +259,7 @@ export function BlogPostPage() {
       {/* Article JSON-LD structured data */}
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify(articleStructuredData).replace(/</g, '\\u003c')}
+          {toJsonLd(articleStructuredData)}
         </script>
       </Helmet>
 

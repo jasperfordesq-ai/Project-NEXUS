@@ -69,6 +69,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, resolveAssetUrl, resolveThumbnailUrl, formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -814,13 +815,13 @@ export function ChallengeDetailPage() {
       <PageMeta title={challenge?.title} description={challenge?.description?.substring(0, 160)} image={challenge?.cover_image ? resolveAssetUrl(challenge.cover_image) : undefined} />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'CreativeWork',
             name: challenge?.title,
             ...(challenge?.description ? { description: challenge.description.substring(0, 300) } : {}),
             ...(challenge?.cover_image ? { image: resolveAssetUrl(challenge.cover_image) } : {}),
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
       {/* Back link */}

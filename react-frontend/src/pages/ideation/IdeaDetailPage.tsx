@@ -51,6 +51,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
+import { toJsonLd } from '@/lib/json-ld';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -447,12 +448,12 @@ export function IdeaDetailPage() {
       <PageMeta title={idea?.title} description={idea?.description?.substring(0, 160)} />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify({
+          {toJsonLd({
             '@context': 'https://schema.org',
             '@type': 'CreativeWork',
             name: idea?.title,
             ...(idea?.description ? { description: idea.description.substring(0, 300) } : {}),
-          }).replace(/</g, '\\u003c')}
+          })}
         </script>
       </Helmet>
       {/* Back link */}

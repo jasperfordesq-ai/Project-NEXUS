@@ -65,6 +65,7 @@ import { PageMeta } from '@/components/seo/PageMeta';
 import { VerificationBadgeRow } from '@/components/verification/VerificationBadge';
 import type { MarketplaceShippingOption } from '@/types/marketplace';
 import { formatMarketplaceCurrency, normalizeMarketplaceListing } from '@/lib/marketplaceNumbers';
+import { toJsonLd } from '@/lib/json-ld';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -198,7 +199,7 @@ function buildProductSchema(
     schema['image'] = listing.images.map((img) => img.url);
   }
 
-  return JSON.stringify(schema).replace(/</g, '\\u003c');
+  return toJsonLd(schema);
 }
 
 function getDeliveryMethodKey(method: string): string {

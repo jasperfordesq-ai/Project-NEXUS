@@ -61,6 +61,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale, resolveAssetUrl, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import type { Listing, ListingDetail, ExchangeConfig } from '@/types/api';
+import { toJsonLd } from '@/lib/json-ld';
 
 interface ListingStructuredDataOptions {
   origin: string;
@@ -505,7 +506,7 @@ export function ListingDetailPage() {
       />
       <Helmet>
         <script type="application/ld+json">
-          {JSON.stringify(listingStructuredData).replace(/</g, '\\u003c')}
+          {toJsonLd(listingStructuredData)}
         </script>
       </Helmet>
       {/* Breadcrumbs */}

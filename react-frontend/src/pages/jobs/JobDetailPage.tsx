@@ -28,6 +28,7 @@ import { useDisclosure } from '@/components/ui/useDisclosure';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { toJsonLd } from '@/lib/json-ld';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Briefcase from 'lucide-react/icons/briefcase';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
@@ -162,7 +163,7 @@ function buildJobPostingSchema(vacancy: JobVacancy, tenantPath: (p: string) => s
     };
   }
 
-  return JSON.stringify(schema);
+  return toJsonLd(schema);
 }
 
 export function JobDetailPage() {
