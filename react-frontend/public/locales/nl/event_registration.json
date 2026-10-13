@@ -222,6 +222,9 @@
     "check_out": "Uitchecken",
     "no_show": "Markeer no-show",
     "undo": "Laatste wijziging ongedaan maken",
+    "undo_title": "Laatste aanwezigheidswijziging ongedaan maken?",
+    "undo_description": "Deze gast gaat terug naar de vorige aanwezigheidsstatus. De wijziging en je reden blijven in de aanwezigheidsgeschiedenis staan.",
+    "undo_reason": "Reden voor ongedaan maken",
     "cancel": "Gast annuleren",
     "cancel_reason": "Reden voor het annuleren van deze gast",
     "cancel_reason_default": "Geannuleerd door de registratiehouder"

@@ -17,7 +17,8 @@
       "save_review": "Salva decisione di revisione",
       "cancel_edit": "Annulla modifica",
       "edit_review": "Aggiornamento decisione",
-      "withdraw_review": "Ritirare la decisione"
+      "withdraw_review": "Ritirare la decisione",
+      "prepare_requirements": "Prepara comunque i requisiti"
     },
     "confirmations": {
       "withdraw_code_title": "Ritirare l’accettazione del codice di condotta?",
@@ -35,6 +36,8 @@
       "shadow_title": "Modalità di osservazione",
       "shadow_description": "I requisiti vengono valutati e registrati, ma non bloccano ancora la partecipazione.",
       "read_only": "Puoi visualizzare questa politica ma non puoi modificarne i requisiti.",
+      "off_title": "L'applicazione delle regole di sicurezza è disattivata",
+      "off_description": "L'applicazione delle regole di sicurezza è disattivata per questa comunità, quindi i requisiti impostati qui non influiscono su chi può partecipare. Un amministratore della comunità può attivarla. Puoi comunque preparare i requisiti in anticipo.",
       "action_error": "Impossibile salvare la modifica di sicurezza. Aggiorna l'area di lavoro e riprova.",
       "success": {
         "saved": "Requisiti di sicurezza salvati come bozza.",

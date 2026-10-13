@@ -42,6 +42,7 @@ import {
   type RegistrationAnswerReview,
   type RegistrationClassification,
   type RegistrationForm,
+  type RegistrationGuest,
   type RegistrationQuestion,
   type RegistrationQuestionType,
   type RegistrationRetentionRun,
@@ -51,9 +52,18 @@ import {
 import { explainedApiError } from '@/lib/explained-api-error';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale } from '@/lib/helpers';
+import { eventIsoToLocalInput, eventLocalInputToOffsetIso } from '@/lib/eventLocalDateTime';
+import type { EventMemberSearchResult } from '@/lib/events-api';
+import { EventMemberPicker } from './EventMemberPicker';
 
 interface EventRegistrationWorkspaceProps {
   eventId: number;
+  /**
+   * The event's IANA time zone. Every date field here is read and written as a
+   * wall clock in this zone, never the browser's (B7): an organiser abroad
+   * must set the same window a local organiser would.
+   */
+  eventTimezone: string;
 }
 
 interface FormDraft {
@@ -76,6 +86,27 @@ interface SettingsDraft {
 }
 
 type OverviewCollection = 'submissions' | 'campaigns' | 'guests';
+
+type GuestAttendanceAction = 'check_in' | 'check_out' | 'no_show' | 'undo';
+type GuestAttendanceStatus = NonNullable<RegistrationGuest['attendance']>['status'];
+
+/**
+ * The attendance changes the server will accept from a guest's current state
+ * (EventRegistrationGuestAttendanceService::transition): check-in and no-show
+ * only from "not checked in", check-out only from "checked in", and undo only
+ * when the server says the latest change can be undone. Offering anything else
+ * would only lead to a refusal (B10).
+ */
+function availableGuestActions(
+  status: GuestAttendanceStatus,
+  canUndo: boolean,
+): GuestAttendanceAction[] {
+  const actions: GuestAttendanceAction[] = [];
+  if (status === 'not_checked_in') actions.push('check_in', 'no_show');
+  if (status === 'checked_in') actions.push('check_out');
+  if (canUndo) actions.push('undo');
+  return actions;
+}
 
 const QUESTION_TYPES: RegistrationQuestionType[] = [
   'short_text',
@@ -115,6 +146,13 @@ const ADMIN_ONLY_CAMPAIGN_TYPES: ReadonlySet<InvitationCampaign['campaign_type']
   'csv',
 ]);
 
+/**
+ * Most members an organiser may name in one member campaign. Mirrors
+ * EventInvitationRecipientExpander::ORGANISER_MAX_MEMBER_IDS; above it the
+ * server treats a named list as bulk reach reserved for admins (F-241).
+ */
+const MAX_PICKED_MEMBERS = 50;
+
 const SUPPORTED_LOCALES = ['ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt'];
 
 function createQuestion(index: number): RegistrationQuestion {
@@ -139,28 +177,27 @@ function blankForm(): FormDraft {
   return { name: '', description: '', questions: [createQuestion(0)] };
 }
 
-function toLocalDateTime(date: Date): string {
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+/** A wall clock in the event zone, `offsetMs` from now (datetime-local format). */
+function eventLocalFromNow(offsetMs: number, timeZone: string): string {
+  return eventIsoToLocalInput(new Date(Date.now() + offsetMs).toISOString(), timeZone);
 }
 
-function toUtc(value: string): string | null {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+/**
+ * A datetime-local value in the event zone, written with that zone's offset.
+ * The server refuses an instant whose offset differs from the event zone's,
+ * so a browser-zone or bare-UTC string is not an option. Null when the value
+ * is malformed or falls in a daylight-saving gap/overlap.
+ */
+function toEventInstant(value: string, timeZone: string): string | null {
+  return eventLocalInputToOffsetIso(value, timeZone);
 }
 
-function storedInstantToLocal(value?: string | null): string {
-  if (!value) return '';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : toLocalDateTime(date);
-}
-
-function settingsDraft(settings: RegistrationSettings | null): SettingsDraft {
+function settingsDraft(settings: RegistrationSettings | null, timeZone: string): SettingsDraft {
   return {
     approvalMode: settings?.approval_mode ?? 'auto',
-    opensAt: storedInstantToLocal(settings?.opens_at_utc),
-    closesAt: storedInstantToLocal(settings?.closes_at_utc),
-    cancellationCutoff: storedInstantToLocal(settings?.cancellation_cutoff_at_utc),
+    opensAt: eventIsoToLocalInput(settings?.opens_at_utc ?? null, timeZone),
+    closesAt: eventIsoToLocalInput(settings?.closes_at_utc ?? null, timeZone),
+    cancellationCutoff: eventIsoToLocalInput(settings?.cancellation_cutoff_at_utc ?? null, timeZone),
     perMemberLimit: String(settings?.per_member_limit ?? 1),
     guestsEnabled: settings?.guests_enabled ?? false,
     maxGuests: String(settings?.max_guests_per_registration ?? 1),
@@ -192,7 +229,7 @@ function appendUniqueById<T extends { id: number }>(current: T[], incoming: T[])
   return [...current, ...additions];
 }
 
-export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspaceProps) {
+export function EventRegistrationWorkspace({ eventId, eventTimezone }: EventRegistrationWorkspaceProps) {
   const { t, i18n } = useTranslation(['event_registration', 'events']);
   const toast = useToast();
   const confirm = useConfirm();
@@ -207,7 +244,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   const [formDraft, setFormDraft] = useState<FormDraft | null>(null);
   const [isSavingForm, setIsSavingForm] = useState(false);
   const [publishingFormId, setPublishingFormId] = useState<number | null>(null);
-  const [registrationSettings, setRegistrationSettings] = useState<SettingsDraft>(() => settingsDraft(null));
+  const [registrationSettings, setRegistrationSettings] = useState<SettingsDraft>(() => settingsDraft(null, eventTimezone));
   const [settingsAction, setSettingsAction] = useState<'save' | 'publish' | null>(null);
 
   const [reviewSubmission, setReviewSubmission] = useState<RegistrationSubmission | null>(null);
@@ -229,11 +266,12 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   );
   const [campaignType, setCampaignType] = useState<InvitationCampaign['campaign_type']>('member');
   const [campaignSource, setCampaignSource] = useState('');
+  const [campaignMembers, setCampaignMembers] = useState<EventMemberSearchResult[]>([]);
   const [campaignLocale, setCampaignLocale] = useState(i18n.language.split('-')[0] || 'en');
   const [previewCampaign, setPreviewCampaign] = useState<InvitationCampaign | null>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const [expiresAt, setExpiresAt] = useState(toLocalDateTime(new Date(Date.now() + 7 * 86_400_000)));
-  const [scheduledFor, setScheduledFor] = useState(toLocalDateTime(new Date(Date.now() + 3_600_000)));
+  const [expiresAt, setExpiresAt] = useState(() => eventLocalFromNow(7 * 86_400_000, eventTimezone));
+  const [scheduledFor, setScheduledFor] = useState(() => eventLocalFromNow(3_600_000, eventTimezone));
   const [campaignBusyId, setCampaignBusyId] = useState<number | null>(null);
   const [cancelCampaign, setCancelCampaign] = useState<InvitationCampaign | null>(null);
 
@@ -243,10 +281,14 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     if (!canSendBulkInvitations && ADMIN_ONLY_CAMPAIGN_TYPES.has(campaignType)) {
       setCampaignType('member');
       setCampaignSource('');
+      setCampaignMembers([]);
       setPreviewCampaign(null);
     }
   }, [canSendBulkInvitations, campaignType]);
   const [cancelReason, setCancelReason] = useState('');
+  const [guestBusy, setGuestBusy] = useState<{ guestId: number; action: GuestAttendanceAction } | null>(null);
+  const [undoGuest, setUndoGuest] = useState<RegistrationGuest | null>(null);
+  const [undoReason, setUndoReason] = useState('');
 
   const [retentionAsOf, setRetentionAsOf] = useState(new Date().toISOString().slice(0, 10));
   const [retentionRun, setRetentionRun] = useState<RegistrationRetentionRun | null>(null);
@@ -266,7 +308,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
         return;
       }
       setOverview(response.data);
-      setRegistrationSettings(settingsDraft(response.data.settings));
+      setRegistrationSettings(settingsDraft(response.data.settings, eventTimezone));
     } catch (error) {
       if (requestGeneration !== overviewGeneration.current) return;
       logError('Failed to load event registration workspace', error);
@@ -274,7 +316,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
     } finally {
       if (requestGeneration === overviewGeneration.current) setIsLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, eventTimezone]);
 
   useEffect(() => {
     void loadOverview();
@@ -366,10 +408,14 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   );
 
   async function saveRegistrationSettings() {
-    const opens = registrationSettings.opensAt ? toUtc(registrationSettings.opensAt) : null;
-    const closes = registrationSettings.closesAt ? toUtc(registrationSettings.closesAt) : null;
+    const opens = registrationSettings.opensAt
+      ? toEventInstant(registrationSettings.opensAt, eventTimezone)
+      : null;
+    const closes = registrationSettings.closesAt
+      ? toEventInstant(registrationSettings.closesAt, eventTimezone)
+      : null;
     const cutoff = registrationSettings.cancellationCutoff
-      ? toUtc(registrationSettings.cancellationCutoff)
+      ? toEventInstant(registrationSettings.cancellationCutoff, eventTimezone)
       : null;
     if ((registrationSettings.opensAt !== '' && opens === null)
       || (registrationSettings.closesAt !== '' && closes === null)
@@ -593,7 +639,9 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   }
 
   function buildCampaignSource(): Record<string, unknown> | null {
-    if (campaignType === 'member') return { member_ids: parsePositiveIds(campaignSource) };
+    if (campaignType === 'member') {
+      return campaignMembers.length > 0 ? { member_ids: campaignMembers.map((member) => member.id) } : null;
+    }
     if (campaignType === 'email') {
       return { emails: campaignSource.split(/[\n,;]+/).map((value) => value.trim()).filter(Boolean) };
     }
@@ -630,7 +678,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   }
 
   async function issueCampaign(campaign: InvitationCampaign) {
-    const expiry = toUtc(expiresAt);
+    const expiry = toEventInstant(expiresAt, eventTimezone);
     if (!expiry) return;
     setCampaignBusyId(campaign.id);
     try {
@@ -651,7 +699,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
   }
 
   async function scheduleCampaign(campaign: InvitationCampaign) {
-    const scheduled = toUtc(scheduledFor);
+    const scheduled = toEventInstant(scheduledFor, eventTimezone);
     if (!scheduled) return;
     setCampaignBusyId(campaign.id);
     try {
@@ -699,23 +747,42 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
 
   async function transitionGuest(
     guestId: number,
-    action: 'check_in' | 'check_out' | 'no_show' | 'undo',
+    action: GuestAttendanceAction,
     version: number,
-  ) {
-    setCampaignBusyId(-guestId);
+    reason?: string,
+  ): Promise<boolean> {
+    if (guestBusy !== null) return false;
+    setGuestBusy({ guestId, action });
     try {
-      const response = await eventRegistrationApi.transitionGuestAttendance(eventId, guestId, action, version);
+      const response = await eventRegistrationApi.transitionGuestAttendance(eventId, guestId, action, version, reason);
       if (!response.success) {
         toast.error(explainedApiError(response) ?? t('messages.attendance_error'));
-        return;
+        return false;
       }
       toast.success(t('messages.attendance_updated'));
       await loadOverview();
+      return true;
     } catch (error) {
       logError('Failed to update guest attendance', error);
       toast.error(t('messages.attendance_error'));
+      return false;
     } finally {
-      setCampaignBusyId(null);
+      setGuestBusy(null);
+    }
+  }
+
+  async function confirmGuestUndo() {
+    if (!undoGuest || !undoReason.trim()) return;
+    // The server requires a reason for an undo; it is kept in the history.
+    const undone = await transitionGuest(
+      undoGuest.id,
+      'undo',
+      undoGuest.attendance?.version ?? 0,
+      undoReason.trim(),
+    );
+    if (undone) {
+      setUndoGuest(null);
+      setUndoReason('');
     }
   }
 
@@ -769,6 +836,8 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
       setIsRetentionBusy(false);
     }
   }
+
+  const zoneHint = t('events:manage.agenda.timezone_hint', { timezone: eventTimezone });
 
   function formatDate(value?: string | null): string {
     if (!value) return t('common.not_recorded');
@@ -887,12 +956,14 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
               <Input
                 type="datetime-local"
                 label={t('settings.closes_at')}
+                description={zoneHint}
                 value={registrationSettings.closesAt}
                 onValueChange={(closesAt) => setRegistrationSettings((current) => ({ ...current, closesAt }))}
               />
               <Input
                 type="datetime-local"
                 label={t('settings.cancellation_cutoff')}
+                description={zoneHint}
                 value={registrationSettings.cancellationCutoff}
                 onValueChange={(cancellationCutoff) => setRegistrationSettings((current) => ({
                   ...current,
@@ -1111,6 +1182,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                   if (value) {
                     setCampaignType(String(value) as InvitationCampaign['campaign_type']);
                     setCampaignSource('');
+                    setCampaignMembers([]);
                     setPreviewCampaign(null);
                   }
                 }}
@@ -1127,15 +1199,27 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
               >
                 {SUPPORTED_LOCALES.map((locale) => <SelectItem key={locale} id={locale}>{t(`locales.${locale}`)}</SelectItem>)}
               </Select>
-              <Textarea
-                className="lg:col-span-2"
-                label={t(`invitations.sources.${campaignType}.label`)}
-                description={t(`invitations.sources.${campaignType}.description`)}
-                value={campaignSource}
-                minRows={campaignType === 'csv' ? 8 : 4}
-                maxLength={campaignType === 'csv' ? 5_000_000 : 20_000}
-                onValueChange={setCampaignSource}
-              />
+              {campaignType === 'member' ? (
+                <EventMemberPicker
+                  className="lg:col-span-2"
+                  selected={campaignMembers}
+                  max={MAX_PICKED_MEMBERS}
+                  onChange={(members) => {
+                    setCampaignMembers(members);
+                    setPreviewCampaign(null);
+                  }}
+                />
+              ) : (
+                <Textarea
+                  className="lg:col-span-2"
+                  label={t(`invitations.sources.${campaignType}.label`)}
+                  description={t(`invitations.sources.${campaignType}.description`)}
+                  value={campaignSource}
+                  minRows={campaignType === 'csv' ? 8 : 4}
+                  maxLength={campaignType === 'csv' ? 5_000_000 : 20_000}
+                  onValueChange={setCampaignSource}
+                />
+              )}
             </CardBody>
             <CardFooter>
               <Button isPending={isPreviewing} isDisabled={!buildCampaignSource()} onPress={() => void previewInvitationCampaign()}>
@@ -1171,15 +1255,15 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                   </ul>
                 )}
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Input type="datetime-local" label={t('invitations.expires_at')} value={expiresAt} onValueChange={setExpiresAt} />
-                  <Input type="datetime-local" label={t('invitations.scheduled_for')} value={scheduledFor} onValueChange={setScheduledFor} />
+                  <Input type="datetime-local" label={t('invitations.expires_at')} description={zoneHint} value={expiresAt} onValueChange={setExpiresAt} />
+                  <Input type="datetime-local" label={t('invitations.scheduled_for')} description={zoneHint} value={scheduledFor} onValueChange={setScheduledFor} />
                 </div>
               </CardBody>
               <CardFooter className="flex flex-wrap gap-2">
                 <Button
                   startContent={<Send className="h-4 w-4" aria-hidden="true" />}
                   isPending={campaignBusyId === previewCampaign.id}
-                  isDisabled={previewCampaign.valid_count === 0 || !toUtc(expiresAt)}
+                  isDisabled={previewCampaign.valid_count === 0 || !toEventInstant(expiresAt, eventTimezone)}
                   onPress={() => void issueCampaign(previewCampaign)}
                 >
                   {t('invitations.send_now')}
@@ -1188,7 +1272,7 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                   variant="secondary"
                   startContent={<CalendarClock className="h-4 w-4" aria-hidden="true" />}
                   isPending={campaignBusyId === previewCampaign.id}
-                  isDisabled={previewCampaign.valid_count === 0 || !toUtc(scheduledFor)}
+                  isDisabled={previewCampaign.valid_count === 0 || !toEventInstant(scheduledFor, eventTimezone)}
                   onPress={() => void scheduleCampaign(previewCampaign)}
                 >
                   {t('invitations.schedule')}
@@ -1258,6 +1342,9 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
               {overview.guests.map((guest) => {
                 const attendanceStatus = guest.attendance?.status ?? 'not_checked_in';
                 const attendanceVersion = guest.attendance?.version ?? 0;
+                const guestActions = availableGuestActions(attendanceStatus, guest.attendance?.can_undo === true);
+                const isGuestBusy = (action: GuestAttendanceAction) => guestBusy?.guestId === guest.id
+                  && guestBusy.action === action;
                 return (
                   <Card key={guest.id} className="border border-theme-default">
                     <CardHeader className="flex items-start justify-between gap-3">
@@ -1275,30 +1362,52 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
                       <p>{guest.ticket_entitlement_id ? t('guests.ticket_linked') : t('guests.no_ticket')}</p>
                       <p>{guest.notification_consent ? t('guests.notifications_allowed') : t('guests.notifications_not_allowed')}</p>
                     </CardBody>
-                    {overview.permissions.manage_attendance && guest.status === 'captured' && (
+                    {overview.permissions.manage_attendance && guest.status === 'captured' && guestActions.length > 0 && (
                       <CardFooter className="flex flex-wrap gap-2">
-                        {attendanceStatus !== 'checked_in' && (
+                        {guestActions.includes('check_in') && (
                           <Button
                             size="sm"
                             startContent={<UserRoundCheck className="h-4 w-4" aria-hidden="true" />}
-                            isPending={campaignBusyId === -guest.id}
+                            isPending={isGuestBusy('check_in')}
+                            isDisabled={guestBusy !== null}
                             onPress={() => void transitionGuest(guest.id, 'check_in', attendanceVersion)}
                           >
                             {t('guests.check_in')}
                           </Button>
                         )}
-                        {attendanceStatus === 'checked_in' && (
-                          <Button size="sm" variant="secondary" onPress={() => void transitionGuest(guest.id, 'check_out', attendanceVersion)}>
+                        {guestActions.includes('check_out') && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            isPending={isGuestBusy('check_out')}
+                            isDisabled={guestBusy !== null}
+                            onPress={() => void transitionGuest(guest.id, 'check_out', attendanceVersion)}
+                          >
                             {t('guests.check_out')}
                           </Button>
                         )}
-                        {!['checked_in', 'checked_out', 'attended'].includes(attendanceStatus) && (
-                          <Button size="sm" variant="secondary" onPress={() => void transitionGuest(guest.id, 'no_show', attendanceVersion)}>
+                        {guestActions.includes('no_show') && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            isPending={isGuestBusy('no_show')}
+                            isDisabled={guestBusy !== null}
+                            onPress={() => void transitionGuest(guest.id, 'no_show', attendanceVersion)}
+                          >
                             {t('guests.no_show')}
                           </Button>
                         )}
-                        {attendanceVersion > 0 && (
-                          <Button size="sm" variant="danger-soft" onPress={() => void transitionGuest(guest.id, 'undo', attendanceVersion)}>
+                        {guestActions.includes('undo') && (
+                          <Button
+                            size="sm"
+                            variant="danger-soft"
+                            isPending={isGuestBusy('undo')}
+                            isDisabled={guestBusy !== null}
+                            onPress={() => {
+                              setUndoReason('');
+                              setUndoGuest(guest);
+                            }}
+                          >
                             {t('guests.undo')}
                           </Button>
                         )}
@@ -1645,6 +1754,31 @@ export function EventRegistrationWorkspace({ eventId }: EventRegistrationWorkspa
               <ModalFooter>
                 <Button variant="secondary" isDisabled={campaignBusyId !== null} onPress={close}>{t('common.cancel')}</Button>
                 <Button variant="danger" isPending={campaignBusyId === cancelCampaign?.id} isDisabled={!cancelReason.trim()} onPress={() => void confirmCampaignCancellation()}>{t('invitations.confirm_cancel')}</Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={undoGuest !== null} onOpenChange={(open) => { if (!open && guestBusy === null) setUndoGuest(null); }} size="lg">
+        <ModalContent>
+          {(close) => (
+            <>
+              <ModalHeader>{t('guests.undo_title')}</ModalHeader>
+              <ModalBody className="space-y-3">
+                <p className="text-sm text-theme-muted">{t('guests.undo_description')}</p>
+                <Textarea label={t('guests.undo_reason')} value={undoReason} maxLength={500} isRequired onValueChange={setUndoReason} />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="secondary" isDisabled={guestBusy !== null} onPress={close}>{t('common.cancel')}</Button>
+                <Button
+                  variant="danger"
+                  isPending={guestBusy?.action === 'undo'}
+                  isDisabled={!undoReason.trim()}
+                  onPress={() => void confirmGuestUndo()}
+                >
+                  {t('guests.undo')}
+                </Button>
               </ModalFooter>
             </>
           )}

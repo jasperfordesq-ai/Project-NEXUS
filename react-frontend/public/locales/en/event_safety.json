@@ -17,7 +17,8 @@
       "save_review": "Save review decision",
       "cancel_edit": "Cancel edit",
       "edit_review": "Update decision",
-      "withdraw_review": "Withdraw decision"
+      "withdraw_review": "Withdraw decision",
+      "prepare_requirements": "Prepare requirements anyway"
     },
     "confirmations": {
       "withdraw_code_title": "Withdraw your code-of-conduct acknowledgement?",
@@ -35,6 +36,8 @@
       "shadow_title": "Observation mode",
       "shadow_description": "Requirements are evaluated and recorded, but they do not yet block participation.",
       "read_only": "You can view this policy but cannot change its requirements.",
+      "off_title": "Safety enforcement is switched off",
+      "off_description": "Safety enforcement is off for this community, so requirements set here do not affect who can take part. A community administrator can switch it on. You can still prepare requirements in advance.",
       "action_error": "The safety change could not be saved. Refresh the workspace and try again.",
       "success": {
         "saved": "Safety requirements saved as a draft.",

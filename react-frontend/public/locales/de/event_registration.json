@@ -222,6 +222,9 @@
     "check_out": "Kasse",
     "no_show": "Nichterscheinen markieren",
     "undo": "Letzte Änderung rückgängig machen",
+    "undo_title": "Letzte Anwesenheitsänderung rückgängig machen?",
+    "undo_description": "Dieser Gast kehrt zu seinem vorherigen Anwesenheitsstatus zurück. Die Änderung und Ihre Begründung bleiben im Anwesenheitsverlauf erhalten.",
+    "undo_reason": "Grund für das Rückgängigmachen",
     "cancel": "Gast stornieren",
     "cancel_reason": "Grund für die Stornierung dieses Gastes",
     "cancel_reason_default": "Vom Registrierungsinhaber storniert"

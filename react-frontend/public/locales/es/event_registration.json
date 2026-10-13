@@ -222,6 +222,9 @@
     "check_out": "Verificar",
     "no_show": "Marcar no presentación",
     "undo": "Deshacer el último cambio",
+    "undo_title": "¿Deshacer el último cambio de asistencia?",
+    "undo_description": "Este invitado vuelve a su estado de asistencia anterior. El cambio y tu motivo quedan en el historial de asistencia.",
+    "undo_reason": "Motivo para deshacer",
     "cancel": "Cancelar invitado",
     "cancel_reason": "Razón para cancelar a este huésped",
     "cancel_reason_default": "Cancelado por el titular del registro"

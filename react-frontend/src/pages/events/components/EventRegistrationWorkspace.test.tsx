@@ -12,6 +12,7 @@ import {
   type InvitationCampaign,
   type RegistrationForm,
 } from '@/lib/event-registration-api';
+import { eventsApi } from '@/lib/events-api';
 import { renderEventRoute } from '@/test/events-test-harness';
 import { EventRegistrationWorkspace } from './EventRegistrationWorkspace';
 
@@ -190,7 +191,7 @@ describe('EventRegistrationWorkspace', () => {
       success: true,
       data: { value: { ...savedSettings, status: 'published', revision: 9 }, changed: true, idempotent_replay: false },
     });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -218,7 +219,7 @@ describe('EventRegistrationWorkspace', () => {
       success: true,
       data: { value: formFixture(), changed: true, idempotent_replay: false },
     });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -257,7 +258,7 @@ describe('EventRegistrationWorkspace', () => {
         },
       },
     });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -288,20 +289,165 @@ describe('EventRegistrationWorkspace', () => {
       success: true,
       data: { changed: true },
     });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
 
+    const search = vi.spyOn(eventsApi, 'searchMembers').mockResolvedValue({
+      success: true,
+      data: [
+        { id: 7, name: 'Alex Member' },
+        { id: 8, name: 'Jamie Member' },
+      ],
+    });
+
     await user.click(await screen.findByRole('tab', { name: 'Invitations' }));
-    await user.type(await screen.findByRole('textbox', { name: 'Member IDs' }), '7, 8, 999');
+    // B15: members are found by name; nobody types a numeric member ID.
+    expect(screen.queryByRole('textbox', { name: 'Member IDs' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Preview recipients' })).toBeDisabled();
+    await user.type(await screen.findByRole('searchbox', { name: 'Find members' }), 'Mem');
+    await user.click(await screen.findByRole('button', { name: /Alex Member/ }));
+    await user.click(await screen.findByRole('button', { name: /Jamie Member/ }));
+    expect(search).toHaveBeenCalledWith('Mem', expect.objectContaining({ signal: expect.any(AbortSignal) }));
     await user.click(screen.getByRole('button', { name: 'Preview recipients' }));
     expect(await screen.findByText('This exact valid-recipient snapshot will be used at send time, even if group membership later changes.')).toBeInTheDocument();
-    expect(preview).toHaveBeenCalledWith(42, 'member', { member_ids: [7, 8, 999] }, 'en');
+    expect(preview).toHaveBeenCalledWith(42, 'member', { member_ids: [7, 8] }, 'en');
 
     await user.click(screen.getByRole('tab', { name: 'Guests' }));
     await user.click(await screen.findByRole('button', { name: 'Check in' }));
-    await waitFor(() => expect(attendance).toHaveBeenCalledWith(42, 81, 'check_in', 0));
+    await waitFor(() => expect(attendance).toHaveBeenCalledWith(42, 81, 'check_in', 0, undefined));
+  });
+
+  it('offers only the attendance changes the server accepts, each with its own busy state (B10)', async () => {
+    const user = userEvent.setup();
+    const overview = overviewFixture();
+    const [baseGuest] = overview.guests;
+    if (!baseGuest) throw new Error('fixture has a guest');
+    overview.guests = [
+      { ...baseGuest, id: 81, display_name: 'Not Yet Guest', attendance: null },
+      {
+        ...baseGuest,
+        id: 82,
+        guest_number: 2,
+        display_name: 'Checked In Guest',
+        attendance: { id: 5, status: 'checked_in', version: 1, can_undo: true },
+      },
+      {
+        ...baseGuest,
+        id: 83,
+        guest_number: 3,
+        display_name: 'Undone Guest',
+        attendance: { id: 6, status: 'no_show', version: 2, can_undo: false },
+      },
+    ];
+    vi.mocked(eventRegistrationApi.organizerOverview).mockResolvedValue({ success: true, data: overview });
+    let release: (value: { success: true; data: Record<string, unknown> }) => void = () => undefined;
+    const attendance = vi.spyOn(eventRegistrationApi, 'transitionGuestAttendance').mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
+      path: '/events/42/manage/registration',
+      route: '/events/42/manage/registration',
+    });
+
+    await user.click(await screen.findByRole('tab', { name: 'Guests' }));
+    // The guest's card: the widest ancestor of its name that holds no other guest.
+    const guestCard = (name: string): HTMLElement => {
+      let element: HTMLElement = screen.getByRole('heading', { name });
+      while (element.parentElement && element.parentElement.querySelectorAll('h4').length === 1) {
+        element = element.parentElement;
+      }
+      return element;
+    };
+    await screen.findByRole('heading', { name: 'Not Yet Guest' });
+    const notYet = guestCard('Not Yet Guest');
+    const checkedIn = guestCard('Checked In Guest');
+    const undone = guestCard('Undone Guest');
+
+    expect(within(notYet).getByRole('button', { name: 'Check in' })).toBeInTheDocument();
+    expect(within(notYet).getByRole('button', { name: 'Mark no-show' })).toBeInTheDocument();
+    expect(within(notYet).queryByRole('button', { name: 'Check out' })).not.toBeInTheDocument();
+    expect(within(notYet).queryByRole('button', { name: 'Undo last change' })).not.toBeInTheDocument();
+
+    expect(within(checkedIn).getByRole('button', { name: 'Check out' })).toBeInTheDocument();
+    expect(within(checkedIn).getByRole('button', { name: 'Undo last change' })).toBeInTheDocument();
+    expect(within(checkedIn).queryByRole('button', { name: 'Check in' })).not.toBeInTheDocument();
+    expect(within(checkedIn).queryByRole('button', { name: 'Mark no-show' })).not.toBeInTheDocument();
+
+    // A no-show whose last change was itself an undo has nothing left to offer.
+    expect(within(undone).queryAllByRole('button')).toHaveLength(0);
+
+    await user.click(within(checkedIn).getByRole('button', { name: 'Check out' }));
+    await waitFor(() => expect(attendance).toHaveBeenCalledWith(42, 82, 'check_out', 1, undefined));
+    // While that request runs, no other attendance button can start another one.
+    expect(within(notYet).getByRole('button', { name: 'Check in' })).toBeDisabled();
+    expect(within(checkedIn).getByRole('button', { name: 'Undo last change' })).toBeDisabled();
+    release({ success: true, data: {} });
+    await waitFor(() => expect(within(notYet).getByRole('button', { name: 'Check in' })).not.toBeDisabled());
+  });
+
+  it('asks for the reason the server requires before undoing an attendance change (B10)', async () => {
+    const user = userEvent.setup();
+    const overview = overviewFixture();
+    const [baseGuest] = overview.guests;
+    if (!baseGuest) throw new Error('fixture has a guest');
+    overview.guests = [{
+      ...baseGuest,
+      attendance: { id: 5, status: 'checked_in', version: 3, can_undo: true },
+    }];
+    vi.mocked(eventRegistrationApi.organizerOverview).mockResolvedValue({ success: true, data: overview });
+    const attendance = vi.spyOn(eventRegistrationApi, 'transitionGuestAttendance').mockResolvedValue({
+      success: true,
+      data: { changed: true },
+    });
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
+      path: '/events/42/manage/registration',
+      route: '/events/42/manage/registration',
+    });
+
+    await user.click(await screen.findByRole('tab', { name: 'Guests' }));
+    await user.click(await screen.findByRole('button', { name: 'Undo last change' }));
+    const dialog = await screen.findByRole('dialog');
+    const confirmButton = within(dialog).getByRole('button', { name: 'Undo last change' });
+    expect(confirmButton).toBeDisabled();
+    expect(attendance).not.toHaveBeenCalled();
+    await user.type(within(dialog).getByRole('textbox', { name: /Reason for undoing/ }), 'Checked in the wrong guest');
+    await user.click(confirmButton);
+
+    await waitFor(() => expect(attendance).toHaveBeenCalledWith(42, 81, 'undo', 3, 'Checked in the wrong guest'));
+  });
+
+  it('reads and writes registration dates in the event time zone, not the browser zone (B7)', async () => {
+    const user = userEvent.setup();
+    const overview = overviewFixture();
+    overview.settings = {
+      ...overview.settings!,
+      opens_at_utc: '2030-05-01T08:00:00Z',
+      closes_at_utc: '2030-05-31T08:00:00Z',
+      cancellation_cutoff_at_utc: '2030-05-31T20:30:00Z',
+    };
+    vi.mocked(eventRegistrationApi.organizerOverview).mockResolvedValue({ success: true, data: overview });
+    const save = vi.spyOn(eventRegistrationApi, 'saveSettings').mockResolvedValue({
+      success: true,
+      data: { value: overview.settings, changed: true, idempotent_replay: false },
+    });
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="Europe/Dublin" />, {
+      path: '/events/42/manage/registration',
+      route: '/events/42/manage/registration',
+    });
+
+    await screen.findByRole('spinbutton', { name: 'Registrations per member' });
+    expect(screen.getAllByDisplayValue('2030-05-01T09:00')).toHaveLength(1);
+    expect(screen.getAllByDisplayValue('2030-05-31T21:30')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Save policy' }));
+
+    // Unchanged values round-trip to the same instants, written with Dublin's offset.
+    await waitFor(() => expect(save).toHaveBeenCalledWith(42, expect.objectContaining({
+      opens_at_utc: '2030-05-01T09:00:00+01:00',
+      closes_at_utc: '2030-05-31T09:00:00+01:00',
+      cancellation_cutoff_at_utc: '2030-05-31T21:30:00+01:00',
+    })));
   });
 
   it('loads every paginated registration collection without discarding earlier records', async () => {
@@ -344,7 +490,7 @@ describe('EventRegistrationWorkspace', () => {
       .mockResolvedValueOnce({ success: true, data: pageTwo('submissions') })
       .mockResolvedValueOnce({ success: true, data: pageTwo('campaigns') })
       .mockResolvedValueOnce({ success: true, data: pageTwo('guests') });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -399,7 +545,7 @@ describe('EventRegistrationWorkspace', () => {
       },
     });
     mockConfirm.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -433,7 +579,7 @@ describe('EventRegistrationWorkspace', () => {
         reason: 'event_registration_retention_post_event_only',
       }],
     });
-    renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+    renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
       path: '/events/42/manage/registration',
       route: '/events/42/manage/registration',
     });
@@ -446,7 +592,7 @@ describe('EventRegistrationWorkspace', () => {
 
   describe('F-161: bulk invitation types are for community admins', () => {
     async function openCampaignTypes(user: ReturnType<typeof userEvent.setup>) {
-      renderEventRoute(<EventRegistrationWorkspace eventId={42} />, {
+      renderEventRoute(<EventRegistrationWorkspace eventId={42} eventTimezone="UTC" />, {
         path: '/events/42/manage/registration',
         route: '/events/42/manage/registration',
       });

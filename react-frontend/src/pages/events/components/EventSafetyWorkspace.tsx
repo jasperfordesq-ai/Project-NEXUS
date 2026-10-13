@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Archive from 'lucide-react/icons/archive';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
@@ -113,6 +113,10 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
   const [loadError, setLoadError] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [archiveConfirmation, setArchiveConfirmation] = useState(false);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState(false);
+  const [showInactiveEditor, setShowInactiveEditor] = useState(false);
+  const reviewGeneration = useRef(0);
 
   const [memberQuery, setMemberQuery] = useState('');
   const [memberResults, setMemberResults] = useState<EventMemberSearchResult[]>([]);
@@ -130,6 +134,9 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
     setArchiveConfirmation(false);
   }, []);
 
+  // B11: the policy (and the requirements draft built from it) and the review
+  // ledger load separately. Paging the ledger used to reload the policy too,
+  // which rebuilt the draft and silently discarded unsaved edits.
   const load = useCallback(async () => {
     setIsLoading(true);
     setLoadError(false);
@@ -140,28 +147,49 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
         return;
       }
       applySafety(safetyResponse.data);
-
-      if (safetyResponse.data.permissions.review_participation) {
-        const reviewResponse = await eventSafetyApi.reviews(eventId, reviewPage, REVIEW_PAGE_SIZE);
-        if (!reviewResponse.success || !reviewResponse.data) {
-          setLoadError(true);
-          return;
-        }
-        setReviews(reviewResponse.data);
-      } else {
-        setReviews(null);
-      }
     } catch (caught) {
       logError('Failed to load Event Safety workspace', caught);
       setLoadError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [applySafety, eventId, reviewPage]);
+  }, [applySafety, eventId]);
+
+  const canReview = safety?.permissions.review_participation === true;
+
+  const loadReviews = useCallback(async () => {
+    const generation = ++reviewGeneration.current;
+    if (!canReview) {
+      setReviews(null);
+      setReviewsError(false);
+      return;
+    }
+    setReviewsLoading(true);
+    setReviewsError(false);
+    try {
+      const reviewResponse = await eventSafetyApi.reviews(eventId, reviewPage, REVIEW_PAGE_SIZE);
+      if (generation !== reviewGeneration.current) return;
+      if (!reviewResponse.success || !reviewResponse.data) {
+        setReviewsError(true);
+        return;
+      }
+      setReviews(reviewResponse.data);
+    } catch (caught) {
+      if (generation !== reviewGeneration.current) return;
+      logError('Failed to load Event Safety reviews', caught);
+      setReviewsError(true);
+    } finally {
+      if (generation === reviewGeneration.current) setReviewsLoading(false);
+    }
+  }, [canReview, eventId, reviewPage]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadReviews();
+  }, [loadReviews]);
 
   useEffect(() => {
     if (selectedMember || memberQuery.trim().length < 2) {
@@ -386,6 +414,10 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
   }
 
   const current = safety.requirements;
+  // B9: with enforcement off for the community, requirements are stored but do
+  // not affect who can take part. The editor stays out of the way until the
+  // organiser deliberately chooses to prepare requirements in advance.
+  const enforcementOff = safety.rollout.mode === 'off';
   const formInvalid = (requirements.minimumAge !== '' && Number.isNaN(optionalInteger(requirements.minimumAge)))
     || (requirements.codeRequired && (!requirements.codeText.trim() || !requirements.codeTextVersion.trim()));
 
@@ -414,7 +446,20 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
             <Alert color="warning" title={t('safety.organizer.shadow_title')} description={t('safety.organizer.shadow_description')} />
           )}
 
-          {safety.permissions.manage_requirements ? (
+          {enforcementOff && (
+            <Alert
+              color="primary"
+              title={t('safety.organizer.off_title')}
+              description={t('safety.organizer.off_description')}
+              endContent={safety.permissions.manage_requirements && !showInactiveEditor ? (
+                <Button size="sm" variant="flat" onPress={() => setShowInactiveEditor(true)}>
+                  {t('safety.actions.prepare_requirements')}
+                </Button>
+              ) : undefined}
+            />
+          )}
+
+          {safety.permissions.manage_requirements ? (enforcementOff && !showInactiveEditor ? null : (
             <form
               className="space-y-5 border-t border-theme-default pt-5"
               onSubmit={(event) => {
@@ -528,7 +573,7 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
                 />
               )}
             </form>
-          ) : (
+          )) : (
             <Alert color="warning" title={t('safety.organizer.read_only')} />
           )}
         </CardBody>
@@ -658,7 +703,26 @@ export function EventSafetyWorkspace({ eventId }: { eventId: number }) {
                 <span className="text-sm text-theme-muted">{t('safety.reviews.total', { count: reviews?.total ?? 0 })}</span>
               </div>
 
-              {!reviews || reviews.items.length === 0 ? (
+              {reviewsError ? (
+                <Alert
+                  color="danger"
+                  title={t('safety.organizer.load_error_title')}
+                  endContent={(
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />}
+                      onPress={() => void loadReviews()}
+                    >
+                      {t('safety.actions.retry')}
+                    </Button>
+                  )}
+                />
+              ) : reviewsLoading && !reviews ? (
+                <div className="flex justify-center p-4">
+                  <Spinner size="sm" label={t('safety.organizer.loading')} />
+                </div>
+              ) : !reviews || reviews.items.length === 0 ? (
                 <p className="rounded-xl border border-theme-default bg-theme-elevated p-4 text-sm text-theme-muted">
                   {t('safety.reviews.empty')}
                 </p>

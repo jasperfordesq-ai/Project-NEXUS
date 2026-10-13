@@ -222,6 +222,9 @@
     "check_out": "Wymelduj",
     "no_show": "Zaznacz, że się nie pojawił",
     "undo": "Cofnij ostatnią zmianę",
+    "undo_title": "Cofnąć ostatnią zmianę obecności?",
+    "undo_description": "Ten gość wróci do poprzedniego stanu obecności. Zmiana i podany powód pozostaną w historii obecności.",
+    "undo_reason": "Powód cofnięcia",
     "cancel": "Anuluj gościa",
     "cancel_reason": "Powód anulowania rezerwacji tego gościa",
     "cancel_reason_default": "Anulowane przez posiadacza rejestracji"

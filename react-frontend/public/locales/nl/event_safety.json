@@ -17,7 +17,8 @@
       "save_review": "Bewaar het beoordelingsbesluit",
       "cancel_edit": "Bewerking annuleren",
       "edit_review": "Besluit bijwerken",
-      "withdraw_review": "Beslissing intrekken"
+      "withdraw_review": "Beslissing intrekken",
+      "prepare_requirements": "Vereisten toch voorbereiden"
     },
     "confirmations": {
       "withdraw_code_title": "Uw instemming met de gedragscode intrekken?",
@@ -35,6 +36,8 @@
       "shadow_title": "Observatiemodus",
       "shadow_description": "De eisen worden geëvalueerd en vastgelegd, maar deelname staat nog niet in de weg.",
       "read_only": "U kunt dit beleid bekijken, maar de vereisten ervan niet wijzigen.",
+      "off_title": "Veiligheidshandhaving staat uit",
+      "off_description": "Veiligheidshandhaving staat uit voor deze community, dus de vereisten die u hier instelt hebben geen invloed op wie kan deelnemen. Een communitybeheerder kan het aanzetten. U kunt de vereisten wel alvast voorbereiden.",
       "action_error": "De veiligheidswijziging kon niet worden opgeslagen. Vernieuw de werkruimte en probeer het opnieuw.",
       "success": {
         "saved": "Veiligheidseisen opgeslagen als concept.",

@@ -17,7 +17,8 @@
       "save_review": "Sábháil cinneadh athbhreithnithe",
       "cancel_edit": "Cealaigh eagarthóireacht",
       "edit_review": "Cinneadh a nuashonrú",
-      "withdraw_review": "Cinneadh a tharraingt siar"
+      "withdraw_review": "Cinneadh a tharraingt siar",
+      "prepare_requirements": "Ullmhaigh riachtanais mar sin féin"
     },
     "confirmations": {
       "withdraw_code_title": "Tarraing siar d’admháil ar an gcód iompair?",
@@ -35,6 +36,8 @@
       "shadow_title": "Modh breathnadóireachta",
       "shadow_description": "Déantar riachtanais a mheas agus a thaifeadadh, ach ní chuireann siad bac ar rannpháirtíocht fós.",
       "read_only": "Is féidir leat an polasaí seo a fheiceáil ach ní féidir leat a riachtanais a athrú.",
+      "off_title": "Tá forfheidhmiú sábháilteachta múchta",
+      "off_description": "Tá forfheidhmiú sábháilteachta múchta don phobal seo, mar sin ní bhíonn tionchar ag na riachtanais a shocraítear anseo ar cé atá in ann páirt a ghlacadh. Is féidir le riarthóir pobail é a chasadh air. Is féidir leat riachtanais a ullmhú roimh ré fós.",
       "action_error": "Níorbh fhéidir an t-athrú sábháilteachta a shábháil. Athnuaigh an spás oibre agus bain triail eile as.",
       "success": {
         "saved": "Ceanglais sábháilteachta a shábháil mar dhréacht.",

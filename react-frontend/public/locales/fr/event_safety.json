@@ -17,7 +17,8 @@
       "save_review": "Enregistrer la décision de révision",
       "cancel_edit": "Annuler la modification",
       "edit_review": "Mettre à jour la décision",
-      "withdraw_review": "Retirer la décision"
+      "withdraw_review": "Retirer la décision",
+      "prepare_requirements": "Préparer les exigences quand même"
     },
     "confirmations": {
       "withdraw_code_title": "Retirer votre acceptation du code de conduite ?",
@@ -35,6 +36,8 @@
       "shadow_title": "Mode observation",
       "shadow_description": "Les exigences sont évaluées et enregistrées, mais elles ne bloquent pas encore la participation.",
       "read_only": "Vous pouvez consulter cette politique mais ne pouvez pas modifier ses exigences.",
+      "off_title": "L'application des règles de sécurité est désactivée",
+      "off_description": "L'application des règles de sécurité est désactivée pour cette communauté : les exigences définies ici n'ont donc aucun effet sur qui peut participer. Un administrateur de la communauté peut l'activer. Vous pouvez tout de même préparer les exigences à l'avance.",
       "action_error": "La modification de sécurité n'a pas pu être enregistrée. Actualisez l'espace de travail et réessayez.",
       "success": {
         "saved": "Exigences de sécurité enregistrées sous forme de brouillon.",

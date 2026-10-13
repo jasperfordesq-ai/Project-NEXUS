@@ -135,3 +135,39 @@ export function eventLocalInputToIso(value: string, timeZone: string): string | 
 
   return new Date(candidate).toISOString();
 }
+
+/**
+ * Resolve a datetime-local wall clock in an IANA zone to an ISO 8601 string
+ * that carries that zone's UTC offset at that moment, e.g.
+ * `2027-07-01T19:30:00+01:00`.
+ *
+ * Several event endpoints (registration windows, invitation expiry and
+ * scheduling, agenda sessions) refuse an instant whose written offset differs
+ * from the event zone's offset, so a `Z` string is rejected for any event
+ * outside UTC. DST gaps and ambiguous fall-back times fail closed (null).
+ */
+export function eventLocalInputToOffsetIso(value: string, timeZone: string): string | null {
+  const iso = eventLocalInputToIso(value, timeZone);
+  if (!iso) return null;
+  const instant = Date.parse(iso);
+  let parts: ZonedDateTimeParts;
+  try {
+    parts = zonedParts(new Date(instant), timeZone);
+  } catch {
+    return null;
+  }
+  const offsetMinutes = Math.round((Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+  ) - instant) / 60_000);
+  const sign = offsetMinutes < 0 ? '-' : '+';
+  const absolute = Math.abs(offsetMinutes);
+  const hours = String(Math.floor(absolute / 60)).padStart(2, '0');
+  const minutes = String(absolute % 60).padStart(2, '0');
+
+  return `${value}:00${sign}${hours}:${minutes}`;
+}

@@ -35,6 +35,7 @@ import {
   type EventBroadcastSegment,
   type EventBroadcastVariant,
 } from '@/lib/event-communications-api';
+import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
 import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
@@ -42,6 +43,8 @@ import { logError } from '@/lib/logger';
 interface EventCommunicationsWorkspaceProps {
   eventId: number;
   eventTitle?: string;
+  /** "Send later" is a wall clock in the event's zone, not the browser's (B7). */
+  eventTimezone: string;
 }
 
 const SEGMENTS: EventBroadcastSegment[] = [
@@ -66,8 +69,12 @@ function initialContent(): EventBroadcastContentInput {
   };
 }
 
-export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommunicationsWorkspaceProps) {
-  const { t } = useTranslation('event_communications');
+export function EventCommunicationsWorkspace({
+  eventId,
+  eventTitle,
+  eventTimezone,
+}: EventCommunicationsWorkspaceProps) {
+  const { t } = useTranslation(['event_communications', 'events']);
   const toast = useToast();
   const generation = useRef(0);
   const auditGeneration = useRef(0);
@@ -260,7 +267,13 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
     if (!scheduleTarget || (scheduleMode === 'later' && !scheduledAt)) return;
     setIsScheduling(true);
     try {
-      const timestamp = scheduleMode === 'later' ? new Date(scheduledAt).toISOString() : null;
+      const timestamp = scheduleMode === 'later' ? eventLocalInputToIso(scheduledAt, eventTimezone) : null;
+      if (scheduleMode === 'later' && timestamp === null) {
+        // Malformed, or a wall clock that does not exist (or exists twice) in
+        // the event zone because of a daylight-saving change.
+        toast.error(t('schedule_error'));
+        return;
+      }
       const response = await eventCommunicationsApi.schedule(
         scheduleTarget.id,
         scheduleTarget.version,
@@ -403,7 +416,15 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
     if (!value) return t('not_recorded');
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return t('not_recorded');
-    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    try {
+      return new Intl.DateTimeFormat(getFormattingLocale(), {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: eventTimezone,
+      }).format(date);
+    } catch {
+      return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    }
   }
 
   return (
@@ -499,7 +520,15 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
                   </Button>
                 )}
                 {broadcast.capabilities.schedule && (
-                  <Button size="sm" startContent={<CalendarClock className="h-4 w-4" aria-hidden="true" />} onPress={() => setScheduleTarget(broadcast)}>
+                  <Button size="sm" startContent={<CalendarClock className="h-4 w-4" aria-hidden="true" />} onPress={() => {
+                    setScheduleTarget(broadcast);
+                    // Re-scheduling starts from the stored time, shown in the event zone.
+                    const stored = broadcast.status === 'scheduled'
+                      ? eventIsoToLocalInput(broadcast.scheduled_at, eventTimezone)
+                      : '';
+                    setScheduleMode(stored ? 'later' : 'now');
+                    setScheduledAt(stored);
+                  }}>
                     {t('schedule')}
                   </Button>
                 )}
@@ -699,7 +728,13 @@ export function EventCommunicationsWorkspace({ eventId, eventTitle }: EventCommu
               <SelectItem id="later">{t('schedule_later')}</SelectItem>
             </Select>
             {scheduleMode === 'later' && (
-              <Input type="datetime-local" label={t('schedule_at')} value={scheduledAt} onValueChange={setScheduledAt} />
+              <Input
+                type="datetime-local"
+                label={t('schedule_at')}
+                description={t('events:manage.agenda.timezone_hint', { timezone: eventTimezone })}
+                value={scheduledAt}
+                onValueChange={setScheduledAt}
+              />
             )}
             <Alert color="warning" title={t('schedule_warning_title')} description={t('schedule_warning_description')} />
           </ModalBody>

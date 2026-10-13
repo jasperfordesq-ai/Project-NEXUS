@@ -222,6 +222,9 @@
     "check_out": "Seiceáil amach",
     "no_show": "Marcáil gan seó",
     "undo": "Cealaigh an t-athrú deiridh",
+    "undo_title": "Cealaigh an t-athrú freastail is déanaí?",
+    "undo_description": "Filleann an t-aoi seo ar a staid freastail roimhe seo. Fanann an t-athrú agus do chúis i stair an fhreastail.",
+    "undo_reason": "Cúis leis an gcealú",
     "cancel": "Cealaigh aoi",
     "cancel_reason": "Cúis leis an aoi seo a chealú",
     "cancel_reason_default": "Ar ceal ag an sealbhóir clárúcháin"

@@ -568,7 +568,7 @@ export function EventManagePage() {
         )}
         {event.permissions.manage_registration && (
           <Tabs.Panel id="registration" className="pt-5 outline-none">
-            {selectedTab === 'registration' && (isSeriesTemplate ? seriesTemplateNotice : <EventRegistrationWorkspace eventId={event.id} />)}
+            {selectedTab === 'registration' && (isSeriesTemplate ? seriesTemplateNotice : <EventRegistrationWorkspace eventId={event.id} eventTimezone={event.schedule.timezone} />)}
           </Tabs.Panel>
         )}
         {event.permissions.edit && (
@@ -613,7 +613,7 @@ export function EventManagePage() {
         {event.permissions.broadcast && (
           <Tabs.Panel id="communications" className="pt-5 outline-none">
             {selectedTab === 'communications' && (
-              <EventCommunicationsWorkspace eventId={event.id} eventTitle={event.title} />
+              <EventCommunicationsWorkspace eventId={event.id} eventTitle={event.title} eventTimezone={event.schedule.timezone} />
             )}
           </Tabs.Panel>
         )}

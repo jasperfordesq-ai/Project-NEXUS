@@ -148,7 +148,7 @@ describe('EventCommunicationsWorkspace', () => {
   });
 
   it('renders only aggregate audience and delivery evidence', async () => {
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="UTC" />);
 
     expect(await screen.findByRole('heading', { name: 'Organizer communications' })).toBeInTheDocument();
     expect(screen.getByText('Audience privacy is protected')).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('EventCommunicationsWorkspace', () => {
 
   it('keeps the composer above fixed navigation and inside short viewport insets', async () => {
     const user = userEvent.setup();
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'New message' }));
     const dialog = await screen.findByRole('dialog', { name: 'New message for Community summit' });
@@ -197,7 +197,7 @@ describe('EventCommunicationsWorkspace', () => {
       success: true,
       data: { ...detailFixture(), changed: true, idempotent_replay: false },
     });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'New message' }));
     const dialog = await screen.findByRole('dialog');
@@ -220,7 +220,7 @@ describe('EventCommunicationsWorkspace', () => {
   it('loads append-only status history without recipient detail', async () => {
     const user = userEvent.setup();
     vi.spyOn(eventCommunicationsApi, 'get').mockResolvedValue({ success: true, data: detailFixture() });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'View history' }));
     const dialog = await screen.findByRole('dialog');
@@ -260,7 +260,7 @@ describe('EventCommunicationsWorkspace', () => {
     const get = vi.spyOn(eventCommunicationsApi, 'get')
       .mockResolvedValueOnce({ success: true, data: first })
       .mockResolvedValueOnce({ success: true, data: second });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'View history' }));
     const dialog = await screen.findByRole('dialog');
@@ -284,7 +284,7 @@ describe('EventCommunicationsWorkspace', () => {
         data: [broadcastFixture({ id: 9, audience: { segments: ['registration_confirmed'], recipient_count: 2 } })],
         meta: { current_page: 2, per_page: 20, total: 21, total_pages: 2, has_more: false },
       });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTimezone="UTC" />);
 
     await user.click(await screen.findByText('2'));
 
@@ -305,7 +305,7 @@ describe('EventCommunicationsWorkspace', () => {
         reason: 'event_broadcast_audience_empty',
       }],
     });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'Schedule' }));
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'confirm_schedule' }));
@@ -320,11 +320,35 @@ describe('EventCommunicationsWorkspace', () => {
       code: 'EVENT_BROADCAST_VALIDATION_FAILED',
       errors: [{ code: 'EVENT_BROADCAST_VALIDATION_FAILED', message: 'Validation failed', field: 'variant' }],
     });
-    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" />);
+    renderEventComponent(<EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="UTC" />);
 
     await user.click(await screen.findByRole('button', { name: 'Schedule' }));
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'confirm_schedule' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('schedule_error'));
+  });
+
+  it('reads and writes "send later" in the event zone, not the browser zone (B7)', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(eventCommunicationsApi, 'list').mockResolvedValue({
+      success: true,
+      data: [broadcastFixture({ status: 'scheduled', scheduled_at: '2030-06-01T09:30:00+00:00' })],
+      meta: { current_page: 1, per_page: 20, total: 1, total_pages: 1, has_more: false },
+    });
+    const schedule = vi.spyOn(eventCommunicationsApi, 'schedule').mockResolvedValue({
+      success: true,
+      data: { broadcast: broadcastFixture({ status: 'scheduled' }), changed: true, idempotent_replay: false },
+    } as Awaited<ReturnType<typeof eventCommunicationsApi.schedule>>);
+    renderEventComponent(
+      <EventCommunicationsWorkspace eventId={42} eventTitle="Community summit" eventTimezone="Europe/Dublin" />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Schedule' }));
+    const dialog = await screen.findByRole('dialog');
+    // 09:30 UTC is 10:30 in Dublin in June.
+    expect(within(dialog).getByLabelText('schedule_at')).toHaveValue('2030-06-01T10:30');
+    await user.click(within(dialog).getByRole('button', { name: 'confirm_schedule' }));
+
+    await waitFor(() => expect(schedule).toHaveBeenCalledWith(8, 1, '2030-06-01T09:30:00.000Z', expect.any(String)));
   });
 });

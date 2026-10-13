@@ -17,7 +17,8 @@
       "save_review": "Guardar decisión de revisión",
       "cancel_edit": "Cancelar edición",
       "edit_review": "Actualizar decisión",
-      "withdraw_review": "decisión de retirar"
+      "withdraw_review": "decisión de retirar",
+      "prepare_requirements": "Preparar los requisitos de todos modos"
     },
     "confirmations": {
       "withdraw_code_title": "¿Retirar tu aceptación del código de conducta?",
@@ -35,6 +36,8 @@
       "shadow_title": "Modo de observación",
       "shadow_description": "Los requisitos se evalúan y registran, pero aún no bloquean la participación.",
       "read_only": "Puede ver esta política pero no puede cambiar sus requisitos.",
+      "off_title": "La aplicación de seguridad está desactivada",
+      "off_description": "La aplicación de seguridad está desactivada en esta comunidad, por lo que los requisitos que se fijen aquí no afectan a quién puede participar. Un administrador de la comunidad puede activarla. Aun así, puede preparar los requisitos con antelación.",
       "action_error": "No se pudo guardar el cambio de seguridad. Actualice el espacio de trabajo e inténtelo de nuevo.",
       "success": {
         "saved": "Requisitos de seguridad guardados como borrador.",

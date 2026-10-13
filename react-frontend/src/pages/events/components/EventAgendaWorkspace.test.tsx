@@ -165,8 +165,8 @@ describe('EventAgendaWorkspace', () => {
         1,
         expect.objectContaining({
           title: 'Community keynote',
-          start_at: '2030-06-01T10:00:00.000Z',
-          end_at: '2030-06-01T11:00:00.000Z',
+          start_at: '2030-06-01T10:00:00+00:00',
+          end_at: '2030-06-01T11:00:00+00:00',
           timezone: 'UTC',
           speakers: [{ display_name: 'Taylor Reed', role_label: 'Keynote speaker' }],
         }),
@@ -174,6 +174,51 @@ describe('EventAgendaWorkspace', () => {
       );
     });
     expect(mockToast.success).toHaveBeenCalledWith('The session was added to the agenda.');
+  });
+
+  it('edits a session in the event zone and writes that zone offset (B12)', async () => {
+    const user = userEvent.setup();
+    const base = createCanonicalEventFixture();
+    const dublinEvent = manageableEvent({
+      schedule: { ...base.schedule, timezone: 'Europe/Dublin' },
+    });
+    // A session stored with a different zone label must still be read in the
+    // event zone, because that is the zone the save is written in.
+    vi.spyOn(eventsApi, 'agenda').mockResolvedValue({
+      success: true,
+      data: agenda({ timezone: 'Europe/Dublin', sessions: [session({ timezone: 'UTC' })] }),
+    });
+    const updateSpy = vi.spyOn(eventsApi, 'updateAgendaSession').mockResolvedValue({
+      success: true,
+      data: {
+        session: session(),
+        agenda_version: 3,
+        changed: true,
+        idempotent_replay: false,
+        history_entry_id: 902,
+      },
+    });
+    renderEventComponent(<EventAgendaWorkspace event={dublinEvent} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Edit Opening workshop' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByLabelText('Start date and time')).toHaveValue('2030-06-01T11:00');
+    expect(within(dialog).getByLabelText('End date and time')).toHaveValue('2030-06-01T12:00');
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith(
+        1,
+        501,
+        1,
+        expect.objectContaining({
+          start_at: '2030-06-01T11:00:00+01:00',
+          end_at: '2030-06-01T12:00:00+01:00',
+          timezone: 'Europe/Dublin',
+        }),
+        expect.any(String),
+      );
+    });
   });
 
   it('reorders with the aggregate version and keeps cancellation evidence visible', async () => {

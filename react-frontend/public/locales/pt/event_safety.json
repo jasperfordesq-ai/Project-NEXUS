@@ -17,7 +17,8 @@
       "save_review": "Salvar decisão de revisão",
       "cancel_edit": "Cancelar edição",
       "edit_review": "Atualizar decisão",
-      "withdraw_review": "Retirar decisão"
+      "withdraw_review": "Retirar decisão",
+      "prepare_requirements": "Preparar os requisitos mesmo assim"
     },
     "confirmations": {
       "withdraw_code_title": "Retirar a aceitação do código de conduta?",
@@ -35,6 +36,8 @@
       "shadow_title": "Modo de observação",
       "shadow_description": "Os requisitos são avaliados e registrados, mas ainda não bloqueiam a participação.",
       "read_only": "Você pode visualizar esta política, mas não pode alterar seus requisitos.",
+      "off_title": "A aplicação de segurança está desativada",
+      "off_description": "A aplicação de segurança está desativada nesta comunidade, por isso os requisitos definidos aqui não afetam quem pode participar. Um administrador da comunidade pode ativá-la. Ainda pode preparar os requisitos com antecedência.",
       "action_error": "A alteração de segurança não pôde ser salva. Atualize o espaço de trabalho e tente novamente.",
       "success": {
         "saved": "Requisitos de segurança salvos como rascunho.",

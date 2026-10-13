@@ -149,6 +149,8 @@ export interface RegistrationGuest {
     id: number;
     status: 'not_checked_in' | 'checked_in' | 'checked_out' | 'attended' | 'no_show';
     version: number;
+    /** Server-derived: the latest attendance change exists and is not itself an undo. */
+    can_undo?: boolean;
   } | null;
 }
 

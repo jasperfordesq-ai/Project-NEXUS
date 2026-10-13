@@ -17,7 +17,8 @@
       "save_review": "Bewertungsentscheidung speichern",
       "cancel_edit": "Bearbeitung abbrechen",
       "edit_review": "Entscheidung aktualisieren",
-      "withdraw_review": "Entscheidung zurückziehen"
+      "withdraw_review": "Entscheidung zurückziehen",
+      "prepare_requirements": "Anforderungen trotzdem vorbereiten"
     },
     "confirmations": {
       "withdraw_code_title": "Bestätigung des Verhaltenskodex zurückziehen?",
@@ -35,6 +36,8 @@
       "shadow_title": "Beobachtungsmodus",
       "shadow_description": "Anforderungen werden bewertet und erfasst, blockieren aber noch nicht die Teilnahme.",
       "read_only": "Sie können diese Richtlinie anzeigen, ihre Anforderungen jedoch nicht ändern.",
+      "off_title": "Die Sicherheitsdurchsetzung ist ausgeschaltet",
+      "off_description": "Die Sicherheitsdurchsetzung ist für diese Community ausgeschaltet, daher haben hier festgelegte Anforderungen keinen Einfluss darauf, wer teilnehmen kann. Eine Community-Administration kann sie einschalten. Sie können Anforderungen trotzdem im Voraus vorbereiten.",
       "action_error": "Die Sicherheitsänderung konnte nicht gespeichert werden. Aktualisieren Sie den Arbeitsbereich und versuchen Sie es erneut.",
       "success": {
         "saved": "Sicherheitsanforderungen als Entwurf gespeichert.",

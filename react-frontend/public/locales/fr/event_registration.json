@@ -222,6 +222,9 @@
     "check_out": "Vérifier",
     "no_show": "Marquer une non-présentation",
     "undo": "Annuler la dernière modification",
+    "undo_title": "Annuler la dernière modification de présence ?",
+    "undo_description": "Cet invité revient à son état de présence précédent. La modification et votre motif restent dans l'historique de présence.",
+    "undo_reason": "Motif de l'annulation",
     "cancel": "Annuler un invité",
     "cancel_reason": "Raison de l'annulation de cet invité",
     "cancel_reason_default": "Annulé par le titulaire de l'inscription"

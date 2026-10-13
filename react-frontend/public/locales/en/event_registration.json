@@ -207,6 +207,9 @@
     "check_out": "Check out",
     "no_show": "Mark no-show",
     "undo": "Undo last change",
+    "undo_title": "Undo the last attendance change?",
+    "undo_description": "This guest goes back to their previous attendance state. The change and your reason stay in the attendance history.",
+    "undo_reason": "Reason for undoing",
     "cancel": "Cancel guest",
     "cancel_reason": "Reason for cancelling this guest",
     "cancel_reason_default": "Cancelled by the registration holder"

@@ -38,6 +38,7 @@ import { useToast } from '@/contexts/ToastContext';
 import {
   eventIsoToLocalInput as isoToLocalInput,
   eventLocalInputToIso as localInputToIso,
+  eventLocalInputToOffsetIso,
 } from '@/lib/eventLocalDateTime';
 import {
   eventsApi,
@@ -152,14 +153,20 @@ function defaultDraft(event: Event): SessionDraft {
   };
 }
 
-function draftFromSession(session: EventAgendaSession): SessionDraft {
+/**
+ * The server accepts a session only in its event's time zone (it refuses any
+ * other zone with event_agenda_timezone_mismatch), so the editor reads and
+ * writes the wall clock in that same zone. Reading in session.timezone while
+ * writing in the event zone shifted a session whenever the two differed.
+ */
+function draftFromSession(session: EventAgendaSession, timeZone: string): SessionDraft {
   return {
     title: session.title,
     description: session.description ?? '',
     type: session.type,
     visibility: session.visibility,
-    startAt: isoToLocalInput(session.start_at, session.timezone),
-    endAt: isoToLocalInput(session.end_at, session.timezone),
+    startAt: isoToLocalInput(session.start_at, timeZone),
+    endAt: isoToLocalInput(session.end_at, timeZone),
     track: session.track ?? '',
     room: session.room ?? '',
     capacity: session.capacity.limit === null ? '' : String(session.capacity.limit),
@@ -263,15 +270,17 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
 
   const openEdit = (session: EventAgendaSession) => {
     setEditing(session);
-    setDraft(draftFromSession(session));
+    setDraft(draftFromSession(session, event.schedule.timezone));
     setFormError(null);
     setIsEditorOpen(true);
   };
 
   const payloadFromDraft = (): EventAgendaSessionPayload | null => {
     const title = draft.title.trim();
-    const startAt = localInputToIso(draft.startAt, event.schedule.timezone);
-    const endAt = localInputToIso(draft.endAt, event.schedule.timezone);
+    // Written with the event zone's own offset: the server refuses an instant
+    // whose offset differs from the event zone's (a bare Z outside UTC).
+    const startAt = eventLocalInputToOffsetIso(draft.startAt, event.schedule.timezone);
+    const endAt = eventLocalInputToOffsetIso(draft.endAt, event.schedule.timezone);
     if (!title || !startAt || !endAt || Date.parse(endAt) <= Date.parse(startAt)) return null;
 
     const speakers: EventAgendaSpeakerInput[] = [];

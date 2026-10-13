@@ -17,7 +17,8 @@
       "save_review": "Zapisz decyzję dotyczącą przeglądu",
       "cancel_edit": "Anuluj edycję",
       "edit_review": "Aktualizacja decyzji",
-      "withdraw_review": "Cofnij decyzję"
+      "withdraw_review": "Cofnij decyzję",
+      "prepare_requirements": "Mimo to przygotuj wymagania"
     },
     "confirmations": {
       "withdraw_code_title": "Wycofać akceptację kodeksu postępowania?",
@@ -35,6 +36,8 @@
       "shadow_title": "Tryb obserwacji",
       "shadow_description": "Wymagania są oceniane i rejestrowane, ale nie blokują jeszcze uczestnictwa.",
       "read_only": "Możesz przeglądać tę politykę, ale nie możesz zmieniać jej wymagań.",
+      "off_title": "Egzekwowanie zasad bezpieczeństwa jest wyłączone",
+      "off_description": "Egzekwowanie zasad bezpieczeństwa jest wyłączone w tej społeczności, więc ustawione tu wymagania nie wpływają na to, kto może wziąć udział. Administrator społeczności może je włączyć. Nadal możesz przygotować wymagania z wyprzedzeniem.",
       "action_error": "Nie można zapisać zmiany dotyczącej bezpieczeństwa. Odśwież obszar roboczy i spróbuj ponownie.",
       "success": {
         "saved": "Wymagania bezpieczeństwa zapisane jako wersja robocza.",

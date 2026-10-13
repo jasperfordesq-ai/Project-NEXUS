@@ -4,7 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it } from 'vitest';
-import { eventIsoToLocalInput, eventLocalInputToIso } from './eventLocalDateTime';
+import {
+  eventIsoToLocalInput,
+  eventLocalInputToIso,
+  eventLocalInputToOffsetIso,
+} from './eventLocalDateTime';
 
 describe('event-local date/time conversion', () => {
   it('renders an instant in the Event IANA timezone', () => {
@@ -30,5 +34,23 @@ describe('event-local date/time conversion', () => {
     expect(eventIsoToLocalInput('not-a-date', 'UTC')).toBe('');
     expect(eventLocalInputToIso('2030-06-01T10:30', 'Not/A_Zone')).toBeNull();
     expect(eventIsoToLocalInput('2030-06-01T09:30:00Z', 'Not/A_Zone')).toBe('');
+  });
+
+  it('writes the event zone offset so the server offset check accepts it', () => {
+    expect(eventLocalInputToOffsetIso('2030-06-01T10:30', 'Europe/Dublin'))
+      .toBe('2030-06-01T10:30:00+01:00');
+    expect(eventLocalInputToOffsetIso('2030-01-15T10:30', 'Europe/Dublin'))
+      .toBe('2030-01-15T10:30:00+00:00');
+    expect(eventLocalInputToOffsetIso('2030-06-01T10:30', 'America/New_York'))
+      .toBe('2030-06-01T10:30:00-04:00');
+    expect(eventLocalInputToOffsetIso('2030-06-01T10:30', 'Asia/Kolkata'))
+      .toBe('2030-06-01T10:30:00+05:30');
+    expect(Date.parse(eventLocalInputToOffsetIso('2030-06-01T10:30', 'Europe/Dublin') ?? ''))
+      .toBe(Date.parse('2030-06-01T09:30:00Z'));
+  });
+
+  it('fails closed on DST gaps and malformed input when writing an offset', () => {
+    expect(eventLocalInputToOffsetIso('2027-03-14T02:30', 'America/New_York')).toBeNull();
+    expect(eventLocalInputToOffsetIso('', 'Europe/Dublin')).toBeNull();
   });
 });

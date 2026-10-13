@@ -222,6 +222,9 @@
     "check_out": "Confira",
     "no_show": "Marcar não comparecimento",
     "undo": "Desfazer a última alteração",
+    "undo_title": "Desfazer a última alteração de presença?",
+    "undo_description": "Este convidado volta ao estado de presença anterior. A alteração e o seu motivo ficam no histórico de presenças.",
+    "undo_reason": "Motivo para desfazer",
     "cancel": "Cancelar convidado",
     "cancel_reason": "Motivo do cancelamento deste hóspede",
     "cancel_reason_default": "Cancelado pelo titular do registro"

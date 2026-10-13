@@ -222,6 +222,9 @@
     "check_out": "Guardare",
     "no_show": "Segna la mancata presentazione",
     "undo": "Annulla l'ultima modifica",
+    "undo_title": "Annullare l'ultima modifica della presenza?",
+    "undo_description": "Questo ospite torna al suo stato di presenza precedente. La modifica e il tuo motivo restano nella cronologia delle presenze.",
+    "undo_reason": "Motivo dell'annullamento",
     "cancel": "Cancella ospite",
     "cancel_reason": "Motivo per cancellare questo ospite",
     "cancel_reason_default": "Annullato dal titolare della registrazione"
