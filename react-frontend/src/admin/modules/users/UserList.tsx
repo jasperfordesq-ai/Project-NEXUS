@@ -362,6 +362,9 @@ export function UserList() {
   // Welcome invitations. Both actions only QUEUE the emails; the server sends
   // them at a steady pace and re-checks every member at send time.
   const onNeverLoggedInTab = filter === 'never_logged_in';
+  // Deleted members are erased (anonymised) accounts: there is nothing left to
+  // approve, suspend, invite or edit, so the tab is read-only.
+  const onDeletedTab = filter === 'deleted';
   const [inviteCount, setInviteCount] = useState<NeverSignedInInvitationCount | null>(null);
   // `attempt` remounts the confirm window each time the number is re-asked.
   const [inviteAll, setInviteAll] = useState<{ count: number; minutes: number; changed: boolean; attempt: number } | null>(null);
@@ -656,12 +659,16 @@ export function UserList() {
             className="ring-2 ring-surface"
           />
           <div>
-            <Link
-              to={tenantPath(`/admin/users/${user.id}/edit`)}
-              className="font-medium text-foreground hover:text-accent"
-            >
-              {user.name}
-            </Link>
+            {user.status === 'deleted' ? (
+              <span className="font-medium text-foreground">{user.name}</span>
+            ) : (
+              <Link
+                to={tenantPath(`/admin/users/${user.id}/edit`)}
+                className="font-medium text-foreground hover:text-accent"
+              >
+                {user.name}
+              </Link>
+            )}
             <p className="text-xs text-muted">{user.email}</p>
           </div>
         </div>
@@ -737,7 +744,7 @@ export function UserList() {
     {
       key: 'actions',
       label: t('users.col_actions'),
-      render: (user) => (
+      render: (user) => user.status === 'deleted' ? null : (
         <UserActionsMenu
           user={user}
           t={t}
@@ -865,6 +872,7 @@ export function UserList() {
           <Tab key="never_logged_in" title={t('users.never_logged_in')} />
           <Tab key="onboarding_incomplete" title={t('users.onboarding_incomplete')} />
           <Tab key="no_location" title={t('users.no_location')} />
+          <Tab key="deleted" title={t('users.deleted')} />
         </Tabs>
       </div>
 
@@ -891,7 +899,7 @@ export function UserList() {
         </div>
       )}
 
-      {(() => {
+      {!onDeletedTab && (() => {
         const selectedIdList = Array.from(selectedIds).map((id) => Number(id)).filter((n) => Number.isFinite(n));
         const bulkActions: BulkAction[] = [
           {
@@ -976,7 +984,7 @@ export function UserList() {
         page={page}
         pageSize={20}
         onPageChange={setPage}
-        selectable
+        selectable={!onDeletedTab}
         onSelectionChange={setSelectedIds}
       />
 

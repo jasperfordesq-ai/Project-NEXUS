@@ -567,6 +567,7 @@
       "active": "Active",
       "approved": "Approved",
       "banned": "Banned",
+      "deleted": "Deleted",
       "bulk_tenants_updated": "Tenants updated",
       "bulk_users_moved": "Users moved",
       "completed": "Completed",

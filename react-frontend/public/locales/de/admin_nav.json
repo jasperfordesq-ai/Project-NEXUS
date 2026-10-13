@@ -539,6 +539,7 @@
       "active": "Aktiv",
       "approved": "Genehmigt",
       "banned": "Gesperrt",
+      "deleted": "Gelöscht",
       "bulk_tenants_updated": "Mandanten aktualisiert",
       "bulk_users_moved": "Benutzer verschoben",
       "completed": "Abgeschlossen",

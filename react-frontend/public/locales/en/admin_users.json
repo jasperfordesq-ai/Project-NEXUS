@@ -87,6 +87,7 @@
     "add_user": "Add User",
     "all_users": "All Users",
     "banned": "Banned",
+    "deleted": "Deleted",
     "bulk_approve_message": "Approve the selected users and grant platform access.",
     "action_send_invitation": "Send invitation",
     "bulk_invite_title": "Send the welcome email",

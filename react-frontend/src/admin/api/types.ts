@@ -199,7 +199,7 @@ export interface AdminUser {
   avatar?: string | null;
   avatar_url?: string | null;
   role: 'member' | 'admin' | 'moderator' | 'tenant_admin' | 'super_admin';
-  status: 'active' | 'inactive' | 'suspended' | 'pending' | 'banned';
+  status: 'active' | 'inactive' | 'suspended' | 'pending' | 'banned' | 'deleted';
   email_verified_at?: string | null;
   tenant_id?: number;
   balance: number;
@@ -245,7 +245,7 @@ export interface AdminBadge {
 export interface UserListParams {
   page?: number;
   limit?: number;
-  status?: 'all' | 'active' | 'pending' | 'suspended' | 'banned' | 'never_logged_in' | 'onboarding_incomplete' | 'no_location';
+  status?: 'all' | 'active' | 'pending' | 'suspended' | 'banned' | 'never_logged_in' | 'onboarding_incomplete' | 'no_location' | 'deleted';
   role?: string;
   search?: string;
   sort?: string;

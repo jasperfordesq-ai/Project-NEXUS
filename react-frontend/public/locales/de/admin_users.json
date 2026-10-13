@@ -87,6 +87,7 @@
     "add_user": "Benutzer hinzufügen",
     "all_users": "Alle Benutzer",
     "banned": "Verboten",
+    "deleted": "Gelöscht",
     "bulk_approve_message": "Genehmigen Sie die ausgewählten Benutzer und gewähren Sie Plattformzugriff.",
     "action_send_invitation": "Einladung senden",
     "bulk_invite_title": "Willkommens-E-Mail senden",

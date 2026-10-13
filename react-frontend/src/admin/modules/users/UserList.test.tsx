@@ -339,6 +339,24 @@ describe('UserList', () => {
     });
   });
 
+  it('has a Deleted tab, and a deleted member offers no actions and no edit link', async () => {
+    mockAdminUsers.list.mockResolvedValue({
+      success: true,
+      data: [makeUser({ id: 7, name: 'Deleted User', status: 'deleted' }), makeUser()],
+    });
+    const { UserList } = await import('./UserList');
+    render(<UserList />);
+
+    expect(await screen.findByRole('tab', { name: /^deleted$|users\.deleted/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByTestId('table-row')).toHaveLength(2));
+
+    const [deletedRow, liveRow] = screen.getAllByTestId('table-row');
+    expect(deletedRow.querySelector('[data-testid="cell-actions"]')?.childElementCount).toBe(0);
+    expect(deletedRow.querySelector('a')).toBeNull();
+    expect(liveRow.querySelector('[data-testid="cell-actions"] button')).not.toBeNull();
+    expect(liveRow.querySelector('a')).not.toBeNull();
+  });
+
   it('shows Import CSV button and Add User button in header', async () => {
     const { UserList } = await import('./UserList');
     render(<UserList />);

@@ -538,6 +538,7 @@
       "active": "有効",
       "approved": "承認済み",
       "banned": "禁止済み",
+      "deleted": "削除済み",
       "bulk_tenants_updated": "テナントを更新済み",
       "bulk_users_moved": "ユーザーを移動済み",
       "completed": "完了",

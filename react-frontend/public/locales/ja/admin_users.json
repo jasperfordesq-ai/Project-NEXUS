@@ -87,6 +87,7 @@
     "add_user": "ユーザーの追加",
     "all_users": "すべてのユーザー",
     "banned": "禁止",
+    "deleted": "削除済み",
     "bulk_approve_message": "選択したユーザーを承認し、プラットフォームへのアクセスを許可します。",
     "action_send_invitation": "招待を送信",
     "bulk_invite_title": "ウェルカムメールを送信",

@@ -539,6 +539,7 @@
       "active": "Actief",
       "approved": "Goedgekeurd",
       "banned": "Geblokkeerd",
+      "deleted": "Verwijderd",
       "bulk_tenants_updated": "Tenants bijgewerkt",
       "bulk_users_moved": "Gebruikers verplaatst",
       "completed": "Voltooid",

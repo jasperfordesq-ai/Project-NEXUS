@@ -41,6 +41,9 @@ class AdminUsersController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
+    /** An erased account: GdprService::executeAccountDeletion stamps both columns. */
+    private const ERASED_SQL = '(u.deleted_at IS NOT NULL OR u.anonymized_at IS NOT NULL)';
+
     public function __construct(
         private readonly GamificationService $gamificationService,
         private readonly TenantSettingsService $tenantSettingsService,
@@ -88,6 +91,11 @@ class AdminUsersController extends BaseApiController
         $conditions = ['u.tenant_id = ?', "(u.status IS NULL OR u.status <> 'delegate')"];
         $params = [$tenantId];
 
+        // Deleted (erased) accounts are listed under their own tab and nowhere
+        // else. An admin delete is a GDPR erasure that keeps the anonymised row
+        // with status 'inactive', so no other filter would exclude it.
+        $conditions[] = $status === 'deleted' ? self::ERASED_SQL : 'NOT ' . self::ERASED_SQL;
+
         if ($status && $status !== 'all') {
             switch ($status) {
                 case 'pending':
@@ -114,9 +122,9 @@ class AdminUsersController extends BaseApiController
                     // Members the clients ask "Where are you based?" — same rule as
                     // `location_missing` on /v2/users/me (NULL, empty or whitespace-only).
                     // REGEXP rather than TRIM() so tabs/newlines count, as they do in PHP's trim().
-                    // Deleted and anonymised accounts are excluded: erasure nulls the location,
+                    // Deleted accounts are excluded above: erasure nulls the location,
                     // but those rows can never be asked.
-                    $conditions[] = "(u.location IS NULL OR u.location REGEXP '^[[:space:]]*$') AND u.deleted_at IS NULL AND u.anonymized_at IS NULL";
+                    $conditions[] = "(u.location IS NULL OR u.location REGEXP '^[[:space:]]*$')";
                     break;
             }
         }
@@ -161,7 +169,7 @@ class AdminUsersController extends BaseApiController
             'role' => 'u.role',
             'created_at' => 'u.created_at',
             'balance' => 'COALESCE(u.balance, 0)',
-            'status' => "CASE WHEN u.is_approved = 0 THEN 'pending' WHEN u.status = 'suspended' THEN 'suspended' WHEN u.status = 'banned' THEN 'banned' ELSE 'active' END",
+            'status' => "CASE WHEN u.deleted_at IS NOT NULL OR u.anonymized_at IS NOT NULL THEN 'deleted' WHEN u.is_approved = 0 THEN 'pending' WHEN u.status = 'suspended' THEN 'suspended' WHEN u.status = 'banned' THEN 'banned' ELSE 'active' END",
         ];
         $sortColumn = $sortColumnMap[$sort] ?? 'u.created_at';
 
@@ -176,7 +184,7 @@ class AdminUsersController extends BaseApiController
                 END as name,
                 u.email, u.email_verified_at, u.avatar_url, u.location, u.role, u.is_approved, u.is_super_admin, u.is_tenant_super_admin,
                 u.status, u.created_at, u.last_active_at, u.last_login_at, u.onboarding_completed, u.profile_type, u.organization_name,
-                u.tenant_id,
+                u.tenant_id, u.deleted_at, u.anonymized_at,
                 t.name as tenant_name,
                 COALESCE(u.balance, 0) as balance,
                 (SELECT COUNT(*) FROM listings l WHERE l.user_id = u.id AND l.status = 'active') as listing_count
@@ -189,7 +197,9 @@ class AdminUsersController extends BaseApiController
         );
 
         $formatted = array_map(function ($row) {
-            $status = $this->formatAdminUserStatus($row->status ?? null, $row->is_approved ?? null);
+            $status = ($row->deleted_at ?? null) !== null || ($row->anonymized_at ?? null) !== null
+                ? 'deleted'
+                : $this->formatAdminUserStatus($row->status ?? null, $row->is_approved ?? null);
 
             return [
                 'id' => (int) $row->id,

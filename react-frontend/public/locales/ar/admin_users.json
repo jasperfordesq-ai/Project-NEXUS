@@ -87,6 +87,7 @@
     "add_user": "إضافة مستخدم",
     "all_users": "كافة المستخدمين",
     "banned": "محظور",
+    "deleted": "محذوف",
     "bulk_approve_message": "الموافقة على المستخدمين المحددين ومنح حق الوصول إلى النظام الأساسي.",
     "action_send_invitation": "إرسال دعوة",
     "bulk_invite_title": "إرسال رسالة الترحيب",

@@ -541,6 +541,7 @@
       "active": "Aktywny",
       "approved": "Zatwierdzony",
       "banned": "Zablokowany",
+      "deleted": "Usunięty",
       "bulk_tenants_updated": "Zaktualizowano dzierżawców",
       "bulk_users_moved": "Przeniesiono użytkowników",
       "completed": "Ukończony",

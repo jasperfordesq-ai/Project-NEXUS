@@ -540,6 +540,7 @@
       "active": "Ativo",
       "approved": "Aprovado",
       "banned": "Bloqueado",
+      "deleted": "Excluído",
       "bulk_tenants_updated": "Inquilinos atualizados",
       "bulk_users_moved": "Usuários movidos",
       "completed": "Concluído",

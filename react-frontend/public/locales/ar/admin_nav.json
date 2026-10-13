@@ -543,6 +543,7 @@
       "active": "نشط",
       "approved": "تمت الموافقة",
       "banned": "محظور",
+      "deleted": "محذوف",
       "bulk_tenants_updated": "تم تحديث المستأجرين",
       "bulk_users_moved": "تم نقل المستخدمين",
       "completed": "مكتمل",
