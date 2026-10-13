@@ -1279,6 +1279,13 @@ class AdminCrmController extends BaseApiController
     }
 
     /**
+     * Every timeline branch is about one member (`u`): activity of a deleted
+     * member is never shown, matching the Users page's "Deleted" tab. With a
+     * LEFT JOIN a row whose member no longer exists still passes.
+     */
+    private const TIMELINE_LIVE_MEMBER = ' AND u.deleted_at IS NULL AND u.anonymized_at IS NULL';
+
+    /**
      * The UNION ALL behind the activity timeline, shared by the JSON page and the
      * CSV export so the two can never disagree about what counts as activity.
      * Each branch is probed before it is included (canRunTimelineBranch), so a
@@ -1307,6 +1314,7 @@ class AdminCrmController extends BaseApiController
                      LEFT JOIN user_presence up ON up.tenant_id = u.tenant_id AND up.user_id = u.id
                      WHERE u.tenant_id = ? AND {$activityAt} IS NOT NULL";
             $p = [$tenantId]; $cp = [$tenantId];
+            $sql .= self::TIMELINE_LIVE_MEMBER;
             if ($userId) { $sql .= " AND u.id = ?"; $p[] = $userId; $cp[] = $userId; }
             if ($useDayFilter) { $sql .= " AND {$activityAt} >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
             $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1320,6 +1328,7 @@ class AdminCrmController extends BaseApiController
                      {$emptyDescriptionParams} as description_params, {$nullText} as metadata, u.created_at as created_at
                      FROM users u WHERE u.tenant_id = ?";
             $p = [$tenantId]; $cp = [$tenantId];
+            $sql .= self::TIMELINE_LIVE_MEMBER;
             if ($userId) { $sql .= " AND u.id = ?"; $p[] = $userId; $cp[] = $userId; }
             if ($useDayFilter) { $sql .= " AND u.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
             $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1335,6 +1344,7 @@ class AdminCrmController extends BaseApiController
                          CONVERT(JSON_OBJECT('title', l.title) USING utf8mb4) COLLATE utf8mb4_unicode_ci as description_params, {$nullText} as metadata, l.created_at
                          FROM listings l LEFT JOIN users u ON u.id = l.user_id WHERE l.tenant_id = ?";
                 $p = [$tenantId]; $cp = [$tenantId];
+                $sql .= self::TIMELINE_LIVE_MEMBER;
                 if ($userId) { $sql .= " AND l.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND l.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
                 $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1352,6 +1362,7 @@ class AdminCrmController extends BaseApiController
                          FROM transactions t LEFT JOIN users u ON u.id = t.sender_id LEFT JOIN users r ON r.id = t.receiver_id
                          WHERE t.tenant_id = ? AND t.status = 'completed'";
                 $p = [$tenantId]; $cp = [$tenantId];
+                $sql .= self::TIMELINE_LIVE_MEMBER;
                 if ($userId) { $sql .= " AND t.sender_id = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND t.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
                 $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1369,6 +1380,7 @@ class AdminCrmController extends BaseApiController
                          FROM member_notes mn LEFT JOIN users u ON u.id = mn.user_id LEFT JOIN users a ON a.id = mn.author_id
                          WHERE mn.tenant_id = ?";
                 $p = [$tenantId]; $cp = [$tenantId];
+                $sql .= self::TIMELINE_LIVE_MEMBER;
                 if ($userId) { $sql .= " AND mn.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND mn.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
                 // F-457: the same concern-note exclusion listNotes() applies.
@@ -1396,6 +1408,7 @@ class AdminCrmController extends BaseApiController
                          CONVERT(JSON_OBJECT('title', ct.title) USING utf8mb4) COLLATE utf8mb4_unicode_ci as description_params, {$nullText} as metadata, ct.created_at
                          FROM coordinator_tasks ct LEFT JOIN users u ON u.id = ct.created_by WHERE ct.tenant_id = ?";
                 $p = [$tenantId]; $cp = [$tenantId];
+                $sql .= self::TIMELINE_LIVE_MEMBER;
                 if ($userId) { $sql .= " AND ct.created_by = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND ct.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
                 $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1413,6 +1426,7 @@ class AdminCrmController extends BaseApiController
                          FROM group_members gm LEFT JOIN users u ON u.id = gm.user_id
                          INNER JOIN `groups` g ON g.id = gm.group_id AND g.tenant_id = ? WHERE 1=1";
                 $p = [$tenantId]; $cp = [$tenantId];
+                $sql .= self::TIMELINE_LIVE_MEMBER;
                 if ($userId) { $sql .= " AND gm.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
                 if ($useDayFilter) { $sql .= " AND gm.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
                 $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);
@@ -1432,6 +1446,7 @@ class AdminCrmController extends BaseApiController
                      FROM activity_log al INNER JOIN users u ON u.id = al.user_id AND u.tenant_id = al.tenant_id
                      WHERE al.tenant_id = ? AND al.action = ?";
             $p = [$tenantId, ProfileEditRecorder::ACTION]; $cp = [$tenantId, ProfileEditRecorder::ACTION];
+            $sql .= self::TIMELINE_LIVE_MEMBER;
             if ($userId) { $sql .= " AND al.user_id = ?"; $p[] = $userId; $cp[] = $userId; }
             if ($useDayFilter) { $sql .= " AND al.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"; $p[] = $safeDays; $cp[] = $safeDays; }
             $this->appendTimelineBranch($unions, $params, $countParams, $sql, $p, $cp);

@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\Listing;
 use App\Models\User;
 use App\Services\TokenService;
 use App\Services\TwoFactorPolicy;
@@ -73,5 +74,42 @@ class AdminDeletedMembersCountsTest extends TestCase
         $crmLive = $this->apiGet('/v2/admin/crm/dashboard')->assertStatus(200)->json('data');
         $this->assertSame($crmBefore['total_members'] + 1, $crmLive['total_members']);
         $this->assertSame($crmBefore['never_logged_in'] + 1, $crmLive['never_logged_in']);
+    }
+
+    public function test_the_crm_timeline_shows_nothing_a_deleted_member_did(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, TwoFactorPolicy::claims('totp')
+        )]);
+
+        $activity = ['created_at' => now(), 'last_login_at' => now(), 'last_active_at' => now()];
+        $live = User::factory()->forTenant($this->testTenantId)->create($activity);
+        $deleted = [
+            User::factory()->forTenant($this->testTenantId)->create(
+                $activity + ['status' => 'inactive', 'deleted_at' => now(), 'anonymized_at' => now()]
+            ),
+            User::factory()->forTenant($this->testTenantId)->create($activity + ['deleted_at' => now()]),
+        ];
+        foreach ([$live, ...$deleted] as $u) {
+            Listing::factory()->forTenant($this->testTenantId)->create(['user_id' => $u->id, 'created_at' => now()]);
+        }
+
+        $types = fn (User $u) => collect(
+            $this->apiGet("/v2/admin/crm/timeline?days=0&limit=100&user_id={$u->id}")->assertStatus(200)->json('data')
+        )->pluck('activity_type')->sort()->values()->all();
+
+        $this->assertSame(['listing_created', 'login', 'signup'], $types($live), 'control: a live member has activity');
+        foreach ($deleted as $u) {
+            $this->assertSame([], $types($u), "deleted member {$u->id} appears in the timeline");
+        }
+
+        // The unfiltered timeline, which is what the page shows by default.
+        $ids = collect($this->apiGet('/v2/admin/crm/timeline?days=1&limit=100')->assertStatus(200)->json('data'))
+            ->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+        $this->assertContains($live->id, $ids);
+        foreach ($deleted as $u) {
+            $this->assertNotContains($u->id, $ids);
+        }
     }
 }
