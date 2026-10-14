@@ -57,4 +57,34 @@ class EmailTemplateBuilderTest extends \Tests\Laravel\TestCase
         $this->assertIsString($html);
         $this->assertNotEmpty($html);
     }
+
+    /**
+     * Some mail apps (Outlook, "block external content") hide or disable the
+     * styled button, leaving the plain link beneath it as the only way through.
+     * Members reported message emails "with no link" while every one sent had
+     * the button, because that link was 11px light grey and easy to miss.
+     */
+    public function testButtonFallbackLinkIsReadable(): void
+    {
+        $url = 'https://example.test/messages/42';
+        $html = EmailTemplateBuilder::make()
+            ->tenantName('Test Community')
+            ->title('New Message')
+            ->button('View Conversation', $url)
+            ->render();
+
+        $fallback = __('emails.common.button_fallback_short');
+        $this->assertSame(
+            1,
+            preg_match('~<p style="([^"]*)"[^>]*>\s*' . preg_quote($fallback, '~') . '<br>\s*<a href="'
+                . preg_quote($url, '~') . '" style="([^"]*)">' . preg_quote($url, '~') . '</a>~', $html, $m),
+            'The fallback paragraph must show the address as a link.'
+        );
+        [, $paragraphStyle, $linkStyle] = $m;
+
+        $this->assertStringNotContainsString('#9ca3af', $paragraphStyle, 'The fallback text must not be faint grey.');
+        $this->assertMatchesRegularExpression('~font-size: 1[4-9]px~', $paragraphStyle);
+        $this->assertMatchesRegularExpression('~font-size: 1[4-9]px~', $linkStyle);
+        $this->assertStringContainsString('text-decoration: underline', $linkStyle);
+    }
 }

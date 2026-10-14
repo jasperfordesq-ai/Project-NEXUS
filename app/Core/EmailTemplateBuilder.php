@@ -498,6 +498,11 @@ HTML;
         $buttonBg = EmailBackground::gradient((string) $theme['gradient']);
         $buttonBgColor = EmailBackground::firstColor((string) $theme['gradient']) ?? $theme['primary'];
 
+        // The plain link under the button is not small print: some mail apps hide
+        // or disable the styled button, and then it is the only way through.
+        // Members reported message emails "with no link" while every one sent had
+        // the button — the link beneath was 11px light grey. Pinned by
+        // EmailTemplateBuilderTest::testButtonFallbackLinkIsReadable.
         return <<<HTML
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
@@ -514,10 +519,10 @@ HTML;
                             </table>
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
-                                    <td style="padding: 4px 40px 16px; text-align: center;" class="mobile-padding">
-                                        <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
+                                    <td style="padding: 8px 40px 16px; text-align: center;" class="mobile-padding">
+                                        <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.6;" class="text-dark">
                                             {$fallbackText}<br>
-                                            <a href="{$url}" style="color: {$theme['primary']}; word-break: break-all; font-size: 11px;">{$url}</a>
+                                            <a href="{$url}" style="color: {$theme['primary']}; word-break: break-all; font-size: 14px; font-weight: 600; text-decoration: underline;">{$url}</a>
                                         </p>
                                     </td>
                                 </tr>
