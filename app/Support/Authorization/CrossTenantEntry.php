@@ -239,6 +239,23 @@ final class CrossTenantEntry
         ],
     ];
 
+    /** One organiser message, addressed by its own id rather than the event's. */
+    private const EVENT_BROADCASTS_PREFIX = 'api/v2/event-broadcasts/';
+
+    /**
+     * The organiser-message routes under EVENT_BROADCASTS_PREFIX, by method,
+     * as the path AFTER the broadcast id ('' is the message itself). Without
+     * them a manager below could draft a message (an event route) but never
+     * open, send, cancel or retry it (E-106). EventBroadcastService still
+     * authorises every action against the message's event.
+     *
+     * @var array<string, list<string>>
+     */
+    private const EVENT_BROADCAST_ROUTES = [
+        'GET' => [''],
+        'POST' => ['revisions', 'schedule', 'cancel', 'retry'],
+    ];
+
     /*
      * 🔴 HOW ORGANISER CHANGES BELOW ARE RECORDED (owner, 12 Oct 2026: option 3).
      * About 45 event tables carry composite foreign keys (<actor column>,
@@ -461,6 +478,19 @@ final class CrossTenantEntry
     public static function isEventOrganiserRequest(string $method, string $path): bool
     {
         $normalised = self::normalisePath($path);
+        if ($normalised !== null && str_starts_with($normalised, self::EVENT_BROADCASTS_PREFIX)) {
+            $segments = explode('/', substr($normalised, strlen(self::EVENT_BROADCASTS_PREFIX)));
+            $broadcastSegment = array_shift($segments);
+
+            return $broadcastSegment !== null
+                && self::isIdSegment($broadcastSegment)
+                && count($segments) <= 1
+                && in_array(
+                    $segments[0] ?? '',
+                    self::EVENT_BROADCAST_ROUTES[strtoupper($method)] ?? [],
+                    true,
+                );
+        }
         if ($normalised === null || ! str_starts_with($normalised, self::EVENTS_PREFIX)) {
             return false;
         }

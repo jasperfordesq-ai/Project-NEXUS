@@ -170,6 +170,71 @@ final class TenantSuperAdminOrganiserChangesBelowTest extends TestCase
         $this->assertRecordedByDelegate('event_broadcasts', 'created_by_user_id', ['event_id' => $eventId]);
     }
 
+    /**
+     * E-106: the manager could draft a message below but every next step lives
+     * under /api/v2/event-broadcasts/{id}, which the door did not admit, so it
+     * could not open, send or cancel what it had just written.
+     */
+    public function test_open_send_and_cancel_a_broadcast(): void
+    {
+        $this->allowLocalContacts();
+        $eventId = $this->event();
+        $this->confirmed($eventId, $this->user(self::CHILD, ['role' => 'member']));
+        $created = $this->asManager('POST', "/api/v2/events/{$eventId}/broadcasts", [
+            'idempotency_key' => 'tsa-broadcast-send-1',
+            'variant' => 'announcement',
+            'segments' => ['registration_confirmed'],
+            'channels' => ['in_app'],
+            'body' => 'Send this from the parent community.',
+        ], ['Idempotency-Key' => 'tsa-broadcast-send-1']);
+        $this->assertOk($created);
+        $broadcastId = (int) $created->json('data.broadcast.id');
+        self::assertGreaterThan(0, $broadcastId, (string) $created->getContent());
+
+        $this->assertOk($this->asManager('GET', "/api/v2/event-broadcasts/{$broadcastId}"));
+
+        $scheduled = $this->asManager('POST', "/api/v2/event-broadcasts/{$broadcastId}/schedule", [
+            'idempotency_key' => 'tsa-broadcast-send-2',
+            'expected_version' => 1,
+            'scheduled_at' => now()->addDay()->toIso8601String(),
+        ], ['Idempotency-Key' => 'tsa-broadcast-send-2']);
+        $this->assertOk($scheduled);
+        $this->assertRecordedByDelegate('event_broadcasts', 'scheduled_by_user_id', ['id' => $broadcastId]);
+
+        $cancelled = $this->asManager('POST', "/api/v2/event-broadcasts/{$broadcastId}/cancel", [
+            'idempotency_key' => 'tsa-broadcast-send-3',
+            'expected_version' => 2,
+            'reason' => 'organiser_cancelled',
+        ], ['Idempotency-Key' => 'tsa-broadcast-send-3']);
+        $this->assertOk($cancelled);
+        $this->assertRecordedByDelegate('event_broadcasts', 'cancelled_by_user_id', ['id' => $broadcastId]);
+    }
+
+    /**
+     * E-106: switching organiser messages off cancels the scheduled ones and
+     * records who did it. From above, that was the manager's own row, which the
+     * composite key refuses, so the whole settings save failed.
+     */
+    public function test_switch_messages_off_while_one_is_scheduled(): void
+    {
+        $eventId = $this->event();
+        $this->confirmed($eventId, $this->user(self::CHILD, ['role' => 'member']));
+        $this->scheduledBroadcast($eventId);
+        $current = $this->asManager('GET', '/api/v2/admin/config/events');
+        $this->assertOk($current);
+
+        $saved = $this->asManager('PUT', '/api/v2/admin/config/events', [
+            'version' => (int) $current->json('data.version'),
+            'reason' => 'Pause organiser messages.',
+            'settings' => ['organizer_broadcasts_enabled' => false],
+            'confirm_disruptive' => true,
+        ]);
+
+        $this->assertOk($saved);
+        self::assertSame('cancelled', DB::table('event_broadcasts')->where('event_id', $eventId)->value('status'));
+        $this->assertRecordedByDelegate('event_broadcasts', 'cancelled_by_user_id', ['event_id' => $eventId]);
+    }
+
     public function test_create_a_ticket_type(): void
     {
         $start = CarbonImmutable::now('UTC')->addMonth()->startOfHour();

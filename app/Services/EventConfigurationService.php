@@ -203,9 +203,16 @@ final class EventConfigurationService
             if (($changes['organizer_broadcasts_enabled']['from'] ?? false) === true
                 && ($changes['organizer_broadcasts_enabled']['to'] ?? true) === false
                 && Schema::hasTable('event_broadcasts')) {
+                // A manager from above is recorded as its delegate here: the
+                // broadcast's actor columns only accept an account of this
+                // community, so its own id failed the whole save (E-106).
+                $cascadeActorId = (int) (
+                    \App\Support\Authorization\CrossTenantEntry::activeActor($actorId, $tenantId)?->id
+                    ?? $actorId
+                );
                 app(EventBroadcastService::class)->cancelScheduledForConfigurationWithinTransaction(
                     $tenantId,
-                    $actorId,
+                    $cascadeActorId,
                     $reason,
                     "events-configuration:{$tenantId}:v{$nextVersion}",
                 );
