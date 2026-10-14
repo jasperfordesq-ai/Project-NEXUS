@@ -564,8 +564,18 @@ class TenantContext
 
         try {
             if ($tenantId !== null) {
+                $switching = (int) ($previousTenant['id'] ?? 0) !== (int) $tenantId;
                 if (!self::setById($tenantId)) {
                     throw new \InvalidArgumentException("Tenant {$tenantId} could not be loaded");
+                }
+                if ($switching) {
+                    // The hub domain remembered from the request belongs to the
+                    // community the request resolved, not to this one. Its own
+                    // parent decides its host (getFrontendUrl looks that up), so
+                    // an email sent for a member elsewhere never inherits the
+                    // caller's host. Restored in finally (email-links audit,
+                    // 2026-10-14).
+                    self::$parentDomain = null;
                 }
             }
 

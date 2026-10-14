@@ -258,4 +258,29 @@ class TenantEmailLinkShapesTest extends TestCase
 
         $this->assertNull($this->accessibleResetBase($t['id']));
     }
+
+    // ------------------------------------------ switching tenant mid-request
+
+    /**
+     * A request on a hub's domain that resolves a child by slug remembers the
+     * hub's domain. Sending an email for a member of ANOTHER community from
+     * that request (runForTenant) must not inherit it: that community's own
+     * parent decides its host.
+     */
+    public function test_run_for_tenant_does_not_inherit_the_request_hub_domain(): void
+    {
+        $grandchild = $this->makeTenant(['parent' => ['domain' => 'middle.example.test']]);
+        $hubRequestTenant = $this->makeTenant(['parent' => ['domain' => 'hub.example.test']]);
+
+        // Simulate the request path that set the hub's domain while resolving a child by slug.
+        TenantContext::setById($hubRequestTenant['id']);
+        $parentDomain = new \ReflectionProperty(TenantContext::class, 'parentDomain');
+        $parentDomain->setValue(null, 'hub.example.test');
+        $this->assertSame('https://hub.example.test', TenantContext::getFrontendUrl(), 'precondition: the request host is in effect');
+
+        $host = TenantContext::runForTenant($grandchild['id'], static fn (): string => TenantContext::getFrontendUrl());
+
+        $this->assertSame('https://middle.example.test', $host);
+        $this->assertSame('https://hub.example.test', TenantContext::getFrontendUrl(), 'the request host is restored afterwards');
+    }
 }
