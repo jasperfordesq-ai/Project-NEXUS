@@ -3,69 +3,113 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+/**
+ * "Messages to attendees" — the organiser's event messaging screen (E-106).
+ *
+ * Rebuilt because the old one was hard to use and unreliable: sending took
+ * four steps across two modals, nothing refreshed afterwards, a retry after a
+ * timeout created a duplicate, and every outcome was a toast. Now: one
+ * composer with a live count and ONE Send button, a list that keeps itself
+ * current, inline explanations, and idempotency keys that replay instead of
+ * duplicating. The pieces live in ./communications/.
+ */
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import CalendarClock from 'lucide-react/icons/calendar-clock';
-import Edit3 from 'lucide-react/icons/edit-3';
-import History from 'lucide-react/icons/history';
 import MailPlus from 'lucide-react/icons/mail-plus';
-import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Send from 'lucide-react/icons/send';
 import ShieldCheck from 'lucide-react/icons/shield-check';
-import XCircle from 'lucide-react/icons/x-circle';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
-import { Card, CardBody, CardFooter, CardHeader } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Chip } from '@/components/ui/Chip';
-import { Input } from '@/components/ui/Input';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
-import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
-import { Textarea } from '@/components/ui/Textarea';
-import { useToast } from '@/contexts/ToastContext';
+import type { ApiResponse } from '@/lib/api';
 import {
   eventCommunicationsApi,
   type EventBroadcast,
-  type EventBroadcastChannel,
   type EventBroadcastContentInput,
-  type EventBroadcastDetail,
-  type EventBroadcastPreview,
-  type EventBroadcastSegment,
-  type EventBroadcastVariant,
 } from '@/lib/event-communications-api';
-import { eventIsoToLocalInput, eventLocalInputToIso } from '@/lib/eventLocalDateTime';
-import { explainedApiError } from '@/lib/explained-api-error';
+import { eventIsoToLocalInput } from '@/lib/eventLocalDateTime';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { BroadcastActivityModal } from './communications/BroadcastActivityModal';
+import { BroadcastCard, type CardAction, type CardError } from './communications/BroadcastCard';
+import {
+  BroadcastComposer,
+  type SubmitHooks,
+  type SubmitRequest,
+  type SubmitResult,
+} from './communications/BroadcastComposer';
+import { describeFailure, isConflict } from './communications/broadcastErrors';
+import { formatWhen, timeZoneCity } from './communications/broadcastPresentation';
+import {
+  clearComposer,
+  contentSignature,
+  initialComposerValues,
+  keyFor,
+  loadComposer,
+  saveComposer,
+  scheduleSignature,
+  valuesToContent,
+  versionSignature,
+  type ComposerMode,
+  type ComposerValues,
+  type KeyLedger,
+  type PersistedComposer,
+} from './communications/composerSession';
+import { useBroadcastList } from './communications/useBroadcastList';
 
 interface EventCommunicationsWorkspaceProps {
   eventId: number;
   eventTitle?: string;
-  /** "Send later" is a wall clock in the event's zone, not the browser's (B7). */
+  /** "Send at a set time" is a wall clock in the event's zone, not the browser's (B7). */
   eventTimezone: string;
+  /** When the event finishes; thank-you and review messages can only go out after it. */
+  eventEndsAt?: string | null;
 }
 
-const SEGMENTS: EventBroadcastSegment[] = [
-  'registration_confirmed',
-  'waitlist_active',
-  'attendance_attended',
-  'attendance_no_show',
-];
-const CHANNELS: EventBroadcastChannel[] = ['email', 'in_app', 'push'];
-
-function newIdempotencyKey(action: string): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
-  return `event-broadcast-${action}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+interface ComposerState {
+  /** Remounts the composer for each new session. */
+  session: number;
+  mode: ComposerMode;
+  source: EventBroadcast | null;
+  initial: ComposerValues;
+  baseline: ComposerValues;
 }
 
-function initialContent(): EventBroadcastContentInput {
+/** What this composer session has already done, so a retry never repeats a finished step. */
+interface ComposerProgress {
+  /** The draft this session owns: the one it created, or the one being edited. */
+  draft: EventBroadcast | null;
+  /** The content signature that draft currently holds. */
+  draftSignature: string | null;
+  /** In "change" mode: the scheduled original has been cancelled. */
+  replaced: boolean;
+}
+
+const PERSIST_DEBOUNCE_MS = 300;
+
+function contentOf(broadcast: EventBroadcast): EventBroadcastContentInput {
   return {
-    variant: 'announcement',
-    segments: ['registration_confirmed'],
-    channels: ['email', 'in_app'],
-    body: '',
+    variant: broadcast.variant,
+    segments: broadcast.audience.segments,
+    channels: broadcast.channels,
+    body: broadcast.body ?? '',
+  };
+}
+
+function valuesFrom(broadcast: EventBroadcast, eventTimezone: string, withSchedule: boolean): ComposerValues {
+  const local = withSchedule ? eventIsoToLocalInput(broadcast.scheduled_at, eventTimezone) : '';
+  return {
+    variant: broadcast.variant,
+    segments: broadcast.audience.segments,
+    channels: broadcast.channels,
+    body: broadcast.body ?? '',
+    when: local ? 'later' : 'now',
+    date: local ? local.slice(0, 10) : null,
+    time: local ? local.slice(11, 16) : null,
   };
 }
 
@@ -73,370 +117,377 @@ export function EventCommunicationsWorkspace({
   eventId,
   eventTitle,
   eventTimezone,
+  eventEndsAt,
 }: EventCommunicationsWorkspaceProps) {
-  const { t } = useTranslation(['event_communications', 'events']);
-  const toast = useToast();
-  const generation = useRef(0);
-  const auditGeneration = useRef(0);
-  const [broadcasts, setBroadcasts] = useState<EventBroadcast[]>([]);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState<{
-    current_page: number;
-    per_page: number;
-    total: number;
-    total_pages: number;
-    has_more: boolean;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const { t } = useTranslation('event_communications');
+  const list = useBroadcastList(eventId);
+  const { reload, upsert } = list;
 
-  const [composerOpen, setComposerOpen] = useState(false);
-  const [editing, setEditing] = useState<EventBroadcast | null>(null);
-  const [content, setContent] = useState<EventBroadcastContentInput>(initialContent);
-  const [preview, setPreview] = useState<EventBroadcastPreview | null>(null);
-  const [isPreviewing, setIsPreviewing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  /** One thing at a time: every action checks and holds this. */
+  const busy = useRef(false);
+  const [busyCard, setBusyCard] = useState<{ id: number; action: CardAction } | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [cardErrors, setCardErrors] = useState<Record<number, CardError>>({});
+  const [composer, setComposer] = useState<ComposerState | null>(null);
+  const [confirm, setConfirm] = useState<{ kind: 'dont_send' | 'discard'; broadcast: EventBroadcast } | null>(null);
+  const [activity, setActivity] = useState<EventBroadcast | null>(null);
+  const [restore, setRestore] = useState<PersistedComposer | null>(() => loadComposer(eventId));
+  const [showCancelled, setShowCancelled] = useState(false);
 
-  const [scheduleTarget, setScheduleTarget] = useState<EventBroadcast | null>(null);
-  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
-  const [scheduledAt, setScheduledAt] = useState('');
-  const [isScheduling, setIsScheduling] = useState(false);
+  const ledger = useRef<KeyLedger>({});
+  const opsLedger = useRef<KeyLedger>({});
+  const progress = useRef<ComposerProgress>({ draft: null, draftSignature: null, replaced: false });
+  const persistTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionCounter = useRef(0);
 
-  const [cancelTarget, setCancelTarget] = useState<EventBroadcast | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [retryingId, setRetryingId] = useState<number | null>(null);
-  const [auditTarget, setAuditTarget] = useState<EventBroadcast | null>(null);
-  const [auditDetail, setAuditDetail] = useState<EventBroadcastDetail | null>(null);
-  const [isAuditLoading, setIsAuditLoading] = useState(false);
-  const [isAuditLoadingMore, setIsAuditLoadingMore] = useState(false);
+  useEffect(() => () => {
+    if (persistTimer.current) clearTimeout(persistTimer.current);
+  }, []);
 
-  const load = useCallback(async () => {
-    const requestGeneration = ++generation.current;
-    setIsLoading(true);
-    setLoadError(false);
-    try {
-      const response = await eventCommunicationsApi.list(eventId, page);
-      if (requestGeneration !== generation.current) return;
-      if (!response.success || !response.data) {
-        setLoadError(true);
-        return;
-      }
-      setBroadcasts(response.data);
-      setPagination(response.meta ?? null);
-    } catch (error) {
-      if (requestGeneration !== generation.current) return;
-      logError('Failed to load event communications', error);
-      setLoadError(true);
-    } finally {
-      if (requestGeneration === generation.current) setIsLoading(false);
+  const locale = getFormattingLocale();
+  const city = timeZoneCity(eventTimezone);
+  const whenText = useCallback((iso: string | null) => {
+    const label = formatWhen(iso, eventTimezone, locale);
+    return label ? t('when_with_zone', { when: label, city }) : t('when_unknown');
+  }, [city, eventTimezone, locale, t]);
+
+  const failureText = useCallback((response: ApiResponse<unknown>, fallbackKey: string): string => {
+    const failure = describeFailure(response);
+    switch (failure.kind) {
+      case 'explained':
+        return failure.message;
+      case 'reason':
+        return t(`reasons.${failure.reason}`);
+      case 'conflict':
+        return t('errors.conflict');
+      case 'rate_limited':
+        return t('errors.rate_limited');
+      case 'timeout':
+        return t('errors.unknown_outcome');
+      default:
+        return t(fallbackKey);
     }
-  }, [eventId, page]);
+  }, [t]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [eventId]);
+  /** A timed-out request is checked once more with the SAME key: the server answers with what it already did. */
+  async function withReplay<T>(call: () => Promise<ApiResponse<T>>, onSlow?: () => void): Promise<ApiResponse<T>> {
+    const first = await call();
+    if (first.success || first.code !== 'TIMEOUT') return first;
+    onSlow?.();
+    return call();
+  }
 
-  useEffect(() => {
-    void load();
-    return () => { generation.current += 1; };
-  }, [load]);
+  // ─── Composer ───────────────────────────────────────────────────────────
 
-  useEffect(() => () => { auditGeneration.current += 1; }, []);
+  function persist(values: ComposerValues, mode: ComposerMode, sourceId: number | null) {
+    if (persistTimer.current) clearTimeout(persistTimer.current);
+    persistTimer.current = setTimeout(() => {
+      saveComposer(eventId, { values, mode, sourceId, session: ledger.current });
+    }, PERSIST_DEBOUNCE_MS);
+  }
 
-  function updateContent(next: Partial<EventBroadcastContentInput>) {
-    setContent((current) => ({ ...current, ...next }));
-    // The audience preview depends on variant, segments and channels only;
-    // clearing it on every keystroke in the body blocked "Save draft" (E-104).
-    if ('variant' in next || 'segments' in next || 'channels' in next) {
-      setPreview(null);
+  function forgetPersisted() {
+    if (persistTimer.current) clearTimeout(persistTimer.current);
+    persistTimer.current = null;
+    clearComposer(eventId);
+    setRestore(null);
+  }
+
+  function startComposer(
+    mode: ComposerMode,
+    source: EventBroadcast | null,
+    initial: ComposerValues,
+    baseline: ComposerValues,
+    session: KeyLedger = {},
+  ) {
+    ledger.current = session;
+    progress.current = mode === 'edit' && source
+      ? { draft: source, draftSignature: contentSignature(contentOf(source)), replaced: false }
+      : { draft: null, draftSignature: null, replaced: false };
+    sessionCounter.current += 1;
+    setNotice(null);
+    setComposer({ session: sessionCounter.current, mode, source, initial, baseline });
+  }
+
+  function openNew() {
+    if (busy.current) return;
+    forgetPersisted();
+    const values = initialComposerValues();
+    startComposer('new', null, values, values);
+  }
+
+  async function loadForComposer(broadcast: EventBroadcast): Promise<EventBroadcast | null> {
+    const response = await withReplay(() => eventCommunicationsApi.get(broadcast.id, 1, 1, { includeSummary: true }));
+    if (!response.success || !response.data || response.data.broadcast.body === null) {
+      setCardErrors((current) => ({
+        ...current,
+        [broadcast.id]: response.code === 'EVENTS_CONTRACT_DRIFT'
+          ? { message: '', drift: true }
+          : { message: failureText(response, 'errors.open') },
+      }));
+      return null;
     }
+    upsert(response.data.broadcast);
+    return response.data.broadcast;
   }
 
-  function openNewComposer() {
-    setEditing(null);
-    setContent(initialContent());
-    setPreview(null);
-    setComposerOpen(true);
-  }
-
-  async function openEditComposer(broadcast: EventBroadcast) {
-    try {
-      const response = await eventCommunicationsApi.get(broadcast.id, 1, 1);
-      if (!response.success || !response.data || response.data.broadcast.body === null) {
-        toast.error(t('load_detail_error'));
-        return;
+  async function continueRestored() {
+    if (!restore || busy.current) return;
+    const saved = restore;
+    if (saved.mode !== 'new' && saved.sourceId !== null) {
+      busy.current = true;
+      try {
+        const response = await eventCommunicationsApi.get(saved.sourceId, 1, 1, { includeSummary: true });
+        const source = response.success ? response.data?.broadcast ?? null : null;
+        const stillEditable = source !== null && source.body !== null && (saved.mode === 'edit'
+          ? source.status === 'draft' && source.capabilities.edit
+          : source.status === 'scheduled' && source.capabilities.cancel);
+        if (source && stillEditable) {
+          upsert(source);
+          const withSchedule = saved.mode === 'change';
+          startComposer(saved.mode, source, saved.values, valuesFrom(source, eventTimezone, withSchedule), saved.session);
+          return;
+        }
+      } catch (error) {
+        logError('Failed to reload the message being restored', error);
+      } finally {
+        busy.current = false;
       }
-      const detail = response.data.broadcast;
-      const body = detail.body;
-      if (body === null) {
-        toast.error(t('load_detail_error'));
-        return;
-      }
-      setEditing(detail);
-      setContent({
-        variant: detail.variant,
-        segments: detail.audience.segments,
-        channels: detail.channels,
-        body,
-      });
-      setPreview(null);
-      setComposerOpen(true);
-    } catch (error) {
-      logError('Failed to load event communication draft', error);
-      toast.error(t('load_detail_error'));
     }
+    // The original has moved on (sent, cancelled…): carry on as a new message.
+    startComposer('new', null, saved.values, initialComposerValues(), saved.mode === 'new' ? saved.session : {});
   }
 
-  function toggleSegment(segment: EventBroadcastSegment, selected: boolean) {
-    const next = selected
-      ? [...new Set([...content.segments, segment])]
-      : content.segments.filter((value) => value !== segment);
-    updateContent({ segments: next });
+  function closeComposer() {
+    setComposer(null);
   }
 
-  function toggleChannel(channel: EventBroadcastChannel, selected: boolean) {
-    const next = selected
-      ? [...new Set([...content.channels, channel])]
-      : content.channels.filter((value) => value !== channel);
-    updateContent({ channels: next });
-  }
-
-  async function previewAudience() {
-    if (content.segments.length === 0 || content.channels.length === 0) return;
-    setIsPreviewing(true);
-    try {
-      const response = await eventCommunicationsApi.preview(eventId, {
-        variant: content.variant,
-        segments: content.segments,
-        channels: content.channels,
-      });
-      if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('preview_error'));
-        return;
-      }
-      setPreview(response.data);
-    } catch (error) {
-      logError('Failed to preview event communication audience', error);
-      toast.error(t('preview_error'));
-    } finally {
-      setIsPreviewing(false);
+  async function failComposer(
+    response: ApiResponse<unknown>,
+    fallbackKey: string,
+    afterDraftSaved: boolean,
+  ): Promise<SubmitResult> {
+    if (response.code === 'EVENTS_CONTRACT_DRIFT') return { status: 'drift' };
+    if (response.code === 'TIMEOUT') {
+      await reload({ silent: true });
+      return { status: 'unknown', message: t('errors.unknown_outcome') };
     }
+    if (isConflict(response)) {
+      // Our idea of the message is out of date. Refresh it, so the next
+      // press uses the current version, and let a new key be issued.
+      delete ledger.current.revise;
+      delete ledger.current.schedule;
+      await reload({ silent: true });
+      const draft = progress.current.draft;
+      if (draft) {
+        const fresh = await eventCommunicationsApi.get(draft.id, 1, 1, { includeSummary: true });
+        if (fresh.success && fresh.data) {
+          progress.current.draft = fresh.data.broadcast;
+          progress.current.draftSignature = contentSignature(contentOf(fresh.data.broadcast));
+          upsert(fresh.data.broadcast);
+        }
+      }
+    }
+    const reason = failureText(response, fallbackKey);
+    return afterDraftSaved
+      ? { status: 'partial', message: t('composer.partial', { reason }) }
+      : { status: 'error', message: reason };
   }
 
-  async function saveDraft() {
-    if (!preview || !content.body.trim()) return;
-    setIsSaving(true);
+  async function submitComposer(request: SubmitRequest, hooks: SubmitHooks): Promise<SubmitResult> {
+    if (!composer || busy.current) return { status: 'error', message: t('errors.action') };
+    busy.current = true;
+    const { mode, source } = composer;
+    const fallback = request.intent === 'draft' ? 'errors.save' : 'errors.send';
     try {
-      const response = editing
-        ? await eventCommunicationsApi.revise(
-          editing.id,
-          editing.version,
-          content,
-          newIdempotencyKey('revise'),
-        )
-        : await eventCommunicationsApi.create(
+      // 1. Changing a scheduled message replaces it: stop the original first.
+      if (mode === 'change' && source && !progress.current.replaced) {
+        const cancelled = await withReplay(() => eventCommunicationsApi.cancel(
+          source.id,
+          source.version,
+          'organiser_replaced',
+          keyFor(ledger.current, 'cancel', versionSignature(source.id, source.version)),
+        ), hooks.onSlow);
+        if (!cancelled.success || !cancelled.data) return await failComposer(cancelled, fallback, false);
+        progress.current.replaced = true;
+        upsert(cancelled.data.broadcast);
+      }
+
+      // 2. Make sure a draft with exactly this content exists — once.
+      const content = valuesToContent(request.values);
+      const signature = contentSignature(content);
+      let draft = progress.current.draft;
+      if (!draft) {
+        const created = await withReplay(() => eventCommunicationsApi.create(
           eventId,
           content,
-          newIdempotencyKey('create'),
-        );
-      if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('save_error'));
-        return;
+          keyFor(ledger.current, 'create', signature),
+        ), hooks.onSlow);
+        if (!created.success || !created.data) return await failComposer(created, fallback, false);
+        draft = created.data.broadcast;
+      } else if (progress.current.draftSignature !== signature) {
+        const current = draft;
+        const revised = await withReplay(() => eventCommunicationsApi.revise(
+          current.id,
+          current.version,
+          content,
+          keyFor(ledger.current, 'revise', `${current.id}|${current.version}|${signature}`),
+        ), hooks.onSlow);
+        if (!revised.success || !revised.data) return await failComposer(revised, fallback, false);
+        draft = revised.data.broadcast;
       }
-      const saved = response.data.broadcast;
-      setBroadcasts((current) => {
-        const exists = current.some((item) => item.id === saved.id);
-        return exists
-          ? current.map((item) => item.id === saved.id ? saved : item)
-          : [saved, ...current];
+      progress.current.draft = draft;
+      progress.current.draftSignature = signature;
+      upsert(draft);
+
+      if (request.intent === 'draft') {
+        forgetPersisted();
+        setNotice(t('notice.saved'));
+        void reload({ silent: true });
+        return { status: 'done' };
+      }
+
+      // 3. Send (now or at the chosen time).
+      const target = draft;
+      const scheduled = await withReplay(() => eventCommunicationsApi.schedule(
+        target.id,
+        target.version,
+        request.scheduledAt,
+        keyFor(ledger.current, 'schedule', scheduleSignature(target.id, request.scheduledAt)),
+      ), hooks.onSlow);
+      if (!scheduled.success || !scheduled.data) return await failComposer(scheduled, fallback, true);
+
+      upsert(scheduled.data.broadcast);
+      forgetPersisted();
+      setNotice(request.intent === 'schedule'
+        ? t('notice.scheduled', { when: whenText(request.scheduledAt) })
+        : t('notice.sent'));
+      void reload({ silent: true });
+      return { status: 'done' };
+    } catch (error) {
+      logError('Failed to send event communication', error);
+      return { status: 'error', message: t(fallback) };
+    } finally {
+      busy.current = false;
+    }
+  }
+
+  // ─── Card actions ───────────────────────────────────────────────────────
+
+  async function runCardAction(
+    broadcast: EventBroadcast,
+    action: CardAction,
+    work: () => Promise<void>,
+  ) {
+    if (busy.current) return;
+    busy.current = true;
+    setBusyCard({ id: broadcast.id, action });
+    setCardErrors((current) => {
+      const next = { ...current };
+      delete next[broadcast.id];
+      return next;
+    });
+    try {
+      await work();
+    } catch (error) {
+      logError('Event communication action failed', error);
+      setCardErrors((current) => ({ ...current, [broadcast.id]: { message: t('errors.action') } }));
+    } finally {
+      busy.current = false;
+      setBusyCard(null);
+    }
+  }
+
+  async function cardFailure(broadcast: EventBroadcast, response: ApiResponse<unknown>) {
+    if (response.code === 'EVENTS_CONTRACT_DRIFT') {
+      setCardErrors((current) => ({ ...current, [broadcast.id]: { message: '', drift: true } }));
+      return;
+    }
+    // Out of date, or unsure whether it went through: refresh first, then explain.
+    if (isConflict(response) || response.code === 'TIMEOUT') await reload({ silent: true });
+    setCardErrors((current) => ({ ...current, [broadcast.id]: { message: failureText(response, 'errors.action') } }));
+  }
+
+  function handleCardAction(action: CardAction, broadcast: EventBroadcast) {
+    if (action === 'activity') {
+      setActivity(broadcast);
+      return;
+    }
+    if (action === 'discard' || action === 'dont_send') {
+      if (!busy.current) setConfirm({ kind: action, broadcast });
+      return;
+    }
+    if (action === 'open' || action === 'change') {
+      void runCardAction(broadcast, action, async () => {
+        const fresh = await loadForComposer(broadcast);
+        if (!fresh) return;
+        forgetPersisted();
+        if (action === 'open') {
+          const values = valuesFrom(fresh, eventTimezone, false);
+          startComposer('edit', fresh, values, values);
+        } else {
+          const values = valuesFrom(fresh, eventTimezone, true);
+          startComposer('change', fresh, values, values);
+        }
       });
-      toast.success(t(editing ? 'revise_success' : 'create_success'));
-      setComposerOpen(false);
-      setEditing(null);
-      setPreview(null);
-    } catch (error) {
-      logError('Failed to save event communication draft', error);
-      toast.error(t('save_error'));
-    } finally {
-      setIsSaving(false);
+      return;
+    }
+    if (action === 'retry') {
+      void runCardAction(broadcast, action, async () => {
+        const response = await withReplay(() => eventCommunicationsApi.retry(
+          broadcast.id,
+          broadcast.version,
+          keyFor(opsLedger.current, `retry:${broadcast.id}`, versionSignature(broadcast.id, broadcast.version)),
+        ));
+        if (!response.success || !response.data) {
+          await cardFailure(broadcast, response);
+          return;
+        }
+        upsert(response.data.broadcast);
+        setNotice(t('notice.retried'));
+        void reload({ silent: true });
+      });
     }
   }
 
-  async function confirmSchedule() {
-    if (!scheduleTarget || (scheduleMode === 'later' && !scheduledAt)) return;
-    setIsScheduling(true);
-    try {
-      const timestamp = scheduleMode === 'later' ? eventLocalInputToIso(scheduledAt, eventTimezone) : null;
-      if (scheduleMode === 'later' && timestamp === null) {
-        // Malformed, or a wall clock that does not exist (or exists twice) in
-        // the event zone because of a daylight-saving change.
-        toast.error(t('schedule_error'));
-        return;
-      }
-      const response = await eventCommunicationsApi.schedule(
-        scheduleTarget.id,
-        scheduleTarget.version,
-        timestamp,
-        newIdempotencyKey('schedule'),
-      );
-      if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('schedule_error'));
-        return;
-      }
-      replaceBroadcast(response.data.broadcast);
-      toast.success(t('schedule_success'));
-      setScheduleTarget(null);
-      setScheduleMode('now');
-      setScheduledAt('');
-    } catch (error) {
-      logError('Failed to schedule event communication', error);
-      toast.error(t('schedule_error'));
-    } finally {
-      setIsScheduling(false);
-    }
-  }
-
-  async function confirmCancel() {
-    if (!cancelTarget || !cancelReason.trim()) return;
-    setIsCancelling(true);
-    try {
-      const response = await eventCommunicationsApi.cancel(
-        cancelTarget.id,
-        cancelTarget.version,
-        cancelReason.trim(),
-        newIdempotencyKey('cancel'),
-      );
-      if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('cancel_error'));
-        return;
-      }
-      replaceBroadcast(response.data.broadcast);
-      toast.success(t('cancel_success'));
-      setCancelTarget(null);
-      setCancelReason('');
-    } catch (error) {
-      logError('Failed to cancel event communication', error);
-      toast.error(t('cancel_error'));
-    } finally {
-      setIsCancelling(false);
-    }
-  }
-
-  async function retryFailed(broadcast: EventBroadcast) {
-    setRetryingId(broadcast.id);
-    try {
-      const response = await eventCommunicationsApi.retry(
+  function confirmStop() {
+    if (!confirm) return;
+    const { kind, broadcast } = confirm;
+    setConfirm(null);
+    void runCardAction(broadcast, kind, async () => {
+      const response = await withReplay(() => eventCommunicationsApi.cancel(
         broadcast.id,
         broadcast.version,
-        newIdempotencyKey('retry'),
-      );
+        kind === 'discard' ? 'organiser_discarded' : 'organiser_cancelled',
+        keyFor(opsLedger.current, `cancel:${broadcast.id}`, versionSignature(broadcast.id, broadcast.version)),
+      ));
       if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('retry_error'));
+        await cardFailure(broadcast, response);
         return;
       }
-      replaceBroadcast(response.data.broadcast);
-      toast.success(t('retry_success'));
-    } catch (error) {
-      logError('Failed to retry event communication', error);
-      toast.error(t('retry_error'));
-    } finally {
-      setRetryingId(null);
-    }
+      upsert(response.data.broadcast);
+      setNotice(t(kind === 'discard' ? 'notice.discarded' : 'notice.cancelled'));
+      void reload({ silent: true });
+    });
   }
 
-  async function openAudit(broadcast: EventBroadcast) {
-    const requestGeneration = ++auditGeneration.current;
-    setAuditTarget(broadcast);
-    setAuditDetail(null);
-    setIsAuditLoading(true);
-    setIsAuditLoadingMore(false);
-    try {
-      const response = await eventCommunicationsApi.get(broadcast.id, 1, 50);
-      if (requestGeneration !== auditGeneration.current) return;
-      if (!response.success || !response.data) {
-        toast.error(explainedApiError(response) ?? t('load_history_error'));
-        return;
-      }
-      setAuditDetail(response.data);
-    } catch (error) {
-      if (requestGeneration !== auditGeneration.current) return;
-      logError('Failed to load event communication history', error);
-      toast.error(t('load_history_error'));
-    } finally {
-      if (requestGeneration === auditGeneration.current) setIsAuditLoading(false);
-    }
-  }
+  // ─── Render ─────────────────────────────────────────────────────────────
 
-  async function loadMoreAuditHistory() {
-    if (!auditTarget || !auditDetail?.history_meta.has_more || isAuditLoadingMore) return;
-    const broadcastId = auditTarget.id;
-    const requestGeneration = auditGeneration.current;
-    const nextPage = auditDetail.history_meta.current_page + 1;
-    setIsAuditLoadingMore(true);
-    try {
-      const response = await eventCommunicationsApi.get(broadcastId, nextPage, 50);
-      if (requestGeneration !== auditGeneration.current || auditTarget.id !== broadcastId) return;
-      if (!response.success || !response.data || response.data.broadcast.id !== broadcastId) {
-        toast.error(t('load_history_error'));
-        return;
-      }
-      const detail = response.data;
-      setAuditDetail((current) => {
-        if (!current || current.broadcast.id !== broadcastId) return current;
-        const byId = new Map(current.history.map((entry) => [entry.id, entry]));
-        detail.history.forEach((entry) => byId.set(entry.id, entry));
-        return {
-          ...detail,
-          history: [...byId.values()],
-        };
-      });
-    } catch (error) {
-      if (requestGeneration !== auditGeneration.current) return;
-      logError('Failed to load more event communication history', error);
-      toast.error(t('load_history_error'));
-    } finally {
-      if (requestGeneration === auditGeneration.current) setIsAuditLoadingMore(false);
-    }
-  }
-
-  function closeAudit() {
-    auditGeneration.current += 1;
-    setAuditTarget(null);
-    setAuditDetail(null);
-    setIsAuditLoading(false);
-    setIsAuditLoadingMore(false);
-  }
-
-  function replaceBroadcast(saved: EventBroadcast) {
-    setBroadcasts((current) => current.map((item) => item.id === saved.id ? saved : item));
-  }
-
-  function dateLabel(value: string | null): string {
-    if (!value) return t('not_recorded');
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return t('not_recorded');
-    try {
-      return new Intl.DateTimeFormat(getFormattingLocale(), {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone: eventTimezone,
-      }).format(date);
-    } catch {
-      return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-    }
-  }
+  const cancelledCount = list.broadcasts.filter((broadcast) => broadcast.status === 'cancelled').length;
+  const visible = showCancelled
+    ? list.broadcasts
+    : list.broadcasts.filter((broadcast) => broadcast.status !== 'cancelled');
+  const drift = list.loadError === 'EVENTS_CONTRACT_DRIFT';
+  const headingId = `event-communications-${eventId}`;
 
   return (
-    <section aria-labelledby={`event-communications-${eventId}`} className="space-y-5">
+    <section aria-labelledby={headingId} className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 id={`event-communications-${eventId}`} className="text-xl font-semibold text-theme-primary">
-            {t('title')}
-          </h2>
+          <h2 id={headingId} className="text-xl font-semibold text-theme-primary">{t('title')}</h2>
           <p className="mt-1 max-w-3xl text-sm text-theme-muted">{t('description')}</p>
         </div>
-        <Button startContent={<MailPlus className="h-4 w-4" aria-hidden="true" />} onPress={openNewComposer}>
+        <Button startContent={<MailPlus className="h-4 w-4" aria-hidden="true" />} onPress={openNew}>
           {t('new_message')}
         </Button>
       </div>
@@ -448,326 +499,142 @@ export function EventCommunicationsWorkspace({
         description={t('privacy_description')}
       />
 
-      {loadError ? (
+      <div role="status">
+        {notice && (
+          <Alert
+            color="success"
+            description={notice}
+            endContent={(
+              <Button size="sm" variant="secondary" onPress={() => setNotice(null)}>{t('dismiss')}</Button>
+            )}
+          />
+        )}
+      </div>
+
+      {restore && !composer && (
+        <Alert
+          color="warning"
+          title={t('restore.title')}
+          description={t('restore.description')}
+          endContent={(
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onPress={() => void continueRestored()}>{t('restore.continue')}</Button>
+              <Button size="sm" variant="secondary" onPress={forgetPersisted}>{t('restore.start_again')}</Button>
+            </div>
+          )}
+        />
+      )}
+
+      {drift ? (
+        <Alert
+          color="danger"
+          title={t('errors.drift_title')}
+          description={t('errors.drift_description')}
+          endContent={(
+            <Button size="sm" variant="danger-soft" onPress={() => window.location.reload()}>
+              {t('errors.reload')}
+            </Button>
+          )}
+        />
+      ) : list.loadError ? (
         <Alert
           color="danger"
           title={t('load_error_title')}
           description={t('load_error_description')}
-          endContent={<Button size="sm" variant="danger-soft" onPress={() => void load()}>{t('retry')}</Button>}
+          endContent={<Button size="sm" variant="danger-soft" onPress={() => void reload()}>{t('retry')}</Button>}
         />
-      ) : isLoading ? (
-        <div className="flex min-h-48 items-center justify-center" aria-label={t('loading')}><Spinner /></div>
-      ) : broadcasts.length === 0 ? (
+      ) : null}
+
+      {list.isLoading ? (
+        <div className="flex min-h-48 items-center justify-center"><Spinner aria-label={t('loading')} /></div>
+      ) : !list.loadError && list.broadcasts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-theme-default p-8 text-center">
           <Send className="mx-auto h-10 w-10 text-theme-subtle" aria-hidden="true" />
           <h3 className="mt-3 font-semibold text-theme-primary">{t('empty_title')}</h3>
           <p className="mt-1 text-sm text-theme-muted">{t('empty_description')}</p>
         </div>
-      ) : (
+      ) : list.broadcasts.length > 0 ? (
         <>
-          <div className="grid gap-4 xl:grid-cols-2" aria-live="polite">
-            {broadcasts.map((broadcast) => (
-            <Card key={broadcast.id} className="border border-theme-default">
-              <CardHeader className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-theme-primary">{t(`variants.${broadcast.variant}`)}</h3>
-                  <p className="mt-1 text-xs text-theme-subtle">{t('version', { version: broadcast.version })}</p>
-                </div>
-                <Chip color={statusColor(broadcast.status)} variant="flat" size="sm">
-                  {t(`statuses.${broadcast.status}`)}
-                </Chip>
-              </CardHeader>
-              <CardBody className="space-y-4">
-                <dl className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <dt className="text-theme-subtle">{t('audience')}</dt>
-                    <dd className="font-medium text-theme-primary">{t('recipient_count', { count: broadcast.audience.recipient_count })}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-theme-subtle">{t('channels')}</dt>
-                    <dd className="font-medium text-theme-primary">{broadcast.channels.map((channel) => t(`channel_labels.${channel}`)).join(', ')}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-theme-subtle">{t('delivery')}</dt>
-                    <dd className="font-medium text-theme-primary">{t('delivery_progress', {
-                      delivered: broadcast.delivery.delivered,
-                      total: broadcast.delivery.total,
-                    })}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-theme-subtle">{t('scheduled_for')}</dt>
-                    <dd className="font-medium text-theme-primary">{dateLabel(broadcast.scheduled_at)}</dd>
-                  </div>
-                </dl>
-                {broadcast.delivery.dead_lettered > 0 && (
-                  <Alert color="danger" title={t('dead_letter_title')} description={t('dead_letter_description', {
-                    count: broadcast.delivery.dead_lettered,
-                  })} />
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {broadcast.audience.segments.map((segment) => (
-                    <Chip key={segment} size="sm" variant="flat">{t(`segment_labels.${segment}`)}</Chip>
-                  ))}
-                </div>
-              </CardBody>
-              <CardFooter className="flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" startContent={<History className="h-4 w-4" aria-hidden="true" />} onPress={() => void openAudit(broadcast)}>
-                  {t('view_history')}
-                </Button>
-                {broadcast.capabilities.edit && (
-                  <Button size="sm" variant="secondary" startContent={<Edit3 className="h-4 w-4" aria-hidden="true" />} onPress={() => void openEditComposer(broadcast)}>
-                    {t('edit')}
-                  </Button>
-                )}
-                {broadcast.capabilities.schedule && (
-                  <Button size="sm" startContent={<CalendarClock className="h-4 w-4" aria-hidden="true" />} onPress={() => {
-                    setScheduleTarget(broadcast);
-                    // Re-scheduling starts from the stored time, shown in the event zone.
-                    const stored = broadcast.status === 'scheduled'
-                      ? eventIsoToLocalInput(broadcast.scheduled_at, eventTimezone)
-                      : '';
-                    setScheduleMode(stored ? 'later' : 'now');
-                    setScheduledAt(stored);
-                  }}>
-                    {t('schedule')}
-                  </Button>
-                )}
-                {broadcast.capabilities.cancel && (
-                  <Button size="sm" variant="danger-soft" startContent={<XCircle className="h-4 w-4" aria-hidden="true" />} onPress={() => setCancelTarget(broadcast)}>
-                    {t('cancel')}
-                  </Button>
-                )}
-                {broadcast.capabilities.retry && (
-                  <Button size="sm" variant="secondary" isPending={retryingId === broadcast.id} startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />} onPress={() => void retryFailed(broadcast)}>
-                    {t('retry_failed')}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
+          {cancelledCount > 0 && (
+            <Checkbox isSelected={showCancelled} onValueChange={setShowCancelled}>
+              {t('show_cancelled', { n: cancelledCount })}
+            </Checkbox>
+          )}
+          <div className="grid gap-4">
+            {visible.map((broadcast) => (
+              <BroadcastCard
+                key={broadcast.id}
+                broadcast={broadcast}
+                now={list.now}
+                eventTimezone={eventTimezone}
+                busyAction={busyCard?.id === broadcast.id ? busyCard.action : null}
+                isLocked={busyCard !== null}
+                error={cardErrors[broadcast.id] ?? null}
+                onAction={handleCardAction}
+                onDismissError={() => setCardErrors((current) => {
+                  const next = { ...current };
+                  delete next[broadcast.id];
+                  return next;
+                })}
+              />
             ))}
           </div>
-          {pagination && pagination.total_pages > 1 && (
+          {list.pagination && list.pagination.total_pages > 1 && (
             <div className="flex justify-end border-t border-theme-default pt-4">
               <Pagination
-                page={pagination.current_page}
-                total={pagination.total_pages}
+                page={list.pagination.current_page}
+                total={list.pagination.total_pages}
                 showControls
-                aria-label={t('title')}
-                onChange={setPage}
+                aria-label={t('pagination_label')}
+                onChange={list.setPage}
               />
             </div>
           )}
         </>
+      ) : null}
+
+      {composer && (
+        <BroadcastComposer
+          key={composer.session}
+          isOpen
+          eventId={eventId}
+          eventTitle={eventTitle}
+          eventTimezone={eventTimezone}
+          eventEndsAt={eventEndsAt}
+          mode={composer.mode}
+          initialValues={composer.initial}
+          baseline={composer.baseline}
+          onValuesChange={(values) => persist(values, composer.mode, composer.source?.id ?? null)}
+          onSubmit={submitComposer}
+          onDiscard={forgetPersisted}
+          onClose={closeComposer}
+        />
       )}
 
-      <Modal isOpen={composerOpen} size="3xl" scrollBehavior="inside" onOpenChange={setComposerOpen}>
+      <BroadcastActivityModal broadcast={activity} eventTimezone={eventTimezone} onClose={() => setActivity(null)} />
+
+      <Modal isOpen={confirm !== null} onOpenChange={(open) => { if (!open) setConfirm(null); }}>
         <ModalContent>
-          <ModalHeader>{t(editing ? 'composer_edit_title' : 'composer_new_title', { title: eventTitle ?? '' })}</ModalHeader>
-          <ModalBody className="space-y-5">
-            <Select
-              label={t('variant_label')}
-              selectedKeys={new Set([content.variant])}
-              onSelectionChange={(keys) => {
-                const value = [...keys][0] as EventBroadcastVariant | undefined;
-                if (value) updateContent({
-                  variant: value,
-                  segments: value === 'announcement' ? content.segments : ['attendance_attended'],
-                });
-              }}
-            >
-              <SelectItem id="announcement">{t('variants.announcement')}</SelectItem>
-              <SelectItem id="follow_up">{t('variants.follow_up')}</SelectItem>
-              <SelectItem id="review_request">{t('variants.review_request')}</SelectItem>
-            </Select>
-
-            <fieldset className="space-y-2">
-              <legend className="font-medium text-theme-primary">{t('segments_label')}</legend>
-              <p className="text-sm text-theme-muted">{t('segments_description')}</p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {SEGMENTS.map((segment) => {
-                  const postEventOnly = content.variant !== 'announcement';
-                  const disabled = content.variant === 'review_request'
-                    ? segment !== 'attendance_attended'
-                    : postEventOnly && !segment.startsWith('attendance_');
-                  return (
-                    <Checkbox
-                      key={segment}
-                      isDisabled={disabled}
-                      isSelected={content.segments.includes(segment)}
-                      onValueChange={(selected) => toggleSegment(segment, selected)}
-                    >
-                      {t(`segment_labels.${segment}`)}
-                    </Checkbox>
-                  );
-                })}
-              </div>
-            </fieldset>
-
-            <fieldset className="space-y-2">
-              <legend className="font-medium text-theme-primary">{t('channels_label')}</legend>
-              <div className="flex flex-wrap gap-4">
-                {CHANNELS.map((channel) => (
-                  <Checkbox
-                    key={channel}
-                    isSelected={content.channels.includes(channel)}
-                    onValueChange={(selected) => toggleChannel(channel, selected)}
-                  >
-                    {t(`channel_labels.${channel}`)}
-                  </Checkbox>
-                ))}
-              </div>
-            </fieldset>
-
-            <Textarea
-              label={t('body_label')}
-              description={t('body_description')}
-              value={content.body}
-              maxLength={20000}
-              minRows={6}
-              onValueChange={(body) => updateContent({ body })}
-            />
-
-            {preview && (
-              <Alert
-                color={preview.recipient_count > 0 ? 'success' : 'warning'}
-                title={t('preview_title')}
-                description={t('preview_summary', {
-                  recipients: preview.recipient_count,
-                  deliveries: preview.delivery_count,
-                })}
-              />
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="secondary" onPress={() => setComposerOpen(false)}>{t('close')}</Button>
-            <Button
-              variant="secondary"
-              isDisabled={content.segments.length === 0 || content.channels.length === 0}
-              isPending={isPreviewing}
-              onPress={() => void previewAudience()}
-            >
-              {t('preview_audience')}
-            </Button>
-            <Button
-              isDisabled={!preview || preview.recipient_count === 0 || !content.body.trim()}
-              isPending={isSaving}
-              onPress={() => void saveDraft()}
-            >
-              {t('save_draft')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        isOpen={auditTarget !== null}
-        size="2xl"
-        scrollBehavior="inside"
-        onOpenChange={(open) => {
-          if (!open) closeAudit();
-        }}
-      >
-        <ModalContent>
-          <ModalHeader>{t('history_title')}</ModalHeader>
+          <ModalHeader>
+            {confirm?.kind === 'discard' ? t('discard_draft.title') : t('dont_send.title')}
+          </ModalHeader>
           <ModalBody>
-            {isAuditLoading ? (
-              <div className="flex min-h-32 items-center justify-center" aria-label={t('loading_history')}>
-                <Spinner />
-              </div>
-            ) : auditDetail ? (
-              <div className="space-y-4">
-                <ol className="space-y-3">
-                  {auditDetail.history.map((entry) => (
-                    <li key={entry.id} className="rounded-xl border border-theme-default p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-medium text-theme-primary">{t(`history_actions.${entry.action}`)}</p>
-                        <Chip size="sm" variant="flat" color={statusColor(entry.to_status)}>
-                          {t(`statuses.${entry.to_status}`)}
-                        </Chip>
-                      </div>
-                      <p className="mt-1 text-sm text-theme-muted">
-                        {t('history_entry_meta', {
-                          version: entry.version,
-                          date: dateLabel(entry.created_at),
-                        })}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-                {auditDetail.history_meta.has_more && (
-                  <Button
-                    variant="secondary"
-                    isPending={isAuditLoadingMore}
-                    onPress={() => void loadMoreAuditHistory()}
-                  >
-                    {t('history_load_more')}
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <Alert color="danger" title={t('load_history_error')} />
-            )}
+            <p className="text-theme-primary">
+              {confirm?.kind === 'discard'
+                ? t('discard_draft.description')
+                : t('dont_send.description', { when: whenText(confirm?.broadcast.scheduled_at ?? null) })}
+            </p>
           </ModalBody>
           <ModalFooter>
-            <Button variant="secondary" onPress={closeAudit}>
-              {t('close')}
+            <Button variant="secondary" onPress={() => setConfirm(null)}>
+              {confirm?.kind === 'discard' ? t('discard_draft.keep') : t('dont_send.keep')}
             </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={scheduleTarget !== null} onOpenChange={(open) => !open && setScheduleTarget(null)}>
-        <ModalContent>
-          <ModalHeader>{t('schedule_title')}</ModalHeader>
-          <ModalBody className="space-y-4">
-            <Select label={t('schedule_mode')} selectedKeys={new Set([scheduleMode])} onSelectionChange={(keys) => {
-              const value = [...keys][0];
-              if (value === 'now' || value === 'later') setScheduleMode(value);
-            }}>
-              <SelectItem id="now">{t('send_now')}</SelectItem>
-              <SelectItem id="later">{t('schedule_later')}</SelectItem>
-            </Select>
-            {scheduleMode === 'later' && (
-              <Input
-                type="datetime-local"
-                label={t('schedule_at')}
-                description={t('events:manage.agenda.timezone_hint', { timezone: eventTimezone })}
-                value={scheduledAt}
-                onValueChange={setScheduledAt}
-              />
-            )}
-            <Alert color="warning" title={t('schedule_warning_title')} description={t('schedule_warning_description')} />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="secondary" onPress={() => setScheduleTarget(null)}>{t('close')}</Button>
-            <Button isDisabled={scheduleMode === 'later' && !scheduledAt} isPending={isScheduling} onPress={() => void confirmSchedule()}>
-              {t('confirm_schedule')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={cancelTarget !== null} onOpenChange={(open) => !open && setCancelTarget(null)}>
-        <ModalContent>
-          <ModalHeader>{t('cancel_title')}</ModalHeader>
-          <ModalBody>
-            <Textarea label={t('cancel_reason_label')} value={cancelReason} maxLength={500} onValueChange={setCancelReason} />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="secondary" onPress={() => setCancelTarget(null)}>{t('close')}</Button>
-            <Button variant="danger" isDisabled={!cancelReason.trim()} isPending={isCancelling} onPress={() => void confirmCancel()}>
-              {t('confirm_cancel')}
+            <Button variant="danger" onPress={confirmStop}>
+              {confirm?.kind === 'discard' ? t('discard_draft.confirm') : t('dont_send.confirm')}
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
     </section>
   );
-}
-
-function statusColor(status: EventBroadcast['status']): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
-  if (status === 'sent') return 'success';
-  if (status === 'failed' || status === 'cancelled') return 'danger';
-  if (status === 'scheduled' || status === 'sending') return 'warning';
-  return 'primary';
 }

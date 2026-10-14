@@ -619,7 +619,7 @@ export function EventManagePage() {
         {event.permissions.broadcast && (
           <Tabs.Panel id="communications" className="pt-5 outline-none">
             {selectedTab === 'communications' && (
-              <EventCommunicationsWorkspace eventId={event.id} eventTitle={event.title} eventTimezone={event.schedule.timezone} />
+              <EventCommunicationsWorkspace eventId={event.id} eventTitle={event.title} eventTimezone={event.schedule.timezone} eventEndsAt={event.schedule.end_at} />
             )}
           </Tabs.Panel>
         )}

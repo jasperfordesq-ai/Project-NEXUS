@@ -451,7 +451,7 @@ describe('EventManagePage', () => {
 
       const tabList = await screen.findByRole('tablist');
       const tabs = screen.getAllByRole('tab');
-      const selected = screen.getByRole('tab', { name: 'Organizer communications' });
+      const selected = screen.getByRole('tab', { name: 'Messages to attendees' });
       const listContainer = tabList.closest<HTMLElement>('[data-slot="tabs-list-container"]');
 
       expect(window.innerWidth).toBe(390);
@@ -675,9 +675,9 @@ describe('EventManagePage', () => {
 
     renderManagePage('/test/events/1/manage/communications');
 
-    const communicationsTab = await screen.findByRole('tab', { name: 'Organizer communications' });
+    const communicationsTab = await screen.findByRole('tab', { name: 'Messages to attendees' });
     expect(communicationsTab).toHaveAttribute('aria-selected', 'true');
-    expect(await screen.findByRole('heading', { name: 'Organizer communications' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Messages to attendees' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'New message' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'People' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Team' })).not.toBeInTheDocument();

@@ -240,4 +240,75 @@ describe('eventCommunicationsApi', () => {
     expect(response.data?.history_meta.current_page).toBe(2);
     expect(mockApi.get).toHaveBeenCalledWith('/v2/event-broadcasts/8?history_page=2&history_per_page=50');
   });
+  it('asks for the plain-language summary only when requested (E-106)', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [{
+        ...broadcastFixture(),
+        summary: {
+          excerpt: 'Doors open at seven.',
+          skipped_reasons: { email_cadence_off: 2 },
+          failed_reasons: { event_broadcast_email_provider_rejected: 1 },
+        },
+      }],
+      meta: { current_page: 1, per_page: 20, total: 1, total_pages: 1, has_more: false },
+    });
+
+    const response = await eventCommunicationsApi.list(42, 1, 20, { includeSummary: true });
+
+    expect(mockApi.get).toHaveBeenCalledWith('/v2/events/42/broadcasts?page=1&per_page=20&include=summary');
+    expect(response.success).toBe(true);
+    expect(response.data?.[0]?.summary?.excerpt).toBe('Doors open at seven.');
+    expect(response.data?.[0]?.summary?.skipped_reasons.email_cadence_off).toBe(2);
+  });
+
+  it('accepts a broadcast without a summary (mutation responses never carry one)', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: { broadcast: broadcastFixture('Body'), history: [], history_meta: historyMeta },
+    });
+
+    const response = await eventCommunicationsApi.get(8, 1, 1, { includeSummary: true });
+
+    expect(mockApi.get).toHaveBeenCalledWith('/v2/event-broadcasts/8?history_page=1&history_per_page=1&include=summary');
+    expect(response.success).toBe(true);
+    expect(response.data?.broadcast.summary).toBeUndefined();
+  });
+
+  it('reads an empty reason list as no reasons (PHP sends [] for an empty map, E-106)', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [{
+        ...broadcastFixture(),
+        summary: { excerpt: 'Doors open.', skipped_reasons: { email_cadence_off: 1 }, failed_reasons: [] },
+      }],
+      meta: { current_page: 1, per_page: 20, total: 1, total_pages: 1, has_more: false },
+    });
+
+    const response = await eventCommunicationsApi.list(42, 1, 20, { includeSummary: true });
+
+    expect(response.success).toBe(true);
+    expect(response.data?.[0]?.summary?.failed_reasons).toEqual({});
+  });
+
+  it('still fails closed when the summary carries an unexpected field', async () => {
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: [{
+        ...broadcastFixture(),
+        summary: {
+          excerpt: null,
+          skipped_reasons: {},
+          failed_reasons: {},
+          recipient_emails: ['user@example.test'],
+        },
+      }],
+      meta: { current_page: 1, per_page: 20, total: 1, total_pages: 1, has_more: false },
+    });
+
+    const response = await eventCommunicationsApi.list(42, 1, 20, { includeSummary: true });
+
+    expect(response.success).toBe(false);
+    expect(response.code).toBe('EVENTS_CONTRACT_DRIFT');
+  });
 });

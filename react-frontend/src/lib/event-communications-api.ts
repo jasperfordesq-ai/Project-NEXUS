@@ -18,6 +18,24 @@ const channelSchema = z.enum(['email', 'in_app', 'push']);
 const variantSchema = z.enum(['announcement', 'follow_up', 'review_request']);
 const statusSchema = z.enum(['draft', 'scheduled', 'sending', 'sent', 'cancelled', 'failed']);
 
+// Opt-in (`?include=summary`) plain-language context for an organiser: a
+// short excerpt of the body and why recipients were skipped or failed, as
+// aggregate counts only. Mutation responses never carry it.
+// PHP encodes an empty map as `[]`; accept that as "no reasons" so an empty
+// count never turns the whole list into a contract-drift error (E-106).
+const reasonCountsSchema = z.preprocess(
+  (value) => (Array.isArray(value) && value.length === 0 ? {} : value),
+  z.record(
+    z.string().regex(/^[a-z0-9_]+$/),
+    z.number().int().nonnegative(),
+  ),
+);
+export const eventBroadcastSummarySchema = z.object({
+  excerpt: z.string().nullable(),
+  skipped_reasons: reasonCountsSchema,
+  failed_reasons: reasonCountsSchema,
+}).strict();
+
 export const eventBroadcastSchema = z.object({
   contract_version: z.literal(1),
   id: z.number().int().positive(),
@@ -50,6 +68,7 @@ export const eventBroadcastSchema = z.object({
   failed_at: timestamp,
   created_at: timestamp,
   updated_at: timestamp,
+  summary: eventBroadcastSummarySchema.optional(),
 }).strict();
 
 export const eventBroadcastHistorySchema = z.object({
@@ -108,6 +127,7 @@ const eventBroadcastMutationSchema = eventBroadcastDetailSchema.extend({
 }).strict();
 
 export type EventBroadcast = z.infer<typeof eventBroadcastSchema>;
+export type EventBroadcastSummary = z.infer<typeof eventBroadcastSummarySchema>;
 export type EventBroadcastHistory = z.infer<typeof eventBroadcastHistorySchema>;
 export type EventBroadcastDetail = z.infer<typeof eventBroadcastDetailSchema>;
 export type EventBroadcastPreview = z.infer<typeof eventBroadcastPreviewSchema>;
@@ -120,6 +140,11 @@ export interface EventBroadcastContentInput {
   segments: EventBroadcastSegment[];
   channels: EventBroadcastChannel[];
   body: string;
+}
+
+export interface EventBroadcastReadOptions {
+  /** Ask the server to add `summary` (excerpt and reason counts) to each broadcast. */
+  includeSummary?: boolean;
 }
 
 export type EventBroadcastListResponse = Omit<ApiResponse<EventBroadcast[]>, 'meta'> & {
@@ -152,7 +177,7 @@ function parseResponse<T>(
   return { ...response, success: false, data: undefined, code: 'EVENTS_CONTRACT_DRIFT' };
 }
 
-function queryString(values: Record<string, number | undefined>): string {
+function queryString(values: Record<string, number | string | undefined>): string {
   const query = new URLSearchParams();
   Object.entries(values).forEach(([key, value]) => {
     if (value !== undefined) query.set(key, String(value));
@@ -162,8 +187,17 @@ function queryString(values: Record<string, number | undefined>): string {
 }
 
 export const eventCommunicationsApi = {
-  async list(eventId: number, page = 1, perPage = 20): Promise<EventBroadcastListResponse> {
-    const endpoint = `/v2/events/${eventId}/broadcasts${queryString({ page, per_page: perPage })}`;
+  async list(
+    eventId: number,
+    page = 1,
+    perPage = 20,
+    options: EventBroadcastReadOptions = {},
+  ): Promise<EventBroadcastListResponse> {
+    const endpoint = `/v2/events/${eventId}/broadcasts${queryString({
+      page,
+      per_page: perPage,
+      include: options.includeSummary ? 'summary' : undefined,
+    })}`;
     const response = await api.get(endpoint);
     const parsed = parseResponse(endpoint, response, z.array(eventBroadcastSchema));
     if (!parsed.success) return { ...parsed, meta: undefined };
@@ -177,10 +211,12 @@ export const eventCommunicationsApi = {
     broadcastId: number,
     historyPage = 1,
     historyPerPage = 50,
+    options: EventBroadcastReadOptions = {},
   ): Promise<ApiResponse<EventBroadcastDetail>> {
     const endpoint = `/v2/event-broadcasts/${broadcastId}${queryString({
       history_page: historyPage,
       history_per_page: historyPerPage,
+      include: options.includeSummary ? 'summary' : undefined,
     })}`;
     return parseResponse(endpoint, await api.get(endpoint), eventBroadcastDetailSchema);
   },
