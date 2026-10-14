@@ -1663,8 +1663,9 @@ class SearchService
         $limit = min($limit, 200);
 
         // Try Meilisearch first for typo-tolerant, ranked results.
-        // If Meili returns non-empty hits, trust them. Otherwise fall back to SQL
-        // so an empty/broken index doesn't silently hide all members.
+        // If Meili returns eligible hits, preserve their relevance order.
+        // Otherwise fall back to SQL so a stale/empty index does not hide
+        // newly approved members.
         $meiliResult = static::searchUserIds($query, $tenantId, $limit);
         if ($meiliResult !== null && !empty($meiliResult['ids'])) {
             // The index cannot express the member's search opt-out, so narrow
@@ -1673,10 +1674,16 @@ class SearchService
             // next caller will not know to re-filter.
             $visible = array_flip(MemberDirectoryVisibility::visibleIds($meiliResult['ids'], $tenantId));
 
-            return array_values(array_filter(
+            $visibleIds = array_values(array_filter(
                 $meiliResult['ids'],
                 static fn ($id): bool => isset($visible[(int) $id]),
             ));
+            if ($visibleIds !== []) {
+                return $visibleIds;
+            }
+            // All index hits may be stale or newly ineligible. Fall back to
+            // current SQL rather than hiding a newly approved member whose
+            // index update has not arrived yet.
         }
 
         // Fall back to SQL LIKE (also runs when Meili is available but empty).
@@ -1688,7 +1695,8 @@ class SearchService
                   ->orWhere('organization_name', 'LIKE', $like)
                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", [$like]);
             })
-            ->whereNotIn('status', ['banned', 'suspended'])
+            ->where('status', 'active')
+            ->where('is_approved', true)
             // Respect search-opt-out (matches SQL path in UsersController::index).
             ->where(function ($q) {
                 $q->where('privacy_search', 1)->orWhereNull('privacy_search');

@@ -11,6 +11,7 @@ use App\Core\EmailTemplate;
 use App\Core\TenantContext;
 use App\Core\Validator as NexusValidator;
 use App\Events\UserRegistered;
+use App\Listeners\NotifyAdminOfNewRegistration;
 use App\I18n\LocaleContext;
 use App\Models\User;
 use App\Services\DisposableEmailService;
@@ -431,61 +432,87 @@ class RegistrationService
             }
         }
 
-        $user = DB::transaction(function () use ($data, $tenantId) {
-            // Retried up to 3x by the outer DB::transaction(..., 3) call below
-            // to recover from MySQL 1213 deadlocks under registration spikes
-            // (Fixes NEXUS-PHP-M).
-            // Check uniqueness inside the transaction to prevent race conditions
-            // where two concurrent registrations with the same email both pass the check
-            $exists = $this->user->newQuery()
-                ->where('email', strtolower(trim($data['email'])))
-                ->where('tenant_id', $tenantId)
-                ->lockForUpdate()
-                ->exists();
-            if ($exists) {
-                return null; // Duplicate — handled below
-            }
+        try {
+            $user = DB::transaction(function () use ($data, $tenantId, $inviteRequired, $inviteCode) {
+                // Retried up to 3x by the outer DB::transaction(..., 3) call below
+                // to recover from MySQL 1213 deadlocks under registration spikes
+                // (Fixes NEXUS-PHP-M).
+                // Check uniqueness inside the transaction to prevent race conditions
+                // where two concurrent registrations with the same email both pass the check
+                $exists = $this->user->newQuery()
+                    ->where('email', strtolower(trim($data['email'])))
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->exists();
+                if ($exists) {
+                    return null; // Duplicate — handled below
+                }
 
-            $user = $this->user->newInstance();
-            $user->tenant_id = $tenantId;
-            $user->first_name = trim($data['first_name']);
-            $user->last_name = trim($data['last_name']);
-            $user->email = strtolower(trim($data['email']));
-            $user->password_hash = Hash::make($data['password']);
-            $user->status = 'pending';
-            // Defensive: never trust the column default for an auth-gating flag
-            $user->onboarding_completed = false;
-            if (Schema::hasColumn('users', 'newsletter_opt_in')) {
-                $user->newsletter_opt_in = filter_var($data['newsletter_opt_in'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            }
+                $user = $this->user->newInstance();
+                $user->tenant_id = $tenantId;
+                $user->first_name = trim($data['first_name']);
+                $user->last_name = trim($data['last_name']);
+                $user->email = strtolower(trim($data['email']));
+                $user->password_hash = Hash::make($data['password']);
+                $user->status = 'pending';
+                // Defensive: never trust the column default for an auth-gating flag
+                $user->onboarding_completed = false;
+                if (Schema::hasColumn('users', 'newsletter_opt_in')) {
+                    $user->newsletter_opt_in = filter_var($data['newsletter_opt_in'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                }
 
-            // Welcome credits are granted at ACTIVATION, not at registration time:
-            // admin-approval tenants grant on approval (AdminUsersController::grantWelcomeCredits),
-            // self-serve tenants grant on email verification (verifyEmail →
-            // StartingBalanceService::applyToNewUser). Both are idempotent against
-            // the transactions table so they can never double-credit.
-            $user->balance = 0;
+                // Welcome credits are granted at ACTIVATION, not at registration time:
+                // admin-approval tenants grant on approval (AdminUsersController::grantWelcomeCredits),
+                // self-serve tenants grant on email verification (verifyEmail →
+                // StartingBalanceService::applyToNewUser). Both are idempotent against
+                // the transactions table so they can never double-credit.
+                $user->balance = 0;
 
-            // Optional fields from frontend
-            $user->phone = preg_replace('/[\s\-\(\)\.]/', '', trim((string) $data['phone']));
-            $user->location = trim((string) $data['location']);
-            if (!empty($data['latitude'])) {
-                $user->latitude = (float) $data['latitude'];
-            }
-            if (!empty($data['longitude'])) {
-                $user->longitude = (float) $data['longitude'];
-            }
-            if (!empty($data['profile_type'])) {
-                $user->profile_type = $data['profile_type'];
-            }
-            if (!empty($data['organization_name'])) {
-                $user->organization_name = $data['organization_name'];
-            }
+                // Optional fields from frontend
+                $user->phone = preg_replace('/[\s\-\(\)\.]/', '', trim((string) $data['phone']));
+                $user->location = trim((string) $data['location']);
+                if (!empty($data['latitude'])) {
+                    $user->latitude = (float) $data['latitude'];
+                }
+                if (!empty($data['longitude'])) {
+                    $user->longitude = (float) $data['longitude'];
+                }
+                if (!empty($data['profile_type'])) {
+                    $user->profile_type = $data['profile_type'];
+                }
+                if (!empty($data['organization_name'])) {
+                    $user->organization_name = $data['organization_name'];
+                }
 
-            $user->save();
+                $user->save();
 
-            return $user;
-        }, 3);
+                // The successful invite redemption, account and staff-email intent
+                // must commit together. A lost process after this transaction can
+                // leave the inline listener unsent, but retains the staff set
+                // selected at this commit boundary for later reconciliation.
+                if ($inviteRequired && !InviteCodeService::redeem($tenantId, $inviteCode, (int) $user->id)) {
+                    throw new RegistrationInviteRedemptionFailed();
+                }
+                foreach (NotifyAdminOfNewRegistration::recipientsFor($tenantId) as $staff) {
+                    if (!empty($staff->email)) {
+                        RegistrationStaffEmailDeliveryLedger::captureInTransaction(
+                            $tenantId,
+                            (int) $user->id,
+                            (int) $staff->id,
+                        );
+                    }
+                }
+
+                return $user;
+            }, 3);
+        } catch (RegistrationInviteRedemptionFailed) {
+            return [
+                'error' => __('api.invite_code_invalid'),
+                'code' => 'INVITE_INVALID',
+                'field' => 'invite_code',
+                'status' => 422,
+            ];
+        }
 
         if ($user === null) {
             return [
@@ -494,26 +521,6 @@ class RegistrationService
                 'field' => 'email',
                 'status' => 409,
             ];
-        }
-
-        // Redeem the invite code now that the user row exists. There is a
-        // small race window between validate() and redeem() where a one-use
-        // code could be consumed by another concurrent registration; if the
-        // redeem fails we deactivate the freshly-created user so the code
-        // remains the gating signal instead of leaving an orphan account.
-        if ($inviteRequired) {
-            $redeemed = InviteCodeService::redeem($tenantId, $inviteCode, (int) $user->id);
-            if (!$redeemed) {
-                // Soft-delete by setting status; the email is now reserved
-                // against re-registration, but the account cannot be used.
-                $user->update(['status' => 'rejected']);
-                return [
-                    'error' => __('api.invite_code_invalid'),
-                    'code'  => 'INVITE_INVALID',
-                    'field' => 'invite_code',
-                    'status' => 422,
-                ];
-            }
         }
 
         // E-035 F-152: an identity-verification or waitlist community runs the

@@ -691,6 +691,18 @@ class Mailer
                 return true;
             }
 
+            if ($category === 'admin_new_registration') {
+                // A timed-out provider may already have accepted this exact
+                // alert. The per-recipient ledger holds false as UNKNOWN; an
+                // automatic SMTP fallback could send a second copy now.
+                \Illuminate\Support\Facades\Log::warning(
+                    'Mailer: registration staff alert primary outcome unconfirmed; SMTP fallback withheld',
+                    self::recipientLogContext($to, $metadata),
+                );
+                self::logEmail($to, $subject, 'failed', null, 'Primary provider outcome unconfirmed; SMTP fallback withheld', $this->tenantId, $category, 'postmark', $metadata);
+                return false;
+            }
+
             // Fallback: SMTP (if configured).
             if (!empty($this->host) && !empty($this->username)) {
                 \Illuminate\Support\Facades\Log::warning(
@@ -715,6 +727,15 @@ class Mailer
             if ($result) {
                 self::logEmail($to, $subject, 'sent', null, null, $this->tenantId, $category, 'gmail_api', $metadata);
                 return true;
+            }
+
+            if ($category === 'admin_new_registration') {
+                \Illuminate\Support\Facades\Log::warning(
+                    'Mailer: registration staff alert primary outcome unconfirmed; SMTP fallback withheld',
+                    self::recipientLogContext($to, $metadata),
+                );
+                self::logEmail($to, $subject, 'failed', null, 'Primary provider outcome unconfirmed; SMTP fallback withheld', $this->tenantId, $category, 'gmail_api', $metadata);
+                return false;
             }
 
             if (!empty($this->host) && !empty($this->username)) {
@@ -773,7 +794,7 @@ class Mailer
      * Send email via the Postmark Email API (raw HTTP, no SDK dependency —
      * mirrors the Gmail API cURL path already used in this class).
      */
-    private function sendViaPostmark($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $category = null, ?array $metadata = null, ?string $textBody = null): bool
+    protected function sendViaPostmark($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $category = null, ?array $metadata = null, ?string $textBody = null): bool
     {
         try {
             // Prefer a caller-supplied text/plain part (proper html→text). Fall
@@ -888,7 +909,7 @@ class Mailer
     /**
      * Send email via Gmail API using OAuth 2.0.
      */
-    private function sendViaGmailApi($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
+    protected function sendViaGmailApi($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
     {
         try {
             $accessToken = $this->getGmailAccessToken();
@@ -1173,7 +1194,7 @@ class Mailer
         return $message;
     }
 
-    private function sendViaSmtp($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
+    protected function sendViaSmtp($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
     {
         try {
             $this->connect();
@@ -1234,27 +1255,27 @@ class Mailer
 
         $ehloHost = $_SERVER['HTTP_HOST'] ?? 'api.project-nexus.ie';
 
-        $this->read();
+        $this->expect([220]);
         $this->write("EHLO " . $ehloHost);
-        $this->read();
+        $this->expect([250]);
 
         if ($this->encryption === 'tls') {
             $this->write("STARTTLS");
-            $this->read();
+            $this->expect([220]);
             stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
             $this->write("EHLO " . $ehloHost);
-            $this->read();
+            $this->expect([250]);
         }
     }
 
     private function auth()
     {
         $this->write("AUTH LOGIN");
-        $this->read();
+        $this->expect([334]);
         $this->write(base64_encode($this->username));
-        $this->read();
+        $this->expect([334]);
         $this->write(base64_encode($this->password));
-        $this->read();
+        $this->expect([235]);
     }
 
     private function sendData($to, $subject, $body, $cc = null, $replyTo = null, ?string $unsubscribeUrl = null, ?string $textBody = null)
@@ -1270,15 +1291,15 @@ class Mailer
         $unsubscribeUrl = $unsubscribeUrl ? self::sanitizeHeaderValue($unsubscribeUrl) : null;
 
         $this->write("MAIL FROM: <{$fromEmail}>");
-        $this->read();
+        $this->expect([250]);
         $this->write("RCPT TO: <$to>");
-        $this->read();
+        $this->expect([250, 251]);
         if ($cc) {
             $this->write("RCPT TO: <$cc>");
-            $this->read();
+            $this->expect([250, 251]);
         }
         $this->write("DATA");
-        $this->read();
+        $this->expect([354]);
 
         $hasText = $textBody !== null && trim($textBody) !== '';
         $boundary = 'bnd_' . md5(uniqid((string) time(), true));
@@ -1318,7 +1339,10 @@ class Mailer
         } else {
             $this->write(self::smtpDataBlock($headers . "\r\n" . $body) . "\r\n.");
         }
-        $this->read();
+        // Only a 250 to the end of DATA means the server accepted the message.
+        // A refusal (for example 550) must not be reported as a send; a reply
+        // lost to the timeout is thrown by read() and stays a failed attempt.
+        $this->expect([250]);
     }
 
     /**
@@ -1344,6 +1368,26 @@ class Mailer
     private function write($cmd)
     {
         fputs($this->socket, $cmd . "\r\n");
+    }
+
+    /**
+     * Read one reply and require one of the expected SMTP codes. A refusal or
+     * an unexpected reply aborts the send, so the caller never reports a
+     * message as sent when the server did not accept it. Only the numeric
+     * code goes into the exception, never the server text.
+     *
+     * @param list<int> $codes
+     */
+    private function expect(array $codes): string
+    {
+        $response = $this->read();
+        $code = (int) substr((string) $response, 0, 3);
+        if (!in_array($code, $codes, true)) {
+            throw new \Exception('SMTP host replied ' . ($code > 0 ? $code : 'with no code')
+                . ' where ' . implode('/', $codes) . ' was required');
+        }
+
+        return (string) $response;
     }
 
     private function read()

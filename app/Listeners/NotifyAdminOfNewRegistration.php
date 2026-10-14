@@ -12,6 +12,7 @@ use App\Events\UserRegistered;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Services\EmailDispatchService;
+use App\Services\RegistrationStaffEmailDeliveryLedger;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -86,8 +87,9 @@ class NotifyAdminOfNewRegistration
      *      approval is outstanding.
      *   2. WHERE TO SEND THEM. Only admin-tier accounts may open /admin/*;
      *      AdminTier deliberately refuses broker and coordinator, who are
-     *      redirected to /dashboard. Sending a broker to the approvals queue
-     *      would hand them a dead link, so they keep the broker members list.
+     *      redirected to /dashboard. Both alert variants use a staff member
+     *      list so incomplete/private registrant profiles do not break the
+     *      link. Approval alerts select the pending queue for admin-tier staff.
      *
      * @param object $recipient a row from recipientsFor()
      * @return array{key: string, bell_link: string, cta_url: string}
@@ -95,19 +97,18 @@ class NotifyAdminOfNewRegistration
     public static function alertPlanFor(
         object $recipient,
         bool $needsApproval,
-        string $profileUrl,
         string $adminQueueUrl,
-        string $brokerListUrl
+        string $brokerListUrl,
+        string $adminListUrl
     ): array {
+        $canReachAdminQueue = \App\Support\Authorization\AdminTier::allows($recipient);
         if (!$needsApproval) {
             return [
                 'key'       => 'new_user_',
-                'bell_link' => '/broker/members',
-                'cta_url'   => $profileUrl,
+                'bell_link' => $canReachAdminQueue ? '/admin/users' : '/broker/members',
+                'cta_url'   => $canReachAdminQueue ? $adminListUrl : $brokerListUrl,
             ];
         }
-
-        $canReachAdminQueue = \App\Support\Authorization\AdminTier::allows($recipient);
 
         return [
             'key'       => 'new_user_pending_',
@@ -118,17 +119,19 @@ class NotifyAdminOfNewRegistration
 
     public function handle(UserRegistered $event): void
     {
-        // Idempotency guard: suppress duplicate/concurrent deliveries so the admin
-        // fanout (email + bell to every admin) runs exactly once per event.
+        // Legacy events without captured intent still use the cache done key.
+        // For new registrations the durable per-recipient claim is authoritative:
+        // a done key must not hide a captured recipient after a partial fanout.
         $entityId = (int) ($event->user->id ?? 0);
         $tenantId = (int) ($event->tenantId ?? 0);
+        $ledgerManaged = RegistrationStaffEmailDeliveryLedger::hasIntentForRegistrant($tenantId, $entityId);
         $handledKey = null;
         $claimKey = null;
         $claimAcquired = false;
         if ($entityId > 0) {
             $handledKey = 'notify_admin_new_registration:done:' . $tenantId . ':' . $entityId;
             $claimKey = 'notify_admin_new_registration:claim:' . $tenantId . ':' . $entityId;
-            if (Cache::has($handledKey)) {
+            if (!$ledgerManaged && Cache::has($handledKey)) {
                 Log::info('NotifyAdminOfNewRegistration: duplicate fanout suppressed', ['entity_id' => $entityId, 'tenant_id' => $tenantId]);
                 return;
             }
@@ -150,11 +153,6 @@ class NotifyAdminOfNewRegistration
             $tenantName = TenantContext::get()['name'] ?? 'Project NEXUS';
             $baseUrl    = TenantContext::getFrontendUrl();
             $basePath   = TenantContext::getSlugPrefix();
-            // Recipients include broker/coordinator roles who can't hit
-            // /admin/* routes — they're redirected to /dashboard. Use the
-            // user-facing /profile/{id} route which works for everyone.
-            $profileUrl = $baseUrl . $basePath . '/profile/' . $user->id;
-
             // 🔴 Does this registration actually need somebody to act?
             //
             // The alert used to be the same either way: subject "New member
@@ -190,9 +188,19 @@ class NotifyAdminOfNewRegistration
             // are deliberately refused /admin/* (see AdminTier), so they keep
             // the broker members list they can actually open.
             $adminQueueUrl  = $baseUrl . $basePath . '/admin/users?filter=pending';
+            $adminListUrl   = $baseUrl . $basePath . '/admin/users';
             $brokerListUrl  = $baseUrl . $basePath . '/broker/members';
 
             $admins = self::recipientsFor((int) $event->tenantId);
+
+            if ($ledgerManaged) {
+                RegistrationStaffEmailDeliveryLedger::cancelCapturedOutsideRecipients(
+                    $tenantId,
+                    $entityId,
+                    $admins->filter(static fn ($staff): bool => !empty($staff->email))
+                        ->pluck('id')->map(static fn ($id): int => (int) $id)->all(),
+                );
+            }
 
             if ($admins->isEmpty()) {
                 Log::info('NotifyAdminOfNewRegistration: no active admins found for tenant', ['tenant_id' => $event->tenantId]);
@@ -206,17 +214,27 @@ class NotifyAdminOfNewRegistration
                 }
 
                 try {
-                    LocaleContext::withLocale($admin, function () use ($admin, $user, $profileUrl, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $brokerListUrl) {
+                    LocaleContext::withLocale($admin, function () use ($admin, $user, $tenantName, $adminEmail, $event, $needsApproval, $adminQueueUrl, $adminListUrl, $brokerListUrl, $ledgerManaged) {
                         $adminName = $admin->first_name ?? $admin->name ?? 'Admin';
 
-                        $plan = self::alertPlanFor($admin, $needsApproval, $profileUrl, $adminQueueUrl, $brokerListUrl);
+                        $plan = self::alertPlanFor($admin, $needsApproval, $adminQueueUrl, $brokerListUrl, $adminListUrl);
                         $key      = $plan['key'];
                         $bellLink = $plan['bell_link'];
                         $ctaUrl   = $plan['cta_url'];
 
                         $bellContent = __('emails_misc.admin_notify.' . $key . 'bell');
-                        Notification::createNotification((int) $admin->id, $bellContent, $bellLink, 'new_user_registered');
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'new_user_registered', $bellContent, $bellLink);
+                        $noticeKey = 'admin_new_registration:' . $event->tenantId . ':' . $user->id . ':' . $admin->id;
+                        $bellCreated = Notification::createNotificationOnce(
+                            (int) $admin->id,
+                            $bellContent,
+                            $bellLink,
+                            'new_user_registered',
+                            (int) $event->tenantId,
+                            $noticeKey
+                        );
+                        if ($bellCreated) {
+                            \App\Services\NotificationDispatcher::fanOutPush((int) $admin->id, 'new_user_registered', $bellContent, $bellLink);
+                        }
 
                         $subject = __('emails_misc.admin_notify.' . $key . 'subject', ['community' => $tenantName]);
 
@@ -229,11 +247,55 @@ class NotifyAdminOfNewRegistration
                             ->button(__('emails_misc.admin_notify.' . $key . 'cta'), $ctaUrl)
                             ->render();
 
-                        if (!EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
-                            'tenant_id' => $event->tenantId,
-                            'idempotency_key' => 'admin_new_registration:' . $event->tenantId . ':' . $user->id . ':' . $admin->id,
-                        ])) {
-                            Log::warning('NotifyAdminOfNewRegistration: email send failed', ['admin_id' => $admin->id, 'email' => $adminEmail]);
+                        $claim = $ledgerManaged
+                            ? RegistrationStaffEmailDeliveryLedger::claimCapturedForInline(
+                                (int) $event->tenantId,
+                                (int) $user->id,
+                                (int) $admin->id,
+                            )
+                            : null;
+                        if ($ledgerManaged && $claim === null) {
+                            return;
+                        }
+
+                        $sent = false;
+                        $outcome = 'unknown';
+                        $errorCode = 'INLINE_SEND_UNCONFIRMED';
+                        try {
+                            if ($claim !== null && EmailDispatchService::isUnroutableRecipient($adminEmail)) {
+                                // This is a pre-transport refusal: no provider
+                                // could have accepted this address.
+                                $outcome = 'definite_failure';
+                                $errorCode = 'UNROUTABLE_RECIPIENT';
+                            } else {
+                                $sent = EmailDispatchService::sendRaw($adminEmail, $subject, $html, null, null, null, 'admin_new_registration', [
+                                    'tenant_id' => $event->tenantId,
+                                    'idempotency_key' => $noticeKey,
+                                    'dispatch_id' => $claim['dispatch_id'] ?? null,
+                                ]);
+                                if ($sent) {
+                                    $outcome = 'accepted';
+                                    $errorCode = null;
+                                }
+                            }
+                        } finally {
+                            if ($claim !== null && !RegistrationStaffEmailDeliveryLedger::resolveClaim(
+                                (int) $event->tenantId,
+                                $claim['id'],
+                                $claim['token'],
+                                $outcome,
+                                null,
+                                $errorCode,
+                            )) {
+                                throw new \RuntimeException('Registration staff-email claim could not be resolved');
+                            }
+                        }
+                        if (!$sent) {
+                            Log::warning('NotifyAdminOfNewRegistration: email delivery not accepted', [
+                                'admin_id' => $admin->id,
+                                'tenant_id' => $event->tenantId,
+                                'outcome' => $outcome,
+                            ]);
                         }
                     });
                 } catch (\Throwable $e) {
@@ -246,8 +308,9 @@ class NotifyAdminOfNewRegistration
                 }
             }
 
-            // Mark handled only after the full fanout ran, so a duplicate delivery can't re-email admins.
-            if ($handledKey !== null) {
+            // The legacy cache gate remains only for events without captured
+            // intent. Managed email deduplication lives in the row claim.
+            if (!$ledgerManaged && $handledKey !== null) {
                 Cache::put($handledKey, 1, now()->addHours(24));
             }
         } finally {

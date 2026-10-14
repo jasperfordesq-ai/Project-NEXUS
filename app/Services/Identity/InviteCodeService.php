@@ -105,13 +105,13 @@ class InviteCodeService
         $code = strtoupper(trim($code));
 
         // Atomic increment with validation
-        $affected = DB::statement(
+        $affected = DB::affectingStatement(
             "UPDATE tenant_invite_codes
              SET uses_count = uses_count + 1, last_used_at = NOW(), last_used_by = ?
              WHERE tenant_id = ? AND code = ? AND is_active = 1 AND uses_count < max_uses
                AND (expires_at IS NULL OR expires_at > NOW())",
             [$userId, $tenantId, $code]
-        )->rowCount();
+        );
 
         if ($affected > 0) {
             // Log the redemption
@@ -168,10 +168,10 @@ class InviteCodeService
      */
     public static function deactivate(int $tenantId, int $codeId): bool
     {
-        return DB::statement(
+        return DB::affectingStatement(
             "UPDATE tenant_invite_codes SET is_active = 0 WHERE id = ? AND tenant_id = ?",
             [$codeId, $tenantId]
-        )->rowCount() > 0;
+        ) > 0;
     }
 
     /**

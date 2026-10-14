@@ -169,6 +169,30 @@ class AdminUsersControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_registration_alert_member_list_finds_an_incomplete_private_registrant_for_staff_only(): void
+    {
+        $registrant = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => 'private-registration-' . uniqid('', true) . '@example.test',
+            'status' => 'active',
+            'is_approved' => true,
+            'onboarding_completed' => false,
+            'privacy_profile' => 'connections',
+        ]);
+
+        foreach (['admin', 'broker', 'coordinator'] as $role) {
+            $staff = User::factory()->forTenant($this->testTenantId)->create([
+                'role' => $role, 'status' => 'active', 'is_approved' => true,
+            ]);
+            Sanctum::actingAs($staff, ['*']);
+            $this->apiGet('/v2/admin/users?search=' . urlencode($registrant->email))
+                ->assertStatus(200)
+                ->assertJsonPath('data.0.id', $registrant->id);
+        }
+
+        Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->create(['role' => 'member']), ['*']);
+        $this->apiGet('/v2/admin/users?search=' . urlencode($registrant->email))->assertStatus(403);
+    }
+
     public function test_index_includes_email_activation_timestamp(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

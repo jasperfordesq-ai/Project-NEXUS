@@ -307,6 +307,7 @@ class MentionService
                 FROM users u
                 WHERE u.tenant_id = ?
                   AND u.status = 'active'
+                  AND u.is_approved = 1
                   AND u.deleted_at IS NULL
                   AND (u.name LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.username LIKE ?)";
 

@@ -41,8 +41,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
             ])
             ->where('status', $status);
 
@@ -120,13 +120,30 @@ class ConnectionService
             'connection_request',
         );
 
-        $connection = DB::transaction(function () use ($requesterId, $receiverId) {
+        $connection = DB::transaction(function () use ($requesterId, $receiverId, $requesterTenantId) {
             // Lock both user rows (in consistent order to prevent deadlocks) to serialize
             // concurrent connection requests between the same pair of users
             $minId = min($requesterId, $receiverId);
             $maxId = max($requesterId, $receiverId);
-            DB::table('users')->where('id', $minId)->lockForUpdate()->first();
-            DB::table('users')->where('id', $maxId)->lockForUpdate()->first();
+            $firstUser = DB::table('users')->where('id', $minId)->lockForUpdate()->first();
+            $secondUser = DB::table('users')->where('id', $maxId)->lockForUpdate()->first();
+            $requester = $requesterId === $minId ? $firstUser : $secondUser;
+            $receiver = $receiverId === $minId ? $firstUser : $secondUser;
+
+            // The numeric ID in a staff registration notice is not an
+            // invitation for another member to contact an unapproved person.
+            // Check after locking so approval cannot change between the
+            // decision and the connection being created.
+            if ($requester === null
+                || (int) $requester->tenant_id !== (int) $requesterTenantId
+                || $requester->status !== 'active'
+                || ! $requester->is_approved
+                || $receiver === null
+                || (int) $receiver->tenant_id !== (int) $requesterTenantId
+                || $receiver->status !== 'active'
+                || ! $receiver->is_approved) {
+                throw new \RuntimeException('User not found');
+            }
 
             // Check for existing connection in either direction
             $existing = Connection::query()
@@ -453,8 +470,8 @@ class ConnectionService
 
         $query = Connection::query()
             ->with([
-                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
-                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile',
+                'requester:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
+                'receiver:id,name,first_name,last_name,avatar_url,organization_name,profile_type,location,bio,privacy_profile,status,is_approved',
             ]);
 
         if ($status === 'pending_sent') {
@@ -523,9 +540,14 @@ class ConnectionService
         $partner = (int) $conn->requester_id === $viewerId ? $conn->receiver : $conn->requester;
         $shaped = null;
 
+        if ($partner !== null && ($partner->status !== 'active' || ! $partner->is_approved)
+            && ! MemberProfileVisibility::canView((int) $partner->id, $viewerId)) {
+            $partner = null;
+        }
+
         if ($partner !== null) {
             $shaped = $partner->toArray();
-            unset($shaped['last_active_at'], $shaped['privacy_profile']);
+            unset($shaped['last_active_at'], $shaped['privacy_profile'], $shaped['status'], $shaped['is_approved']);
 
             // Same rule as MemberProfileVisibility::canView() for a signed-in
             // viewer, read from the loaded row: "public" and "members" are

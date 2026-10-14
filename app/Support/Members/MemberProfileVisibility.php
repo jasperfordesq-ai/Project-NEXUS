@@ -62,9 +62,10 @@ final class MemberProfileVisibility
         // Bypass the tenant scope so a platform super-admin acting on another
         // community is still recognised.
         $viewer = User::withoutGlobalScope(TenantScope::class)
-            ->select(['id', 'tenant_id', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+            ->select(['id', 'tenant_id', 'role', 'status', 'is_approved', 'is_admin',
+                'is_super_admin', 'is_tenant_super_admin', 'is_god'])
             ->find($viewerId);
-        if (!AdminTier::allows($viewer)) {
+        if ($viewer?->status !== 'active' || ! $viewer->is_approved || ! AdminTier::allows($viewer)) {
             return false;
         }
 
@@ -102,12 +103,33 @@ final class MemberProfileVisibility
             return true;
         }
 
-        $privacy = DB::table('users')
+        $owner = DB::table('users')
             ->where('id', $ownerId)
             ->where('tenant_id', TenantContext::getId())
-            ->value('privacy_profile');
+            ->first(['tenant_id', 'status', 'is_approved', 'privacy_profile']);
 
-        $privacy = $privacy === null ? 'public' : (string) $privacy;
+        if ($owner === null) {
+            return false;
+        }
+
+        // A direct member ID must not disclose a registration before the
+        // account is active and approved. Keep the same staff review exception
+        // as the main public-profile route; self access was handled above.
+        if ($owner->status !== 'active' || ! $owner->is_approved) {
+            $viewer = $viewerId ? User::withoutGlobalScope(TenantScope::class)
+                ->select(['id', 'tenant_id', 'role', 'status', 'is_approved'])
+                ->find($viewerId) : null;
+            $staffCanReview = $viewer?->status === 'active' && $viewer->is_approved && (
+                self::viewerIsAdmin($viewerId)
+                || ((int) $viewer->tenant_id === (int) $owner->tenant_id
+                    && in_array($viewer->role, ['broker', 'coordinator'], true))
+            );
+            if (! $staffCanReview) {
+                return false;
+            }
+        }
+
+        $privacy = $owner->privacy_profile === null ? 'public' : (string) $owner->privacy_profile;
 
         if ($privacy === 'public') {
             return true;
@@ -164,19 +186,23 @@ final class MemberProfileVisibility
         // Only a fixed table/alias name reaches the SQL; no request value does.
         $t = preg_replace('/[^A-Za-z0-9_]/', '', $table) ?: 'users';
         $col = "{$t}.privacy_profile";
+        $approved = "{$t}.status = 'active' AND {$t}.is_approved = 1";
 
         if ($viewerId === null) {
-            return ["{$col} IS NULL OR {$col} = 'public'", []];
+            return ["({$approved}) AND ({$col} IS NULL OR {$col} = 'public')", []];
         }
 
-        $sql = "{$col} IS NULL OR {$col} IN ('public', 'members')"
+        // Self may inspect an unfinished account. Bulk member-facing lists
+        // must not reveal a pending registration merely because its profile
+        // privacy is public or an older connection row exists.
+        $sql = "(({$approved}) OR {$t}.id = ?) AND ({$col} IS NULL OR {$col} IN ('public', 'members')"
             . " OR {$t}.id = ?"
             . " OR EXISTS (SELECT 1 FROM connections pv_c"
             . " WHERE pv_c.tenant_id = ? AND pv_c.status = 'accepted'"
             . " AND ((pv_c.requester_id = {$t}.id AND pv_c.receiver_id = ?)"
-            . " OR (pv_c.receiver_id = {$t}.id AND pv_c.requester_id = ?)))";
+            . " OR (pv_c.receiver_id = {$t}.id AND pv_c.requester_id = ?))))";
 
-        return [$sql, [$viewerId, $tenantId, $viewerId, $viewerId]];
+        return [$sql, [$viewerId, $viewerId, $tenantId, $viewerId, $viewerId]];
     }
 
     /**

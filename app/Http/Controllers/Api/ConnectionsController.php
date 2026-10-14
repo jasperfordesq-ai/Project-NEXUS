@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Support\UserDisplayName;
+use App\Support\Members\MemberProfileVisibility;
 
 /**
  * ConnectionsController - Member connections (friend requests).
@@ -105,10 +106,12 @@ class ConnectionsController extends BaseApiController
         // "no connection". The two answers were identical, which let a caller
         // confirm that an id exists somewhere on the platform
         // (CrossCommunityAccessSweepTest, 2026-09-10).
-        if (! \App\Models\User::query()
+        $otherUser = \App\Models\User::query()
             ->where('id', $otherUserId)
             ->where('tenant_id', $this->getTenantId())
-            ->exists()) {
+            ->first(['id', 'status', 'is_approved']);
+        if (! $otherUser || (($otherUser->status !== 'active' || ! $otherUser->is_approved)
+            && ! MemberProfileVisibility::canView($otherUserId, $userId))) {
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 
