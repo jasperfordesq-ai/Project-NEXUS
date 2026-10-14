@@ -729,7 +729,7 @@ test.describe('Events enterprise lifecycle @events @enterprise @journey', () => 
     await expect(waitlistedRow).toContainText('Position 1');
 
     await page.goto(`${FRONTEND_BASE_URL}/${TENANT}/events/${event.id}/manage/check-in`);
-    const checkInTable = page.getByRole('grid', { name: 'Manual check-in roster' });
+    const checkInTable = page.getByRole('grid', { name: 'Check in by name' });
     await expect(checkInTable).toBeVisible({ timeout: 25_000 });
     const checkInRow = checkInTable.getByRole('row').filter({ hasText: current.rosterMember.name });
     await expect(checkInRow).toContainText('Not checked in');
