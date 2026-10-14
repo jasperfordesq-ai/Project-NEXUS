@@ -45,6 +45,11 @@ class F321UnsubscribeRequiresConfirmationTest extends TestCase
     {
         TenantContext::setById($this->testTenantId);
         $url = NotificationUnsubscribeController::buildSignedUrl((int) $user->id, $this->testTenantId, $category);
+        // The test tenant has no domain of its own. The link must still sit
+        // directly under the host: /{slug}/api/... is never proxied to Laravel
+        // (email-links audit, 2026-10-14).
+        $this->assertStringStartsWith(TenantContext::getFrontendUrl() . '/api/v2/notifications/unsubscribe?token=', $url);
+        $this->assertStringNotContainsString('/' . $this->testTenantSlug . '/api/', $url);
         parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
 
         return (string) ($query['token'] ?? '');

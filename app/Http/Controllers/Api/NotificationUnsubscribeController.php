@@ -95,11 +95,18 @@ class NotificationUnsubscribeController extends BaseApiController
         $sig     = hash_hmac('sha256', $payload, (string) config('app.key'));
         $token   = rtrim(strtr(base64_encode($payload . '.' . $sig), '+/', '-_'), '=');
 
-        // Use the tenant's frontend URL so the unsubscribe page lives under
-        // the same domain as the email's other links.
-        $baseUrl  = TenantContext::getFrontendUrl();
-        $basePath = TenantContext::getSlugPrefix();
-        return $baseUrl . $basePath . '/api/v2/notifications/unsubscribe?token=' . $token;
+        // Use the tenant's frontend host so the unsubscribe page lives under
+        // the same domain as the email's other links — but never the slug
+        // prefix. This is an API route: every community host proxies /api/
+        // to Laravel, and nothing proxies /{slug}/api/. For a community
+        // without a domain of its own (agoris under timebank.global, stratford
+        // under uk.timebank.global) the prefixed form reached the React app,
+        // which answered the mail client's Unsubscribe button and the digest's
+        // "unsubscribe from events" link with its own page-not-found. The
+        // tenant is carried by the token, so the slug adds nothing here.
+        // Pinned by tests/Laravel/Unit/Core/TenantEmailLinkShapesTest.php.
+        $baseUrl = TenantContext::getFrontendUrl();
+        return $baseUrl . '/api/v2/notifications/unsubscribe?token=' . $token;
     }
 
     /**
