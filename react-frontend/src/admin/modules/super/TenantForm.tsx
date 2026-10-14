@@ -271,6 +271,7 @@ export function TenantForm() {
   const hubDomain = chosenHub?.domain?.trim() || '';
   const mainAddress = buildPlatformTenantUrl(form.slug, hubDomain);
   const accessibleAddress = buildAccessibleFrontendUrl(form.slug);
+  const customDomainEntered = Boolean(form.domain.trim() || form.accessible_domain.trim());
 
   const copyAddress = async (address: string) => {
     try {
@@ -439,7 +440,6 @@ export function TenantForm() {
                 <p className="text-xs font-medium uppercase text-muted flex items-center gap-1">
                   <Globe size={12} /> {t('tenant_form.addresses_heading')}
                 </p>
-                <p className="text-sm text-muted">{t('tenant_form.addresses_desc')}</p>
                 <TenantAddressField
                   label={t('tenant_form.address_react_label')}
                   value={mainAddress}
@@ -454,6 +454,14 @@ export function TenantForm() {
                   copyLabel={t('tenant_form.address_copy')}
                   onCopy={copyAddress}
                 />
+                {/* Owner wording (14 Oct 2026): these addresses are a stop-gap
+                    until the community's own domain is live with its DNS
+                    provider. Plain words only: no "slug", no bare "DNS". */}
+                <p className="text-sm text-muted">
+                  {customDomainEntered
+                    ? t('tenant_form.addresses_custom_domain_note')
+                    : t('tenant_form.addresses_temporary_note')}
+                </p>
                 {hubDomain && (
                   <p className="text-xs text-muted">{t('tenant_form.address_hub_domain_desc')}</p>
                 )}

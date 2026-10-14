@@ -475,6 +475,14 @@ describe('TenantForm — location tab geocoding', () => {
 describe('TenantForm — live web addresses', () => {
   const MAIN = 'Main website address';
   const ACCESSIBLE = 'Accessible website address';
+  const TEMPORARY_NOTE =
+    'Your community can be reached at these addresses straight away. ' +
+    'Use them until your own web address has been set up with the company that manages your web addresses (DNS). ' +
+    'Once that is live, members should use your own web address instead.';
+  const CUSTOM_DOMAIN_NOTE =
+    'Your community can be reached at these addresses straight away. ' +
+    'The web address you have entered below will become the main address once it has been set up with the company that manages your web addresses (DNS). ' +
+    'Until then, use these.';
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -496,6 +504,10 @@ describe('TenantForm — live web addresses', () => {
     expect(screen.getByRole('textbox', { name: ACCESSIBLE })).toHaveValue(
       'https://accessible.project-nexus.ie/my-test-timebank/accessible'
     );
+    // The addresses are a stop-gap until the community's own domain is live,
+    // and the note says so in plain words (no "slug", no bare "DNS").
+    expect(screen.getByText(TEMPORARY_NOTE)).toBeInTheDocument();
+    expect(screen.queryByText(CUSTOM_DOMAIN_NOTE)).not.toBeInTheDocument();
   });
 
   it('follows the slug when it is edited by hand, not the custom domain fields', async () => {
@@ -515,6 +527,10 @@ describe('TenantForm — live web addresses', () => {
     expect(screen.getByRole('textbox', { name: ACCESSIBLE })).toHaveValue(
       'https://accessible.project-nexus.ie/coventrytb/accessible'
     );
+    // Once a custom domain is entered, the note says that domain becomes the
+    // main address when the hosting provider has set it up.
+    expect(screen.getByText(CUSTOM_DOMAIN_NOTE)).toBeInTheDocument();
+    expect(screen.queryByText(TEMPORARY_NOTE)).not.toBeInTheDocument();
   });
 
   it('uses the hub domain for the main address when the chosen parent owns one', async () => {
