@@ -11,6 +11,7 @@
 namespace App\Services\Auth;
 
 use App\Core\EmailTemplateBuilder;
+use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Services\EmailDispatchService;
 use App\Support\Tenancy\UserTenantResolver;
@@ -49,10 +50,18 @@ class WelcomeInvitationMailer
         $invitationToken = null;
 
         try {
-            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $withPasswordLink, &$invitationToken) {
-                // Resolve tenant from the USER's tenant_id
-                $resolvedTenant = UserTenantResolver::resolve($user);
-                $userTenantId = $resolvedTenant['tenant_id'];
+            // Resolve tenant from the USER's tenant_id — and render INSIDE it.
+            // The template footer ("manage preferences") reads TenantContext,
+            // so a resend made from a parent community's screen otherwise
+            // pointed the member at the parent's address while the buttons
+            // pointed at their own (email-links audit, 2026-10-14).
+            $resolvedTenant = UserTenantResolver::resolve($user);
+            $userTenantId = $resolvedTenant['tenant_id'];
+
+            // A full closure, not an arrow function: $invitationToken must be
+            // captured by reference so a failed send can revoke the link.
+            TenantContext::runForTenant($userTenantId, function () use ($user, $withPasswordLink, &$invitationToken, $resolvedTenant, $userTenantId): void {
+                LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $withPasswordLink, &$invitationToken, $resolvedTenant, $userTenantId) {
                 $tenantName = $resolvedTenant['name'];
                 $tenantNameSafe = htmlspecialchars($tenantName, ENT_QUOTES, 'UTF-8');
 
@@ -106,6 +115,7 @@ class WelcomeInvitationMailer
                 if (!EmailDispatchService::sendRaw($user['email'], $subject, $html, null, null, null, 'welcome', ['tenant_id' => $userTenantId])) {
                     throw new \RuntimeException('Welcome email send returned false');
                 }
+                });
             });
         } catch (\Throwable $e) {
             if ($invitationToken !== null) {
