@@ -260,6 +260,8 @@ final class EventBroadcastDeliveryReliabilityTest extends TestCase
             ->assertJsonPath('data.0.summary.excerpt', 'Doors open at 18:30.')
             ->assertJsonPath('data.0.summary.skipped_reasons.email_cadence_off', 1)
             ->assertJsonPath('data.0.summary.failed_reasons', []);
+        // An empty reason map must be a JSON object, never a list.
+        self::assertStringContainsString('"failed_reasons":{}', (string) $withSummary->getContent());
         self::assertStringNotContainsString((string) $optedOut->email, (string) $withSummary->getContent());
     }
 

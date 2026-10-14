@@ -71,7 +71,14 @@ final class EventBroadcastResource
             'updated_at' => self::timestamp($broadcast->updated_at),
         ];
         if ($summary !== null) {
-            $projection['summary'] = $summary;
+            // Reason maps are objects in JSON even when empty: PHP encodes an
+            // empty array as [], which the website's strict schema rejected,
+            // so the list showed "This page needs a refresh" (E-106).
+            $projection['summary'] = [
+                'excerpt' => $summary['excerpt'],
+                'skipped_reasons' => (object) $summary['skipped_reasons'],
+                'failed_reasons' => (object) $summary['failed_reasons'],
+            ];
         }
 
         return $projection;
