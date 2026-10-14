@@ -50,6 +50,7 @@ final class EventBroadcastController extends BaseApiController
                 $this->getActingUserId(),
                 $page,
                 min(100, $perPage),
+                $this->wantsSummary($request),
             );
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
@@ -80,6 +81,7 @@ final class EventBroadcastController extends BaseApiController
                 $this->getActingUserId(),
                 $historyPage,
                 min(100, $historyPerPage),
+                $this->wantsSummary($request),
             );
         } catch (EventBroadcastException $exception) {
             return $this->broadcastError($exception);
@@ -295,12 +297,30 @@ final class EventBroadcastController extends BaseApiController
         return $this->privateResponse($this->respondWithError($code, $message, $field, $status));
     }
 
+    /** `?include=summary`: opt-in, because the store app's schemas reject unknown fields. */
+    private function wantsSummary(Request $request): bool
+    {
+        $include = $request->query('include');
+
+        return is_string($include)
+            && in_array('summary', array_map('trim', explode(',', $include)), true);
+    }
+
     private function unexpected(Throwable $exception): JsonResponse
     {
-        Log::error('Event broadcast request failed', [
+        // Where it failed, and for a database error its SQLSTATE and driver
+        // code. Never the message: a query exception embeds its bindings,
+        // which can include the organiser's text (E-106).
+        $context = [
             'exception' => $exception::class,
             'reason_code' => 'event_broadcast_server_error',
-        ]);
+            'origin' => basename($exception->getFile()) . ':' . $exception->getLine(),
+        ];
+        if ($exception instanceof \Illuminate\Database\QueryException) {
+            $context['sqlstate'] = (string) ($exception->errorInfo[0] ?? '');
+            $context['driver_code'] = (int) ($exception->errorInfo[1] ?? 0);
+        }
+        Log::error('Event broadcast request failed', $context);
         return $this->privateResponse($this->respondWithError(
             'EVENT_BROADCAST_SERVER_ERROR',
             __('api.server_error'),

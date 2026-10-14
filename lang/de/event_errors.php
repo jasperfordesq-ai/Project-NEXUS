@@ -15,5 +15,10 @@ return [
         'audience_empty' => 'Niemand würde diese Nachricht erhalten. Wählen Sie eine Zielgruppe, die mindestens eine Person umfasst.',
         'channel_empty' => 'Wählen Sie mindestens einen Weg, auf dem diese Nachricht gesendet wird.',
         'body_invalid' => 'Schreiben Sie eine Nachricht mit höchstens :max Zeichen.',
+        'version_conflict' => 'Diese Nachricht wurde an anderer Stelle geändert, nachdem die Seite geladen wurde. Laden Sie die Seite neu, prüfen Sie sie und versuchen Sie es erneut.',
+        'transition_invalid' => 'Diese Nachricht ist bereits weiter: Sie wird gerade gesendet oder wurde schon gesendet. Laden Sie die Seite neu, um den Stand zu sehen.',
+        'cancel_after_send_forbidden' => 'Der Versand hat bereits begonnen, daher kann diese Nachricht nicht mehr abgebrochen werden.',
+        'idempotency_conflict' => 'Das sieht nach einer Wiederholung eines früheren Versuchs mit anderen Angaben aus. Laden Sie die Seite neu und prüfen Sie, ob die Nachricht schon da ist.',
+        'authorization_denied' => 'Sie dürfen für diese Veranstaltung keine Nachrichten senden. Bitten Sie die Veranstalterin oder den Veranstalter, Sie zum Team hinzuzufügen.',
     ],
 ];

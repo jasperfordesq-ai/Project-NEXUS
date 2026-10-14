@@ -29,6 +29,13 @@ abstract class EventBroadcastFormRequest extends FormRequest
         'event_broadcast_audience_empty' => 'event_errors.broadcast.audience_empty',
         'event_broadcast_channel_empty' => 'event_errors.broadcast.channel_empty',
         'event_broadcast_body_invalid' => 'event_errors.broadcast.body_invalid',
+        // E-106: refusals the organiser meets when the message moved on in
+        // the background, or when they lack the event-team permission.
+        'event_broadcast_version_conflict' => 'event_errors.broadcast.version_conflict',
+        'event_broadcast_transition_invalid' => 'event_errors.broadcast.transition_invalid',
+        'event_broadcast_cancel_after_send_forbidden' => 'event_errors.broadcast.cancel_after_send_forbidden',
+        'event_broadcast_idempotency_conflict' => 'event_errors.broadcast.idempotency_conflict',
+        'event_broadcast_authorization_denied' => 'event_errors.broadcast.authorization_denied',
     ];
 
     public function authorize(): bool

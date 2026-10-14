@@ -15,5 +15,10 @@ return [
         'audience_empty' => 'Personne ne recevrait ce message. Choisissez un public qui comprend au moins une personne.',
         'channel_empty' => 'Choisissez au moins un moyen d’envoyer ce message.',
         'body_invalid' => 'Rédigez un message de :max caractères au maximum.',
+        'version_conflict' => 'Ce message a été modifié ailleurs après le chargement de la page. Actualisez la page, vérifiez-le et réessayez.',
+        'transition_invalid' => 'Ce message a déjà avancé : il est peut-être en cours d\'envoi ou déjà envoyé. Actualisez la page pour voir où il en est.',
+        'cancel_after_send_forbidden' => 'L\'envoi a déjà commencé, ce message ne peut donc plus être annulé.',
+        'idempotency_conflict' => 'Cela ressemble à la répétition d\'une tentative précédente avec d\'autres informations. Actualisez la page et vérifiez si le message y est déjà.',
+        'authorization_denied' => 'Vous n\'êtes pas autorisé à envoyer des messages pour cet événement. Demandez à l\'organisateur de vous ajouter à l\'équipe de l\'événement.',
     ],
 ];

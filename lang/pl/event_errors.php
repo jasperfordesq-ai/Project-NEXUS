@@ -15,5 +15,10 @@ return [
         'audience_empty' => 'Nikt nie otrzymałby tej wiadomości. Wybierz grupę odbiorców, która obejmuje co najmniej jedną osobę.',
         'channel_empty' => 'Wybierz co najmniej jeden sposób wysłania tej wiadomości.',
         'body_invalid' => 'Napisz wiadomość o długości nie większej niż :max znaków.',
+        'version_conflict' => 'Ta wiadomość została zmieniona w innym miejscu po wczytaniu strony. Odśwież stronę, sprawdź ją i spróbuj ponownie.',
+        'transition_invalid' => 'Ta wiadomość jest już na dalszym etapie: może być wysyłana lub już wysłana. Odśwież stronę, aby zobaczyć jej stan.',
+        'cancel_after_send_forbidden' => 'Wysyłanie już się rozpoczęło, więc tej wiadomości nie można już anulować.',
+        'idempotency_conflict' => 'Wygląda to na powtórzenie wcześniejszej próby z innymi danymi. Odśwież stronę i sprawdź, czy wiadomość już tam jest.',
+        'authorization_denied' => 'Nie masz uprawnień do wysyłania wiadomości dotyczących tego wydarzenia. Poproś organizatora o dodanie Cię do zespołu wydarzenia.',
     ],
 ];

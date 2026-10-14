@@ -16,9 +16,16 @@ use DateTimeInterface;
 /** Manager projection with aggregate delivery evidence and no recipient identity. */
 final class EventBroadcastResource
 {
-    /** @return array<string,mixed> */
-    public static function fromModel(EventBroadcast $broadcast, bool $includeBody = true): array
-    {
+    /**
+     * @param array{excerpt:?string,skipped_reasons:array<string,int>,failed_reasons:array<string,int>}|null $summary
+     *        opt-in (`?include=summary`): the store app's strict schemas reject unknown fields
+     * @return array<string,mixed>
+     */
+    public static function fromModel(
+        EventBroadcast $broadcast,
+        bool $includeBody = true,
+        ?array $summary = null,
+    ): array {
         $status = $broadcast->status instanceof BackedEnum
             ? (string) $broadcast->status->value
             : (string) $broadcast->getRawOriginal('status');
@@ -27,7 +34,7 @@ final class EventBroadcastResource
             : (string) $broadcast->getRawOriginal('variant');
         $state = EventBroadcastStatus::tryFrom($status);
 
-        return [
+        $projection = [
             'contract_version' => 1,
             'id' => (int) $broadcast->id,
             'event_id' => (int) $broadcast->event_id,
@@ -63,6 +70,24 @@ final class EventBroadcastResource
             'created_at' => self::timestamp($broadcast->created_at),
             'updated_at' => self::timestamp($broadcast->updated_at),
         ];
+        if ($summary !== null) {
+            $projection['summary'] = $summary;
+        }
+
+        return $projection;
+    }
+
+    /** A short plain-text excerpt so the organiser can tell messages apart. */
+    public static function excerpt(?string $body, int $length = 140): ?string
+    {
+        $collapsed = trim((string) preg_replace('/\s+/u', ' ', (string) $body));
+        if ($collapsed === '') {
+            return null;
+        }
+
+        return mb_strlen($collapsed) > $length
+            ? rtrim(mb_substr($collapsed, 0, $length - 1)) . '…'
+            : $collapsed;
     }
 
     /** @return list<string> */

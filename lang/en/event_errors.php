@@ -15,5 +15,10 @@ return [
         'audience_empty' => 'Nobody would receive this message. Choose an audience that includes at least one person.',
         'channel_empty' => 'Choose at least one way to send this message.',
         'body_invalid' => 'Write a message of no more than :max characters.',
+        'version_conflict' => 'This message was changed somewhere else after the page loaded. Refresh the page, check it and try again.',
+        'transition_invalid' => 'This message has already moved on: it may be sending or already sent. Refresh the page to see where it is.',
+        'cancel_after_send_forbidden' => 'Sending has already started, so this message can no longer be cancelled.',
+        'idempotency_conflict' => 'This looks like a repeat of an earlier attempt with different details. Refresh the page and check whether the message is already there.',
+        'authorization_denied' => 'You are not allowed to send messages for this event. Ask the event organiser to add you to the event team.',
     ],
 ];

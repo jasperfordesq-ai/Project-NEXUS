@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EventBroadcastDeliveryStatus;
 use App\Exceptions\EventBroadcastException;
 use App\Http\Resources\EventBroadcastHistoryResource;
 use App\Http\Resources\EventBroadcastResource;
@@ -15,6 +16,7 @@ use App\Models\EventBroadcast;
 use App\Models\EventBroadcastHistory;
 use App\Models\User;
 use App\Support\Events\EventBroadcastFoundationSupport;
+use Illuminate\Support\Facades\DB;
 
 /** Authorized organizer read model; all participant detail remains internal. */
 final class EventBroadcastQueryService
@@ -30,6 +32,7 @@ final class EventBroadcastQueryService
         User|int $actor,
         int $page = 1,
         int $perPage = 20,
+        bool $includeSummary = false,
     ): array {
         $this->support->assertSchema();
         $tenantId = $this->support->tenantId();
@@ -42,14 +45,19 @@ final class EventBroadcastQueryService
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId);
         $total = (clone $query)->count();
-        $items = $query
+        $models = $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
-            ->get()
-            ->map(static fn (EventBroadcast $broadcast): array =>
-                EventBroadcastResource::fromModel($broadcast, false))
+            ->get();
+        $summaries = $includeSummary ? $this->summaries($tenantId, $models->all()) : [];
+        $items = $models
+            ->map(static fn (EventBroadcast $broadcast): array => EventBroadcastResource::fromModel(
+                $broadcast,
+                false,
+                $includeSummary ? ($summaries[(int) $broadcast->id] ?? null) : null,
+            ))
             ->all();
 
         return [
@@ -72,6 +80,7 @@ final class EventBroadcastQueryService
         User|int $actor,
         int $historyPage = 1,
         int $historyPerPage = 50,
+        bool $includeSummary = false,
     ): array
     {
         $this->support->assertSchema();
@@ -109,7 +118,11 @@ final class EventBroadcastQueryService
             ->all();
 
         return [
-            'broadcast' => EventBroadcastResource::fromModel($broadcast),
+            'broadcast' => EventBroadcastResource::fromModel(
+                $broadcast,
+                true,
+                $includeSummary ? ($this->summaries($tenantId, [$broadcast])[(int) $broadcast->id] ?? null) : null,
+            ),
             'history' => $history,
             'history_meta' => [
                 'current_page' => $historyPage,
@@ -119,5 +132,52 @@ final class EventBroadcastQueryService
                 'has_more' => $historyPage < $historyTotalPages,
             ],
         ];
+    }
+
+    /**
+     * Aggregate, identity-free delivery reasons per broadcast (E-106): how many
+     * deliveries were skipped and why, how many could not be delivered and why.
+     * Counts only — never a recipient, address or provider message.
+     *
+     * @param list<EventBroadcast> $broadcasts
+     * @return array<int,array{excerpt:?string,skipped_reasons:array<string,int>,failed_reasons:array<string,int>}>
+     */
+    private function summaries(int $tenantId, array $broadcasts): array
+    {
+        $summaries = [];
+        foreach ($broadcasts as $broadcast) {
+            $summaries[(int) $broadcast->id] = [
+                'excerpt' => EventBroadcastResource::excerpt(
+                    is_string($broadcast->body) ? $broadcast->body : null,
+                ),
+                'skipped_reasons' => [],
+                'failed_reasons' => [],
+            ];
+        }
+        if ($summaries === []) {
+            return [];
+        }
+        $rows = DB::table('event_broadcast_deliveries')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('broadcast_id', array_keys($summaries))
+            ->whereIn('status', [
+                EventBroadcastDeliveryStatus::Suppressed->value,
+                EventBroadcastDeliveryStatus::DeadLetter->value,
+            ])
+            ->selectRaw('broadcast_id, status, COALESCE(suppression_reason, last_error_code) AS reason, COUNT(*) AS aggregate')
+            ->groupBy('broadcast_id', 'status', 'reason')
+            ->get();
+        foreach ($rows as $row) {
+            $id = (int) $row->broadcast_id;
+            $reason = is_string($row->reason) && preg_match('/^[a-z0-9_]{1,100}$/', $row->reason) === 1
+                ? $row->reason
+                : 'unknown';
+            $bucket = (string) $row->status === EventBroadcastDeliveryStatus::Suppressed->value
+                ? 'skipped_reasons'
+                : 'failed_reasons';
+            $summaries[$id][$bucket][$reason] = ($summaries[$id][$bucket][$reason] ?? 0) + (int) $row->aggregate;
+        }
+
+        return $summaries;
     }
 }

@@ -15,5 +15,10 @@ return [
         'audience_empty' => 'Ní bhfaigheadh aon duine an teachtaireacht seo. Roghnaigh grúpa faighteoirí ina bhfuil duine amháin ar a laghad.',
         'channel_empty' => 'Roghnaigh bealach amháin ar a laghad chun an teachtaireacht seo a sheoladh.',
         'body_invalid' => 'Scríobh teachtaireacht nach mó ná :max carachtar í.',
+        'version_conflict' => 'Athraíodh an teachtaireacht seo in áit eile tar éis don leathanach lódáil. Athnuaigh an leathanach, seiceáil í agus bain triail eile as.',
+        'transition_invalid' => 'Tá an teachtaireacht seo bogtha ar aghaidh cheana: d\'fhéadfadh sí a bheith á seoladh nó seolta cheana. Athnuaigh an leathanach le feiceáil cá bhfuil sí.',
+        'cancel_after_send_forbidden' => 'Tá tús curtha leis an seoladh cheana, mar sin ní féidir an teachtaireacht seo a chealú a thuilleadh.',
+        'idempotency_conflict' => 'Is cosúil gur athdhéanamh é seo ar iarracht níos luaithe le sonraí difriúla. Athnuaigh an leathanach agus seiceáil an bhfuil an teachtaireacht ann cheana.',
+        'authorization_denied' => 'Níl cead agat teachtaireachtaí a sheoladh don imeacht seo. Iarr ar eagraí an imeachta tú a chur le foireann an imeachta.',
     ],
 ];

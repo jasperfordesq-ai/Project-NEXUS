@@ -169,6 +169,28 @@ final class EventBroadcastAndRetentionErrorMessagesTest extends TestCase
         );
     }
 
+    /**
+     * E-106: the website acts on the version it last saw. When the message has
+     * moved on (the sender started it, another tab changed it), the organiser
+     * must be told so in words, not "The message could not be scheduled".
+     */
+    public function test_acting_on_an_out_of_date_message_says_so(): void
+    {
+        [$organizer, $broadcastId] = $this->draft('announcement', ['registration_confirmed'], true);
+        Sanctum::actingAs($organizer, ['*']);
+
+        $response = $this->apiPost("/v2/event-broadcasts/{$broadcastId}/schedule", [
+            'expected_version' => 7,
+            'scheduled_at' => null,
+        ], ['Idempotency-Key' => 'stale-version-schedule']);
+
+        $response->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'EVENT_BROADCAST_CONFLICT')
+            ->assertJsonPath('errors.0.reason', 'event_broadcast_version_conflict')
+            ->assertJsonPath('errors.0.message', __('event_errors.broadcast.version_conflict'));
+        self::assertNotSame('event_errors.broadcast.version_conflict', __('event_errors.broadcast.version_conflict'));
+    }
+
     public function test_an_unexplained_broadcast_refusal_stays_generic(): void
     {
         $organizer = $this->organizer();

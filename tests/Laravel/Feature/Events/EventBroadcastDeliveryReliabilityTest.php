@@ -213,6 +213,29 @@ final class EventBroadcastDeliveryReliabilityTest extends TestCase
         self::assertSame(EventBroadcastStatus::Sent->value, $this->broadcastStatus($broadcastId));
     }
 
+    // ---- opt-in summary for the organiser screen ------------------------------
+
+    public function test_the_list_explains_skipped_deliveries_only_when_asked(): void
+    {
+        [$organizer, $eventId] = $this->eventWithOrganizer();
+        $optedOut = $this->member('Opted out');
+        $this->globalFrequency((int) $optedOut->id, 'off');
+        $this->confirmedRegistration($eventId, (int) $optedOut->id, (int) $organizer->id);
+        $this->scheduledBroadcast($eventId, $organizer, ['email']);
+        $this->consumer($this->recordingTransport())->processBatch(10, $this->testTenantId);
+        \Laravel\Sanctum\Sanctum::actingAs($organizer, ['*']);
+
+        $plain = $this->apiGet("/v2/events/{$eventId}/broadcasts");
+        $plain->assertOk()->assertJsonMissingPath('data.0.summary');
+
+        $withSummary = $this->apiGet("/v2/events/{$eventId}/broadcasts?include=summary");
+        $withSummary->assertOk()
+            ->assertJsonPath('data.0.summary.excerpt', 'Doors open at 18:30.')
+            ->assertJsonPath('data.0.summary.skipped_reasons.email_cadence_off', 1)
+            ->assertJsonPath('data.0.summary.failed_reasons', []);
+        self::assertStringNotContainsString((string) $optedOut->email, (string) $withSummary->getContent());
+    }
+
     // ---- helpers -------------------------------------------------------------
 
     /** @return array{0:User,1:int} */
