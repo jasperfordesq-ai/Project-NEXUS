@@ -45,6 +45,7 @@ final class EventBroadcastChannelDispatcher implements EventBroadcastTransport
                 $tenantId,
                 $recipient,
                 $message,
+                $deliveryKey,
             ),
             EventBroadcastChannel::Push => $this->push(
                 $tenantId,
@@ -123,7 +124,10 @@ final class EventBroadcastChannelDispatcher implements EventBroadcastTransport
         int $tenantId,
         object $recipient,
         EventBroadcastRenderedMessage $message,
+        string $deliveryKey,
     ): EventBroadcastTransportResult {
+        // Keyed by the delivery, so a repeated hand-off (a released stale
+        // claim, a retry) never puts a second copy in the bell (E-106 FN-3).
         $notificationId = Notification::createNotification(
             (int) $recipient->id,
             $message->message,
@@ -131,6 +135,7 @@ final class EventBroadcastChannelDispatcher implements EventBroadcastTransport
             $message->notificationType,
             false,
             $tenantId,
+            'event_broadcast:' . $deliveryKey,
         );
 
         return new EventBroadcastTransportResult('database', (string) $notificationId);

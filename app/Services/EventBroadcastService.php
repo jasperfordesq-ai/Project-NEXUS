@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\TenantContext;
 use App\Enums\EventBroadcastAction;
 use App\Enums\EventBroadcastAudienceSegment;
 use App\Enums\EventBroadcastChannel;
@@ -25,6 +26,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /** Versioned organizer workflow and transactional recipient-outbox producer. */
 final class EventBroadcastService
@@ -939,6 +941,67 @@ final class EventBroadcastService
 
             return true;
         }, 3);
+    }
+
+    /**
+     * Close every broadcast that is still "sending" although none of its
+     * deliveries is waiting or in progress. Reconciliation normally follows
+     * each processed delivery; this sweep covers a worker that stopped, or a
+     * reconcile that failed, after the last one (E-106 FN-4). Bounded, and a
+     * failure on one broadcast is logged without stopping the others.
+     *
+     * @return int how many broadcasts were moved to sent or failed
+     */
+    public function reconcileOpenBroadcasts(?int $tenantId = null, int $limit = 100): int
+    {
+        $active = [
+            EventBroadcastDeliveryStatus::Pending->value,
+            EventBroadcastDeliveryStatus::Retry->value,
+            EventBroadcastDeliveryStatus::Processing->value,
+        ];
+        $candidates = DB::table('event_broadcasts as broadcast')
+            ->where('broadcast.status', EventBroadcastStatus::Sending->value)
+            ->when($tenantId !== null, static fn ($query) => $query->where('broadcast.tenant_id', $tenantId))
+            ->whereNotExists(static function ($query) use ($active): void {
+                $query->select(DB::raw(1))
+                    ->from('event_broadcast_deliveries as delivery')
+                    ->whereColumn('delivery.broadcast_id', 'broadcast.id')
+                    ->whereColumn('delivery.tenant_id', 'broadcast.tenant_id')
+                    ->whereIn('delivery.status', $active);
+            })
+            ->orderBy('broadcast.id')
+            ->limit(max(1, $limit))
+            ->get(['broadcast.id', 'broadcast.tenant_id']);
+
+        $closed = 0;
+        foreach ($candidates as $candidate) {
+            $rowTenantId = (int) $candidate->tenant_id;
+            $broadcastId = (int) $candidate->id;
+            try {
+                TenantContext::runForTenant(
+                    $rowTenantId,
+                    fn () => $this->reconcileDeliveryState($rowTenantId, $broadcastId),
+                );
+                $status = (string) DB::table('event_broadcasts')
+                    ->where('tenant_id', $rowTenantId)
+                    ->where('id', $broadcastId)
+                    ->value('status');
+                if ($status !== EventBroadcastStatus::Sending->value) {
+                    $closed++;
+                }
+            } catch (\Throwable $exception) {
+                Log::error('Event broadcast sweep could not close a finished broadcast', [
+                    'tenant_id' => $rowTenantId,
+                    'broadcast_id' => $broadcastId,
+                    'exception' => $exception::class,
+                    'reason_code' => $exception instanceof EventBroadcastException
+                        ? $exception->reasonCode
+                        : 'event_broadcast_reconcile_failed',
+                ]);
+            }
+        }
+
+        return $closed;
     }
 
     public function reconcileDeliveryState(int $tenantId, int $broadcastId): void

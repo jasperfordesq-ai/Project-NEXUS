@@ -363,6 +363,7 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
             'retrying' => 0,
             'dead_lettered' => 0,
             'stale_released' => 0,
+            'reconciled' => 0,
         ], $summary);
         self::assertCount(1, $transport->calls);
         self::assertSame('fr', $transport->calls[0]['locale']);

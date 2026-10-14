@@ -47,6 +47,7 @@ final class EventBroadcastDeliveryConsumer
             'retrying' => 0,
             'dead_lettered' => 0,
             'stale_released' => $this->releaseStaleClaims($tenantId),
+            'reconciled' => 0,
         ];
         $rows = $this->claimBatch($limit, $tenantId);
         $summary['claimed'] = count($rows);
@@ -102,6 +103,10 @@ final class EventBroadcastDeliveryConsumer
                 }
             }
         }
+        // A broadcast is only reconciled after one of its deliveries is
+        // processed. If that last step failed, or the worker stopped in
+        // between, nothing would ever close it (E-106 FN-4).
+        $summary['reconciled'] = $this->broadcasts->reconcileOpenBroadcasts($tenantId);
 
         return $summary;
     }
@@ -322,7 +327,7 @@ final class EventBroadcastDeliveryConsumer
             return 'suppressed';
         }
 
-        $cadence = (string) ($preferences['cadence'] ?? 'off');
+        $cadence = self::effectiveEmailCadence($preferences);
         $result = LocaleContext::withLocale($recipient, function () use (
             $channel,
             $tenantId,
@@ -382,7 +387,7 @@ final class EventBroadcastDeliveryConsumer
                     'preference' => (string) ($sources['email'] ?? 'unknown'),
                 ];
             }
-            if ((string) ($preferences['cadence'] ?? 'off') === 'off') {
+            if (self::effectiveEmailCadence($preferences) === 'off') {
                 return [
                     'reason' => 'email_cadence_off',
                     'preference' => (string) ($preferences['cadence_source'] ?? 'unknown'),
@@ -432,6 +437,28 @@ final class EventBroadcastDeliveryConsumer
         return $hasWebPush || $hasFcm
             ? null
             : ['reason' => 'push_destination_missing', 'preference' => null];
+    }
+
+    /**
+     * The email cadence for an organiser broadcast (E-106, owner decision
+     * 14 Oct 2026). The community default cadence ('off' out of the box,
+     * source 'tenant') records no choice by the member, so it must not
+     * silence a message the organiser sent to them: it is sent at once.
+     * A member's own choice at event, category or global level is kept,
+     * including 'off', and the email_events opt-out is applied earlier as
+     * the email channel. Same rule as admin review alerts in
+     * EventNotificationOutboxActionHandler.
+     *
+     * @param array<string,mixed> $preferences
+     */
+    public static function effectiveEmailCadence(array $preferences): string
+    {
+        $cadence = (string) ($preferences['cadence'] ?? 'off');
+        if ($cadence === 'off' && ($preferences['cadence_source'] ?? null) === 'tenant') {
+            return 'instant';
+        }
+
+        return $cadence;
     }
 
     private function markDelivered(
@@ -600,12 +627,21 @@ final class EventBroadcastDeliveryConsumer
         ?string $evidenceId,
         ?string $reasonCode,
     ): void {
+        // Number attempts across the delivery's whole life. `attempts` is the
+        // retry budget and "Try again" resets it to 0, so copying it here
+        // repeated an earlier attempt number and broke the unique evidence
+        // key inside the failure handler, aborting the batch (E-106 FN-2).
+        // Callers hold the delivery row lock, so MAX()+1 cannot race.
+        $attemptNumber = 1 + (int) DB::table('event_broadcast_delivery_attempts')
+            ->where('tenant_id', (int) $delivery->tenant_id)
+            ->where('delivery_id', (int) $delivery->id)
+            ->max('attempt_number');
         DB::table('event_broadcast_delivery_attempts')->insert([
             'tenant_id' => (int) $delivery->tenant_id,
             'event_id' => (int) $delivery->event_id,
             'broadcast_id' => (int) $delivery->broadcast_id,
             'delivery_id' => (int) $delivery->id,
-            'attempt_number' => (int) $delivery->attempts,
+            'attempt_number' => $attemptNumber,
             'outcome' => $outcome,
             'provider' => $provider !== null ? mb_substr($provider, 0, 50) : null,
             'provider_evidence_id' => $evidenceId !== null

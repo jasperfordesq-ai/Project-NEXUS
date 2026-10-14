@@ -246,6 +246,56 @@ final class EventInvitationSecurityBoundaryTest extends TestCase
             ->count());
     }
 
+    /**
+     * E-106 (owner decision 14 Oct 2026): the community's default email
+     * cadence is not the member's choice, so an invitation is emailed to a
+     * member who never chose a digest. Before, every such email was
+     * suppressed as invitation_requires_instant_email.
+     */
+    public function test_invitation_email_is_not_suppressed_for_a_member_who_never_chose_a_digest(): void
+    {
+        $owner = $this->eventUser();
+        $target = $this->eventUser();
+        self::assertSame(0, DB::table('notification_settings')->where('user_id', (int) $target->id)->count());
+        [$eventId, $start] = $this->registrationEvent((int) $owner->id);
+        $preview = (new EventInvitationCampaignService())->preview(
+            $eventId,
+            $owner,
+            'member',
+            ['member_ids' => [(int) $target->id]],
+            'e106-invitation-cadence-preview',
+        );
+        (new EventInvitationService())->issueCampaign(
+            $eventId,
+            (int) $preview['campaign']->id,
+            $owner,
+            [],
+            1,
+            'e106-invitation-cadence-issue',
+            $start->subDay()->toIso8601String(),
+        );
+        $outbox = DB::table('event_domain_outbox')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('event_id', $eventId)
+            ->where('action', 'event.invitation.issued')
+            ->first();
+        self::assertNotNull($outbox);
+
+        try {
+            (new EventInvitationDeliveryConsumer())->handle((array) $outbox);
+        } catch (\RuntimeException $exception) {
+            // The email is now attempted; the test mailer may decline it, which
+            // leaves it for a retry rather than suppressing it.
+            self::assertSame('event_invitation_delivery_retry_required', $exception->getMessage());
+        }
+
+        self::assertSame(0, DB::table('event_notification_deliveries')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('outbox_id', (int) $outbox->id)
+            ->where('suppression_reason', 'invitation_requires_instant_email')
+            ->count());
+    }
+
     private function group(User $owner, string $visibility): Group
     {
         return Group::factory()->forTenant($this->testTenantId)->create([

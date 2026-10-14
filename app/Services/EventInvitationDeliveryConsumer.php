@@ -322,7 +322,11 @@ final class EventInvitationDeliveryConsumer
             $this->deliveries->markSuppressed($tenantId, (int) $delivery['id'], 'email_address_missing');
             return;
         }
-        if ($userId !== null && ($preferences['cadence'] ?? 'off') !== 'instant') {
+        // The community default cadence is not a member's choice (E-106): an
+        // invitation goes to a member who never chose a digest. A member's own
+        // 'off' or digest choice still holds; invitations are never digested.
+        if ($userId !== null
+            && EventBroadcastDeliveryConsumer::effectiveEmailCadence($preferences ?? []) !== 'instant') {
             $this->deliveries->markSuppressed(
                 $tenantId,
                 (int) $delivery['id'],

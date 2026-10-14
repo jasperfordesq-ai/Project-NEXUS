@@ -1473,9 +1473,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/EventBroadcastChannelDispatcher.php:179:FCMPushService::sendToUser",
+            "id": "app/Services/EventBroadcastChannelDispatcher.php:184:FCMPushService::sendToUser",
             "file": "app/Services/EventBroadcastChannelDispatcher.php",
-            "line": 179,
+            "line": 184,
             "transport": "FCMPushService::sendToUser",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -1486,9 +1486,9 @@
             "data_expression": "['link' => $message->path, 'type' => $message->notificationType, 'event_delivery_key' => $deliveryKey]"
         },
         {
-            "id": "app/Services/EventInvitationDeliveryConsumer.php:423:FCMPushService::sendToUser",
+            "id": "app/Services/EventInvitationDeliveryConsumer.php:427:FCMPushService::sendToUser",
             "file": "app/Services/EventInvitationDeliveryConsumer.php",
-            "line": 423,
+            "line": 427,
             "transport": "FCMPushService::sendToUser",
             "role": "producer",
             "recipient_expression": "$userId",
