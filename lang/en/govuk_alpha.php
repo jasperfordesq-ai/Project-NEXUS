@@ -1379,35 +1379,63 @@ return [
         'people_pagination' => 'Event people pages',
         'people_previous' => 'Previous page',
         'people_next' => 'Next page',
-        'check_in_title' => 'Manual check-in',
-        'check_in_intro' => 'Search the confirmed roster and record attendance changes with an auditable version history.',
-        'check_in_metrics_title' => 'Attendance summary',
-        'check_in_search_title' => 'Find an attendee',
-        'check_in_search_label' => 'Search the confirmed roster',
+        'check_in_title' => 'Check in attendees',
+        'check_in_intro' => 'Record who has arrived at this event. Find each person on the list, or enter the check-in code they show you.',
+        'check_in_metrics_title' => 'Attendance so far',
+        'check_in_search_title' => 'Check in by name',
+        'check_in_search_label' => 'Search by name',
         'check_in_result_count' => '{0} No attendees shown|{1} 1 attendee shown|[2,*] :count attendees shown',
-        'check_in_empty' => 'No attendees match this search.',
-        'attendance_updated' => 'The attendance record was updated.',
-        'attendance_conflict' => 'This attendance record changed elsewhere. The roster has been refreshed; review it before trying again.',
-        'attendance_too_early' => 'Check-in has not opened for this event yet. It opens shortly before the start time.',
-        'attendance_window_closed' => 'Check-in has closed for this event, so attendance can no longer be recorded.',
+        'check_in_empty' => 'No one on the attendee list matches this search. Only people with a confirmed place are listed.',
+        'attendance_updated' => 'The attendance change was saved. The list below shows each person\'s current status.',
+        'attendance_conflict' => 'Someone else changed this person\'s attendance at the same time. The list below has been refreshed; check it, then try again.',
+        'attendance_too_early' => 'Check-in has not opened yet. It opens 30 minutes before the event starts.',
+        'attendance_window_closed' => 'Check-in closed 24 hours after the event ended, so no one else can be checked in. You can still check someone out or undo the latest change.',
         'attendance_not_registered' => 'This person does not have a confirmed place yet. Confirm their registration first, then record attendance.',
-        'attendance_event_unavailable' => 'This event is not open for attendance. Publish it, and check that it has not been cancelled or postponed.',
-        'attendance_failed' => 'The attendance record could not be updated. Check the action, reason and confirmation, then try again.',
-        'attendance_no_action' => 'No attendance action is currently available.',
-        'attendance_action_label' => 'Attendance action',
+        'attendance_event_unavailable' => 'Attendance cannot be recorded for this event. It may still be a draft, or it may have been cancelled or postponed.',
+        'attendance_failed' => 'The attendance change could not be saved. Check the action you chose and the confirmation box, then try again.',
+        'attendance_no_action' => 'Nothing can be recorded for this person right now.',
+        'attendance_action_label' => 'What do you want to record?',
         'attendance_actions' => [
             'check_in' => 'Check in',
             'check_out' => 'Check out',
-            'no_show' => 'Mark no-show',
-            'undo' => 'Undo latest change',
+            'no_show' => 'Mark as no-show',
+            'undo' => 'Undo the latest change',
         ],
-        'attendance_reason_label' => 'Correction reason',
-        'attendance_reason_hint' => 'A reason is required when undoing the latest attendance change.',
-        'attendance_confirmation' => 'I confirm this attendance change for :name',
+        'attendance_reason_label' => 'Reason (needed only to undo)',
+        'attendance_reason_hint' => 'Say briefly why the latest change is being undone, for example "checked in the wrong person". Do not include personal details.',
+        'attendance_confirmation' => 'I confirm this change for :name',
         'attendance_apply' => 'Update attendance',
-        'check_in_pagination' => 'Check-in roster pages',
+        'check_in_pagination' => 'Attendee list pages',
         'check_in_previous' => 'Previous page',
         'check_in_next' => 'Next page',
+
+        'check_in_search_intro' => 'Only people with a confirmed place are listed. Choose what to record for a person, tick the box to confirm, then select "Update attendance".',
+
+        'attendance_reason_required' => 'Enter a short reason before undoing the latest change, then try again.',
+
+        'attendance_not_possible' => 'That change is not possible for this person right now, for example because they are already checked in or have already been checked out. Find them on the list below to see which actions are available.',
+
+        'check_in_how_title' => 'How check-in works',
+
+        'check_in_how_who' => 'The organiser and any event staff member with the "manage attendance" ability can use this page.',
+
+        'check_in_how_when' => 'You can check people in from 30 minutes before the event starts until 24 hours after it ends. "No-show" can be recorded from the start time. Checking out and undoing stay available afterwards, so a record can be completed.',
+
+        'check_in_how_name' => 'Find the person on the list below (only people with a confirmed place are listed), choose what to record, tick the confirmation box and select "Update attendance".',
+
+        'check_in_how_code' => 'If an attendee shows you their check-in code, on their phone or printed, enter it under "Check in with an attendee\'s code" further down instead.',
+
+        'check_in_how_undo' => 'Made a mistake? Choose "Undo the latest change" and give a short reason. A record of every change is kept; nothing is deleted.',
+
+        'check_in_how_credits' => 'If this event offers a time-credit reward for attending, it is given when the person is first checked in. Otherwise checking in does not change anyone\'s balance.',
+
+        'check_in_how_offline' => 'Recording arrivals without an internet connection is available in the main website and the phone app, not on this page.',
+
+        'check_in_window_before' => 'Check-in for this event opens at :date, 30 minutes before it starts. Until then no one can be checked in.',
+
+        'check_in_window_after' => 'Check-in for this event closed at :date, 24 hours after it ended. You can still check people out or undo the latest change to complete the record.',
+
+        'check_in_window_open' => 'Check-in is open now. It closes at :date, 24 hours after the event ends.',
         'location' => 'Location',
         'online' => 'Online',
         'organiser' => 'Organiser',

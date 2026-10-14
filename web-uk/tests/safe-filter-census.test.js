@@ -72,6 +72,13 @@ const REVIEWED_RAW_SITES = {
     why: 'JSON-LD inside <script>; inlineScriptJson escapes < > &',
     guard: ['src/server.js', 'organisationStructuredData: inlineScriptJson(structuredData),'],
   },
+  // E-105 (13 Oct 2026): the attendee's own event check-in code as a QR, so the phone
+  // app and the main website can scan it off the accessible page. Same renderer; the
+  // token is encoded into rectangles and never emitted as text by the SVG.
+  'events/check-in-credential.njk {{ oneShotQrSvg | safe }}': {
+    why: 'system-generated QR SVG from src/lib/qr-svg.js; the check-in code is encoded into rectangles, never emitted as text',
+    guard: ['src/routes/events.js', 'qrSvg(credential.token)'],
+  },
   'venues/pass.njk {{ qrSvg | safe }}': {
     why: 'system-generated QR SVG; the pass URL is encoded into rectangles, never emitted as text',
     guard: ['src/routes/venues.js', 'qrSvg: passQrSvg(pass.qr_url),'],

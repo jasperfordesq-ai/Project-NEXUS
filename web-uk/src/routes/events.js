@@ -6,6 +6,7 @@
 const express = require('express');
 const fs = require('fs/promises');
 const { randomUUID } = require('node:crypto');
+const { qrSvg } = require('../lib/qr-svg');
 const { URL } = require('node:url');
 const {
   getEvents,
@@ -831,6 +832,31 @@ function agendaDateLabel(value, timezone, formatDate) {
   });
 }
 
+// When attendance can be recorded (E-105, 13 Oct 2026). The API decides and refuses
+// outside the window; these two numbers mirror its platform defaults
+// (config/events.php: attendance.opens_before_minutes = 30, closes_after_hours = 24;
+// there is no per-community override today) so the page can SAY when check-in opens
+// or closed instead of silently offering no actions. Check-out and undo remain
+// possible after the window, so a record can still be completed.
+const ATTENDANCE_OPENS_BEFORE_MINUTES = 30;
+const ATTENDANCE_CLOSES_AFTER_HOURS = 24;
+
+function attendanceWindow(event, formatDate, now = Date.now()) {
+  const start = new Date(event?.start_time || event?.start_at || event?.startAt || '');
+  if (Number.isNaN(start.getTime())) return { state: 'unknown', opensLabel: '', closesLabel: '' };
+  const endRaw = new Date(event?.end_time || event?.end_at || event?.endAt || '');
+  const end = Number.isNaN(endRaw.getTime()) ? start : endRaw;
+  const opens = new Date(start.getTime() - ATTENDANCE_OPENS_BEFORE_MINUTES * 60000);
+  const closes = new Date(end.getTime() + ATTENDANCE_CLOSES_AFTER_HOURS * 3600000);
+  const timezone = event?.timezone || event?.time_zone || 'UTC';
+  const label = (date) => (typeof formatDate === 'function' ? agendaDateLabel(date.toISOString(), timezone, formatDate) : date.toISOString());
+  return {
+    state: now < opens.getTime() ? 'before' : (now > closes.getTime() ? 'after' : 'open'),
+    opensLabel: label(opens),
+    closesLabel: label(closes)
+  };
+}
+
 async function renderOfflineCredential(req, res, id, options = {}) {
   const token = tokenFrom(req);
   const [eventResult, credentialResult] = await Promise.all([
@@ -849,6 +875,9 @@ async function renderOfflineCredential(req, res, id, options = {}) {
     event: { id, title: trimmed(event.title) },
     credential,
     oneShotToken: credential?.tokenOneShot && credential.token.startsWith('nqx2_') ? credential.token : '',
+    // The same code as a QR, so the phone app's and the main website's scanners can
+    // read it off this page too. Encodes the token exactly as React's card does.
+    oneShotQrSvg: credential?.tokenOneShot && credential.token.startsWith('nqx2_') ? (qrSvg(credential.token) || '') : '',
     status: options.status || trimmed(req.query.status),
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
@@ -1113,6 +1142,7 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
     total: Math.max(0, Number.parseInt(meta.total, 10) || 0),
     query,
     attendanceStates: PEOPLE_FILTERS.attendance_state,
+    attendanceWindow: attendanceWindow(event, res.locals.formatLocaleDate),
     status: trimmed(req.query.status),
     // One key per rendered page. The signed-code endpoint requires an idempotency
     // key, so a double-tapped submit replays the same action instead of recording a
@@ -1459,6 +1489,10 @@ function attendanceConflictStatus(error) {
     case 'EVENT_ATTENDANCE_WINDOW_CLOSED': return 'attendance-window-closed';
     case 'EVENT_ATTENDANCE_REGISTRATION_REQUIRED': return 'attendance-not-registered';
     case 'EVENT_REGISTRATION_UNAVAILABLE': return 'attendance-event-unavailable';
+    // "Check in" for someone already checked in / out, or an undo when there is nothing
+    // left to undo. The signed-code form always offers all four actions, so this is the
+    // common case there — and "changed elsewhere, roster refreshed" was wrong advice.
+    case 'EVENT_REGISTRATION_TRANSITION_INVALID': return 'attendance-not-possible';
     default: return 'attendance-conflict';
   }
 }
@@ -1478,6 +1512,11 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
   const credential = trimmed(req.body.credential, 1024);
   const reason = trimmed(req.body.reason, 500);
   const codeInvalid = eventPath(id, '/check-in?status=attendance-code-invalid');
+  if (action === 'undo' && !reason && checked(req.body.confirmation) && credential.startsWith('nqx2_')) {
+    // Everything else was right; only the reason is missing. Say so, rather than the
+    // generic "check the action, reason and confirmation" (E-105).
+    return redirectTo(res, eventPath(id, '/check-in?status=attendance-reason-required'));
+  }
   if (!action
     || !checked(req.body.confirmation)
     || !credential.startsWith('nqx2_')
@@ -1529,6 +1568,9 @@ router.post('/:id(\\d+)/check-in/:userId(\\d+)', requireAuth, asyncRoute(async (
   const action = selectedValue(req.body.action, ['check_in', 'check_out', 'no_show', 'undo']);
   const expectedVersion = Number.parseInt(req.body.expected_version, 10);
   const reason = trimmed(req.body.reason, 4000);
+  if (action === 'undo' && !reason && Number.isInteger(expectedVersion) && expectedVersion >= 0 && checked(req.body.confirmation)) {
+    return redirectTo(res, eventPath(id, '/check-in?status=attendance-reason-required'));
+  }
   if (!action || !Number.isInteger(expectedVersion) || expectedVersion < 0 || !checked(req.body.confirmation)
     || (action === 'undo' && !reason)) {
     return redirectTo(res, eventPath(id, '/check-in?status=attendance-invalid'));
@@ -3071,6 +3113,9 @@ router.post('/:id(\\d+)/check-in/credential/revoke', requireAuth, asyncRoute(asy
   const credentialId = positiveInteger(req.body.credential_id);
   const expectedVersion = positiveInteger(req.body.expected_version);
   const reason = trimmed(req.body.reason, 501);
+  if (!reason && checked(req.body.confirmation) && credentialId !== null && expectedVersion !== null) {
+    return redirectTo(res, eventPath(id, '/check-in/credential?status=reason-required'));
+  }
   if (!checked(req.body.confirmation) || credentialId === null || expectedVersion === null || !reason || reason.length > 500) {
     return redirectTo(res, eventPath(id, '/check-in/credential?status=invalid'));
   }

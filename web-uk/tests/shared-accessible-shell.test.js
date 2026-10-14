@@ -25665,7 +25665,8 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({ _csrf: csrf, action: 'undo', expected_version: '9', confirmation: '1' });
 
-    expect(invalid.headers.location).toBe('/events/42/check-in?status=attendance-invalid');
+    // E-105: undo with everything else right is 'reason required', not the generic refusal.
+    expect(invalid.headers.location).toBe('/events/42/check-in?status=attendance-reason-required');
     expect(api.callEventApi).not.toHaveBeenCalled();
 
     api.callEventApi.mockRejectedValueOnce(new api.ApiError('Version conflict', 409));
@@ -25692,7 +25693,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(page.status).toBe(200);
     expect(page.text).toContain('action="/events/42/check-in/code"');
-    expect(page.text).toContain('Enter a signed attendee code');
+    expect(page.text).toContain('Record attendance from this code');
     expect(page.text).toContain('name="credential"');
     expect(page.text).toContain('maxlength="1024"');
     // Every form carries a key, so a double-tapped submit replays one action.
@@ -25746,7 +25747,8 @@ describe('shared accessible frontend shell', () => {
 
     // Undo with no reason: a correction to a register has to be auditable.
     const noReason = await post({ action: 'undo', credential: 'nqx2_code', confirmation: '1' });
-    expect(noReason.headers.location).toBe('/events/42/check-in?status=attendance-code-invalid');
+    // E-105: only the reason is missing, so the page says exactly that.
+    expect(noReason.headers.location).toBe('/events/42/check-in?status=attendance-reason-required');
 
     expect(api.callEventApi).not.toHaveBeenCalled();
 
@@ -27269,7 +27271,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(page.status).toBe(200);
     expect(page.headers['cache-control']).toBe('private, no-store');
-    expect(page.text).toContain('Your event check-in code');
+    expect(page.text).toContain('Your check-in code (optional)');
     expect(page.text).toContain('action="/events/42/check-in/credential/issue"');
     expect(api.callEventApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/42/offline-checkin/credentials/me');
 
@@ -27289,7 +27291,7 @@ describe('shared accessible frontend shell', () => {
     expect(issued.status).toBe(200);
     expect(issued.headers['cache-control']).toBe('private, no-store');
     expect(issued.text).toContain('nqx2_signed-test-code');
-    expect(issued.text).toContain('the complete code is shown only when it is created or replaced');
+    expect(issued.text).toContain('This is the only time the full code is shown');
     expect(api.callEventApi).toHaveBeenNthCalledWith(3, 'test-token', 'POST', '/42/offline-checkin/credentials', {
       idempotency_key: 'credential-issue-key'
     });
