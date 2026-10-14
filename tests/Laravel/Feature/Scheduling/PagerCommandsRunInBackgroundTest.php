@@ -45,6 +45,9 @@ class PagerCommandsRunInBackgroundTest extends TestCase
             'gdpr:check-overdue-requests',
             'backup:verify',
             'safeguarding:check-policy-health',
+            // E-106: exits non-zero when a delivery is given up on, and now
+            // runs for up to a minute.
+            'events:process-broadcasts',
         ];
 
         foreach ($monitors as $command) {

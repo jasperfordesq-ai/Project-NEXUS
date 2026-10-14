@@ -213,6 +213,33 @@ final class EventBroadcastDeliveryReliabilityTest extends TestCase
         self::assertSame(EventBroadcastStatus::Sent->value, $this->broadcastStatus($broadcastId));
     }
 
+    // ---- FN-5: one scheduled run drains what is due ----------------------------
+
+    public function test_one_run_of_the_sender_keeps_going_until_nothing_is_due(): void
+    {
+        [$organizer, $eventId] = $this->eventWithOrganizer();
+        foreach (['A', 'B', 'C'] as $name) {
+            $member = $this->member('Batch ' . $name);
+            $this->confirmedRegistration($eventId, (int) $member->id, (int) $organizer->id);
+        }
+        $broadcastId = $this->scheduledBroadcast($eventId, $organizer, ['in_app']);
+
+        // Batches of one: before E-106 a run processed exactly one batch.
+        $exit = \Illuminate\Support\Facades\Artisan::call('events:process-broadcasts', [
+            '--tenant' => (string) $this->testTenantId,
+            '--limit' => '1',
+            '--budget-seconds' => '30',
+            '--json' => true,
+        ]);
+
+        self::assertSame(0, $exit);
+        self::assertSame(3, DB::table('event_broadcast_deliveries')
+            ->where('broadcast_id', $broadcastId)
+            ->where('status', 'delivered')
+            ->count());
+        self::assertSame(EventBroadcastStatus::Sent->value, $this->broadcastStatus($broadcastId));
+    }
+
     // ---- opt-in summary for the organiser screen ------------------------------
 
     public function test_the_list_explains_skipped_deliveries_only_when_asked(): void

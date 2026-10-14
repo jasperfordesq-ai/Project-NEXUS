@@ -283,6 +283,26 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Organiser broadcasts (messages to attendees)
+    |--------------------------------------------------------------------------
+    |
+    | Retry budget per delivery, its backoff, how long a claimed delivery may
+    | stay "processing" before it is released, and how long one scheduled run
+    | of events:process-broadcasts keeps claiming batches (E-106: one batch of
+    | 50 a minute made a 300-person, three-way message take over 18 minutes).
+    |
+    */
+
+    'broadcast' => [
+        'max_attempts' => (int) env('EVENTS_BROADCAST_MAX_ATTEMPTS', 5),
+        'base_retry_seconds' => (int) env('EVENTS_BROADCAST_BASE_RETRY_SECONDS', 60),
+        'max_retry_seconds' => (int) env('EVENTS_BROADCAST_MAX_RETRY_SECONDS', 3600),
+        'stale_claim_minutes' => (int) env('EVENTS_BROADCAST_STALE_CLAIM_MINUTES', 10),
+        'budget_seconds' => (int) env('EVENTS_BROADCAST_BUDGET_SECONDS', 50),
+    ],
+
     'reminders' => [
         'mode' => env('EVENTS_REMINDER_MODE', 'canonical'),
         'default_enabled' => env('EVENTS_REMINDER_DEFAULT_ENABLED', true),

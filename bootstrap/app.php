@@ -197,10 +197,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('events-process-notification-outbox');
 
-        $schedule->command('events:process-broadcasts --limit=50')
+        // Background (E-106): the sender now works for up to
+        // events.broadcast.budget_seconds per run, which in the foreground
+        // would hold up every task scheduled after it; and it exits non-zero
+        // when a delivery is given up on, which in the foreground the
+        // scheduler re-reports as "Scheduled command failed" (see slo:check).
+        $schedule->command('events:process-broadcasts --limit=100')
             ->everyMinute()
             ->withoutOverlapping(10)
             ->onOneServer()
+            ->runInBackground()
             ->name('events-process-broadcasts');
 
         $schedule->command('events:process-federation --limit=50')
