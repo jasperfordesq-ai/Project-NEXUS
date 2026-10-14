@@ -35,7 +35,12 @@ function mutationKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-/** Confirmed-attendee, one-shot display boundary for a PII-free signed QR credential. */
+/**
+ * The attendee's own check-in code, shown once when created. The code contains no name,
+ * email address or phone number; staff can always check the attendee in by name instead.
+ */
+const GUIDANCE_STEPS = ['create', 'save', 'show'] as const;
+
 export default function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
   const { t } = useTranslation(['eventOfflineCheckin', 'common']);
   const theme = useTheme();
@@ -232,10 +237,22 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
             </View>
           </View>
 
+          <View className="gap-1.5" testID="checkin-credential-steps" accessibilityLabel={t('eventOfflineCheckin:credential.stepsLabel')}>
+            {GUIDANCE_STEPS.map((step, index) => (
+              <View key={step} className="flex-row gap-2">
+                <Text className="w-5 text-sm font-bold" style={{ color: primary }}>{index + 1}.</Text>
+                <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.text }}>
+                  {t(`eventOfflineCheckin:credential.steps.${step}`)}
+                </Text>
+              </View>
+            ))}
+          </View>
+
           <Alert status="accent">
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>{t('eventOfflineCheckin:credential.privacy')}</Alert.Title>
+              <Alert.Description>{t('eventOfflineCheckin:credential.optional')}</Alert.Description>
             </Alert.Content>
           </Alert>
 
@@ -314,6 +331,9 @@ export default function EventCheckinCredentialCard({ eventId }: { eventId: numbe
                 placeholder={t('eventOfflineCheckin:credential.reason_hint')}
                 editable={!busy}
               />
+              <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>
+                {t('eventOfflineCheckin:credential.manage_hint')}
+              </Text>
               <View className="flex-row flex-wrap gap-2">
                 <Button className="flex-1" variant="secondary" isDisabled={busy} onPress={requestRotate}>
                   <Ionicons name="refresh-outline" size={16} color={primary} />

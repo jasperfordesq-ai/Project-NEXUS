@@ -762,7 +762,11 @@ export type EventAttendee = z.infer<typeof eventRosterMemberSchema>;
 export type EventAttendeesResponse = z.infer<typeof eventRosterResponseSchema>;
 export type EventAttendanceRosterPerson = z.infer<typeof eventAttendanceRosterPersonSchema>;
 export type EventAttendanceRosterResponse = z.infer<typeof eventAttendanceRosterResponseSchema>;
-export type EventAttendanceAction = 'check_in' | 'check_out' | 'no_show';
+/**
+ * `undo` reverses the latest attendance change and REQUIRES a reason (the API answers
+ * 422 `EVENT_REGISTRATION_REASON_REQUIRED` without one). The earlier record is kept.
+ */
+export type EventAttendanceAction = 'check_in' | 'check_out' | 'no_show' | 'undo';
 export type EventSeries = z.infer<typeof eventSeriesSchema>;
 export type EventCategory = z.infer<typeof eventCategorySchema>;
 export type EventAgenda = z.infer<typeof eventAgendaSchema>;
@@ -1207,13 +1211,17 @@ export async function transitionEventAttendance(
     action: EventAttendanceAction;
     expectedVersion: number;
     idempotencyKey: string;
+    /** Required for `undo`; the server refuses the request without it. */
+    reason?: string;
   },
 ): Promise<z.infer<typeof eventAttendanceMutationEnvelopeSchema>> {
   const endpoint = `${API_V2}/events/${eventId}/people/${userId}/attendance`;
+  const reason = input.reason?.trim();
   const payload = {
     action: input.action,
     expected_version: input.expectedVersion,
     idempotency_key: input.idempotencyKey,
+    ...(reason ? { reason } : {}),
   };
   const response = await api.post<unknown>(endpoint, payload, {
     headers: {

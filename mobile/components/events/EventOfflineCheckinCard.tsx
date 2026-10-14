@@ -50,12 +50,23 @@ import {
 import { recoverOfflineRegistration } from '@/lib/offlineRegistrationRecovery';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 const OPERATIONS: OfflineAttendanceOperation[] = ['check_in', 'check_out', 'no_show', 'undo'];
 
 function mutationKey(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
+
+/** A readable "works until" date, or null when the server gave none (older fixtures, cached data). */
+function formatUntil(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+const GUIDANCE_STEPS = ['setup', 'download', 'record', 'sync'] as const;
 
 export default function EventOfflineCheckinCard({ eventId }: { eventId: number }) {
   const { t } = useTranslation(['eventOfflineCheckin', 'notifications', 'events', 'common']);
@@ -539,6 +550,14 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('workspace.description')}</Text>
             </View>
           </View>
+          <View className="gap-1.5" testID="offline-checkin-steps" accessibilityLabel={t('workspace.stepsLabel')}>
+            {GUIDANCE_STEPS.map((step, index) => (
+              <View key={step} className="flex-row gap-2">
+                <Text className="w-5 text-sm font-bold" style={{ color: primary }}>{index + 1}.</Text>
+                <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.text }}>{t(`workspace.steps.${step}`)}</Text>
+              </View>
+            ))}
+          </View>
           <Alert status="accent">
             <Alert.Indicator />
             <Alert.Content>
@@ -546,25 +565,31 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               <Alert.Description>{t('workspace.privacyDescription')}</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('workspace.noWallet')}</Text>
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('workspace.noWallet')}</Text>
         </Card.Body>
       </Card>
 
       {!cachedMode && <Card variant="secondary">
         <Card.Body className="gap-3 px-4 py-4">
           <Text className="text-base font-bold" style={{ color: theme.text }}>{t('device.title')}</Text>
-          <Input label={t('device.label')} value={deviceLabel} onChangeText={setDeviceLabel} placeholder={t('device.labelPlaceholder')} editable={!busy && !pendingRegistration} />
+          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('device.description')}</Text>
+          <Input label={t('device.label')} value={deviceLabel} onChangeText={setDeviceLabel} placeholder={t('device.labelPlaceholder')} helper={t('device.labelHelper')} editable={!busy && !pendingRegistration} />
           <Button variant="primary" isDisabled={busy || !!pendingRegistration || !deviceLabel.trim()} onPress={() => void registerDevice()}>
             {busy ? <Spinner size="sm" /> : <AccentIcon name="phone-portrait-outline" size={18} />}
             <Button.Label>{t('device.register')}</Button.Label>
           </Button>
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('device.registerHint')}</Text>
           <TextArea label={t('device.reason')} value={revocationReason} onChangeText={setRevocationReason} placeholder={t('device.reasonHint')} editable={!busy} />
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('device.reasonWhy')}</Text>
           {workspace.devices.length === 0 ? <Text className="text-sm" style={{ color: theme.textSecondary }}>{t('device.empty')}</Text> : workspace.devices.map((device) => (
             <Surface key={device.id} variant="tertiary" className="gap-2 rounded-panel-inner p-3">
               <View className="flex-row items-center justify-between gap-2">
                 <View className="min-w-0 flex-1">
                   <Text className="text-sm font-semibold" style={{ color: theme.text }}>{device.label}</Text>
                   <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('device.version', { version: device.version })}</Text>
+                  {formatUntil(device.expires_at) ? (
+                    <Text className="text-xs" style={{ color: theme.textSecondary }}>{t('device.worksUntil', { date: formatUntil(device.expires_at) })}</Text>
+                  ) : null}
                 </View>
                 <Chip size="sm" color={device.status === 'active' ? 'success' : 'default'}><Chip.Label>{t(`device.status.${device.status}`)}</Chip.Label></Chip>
               </View>
@@ -615,6 +640,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               ) : null}
               <Input label={t('scan.codeLabel')} value={credential} onChangeText={setCredential} placeholder={t('scan.codeHint')} autoCapitalize="none" autoCorrect={false} editable={!busy} />
               <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t('scan.operation')}</Text>
+              <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('scan.operationHint')}</Text>
               <View className="flex-row flex-wrap gap-2">
                 {OPERATIONS.map((item) => (
                   <Chip key={item} size="sm" color={operation === item ? 'accent' : 'default'} variant={operation === item ? 'primary' : 'soft'} onPress={() => setOperation(item)} accessibilityRole="button" accessibilityState={{ selected: operation === item }}>
@@ -626,6 +652,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
               <Button variant="primary" isDisabled={busy || !credential.trim()} onPress={() => void enqueue()}>
                 <Button.Label>{t('scan.queue')}</Button.Label>
               </Button>
+              <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('scan.queueHint')}</Text>
             </Card.Body>
           </Card>
           )}
@@ -640,6 +667,10 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
                 <Button size="sm" variant="primary" isDisabled={busy || (pendingCount === 0 && !session.activeBatchId) || (sessionInactive !== null && !(sessionInactive === 'manifest_expired' && session.activeBatchId))} onPress={() => void synchronize()}>
                   <Button.Label>{t((sessionInactive === 'manifest_expired' && session.activeBatchId) || session.activeBatchStatus === 'dead_letter' ? 'queue.checkResult' : 'queue.sync')}</Button.Label>
                 </Button>
+                <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('queue.syncHint')}</Text>
+                {formatUntil(session.manifest?.expires_at) ? (
+                  <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('queue.listValidUntil', { date: formatUntil(session.manifest?.expires_at) })}</Text>
+                ) : null}
               </View>
               {session.activeBatchStatus === 'dead_letter' && (
                 <Alert status="warning" testID="offline-batch-stopped">
@@ -700,6 +731,7 @@ export default function EventOfflineCheckinCard({ eventId }: { eventId: number }
         <Card.Body className="gap-3 px-4 py-4">
           <Text className="text-base font-bold" style={{ color: theme.text }}>{t('conflicts.title')}</Text>
           <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('conflicts.description')}</Text>
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('conflicts.howTo')}</Text>
           {!conflicts ? (
             <Button size="sm" variant="secondary" isDisabled={busy} onPress={() => { if (!mutationPendingRef.current) void loadConflicts(); }}><Button.Label>{t('workspace.retry')}</Button.Label></Button>
           ) : conflicts.items.length === 0 ? (

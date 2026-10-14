@@ -57,6 +57,7 @@ jest.mock('react-i18next', () => ({
         'eventOfflineCheckin:credential.status.active': 'Active',
         'eventOfflineCheckin:credential.unavailable': 'Code unavailable',
         'eventOfflineCheckin:credential.privacy': 'No personal data in QR',
+        'eventOfflineCheckin:credential.optional': 'Optional: staff can check you in by name.',
         'eventOfflineCheckin:workspace.retry': 'Try again',
         'common:no': 'No',
       };
@@ -102,6 +103,7 @@ jest.mock('heroui-native', () => {
     Indicator: () => null,
     Content: Box,
     Title: ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>,
+    Description: ({ children }: { children?: React.ReactNode }) => <Text>{children}</Text>,
   });
   const Spinner = () => <View testID="spinner" />;
   return { Alert, Button, Card, Chip, Spinner, Surface: Box };

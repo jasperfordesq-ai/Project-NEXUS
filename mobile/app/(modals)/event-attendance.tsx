@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { useEffect, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
@@ -30,6 +30,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import Avatar from '@/components/ui/Avatar';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import SearchInput from '@/components/ui/SearchInput';
+import TextArea from '@/components/ui/TextArea';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -47,6 +48,21 @@ const FILTERS: AttendanceFilter[] = [
   'checked_out',
   'no_show',
 ];
+
+/**
+ * 🔴 Every 409 used to become one "Roster changed" toast. For a too-early event that told
+ * the volunteer on the door that somebody else had edited the record, when the truth was
+ * "check-in opens 30 minutes before the start" (audit E-105, 2026-10-13). Each refusal the
+ * API can send now gets its own sentence that says what to do next; the version conflict
+ * keeps the refresh-and-retry treatment.
+ */
+const REFUSAL_MESSAGES: Record<string, { title: string; description: string }> = {
+  EVENT_ATTENDANCE_TOO_EARLY: { title: 'attendance.refusals.tooEarlyTitle', description: 'attendance.refusals.tooEarly' },
+  EVENT_ATTENDANCE_WINDOW_CLOSED: { title: 'attendance.refusals.windowClosedTitle', description: 'attendance.refusals.windowClosed' },
+  EVENT_ATTENDANCE_REGISTRATION_REQUIRED: { title: 'attendance.refusals.notRegisteredTitle', description: 'attendance.refusals.notRegistered' },
+  EVENT_REGISTRATION_UNAVAILABLE: { title: 'attendance.refusals.eventUnavailableTitle', description: 'attendance.refusals.eventUnavailable' },
+  EVENT_REGISTRATION_REASON_REQUIRED: { title: 'attendance.undoReasonRequiredTitle', description: 'attendance.undoReasonRequired' },
+};
 
 function newMutationKey(eventId: number, memberId: number, action: EventAttendanceAction, version: number): string {
   return `mobile-attendance-${eventId}-${memberId}-${action}-v${version}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -77,6 +93,9 @@ function EventAttendanceScreenInner() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<AttendanceFilter>('all');
   const [activeMutation, setActiveMutation] = useState<string | null>(null);
+  /** The member whose Undo reason box is open, if any. */
+  const [undoTarget, setUndoTarget] = useState<number | null>(null);
+  const [undoReason, setUndoReason] = useState('');
   const mutationKeys = useRef(new Map<string, string>());
   const mutationPendingRef = useRef(false);
   const isMountedRef = useRef(true);
@@ -119,6 +138,8 @@ function EventAttendanceScreenInner() {
     setDraftSearch('');
     setSearch('');
     setFilter('all');
+    setUndoTarget(null);
+    setUndoReason('');
   }, [safeEventId]);
 
   useEffect(() => {
@@ -138,7 +159,18 @@ function EventAttendanceScreenInner() {
     setFilter(next);
   }
 
-  async function runAttendanceAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction) {
+  function successDescription(action: EventAttendanceAction, mutation: AttendanceConfirmation): string {
+    if (action === 'check_in' && mutation.credit_status === 'already_settled') {
+      return t('attendance.creditAlreadySettled');
+    }
+    if (action === 'check_in' && mutation.credit_status === 'settled') {
+      return t('attendance.creditSettled');
+    }
+    if (action === 'undo') return t('attendance.undoRecorded');
+    return t(`attendance.actions.${action}`);
+  }
+
+  async function runAttendanceAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction, reason?: string) {
     if (!isMountedRef.current || mutationPendingRef.current) return;
     if ((confirmationsRef.current.get(person.member.id)?.attendance_version ?? 0) > (person.attendance.version ?? 0)) return;
     mutationPendingRef.current = true;
@@ -155,20 +187,33 @@ function EventAttendanceScreenInner() {
         action,
         expectedVersion,
         idempotencyKey,
+        ...(reason ? { reason } : {}),
       });
       mutationKeys.current.delete(operationId);
       if (!isMountedRef.current) return;
       confirmationsRef.current = new Map(confirmationsRef.current).set(person.member.id, result.data.mutation);
       setConfirmations(confirmationsRef.current);
+      if (action === 'undo') {
+        setUndoTarget(null);
+        setUndoReason('');
+      }
       showToast({
         title: t('attendance.updated'),
-        description: t(`attendance.actions.${action}`),
+        description: successDescription(action, result.data.mutation),
         variant: 'success',
       });
       rosterApi.refresh();
     } catch (error) {
       if (!isMountedRef.current) return;
-      if (error instanceof ApiResponseError && error.status === 409) {
+      const code = error instanceof ApiResponseError ? error.code : undefined;
+      const refusal = code ? REFUSAL_MESSAGES[code] : undefined;
+      if (refusal) {
+        // The server said no for a reason the volunteer can act on: say it, and show the
+        // roster the server now holds (its `management_actions` explain which buttons apply).
+        mutationKeys.current.delete(operationId);
+        showToast({ title: t(refusal.title), description: t(refusal.description), variant: 'warning' });
+        rosterApi.refresh();
+      } else if (error instanceof ApiResponseError && error.status === 409) {
         mutationKeys.current.delete(operationId);
         showToast({
           title: t('attendance.conflictTitle'),
@@ -197,6 +242,12 @@ function EventAttendanceScreenInner() {
   }
 
   function requestAction(person: EventAttendanceRosterPerson, action: EventAttendanceAction) {
+    if (action === 'undo') {
+      // Undo needs a reason: open the reason box on this person's card instead of sending.
+      setUndoTarget(person.member.id);
+      setUndoReason('');
+      return;
+    }
     if (action !== 'no_show') {
       void runAttendanceAction(person, action);
       return;
@@ -210,6 +261,19 @@ function EventAttendanceScreenInner() {
       variant: 'danger',
       onConfirm: () => runAttendanceAction(person, action),
     });
+  }
+
+  function submitUndo(person: EventAttendanceRosterPerson) {
+    const reason = undoReason.trim();
+    if (!reason) {
+      showToast({
+        title: t('attendance.undoReasonRequiredTitle'),
+        description: t('attendance.undoReasonRequired'),
+        variant: 'warning',
+      });
+      return;
+    }
+    void runAttendanceAction(person, 'undo', reason);
   }
 
   const fallbackHref = safeEventId > 0
@@ -258,7 +322,12 @@ function EventAttendanceScreenInner() {
           </HeroCard.Body>
         </HeroCard>
 
+        <HowCheckinWorksPanel />
+
         <Surface variant="secondary" className="gap-3 rounded-panel-inner p-4">
+          <Text className="text-base font-bold" style={{ color: theme.text }} accessibilityRole="header">
+            {t('attendance.byNameTitle')}
+          </Text>
           <SearchInput
             value={draftSearch}
             onChangeText={(value) => {
@@ -276,6 +345,7 @@ function EventAttendanceScreenInner() {
             disabled={rosterApi.isLoading}
             containerClassName="mb-0"
           />
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('attendance.searchHint')}</Text>
           <HeroButton variant="secondary" onPress={applySearch} isDisabled={rosterApi.isLoading}>
             <Ionicons name="search-outline" size={17} color={primary} />
             <HeroButton.Label>{t('attendance.search')}</HeroButton.Label>
@@ -355,6 +425,11 @@ function EventAttendanceScreenInner() {
                 person={person}
                 activeMutation={activeMutation}
                 onAction={requestAction}
+                undoOpen={undoTarget === person.member.id}
+                undoReason={undoReason}
+                onUndoReasonChange={setUndoReason}
+                onUndoSubmit={() => submitUndo(person)}
+                onUndoCancel={() => { setUndoTarget(null); setUndoReason(''); }}
               />
             ))}
           </View>
@@ -383,10 +458,69 @@ function EventAttendanceScreenInner() {
             </HeroButton>
           </View>
         ) : null}
+
+        <View className="gap-1 pt-2">
+          <Text className="text-base font-bold" style={{ color: theme.text }} accessibilityRole="header">
+            {t('attendance.offlineSectionTitle')}
+          </Text>
+          <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+            {t('attendance.offlineSectionHint')}
+          </Text>
+        </View>
         <EventOfflineCheckinCard eventId={safeEventId} />
       </ScrollView>
       {confirmDialog}
     </SafeAreaView>
+  );
+}
+
+/**
+ * Plain-English explanation of check-in for the volunteer on the door (owner instruction,
+ * E-105): who can use it, when it opens and closes, the three ways to record attendance
+ * and what Undo does. Collapsed by default because the roster below is the busy part of
+ * the page; the one-line summary stays visible.
+ */
+function HowCheckinWorksPanel() {
+  const { t } = useTranslation(['events']);
+  const theme = useTheme();
+  const primary = usePrimaryColor();
+  const [expanded, setExpanded] = useState(false);
+  const steps = ['who', 'when', 'byName', 'byCode', 'offline', 'undo', 'credits'] as const;
+
+  return (
+    <HeroCard variant="secondary" testID="attendance-how-it-works">
+      <HeroCard.Body className="gap-2 px-4 py-3">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          accessibilityLabel={t('attendance.howItWorks.title')}
+          accessibilityHint={t(expanded ? 'attendance.howItWorks.collapseHint' : 'attendance.howItWorks.expandHint')}
+          onPress={() => setExpanded((current) => !current)}
+          className="flex-row items-center gap-2"
+        >
+          <Ionicons name="help-circle-outline" size={20} color={primary} />
+          <Text className="min-w-0 flex-1 text-base font-bold" style={{ color: theme.text }}>
+            {t('attendance.howItWorks.title')}
+          </Text>
+          <Ionicons name={expanded ? 'chevron-up-outline' : 'chevron-down-outline'} size={18} color={theme.textSecondary} />
+        </Pressable>
+        <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>
+          {t('attendance.howItWorks.summary')}
+        </Text>
+        {expanded ? (
+          <View className="gap-2 pt-1" testID="attendance-how-it-works-steps">
+            {steps.map((step, index) => (
+              <View key={step} className="flex-row gap-2">
+                <Text className="w-5 text-sm font-bold" style={{ color: primary }}>{index + 1}.</Text>
+                <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.text }}>
+                  {t(`attendance.howItWorks.steps.${step}`)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </HeroCard.Body>
+    </HeroCard>
   );
 }
 
@@ -403,10 +537,20 @@ function AttendancePersonCard({
   person,
   activeMutation,
   onAction,
+  undoOpen,
+  undoReason,
+  onUndoReasonChange,
+  onUndoSubmit,
+  onUndoCancel,
 }: {
   person: EventAttendanceRosterPerson;
   activeMutation: string | null;
   onAction: (person: EventAttendanceRosterPerson, action: EventAttendanceAction) => void;
+  undoOpen: boolean;
+  undoReason: string;
+  onUndoReasonChange: (value: string) => void;
+  onUndoSubmit: () => void;
+  onUndoCancel: () => void;
 }) {
   const { t } = useTranslation(['events', 'common']);
   const theme = useTheme();
@@ -416,7 +560,9 @@ function AttendancePersonCard({
     ...(person.management_actions.check_in ? ['check_in' as const] : []),
     ...(person.management_actions.check_out ? ['check_out' as const] : []),
     ...(person.management_actions.no_show ? ['no_show' as const] : []),
+    ...(person.management_actions.undo_attendance ? ['undo' as const] : []),
   ];
+  const undoBusy = activeMutation === `${person.member.id}:undo:${person.attendance.version ?? 0}`;
 
   return (
     <HeroCard variant="secondary">
@@ -454,8 +600,9 @@ function AttendancePersonCard({
                   key={action}
                   size="sm"
                   variant={action === 'no_show' ? 'danger-soft' : action === 'check_in' ? 'primary' : 'secondary'}
-                  isDisabled={activeMutation !== null}
+                  isDisabled={activeMutation !== null || (action === 'undo' && undoOpen)}
                   accessibilityLabel={t('attendance.actionLabel', { action: t(`attendance.actions.${action}`), name })}
+                  accessibilityHint={action === 'undo' ? t('attendance.undoHint') : undefined}
                   accessibilityState={{ busy }}
                   onPress={() => onAction(person, action)}
                 >
@@ -463,7 +610,7 @@ function AttendancePersonCard({
                     <AccentIcon name="log-in-outline" size={16} />
                   ) : (
                     <Ionicons
-                      name={action === 'check_out' ? 'log-out-outline' : 'person-remove-outline'}
+                      name={action === 'check_out' ? 'log-out-outline' : action === 'undo' ? 'arrow-undo-outline' : 'person-remove-outline'}
                       size={16}
                       color={action === 'no_show' ? theme.error : primary}
                     />
@@ -474,6 +621,31 @@ function AttendancePersonCard({
             })}
           </View>
         )}
+
+        {undoOpen ? (
+          <Surface variant="tertiary" className="gap-2 rounded-panel-inner p-3" testID={`attendance-undo-${person.member.id}`}>
+            <Text className="text-sm font-semibold" style={{ color: theme.text }}>
+              {t('attendance.undoTitle', { name })}
+            </Text>
+            <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>{t('attendance.undoHint')}</Text>
+            <TextArea
+              label={t('attendance.undoReasonLabel')}
+              value={undoReason}
+              onChangeText={onUndoReasonChange}
+              placeholder={t('attendance.undoReasonPlaceholder')}
+              editable={!undoBusy}
+            />
+            <View className="flex-row gap-2">
+              <HeroButton className="flex-1" size="sm" variant="primary" isDisabled={activeMutation !== null} onPress={onUndoSubmit}>
+                {undoBusy ? <Spinner size="sm" /> : null}
+                <HeroButton.Label>{t('attendance.undoConfirm')}</HeroButton.Label>
+              </HeroButton>
+              <HeroButton className="flex-1" size="sm" variant="secondary" isDisabled={undoBusy} onPress={onUndoCancel}>
+                <HeroButton.Label>{t('attendance.undoCancel')}</HeroButton.Label>
+              </HeroButton>
+            </View>
+          </Surface>
+        ) : null}
       </HeroCard.Body>
     </HeroCard>
   );

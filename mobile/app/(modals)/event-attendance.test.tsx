@@ -128,9 +128,11 @@ jest.mock('@/lib/hooks/useApi', () => ({
 jest.mock('@/lib/api/client', () => ({
   ApiResponseError: class ApiResponseError extends Error {
     status: number;
-    constructor(mockStatus: number, mockMessage: string) {
+    code?: string;
+    constructor(mockStatus: number, mockMessage: string, _mockErrors?: Record<string, string[]>, mockCode?: string) {
       super(mockMessage);
       this.status = mockStatus;
+      this.code = mockCode;
     }
   },
 }));
@@ -345,6 +347,107 @@ describe('EventAttendanceScreen', () => {
     expect(screen.queryByText('Check in')).toBeNull();
     await act(async () => finish(mockRoster));
     expect(await screen.findByText('Taylor Member')).toBeTruthy();
+  });
+
+  /*
+    E-105 (2026-10-13): the roster offered Check in / Check out / No-show only, so an
+    organiser on a phone could not undo a mistaken check-in at all. Undo needs a reason
+    (the API answers 422 without one), so the button opens a reason box instead of sending.
+  */
+  it('offers Undo only when the server allows it and sends the reason with the undo', async () => {
+    const undoable = { ...mockRoster, data: [{ ...mockRoster.data[0], attendance: { ...mockRoster.data[0].attendance, id: 8, state: 'checked_in', version: 1 }, management_actions: { ...mockRoster.data[0].management_actions, check_in: false, no_show: false, check_out: true, undo_attendance: true } }] };
+    mockApiOverride = { data: undoable };
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Undo'));
+    expect(mockTransitionAttendance).not.toHaveBeenCalled();
+    expect(screen.getByTestId('attendance-undo-44')).toBeTruthy();
+    fireEvent.changeText(screen.getByPlaceholderText('For example: checked in the wrong person'), '  wrong person  ');
+    fireEvent.press(screen.getByText('Record undo'));
+
+    await waitFor(() => {
+      expect(mockTransitionAttendance).toHaveBeenCalledWith(7, 44, {
+        action: 'undo',
+        expectedVersion: 1,
+        idempotencyKey: expect.stringMatching(/^mobile-attendance-7-44-undo-v1-/),
+        reason: 'wrong person',
+      });
+    });
+  });
+
+  it('does not offer Undo when the server does not allow it', () => {
+    const screen = render(<EventAttendanceScreen />);
+    expect(screen.queryByText('Undo')).toBeNull();
+  });
+
+  it('refuses an undo without a reason and sends nothing', () => {
+    const undoable = { ...mockRoster, data: [{ ...mockRoster.data[0], management_actions: { ...mockRoster.data[0].management_actions, undo_attendance: true } }] };
+    mockApiOverride = { data: undoable };
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Undo'));
+    fireEvent.press(screen.getByText('Record undo'));
+
+    expect(mockTransitionAttendance).not.toHaveBeenCalled();
+    expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', title: 'A reason is needed' }));
+  });
+
+  /*
+    E-105: every 409 used to become "Roster changed ... changed elsewhere". For an event
+    that has not opened yet that was wrong advice; the API's code says what to do next.
+  */
+  it.each([
+    ['EVENT_ATTENDANCE_TOO_EARLY', 'Check-in has not opened yet'],
+    ['EVENT_ATTENDANCE_WINDOW_CLOSED', 'Check-in has closed'],
+    ['EVENT_ATTENDANCE_REGISTRATION_REQUIRED', 'No confirmed place'],
+    ['EVENT_REGISTRATION_UNAVAILABLE', 'Attendance cannot be recorded'],
+  ])('explains a %s refusal instead of calling it a conflict', async (code, title) => {
+    mockTransitionAttendance.mockRejectedValueOnce(new ApiResponseError(409, 'refused', undefined, code));
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Check in'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', title }));
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Attendee list changed' }));
+  });
+
+  it('still treats a version conflict as a conflict', async () => {
+    mockTransitionAttendance.mockRejectedValueOnce(new ApiResponseError(409, 'conflict', undefined, 'EVENT_REGISTRATION_CONFLICT'));
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Check in'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', title: 'Attendee list changed' }));
+    });
+  });
+
+  it('says the reward was already given when a re-check-in reports already_settled', async () => {
+    mockTransitionAttendance.mockResolvedValueOnce({ data: { member: { id: 44, display_name: 'Taylor Member' }, mutation: { attendance_version: 3, credit_status: 'already_settled' } } });
+    const screen = render(<EventAttendanceScreen />);
+
+    fireEvent.press(screen.getByText('Check in'));
+
+    await waitFor(() => {
+      expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({
+        variant: 'success',
+        description: 'Checked in. The attendance reward was already given earlier, so no new credits were issued.',
+      }));
+    });
+  });
+
+  it('shows the plain-English how-it-works steps on demand', () => {
+    const screen = render(<EventAttendanceScreen />);
+    expect(screen.queryByTestId('attendance-how-it-works-steps')).toBeNull();
+
+    fireEvent.press(screen.getByText('How check-in works'));
+
+    expect(screen.getByTestId('attendance-how-it-works-steps')).toBeTruthy();
+    expect(screen.getByText(/30 minutes before the start until 24 hours after the end/)).toBeTruthy();
+    expect(screen.getByText('Offline mode: only needed when there is no internet')).toBeTruthy();
   });
 
   it('still offers Retry for a server failure, which retrying can fix', () => {
