@@ -421,9 +421,12 @@ class NewsletterService
                             ? $newsletter->subject_b
                             : $newsletter->subject);
 
+                    // routes/api.php is mounted under /api (RouteServiceProvider); the
+                    // prefix-less form only works through the compatibility routes kept
+                    // for already-sent emails (email-links audit, 2026-10-14).
                     $apiUrl = rtrim(config('app.url', ''), '/');
                     $unsubscribeUrl = $unsubscribeToken
-                        ? $apiUrl . '/v2/newsletter/unsubscribe?token=' . rawurlencode($unsubscribeToken)
+                        ? $apiUrl . '/api/v2/newsletter/unsubscribe?token=' . rawurlencode($unsubscribeToken)
                         : null;
 
                     $success = EmailDispatchService::sendRaw($item->email, $subject, $emailHtml, null, null, $unsubscribeUrl, 'newsletter', ['tenant_id' => $tenantId, 'textBody' => $textBody]);
@@ -717,7 +720,7 @@ class NewsletterService
         $pixelHtml = '';
         $pixelToken = $trackingToken ?? $unsubscribeToken;
         if ($pixelToken) {
-            $pixelUrl = $apiUrl . '/v2/newsletter/pixel/' . rawurlencode($pixelToken);
+            $pixelUrl = $apiUrl . '/api/v2/newsletter/pixel/' . rawurlencode($pixelToken);
             $pixelHtml = '<img src="' . $pixelUrl . '" width="1" height="1" border="0" alt=""'
                 . ' style="height:1px!important;width:1px!important;border-width:0!important;'
                 . 'margin-top:0!important;margin-bottom:0!important;'
@@ -1057,7 +1060,7 @@ HTML;
                 }
 
                 $signature = hash_hmac('sha256', $trackingToken . '|' . $href, (string) config('app.key'));
-                $trackedUrl = rtrim($apiUrl, '/') . '/v2/newsletter/click/' . rawurlencode($trackingToken)
+                $trackedUrl = rtrim($apiUrl, '/') . '/api/v2/newsletter/click/' . rawurlencode($trackingToken)
                     . '?url=' . rawurlencode($href)
                     . '&sig=' . rawurlencode($signature);
 
