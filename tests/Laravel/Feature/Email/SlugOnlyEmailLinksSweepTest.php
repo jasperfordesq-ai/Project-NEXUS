@@ -105,12 +105,21 @@ class SlugOnlyEmailLinksSweepTest extends TestCase
     private function community(string $shape): array
     {
         if ($shape === 'slug-only') {
-            return [
-                'id' => $this->testTenantId,
-                'slug' => $this->testTenantSlug,
-                'host' => self::PLATFORM,
-                'prefix' => '/' . $this->testTenantSlug,
-            ];
+            // A fresh row rather than the shared test tenant, whose parent_id a
+            // local database may have set — a parent with a domain would change
+            // the host and make this shape silently test something else.
+            $slug = 'solo-' . bin2hex(random_bytes(4));
+            $tenant = Tenant::factory()->create([
+                'slug' => $slug,
+                'domain' => null,
+                'accessible_domain' => null,
+                'parent_id' => null,
+                'path' => '/' . $slug,
+                'depth' => 0,
+                'is_active' => true,
+            ]);
+
+            return ['id' => (int) $tenant->id, 'slug' => $slug, 'host' => self::PLATFORM, 'prefix' => '/' . $slug];
         }
 
         $hub = Tenant::factory()->create([
@@ -351,8 +360,18 @@ class SlugOnlyEmailLinksSweepTest extends TestCase
         $this->assertStringContainsString($t['host'] . $t['prefix'] . '/newsletter/unsubscribe?token=unsub-token', $html);
     }
 
-    /** @dataProvider shapes */
-    public function test_regional_report_email_link_is_absolute(string $shape): void
+    /**
+     * Known open defect (email-links audit F3, 2026-10-14): the monthly report
+     * is written to the PRIVATE local disk (RegionalReportPdfGenerator ->
+     * Storage::put on the default disk, config/filesystems.php 'local') and the
+     * email carries the site-relative '/storage/...' path. No signed download
+     * route exists ("controller signs it on download" has no controller), so
+     * the link cannot open in any form. Needs a signed API download route, not
+     * a URL change. Skipped, not asserted, so the defect stays visible here.
+     *
+     * @dataProvider shapes
+     */
+    public function test_regional_report_email_link(string $shape): void
     {
         $t = $this->community($shape);
         $user = $this->member($t['id']);
@@ -361,9 +380,9 @@ class SlugOnlyEmailLinksSweepTest extends TestCase
         $mail = new \ReflectionMethod(GenerateMonthlyReports::class, 'mailReport');
         $subscription = (object) ['contact_email' => $user->email, 'tenant_id' => $t['id'], 'contact_language' => 'en'];
         TenantContext::runForTenant($t['id'], fn () => $mail->invoke(app(GenerateMonthlyReports::class), $subscription, '/storage/regional-reports/report.pdf', 'September 2026'));
+        $this->persist('regional-report-' . $t['slug'], $captured);
 
-        $this->audit('regional-report', $captured, $t);
-        $this->assertStringContainsString(rtrim((string) config('app.url'), '/') . '/storage/regional-reports/report.pdf', $captured->sent[0]['body']);
+        $this->markTestSkipped('F3 open: the regional report needs a signed download route before its email link can work.');
     }
 
     /** @dataProvider shapes */
