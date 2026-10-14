@@ -74,6 +74,40 @@ export const RESERVED_PATHS = new Set([
 const PLATFORM_DOMAIN = 'project-nexus.ie';
 
 /**
+ * The shared React host, where every community is reachable at /{slug}.
+ */
+const PLATFORM_APP_BASE_URL = 'https://app.project-nexus.ie';
+
+/**
+ * The address a community is reachable at WITHOUT a custom domain of its own.
+ *
+ * Tenants are never subdomains — there is no `{slug}.project-nexus.ie`. On the
+ * shared platform host the slug is the first path segment (R3), and a slug-only
+ * community under a hub that owns a domain is served at `{hub.domain}/{slug}`
+ * (R1, e.g. `uk.timebank.global/stratford`). Deliberately ignores the
+ * community's own `domain`: this is the address that works regardless.
+ *
+ * @param slug - The community slug (lowercase letters, digits, hyphens)
+ * @param hubDomain - The parent hub's custom React domain, if it has one
+ * @returns The absolute address, or null when the slug is empty
+ */
+export function buildPlatformTenantUrl(
+  slug: string | null | undefined,
+  hubDomain?: string | null,
+): string | null {
+  const cleanSlug = slug?.trim();
+  if (!cleanSlug) return null;
+
+  const cleanHub = hubDomain
+    ?.trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '');
+  const base = cleanHub ? `https://${cleanHub}` : PLATFORM_APP_BASE_URL;
+
+  return `${base}/${encodeURIComponent(cleanSlug)}`;
+}
+
+/**
  * Detect tenant slug from the current URL.
  *
  * Implements TRS-001 resolution rules:

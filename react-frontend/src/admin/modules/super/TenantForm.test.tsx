@@ -467,3 +467,127 @@ describe('TenantForm — location tab geocoding', () => {
     });
   });
 });
+
+// The community's addresses WITHOUT a custom domain, shown live under the slug
+// so the operator can see (and copy) where the community will live before
+// saving. Tenants are never subdomains: the slug is a path segment on the
+// platform host, and the accessible site mounts it at /{slug}/accessible.
+describe('TenantForm — live web addresses', () => {
+  const MAIN = 'Main website address';
+  const ACCESSIBLE = 'Accessible website address';
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockRouteParams.current = {};
+    mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [] });
+    mockAdminSuper.createTenant.mockResolvedValue({ success: true, data: { tenant_id: 7 } });
+  });
+
+  it('shows both addresses as the slug is generated from the name', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'My Test Timebank');
+
+    expect(screen.getByRole('textbox', { name: MAIN })).toHaveValue(
+      'https://app.project-nexus.ie/my-test-timebank'
+    );
+    expect(screen.getByRole('textbox', { name: ACCESSIBLE })).toHaveValue(
+      'https://accessible.project-nexus.ie/my-test-timebank/accessible'
+    );
+  });
+
+  it('follows the slug when it is edited by hand, not the custom domain fields', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^slug$/i }), 'Coventry TB');
+    await userEvent.type(screen.getByRole('textbox', { name: /^domain$/i }), 'coventry.example.org');
+    await userEvent.type(
+      screen.getByRole('textbox', { name: /accessible frontend domain/i }),
+      'accessible.coventry.example.org'
+    );
+
+    // The slug field strips anything that is not a-z, 0-9 or a hyphen.
+    expect(screen.getByRole('textbox', { name: MAIN })).toHaveValue('https://app.project-nexus.ie/coventrytb');
+    expect(screen.getByRole('textbox', { name: ACCESSIBLE })).toHaveValue(
+      'https://accessible.project-nexus.ie/coventrytb/accessible'
+    );
+  });
+
+  it('uses the hub domain for the main address when the chosen parent owns one', async () => {
+    mockAdminSuper.listTenants.mockResolvedValue({
+      success: true,
+      data: [
+        { id: 4, name: 'Timebank Global', depth: 1, max_depth: 0, allows_subtenants: true, domain: '' },
+        {
+          id: 11, name: 'Timebanking UK', depth: 2, max_depth: 0, allows_subtenants: true,
+          domain: 'uk.timebank.global', accessible_domain: 'accessible-uk.timebank.global',
+        },
+      ],
+    });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await screen.findByRole('option', { name: /Timebanking UK/ });
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'Stratford');
+    fireEvent.change(screen.getByRole('combobox', { name: /parent tenant/i }), { target: { value: '11' } });
+
+    expect(screen.getByRole('textbox', { name: MAIN })).toHaveValue('https://uk.timebank.global/stratford');
+    // The accessible site does not serve slug-only sub-communities under the
+    // hub's accessible domain; they stay on the shared accessible host.
+    expect(screen.getByRole('textbox', { name: ACCESSIBLE })).toHaveValue(
+      'https://accessible.project-nexus.ie/stratford/accessible'
+    );
+
+    // A hub without a domain falls back to the platform host.
+    fireEvent.change(screen.getByRole('combobox', { name: /parent tenant/i }), { target: { value: '4' } });
+    expect(screen.getByRole('textbox', { name: MAIN })).toHaveValue('https://app.project-nexus.ie/stratford');
+  });
+
+  it('shows a neutral placeholder while the slug is empty', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    const main = screen.getByRole('textbox', { name: MAIN });
+    const accessible = screen.getByRole('textbox', { name: ACCESSIBLE });
+    expect(main).toHaveValue('');
+    expect(accessible).toHaveValue('');
+    expect(main).toHaveAttribute('placeholder', 'Type a name or slug to see the address');
+    expect(accessible).toHaveAttribute('placeholder', 'Type a name or slug to see the address');
+    expect(screen.queryByText(/project-nexus\.ie/)).not.toBeInTheDocument();
+  });
+
+  it('copies the address to the clipboard', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText } });
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'Copy Me');
+    const copyMain = screen.getAllByRole('button', { name: 'Copy address' })[0];
+    expect(copyMain).toBeDefined();
+    await userEvent.click(copyMain!);
+
+    expect(writeText).toHaveBeenCalledWith('https://app.project-nexus.ie/copy-me');
+    expect(mockToast.success).toHaveBeenCalledWith('Address copied');
+  });
+
+  // The SEO tab's search preview used to invent https://{slug}.project-nexus.ie,
+  // which is not an address any tenant has. It must agree with the live preview.
+  it('shows the same address in the Google search preview', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'My Test Timebank');
+    await userEvent.click(screen.getByRole('tab', { name: /seo/i }));
+
+    expect(await screen.findByText('https://app.project-nexus.ie/my-test-timebank')).toBeInTheDocument();
+    expect(screen.queryByText(/my-test-timebank\.project-nexus\.ie/)).not.toBeInTheDocument();
+  });
+});

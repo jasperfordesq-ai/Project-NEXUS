@@ -1,4 +1,4 @@
-import { CardBody, Card, Select, SelectItem, Button, Spinner, Input, Textarea, Switch, Tabs, Tab, Checkbox } from '@/components/ui';
+import { CardBody, Card, Select, SelectItem, Button, Spinner, Input, Textarea, Switch, Tabs, Tab, Checkbox, TextField, Label, InputGroup } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -16,10 +16,14 @@ import Building2 from 'lucide-react/icons/building-2';
 import Save from 'lucide-react/icons/save';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Eye from 'lucide-react/icons/eye';
+import Copy from 'lucide-react/icons/copy';
+import Globe from 'lucide-react/icons/globe';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { languageDisplayName } from '@/lib/languageDisplayName';
+import { buildPlatformTenantUrl } from '@/lib/tenant-routing';
+import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
@@ -55,6 +59,40 @@ function parentHasRoom(parent: Pick<SuperAdminTenant, 'depth' | 'max_depth'>): b
   const maxDepth = Number(parent.max_depth ?? 0);
   if (maxDepth <= 0) return true;
   return Number(parent.depth ?? 0) + 1 <= maxDepth;
+}
+
+/**
+ * One read-only, copyable address line (HeroUI TextField + InputGroup with a
+ * copy-button suffix). `value` is null while the slug is empty, in which case
+ * the placeholder shows and the copy button is disabled.
+ */
+function TenantAddressField({ label, value, placeholder, copyLabel, onCopy }: {
+  label: string;
+  value: string | null;
+  placeholder: string;
+  copyLabel: string;
+  onCopy: (address: string) => void;
+}) {
+  return (
+    <TextField fullWidth isReadOnly value={value ?? ''}>
+      <Label>{label}</Label>
+      <InputGroup fullWidth variant="secondary">
+        <InputGroup.Input readOnly placeholder={placeholder} className="font-mono text-sm" />
+        <InputGroup.Suffix className="pe-0">
+          <Button
+            isIconOnly
+            aria-label={copyLabel}
+            size="sm"
+            variant="ghost"
+            isDisabled={!value}
+            onPress={() => { if (value) onCopy(value); }}
+          >
+            <Copy size={14} />
+          </Button>
+        </InputGroup.Suffix>
+      </InputGroup>
+    </TextField>
+  );
 }
 
 export function TenantForm() {
@@ -221,6 +259,28 @@ export function TenantForm() {
   // (allows_subtenants = 1); a tenant can never be its own parent.
   const selectableParents = parentTenants.filter((parent) => String(parent.id) !== id);
 
+  // The community's addresses WITHOUT a custom domain, recomputed as the slug
+  // (and the chosen hub) change. Always slug-based: the domain fields below do
+  // not affect them, because these are the addresses that keep working whatever
+  // the operator types there. A slug-only community under a hub that owns a
+  // React domain lives at {hub.domain}/{slug}; the accessible site has no such
+  // mode on the hub's accessible domain, so it stays on the shared host.
+  const chosenHub = form.parent_id
+    ? parentTenants.find((parent) => String(parent.id) === form.parent_id)
+    : undefined;
+  const hubDomain = chosenHub?.domain?.trim() || '';
+  const mainAddress = buildPlatformTenantUrl(form.slug, hubDomain);
+  const accessibleAddress = buildAccessibleFrontendUrl(form.slug);
+
+  const copyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      toast.success(t('tenant_form.address_copied'));
+    } catch {
+      toast.error(t('tenant_form.address_copy_failed'));
+    }
+  };
+
   const handleSubmit = async () => {
     if (!form.name.trim()) {
       toast.error(t('tenant_form.name_required'));
@@ -375,6 +435,29 @@ export function TenantForm() {
                 isRequired
                 description={slugAutoGen ? t('tenant_form.slug_auto_desc') : t('tenant_form.slug_manual_desc')}
               />
+              <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
+                <p className="text-xs font-medium uppercase text-muted flex items-center gap-1">
+                  <Globe size={12} /> {t('tenant_form.addresses_heading')}
+                </p>
+                <p className="text-sm text-muted">{t('tenant_form.addresses_desc')}</p>
+                <TenantAddressField
+                  label={t('tenant_form.address_react_label')}
+                  value={mainAddress}
+                  placeholder={t('tenant_form.web_address_placeholder')}
+                  copyLabel={t('tenant_form.address_copy')}
+                  onCopy={copyAddress}
+                />
+                <TenantAddressField
+                  label={t('tenant_form.address_accessible_label')}
+                  value={accessibleAddress}
+                  placeholder={t('tenant_form.web_address_placeholder')}
+                  copyLabel={t('tenant_form.address_copy')}
+                  onCopy={copyAddress}
+                />
+                {hubDomain && (
+                  <p className="text-xs text-muted">{t('tenant_form.address_hub_domain_desc')}</p>
+                )}
+              </div>
               <Input
                 label={t('tenant_form.domain_label')}
                 placeholder={t('tenant_form.domain_placeholder')}
@@ -487,7 +570,7 @@ export function TenantForm() {
               />
               <Textarea
                 label={t('tenant_form.address_label')}
-                placeholder={t('tenant_form.address_placeholder')}
+                placeholder={t('tenant_form.web_address_placeholder')}
                 value={form.address}
                 onValueChange={(v) => updateField('address', v)}
                 minRows={2}
@@ -508,7 +591,7 @@ export function TenantForm() {
                   {form.meta_title || form.name || t('tenant_form.page_title_fallback')}
                 </p>
                 <p className="text-sm text-green-700 dark:text-success truncate">
-                  {form.domain ? `https://${form.domain}` : `https://${form.slug || 'tenant'}.project-nexus.ie`}
+                  {mainAddress ?? t('tenant_form.web_address_placeholder')}
                 </p>
                 <p className="text-sm text-muted line-clamp-2">
                   {form.meta_description || t('tenant_form.no_description_set')}

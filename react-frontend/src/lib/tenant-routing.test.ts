@@ -16,7 +16,30 @@ import {
   detectTenantFromUrl,
   tenantPath,
   stripTenantSlug,
+  buildPlatformTenantUrl,
 } from './tenant-routing';
+
+// The address a community is reachable at WITHOUT a custom domain. Tenants are
+// never subdomains (there is no {slug}.project-nexus.ie): on the platform host
+// the slug is the first path segment, and a slug-only community under a hub
+// that owns a domain is served at {hub.domain}/{slug} (R1 in TRS-001).
+describe('buildPlatformTenantUrl', () => {
+  it('builds the path-based address on the platform app host', () => {
+    expect(buildPlatformTenantUrl('hour-timebank')).toBe('https://app.project-nexus.ie/hour-timebank');
+  });
+
+  it('uses the hub domain for a slug-only community under a hub that owns one', () => {
+    expect(buildPlatformTenantUrl('stratford', 'uk.timebank.global')).toBe('https://uk.timebank.global/stratford');
+    expect(buildPlatformTenantUrl('stratford', 'https://uk.timebank.global/')).toBe('https://uk.timebank.global/stratford');
+  });
+
+  it('ignores a blank hub domain and returns null for an empty slug', () => {
+    expect(buildPlatformTenantUrl('stratford', '   ')).toBe('https://app.project-nexus.ie/stratford');
+    expect(buildPlatformTenantUrl('')).toBeNull();
+    expect(buildPlatformTenantUrl('  ', 'uk.timebank.global')).toBeNull();
+    expect(buildPlatformTenantUrl(null)).toBeNull();
+  });
+});
 
 describe('tenant-routing', () => {
   // Save original location
