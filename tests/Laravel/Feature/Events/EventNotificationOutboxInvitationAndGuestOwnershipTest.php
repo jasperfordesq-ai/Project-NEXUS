@@ -53,6 +53,15 @@ final class EventNotificationOutboxInvitationAndGuestOwnershipTest extends TestC
     {
         $owner = $this->eventUser();
         $target = $this->eventUser();
+        // Since E-106 the invitation is also emailed to a member who never
+        // chose a digest. The test box has no mail transport, so record the
+        // send as accepted (same stub as EventSubmitForReviewNotifiesAdminsTest).
+        $this->app->instance(\App\Services\EmailDispatchService::class, new class extends \App\Services\EmailDispatchService {
+            public function send(string $to, string $subject, string $body, array $options = []): bool
+            {
+                return true;
+            }
+        });
         [$eventId, $start] = $this->registrationEvent((int) $owner->id);
         $preview = (new EventInvitationCampaignService())->preview(
             $eventId,

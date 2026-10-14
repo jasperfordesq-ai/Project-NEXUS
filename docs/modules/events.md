@@ -106,6 +106,8 @@ Every recipient-facing render must run inside `LocaleContext::withLocale($recipi
 
 Organiser broadcasts use an authorised, frozen audience snapshot, preview counts, scheduled/revised/cancelled state, per-recipient locale, channel preference checks, delivery evidence and retry diagnostics. Audience membership is not recalculated midway through a send.
 
+Organiser broadcast and invitation emails treat the community's default email cadence (`off` out of the box) as "no choice made" and send at once; a member's own cadence choice, including `off`, and the `email_events` opt-out still apply. `events:process-broadcasts` runs in the background every minute and keeps claiming batches while work is due, for up to `events.broadcast.budget_seconds` (default 50); retry and stale-claim limits are in `config/events.php` under `broadcast`. Each run also closes any broadcast left "sending" with no active deliveries. The list and detail endpoints accept `?include=summary` for an excerpt and identity-free counts of skipped and undelivered deliveries by reason. The local Docker stack has no scheduler container: run `php artisan schedule:work` (or `events:process-broadcasts`) in `nexus-php-app` to send broadcasts locally.
+
 ## Recurrence, calendars and federation
 
 Recurrence uses `sabre/vobject` through the Events recurrence service. Store UTC timestamps with an explicit IANA timezone, stable occurrence key and immutable canonical UTC recurrence identity. Reject invalid zones, DST gaps and ambiguous fall-back wall times; test month-end and DST boundaries. Named series and recurrence templates remain explicit concepts.
