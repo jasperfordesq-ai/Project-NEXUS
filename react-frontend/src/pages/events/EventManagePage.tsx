@@ -607,7 +607,13 @@ export function EventManagePage() {
           )}
         {event.permissions.check_in && (
           <Tabs.Panel id="check-in" className="pt-5 outline-none">
-            {selectedTab === 'check-in' && (isSeriesTemplate ? seriesTemplateNotice : <EventOfflineCheckinWorkspace eventId={event.id} />)}
+            {selectedTab === 'check-in' && (isSeriesTemplate ? seriesTemplateNotice : (
+              <EventOfflineCheckinWorkspace
+                eventId={event.id}
+                eventStart={event.schedule.start_at}
+                eventEnd={event.schedule.end_at}
+              />
+            ))}
           </Tabs.Panel>
         )}
         {event.permissions.broadcast && (

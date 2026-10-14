@@ -50,8 +50,8 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('./components/EventOfflineCheckinWorkspace', () => ({
   EventOfflineCheckinWorkspace: ({ eventId }: { eventId: number }) => (
     <section>
-      <h2>Offline QR check-in</h2>
-      <h3>Manual check-in</h3>
+      <h2>Check in attendees</h2>
+      <h3>1. Check in by name</h3>
       <span>event-{eventId}</span>
     </section>
   ),
@@ -520,7 +520,7 @@ describe('EventManagePage', () => {
     expect(screen.getByRole('link', { name: 'Edit event' })).toHaveAttribute('href', '/test/events/1/edit');
     expect(screen.getByRole('link', { name: 'Manage people' })).toHaveAttribute('href', '/test/events/1/manage/people');
     expect(screen.getByRole('link', { name: 'Registration, invitations and guests' })).toHaveAttribute('href', '/test/events/1/manage/registration');
-    expect(screen.getByRole('link', { name: 'Open check-in' })).toHaveAttribute('href', '/test/events/1/manage/check-in');
+    expect(screen.getByRole('link', { name: 'Check in attendees' })).toHaveAttribute('href', '/test/events/1/manage/check-in');
     expect(screen.getByRole('link', { name: 'Manage agenda' })).toHaveAttribute('href', '/test/events/1/manage/agenda');
     expect(screen.getByRole('link', { name: 'Templates' })).toHaveAttribute('href', '/test/events/1/manage/templates');
     expect(screen.getByRole('link', { name: 'Event analytics' })).toHaveAttribute('href', '/test/events/1/manage/analytics');
@@ -622,8 +622,8 @@ describe('EventManagePage', () => {
 
     const checkInTab = await screen.findByRole('tab', { name: 'Check-in' });
     expect(checkInTab).toHaveAttribute('aria-selected', 'true');
-    expect(await screen.findByRole('heading', { name: 'Offline QR check-in' })).toBeInTheDocument();
-    expect(await screen.findByRole('heading', { name: 'Manual check-in' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Check in attendees' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '1. Check in by name' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'People' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Team' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /export/i })).not.toBeInTheDocument();

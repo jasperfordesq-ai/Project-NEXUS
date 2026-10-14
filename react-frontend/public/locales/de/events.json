@@ -399,7 +399,7 @@
       "operations_title": "Verfügbare Operationen",
       "edit_event": "Veranstaltung bearbeiten",
       "people": "Menschen verwalten",
-      "check_in": "Offener Check-in",
+      "check_in": "Teilnehmende einchecken",
       "agenda": "Programm verwalten"
     },
     "lifecycle_states": {
@@ -603,40 +603,59 @@
       }
     },
     "check_in": {
-      "title": "Manueller Check-in",
-      "description": "Durchsuchen Sie den bestätigten Dienstplan und zeichnen Sie Anwesenheitsänderungen mit einem überprüfbaren Versionsverlauf auf.",
-      "metrics_aria": "Check-in-Metriken",
-      "search_label": "Finden Sie einen Teilnehmer",
-      "search_placeholder": "Durchsuchen Sie den bestätigten Dienstplan",
-      "clear_search": "Teilnehmersuche löschen",
-      "loading": "Check-in-Liste wird geladen...",
-      "results_count": "{{count}} Teilnehmer gefunden",
-      "table_aria": "Manuelle Check-in-Liste",
-      "empty": "Zu dieser Suche passen keine Teilnehmer.",
-      "load_error_title": "Der Check-in konnte nicht geladen werden",
-      "load_error_desc": "Der Check-in-Dienstplan konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
-      "pagination_aria": "Check-in-Listenseiten",
+      "title": "Per Name einchecken",
+      "description": "Suchen Sie die Person und drücken Sie Einchecken. Jede Änderung wird protokolliert und kann mit einem Grund rückgängig gemacht werden.",
+      "guide": {
+        "title": "So funktioniert der Check-in",
+        "who": "Wer darf das: die Organisation sowie Teammitglieder mit der Berechtigung „Anwesenheit verwalten“.",
+        "when": "Wann: von 30 Minuten vor Beginn bis 24 Stunden nach Ende der Veranstaltung. Check-out und Rückgängig bleiben danach möglich; „Nicht erschienen“ kann ab der Startzeit erfasst werden.",
+        "step_find": "Suchen Sie die Person in der Liste (Namen eintippen, um zu suchen) und drücken Sie Einchecken, wenn sie ankommt.",
+        "step_leave": "Drücken Sie Auschecken, wenn sie geht, oder Nicht erschienen, wenn sie nicht gekommen ist.",
+        "step_undo": "Einen Fehler gemacht? Drücken Sie Rückgängig und geben Sie einen kurzen Grund an. Jede Änderung wird protokolliert; nichts wird gelöscht.",
+        "step_more": "Check-in-Codes scannen und der Offline-Modus finden sich unter Verwalten → Check-in.",
+        "credits": "Wenn diese Veranstaltung eine Zeitguthaben-Belohnung für die Teilnahme bietet, wird sie beim ersten Check-in der Person gutgeschrieben. Andernfalls ändert das Einchecken kein Guthaben."
+      },
+      "window": {
+        "opens_at": "Der Check-in öffnet am {{date}} (30 Minuten vor Beginn).",
+        "open_until": "Der Check-in ist bis {{date}} geöffnet (24 Stunden nach Ende).",
+        "closed_at": "Der Check-in wurde am {{date}} geschlossen. Auschecken und Rückgängig sind weiterhin möglich."
+      },
+      "metrics_aria": "Anwesenheitszahlen",
+      "search_label": "Person finden",
+      "search_placeholder": "Namen eingeben",
+      "search_hint": "Es werden nur Personen mit bestätigtem Platz aufgeführt.",
+      "clear_search": "Namenssuche löschen",
+      "loading": "Namensliste wird geladen...",
+      "results_count": "{{count}} Person(en) gefunden",
+      "table_aria": "Per Name einchecken",
+      "empty": "Niemand passt zu dieser Suche.",
+      "load_error_title": "Die Liste konnte nicht geladen werden",
+      "load_error_desc": "Bitte versuchen Sie es erneut. Wenn es weiterhin fehlschlägt, prüfen Sie Ihre Internetverbindung.",
+      "pagination_aria": "Listenseiten",
       "actions": {
         "check_in": "Einchecken",
-        "check_out": "Kasse",
-        "no_show": "Nichterscheinen markieren",
-        "undo": "Rückgängig machen"
+        "check_out": "Auschecken",
+        "no_show": "Nicht erschienen",
+        "undo": "Rückgängig"
       },
-      "no_actions": "Keine Aktion verfügbar",
+      "no_actions": "Nichts zu tun",
+      "no_actions_too_early": "Noch nicht geöffnet",
+      "no_actions_closed": "Check-in geschlossen",
       "success": {
-        "check_in": "Die Anwesenheit wurde überprüft.",
-        "check_out": "Die Anwesenheit wurde überprüft.",
-        "no_show": "Die Anwesenheit wurde als Nichterscheinen gewertet.",
-        "undo": "Die Anwesenheitskorrektur wurde erfasst.",
-        "check_in_reward_already_granted": "Eingecheckt – die Anwesenheitsprämie wurde bereits früher gewährt, es wurden also keine neuen Gutschriften ausgestellt."
+        "check_in": "Eingecheckt.",
+        "check_out": "Ausgecheckt.",
+        "no_show": "Als nicht erschienen markiert.",
+        "undo": "Die Änderung wurde rückgängig gemacht.",
+        "check_in_reward_already_granted": "Eingecheckt. Die Teilnahmebelohnung wurde bereits früher vergeben, daher wurde kein neues Guthaben gutgeschrieben."
       },
-      "action_error": "Die Anwesenheitsliste konnte nicht aktualisiert werden.",
-      "version_conflict": "Dieser Besucherrekord hat sich an anderer Stelle geändert. Der Kader wurde aktualisiert.",
-      "undo_title": "Anwesenheitsänderung rückgängig machen?",
-      "undo_description": "Korrigieren Sie die letzte Anwesenheitsänderung für {{name}}. Die ursprüngliche Geschichte bleibt unveränderlich.",
-      "undo_reason_label": "Korrekturgrund",
-      "keep_record": "Protokollieren",
-      "confirm_undo": "Korrektur aufzeichnen"
+      "action_error": "Die Änderung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "version_conflict": "Jemand anderes hat den Eintrag dieser Person zur gleichen Zeit geändert. Die Liste wurde aktualisiert – bitte prüfen und erneut versuchen.",
+      "undo_title": "Letzte Änderung rückgängig machen?",
+      "undo_description": "Dies macht die letzte Anwesenheitsänderung für {{name}} rückgängig. Der frühere Eintrag bleibt erhalten; nichts wird gelöscht.",
+      "undo_reason_label": "Warum machen Sie es rückgängig?",
+      "undo_reason_hint": "Ein kurzer Grund ist nötig und wird protokolliert. Geben Sie keine persönlichen Daten an.",
+      "keep_record": "So lassen",
+      "confirm_undo": "Rückgängig"
     },
     "agenda": {
       "title": "Programm",

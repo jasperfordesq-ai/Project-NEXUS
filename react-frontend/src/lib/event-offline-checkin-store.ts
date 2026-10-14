@@ -32,6 +32,20 @@ export function offlineCheckinExplanation(error: unknown): string | null {
   return error instanceof OfflineCheckinRequestError ? error.explanation : null;
 }
 
+/**
+ * Parse a timestamp from the check-in API or the local queue. The conflicts
+ * endpoint returns bare `YYYY-MM-DD HH:MM:SS` (UTC, no zone marker), which
+ * `new Date()` reads as LOCAL time — a one-hour drift in Ireland (E-105). Bare
+ * values are treated as UTC; ISO strings with a zone are parsed as they are.
+ */
+export function parseCheckinTimestamp(value: string): Date {
+  const trimmed = value.trim();
+  const bare = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?)$/.exec(trimmed);
+  if (bare) return new Date(`${bare[1]}T${bare[2]}Z`);
+
+  return new Date(trimmed);
+}
+
 const DATABASE_NAME = 'nexus-event-checkin-v1';
 const DATABASE_VERSION = 1;
 const KEY_STORE = 'keys';

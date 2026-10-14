@@ -432,7 +432,7 @@
       "operations_title": "Oibríochtaí atá ar fáil",
       "edit_event": "Cuir imeacht in eagar",
       "people": "Bainistigh daoine",
-      "check_in": "Oscail an clárú isteach",
+      "check_in": "Seiceáil isteach na rannpháirtithe",
       "agenda": "Bainistigh an clár"
     },
     "lifecycle_states": {
@@ -636,40 +636,59 @@
       }
     },
     "check_in": {
-      "title": "Clárú isteach de láimh",
-      "description": "Cuardaigh an uainchlár deimhnithe agus déan taifead ar athruithe tinrimh le stair leaganacha in-iniúchta.",
-      "metrics_aria": "Méadracht an chláraithe isteach",
-      "search_label": "Aimsigh freastalaí",
-      "search_placeholder": "Cuardaigh an uainchlár deimhnithe",
-      "clear_search": "Glan cuardach freastalaithe",
-      "loading": "Uainchlár an chláraithe isteach á lódáil...",
-      "results_count": "Aimsíodh {{count}} freastalaí",
-      "table_aria": "Uainchlár cláraithe isteach de láimh",
-      "empty": "Ní mheaitseálann aon lucht freastail an cuardach seo.",
-      "load_error_title": "Ní féidir an clárú isteach a lódáil",
-      "load_error_desc": "Níorbh fhéidir uainchlár an chláraithe isteach a lódáil. Bain triail eile as.",
-      "pagination_aria": "Leathanaigh uainchlár an chláraithe isteach",
+      "title": "Seiceáil isteach de réir ainm",
+      "description": "Aimsigh an duine agus brúigh Seiceáil isteach. Taifeadtar gach athrú agus is féidir é a chealú le cúis.",
+      "guide": {
+        "title": "Conas a oibríonn seiceáil isteach",
+        "who": "Cé atá in ann é a úsáid: an t-eagraí, agus baill foirne a bhfuil an cead \"tinreamh a bhainistiú\" acu.",
+        "when": "Cathain: ó 30 nóiméad roimh thús an imeachta go dtí 24 uair an chloig tar éis a dheiridh. Is féidir Seiceáil amach agus Cealaigh a dhéanamh ina dhiaidh sin fós; is féidir \"Níor tháinig\" a thaifeadadh ón am tosaithe.",
+        "step_find": "Aimsigh an duine sa liosta (clóscríobh ainm le cuardach) agus brúigh Seiceáil isteach nuair a thagann sé nó sí.",
+        "step_leave": "Brúigh Seiceáil amach nuair a imíonn sé nó sí, nó Níor tháinig mura dtáinig sé nó sí.",
+        "step_undo": "Botún déanta? Brúigh Cealaigh agus tabhair cúis ghearr. Coinnítear taifead ar gach athrú; ní scriostar rud ar bith.",
+        "step_more": "Tá scanadh cód seiceála isteach agus an mód as líne faoi Bainistigh → Seiceáil isteach.",
+        "credits": "Má thairgeann an t-imeacht seo luach saothair creidmheasa ama as freastal, bronntar é nuair a sheiceáiltear an duine isteach den chéad uair. Murach sin, ní athraíonn seiceáil isteach iarmhéid duine ar bith."
+      },
+      "window": {
+        "opens_at": "Osclaíonn seiceáil isteach {{date}} (30 nóiméad roimh an tús).",
+        "open_until": "Tá seiceáil isteach ar oscailt go dtí {{date}} (24 uair an chloig tar éis an deiridh).",
+        "closed_at": "Dúnadh seiceáil isteach {{date}}. Is féidir Seiceáil amach agus Cealaigh a dhéanamh fós."
+      },
+      "metrics_aria": "Iomláin tinrimh",
+      "search_label": "Aimsigh duine",
+      "search_placeholder": "Clóscríobh ainm",
+      "search_hint": "Ní liostaítear ach daoine a bhfuil áit dheimhnithe acu.",
+      "clear_search": "Glan an cuardach ainm",
+      "loading": "Liosta na n-ainmneacha á lódáil...",
+      "results_count": "{{count}} duine aimsithe",
+      "table_aria": "Seiceáil isteach de réir ainm",
+      "empty": "Ní mheaitseálann duine ar bith an cuardach seo.",
+      "load_error_title": "Níorbh fhéidir an liosta a lódáil",
+      "load_error_desc": "Bain triail eile as, le do thoil. Má theipeann air i gcónaí, seiceáil do nasc idirlín.",
+      "pagination_aria": "Leathanaigh an liosta",
       "actions": {
-        "check_in": "Cláraigh isteach",
-        "check_out": "Cláraigh amach",
-        "no_show": "Marcáil nár tháinig",
-        "undo": "Cealaigh an t-athrú"
+        "check_in": "Seiceáil isteach",
+        "check_out": "Seiceáil amach",
+        "no_show": "Marcáil níor tháinig",
+        "undo": "Cealaigh"
       },
-      "no_actions": "Níl aon ghníomh ar fáil",
+      "no_actions": "Níl rud ar bith le déanamh",
+      "no_actions_too_early": "Níl sé ar oscailt fós",
+      "no_actions_closed": "Seiceáil isteach dúnta",
       "success": {
-        "check_in": "Cláraíodh an freastalaí isteach.",
-        "check_out": "Cláraíodh an freastalaí amach.",
-        "no_show": "Taifeadadh nár tháinig an freastalaí.",
-        "undo": "Taifeadadh an ceartúchán tinrimh.",
-        "check_in_reward_already_granted": "Cláraithe isteach — deonaíodh an luaíocht tinrimh cheana, mar sin níor eisíodh aon chreidmheas ama nua."
+        "check_in": "Seiceáilte isteach.",
+        "check_out": "Seiceáilte amach.",
+        "no_show": "Marcáilte mar níor tháinig.",
+        "undo": "Cealaíodh an t-athrú.",
+        "check_in_reward_already_granted": "Seiceáilte isteach. Bronnadh an luach saothair tinrimh cheana féin, mar sin níor eisíodh creidmheasanna nua."
       },
-      "action_error": "Níorbh fhéidir an taifead tinrimh a nuashonrú.",
-      "version_conflict": "Athraíodh an taifead tinrimh seo in áit eile. Athnuadh an t-uainchlár.",
-      "undo_title": "Athrú tinrimh a chealú?",
-      "undo_description": "Ceartaigh an t-athrú tinrimh is déanaí do {{name}}. Fanfaidh an stair bhunaidh do-athraithe.",
-      "undo_reason_label": "Cúis cheartúcháin",
-      "keep_record": "Coinnigh taifead",
-      "confirm_undo": "Taifead an ceartúchán"
+      "action_error": "Níorbh fhéidir an t-athrú a shábháil. Bain triail eile as, le do thoil.",
+      "version_conflict": "D'athraigh duine eile taifead an duine seo ag an am céanna. Athnuadh an liosta — seiceáil é agus bain triail eile as.",
+      "undo_title": "An t-athrú deireanach a chealú?",
+      "undo_description": "Cealaíonn sé seo an t-athrú tinrimh is déanaí do {{name}}. Coinnítear an taifead roimhe sin; ní scriostar rud ar bith.",
+      "undo_reason_label": "Cén fáth a bhfuil tú á chealú?",
+      "undo_reason_hint": "Tá cúis ghearr ag teastáil agus coinnítear sa taifead í. Ná cuir sonraí pearsanta duine ar bith isteach.",
+      "keep_record": "Fág mar atá",
+      "confirm_undo": "Cealaigh"
     },
     "agenda": {
       "title": "Clár",

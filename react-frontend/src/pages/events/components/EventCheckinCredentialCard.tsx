@@ -9,7 +9,6 @@ import Copy from 'lucide-react/icons/copy';
 import Printer from 'lucide-react/icons/printer';
 import QrCode from 'lucide-react/icons/qr-code';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
-import ShieldCheck from 'lucide-react/icons/shield-check';
 import QRCode from 'qrcode';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -23,7 +22,7 @@ import {
   eventOfflineCheckinApi,
   type EventCheckinCredential,
 } from '@/lib/event-offline-checkin-api';
-import { OfflineCheckinRequestError, offlineCheckinExplanation } from '@/lib/event-offline-checkin-store';
+import { OfflineCheckinRequestError, offlineCheckinExplanation, parseCheckinTimestamp } from '@/lib/event-offline-checkin-store';
 import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
@@ -32,6 +31,11 @@ function mutationKey(prefix: string): string {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}`;
 }
 
+/**
+ * The attendee's optional check-in code (E-105). Staff can always check them
+ * in by name; the code only makes it quicker. It is shown once, so the card
+ * says so before the person presses anything.
+ */
 export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
   const { t } = useTranslation('event_offline_checkin');
   const toast = useToast();
@@ -172,23 +176,38 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
     return <div className="flex min-h-32 items-center justify-center"><Spinner label={t('credential.loading')} /></div>;
   }
 
+  const hasActiveCode = credential !== null && credential.status === 'active';
+
   return (
     <Card className="border border-theme-default bg-theme-surface">
       <CardBody className="space-y-4 p-4 sm:p-6">
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 h-5 w-5 text-accent" aria-hidden="true" />
+          <QrCode className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
           <div>
             <h2 className="font-semibold text-theme-primary">{t('credential.title')}</h2>
             <p className="text-sm text-theme-muted">{t('credential.description')}</p>
           </div>
         </div>
-        <Alert color="primary" title={t('credential.privacy')} />
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm text-theme-primary">
+          <p className="font-semibold">{t('credential.guide_title')}</p>
+          <ol className="mt-2 list-decimal list-outside ms-5 space-y-1">
+            <li>{t('credential.step_create')}</li>
+            <li>{t('credential.step_save')}</li>
+            <li>{t('credential.step_show')}</li>
+          </ol>
+          <p className="mt-2 text-theme-muted">{t('credential.privacy')}</p>
+        </div>
         {loadError && <Alert color="warning" title={t('credential.load_error')} />}
 
-        {!credential || credential.status !== 'active' ? (
-          <Button color="primary" startContent={<QrCode className="h-4 w-4" aria-hidden="true" />} isLoading={busy} isDisabled={busy} onPress={() => void issue()}>
-            {t('credential.issue')}
-          </Button>
+        {!hasActiveCode ? (
+          <div className="space-y-3">
+            {credential && credential.status !== 'active' && (
+              <div><Chip size="sm" variant="flat">{t(`credential.status.${credential.status}`)}</Chip></div>
+            )}
+            <Button color="primary" startContent={<QrCode className="h-4 w-4" aria-hidden="true" />} isLoading={busy} isDisabled={busy} onPress={() => void issue()}>
+              {t('credential.issue')}
+            </Button>
+          </div>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -197,7 +216,7 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
                 <span className="text-xs text-theme-muted">
                   {t('credential.expires', {
                     date: new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' })
-                      .format(new Date(credential.expires_at)),
+                      .format(parseCheckinTimestamp(credential.expires_at)),
                   })}
                 </span>
               )}
@@ -217,11 +236,11 @@ export function EventCheckinCredentialCard({ eventId }: { eventId: number }) {
             ) : (
               <Alert color="warning" title={t('credential.one_shot')} />
             )}
-            <Textarea label={t('credential.reason')} description={t('credential.reason_hint')} value={reason} onValueChange={setReason} />
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" startContent={<RotateCcw className="h-4 w-4" aria-hidden="true" />} isDisabled={busy} onPress={() => void rotate()}>{t('credential.rotate')}</Button>
-              <Button color="danger" variant="outline" isDisabled={busy} onPress={() => void revoke()}>{t('credential.revoke')}</Button>
             </div>
+            <Textarea label={t('credential.reason')} description={t('credential.reason_hint')} value={reason} onValueChange={setReason} />
+            <Button color="danger" variant="outline" isDisabled={busy} onPress={() => void revoke()}>{t('credential.revoke')}</Button>
           </div>
         )}
       </CardBody>

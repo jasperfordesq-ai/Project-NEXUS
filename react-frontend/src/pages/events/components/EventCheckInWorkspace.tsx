@@ -7,11 +7,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Label } from '@heroui/react/label';
 import { SearchField } from '@heroui/react/search-field';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Clock from 'lucide-react/icons/clock';
 import LogOut from 'lucide-react/icons/log-out';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Search from 'lucide-react/icons/search';
 import UserX from 'lucide-react/icons/user-x';
 import { useTranslation } from 'react-i18next';
+import { Alert } from '@/components/ui/Alert';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
@@ -30,14 +32,53 @@ import {
   type EventPeoplePerson,
   type EventPeopleQueryParams,
 } from '@/lib/events-api';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { getFormattingLocale, resolveAvatarUrl } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { EventCheckInGuide } from './EventCheckInGuide';
 
 const PAGE_SIZE = 25;
+
+/** Platform defaults (`config/events.php` attendance window). */
+const OPENS_BEFORE_MINUTES = 30;
+const CLOSES_AFTER_HOURS = 24;
+
+export type CheckInWindowState = 'unknown' | 'too_early' | 'open' | 'closed';
+
+export interface CheckInWindow {
+  state: CheckInWindowState;
+  opensAt: Date | null;
+  closesAt: Date | null;
+}
+
+/**
+ * When attendance can be recorded for an event: from 30 minutes before the
+ * start until 24 hours after the end (the server enforces the same window and
+ * answers 409 outside it). Check-out and Undo stay possible after it closes;
+ * only Check in is window-limited.
+ */
+export function checkInWindow(
+  start: string | null | undefined,
+  end: string | null | undefined,
+  now: Date = new Date(),
+): CheckInWindow {
+  const startAt = start ? new Date(start) : null;
+  if (!startAt || Number.isNaN(startAt.getTime())) {
+    return { state: 'unknown', opensAt: null, closesAt: null };
+  }
+  const endAtCandidate = end ? new Date(end) : null;
+  const endAt = endAtCandidate && !Number.isNaN(endAtCandidate.getTime()) ? endAtCandidate : startAt;
+  const opensAt = new Date(startAt.getTime() - OPENS_BEFORE_MINUTES * 60_000);
+  const closesAt = new Date(endAt.getTime() + CLOSES_AFTER_HOURS * 3_600_000);
+  if (now < opensAt) return { state: 'too_early', opensAt, closesAt };
+  if (now > closesAt) return { state: 'closed', opensAt, closesAt };
+
+  return { state: 'open', opensAt, closesAt };
+}
 
 interface UndoTarget {
   person: EventPeoplePerson;
 }
+
 function createIdempotencyKey(action: string): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
     return `event-attendance-${action}-${globalThis.crypto.randomUUID()}`;
@@ -46,7 +87,28 @@ function createIdempotencyKey(action: string): string {
   return `event-attendance-${action}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(value);
+}
+
+export interface EventCheckInWorkspaceProps {
+  eventId: number;
+  /** Event start (ISO). With `eventEnd`, lets the list say when check-in opens and closes. */
+  eventStart?: string | null;
+  eventEnd?: string | null;
+  /** Show the "How check-in works" panel above the list (default: yes). */
+  showGuide?: boolean;
+  /** Bump to make the list reload (after a code scan was synced, for example). */
+  reloadToken?: number;
+}
+
+export function EventCheckInWorkspace({
+  eventId,
+  eventStart = null,
+  eventEnd = null,
+  showGuide = true,
+  reloadToken = 0,
+}: EventCheckInWorkspaceProps) {
   const { t } = useTranslation('events');
   const toast = useToast();
   const [people, setPeople] = useState<EventPeoplePerson[]>([]);
@@ -102,7 +164,7 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [loadPeople]);
+  }, [loadPeople, reloadToken]);
 
   const transition = async (
     person: EventPeoplePerson,
@@ -153,9 +215,42 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
     || t('manage.people.member_fallback', { id: person.member.id });
 
   const metrics = meta?.metrics;
+  const window_ = useMemo(() => checkInWindow(eventStart, eventEnd), [eventStart, eventEnd]);
+  const noActionsLabel = window_.state === 'too_early'
+    ? t('manage.check_in.no_actions_too_early')
+    : window_.state === 'closed'
+      ? t('manage.check_in.no_actions_closed')
+      : t('manage.check_in.no_actions');
 
   return (
     <div className="space-y-5">
+      {showGuide && (
+        <EventCheckInGuide
+          title={t('manage.check_in.guide.title')}
+          who={t('manage.check_in.guide.who')}
+          when={t('manage.check_in.guide.when')}
+          steps={[
+            t('manage.check_in.guide.step_find'),
+            t('manage.check_in.guide.step_leave'),
+            t('manage.check_in.guide.step_undo'),
+            t('manage.check_in.guide.step_more'),
+          ]}
+          credits={t('manage.check_in.guide.credits')}
+        />
+      )}
+
+      {window_.state !== 'unknown' && window_.opensAt && window_.closesAt && (
+        <Alert
+          color={window_.state === 'open' ? 'success' : 'warning'}
+          icon={<Clock className="h-5 w-5" aria-hidden="true" />}
+          title={window_.state === 'too_early'
+            ? t('manage.check_in.window.opens_at', { date: formatDate(window_.opensAt) })
+            : window_.state === 'open'
+              ? t('manage.check_in.window.open_until', { date: formatDate(window_.closesAt) })
+              : t('manage.check_in.window.closed_at', { date: formatDate(window_.closesAt) })}
+        />
+      )}
+
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label={t('manage.check_in.metrics_aria')}>
         {(['confirmed', 'checked_in', 'checked_out', 'no_show', 'attended'] as const).map((metric) => (
           <div key={metric} className="rounded-xl border border-theme-default bg-theme-surface p-4">
@@ -173,21 +268,24 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
           </div>
 
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_18rem]">
-            <SearchField
-              className="w-full"
-              value={search}
-              onChange={(value) => {
-                setPage(1);
-                setSearch(value);
-              }}
-            >
-              <Label>{t('manage.check_in.search_label')}</Label>
-              <SearchField.Group>
-                <SearchField.SearchIcon><Search className="h-4 w-4" aria-hidden="true" /></SearchField.SearchIcon>
-                <SearchField.Input placeholder={t('manage.check_in.search_placeholder')} />
-                {search && <SearchField.ClearButton aria-label={t('manage.check_in.clear_search')} />}
-              </SearchField.Group>
-            </SearchField>
+            <div>
+              <SearchField
+                className="w-full"
+                value={search}
+                onChange={(value) => {
+                  setPage(1);
+                  setSearch(value);
+                }}
+              >
+                <Label>{t('manage.check_in.search_label')}</Label>
+                <SearchField.Group>
+                  <SearchField.SearchIcon><Search className="h-4 w-4" aria-hidden="true" /></SearchField.SearchIcon>
+                  <SearchField.Input placeholder={t('manage.check_in.search_placeholder')} />
+                  {search && <SearchField.ClearButton aria-label={t('manage.check_in.clear_search')} />}
+                </SearchField.Group>
+              </SearchField>
+              <p className="mt-1 text-xs text-theme-muted">{t('manage.check_in.search_hint')}</p>
+            </div>
             <Select
               label={t('manage.people.attendance_filter')}
               selectedKeys={new Set([attendanceState])}
@@ -289,7 +387,7 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
                             && !person.management_actions.check_out
                             && !person.management_actions.no_show
                             && !person.management_actions.undo_attendance && (
-                              <span className="text-sm text-theme-muted">{t('manage.check_in.no_actions')}</span>
+                              <span className="text-sm text-theme-muted">{noActionsLabel}</span>
                             )}
                         </div>
                       </TableCell>
@@ -325,6 +423,7 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
             </p>
             <Textarea
               label={t('manage.check_in.undo_reason_label')}
+              description={t('manage.check_in.undo_reason_hint')}
               value={undoReason}
               onValueChange={setUndoReason}
               minRows={3}

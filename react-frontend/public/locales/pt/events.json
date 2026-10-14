@@ -409,7 +409,7 @@
       "operations_title": "Operações disponíveis",
       "edit_event": "Editar evento",
       "people": "Gerenciar pessoas",
-      "check_in": "Check-in aberto",
+      "check_in": "Registar a chegada dos participantes",
       "agenda": "Gerenciar programação"
     },
     "lifecycle_states": {
@@ -613,40 +613,59 @@
       }
     },
     "check_in": {
-      "title": "Check-in manual",
-      "description": "Pesquise a escalação confirmada e registre as alterações de participação com um histórico de versões auditáveis.",
-      "metrics_aria": "Métricas de check-in",
-      "search_label": "Encontre um participante",
-      "search_placeholder": "Pesquise a lista confirmada",
-      "clear_search": "Limpar pesquisa de participantes",
-      "loading": "Carregando lista de check-in...",
-      "results_count": "{{count}} participante(s) encontrado(s)",
-      "table_aria": "Lista de check-in manual",
-      "empty": "Nenhum participante corresponde a esta pesquisa.",
-      "load_error_title": "Não foi possível carregar o check-in",
-      "load_error_desc": "A lista de check-in não pôde ser carregada. Por favor, tente novamente.",
-      "pagination_aria": "Páginas de lista de check-in",
+      "title": "Check-in pelo nome",
+      "description": "Encontre a pessoa e prima Check-in. Cada alteração fica registada e pode ser anulada indicando um motivo.",
+      "guide": {
+        "title": "Como funciona o check-in",
+        "who": "Quem pode usar: a pessoa organizadora e os membros da equipa com a permissão «gerir presenças».",
+        "when": "Quando: desde 30 minutos antes do início até 24 horas depois do fim do evento. O check-out e o Anular continuam possíveis depois disso; a falta pode ser registada a partir da hora de início.",
+        "step_find": "Encontre a pessoa na lista (escreva um nome para procurar) e prima Check-in quando ela chegar.",
+        "step_leave": "Prima Check-out quando ela sair, ou Não veio se não tiver aparecido.",
+        "step_undo": "Enganou-se? Prima Anular e indique um motivo breve. Fica um registo de cada alteração; nada é apagado.",
+        "step_more": "A leitura de códigos de check-in e o modo offline estão em Gerir → Check-in.",
+        "credits": "Se este evento oferecer uma recompensa em créditos de tempo pela participação, ela é atribuída quando a pessoa faz o check-in pela primeira vez. Caso contrário, o check-in não altera o saldo de ninguém."
+      },
+      "window": {
+        "opens_at": "O check-in abre em {{date}} (30 minutos antes do início).",
+        "open_until": "O check-in está aberto até {{date}} (24 horas depois do fim).",
+        "closed_at": "O check-in fechou em {{date}}. O check-out e o Anular continuam possíveis."
+      },
+      "metrics_aria": "Totais de presenças",
+      "search_label": "Encontrar uma pessoa",
+      "search_placeholder": "Escreva um nome",
+      "search_hint": "Só aparecem as pessoas com lugar confirmado.",
+      "clear_search": "Limpar a pesquisa por nome",
+      "loading": "A carregar a lista de nomes...",
+      "results_count": "{{count}} pessoa(s) encontrada(s)",
+      "table_aria": "Check-in pelo nome",
+      "empty": "Ninguém corresponde a esta pesquisa.",
+      "load_error_title": "Não foi possível carregar a lista",
+      "load_error_desc": "Tente novamente. Se continuar a falhar, verifique a sua ligação à internet.",
+      "pagination_aria": "Páginas da lista",
       "actions": {
         "check_in": "Check-in",
-        "check_out": "Confira",
-        "no_show": "Marcar não comparecimento",
-        "undo": "Desfazer"
+        "check_out": "Check-out",
+        "no_show": "Marcar falta",
+        "undo": "Anular"
       },
-      "no_actions": "Nenhuma ação disponível",
+      "no_actions": "Nada a fazer",
+      "no_actions_too_early": "Ainda não abriu",
+      "no_actions_closed": "Check-in fechado",
       "success": {
-        "check_in": "A presença foi verificada.",
-        "check_out": "A presença foi verificada.",
-        "no_show": "A participação foi marcada como não comparecimento.",
-        "undo": "A correção de comparecimento foi registrada.",
-        "check_in_reward_already_granted": "Check-in — a recompensa de participação já foi concedida anteriormente, portanto não foram emitidos novos créditos."
+        "check_in": "Check-in feito.",
+        "check_out": "Check-out feito.",
+        "no_show": "Marcado como falta.",
+        "undo": "A alteração foi anulada.",
+        "check_in_reward_already_granted": "Check-in feito. A recompensa de presença já tinha sido atribuída antes, por isso não foram emitidos novos créditos."
       },
-      "action_error": "O registro de presença não pôde ser atualizado.",
-      "version_conflict": "Este recorde de comparecimento mudou em outro lugar. A lista foi atualizada.",
-      "undo_title": "Desfazer alteração de frequência?",
-      "undo_description": "Corrija a última alteração de frequência para {{name}}. A história original permanece imutável.",
-      "undo_reason_label": "Motivo da correção",
-      "keep_record": "Manter registro",
-      "confirm_undo": "Correção de registro"
+      "action_error": "Não foi possível guardar a alteração. Tente novamente.",
+      "version_conflict": "Outra pessoa alterou o registo desta pessoa ao mesmo tempo. A lista foi atualizada — verifique-a e tente novamente.",
+      "undo_title": "Anular a última alteração?",
+      "undo_description": "Isto reverte a última alteração de presença de {{name}}. O registo anterior é mantido; nada é apagado.",
+      "undo_reason_label": "Porque está a anular?",
+      "undo_reason_hint": "É obrigatório um motivo breve, que fica no registo. Não inclua dados pessoais de ninguém.",
+      "keep_record": "Deixar como está",
+      "confirm_undo": "Anular"
     },
     "agenda": {
       "title": "Programação",

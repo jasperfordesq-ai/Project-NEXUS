@@ -8,9 +8,8 @@ import { useTranslation } from 'react-i18next';
 import Camera from 'lucide-react/icons/camera';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import KeyRound from 'lucide-react/icons/key-round';
-import LockKeyhole from 'lucide-react/icons/lock-keyhole';
+import QrCode from 'lucide-react/icons/qr-code';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import ShieldCheck from 'lucide-react/icons/shield-check';
 import Smartphone from 'lucide-react/icons/smartphone';
 import Trash2 from 'lucide-react/icons/trash-2';
 import WifiOff from 'lucide-react/icons/wifi-off';
@@ -38,6 +37,7 @@ import {
   offlineCheckinExplanation,
   offlineDecisionMessage,
   OfflineCheckinRequestError,
+  parseCheckinTimestamp,
   purgeOfflineCheckinSession,
   refreshOfflineCheckinManifest,
   removeSyncedOfflineCheckinItems,
@@ -47,6 +47,7 @@ import {
 import { explainedApiError } from '@/lib/explained-api-error';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { EventCheckInGuide } from './EventCheckInGuide';
 import { EventCheckInWorkspace } from './EventCheckInWorkspace';
 
 interface BarcodeDetection {
@@ -68,14 +69,29 @@ function errorCode(error: unknown): string {
 }
 
 function localDate(value: string): string {
-  const date = new Date(value);
+  const date = parseCheckinTimestamp(value);
   return Number.isNaN(date.getTime())
     ? value
     : new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
-  const { t } = useTranslation('event_offline_checkin');
+function isOnline(): boolean {
+  return typeof navigator === 'undefined' || navigator.onLine;
+}
+
+export interface EventOfflineCheckinWorkspaceProps {
+  eventId: number;
+  eventStart?: string | null;
+  eventEnd?: string | null;
+}
+
+/**
+ * The organiser's Manage → Check-in tab. Order of importance (E-105):
+ * 1. check in by name (always works online), 2. scan an attendee's check-in
+ * code, 3. offline mode — clearly marked as only needed without internet.
+ */
+export function EventOfflineCheckinWorkspace({ eventId, eventStart = null, eventEnd = null }: EventOfflineCheckinWorkspaceProps) {
+  const { t } = useTranslation(['event_offline_checkin', 'events']);
   const toast = useToast();
   const tRef = useRef(t);
   const toastRef = useRef(toast);
@@ -97,7 +113,13 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
   const [resolutionReasons, setResolutionReasons] = useState<Record<number, string>>({});
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraUnavailable, setCameraUnavailable] = useState(false);
+  const [rosterReloadToken, setRosterReloadToken] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const attendanceStateLabel = useCallback((state: string): string => t(
+    `events:manage.people.states.attendance.${state}`,
+    { defaultValue: state },
+  ), [t]);
 
   const loadConflicts = useCallback(async (page = 1) => {
     setIsConflictsLoading(true);
@@ -130,8 +152,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
       }
       if (restored) break;
     }
-    if (restored && restored.manifest.manifest_version !== next.manifest_version
-      && typeof navigator !== 'undefined' && navigator.onLine) {
+    if (restored && restored.manifest.manifest_version !== next.manifest_version && isOnline()) {
       const manifest = await eventOfflineCheckinApi.manifest(eventId, restored.deviceSecret);
       if (manifest.success && manifest.data) {
         restored = await refreshOfflineCheckinManifest(restored, manifest.data);
@@ -323,21 +344,54 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
     }
   };
 
+  /**
+   * Record a scanned code. It is always saved on this device first; when the
+   * browser is online it is sent to the server straight away, so a volunteer
+   * on the door sees "sent" rather than a queue they must remember to sync.
+   */
   const queueCredential = async () => {
     if (!session || !credential.trim()) return;
     setIsBusy(true);
     try {
-      const next = await enqueueOfflineCredential(
+      let next = await enqueueOfflineCredential(
         session,
         credential,
         operation,
         correctionReason,
       );
-      setSession(next);
       const queued = next.queue[next.queue.length - 1];
+      const name = queued?.displayName ?? '';
       setCredential('');
       setCorrectionReason('');
-      toast.success(t('scan.queued', { name: queued?.displayName ?? '' }));
+      if (!isOnline()) {
+        setSession(next);
+        toast.success(t('scan.saved_offline', { name }));
+        return;
+      }
+      try {
+        const result = await synchronizeOfflineCheckin(next);
+        next = result.session;
+        setSession(next);
+        const decided = queued
+          ? next.queue.find((item) => item.clientNonce === queued.clientNonce)
+          : undefined;
+        if (decided?.state === 'synced') {
+          toast.success(t('scan.sent', { name }));
+        } else if (decided?.state === 'conflict') {
+          toast.warning(t('scan.needs_review', { name }));
+          await loadConflicts();
+        } else if (decided?.state === 'rejected') {
+          const message = offlineDecisionMessage(decided.code ?? 'unknown');
+          toast.error(t('scan.not_applied', { name, reason: t(message.key, message.params) }));
+        } else {
+          toast.success(t('scan.queued', { name }));
+        }
+        setRosterReloadToken((current) => current + 1);
+      } catch (error) {
+        setSession(next);
+        const explanation = offlineCheckinExplanation(error);
+        toast.warning(explanation ?? t('scan.saved_offline', { name }));
+      }
     } catch (error) {
       const code = errorCode(error);
       toast.error(t(code === 'reason_required'
@@ -346,7 +400,11 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
           ? 'scan.transition_invalid'
           : code === 'credential_verification_unavailable'
             ? 'scan.verification_unavailable'
-            : 'scan.invalid'));
+            : code === 'credential_copied'
+              ? 'scan.already_recorded'
+              : code === 'queue_full'
+                ? 'scan.queue_full'
+                : 'scan.invalid'));
     } finally {
       setIsBusy(false);
     }
@@ -359,6 +417,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
       const result = await synchronizeOfflineCheckin(session);
       setSession(result.session);
       toast.success(result.batch ? t('queue.sync_success') : t('queue.nothing_to_sync'));
+      setRosterReloadToken((current) => current + 1);
       await loadConflicts();
     } catch (error) {
       const code = errorCode(error);
@@ -413,6 +472,7 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
       setConflicts(response.data);
       setResolutionReasons((current) => ({ ...current, [item.item_id]: '' }));
       toast.success(t('conflicts.resolved'));
+      setRosterReloadToken((current) => current + 1);
     } catch (error) {
       logError('Failed to resolve Event offline check-in conflict', error);
       toast.error(t('conflicts.resolution_error'));
@@ -427,6 +487,31 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
     return counts;
   }, {}) ?? {}, [session]);
 
+  const guide = (
+    <EventCheckInGuide
+      title={t('guide.title')}
+      who={t('guide.who')}
+      when={t('guide.when')}
+      steps={[t('guide.step_name'), t('guide.step_code'), t('guide.step_offline'), t('guide.step_undo')]}
+    />
+  );
+
+  const byName = (
+    <section aria-labelledby="checkin-by-name-heading" className="space-y-3">
+      <div>
+        <h3 id="checkin-by-name-heading" className="text-lg font-semibold text-theme-primary">{t('sections.by_name')}</h3>
+        <p className="text-sm text-theme-muted">{t('sections.by_name_hint')}</p>
+      </div>
+      <EventCheckInWorkspace
+        eventId={eventId}
+        eventStart={eventStart}
+        eventEnd={eventEnd}
+        showGuide={false}
+        reloadToken={rosterReloadToken}
+      />
+    </section>
+  );
+
   if (isLoading && !workspace) {
     return <div className="flex min-h-48 items-center justify-center"><Spinner label={t('workspace.loading')} /></div>;
   }
@@ -434,12 +519,28 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
   if (loadError || !workspace) {
     return (
       <div className="space-y-5">
+        <div>
+          <h2 className="text-xl font-bold text-theme-primary">{t('workspace.title')}</h2>
+          <p className="mt-1 text-sm text-theme-muted">{t('workspace.description')}</p>
+        </div>
+        {guide}
+        {byName}
         <Alert color="danger" title={t('workspace.load_error_title')} description={t('workspace.load_error_description')} />
         <Button variant="outline" onPress={() => void load()}>{t('workspace.retry')}</Button>
-        <EventCheckInWorkspace eventId={eventId} />
       </div>
     );
   }
+
+  const online = isOnline();
+  const deviceSetup = (
+    <div className="space-y-3">
+      <p className="text-sm text-theme-muted">{t('device.setup_what')}</p>
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <Input label={t('device.label')} description={t('device.label_hint')} value={deviceLabel} onValueChange={setDeviceLabel} />
+        <Button className="self-end" color="primary" isDisabled={isBusy || !deviceLabel.trim()} isLoading={isBusy} onPress={() => void registerDevice()}>{t('device.register')}</Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -448,151 +549,185 @@ export function EventOfflineCheckinWorkspace({ eventId }: { eventId: number }) {
         <p className="mt-1 text-sm text-theme-muted">{t('workspace.description')}</p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <Alert color="primary" icon={<ShieldCheck className="h-5 w-5" aria-hidden="true" />} title={t('workspace.privacy_title')} description={t('workspace.privacy_body')} />
-        <Alert color="success" icon={<LockKeyhole className="h-5 w-5" aria-hidden="true" />} title={t('workspace.manual_required')} description={t('workspace.no_wallet')} />
-        <Alert color={navigator.onLine ? 'success' : 'warning'} icon={navigator.onLine ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <WifiOff className="h-5 w-5" aria-hidden="true" />} title={navigator.onLine ? t('workspace.online') : t('workspace.offline')} description={session ? t('workspace.offline_ready') : t('workspace.offline_not_ready')} />
+      {guide}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <Alert
+          color={online ? 'success' : 'warning'}
+          icon={online ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> : <WifiOff className="h-5 w-5" aria-hidden="true" />}
+          title={online ? t('workspace.online') : t('workspace.offline')}
+          description={online ? t('workspace.online_hint') : t('workspace.offline_hint')}
+        />
+        <Alert color="primary" title={t('workspace.credits')} />
       </div>
 
-      <Card className="border border-theme-default bg-theme-surface">
-        <CardBody className="space-y-4 p-4 sm:p-6">
-          <div className="flex items-start gap-3">
-            <Smartphone className="mt-0.5 h-5 w-5 text-accent" aria-hidden="true" />
-            <div>
-              <h3 className="font-semibold text-theme-primary">{t('device.title')}</h3>
-              <p className="text-sm text-theme-muted">{t('device.description')}</p>
+      {byName}
+
+      <section aria-labelledby="checkin-scan-heading">
+        <Card className="border border-theme-default bg-theme-surface">
+          <CardBody className="space-y-4 p-4 sm:p-6">
+            <div className="flex items-start gap-3">
+              <QrCode className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+              <div>
+                <h3 id="checkin-scan-heading" className="text-lg font-semibold text-theme-primary">{t('sections.scan')}</h3>
+                <p className="text-sm text-theme-muted">{t('scan.description')}</p>
+              </div>
             </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-            <Input label={t('device.label')} description={t('device.label_hint')} value={deviceLabel} onValueChange={setDeviceLabel} />
-            <Button className="self-end" color="primary" isDisabled={isBusy || !deviceLabel.trim()} isLoading={isBusy} onPress={() => void registerDevice()}>{t('device.register')}</Button>
-          </div>
-          <Textarea label={t('device.reason')} description={t('device.reason_hint')} value={deviceReason} onValueChange={setDeviceReason} />
-          <div className="space-y-2">
-            {workspace.devices.length === 0 && <p className="text-sm text-theme-muted">{t('device.empty')}</p>}
-            {workspace.devices.map((device) => (
-              <div key={device.id} className="flex flex-col gap-3 rounded-xl border border-theme-default p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-theme-primary">{device.label}</span>
-                    <Chip size="sm" color={device.status === 'active' ? 'success' : 'default'}>{t(`device.status.${device.status}`)}</Chip>
-                    {session?.deviceId === device.id && <Chip size="sm" color="primary">{t('device.this_device')}</Chip>}
-                  </div>
-                  <p className="mt-1 text-xs text-theme-muted">{t('device.version', { version: device.version })} · {t('device.expires', { date: localDate(device.expires_at) })}</p>
+            {session ? (
+              <>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-theme-muted">{t('workspace.list_version', { version: session.manifest.manifest_version })}</p>
+                  <Button size="sm" variant="outline" startContent={<Camera className="h-4 w-4" aria-hidden="true" />} onPress={() => setCameraActive((current) => !current)}>{cameraActive ? t('scan.stop_camera') : t('scan.start_camera')}</Button>
                 </div>
-                {device.status === 'active' && (
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" startContent={<KeyRound className="h-4 w-4" aria-hidden="true" />} isDisabled={isBusy} onPress={() => void rotateDevice(device)}>{t('device.rotate')}</Button>
-                    <Button size="sm" color="danger" variant="outline" isDisabled={isBusy} onPress={() => void revokeDevice(device)}>{t('device.revoke')}</Button>
+                {cameraUnavailable && <Alert color="warning" title={t('scan.camera_unavailable')} />}
+                {cameraActive && <video ref={videoRef} className="max-h-72 w-full rounded-xl bg-black object-cover" aria-label={t('scan.camera_label')} muted playsInline />}
+                <Input label={t('scan.code_label')} description={t('scan.code_hint')} value={credential} onValueChange={setCredential} autoComplete="off" spellCheck={false} />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Select label={t('scan.operation')} selectedKeys={new Set([operation])} onSelectionChange={(keys) => setOperation(String(Array.from(keys as Iterable<string | number>)[0] ?? 'check_in') as OfflineOperation)}>
+                    {(['check_in', 'check_out', 'no_show', 'undo'] as const).map((action) => <SelectItem key={action} id={action} textValue={t(`scan.operations.${action}`)}>{t(`scan.operations.${action}`)}</SelectItem>)}
+                  </Select>
+                  <Textarea label={t('scan.reason')} description={t('scan.reason_hint')} value={correctionReason} onValueChange={setCorrectionReason} />
+                </div>
+                <Button color="primary" isDisabled={isBusy || !credential.trim()} isLoading={isBusy} onPress={() => void queueCredential()}>{t('scan.queue')}</Button>
+              </>
+            ) : (
+              <>
+                <Alert color="warning" title={t('scan.needs_setup')} />
+                {deviceSetup}
+              </>
+            )}
+          </CardBody>
+        </Card>
+      </section>
+
+      <section aria-labelledby="checkin-offline-heading">
+        <Card className="border border-theme-default bg-theme-surface">
+          <CardBody className="space-y-5 p-4 sm:p-6">
+            <div className="flex items-start gap-3">
+              <WifiOff className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 id="checkin-offline-heading" className="text-lg font-semibold text-theme-primary">{t('sections.offline')}</h3>
+                  <Chip size="sm" color="warning" variant="flat">{t('sections.offline_badge')}</Chip>
+                </div>
+                <p className="text-sm text-theme-muted">{t('sections.offline_hint')}</p>
+                <p className="text-sm text-theme-muted">{session ? t('workspace.offline_ready') : t('workspace.offline_not_ready')}</p>
+                {session && <p className="text-xs text-theme-muted">{t('workspace.list_expires', { date: localDate(session.manifest.expires_at) })}</p>}
+              </div>
+            </div>
+
+            {session && (
+              <div className="space-y-3 rounded-xl border border-theme-default p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h4 className="font-semibold text-theme-primary">{t('queue.title')}</h4>
+                    <p className="text-sm text-theme-muted">{t('queue.description')}</p>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" color="primary" startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />} isDisabled={isBusy || !session.queue.some((item) => item.state === 'pending')} isLoading={isBusy} onPress={() => void sync()}>{t('queue.sync')}</Button>
+                    <Button size="sm" variant="outline" isDisabled={!queueCounts.synced} onPress={() => void removeSyncedOfflineCheckinItems(session).then(setSession)}>{t('queue.clear_synced')}</Button>
+                  </div>
+                </div>
+                <p className="text-xs text-theme-muted">{t('queue.sync_hint')}</p>
+                {session.queue.length === 0 ? <p className="text-sm text-theme-muted">{t('queue.empty')}</p> : (
+                  <ul className="divide-y divide-theme-default rounded-xl border border-theme-default">
+                    {session.queue.map((item) => (
+                      <li key={item.clientNonce} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="font-medium text-theme-primary">{item.displayName}</p>
+                          <p className="text-xs text-theme-muted">{t(`scan.operations.${item.operation}`)} · {t('queue.observed', { date: localDate(item.observedAt) })}</p>
+                          {item.code && <p className="text-xs text-theme-muted">{t(offlineDecisionMessage(item.code).key, offlineDecisionMessage(item.code).params)}</p>}
+                        </div>
+                        <Chip size="sm" color={item.state === 'synced' ? 'success' : item.state === 'conflict' ? 'warning' : item.state === 'rejected' ? 'danger' : 'default'}>{t(`queue.states.${item.state}`)}</Chip>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
-            ))}
-          </div>
-        </CardBody>
-      </Card>
+            )}
 
-      {session && (
-        <>
-          <Card className="border border-theme-default bg-theme-surface">
-            <CardBody className="space-y-4 p-4 sm:p-6">
-              <div className="flex items-start justify-between gap-3">
+            <div className="space-y-3 rounded-xl border border-theme-default p-4">
+              <div className="flex items-start gap-3">
+                <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
                 <div>
-                  <h3 className="font-semibold text-theme-primary">{t('scan.title')}</h3>
-                  <p className="text-sm text-theme-muted">{t('scan.description')}</p>
-                  <p className="mt-1 text-xs text-theme-muted">{t('workspace.manifest_expires', { date: localDate(session.manifest.expires_at) })} · {t('workspace.manifest_version', { version: session.manifest.manifest_version })}</p>
-                </div>
-                <Button size="sm" variant="outline" startContent={<Camera className="h-4 w-4" aria-hidden="true" />} onPress={() => setCameraActive((current) => !current)}>{cameraActive ? t('scan.stop_camera') : t('scan.start_camera')}</Button>
-              </div>
-              {cameraUnavailable && <Alert color="warning" title={t('scan.camera_unavailable')} />}
-              {cameraActive && <video ref={videoRef} className="max-h-72 w-full rounded-xl bg-black object-cover" aria-label={t('scan.camera_label')} muted playsInline />}
-              <Input label={t('scan.code_label')} description={t('scan.code_hint')} value={credential} onValueChange={setCredential} autoComplete="off" spellCheck={false} />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Select label={t('scan.operation')} selectedKeys={new Set([operation])} onSelectionChange={(keys) => setOperation(String(Array.from(keys as Iterable<string | number>)[0] ?? 'check_in') as OfflineOperation)}>
-                  {(['check_in', 'check_out', 'no_show', 'undo'] as const).map((action) => <SelectItem key={action} id={action}>{t(`scan.operations.${action}`)}</SelectItem>)}
-                </Select>
-                <Textarea label={t('scan.reason')} description={t('scan.reason_hint')} value={correctionReason} onValueChange={setCorrectionReason} />
-              </div>
-              <Button color="primary" isDisabled={isBusy || !credential.trim()} isLoading={isBusy} onPress={() => void queueCredential()}>{t('scan.queue')}</Button>
-            </CardBody>
-          </Card>
-
-          <Card className="border border-theme-default bg-theme-surface">
-            <CardBody className="space-y-4 p-4 sm:p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 className="font-semibold text-theme-primary">{t('queue.title')}</h3>
-                  <p className="text-sm text-theme-muted">{t('queue.description')}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" color="primary" startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />} isDisabled={isBusy || !session.queue.some((item) => item.state === 'pending')} isLoading={isBusy} onPress={() => void sync()}>{t('queue.sync')}</Button>
-                  <Button size="sm" variant="outline" isDisabled={!queueCounts.synced} onPress={() => void removeSyncedOfflineCheckinItems(session).then(setSession)}>{t('queue.clear_synced')}</Button>
-                  <Button size="sm" color="danger" variant="outline" startContent={<Trash2 className="h-4 w-4" aria-hidden="true" />} onPress={() => void purge()}>{t('queue.purge')}</Button>
+                  <h4 className="font-semibold text-theme-primary">{t('device.title')}</h4>
+                  <p className="text-sm text-theme-muted">{t('device.description')}</p>
                 </div>
               </div>
-              {session.queue.length === 0 ? <p className="text-sm text-theme-muted">{t('queue.empty')}</p> : (
-                <ul className="divide-y divide-theme-default rounded-xl border border-theme-default">
-                  {session.queue.map((item) => (
-                    <li key={item.clientNonce} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="font-medium text-theme-primary">{item.displayName}</p>
-                        <p className="text-xs text-theme-muted">{t(`scan.operations.${item.operation}`)} · {t('queue.observed', { date: localDate(item.observedAt) })}</p>
-                        {item.code && <p className="text-xs text-theme-muted">{t(offlineDecisionMessage(item.code).key, offlineDecisionMessage(item.code).params)}</p>}
+              {!session && <p className="text-sm text-theme-muted">{t('device.setup_in_scan')}</p>}
+              <div className="space-y-2">
+                {workspace.devices.length === 0 && <p className="text-sm text-theme-muted">{t('device.empty')}</p>}
+                {workspace.devices.map((device) => (
+                  <div key={device.id} className="flex flex-col gap-3 rounded-xl border border-theme-default p-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-theme-primary">{device.label}</span>
+                        <Chip size="sm" color={device.status === 'active' ? 'success' : 'default'}>{t(`device.status.${device.status}`)}</Chip>
+                        {session?.deviceId === device.id && <Chip size="sm" color="primary">{t('device.this_device')}</Chip>}
                       </div>
-                      <Chip size="sm" color={item.state === 'synced' ? 'success' : item.state === 'conflict' ? 'warning' : item.state === 'rejected' ? 'danger' : 'default'}>{t(`queue.states.${item.state}`)}</Chip>
-                    </li>
-                  ))}
-                </ul>
+                      <p className="mt-1 text-xs text-theme-muted">{t('device.version', { version: device.version })} · {t('device.expires', { date: localDate(device.expires_at) })}</p>
+                      {device.status === 'active' && session?.deviceId !== device.id && (
+                        <p className="mt-1 text-xs text-theme-muted">{t('device.other_device')}</p>
+                      )}
+                    </div>
+                    {device.status === 'active' && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" startContent={<KeyRound className="h-4 w-4" aria-hidden="true" />} isDisabled={isBusy} onPress={() => void rotateDevice(device)}>{t('device.rotate')}</Button>
+                        <Button size="sm" color="danger" variant="outline" isDisabled={isBusy} onPress={() => void revokeDevice(device)}>{t('device.revoke')}</Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {workspace.devices.some((device) => device.status === 'active') && (
+                <Textarea label={t('device.reason')} description={t('device.reason_hint')} value={deviceReason} onValueChange={setDeviceReason} />
               )}
-            </CardBody>
-          </Card>
-        </>
-      )}
-
-      <Card className="border border-theme-default bg-theme-surface">
-        <CardBody className="space-y-4 p-4 sm:p-6">
-          <div>
-            <h3 className="font-semibold text-theme-primary">{t('conflicts.title')}</h3>
-            <p className="text-sm text-theme-muted">{t('conflicts.description')}</p>
-          </div>
-          {isConflictsLoading && !conflicts ? <Spinner label={t('conflicts.title')} /> : !conflicts ? <Button size="sm" variant="outline" onPress={() => void loadConflicts()}>{t('workspace.retry')}</Button> : conflicts.items.length === 0 ? <p className="text-sm text-theme-muted">{t('conflicts.empty')}</p> : conflicts.items.map((item) => (
-            <div key={item.item_id} className="space-y-3 rounded-xl border border-warning/40 bg-warning/5 p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-medium text-theme-primary">{item.member.display_name}</p>
-                  <p className="text-xs text-theme-muted">{t('conflicts.current_state', { state: item.current_attendance.state, version: item.current_attendance.version })}</p>
-                  <p className="text-xs text-theme-muted">{t('conflicts.device', { label: item.device.label ?? `#${item.device.id}` })} · {t('conflicts.observed', { date: localDate(item.observed_at) })}</p>
+              {session && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button size="sm" color="danger" variant="outline" startContent={<Trash2 className="h-4 w-4" aria-hidden="true" />} onPress={() => void purge()}>{t('queue.purge')}</Button>
+                  <p className="text-xs text-theme-muted">{t('device.logout_note')}</p>
                 </div>
-                <Chip color="warning" size="sm">{t(`scan.operations.${item.operation}`)}</Chip>
-              </div>
-              <Textarea label={t('conflicts.reason')} description={t('conflicts.reason_hint')} value={resolutionReasons[item.item_id] ?? ''} onValueChange={(value) => setResolutionReasons((current) => ({ ...current, [item.item_id]: value }))} />
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" color="primary" isDisabled={isBusy} onPress={() => void resolveConflict(item, 'apply')}>{t('conflicts.apply')}</Button>
-                <Button size="sm" variant="outline" isDisabled={isBusy} onPress={() => void resolveConflict(item, 'reject')}>{t('conflicts.reject')}</Button>
-              </div>
+              )}
             </div>
-          ))}
-          {conflicts && conflicts.total > conflicts.per_page && (
-            <div className="flex justify-end border-t border-theme-default pt-4">
-              <Pagination
-                page={conflicts.page}
-                total={Math.ceil(conflicts.total / conflicts.per_page)}
-                showControls
-                isDisabled={isConflictsLoading || isBusy}
-                aria-label={t('conflicts.title')}
-                onChange={(nextPage) => void loadConflicts(nextPage)}
-              />
-            </div>
-          )}
-        </CardBody>
-      </Card>
 
-      <section aria-labelledby="manual-checkin-heading" className="space-y-3">
-        <div>
-          <h3 id="manual-checkin-heading" className="text-lg font-semibold text-theme-primary">{t('manual.title')}</h3>
-          <p className="text-sm text-theme-muted">{t('manual.description')}</p>
-        </div>
-        <EventCheckInWorkspace eventId={eventId} />
+            <div className="space-y-3 rounded-xl border border-theme-default p-4">
+              <div>
+                <h4 className="font-semibold text-theme-primary">{t('conflicts.title')}</h4>
+                <p className="text-sm text-theme-muted">{t('conflicts.description')}</p>
+              </div>
+              {isConflictsLoading && !conflicts ? <Spinner label={t('conflicts.title')} /> : !conflicts ? <Button size="sm" variant="outline" onPress={() => void loadConflicts()}>{t('workspace.retry')}</Button> : conflicts.items.length === 0 ? <p className="text-sm text-theme-muted">{t('conflicts.empty')}</p> : conflicts.items.map((item) => (
+                <div key={item.item_id} className="space-y-3 rounded-xl border border-warning/40 bg-warning/5 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-theme-primary">{item.member.display_name}</p>
+                      <p className="text-sm text-theme-primary">{t('conflicts.offline_action', { action: t(`scan.operations.${item.operation}`) })}</p>
+                      <p className="text-sm text-theme-primary">{t('conflicts.current_state', { state: attendanceStateLabel(item.current_attendance.state) })}</p>
+                      <p className="text-xs text-theme-muted">{t('conflicts.device', { label: item.device.label ?? `#${item.device.id}` })} · {t('conflicts.observed', { date: localDate(item.observed_at) })}</p>
+                    </div>
+                    <Chip color="warning" size="sm">{t('queue.states.conflict')}</Chip>
+                  </div>
+                  <Textarea label={t('conflicts.reason')} description={t('conflicts.reason_hint')} value={resolutionReasons[item.item_id] ?? ''} onValueChange={(value) => setResolutionReasons((current) => ({ ...current, [item.item_id]: value }))} />
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" isDisabled={isBusy} onPress={() => void resolveConflict(item, 'reject')}>{t('conflicts.reject')}</Button>
+                    <Button size="sm" color="primary" isDisabled={isBusy} onPress={() => void resolveConflict(item, 'apply')}>{t('conflicts.apply')}</Button>
+                  </div>
+                </div>
+              ))}
+              {conflicts && conflicts.total > conflicts.per_page && (
+                <div className="flex justify-end border-t border-theme-default pt-4">
+                  <Pagination
+                    page={conflicts.page}
+                    total={Math.ceil(conflicts.total / conflicts.per_page)}
+                    showControls
+                    isDisabled={isConflictsLoading || isBusy}
+                    aria-label={t('conflicts.title')}
+                    onChange={(nextPage) => void loadConflicts(nextPage)}
+                  />
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       </section>
     </div>
   );

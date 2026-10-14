@@ -8,6 +8,7 @@ import type { OfflineCheckinManifest } from '@/lib/event-offline-checkin-api';
 import {
   deriveOfflineTransition,
   offlineDecisionMessage,
+  parseCheckinTimestamp,
   verifyOfflineCredential,
 } from '@/lib/event-offline-checkin-store';
 
@@ -135,5 +136,21 @@ describe('offlineDecisionMessage (E-102)', () => {
 
   it('falls back to a generic message that still carries the reference', () => {
     expect(offlineDecisionMessage('something_new')).toEqual({ key: 'queue.decisions.unknown', params: { code: 'something_new' } });
+  });
+});
+
+describe('parseCheckinTimestamp (E-105)', () => {
+  it('reads the bare "YYYY-MM-DD HH:MM:SS" the conflicts endpoint returns as UTC, not local time', () => {
+    expect(parseCheckinTimestamp('2026-10-13 19:38:38').toISOString()).toBe('2026-10-13T19:38:38.000Z');
+    expect(parseCheckinTimestamp('2026-10-13T19:38:38').toISOString()).toBe('2026-10-13T19:38:38.000Z');
+  });
+
+  it('leaves zoned ISO timestamps alone', () => {
+    expect(parseCheckinTimestamp('2026-10-13T19:38:38+01:00').toISOString()).toBe('2026-10-13T18:38:38.000Z');
+    expect(parseCheckinTimestamp('2026-10-13T19:38:38.123Z').toISOString()).toBe('2026-10-13T19:38:38.123Z');
+  });
+
+  it('returns an invalid date for garbage rather than throwing', () => {
+    expect(Number.isNaN(parseCheckinTimestamp('not a date').getTime())).toBe(true);
   });
 });

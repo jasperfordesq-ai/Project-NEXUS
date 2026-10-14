@@ -1695,7 +1695,11 @@ export function EventDetailPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  <EventCheckInWorkspace eventId={event.id} />
+                  <EventCheckInWorkspace
+                    eventId={event.id}
+                    eventStart={event.schedule.start_at}
+                    eventEnd={event.schedule.end_at}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
