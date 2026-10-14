@@ -47,4 +47,4 @@ const result = spawnSync(
 );
 if (result.status !== 0) process.exit(result.status ?? 1);
 console.log('Wrote src/pages/help/guides/data/label-baseline.json');
-if (env.HELP_LABELS_REPORT) console.log(`Wrote ${env.HELP_LABELS_REPORT}`);
+if (env.HELP_LABELS_REPORT) console.log('Wrote Help Centre label report');
