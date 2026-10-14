@@ -9,6 +9,8 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use App\Core\EmailTemplateBuilder;
+use App\Core\TenantContext;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -64,12 +66,19 @@ class SafeguardingCriticalMail extends Mailable
             }
         }
 
+        // The header names and links the community the alert belongs to, on
+        // its own address (slug included when it has no domain of its own).
+        $communityName = (string) (TenantContext::get()['name'] ?? config('app.name'));
+        $communityUrl = rtrim(EmailTemplateBuilder::tenantUrl('/'), '/');
+
         return new Content(
             markdown: 'emails.safeguarding-critical',
             with: [
                 'report'   => $this->report,
                 'reporter' => $this->reporter,
                 'remaining' => $remaining,
+                'communityName' => $communityName,
+                'communityUrl' => $communityUrl !== '' ? $communityUrl : (string) config('app.frontend_url'),
             ],
         );
     }

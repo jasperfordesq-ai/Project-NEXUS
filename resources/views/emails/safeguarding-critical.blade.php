@@ -2,7 +2,16 @@
 {{-- SPDX-License-Identifier: AGPL-3.0-or-later --}}
 {{-- Author: Jasper Ford --}}
 {{-- See NOTICE file for attribution and acknowledgements. --}}
-@component('mail::message')
+{{-- mail::layout rather than mail::message: the stock message header links
+     config('app.url'), the API host. The header must point at the community
+     the alert is about (email-links audit, 2026-10-14). --}}
+@component('mail::layout')
+@slot('header')
+@component('mail::header', ['url' => $communityUrl])
+{{ $communityName }}
+@endcomponent
+@endslot
+
 # {{ __('safeguarding.critical.subject') }}
 
 {{ __('safeguarding.critical.greeting', ['name' => $reporter]) }}
@@ -19,4 +28,10 @@
 @endcomponent
 
 {{ __('safeguarding.critical.footer') }}
+
+@slot('footer')
+@component('mail::footer')
+© {{ date('Y') }} {{ $communityName }}. {{ __('emails.footer.all_rights_reserved') }}
+@endcomponent
+@endslot
 @endcomponent
