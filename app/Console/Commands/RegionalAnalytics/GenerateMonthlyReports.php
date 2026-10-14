@@ -167,11 +167,18 @@ class GenerateMonthlyReports extends Command
             // Without this wrap the queue worker's default locale (en) leaks through.
             $language = (string) ($sub->contact_language ?? 'en') ?: 'en';
 
-            return LocaleContext::withLocale($language, function () use ($email, $fileUrl, $periodLabel, $tenantId): array {
+            // The generator hands over a site-relative path (/storage/...). An
+            // email has no site to be relative to, so the file is addressed on
+            // the API host, which serves /storage/ (email-links audit, 2026-10-14).
+            $downloadUrl = str_starts_with($fileUrl, '/')
+                ? rtrim((string) config('app.url'), '/') . $fileUrl
+                : $fileUrl;
+
+            return LocaleContext::withLocale($language, function () use ($email, $downloadUrl, $periodLabel, $tenantId): array {
                 // Route through the platform Mailer. The Laravel Mail facade uses
                 // SMTP in production and does not create unified audit evidence.
                 $body = '<p>' . e(__('emails.regional_analytics.report_ready', ['period' => $periodLabel])) . '</p>'
-                    . '<p><a href="' . e($fileUrl) . '">' . e(__('emails.regional_analytics.download_report')) . '</a></p>'
+                    . '<p><a href="' . e($downloadUrl) . '">' . e(__('emails.regional_analytics.download_report')) . '</a></p>'
                     . '<p>' . e(__('emails.regional_analytics.privacy_note')) . '</p>';
 
                 if (!EmailDispatchService::sendRaw(
