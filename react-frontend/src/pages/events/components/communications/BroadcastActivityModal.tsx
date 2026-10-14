@@ -14,7 +14,6 @@ import {
   type EventBroadcast,
   type EventBroadcastDetail,
 } from '@/lib/event-communications-api';
-import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { formatWhen, timeZoneCity } from './broadcastPresentation';
 
@@ -94,7 +93,6 @@ export function BroadcastActivityModal({ broadcast, eventTimezone, onClose }: Br
   }, [broadcastId, detail, isLoadingMore]);
 
   const city = timeZoneCity(eventTimezone);
-  const locale = getFormattingLocale();
 
   return (
     <Modal
@@ -118,7 +116,7 @@ export function BroadcastActivityModal({ broadcast, eventTimezone, onClose }: Br
             ) : (
               <ol className="space-y-3">
                 {detail.history.map((entry) => {
-                  const label = formatWhen(entry.created_at, eventTimezone, locale);
+                  const label = formatWhen(entry.created_at, eventTimezone);
                   return (
                     <li key={entry.id} className="rounded-xl border border-theme-default p-4">
                       <p className="font-medium text-theme-primary">{t(`activity.actions.${entry.action}`)}</p>

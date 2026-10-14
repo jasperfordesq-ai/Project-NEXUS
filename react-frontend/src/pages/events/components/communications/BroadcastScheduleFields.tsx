@@ -9,7 +9,6 @@ import { DatePicker } from '@/components/ui/DatePicker';
 import { Radio, RadioGroup } from '@/components/ui/Radio';
 import { TimeInput } from '@/components/ui/TimeInput';
 import { eventLocalInputToIso } from '@/lib/eventLocalDateTime';
-import { getFormattingLocale } from '@/lib/helpers';
 import { formatWhen, timeZoneCity } from './broadcastPresentation';
 
 export interface ScheduleFieldValues {
@@ -73,7 +72,7 @@ export function BroadcastScheduleFields({
   const iso = values.date && values.time ? eventLocalInputToIso(`${values.date}T${values.time}`, eventTimezone) : null;
   const viewerZone = browserZone();
   const showViewerTime = iso !== null && viewerZone !== null && viewerZone !== eventTimezone;
-  const viewerTime = showViewerTime ? formatWhen(iso, viewerZone, getFormattingLocale()) : null;
+  const viewerTime = showViewerTime ? formatWhen(iso, viewerZone) : null;
 
   return (
     <fieldset className="space-y-3" id={`${idPrefix}-when`}>

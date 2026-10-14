@@ -12,6 +12,7 @@
  */
 
 import type { EventBroadcast } from '@/lib/event-communications-api';
+import { getFormattingLocale } from '@/lib/helpers';
 
 /** A scheduled message this close to its time is described as "Sending shortly". */
 export const DUE_WINDOW_MS = 60_000;
@@ -61,14 +62,18 @@ function parseInstant(iso: string | null | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** A date and time in the given zone, in the reader's language; null when it cannot be read. */
-export function formatWhen(iso: string | null | undefined, timeZone: string, locale?: string): string | null {
+/**
+ * A date and time in the given zone, in the reader's language (the app's
+ * shared formatting locale, as the build's locale-formatting rule requires);
+ * null when it cannot be read.
+ */
+export function formatWhen(iso: string | null | undefined, timeZone: string): string | null {
   const date = parseInstant(iso);
   if (!date) return null;
   try {
-    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(date);
+    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(date);
   } catch {
-    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+    return new Intl.DateTimeFormat(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(date);
   }
 }
 
@@ -83,7 +88,6 @@ export function describeBroadcast(
   broadcast: EventBroadcast,
   now: number,
   timeZone: string,
-  locale?: string,
 ): BroadcastDescription {
   const { delivered, total, suppressed, dead_lettered: deadLettered } = broadcast.delivery;
   const pending = Math.max(0, total - delivered - suppressed - deadLettered);
@@ -96,7 +100,7 @@ export function describeBroadcast(
     pending,
     progress: null as number | null,
   };
-  const at = (iso: string | null) => ({ whenIso: iso, whenLabel: formatWhen(iso, timeZone, locale) });
+  const at = (iso: string | null) => ({ whenIso: iso, whenLabel: formatWhen(iso, timeZone) });
 
   switch (broadcast.status) {
     case 'draft':

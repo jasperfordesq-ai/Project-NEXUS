@@ -52,7 +52,7 @@ describe('timeZoneCity', () => {
 
 describe('formatWhen', () => {
   it('formats in the event zone and returns null for nothing', () => {
-    expect(formatWhen('2030-06-01T09:30:00Z', 'Europe/Dublin', 'en-IE')).toMatch(/10:30/);
+    expect(formatWhen('2030-06-01T09:30:00Z', 'Europe/Dublin')).toMatch(/10:30/);
     expect(formatWhen(null, 'Europe/Dublin')).toBeNull();
     expect(formatWhen('not a date', 'Europe/Dublin')).toBeNull();
   });
@@ -126,7 +126,7 @@ describe('describeBroadcast', () => {
   });
 
   it('describes a cancelled message with its time', () => {
-    const d = describeBroadcast(broadcast({ status: 'cancelled', cancelled_at: '2030-06-01T10:00:00Z' }), NOW, 'UTC', 'en-GB');
+    const d = describeBroadcast(broadcast({ status: 'cancelled', cancelled_at: '2030-06-01T10:00:00Z' }), NOW, 'UTC');
     expect(d.kind).toBe('cancelled');
     expect(d.whenLabel).toMatch(/10:00/);
   });

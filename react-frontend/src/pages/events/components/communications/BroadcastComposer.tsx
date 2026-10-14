@@ -166,7 +166,7 @@ export function BroadcastComposer({
   const locale = getFormattingLocale();
   const city = timeZoneCity(eventTimezone);
   const whenWithZone = (iso: string | null) => {
-    const label = formatWhen(iso, eventTimezone, locale);
+    const label = formatWhen(iso, eventTimezone);
     return label ? t('when_with_zone', { when: label, city }) : t('when_unknown');
   };
   const peopleText = count.status === 'ready'

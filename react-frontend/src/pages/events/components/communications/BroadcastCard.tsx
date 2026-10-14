@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/Disclosure';
 import { Progress } from '@/components/ui/Progress';
 import type { EventBroadcast } from '@/lib/event-communications-api';
-import { getFormattingLocale } from '@/lib/helpers';
 import {
   broadcastExcerpt,
   describeBroadcast,
@@ -59,7 +58,7 @@ export function BroadcastCard({
   onDismissError,
 }: BroadcastCardProps) {
   const { t } = useTranslation('event_communications');
-  const description = describeBroadcast(broadcast, now, eventTimezone, getFormattingLocale());
+  const description = describeBroadcast(broadcast, now, eventTimezone);
   const city = timeZoneCity(eventTimezone);
   const when = description.whenLabel
     ? t('when_with_zone', { when: description.whenLabel, city })

@@ -32,7 +32,6 @@ import {
   type EventBroadcastContentInput,
 } from '@/lib/event-communications-api';
 import { eventIsoToLocalInput } from '@/lib/eventLocalDateTime';
-import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { BroadcastActivityModal } from './communications/BroadcastActivityModal';
 import { BroadcastCard, type CardAction, type CardError } from './communications/BroadcastCard';
@@ -144,12 +143,11 @@ export function EventCommunicationsWorkspace({
     if (persistTimer.current) clearTimeout(persistTimer.current);
   }, []);
 
-  const locale = getFormattingLocale();
   const city = timeZoneCity(eventTimezone);
   const whenText = useCallback((iso: string | null) => {
-    const label = formatWhen(iso, eventTimezone, locale);
+    const label = formatWhen(iso, eventTimezone);
     return label ? t('when_with_zone', { when: label, city }) : t('when_unknown');
-  }, [city, eventTimezone, locale, t]);
+  }, [city, eventTimezone, t]);
 
   const failureText = useCallback((response: ApiResponse<unknown>, fallbackKey: string): string => {
     const failure = describeFailure(response);
