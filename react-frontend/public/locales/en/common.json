@@ -2839,8 +2839,6 @@
     "config_onboarding_enabled": "Show onboarding flow",
     "config_onboarding_enabled_desc": "Walk new members through profile and skills setup after sign-up.",
     "config_configure_steps": "Configure steps",
-    "config_welcome_message": "Welcome message",
-    "config_welcome_message_desc": "Shown to new members on their first sign-in.",
     "config_group_wallet": "Wallet & credits",
     "config_group_wallet_desc": "Time-credit balance, transfer caps, and how the currency is named.",
     "config_starting_balance": "Starting balance",

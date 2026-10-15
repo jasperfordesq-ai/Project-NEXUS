@@ -2839,8 +2839,6 @@
     "config_onboarding_enabled": "Onboarding-Ablauf anzeigen",
     "config_onboarding_enabled_desc": "Führen Sie neue Mitglieder nach der Anmeldung durch die Profil- und Kompetenzeinrichtung.",
     "config_configure_steps": "Schritte konfigurieren",
-    "config_welcome_message": "Willkommensnachricht",
-    "config_welcome_message_desc": "Wird neuen Mitgliedern bei der ersten Anmeldung angezeigt.",
     "config_group_wallet": "Geldbörse und Guthaben",
     "config_group_wallet_desc": "Zeitguthabensaldo, Transferobergrenzen und Bezeichnung der Währung.",
     "config_starting_balance": "Ausgangsbilanz",

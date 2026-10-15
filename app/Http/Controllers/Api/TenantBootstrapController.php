@@ -591,8 +591,10 @@ class TenantBootstrapController extends BaseApiController
         // `region` drives date and number formatting in every client. Its
         // fallbacks (the tenant's country_code, then the platform default) are
         // applied client-side, so absence here is normal, not an error.
+        // `welcome_message` was published here until 2026-10-15, but no client
+        // ever displayed it; the setting is retired (RetiredWelcomeMessageSettingTest).
         'timezone', 'default_currency', 'region',
-        'items_per_page', 'welcome_credits', 'footer_text', 'welcome_message',
+        'items_per_page', 'welcome_credits', 'footer_text',
         'seo_google_verification', 'seo_bing_verification',
         'map_provider', 'geocoding_provider',
         'inactivity_timeout_minutes',

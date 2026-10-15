@@ -49,7 +49,6 @@ const makeConfig = (overrides = {}) => ({
   require_email_verification: true,
   maintenance_mode: false,
   onboarding_enabled: true,
-  welcome_message: '',
   starting_balance: 0,
   max_transaction: 0,
   currency_name: 'Hours',

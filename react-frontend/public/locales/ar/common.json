@@ -2939,8 +2939,6 @@
     "config_onboarding_enabled": "عرض تدفق الإعداد",
     "config_onboarding_enabled_desc": "قم بتوجيه الأعضاء الجدد من خلال إعداد الملف الشخصي والمهارات بعد التسجيل.",
     "config_configure_steps": "تكوين الخطوات",
-    "config_welcome_message": "رسالة ترحيب",
-    "config_welcome_message_desc": "تظهر للأعضاء الجدد عند تسجيل دخولهم لأول مرة.",
     "config_group_wallet": "المحفظة والائتمانات",
     "config_group_wallet_desc": "رصيد رصيد الوقت، وحدود التحويل، وكيفية تسمية العملة.",
     "config_starting_balance": "رصيد البداية",

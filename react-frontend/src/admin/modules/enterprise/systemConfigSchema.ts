@@ -91,7 +91,6 @@ export function buildConfigSchema(t: Translate, icons: Record<string, ReactNode>
           default: true,
           manage: { href: '/admin/onboarding-settings', label: t('enterprise.config_configure_steps') },
         },
-        { key: 'welcome_message', label: t('enterprise.config_welcome_message'), description: t('enterprise.config_welcome_message_desc'), type: 'textarea', default: '' },
       ],
     },
     {
@@ -167,7 +166,6 @@ export const STATIC_SETTINGS: StaticSettingDef[] = [
   { key: 'require_email_verification', type: 'boolean', default: true },
   { key: 'maintenance_mode', type: 'boolean', default: false },
   { key: 'onboarding_enabled', type: 'boolean', default: true },
-  { key: 'welcome_message', type: 'textarea', default: '' },
   { key: 'starting_balance', type: 'number', default: 0, validation: { min: 0 } },
   { key: 'max_transaction', type: 'number', default: 0, validation: { min: 0 } },
   { key: 'currency_name', type: 'text', default: '' },

@@ -2864,8 +2864,6 @@
     "config_onboarding_enabled": "Afficher le flux d'intégration",
     "config_onboarding_enabled_desc": "Guidez les nouveaux membres dans la configuration de leur profil et de leurs compétences après leur inscription.",
     "config_configure_steps": "Configurer les étapes",
-    "config_welcome_message": "Message de bienvenue",
-    "config_welcome_message_desc": "Présenté aux nouveaux membres lors de leur première connexion.",
     "config_group_wallet": "Portefeuille et crédits",
     "config_group_wallet_desc": "Solde de crédit-temps, plafonds de transfert et nom de la devise.",
     "config_starting_balance": "Solde de départ",

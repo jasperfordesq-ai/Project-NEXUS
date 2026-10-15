@@ -2914,8 +2914,6 @@
     "config_onboarding_enabled": "Taispeáin an próiseas ionduchtaithe",
     "config_onboarding_enabled_desc": "Treoraigh baill nua trí shocrú a bpróifíle agus a scileanna tar éis dóibh clárú.",
     "config_configure_steps": "Cumraigh céimeanna",
-    "config_welcome_message": "Teachtaireacht fáilte",
-    "config_welcome_message_desc": "Taispeántar do bhaill nua ar a gcéad síniú isteach.",
     "config_group_wallet": "Sparán & creidmheasanna",
     "config_group_wallet_desc": "Comhardaithe ama-creidmheasa, caipíní aistrithe, agus conas a ainmnítear an t-airgeadra.",
     "config_starting_balance": "Ag tosú cothromaíocht",

@@ -30,7 +30,6 @@ class AdminSettingsController extends BaseApiController
      */
     private const ADMIN_ALLOWED_KEYS = [
         'general.timezone',
-        'general.welcome_message',
         'general.default_currency',
         // ISO 3166-1 alpha-2. Drives date and number formatting across the web,
         // mobile and accessible clients via App\I18n\FormattingLocale.

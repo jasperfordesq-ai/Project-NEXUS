@@ -2889,8 +2889,6 @@
     "config_onboarding_enabled": "Pokaż proces wdrażania",
     "config_onboarding_enabled_desc": "Przeprowadź nowych członków przez konfigurację profilu i umiejętności po rejestracji.",
     "config_configure_steps": "Skonfiguruj kroki",
-    "config_welcome_message": "Wiadomość powitalna",
-    "config_welcome_message_desc": "Wyświetlane nowym członkom przy pierwszym logowaniu.",
     "config_group_wallet": "Portfel i kredyty",
     "config_group_wallet_desc": "Saldo kredytu w czasie, limity transferów i nazwa waluty.",
     "config_starting_balance": "Bilans startowy",

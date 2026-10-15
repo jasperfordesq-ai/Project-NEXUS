@@ -2839,8 +2839,6 @@
     "config_onboarding_enabled": "オンボーディング フローを表示する",
     "config_onboarding_enabled_desc": "新しいメンバーにサインアップ後のプロフィールとスキルの設定を説明します。",
     "config_configure_steps": "ステップの構成",
-    "config_welcome_message": "ウェルカムメッセージ",
-    "config_welcome_message_desc": "新しいメンバーの最初のサインイン時に表示されます。",
     "config_group_wallet": "ウォレットとクレジット",
     "config_group_wallet_desc": "タイムクレジット残高、転送上限、通貨の命名方法。",
     "config_starting_balance": "開始残高",

@@ -2839,8 +2839,6 @@
     "config_onboarding_enabled": "Onboardingstroom weergeven",
     "config_onboarding_enabled_desc": "Leid nieuwe leden door het instellen van profielen en vaardigheden na aanmelding.",
     "config_configure_steps": "Configureer stappen",
-    "config_welcome_message": "Welkomstbericht",
-    "config_welcome_message_desc": "Wordt aan nieuwe leden getoond bij hun eerste aanmelding.",
     "config_group_wallet": "Portemonnee en tegoeden",
     "config_group_wallet_desc": "Tijdskredietsaldo, overdrachtslimieten en hoe de valuta wordt genoemd.",
     "config_starting_balance": "Beginsaldo",

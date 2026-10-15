@@ -127,15 +127,15 @@ final class EnterpriseConfigTierTest extends TestCase
 
     public function test_rejected_request_writes_nothing_even_for_ordinary_keys_in_the_same_payload(): void
     {
-        $this->seedSetting('general.welcome_message', 'before');
+        $this->seedSetting('general.footer_text', 'before');
         Sanctum::actingAs($this->admin());
 
         $this->apiPut('/v2/admin/enterprise/config', [
-            'welcome_message' => 'after',
+            'footer_text' => 'after',
             'require_email_verification' => false,
         ])->assertStatus(403);
 
-        $this->assertSame('before', $this->setting('general.welcome_message'));
+        $this->assertSame('before', $this->setting('general.footer_text'));
     }
 
     public function test_unknown_keys_are_not_merged_into_tenant_configuration(): void
@@ -143,7 +143,7 @@ final class EnterpriseConfigTierTest extends TestCase
         Sanctum::actingAs($this->admin());
 
         $this->apiPut('/v2/admin/enterprise/config', [
-            'welcome_message' => 'hello',
+            'footer_text' => 'hello',
             'jobs_require_moderation' => false,
             'modules' => ['wallet' => false],
             'f054_probe' => 'x',
@@ -153,7 +153,7 @@ final class EnterpriseConfigTierTest extends TestCase
         $this->assertArrayNotHasKey('f054_probe', $configuration);
         $this->assertArrayNotHasKey('jobs_require_moderation', $configuration);
         $this->assertNotSame(['wallet' => false], $configuration['modules'] ?? null);
-        $this->assertSame('hello', $this->setting('general.welcome_message'));
+        $this->assertSame('hello', $this->setting('general.footer_text'));
     }
 
     public function test_admin_can_still_change_ordinary_settings(): void
@@ -161,13 +161,13 @@ final class EnterpriseConfigTierTest extends TestCase
         Sanctum::actingAs($this->admin());
 
         $this->apiPut('/v2/admin/enterprise/config', [
-            'welcome_message' => 'Welcome F-054',
+            'footer_text' => 'Welcome F-054',
             'max_listing_images' => 7,
             'site_description' => 'Enterprise config control',
         ])->assertStatus(200)
-            ->assertJsonPath('data.welcome_message', 'Welcome F-054');
+            ->assertJsonPath('data.footer_text', 'Welcome F-054');
 
-        $this->assertSame('Welcome F-054', $this->setting('general.welcome_message'));
+        $this->assertSame('Welcome F-054', $this->setting('general.footer_text'));
         $this->assertSame('7', $this->setting('listing.max_images'));
         $this->assertSame(
             'Enterprise config control',
@@ -207,7 +207,7 @@ final class EnterpriseConfigTierTest extends TestCase
     {
         $this->seedSetting('general.email_verification', 'true');
         $this->seedSetting('general.admin_approval', 'true');
-        $this->seedSetting('general.welcome_message', 'reset me');
+        $this->seedSetting('general.footer_text', 'reset me');
         $configuration = $this->configuration();
         $configuration['modules'] = ['wallet' => false];
         $configuration['jobs_require_moderation'] = true;
@@ -219,7 +219,7 @@ final class EnterpriseConfigTierTest extends TestCase
 
         $this->assertSame('true', $this->setting('general.email_verification'));
         $this->assertSame('true', $this->setting('general.admin_approval'));
-        $this->assertNull($this->setting('general.welcome_message'), 'ordinary keys are still reset');
+        $this->assertNull($this->setting('general.footer_text'), 'ordinary keys are still reset');
         $after = $this->configuration();
         $this->assertSame(['wallet' => false], $after['modules'] ?? null);
         $this->assertTrue($after['jobs_require_moderation'] ?? null);
@@ -238,13 +238,13 @@ final class EnterpriseConfigTierTest extends TestCase
 
     public function test_admin_can_reset_a_named_ordinary_setting(): void
     {
-        $this->seedSetting('general.welcome_message', 'reset me');
+        $this->seedSetting('general.footer_text', 'reset me');
         Sanctum::actingAs($this->admin());
 
-        $this->apiPost('/v2/admin/enterprise/config/reset', ['keys' => ['welcome_message']])
+        $this->apiPost('/v2/admin/enterprise/config/reset', ['keys' => ['footer_text']])
             ->assertStatus(200);
 
-        $this->assertNull($this->setting('general.welcome_message'));
+        $this->assertNull($this->setting('general.footer_text'));
     }
 
     public function test_platform_super_admin_reset_all_still_resets_reserved_settings(): void

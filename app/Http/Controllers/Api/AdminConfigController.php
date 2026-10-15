@@ -79,7 +79,7 @@ class AdminConfigController extends BaseApiController
     ];
 
     private const GENERAL_SETTING_KEYS = [
-        'timezone', 'registration_mode', 'welcome_message',
+        'timezone', 'registration_mode',
         'maintenance_mode', 'default_currency', 'date_format',
         'time_format', 'items_per_page', 'max_upload_size_mb',
         'email_verification', 'admin_approval', 'welcome_credits',

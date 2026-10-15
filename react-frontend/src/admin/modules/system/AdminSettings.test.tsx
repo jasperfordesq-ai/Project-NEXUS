@@ -212,7 +212,6 @@ const makeEnterpriseConfig = (overrides: Record<string, unknown> = {}) => ({
     timezone: 'UTC',
     locale: 'en',
     onboarding_enabled: true,
-    welcome_message: '',
     starting_balance: 0,
     max_transaction: 0,
     currency_name: 'Hours',
