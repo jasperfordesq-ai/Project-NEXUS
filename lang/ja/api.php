@@ -230,6 +230,7 @@ return [
     'unknown_module' => '不明なモジュール: :module',
     'cannot_run_disabled_job' => '無効化されたジョブは実行できません。まず有効にしてください。',
     'welcome_credits_range' => 'welcome_credits は 0 ～ 100 でなければなりません',
+    'approval_email_message_invalid' => '承認メールの歓迎文は、:max 文字以内のプレーンテキストにしてください。',
     'max_upload_size_range' => 'max_upload_size_mb は 1 ～ 50 の範囲にする必要があります',
     'items_per_page_range' => 'items_per_page は 5 ～ 100 でなければなりません',
     'maintenance_mode_boolean' => 'maintenance_mode はブール値である必要があります',

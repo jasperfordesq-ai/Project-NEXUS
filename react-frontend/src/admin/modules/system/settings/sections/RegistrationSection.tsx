@@ -8,10 +8,11 @@ import { useTranslation } from 'react-i18next';
 import UserCheck from 'lucide-react/icons/user-check';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import Lock from 'lucide-react/icons/lock';
-import { Button, Chip, Input, Switch, Tooltip } from '@/components/ui';
+import { Button, Chip, Input, Switch, Textarea, Tooltip } from '@/components/ui';
 import { useTenant } from '@/contexts';
 import { SettingsSection, SettingsRow } from '../SettingsSection';
 import { RegistrationModeField } from '../RegistrationModeField';
+import { APPROVAL_EMAIL_MESSAGE_MAX_CHARS } from '../settingsForm';
 import type { AdminSettingsFormState } from '../useAdminSettingsForm';
 
 export const REGISTRATION_SECTION_ID = 'registration';
@@ -78,6 +79,27 @@ export function RegistrationSection({ state }: { state: AdminSettingsFormState }
           aria-label={t('system.label_admin_approval')}
         />
       </SettingsRow>
+
+      {/* Full width: a paragraph of text does not fit SettingsRow's control column. */}
+      <div className="px-4 py-4 sm:px-5">
+        <Textarea
+          label={t('system.label_approval_email_message')}
+          description={t('system.desc_approval_email_message')}
+          placeholder={t('system.placeholder_approval_email_message')}
+          variant="secondary"
+          minRows={3}
+          maxRows={10}
+          maxLength={APPROVAL_EMAIL_MESSAGE_MAX_CHARS}
+          value={form.approval_email_message}
+          onValueChange={(val) => setField('approval_email_message', val)}
+        />
+        <p className="mt-1 text-right text-xs tabular-nums text-muted" aria-live="polite">
+          {t('system.approval_email_message_count', {
+            used: form.approval_email_message.length,
+            max: APPROVAL_EMAIL_MESSAGE_MAX_CHARS,
+          })}
+        </p>
+      </div>
 
       <SettingsRow label={t('system.label_inactivity_timeout')} help={t('system.desc_inactivity_timeout')}>
         <Input

@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'وحدة غير معروفة: :module',
     'cannot_run_disabled_job' => 'لا يمكن تشغيل مهمة معطلة. تمكينه أولا.',
     'welcome_credits_range' => 'يجب أن تتراوح قيمة Welcome_credits بين 0 و100',
+    'approval_email_message_invalid' => 'يجب أن يكون نص الترحيب في رسالة الموافقة نصًا عاديًا لا يتجاوز :max حرف.',
     'max_upload_size_range' => 'يجب أن يتراوح الحد الأقصى للتحميل_حجم_mb بين 1 و50',
     'items_per_page_range' => 'يجب أن يتراوح عدد items_per_page بين 5 و100',
     'maintenance_mode_boolean' => 'يجب أن تكون قيمة Maintenance_mode قيمة منطقية',

@@ -379,6 +379,7 @@ return [
     'unknown_module'                       => 'Unknown module: :module',
     'cannot_run_disabled_job'              => 'Cannot run disabled job. Enable it first.',
     'welcome_credits_range'                => 'welcome_credits must be between 0 and 100',
+    'approval_email_message_invalid' => 'The welcome text for the approval email must be plain text of no more than :max characters.',
     'max_upload_size_range'                => 'max_upload_size_mb must be between 1 and 50',
     'items_per_page_range'                 => 'items_per_page must be between 5 and 100',
     'maintenance_mode_boolean'             => 'maintenance_mode must be a boolean value',

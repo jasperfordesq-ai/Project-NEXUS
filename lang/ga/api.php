@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Modúl anaithnid: :module',
     'cannot_run_disabled_job' => 'Ní féidir post díchumasaithe a rith. Cumasaigh é ar dtús.',
     'welcome_credits_range' => 'caithfidh fáilte_credits a bheith idir 0 agus 100',
+    'approval_email_message_invalid' => 'Ní mór don téacs fáilte sa ríomhphost ceadaithe a bheith ina ghnáth-théacs nach faide ná :max carachtar.',
     'max_upload_size_range' => 'caithfidh max_upload_size_mb a bheith idir 1 agus 50',
     'items_per_page_range' => 'caithfidh items_per_page a bheith idir 5 agus 100',
     'maintenance_mode_boolean' => 'cothabhála_mode ní mór luach boolean',

@@ -64,6 +64,7 @@ export interface SettingsForm {
   default_currency: string;       // general.default_currency (ISO 4217 lowercase)
   region: string;                 // general.region (ISO 3166-1 alpha-2, drives date/number formatting)
   inactivity_timeout_minutes: string; // general.inactivity_timeout_minutes ('0' = disabled, 5–480)
+  approval_email_message: string; // general.approval_email_message (plain text added to the account-approved email; '' = default email)
   header_bg_color: string;        // tenants.configuration.header_bg_color ('' = default black)
   header_accent_color: string;    // tenants.configuration.header_accent_color ('' = match background)
 }
@@ -90,6 +91,9 @@ export const REGION_OPTIONS: Array<{ code: string; labelKey: string }> = [
   { code: 'PL', labelKey: 'system.region_pl' },
   { code: 'US', labelKey: 'system.region_us' },
 ];
+
+/** Matches AdminConfigController::APPROVAL_EMAIL_MESSAGE_MAX_CHARS. */
+export const APPROVAL_EMAIL_MESSAGE_MAX_CHARS = 1000;
 
 export const CURRENCY_OPTIONS: Array<{ code: string; labelKey: string }> = [
   { code: 'eur', labelKey: 'system.currency_eur' },
@@ -126,6 +130,7 @@ export const DEFAULT_SETTINGS: SettingsForm = {
   default_currency: 'eur',
   region: 'IE',
   inactivity_timeout_minutes: '0',
+  approval_email_message: '',
   header_bg_color: '',
   header_accent_color: '',
 };
@@ -190,6 +195,7 @@ export function settingsFromResponse(data: AdminSettingsResponse): SettingsForm 
     default_currency: str(settings.default_currency).toLowerCase() || 'eur',
     region: str(settings.region).toUpperCase() || 'IE',
     inactivity_timeout_minutes: String(settings.inactivity_timeout_minutes ?? '0'),
+    approval_email_message: str(settings.approval_email_message),
     header_bg_color: str(settings.header_bg_color),
     header_accent_color: str(settings.header_accent_color),
   };

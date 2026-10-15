@@ -83,6 +83,9 @@ class AdminConfigController extends BaseApiController
         'maintenance_mode', 'default_currency', 'date_format',
         'time_format', 'items_per_page', 'max_upload_size_mb',
         'email_verification', 'admin_approval', 'welcome_credits',
+        // A community's own plain-text passage in the account-approved email
+        // (AdminUsersController::sendApprovalWelcomeEmail). Empty = default email.
+        'approval_email_message',
         'footer_text',
         'partner_logo_url',
         'partner_logo_label',
@@ -109,6 +112,9 @@ class AdminConfigController extends BaseApiController
         // the only change) and GET never returned it.
         'region',
     ];
+
+    /** Longest community welcome text the approval email accepts (characters). */
+    public const APPROVAL_EMAIL_MESSAGE_MAX_CHARS = 1000;
 
     /**
      * Settings that only a platform super-admin (God) may modify.
@@ -1485,6 +1491,21 @@ class AdminConfigController extends BaseApiController
                 return $this->respondWithError('VALIDATION_ERROR', __('api.welcome_credits_range'), 'welcome_credits', 422);
             }
             $kvUpdates['welcome_credits'] = (string) $wc;
+        }
+
+        // Validate approval_email_message — plain text only, at most
+        // APPROVAL_EMAIL_MESSAGE_MAX_CHARS characters. Stored trimmed with
+        // Unix line endings; the email escapes it, so markup is never rendered.
+        if (array_key_exists('approval_email_message', $kvUpdates)) {
+            $message = $kvUpdates['approval_email_message'];
+            if ($message !== null && !is_string($message)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.approval_email_message_invalid', ['max' => self::APPROVAL_EMAIL_MESSAGE_MAX_CHARS]), 'approval_email_message', 422);
+            }
+            $message = trim(str_replace(["\r\n", "\r"], "\n", (string) $message));
+            if (mb_strlen($message) > self::APPROVAL_EMAIL_MESSAGE_MAX_CHARS) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.approval_email_message_invalid', ['max' => self::APPROVAL_EMAIL_MESSAGE_MAX_CHARS]), 'approval_email_message', 422);
+            }
+            $kvUpdates['approval_email_message'] = $message;
         }
 
         // Validate max_upload_size_mb — prevent dangerously large values

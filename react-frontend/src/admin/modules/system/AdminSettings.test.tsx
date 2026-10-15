@@ -448,6 +448,41 @@ describe('AdminSettings', () => {
     });
   });
 
+  // Bridgwater, 2026-10-15: a coordinator asked to tailor the approval email.
+  describe('welcome text for the approval email', () => {
+    it('shows the saved text, limits it to 1,000 characters and saves only that field', async () => {
+      mockAdminSettings.get.mockResolvedValue(makeSettingsData({ approval_email_message: 'Hello from Bridgwater' }));
+      await renderPage();
+
+      const box = await screen.findByLabelText('Welcome text for the approval email');
+      expect(box).toHaveValue('Hello from Bridgwater');
+      expect(box).toHaveAttribute('maxlength', '1000');
+      expect(screen.getByText('21 / 1000 characters')).toBeInTheDocument();
+
+      await userEvent.clear(box);
+      await userEvent.type(box, 'Coffee morning on Tuesdays');
+
+      const nav = screen.getByRole('navigation', { name: 'Jump to section' });
+      const dirtyPills = nav.querySelectorAll('a[data-dirty="true"]');
+      expect(dirtyPills).toHaveLength(1);
+      expect(dirtyPills[0]).toHaveAttribute('href', '#settings-section-registration');
+
+      await userEvent.click(getSaveButton());
+      await waitFor(() => {
+        expect(mockAdminSettings.update).toHaveBeenCalledWith({ approval_email_message: 'Coffee morning on Tuesdays' });
+      });
+    });
+
+    it('is open to a plain community admin, not only super admins', async () => {
+      mockAuthState.user = { id: 5, name: 'Plain Admin', role: 'admin', is_admin: true };
+      await renderPage();
+
+      const box = await screen.findByLabelText('Welcome text for the approval email');
+      expect(box).not.toBeDisabled();
+      expect(box).toHaveValue('');
+    });
+  });
+
   it('shows the maintenance mode switch as read only', async () => {
     await renderPage();
     expect(findSwitch('Maintenance Mode')).toBeDisabled();

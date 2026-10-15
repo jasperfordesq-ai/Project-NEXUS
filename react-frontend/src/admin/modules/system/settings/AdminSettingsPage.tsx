@@ -67,7 +67,7 @@ const SECTION_FIELDS: Record<string, SettingsFormKey[]> = {
     'powered_by_wording', 'powered_by_label', 'powered_by_url', 'powered_by_image_light', 'powered_by_image_dark',
     'network_powered_by_wording', 'network_powered_by_label', 'network_powered_by_url', 'network_powered_by_image_light', 'network_powered_by_image_dark',
   ],
-  [REGISTRATION_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'inactivity_timeout_minutes'],
+  [REGISTRATION_SECTION_ID]: ['registration_mode', 'email_verification', 'admin_approval', 'approval_email_message', 'inactivity_timeout_minutes'],
 };
 
 const SYSTEM_CONFIG_ICONS: Record<string, ReactNode> = {

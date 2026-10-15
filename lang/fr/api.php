@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Module inconnu : :module',
     'cannot_run_disabled_job' => 'Impossible d\'exécuter le travail désactivé. Activez-le d’abord.',
     'welcome_credits_range' => 'Welcome_credits doit être compris entre 0 et 100',
+    'approval_email_message_invalid' => 'Le texte de bienvenue de l\'e-mail d\'approbation doit être du texte brut de :max caractères au maximum.',
     'max_upload_size_range' => 'max_upload_size_mb doit être compris entre 1 et 50',
     'items_per_page_range' => 'items_per_page doit être compris entre 5 et 100',
     'maintenance_mode_boolean' => 'maintenance_mode doit être une valeur booléenne',

@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Onbekende module: :module',
     'cannot_run_disabled_job' => 'Kan uitgeschakelde taak niet uitvoeren. Schakel het eerst in.',
     'welcome_credits_range' => 'welkomst_credits moeten tussen 0 en 100 liggen',
+    'approval_email_message_invalid' => 'De welkomsttekst voor de goedkeuringsmail moet platte tekst zijn van maximaal :max tekens.',
     'max_upload_size_range' => 'max_upload_size_mb moet tussen 1 en 50 liggen',
     'items_per_page_range' => 'items_per_page moet tussen 5 en 100 liggen',
     'maintenance_mode_boolean' => 'Maintenance_mode moet een Booleaanse waarde zijn',

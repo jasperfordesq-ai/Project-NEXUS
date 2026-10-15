@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Unbekanntes Modul: :module',
     'cannot_run_disabled_job' => 'Der deaktivierte Job kann nicht ausgeführt werden. Aktivieren Sie es zuerst.',
     'welcome_credits_range' => 'Welcome_credits muss zwischen 0 und 100 liegen',
+    'approval_email_message_invalid' => 'Der Begrüßungstext für die Freischaltungs-E-Mail muss reiner Text mit höchstens :max Zeichen sein.',
     'max_upload_size_range' => 'max_upload_size_mb muss zwischen 1 und 50 liegen',
     'items_per_page_range' => 'items_per_page muss zwischen 5 und 100 liegen',
     'maintenance_mode_boolean' => 'Maintenance_mode muss ein boolescher Wert sein',

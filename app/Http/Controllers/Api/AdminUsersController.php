@@ -2595,6 +2595,11 @@ class AdminUsersController extends BaseApiController
                     ->salutation(__('emails_misc.admin_actions.approval_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.approval_body_intro', ['community' => $tenantNameSafe]));
 
+                // The community's own words, if its admins wrote any.
+                foreach ($this->approvalEmailCommunityParagraphs((int) $tenant['tenant_id']) as $communityParagraph) {
+                    $builder->paragraph($communityParagraph);
+                }
+
                 if ($creditsAwarded > 0) {
                     $builder->paragraph(__('emails_misc.admin_actions.approval_body_credits', [
                         'credits' => $creditsAwarded,
@@ -2635,6 +2640,38 @@ class AdminUsersController extends BaseApiController
             try { \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send welcome email to user #{$user['id']}: " . $e->getMessage()); } catch (\Throwable) {}
             return false;
         }
+    }
+
+    /**
+     * A community's own welcome text for the approval email
+     * (`general.approval_email_message`, set in admin Settings), ready for
+     * EmailTemplateBuilder::paragraph().
+     *
+     * Plain text by design: it is escaped HERE, so paragraph() finds no markup
+     * to keep and an admin cannot put a link or styling into an email that
+     * carries the platform's name. A blank line starts a new paragraph; a
+     * single line break is kept as one. The text is shown as written, in
+     * whatever language the admin wrote it, to every member.
+     *
+     * @return list<string> escaped paragraphs; empty when the community has none
+     */
+    private function approvalEmailCommunityParagraphs(int $tenantId): array
+    {
+        $raw = $this->tenantSettingsService->get($tenantId, 'general.approval_email_message', '');
+        $text = trim(str_replace(["\r\n", "\r"], "\n", is_string($raw) ? $raw : ''));
+        if ($text === '') {
+            return [];
+        }
+
+        $paragraphs = [];
+        foreach (preg_split('/\n[ \t]*\n/', $text) ?: [] as $block) {
+            $block = trim($block);
+            if ($block !== '') {
+                $paragraphs[] = str_replace("\n", '<br>', htmlspecialchars($block, ENT_QUOTES, 'UTF-8'));
+            }
+        }
+
+        return $paragraphs;
     }
 
     /**

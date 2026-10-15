@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Modulo sconosciuto: :module',
     'cannot_run_disabled_job' => 'Impossibile eseguire il lavoro disabilitato. Abilitalo prima.',
     'welcome_credits_range' => 'Welcome_Credits deve essere compreso tra 0 e 100',
+    'approval_email_message_invalid' => 'Il testo di benvenuto dell\'email di approvazione deve essere testo semplice di non più di :max caratteri.',
     'max_upload_size_range' => 'max_upload_size_mb deve essere compreso tra 1 e 50',
     'items_per_page_range' => 'items_per_page deve essere compreso tra 5 e 100',
     'maintenance_mode_boolean' => 'Maintenance_mode deve essere un valore booleano',

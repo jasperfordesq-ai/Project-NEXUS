@@ -230,6 +230,7 @@ return [
     'unknown_module' => 'Nieznany moduł: :module',
     'cannot_run_disabled_job' => 'Nie można uruchomić wyłączonego zadania. Najpierw to włącz.',
     'welcome_credits_range' => 'Welcome_credits musi mieścić się w przedziale od 0 do 100',
+    'approval_email_message_invalid' => 'Tekst powitalny w e-mailu o zatwierdzeniu musi być zwykłym tekstem o długości nie większej niż :max znaków.',
     'max_upload_size_range' => 'max_upload_size_mb musi wynosić od 1 do 50',
     'items_per_page_range' => 'items_per_page musi wynosić od 5 do 100',
     'maintenance_mode_boolean' => 'tryb_konserwacji musi być wartością logiczną',
