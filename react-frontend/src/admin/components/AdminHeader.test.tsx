@@ -41,6 +41,17 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // ─── Contexts ────────────────────────────────────────────────────────────────
 const mockLogout = vi.fn();
 const disabledModules = vi.hoisted(() => new Set<string>());
+interface MockUser {
+  id: number;
+  name: string;
+  avatar_url: null;
+  avatar: null;
+  tenant_id?: number;
+  role?: 'admin';
+  is_tenant_super_admin?: boolean;
+}
+const DEFAULT_USER = vi.hoisted((): MockUser => ({ id: 1, name: 'Alice Admin', avatar_url: null, avatar: null }));
+const authState = vi.hoisted(() => ({ user: { ...DEFAULT_USER } as MockUser }));
 const mockToast = {
   success: vi.fn(),
   error: vi.fn(),
@@ -52,7 +63,7 @@ const mockToast = {
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({
-      user: { id: 1, name: 'Alice Admin', avatar_url: null, avatar: null },
+      user: authState.user,
       isAuthenticated: true,
       login: vi.fn(),
       logout: mockLogout,
@@ -208,6 +219,7 @@ describe('AdminHeader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     disabledModules.clear();
+    authState.user = { ...DEFAULT_USER };
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: FrameRequestCallback) =>
       window.setTimeout(() => callback(performance.now()), 0)
     );
@@ -278,6 +290,54 @@ describe('AdminHeader', () => {
       await user.click(backBtn);
       expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/dashboard');
     }
+  });
+
+  // A tenant super admin from a community ABOVE is sent from every member page
+  // back to /admin (ProtectedRoute), so "Back to site" pointing at /dashboard
+  // just reloaded the admin panel. It must go to the public home page instead.
+  describe('a tenant super admin managing a community below its own', () => {
+    beforeEach(() => {
+      authState.user = { ...DEFAULT_USER, tenant_id: 1, role: 'admin', is_tenant_super_admin: true };
+    });
+
+    it('sends "Back to site" to the public home page, not the member dashboard', async () => {
+      const user = userEvent.setup();
+      const { AdminHeader } = await import('./AdminHeader');
+      render(<AdminHeader sidebarCollapsed={false} />);
+
+      const backBtn = screen.getAllByRole('button').find(
+        (btn) => btn.getAttribute('aria-label')?.toLowerCase().includes('back'),
+      );
+      expect(backBtn).toBeDefined();
+      await user.click(backBtn!);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/');
+      expect(mockNavigate).not.toHaveBeenCalledWith('/hour-timebank/dashboard');
+    });
+
+    it('does not offer the member-only notifications and profile shortcuts', async () => {
+      const { AdminHeader } = await import('./AdminHeader');
+      render(<AdminHeader sidebarCollapsed={false} />);
+
+      expect(screen.getAllByRole('button').some(
+        (button) => button.getAttribute('aria-label')?.toLowerCase().includes('notification'),
+      )).toBe(false);
+      expect(screen.queryByTestId('dropdown-item-profile')).not.toBeInTheDocument();
+      expect(screen.getByTestId('dropdown-item-logout')).toBeInTheDocument();
+    });
+
+    it('still uses the dashboard for an admin of this community', async () => {
+      authState.user = { ...DEFAULT_USER, tenant_id: 2, role: 'admin', is_tenant_super_admin: true };
+      const user = userEvent.setup();
+      const { AdminHeader } = await import('./AdminHeader');
+      render(<AdminHeader sidebarCollapsed={false} />);
+
+      const backBtn = screen.getAllByRole('button').find(
+        (btn) => btn.getAttribute('aria-label')?.toLowerCase().includes('back'),
+      );
+      await user.click(backBtn!);
+      expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/dashboard');
+    });
   });
 
   it('shows hamburger toggle button when onSidebarToggle is provided', async () => {

@@ -21,6 +21,7 @@ import Menu from 'lucide-react/icons/menu';
 import User from 'lucide-react/icons/user';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { adminSupportReports } from '@/admin/api/adminApi';
+import { isVisitingManager } from '@/lib/access';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -70,6 +71,12 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
   const { tenantPath, tenant, hasModule } = useTenant();
   const navigate = useNavigate();
   const adminLabel = t('admin');
+  // A tenant super admin managing a community below its own is not a member
+  // here: ProtectedRoute sends it from every member page straight back to
+  // /admin. So "Back to site" goes to the community's public home page, and
+  // the member-page shortcuts (notifications, profile) are not offered.
+  const visiting = isVisitingManager(user, tenant?.id);
+  const siteHome = visiting ? '/' : hasModule('dashboard') ? '/dashboard' : '/';
 
   // Open support-request count for the header indicator. Best-effort and
   // deferred so it does not compete with the first admin page render. If the
@@ -120,7 +127,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
         <Button
           variant="tertiary"
           size="sm"
-          onPress={() => navigate(tenantPath(hasModule('dashboard') ? '/dashboard' : '/'))}
+          onPress={() => navigate(tenantPath(siteHome))}
           startContent={<ArrowLeft size={16} aria-hidden="true" />}
           aria-label={t('back_to_site')}
           className="min-w-0 bg-surface-secondary/70 px-2 text-muted hover:bg-surface-tertiary/70 sm:px-3"
@@ -159,7 +166,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
           )}
         </Button>
 
-        {hasModule('notifications') && <Button
+        {!visiting && hasModule('notifications') && <Button
           isIconOnly
           variant="tertiary"
           size="sm"
@@ -191,7 +198,7 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
               if (key === 'logout') logout();
             }}
           >
-            {hasModule('profile') ? <DropdownItem
+            {!visiting && hasModule('profile') ? <DropdownItem
               key="profile" id="profile"
               startContent={<User size={16} />}
             >
