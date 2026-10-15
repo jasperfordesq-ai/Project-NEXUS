@@ -36,11 +36,21 @@ const express = require('express');
 const request = require('supertest');
 
 class MockApiError extends Error {
-  constructor(message, status) {
+  constructor(message, status, data = null) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.data = data;
   }
+}
+
+// Exactly what Laravel's TenantContext answers (since F-443) when an anonymous
+// caller names a community that does not exist — measured on production 2026-10-15.
+function invalidTenantError() {
+  return new MockApiError('Invalid tenant ID', 400, {
+    data: null,
+    errors: [{ code: 'INVALID_TENANT', message: 'Invalid tenant ID', field: null }],
+  });
 }
 class MockApiOfflineError extends Error {
   constructor(message = 'Unable to connect') {
@@ -328,5 +338,78 @@ describe('🔴 the slug-less route set is refused on the SHARED platform host', 
   it('does NOT refuse on a local host', async () => {
     const response = await request(buildApp()).get('/listings').set('Host', 'localhost:5180');
     expect(response.status).toBe(200);
+  });
+});
+
+describe('🔴 Laravel 400 INVALID_TENANT also means "no such community"', () => {
+  /**
+   * Production, 2026-10-15: pressing Accept or Reject on the cookie banner showed
+   * "Sorry, there is a problem" on every community's own accessible domain
+   * (reported on Bridgwater, reproduced on Ryde). The parent-domain resolver asked
+   * the platform whether `cookie-consent` was a child community; the platform
+   * answered 400 INVALID_TENANT rather than the 404 this file expected, and the
+   * error escaped as an application error.
+   */
+  const bridgwater = {
+    id: 17,
+    slug: 'bridgwater-time-bank',
+    domain: 'bridgwater.timebank.global',
+    accessible_domain: 'accessible-bridgwater.timebank.global',
+  };
+
+  function onCommunityDomain() {
+    mockGetTenantBootstrap.mockImplementation(async (options) => {
+      if (options.slug) throw invalidTenantError();
+      return { data: bridgwater };
+    });
+  }
+
+  it('lets the cookie banner submit on a community own accessible domain', async () => {
+    onCommunityDomain();
+
+    const response = await request(buildApp())
+      .post('/cookie-consent')
+      .set('Host', 'accessible-bridgwater.timebank.global');
+
+    expect(response.status).toBe(200);
+    expect(response.body.reached).toBe(true);
+    expect(response.body.tenantSlug).toBe('bridgwater-time-bank');
+    expect(response.body.rewrittenUrl).toBe('/cookie-consent');
+  });
+
+  it('serves the other slug-less pages that failed the same way', async () => {
+    onCommunityDomain();
+
+    for (const path of ['/report-a-problem', '/sitemap.txt']) {
+      const response = await request(buildApp())
+        .get(path)
+        .set('Host', 'accessible-bridgwater.timebank.global');
+
+      expect(response.status).toBe(200);
+      expect(response.body.tenantSlug).toBe('bridgwater-time-bank');
+    }
+  });
+
+  it('answers 404, not an error page, for a mistyped community on the shared host', async () => {
+    mockGetTenantBootstrap.mockRejectedValue(invalidTenantError());
+
+    const response = await request(buildApp()).get('/not-a-real-community/accessible/');
+
+    expect(response.status).toBe(200);
+    expect(response.body.rewrittenUrl).toBe('/__accessible-domain-not-found__');
+    expect(response.body.tenantSlug).toBeNull();
+  });
+
+  it('still surfaces any OTHER 400 as a fault', async () => {
+    // The control: only the explicit INVALID_TENANT code means "no such community".
+    mockGetTenantBootstrap.mockRejectedValue(new MockApiError('Bad request', 400, {
+      errors: [{ code: 'VALIDATION_ERROR', message: 'Bad request' }],
+    }));
+
+    const response = await request(buildApp()).get('/hour-timebank/accessible/');
+
+    // Propagated to the error handler, not swallowed into a 404 or a page.
+    expect(response.status).toBe(400);
+    expect(response.body.reached).toBeUndefined();
   });
 });

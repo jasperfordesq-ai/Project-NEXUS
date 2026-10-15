@@ -327,6 +327,38 @@ function firstRoutableSegment(pathname) {
   return first;
 }
 
+/**
+ * Did the platform answer "no such community"?
+ *
+ * 🔴 Laravel says it TWO ways, and this file only knew one. A bootstrap lookup by
+ * slug for an unknown community used to come back 404. Since F-443 (commit
+ * 18a87ad0a) an anonymous caller naming a community that does not exist is refused
+ * by `TenantContext` with **400 INVALID_TENANT** before the controller runs. Every
+ * catch below tolerated only the 404, so the 400 escaped as an application error.
+ *
+ * That broke more than typos. On a community's own accessible domain, the
+ * parent-domain resolver asks "is the first path segment a child community?" for
+ * every path not in RESERVED_CHILD_SEGMENTS — `/cookie-consent`,
+ * `/report-a-problem`, `/sitemap.txt` — and each of those now got the 400 and
+ * rendered "Sorry, there is a problem". Observed on production 2026-10-15: accepting
+ * or rejecting cookies failed on every community domain (Bridgwater and Ryde
+ * checked), and `/{typo}/accessible/` on the shared host answered 400 instead of 404.
+ *
+ * Only the explicit INVALID_TENANT code counts. Any other 400 is a real fault and
+ * must still propagate.
+ */
+function isUnknownCommunityError(error, ApiError) {
+  if (!(error instanceof ApiError)) {
+    return false;
+  }
+  if (error.status === 404) {
+    return true;
+  }
+  return error.status === 400
+    && Array.isArray(error.data?.errors)
+    && error.data.errors.some((entry) => entry && entry.code === 'INVALID_TENANT');
+}
+
 async function resolveParentDomainChildTenant(req, res, pathname, queryIndex, originalUrl) {
   if (isUnprefixedPath(pathname)) {
     return false;
@@ -367,7 +399,7 @@ async function resolveParentDomainChildTenant(req, res, pathname, queryIndex, or
 
     return true;
   } catch (error) {
-    if (error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404)) {
+    if (error instanceof ApiOfflineError || isUnknownCommunityError(error, ApiError)) {
       return false;
     }
 
@@ -408,7 +440,7 @@ async function resolveCustomAccessibleDomain(req, pathname) {
 
     return false;
   } catch (error) {
-    if (error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404)) {
+    if (error instanceof ApiOfflineError || isUnknownCommunityError(error, ApiError)) {
       return false;
     }
 
@@ -461,7 +493,7 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
     }
     return true;
   } catch (error) {
-    if (error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404)) {
+    if (error instanceof ApiOfflineError || isUnknownCommunityError(error, ApiError)) {
       return false;
     }
 
@@ -518,7 +550,7 @@ async function resolveSharedMountTenant(tenantSlug) {
     // `mockResolvedValueOnce`, none of which describe a missing community.
     return { slug: tenantSlug };
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) {
+    if (isUnknownCommunityError(error, ApiError)) {
       return null;
     }
     if (error instanceof ApiOfflineError) {

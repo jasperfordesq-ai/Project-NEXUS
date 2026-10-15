@@ -24408,9 +24408,11 @@ describe('shared accessible frontend shell', () => {
     // A non-404 failure from the community lookup is rethrown by tenantRouting,
     // so Express jumps straight to the error handler and Helmet never runs.
     const api = require('../src/lib/api');
-    api.getTenantBootstrap.mockRejectedValueOnce(new api.ApiError('Community lookup failed', 400, {
+    // Not INVALID_TENANT: since 2026-10-15 that code means "no such community"
+    // and is answered with a 404 page (tenant-routing-unknown-community.test.js).
+    api.getTenantBootstrap.mockRejectedValueOnce(new api.ApiError('Community lookup failed', 500, {
       success: false,
-      errors: [{ code: 'INVALID_TENANT', message: 'Community lookup failed' }]
+      errors: [{ code: 'SERVER_ERROR', message: 'Community lookup failed' }]
     }));
 
     const errorPage = await request(app).get('/zzz/accessible/zzz');
