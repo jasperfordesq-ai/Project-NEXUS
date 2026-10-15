@@ -115,7 +115,12 @@
                 "post_event_too_early": "Ní féidir teachtaireacht le haghaidh tar éis na hócáide a sheoladh go dtí go mbeidh an ócáid thart. Roghnaigh am tar éis dheireadh na hócáide.",
                 "audience_empty": "Ní bhfaigheadh aon duine an teachtaireacht seo. Roghnaigh grúpa faighteoirí ina bhfuil duine amháin ar a laghad.",
                 "channel_empty": "Roghnaigh bealach amháin ar a laghad chun an teachtaireacht seo a sheoladh.",
-                "body_invalid": "Scríobh teachtaireacht nach mó ná :max carachtar í."
+                "body_invalid": "Scríobh teachtaireacht nach mó ná :max carachtar í.",
+                "version_conflict": "Athraíodh an teachtaireacht seo in áit eile tar éis don leathanach lódáil. Athnuaigh an leathanach, seiceáil í agus bain triail eile as.",
+                "transition_invalid": "Tá an teachtaireacht seo bogtha ar aghaidh cheana: d'fhéadfadh sí a bheith á seoladh nó seolta cheana. Athnuaigh an leathanach le feiceáil cá bhfuil sí.",
+                "cancel_after_send_forbidden": "Tá tús curtha leis an seoladh cheana, mar sin ní féidir an teachtaireacht seo a chealú a thuilleadh.",
+                "idempotency_conflict": "Is cosúil gur athdhéanamh é seo ar iarracht níos luaithe le sonraí difriúla. Athnuaigh an leathanach agus seiceáil an bhfuil an teachtaireacht ann cheana.",
+                "authorization_denied": "Níl cead agat teachtaireachtaí a sheoladh don imeacht seo. Iarr ar eagraí an imeachta tú a chur le foireann an imeachta."
             }
         },
         "event_lifecycle_history": {
@@ -2591,6 +2596,8 @@
                     "cancelled_reason_prefix": "Cúis:",
                     "allow_remote_label": "Ceadaigh freastal cianda",
                     "allow_remote_hint": "Is féidir le rannpháirtithe páirt a ghlacadh ar líne chomh maith le bheith i láthair go pearsanta.",
+                    "public_listing_label": "Liostaigh mar imeacht poiblí",
+                    "public_listing_hint": "Taispeáin an t-imeacht seo ar leathanach imeachtaí poiblí an phobail, áit ar féidir le daoine nach bhfuil sínithe isteach é a fheiceáil. Fág an bosca seo gan tic chun é a choinneáil do bhaill amháin.",
                     "video_url_label": "Nasc físeáin nó cruinnithe (roghnach)",
                     "video_url_hint": "Greamaigh URL do ghlao físeáin nó seomra cruinnithe. Ní thaispeántar ach d'fhreastalaithe é.",
                     "video_url_summary_label": "Bí páirteach go cianda",

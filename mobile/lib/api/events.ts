@@ -194,6 +194,8 @@ export const eventSchema = z.object({
   }).nullable().optional(),
   distance_km: z.number().nonnegative().optional(),
   federated_visibility: z.enum(['none', 'listed', 'joinable', 'bookable']).nullable().optional(),
+  /** Organiser opted in to the community's public (signed-out) events pages. Sent only when the tenant has `public_events` on. */
+  is_public_listing: z.boolean().optional(),
 }).passthrough();
 
 export const eventsResponseSchema = z.object({
@@ -873,6 +875,8 @@ export interface CreateEventPayload {
   video_url?: string | null;
   max_attendees?: number | null;
   federated_visibility?: EventFederatedVisibilityMutation;
+  /** Ignored by the server unless the community has `public_events` switched on. */
+  is_public_listing?: boolean;
   recurrence_frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   recurrence_interval?: number;
   recurrence_days?: string;
@@ -906,6 +910,7 @@ export interface EventRecurrenceRevisionPatch {
   online_link?: string | null;
   video_url?: string | null;
   allow_remote_attendance?: boolean;
+  is_public_listing?: boolean;
   category_id?: number | null;
   all_day?: boolean;
   accessibility_step_free?: boolean | null;

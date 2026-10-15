@@ -33,6 +33,7 @@ import Users from 'lucide-react/icons/users';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import ImagePlus from 'lucide-react/icons/image-plus';
+import Globe from 'lucide-react/icons/globe';
 import X from 'lucide-react/icons/x';
 import Tag from 'lucide-react/icons/tag';
 import Repeat from 'lucide-react/icons/repeat';
@@ -101,6 +102,9 @@ interface FormData {
   // Video conferencing
   allowRemoteAttendance: boolean;
   videoUrl: string;
+  // Listed on the community's public events pages (only offered when the
+  // community has public events switched on)
+  isPublicListing: boolean;
   // Recurrence
   isRecurring: boolean;
   recurrenceFrequency: RecurrenceFrequency;
@@ -135,6 +139,7 @@ const initialFormData: FormData = {
   category: '',
   allowRemoteAttendance: false,
   videoUrl: '',
+  isPublicListing: false,
   isRecurring: false,
   recurrenceFrequency: 'weekly',
   recurrenceDays: [],
@@ -237,8 +242,11 @@ export function CreateEventPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
   const { user } = useAuth();
+  // The public-listing choice exists only while the community advertises
+  // events publicly; otherwise every event stays members-only.
+  const canListPublicly = hasFeature('public_events');
   const toast = useToast();
   const isEditing = !!id;
   // Creation only. Editing an existing Event is governed by the Event policy
@@ -362,6 +370,7 @@ export function CreateEventPage() {
           category: event.category?.id ? String(event.category.id) : '',
           allowRemoteAttendance: event.location.mode !== 'in_person',
           videoUrl: event.online_access.video_url || event.online_access.join_url || '',
+          isPublicListing: event.is_public_listing === true,
           // Recurrence fields default (editing a recurring event is not supported yet)
           isRecurring: false,
           recurrenceFrequency: 'weekly',
@@ -728,6 +737,9 @@ export function CreateEventPage() {
         allow_remote_attendance: formData.allowRemoteAttendance,
         video_url: formData.allowRemoteAttendance && formData.videoUrl.trim() ? formData.videoUrl.trim() : null,
       };
+      if (canListPublicly) {
+        payload.is_public_listing = formData.isPublicListing;
+      }
 
       if (coverRemovalRequested) {
         payload.cover_image = null;
@@ -778,6 +790,9 @@ export function CreateEventPage() {
         accessibility_assistance_contact: formData.venueAccessibility.assistance_contact.trim() || null,
         accessibility_notes: formData.venueAccessibility.notes.trim() || null,
       };
+      if (canListPublicly) {
+        revisionPatch.is_public_listing = formData.isPublicListing;
+      }
       const baselineSchedule = loadedScheduleRef.current;
       const currentStartClock = formData.allDay
         ? null
@@ -1674,6 +1689,31 @@ export function CreateEventPage() {
               </motion.div>
             )}
           </div>
+
+          {/* Public listing — only when the community has public events on */}
+          {canListPublicly && (
+            <div className="flex items-center justify-between p-4 rounded-xl bg-theme-elevated border border-theme-default">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/20">
+                  <Globe className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="font-medium text-theme-primary">
+                    {t('form.public_listing_toggle')}
+                  </p>
+                  <p className="text-sm text-theme-subtle">
+                    {t('form.public_listing_desc')}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                aria-label={t('form.public_listing_toggle')}
+                isSelected={formData.isPublicListing}
+                isDisabled={isSubmitting}
+                onValueChange={(checked) => setFormData((prev) => ({ ...prev, isPublicListing: checked }))}
+              />
+            </div>
+          )}
 
           {/* Attach Polls */}
           {availablePolls.length > 0 && (

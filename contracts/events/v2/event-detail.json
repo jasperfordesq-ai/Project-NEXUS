@@ -161,6 +161,7 @@
   "cancellation_reason": null,
   "is_online": true,
   "allow_remote_attendance": true,
+  "is_public_listing": false,
   "online_link": null,
   "online_url": null,
   "video_url": null,

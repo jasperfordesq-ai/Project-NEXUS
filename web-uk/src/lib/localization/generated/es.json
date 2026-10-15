@@ -115,7 +115,12 @@
                 "post_event_too_early": "Un mensaje para después del evento solo se puede enviar cuando el evento haya terminado. Elige una hora posterior al final del evento.",
                 "audience_empty": "Nadie recibiría este mensaje. Elige un público que incluya al menos a una persona.",
                 "channel_empty": "Elige al menos una forma de enviar este mensaje.",
-                "body_invalid": "Escribe un mensaje de :max caracteres como máximo."
+                "body_invalid": "Escribe un mensaje de :max caracteres como máximo.",
+                "version_conflict": "Este mensaje se cambió en otro lugar después de cargar la página. Actualiza la página, revísalo e inténtalo de nuevo.",
+                "transition_invalid": "Este mensaje ya ha avanzado: puede que se esté enviando o que ya se haya enviado. Actualiza la página para ver en qué punto está.",
+                "cancel_after_send_forbidden": "El envío ya ha comenzado, así que este mensaje ya no se puede cancelar.",
+                "idempotency_conflict": "Parece una repetición de un intento anterior con otros datos. Actualiza la página y comprueba si el mensaje ya está ahí.",
+                "authorization_denied": "No tienes permiso para enviar mensajes de este evento. Pide a quien organiza el evento que te añada al equipo."
             }
         },
         "event_lifecycle_history": {
@@ -2591,6 +2596,8 @@
                     "cancelled_reason_prefix": "Motivo:",
                     "allow_remote_label": "Permitir asistencia remota",
                     "allow_remote_hint": "Los participantes pueden unirse en línea además de en persona.",
+                    "public_listing_label": "Publicar como evento público",
+                    "public_listing_hint": "Muestra este evento en la página de eventos públicos de la comunidad, donde pueden verlo personas que no han iniciado sesión. Deje la casilla sin marcar para que solo lo vean los miembros.",
                     "video_url_label": "Enlace de vídeo o reunión (opcional)",
                     "video_url_hint": "Pegue la URL de su videollamada o sala de reuniones. Solo se mostrará a los asistentes.",
                     "video_url_summary_label": "Unirse de forma remota",

@@ -257,6 +257,8 @@
     "cancel": "Abbrechen",
     "remote_attendance_toggle": "Fernteilnahme erlauben",
     "remote_attendance_desc": "Teilnehmer können per Videokonferenz teilnehmen",
+    "public_listing_toggle": "Als öffentliche Veranstaltung anzeigen",
+    "public_listing_desc": "Zeigt diese Veranstaltung auf der öffentlichen Veranstaltungsseite der Gemeinschaft, wo sie auch Personen ohne Anmeldung sehen können. Lass dies ausgeschaltet, damit sie nur für Mitglieder sichtbar bleibt.",
     "remote_attendance_toggle_aria": "Fernteilnahme umschalten",
     "video_url_label": "Meeting-Link",
     "video_url_placeholder": "https://zoom.us/j/... oder https://meet.google.com/...",

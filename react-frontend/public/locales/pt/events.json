@@ -266,6 +266,8 @@
     "cancel": "Cancelar",
     "remote_attendance_toggle": "Permitir participação remota",
     "remote_attendance_desc": "Permitir que os participantes participem por videoconferência",
+    "public_listing_toggle": "Listar como evento público",
+    "public_listing_desc": "Mostra este evento na página de eventos públicos da comunidade, onde pessoas sem sessão iniciada o podem ver. Deixe desativado para o manter apenas para membros.",
     "remote_attendance_toggle_aria": "Alternar participação remota",
     "video_url_label": "Link da reunião",
     "video_url_placeholder": "https://zoom.us/j/... ou https://meet.google.com/...",

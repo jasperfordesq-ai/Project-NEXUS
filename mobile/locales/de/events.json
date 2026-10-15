@@ -98,6 +98,8 @@
     "venueAccessibilityNotesPlaceholder": "Was Mitglieder sonst wissen sollten",
     "venueAccessibilityPrivacy": "Veröffentlichen Sie nur Kontaktdaten, die sicher mit berechtigten Veranstaltungsbesuchern geteilt werden können.",
     "remoteAttendance": "Fernzugriff zulassen",
+    "publicListing": "Als öffentliche Veranstaltung anzeigen",
+    "publicListingHint": "Zeigt diese Veranstaltung auf der öffentlichen Veranstaltungsseite der Gemeinschaft, wo sie auch Personen ohne Anmeldung sehen können. Lass dies ausgeschaltet, damit sie nur für Mitglieder sichtbar bleibt.",
     "videoUrlLabel": "Videolink",
     "videoUrlPlaceholder": "https://...",
     "maxAttendeesLabel": "Kapazität",

@@ -115,7 +115,12 @@
                 "post_event_too_early": "Uma mensagem para depois do evento só pode ser enviada quando o evento terminar. Escolha uma hora posterior ao fim do evento.",
                 "audience_empty": "Ninguém receberia esta mensagem. Escolha um público que inclua pelo menos uma pessoa.",
                 "channel_empty": "Escolha pelo menos uma forma de enviar esta mensagem.",
-                "body_invalid": "Escreva uma mensagem com no máximo :max caracteres."
+                "body_invalid": "Escreva uma mensagem com no máximo :max caracteres.",
+                "version_conflict": "Esta mensagem foi alterada noutro lugar depois de a página carregar. Atualize a página, verifique-a e tente novamente.",
+                "transition_invalid": "Esta mensagem já avançou: pode estar a ser enviada ou já ter sido enviada. Atualize a página para ver em que ponto está.",
+                "cancel_after_send_forbidden": "O envio já começou, por isso esta mensagem já não pode ser cancelada.",
+                "idempotency_conflict": "Parece a repetição de uma tentativa anterior com dados diferentes. Atualize a página e verifique se a mensagem já lá está.",
+                "authorization_denied": "Não tem permissão para enviar mensagens deste evento. Peça a quem organiza o evento que o adicione à equipa."
             }
         },
         "event_lifecycle_history": {
@@ -2591,6 +2596,8 @@
                     "cancelled_reason_prefix": "Motivo:",
                     "allow_remote_label": "Permitir participação remota",
                     "allow_remote_hint": "Os participantes podem participar online e presencialmente.",
+                    "public_listing_label": "Listar como evento público",
+                    "public_listing_hint": "Mostra este evento na página de eventos públicos da comunidade, onde pessoas sem sessão iniciada o podem ver. Deixe a caixa por assinalar para o manter apenas para membros.",
                     "video_url_label": "Link de vídeo ou reunião (opcional)",
                     "video_url_hint": "Cole o URL da sua chamada de vídeo ou sala de reunião. Apenas visível para os participantes.",
                     "video_url_summary_label": "Entrar remotamente",

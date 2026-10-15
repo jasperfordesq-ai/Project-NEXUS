@@ -98,6 +98,8 @@
     "venueAccessibilityNotesPlaceholder": "Cualquier otra información útil",
     "venueAccessibilityPrivacy": "Publica solo datos de contacto que sea seguro compartir con las personas autorizadas a ver el evento.",
     "remoteAttendance": "Permitir asistencia remota",
+    "publicListing": "Publicar como evento público",
+    "publicListingHint": "Muestra este evento en la página de eventos públicos de la comunidad, donde pueden verlo personas que no han iniciado sesión. Déjalo desactivado para que solo lo vean los miembros.",
     "videoUrlLabel": "Enlace de vídeo",
     "videoUrlPlaceholder": "https://...",
     "maxAttendeesLabel": "Capacidad",

@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createCanonicalEventFixture, renderEventRoute } from '@/test/events-test-harness';
 import { createMockContexts } from '@/test/mock-contexts';
 
-const { mockApi, mockToast, mockLogError, mockAuthUser } = vi.hoisted(() => ({
+const { mockApi, mockToast, mockLogError, mockAuthUser, mockFeaturesOff } = vi.hoisted(() => ({
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -25,6 +25,8 @@ const { mockApi, mockToast, mockLogError, mockAuthUser } = vi.hoisted(() => ({
   mockLogError: vi.fn(),
   // Mutable so a test can flip the server-supplied Event-creation capability.
   mockAuthUser: { current: { id: 1, name: 'Alice' } as { id: number; name: string; can_create_events?: boolean } },
+  // Tenant features a test switches off; everything else reports on.
+  mockFeaturesOff: new Set<string>(),
 }));
 
 vi.mock('@/lib/api', () => ({ api: mockApi }));
@@ -34,7 +36,7 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
       tenantPath: (path: string) => `/test${path}`,
-      hasFeature: vi.fn(() => true),
+      hasFeature: vi.fn((feature: string) => !mockFeaturesOff.has(feature)),
       hasModule: vi.fn(() => true),
     }),
     useToast: () => mockToast,
@@ -187,6 +189,7 @@ describe('CreateEventPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthUser.current = { id: 1, name: 'Alice' };
+    mockFeaturesOff.clear();
     mockApi.get.mockImplementation((endpoint: string) => Promise.resolve({
       success: true,
       data: endpoint === '/v2/events/recurrence-capabilities'
@@ -465,5 +468,53 @@ describe('CreateEventPage', () => {
     expect(screen.getByRole('spinbutton', { name: 'Number of occurrences' })).toHaveAttribute('max', '52');
     expect(screen.getByText('Between 2 and 52 occurrences')).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Never (rolling schedule)' })).not.toBeInTheDocument();
+  });
+
+  describe('public listing choice', () => {
+    async function fillAndSubmitSingleEvent() {
+      mockApi.post.mockResolvedValue({ success: true, data: { id: 77 } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Event Title' }), { target: { value: 'Seed swap' } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), { target: { value: 'Bring seeds, take seeds.' } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Start Date' }), { target: { value: '2099-05-01' } });
+      fireEvent.change(screen.getByRole('textbox', { name: 'Start Time' }), { target: { value: '10:00' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Create Event' }));
+      await waitFor(() => expect(mockApi.post).toHaveBeenCalledWith('/v2/events', expect.any(Object), expect.any(Object)));
+      return mockApi.post.mock.calls.find(([path]) => path === '/v2/events')?.[1] as Record<string, unknown>;
+    }
+
+    it('is not offered, and not sent, when the community has public events off', async () => {
+      mockFeaturesOff.add('public_events');
+      await renderCreateEventPage();
+
+      expect(screen.queryByRole('switch', { name: 'List as a public event' })).not.toBeInTheDocument();
+      const payload = await fillAndSubmitSingleEvent();
+      expect(payload).not.toHaveProperty('is_public_listing');
+    });
+
+    it("is offered switched off, and sends the organiser's choice", async () => {
+      await renderCreateEventPage();
+
+      const toggle = screen.getByRole('switch', { name: 'List as a public event' });
+      expect(toggle).not.toBeChecked();
+      fireEvent.click(toggle);
+      expect(toggle).toBeChecked();
+
+      const payload = await fillAndSubmitSingleEvent();
+      expect(payload).toEqual(expect.objectContaining({ is_public_listing: true }));
+    });
+
+    it('shows the saved choice when editing an event', async () => {
+      const existing = createCanonicalEventFixture({ id: 5, title: 'Listed Event', is_public_listing: true });
+      mockApi.get.mockImplementation((endpoint: string) => Promise.resolve(
+        endpoint.startsWith('/v2/events/5')
+          ? { success: true, data: existing }
+          : { success: true, data: [] },
+      ));
+
+      await renderEventRoute(<CreateEventPage />, { route: '/test/events/edit/5', path: '/test/events/edit/:id' });
+
+      expect(await screen.findByDisplayValue('Listed Event')).toBeInTheDocument();
+      expect(screen.getByRole('switch', { name: 'List as a public event' })).toBeChecked();
+    });
   });
 });

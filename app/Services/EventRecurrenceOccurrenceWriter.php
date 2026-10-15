@@ -213,6 +213,7 @@ class EventRecurrenceOccurrenceWriter
             'event' => $root->event ?? null,
             'federated_visibility' => $root->federated_visibility ?? 'none',
             'allow_remote_attendance' => (int) ($root->allow_remote_attendance ?? 0),
+            'is_public_listing' => (int) ($root->is_public_listing ?? 0),
         ];
         if (class_exists(EventRecurrenceRevisionService::class)) {
             $resolved = app(EventRecurrenceRevisionService::class)->effectiveBlueprint(

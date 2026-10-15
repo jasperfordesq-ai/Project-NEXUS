@@ -129,6 +129,8 @@ jest.mock('react-i18next', () => ({
         'create.venueAccessibilityNotesPlaceholder': 'Anything else members should know',
         'create.venueAccessibilityPrivacy': 'Share safe contact details only.',
         'create.remoteAttendance': 'Allow remote attendance',
+        'create.publicListing': 'List as a public event',
+        'create.publicListingHint': 'Show this event on the community public events page.',
         'create.videoUrlLabel': 'Video link',
         'create.videoUrlPlaceholder': 'https://...',
         'create.maxAttendeesLabel': 'Capacity',
@@ -210,8 +212,13 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
+let mockDisabledFeatures: string[] = [];
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { slug: 'hour-timebank' }, hasFeature: () => true, hasModule: () => true }),
+  useTenant: () => ({
+    tenant: { slug: 'hour-timebank' },
+    hasFeature: (feature: string) => !mockDisabledFeatures.includes(feature),
+    hasModule: () => true,
+  }),
   usePrimaryColor: () => '#6366f1',
 }));
 
@@ -256,6 +263,20 @@ jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: (...args: unknown[]) => mockLaunchImageLibraryAsync(...args),
 }));
 jest.mock('@/components/ui/AppTopBar', () => 'View');
+jest.mock('@/components/ui/Toggle', () => {
+  const { Text } = require('react-native');
+  return function MockToggle({ value, onValueChange, accessibilityLabel }: {
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+    accessibilityLabel?: string;
+  }) {
+    return (
+      <Text accessibilityRole="switch" accessibilityLabel={accessibilityLabel} accessibilityState={{ checked: value }} onPress={() => onValueChange(!value)}>
+        {value ? 'on' : 'off'}
+      </Text>
+    );
+  };
+});
 
 jest.mock('@/components/ui/AppToast', () => {
   // Stable references so screens that put `show` in a useCallback/useEffect
@@ -361,6 +382,7 @@ describe('NewEventRoute', () => {
   beforeEach(() => {
     showToast.mockClear();
     mockSearchParams = {};
+    mockDisabledFeatures = [];
     mockCreateEvent.mockClear();
     mockCreateRecurringEvent.mockClear();
     mockCommitEventRecurrenceRevision.mockReset();
@@ -488,6 +510,70 @@ describe('NewEventRoute', () => {
       }));
     });
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: '/(modals)/event-detail', params: { id: '6' } }));
+  });
+
+  it('hides the public listing switch and sends nothing when the community has no public events', async () => {
+    mockDisabledFeatures = ['public_events'];
+    const { getByPlaceholderText, getByText, queryByLabelText, queryByText } = render(<NewEventRoute />);
+
+    expect(queryByLabelText('List as a public event')).toBeNull();
+    expect(queryByText('List as a public event')).toBeNull();
+
+    fireEvent.changeText(getByPlaceholderText('What is happening?'), 'Repair workshop');
+    fireEvent.changeText(getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend.');
+    fireEvent.changeText(getByPlaceholderText('Venue, town, or meeting place'), 'Community hall');
+    fireEvent.press(getByText('Create event'));
+
+    await waitFor(() => expect(mockCreateEvent).toHaveBeenCalledTimes(1));
+    expect(mockCreateEvent.mock.calls[0][0]).not.toHaveProperty('is_public_listing');
+  });
+
+  it('shows the public listing switch off by default and sends it when switched on', async () => {
+    const { getByLabelText, getByPlaceholderText, getByText } = render(<NewEventRoute />);
+
+    const toggle = getByLabelText('List as a public event');
+    expect(toggle.props.accessibilityState).toEqual({ checked: false });
+    expect(getByText('Show this event on the community public events page.')).toBeTruthy();
+
+    fireEvent.changeText(getByPlaceholderText('What is happening?'), 'Repair workshop');
+    fireEvent.changeText(getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend.');
+    fireEvent.changeText(getByPlaceholderText('Venue, town, or meeting place'), 'Community hall');
+    fireEvent.press(toggle);
+    expect(getByLabelText('List as a public event').props.accessibilityState).toEqual({ checked: true });
+    fireEvent.press(getByText('Create event'));
+
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(expect.objectContaining({ is_public_listing: true }));
+    });
+  });
+
+  it('sends an untouched public listing switch as false', async () => {
+    const { getByPlaceholderText, getByText } = render(<NewEventRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('What is happening?'), 'Repair workshop');
+    fireEvent.changeText(getByPlaceholderText('Tell members what to expect.'), 'Bring something small to mend.');
+    fireEvent.changeText(getByPlaceholderText('Venue, town, or meeting place'), 'Community hall');
+    fireEvent.press(getByText('Create event'));
+
+    await waitFor(() => {
+      expect(mockCreateEvent).toHaveBeenCalledWith(expect.objectContaining({ is_public_listing: false }));
+    });
+  });
+
+  it('prefills the public listing switch from the loaded event when editing', async () => {
+    mockSearchParams = { id: '7' };
+    mockGetEvent.mockResolvedValueOnce({ data: { ...canonicalEditEvent, is_public_listing: true } });
+
+    const { getByDisplayValue, getByLabelText, getByText } = render(<NewEventRoute />);
+
+    await waitFor(() => expect(getByDisplayValue('Existing workshop')).toBeTruthy());
+    expect(getByLabelText('List as a public event').props.accessibilityState).toEqual({ checked: true });
+    fireEvent.changeText(getByDisplayValue('Existing workshop'), 'Updated workshop');
+    fireEvent.press(getByText('Update event'));
+
+    await waitFor(() => {
+      expect(mockUpdateEvent).toHaveBeenCalledWith(7, expect.objectContaining({ is_public_listing: true }));
+    });
   });
 
   it('creates canonical venue-accessibility facts', async () => {

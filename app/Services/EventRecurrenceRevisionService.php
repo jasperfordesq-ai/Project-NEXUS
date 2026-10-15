@@ -50,6 +50,7 @@ final class EventRecurrenceRevisionService
         'online_link',
         'video_url',
         'allow_remote_attendance',
+        'is_public_listing',
         'category_id',
         'all_day',
         'accessibility_step_free',
@@ -1417,6 +1418,11 @@ final class EventRecurrenceRevisionService
         if ($rawPatch === [] || count($rawPatch) > 32) {
             throw new EventRecurrenceRevisionException('event_recurrence_revision_patch_invalid');
         }
+        // Same rule as EventService: the public-listing choice is only
+        // accepted while the community advertises events publicly.
+        if (! TenantContext::hasFeature('public_events')) {
+            unset($rawPatch['is_public_listing']);
+        }
 
         $patch = [];
         foreach ($rawPatch as $field => $value) {
@@ -1430,7 +1436,7 @@ final class EventRecurrenceRevisionService
                 'longitude' => $this->nullableCoordinate($value, -180.0, 180.0),
                 'max_attendees' => $this->nullablePositiveInt($value),
                 'category_id' => $this->nullablePositiveInt($value),
-                'is_online', 'allow_remote_attendance', 'all_day' => $this->normalizeBoolean($value),
+                'is_online', 'allow_remote_attendance', 'is_public_listing', 'all_day' => $this->normalizeBoolean($value),
                 'accessibility_step_free',
                 'accessibility_toilet',
                 'accessibility_hearing_loop',

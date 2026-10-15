@@ -77,6 +77,37 @@ function checked(value) {
   return value === true || ['1', 'true', 'on', 'yes'].includes(String(value || '').toLowerCase());
 }
 
+/**
+ * "List as a public event" (owner decision 2026-10-15). When a community has
+ * `public_events` on, an event reaches the signed-out public events pages ONLY
+ * if its organiser ticked this box. The choice is offered — and sent — only when
+ * the tenant has BOTH `events` and `public_events` on, the same gate the
+ * What's On page uses. With no tenant context the answer is "off", because
+ * `public_events` defaults to false.
+ */
+function publicListingEnabled(req) {
+  const tenant = req.accessibleRouting?.tenant;
+  const flags = tenant && typeof tenant === 'object' ? tenant : {};
+  return flagEnabled(flags, 'events', 'features', true)
+    && flagEnabled(flags, 'public_events', 'features', true);
+}
+
+/**
+ * Normalise the submitted choice BEFORE any handler reads req.body, so
+ * eventScopedPayload, recurringRevisionPatch and the stored/re-rendered form all
+ * see the same thing: an explicit '1' / '0' when the feature is on (an unticked
+ * box must clear the listing, not be silently dropped), and no key at all when it
+ * is off — so nothing is sent to the API.
+ */
+function applyPublicListingChoice(req) {
+  if (!req.body || typeof req.body !== 'object') return;
+  if (publicListingEnabled(req)) {
+    req.body.is_public_listing = checked(req.body.is_public_listing) ? '1' : '0';
+  } else {
+    delete req.body.is_public_listing;
+  }
+}
+
 function moderationPage(value) {
   if (value === undefined) return 1;
   const text = String(value || '');
@@ -346,7 +377,8 @@ const RECURRING_FORM_FIELDS = [
   'accessibility_step_free', 'accessibility_toilet', 'accessibility_hearing_loop',
   'accessibility_quiet_space', 'accessibility_seating', 'accessibility_parking',
   'accessibility_parking_details', 'accessibility_transit_details',
-  'accessibility_assistance_contact', 'accessibility_notes', 'max_attendees', 'scope'
+  'accessibility_assistance_contact', 'accessibility_notes', 'max_attendees', 'scope',
+  'is_public_listing'
 ];
 
 function recurringFormValues(body = {}) {
@@ -1222,12 +1254,14 @@ router.get('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
       onlineLink: valueOr('online_link', trimmed(event.online_link ?? event.onlineLink)),
       allowRemoteAttendance: checked(valueOr('allow_remote_attendance', event.allow_remote_attendance ?? event.allowRemoteAttendance)),
       videoUrl: valueOr('video_url', trimmed(event.video_url ?? event.videoUrl)),
+      isPublicListing: checked(valueOr('is_public_listing', event.is_public_listing ?? event.isPublicListing)),
       maxAttendees: positiveInteger(valueOr('max_attendees', event.max_attendees ?? event.maxAttendees)),
       // 🔴 Was ten flat `event.accessibility_*` reads, which the v2 contract does not
       // send — so every answer rendered "unknown" and saving wiped the real values.
       accessibility: venueAccessibilityView(event, valueOr)
     },
     categories,
+    publicListingEnabled: publicListingEnabled(req),
     supportsEffectiveRevisions: supportsEffectiveRevisions(capabilitiesResult),
     selectedScope: trimmed(values.scope) === 'all' ? 'all' : 'single',
     errors,
@@ -1332,6 +1366,10 @@ function eventScopedPayload(body) {
   ]) {
     if (Object.prototype.hasOwnProperty.call(body, field)) payload[field] = trimmed(body[field]) || null;
   }
+  // Present only when applyPublicListingChoice found the tenant's public_events on.
+  if (Object.prototype.hasOwnProperty.call(body, 'is_public_listing')) {
+    payload.is_public_listing = checked(body.is_public_listing);
+  }
   if (Object.prototype.hasOwnProperty.call(body, 'timezone')) payload.timezone = trimmed(body.timezone) || 'UTC';
   if (Object.prototype.hasOwnProperty.call(body, 'all_day')) payload.all_day = checked(body.all_day);
   return payload;
@@ -1342,8 +1380,8 @@ const RECURRING_REVISION_FIELDS = [
   'accessibility_parking', 'accessibility_parking_details', 'accessibility_quiet_space',
   'accessibility_seating', 'accessibility_step_free', 'accessibility_toilet',
   'accessibility_transit_details', 'allow_remote_attendance', 'category_id', 'description',
-  'is_online', 'latitude', 'local_end_time', 'local_start_time', 'location', 'longitude',
-  'max_attendees', 'online_link', 'title', 'video_url'
+  'is_online', 'is_public_listing', 'latitude', 'local_end_time', 'local_start_time', 'location',
+  'longitude', 'max_attendees', 'online_link', 'title', 'video_url'
 ];
 
 function supportsEffectiveRevisions(result) {
@@ -1354,7 +1392,10 @@ function recurringRevisionPatch(body, event) {
   const submitted = eventScopedPayload(body);
   const patch = {};
   const nullableIntegerFields = ['category_id', 'max_attendees'];
-  const booleanFields = ['is_online', 'allow_remote_attendance'];
+  // is_public_listing is only in body when the tenant has public_events on
+  // (applyPublicListingChoice), so the hasOwnProperty guard below keeps it out of
+  // the patch otherwise.
+  const booleanFields = ['is_online', 'allow_remote_attendance', 'is_public_listing'];
   const nullableTextFields = [
     'location', 'online_link', 'video_url', 'accessibility_parking_details',
     'accessibility_transit_details', 'accessibility_assistance_contact', 'accessibility_notes'
@@ -3208,6 +3249,7 @@ router.post('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
   // use so eventScopedPayload, recurringRevisionPatch and storeRecurringForm all read it.
   req.body.start_time = readDateTime(req.body, 'start_time').value || '';
   req.body.end_time = readDateTime(req.body, 'end_time').value || '';
+  applyPublicListingChoice(req);
   const scope = trimmed(req.body.scope) === 'all' ? 'all' : 'single';
   if (scope === 'all') {
     const token = tokenFrom(req);
@@ -3454,6 +3496,7 @@ router.get('/new', requireAuth, asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha.events.create_title'),
     categories,
     setupErrorMessage,
+    publicListingEnabled: publicListingEnabled(req),
     // The create handler has always sent group_id to the API; until now nothing
     // could set it, so an event could never be attached to a group. The group
     // page now links here with ?group_id=N and the form carries it through.
@@ -3471,6 +3514,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
   // read the recombined value.
   req.body.start_time = readDateTime(req.body, 'start_time').value || '';
   req.body.end_time = readDateTime(req.body, 'end_time').value || '';
+  applyPublicListingChoice(req);
   const {
     title,
     description,
@@ -3495,6 +3539,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     end_time_parts: splitDateTime(dateTimeLocal(end_time)),
     is_online: checked(req.body.is_online),
     allow_remote_attendance: checked(req.body.allow_remote_attendance),
+    is_public_listing: checked(req.body.is_public_listing),
     is_recurring: checked(is_recurring)
   };
 
@@ -3531,6 +3576,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
       errors: errorList,
       values,
       categories,
+      publicListingEnabled: publicListingEnabled(req),
       // Keep the group across a failed submit, or correcting one field would
       // silently detach the event from the group the member started in.
       groupId: positiveInteger(req.body.group_id) || null,
@@ -3731,6 +3777,8 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
     // event and never correct it afterwards — the information a disabled member needs
     // in order to decide whether they can attend.
     accessibility: venueAccessibilityView(event),
+    publicListingEnabled: publicListingEnabled(req),
+    isPublicListing: checked(event.is_public_listing ?? event.isPublicListing),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
@@ -3743,6 +3791,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
   // destructure so values/validation/eventScopedPayload all read the recombined value.
   req.body.start_time = readDateTime(req.body, 'start_time').value || '';
   req.body.end_time = readDateTime(req.body, 'end_time').value || '';
+  applyPublicListingChoice(req);
   const { title, description, start_time, end_time } = req.body;
   const image = uploadedFile(req, 'image');
   const values = {
@@ -3799,6 +3848,8 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
       accessibility: venueAccessibilityView({}, (field, fallback) => (
         Object.prototype.hasOwnProperty.call(req.body || {}, field) ? trimmed(req.body[field]) : fallback
       )),
+      publicListingEnabled: publicListingEnabled(req),
+      isPublicListing: checked(req.body.is_public_listing),
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   };

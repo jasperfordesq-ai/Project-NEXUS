@@ -275,6 +275,8 @@
     "cancel": "Anuluj",
     "remote_attendance_toggle": "Zezwalaj na zdalną obsługę",
     "remote_attendance_desc": "Pozwól uczestnikom dołączać za pośrednictwem wideokonferencji",
+    "public_listing_toggle": "Pokaż jako wydarzenie publiczne",
+    "public_listing_desc": "Wyświetla to wydarzenie na publicznej stronie wydarzeń społeczności, gdzie mogą je zobaczyć osoby niezalogowane. Pozostaw wyłączone, aby było widoczne tylko dla członków.",
     "remote_attendance_toggle_aria": "Przełącz zdalną obecność",
     "video_url_label": "Link do spotkania",
     "video_url_placeholder": "https://zoom.us/j/... or https://meet.google.com/...",

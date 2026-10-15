@@ -284,6 +284,8 @@
     "cancel": "Cealaigh",
     "remote_attendance_toggle": "Ceadaigh freastal cianda",
     "remote_attendance_desc": "Lig do fhreastalaithe páirt a ghlacadh trí fhíschomhdháil",
+    "public_listing_toggle": "Liostaigh mar imeacht poiblí",
+    "public_listing_desc": "Taispeáin an t-imeacht seo ar leathanach imeachtaí poiblí an phobail, áit ar féidir le daoine nach bhfuil sínithe isteach é a fheiceáil. Fág é seo múchta chun é a choinneáil do bhaill amháin.",
     "remote_attendance_toggle_aria": "Scoránaigh freastal cianda",
     "video_url_label": "Nasc cruinnithe",
     "video_url_placeholder": "https://zoom.us/j/... nó https://meet.google.com/...",

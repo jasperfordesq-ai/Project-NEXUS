@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Motivo:',
             'allow_remote_label' => 'Permitir asistencia remota',
             'allow_remote_hint' => 'Los participantes pueden unirse en línea además de en persona.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Publicar como evento público',
+            'public_listing_hint' => 'Muestra este evento en la página de eventos públicos de la comunidad, donde pueden verlo personas que no han iniciado sesión. Deje la casilla sin marcar para que solo lo vean los miembros.',
             'video_url_label' => 'Enlace de vídeo o reunión (opcional)',
             'video_url_hint' => 'Pegue la URL de su videollamada o sala de reuniones. Solo se mostrará a los asistentes.',
             'video_url_summary_label' => 'Unirse de forma remota',

@@ -28,7 +28,7 @@ abstract class EventRecurrenceRevisionFormRequest extends FormRequest
         return [
             'patch' => [
                 'required',
-                'array:title,description,location,latitude,longitude,max_attendees,is_online,online_link,video_url,allow_remote_attendance,category_id,all_day,accessibility_step_free,accessibility_toilet,accessibility_hearing_loop,accessibility_quiet_space,accessibility_seating,accessibility_parking,accessibility_parking_details,accessibility_transit_details,accessibility_assistance_contact,accessibility_notes,timezone,local_start_time,local_end_time,recurrence_rrule,recurrence_exdates,recurrence_rdates,group_id,series_id,poll_ids,image_url,cover_image,federated_visibility',
+                'array:title,description,location,latitude,longitude,max_attendees,is_online,online_link,video_url,allow_remote_attendance,category_id,all_day,accessibility_step_free,accessibility_toilet,accessibility_hearing_loop,accessibility_quiet_space,accessibility_seating,accessibility_parking,accessibility_parking_details,accessibility_transit_details,accessibility_assistance_contact,accessibility_notes,timezone,local_start_time,local_end_time,recurrence_rrule,recurrence_exdates,recurrence_rdates,group_id,series_id,poll_ids,image_url,cover_image,federated_visibility,is_public_listing',
                 'min:1',
                 'max:32',
             ],
@@ -42,6 +42,7 @@ abstract class EventRecurrenceRevisionFormRequest extends FormRequest
             'patch.online_link' => ['sometimes', 'nullable', 'url:http,https', 'max:512'],
             'patch.video_url' => ['sometimes', 'nullable', 'url:http,https', 'max:512'],
             'patch.allow_remote_attendance' => ['sometimes', 'boolean'],
+            'patch.is_public_listing' => ['sometimes', 'boolean'],
             'patch.category_id' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'patch.all_day' => ['sometimes', 'boolean'],
             'patch.accessibility_step_free' => ['sometimes', 'nullable', 'boolean'],

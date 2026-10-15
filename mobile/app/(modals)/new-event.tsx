@@ -36,7 +36,7 @@ import {
   type EventRecurrenceRevisionPatch,
   type EventRecurrenceRevisionPreview,
 } from '@/lib/api/events';
-import { usePrimaryColor } from '@/lib/hooks/useTenant';
+import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { resolveImageUrl } from '@/lib/utils/resolveImageUrl';
 import { withAlpha } from '@/lib/utils/color';
@@ -58,6 +58,7 @@ import { useConfirm } from '@/components/ui/useConfirm';
 import EmptyState from '@/components/ui/EmptyState';
 import FormActionFooter from '@/components/ui/FormActionFooter';
 import Input from '@/components/ui/Input';
+import Toggle from '@/components/ui/Toggle';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import SavedImageRecovery from '@/components/ui/SavedImageRecovery';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
@@ -144,6 +145,11 @@ function NewEventScreen() {
   const { t } = useTranslation(['events', 'common']);
   const params = useLocalSearchParams<{ group_id?: string; id?: string; series_id?: string }>();
   const primary = usePrimaryColor();
+  const { hasFeature } = useTenant();
+  // The "List as a public event" choice only means anything when the community runs
+  // public (signed-out) events pages; the server ignores it otherwise, so it is neither
+  // shown nor sent.
+  const publicEventsEnabled = hasFeature('public_events');
   const theme = useTheme();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
@@ -166,6 +172,7 @@ function NewEventScreen() {
   const [videoUrl, setVideoUrl] = useState('');
   const [maxAttendees, setMaxAttendees] = useState('');
   const [allowRemoteAttendance, setAllowRemoteAttendance] = useState(false);
+  const [isPublicListing, setIsPublicListing] = useState(false);
   const [federatedVisibility, setFederatedVisibility] = useState<EventFederatedVisibilityMutation | undefined>(
     isEditing ? undefined : 'none',
   );
@@ -371,6 +378,7 @@ function NewEventScreen() {
     setVideoUrl(event.online_access.video_url ?? event.online_access.join_url ?? '');
     setMaxAttendees(event.relationship.capacity.limit !== null ? String(event.relationship.capacity.limit) : '');
     setAllowRemoteAttendance(event.location.mode !== 'in_person');
+    setIsPublicListing(event.is_public_listing === true);
     setFederatedVisibility(
       event.federated_visibility === 'bookable'
         ? 'joinable'
@@ -398,7 +406,7 @@ function NewEventScreen() {
       title, description, timezone, allDay, startTime, endTime, category,
       location, latitude, longitude, videoUrl, maxAttendees,
       allowRemoteAttendance, federatedVisibility, seriesId, selectedImageUri,
-      venueAccessibility,
+      venueAccessibility, publicEventsEnabled ? isPublicListing : null,
     ]);
   }
 
@@ -590,6 +598,7 @@ function NewEventScreen() {
           notes: venueAccessibility.notes.trim() || null,
         },
       };
+      if (publicEventsEnabled) payload.is_public_listing = isPublicListing;
 
       if (!isEditing && isRecurring) {
         payload.recurrence_frequency = recurrenceFrequency === 'biweekly' ? 'weekly' : recurrenceFrequency;
@@ -624,6 +633,7 @@ function NewEventScreen() {
         accessibility_assistance_contact: venueAccessibility.assistance_contact.trim() || null,
         accessibility_notes: venueAccessibility.notes.trim() || null,
       };
+      if (publicEventsEnabled) effectivePatch.is_public_listing = isPublicListing;
       const originalSchedule = originalScheduleRef.current;
       const startClock = allDay ? null : startTime.slice(11, 16);
       const endClock = allDay || !endTime ? null : endTime.slice(11, 16);
@@ -1059,6 +1069,15 @@ function NewEventScreen() {
             <ToggleChip label={t('create.remoteAttendance')} selected={allowRemoteAttendance} onPress={() => setAllowRemoteAttendance((value) => !value)} primary={primary} />
             {allowRemoteAttendance ? (
               <FormField label={t('create.videoUrlLabel')} value={videoUrl} onChangeText={setVideoUrl} placeholder={t('create.videoUrlPlaceholder')} theme={theme} />
+            ) : null}
+            {publicEventsEnabled ? (
+              <View className="gap-1">
+                <View className="min-h-11 flex-row items-center justify-between gap-3">
+                  <Text className="flex-1 text-sm font-semibold" style={{ color: theme.text }}>{t('create.publicListing')}</Text>
+                  <Toggle value={isPublicListing} onValueChange={setIsPublicListing} accessibilityLabel={t('create.publicListing')} />
+                </View>
+                <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>{t('create.publicListingHint')}</Text>
+              </View>
             ) : null}
             <FormField label={t('create.maxAttendeesLabel')} value={maxAttendees} onChangeText={setMaxAttendees} placeholder={t('create.maxAttendeesPlaceholder')} theme={theme} keyboardType="number-pad" />
 

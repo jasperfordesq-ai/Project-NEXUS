@@ -98,6 +98,8 @@
     "venueAccessibilityNotesPlaceholder": "Aon rud eile ba chóir do bhaill a bheith ar eolas acu",
     "venueAccessibilityPrivacy": "Ná foilsigh ach sonraí teagmhála atá sábháilte le roinnt le lucht féachana incháilithe an imeachta.",
     "remoteAttendance": "Ceadaigh cianfhreastal",
+    "publicListing": "Liostaigh mar imeacht poiblí",
+    "publicListingHint": "Taispeáin an t-imeacht seo ar leathanach imeachtaí poiblí an phobail, áit ar féidir le daoine nach bhfuil sínithe isteach é a fheiceáil. Fág é seo múchta chun é a choinneáil do bhaill amháin.",
     "videoUrlLabel": "Nasc físe",
     "videoUrlPlaceholder": " https://...",
     "maxAttendeesLabel": "Acmhainn",

@@ -257,6 +257,8 @@
     "cancel": "キャンセル",
     "remote_attendance_toggle": "リモート出席を許可する",
     "remote_attendance_desc": "出席者がビデオ会議を通じて参加できるようにする",
+    "public_listing_toggle": "公開イベントとして掲載",
+    "public_listing_desc": "このイベントをコミュニティの公開イベントページに表示し、ログインしていない人も見られるようにします。オフのままにすると、メンバーだけが見られます。",
     "remote_attendance_toggle_aria": "リモート出席の切り替え",
     "video_url_label": "ミーティングリンク",
     "video_url_placeholder": "https://zoom.us/j/... or https://meet.google.com/...",

@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Cúis:',
             'allow_remote_label' => 'Ceadaigh freastal cianda',
             'allow_remote_hint' => 'Is féidir le rannpháirtithe páirt a ghlacadh ar líne chomh maith le bheith i láthair go pearsanta.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Liostaigh mar imeacht poiblí',
+            'public_listing_hint' => 'Taispeáin an t-imeacht seo ar leathanach imeachtaí poiblí an phobail, áit ar féidir le daoine nach bhfuil sínithe isteach é a fheiceáil. Fág an bosca seo gan tic chun é a choinneáil do bhaill amháin.',
             'video_url_label' => 'Nasc físeáin nó cruinnithe (roghnach)',
             'video_url_hint' => 'Greamaigh URL do ghlao físeáin nó seomra cruinnithe. Ní thaispeántar ach d\'fhreastalaithe é.',
             'video_url_summary_label' => 'Bí páirteach go cianda',

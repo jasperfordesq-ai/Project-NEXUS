@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Motif :',
             'allow_remote_label' => 'Autoriser la participation à distance',
             'allow_remote_hint' => 'Les participants peuvent rejoindre en ligne ou en personne.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Publier comme événement public',
+            'public_listing_hint' => 'Affiche cet événement sur la page des événements publics de la communauté, où les personnes non connectées peuvent le voir. Laissez la case décochée pour le réserver aux membres.',
             'video_url_label' => 'Lien vidéo ou réunion (facultatif)',
             'video_url_hint' => 'Collez l\'URL de votre appel vidéo ou salle de réunion. Affiché uniquement aux participants.',
             'video_url_summary_label' => 'Rejoindre à distance',

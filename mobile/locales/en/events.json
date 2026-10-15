@@ -98,6 +98,8 @@
     "venueAccessibilityNotesPlaceholder": "Anything else members should know",
     "venueAccessibilityPrivacy": "Only publish contact details that are safe to share with eligible event viewers.",
     "remoteAttendance": "Allow remote attendance",
+    "publicListing": "List as a public event",
+    "publicListingHint": "Show this event on the community's public events page, where people who aren't signed in can see it. Leave this off to keep it for members only.",
     "videoUrlLabel": "Video link",
     "videoUrlPlaceholder": "https://...",
     "maxAttendeesLabel": "Capacity",

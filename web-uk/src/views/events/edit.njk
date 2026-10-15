@@ -16,6 +16,7 @@
    an existing one-off event — while CHANGELOG.md claimed the shared block meant the
    forms "cannot drift apart again". #}
 {% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
+{% from "events/_public-listing-field.njk" import publicListingField %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -219,6 +220,8 @@
             }
           }) }}
         </fieldset>
+
+        {{ publicListingField(t, publicListingEnabled, isPublicListing) }}
 
         {{ govukButton({
           text: t("events.update_submit"),

@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Powód:',
             'allow_remote_label' => 'Zezwól na udział zdalny',
             'allow_remote_hint' => 'Uczestnicy mogą dołączyć online lub osobiście.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Pokaż jako wydarzenie publiczne',
+            'public_listing_hint' => 'Wyświetla to wydarzenie na publicznej stronie wydarzeń społeczności, gdzie mogą je zobaczyć osoby niezalogowane. Pozostaw pole niezaznaczone, aby było widoczne tylko dla członków.',
             'video_url_label' => 'Link do wideo lub spotkania (opcjonalnie)',
             'video_url_hint' => 'Wklej adres URL wideokonferencji lub pokoju spotkań. Widoczny tylko dla uczestników.',
             'video_url_summary_label' => 'Dołącz zdalnie',

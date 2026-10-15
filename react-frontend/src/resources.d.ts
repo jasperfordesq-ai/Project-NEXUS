@@ -44211,6 +44211,8 @@ export default interface Resources {
       "max_attendees_placeholder": "Leave empty for unlimited",
       "nav_edit": "Edit Event",
       "nav_new": "New Event",
+      "public_listing_desc": "Show this event on the community's public events page, where people who aren't signed in can see it. Leave this off to keep it for members only.",
+      "public_listing_toggle": "List as a public event",
       "recurrence_count": "Number of occurrences",
       "recurrence_count_hint": "Between 2 and {{max}} occurrences",
       "recurrence_count_placeholder": "10",

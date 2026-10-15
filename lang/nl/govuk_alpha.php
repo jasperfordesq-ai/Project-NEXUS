@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Reden:',
             'allow_remote_label' => 'Online deelname toestaan',
             'allow_remote_hint' => 'Deelnemers kunnen ook online deelnemen naast persoonlijke aanwezigheid.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Als openbaar evenement tonen',
+            'public_listing_hint' => 'Toon dit evenement op de openbare evenementenpagina van de gemeenschap, waar mensen die niet zijn ingelogd het kunnen zien. Laat dit vakje leeg om het alleen voor leden te houden.',
             'video_url_label' => 'Video- of vergaderlink (optioneel)',
             'video_url_hint' => 'Plak de URL van uw videogesprek of vergaderruimte. Alleen zichtbaar voor deelnemers.',
             'video_url_summary_label' => 'Op afstand deelnemen',

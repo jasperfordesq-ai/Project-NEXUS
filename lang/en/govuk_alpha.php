@@ -1609,6 +1609,9 @@ return [
             // Remote attendance conditional-reveal
             'allow_remote_label' => 'Allow remote attendance',
             'allow_remote_hint' => 'Participants can join online as well as in person.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'List as a public event',
+            'public_listing_hint' => 'Show this event on the community\'s public events page, where people who aren\'t signed in can see it. Leave this unticked to keep it for members only.',
             'video_url_label' => 'Video or meeting link (optional)',
             'video_url_hint' => 'Paste the URL for your video call or meeting room. Only shown to attendees.',
             'video_url_summary_label' => 'Join remotely',

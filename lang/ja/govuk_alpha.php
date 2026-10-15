@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => '理由：',
             'allow_remote_label' => 'リモート参加を許可する',
             'allow_remote_hint' => '参加者はオンラインでも対面でも参加できます。',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => '公開イベントとして掲載',
+            'public_listing_hint' => 'このイベントをコミュニティの公開イベントページに表示し、ログインしていない人も見られるようにします。チェックを入れないままにすると、メンバーだけが見られます。',
             'video_url_label' => 'ビデオまたは会議のリンク（任意）',
             'video_url_hint' => 'ビデオ通話または会議室のURLを貼り付けてください。参加者にのみ表示されます。',
             'video_url_summary_label' => 'リモートで参加する',

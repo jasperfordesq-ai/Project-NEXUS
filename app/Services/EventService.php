@@ -89,6 +89,7 @@ class EventService
         'image_url',
         'cover_image',
         'federated_visibility',
+        'is_public_listing',
         'accessibility_step_free',
         'accessibility_toilet',
         'accessibility_hearing_loop',
@@ -290,6 +291,9 @@ class EventService
                 $published->whereNull('events.publication_status')
                     ->orWhere('events.publication_status', EventPublicationState::Published->value);
             });
+            // Only events whose organiser chose "List as a public event".
+            // Turning the community feature on does not publish anything else.
+            $query->where('events.is_public_listing', 1);
         } elseif (! $isTenantAdmin) {
             // Members see published events plus their OWN drafts/pending.
             // Without this, the list rendered full cards (title, image,
@@ -937,7 +941,8 @@ class EventService
                 'user:id,first_name,last_name,organization_name,profile_type,avatar_url',
                 'category:id,name,slug,color,type',
             ])
-            ->whereKey($id);
+            ->whereKey($id)
+            ->where('events.is_public_listing', 1);
         self::wherePublishedPublication($query, 'events');
 
         self::applyDiscoveryVisibility($query, null, $tenantId, false);
@@ -1125,6 +1130,7 @@ class EventService
                 'cover_image'          => $normalized['cover_image'],
                 'series_id'            => self::resolveSeriesId($normalized['series_id'], $userId),
                 'federated_visibility' => $normalized['federated_visibility'],
+                'is_public_listing'    => $normalized['is_public_listing'],
                 'accessibility_step_free' => $normalized['accessibility_step_free'],
                 'accessibility_toilet' => $normalized['accessibility_toilet'],
                 'accessibility_hearing_loop' => $normalized['accessibility_hearing_loop'],
@@ -1629,6 +1635,14 @@ class EventService
                     ? $input['federated_visibility']
                     : ($event !== null ? $existing($event, 'federated_visibility') : 'none'))
                 : 'none',
+            // The organiser's choice is only accepted while the community
+            // advertises events publicly. While the feature is off the stored
+            // value is kept, not wiped, so switching the feature off and on
+            // again does not silently un-list what organisers opted in.
+            'is_public_listing' => TenantContext::hasFeature('public_events')
+                && array_key_exists('is_public_listing', $input)
+                ? $input['is_public_listing']
+                : ($event !== null ? ($existing($event, 'is_public_listing') ?? false) : false),
             'timezone' => $timezone,
             'all_day' => array_key_exists('all_day', $input)
                 ? $input['all_day']
@@ -1654,6 +1668,7 @@ class EventService
             ],
             'is_online' => ['required', 'boolean'],
             'allow_remote_attendance' => ['required', 'boolean'],
+            'is_public_listing' => ['required', 'boolean'],
             'all_day' => ['required', 'boolean'],
             'timezone' => [
                 'required', 'string', 'max:64',
@@ -1778,14 +1793,14 @@ class EventService
             'title', 'description', 'location', 'latitude', 'longitude',
             'category_id', 'group_id', 'series_id', 'max_attendees',
             'is_online', 'allow_remote_attendance', 'online_link', 'video_url',
-            'image_url', 'cover_image', 'federated_visibility',
+            'image_url', 'cover_image', 'federated_visibility', 'is_public_listing',
         ] as $field) {
             if ($isCreate || array_key_exists($field, $input)) {
                 $normalized[$field] = $effective[$field];
             }
         }
 
-        foreach (['is_online', 'allow_remote_attendance'] as $field) {
+        foreach (['is_online', 'allow_remote_attendance', 'is_public_listing'] as $field) {
             if (array_key_exists($field, $normalized)) {
                 $normalized[$field] = (bool) $normalized[$field];
             }

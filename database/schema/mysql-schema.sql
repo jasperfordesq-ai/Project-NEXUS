@@ -8875,6 +8875,7 @@ CREATE TABLE `events` (
   `series_id` int(11) DEFAULT NULL COMMENT 'Links event to a series',
   `federation_version` bigint(20) unsigned NOT NULL DEFAULT 1 COMMENT 'Monotonic revision for every federation-visible mutation',
   `checkin_manifest_version` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Monotonic version of the revocable offline check-in projection',
+  `is_public_listing` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Organiser opted this event into the public events pages',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_events_tenant_id` (`tenant_id`,`id`),
   UNIQUE KEY `uq_events_tenant_occurrence` (`tenant_id`,`occurrence_key`),
@@ -22056,7 +22057,8 @@ INSERT INTO `laravel_migrations` VALUES
 (485,'2026_10_11_180000_let_withdrawn_event_guests_be_re_added',155),
 (486,'2026_10_12_120000_add_target_tenant_id_to_super_admin_audit_log',156),
 (487,'2026_10_12_180000_create_tenant_manager_delegates',157),
-(488,'2026_10_09_101000_create_registration_staff_email_deliveries',158);
+(488,'2026_10_09_101000_create_registration_staff_email_deliveries',158),
+(489,'2026_10_15_100000_add_is_public_listing_to_events',159);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

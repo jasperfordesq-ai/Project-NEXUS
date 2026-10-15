@@ -257,6 +257,8 @@
     "cancel": "Cancel",
     "remote_attendance_toggle": "Allow remote attendance",
     "remote_attendance_desc": "Let attendees join via video conferencing",
+    "public_listing_toggle": "List as a public event",
+    "public_listing_desc": "Show this event on the community's public events page, where people who aren't signed in can see it. Leave this off to keep it for members only.",
     "remote_attendance_toggle_aria": "Toggle remote attendance",
     "video_url_label": "Meeting Link",
     "video_url_placeholder": "https://zoom.us/j/... or https://meet.google.com/...",

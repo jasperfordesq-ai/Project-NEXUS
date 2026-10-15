@@ -9,6 +9,7 @@ namespace Tests\Laravel\Feature\Events;
 use App\Core\TenantContext;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\EventService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
@@ -78,6 +79,9 @@ class PublicEventsTest extends TestCase
             'start_time' => now()->addDays(7),
             'end_time' => now()->addDays(7)->addHours(3),
             'max_attendees' => 40,
+            // Opted in by default so the audience tests below isolate the rule
+            // they name; the opt-in itself is tested on its own further down.
+            'is_public_listing' => true,
         ], $overrides));
         $event->tenant_id = $this->testTenantId;
         $event->status = 'active';
@@ -459,5 +463,128 @@ class PublicEventsTest extends TestCase
         $this->assertSame('online', $rows->firstWhere('id', $onlineOnly->id)['attendance_mode']);
         $this->assertSame('in_person', $rows->firstWhere('id', $inPerson->id)['attendance_mode']);
         $this->assertFalse($rows->firstWhere('id', $inPerson->id)['is_online']);
+    }
+
+    // ── Organiser opt-in (owner, 2026-10-15) ────────────────────────────
+
+    public function test_an_event_its_organiser_did_not_opt_in_is_not_public(): void
+    {
+        $organiser = $this->organiser();
+        $optedIn = $this->event($organiser, ['title' => 'Listed publicly']);
+        $membersOnly = $this->event($organiser, ['title' => 'Members only', 'is_public_listing' => false]);
+
+        $this->assertFalse((bool) $membersOnly->fresh()->getRawOriginal('is_public_listing'));
+
+        $ids = array_column($this->apiGet('/v2/public/events')->json('data') ?? [], 'id');
+
+        $this->assertContains((int) $optedIn->id, $ids, 'Positive control: the opted-in event is listed.');
+        $this->assertNotContains((int) $membersOnly->id, $ids);
+        $this->assertSame(
+            404,
+            $this->apiGet('/v2/public/events/' . $membersOnly->id)->getStatusCode(),
+            'A members-only event must not be openable by guessing its id.'
+        );
+    }
+
+    public function test_an_event_created_without_the_choice_is_members_only(): void
+    {
+        $organiser = $this->organiser();
+
+        $event = EventService::create((int) $organiser->id, $this->writerPayload());
+
+        $this->assertFalse((bool) $event->fresh()->getRawOriginal('is_public_listing'));
+    }
+
+    public function test_the_organiser_can_opt_in_while_the_community_has_public_events(): void
+    {
+        $organiser = $this->organiser();
+
+        $event = EventService::create((int) $organiser->id, $this->writerPayload(['is_public_listing' => true]));
+
+        $this->assertTrue((bool) $event->fresh()->getRawOriginal('is_public_listing'));
+
+        $this->assertTrue(EventService::update((int) $event->id, (int) $organiser->id, ['is_public_listing' => false]));
+        $this->assertFalse((bool) $event->fresh()->getRawOriginal('is_public_listing'));
+    }
+
+    public function test_the_choice_is_ignored_while_the_community_has_public_events_off(): void
+    {
+        $organiser = $this->organiser();
+        $this->setPublicEventsFeature(false);
+
+        $event = EventService::create((int) $organiser->id, $this->writerPayload(['is_public_listing' => true]));
+
+        $this->assertFalse(
+            (bool) $event->fresh()->getRawOriginal('is_public_listing'),
+            'With the feature off the form has no tick box, so the API must not accept one either.'
+        );
+    }
+
+    public function test_switching_the_feature_off_does_not_wipe_an_opt_in(): void
+    {
+        $organiser = $this->organiser();
+        $event = $this->event($organiser);
+        $this->setPublicEventsFeature(false);
+
+        $this->assertTrue(EventService::update((int) $event->id, (int) $organiser->id, [
+            'title' => 'Renamed while the feature is off',
+            'is_public_listing' => false,
+        ]));
+
+        $this->assertTrue((bool) $event->fresh()->getRawOriginal('is_public_listing'));
+    }
+
+    public function test_every_date_of_a_repeating_event_carries_the_choice(): void
+    {
+        $organiser = $this->organiser();
+        \Laravel\Sanctum\Sanctum::actingAs($organiser, ['*']);
+        $start = now()->addDay()->setTime(9, 0);
+
+        $response = $this->apiPost('/v2/events/recurring', [
+            'title' => 'Weekly walk',
+            'description' => 'Every Saturday.',
+            'start_time' => $start->format('Y-m-d H:i:s'),
+            'end_time' => $start->copy()->addHours(2)->format('Y-m-d H:i:s'),
+            'timezone' => 'Europe/Dublin',
+            'recurrence_frequency' => 'weekly',
+            'recurrence_ends_type' => 'after_count',
+            'recurrence_ends_after_count' => 3,
+            'is_public_listing' => true,
+        ])->assertCreated();
+        $rootId = (int) $response->json('data.template.id');
+
+        $dates = DB::table('events')->where('parent_event_id', $rootId)->pluck('is_public_listing');
+
+        $this->assertNotEmpty($dates, 'Positive control: the series produced dates.');
+        foreach ($dates as $flag) {
+            $this->assertSame(1, (int) $flag);
+        }
+    }
+
+    public function test_the_member_payload_reports_the_choice_for_the_edit_form(): void
+    {
+        $organiser = $this->organiser();
+        $event = $this->event($organiser);
+        \Laravel\Sanctum\Sanctum::actingAs($organiser, ['*']);
+
+        $response = $this->apiGet('/v2/events/' . $event->id);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $response->assertJsonPath('data.is_public_listing', true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function writerPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'title' => 'Seed Swap',
+            'description' => 'Bring seeds, take seeds.',
+            'location' => 'Library',
+            'start_time' => now()->addDays(10)->format('Y-m-d H:i:s'),
+            'end_time' => now()->addDays(10)->addHours(2)->format('Y-m-d H:i:s'),
+        ], $overrides);
     }
 }

@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Motivo:',
             'allow_remote_label' => 'Consenti partecipazione da remoto',
             'allow_remote_hint' => 'I partecipanti possono partecipare sia online che di persona.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Pubblica come evento pubblico',
+            'public_listing_hint' => 'Mostra questo evento nella pagina degli eventi pubblici della comunità, dove possono vederlo anche le persone che non hanno effettuato l\'accesso. Lascia la casella non selezionata per riservarlo ai soli membri.',
             'video_url_label' => 'Link video o riunione (opzionale)',
             'video_url_hint' => 'Incolla l\'URL per la tua videochiamata o sala riunioni. Visibile solo ai partecipanti.',
             'video_url_summary_label' => 'Partecipa da remoto',

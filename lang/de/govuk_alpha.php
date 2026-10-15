@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'Grund:',
             'allow_remote_label' => 'Fernteilnahme erlauben',
             'allow_remote_hint' => 'Teilnehmer können online sowie vor Ort teilnehmen.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'Als öffentliche Veranstaltung anzeigen',
+            'public_listing_hint' => 'Zeigt diese Veranstaltung auf der öffentlichen Veranstaltungsseite der Gemeinschaft, wo sie auch Personen ohne Anmeldung sehen können. Lassen Sie das Kästchen leer, damit sie nur für Mitglieder sichtbar bleibt.',
             'video_url_label' => 'Video- oder Meeting-Link (optional)',
             'video_url_hint' => 'Fügen Sie die URL für Ihren Videoanruf oder Meetingraum ein. Nur für Teilnehmer sichtbar.',
             'video_url_summary_label' => 'Fernzugang',

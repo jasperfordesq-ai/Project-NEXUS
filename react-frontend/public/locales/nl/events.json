@@ -257,6 +257,8 @@
     "cancel": "Annuleren",
     "remote_attendance_toggle": "Sta aanwezigheid op afstand toe",
     "remote_attendance_desc": "Laat deelnemers deelnemen via videoconferenties",
+    "public_listing_toggle": "Als openbaar evenement tonen",
+    "public_listing_desc": "Toon dit evenement op de openbare evenementenpagina van de gemeenschap, waar mensen die niet zijn ingelogd het kunnen zien. Laat dit uit om het alleen voor leden te houden.",
     "remote_attendance_toggle_aria": "Schakel externe aanwezigheid in",
     "video_url_label": "Ontmoetingslink",
     "video_url_placeholder": "https://zoom.us/j/... or https://meet.google.com/...",

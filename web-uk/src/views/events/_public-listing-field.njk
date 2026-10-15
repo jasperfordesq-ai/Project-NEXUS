@@ -1,0 +1,32 @@
+{#
+  Copyright © 2024–2026 Jasper Ford
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Author: Jasper Ford
+  See NOTICE file for attribution and acknowledgements.
+
+  "List as a public event" — shared by the event CREATE, EDIT and recurring-EDIT
+  forms so the three cannot drift.
+
+  Owner decision 2026-10-15: when a community has the `public_events` feature on,
+  an event appears on the signed-out public events pages ONLY if its organiser
+  ticks this box. It is off by default. The route decides whether to render it
+  (`enabled` = tenant has both `events` and `public_events`); when it is not
+  rendered nothing is sent, and the API ignores the value anyway.
+
+  The hidden "0" makes an unticked box arrive as an explicit "no" rather than a
+  missing field, so un-ticking on edit actually clears the listing.
+#}
+{% macro publicListingField(t, enabled, isChecked) %}
+  {% if enabled %}
+    <div class="govuk-form-group govuk-!-margin-top-7">
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input type="hidden" name="is_public_listing" value="0">
+          <input class="govuk-checkboxes__input" id="is_public_listing" name="is_public_listing" type="checkbox" value="1" aria-describedby="is_public_listing-hint"{% if isChecked %} checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="is_public_listing">{{ t("govuk_alpha.events.polish_events.public_listing_label") }}</label>
+          <div id="is_public_listing-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha.events.polish_events.public_listing_hint") }}</div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}

@@ -99,6 +99,10 @@ final class EventContractMapper
             'cancellation_reason' => $schedule['cancellation_reason'],
             'is_online' => (bool) ($event['is_online'] ?? false),
             'allow_remote_attendance' => (bool) ($event['allow_remote_attendance'] ?? false),
+            // Organiser's opt-in to the community's public events pages. Only
+            // the event's edit form reads it; the public pages filter on it
+            // server-side.
+            'is_public_listing' => (bool) ($event['is_public_listing'] ?? false),
             'online_link' => $onlineAccess['join_url'],
             'online_url' => $onlineAccess['join_url'],
             'video_url' => $onlineAccess['video_url'],

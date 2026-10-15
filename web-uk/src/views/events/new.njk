@@ -10,6 +10,7 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
+{% from "events/_public-listing-field.njk" import publicListingField %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -334,6 +335,8 @@
            drift. `values` carries a rejected submission back so a validation
            error does not wipe the organiser's answers. #}
         {{ venueAccessibilityFields(t, values, characterCountMessages) }}
+
+        {{ publicListingField(t, publicListingEnabled, values and values.is_public_listing) }}
 
         {{ govukButton({
           text: t("actions.create_event"),

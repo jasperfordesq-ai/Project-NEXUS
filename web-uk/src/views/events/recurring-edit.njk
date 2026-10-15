@@ -5,6 +5,7 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
+{% from "events/_public-listing-field.njk" import publicListingField %}
 {% from "_date-input.njk" import nexusDateTimeInput %}
 
 {% block beforeContent %}
@@ -135,6 +136,8 @@
             <input class="govuk-input govuk-input--width-5" id="max_attendees" name="max_attendees" type="number" min="1" step="1" value="{{ event.maxAttendees or '' }}" aria-describedby="max-attendees-hint">
           </div>
         </fieldset>
+
+        {{ publicListingField(t, publicListingEnabled, event.isPublicListing) }}
 
         {% if supportsEffectiveRevisions %}
         <div class="govuk-warning-text govuk-!-margin-top-7">

@@ -293,6 +293,8 @@
     "cancel": "إلغاء",
     "remote_attendance_toggle": "السماح بالحضور عن بعد",
     "remote_attendance_desc": "السماح للحاضرين بالانضمام عبر مؤتمرات الفيديو",
+    "public_listing_toggle": "إدراج كفعالية عامة",
+    "public_listing_desc": "اعرض هذه الفعالية في صفحة الفعاليات العامة للمجتمع، حيث يمكن لمن لم يسجّلوا الدخول رؤيتها. اترك هذا الخيار مغلقًا لإبقائها للأعضاء فقط.",
     "remote_attendance_toggle_aria": "تبديل الحضور عن بعد",
     "video_url_label": "رابط اللقاء",
     "video_url_placeholder": "https://zoom.us/j/... or https://meet.google.com/...",

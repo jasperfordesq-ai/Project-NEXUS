@@ -274,6 +274,8 @@ export const eventSchema = z.object({
   distance_km: z.number().nonnegative().optional(),
   /** Present only when the event pays a treasury attendance reward. */
   attendance_credit_amount: z.number().positive().optional(),
+  /** Organiser opted this event into the community's public events pages. */
+  is_public_listing: z.boolean().optional(),
 }).passthrough();
 
 export const eventRegistrationResponseSchema = z.object({

@@ -115,7 +115,12 @@
                 "post_event_too_early": "A message for after the event can only be sent once the event has ended. Choose a time after the event's end.",
                 "audience_empty": "Nobody would receive this message. Choose an audience that includes at least one person.",
                 "channel_empty": "Choose at least one way to send this message.",
-                "body_invalid": "Write a message of no more than :max characters."
+                "body_invalid": "Write a message of no more than :max characters.",
+                "version_conflict": "This message was changed somewhere else after the page loaded. Refresh the page, check it and try again.",
+                "transition_invalid": "This message has already moved on: it may be sending or already sent. Refresh the page to see where it is.",
+                "cancel_after_send_forbidden": "Sending has already started, so this message can no longer be cancelled.",
+                "idempotency_conflict": "This looks like a repeat of an earlier attempt with different details. Refresh the page and check whether the message is already there.",
+                "authorization_denied": "You are not allowed to send messages for this event. Ask the event organiser to add you to the event team."
             }
         },
         "event_lifecycle_history": {
@@ -2591,6 +2596,8 @@
                     "cancelled_reason_prefix": "Reason:",
                     "allow_remote_label": "Allow remote attendance",
                     "allow_remote_hint": "Participants can join online as well as in person.",
+                    "public_listing_label": "List as a public event",
+                    "public_listing_hint": "Show this event on the community's public events page, where people who aren't signed in can see it. Leave this unticked to keep it for members only.",
                     "video_url_label": "Video or meeting link (optional)",
                     "video_url_hint": "Paste the URL for your video call or meeting room. Only shown to attendees.",
                     "video_url_summary_label": "Join remotely",

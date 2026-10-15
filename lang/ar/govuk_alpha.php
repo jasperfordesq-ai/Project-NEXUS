@@ -1561,6 +1561,9 @@ return [
             'cancelled_reason_prefix' => 'السبب:',
             'allow_remote_label' => 'السماح بالحضور عن بُعد',
             'allow_remote_hint' => 'يمكن للمشاركين الانضمام عبر الإنترنت أو حضوريًا.',
+            // Public listing (owner decision 2026-10-15): only shown when public_events is on
+            'public_listing_label' => 'إدراج كفعالية عامة',
+            'public_listing_hint' => 'اعرض هذه الفعالية في صفحة الفعاليات العامة للمجتمع، حيث يمكن لمن لم يسجّلوا الدخول رؤيتها. اترك هذا المربع دون تحديد لإبقائها للأعضاء فقط.',
             'video_url_label' => 'رابط الفيديو أو الاجتماع (اختياري)',
             'video_url_hint' => 'الصق رابط مكالمة الفيديو أو غرفة الاجتماع. يُعرض للحاضرين فقط.',
             'video_url_summary_label' => 'الانضمام عن بُعد',

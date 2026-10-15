@@ -266,6 +266,8 @@
     "cancel": "Cancelar",
     "remote_attendance_toggle": "Permitir asistencia remota",
     "remote_attendance_desc": "Permite a los asistentes unirse por videoconferencia",
+    "public_listing_toggle": "Publicar como evento público",
+    "public_listing_desc": "Muestra este evento en la página de eventos públicos de la comunidad, donde pueden verlo personas que no han iniciado sesión. Déjalo desactivado para que solo lo vean los miembros.",
     "remote_attendance_toggle_aria": "Alternar asistencia remota",
     "video_url_label": "Enlace de la reunión",
     "video_url_placeholder": "https://zoom.us/j/... o https://meet.google.com/...",
