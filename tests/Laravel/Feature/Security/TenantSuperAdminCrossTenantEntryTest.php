@@ -143,6 +143,47 @@ final class TenantSuperAdminCrossTenantEntryTest extends TestCase
         self::assertSame('TENANT_MISMATCH', $refused->json('errors.0.code'));
     }
 
+    /**
+     * The child community's OWN custom domain (bridgwater.timebank.global, a
+     * child of Timebanking UK, 15 Oct 2026). TenantContext locks the request to
+     * the domain's community without looking at the token, so the crossing is
+     * decided by the Authenticate middleware alone. A member call there must be
+     * refused as a community mismatch (403), exactly as it is via the header:
+     * it used to answer 401 "authentication required", which the website
+     * reads as an expired session — it refreshed, was refused again, and
+     * signed the manager out of the community it had just signed in to.
+     */
+    public function test_on_the_child_custom_domain_a_member_call_is_a_mismatch_not_a_lost_session(): void
+    {
+        $domain = 'xte-child-' . Str::lower(Str::random(6)) . '.project-nexus.test';
+        DB::table('tenants')->where('id', self::CHILD)->update(['domain' => $domain]);
+
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+
+        foreach ([[], ['X-Tenant-ID' => (string) self::CHILD]] as $headers) {
+            $this->jwt('GET', "http://{$domain}/api/v2/admin/config", $tsa, $headers)
+                ->assertStatus(200);
+            self::assertSame(self::CHILD, (int) TenantContext::getId());
+
+            $this->jwt('GET', "http://{$domain}/api/v2/users/me", $tsa, $headers)
+                ->assertStatus(200)
+                ->assertJsonPath('data.id', (int) $tsa->id);
+
+            foreach (['/api/v2/notifications/counts', '/api/v2/messages/unread-count', '/api/v2/realtime/config'] as $uri) {
+                $member = $this->jwt('GET', "http://{$domain}{$uri}", $tsa, $headers);
+                $member->assertStatus(403);
+                self::assertSame('tenant_mismatch', $member->json('errors.0.code'), $uri);
+            }
+        }
+
+        // A plain member of the hub is refused on the child's domain the same
+        // way — the session-ending answer the website acts on (AuthContext).
+        $hubMember = $this->member(self::HUB);
+        $refused = $this->jwt('GET', "http://{$domain}/api/v2/users/me", $hubMember, []);
+        $refused->assertStatus(403);
+        self::assertSame('tenant_mismatch', $refused->json('errors.0.code'));
+    }
+
     public function test_a_stateful_hub_tenant_super_admin_opens_a_child_admin_screen(): void
     {
         $tsa = $this->tenantSuperAdmin(self::HUB);

@@ -26,6 +26,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Authenticate
 {
+    /**
+     * Set by validateLegacyToken() when the token is valid but its account may
+     * not work in the community this request resolved to. Reported as a 403
+     * `tenant_mismatch`, never as a 401: a 401 tells the website the session
+     * has expired, so it refreshes, is refused again and signs the account out.
+     */
+    private bool $bearerTenantMismatch = false;
+
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
         // Keep guard-based authentication for Laravel stateful requests and
@@ -156,7 +164,20 @@ class Authenticate
         // Bearer authentication uses the versioned, short-lived JWT contract.
         $token = $this->extractBearerToken($request);
         if ($token) {
+            $this->bearerTenantMismatch = false;
             $validated = $this->validateLegacyToken($token, $request);
+            if (!$validated && $this->bearerTenantMismatch) {
+                // Same answer as the session branch above and as TenantContext
+                // gives on the X-Tenant-ID / X-Tenant-Slug path. Reached when a
+                // community's own custom domain resolved the request, because
+                // TenantContext does not compare the token there.
+                return response()->json([
+                    'errors' => [
+                        ['code' => 'tenant_mismatch', 'message' => 'Your account does not belong to this community'],
+                    ],
+                    'success' => false,
+                ], 403, ['API-Version' => '2.0']);
+            }
             if ($validated) {
                 // shouldUse AFTER setUser (setUser happens inside validateLegacyToken)
                 auth()->shouldUse('sanctum');
@@ -276,6 +297,7 @@ class Authenticate
                 // this token a moment earlier.
                 if (!CrossTenantEntry::allowsForRequest($eloquentUser, (int) $tenantId, $request)) {
                     \Illuminate\Support\Facades\Log::debug('[Auth] User tenant mismatch', ['user_id' => $userId, 'user_tenant' => $eloquentUser->tenant_id, 'request_tenant' => $tenantId]);
+                    $this->bearerTenantMismatch = true;
                     return false;
                 }
             }

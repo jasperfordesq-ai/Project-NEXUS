@@ -254,7 +254,7 @@ class AuthenticateTest extends TestCase
      * path (actingAs, no bearer token), so without this a regression that dropped
      * the JWT tenant guard would reach main with a green suite.
      */
-    public function test_handle_legacy_jwt_from_other_tenant_returns_401(): void
+    public function test_handle_legacy_jwt_from_other_tenant_is_refused_as_a_tenant_mismatch(): void
     {
         \Illuminate\Support\Facades\DB::table('tenants')->insertOrIgnore([
             'id' => 99,
@@ -283,8 +283,11 @@ class AuthenticateTest extends TestCase
 
         $response = $this->middleware->handle($request, $this->makeNext());
 
-        $this->assertEquals(401, $response->getStatusCode());
-        $this->assertSame('auth_required', $response->getData(true)['errors'][0]['code']);
+        // 403 tenant_mismatch, not 401: a 401 tells the website the session
+        // expired, and it signed out a manager who had just signed in on a
+        // community's own domain (15 Oct 2026). Still a refusal: $next never ran.
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertSame('tenant_mismatch', $response->getData(true)['errors'][0]['code']);
     }
 
     /**
