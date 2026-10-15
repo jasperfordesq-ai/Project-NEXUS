@@ -19,8 +19,8 @@
   "gdpr_request": {
     "subject": "We've received your data request",
     "title": "Request received",
-    "greeting": "Hi {name},",
-    "body": "We've received your data rights request for {community} and will respond within 30 days, as required by data protection law. There's nothing more you need to do right now.",
+    "greeting": "Hi {{name}},",
+    "body": "We've received your data rights request for {{community}} and will respond within 30 days, as required by data protection law. There's nothing more you need to do right now.",
     "body_contact": "If you didn't make this request, please contact us straight away."
   },
   "announcement": {

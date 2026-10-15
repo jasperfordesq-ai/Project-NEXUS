@@ -134,10 +134,25 @@ class EmailTemplateBuilder
     // CONTENT BLOCKS (order matters — rendered top to bottom)
     // =========================================================================
 
-    /** Add a greeting line: "Hi John," */
+    /**
+     * Add a greeting line for a NAME: greeting('John') renders the translated
+     * "Hi John,". For a whole greeting sentence ("Great news, John!") use
+     * salutation() — passing one here renders "Hi Great news, John!,".
+     */
     public function greeting(string $name): self
     {
         $this->blocks[] = ['type' => 'greeting', 'name' => $name];
+        return $this;
+    }
+
+    /**
+     * Add a complete greeting line, printed as written (e.g. a translated
+     * "Welcome back, :name!"). Same text rules as paragraph(): a name the
+     * caller already escaped stays readable, and stray markup shows as text.
+     */
+    public function salutation(string $text): self
+    {
+        $this->blocks[] = ['type' => 'greeting', 'line' => $text];
         return $this;
     }
 
@@ -290,8 +305,9 @@ class EmailTemplateBuilder
 
     private function renderGreeting(array $block): string
     {
-        $name = self::esc($block['name']);
-        $greeting = __('emails.common.greeting', ['name' => $name]);
+        $greeting = isset($block['line'])
+            ? self::sanitizeFormattedText((string) $block['line'])
+            : __('emails.common.greeting', ['name' => self::esc($block['name'])]);
         return <<<HTML
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>

@@ -9,8 +9,8 @@
   "gdpr_request": {
     "subject": "Fuaireamar d'iarratas sonraí",
     "title": "Iarratas faighte",
-    "greeting": "Dia duit {name},",
-    "body": "Fuaireamar d'iarratas faoi do chearta sonraí le haghaidh {community} agus freagróimid laistigh de 30 lá, mar a éilíonn an dlí cosanta sonraí. Níl aon rud eile le déanamh agat anois.",
+    "greeting": "Dia duit {{name}},",
+    "body": "Fuaireamar d'iarratas faoi do chearta sonraí le haghaidh {{community}} agus freagróimid laistigh de 30 lá, mar a éilíonn an dlí cosanta sonraí. Níl aon rud eile le déanamh agat anois.",
     "body_contact": "Mura ndearna tú an t-iarratas seo, déan teagmháil linn láithreach le do thoil."
   },
   "announcement": {

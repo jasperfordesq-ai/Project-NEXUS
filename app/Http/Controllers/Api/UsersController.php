@@ -750,7 +750,7 @@ class UsersController extends BaseApiController
                     $html = EmailTemplateBuilder::make()
                         ->theme('warning')
                         ->title(__('emails_misc.admin_actions.self_deletion_title'))
-                        ->greeting(__('emails_misc.admin_actions.self_deletion_greeting', ['name' => $userName]))
+                        ->salutation(__('emails_misc.admin_actions.self_deletion_greeting', ['name' => $userName]))
                         ->paragraph(__('emails_misc.admin_actions.self_deletion_body', ['community' => $community]))
                         ->paragraph(__('emails_misc.admin_actions.self_deletion_body_contact'))
                         ->render();
@@ -1092,7 +1092,7 @@ class UsersController extends BaseApiController
                 $html = EmailTemplateBuilder::make()
                     ->theme('brand')
                     ->title(__('emails.gdpr_request.title'))
-                    ->greeting(__('emails.gdpr_request.greeting', ['name' => $userName]))
+                    ->salutation(__('emails.gdpr_request.greeting', ['name' => $userName]))
                     ->paragraph(__('emails.gdpr_request.body', ['community' => $community]))
                     ->paragraph(__('emails.gdpr_request.body_contact'))
                     ->render();

@@ -79,7 +79,7 @@ final class EmailVerificationSender
 
                 $html = EmailTemplateBuilder::make()
                     ->title(__('emails_misc.auth.verify_email_title'))
-                    ->greeting($greeting)
+                    ->salutation($greeting)
                     ->paragraph(__('emails_misc.auth.verify_email_body'))
                     ->paragraph(__('emails_misc.auth.verify_email_ignore'))
                     ->button(__('emails_misc.auth.verify_email_cta'), $verifyUrl)

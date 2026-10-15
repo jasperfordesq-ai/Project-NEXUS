@@ -91,7 +91,7 @@ class CivicDigestMail
                     ->title($subject)
                     ->previewText(__($introKey, ['count' => $count, 'community' => $community]))
                     ->tenantName($community)
-                    ->greeting(__('civic_digest.email.greeting', ['name' => $name]))
+                    ->salutation(__('civic_digest.email.greeting', ['name' => $name]))
                     ->paragraph(__($introKey, ['count' => $count, 'community' => $community]));
 
                 // Group items by source so we can render them in priority order

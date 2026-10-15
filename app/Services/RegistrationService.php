@@ -809,7 +809,7 @@ class RegistrationService
                 $html = \App\Core\EmailTemplateBuilder::make()
                     ->theme('brand')
                     ->title(__('emails_misc.registration.verify_title'))
-                    ->greeting(__('emails_misc.registration.verify_greeting', ['name' => $firstName, 'tenant' => $tenantName]))
+                    ->salutation(__('emails_misc.registration.verify_greeting', ['name' => $firstName, 'tenant' => $tenantName]))
                     ->paragraph(__('emails_misc.registration.verify_body'))
                     ->button(__('emails_misc.registration.verify_cta'), $verifyUrl)
                     ->render();

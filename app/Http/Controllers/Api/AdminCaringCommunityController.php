@@ -842,7 +842,7 @@ class AdminCaringCommunityController extends BaseApiController
                         $html = EmailTemplateBuilder::make()
                             ->title(__('emails_misc.admin_actions.welcome_created_title'))
                             ->previewText(__('emails_misc.admin_actions.welcome_created_preview'))
-                            ->greeting(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
+                            ->salutation(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
                             ->paragraph(__('emails_misc.admin_actions.welcome_created_body_intro', ['community' => $tenantName]))
                             ->infoCard([
                                 __('emails_misc.admin_actions.welcome_created_info_email')    => $email,

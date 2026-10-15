@@ -9,8 +9,8 @@
   "gdpr_request": {
     "subject": "Otrzymaliśmy Twoje żądanie dotyczące danych",
     "title": "Żądanie otrzymane",
-    "greeting": "Cześć {name},",
-    "body": "Otrzymaliśmy Twoje żądanie dotyczące praw do danych dla {community} i odpowiemy w ciągu 30 dni, zgodnie z wymogami przepisów o ochronie danych. Na razie nie musisz nic więcej robić.",
+    "greeting": "Cześć {{name}},",
+    "body": "Otrzymaliśmy Twoje żądanie dotyczące praw do danych dla {{community}} i odpowiemy w ciągu 30 dni, zgodnie z wymogami przepisów o ochronie danych. Na razie nie musisz nic więcej robić.",
     "body_contact": "Jeśli to nie Ty złożyłeś to żądanie, skontaktuj się z nami niezwłocznie."
   },
   "announcement": {

@@ -9,8 +9,8 @@
   "gdpr_request": {
     "subject": "Abbiamo ricevuto la tua richiesta sui dati",
     "title": "Richiesta ricevuta",
-    "greeting": "Ciao {name},",
-    "body": "Abbiamo ricevuto la tua richiesta relativa ai tuoi diritti sui dati per {community} e risponderemo entro 30 giorni, come previsto dalla normativa sulla protezione dei dati. Per ora non devi fare altro.",
+    "greeting": "Ciao {{name}},",
+    "body": "Abbiamo ricevuto la tua richiesta relativa ai tuoi diritti sui dati per {{community}} e risponderemo entro 30 giorni, come previsto dalla normativa sulla protezione dei dati. Per ora non devi fare altro.",
     "body_contact": "Se non hai effettuato tu questa richiesta, contattaci subito."
   },
   "announcement": {

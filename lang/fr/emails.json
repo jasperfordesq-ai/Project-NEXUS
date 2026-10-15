@@ -9,8 +9,8 @@
   "gdpr_request": {
     "subject": "Nous avons bien reçu votre demande de données",
     "title": "Demande reçue",
-    "greeting": "Bonjour {name},",
-    "body": "Nous avons bien reçu votre demande relative à vos droits sur les données pour {community} et y répondrons sous 30 jours, comme l'exige la réglementation sur la protection des données. Vous n'avez rien d'autre à faire pour le moment.",
+    "greeting": "Bonjour {{name}},",
+    "body": "Nous avons bien reçu votre demande relative à vos droits sur les données pour {{community}} et y répondrons sous 30 jours, comme l'exige la réglementation sur la protection des données. Vous n'avez rien d'autre à faire pour le moment.",
     "body_contact": "Si vous n'êtes pas à l'origine de cette demande, veuillez nous contacter immédiatement."
   },
   "announcement": {

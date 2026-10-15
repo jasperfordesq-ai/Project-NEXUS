@@ -827,7 +827,7 @@ class AdminUsersController extends BaseApiController
                     $html = EmailTemplateBuilder::make()
                         ->title(__('emails_misc.admin_actions.welcome_created_title'))
                         ->previewText(__('emails_misc.admin_actions.welcome_created_preview'))
-                        ->greeting(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
+                        ->salutation(__('emails_misc.admin_actions.welcome_created_greeting', ['community' => $tenantName]))
                         ->paragraph(__('emails_misc.admin_actions.welcome_created_body_intro', ['community' => $tenantName]))
                         ->infoCard([
                             __('emails_misc.admin_actions.welcome_created_info_email')    => $email,
@@ -1208,7 +1208,7 @@ class AdminUsersController extends BaseApiController
 
                 $html = EmailTemplateBuilder::make()
                     ->theme('danger')
-                    ->greeting(__('emails_misc.admin_actions.ban_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.ban_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.ban_body', ['community' => $tenantName]))
                     ->paragraph(__('emails_misc.admin_actions.ban_help'))
                     ->render();
@@ -1322,7 +1322,7 @@ class AdminUsersController extends BaseApiController
 
                 $html = EmailTemplateBuilder::make()
                     ->theme('warning')
-                    ->greeting(__('emails_misc.admin_actions.deletion_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.deletion_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.deletion_body', ['community' => $tenantName]))
                     ->paragraph(__('emails_misc.admin_actions.deletion_help'))
                     ->render();
@@ -1498,7 +1498,7 @@ class AdminUsersController extends BaseApiController
                     ->theme('warning')
                     ->title(__('emails_misc.admin_actions.reset_2fa_title'))
                     ->previewText(__('emails_misc.admin_actions.reset_2fa_preview'))
-                    ->greeting(__('emails_misc.admin_actions.reset_2fa_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.reset_2fa_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.reset_2fa_body', ['community' => $tenantName]))
                     ->paragraph(__('emails_misc.admin_actions.reset_2fa_body_reenable'))
                     ->paragraph(__('emails_misc.admin_actions.reset_2fa_body_contact'))
@@ -1782,7 +1782,7 @@ class AdminUsersController extends BaseApiController
 
                 $html = EmailTemplateBuilder::make()
                     ->theme('warning')
-                    ->greeting(__('emails_misc.admin_actions.set_password_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.set_password_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.set_password_body', ['community' => $tenantName]))
                     ->paragraph(__('emails_misc.admin_actions.set_password_body_old_pass'))
                     ->paragraph(__('emails_misc.admin_actions.set_password_body_contact'))
@@ -2166,7 +2166,7 @@ class AdminUsersController extends BaseApiController
             $html = \App\Core\EmailTemplateBuilder::make()
                 ->theme('warning')
                 ->title(__('emails_misc.admin_actions.password_reset_title'))
-                ->greeting(__('emails_misc.admin_actions.password_reset_greeting', ['name' => $firstName]))
+                ->salutation(__('emails_misc.admin_actions.password_reset_greeting', ['name' => $firstName]))
                 ->paragraph(__('emails_misc.admin_actions.password_reset_body'))
                 ->button(__('emails_misc.admin_actions.password_reset_cta'), $resetLink)
                 ->render();
@@ -2439,7 +2439,7 @@ class AdminUsersController extends BaseApiController
 
                 $html = EmailTemplateBuilder::make()
                     ->theme('warning')
-                    ->greeting(__('emails_misc.admin_actions.suspension_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.suspension_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.suspension_body', ['community' => $tenantName]))
                     ->paragraph(__('emails_misc.admin_actions.suspension_help'))
                     ->render();
@@ -2592,7 +2592,7 @@ class AdminUsersController extends BaseApiController
                 $builder = \App\Core\EmailTemplateBuilder::make()
                     ->theme('success')
                     ->title(__('emails_misc.admin_actions.approval_title'))
-                    ->greeting(__('emails_misc.admin_actions.approval_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.approval_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.approval_body_intro', ['community' => $tenantNameSafe]));
 
                 if ($creditsAwarded > 0) {
@@ -2602,16 +2602,16 @@ class AdminUsersController extends BaseApiController
                     ]));
                 }
 
-                $stepsHtml = '<p>' . __('emails_misc.admin_actions.approval_body_next_steps') . '</p>'
-                    . '<ul style="padding-left: 20px; margin: 10px 0;">'
-                    . '<li style="margin-bottom: 8px;">' . __('emails_misc.admin_actions.approval_list_browse') . '</li>'
-                    . '<li style="margin-bottom: 8px;">' . __('emails_misc.admin_actions.approval_list_create_listing') . '</li>'
-                    . '<li style="margin-bottom: 8px;">' . __('emails_misc.admin_actions.approval_list_connect') . '</li>'
-                    . '<li style="margin-bottom: 8px;">' . __('emails_misc.admin_actions.approval_list_events') . '</li>'
-                    . '</ul>';
-
+                // bulletList(), not a hand-built <ul> in paragraph(): paragraph()
+                // shows list tags as text (F-038), which printed raw HTML to members.
                 $html = $builder
-                    ->paragraph($stepsHtml)
+                    ->paragraph(__('emails_misc.admin_actions.approval_body_next_steps'))
+                    ->bulletList([
+                        __('emails_misc.admin_actions.approval_list_browse'),
+                        __('emails_misc.admin_actions.approval_list_create_listing'),
+                        __('emails_misc.admin_actions.approval_list_connect'),
+                        __('emails_misc.admin_actions.approval_list_events'),
+                    ])
                     ->paragraph(__('emails_misc.admin_actions.approval_body_closing'))
                     ->button(__('emails_misc.admin_actions.approval_cta'), $loginUrl)
                     ->render();
@@ -2697,7 +2697,7 @@ class AdminUsersController extends BaseApiController
                 $html = \App\Core\EmailTemplateBuilder::make()
                     ->theme('brand')
                     ->title(__('svc_notifications.account_reactivated_title'))
-                    ->greeting(__('emails_misc.admin_actions.reactivation_greeting', ['name' => $firstName]))
+                    ->salutation(__('emails_misc.admin_actions.reactivation_greeting', ['name' => $firstName]))
                     ->paragraph(__('emails_misc.admin_actions.reactivation_body', ['community' => $tenantNameSafe]))
                     ->paragraph(__('emails_misc.admin_actions.reactivation_body_access'))
                     ->button(__('emails_misc.admin_actions.reactivation_cta'), $loginUrl)

@@ -196,6 +196,31 @@ class AdminUsersMemberEmailCommunityTest extends TestCase
         $this->assertStringContainsString($f['host'] . $f['prefix'] . '/login', $captured->sent[0]['body']);
     }
 
+    /**
+     * Bridgwater, 2026-10-15: the approval email showed its "things you can do"
+     * list as raw `<ul style=…><li …>` text, and its greeting as "Hi Great news,
+     * Sarah!,". The list was hand-built HTML passed to paragraph(), which (F-038)
+     * shows any non-formatting tag as text; the greeting was a whole sentence
+     * passed to greeting(), which wraps its argument in "Hi …,".
+     */
+    public function test_approval_email_reads_as_written(): void
+    {
+        $f = $this->managerAboveMemberBelow();
+
+        $captured = $this->sendFromTheHub($f, 'sendApprovalWelcomeEmail', [$f['member'], 5]);
+        $body = $captured->sent[0]['body'];
+
+        $this->assertStringNotContainsString('&lt;ul', $body, 'the list must render as a list, not as code');
+        $this->assertStringNotContainsString('&lt;li', $body, 'the list must render as a list, not as code');
+        $this->assertStringNotContainsString('&lt;/li', $body);
+        $this->assertStringContainsString('Great news, Greta!', $body);
+        $this->assertStringNotContainsString('Hi Great news', $body);
+        $this->assertStringNotContainsString('Greta!,', $body);
+        // Every list item still arrives, with its bold word.
+        $this->assertStringContainsString('<strong>listings</strong>', $body);
+        $this->assertStringContainsString('<strong>events</strong>', $body);
+    }
+
     public function test_reactivation_email_links_stay_on_the_members_community(): void
     {
         $f = $this->managerAboveMemberBelow();

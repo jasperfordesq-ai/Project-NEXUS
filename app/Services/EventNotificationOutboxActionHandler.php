@@ -393,7 +393,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
                 $html = EmailTemplateBuilder::make()
                     ->theme('info')
                     ->title(__('emails.event_guardian_consent.title'))
-                    ->greeting(__('emails.event_guardian_consent.greeting', [
+                    ->salutation(__('emails.event_guardian_consent.greeting', [
                         'name' => $guardianName,
                     ]))
                     ->paragraph(__('emails.event_guardian_consent.introduction', [
