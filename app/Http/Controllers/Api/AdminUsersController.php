@@ -1468,9 +1468,28 @@ class AdminUsersController extends BaseApiController
             Log::warning("[AdminUsers] Failed to create 2FA reset bell notification for user #{$id}: " . $e->getMessage());
         }
 
+        $this->sendTwoFactorResetEmail($user, $id);
+
+        return $this->respondWithData(['reset' => true, 'id' => $id]);
+    }
+
+    /**
+     * Email a member that an administrator reset their two-factor sign-in.
+     * Never throws: a failed email must not undo the reset.
+     *
+     * @param array<string,mixed> $user User record from the database
+     */
+    private function sendTwoFactorResetEmail(array $user, int $id): void
+    {
+        $recipientLocale = $user['preferred_language'] ?? null;
         try {
-            LocaleContext::withLocale($recipientLocale, function () use ($user, $id) {
-                $tenant = $this->resolveUserTenant($user);
+            // Render INSIDE the member's community: the template footer reads
+            // TenantContext, so a manager acting from a community above would
+            // otherwise send buttons for the member's community and a footer
+            // link to its own (email-links audit, 2026-10-14, F7b).
+            $tenant = $this->resolveUserTenant($user);
+            TenantContext::runForTenant($tenant['tenant_id'], function () use ($user, $id, $tenant, $recipientLocale): void {
+            LocaleContext::withLocale($recipientLocale, function () use ($user, $id, $tenant) {
                 $firstName = htmlspecialchars($user['first_name'] ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
                 $tenantName = $tenant['name'];
                 $loginUrl = $tenant['frontend_url'] . $tenant['slug_prefix'] . '/login';
@@ -1499,11 +1518,10 @@ class AdminUsersController extends BaseApiController
                     Log::warning("[AdminUsers] 2FA reset email send returned false for user #{$id}");
                 }
             });
+            });
         } catch (\Throwable $e) {
             Log::warning("[AdminUsers] Failed to send 2FA reset email to user #{$id}: " . $e->getMessage());
         }
-
-        return $this->respondWithData(['reset' => true, 'id' => $id]);
     }
 
     /** POST /api/v2/admin/users/{id}/badges */
@@ -1738,10 +1756,26 @@ class AdminUsersController extends BaseApiController
         $this->auditLogService->logAdminAction('admin_set_password', $adminId, $id, ['email' => $user['email']]);
 
         // Notify the user (email only — they need to know their old password no longer works)
-        // CRITICAL: Do NOT include the new password in the email
+        $this->sendPasswordChangedEmail($user, $id);
+
+        return $this->respondWithData(['password_set' => true, 'id' => $id]);
+    }
+
+    /**
+     * Email a member that an administrator replaced their password.
+     * CRITICAL: the new password is never included. Never throws: a failed
+     * email must not undo the change.
+     *
+     * @param array<string,mixed> $user User record from the database
+     */
+    private function sendPasswordChangedEmail(array $user, int $id): void
+    {
         try {
-            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $id) {
-                $tenant = $this->resolveUserTenant($user);
+            // Render INSIDE the member's community so the template footer
+            // matches the buttons (see sendTwoFactorResetEmail).
+            $tenant = $this->resolveUserTenant($user);
+            TenantContext::runForTenant($tenant['tenant_id'], function () use ($user, $id, $tenant): void {
+            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $id, $tenant) {
                 $firstName = htmlspecialchars($user['first_name'] ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
                 $tenantName = $tenant['name'];
                 $loginUrl = $tenant['frontend_url'] . $tenant['slug_prefix'] . '/login';
@@ -1768,11 +1802,10 @@ class AdminUsersController extends BaseApiController
                     Log::warning("[AdminUsers] Password-changed email returned false for user #{$id}");
                 }
             });
+            });
         } catch (\Throwable $e) {
             Log::warning("[AdminUsers] Failed to send password reset email to user #{$id}: " . $e->getMessage());
         }
-
-        return $this->respondWithData(['password_set' => true, 'id' => $id]);
     }
 
     // =========================================================================
@@ -2090,32 +2123,7 @@ class AdminUsersController extends BaseApiController
             });
 
             try {
-                $resetEmailSent = (bool) LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $id, $token) {
-                    $tenant = $this->resolveUserTenant($user);
-                    $tenantNameSafe = htmlspecialchars($tenant['name'], ENT_QUOTES, 'UTF-8');
-
-                    $resetLink = $tenant['frontend_url'] . $tenant['slug_prefix'] . "/password/reset?token={$token}";
-
-                    $firstName = htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8');
-                    $html = \App\Core\EmailTemplateBuilder::make()
-                        ->theme('warning')
-                        ->title(__('emails_misc.admin_actions.password_reset_title'))
-                        ->greeting(__('emails_misc.admin_actions.password_reset_greeting', ['name' => $firstName]))
-                        ->paragraph(__('emails_misc.admin_actions.password_reset_body'))
-                        ->button(__('emails_misc.admin_actions.password_reset_cta'), $resetLink)
-                        ->render();
-
-                    return EmailDispatchService::sendRaw(
-                        $user['email'],
-                        __('emails_misc.admin_actions.password_reset_subject', ['community' => $tenantNameSafe]),
-                        $html,
-                        null,
-                        null,
-                        null,
-                        'password_reset',
-                        ['tenant_id' => $tenant['tenant_id']]
-                    );
-                });
+                $resetEmailSent = $this->sendPasswordResetLinkEmail($user, $token);
             } catch (\Throwable $sendException) {
                 $this->restorePasswordResetRows($user['email'], $userTenantId, $existingResetRows);
                 throw $sendException;
@@ -2133,6 +2141,48 @@ class AdminUsersController extends BaseApiController
             \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send password reset email for user #{$id}: " . $e->getMessage());
             return $this->respondWithError('SERVER_ERROR', __('api.create_failed', ['resource' => 'password reset email']), null, 500);
         }
+    }
+
+    /**
+     * Email a member the self-service reset link an administrator asked for.
+     * Returns the mailer's acceptance; may throw, and the caller restores the
+     * previous reset rows either way.
+     *
+     * @param array<string,mixed> $user User record from the database
+     */
+    private function sendPasswordResetLinkEmail(array $user, string $token): bool
+    {
+        // Render INSIDE the member's community so the template footer matches
+        // the reset button (see sendTwoFactorResetEmail).
+        $tenant = $this->resolveUserTenant($user);
+
+        return (bool) TenantContext::runForTenant($tenant['tenant_id'], function () use ($user, $token, $tenant) {
+        return LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $token, $tenant) {
+            $tenantNameSafe = htmlspecialchars($tenant['name'], ENT_QUOTES, 'UTF-8');
+
+            $resetLink = $tenant['frontend_url'] . $tenant['slug_prefix'] . "/password/reset?token={$token}";
+
+            $firstName = htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8');
+            $html = \App\Core\EmailTemplateBuilder::make()
+                ->theme('warning')
+                ->title(__('emails_misc.admin_actions.password_reset_title'))
+                ->greeting(__('emails_misc.admin_actions.password_reset_greeting', ['name' => $firstName]))
+                ->paragraph(__('emails_misc.admin_actions.password_reset_body'))
+                ->button(__('emails_misc.admin_actions.password_reset_cta'), $resetLink)
+                ->render();
+
+            return EmailDispatchService::sendRaw(
+                $user['email'],
+                __('emails_misc.admin_actions.password_reset_subject', ['community' => $tenantNameSafe]),
+                $html,
+                null,
+                null,
+                null,
+                'password_reset',
+                ['tenant_id' => $tenant['tenant_id']]
+            );
+        });
+        });
     }
 
     /**
@@ -2527,8 +2577,12 @@ class AdminUsersController extends BaseApiController
     private function sendApprovalWelcomeEmail(array $user, int $creditsAwarded): bool
     {
         try {
-            return LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $creditsAwarded) {
-                $tenant = $this->resolveUserTenant($user);
+            // Render INSIDE the member's community so the template footer
+            // matches the buttons (see sendTwoFactorResetEmail).
+            $tenant = $this->resolveUserTenant($user);
+
+            return (bool) TenantContext::runForTenant($tenant['tenant_id'], function () use ($user, $creditsAwarded, $tenant) {
+            return LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $creditsAwarded, $tenant) {
                 $firstName = htmlspecialchars($user['first_name'] ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
                 $loginUrl = $tenant['frontend_url'] . $tenant['slug_prefix'] . '/login';
                 $tenantNameSafe = htmlspecialchars($tenant['name'], ENT_QUOTES, 'UTF-8');
@@ -2575,6 +2629,7 @@ class AdminUsersController extends BaseApiController
                 }
 
                 return (bool) $result;
+            });
             });
         } catch (\Throwable $e) {
             try { \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send welcome email to user #{$user['id']}: " . $e->getMessage()); } catch (\Throwable) {}
@@ -2629,8 +2684,12 @@ class AdminUsersController extends BaseApiController
     private function sendReactivationNotificationEmail(array $user): bool
     {
         try {
-            return LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user) {
-                $tenant = $this->resolveUserTenant($user);
+            // Render INSIDE the member's community so the template footer
+            // matches the buttons (see sendTwoFactorResetEmail).
+            $tenant = $this->resolveUserTenant($user);
+
+            return (bool) TenantContext::runForTenant($tenant['tenant_id'], function () use ($user, $tenant) {
+            return LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($user, $tenant) {
                 $firstName = htmlspecialchars($user['first_name'] ?? __('emails.common.fallback_name'), ENT_QUOTES, 'UTF-8');
                 $tenantNameSafe = htmlspecialchars($tenant['name'], ENT_QUOTES, 'UTF-8');
                 $loginUrl = $tenant['frontend_url'] . $tenant['slug_prefix'] . '/login';
@@ -2662,6 +2721,7 @@ class AdminUsersController extends BaseApiController
                 }
 
                 return (bool) $result;
+            });
             });
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminUsers] Failed to send reactivation email to user #{$user['id']}: " . $e->getMessage());
