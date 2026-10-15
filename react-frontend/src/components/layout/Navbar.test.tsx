@@ -879,9 +879,42 @@ describe('Navbar', () => {
 
       expect(screen.getByRole('button', { name: /^Podcasts\b/ })).toBeInTheDocument();
 
-      const bodyText = document.body.textContent ?? '';
-      expect(bodyText.indexOf('Courses')).toBeLessThan(bodyText.indexOf('Podcasts'));
-      expect(bodyText.indexOf('Podcasts')).toBeLessThan(bodyText.indexOf('Premium'));
+      // Scoped to the dropdown panel: the utility bar's Donate button carries the
+      // same label and sits earlier in the page.
+      const panelText = screen.getByRole('navigation', { name: 'Community navigation' }).textContent ?? '';
+      expect(panelText.indexOf('Courses')).toBeLessThan(panelText.indexOf('Podcasts'));
+      expect(panelText.indexOf('Podcasts')).toBeLessThan(panelText.indexOf('Premium'));
+    });
+  });
+
+  describe('utility bar donate button', () => {
+    it('shows when the Donations & Support feature is on and goes to /premium', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        tenant: {
+          hasFeature: vi.fn((feature: string) => feature === 'member_premium'),
+          hasModule: vi.fn(() => false),
+        },
+      });
+
+      render(<Navbar />);
+      const donate = screen.getByRole('button', { name: 'Premium' });
+      await user.click(donate);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/premium');
+    });
+
+    it('is absent when the Donations & Support feature is off', () => {
+      setupDefaultMocks({
+        tenant: {
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => false),
+        },
+      });
+
+      render(<Navbar />);
+
+      expect(screen.queryByRole('button', { name: 'Premium' })).not.toBeInTheDocument();
     });
   });
 

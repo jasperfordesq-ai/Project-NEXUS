@@ -35,6 +35,7 @@ import BadgeCheck from 'lucide-react/icons/badge-check';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Download from 'lucide-react/icons/download';
 import LifeBuoy from 'lucide-react/icons/life-buoy';
+import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -618,6 +619,24 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                     <ExternalLink className="hidden lg:block w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   </a>
                 </Tooltip>
+              )}
+              {/* Donate — only when the community has the Donations & Support
+                  engine (member_premium) switched on. /premium is a protected
+                  route, so a guest is sent to sign in first and returned. */}
+              {hasFeature('member_premium') && (
+                <>
+                  <Button
+                    variant="light"
+                    size="sm"
+                    className={utilityBarActionClass}
+                    onPress={() => navigate(tenantPath('/premium'))}
+                    aria-label={t('nav.premium')}
+                  >
+                    <HeartHandshake className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span className="hidden md:inline" aria-hidden="true">{t('nav.premium')}</span>
+                  </Button>
+                  <span className={utilityBarDividerClass}>|</span>
+                </>
               )}
               <LanguageSwitcher triggerClassName={utilityBarActionClass} />
               <ThemePicker triggerSize="sm" placement="bottom-end" triggerClassName={utilityBarIconActionClass} />
