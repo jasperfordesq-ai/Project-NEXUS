@@ -439,6 +439,22 @@ every session and every tool: the Atlassian MCP connector, a browser, the API, o
 Access details (site, connector, fallbacks) are in the private
 `.local-docs-archive/support-helpdesk/README-ATLASSIAN-ACCESS-AND-BOUNDARIES.md`.
 
+#### 🔴 Whose DPO this is — ONE community's, not the platform's (owner, 15 Oct 2026)
+
+**Project NEXUS does not have a Data Protection Officer.** The DPO named in this file and in the
+register below is **Timebank Ireland's** DPO. Timebank Ireland is one community on the platform:
+tenant 2, `hour-timebank`. The DPO's remit is that community, not the platform and not other
+communities.
+
+- **Every other community answers for its own data protection.** Timebanking UK is responsible for
+  appointing its own DPO, if UK law requires one. Timebanking UK has nothing to do with Project NEXUS
+  beyond being a community on it.
+- **Giving a hub's managers access to the communities below it is a platform feature, not a decision
+  Timebank Ireland's DPO makes** for those other communities. Never describe the DPO as approving, or
+  needing to approve, anything for the platform as a whole or for a community other than tenant 2.
+- When a change raises a data-protection question, say **which community** it affects. Only questions
+  touching tenant 2 belong in front of Timebank Ireland's DPO.
+
 #### 🔴 Everything the DPO needs to be told goes in ONE register
 
 `.local-docs-archive/dpo/DPO-REGISTER.md` (private, gitignored — not in a fresh clone; if it is
