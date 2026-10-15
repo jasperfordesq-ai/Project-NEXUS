@@ -95,11 +95,16 @@ class RegionalReportPdfGeneratorTest extends TestCase
 
     // ── URL / path contract ───────────────────────────────────────────────────
 
-    public function test_generateAndStore_returns_url_starting_with_storage_prefix(): void
+    public function test_generateAndStore_returns_the_private_path_not_a_public_address(): void
     {
-        $url = $this->generator->generateAndStore($this->minimalPayload(), 42, '2026-01');
+        // Since F3 (2624e7da3) the PDF lives on the private disk and is reached
+        // only through the signed RegionalReportDownloadLink, so the generator
+        // returns the stored path, never a "/storage/..." address.
+        $path = $this->generator->generateAndStore($this->minimalPayload(), 42, '2026-01');
 
-        $this->assertStringStartsWith('/storage/', $url);
+        $this->assertStringStartsWith('regional-analytics/42/', $path);
+        $this->assertStringNotContainsString('/storage/', $path);
+        $this->assertTrue(Storage::disk(RegionalReportPdfGenerator::DISK)->exists($path));
     }
 
     public function test_generateAndStore_url_contains_subscription_id_and_period(): void
