@@ -98,7 +98,10 @@ class JobTemplateService
                 ->first();
             if (!$t) return null;
             // Increment use_count when fetched for use
-            $t->increment('use_count');
+            // A manager visiting from a community above is not counted (E-107).
+            if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+                $t->increment('use_count');
+            }
             return $t->toArray();
         } catch (\Throwable $e) {
             Log::error('JobTemplateService::get failed', ['error' => $e->getMessage()]);

@@ -34,6 +34,9 @@ class Authenticate
      */
     private bool $bearerTenantMismatch = false;
 
+    /** @var array{code:string,message:string}|null The refusal for $bearerTenantMismatch. */
+    private ?array $bearerTenantMismatchError = null;
+
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
         // Keep guard-based authentication for Laravel stateful requests and
@@ -74,9 +77,11 @@ class Authenticate
                             'user_tenant' => $user->tenant_id,
                             'request_tenant' => $tenantId,
                         ]);
+                        // A tenant super admin from above, on a member write
+                        // here, is told it is visiting rather than foreign.
                         return response()->json([
                             'errors' => [
-                                ['code' => 'tenant_mismatch', 'message' => 'Your account does not belong to this community'],
+                                CrossTenantEntry::refusalError($user, (int) $tenantId, 'tenant_mismatch', 'Your account does not belong to this community'),
                             ],
                             'success' => false,
                         ], 403, ['API-Version' => '2.0']);
@@ -165,6 +170,7 @@ class Authenticate
         $token = $this->extractBearerToken($request);
         if ($token) {
             $this->bearerTenantMismatch = false;
+            $this->bearerTenantMismatchError = null;
             $validated = $this->validateLegacyToken($token, $request);
             if (!$validated && $this->bearerTenantMismatch) {
                 // Same answer as the session branch above and as TenantContext
@@ -173,7 +179,8 @@ class Authenticate
                 // TenantContext does not compare the token there.
                 return response()->json([
                     'errors' => [
-                        ['code' => 'tenant_mismatch', 'message' => 'Your account does not belong to this community'],
+                        $this->bearerTenantMismatchError
+                            ?? ['code' => 'tenant_mismatch', 'message' => 'Your account does not belong to this community'],
                     ],
                     'success' => false,
                 ], 403, ['API-Version' => '2.0']);
@@ -298,6 +305,12 @@ class Authenticate
                 if (!CrossTenantEntry::allowsForRequest($eloquentUser, (int) $tenantId, $request)) {
                     \Illuminate\Support\Facades\Log::debug('[Auth] User tenant mismatch', ['user_id' => $userId, 'user_tenant' => $eloquentUser->tenant_id, 'request_tenant' => $tenantId]);
                     $this->bearerTenantMismatch = true;
+                    $this->bearerTenantMismatchError = CrossTenantEntry::refusalError(
+                        $eloquentUser,
+                        (int) $tenantId,
+                        'tenant_mismatch',
+                        'Your account does not belong to this community',
+                    );
                     return false;
                 }
             }

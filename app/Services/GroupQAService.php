@@ -152,11 +152,15 @@ final class GroupQAService
             return null;
         }
 
-        DB::table('group_questions')
-            ->where('id', $questionId)
-            ->where('group_id', $groupId)
-            ->where('tenant_id', $tenantId)
-            ->increment('view_count');
+        // A manager visiting from a community above is not counted (E-107).
+        $countView = ! \App\Support\Authorization\CrossTenantEntry::isVisitingNow();
+        if ($countView) {
+            DB::table('group_questions')
+                ->where('id', $questionId)
+                ->where('group_id', $groupId)
+                ->where('tenant_id', $tenantId)
+                ->increment('view_count');
+        }
 
         $answers = DB::table('group_answers as ga')
             ->leftJoin('users as u', static function ($join) use ($tenantId): void {
@@ -188,7 +192,7 @@ final class GroupQAService
             ->all();
 
         $result = self::formatQuestion($question);
-        $result['view_count'] = ((int) $result['view_count']) + 1;
+        $result['view_count'] = ((int) $result['view_count']) + ($countView ? 1 : 0);
         $result['answers'] = $answers;
 
         return $result;

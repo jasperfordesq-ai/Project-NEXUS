@@ -100,6 +100,64 @@ final class CrossTenantEntry
 
     private const READ_METHODS = ['GET', 'HEAD'];
 
+    /** The member API a visitor may read (isVisitorReadRequest()). */
+    private const MEMBER_API_PREFIX = 'api/v2/';
+
+    /**
+     * Reads outside the member API that every member page needs: the site's
+     * navigation menus (MenuController, read only). Pattern syntax: matchesAny().
+     *
+     * @var list<string>
+     */
+    private const VISITOR_EXTRA_READS = [
+        'api/menus',
+        'api/menus/+',
+    ];
+
+    /** The error code of a request refused to a visitor (isVisitor()). */
+    public const VISITOR_READ_ONLY_CODE = 'visiting_manager_read_only';
+
+    /**
+     * Member-side reads a visitor may NOT make, although they are GETs: they
+     * write, leave a trace a member can see, or create rows for the caller.
+     * Pattern syntax: see matchesAny(). The first entry must be a literal path
+     * (a test calls it).
+     *
+     * @var list<string>
+     */
+    public const VISITOR_REFUSED_READS = [
+        // Personal data exports and statements: built for, and recorded
+        // against, the caller (the member export also notifies admins).
+        'api/v2/me/data-export',
+        'api/v2/caring-community/me/data-export',
+        'api/v2/caring-community/my-ahv-pension-export',
+        'api/v2/jobs/gdpr-export',
+        'api/v2/wallet/statement',
+        'api/v2/groups/#/export',
+        'api/v2/groups/#/exports/*',
+        // Opening a conversation marks it read, and the read marker also
+        // touches the caller's notifications in its own community.
+        'api/v2/messages/#',
+        'api/v2/messages/#/*',
+        // Rows, passes and credentials created for the caller on first read.
+        'api/v2/marketplace/seller/*',
+        'api/v2/caring-community/regional-points/*',
+        'api/v2/caring-community/hour-transfer/my-history',
+        'api/v2/gamification/nexus-score',
+        'api/v2/partner-venues/pass',
+        'api/v2/volunteering/shifts/#/checkin',
+        'api/v2/courses/#/certificate',
+        'api/v2/volunteering/certificates/+/html',
+        // Reads that change the caller's own records or what a member sees.
+        'api/v2/safeguarding/my-preferences',
+        'api/v2/caring-community/my-trust-tier',
+        'api/v2/identity/status',
+        'api/v2/federation/activity',
+        'api/v2/goals/#/insights',
+        'api/v2/users/me/sub-accounts',
+        'api/v2/users/me/sub-accounts/*',
+    ];
+
     /**
      * The two calls behind the "Confirm it is you" prompt that guards high-risk
      * admin actions (RequireRecentSecondFactor). Without them a manager working
@@ -289,11 +347,124 @@ final class CrossTenantEntry
             return true;
         }
 
-        if (! self::isManagementRequest($method, $path)) {
+        if (! self::isManagementRequest($method, $path) && ! self::isVisitorReadRequest($method, $path)) {
             return false;
         }
 
         return self::mayEnter($user, $tenantId);
+    }
+
+    /**
+     * Is this account VISITING community $tenantId — a tenant super admin from
+     * a community above, signed in here to manage and look around, never as a
+     * member? The platform owner is never a visitor (it may do anything
+     * anywhere); its own community is not a visit.
+     *
+     * Used to answer a refused request with VISITOR_READ_ONLY_CODE instead of
+     * a tenant mismatch, which the website treats as a foreign account and
+     * signs out.
+     *
+     * @param object|array<string,mixed>|null $user Needs USER_COLUMNS.
+     */
+    public static function isVisitor(object|array|null $user, int $tenantId): bool
+    {
+        return ! self::isPlatformOwner($user) && self::mayEnter($user, $tenantId);
+    }
+
+    /**
+     * The error for a request refused at the door: VISITOR_READ_ONLY_CODE when
+     * the account is a visitor here (isVisitor()), otherwise the caller's own
+     * community-mismatch code and message, unchanged.
+     *
+     * @param object|array<string,mixed>|null $user Needs USER_COLUMNS.
+     * @return array{code:string,message:string}
+     */
+    public static function refusalError(object|array|null $user, int $tenantId, string $mismatchCode, string $mismatchMessage): array
+    {
+        if (self::isVisitor($user, $tenantId)) {
+            return [
+                'code' => self::VISITOR_READ_ONLY_CODE,
+                'message' => 'You are visiting this community as a manager from another community. You can look around, but you cannot take part here.',
+            ];
+        }
+
+        return ['code' => $mismatchCode, 'message' => $mismatchMessage];
+    }
+
+    /**
+     * Is this a member-side READ a visitor may make — GET/HEAD of the member
+     * API (api/v2/*) that is not on VISITOR_REFUSED_READS?
+     *
+     * 🔴 Owner, 15 Oct 2026: a tenant super admin should "be able to browse the
+     * children so he can see what's going on", with "as much leeway as
+     * possible", but with "strict rules to stop any confusion, like acting as
+     * an ordinary member on the site". So: everything a member of the community
+     * can see, and no member action. Every write outside isManagementRequest()
+     * stays refused here, at the door, whatever the page shows.
+     *
+     * Same refusal of anything ambiguous as isAdministrationRequest().
+     */
+    public static function isVisitorReadRequest(string $method, string $path): bool
+    {
+        if (! in_array(strtoupper($method), self::READ_METHODS, true)) {
+            return false;
+        }
+
+        $normalised = self::normalisePath($path);
+        if ($normalised === null) {
+            return false;
+        }
+
+        if (self::matchesAny($normalised, self::VISITOR_EXTRA_READS)) {
+            return true;
+        }
+
+        if (! str_starts_with($normalised, self::MEMBER_API_PREFIX)
+            || strlen($normalised) <= strlen(self::MEMBER_API_PREFIX)
+        ) {
+            return false;
+        }
+
+        return ! self::matchesAny($normalised, self::VISITOR_REFUSED_READS);
+    }
+
+    /**
+     * Does $path match one of $patterns, segment for segment? In a pattern '#'
+     * is an id segment (a {placeholder} or digits) and '+' is any one segment.
+     * A pattern ending in '/*' also matches everything below it.
+     *
+     * @param list<string> $patterns
+     */
+    private static function matchesAny(string $path, array $patterns): bool
+    {
+        $segments = explode('/', $path);
+        foreach ($patterns as $pattern) {
+            $prefix = str_ends_with($pattern, '/*');
+            $expected = explode('/', $prefix ? substr($pattern, 0, -2) : $pattern);
+            if ($prefix ? count($segments) < count($expected) : count($segments) !== count($expected)) {
+                continue;
+            }
+
+            $matches = true;
+            foreach ($expected as $i => $want) {
+                $got = $segments[$i];
+                $ok = match ($want) {
+                    '#' => self::isIdSegment($got),
+                    '+' => preg_match('/^(\{[A-Za-z_]+\}|[A-Za-z0-9_.-]+)$/', $got) === 1,
+                    default => $got === $want,
+                };
+                if (! $ok) {
+                    $matches = false;
+                    break;
+                }
+            }
+
+            if ($matches) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -373,7 +544,37 @@ final class CrossTenantEntry
             return true;
         }
 
-        return self::allowsForRequest($actor, $tenantId, $request);
+        // 🔴 Management only, never a visitor's read (E-107): acting needs an
+        // account of THIS community (activeActor() creates the delegate), and
+        // merely looking around must never create one.
+        if (self::isPlatformOwner($actor)) {
+            return true;
+        }
+        [$method, $path] = self::describeRequest($request);
+
+        return self::isManagementRequest($method, $path) && self::mayEnter($actor, $tenantId);
+    }
+
+    /**
+     * Is the request being handled now a VISIT (isVisitor()) by the signed-in
+     * account? For the places that record that someone looked — view and
+     * download counters — which must not count a manager looking around from
+     * above (owner, 15 Oct 2026: browsing must not confuse anyone). Fails open
+     * to "not a visit" only when there is no signed-in account or community,
+     * which is never a visit.
+     */
+    public static function isVisitingNow(): bool
+    {
+        try {
+            $user = auth()->user();
+            $tenantId = (int) \App\Core\TenantContext::getId();
+        } catch (Throwable) {
+            return false;
+        }
+
+        return $user !== null && $tenantId > 0
+            && (int) data_get($user, 'tenant_id', 0) !== $tenantId
+            && self::isVisitor($user, $tenantId);
     }
 
     /**

@@ -31,7 +31,14 @@ vi.mock('./AuthContext', () => ({
   }),
 }));
 
+const mockUseTenant = vi.fn().mockReturnValue({ tenant: { id: 2 } });
+vi.mock('./TenantContext', () => ({
+  useTenant: (...args: unknown[]) => mockUseTenant(...args),
+}));
+
 // Import after mocks
+import { api } from '@/lib/api';
+import { useAuth } from './AuthContext';
 import {
   PresenceProvider,
   usePresence,
@@ -95,5 +102,35 @@ describe('PresenceContext', () => {
     expect(getPresenceFn).not.toBeNull();
     const presence = getPresenceFn!(99999);
     expect(presence.status).toBe('offline');
+  });
+});
+
+describe('PresenceContext for a manager visiting from a community above (E-107)', () => {
+  beforeEach(() => {
+    vi.mocked(api.post).mockClear();
+  });
+
+  it('never sends a heartbeat, so the visitor never shows as online here', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 7, tenant_id: 2, role: 'admin', is_tenant_super_admin: true },
+      isAuthenticated: true,
+    } as unknown as ReturnType<typeof useAuth>);
+    mockUseTenant.mockReturnValue({ tenant: { id: 101 } });
+
+    renderWithPresenceProvider(<div>child</div>);
+
+    expect(api.post).not.toHaveBeenCalledWith('/v2/presence/heartbeat');
+  });
+
+  it('sends it as usual in its own community', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 7, tenant_id: 2, role: 'admin', is_tenant_super_admin: true },
+      isAuthenticated: true,
+    } as unknown as ReturnType<typeof useAuth>);
+    mockUseTenant.mockReturnValue({ tenant: { id: 2 } });
+
+    renderWithPresenceProvider(<div>child</div>);
+
+    expect(api.post).toHaveBeenCalledWith('/v2/presence/heartbeat');
   });
 });

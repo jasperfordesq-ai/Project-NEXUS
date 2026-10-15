@@ -3262,5 +3262,12 @@
   "time_credits_short_many": "{{count}}h di crediti",
   "time_ago_hours_many": "{{count}} h fa",
   "time_ago_days_many": "{{count}} g fa",
-  "max_characters_many": "max {{count}} caratteri"
+  "max_characters_many": "max {{count}} caratteri",
+  "visiting_manager": {
+    "banner": "Stai visualizzando {{community}} come gestore di un’altra comunità.",
+    "read_only": "Puoi dare un’occhiata, ma non puoi partecipare qui.",
+    "open_admin": "Apri il pannello di amministrazione",
+    "refused_title": "Stai solo visitando questa comunità",
+    "refused_body": "Come gestore di un’altra comunità puoi dare un’occhiata qui, ma non puoi pubblicare, rispondere, iscriverti o inviare nulla. Apporta le modifiche nel pannello di amministrazione."
+  }
 }

@@ -3391,5 +3391,12 @@
   "max_characters_few": "بحد أقصى {{count}} حرفًا",
   "max_characters_many": "بحد أقصى {{count}} حرفًا",
   "max_characters_two": "بحد أقصى {{count}} حرفًا",
-  "max_characters_zero": "بحد أقصى {{count}} حرفًا"
+  "max_characters_zero": "بحد أقصى {{count}} حرفًا",
+  "visiting_manager": {
+    "banner": "أنت تتصفح {{community}} بصفتك مديرًا من مجتمع آخر.",
+    "read_only": "يمكنك التصفح، لكن لا يمكنك المشاركة هنا.",
+    "open_admin": "افتح لوحة الإدارة",
+    "refused_title": "أنت تزور هذا المجتمع فقط",
+    "refused_body": "بصفتك مديرًا من مجتمع آخر يمكنك التصفح هنا، لكن لا يمكنك النشر أو الرد أو التسجيل أو إرسال أي شيء. أجرِ التغييرات من لوحة الإدارة."
+  }
 }

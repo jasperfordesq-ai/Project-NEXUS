@@ -176,6 +176,8 @@ class KnowledgeBaseService
         }
 
         // Increment view count
+        // A manager visiting from a community above is not counted (E-107).
+        $incrementViews = $incrementViews && ! \App\Support\Authorization\CrossTenantEntry::isVisitingNow();
         if ($incrementViews) {
             DB::table('knowledge_base_articles')
                 ->where('id', $id)

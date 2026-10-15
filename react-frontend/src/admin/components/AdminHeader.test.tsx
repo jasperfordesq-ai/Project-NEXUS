@@ -292,15 +292,15 @@ describe('AdminHeader', () => {
     }
   });
 
-  // A tenant super admin from a community ABOVE is sent from every member page
-  // back to /admin (ProtectedRoute), so "Back to site" pointing at /dashboard
-  // just reloaded the admin panel. It must go to the public home page instead.
+  // A tenant super admin from a community ABOVE has no member dashboard here
+  // (ProtectedRoute sends it on), so "Back to site" goes to what it may look
+  // around: the community feed (E-107), or the home page without one.
   describe('a tenant super admin managing a community below its own', () => {
     beforeEach(() => {
       authState.user = { ...DEFAULT_USER, tenant_id: 1, role: 'admin', is_tenant_super_admin: true };
     });
 
-    it('sends "Back to site" to the public home page, not the member dashboard', async () => {
+    async function clickBackToSite() {
       const user = userEvent.setup();
       const { AdminHeader } = await import('./AdminHeader');
       render(<AdminHeader sidebarCollapsed={false} />);
@@ -310,9 +310,24 @@ describe('AdminHeader', () => {
       );
       expect(backBtn).toBeDefined();
       await user.click(backBtn!);
+    }
+
+    it('sends "Back to site" to the community feed, not the member dashboard', async () => {
+      await clickBackToSite();
+
+      expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/feed');
+      expect(mockNavigate).not.toHaveBeenCalledWith('/hour-timebank/dashboard');
+    });
+
+    it('sends "Back to site" to the home page when the community has no feed', async () => {
+      disabledModules.add('feed');
+      try {
+        await clickBackToSite();
+      } finally {
+        disabledModules.delete('feed');
+      }
 
       expect(mockNavigate).toHaveBeenCalledWith('/hour-timebank/');
-      expect(mockNavigate).not.toHaveBeenCalledWith('/hour-timebank/dashboard');
     });
 
     it('does not offer the member-only notifications and profile shortcuts', async () => {

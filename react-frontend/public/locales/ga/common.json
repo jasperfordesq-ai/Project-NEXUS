@@ -3348,5 +3348,12 @@
   "time_ago_days_two": "{{count}} lá ó shin",
   "max_characters_few": "uas. {{count}} carachtar",
   "max_characters_many": "uas. {{count}} carachtar",
-  "max_characters_two": "uas. {{count}} carachtar"
+  "max_characters_two": "uas. {{count}} carachtar",
+  "visiting_manager": {
+    "banner": "Tá {{community}} á fheiceáil agat mar bhainisteoir ó phobal eile.",
+    "read_only": "Is féidir leat breathnú thart, ach ní féidir leat páirt a ghlacadh anseo.",
+    "open_admin": "Oscail an painéal riaracháin",
+    "refused_title": "Níl tú ach ar cuairt sa phobal seo",
+    "refused_body": "Mar bhainisteoir ó phobal eile is féidir leat breathnú thart anseo, ach ní féidir leat aon rud a phostáil, a fhreagairt, clárú ná a sheoladh. Déan athruithe sa phainéal riaracháin."
+  }
 }

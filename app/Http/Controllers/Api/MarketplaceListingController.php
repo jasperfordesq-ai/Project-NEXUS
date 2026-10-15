@@ -241,7 +241,10 @@ class MarketplaceListingController extends BaseApiController
         }
 
         // Record view asynchronously (best-effort)
-        MarketplaceListingService::recordView($id);
+        // A manager visiting from a community above is not counted (E-107).
+        if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+            MarketplaceListingService::recordView($id);
+        }
 
         return $this->respondWithData(PublicMarketplaceListingResource::augment($listing));
     }

@@ -362,10 +362,13 @@ final class GroupFileService
             return null;
         }
 
-        DB::table('group_files')
-            ->where('id', $fileId)
-            ->where('tenant_id', $tenantId)
-            ->increment('download_count');
+        // A manager visiting from a community above is not counted (E-107).
+        if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+            DB::table('group_files')
+                ->where('id', $fileId)
+                ->where('tenant_id', $tenantId)
+                ->increment('download_count');
+        }
 
         return [
             'file_path' => $path,

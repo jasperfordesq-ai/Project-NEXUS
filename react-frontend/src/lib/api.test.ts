@@ -491,6 +491,40 @@ describe('API Client', () => {
       })]);
     });
 
+    // E-107: a manager from a community above may look around a community
+    // below, but the server refuses its member actions with
+    // 403 visiting_manager_read_only. That is explained, never a sign-out.
+    it('announces a refused visitor action without ending the session', async () => {
+      tokenManager.setAccessToken('visitor-session');
+      const announced: unknown[] = [];
+      const ended = vi.fn();
+      const onAnnounced = (event: Event) => announced.push((event as CustomEvent).detail);
+      window.addEventListener('nexus:visitor_read_only', onAnnounced);
+      window.addEventListener('nexus:session_expired', ended);
+      const refusal = {
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: () => Promise.resolve({
+          success: false,
+          errors: [{ code: 'visiting_manager_read_only', message: 'You are visiting this community.' }],
+        }),
+      } as Response;
+      vi.mocked(fetch).mockResolvedValueOnce(refusal).mockResolvedValueOnce(refusal);
+
+      const write = await api.post('/v2/feed/posts', { content: 'hello' });
+      // A refused READ stays with its own page: no announcement.
+      const read = await api.get('/v2/me/data-export');
+
+      window.removeEventListener('nexus:visitor_read_only', onAnnounced);
+      window.removeEventListener('nexus:session_expired', ended);
+      expect(write.code).toBe('visiting_manager_read_only');
+      expect(read.code).toBe('visiting_manager_read_only');
+      expect(announced).toEqual([{ endpoint: '/v2/feed/posts' }]);
+      expect(ended).not.toHaveBeenCalled();
+      expect(tokenManager.getAccessToken()).toBe('visitor-session');
+    });
+
     it('leaves a public (skipAuth) 403 ACCOUNT_UNDER_MINIMUM_AGE to the caller', async () => {
       tokenManager.setAccessToken('unrelated-session');
       const listener = vi.fn();

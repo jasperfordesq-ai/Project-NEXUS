@@ -346,10 +346,13 @@ class ResourcePublicController extends BaseApiController
         }
 
         // Increment download counter
-        DB::table('resources')
-            ->where('id', $id)
-            ->where('tenant_id', $tenantId)
-            ->increment('downloads');
+        // A manager visiting from a community above is not counted (E-107).
+        if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+            DB::table('resources')
+                ->where('id', $id)
+                ->where('tenant_id', $tenantId)
+                ->increment('downloads');
+        }
 
         // Build a friendly download filename from the title
         $ext = pathinfo($fullPath, PATHINFO_EXTENSION);

@@ -3219,5 +3219,12 @@
     "stop": "Stop met kijken",
     "handoff_failed": "Die imitatielink is verlopen of werd al gebruikt. Begin opnieuw vanuit het beheerdersdashboard.",
     "read_only": "Ondersteuningssessie met alleen leestoegang. Ga terug naar uw eigen account om wijzigingen aan te brengen."
+  },
+  "visiting_manager": {
+    "banner": "Je bekijkt {{community}} als beheerder van een andere gemeenschap.",
+    "read_only": "Je kunt rondkijken, maar hier niet meedoen.",
+    "open_admin": "Beheerpaneel openen",
+    "refused_title": "Je bezoekt deze gemeenschap alleen",
+    "refused_body": "Als beheerder van een andere gemeenschap kun je hier rondkijken, maar je kunt niets plaatsen, beantwoorden, je aanmelden of versturen. Breng wijzigingen aan in het beheerpaneel."
   }
 }

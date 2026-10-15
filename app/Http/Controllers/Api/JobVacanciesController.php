@@ -291,7 +291,10 @@ class JobVacanciesController extends BaseApiController
         $job = $this->jobService->legacyGetById($id, $userId);
 
         // Increment views
-        $this->jobService->incrementViews($id, $userId);
+        // A manager visiting from a community above is not counted (E-107).
+        if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+            $this->jobService->incrementViews($id, $userId);
+        }
 
         return $this->respondWithData($job ? PublicJobResource::augment($job) : $job);
     }
@@ -2660,7 +2663,10 @@ class JobVacanciesController extends BaseApiController
         }
 
         // Increment use count
-        $template->increment('use_count');
+        // A manager visiting from a community above is not counted (E-107).
+        if (! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
+            $template->increment('use_count');
+        }
 
         // Replace placeholders
         $body = $template->description ?? '';

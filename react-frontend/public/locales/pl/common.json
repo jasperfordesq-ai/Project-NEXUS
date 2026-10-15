@@ -3305,5 +3305,12 @@
   "time_ago_days_few": "{{count}}d temu",
   "time_ago_days_many": "{{count}}d temu",
   "max_characters_few": "maks. {{count}} znaków",
-  "max_characters_many": "maks. {{count}} znaków"
+  "max_characters_many": "maks. {{count}} znaków",
+  "visiting_manager": {
+    "banner": "Przeglądasz {{community}} jako menedżer z innej społeczności.",
+    "read_only": "Możesz się rozglądać, ale nie możesz tu uczestniczyć.",
+    "open_admin": "Otwórz panel administracyjny",
+    "refused_title": "Tylko odwiedzasz tę społeczność",
+    "refused_body": "Jako menedżer z innej społeczności możesz się tu rozglądać, ale nie możesz niczego publikować, odpowiadać, zapisywać się ani wysyłać. Zmiany wprowadzaj w panelu administracyjnym."
+  }
 }

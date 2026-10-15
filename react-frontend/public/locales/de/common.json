@@ -3219,5 +3219,12 @@
     "stop": "Stoppen Sie die Anzeige",
     "handoff_failed": "Dieser Identitätswechsel-Link ist abgelaufen oder wurde bereits verwendet. Beginnen Sie erneut im Admin-Bereich.",
     "read_only": "Schreibgeschützte Support-Sitzung. Kehren Sie zu Ihrem eigenen Konto zurück, um Änderungen vorzunehmen."
+  },
+  "visiting_manager": {
+    "banner": "Sie sehen {{community}} als Verwalter aus einer anderen Gemeinschaft.",
+    "read_only": "Sie können sich umsehen, aber hier nicht mitmachen.",
+    "open_admin": "Verwaltungsbereich öffnen",
+    "refused_title": "Sie besuchen diese Gemeinschaft nur",
+    "refused_body": "Als Verwalter aus einer anderen Gemeinschaft können Sie sich hier umsehen, aber nichts posten, beantworten, sich anmelden oder senden. Änderungen nehmen Sie im Verwaltungsbereich vor."
   }
 }

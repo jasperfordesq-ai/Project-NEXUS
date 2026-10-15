@@ -72,11 +72,14 @@ export function AdminHeader({ sidebarCollapsed, onSidebarToggle }: AdminHeaderPr
   const navigate = useNavigate();
   const adminLabel = t('admin');
   // A tenant super admin managing a community below its own is not a member
-  // here: ProtectedRoute sends it from every member page straight back to
-  // /admin. So "Back to site" goes to the community's public home page, and
-  // the member-page shortcuts (notifications, profile) are not offered.
+  // here: it may look around (E-107) but has no dashboard of its own, which
+  // ProtectedRoute sends on to the feed. So "Back to site" goes straight to
+  // the community feed (or home page), and the member-page shortcuts
+  // (notifications, profile) are not offered.
   const visiting = isVisitingManager(user, tenant?.id);
-  const siteHome = visiting ? '/' : hasModule('dashboard') ? '/dashboard' : '/';
+  const siteHome = visiting
+    ? (hasModule('feed') ? '/feed' : '/')
+    : hasModule('dashboard') ? '/dashboard' : '/';
 
   // Open support-request count for the header indicator. Best-effort and
   // deferred so it does not compete with the first admin page render. If the

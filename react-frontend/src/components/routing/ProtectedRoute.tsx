@@ -42,18 +42,21 @@ const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
 ]);
 
 /**
- * Event organiser pages a manager from a community above may open here:
- * `/events/:id/manage` and its sections. Matched on the path after any tenant
- * slug prefix.
+ * Pages about the signed-in account's OWN membership of this community. A
+ * manager visiting from a community above has none here (it looks around, it
+ * does not take part — E-107), so these send it to the community feed (or home
+ * page) instead of an empty or misleading page. Matched on any path segment.
  */
-const EVENT_MANAGE_PATH = /\/events\/\d+\/manage(?:\/[^/]*)?$/;
-/** An event's own page — sent on to its organiser page for a visiting manager. */
-const EVENT_DETAIL_PATH = /\/events\/(\d+)$/;
+const VISITOR_PERSONAL_SEGMENTS = new Set([
+  'dashboard', 'messages', 'wallet', 'notifications', 'settings', 'onboarding', 'exchanges', 'matches',
+]);
+/** Form pages for creating or changing something: taking part, not looking. */
+const VISITOR_FORM_SEGMENTS = new Set(['create', 'new', 'edit']);
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation('common');
   const { isAuthenticated, isLoading, status, user } = useAuth();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, hasModule } = useTenant();
   const location = useLocation();
   // A tenant super admin managing a community below its own (owner rule,
   // 12 Oct 2026). It is not a member here: member pages would be refused by
@@ -105,16 +108,19 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // The tenant bootstrap payload includes onboarding settings. When
   // onboarding.enabled=false or onboarding.mandatory=false, we skip the
   // redirect entirely so members can use the platform without onboarding.
+  // A manager from a community above may look around the member side (owner,
+  // 15 Oct 2026: "browse the children so he can see what's going on"). The
+  // server refuses every member action it tries; the banner says so. This
+  // community's member terms and onboarding are not its, so neither applies.
   if (visiting) {
-    const path = location.pathname.replace(/\/+$/, '');
-    if (EVENT_MANAGE_PATH.test(path)) {
-      return children ? <>{children}</> : <Outlet />;
+    const segments = location.pathname.replace(/\/+$/, '').split('/');
+    const personal = segments.some((segment) => VISITOR_PERSONAL_SEGMENTS.has(segment))
+      || segments.some((segment) => VISITOR_FORM_SEGMENTS.has(segment))
+      || segments[segments.length - 1] === 'profile';
+    if (personal) {
+      return <Navigate to={tenantPath(hasModule?.('feed') ? '/feed' : '/')} replace />;
     }
-    const detail = EVENT_DETAIL_PATH.exec(path);
-    if (detail) {
-      return <Navigate to={tenantPath(`/events/${detail[1]}/manage`)} replace />;
-    }
-    return <Navigate to={tenantPath('/admin')} replace />;
+    return children ? <>{children}</> : <Outlet />;
   }
 
   const pathSegments = location.pathname.replace(/\/+$/, '').split('/');

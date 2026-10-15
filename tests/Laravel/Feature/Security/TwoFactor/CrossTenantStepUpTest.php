@@ -140,11 +140,13 @@ class CrossTenantStepUpTest extends TwoFactorAuditTestCase
     public function test_a_tenant_super_admin_from_above_still_cannot_manage_its_passkeys_from_below(): void
     {
         // Only the two step-up calls are admitted, not the rest of /webauthn.
+        // Refused as a visit since E-107 (15 Oct 2026): a manager from above
+        // may look around the member side here, but /webauthn is not part of it.
         $tsa = $this->tenantSuperAdminAbove();
 
         $this->apiGet('/webauthn/credentials', $this->staleSession($tsa))
             ->assertStatus(403)
-            ->assertJsonPath('errors.0.code', 'TENANT_MISMATCH');
+            ->assertJsonPath('errors.0.code', \App\Support\Authorization\CrossTenantEntry::VISITOR_READ_ONLY_CODE);
     }
 
     public function test_a_code_from_a_member_of_another_community_mints_nothing_here(): void

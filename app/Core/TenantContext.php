@@ -45,6 +45,14 @@ class TenantContext
     private static $headerTenantId = null;
 
     /**
+     * @var array{code:string,message:string}|null Set by tokenUserMayEnter() when
+     * it refuses a VISITOR (CrossTenantEntry::isVisitor()) — a tenant super admin
+     * from above on a member write — so the refusal says so instead of reporting
+     * a foreign account. Read once by respondWithTenantMismatchError().
+     */
+    private static ?array $visitorRefusal = null;
+
+    /**
      * When a slug-only sub-tenant is resolved from a parent's custom domain
      * (e.g. timebanking.uk/cardiff → cardiff tenant), this holds the parent's
      * domain string so getFrontendUrl() can return the correct base URL for
@@ -515,6 +523,7 @@ class TenantContext
         self::$cachedId = null;
         self::$tokenTenantId = null;
         self::$headerTenantId = null;
+        self::$visitorRefusal = null;
         self::$parentDomain = null;
         self::$parentDomainByParentId = [];
         self::$viaAccessibleDomain = false;
@@ -1106,11 +1115,14 @@ class TenantContext
         ];
         self::$basePath = '';
 
+        $error = self::$visitorRefusal
+            ?? ['code' => ApiErrorCodes::TENANT_MISMATCH, 'message' => 'Token tenant does not match requested tenant'];
+        self::$visitorRefusal = null;
+
         return new \Illuminate\Http\JsonResponse([
             'data' => null,
             'errors' => [[
-                'code' => ApiErrorCodes::TENANT_MISMATCH,
-                'message' => 'Token tenant does not match requested tenant',
+                ...$error,
                 'field' => null
             ]]
         ], 403);
@@ -1170,7 +1182,19 @@ class TenantContext
                             return false;
                         }
 
-                        return \App\Support\Authorization\CrossTenantEntry::allowsForRequest($userRow, $targetTenantId);
+                        if (\App\Support\Authorization\CrossTenantEntry::allowsForRequest($userRow, $targetTenantId)) {
+                            return true;
+                        }
+                        if (\App\Support\Authorization\CrossTenantEntry::isVisitor($userRow, $targetTenantId)) {
+                            self::$visitorRefusal = \App\Support\Authorization\CrossTenantEntry::refusalError(
+                                $userRow,
+                                $targetTenantId,
+                                ApiErrorCodes::TENANT_MISMATCH,
+                                'Token tenant does not match requested tenant',
+                            );
+                        }
+
+                        return false;
                     }
                 }
             }

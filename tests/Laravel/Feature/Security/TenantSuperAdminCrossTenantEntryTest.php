@@ -38,7 +38,11 @@ use Tests\Laravel\TestCase;
  *   - a tenant super admin who is admin-tier — a STRICT descendant of its home
  *     community, on an ADMINISTRATION request only (/api/v2/admin/*, plus the
  *     read-only GET /api/v2/users/me the admin panel loads);
- *   - everybody else, and every member endpoint — refused, 403 tenant mismatch.
+ *   - the same tenant super admin may also READ the member side of that
+ *     community (GET/HEAD /api/v2/*, minus reads that write or leave a trace)
+ *     — owner, 15 Oct 2026: browse below to "see what's actually going on";
+ *     every member WRITE there is refused, 403 visiting_manager_read_only;
+ *   - everybody else — refused, 403 tenant mismatch.
  *
  * Fixture: hub 2 (path /2/) with children 101 (/2/101/) and 102 (/2/102/), and
  * an unrelated root 103 (/103/). Every grant is paired with refusals on the
@@ -135,7 +139,7 @@ final class TenantSuperAdminCrossTenantEntryTest extends TestCase
 
         $member = $this->jwt('POST', "http://{$domain}/api/v2/feed/posts", $tsa, ['X-Tenant-ID' => (string) self::CHILD]);
         $member->assertStatus(403);
-        self::assertSame('TENANT_MISMATCH', $member->json('errors.0.code'));
+        self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $member->json('errors.0.code'));
 
         $admin = $this->user(self::HUB, ['role' => 'admin']);
         $refused = $this->jwt('GET', "http://{$domain}/api/v2/admin/config", $admin, ['X-Tenant-ID' => (string) self::CHILD]);
@@ -169,11 +173,15 @@ final class TenantSuperAdminCrossTenantEntryTest extends TestCase
                 ->assertStatus(200)
                 ->assertJsonPath('data.id', (int) $tsa->id);
 
-            foreach (['/api/v2/notifications/counts', '/api/v2/messages/unread-count', '/api/v2/realtime/config'] as $uri) {
-                $member = $this->jwt('GET', "http://{$domain}{$uri}", $tsa, $headers);
-                $member->assertStatus(403);
-                self::assertSame('tenant_mismatch', $member->json('errors.0.code'), $uri);
-            }
+            // Reading the member side is admitted since 15 Oct 2026 (E-107).
+            $this->jwt('GET', "http://{$domain}/api/v2/listings", $tsa, $headers)
+                ->assertStatus(200);
+
+            // Taking part is not: a member write is refused as a visit, never
+            // as a foreign account (which the website would sign out).
+            $write = $this->jwt('POST', "http://{$domain}/api/v2/feed/posts", $tsa, $headers);
+            $write->assertStatus(403);
+            self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $write->json('errors.0.code'));
         }
 
         // A plain member of the hub is refused on the child's domain the same
@@ -218,7 +226,7 @@ final class TenantSuperAdminCrossTenantEntryTest extends TestCase
         $response = $this->jwt($method, $uri, $tsa, ['X-Tenant-ID' => (string) self::CHILD]);
 
         $response->assertStatus(403);
-        self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'));
+        self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $response->json('errors.0.code'));
     }
 
     /** @dataProvider memberEndpoints */
@@ -231,7 +239,154 @@ final class TenantSuperAdminCrossTenantEntryTest extends TestCase
             ->json($method, $uri, []);
 
         $response->assertStatus(403);
-        self::assertSame('tenant_mismatch', $response->json('errors.0.code'));
+        self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $response->json('errors.0.code'));
+    }
+
+    // ------------------------------- grants: browsing the member side below (E-107)
+
+    /**
+     * 🔴 Owner, 15 Oct 2026: a tenant super admin should "be able to browse the
+     * children so he can see what's going on", with "as much leeway as
+     * possible", but never "acting as an ordinary member on the site".
+     */
+    public function test_a_hub_tenant_super_admin_reads_the_member_side_of_a_child_community(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+        $childMember = $this->member(self::CHILD);
+
+        foreach (['X-Tenant-ID' => (string) self::CHILD, 'X-Tenant-Slug' => $this->childSlug] as $header => $value) {
+            $this->jwt('GET', '/api/v2/listings', $tsa, [$header => $value])->assertStatus(200);
+            self::assertSame(self::CHILD, (int) TenantContext::getId(), $header);
+
+            $this->jwt('GET', '/api/v2/users/' . $childMember->id, $tsa, [$header => $value])
+                ->assertStatus(200)
+                ->assertJsonPath('data.id', (int) $childMember->id);
+        }
+    }
+
+    public function test_a_stateful_hub_tenant_super_admin_reads_the_member_side_of_a_child_community(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+        Sanctum::actingAs($tsa, ['*']);
+
+        $this->withHeaders(['X-Tenant-ID' => (string) self::CHILD, 'Accept' => 'application/json'])
+            ->getJson('/api/v2/listings')
+            ->assertStatus(200);
+    }
+
+    public function test_browsing_is_still_confined_to_communities_below(): void
+    {
+        $cases = [
+            'child TSA upwards' => [$this->tenantSuperAdmin(self::CHILD), self::HUB],
+            'sibling TSA' => [$this->tenantSuperAdmin(self::SIBLING), self::CHILD],
+            'unrelated root TSA' => [$this->tenantSuperAdmin(self::UNRELATED_ROOT), self::CHILD],
+            'plain hub admin' => [$this->user(self::HUB, ['role' => 'admin']), self::CHILD],
+            'hub member' => [$this->member(self::HUB), self::CHILD],
+            'hub broker with a stray flag' => [$this->user(self::HUB, ['role' => 'broker', 'is_tenant_super_admin' => 1]), self::CHILD],
+        ];
+
+        foreach ($cases as $label => [$actor, $target]) {
+            $response = $this->jwt('GET', '/api/v2/listings', $actor, ['X-Tenant-ID' => (string) $target]);
+            $response->assertStatus(403);
+            self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'), $label . ': not a visit, an account that may not be here.');
+        }
+    }
+
+    public function test_the_read_predicate_admits_member_reads_and_refuses_everything_else(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/listings'));
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'HEAD', '/api/v2/feed'));
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/users/{id}'));
+
+        foreach (['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] as $method) {
+            self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, $method, 'api/v2/listings'), $method);
+        }
+        // The site's navigation menus, which every member page loads.
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/menus'));
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/menus/{slug}'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'POST', 'api/menus'));
+        // Otherwise only the member API: not legacy paths, not ambiguous ones.
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/listings'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/ai/limits'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/../admin-x'));
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/listings%2F..'));
+        // Never above or beside.
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::UNRELATED_ROOT, 'GET', 'api/v2/listings'));
+        // Reads that write or leave a trace stay refused.
+        self::assertNotEmpty(CrossTenantEntry::VISITOR_REFUSED_READS);
+        foreach (CrossTenantEntry::VISITOR_REFUSED_READS as $pattern) {
+            // As the route table spells it, and as a concrete request path.
+            foreach ([['#' => '{id}', '+' => '{code}', '*' => 'download'], ['#' => '42', '+' => 'abc-123', '*' => 'download']] as $fill) {
+                $path = strtr($pattern, $fill);
+                self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', $path), $path);
+            }
+        }
+        // A pattern ending in /* covers everything below it, not the parent.
+        self::assertFalse(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/marketplace/seller/coupons/{id}/redemptions'));
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/marketplace/sellers/{id}'));
+        self::assertTrue(CrossTenantEntry::allows($tsa, self::CHILD, 'GET', 'api/v2/messages/unread-count'), 'A count, not a conversation.');
+    }
+
+    public function test_a_refused_read_on_the_refusal_list_is_a_visit_not_a_foreign_account(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+        $path = CrossTenantEntry::VISITOR_REFUSED_READS[0];
+        self::assertStringNotContainsString('{', $path, 'The first refused read is a literal path the test can call.');
+
+        $response = $this->jwt('GET', '/' . $path, $tsa, ['X-Tenant-ID' => (string) self::CHILD]);
+        $response->assertStatus(403);
+        self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $response->json('errors.0.code'));
+    }
+
+    public function test_a_visit_leaves_no_view_count_behind(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+        $owner = $this->member(self::CHILD);
+        $listing = \App\Models\Listing::factory()->forTenant(self::CHILD)->create(['user_id' => $owner->id, 'status' => 'active']);
+        $before = (int) DB::table('listings')->where('id', $listing->id)->value('view_count');
+
+        $this->jwt('GET', '/api/v2/listings/' . $listing->id, $tsa, ['X-Tenant-ID' => (string) self::CHILD])
+            ->assertStatus(200);
+
+        self::assertSame($before, (int) DB::table('listings')->where('id', $listing->id)->value('view_count'));
+        self::assertSame(0, DB::table('listing_views')->where('listing_id', $listing->id)->count());
+
+        // Control: a member of the community is counted.
+        $this->jwt('GET', '/api/v2/listings/' . $listing->id, $this->member(self::CHILD), ['X-Tenant-ID' => (string) self::CHILD])
+            ->assertStatus(200);
+        self::assertSame($before + 1, (int) DB::table('listings')->where('id', $listing->id)->value('view_count'));
+    }
+
+    public function test_looking_around_never_makes_the_visitor_an_actor_here(): void
+    {
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+
+        // Reading the member side: not an actor, so no delegate account.
+        self::assertFalse(CrossTenantEntry::actorMayActIn($tsa, self::CHILD, \Illuminate\Http\Request::create('/api/v2/events', 'GET')));
+        self::assertFalse(CrossTenantEntry::actorMayActIn($tsa, self::CHILD, \Illuminate\Http\Request::create('/api/v2/listings/5', 'GET')));
+        // Managing: an actor, as before.
+        self::assertTrue(CrossTenantEntry::actorMayActIn($tsa, self::CHILD, \Illuminate\Http\Request::create('/api/v2/admin/users', 'GET')));
+        self::assertTrue(CrossTenantEntry::actorMayActIn($tsa, self::CHILD, \Illuminate\Http\Request::create('/api/v2/events/5/attendees', 'GET')));
+
+        $delegatesBefore = DB::table('users')->where('tenant_id', self::CHILD)->where('status', 'delegate')->count();
+        $this->jwt('GET', '/api/v2/events', $tsa, ['X-Tenant-ID' => (string) self::CHILD]);
+        self::assertSame($delegatesBefore, DB::table('users')->where('tenant_id', self::CHILD)->where('status', 'delegate')->count());
+    }
+
+    public function test_the_platform_owner_is_never_a_visitor(): void
+    {
+        $god = $this->user(self::HUB, ['role' => 'admin', 'is_super_admin' => 1, 'is_god' => 1]);
+        $tsa = $this->tenantSuperAdmin(self::HUB);
+
+        self::assertTrue(CrossTenantEntry::allows($god, self::CHILD, 'POST', 'api/v2/feed/posts'));
+        self::assertFalse(CrossTenantEntry::isVisitor($god, self::CHILD));
+        self::assertTrue(CrossTenantEntry::isVisitor($tsa, self::CHILD));
+        self::assertFalse(CrossTenantEntry::isVisitor($tsa, self::HUB), 'Its own community is not a visit.');
+        self::assertFalse(CrossTenantEntry::isVisitor($tsa, self::UNRELATED_ROOT), 'A community it may not enter is not a visit.');
     }
 
     // ---------------------------------------- refusals: everyone else

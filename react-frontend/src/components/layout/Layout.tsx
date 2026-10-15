@@ -25,6 +25,7 @@ import { SessionTimeoutWarning } from '@/components/feedback/SessionTimeoutWarni
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { SeoHead } from '@/components/seo/SeoHead';
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
+import { VisitingManagerBanner } from '@/components/admin/VisitingManagerBanner';
 import { useApiErrorHandler } from '@/hooks/useApiErrorHandler';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useAuth } from '@/contexts/AuthContext';
@@ -95,6 +96,9 @@ export function Layout({
 
       {/* Impersonation notice + exit — renders only in an impersonated tab */}
       <ImpersonationBanner />
+
+      {/* A manager from a community above, looking around (E-107) */}
+      <VisitingManagerBanner />
 
       {/* Offline indicator */}
       <OfflineIndicator />

@@ -26,6 +26,8 @@ import {
   type ReactNode,
 } from 'react';
 import { useAuth } from './AuthContext';
+import { useTenant } from './TenantContext';
+import { isVisitingManager } from '@/lib/access';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 
@@ -92,6 +94,11 @@ interface PresenceProviderProps {
 
 export function PresenceProvider({ children }: PresenceProviderProps) {
   const { user, isAuthenticated } = useAuth();
+  const { tenant } = useTenant();
+  // A manager visiting from a community above is looking around, not here as a
+  // member: it never shows as online, and the server refuses its heartbeat
+  // anyway (E-107).
+  const visiting = isAuthenticated && isVisitingManager(user, tenant?.id);
   const [onlineUsers, setOnlineUsers] = useState<Map<number, PresenceState>>(new Map());
   const [onlineCount, setOnlineCount] = useState(0);
 
@@ -141,7 +148,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
 
   // Start/stop heartbeat based on auth state
   useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
+    if (!isAuthenticated || !user?.id || visiting) {
       // Clear heartbeat when logged out
       if (heartbeatIntervalRef.current) {
         clearInterval(heartbeatIntervalRef.current);
@@ -201,7 +208,7 @@ export function PresenceProvider({ children }: PresenceProviderProps) {
         clearTimeout(activityDebounceRef.current);
       }
     };
-  }, [isAuthenticated, user?.id, sendHeartbeat, handleActivity]);
+  }, [isAuthenticated, user?.id, visiting, sendHeartbeat, handleActivity]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Online count polling

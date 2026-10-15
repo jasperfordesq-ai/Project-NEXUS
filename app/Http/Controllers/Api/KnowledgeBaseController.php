@@ -146,7 +146,8 @@ class KnowledgeBaseController extends BaseApiController
         // articles and for HEAD requests, neither of which represent a real
         // user view.
         $isHead = strtoupper(request()->method()) === 'HEAD';
-        if (! $isAdminPreview && ! $isHead) {
+        // A manager visiting from a community above is not a user view either (E-107).
+        if (! $isAdminPreview && ! $isHead && ! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
             // Column is views_count — 'view_count' 500ed every public slug fetch
             DB::table('knowledge_base_articles')->where('id', $article->id)->where('tenant_id', \App\Core\TenantContext::getId())->increment('views_count');
         }

@@ -3262,5 +3262,12 @@
   "time_credits_short_many": "{{count}}h de créditos",
   "time_ago_hours_many": "há {{count}}h",
   "time_ago_days_many": "há {{count}}d",
-  "max_characters_many": "máx. {{count}} caracteres"
+  "max_characters_many": "máx. {{count}} caracteres",
+  "visiting_manager": {
+    "banner": "Está a ver {{community}} como gestor de outra comunidade.",
+    "read_only": "Pode explorar, mas não pode participar aqui.",
+    "open_admin": "Abrir o painel de administração",
+    "refused_title": "Está apenas a visitar esta comunidade",
+    "refused_body": "Como gestor de outra comunidade pode explorar aqui, mas não pode publicar, responder, inscrever-se nem enviar nada. Faça as alterações no painel de administração."
+  }
 }

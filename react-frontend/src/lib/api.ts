@@ -102,6 +102,18 @@ export interface SessionReplacedDetail {
 export const API_ERROR_EVENT = 'nexus:api_error';
 
 /**
+ * The server refused an action because this account is VISITING the community:
+ * a tenant super admin from a community above, which may look around but not
+ * take part (E-107, owner 15 Oct 2026). Never a sign-out. Fired for writes only;
+ * a refused background read stays with its own page.
+ */
+export const VISITOR_READ_ONLY_EVENT = 'nexus:visitor_read_only';
+export const VISITOR_READ_ONLY_CODE = 'visiting_manager_read_only';
+export interface VisitorReadOnlyDetail {
+  endpoint: string;
+}
+
+/**
  * Fired after any successful write (POST/PUT/PATCH/DELETE) through `request()`.
  * Lets a shell that shows counts — the broker panel's sidebar badges — refresh
  * after an action anywhere on the page, instead of every button having to
@@ -1868,6 +1880,16 @@ export class ApiClient {
       const firstError = errors && errors.length > 0 ? errors[0] : null;
       const errorMessage = data.error ?? firstError?.message ?? data.message ?? i18n.t('api.request_failed', { ns: 'errors' });
       const errorCode = data.code ?? firstError?.code ?? `HTTP_${response.status}`;
+
+      if (
+        response.status === 403
+        && method !== 'GET'
+        && method !== 'HEAD'
+        && errorCode === VISITOR_READ_ONLY_CODE
+        && typeof window !== 'undefined'
+      ) {
+        window.dispatchEvent(new CustomEvent<VisitorReadOnlyDetail>(VISITOR_READ_ONLY_EVENT, { detail: { endpoint } }));
+      }
 
       // Adults-only decision 2026-09-25: the server refuses every authenticated
       // request from an account whose recorded date of birth is under 18. No

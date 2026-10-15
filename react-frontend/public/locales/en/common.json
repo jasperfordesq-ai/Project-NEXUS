@@ -3219,5 +3219,12 @@
     "stop": "Stop viewing",
     "handoff_failed": "That impersonation link has expired or was already used. Start again from the admin panel.",
     "read_only": "Read-only support session. Return to your own account to make changes."
+  },
+  "visiting_manager": {
+    "banner": "You are viewing {{community}} as a manager from another community.",
+    "read_only": "You can look around, but you cannot take part here.",
+    "open_admin": "Open the admin panel",
+    "refused_title": "You are only visiting this community",
+    "refused_body": "As a manager from another community you can look around here, but you cannot post, reply, sign up or send anything. Make changes in the admin panel."
   }
 }

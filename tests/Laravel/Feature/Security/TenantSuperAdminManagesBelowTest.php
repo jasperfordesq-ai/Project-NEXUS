@@ -199,7 +199,6 @@ final class TenantSuperAdminManagesBelowTest extends TestCase
             'own reminders' => ['PUT', '/reminders'],
             'acknowledge code of conduct' => ['POST', '/safety/code-of-conduct/acknowledgements'],
             'own registration form' => ['POST', '/registration-product/submissions'],
-            'own calendar file' => ['GET', '/calendar.ics'],
         ];
     }
 
@@ -210,21 +209,32 @@ final class TenantSuperAdminManagesBelowTest extends TestCase
 
         $response = $this->jwt($method, "/api/v2/events/{$eventId}{$suffix}", $this->tenantSuperAdmin(self::PARENT), self::CHILD);
 
+        // Refused as a VISIT (E-107, 15 Oct 2026), not as a foreign account.
         $response->assertStatus(403);
-        self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'));
+        self::assertSame(CrossTenantEntry::VISITOR_READ_ONLY_CODE, $response->json('errors.0.code'));
     }
 
-    public function test_a_parent_tenant_super_admin_cannot_read_its_own_relationship_to_a_child_event(): void
+    public function test_a_parent_tenant_super_admin_may_look_at_a_child_event_as_a_member_would_without_becoming_an_actor(): void
     {
-        // "My" registration state is a member's own view, not an organiser
-        // tool: refused below. Organiser CHANGES are covered, and admitted, in
-        // TenantSuperAdminOrganiserChangesBelowTest (owner, 12 Oct 2026: option 3).
+        // Owner, 15 Oct 2026 (E-107): a tenant super admin may look around the
+        // member side below — "my" registration state and the event's calendar
+        // file are reads a member makes — but looking never makes it an actor
+        // there: no delegate account is created. Organiser CHANGES are covered,
+        // and admitted, in TenantSuperAdminOrganiserChangesBelowTest.
         $eventId = $this->childEvent();
+        $tsa = $this->tenantSuperAdmin(self::PARENT);
+        $delegates = DB::table('users')->where('tenant_id', self::CHILD)->where('status', 'delegate')->count();
 
-        $response = $this->jwt('GET', "/api/v2/events/{$eventId}/relationship", $this->tenantSuperAdmin(self::PARENT), self::CHILD);
+        foreach (['/relationship', '/calendar.ics'] as $suffix) {
+            $response = $this->jwt('GET', "/api/v2/events/{$eventId}{$suffix}", $tsa, self::CHILD);
+            self::assertNotContains(
+                $response->json('errors.0.code'),
+                ['TENANT_MISMATCH', 'tenant_mismatch', CrossTenantEntry::VISITOR_READ_ONLY_CODE],
+                $suffix . ' is not refused at the door.',
+            );
+        }
 
-        $response->assertStatus(403);
-        self::assertSame('TENANT_MISMATCH', $response->json('errors.0.code'));
+        self::assertSame($delegates, DB::table('users')->where('tenant_id', self::CHILD)->where('status', 'delegate')->count());
     }
 
     public function test_a_sibling_tenant_super_admin_cannot_open_the_child_event_team(): void

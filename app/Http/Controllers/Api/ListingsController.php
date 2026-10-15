@@ -238,8 +238,9 @@ class ListingsController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.listing_not_found'), null, 404);
         }
 
-        // Track view (skip if viewer is the listing owner)
-        if ($userId === null || $userId !== (int) ($listing['user_id'] ?? 0)) {
+        // Track view (skip if viewer is the listing owner, or a manager
+        // visiting from a community above — E-107)
+        if (($userId === null || $userId !== (int) ($listing['user_id'] ?? 0)) && ! \App\Support\Authorization\CrossTenantEntry::isVisitingNow()) {
             try {
                 $ip = \App\Core\ClientIp::get();
                 $this->listingAnalyticsService->recordView($id, $userId, $ip);

@@ -75,9 +75,17 @@ the rule above.
   `GET`/`HEAD /api/v2/users/me` and the member-directory search
   `GET /api/v2/users`; and the event organiser tools, views and changes alike (an
   explicit method + path list, `EVENT_ORGANISER_ROUTES`) — with a token issued
-  for its home tenant. Everything else (posting, messaging, wallet, registering
-  for events) is still refused there, so a parent tenant super admin manages a
-  sub-community but never acts in it as a member. Tenant
+  for its home tenant. Since 15 Oct 2026 it may also **read** the member side
+  there (`CrossTenantEntry::isVisitorReadRequest()`: `GET`/`HEAD` of `api/v2/*`
+  and the navigation menus, minus `VISITOR_REFUSED_READS` — reads that write,
+  export personal data, or create rows for the caller). Everything else
+  (posting, messaging, wallet, registering for events) is still refused there,
+  answered `403 visiting_manager_read_only`, so a parent tenant super admin
+  manages and looks around a sub-community but never acts in it as a member.
+  Looking around leaves no trace: view and download counters skip a visitor
+  (`CrossTenantEntry::isVisitingNow()`), it never shows as online, and a read
+  never creates its delegate (`actorMayActIn()` admits management requests
+  only). Tenant
   admins, brokers and members are always pinned to their home tenant. Admin controllers that load "the acting admin" now load that account
   by id and check it with `CrossTenantEntry`/`TenantAdminScope`; the members and
   records being administered stay confined to the request's tenant.
@@ -121,9 +129,12 @@ the rule above.
   no longer signs anyone out on a community switch, and no longer clears the
   stored session when it boots a different community: it asks
   `GET /v2/users/me` there (`COMMUNITY_CHANGED_EVENT`), and a `tenant_mismatch`
-  answer ends the session. A visiting tenant super admin (`isVisitingManager()`)
-  is sent to the admin panel, an event's page opens on its organiser page, and
-  that community's member terms and onboarding are not asked of it.
+  answer ends the session (`visiting_manager_read_only` never does). A visiting
+  tenant super admin (`isVisitingManager()`) may open member pages, under a
+  permanent "visiting" banner (`VisitingManagerBanner`); pages about its own
+  membership (dashboard, messages, wallet, notifications, settings, exchanges,
+  matches, create/edit forms) send it to the community feed, and that
+  community's member terms and onboarding are not asked of it.
 
 ### Flags each level needs
 

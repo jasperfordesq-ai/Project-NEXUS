@@ -682,10 +682,15 @@ admin** (`is_super_admin`: platform-wide) → **god** (`is_god` **and**
   called from `TenantContext` and `Authenticate`): a tenant super admin may enter
   a tenant strictly below its home tenant **for management requests only**
   (`/api/v2/admin/*`, read-only `GET /api/v2/users/me` and `GET /api/v2/users`,
-  and the event organiser tools) — every member-facing endpoint there still
-  answers `403 tenant_mismatch`. It can sign in on a sub-community's login page
-  and keep its session there; the React app sends it to the admin panel, and
-  signs out any account the server refuses in the community it moved to.
+  and the event organiser tools). 🔴 Since 15 Oct 2026 (owner, E-107) it may
+  also **look around the member side** there — `GET`/`HEAD` of `api/v2/*`
+  minus `CrossTenantEntry::VISITOR_REFUSED_READS` — but **never take part**:
+  every member write answers `403 visiting_manager_read_only`. Browsing must
+  leave no trace (view/download counters check `CrossTenantEntry::isVisitingNow()`;
+  a new GET that writes, or creates rows for the caller, belongs on the refused
+  list). It can sign in on a sub-community's login page and keep its session
+  there; the React app shows a "visiting" banner, and signs out any account the
+  server refuses in the community it moved to (`tenant_mismatch`).
   🔴 Below, it ACTS as its **delegate** (`ManagerDelegate`, `status =
   'delegate'`), because 45 event tables only accept an actor of the record's own
   community. A delegate never signs in, cannot be taken over (DB triggers), and

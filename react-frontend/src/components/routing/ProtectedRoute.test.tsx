@@ -128,11 +128,60 @@ describe('ProtectedRoute', () => {
       mockUseTenant.mockReturnValue({ tenantPath: (p: string) => `/child${p}`, tenant: { id: 101 } });
     });
 
-    it('sends the visitor from a member page to the admin panel', () => {
+    // Owner, 15 Oct 2026 (E-107): the visitor may "browse the children so he
+    // can see what's going on", but never take part as a member.
+    it('lets the visitor look around a member page, without member terms or onboarding', () => {
       mockPathname = '/child/feed';
+      mockUseLegalGate.mockReturnValue({
+        hasPending: true,
+        pendingDocs: [],
+        acceptAll: vi.fn(),
+        isAccepting: false,
+        isLoading: false,
+        error: null,
+        refresh: vi.fn(),
+      });
       render(<ProtectedRoute><div>Protected Content</div></ProtectedRoute>);
-      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/admin');
-      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+      expect(screen.getByText('Protected Content')).toBeInTheDocument();
+      expect(screen.queryByTestId('navigate')).not.toBeInTheDocument();
+      expect(mockUseLegalGate).toHaveBeenCalledWith({ enabled: false });
+    });
+
+    it.each([
+      '/child/dashboard',
+      '/child/messages',
+      '/child/messages/12',
+      '/child/wallet',
+      '/child/notifications',
+      '/child/settings',
+      '/child/onboarding',
+      '/child/exchanges/3',
+      '/child/matches',
+      '/child/listings/create',
+      '/child/listings/edit/9',
+      '/child/profile',
+    ])('sends the visitor from a page about its own membership (%s) to the community home', (path) => {
+      mockPathname = path;
+      render(<ProtectedRoute><div>Own page</div></ProtectedRoute>);
+      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/');
+      expect(screen.queryByText('Own page')).not.toBeInTheDocument();
+    });
+
+    it('sends it to the community feed when the community has one', () => {
+      mockUseTenant.mockReturnValue({
+        tenantPath: (p: string) => `/child${p}`,
+        tenant: { id: 101 },
+        hasModule: (m: string) => m === 'feed',
+      });
+      mockPathname = '/child/dashboard';
+      render(<ProtectedRoute><div>Own page</div></ProtectedRoute>);
+      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/feed');
+    });
+
+    it("shows another member's profile", () => {
+      mockPathname = '/child/profile/31';
+      render(<ProtectedRoute><div>Their profile</div></ProtectedRoute>);
+      expect(screen.getByText('Their profile')).toBeInTheDocument();
     });
 
     it('opens an event organiser page without member terms or onboarding', () => {
@@ -151,10 +200,10 @@ describe('ProtectedRoute', () => {
       expect(mockUseLegalGate).toHaveBeenCalledWith({ enabled: false });
     });
 
-    it("sends an event's own page on to its organiser page", () => {
+    it("shows an event's own page as a member sees it", () => {
       mockPathname = '/child/events/55';
       render(<ProtectedRoute><div>Event page</div></ProtectedRoute>);
-      expect(screen.getByTestId('navigate')).toHaveAttribute('data-to', '/child/events/55/manage');
+      expect(screen.getByText('Event page')).toBeInTheDocument();
     });
 
     it('treats the same account in its own community as a member as usual', () => {
