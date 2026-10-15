@@ -18,6 +18,7 @@ import { userScopedStorageKey } from '@/lib/userScopedStorage';
 import { useDraftPersistence } from '@/hooks';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TimeInput, type TimeInputValue, Button, Input, Textarea } from '@/components/ui';
+import { Switch } from '@/components/ui/Switch';
 import { eventsApi } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
@@ -52,9 +53,13 @@ interface EventDraft {
 
 export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmitProps) {
   const { t } = useTranslation('feed');
+  const { t: tEvents } = useTranslation('events');
   const toast = useToast();
   const { user } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, hasFeature } = useTenant();
+  // Same rule as the full event form: offered (and sent) only while the
+  // community advertises events publicly; otherwise events stay members-only.
+  const canListPublicly = hasFeature('public_events');
   const { register, unregister } = useComposeSubmit();
   const isMobile = useMediaQuery('(max-width: 639px)');
   const submitRef = useRef<() => void>(() => {});
@@ -73,6 +78,7 @@ export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmi
   const [location, setLocation] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
+  const [isPublicListing, setIsPublicListing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Apply template data when selected from TemplatePicker
@@ -126,6 +132,7 @@ export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmi
       if (latitude != null) payload.latitude = latitude;
       if (longitude != null) payload.longitude = longitude;
       if (groupId) payload.group_id = groupId;
+      if (canListPublicly) payload.is_public_listing = isPublicListing;
 
       const res = await eventsApi.create(payload);
       if (res.success) {
@@ -254,6 +261,21 @@ export function EventTab({ onSuccess, onClose, groupId, templateData }: TabSubmi
           setLocation(value);
         }}
       />
+
+      {canListPublicly && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-default)] bg-[var(--surface-elevated)] p-3">
+          <div>
+            <p className="text-sm font-medium text-[var(--text-primary)]">{tEvents('form.public_listing_toggle')}</p>
+            <p className="text-xs text-[var(--text-muted)]">{tEvents('form.public_listing_desc')}</p>
+          </div>
+          <Switch
+            aria-label={tEvents('form.public_listing_toggle')}
+            isSelected={isPublicListing}
+            isDisabled={isSubmitting}
+            onValueChange={setIsPublicListing}
+          />
+        </div>
+      )}
 
       <div className={`flex items-center justify-between pt-1 ${isMobile ? 'sticky bottom-0 bg-[var(--surface-base)] py-3 border-t border-[var(--border-default)]' : ''}`}>
         <div className="flex items-center gap-1">

@@ -9,7 +9,8 @@ import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 import { renderEventComponent } from '@/test/events-test-harness';
 
-const { mockApi, mockToast } = vi.hoisted(() => ({
+const { mockApi, mockToast, mockFeaturesOff } = vi.hoisted(() => ({
+  mockFeaturesOff: new Set<string>(),
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -48,7 +49,7 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: (path: string) => `/test${path}`,
-      hasFeature: vi.fn(() => true),
+      hasFeature: vi.fn((feature: string) => !mockFeaturesOff.has(feature)),
       hasModule: vi.fn(() => true),
     }),
   }),
@@ -127,6 +128,7 @@ describe('EventTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    mockFeaturesOff.clear();
     mockApi.post.mockResolvedValue({ success: true, data: { id: 99 } });
   });
 
@@ -227,5 +229,19 @@ describe('EventTab', () => {
 
     expect(await screen.findByDisplayValue('Community Litter Pick')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Join us to clean the park.')).toBeInTheDocument();
+  });
+
+  it('offers "List as a public event", switched off, when the community has public events on', () => {
+    renderEventComponent(<EventTab {...defaultProps} />);
+
+    const toggle = screen.getByRole('switch', { name: 'List as a public event' });
+    expect(toggle).not.toBeChecked();
+  });
+
+  it('does not offer "List as a public event" when the community has public events off', () => {
+    mockFeaturesOff.add('public_events');
+    renderEventComponent(<EventTab {...defaultProps} />);
+
+    expect(screen.queryByRole('switch', { name: 'List as a public event' })).not.toBeInTheDocument();
   });
 });
