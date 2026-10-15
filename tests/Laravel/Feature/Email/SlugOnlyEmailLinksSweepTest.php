@@ -24,6 +24,7 @@ use App\Services\EventNotificationService;
 use App\Services\GroupInviteService;
 use App\Services\NewsletterService;
 use App\Services\NotificationDispatcher;
+use App\Services\RegionalAnalytics\RegionalReportDownloadLink;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Laravel\Support\CapturedEmailLinks;
 use Tests\Laravel\TestCase;
@@ -361,13 +362,12 @@ class SlugOnlyEmailLinksSweepTest extends TestCase
     }
 
     /**
-     * Known open defect (email-links audit F3, 2026-10-14): the monthly report
-     * is written to the PRIVATE local disk (RegionalReportPdfGenerator ->
-     * Storage::put on the default disk, config/filesystems.php 'local') and the
-     * email carries the site-relative '/storage/...' path. No signed download
-     * route exists ("controller signs it on download" has no controller), so
-     * the link cannot open in any form. Needs a signed API download route, not
-     * a URL change. Skipped, not asserted, so the defect stays visible here.
+     * Email-links audit F3 (2026-10-14), closed: the monthly report is written
+     * to the PRIVATE local disk, so the email must carry a signed, expiring API
+     * address on the API host (RegionalReportDownloadLink), never a '/storage/'
+     * path. That the address actually returns the PDF is proven by
+     * Feature\RegionalAnalytics\ReportDownloadLinkTest; this sweep checks the
+     * link the email carries belongs to the API host like every other API link.
      *
      * @dataProvider shapes
      */
@@ -377,12 +377,15 @@ class SlugOnlyEmailLinksSweepTest extends TestCase
         $user = $this->member($t['id']);
         $captured = CapturedEmailLinks::install();
 
+        // The link is signed from the report row's id; the row itself is exercised in ReportDownloadLinkTest.
+        $downloadUrl = RegionalReportDownloadLink::forReport(1);
         $mail = new \ReflectionMethod(GenerateMonthlyReports::class, 'mailReport');
         $subscription = (object) ['contact_email' => $user->email, 'tenant_id' => $t['id'], 'contact_language' => 'en'];
-        TenantContext::runForTenant($t['id'], fn () => $mail->invoke(app(GenerateMonthlyReports::class), $subscription, '/storage/regional-reports/report.pdf', 'September 2026'));
-        $this->persist('regional-report-' . $t['slug'], $captured);
+        TenantContext::runForTenant($t['id'], fn () => $mail->invoke(app(GenerateMonthlyReports::class), $subscription, $downloadUrl, 'September 2026'));
 
-        $this->markTestSkipped('F3 open: the regional report needs a signed download route before its email link can work.');
+        $this->audit('regional-report', $captured, $t);
+        $this->assertStringContainsString(rtrim((string) config('app.url'), '/') . '/api/v2/regional-analytics/reports/1/', $captured->sent[0]['body']);
+        $this->assertStringNotContainsString('/storage/', $captured->sent[0]['body']);
     }
 
     /** @dataProvider shapes */

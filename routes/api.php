@@ -3558,6 +3558,9 @@ Route::get('/v2/newsletter/pixel/{token}', [\App\Http\Controllers\Api\Newsletter
 Route::get('/v2/legal-publication/open/{deliveryId}/{signature}', [\App\Http\Controllers\Api\LegalPublicationTrackingController::class, 'open'])->middleware('throttle:nexus-route-120-per-1m');
 Route::get('/v2/legal-publication/click/{deliveryId}/{signature}', [\App\Http\Controllers\Api\LegalPublicationTrackingController::class, 'click'])->middleware('throttle:nexus-route-120-per-1m');
 Route::get('/v2/newsletter/click/{token}', [\App\Http\Controllers\Api\NewsletterController::class, 'trackClick'])->middleware('throttle:nexus-route-120-per-1m');
+// Regional analytics monthly report — signed, expiring download for the partner contact named in the email (email-links audit F3).
+Route::get('/v2/regional-analytics/reports/{reportId}/{expires}/{signature}', [\App\Http\Controllers\Api\RegionalReportDownloadController::class, 'download'])
+    ->whereNumber('reportId')->whereNumber('expires')->middleware('throttle:nexus-route-30-per-1m');
 
 // SOC13 — Social login (OAuth). Redirect/callback are public so anonymous
 // visitors can start a sign-in flow. Link/unlink/identities live inside

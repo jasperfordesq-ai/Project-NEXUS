@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Services\EmailDispatchService;
 use App\Services\RegionalAnalytics\RegionalAnalyticsService;
+use App\Services\RegionalAnalytics\RegionalReportDownloadLink;
 use App\Services\RegionalAnalytics\RegionalReportPdfGenerator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -25,9 +26,9 @@ use Illuminate\Support\Facades\Log;
  * Per active subscription:
  *   - Resolves last calendar month
  *   - Builds the bucketed payload (privacy-preserving)
- *   - Renders PDF and stores it
  *   - Inserts a regional_analytics_reports row
- *   - Emails the PDF link to recipient_emails
+ *   - Renders the PDF and stores it on the private disk (path kept in file_url)
+ *   - Emails a signed, expiring download link to recipient_emails
  */
 class GenerateMonthlyReports extends Command
 {
@@ -107,17 +108,19 @@ class GenerateMonthlyReports extends Command
                     'updated_at' => now(),
                 ]);
 
-                $fileUrl = $pdf->generateAndStore($payload, (int) $sub->id, $periodLabel);
+                $storedPath = $pdf->generateAndStore($payload, (int) $sub->id, $periodLabel);
 
                 DB::table('regional_analytics_reports')->where('id', $reportId)->update([
                     'status' => 'generated',
                     'generated_at' => now(),
-                    'file_url' => $fileUrl,
+                    'file_url' => $storedPath,
                     'payload_json' => json_encode($payload),
                     'updated_at' => now(),
                 ]);
 
-                $mailResult = $this->mailReport($sub, $fileUrl, $periodLabel);
+                // The file is private: the email carries a signed link to this
+                // report row, never the path (email-links audit F3).
+                $mailResult = $this->mailReport($sub, RegionalReportDownloadLink::forReport((int) $reportId), $periodLabel);
 
                 DB::table('regional_analytics_reports')->where('id', $reportId)->update([
                     'status' => $mailResult['sent'] ? 'sent' : 'failed',
@@ -151,7 +154,7 @@ class GenerateMonthlyReports extends Command
     /**
      * @return array{sent:bool,error:string|null}
      */
-    private function mailReport(object $sub, string $fileUrl, string $periodLabel): array
+    private function mailReport(object $sub, string $downloadUrl, string $periodLabel): array
     {
         try {
             $email = (string) ($sub->contact_email ?? '');
@@ -167,11 +170,11 @@ class GenerateMonthlyReports extends Command
             // Without this wrap the queue worker's default locale (en) leaks through.
             $language = (string) ($sub->contact_language ?? 'en') ?: 'en';
 
-            return LocaleContext::withLocale($language, function () use ($email, $fileUrl, $periodLabel, $tenantId): array {
+            return LocaleContext::withLocale($language, function () use ($email, $downloadUrl, $periodLabel, $tenantId): array {
                 // Route through the platform Mailer. The Laravel Mail facade uses
                 // SMTP in production and does not create unified audit evidence.
                 $body = '<p>' . e(__('emails.regional_analytics.report_ready', ['period' => $periodLabel])) . '</p>'
-                    . '<p><a href="' . e($fileUrl) . '">' . e(__('emails.regional_analytics.download_report')) . '</a></p>'
+                    . '<p><a href="' . e($downloadUrl) . '">' . e(__('emails.regional_analytics.download_report')) . '</a></p>'
                     . '<p>' . e(__('emails.regional_analytics.privacy_note')) . '</p>';
 
                 if (!EmailDispatchService::sendRaw(

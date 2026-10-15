@@ -89,12 +89,12 @@ class GenerateMonthlyReportsTest extends TestCase
     }
 
     /**
-     * Mock RegionalReportPdfGenerator to return a fake URL without rendering.
+     * Mock RegionalReportPdfGenerator to return a stored path without rendering.
      */
     private function mockPdfGenerator(): void
     {
         $mock = $this->createMock(RegionalReportPdfGenerator::class);
-        $mock->method('generateAndStore')->willReturn('https://cdn.example.com/report.pdf');
+        $mock->method('generateAndStore')->willReturn('regional-analytics/1/2026-09_deadbeef.pdf');
         $this->app->instance(RegionalReportPdfGenerator::class, $mock);
     }
 

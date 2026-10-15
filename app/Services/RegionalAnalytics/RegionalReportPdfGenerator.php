@@ -19,8 +19,15 @@ use Illuminate\Support\Facades\Storage;
  */
 class RegionalReportPdfGenerator
 {
+    /** The private disk the reports are written to and served from. */
+    public const DISK = 'local';
+
     /**
-     * Render a payload to a PDF and store it; returns the public file URL.
+     * Render a payload to a PDF and store it on the private disk.
+     *
+     * Returns the stored path, not an address: the file is private, so the
+     * only way to reach it is the signed, expiring link that
+     * RegionalReportDownloadLink builds from the report row's id.
      */
     public function generateAndStore(array $payload, int $subscriptionId, string $periodLabel): string
     {
@@ -34,11 +41,9 @@ class RegionalReportPdfGenerator
             substr(bin2hex(random_bytes(4)), 0, 8)
         );
 
-        // Uses the default filesystem; in tests this is the local disk.
-        Storage::put($filename, $pdfBytes);
+        Storage::disk(self::DISK)->put($filename, $pdfBytes);
 
-        // Return a relative URL — controller signs it on download.
-        return '/storage/' . $filename;
+        return $filename;
     }
 
     /**
