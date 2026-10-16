@@ -12,7 +12,15 @@
  * header carries at most seven groups (Main + six), which is 4 + 3.
  */
 
-export const MEGA_PANEL_MIN_COLUMN_PX = 200;
+/**
+ * 230px leaves a 150px description area once the column (2×10px), item
+ * (2×10px), 30px icon tile and 10px gap are taken out — room for a
+ * 45-character description on two lines.
+ */
+export const MEGA_PANEL_MIN_COLUMN_PX = 230;
+
+/** Space kept clear between the panel and each side of the viewport. */
+export const MEGA_PANEL_VIEWPORT_GUTTER_PX = 16;
 
 export interface MegaPanelLayout {
   rows: 1 | 2;

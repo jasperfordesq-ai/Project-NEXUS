@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -210,6 +210,22 @@ describe('DesktopMegaPanel', () => {
       }
     });
 
+    it('keeps a 150px description area at the minimum column width', () => {
+      renderPanel();
+      // 230 − column padding 2×10 − item padding 2×10 − 30px tile − 10px gap = 150.
+      expect(MEGA_PANEL_MIN_COLUMN_PX - 20 - 20 - 30 - 10).toBe(150);
+      const column = getNav().querySelector('[data-mega-group]')!;
+      expect(column).toHaveClass('px-2.5');
+      // Column dividers are inset shadows, so they take no width from the text.
+      expect(column.className).not.toMatch(/\bborder-[lt]\b/);
+      const item = getItems()[0]!;
+      expect(item).toHaveClass('px-2.5', 'py-1.5', 'gap-2.5');
+      expect(item.querySelector('span')).toHaveClass('size-[30px]');
+      const list = column.querySelector('p + div')!;
+      expect(list).toHaveClass('space-y-0.5');
+      expect(column.querySelector('p')).toHaveClass('mb-1');
+    });
+
     it('lays out three groups in one row when they fit', () => {
       renderPanel();
       expect(getNav()).toHaveAttribute('data-rows', '1');
@@ -234,19 +250,81 @@ describe('DesktopMegaPanel', () => {
       return document.querySelector<HTMLElement>('[data-mega-panel]')!;
     }
 
-    it('spans the bounds edge to edge when the layout needs two rows', () => {
+    it('takes the full available width, centred, when the layout needs two rows', () => {
       renderPanel({ groups: makeGroups(7), availableWidthPx: 960 });
       const panel = getPanel();
       expect(panel).toHaveAttribute('data-position', 'full');
-      expect(panel).toHaveClass('absolute', 'top-full', 'left-0', 'right-0');
+      expect(panel).toHaveClass('absolute', 'top-full', 'left-1/2', '-translate-x-1/2', 'w-[var(--mega-panel-max-w)]');
+      expect(panel.style.getPropertyValue('--mega-panel-max-w')).toBe('960px');
     });
 
-    it('centres three or more groups under the bar', () => {
+    it('centres three or more groups under the bar, capped at the available width', () => {
       renderPanel();
       const panel = getPanel();
       expect(panel).toHaveAttribute('data-position', 'centre');
-      expect(panel).toHaveClass('absolute', 'top-full', 'left-1/2', '-translate-x-1/2');
+      expect(panel).toHaveClass('absolute', 'top-full', 'left-1/2', '-translate-x-1/2', 'max-w-[var(--mega-panel-max-w)]');
       expect(panel).not.toHaveClass('right-0');
+      expect(panel.style.getPropertyValue('--mega-panel-max-w')).toBe('1360px');
+    });
+
+    describe('measured from the viewport', () => {
+      const original = {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        rect: Element.prototype.getBoundingClientRect,
+      };
+
+      function setViewport(width: number, height: number) {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+        Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
+      }
+
+      afterEach(() => {
+        setViewport(original.innerWidth, original.innerHeight);
+        Element.prototype.getBoundingClientRect = original.rect;
+      });
+
+      function renderInBounds(boundsWidth: number, groupCount: number) {
+        const props = baseProps({ groups: makeGroups(groupCount), availableWidthPx: undefined });
+        return render(
+          <MemoryRouter>
+            <div data-mega-panel-bounds ref={node => {
+              if (node) Object.defineProperty(node, 'clientWidth', { configurable: true, value: boundsWidth });
+            }}
+            >
+              <DesktopMegaPanel {...props} />
+            </div>
+          </MemoryRouter>,
+        );
+      }
+
+      it('uses the viewport width minus a 16px gutter each side, not the bounds container', () => {
+        setViewport(1440, 900);
+        renderInBounds(900, 6);
+        const panel = getPanel();
+        expect(panel.style.getPropertyValue('--mega-panel-max-w')).toBe('1408px');
+        // 6 x 230 = 1380 fits in 1408, though not in the 900px container.
+        expect(getNav()).toHaveAttribute('data-rows', '1');
+        expect(getNav()).toHaveAttribute('data-columns', '6');
+      });
+
+      it('caps the height at the viewport below the panel top, less 16px, and re-measures on resize', () => {
+        setViewport(1024, 800);
+        Element.prototype.getBoundingClientRect = function getBoundingClientRect(this: Element) {
+          const top = this.hasAttribute('data-mega-panel') ? 109 : 0;
+          return { top, bottom: top, left: 0, right: 0, width: 0, height: 0, x: 0, y: top, toJSON: () => ({}) } as DOMRect;
+        };
+        renderInBounds(1000, 7);
+        const panel = getPanel();
+        expect(panel).toHaveClass('max-h-[var(--mega-panel-max-h,75vh)]');
+        expect(panel.style.getPropertyValue('--mega-panel-max-h')).toBe('675px');
+
+        act(() => {
+          setViewport(1366, 768);
+          window.dispatchEvent(new Event('resize'));
+        });
+        expect(getPanel().style.getPropertyValue('--mega-panel-max-h')).toBe('643px');
+      });
     });
 
     it('anchors one or two groups under the trigger', () => {

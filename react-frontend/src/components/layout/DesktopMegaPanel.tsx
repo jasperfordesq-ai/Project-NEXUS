@@ -15,6 +15,10 @@
  *   which must be the panel's containing block). HeroUI's Popover is not
  *   used because it can only place content relative to its trigger, so it
  *   cannot centre a wide panel under the bar.
+ * - Width comes from the VIEWPORT less a 16px gutter each side, not from the
+ *   bounds container: the panel is centred on the container (itself centred
+ *   in the viewport) and may extend past its edges. Height is capped at the
+ *   viewport below the panel's own top edge, less 16px.
  * - React Aria still does what it is good at: `FocusScope` traps focus and
  *   restores it to the trigger on close, `useInteractOutside` dismisses.
  */
@@ -40,7 +44,12 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ScrollShadow } from '@/components/ui/ScrollShadow';
-import { layoutMegaPanel, MEGA_PANEL_MIN_COLUMN_PX, type MegaPanelLayout } from './megaPanelLayout';
+import {
+  layoutMegaPanel,
+  MEGA_PANEL_MIN_COLUMN_PX,
+  MEGA_PANEL_VIEWPORT_GUTTER_PX,
+  type MegaPanelLayout,
+} from './megaPanelLayout';
 
 export type MegaPanelTone = 'main' | 'engage' | 'progress' | 'tools' | 'partner' | 'about' | 'community' | 'explore';
 
@@ -67,7 +76,7 @@ export interface DesktopMegaPanelProps {
   onOpenChange: (open: boolean) => void;
   groups: MegaPanelGroup[];
   onNavigate: (href: string) => void;
-  /** Width the panel may use; defaults to the nearest `[data-mega-panel-bounds]` ancestor's width, measured with ResizeObserver. */
+  /** Width the panel may use; defaults to the viewport width less a 16px gutter each side, re-measured on resize. */
   availableWidthPx?: number;
 }
 
@@ -89,6 +98,17 @@ const TONE_COLOUR: Record<MegaPanelTone, string> = {
 
 const BOUNDS_SELECTOR = '[data-mega-panel-bounds]';
 
+/**
+ * Column dividers are inset shadows rather than borders so they take no
+ * width from the 150px description area. Keyed by `${hasLeft}-${hasTop}`.
+ */
+const DIVIDER_CLASSES: Record<string, string> = {
+  'false-false': '',
+  'true-false': 'shadow-[inset_1px_0_0_var(--border-default)]',
+  'false-true': 'shadow-[inset_0_1px_0_var(--border-default)]',
+  'true-true': 'shadow-[inset_1px_0_0_var(--border-default),inset_0_1px_0_var(--border-default)]',
+};
+
 type PanelPosition = 'full' | 'centre' | 'trigger';
 
 function findBounds(node: Element | null): HTMLElement | null {
@@ -100,33 +120,31 @@ function viewportWidth(): number {
   return width > 0 ? width : window.innerWidth;
 }
 
+function availableViewportWidth(): number {
+  return Math.max(0, viewportWidth() - 2 * MEGA_PANEL_VIEWPORT_GUTTER_PX);
+}
+
 /**
- * Width of the bounds container, kept current with a ResizeObserver. Falls
- * back to the viewport when there is no bounds ancestor, and to a window
- * resize listener where ResizeObserver does not exist.
+ * Width the panel may use: the viewport less the gutters, kept current on
+ * resize (the ResizeObserver also catches a scrollbar appearing).
  */
-function useBoundsWidth(rootRef: RefObject<HTMLElement | null>, enabled: boolean): number | null {
+function useViewportWidth(enabled: boolean): number | null {
   const [width, setWidth] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     if (!enabled) return undefined;
 
-    const bounds = findBounds(rootRef.current);
-    const read = () => {
-      const measured = bounds ? bounds.clientWidth : viewportWidth();
-      setWidth(measured > 0 ? measured : viewportWidth());
-    };
+    const read = () => setWidth(availableViewportWidth());
     read();
 
-    if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', read);
-      return () => window.removeEventListener('resize', read);
-    }
-
-    const observer = new ResizeObserver(read);
-    observer.observe(bounds ?? document.documentElement);
-    return () => observer.disconnect();
-  }, [enabled, rootRef]);
+    window.addEventListener('resize', read);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(read);
+    observer?.observe(document.documentElement);
+    return () => {
+      window.removeEventListener('resize', read);
+      observer?.disconnect();
+    };
+  }, [enabled]);
 
   return width;
 }
@@ -137,11 +155,12 @@ function panelPosition(layout: MegaPanelLayout, groupCount: number): PanelPositi
 }
 
 const POSITION_CLASSES: Record<PanelPosition, string> = {
-  // Two rows only happen when one row would not fit, so fill the bounds.
-  full: 'left-0 right-0',
-  // Content-sized and capped at the bounds; at the cap this spans edge to edge.
-  centre: 'left-1/2 -translate-x-1/2 w-max max-w-full',
-  trigger: 'left-[var(--mega-panel-left)] w-max max-w-full',
+  // Two rows only happen when one row would not fit, so take the full
+  // available width, centred.
+  full: 'left-1/2 -translate-x-1/2 w-[var(--mega-panel-max-w)]',
+  // Content-sized and capped at the available width.
+  centre: 'left-1/2 -translate-x-1/2 w-max max-w-[var(--mega-panel-max-w)]',
+  trigger: 'left-[var(--mega-panel-left)] w-max max-w-[var(--mega-panel-max-w)]',
 };
 
 export function DesktopMegaPanel({
@@ -164,15 +183,16 @@ export function DesktopMegaPanel({
   const visibleGroups = useMemo(() => groups.filter(group => group.items.length > 0), [groups]);
   const hasGroups = visibleGroups.length > 0;
 
-  const measuredWidth = useBoundsWidth(rootRef, hasGroups && availableWidthPx === undefined);
-  const width = availableWidthPx ?? measuredWidth ?? (typeof window === 'undefined' ? 0 : viewportWidth());
+  const measuredWidth = useViewportWidth(hasGroups && availableWidthPx === undefined);
+  const width = availableWidthPx ?? measuredWidth ?? (typeof window === 'undefined' ? 0 : availableViewportWidth());
   const layout = layoutMegaPanel(visibleGroups.length, width);
   const position = panelPosition(layout, visibleGroups.length);
 
   const [anchorLeft, setAnchorLeft] = useState(0);
+  const [maxHeight, setMaxHeight] = useState<number | null>(null);
 
   // Anchor a one- or two-group panel under the trigger, pulled left just
-  // enough to stay inside the bounds.
+  // enough to stay inside the viewport gutters.
   useLayoutEffect(() => {
     if (!isOpen || position !== 'trigger') return;
     const root = rootRef.current;
@@ -182,11 +202,27 @@ export function DesktopMegaPanel({
 
     const bounds = findBounds(root);
     const boundsLeft = bounds ? bounds.getBoundingClientRect().left : 0;
-    const boundsWidth = bounds ? bounds.clientWidth : viewportWidth();
+    const minLeft = MEGA_PANEL_VIEWPORT_GUTTER_PX - boundsLeft;
+    const maxLeft = viewportWidth() - MEGA_PANEL_VIEWPORT_GUTTER_PX - boundsLeft - panel.offsetWidth;
     const triggerLeft = trigger.getBoundingClientRect().left - boundsLeft;
-    const next = Math.max(0, Math.min(triggerLeft, boundsWidth - panel.offsetWidth));
+    const next = Math.max(minLeft, Math.min(triggerLeft, maxLeft));
     setAnchorLeft(prev => (prev === next ? prev : next));
   }, [isOpen, position, width, visibleGroups]);
+
+  // Cap the height at the viewport below the panel's own top edge, less the
+  // gutter. Measured on open and on every resize; 75vh until then.
+  useLayoutEffect(() => {
+    if (!isOpen) return undefined;
+    const read = () => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const next = Math.max(0, Math.floor(window.innerHeight - panel.getBoundingClientRect().top - MEGA_PANEL_VIEWPORT_GUTTER_PX));
+      setMaxHeight(prev => (prev === next ? prev : next));
+    };
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
+  }, [isOpen]);
 
   useInteractOutside({
     ref: rootRef,
@@ -258,13 +294,13 @@ export function DesktopMegaPanel({
         data-mega-col={columnIndex}
         onPress={() => onNavigate(item.href)}
         variant="light"
-        className={`group w-full flex !h-auto min-h-[3.5rem] items-start gap-3 rounded-lg px-3 py-2.5 text-start transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 justify-start ${
+        className={`group w-full flex !h-auto items-start gap-2.5 rounded-lg px-2.5 py-1.5 text-start transition-colors motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 justify-start ${
           active
             ? 'bg-theme-active text-theme-primary'
             : 'text-theme-muted hover:text-theme-primary hover:bg-theme-hover'
         }`}
       >
-        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--mega-tone)_12%,transparent)] text-[var(--mega-tone)]">
+        <span className="mt-0.5 flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-[color-mix(in_srgb,var(--mega-tone)_12%,transparent)] text-[var(--mega-tone)]">
           <Icon className="w-4 h-4" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
@@ -290,12 +326,12 @@ export function DesktopMegaPanel({
         key={group.key}
         data-mega-group={group.key}
         style={toneStyle}
-        className={`min-w-[var(--mega-col-min)] p-2 ${indexInRow > 0 ? 'border-l border-[var(--border-default)]' : ''} ${row > 0 ? 'border-t border-[var(--border-default)]' : ''}`}
+        className={`min-w-[var(--mega-col-min)] px-2.5 py-2 ${DIVIDER_CLASSES[`${indexInRow > 0}-${row > 0}`]}`}
       >
-        <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-theme-subtle">
+        <p className="mb-1 px-2.5 pt-1 text-xs font-semibold uppercase tracking-wider text-theme-subtle">
           {group.title}
         </p>
-        <div className="mt-0.5 space-y-0.5">
+        <div className="space-y-0.5">
           {group.items.map(item => renderItem(item, index))}
         </div>
       </div>
@@ -313,6 +349,8 @@ export function DesktopMegaPanel({
     // "Polls") shrinks to the label and squeezes its descriptions to a few
     // characters per line.
     '--mega-col-min': `${MEGA_PANEL_MIN_COLUMN_PX}px`,
+    '--mega-panel-max-w': `${width}px`,
+    ...(maxHeight === null ? {} : { '--mega-panel-max-h': `${maxHeight}px` }),
   } as CSSProperties;
 
   return (
@@ -343,12 +381,12 @@ export function DesktopMegaPanel({
           data-mega-panel
           data-position={position}
           style={panelStyle}
-          className={`absolute top-full z-50 mt-2 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-dropdown)] shadow-2xl max-h-[75vh] ${POSITION_CLASSES[position]}`}
+          className={`absolute top-full z-50 mt-2 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-dropdown)] shadow-2xl max-h-[var(--mega-panel-max-h,75vh)] ${POSITION_CLASSES[position]}`}
         >
           <FocusScope contain restoreFocus>
             <MegaPanelBody navRef={navRef}>
               <h2 className="sr-only">{ariaLabel}</h2>
-              <ScrollShadow className="max-h-[75vh]" size={56}>
+              <ScrollShadow className="max-h-[calc(var(--mega-panel-max-h,75vh)-2px)]" size={56}>
                 {/* The keydown handler is delegated roving-focus navigation for
                     the buttons inside (arrows / Home / End / Escape). The rule
                     reads <nav> as non-interactive; the listener adds keyboard
@@ -360,7 +398,7 @@ export function DesktopMegaPanel({
                   data-rows={layout.rows}
                   data-columns={layout.columnsPerRow}
                   onKeyDown={handleKeyDown}
-                  className={`grid gap-0 p-2 ${gridClasses}`}
+                  className={`grid gap-0 py-1 ${gridClasses}`}
                 >
                   {visibleGroups.map(renderColumn)}
                 </nav>
