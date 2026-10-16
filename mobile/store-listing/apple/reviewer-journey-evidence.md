@@ -4,6 +4,12 @@ Last reviewed: 2026-08-27
 
 Verified against production: 27 August 2026
 
+🔴 **2026-10-16: the review account is now the ordinary member Maya Rivers (user 526), not the
+Partner Demo admin.** The admin account enrolled an authenticator app, which neither App
+Review nor the screenshot job can answer; a plain member with an avatar and no two-factor
+was given a fresh password instead. The walk below still holds (Sam Chen and Theo Walsh are
+other members).
+
 The reviewer credentials are stored only in `.secrets.local/demo-login.env` and must be
 copied into App Store Connect immediately before submission. They are not repeated here.
 The verification session used the same mobile login endpoint as the app and was logged out.
