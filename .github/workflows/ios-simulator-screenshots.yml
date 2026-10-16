@@ -49,6 +49,21 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
+      # Expo SDK 55's expo-modules-core needs Xcode 26 (Swift 6 attributes such as
+      # @MainActor on protocol requirements); macos-15's default Xcode fails to compile
+      # it. Same selection as mobile-emulator.yml.
+      - name: Select Expo SDK 55's Xcode toolchain
+        run: |
+          set -euo pipefail
+          XCODE_APP=/Applications/Xcode_26.2.app
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "Xcode 26.2 is absent; Expo SDK 55's CI toolchain cannot be reproduced on this runner." >&2
+            find /Applications -maxdepth 1 -name 'Xcode_*.app' -print >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: ${{ env.NODE_VERSION }}
