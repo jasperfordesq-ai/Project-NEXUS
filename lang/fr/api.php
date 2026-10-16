@@ -2998,4 +2998,6 @@ CANDIDATS ::candidates',
     'event_safety_publish_draft_required' => 'Seul un brouillon peut être publié. Enregistrez d\'abord vos modifications comme brouillon, puis publiez-le.',
     'event_safety_code_of_conduct_changed' => 'Le code de conduite a changé depuis que vous l\'avez ouvert. Rechargez la page, lisez la version actuelle et acceptez-la de nouveau.',
     'event_safety_code_of_conduct_not_required' => 'Cet événement n\'a actuellement aucun code de conduite à accepter.',
+    'menu_location_invalid' => 'L\'emplacement dans le menu doit être À propos, Colonne d\'en-tête ou Pied de page.',
+    'header_column_title_invalid' => 'Le titre de la colonne d\'en-tête doit être du texte brut de :max caractères au maximum.',
 ];

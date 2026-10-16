@@ -584,4 +584,63 @@ class TenantBootstrapControllerTest extends TestCase
             $this->assertGreaterThanOrEqual(0, $data[$key], "Expected non-negative value for key: {$key}");
         }
     }
+
+    public function test_bootstrap_groups_menu_pages_by_location_with_descriptions(): void
+    {
+        $rows = [
+            ['Our Story', 'our-story', 'about', 'Written by us', 1],
+            ['Annual Review', 'annual-review', 'header', null, 1],
+            ['Credits', 'credits', 'footer', 'x', 1],
+            ['Hidden Draft', 'hidden-draft', 'header', 'nope', 0],
+        ];
+        foreach ($rows as $i => [$title, $slug, $location, $description, $published]) {
+            DB::table('pages')->insert([
+                'tenant_id' => $this->testTenantId,
+                'title' => $title,
+                'slug' => $slug . '-bootstrap-test',
+                'content' => '',
+                'is_published' => $published,
+                'show_in_menu' => 1,
+                'menu_location' => $location,
+                'menu_order' => $i,
+                'meta_description' => $description,
+            ]);
+        }
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        try {
+            $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)->assertOk();
+            $menu = $response->json('data.menu_pages');
+
+            $this->assertSame(
+                ['title' => 'Our Story', 'slug' => 'our-story-bootstrap-test', 'description' => 'Written by us'],
+                $menu['about'][0]
+            );
+            $this->assertCount(1, $menu['header']);
+            $this->assertSame('Annual Review', $menu['header'][0]['title']);
+            $this->assertNull($menu['header'][0]['description']);
+            $this->assertCount(1, $menu['footer']);
+        } finally {
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        }
+    }
+
+    public function test_bootstrap_exposes_header_column_title_when_set(): void
+    {
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        $without = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)->assertOk();
+        $this->assertArrayNotHasKey('header_column_title', $without->json('data.settings'));
+
+        app(TenantSettingsService::class)->set($this->testTenantId, 'general.header_column_title', 'Impact');
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        try {
+            $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug)
+                ->assertOk()
+                ->assertJsonPath('data.settings.header_column_title', 'Impact');
+        } finally {
+            app(TenantSettingsService::class)->clearCacheForTenant($this->testTenantId);
+            app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+        }
+    }
 }

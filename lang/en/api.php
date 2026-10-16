@@ -3522,4 +3522,6 @@ return [
     'event_safety_publish_draft_required' => 'Only a draft can be published. Save your changes as a draft first, then publish.',
     'event_safety_code_of_conduct_changed' => 'The code of conduct has changed since you opened it. Reload the page, read the current version and agree again.',
     'event_safety_code_of_conduct_not_required' => 'This event has no code of conduct to agree to at the moment.',
+    'menu_location_invalid' => 'Menu location must be About, Header column or Footer.',
+    'header_column_title_invalid' => 'The header column title must be plain text of at most :max characters.',
 ];

@@ -87,6 +87,7 @@ class AdminConfigController extends BaseApiController
         // (AdminUsersController::sendApprovalWelcomeEmail). Empty = default email.
         'approval_email_message',
         'footer_text',
+        'header_column_title',
         'partner_logo_url',
         'partner_logo_label',
         'partner_logo_link_url',
@@ -115,6 +116,9 @@ class AdminConfigController extends BaseApiController
 
     /** Longest community welcome text the approval email accepts (characters). */
     public const APPROVAL_EMAIL_MESSAGE_MAX_CHARS = 1000;
+
+    /** Longest title a community may give the pages column in the desktop More menu. */
+    private const HEADER_COLUMN_TITLE_MAX_CHARS = 30;
 
     /**
      * Settings that only a platform super-admin (God) may modify.
@@ -1506,6 +1510,21 @@ class AdminConfigController extends BaseApiController
                 return $this->respondWithError('VALIDATION_ERROR', __('api.approval_email_message_invalid', ['max' => self::APPROVAL_EMAIL_MESSAGE_MAX_CHARS]), 'approval_email_message', 422);
             }
             $kvUpdates['approval_email_message'] = $message;
+        }
+
+        // Validate header_column_title — the heading of the community's own
+        // pages column in the desktop More menu. Plain text, at most
+        // HEADER_COLUMN_TITLE_MAX_CHARS characters; an empty value clears it.
+        if (array_key_exists('header_column_title', $kvUpdates)) {
+            $title = $kvUpdates['header_column_title'];
+            if ($title !== null && !is_string($title)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.header_column_title_invalid', ['max' => self::HEADER_COLUMN_TITLE_MAX_CHARS]), 'header_column_title', 422);
+            }
+            $title = trim(strip_tags((string) $title));
+            if (mb_strlen($title) > self::HEADER_COLUMN_TITLE_MAX_CHARS) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.header_column_title_invalid', ['max' => self::HEADER_COLUMN_TITLE_MAX_CHARS]), 'header_column_title', 422);
+            }
+            $kvUpdates['header_column_title'] = $title;
         }
 
         // Validate max_upload_size_mb — prevent dangerously large values

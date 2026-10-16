@@ -1342,4 +1342,47 @@ class AdminConfigControllerTest extends TestCase
             ->assertJsonPath('data.1.actor_scope', 'parent_community')
             ->assertJsonPath('data.2.actor_name', 'Platform Owner');
     }
+
+    public function test_settings_header_column_title_round_trips_trimmed_and_tagless(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
+            $mock->shouldReceive('refreshTenantOrFail')->andReturn(1);
+        });
+
+        $this->apiPut('/v2/admin/settings', ['header_column_title' => '  <b>Impact</b> '])->assertStatus(200);
+
+        $this->apiGet('/v2/admin/settings')
+            ->assertStatus(200)
+            ->assertJsonPath('data.settings.header_column_title', 'Impact');
+    }
+
+    public function test_settings_header_column_title_rejects_more_than_30_characters_and_non_strings(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        $this->mock(PrerenderContentInvalidator::class, function ($mock): void {
+            $mock->shouldReceive('refreshTenantOrFail')->andReturn(1);
+        });
+
+        foreach ([str_repeat('a', 31), ['x']] as $bad) {
+            $this->apiPut('/v2/admin/settings', ['header_column_title' => $bad])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.0.field', 'header_column_title');
+        }
+
+        $this->apiPut('/v2/admin/settings', ['header_column_title' => ''])->assertStatus(200);
+        $this->assertSame(
+            '',
+            DB::table('tenant_settings')
+                ->where('tenant_id', $this->testTenantId)
+                ->where('setting_key', 'general.header_column_title')
+                ->value('setting_value')
+        );
+    }
 }

@@ -2998,4 +2998,6 @@ KANDYDACI::candidates',
     'event_safety_publish_draft_required' => 'Opublikować można tylko wersję roboczą. Najpierw zapisz zmiany jako wersję roboczą, a potem ją opublikuj.',
     'event_safety_code_of_conduct_changed' => 'Kodeks postępowania zmienił się od chwili jego otwarcia. Odśwież stronę, przeczytaj aktualną wersję i zaakceptuj ją ponownie.',
     'event_safety_code_of_conduct_not_required' => 'To wydarzenie nie ma obecnie kodeksu postępowania do zaakceptowania.',
+    'menu_location_invalid' => 'Lokalizacja w menu musi być jedną z: O nas, Kolumna nagłówka lub Stopka.',
+    'header_column_title_invalid' => 'Tytuł kolumny nagłówka musi być zwykłym tekstem o długości nie większej niż :max znaków.',
 ];

@@ -2998,4 +2998,6 @@ CANDIDATI::candidates',
     'event_safety_publish_draft_required' => 'Si può pubblicare solo una bozza. Salva prima le modifiche come bozza, poi pubblicala.',
     'event_safety_code_of_conduct_changed' => 'Il codice di condotta è cambiato da quando l\'hai aperto. Ricarica la pagina, leggi la versione attuale e accettala di nuovo.',
     'event_safety_code_of_conduct_not_required' => 'Al momento questo evento non ha alcun codice di condotta da accettare.',
+    'menu_location_invalid' => 'La posizione nel menu deve essere Informazioni, Colonna dell\'intestazione o Piè di pagina.',
+    'header_column_title_invalid' => 'Il titolo della colonna dell\'intestazione deve essere testo semplice di non più di :max caratteri.',
 ];

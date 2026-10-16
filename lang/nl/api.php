@@ -2998,4 +2998,6 @@ KANDIDATEN::candidates',
     'event_safety_publish_draft_required' => 'Alleen een concept kan worden gepubliceerd. Sla uw wijzigingen eerst op als concept en publiceer het daarna.',
     'event_safety_code_of_conduct_changed' => 'De gedragscode is gewijzigd sinds u die opende. Laad de pagina opnieuw, lees de huidige versie en ga opnieuw akkoord.',
     'event_safety_code_of_conduct_not_required' => 'Dit evenement heeft op dit moment geen gedragscode waarmee u akkoord moet gaan.',
+    'menu_location_invalid' => 'De menulocatie moet Over ons, Koptekstkolom of Voettekst zijn.',
+    'header_column_title_invalid' => 'De titel van de koptekstkolom moet platte tekst zijn van maximaal :max tekens.',
 ];

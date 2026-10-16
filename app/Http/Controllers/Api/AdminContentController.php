@@ -26,6 +26,9 @@ class AdminContentController extends BaseApiController
     protected bool $isV2Api = true;
     private const PAGE_DESIGN_JSON_MAX_BYTES = 2_000_000;
 
+    /** Where a published page may appear: About menu, the header column of the More menu, or the footer. */
+    private const MENU_LOCATIONS = ['about', 'header', 'footer'];
+
     public function __construct(
         private readonly RedisCache $redisCache,
     ) {}
@@ -114,6 +117,9 @@ class AdminContentController extends BaseApiController
         $sortOrder = (int)($input['sort_order'] ?? 0);
         $showInMenu = (int)($input['show_in_menu'] ?? 0);
         $menuLocation = $input['menu_location'] ?? 'about';
+        if (!in_array($menuLocation, self::MENU_LOCATIONS, true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.menu_location_invalid'), 'menu_location', 422);
+        }
         $menuOrder = (int)($input['menu_order'] ?? 0);
 
         if (!in_array($status, ['draft', 'published'], true)) {
@@ -223,7 +229,12 @@ class AdminContentController extends BaseApiController
         }
         if (isset($input['sort_order'])) { $data['sort_order'] = (int)$input['sort_order']; }
         if (isset($input['show_in_menu'])) { $data['show_in_menu'] = (int)$input['show_in_menu']; }
-        if (isset($input['menu_location'])) { $data['menu_location'] = $input['menu_location']; }
+        if (isset($input['menu_location'])) {
+            if (!in_array($input['menu_location'], self::MENU_LOCATIONS, true)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.menu_location_invalid'), 'menu_location', 422);
+            }
+            $data['menu_location'] = $input['menu_location'];
+        }
         if (array_key_exists('meta_description', $input)) { $data['meta_description'] = $input['meta_description']; }
         if (isset($input['menu_order'])) { $data['menu_order'] = (int)$input['menu_order']; }
 

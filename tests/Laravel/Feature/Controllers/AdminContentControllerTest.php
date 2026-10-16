@@ -389,4 +389,42 @@ class AdminContentControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_create_page_rejects_unknown_menu_location(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/pages', [
+            'title' => 'Sidebar Page',
+            'show_in_menu' => 1,
+            'menu_location' => 'sidebar',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR')
+            ->assertJsonPath('errors.0.field', 'menu_location');
+    }
+
+    public function test_create_and_update_page_accept_header_menu_location(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $create = $this->apiPost('/v2/admin/pages', [
+            'title' => 'Header Column Page',
+            'show_in_menu' => 1,
+            'menu_location' => 'header',
+        ]);
+        $create->assertStatus(201);
+        $pageId = (int) $create->json('data.id');
+        $this->assertSame('header', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+
+        $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'footer'])->assertStatus(200);
+        $this->assertSame('footer', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+
+        $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'nowhere'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'menu_location');
+        $this->assertSame('footer', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+    }
 }

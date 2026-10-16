@@ -594,7 +594,7 @@ class TenantBootstrapController extends BaseApiController
         // `welcome_message` was published here until 2026-10-15, but no client
         // ever displayed it; the setting is retired (RetiredWelcomeMessageSettingTest).
         'timezone', 'default_currency', 'region',
-        'items_per_page', 'welcome_credits', 'footer_text',
+        'items_per_page', 'welcome_credits', 'footer_text', 'header_column_title',
         'seo_google_verification', 'seo_bing_verification',
         'map_provider', 'geocoding_provider',
         'inactivity_timeout_minutes',
@@ -661,7 +661,7 @@ class TenantBootstrapController extends BaseApiController
                 ->where('tenant_id', $tenantId)
                 ->where('is_published', 1)
                 ->where('show_in_menu', 1)
-                ->select('title', 'slug', 'menu_location')
+                ->select('title', 'slug', 'menu_location', 'meta_description')
                 ->orderBy('menu_order')
                 ->orderBy('sort_order')
                 ->orderBy('title')
@@ -672,6 +672,7 @@ class TenantBootstrapController extends BaseApiController
                 $result[$location][] = [
                     'title' => $row->title,
                     'slug' => $row->slug,
+                    'description' => $row->meta_description !== null && $row->meta_description !== '' ? $row->meta_description : null,
                 ];
             }
         } catch (\Exception $e) {

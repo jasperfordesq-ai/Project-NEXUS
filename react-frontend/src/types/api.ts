@@ -1342,6 +1342,12 @@ export interface AuthenticationConfig {
   'passkeys.conditional_autofill': boolean;
 }
 
+export interface MenuPage {
+  title: string;
+  slug: string;
+  description?: string | null;
+}
+
 export interface TenantConfig {
   id: number;
   name: string;
@@ -1384,8 +1390,9 @@ export interface TenantConfig {
   };
   categories?: Category[];
   menu_pages?: {
-    about?: { title: string; slug: string }[];
-    footer?: { title: string; slug: string }[];
+    about?: MenuPage[];
+    header?: MenuPage[];
+    footer?: MenuPage[];
   };
   /** Listing module configuration */
   listing_config?: ListingConfig;
