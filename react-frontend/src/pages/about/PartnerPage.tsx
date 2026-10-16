@@ -179,17 +179,18 @@ export function PartnerPage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="sr-only">{t('partner.together_banner_heading')}</h2>
-            <div className="rounded-2xl bg-white p-3 sm:p-5 shadow-xl ring-1 ring-black/5">
+            {/* The graphic is dark-edged, so it fills the card edge to edge rather than sitting in a white frame. */}
+            <div className="rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5">
               <picture>
                 <source srcSet="/images/Timebanking-UK-and-Timebank-Ireland-Partners.webp" type="image/webp" />
                 <img
                   src="/images/Timebanking-UK-and-Timebank-Ireland-Partners.webp"
                   alt={t('partner.together_banner_alt')}
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto block"
                   loading="eager"
                   decoding="async"
-                  width={1900}
-                  height={800}
+                  width={1922}
+                  height={818}
                 />
               </picture>
             </div>
