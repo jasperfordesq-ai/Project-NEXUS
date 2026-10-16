@@ -215,6 +215,65 @@ class DonationStripeAccountService
     }
 
     /**
+     * A one-time login link to the Stripe Express dashboard of the community's
+     * own connected account, so an admin can see payouts, balances and
+     * payments without needing separate Stripe credentials.
+     *
+     * Only issued for the account this community's onboarding created (F-263):
+     * a login link gives the holder full access to the account, so it must
+     * never be minted for an id that merely happens to be saved here.
+     *
+     * @throws \RuntimeException when no account is connected, the saved account
+     *   was not onboarded for this community, or Stripe refuses the link
+     */
+    public static function createDashboardLoginLink(int $tenantId): string
+    {
+        $accountId = self::accountIdForTenant($tenantId);
+        if (!$accountId) {
+            throw new \RuntimeException(__('api.member_premium_connect_account_missing'));
+        }
+
+        $client = StripeService::client();
+
+        try {
+            $account = $client->accounts->retrieve($accountId);
+        } catch (\Throwable $e) {
+            Log::warning('DonationStripeAccountService: failed to retrieve Connect account before issuing a dashboard link', [
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $accountId,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Failed to check the saved Stripe Connect account: ' . $e->getMessage(), 0, $e);
+        }
+
+        if (!self::accountWasOnboardedForTenant($account, $tenantId)) {
+            Log::warning('DonationStripeAccountService: refused to issue a dashboard link for a Connect account not onboarded by this tenant', [
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $accountId,
+            ]);
+            throw new \RuntimeException(__('api.member_premium_connect_account_invalid'));
+        }
+
+        try {
+            $loginLink = $client->accounts->createLoginLink($accountId);
+        } catch (\Throwable $e) {
+            Log::error('DonationStripeAccountService: failed to create Express dashboard login link', [
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $accountId,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Failed to create a Stripe dashboard link: ' . $e->getMessage(), 0, $e);
+        }
+
+        $url = (string) ($loginLink->url ?? '');
+        if ($url === '') {
+            throw new \RuntimeException('Stripe did not return a dashboard link.');
+        }
+
+        return $url;
+    }
+
+    /**
      * @return array{state:string,charges_enabled:bool,payouts_enabled:bool,details_submitted:bool,requirements_due:array<int,string>,disabled_reason:?string,error:?string}
      */
     public static function accountStatusForTenant(int $tenantId): array

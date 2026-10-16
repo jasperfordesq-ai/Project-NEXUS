@@ -83,13 +83,15 @@ class MemberPremiumAdminController extends BaseApiController
         $this->requireAdmin();
         $tenantId = TenantContext::getId();
 
+        // The Stripe account page is where setup lives; Member Premium only
+        // shows a summary of it.
         $returnUrl = MemberPremiumService::safeReturnUrl(
             (string) ($this->input('return_url') ?? ''),
-            '/admin/member-premium?stripe_connect=return',
+            '/admin/stripe-account?stripe_connect=return',
         );
         $refreshUrl = MemberPremiumService::safeReturnUrl(
             (string) ($this->input('refresh_url') ?? ''),
-            '/admin/member-premium?stripe_connect=refresh',
+            '/admin/stripe-account?stripe_connect=refresh',
         );
 
         try {
@@ -102,6 +104,36 @@ class MemberPremiumAdminController extends BaseApiController
             'settings' => DonationStripeAccountService::settingsPayloadForTenant($tenantId),
             'onboarding_url' => $result['onboarding_url'],
         ]);
+    }
+
+    /**
+     * POST /api/v2/admin/member-premium/connect/dashboard-link
+     *
+     * A one-time link into the community's own Stripe Express dashboard
+     * (payouts, balance, payments). Refused when nothing is connected, and
+     * never issued for an account this community's onboarding did not create.
+     */
+    public function createConnectDashboardLink(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = TenantContext::getId();
+
+        if (!DonationStripeAccountService::accountIdForTenant($tenantId)) {
+            return $this->respondWithError(
+                'STRIPE_CONNECT_NOT_CONNECTED',
+                __('api.member_premium_connect_account_missing'),
+                null,
+                422,
+            );
+        }
+
+        try {
+            $url = DonationStripeAccountService::createDashboardLoginLink($tenantId);
+        } catch (\Throwable $e) {
+            return $this->respondWithError('STRIPE_CONNECT_DASHBOARD_LINK_FAILED', $e->getMessage(), null, 500);
+        }
+
+        return $this->respondWithData(['dashboard_url' => $url]);
     }
 
     /**

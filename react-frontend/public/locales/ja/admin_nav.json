@@ -517,7 +517,8 @@
     "qualifications": "資格",
     "opportunities": "活動とシフト",
     "certificates": "証明書",
-    "group_bookings": "グループ予約"
+    "group_bookings": "グループ予約",
+    "stripe_account": "Stripe アカウント"
   },
   "aria": {
     "breadcrumbs": "ブレッドクラム"
@@ -745,7 +746,8 @@
     "url_redirects": "301|302|古いリンク|移動したページ|リンク切れ",
     "marketplace_cases": "DSA|紛争|苦情|報告|案件",
     "registration_policy": "登録ルール|参加できる人|本人確認|メール確認|登録",
-    "fadp": "スイス|nDSG|データ保護|処理記録"
+    "fadp": "スイス|nDSG|データ保護|処理記録",
+    "stripe_account": "stripe|支払い|カード|銀行|入金|接続|寄付"
   },
   "user_report": "ユーザーレポート",
   "municipal_impact": "自治体の影響レポート",
@@ -801,5 +803,6 @@
   "registration_policy": "登録ポリシー",
   "permissions_list": "権限一覧",
   "fadp": "スイスのデータ保護 (FADP)",
-  "subscriptions": "サブスクリプション"
+  "subscriptions": "サブスクリプション",
+  "stripe_account": "Stripe アカウント"
 }

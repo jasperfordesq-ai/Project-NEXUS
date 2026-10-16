@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Account Stripe",
+      "summary": "Collega l’account Stripe della tua comunità perché le donazioni con carta e il sostegno ricorrente arrivino direttamente sul tuo conto bancario, invece che sull’account Stripe della piattaforma.",
+      "steps": [
+        {
+          "label": "Premi Collega Stripe",
+          "detail": "Vieni portato su Stripe, che chiede i dati della tua organizzazione e il conto bancario su cui versare. Puoi interrompere e tornare più tardi; la pagina offrirà allora Completa la configurazione in Stripe."
+        },
+        {
+          "label": "Controlla lo stato",
+          "detail": "Pronto significa che i pagamenti vanno sul tuo account. In attesa o Azione necessaria significa che Stripe vuole ancora qualcosa; la pagina dice quanti elementi mancano."
+        },
+        {
+          "label": "Apri la dashboard Stripe",
+          "detail": "Una volta collegato, Apri la dashboard Stripe ti porta a saldo, versamenti e pagamenti senza un accesso Stripe separato."
+        }
+      ],
+      "tips": [
+        "Finché il tuo account non è pronto, i pagamenti continuano ad andare sull’account Stripe della piattaforma e vengono registrati a nome della tua comunità, quindi non si perde nulla.",
+        "Si applicano le commissioni Stripe per le carte; la piattaforma non trattiene alcuna quota delle donazioni."
+      ],
+      "caution": "Scollegando, i nuovi pagamenti vanno sull’account della piattaforma. I pagamenti già incassati e le donazioni ricorrenti già attive restano sul tuo account Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Donazioni e sostegno",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

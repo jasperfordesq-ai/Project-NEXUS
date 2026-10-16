@@ -157,7 +157,7 @@ describe('MemberPremiumAdminPage', () => {
     });
   });
 
-  it('shows Stripe Connect onboarding and live status controls', async () => {
+  it('summarises a connected Stripe account and links to the Stripe account page', async () => {
     mockMemberPremiumApi.getSettings.mockResolvedValueOnce({
       data: {
         settings: {
@@ -179,10 +179,14 @@ describe('MemberPremiumAdminPage', () => {
     render(<MemberPremiumAdminPage />);
 
     await waitFor(() => {
-      expect(screen.getAllByText(/tenant connect/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/this community's stripe account/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/ready/i).length).toBeGreaterThan(0);
-      expect(screen.getByRole('button', { name: /continue stripe onboarding/i })).toBeInTheDocument();
     });
+    // Setup moved to its own page so communities without Donations & Support
+    // can reach it; this page only links there.
+    expect(screen.getByRole('link', { name: /manage stripe account/i })).toHaveAttribute('href', '/test/admin/stripe-account');
+    expect(screen.queryByRole('button', { name: /onboarding/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /account id/i })).not.toBeInTheDocument();
   });
 
   it('shows donation finance operations and export controls', async () => {
@@ -192,7 +196,7 @@ describe('MemberPremiumAdminPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/finance operations/i)).toBeInTheDocument();
-      expect(screen.getByText(/tenant connect volume/i)).toBeInTheDocument();
+      expect(screen.getByText(/paid into your stripe account/i)).toBeInTheDocument();
       expect(screen.getByText(/gift aid ready/i)).toBeInTheDocument();
       expect(screen.getByText(/open disputes/i)).toBeInTheDocument();
     });
@@ -227,8 +231,8 @@ describe('MemberPremiumAdminPage', () => {
     render(<MemberPremiumAdminPage />);
 
     await waitFor(() => {
-      expect(screen.getAllByText(/platform fallback/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/not ready for live donations/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/platform's stripe account/i).length).toBeGreaterThan(0);
+      expect(screen.getByText(/not ready yet/i)).toBeInTheDocument();
     });
   });
 

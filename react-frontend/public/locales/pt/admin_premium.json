@@ -180,43 +180,25 @@
       "deleted": "Camada excluída",
       "delete_failed": "Falha na exclusão",
       "settings_load_failed": "Não foi possível carregar as configurações de roteamento de doações.",
-      "settings_saved": "As configurações de roteamento de doações foram salvas.",
-      "settings_save_failed": "Não foi possível salvar as configurações de roteamento de doações.",
-      "onboarding_failed": "Não foi possível iniciar a integração do Stripe.",
       "finance_load_failed": "Não foi possível carregar as operações de financiamento de doações.",
       "annual_receipts_export_failed": "Não foi possível fazer download da exportação de recibo anual.",
       "gift_aid_export_failed": "A exportação de Gift Aid não pôde ser baixada."
     },
     "settings": {
-      "description": "Deixe em branco para usar a conta Stripe da plataforma com metadados de locatário. Conecte uma conta Stripe de locatário para enviar futuras doações únicas e regulares para essa conta de locatário.",
-      "stripe_connect_account_id": "ID da conta do locatário Stripe Connect",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Alterar isso afeta futuras verificações de doações. Sincronize novamente os níveis de suporte após adicionar uma conta de locatário para que existam preços recorrentes nessa conta Stripe.",
-      "route_platform_default": "Reserva de plataforma",
-      "start_onboarding": "Inicie a integração do Stripe",
-      "continue_onboarding": "Continuar a integração do Stripe",
-      "requirements_due": "Requisitos de conta Stripe que precisam de atenção: {{count}}.",
-      "save": "Salvar roteamento",
       "status": {
         "not_connected": "Não conectado",
         "restricted": "Ação necessária",
         "unknown": "Estado desconhecido",
         "pending": "Pendente",
         "ready": "Pronto"
-      },
-      "connect_fallback_active": "Uma conta Stripe Connect está configurada, mas ainda não está pronta para doações ao vivo. Os pagamentos usarão o substituto da plataforma até que a integração seja concluída.",
-      "requirements_due_many": "Requisitos de conta Stripe que precisam de atenção: {{count}}.",
-      "requirements_due_one": "Requisitos de conta Stripe que precisam de atenção: {{count}}.",
-      "requirements_due_other": "Requisitos de conta Stripe que precisam de atenção: {{count}}.",
-      "route_tenant_connect": "Conexão de Inquilino",
-      "title": "Stripe roteamento"
+      }
     },
     "finance": {
       "title": "Operações financeiras",
-      "description": "Rastreie o roteamento do Locatário Connect, a responsabilidade de substituição da plataforma, a prontidão do Gift Aid, as disputas e o acompanhamento do recebimento deste inquilino.",
+      "description": "Para onde foram pagos os donativos, prontidão de Gift Aid, disputas e acompanhamento de recibos desta comunidade.",
       "completed_volume": "Volume concluído",
-      "platform_fallback_volume": "Volume de fallback da plataforma",
-      "tenant_connect_volume": "Volume do Locatário Connect",
+      "platform_fallback_volume": "Pago através da conta da plataforma",
+      "tenant_connect_volume": "Pago na sua conta Stripe",
       "open_disputes": "Disputas abertas",
       "active_recurring": "Ativo recorrente",
       "failed_receipts": "Recibos falhados",
@@ -236,6 +218,68 @@
       "declaration_count": "{{count}} declaração",
       "declaration_count_other": "{{count}} declarações",
       "past_due_count": "{{count}} vencido"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Conta Stripe",
+      "description": "Para onde vão os pagamentos com cartão feitos a esta comunidade."
+    },
+    "status_heading": "A sua conta Stripe",
+    "route": {
+      "platform": "Os pagamentos vão para a conta Stripe da plataforma",
+      "own": "Os pagamentos vão para a conta Stripe desta comunidade"
+    },
+    "state": {
+      "not_connected": "Neste momento os pagamentos com cartão vão para a conta Stripe da plataforma. Ligue a conta Stripe da sua comunidade para que os donativos sejam pagos diretamente na sua conta bancária.",
+      "pending": "Os seus dados estão na Stripe e a ser verificados. Os pagamentos com cartão vão para a conta Stripe da plataforma até a Stripe terminar.",
+      "restricted": "A Stripe precisa de mais informações antes de a sua conta poder receber pagamentos. Os pagamentos com cartão vão para a conta Stripe da plataforma até isto ficar resolvido.",
+      "ready": "Os donativos e o apoio recorrente são pagos diretamente na conta Stripe desta comunidade.",
+      "unknown": "Não foi possível contactar a Stripe para verificar a sua conta. Tente novamente daqui a pouco."
+    },
+    "requirements_due_one": "{{count}} item ainda precisa da sua atenção na Stripe.",
+    "requirements_due_other": "{{count}} itens ainda precisam da sua atenção na Stripe.",
+    "account_id": "ID da conta Stripe",
+    "actions": {
+      "connect": "Ligar a Stripe",
+      "finish_setup": "Concluir a configuração na Stripe",
+      "open_dashboard": "Abrir o painel da Stripe",
+      "check_status": "Verificar estado",
+      "disconnect": "Desligar"
+    },
+    "disconnect_confirm": {
+      "title": "Desligar esta conta Stripe?",
+      "body": "Os novos pagamentos com cartão passarão a ir para a conta Stripe da plataforma. Os pagamentos já recebidos ficam na sua conta Stripe, e os apoiantes com um donativo recorrente continuam a pagar para ela até cancelarem."
+    },
+    "how_it_works": {
+      "title": "O que muda ao ligar",
+      "item_1": "Os donativos pontuais são pagos na sua conta Stripe.",
+      "item_2": "Os níveis de apoio recorrente são cobrados a partir da sua conta Stripe. São criados lá automaticamente na primeira vez que alguém subscreve depois de ligar.",
+      "item_3": "Os reembolsos saem da conta que recebeu o pagamento.",
+      "item_4": "Até a sua conta estar pronta, os pagamentos continuam a ir para a conta Stripe da plataforma e ficam registados em nome da sua comunidade."
+    },
+    "before_you_start": {
+      "title": "Antes de começar",
+      "body": "A Stripe vai pedir os dados da sua organização e a conta bancária para onde pagar. Costuma demorar cerca de dez minutos, e pode voltar mais tarde para terminar.",
+      "fees": "Aplicam-se as taxas de processamento de cartões da própria Stripe. A plataforma não fica com qualquer parte dos donativos.",
+      "manage_levels": "Gerir os níveis de apoio"
+    },
+    "toasts": {
+      "load_failed": "Não foi possível carregar o estado da sua conta Stripe.",
+      "returned": "Bem-vindo de volta da Stripe. A verificar a sua conta.",
+      "link_expired": "A ligação de configuração da Stripe tinha expirado. Inicie a configuração de novo a partir daqui.",
+      "onboarding_failed": "Não foi possível iniciar a configuração da Stripe.",
+      "dashboard_failed": "Não foi possível abrir o painel da Stripe.",
+      "disconnected": "Conta Stripe desligada. Os pagamentos com cartão vão agora para a conta Stripe da plataforma.",
+      "disconnect_failed": "Não foi possível desligar a conta Stripe.",
+      "status_refreshed": "Estado da conta Stripe atualizado."
+    },
+    "summary": {
+      "title": "Conta Stripe",
+      "manage": "Gerir a conta Stripe",
+      "not_connected": "Os pagamentos com cartão vão para a conta Stripe da plataforma. Ligue a conta da sua comunidade para receber diretamente.",
+      "ready": "Os pagamentos vão diretamente para a conta Stripe desta comunidade.",
+      "not_ready": "A sua conta Stripe ainda não está pronta, por isso os pagamentos usam por agora a conta da plataforma."
     }
   }
 }

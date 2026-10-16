@@ -179,42 +179,25 @@
       "deleted": "Tier deleted",
       "delete_failed": "Delete failed",
       "settings_load_failed": "Donation routing settings could not be loaded.",
-      "settings_saved": "Donation routing settings saved.",
-      "settings_save_failed": "Donation routing settings could not be saved.",
-      "onboarding_failed": "Stripe onboarding could not be started.",
       "finance_load_failed": "Donation finance operations could not be loaded.",
       "gift_aid_export_failed": "Gift Aid export could not be downloaded.",
       "annual_receipts_export_failed": "Annual receipt export could not be downloaded."
     },
     "settings": {
-      "title": "Stripe routing",
-      "description": "Leave this blank to use the platform Stripe account with tenant metadata. Connect a tenant Stripe account to send future one-off and regular donations to that tenant account.",
-      "stripe_connect_account_id": "Tenant Stripe Connect account ID",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Changing this affects future donation checkouts. Re-sync support levels after adding a tenant account so recurring prices exist in that Stripe account.",
-      "route_platform_default": "Platform fallback",
-      "route_tenant_connect": "Tenant Connect",
-      "start_onboarding": "Start Stripe onboarding",
-      "continue_onboarding": "Continue Stripe onboarding",
-      "requirements_due": "Stripe account requirements needing attention: {{count}}.",
-      "save": "Save routing",
       "status": {
         "not_connected": "Not connected",
         "pending": "Pending",
         "ready": "Ready",
         "restricted": "Action needed",
         "unknown": "Status unknown"
-      },
-      "connect_fallback_active": "A Stripe Connect account is configured, but it is not ready for live donations yet. Payments will use the platform fallback until onboarding is complete.",
-      "requirements_due_one": "Stripe account requirements needing attention: {{count}}.",
-      "requirements_due_other": "Stripe account requirements needing attention: {{count}}."
+      }
     },
     "finance": {
       "title": "Finance operations",
-      "description": "Track tenant Connect routing, platform fallback liability, Gift Aid readiness, disputes, and receipt follow-up for this tenant.",
+      "description": "Where donations were paid, Gift Aid readiness, disputes and receipt follow-up for this community.",
       "completed_volume": "Completed volume",
-      "platform_fallback_volume": "Platform fallback volume",
-      "tenant_connect_volume": "Tenant Connect volume",
+      "platform_fallback_volume": "Paid via the platform account",
+      "tenant_connect_volume": "Paid into your Stripe account",
       "gift_aid_ready": "Gift Aid ready",
       "open_disputes": "Open disputes",
       "active_recurring": "Active recurring",
@@ -231,6 +214,68 @@
       "declaration_count_one": "{{count}} declaration",
       "past_due_count_one": "{{count}} past due",
       "past_due_count_other": "{{count}} past due"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Stripe account",
+      "description": "Where card payments made to this community are paid."
+    },
+    "status_heading": "Your Stripe account",
+    "route": {
+      "platform": "Payments go to the platform's Stripe account",
+      "own": "Payments go to this community's Stripe account"
+    },
+    "state": {
+      "not_connected": "Card payments currently go to the platform's Stripe account. Connect your community's own Stripe account so donations are paid straight into your bank account.",
+      "pending": "Your details are with Stripe and are being checked. Card payments go to the platform's Stripe account until Stripe finishes.",
+      "restricted": "Stripe needs more information before your account can take payments. Card payments go to the platform's Stripe account until this is done.",
+      "ready": "Donations and recurring support are paid straight into this community's Stripe account.",
+      "unknown": "We could not reach Stripe to check your account just now. Try again in a moment."
+    },
+    "requirements_due_one": "{{count}} item still needs your attention in Stripe.",
+    "requirements_due_other": "{{count}} items still need your attention in Stripe.",
+    "account_id": "Stripe account ID",
+    "actions": {
+      "connect": "Connect Stripe",
+      "finish_setup": "Finish setup in Stripe",
+      "open_dashboard": "Open Stripe dashboard",
+      "check_status": "Check status",
+      "disconnect": "Disconnect"
+    },
+    "disconnect_confirm": {
+      "title": "Disconnect this Stripe account?",
+      "body": "New card payments will go to the platform's Stripe account instead. Payments already taken stay in your Stripe account, and supporters with a recurring donation keep paying into it until they cancel."
+    },
+    "how_it_works": {
+      "title": "What connecting changes",
+      "item_1": "One-off donations are paid into your Stripe account.",
+      "item_2": "Recurring support levels are billed from your Stripe account. They are set up there automatically the first time someone subscribes after you connect.",
+      "item_3": "Refunds come from whichever account took the payment.",
+      "item_4": "Until your account is ready, payments keep going to the platform's Stripe account and are recorded against your community."
+    },
+    "before_you_start": {
+      "title": "Before you start",
+      "body": "Stripe will ask for your organisation's details and the bank account to pay into. It usually takes about ten minutes, and you can come back and finish later.",
+      "fees": "Stripe's own card-processing fees apply. The platform does not take a share of donations.",
+      "manage_levels": "Manage donation support levels"
+    },
+    "toasts": {
+      "load_failed": "Your Stripe account status could not be loaded.",
+      "returned": "Welcome back from Stripe. Checking your account now.",
+      "link_expired": "The Stripe setup link had expired. Start setup again from here.",
+      "onboarding_failed": "Stripe setup could not be started.",
+      "dashboard_failed": "The Stripe dashboard could not be opened.",
+      "disconnected": "Stripe account disconnected. Card payments now go to the platform's Stripe account.",
+      "disconnect_failed": "The Stripe account could not be disconnected.",
+      "status_refreshed": "Stripe account status updated."
+    },
+    "summary": {
+      "title": "Stripe account",
+      "manage": "Manage Stripe account",
+      "not_connected": "Card payments go to the platform's Stripe account. Connect your community's own account to be paid directly.",
+      "ready": "Payments go straight into this community's Stripe account.",
+      "not_ready": "Your Stripe account is not ready yet, so payments use the platform's account for now."
     }
   }
 }

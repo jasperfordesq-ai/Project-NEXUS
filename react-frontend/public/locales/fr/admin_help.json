@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Compte Stripe",
+      "summary": "Connectez le compte Stripe de votre communauté pour que les dons par carte et le soutien récurrent soient versés directement sur votre compte bancaire, au lieu d’aller sur le compte Stripe de la plateforme.",
+      "steps": [
+        {
+          "label": "Cliquez sur Connecter Stripe",
+          "detail": "Vous êtes redirigé vers Stripe, qui demande les informations de votre organisation et le compte bancaire à créditer. Vous pouvez vous arrêter et revenir plus tard ; la page propose alors Terminer la configuration dans Stripe."
+        },
+        {
+          "label": "Vérifiez l’état",
+          "detail": "Prêt signifie que les paiements vont sur votre compte. En attente ou Action requise signifie que Stripe attend encore quelque chose ; la page indique combien d’éléments restent à traiter."
+        },
+        {
+          "label": "Ouvrez le tableau de bord Stripe",
+          "detail": "Une fois connecté, Ouvrir le tableau de bord Stripe vous mène à votre solde, vos virements et vos paiements sans connexion Stripe séparée."
+        }
+      ],
+      "tips": [
+        "Tant que votre compte n’est pas prêt, les paiements continuent d’aller sur le compte Stripe de la plateforme et sont enregistrés au nom de votre communauté : rien n’est perdu.",
+        "Les frais de carte de Stripe s’appliquent ; la plateforme ne prélève aucune part sur les dons."
+      ],
+      "caution": "La déconnexion envoie les nouveaux paiements sur le compte de la plateforme. Les paiements déjà encaissés et les dons récurrents déjà en place restent sur votre compte Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Dons et soutien",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

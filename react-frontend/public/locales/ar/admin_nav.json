@@ -517,7 +517,8 @@
     "qualifications": "المؤهلات",
     "opportunities": "الفرص والمناوبات",
     "certificates": "الشهادات",
-    "group_bookings": "الحجوزات الجماعية"
+    "group_bookings": "الحجوزات الجماعية",
+    "stripe_account": "حساب Stripe"
   },
   "aria": {
     "breadcrumbs": "فتات الخبز"
@@ -761,7 +762,8 @@
     "url_redirects": "301|302|روابط قديمة|صفحات منقولة|روابط معطلة",
     "marketplace_cases": "DSA|نزاعات|شكاوى|بلاغات|قضايا",
     "registration_policy": "قواعد التسجيل|من يمكنه الانضمام|التحقق من الهوية|التحقق من البريد الإلكتروني|تسجيل",
-    "fadp": "سويسرا|سويسري|nDSG|حماية البيانات|سجل المعالجة"
+    "fadp": "سويسرا|سويسري|nDSG|حماية البيانات|سجل المعالجة",
+    "stripe_account": "stripe|المدفوعات|بطاقة|بنك|التحويلات|ربط|التبرعات"
   },
   "user_report": "تقرير المستخدم",
   "municipal_impact": "تقارير الأثر البلدي",
@@ -817,5 +819,6 @@
   "registration_policy": "سياسة التسجيل",
   "permissions_list": "قائمة الصلاحيات",
   "fadp": "حماية البيانات السويسرية (FADP)",
-  "subscriptions": "الاشتراكات"
+  "subscriptions": "الاشتراكات",
+  "stripe_account": "حساب Stripe"
 }

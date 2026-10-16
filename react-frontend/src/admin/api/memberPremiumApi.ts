@@ -93,6 +93,10 @@ export const memberPremiumAdminApi = {
       payload,
     ),
 
+  /** One-time link into the community's own Stripe Express dashboard (payouts, balance). */
+  createConnectDashboardLink: () =>
+    api.post<{ dashboard_url: string }>('/v2/admin/member-premium/connect/dashboard-link', {}),
+
   listTiers: () =>
     api.get<{ tiers: MemberPremiumTier[] }>('/v2/admin/member-premium/tiers'),
 

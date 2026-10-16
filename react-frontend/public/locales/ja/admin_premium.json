@@ -179,42 +179,25 @@
       "deleted": "階層が削除されました",
       "delete_failed": "削除に失敗しました",
       "settings_load_failed": "寄付ルーティング設定を読み込めませんでした。",
-      "settings_saved": "寄付ルーティング設定が保存されました。",
-      "settings_save_failed": "寄付ルーティング設定を保存できませんでした。",
-      "onboarding_failed": "Stripe オンボーディングを開始できませんでした。",
       "finance_load_failed": "寄付金融操作をロードできませんでした。",
       "annual_receipts_export_failed": "年次領収書のエクスポートをダウンロードできませんでした。",
       "gift_aid_export_failed": "ギフトエイドのエクスポートをダウンロードできませんでした。"
     },
     "settings": {
-      "description": "テナント メタデータを持つプラットフォーム Stripe アカウントを使用するには、これを空白のままにします。テナントの Stripe アカウントを接続して、将来の 1 回限りの寄付および定期的な寄付をそのテナント アカウントに送信します。",
-      "stripe_connect_account_id": "テナント Stripe Connect アカウント ID",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "これを変更すると、今後の寄付のチェックアウトに影響します。テナント アカウントを追加した後、サポート レベルを再同期して、その Stripe アカウントに定期的な価格が存在するようにします。",
-      "route_platform_default": "プラットフォームのフォールバック",
-      "start_onboarding": "Stripe オンボーディングを開始する",
-      "continue_onboarding": "Stripe のオンボーディングを継続する",
-      "requirements_due": "注意が必要な Stripe アカウント要件: {{count}}。",
-      "save": "ルーティングの保存",
       "status": {
         "not_connected": "接続されていません",
         "restricted": "必要なアクション",
         "unknown": "ステータス不明",
         "pending": "保留中",
         "ready": "準備完了"
-      },
-      "connect_fallback_active": "Stripe Connect アカウントは構成されていますが、まだライブ寄付を行う準備ができていません。オンボーディングが完了するまで、支払いにはプラットフォームのフォールバックが使用されます。",
-      "requirements_due_one": "注意が必要な Stripe アカウント要件: {{count}}。",
-      "requirements_due_other": "注意が必要な Stripe アカウント要件: {{count}}。",
-      "route_tenant_connect": "テナント接続",
-      "title": "Stripe ルーティング"
+      }
     },
     "finance": {
       "title": "財務業務",
-      "description": "このテナントのテナント接続ルーティング、プラットフォームのフォールバック責任、ギフトエイドの準備状況、紛争、および受領書のフォローアップを追跡します。",
+      "description": "このコミュニティの寄付の入金先、Gift Aid の準備状況、チャージバック、領収書のフォローアップ。",
       "completed_volume": "完結巻",
-      "platform_fallback_volume": "プラットフォームのフォールバック ボリューム",
-      "tenant_connect_volume": "テナントコネクトボリューム",
+      "platform_fallback_volume": "プラットフォームのアカウント経由で支払い",
+      "tenant_connect_volume": "あなたの Stripe アカウントへ支払い",
       "open_disputes": "オープンな紛争",
       "active_recurring": "アクティブな定期的",
       "failed_receipts": "失敗した受信",
@@ -231,6 +214,68 @@
       "declaration_count": "{{count}} 宣言",
       "declaration_count_other": "{{count}} 宣言",
       "past_due_count": "{{count}} 支払期日過ぎ"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Stripe アカウント",
+      "description": "このコミュニティへのカード決済の入金先。"
+    },
+    "status_heading": "あなたの Stripe アカウント",
+    "route": {
+      "platform": "支払いはプラットフォームの Stripe アカウントへ",
+      "own": "支払いはこのコミュニティの Stripe アカウントへ"
+    },
+    "state": {
+      "not_connected": "現在、カード決済はプラットフォームの Stripe アカウントに入金されています。寄付がコミュニティの銀行口座に直接入金されるよう、コミュニティ自身の Stripe アカウントを接続してください。",
+      "pending": "入力内容は Stripe に送られ、確認中です。Stripe の確認が終わるまで、カード決済はプラットフォームの Stripe アカウントに入金されます。",
+      "restricted": "アカウントで決済を受け付けるには、Stripe が追加の情報を必要としています。完了するまで、カード決済はプラットフォームの Stripe アカウントに入金されます。",
+      "ready": "寄付と継続的なサポートは、このコミュニティの Stripe アカウントに直接入金されます。",
+      "unknown": "ただいま Stripe に接続できず、アカウントを確認できませんでした。しばらくしてからもう一度お試しください。"
+    },
+    "requirements_due_one": "Stripe で対応が必要な項目が {{count}} 件あります。",
+    "requirements_due_other": "Stripe で対応が必要な項目が {{count}} 件あります。",
+    "account_id": "Stripe アカウント ID",
+    "actions": {
+      "connect": "Stripe を接続",
+      "finish_setup": "Stripe で設定を完了",
+      "open_dashboard": "Stripe ダッシュボードを開く",
+      "check_status": "状態を確認",
+      "disconnect": "接続を解除"
+    },
+    "disconnect_confirm": {
+      "title": "この Stripe アカウントの接続を解除しますか？",
+      "body": "今後のカード決済はプラットフォームの Stripe アカウントに入金されます。すでに受け取った支払いはあなたの Stripe アカウントに残り、継続的な寄付をしているサポーターは解約するまでそのアカウントへの支払いを続けます。"
+    },
+    "how_it_works": {
+      "title": "接続すると変わること",
+      "item_1": "単発の寄付はあなたの Stripe アカウントに入金されます。",
+      "item_2": "継続的なサポートレベルはあなたの Stripe アカウントから請求されます。接続後に誰かが初めて登録した時点で、そこに自動的に作成されます。",
+      "item_3": "返金は、その支払いを受け取ったアカウントから行われます。",
+      "item_4": "アカウントの準備が整うまで、支払いは引き続きプラットフォームの Stripe アカウントに入金され、あなたのコミュニティ宛として記録されます。"
+    },
+    "before_you_start": {
+      "title": "始める前に",
+      "body": "Stripe から団体の情報と入金先の銀行口座を求められます。通常は 10 分ほどで、後で戻って続きを完了することもできます。",
+      "fees": "Stripe 独自のカード決済手数料がかかります。プラットフォームが寄付の一部を受け取ることはありません。",
+      "manage_levels": "寄付サポートレベルを管理"
+    },
+    "toasts": {
+      "load_failed": "Stripe アカウントの状態を読み込めませんでした。",
+      "returned": "Stripe からお帰りなさい。アカウントを確認しています。",
+      "link_expired": "Stripe の設定リンクの有効期限が切れていました。ここから設定をやり直してください。",
+      "onboarding_failed": "Stripe の設定を開始できませんでした。",
+      "dashboard_failed": "Stripe ダッシュボードを開けませんでした。",
+      "disconnected": "Stripe アカウントの接続を解除しました。カード決済は今後プラットフォームの Stripe アカウントに入金されます。",
+      "disconnect_failed": "Stripe アカウントの接続を解除できませんでした。",
+      "status_refreshed": "Stripe アカウントの状態を更新しました。"
+    },
+    "summary": {
+      "title": "Stripe アカウント",
+      "manage": "Stripe アカウントを管理",
+      "not_connected": "カード決済はプラットフォームの Stripe アカウントに入金されます。直接受け取るには、コミュニティ自身のアカウントを接続してください。",
+      "ready": "支払いはこのコミュニティの Stripe アカウントに直接入金されます。",
+      "not_ready": "Stripe アカウントの準備がまだ整っていないため、当面はプラットフォームのアカウントが使われます。"
     }
   }
 }

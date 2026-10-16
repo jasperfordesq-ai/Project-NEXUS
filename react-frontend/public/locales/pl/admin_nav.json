@@ -517,7 +517,8 @@
     "qualifications": "Kwalifikacje",
     "opportunities": "Oferty i zmiany",
     "certificates": "Certyfikaty",
-    "group_bookings": "Rezerwacje grupowe"
+    "group_bookings": "Rezerwacje grupowe",
+    "stripe_account": "Konto Stripe"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"
@@ -753,7 +754,8 @@
     "url_redirects": "301|302|stare linki|przeniesione strony|niedziałające linki",
     "marketplace_cases": "DSA|spory|skargi|zgłoszenia|sprawy",
     "registration_policy": "zasady zapisu|kto może dołączyć|weryfikacja tożsamości|weryfikacja e-mail|rejestracja",
-    "fadp": "Szwajcaria|szwajcarska|nDSG|ochrona danych|rejestr czynności przetwarzania"
+    "fadp": "Szwajcaria|szwajcarska|nDSG|ochrona danych|rejestr czynności przetwarzania",
+    "stripe_account": "stripe|płatności|karta|bank|wypłaty|połącz|darowizny"
   },
   "user_report": "Raport użytkownika",
   "municipal_impact": "Miejskie raporty oddziaływania",
@@ -809,5 +811,6 @@
   "registration_policy": "Zasady rejestracji",
   "permissions_list": "Lista uprawnień",
   "fadp": "Szwajcarska ochrona danych (FADP)",
-  "subscriptions": "Subskrypcje"
+  "subscriptions": "Subskrypcje",
+  "stripe_account": "Konto Stripe"
 }

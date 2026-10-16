@@ -517,7 +517,8 @@
     "qualifications": "Cualificaciones",
     "opportunities": "Oportunidades y turnos",
     "certificates": "Certificados",
-    "group_bookings": "Reservas de grupo"
+    "group_bookings": "Reservas de grupo",
+    "stripe_account": "Cuenta de Stripe"
   },
   "aria": {
     "breadcrumbs": "Pan rallado"
@@ -749,7 +750,8 @@
     "url_redirects": "301|302|enlaces antiguos|páginas movidas|enlaces rotos",
     "marketplace_cases": "DSA|disputas|quejas|denuncias|casos",
     "registration_policy": "reglas de registro|quién puede unirse|verificación de identidad|verificación de correo|registro",
-    "fadp": "Suiza|suizo|nLPD|protección de datos|registro de actividades de tratamiento"
+    "fadp": "Suiza|suizo|nLPD|protección de datos|registro de actividades de tratamiento",
+    "stripe_account": "stripe|pagos|tarjeta|banco|transferencias|conectar|donaciones"
   },
   "user_report": "Informe de usuario",
   "municipal_impact": "Informes de impacto municipal",
@@ -805,5 +807,6 @@
   "registration_policy": "Política de registro",
   "permissions_list": "Lista de permisos",
   "fadp": "Protección de datos suiza (FADP)",
-  "subscriptions": "Suscripciones"
+  "subscriptions": "Suscripciones",
+  "stripe_account": "Cuenta de Stripe"
 }

@@ -76,6 +76,11 @@ class DonationPaymentController extends BaseApiController
             return $this->respondWithData([
                 'client_secret' => $result['client_secret'],
                 'donation_id' => $result['donation_id'],
+                // null when the platform account took the payment; an acct_ id
+                // when the community's own Stripe account did. The card form
+                // must initialise Stripe.js against that account or Stripe
+                // answers "No such payment_intent" on confirmation.
+                'stripe_account_id' => $result['stripe_account_id'] ?? null,
             ]);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);

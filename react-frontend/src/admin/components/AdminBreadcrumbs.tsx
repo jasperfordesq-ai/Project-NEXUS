@@ -54,6 +54,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   attributes: 'breadcrumbs.attributes',
   plans: 'breadcrumbs.plans',
   subscriptions: 'breadcrumbs.subscriptions',
+  'stripe-account': 'breadcrumbs.stripe_account',
 
   // Engagement / Gamification
   gamification: 'breadcrumbs.gamification',

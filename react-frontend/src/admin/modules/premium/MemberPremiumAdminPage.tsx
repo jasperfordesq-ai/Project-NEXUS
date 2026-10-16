@@ -19,8 +19,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Trash from 'lucide-react/icons/trash';
 import Pencil from 'lucide-react/icons/pencil';
 import Users from 'lucide-react/icons/users';
-import Save from 'lucide-react/icons/save';
-import ExternalLink from 'lucide-react/icons/external-link';
+import CreditCard from 'lucide-react/icons/credit-card';
 import Download from 'lucide-react/icons/download';
 import { useToast, useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -96,8 +95,6 @@ export function MemberPremiumAdminPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const [settingsSaving, setSettingsSaving] = useState(false);
-  const [onboarding, setOnboarding] = useState(false);
   const [stripeConnectAccountId, setStripeConnectAccountId] = useState('');
   const [paymentRoute, setPaymentRoute] = useState<'platform_default' | 'tenant_connect'>('platform_default');
   const [fallbackReason, setFallbackReason] = useState<string | null>(null);
@@ -241,52 +238,6 @@ export function MemberPremiumAdminPage() {
     }
   };
 
-  const saveSettings = async () => {
-    setSettingsSaving(true);
-    try {
-      const res = await memberPremiumAdminApi.updateSettings({
-        stripe_connect_account_id: stripeConnectAccountId.trim(),
-      });
-      const settings = res.data?.settings;
-      setStripeConnectAccountId(settings?.stripe_connect_account_id ?? '');
-      setPaymentRoute(settings?.payment_route ?? 'platform_default');
-      setFallbackReason(settings?.fallback_reason ?? null);
-      setAccountStatus(settings?.account_status ?? null);
-      toast.success(t('member_premium_admin.toasts.settings_saved'));
-    } catch {
-      toast.error(t('member_premium_admin.toasts.settings_save_failed'));
-    } finally {
-      setSettingsSaving(false);
-    }
-  };
-
-  const startConnectOnboarding = async () => {
-    setOnboarding(true);
-    try {
-      const currentUrl = `${window.location.origin}${tenantPath('/admin/member-premium')}`;
-      const res = await memberPremiumAdminApi.createConnectOnboardingLink({
-        return_url: `${currentUrl}?stripe_connect=return`,
-        refresh_url: `${currentUrl}?stripe_connect=refresh`,
-      });
-      const settings = res.data?.settings;
-      setStripeConnectAccountId(settings?.stripe_connect_account_id ?? '');
-      setPaymentRoute(settings?.payment_route ?? 'platform_default');
-      setFallbackReason(settings?.fallback_reason ?? null);
-      setAccountStatus(settings?.account_status ?? null);
-
-      const onboardingUrl = res.data?.onboarding_url;
-      if (onboardingUrl) {
-        window.location.assign(onboardingUrl);
-      } else {
-        toast.error(t('member_premium_admin.toasts.onboarding_failed'));
-      }
-    } catch {
-      toast.error(t('member_premium_admin.toasts.onboarding_failed'));
-    } finally {
-      setOnboarding(false);
-    }
-  };
-
   const deleteTier = async (tier: MemberPremiumTier) => {
     const ok = await confirm({
       title: t('member_premium_admin.confirm_delete', { name: tier.name }),
@@ -391,17 +342,20 @@ export function MemberPremiumAdminPage() {
         }
       />
 
+      {/* Where the money goes. Setup itself lives on the Stripe account page,
+          which every community that takes card payments can reach; this is
+          only a summary so an admin here is never surprised by the route. */}
       <Card>
-        <CardBody className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+        <CardBody className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-semibold text-foreground">
-                {t('member_premium_admin.settings.title')}
+                {t('stripe_account.summary.title')}
               </h2>
               <Chip size="sm" color={paymentRoute === 'tenant_connect' ? 'success' : 'warning'} variant="soft">
                 {paymentRoute === 'tenant_connect'
-                  ? t('member_premium_admin.settings.route_tenant_connect')
-                  : t('member_premium_admin.settings.route_platform_default')}
+                  ? t('stripe_account.route.own')
+                  : t('stripe_account.route.platform')}
               </Chip>
               <Chip
                 size="sm"
@@ -412,53 +366,23 @@ export function MemberPremiumAdminPage() {
               </Chip>
             </div>
             <p className="text-sm text-muted">
-              {t('member_premium_admin.settings.description')}
+              {settingsLoading
+                ? null
+                : paymentRoute === 'tenant_connect'
+                  ? t('stripe_account.summary.ready')
+                  : stripeConnectAccountId || fallbackReason === 'stripe_connect_not_ready'
+                    ? t('stripe_account.summary.not_ready')
+                    : t('stripe_account.summary.not_connected')}
             </p>
-            {accountStatus?.requirements_due?.length ? (
-              <p className="text-sm text-warning-soft-foreground">
-                {t('member_premium_admin.settings.requirements_due', {
-                  count: accountStatus.requirements_due.length,
-                })}
-              </p>
-            ) : null}
-            {fallbackReason === 'stripe_connect_not_ready' ? (
-              <p className="text-sm text-warning-soft-foreground">
-                {t('member_premium_admin.settings.connect_fallback_active')}
-              </p>
-            ) : null}
-            {accountStatus?.error ? (
-              <p className="text-sm text-danger">
-                {t('member_premium_admin.toasts.settings_load_failed')}
-              </p>
-            ) : null}
-            <Input
-              label={t('member_premium_admin.settings.stripe_connect_account_id')}
-              value={stripeConnectAccountId}
-              onValueChange={setStripeConnectAccountId}
-              placeholder={t('member_premium_admin.settings.stripe_connect_placeholder')}
-              description={t('member_premium_admin.settings.stripe_connect_description')}
-              isDisabled={settingsLoading}
-            />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             <Button
-              variant="secondary"
-              startContent={<ExternalLink size={16} />}
-              onPress={startConnectOnboarding}
-              isLoading={onboarding}
-              isDisabled={settingsLoading || settingsSaving}
+              as={Link}
+              to={tenantPath('/admin/stripe-account')}
+              variant={paymentRoute === 'tenant_connect' ? 'secondary' : 'primary'}
+              startContent={<CreditCard size={16} />}
             >
-              {stripeConnectAccountId
-                ? t('member_premium_admin.settings.continue_onboarding')
-                : t('member_premium_admin.settings.start_onboarding')}
-            </Button>
-            <Button
-              startContent={<Save size={16} />}
-              onPress={saveSettings}
-              isLoading={settingsSaving}
-              isDisabled={settingsLoading || onboarding}
-            >
-              {t('member_premium_admin.settings.save')}
+              {t('stripe_account.summary.manage')}
             </Button>
           </div>
         </CardBody>

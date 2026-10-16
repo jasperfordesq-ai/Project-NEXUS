@@ -587,6 +587,13 @@ function useAdminNav(): NavSection[] {
             { label: t('subscriptions'), href: '/admin/plans/subscriptions', icon: CreditCard },
             { label: t('billing'), href: '/admin/billing', icon: CreditCard },
           ] : []),
+          // The community's own Stripe account: one-off donations ride on
+          // volunteering (on by default), recurring support on member_premium.
+          // Either way the money lands in the same account, so the page is
+          // reachable whenever one of them is on — not only with member_premium.
+          ...(hasFeature('volunteering') || hasFeature('member_premium') ? [
+            { label: t('stripe_account'), href: '/admin/stripe-account', icon: CreditCard, keywords: keyword(t('search_keywords.stripe_account')) },
+          ] : []),
           ...(hasFeature('member_premium') ? [
             { label: t('member_premium'), href: '/admin/member-premium', icon: HandHeart },
             { label: t('premium_subscribers'), href: '/admin/member-premium/subscribers', icon: Users },

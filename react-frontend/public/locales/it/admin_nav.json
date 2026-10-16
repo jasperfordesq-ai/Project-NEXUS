@@ -517,7 +517,8 @@
     "qualifications": "Qualifiche",
     "opportunities": "Opportunità e turni",
     "certificates": "Certificati",
-    "group_bookings": "Prenotazioni di gruppo"
+    "group_bookings": "Prenotazioni di gruppo",
+    "stripe_account": "Account Stripe"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"
@@ -749,7 +750,8 @@
     "url_redirects": "301|302|vecchi link|pagine spostate|link non funzionanti",
     "marketplace_cases": "DSA|controversie|reclami|segnalazioni|casi",
     "registration_policy": "regole di iscrizione|chi può unirsi|verifica dell'identità|verifica email|registrazione",
-    "fadp": "Svizzera|svizzera|nLPD|LPD|protezione dei dati|registro dei trattamenti"
+    "fadp": "Svizzera|svizzera|nLPD|LPD|protezione dei dati|registro dei trattamenti",
+    "stripe_account": "stripe|pagamenti|carta|banca|versamenti|collegare|donazioni"
   },
   "user_report": "Rapporto utente",
   "municipal_impact": "Rapporti sull'impatto municipale",
@@ -805,5 +807,6 @@
   "registration_policy": "Criteri di registrazione",
   "permissions_list": "Elenco dei permessi",
   "fadp": "Protezione dei dati svizzera (LPD)",
-  "subscriptions": "Abbonamenti"
+  "subscriptions": "Abbonamenti",
+  "stripe_account": "Account Stripe"
 }

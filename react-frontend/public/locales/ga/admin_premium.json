@@ -182,45 +182,25 @@
       "deleted": "Scriosadh an tsraith",
       "delete_failed": "Theip ar an scriosadh",
       "settings_load_failed": "Níorbh fhéidir socruithe ródaithe síntiús a lódáil.",
-      "settings_saved": "Sábháladh socruithe ródaithe síntiús.",
-      "settings_save_failed": "Níorbh fhéidir socruithe ródaithe síntiús a shábháil.",
       "finance_load_failed": "Níorbh fhéidir oibríochtaí airgeadais síntiús a luchtú.",
       "annual_receipts_export_failed": "Níorbh fhéidir easpórtáil admhála bliantúil a íoslódáil.",
-      "gift_aid_export_failed": "Níorbh fhéidir an easpórtáil Gift Aid a íoslódáil.",
-      "onboarding_failed": "Níorbh fhéidir tús a chur le onboarding Stripe."
+      "gift_aid_export_failed": "Níorbh fhéidir an easpórtáil Gift Aid a íoslódáil."
     },
     "settings": {
-      "description": "Fág é seo folamh chun cuntas Stripe an ardáin a úsáid le meiteashonraí tionónta. Ceangail cuntas Stripe tionónta chun síntiúis aonuaire agus rialta sa todhchaí a sheoladh chuig an gcuntas tionónta sin.",
-      "stripe_connect_account_id": "Aitheantas cuntais Tionónta Stripe Connect",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Cuireann sé seo isteach ar sheiceanna deonacha amach anseo. Leibhéil tacaíochta a athshioncronú tar éis cuntas tionónta a chur leis ionas go mbeidh praghsanna athfhillteacha sa chuntas Stripe sin.",
-      "route_platform_default": "Cúlbhrat ardán",
-      "start_onboarding": "Tosaigh Stripe ar bordáil",
-      "continue_onboarding": "Lean ar aghaidh ag dul ar bord Stripe",
-      "save": "Sábháil ródú",
       "status": {
         "not_connected": "Gan ceangal",
         "restricted": "Gníomh de dhíth",
         "unknown": "Stádas anaithnid",
         "pending": "Ar feitheamh",
         "ready": "Réidh"
-      },
-      "connect_fallback_active": "Tá cuntas Stripe Connect cumraithe, ach níl sé réidh le haghaidh deonacháin bheo go fóill. Bainfidh íocaíochtaí úsáid as an ardán cúltaca go dtí go mbeidh an bordáil críochnaithe.",
-      "requirements_due_few": "Riachtanais chuntais stripe ar gá aird a thabhairt orthu: {{count}}.",
-      "requirements_due_many": "Riachtanais chuntais stripe ar gá aird a thabhairt orthu: {{count}}.",
-      "requirements_due_two": "Riachtanais chuntais stripe ar gá aird a thabhairt orthu: {{count}}.",
-      "title": "Ródú Stripe",
-      "requirements_due": "Riachtanais cuntais Stripe ag teastáil aire: {{count}}.",
-      "requirements_due_one": "Riachtanais cuntais Stripe ag teastáil aire: {{count}}.",
-      "requirements_due_other": "Riachtanais cuntais Stripe ag teastáil aire: {{count}}.",
-      "route_tenant_connect": "Ceangal Le Cóirí"
+      }
     },
     "finance": {
       "title": "Oibríochtaí airgeadais",
-      "description": "Rianaigh ródú Connect tenant, dliteanas ardáin aischurtha, ullmhacht Gift Aid, díospóidí, agus fáltas leantach don tionónta seo.",
+      "description": "Cár íocadh síntiúis, ullmhacht Gift Aid, díospóidí agus admhálacha le leanúint don phobal seo.",
       "completed_volume": "Toirt críochnaithe",
-      "platform_fallback_volume": "Toilleadh cúlaithe an ardáin",
-      "tenant_connect_volume": "toirte Tenant Connect",
+      "platform_fallback_volume": "Íoctha trí chuntas an ardáin",
+      "tenant_connect_volume": "Íoctha isteach i do chuntas Stripe",
       "open_disputes": "Díospóidí oscailte",
       "active_recurring": "Gníomhach athfhillteach",
       "failed_receipts": "Admhálacha teipthe",
@@ -246,6 +226,71 @@
       "declaration_count": "{{count}} ráiteas",
       "declaration_count_other": "{{count}} ráitis",
       "past_due_count": "{{count}} as dáta"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Cuntas Stripe",
+      "description": "Cá dtéann íocaíochtaí cárta a dhéantar leis an bpobal seo."
+    },
+    "status_heading": "Do chuntas Stripe",
+    "route": {
+      "platform": "Téann íocaíochtaí chuig cuntas Stripe an ardáin",
+      "own": "Téann íocaíochtaí chuig cuntas Stripe an phobail seo"
+    },
+    "state": {
+      "not_connected": "Faoi láthair téann íocaíochtaí cárta chuig cuntas Stripe an ardáin. Ceangail cuntas Stripe do phobail féin ionas go n-íocfar síntiúis díreach isteach i do chuntas bainc.",
+      "pending": "Tá do shonraí ag Stripe agus á seiceáil. Téann íocaíochtaí cárta chuig cuntas Stripe an ardáin go dtí go mbeidh Stripe críochnaithe.",
+      "restricted": "Teastaíonn tuilleadh eolais ó Stripe sular féidir le do chuntas íocaíochtaí a ghlacadh. Téann íocaíochtaí cárta chuig cuntas Stripe an ardáin go dtí go mbeidh sé sin déanta.",
+      "ready": "Íoctar síntiúis agus tacaíocht athfhillteach díreach isteach i gcuntas Stripe an phobail seo.",
+      "unknown": "Níorbh fhéidir linn teagmháil a dhéanamh le Stripe chun do chuntas a sheiceáil anois díreach. Bain triail eile as i gceann nóiméid."
+    },
+    "requirements_due_one": "Tá {{count}} mhír fós ag teastáil uait in Stripe.",
+    "requirements_due_two": "Tá {{count}} mhír fós ag teastáil uait in Stripe.",
+    "requirements_due_few": "Tá {{count}} mhír fós ag teastáil uait in Stripe.",
+    "requirements_due_many": "Tá {{count}} mír fós ag teastáil uait in Stripe.",
+    "requirements_due_other": "Tá {{count}} mír fós ag teastáil uait in Stripe.",
+    "account_id": "ID cuntais Stripe",
+    "actions": {
+      "connect": "Ceangail Stripe",
+      "finish_setup": "Críochnaigh an socrú in Stripe",
+      "open_dashboard": "Oscail deais Stripe",
+      "check_status": "Seiceáil an stádas",
+      "disconnect": "Dícheangail"
+    },
+    "disconnect_confirm": {
+      "title": "An cuntas Stripe seo a dhícheangal?",
+      "body": "Rachaidh íocaíochtaí cárta nua chuig cuntas Stripe an ardáin ina ionad. Fanann íocaíochtaí a glacadh cheana i do chuntas Stripe, agus leanann tacaitheoirí a bhfuil síntiús athfhillteach acu ag íoc isteach ann go dtí go gcuireann siad ar ceal é."
+    },
+    "how_it_works": {
+      "title": "An méid a athraíonn nuair a cheanglaítear",
+      "item_1": "Íoctar síntiúis aonuaire isteach i do chuntas Stripe.",
+      "item_2": "Billeáiltear leibhéil tacaíochta athfhillteacha ó do chuntas Stripe. Cruthaítear ansin iad go huathoibríoch an chéad uair a dhéanann duine síntiús tar éis duit ceangal.",
+      "item_3": "Tagann aisíocaíochtaí ón gcuntas a ghlac an íocaíocht.",
+      "item_4": "Go dtí go mbeidh do chuntas réidh, leanann íocaíochtaí ag dul chuig cuntas Stripe an ardáin agus taifeadtar iad in aghaidh do phobail."
+    },
+    "before_you_start": {
+      "title": "Sula dtosaíonn tú",
+      "body": "Iarrfaidh Stripe sonraí d’eagraíochta agus an cuntas bainc le híoc isteach ann. De ghnáth tógann sé thart ar deich nóiméad, agus is féidir leat filleadh agus críochnú níos déanaí.",
+      "fees": "Baineann táillí próiseála cárta Stripe féin. Ní thógann an t-ardán aon sciar de shíntiúis.",
+      "manage_levels": "Bainistigh leibhéil tacaíochta síntiús"
+    },
+    "toasts": {
+      "load_failed": "Níorbh fhéidir stádas do chuntais Stripe a lódáil.",
+      "returned": "Fáilte ar ais ó Stripe. Do chuntas á sheiceáil anois.",
+      "link_expired": "Bhí an nasc socraithe Stripe imithe in éag. Tosaigh an socrú arís ón áit seo.",
+      "onboarding_failed": "Níorbh fhéidir socrú Stripe a thosú.",
+      "dashboard_failed": "Níorbh fhéidir deais Stripe a oscailt.",
+      "disconnected": "Cuntas Stripe dícheangailte. Téann íocaíochtaí cárta chuig cuntas Stripe an ardáin anois.",
+      "disconnect_failed": "Níorbh fhéidir an cuntas Stripe a dhícheangal.",
+      "status_refreshed": "Stádas an chuntais Stripe nuashonraithe."
+    },
+    "summary": {
+      "title": "Cuntas Stripe",
+      "manage": "Bainistigh an cuntas Stripe",
+      "not_connected": "Téann íocaíochtaí cárta chuig cuntas Stripe an ardáin. Ceangail cuntas do phobail féin le híoc go díreach.",
+      "ready": "Téann íocaíochtaí díreach isteach i gcuntas Stripe an phobail seo.",
+      "not_ready": "Níl do chuntas Stripe réidh fós, mar sin úsáideann íocaíochtaí cuntas an ardáin go fóill."
     }
   }
 }

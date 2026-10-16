@@ -10,8 +10,8 @@
  * payment confirmation with loading/error states.
  */
 
-import { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { useMemo, useState } from 'react';
+import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
@@ -22,22 +22,45 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { Button, Chip } from '@/components/ui';
 
-/* ───────────────────────── Stripe init (module-level, called once) ───────────────────────── */
+/* ───────────────────────── Stripe init (one instance per account) ───────────────────────── */
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
+
+/**
+ * A PaymentIntent created on a community's own Stripe account (Stripe Connect,
+ * direct charge) can only be confirmed by a Stripe.js instance initialised
+ * with that account's id. Confirming it through the platform instance fails
+ * with "No such payment_intent", so each connected account gets its own
+ * instance, created once and reused.
+ */
+const stripeInstances = new Map<string, Promise<Stripe | null>>();
+
+function getStripePromise(stripeAccountId: string | null | undefined): Promise<Stripe | null> | null {
+  if (!stripeKey) return null;
+  const accountKey = stripeAccountId || '';
+  let promise = stripeInstances.get(accountKey);
+  if (!promise) {
+    promise = accountKey
+      ? loadStripe(stripeKey, { stripeAccount: accountKey })
+      : loadStripe(stripeKey);
+    stripeInstances.set(accountKey, promise);
+  }
+  return promise;
+}
 
 /* ───────────────────────── Props ───────────────────────── */
 
 interface StripePaymentFormProps {
   clientSecret: string;
+  /** The connected account the client_secret belongs to; null/undefined for the platform account. */
+  stripeAccountId?: string | null;
   onSuccess: () => void;
   onError: (error: string) => void;
 }
 
 /* ───────────────────────── Inner form (must be inside Elements) ───────────────────────── */
 
-function PaymentForm({ onSuccess, onError }: Omit<StripePaymentFormProps, 'clientSecret'>) {
+function PaymentForm({ onSuccess, onError }: Pick<StripePaymentFormProps, 'onSuccess' | 'onError'>) {
   const { t } = useTranslation('volunteering');
   const stripe = useStripe();
   const elements = useElements();
@@ -122,9 +145,14 @@ function PaymentForm({ onSuccess, onError }: Omit<StripePaymentFormProps, 'clien
 
 /* ───────────────────────── Exported wrapper ───────────────────────── */
 
-export function StripePaymentForm({ clientSecret, onSuccess, onError }: StripePaymentFormProps) {
+export function StripePaymentForm({ clientSecret, stripeAccountId, onSuccess, onError }: StripePaymentFormProps) {
+  const stripePromise = useMemo(() => getStripePromise(stripeAccountId), [stripeAccountId]);
+
   return (
     <Elements
+      // Elements must be remounted when the account changes: the provider
+      // binds to the Stripe instance it was first given.
+      key={stripeAccountId || 'platform'}
       stripe={stripePromise}
       options={{
         clientSecret,

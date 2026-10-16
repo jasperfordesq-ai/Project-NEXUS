@@ -179,42 +179,25 @@
       "deleted": "Stufe gelöscht",
       "delete_failed": "Das Löschen ist fehlgeschlagen",
       "settings_load_failed": "Die Einstellungen für die Spendenweiterleitung konnten nicht geladen werden.",
-      "settings_saved": "Einstellungen für die Spendenweiterleitung gespeichert.",
-      "settings_save_failed": "Die Einstellungen für die Spendenweiterleitung konnten nicht gespeichert werden.",
-      "onboarding_failed": "Stripe-Onboarding konnte nicht gestartet werden.",
       "finance_load_failed": "Spendenfinanzierungsvorgänge konnten nicht geladen werden.",
       "annual_receipts_export_failed": "Der Export des Jahresbelegs konnte nicht heruntergeladen werden.",
       "gift_aid_export_failed": "Gift-Aid-Export konnte nicht heruntergeladen werden."
     },
     "settings": {
-      "title": "Stripe-Routing",
-      "description": "Lassen Sie dieses Feld leer, um das Plattform-Stripe-Konto mit Mandantenmetadaten zu verwenden. Verbinden Sie ein Mieter-Stripe-Konto, um zukünftige einmalige und regelmäßige Spenden an dieses Mieterkonto zu senden.",
-      "stripe_connect_account_id": "Stripe Connect-Konto-ID des Mandanten",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Wenn Sie dies ändern, wirkt sich dies auf zukünftige Spendenabschlüsse aus. Synchronisieren Sie die Supportstufen nach dem Hinzufügen eines Mandantenkontos erneut, damit in diesem Stripe-Konto wiederkehrende Preise vorhanden sind.",
-      "route_platform_default": "Plattform-Fallback",
-      "start_onboarding": "Starten Sie das Stripe-Onboarding",
-      "continue_onboarding": "Fahren Sie mit dem Stripe-Onboarding fort",
-      "requirements_due": "Anforderungen an Stripe-Konten, die beachtet werden müssen: {{count}}.",
-      "save": "Routing speichern",
       "status": {
         "not_connected": "Nicht verbunden",
         "restricted": "Handlungsbedarf",
         "unknown": "Status unbekannt",
         "pending": "Ausstehend",
         "ready": "Bereit"
-      },
-      "connect_fallback_active": "Ein Stripe Connect-Konto ist konfiguriert, aber noch nicht für Live-Spenden bereit. Zahlungen nutzen das Plattform-Fallback, bis das Onboarding abgeschlossen ist.",
-      "requirements_due_one": "Anforderungen an Stripe-Konten, die beachtet werden müssen: {{count}}.",
-      "requirements_due_other": "Anforderungen an Stripe-Konten, die beachtet werden müssen: {{count}}.",
-      "route_tenant_connect": "Mieter verbinden"
+      }
     },
     "finance": {
       "title": "Finanzoperationen",
-      "description": "Verfolgen Sie die Route des Mieters Connect, die Plattform-Fallback-Haftung, die Gift Aid-Bereitschaft, Streitigkeiten und die Nachverfolgung von Quittungen für diesen Mieter.",
+      "description": "Wohin Spenden gezahlt wurden, Gift-Aid-Bereitschaft, Streitfälle und Quittungsnachverfolgung für diese Community.",
       "completed_volume": "Abgeschlossenes Volumen",
-      "platform_fallback_volume": "Plattform-Fallback-Volumen",
-      "tenant_connect_volume": "Tenant Connect-Volume",
+      "platform_fallback_volume": "Über das Konto der Plattform gezahlt",
+      "tenant_connect_volume": "Auf Ihr Stripe-Konto gezahlt",
       "open_disputes": "Offene Streitigkeiten",
       "active_recurring": "Aktiv wiederkehrend",
       "failed_receipts": "Fehlgeschlagene Belege",
@@ -231,6 +214,68 @@
       "declaration_count": "{{count}} Erklärung",
       "declaration_count_other": "{{count}} Erklärungen",
       "past_due_count": "{{count}} überfällig"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Stripe-Konto",
+      "description": "Wohin Kartenzahlungen an diese Community fließen."
+    },
+    "status_heading": "Ihr Stripe-Konto",
+    "route": {
+      "platform": "Zahlungen gehen an das Stripe-Konto der Plattform",
+      "own": "Zahlungen gehen an das Stripe-Konto dieser Community"
+    },
+    "state": {
+      "not_connected": "Kartenzahlungen gehen derzeit an das Stripe-Konto der Plattform. Verbinden Sie das eigene Stripe-Konto Ihrer Community, damit Spenden direkt auf Ihr Bankkonto ausgezahlt werden.",
+      "pending": "Ihre Angaben liegen Stripe vor und werden geprüft. Kartenzahlungen gehen an das Stripe-Konto der Plattform, bis Stripe fertig ist.",
+      "restricted": "Stripe benötigt weitere Angaben, bevor Ihr Konto Zahlungen annehmen kann. Kartenzahlungen gehen an das Stripe-Konto der Plattform, bis das erledigt ist.",
+      "ready": "Spenden und regelmäßige Unterstützung werden direkt auf das Stripe-Konto dieser Community ausgezahlt.",
+      "unknown": "Stripe war gerade nicht erreichbar, um Ihr Konto zu prüfen. Versuchen Sie es gleich noch einmal."
+    },
+    "requirements_due_one": "{{count}} Punkt braucht in Stripe noch Ihre Aufmerksamkeit.",
+    "requirements_due_other": "{{count}} Punkte brauchen in Stripe noch Ihre Aufmerksamkeit.",
+    "account_id": "Stripe-Konto-ID",
+    "actions": {
+      "connect": "Stripe verbinden",
+      "finish_setup": "Einrichtung in Stripe abschließen",
+      "open_dashboard": "Stripe-Dashboard öffnen",
+      "check_status": "Status prüfen",
+      "disconnect": "Trennen"
+    },
+    "disconnect_confirm": {
+      "title": "Dieses Stripe-Konto trennen?",
+      "body": "Neue Kartenzahlungen gehen dann stattdessen an das Stripe-Konto der Plattform. Bereits eingegangene Zahlungen bleiben in Ihrem Stripe-Konto, und Unterstützer mit einer regelmäßigen Spende zahlen weiter dorthin, bis sie kündigen."
+    },
+    "how_it_works": {
+      "title": "Was sich durch das Verbinden ändert",
+      "item_1": "Einmalige Spenden werden auf Ihr Stripe-Konto ausgezahlt.",
+      "item_2": "Regelmäßige Unterstützungsstufen werden über Ihr Stripe-Konto abgerechnet. Sie werden dort automatisch angelegt, sobald nach dem Verbinden jemand zum ersten Mal abonniert.",
+      "item_3": "Erstattungen kommen von dem Konto, das die Zahlung angenommen hat.",
+      "item_4": "Bis Ihr Konto bereit ist, gehen Zahlungen weiter an das Stripe-Konto der Plattform und werden Ihrer Community zugeordnet."
+    },
+    "before_you_start": {
+      "title": "Bevor Sie beginnen",
+      "body": "Stripe fragt nach den Angaben zu Ihrer Organisation und dem Bankkonto für Auszahlungen. Das dauert meist etwa zehn Minuten, und Sie können später zurückkommen und es abschließen.",
+      "fees": "Es gelten die Kartengebühren von Stripe. Die Plattform behält keinen Anteil an Spenden ein.",
+      "manage_levels": "Unterstützungsstufen für Spenden verwalten"
+    },
+    "toasts": {
+      "load_failed": "Der Status Ihres Stripe-Kontos konnte nicht geladen werden.",
+      "returned": "Willkommen zurück von Stripe. Ihr Konto wird jetzt geprüft.",
+      "link_expired": "Der Stripe-Einrichtungslink war abgelaufen. Starten Sie die Einrichtung von hier aus erneut.",
+      "onboarding_failed": "Die Stripe-Einrichtung konnte nicht gestartet werden.",
+      "dashboard_failed": "Das Stripe-Dashboard konnte nicht geöffnet werden.",
+      "disconnected": "Stripe-Konto getrennt. Kartenzahlungen gehen jetzt an das Stripe-Konto der Plattform.",
+      "disconnect_failed": "Das Stripe-Konto konnte nicht getrennt werden.",
+      "status_refreshed": "Status des Stripe-Kontos aktualisiert."
+    },
+    "summary": {
+      "title": "Stripe-Konto",
+      "manage": "Stripe-Konto verwalten",
+      "not_connected": "Kartenzahlungen gehen an das Stripe-Konto der Plattform. Verbinden Sie das eigene Konto Ihrer Community, um direkt ausgezahlt zu werden.",
+      "ready": "Zahlungen gehen direkt auf das Stripe-Konto dieser Community.",
+      "not_ready": "Ihr Stripe-Konto ist noch nicht bereit, daher laufen Zahlungen vorerst über das Konto der Plattform."
     }
   }
 }

@@ -319,6 +319,9 @@ const SupportReportsPage = lazy(() => import('./modules/support/SupportReportsPa
 
 // AG58 — Member Premium admin
 const MemberPremiumAdminPage = lazy(() => import('./modules/premium/MemberPremiumAdminPage'));
+// The community's own Stripe account — deliberately not behind member_premium:
+// one-off donations (volunteering, on by default) pay into the same account.
+const StripeAccountPage = lazy(() => import('./modules/billing/StripeAccountPage'));
 const MemberPremiumSubscribersPage = lazy(() => import('./modules/premium/MemberPremiumSubscribersPage'));
 
 // Billing module
@@ -460,6 +463,7 @@ export function AdminRoutes() {
       <Route path="match-debug" element={<Lazy><MatchDebugPanel /></Lazy>} />
 
       {/* ─── BILLING ─── */}
+      <Route path="stripe-account" element={<Lazy><StripeAccountPage /></Lazy>} />
       <Route path="member-premium" element={
         <FeatureGatedElement feature="member_premium">
           <Lazy><MemberPremiumAdminPage /></Lazy>

@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Cuntas Stripe",
+      "summary": "Ceangail cuntas Stripe do phobail féin ionas go n-íocfar síntiúis cárta agus tacaíocht athfhillteach díreach isteach i do chuntas bainc, in ionad dul chuig cuntas Stripe an ardáin.",
+      "steps": [
+        {
+          "label": "Brúigh Ceangail Stripe",
+          "detail": "Tugtar chuig Stripe thú, a iarrann sonraí d’eagraíochta agus an cuntas bainc le híoc isteach ann. Is féidir stopadh agus filleadh níos déanaí; tairgeann an leathanach Críochnaigh an socrú in Stripe ansin."
+        },
+        {
+          "label": "Seiceáil an stádas",
+          "detail": "Ciallaíonn Réidh go dtéann íocaíochtaí chuig do chuntas. Ciallaíonn Ar feitheamh nó Gníomh ag teastáil go bhfuil rud éigin fós ag teastáil ó Stripe; deir an leathanach cé mhéad mír atá fós le déanamh."
+        },
+        {
+          "label": "Oscail deais Stripe",
+          "detail": "Nuair a bheidh sé ceangailte, tugann Oscail deais Stripe thú chuig d’iarmhéid, d’íocaíochtaí amach agus d’íocaíochtaí gan logáil isteach ar leith in Stripe."
+        }
+      ],
+      "tips": [
+        "Go dtí go mbeidh do chuntas réidh, leanann íocaíochtaí ag dul chuig cuntas Stripe an ardáin agus taifeadtar iad in aghaidh do phobail, mar sin ní chailltear rud ar bith.",
+        "Baineann táillí cárta Stripe; ní thógann an t-ardán aon sciar de shíntiúis."
+      ],
+      "caution": "Seolann dícheangal íocaíochtaí nua chuig cuntas an ardáin. Fanann íocaíochtaí a glacadh cheana, agus síntiúis athfhillteacha atá socraithe cheana, i do chuntas Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Síntiúis agus Tacaíocht",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

@@ -517,7 +517,8 @@
     "qualifications": "Cáilíochtaí",
     "opportunities": "Deiseanna & sealanna",
     "certificates": "Teastais",
-    "group_bookings": "Áirithintí grúpa"
+    "group_bookings": "Áirithintí grúpa",
+    "stripe_account": "Cuntas Stripe"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"
@@ -757,7 +758,8 @@
     "url_redirects": "301|302|sean-naisc|leathanaigh bogtha|naisc bhriste",
     "marketplace_cases": "DSA|díospóidí|gearáin|tuairiscí|cásanna",
     "registration_policy": "rialacha clárúcháin|cé atá in ann páirt a ghlacadh|fíorú aitheantais|fíorú ríomhphoist|clárú",
-    "fadp": "an Eilvéis|Eilvéiseach|nDSG|cosaint sonraí|clár próiseála"
+    "fadp": "an Eilvéis|Eilvéiseach|nDSG|cosaint sonraí|clár próiseála",
+    "stripe_account": "stripe|íocaíochtaí|cárta|banc|íocaíochtaí amach|ceangail|síntiúis"
   },
   "user_report": "Tuairisc Úsáideoir",
   "municipal_impact": "Tuarascálacha Tionchair Chathrach",
@@ -813,5 +815,6 @@
   "registration_policy": "Polasaí clárúcháin",
   "permissions_list": "Liosta ceadanna",
   "fadp": "Cosaint sonraí na hEilvéise (FADP)",
-  "subscriptions": "Síntiúis"
+  "subscriptions": "Síntiúis",
+  "stripe_account": "Cuntas Stripe"
 }

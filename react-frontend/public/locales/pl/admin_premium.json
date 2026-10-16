@@ -181,44 +181,25 @@
       "deleted": "Poziom usunięty",
       "delete_failed": "Usunięcie nie powiodło się",
       "settings_load_failed": "Nie udało się wczytać ustawień przekazywania darowizn.",
-      "settings_saved": "Ustawienia przekazywania darowizn zostały zapisane.",
-      "settings_save_failed": "Nie można zapisać ustawień przekazywania darowizn.",
-      "onboarding_failed": "Nie można rozpocząć wdrażania Stripe.",
       "finance_load_failed": "Nie można wczytać operacji finansowania darowizn.",
       "annual_receipts_export_failed": "Nie można pobrać eksportu rocznego rachunku.",
       "gift_aid_export_failed": "Nie udało się pobrać eksportu Gift Aid."
     },
     "settings": {
-      "description": "Pozostaw to pole puste, aby używać konta Stripe platformy z metadanymi dzierżawy. Połącz konto Stripe najemcy, aby wysyłać przyszłe jednorazowe i regularne darowizny na to konto najemcy.",
-      "stripe_connect_account_id": "Identyfikator konta Tenant Stripe Connect",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Zmiana tego ustawienia będzie miała wpływ na przyszłe transakcje dotyczące darowizn. Po dodaniu konta najemcy ponownie zsynchronizuj poziomy wsparcia, aby na tym koncie Stripe istniały powtarzające się ceny.",
-      "route_platform_default": "Awaryjna platforma",
-      "start_onboarding": "Rozpocznij wdrażanie Stripe",
-      "continue_onboarding": "Kontynuuj wdrażanie Stripe",
-      "requirements_due": "Wymagania dotyczące konta Stripe wymagające uwagi: {{count}}.",
-      "save": "Zapisz routing",
       "status": {
         "not_connected": "Nie podłączony",
         "restricted": "Potrzebne działanie",
         "unknown": "Stan nieznany",
         "pending": "Oczekujące",
         "ready": "Gotowe"
-      },
-      "connect_fallback_active": "Konto Stripe Connect jest skonfigurowane, ale nie jest jeszcze gotowe do przyjmowania darowizn na żywo. Do momentu zakończenia wdrożenia płatności będą korzystać z platformy zastępczej.",
-      "requirements_due_few": "Wymagania dotyczące konta Stripe wymagające uwagi: {{count}}.",
-      "requirements_due_many": "Wymagania dotyczące konta Stripe wymagające uwagi: {{count}}.",
-      "requirements_due_one": "Wymagania dotyczące konta Stripe wymagające uwagi: {{count}}.",
-      "requirements_due_other": "Wymagania dotyczące konta Stripe wymagające uwagi: {{count}}.",
-      "title": "Stripe trasowanie",
-      "route_tenant_connect": "Połączenie Najemcy"
+      }
     },
     "finance": {
       "title": "Operacje finansowe",
-      "description": "Śledź routing najemcy Connect, odpowiedzialność za awaryjną platformę, gotowość do skorzystania z Gift Aid, spory i działania następcze po paragonach dla tego najemcy.",
+      "description": "Dokąd trafiły darowizny, gotowość Gift Aid, spory i potwierdzenia do wyjaśnienia dla tej społeczności.",
       "completed_volume": "Ukończony tom",
-      "platform_fallback_volume": "Wolumen rezerwowy platformy",
-      "tenant_connect_volume": "Wolumen Tenant Connect",
+      "platform_fallback_volume": "Zapłacono przez konto platformy",
+      "tenant_connect_volume": "Zapłacono na Twoje konto Stripe",
       "open_disputes": "Otwarte spory",
       "active_recurring": "Aktywne, powtarzające się",
       "failed_receipts": "Nieudane wpływy",
@@ -241,6 +222,70 @@
       "declaration_count": "{{count}} deklaracja",
       "declaration_count_other": "{{count}} deklaracje",
       "past_due_count": "{{count}} zaległe"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Konto Stripe",
+      "description": "Dokąd trafiają płatności kartą na rzecz tej społeczności."
+    },
+    "status_heading": "Twoje konto Stripe",
+    "route": {
+      "platform": "Płatności trafiają na konto Stripe platformy",
+      "own": "Płatności trafiają na konto Stripe tej społeczności"
+    },
+    "state": {
+      "not_connected": "Płatności kartą trafiają obecnie na konto Stripe platformy. Połącz własne konto Stripe swojej społeczności, aby darowizny trafiały prosto na Twoje konto bankowe.",
+      "pending": "Twoje dane są w Stripe i są sprawdzane. Płatności kartą trafiają na konto Stripe platformy, dopóki Stripe nie zakończy weryfikacji.",
+      "restricted": "Stripe potrzebuje dodatkowych informacji, zanim Twoje konto będzie mogło przyjmować płatności. Do tego czasu płatności kartą trafiają na konto Stripe platformy.",
+      "ready": "Darowizny i cykliczne wsparcie trafiają prosto na konto Stripe tej społeczności.",
+      "unknown": "Nie udało się połączyć ze Stripe, aby sprawdzić Twoje konto. Spróbuj ponownie za chwilę."
+    },
+    "requirements_due_one": "{{count}} element nadal wymaga Twojej uwagi w Stripe.",
+    "requirements_due_few": "{{count}} elementy nadal wymagają Twojej uwagi w Stripe.",
+    "requirements_due_many": "{{count}} elementów nadal wymaga Twojej uwagi w Stripe.",
+    "requirements_due_other": "{{count}} elementu nadal wymaga Twojej uwagi w Stripe.",
+    "account_id": "Identyfikator konta Stripe",
+    "actions": {
+      "connect": "Połącz Stripe",
+      "finish_setup": "Dokończ konfigurację w Stripe",
+      "open_dashboard": "Otwórz panel Stripe",
+      "check_status": "Sprawdź stan",
+      "disconnect": "Odłącz"
+    },
+    "disconnect_confirm": {
+      "title": "Odłączyć to konto Stripe?",
+      "body": "Nowe płatności kartą będą trafiać na konto Stripe platformy. Już pobrane płatności pozostają na Twoim koncie Stripe, a osoby z cykliczną darowizną nadal płacą na nie, dopóki jej nie anulują."
+    },
+    "how_it_works": {
+      "title": "Co zmienia połączenie konta",
+      "item_1": "Jednorazowe darowizny trafiają na Twoje konto Stripe.",
+      "item_2": "Poziomy cyklicznego wsparcia są rozliczane z Twojego konta Stripe. Są tam tworzone automatycznie, gdy po połączeniu ktoś po raz pierwszy wykupi subskrypcję.",
+      "item_3": "Zwroty pochodzą z tego konta, które przyjęło płatność.",
+      "item_4": "Dopóki Twoje konto nie jest gotowe, płatności nadal trafiają na konto Stripe platformy i są zapisywane na rzecz Twojej społeczności."
+    },
+    "before_you_start": {
+      "title": "Zanim zaczniesz",
+      "body": "Stripe poprosi o dane Twojej organizacji i konto bankowe do wypłat. Zajmuje to zwykle około dziesięciu minut, a dokończyć można później.",
+      "fees": "Obowiązują własne opłaty Stripe za obsługę kart. Platforma nie pobiera żadnej części darowizn.",
+      "manage_levels": "Zarządzaj poziomami wsparcia"
+    },
+    "toasts": {
+      "load_failed": "Nie udało się wczytać stanu Twojego konta Stripe.",
+      "returned": "Witaj z powrotem ze Stripe. Sprawdzamy Twoje konto.",
+      "link_expired": "Link do konfiguracji Stripe wygasł. Rozpocznij konfigurację ponownie stąd.",
+      "onboarding_failed": "Nie udało się rozpocząć konfiguracji Stripe.",
+      "dashboard_failed": "Nie udało się otworzyć panelu Stripe.",
+      "disconnected": "Konto Stripe odłączone. Płatności kartą trafiają teraz na konto Stripe platformy.",
+      "disconnect_failed": "Nie udało się odłączyć konta Stripe.",
+      "status_refreshed": "Stan konta Stripe zaktualizowany."
+    },
+    "summary": {
+      "title": "Konto Stripe",
+      "manage": "Zarządzaj kontem Stripe",
+      "not_connected": "Płatności kartą trafiają na konto Stripe platformy. Połącz własne konto swojej społeczności, aby otrzymywać je bezpośrednio.",
+      "ready": "Płatności trafiają prosto na konto Stripe tej społeczności.",
+      "not_ready": "Twoje konto Stripe nie jest jeszcze gotowe, więc płatności na razie korzystają z konta platformy."
     }
   }
 }

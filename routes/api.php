@@ -4457,6 +4457,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/v2/admin/member-premium/settings', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'settings']);
     Route::put('/v2/admin/member-premium/settings', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'updateSettings']);
     Route::post('/v2/admin/member-premium/connect/onboarding', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'createConnectOnboarding']);
+    Route::post('/v2/admin/member-premium/connect/dashboard-link', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'createConnectDashboardLink']);
     Route::get('/v2/admin/member-premium/finance/overview', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'financeOverview']);
     Route::get('/v2/admin/member-premium/finance/disputes', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'financeDisputes']);
     Route::get('/v2/admin/member-premium/finance/gift-aid-export', [\App\Http\Controllers\Api\Admin\MemberPremiumAdminController::class, 'giftAidExport']);

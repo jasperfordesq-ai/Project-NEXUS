@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Stripe-account",
+      "summary": "Koppel het eigen Stripe-account van uw community zodat kaartdonaties en terugkerende steun rechtstreeks op uw bankrekening worden gestort, in plaats van naar het Stripe-account van het platform te gaan.",
+      "steps": [
+        {
+          "label": "Klik op Stripe koppelen",
+          "detail": "U gaat naar Stripe, dat om de gegevens van uw organisatie en de bankrekening voor uitbetalingen vraagt. U kunt stoppen en later terugkomen; de pagina biedt dan Installatie afronden in Stripe."
+        },
+        {
+          "label": "Controleer de status",
+          "detail": "Klaar betekent dat betalingen naar uw account gaan. In behandeling of Actie nodig betekent dat Stripe nog iets wil; de pagina zegt hoeveel punten openstaan."
+        },
+        {
+          "label": "Open het Stripe-dashboard",
+          "detail": "Eenmaal gekoppeld brengt Stripe-dashboard openen u naar uw saldo, uitbetalingen en betalingen zonder aparte Stripe-login."
+        }
+      ],
+      "tips": [
+        "Totdat uw account klaar is, blijven betalingen naar het Stripe-account van het platform gaan en worden ze op naam van uw community geregistreerd, dus er gaat niets verloren.",
+        "De kaartkosten van Stripe zijn van toepassing; het platform houdt geen deel van de donaties in."
+      ],
+      "caution": "Bij ontkoppelen gaan nieuwe betalingen naar het account van het platform. Al ontvangen betalingen en al ingestelde terugkerende donaties blijven op uw Stripe-account.",
+      "relatedPaths": [
+        {
+          "label": "Donaties en steun",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

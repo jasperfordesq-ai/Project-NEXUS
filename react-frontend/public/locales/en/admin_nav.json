@@ -27,7 +27,8 @@
     "url_redirects": "301|302|old links|moved pages|broken links",
     "marketplace_cases": "DSA|disputes|complaints|reports|cases",
     "registration_policy": "sign-up rules|who can join|identity verification|email verification|registration",
-    "fadp": "Switzerland|Swiss|nDSG|revDSG|data protection|processing register"
+    "fadp": "Switzerland|Swiss|nDSG|revDSG|data protection|processing register",
+    "stripe_account": "stripe|payments|card|bank|payouts|connect|donations"
   },
   "community_fund": "Community Fund",
   "dashboard": "Dashboard",
@@ -545,7 +546,8 @@
     "qualifications": "Qualifications",
     "opportunities": "Opportunities & shifts",
     "certificates": "Certificates",
-    "group_bookings": "Group bookings"
+    "group_bookings": "Group bookings",
+    "stripe_account": "Stripe account"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"
@@ -801,5 +803,6 @@
   "registration_policy": "Registration policy",
   "permissions_list": "Permissions list",
   "fadp": "Swiss data protection (FADP)",
-  "subscriptions": "Subscriptions"
+  "subscriptions": "Subscriptions",
+  "stripe_account": "Stripe account"
 }

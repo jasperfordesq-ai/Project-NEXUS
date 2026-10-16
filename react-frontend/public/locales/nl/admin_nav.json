@@ -517,7 +517,8 @@
     "qualifications": "Kwalificaties",
     "opportunities": "Kansen & diensten",
     "certificates": "Certificaten",
-    "group_bookings": "Groepsboekingen"
+    "group_bookings": "Groepsboekingen",
+    "stripe_account": "Stripe-account"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
@@ -745,7 +746,8 @@
     "url_redirects": "301|302|oude links|verplaatste pagina's|kapotte links",
     "marketplace_cases": "DSA|geschillen|klachten|meldingen|zaken",
     "registration_policy": "aanmeldregels|wie mag lid worden|identiteitscontrole|e-mailverificatie|registratie",
-    "fadp": "Zwitserland|Zwitserse|nDSG|gegevensbescherming|verwerkingsregister"
+    "fadp": "Zwitserland|Zwitserse|nDSG|gegevensbescherming|verwerkingsregister",
+    "stripe_account": "stripe|betalingen|kaart|bank|uitbetalingen|koppelen|donaties"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",
@@ -801,5 +803,6 @@
   "registration_policy": "Registratiebeleid",
   "permissions_list": "Lijst met rechten",
   "fadp": "Zwitserse gegevensbescherming (FADP)",
-  "subscriptions": "Abonnementen"
+  "subscriptions": "Abonnementen",
+  "stripe_account": "Stripe-account"
 }

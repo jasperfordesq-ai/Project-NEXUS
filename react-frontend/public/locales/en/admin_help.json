@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Stripe account",
+      "summary": "Connect your community's own Stripe account so card donations and recurring support are paid straight into your bank account, instead of going to the platform's Stripe account.",
+      "steps": [
+        {
+          "label": "Press Connect Stripe",
+          "detail": "You are taken to Stripe, which asks for your organisation's details and the bank account to pay into. You can stop and come back later; the page then offers Finish setup in Stripe."
+        },
+        {
+          "label": "Check the status",
+          "detail": "Ready means payments go to your account. Pending or Action needed means Stripe still wants something; the page says how many items are outstanding."
+        },
+        {
+          "label": "Open the Stripe dashboard",
+          "detail": "Once connected, Open Stripe dashboard takes you to your balance, payouts and payments without a separate Stripe login."
+        }
+      ],
+      "tips": [
+        "Until your account is ready, payments keep going to the platform's Stripe account and are recorded against your community, so nothing is lost.",
+        "Stripe's card fees apply; the platform does not take a share of donations."
+      ],
+      "caution": "Disconnecting sends new payments to the platform's account. Payments already taken, and recurring donations already set up, stay in your Stripe account.",
+      "relatedPaths": [
+        {
+          "label": "Donations & Support",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Stripe-Konto",
+      "summary": "Verbinden Sie das eigene Stripe-Konto Ihrer Community, damit Kartenspenden und regelmäßige Unterstützung direkt auf Ihr Bankkonto fließen statt auf das Stripe-Konto der Plattform.",
+      "steps": [
+        {
+          "label": "Auf „Stripe verbinden“ klicken",
+          "detail": "Sie werden zu Stripe weitergeleitet, das nach den Angaben Ihrer Organisation und dem Bankkonto für Auszahlungen fragt. Sie können unterbrechen und später zurückkommen; die Seite bietet dann „Einrichtung in Stripe abschließen“ an."
+        },
+        {
+          "label": "Status prüfen",
+          "detail": "„Bereit“ bedeutet, Zahlungen gehen auf Ihr Konto. „Ausstehend“ oder „Handlung nötig“ bedeutet, Stripe benötigt noch etwas; die Seite zeigt, wie viele Punkte offen sind."
+        },
+        {
+          "label": "Stripe-Dashboard öffnen",
+          "detail": "Nach dem Verbinden führt „Stripe-Dashboard öffnen“ ohne separaten Stripe-Login zu Saldo, Auszahlungen und Zahlungen."
+        }
+      ],
+      "tips": [
+        "Bis Ihr Konto bereit ist, gehen Zahlungen weiter an das Stripe-Konto der Plattform und werden Ihrer Community zugeordnet, es geht also nichts verloren.",
+        "Es gelten die Kartengebühren von Stripe; die Plattform behält keinen Anteil an Spenden ein."
+      ],
+      "caution": "Beim Trennen gehen neue Zahlungen an das Konto der Plattform. Bereits eingegangene Zahlungen und bereits eingerichtete regelmäßige Spenden bleiben in Ihrem Stripe-Konto.",
+      "relatedPaths": [
+        {
+          "label": "Spenden & Unterstützung",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

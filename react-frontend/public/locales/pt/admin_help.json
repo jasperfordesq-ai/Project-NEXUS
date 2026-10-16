@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Conta Stripe",
+      "summary": "Ligue a conta Stripe da sua comunidade para que os donativos com cartão e o apoio recorrente sejam pagos diretamente na sua conta bancária, em vez de irem para a conta Stripe da plataforma.",
+      "steps": [
+        {
+          "label": "Carregue em Ligar a Stripe",
+          "detail": "É levado para a Stripe, que pede os dados da sua organização e a conta bancária para onde pagar. Pode parar e voltar mais tarde; a página passa então a oferecer Concluir a configuração na Stripe."
+        },
+        {
+          "label": "Verifique o estado",
+          "detail": "Pronta significa que os pagamentos vão para a sua conta. Pendente ou Ação necessária significa que a Stripe ainda precisa de algo; a página diz quantos itens faltam."
+        },
+        {
+          "label": "Abra o painel da Stripe",
+          "detail": "Depois de ligada, Abrir o painel da Stripe leva-o ao saldo, transferências e pagamentos sem um início de sessão separado na Stripe."
+        }
+      ],
+      "tips": [
+        "Até a sua conta estar pronta, os pagamentos continuam a ir para a conta Stripe da plataforma e ficam registados em nome da sua comunidade, por isso nada se perde.",
+        "Aplicam-se as taxas de cartão da Stripe; a plataforma não fica com qualquer parte dos donativos."
+      ],
+      "caution": "Ao desligar, os novos pagamentos vão para a conta da plataforma. Os pagamentos já recebidos e os donativos recorrentes já configurados ficam na sua conta Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Donativos e apoio",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

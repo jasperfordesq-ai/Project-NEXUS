@@ -334,9 +334,14 @@ class StripeDonationService
             'currency' => $currency,
         ]);
 
+        // stripe_account_id is part of the contract, not diagnostics: a
+        // PaymentIntent created on a connected account can only be confirmed
+        // by Stripe.js initialised with that account (`stripeAccount`), so the
+        // browser must be told which account the client_secret belongs to.
         return [
             'client_secret' => $paymentIntent->client_secret,
             'donation_id' => $donation->id,
+            'stripe_account_id' => $tenantStripeAccountId,
         ];
     }
 

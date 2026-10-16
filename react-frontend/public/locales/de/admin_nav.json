@@ -517,7 +517,8 @@
     "qualifications": "Qualifikationen",
     "opportunities": "Gelegenheiten & Schichten",
     "certificates": "Bescheinigungen",
-    "group_bookings": "Gruppenbuchungen"
+    "group_bookings": "Gruppenbuchungen",
+    "stripe_account": "Stripe-Konto"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"
@@ -745,7 +746,8 @@
     "url_redirects": "301|302|alte Links|verschobene Seiten|defekte Links",
     "marketplace_cases": "DSA|Streitfälle|Beschwerden|Meldungen|Fälle",
     "registration_policy": "Anmelderegeln|wer beitreten darf|Identitätsprüfung|E-Mail-Bestätigung|Registrierung",
-    "fadp": "Schweiz|Schweizer|nDSG|revDSG|Datenschutz|Bearbeitungsverzeichnis"
+    "fadp": "Schweiz|Schweizer|nDSG|revDSG|Datenschutz|Bearbeitungsverzeichnis",
+    "stripe_account": "stripe|zahlungen|karte|bank|auszahlungen|verbinden|spenden"
   },
   "user_report": "Benutzerbericht",
   "municipal_impact": "Kommunale Wirkungsberichte",
@@ -801,5 +803,6 @@
   "registration_policy": "Registrierungsrichtlinie",
   "permissions_list": "Berechtigungsliste",
   "fadp": "Schweizer Datenschutz (DSG)",
-  "subscriptions": "Abonnements"
+  "subscriptions": "Abonnements",
+  "stripe_account": "Stripe-Konto"
 }

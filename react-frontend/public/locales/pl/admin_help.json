@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Konto Stripe",
+      "summary": "Połącz własne konto Stripe swojej społeczności, aby darowizny kartą i cykliczne wsparcie trafiały prosto na Twoje konto bankowe zamiast na konto Stripe platformy.",
+      "steps": [
+        {
+          "label": "Kliknij Połącz Stripe",
+          "detail": "Zostaniesz przeniesiony do Stripe, który poprosi o dane Twojej organizacji i konto bankowe do wypłat. Możesz przerwać i wrócić później; strona zaproponuje wtedy Dokończ konfigurację w Stripe."
+        },
+        {
+          "label": "Sprawdź stan",
+          "detail": "Gotowe oznacza, że płatności trafiają na Twoje konto. Oczekuje lub Wymagane działanie oznacza, że Stripe czegoś jeszcze potrzebuje; strona pokazuje, ile elementów pozostało."
+        },
+        {
+          "label": "Otwórz panel Stripe",
+          "detail": "Po połączeniu przycisk Otwórz panel Stripe prowadzi do salda, wypłat i płatności bez osobnego logowania do Stripe."
+        }
+      ],
+      "tips": [
+        "Dopóki Twoje konto nie jest gotowe, płatności nadal trafiają na konto Stripe platformy i są zapisywane na rzecz Twojej społeczności, więc nic nie ginie.",
+        "Obowiązują opłaty Stripe za karty; platforma nie pobiera żadnej części darowizn."
+      ],
+      "caution": "Odłączenie kieruje nowe płatności na konto platformy. Już pobrane płatności i już skonfigurowane cykliczne darowizny pozostają na Twoim koncie Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Darowizny i wsparcie",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

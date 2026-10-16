@@ -169,6 +169,47 @@ describe('StripePaymentForm', () => {
     expect(screen.getByText(/action_required|action required|additional authentication/i)).toBeInTheDocument();
   });
 
+  // A PaymentIntent created on a community's own Stripe account (Connect
+  // direct charge) can only be confirmed by Stripe.js initialised with that
+  // account; through the platform instance Stripe answers "No such
+  // payment_intent" and every donation to such a community fails.
+  it('initialises Stripe.js against the connected account the client secret belongs to', async () => {
+    const { loadStripe } = await import('@stripe/stripe-js');
+    vi.mocked(loadStripe).mockClear();
+
+    render(
+      <StripePaymentForm
+        clientSecret="pi_test_secret"
+        stripeAccountId="acct_test_community"
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    );
+
+    expect(loadStripe).toHaveBeenCalledWith(expect.any(String), { stripeAccount: 'acct_test_community' });
+  });
+
+  it('uses the platform account when no connected account is given', async () => {
+    const { loadStripe } = await import('@stripe/stripe-js');
+    vi.mocked(loadStripe).mockClear();
+
+    render(
+      <StripePaymentForm
+        clientSecret="pi_test_secret"
+        stripeAccountId={null}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
+    );
+
+    // Instances are cached per account, so the platform one may already
+    // exist from an earlier render; what matters is that it is never built
+    // with a stripeAccount option.
+    for (const call of vi.mocked(loadStripe).mock.calls) {
+      expect(call[1]).toBeUndefined();
+    }
+  });
+
   it('handles confirmPayment throwing an exception', async () => {
     mockConfirmPayment.mockRejectedValueOnce(new Error('Network failure'));
 

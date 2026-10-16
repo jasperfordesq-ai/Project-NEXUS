@@ -1622,6 +1622,35 @@
           "path": "/super-admin/national/kiss"
         }
       ]
+    },
+    "/admin/stripe-account": {
+      "title": "Cuenta de Stripe",
+      "summary": "Conecte la cuenta de Stripe de su comunidad para que las donaciones con tarjeta y el apoyo recurrente se ingresen directamente en su cuenta bancaria, en lugar de ir a la cuenta de Stripe de la plataforma.",
+      "steps": [
+        {
+          "label": "Pulse Conectar Stripe",
+          "detail": "Se le lleva a Stripe, que pide los datos de su organización y la cuenta bancaria en la que ingresar. Puede parar y volver más tarde; la página ofrecerá entonces Terminar la configuración en Stripe."
+        },
+        {
+          "label": "Compruebe el estado",
+          "detail": "Listo significa que los pagos van a su cuenta. Pendiente o Acción necesaria significa que Stripe aún necesita algo; la página indica cuántos elementos quedan."
+        },
+        {
+          "label": "Abra el panel de Stripe",
+          "detail": "Una vez conectado, Abrir el panel de Stripe le lleva a su saldo, transferencias y pagos sin un inicio de sesión aparte en Stripe."
+        }
+      ],
+      "tips": [
+        "Hasta que su cuenta esté lista, los pagos siguen yendo a la cuenta de Stripe de la plataforma y se registran a nombre de su comunidad, así que no se pierde nada.",
+        "Se aplican las comisiones de tarjeta de Stripe; la plataforma no se queda con ninguna parte de las donaciones."
+      ],
+      "caution": "Al desconectar, los nuevos pagos van a la cuenta de la plataforma. Los pagos ya cobrados y las donaciones recurrentes ya configuradas se quedan en su cuenta de Stripe.",
+      "relatedPaths": [
+        {
+          "label": "Donaciones y apoyo",
+          "path": "/admin/member-premium"
+        }
+      ]
     }
   }
 }

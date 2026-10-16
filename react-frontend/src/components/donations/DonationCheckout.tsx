@@ -51,6 +51,8 @@ type CheckoutStep = 'form' | 'payment' | 'success';
 interface PaymentIntentResponse {
   client_secret: string;
   donation_id: number;
+  /** Set when the community's own Stripe account took the payment (Stripe Connect). */
+  stripe_account_id?: string | null;
 }
 
 interface GiftAidDeclaration {
@@ -106,6 +108,7 @@ export function DonationCheckout({
   // Checkout flow state
   const [step, setStep] = useState<CheckoutStep>('form');
   const [clientSecret, setClientSecret] = useState('');
+  const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
   const [donationId, setDonationId] = useState<number | null>(null);
   const [isCreatingIntent, setIsCreatingIntent] = useState(false);
 
@@ -124,6 +127,7 @@ export function DonationCheckout({
     });
     setStep('form');
     setClientSecret('');
+    setStripeAccountId(null);
     setDonationId(null);
     setIsCreatingIntent(false);
   };
@@ -182,6 +186,7 @@ export function DonationCheckout({
 
       if (response.success && response.data) {
         setClientSecret(response.data.client_secret);
+        setStripeAccountId(response.data.stripe_account_id || null);
         setDonationId(response.data.donation_id);
         setStep('payment');
       } else {
@@ -370,6 +375,7 @@ export function DonationCheckout({
                   <Suspense fallback={null}>
                     <StripePaymentForm
                       clientSecret={clientSecret}
+                      stripeAccountId={stripeAccountId}
                       onSuccess={handlePaymentSuccess}
                       onError={handlePaymentError}
                     />

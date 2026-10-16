@@ -180,43 +180,25 @@
       "deleted": "Niveau supprimé",
       "delete_failed": "Échec de la suppression",
       "settings_load_failed": "Les paramètres d'acheminement des dons n'ont pas pu être chargés.",
-      "settings_saved": "Paramètres d'acheminement des dons enregistrés.",
-      "settings_save_failed": "Les paramètres d'acheminement des dons n'ont pas pu être enregistrés.",
-      "onboarding_failed": "L'intégration de Stripe n'a pas pu démarrer.",
       "finance_load_failed": "Les opérations de financement de dons n'ont pas pu être chargées.",
       "annual_receipts_export_failed": "L'exportation des reçus annuels n'a pas pu être téléchargée.",
       "gift_aid_export_failed": "L'export du Gift Aid n'a pas pu être téléchargé."
     },
     "settings": {
-      "description": "Laissez ce champ vide pour utiliser le compte Stripe de la plateforme avec les métadonnées du locataire. Connectez un compte Stripe locataire pour envoyer de futurs dons ponctuels et réguliers à ce compte locataire.",
-      "stripe_connect_account_id": "ID de compte du locataire Stripe Connect",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Changer cela affecte les futurs paiements de dons. Resynchronisez les niveaux de support après avoir ajouté un compte locataire afin que des prix récurrents existent dans ce compte Stripe.",
-      "route_platform_default": "Plateforme de secours",
-      "start_onboarding": "Commencer l'intégration de Stripe",
-      "continue_onboarding": "Continuer l'intégration de Stripe",
-      "requirements_due": "Conditions requises pour le compte Stripe nécessitant une attention : {{count}}.",
-      "save": "Enregistrer le routage",
       "status": {
         "not_connected": "Non connecté",
         "restricted": "Action nécessaire",
         "unknown": "Statut inconnu",
         "pending": "En attente",
         "ready": "Prêt"
-      },
-      "connect_fallback_active": "Un compte Stripe Connect est configuré, mais il n'est pas encore prêt pour les dons en direct. Les paiements utiliseront la solution de secours de la plateforme jusqu'à ce que l'intégration soit terminée.",
-      "requirements_due_one": "Conditions requises pour le compte Stripe nécessitant une attention : {{count}}.",
-      "requirements_due_other": "Conditions requises pour le compte Stripe nécessitant une attention : {{count}}.",
-      "requirements_due_many": "Stripe account requirements needing attention: {{count}}.",
-      "route_tenant_connect": "Connexion du locataire",
-      "title": "Stripe routage"
+      }
     },
     "finance": {
       "title": "Opérations financières",
-      "description": "Suivez le routage du locataire Connect, la responsabilité de secours de la plateforme, la préparation à Gift Aid, les litiges et le suivi des reçus pour ce locataire.",
+      "description": "Où les dons ont été versés, état du Gift Aid, litiges et suivi des reçus pour cette communauté.",
       "completed_volume": "Tome terminé",
-      "platform_fallback_volume": "Volume de secours de la plateforme",
-      "tenant_connect_volume": "Volume de connexion du locataire",
+      "platform_fallback_volume": "Versé via le compte de la plateforme",
+      "tenant_connect_volume": "Versé sur votre compte Stripe",
       "open_disputes": "Litiges ouverts",
       "active_recurring": "Actif récurrent",
       "failed_receipts": "Reçus échoués",
@@ -236,6 +218,68 @@
       "declaration_count": "{{count}} déclaration",
       "declaration_count_other": "{{count}} déclarations",
       "past_due_count": "{{count}} en retard"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Compte Stripe",
+      "description": "Où sont versés les paiements par carte faits à cette communauté."
+    },
+    "status_heading": "Votre compte Stripe",
+    "route": {
+      "platform": "Les paiements vont sur le compte Stripe de la plateforme",
+      "own": "Les paiements vont sur le compte Stripe de cette communauté"
+    },
+    "state": {
+      "not_connected": "Les paiements par carte vont pour l’instant sur le compte Stripe de la plateforme. Connectez le compte Stripe de votre communauté pour que les dons soient versés directement sur votre compte bancaire.",
+      "pending": "Vos informations sont chez Stripe et sont en cours de vérification. Les paiements par carte vont sur le compte Stripe de la plateforme jusqu’à ce que Stripe ait terminé.",
+      "restricted": "Stripe a besoin d’informations supplémentaires avant que votre compte puisse accepter des paiements. Les paiements par carte vont sur le compte Stripe de la plateforme en attendant.",
+      "ready": "Les dons et le soutien récurrent sont versés directement sur le compte Stripe de cette communauté.",
+      "unknown": "Impossible de joindre Stripe pour vérifier votre compte pour le moment. Réessayez dans un instant."
+    },
+    "requirements_due_one": "{{count}} élément demande encore votre attention dans Stripe.",
+    "requirements_due_other": "{{count}} éléments demandent encore votre attention dans Stripe.",
+    "account_id": "Identifiant du compte Stripe",
+    "actions": {
+      "connect": "Connecter Stripe",
+      "finish_setup": "Terminer la configuration dans Stripe",
+      "open_dashboard": "Ouvrir le tableau de bord Stripe",
+      "check_status": "Vérifier l’état",
+      "disconnect": "Déconnecter"
+    },
+    "disconnect_confirm": {
+      "title": "Déconnecter ce compte Stripe ?",
+      "body": "Les nouveaux paiements par carte iront alors sur le compte Stripe de la plateforme. Les paiements déjà encaissés restent sur votre compte Stripe, et les soutiens ayant un don récurrent continuent d’y payer jusqu’à ce qu’ils annulent."
+    },
+    "how_it_works": {
+      "title": "Ce que change la connexion",
+      "item_1": "Les dons ponctuels sont versés sur votre compte Stripe.",
+      "item_2": "Les niveaux de soutien récurrent sont facturés depuis votre compte Stripe. Ils y sont créés automatiquement la première fois que quelqu’un s’abonne après la connexion.",
+      "item_3": "Les remboursements proviennent du compte qui a encaissé le paiement.",
+      "item_4": "Tant que votre compte n’est pas prêt, les paiements continuent d’aller sur le compte Stripe de la plateforme et sont enregistrés au nom de votre communauté."
+    },
+    "before_you_start": {
+      "title": "Avant de commencer",
+      "body": "Stripe vous demandera les informations de votre organisation et le compte bancaire à créditer. Cela prend généralement une dizaine de minutes, et vous pouvez revenir terminer plus tard.",
+      "fees": "Les frais de traitement de carte de Stripe s’appliquent. La plateforme ne prélève aucune part sur les dons.",
+      "manage_levels": "Gérer les niveaux de soutien"
+    },
+    "toasts": {
+      "load_failed": "L’état de votre compte Stripe n’a pas pu être chargé.",
+      "returned": "Bon retour de Stripe. Vérification de votre compte en cours.",
+      "link_expired": "Le lien de configuration Stripe avait expiré. Relancez la configuration depuis cette page.",
+      "onboarding_failed": "La configuration Stripe n’a pas pu démarrer.",
+      "dashboard_failed": "Le tableau de bord Stripe n’a pas pu être ouvert.",
+      "disconnected": "Compte Stripe déconnecté. Les paiements par carte vont désormais sur le compte Stripe de la plateforme.",
+      "disconnect_failed": "Le compte Stripe n’a pas pu être déconnecté.",
+      "status_refreshed": "État du compte Stripe mis à jour."
+    },
+    "summary": {
+      "title": "Compte Stripe",
+      "manage": "Gérer le compte Stripe",
+      "not_connected": "Les paiements par carte vont sur le compte Stripe de la plateforme. Connectez le compte de votre communauté pour être payé directement.",
+      "ready": "Les paiements vont directement sur le compte Stripe de cette communauté.",
+      "not_ready": "Votre compte Stripe n’est pas encore prêt ; les paiements passent donc par le compte de la plateforme pour l’instant."
     }
   }
 }

@@ -179,42 +179,25 @@
       "deleted": "Niveau verwijderd",
       "delete_failed": "Verwijderen is mislukt",
       "settings_load_failed": "Instellingen voor donatieroutering kunnen niet worden geladen.",
-      "settings_saved": "Instellingen voor donatieroutering opgeslagen.",
-      "settings_save_failed": "Instellingen voor donatieroutering kunnen niet worden opgeslagen.",
-      "onboarding_failed": "Stripe-onboarding kan niet worden gestart.",
       "finance_load_failed": "Donatiefinancieringstransacties konden niet worden geladen.",
       "annual_receipts_export_failed": "Export van jaarlijkse bonnen kan niet worden gedownload.",
       "gift_aid_export_failed": "Gift Aid-export kon niet worden gedownload."
     },
     "settings": {
-      "description": "Laat dit veld leeg om het platform Stripe-account met metadata van de tenant te gebruiken. Koppel een Stripe-tenantaccount om toekomstige eenmalige en reguliere donaties naar dat huurdersaccount te sturen.",
-      "stripe_connect_account_id": "Tenant Stripe Connect-account-ID",
-      "stripe_connect_placeholder": "acct_...",
-      "stripe_connect_description": "Als u dit wijzigt, heeft dit invloed op toekomstige donatie-afrekeningen. Synchroniseer de ondersteuningsniveaus opnieuw na het toevoegen van een tenantaccount, zodat terugkerende prijzen in dat Stripe-account bestaan.",
-      "route_platform_default": "Platformterugval",
-      "start_onboarding": "Start de introductie van Stripe",
-      "continue_onboarding": "Ga door met de introductie van Stripe",
-      "requirements_due": "Stripe-accountvereisten vereisen aandacht: {{count}}.",
-      "save": "Route opslaan",
       "status": {
         "not_connected": "Niet verbonden",
         "restricted": "Actie nodig",
         "unknown": "Status onbekend",
         "pending": "In afwachting",
         "ready": "Klaar"
-      },
-      "connect_fallback_active": "Er is een Stripe Connect-account geconfigureerd, maar deze is nog niet klaar voor live donaties. Betalingen maken gebruik van de fallback van het platform totdat de onboarding is voltooid.",
-      "requirements_due_one": "Stripe-accountvereisten vereisen aandacht: {{count}}.",
-      "requirements_due_other": "Stripe-accountvereisten vereisen aandacht: {{count}}.",
-      "route_tenant_connect": "Huurder Connect",
-      "title": "Stripe routering"
+      }
     },
     "finance": {
       "title": "Financiële operaties",
-      "description": "Volg huurder Connect-routing, platform-fallback-aansprakelijkheid, gereedheid voor Gift Aid, geschillen en opvolging van ontvangsten voor deze huurder.",
+      "description": "Waar donaties naartoe zijn gegaan, Gift Aid-gereedheid, geschillen en opvolging van ontvangstbewijzen voor deze community.",
       "completed_volume": "Voltooid volume",
-      "platform_fallback_volume": "Platform-fallback-volume",
-      "tenant_connect_volume": "Tenant Connect-volume",
+      "platform_fallback_volume": "Betaald via het platformaccount",
+      "tenant_connect_volume": "Betaald op uw Stripe-account",
       "open_disputes": "Openlijke geschillen",
       "active_recurring": "Actief terugkerend",
       "failed_receipts": "Mislukte ontvangstbewijzen",
@@ -231,6 +214,68 @@
       "declaration_count": "{{count}} verklaring",
       "declaration_count_other": "{{count}} verklaringen",
       "past_due_count": "{{count}} achterstallig"
+    }
+  },
+  "stripe_account": {
+    "meta": {
+      "title": "Stripe-account",
+      "description": "Waar kaartbetalingen aan deze community naartoe gaan."
+    },
+    "status_heading": "Uw Stripe-account",
+    "route": {
+      "platform": "Betalingen gaan naar het Stripe-account van het platform",
+      "own": "Betalingen gaan naar het Stripe-account van deze community"
+    },
+    "state": {
+      "not_connected": "Kaartbetalingen gaan nu naar het Stripe-account van het platform. Koppel het eigen Stripe-account van uw community zodat donaties rechtstreeks op uw bankrekening worden gestort.",
+      "pending": "Uw gegevens liggen bij Stripe en worden gecontroleerd. Kaartbetalingen gaan naar het Stripe-account van het platform totdat Stripe klaar is.",
+      "restricted": "Stripe heeft meer informatie nodig voordat uw account betalingen kan ontvangen. Kaartbetalingen gaan naar het Stripe-account van het platform totdat dit is geregeld.",
+      "ready": "Donaties en terugkerende steun worden rechtstreeks op het Stripe-account van deze community gestort.",
+      "unknown": "We konden Stripe zojuist niet bereiken om uw account te controleren. Probeer het zo nog eens."
+    },
+    "requirements_due_one": "{{count}} punt heeft in Stripe nog uw aandacht nodig.",
+    "requirements_due_other": "{{count}} punten hebben in Stripe nog uw aandacht nodig.",
+    "account_id": "Stripe-account-ID",
+    "actions": {
+      "connect": "Stripe koppelen",
+      "finish_setup": "Installatie afronden in Stripe",
+      "open_dashboard": "Stripe-dashboard openen",
+      "check_status": "Status controleren",
+      "disconnect": "Ontkoppelen"
+    },
+    "disconnect_confirm": {
+      "title": "Dit Stripe-account ontkoppelen?",
+      "body": "Nieuwe kaartbetalingen gaan dan naar het Stripe-account van het platform. Al ontvangen betalingen blijven op uw Stripe-account, en supporters met een terugkerende donatie blijven daarop betalen totdat ze opzeggen."
+    },
+    "how_it_works": {
+      "title": "Wat koppelen verandert",
+      "item_1": "Eenmalige donaties worden op uw Stripe-account gestort.",
+      "item_2": "Terugkerende steunniveaus worden via uw Stripe-account geïnd. Ze worden daar automatisch aangemaakt zodra iemand na het koppelen voor het eerst een abonnement neemt.",
+      "item_3": "Terugbetalingen komen van het account dat de betaling heeft ontvangen.",
+      "item_4": "Totdat uw account klaar is, blijven betalingen naar het Stripe-account van het platform gaan en worden ze op naam van uw community geregistreerd."
+    },
+    "before_you_start": {
+      "title": "Voordat u begint",
+      "body": "Stripe vraagt om de gegevens van uw organisatie en de bankrekening waarop uitbetaald moet worden. Het duurt meestal zo'n tien minuten, en u kunt later terugkomen om het af te ronden.",
+      "fees": "De eigen kaartkosten van Stripe zijn van toepassing. Het platform houdt geen deel van de donaties in.",
+      "manage_levels": "Steunniveaus voor donaties beheren"
+    },
+    "toasts": {
+      "load_failed": "De status van uw Stripe-account kon niet worden geladen.",
+      "returned": "Welkom terug van Stripe. We controleren nu uw account.",
+      "link_expired": "De Stripe-installatielink was verlopen. Start de installatie opnieuw vanaf hier.",
+      "onboarding_failed": "De Stripe-installatie kon niet worden gestart.",
+      "dashboard_failed": "Het Stripe-dashboard kon niet worden geopend.",
+      "disconnected": "Stripe-account ontkoppeld. Kaartbetalingen gaan nu naar het Stripe-account van het platform.",
+      "disconnect_failed": "Het Stripe-account kon niet worden ontkoppeld.",
+      "status_refreshed": "Status van het Stripe-account bijgewerkt."
+    },
+    "summary": {
+      "title": "Stripe-account",
+      "manage": "Stripe-account beheren",
+      "not_connected": "Kaartbetalingen gaan naar het Stripe-account van het platform. Koppel het eigen account van uw community om rechtstreeks uitbetaald te worden.",
+      "ready": "Betalingen gaan rechtstreeks naar het Stripe-account van deze community.",
+      "not_ready": "Uw Stripe-account is nog niet klaar, dus betalingen lopen voorlopig via het account van het platform."
     }
   }
 }

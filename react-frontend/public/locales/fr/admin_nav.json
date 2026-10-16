@@ -517,7 +517,8 @@
     "qualifications": "Qualifications",
     "opportunities": "Missions et créneaux",
     "certificates": "Certificats",
-    "group_bookings": "Réservations de groupe"
+    "group_bookings": "Réservations de groupe",
+    "stripe_account": "Compte Stripe"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"
@@ -749,7 +750,8 @@
     "url_redirects": "301|302|anciens liens|pages déplacées|liens cassés",
     "marketplace_cases": "DSA|litiges|réclamations|signalements|dossiers",
     "registration_policy": "règles d'inscription|qui peut rejoindre|vérification d'identité|vérification de l'e-mail|inscription",
-    "fadp": "Suisse|suisse|nLPD|LPD|protection des données|registre des traitements"
+    "fadp": "Suisse|suisse|nLPD|LPD|protection des données|registre des traitements",
+    "stripe_account": "stripe|paiements|carte|banque|virements|connecter|dons"
   },
   "user_report": "Rapport utilisateur",
   "municipal_impact": "Rapports d'impact municipaux",
@@ -805,5 +807,6 @@
   "registration_policy": "Politique d'inscription",
   "permissions_list": "Liste des autorisations",
   "fadp": "Protection des données suisse (LPD)",
-  "subscriptions": "Abonnements"
+  "subscriptions": "Abonnements",
+  "stripe_account": "Compte Stripe"
 }

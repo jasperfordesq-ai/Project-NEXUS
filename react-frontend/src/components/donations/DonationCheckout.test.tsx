@@ -78,14 +78,16 @@ vi.mock('@stripe/react-stripe-js', () => ({
 // Mock the StripePaymentForm sub-component entirely to isolate DonationCheckout
 vi.mock('./StripePaymentForm', () => ({
   StripePaymentForm: ({
+    stripeAccountId,
     onSuccess,
     onError,
   }: {
     clientSecret: string;
+    stripeAccountId?: string | null;
     onSuccess: () => void;
     onError: (e: string) => void;
   }) => (
-    <div data-testid="stripe-payment-form">
+    <div data-testid="stripe-payment-form" data-stripe-account={stripeAccountId ?? ''}>
       <button onClick={() => onSuccess()}>Pay Now</button>
       <button onClick={() => onError('card_declined')}>Trigger Error</button>
     </div>
@@ -211,6 +213,33 @@ describe('DonationCheckout', () => {
     // Should advance to payment step and show StripePaymentForm
     await waitFor(() =>
       expect(screen.getByTestId('stripe-payment-form')).toBeInTheDocument(),
+    );
+    // Platform account: no connected account is handed to the card form.
+    expect(screen.getByTestId('stripe-payment-form')).toHaveAttribute('data-stripe-account', '');
+  });
+
+  // When the community's own Stripe account took the payment, the card form
+  // must be told which account the client secret belongs to, or Stripe.js
+  // cannot confirm it.
+  it('hands the connected Stripe account to the card form when the community has its own', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({
+      success: true,
+      data: { client_secret: 'pi_test_secret', donation_id: 100, stripe_account_id: 'acct_test_community' },
+    });
+    const user = userEvent.setup();
+    render(<DonationCheckout {...defaultProps} />);
+
+    const amountInput = screen.getByRole('spinbutton');
+    await user.clear(amountInput);
+    await user.type(amountInput, '10');
+    await waitFor(() => {
+      const continueBtn = screen.queryByRole('button', { name: /continue/i });
+      expect(continueBtn && continueBtn.getAttribute('disabled') === null && continueBtn.getAttribute('aria-disabled') !== 'true').toBe(true);
+    });
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stripe-payment-form')).toHaveAttribute('data-stripe-account', 'acct_test_community'),
     );
   });
 
