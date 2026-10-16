@@ -129,7 +129,7 @@ function getItems() {
 }
 
 function getTrigger() {
-  return document.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
+  return document.querySelector<HTMLButtonElement>('button[aria-haspopup="true"]')!;
 }
 
 function itemButton(label: string) {
@@ -149,10 +149,11 @@ describe('DesktopMegaPanel', () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it('renders the trigger with menu popup semantics', () => {
+    it('renders the trigger with popup semantics', () => {
       renderPanel({ isOpen: false });
       const trigger = getTrigger();
       expect(trigger).toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-haspopup', 'true');
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
       expect(trigger).toHaveTextContent('More');
       expect(getNav()).toBeNull();
@@ -183,7 +184,7 @@ describe('DesktopMegaPanel', () => {
     it('clamps a long description to two lines and omits the line when desc is missing', () => {
       renderPanel();
       const longDesc = screen.getByText(LONG_DESC);
-      expect(longDesc.className).toContain('line-clamp-2');
+      expect(longDesc).toHaveClass('line-clamp-2', 'whitespace-normal');
 
       const label = screen.getByText('About Us');
       expect(label.className).toContain('whitespace-nowrap');

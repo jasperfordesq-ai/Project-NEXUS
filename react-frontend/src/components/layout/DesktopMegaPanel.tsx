@@ -270,7 +270,7 @@ export function DesktopMegaPanel({
         <span className="min-w-0 flex-1">
           <span className="block whitespace-nowrap text-sm font-semibold leading-tight">{item.label}</span>
           {item.desc ? (
-            <span className="mt-0.5 w-0 min-w-full line-clamp-2 text-xs leading-snug text-theme-subtle">
+            <span className="mt-0.5 w-0 min-w-full whitespace-normal line-clamp-2 text-xs leading-snug text-theme-subtle">
               {item.desc}
             </span>
           ) : null}
@@ -317,7 +317,7 @@ export function DesktopMegaPanel({
       </div>
       <Button
         data-mega-trigger
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-expanded={isOpen}
         variant="light"
         size="sm"
