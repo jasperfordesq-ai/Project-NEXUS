@@ -80,7 +80,9 @@ describe('HeroUI accessible-name production contracts', () => {
       visit(file);
     }
 
-    expect(popoverCount).toBe(19);
+    // 19 until 2026-10-16, when the header's DesktopNavPanel (one PopoverContent)
+    // was replaced by DesktopMegaPanel, which is a positioned panel, not a Popover.
+    expect(popoverCount).toBe(18);
     expect(unnamed).toEqual([]);
   });
 
