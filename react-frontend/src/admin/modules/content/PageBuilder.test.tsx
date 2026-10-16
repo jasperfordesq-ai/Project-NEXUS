@@ -255,6 +255,28 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('offers About, Header column and Footer as menu locations', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 9 } });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    await user.type(screen.getAllByRole('textbox')[0]!, 'Our Work');
+    await user.click(screen.getByRole('switch'));
+    await user.click(await screen.findByRole('button', { name: /location/i }));
+
+    expect(await screen.findByRole('option', { name: 'About Section' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Footer' })).toBeInTheDocument();
+    await user.click(screen.getByRole('option', { name: /^Header column/ }));
+
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+    await waitFor(() => expect(mockAdminPages.create).toHaveBeenCalled());
+    expect(mockAdminPages.create).toHaveBeenCalledWith(expect.objectContaining({
+      show_in_menu: 1,
+      menu_location: 'header',
+    }));
+  });
+
   it('submits the latest flushed builder HTML and design_json when saving immediately', async () => {
     const user = userEvent.setup();
     mockContentEditorState.flushPayload = {

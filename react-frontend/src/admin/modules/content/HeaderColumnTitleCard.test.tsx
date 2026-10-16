@@ -1,0 +1,55 @@
+// Copyright © 2024–2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
+import { createMockContexts } from '@/test/mock-contexts';
+
+const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }));
+const mockSettings = vi.hoisted(() => ({ get: vi.fn(), update: vi.fn() }));
+
+vi.mock('@/contexts', () => createMockContexts({ useToast: () => mockToast }));
+vi.mock('../../api/adminApi', () => ({ adminSettings: mockSettings }));
+vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
+
+import { HeaderColumnTitleCard } from './HeaderColumnTitleCard';
+
+describe('HeaderColumnTitleCard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSettings.get.mockResolvedValue({ success: true, data: { settings: { header_column_title: 'Impact' } } });
+  });
+
+  it('prefills from settings and saves the trimmed title', async () => {
+    mockSettings.update.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    render(<HeaderColumnTitleCard />);
+
+    const input = await screen.findByRole('textbox');
+    await waitFor(() => expect(input).toHaveValue('Impact'));
+    expect(input).toHaveAttribute('maxlength', '30');
+
+    await user.clear(input);
+    await user.type(input, ' Our Work ');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(mockSettings.update).toHaveBeenCalledWith({ header_column_title: 'Our Work' }));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+  });
+
+  it('shows the failure toast when saving fails', async () => {
+    mockSettings.update.mockResolvedValue({ success: false });
+    const user = userEvent.setup();
+    render(<HeaderColumnTitleCard />);
+
+    const input = await screen.findByRole('textbox');
+    await waitFor(() => expect(input).toHaveValue('Impact'));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+});

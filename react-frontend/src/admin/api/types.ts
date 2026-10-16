@@ -2227,6 +2227,8 @@ export interface AdminSettingsResponse {
     admin_approval: string | null;
     maintenance_mode: string | null;
     footer_text: string | null;
+    /** Heading of the community's own pages column in the More menu ('' = default). */
+    header_column_title?: string | null;
     partner_logo_url: string | null;
     partner_logo_label: string | null;
     partner_logo_link_url: string | null;

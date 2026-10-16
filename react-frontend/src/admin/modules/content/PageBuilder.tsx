@@ -275,6 +275,7 @@ export function PageBuilder() {
             <Input
               label={t('content.label_meta_description')}
               placeholder={t('content.placeholder_meta_description')}
+              description={t('content.meta_description_menu_hint')}
               variant="secondary"
               value={formData.meta_description}
               isDisabled={saving}
@@ -320,6 +321,7 @@ export function PageBuilder() {
                   }}
                 >
                   <SelectItem key="about" id="about">{t('content.about_section')}</SelectItem>
+                  <SelectItem key="header" id="header" description={t('content.header_column_desc')}>{t('content.header_column')}</SelectItem>
                   <SelectItem key="footer" id="footer">{t('content.footer')}</SelectItem>
                 </Select>
                 <Input

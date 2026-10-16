@@ -23,6 +23,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
 import { EmptyState } from '../../components/EmptyState';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { HeaderColumnTitleCard } from './HeaderColumnTitleCard';
 
 import { useTranslation } from 'react-i18next';
 import { Button, Chip, Spinner } from '@/components/ui';
@@ -36,6 +37,12 @@ interface PageItem {
   menu_location: string;
   created_at: string;
 }
+
+const MENU_LOCATION_LABEL_KEYS: Record<string, string> = {
+  about: 'content.location_about',
+  header: 'content.location_header',
+  footer: 'content.footer',
+};
 
 export function PagesAdmin() {
   const { t } = useTranslation('admin_content');
@@ -128,7 +135,7 @@ export function PagesAdmin() {
       sortable: true,
       render: (item) => item.show_in_menu ? (
         <Chip size="sm" variant="soft">
-          {item.menu_location === 'footer' ? t('content.footer') : t('content.location_about')}
+          {t(MENU_LOCATION_LABEL_KEYS[item.menu_location] ?? 'content.location_about')}
         </Chip>
       ) : (
         <span className="text-sm text-muted">{t('content.label_no')}</span>
@@ -199,6 +206,8 @@ export function PagesAdmin() {
           </Button>
         }
       />
+
+      <HeaderColumnTitleCard />
 
       {data.length === 0 ? (
         <EmptyState

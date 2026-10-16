@@ -58,6 +58,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 vi.mock('../../api/adminApi', () => ({
+  adminSettings: { get: vi.fn().mockResolvedValue({ success: true, data: { settings: {} } }), update: vi.fn() },
   adminPages: {
     list: vi.fn(),
     delete: vi.fn(),
@@ -83,6 +84,21 @@ import { adminPages } from '../../api/adminApi';
 describe('PagesAdmin', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('labels a header page as Header in the In Menu column', async () => {
+    vi.mocked(adminPages.list).mockResolvedValue({
+      success: true,
+      data: [{
+        id: 12, title: 'Our Work', slug: 'our-work', status: 'published', sort_order: 1,
+        show_in_menu: 1, menu_location: 'header', menu_order: 1, created_at: '2026-03-01T00:00:00Z',
+      }],
+    });
+    render(<PagesAdmin />);
+
+    await waitFor(() => expect(screen.getByText('Our Work')).toBeInTheDocument());
+    expect(screen.getByText('Header')).toBeInTheDocument();
+    expect(screen.getByLabelText(/header column title/i)).toBeInTheDocument();
   });
 
   // ── loading state ─────────────────────────────────────────────────────────
