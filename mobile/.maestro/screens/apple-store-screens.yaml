@@ -52,13 +52,19 @@ appId: ie.project.nexus
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 60000
-# A signed Simulator build makes iOS offer "Save Password?" over the feed, and the
-# next tap only dismisses it (run 38965867800: the Listings tap was swallowed). A
-# tap on the status bar dismisses the sheet and is harmless when there is none.
-- waitForAnimationToEnd:
-    timeout: 8000
+# A signed Simulator build makes iOS offer "Save Password?" a few seconds after the
+# feed appears, and while it is up Maestro sees nothing of the app (runs 38965867800
+# and 38972735398: the sheet arrived after an early dismissal tap, swallowed the
+# Listings tap, and hid the notifications card from `when: visible`). Wait for it,
+# then press its "Not Now" button by position: the sheet is outside the app's
+# hierarchy, so it cannot be found by text. That point sits in the gap between two
+# feed cards, so it is inert if the sheet ever fails to appear.
+- extendedWaitUntil:
+    visible: "Save Password\\?"
+    timeout: 20000
+  optional: true
 - tapOn:
-    point: "50%,2%"
+    point: "33%,61%"
 - waitForAnimationToEnd:
     timeout: 8000
 # The first-run push prompt card is real UI but not what the store page should show.
@@ -73,11 +79,14 @@ appId: ie.project.nexus
     timeout: 8000
 - takeScreenshot: 01-feed
 
-- tapOn:
-    point: "29%,95%"
-- extendedWaitUntil:
-    visible: "Listings"
-    timeout: 15000
+- retry:
+    maxRetries: 2
+    commands:
+      - tapOn:
+          point: "29%,95%"
+      - extendedWaitUntil:
+          visible: "Listings"
+          timeout: 15000
 - waitForAnimationToEnd:
     timeout: 8000
 - waitForAnimationToEnd:
