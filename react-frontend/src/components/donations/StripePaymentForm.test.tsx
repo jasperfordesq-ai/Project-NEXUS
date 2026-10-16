@@ -174,6 +174,9 @@ describe('StripePaymentForm', () => {
   // account; through the platform instance Stripe answers "No such
   // payment_intent" and every donation to such a community fails.
   it('initialises Stripe.js against the connected account the client secret belongs to', async () => {
+    // CI has no publishable key in its environment; the form reads it when
+    // first needed, so stubbing it here is enough.
+    vi.stubEnv('VITE_STRIPE_PUBLISHABLE_KEY', 'pk_test_ci_stub');
     const { loadStripe } = await import('@stripe/stripe-js');
     vi.mocked(loadStripe).mockClear();
 
@@ -186,10 +189,12 @@ describe('StripePaymentForm', () => {
       />
     );
 
-    expect(loadStripe).toHaveBeenCalledWith(expect.any(String), { stripeAccount: 'acct_test_community' });
+    expect(loadStripe).toHaveBeenCalledWith('pk_test_ci_stub', { stripeAccount: 'acct_test_community' });
+    vi.unstubAllEnvs();
   });
 
   it('uses the platform account when no connected account is given', async () => {
+    vi.stubEnv('VITE_STRIPE_PUBLISHABLE_KEY', 'pk_test_ci_stub');
     const { loadStripe } = await import('@stripe/stripe-js');
     vi.mocked(loadStripe).mockClear();
 
@@ -208,6 +213,7 @@ describe('StripePaymentForm', () => {
     for (const call of vi.mocked(loadStripe).mock.calls) {
       expect(call[1]).toBeUndefined();
     }
+    vi.unstubAllEnvs();
   });
 
   it('handles confirmPayment throwing an exception', async () => {

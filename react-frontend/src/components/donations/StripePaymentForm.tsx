@@ -24,26 +24,30 @@ import { Button, Chip } from '@/components/ui';
 
 /* ───────────────────────── Stripe init (one instance per account) ───────────────────────── */
 
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-
 /**
  * A PaymentIntent created on a community's own Stripe account (Stripe Connect,
  * direct charge) can only be confirmed by a Stripe.js instance initialised
  * with that account's id. Confirming it through the platform instance fails
  * with "No such payment_intent", so each connected account gets its own
  * instance, created once and reused.
+ *
+ * The publishable key is read when first needed, not at import, so a test
+ * can set it and so a missing key degrades to "no Stripe" rather than a
+ * crash.
  */
 const stripeInstances = new Map<string, Promise<Stripe | null>>();
 
 function getStripePromise(stripeAccountId: string | null | undefined): Promise<Stripe | null> | null {
+  const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
   if (!stripeKey) return null;
   const accountKey = stripeAccountId || '';
-  let promise = stripeInstances.get(accountKey);
+  const cacheKey = `${stripeKey}|${accountKey}`;
+  let promise = stripeInstances.get(cacheKey);
   if (!promise) {
     promise = accountKey
       ? loadStripe(stripeKey, { stripeAccount: accountKey })
       : loadStripe(stripeKey);
-    stripeInstances.set(accountKey, promise);
+    stripeInstances.set(cacheKey, promise);
   }
   return promise;
 }

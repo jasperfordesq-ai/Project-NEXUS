@@ -249,9 +249,9 @@
       "ready": "تُدفع التبرعات والدعم المتكرر مباشرةً إلى حساب Stripe الخاص بهذا المجتمع.",
       "unknown": "تعذّر الوصول إلى Stripe للتحقق من حسابك الآن. حاول مرة أخرى بعد قليل."
     },
-    "requirements_due_zero": "لا توجد عناصر تحتاج إلى انتباهك في Stripe.",
-    "requirements_due_one": "عنصر واحد ما زال يحتاج إلى انتباهك في Stripe.",
-    "requirements_due_two": "عنصران ما زالا يحتاجان إلى انتباهك في Stripe.",
+    "requirements_due_zero": "لا توجد عناصر تحتاج إلى انتباهك في Stripe ({{count}}).",
+    "requirements_due_one": "عنصر واحد ({{count}}) ما زال يحتاج إلى انتباهك في Stripe.",
+    "requirements_due_two": "عنصران ({{count}}) ما زالا يحتاجان إلى انتباهك في Stripe.",
     "requirements_due_few": "{{count}} عناصر ما زالت تحتاج إلى انتباهك في Stripe.",
     "requirements_due_many": "{{count}} عنصرًا ما زال يحتاج إلى انتباهك في Stripe.",
     "requirements_due_other": "{{count}} عنصر ما زال يحتاج إلى انتباهك في Stripe.",
