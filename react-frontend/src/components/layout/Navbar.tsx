@@ -48,8 +48,7 @@ import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopMenuItems } from '@/components/navigation';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
-import { MegaMenu } from '@/components/layout/MegaMenu';
-import { DesktopNavPanel, type DesktopNavPanelSection } from '@/components/layout/DesktopNavPanel';
+import { DesktopMegaPanel, type MegaPanelGroup, type MegaPanelItem } from '@/components/layout/DesktopMegaPanel';
 import {
   CREATE_SECTION_LABEL_KEYS,
   getVisibleCreateOptions,
@@ -64,7 +63,7 @@ import {
   type DesktopNavigationSection,
   type NavigationItemPolicy,
 } from '@/components/navigation/navigationRegistry';
-import type { TenantFeatures } from '@/types/api';
+import type { MenuPage, TenantFeatures } from '@/types/api';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -155,7 +154,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   // Scroll behavior for utility bar auto-hide + logo shrink
   const { isScrolled, isUtilityBarVisible } = useHeaderScroll(48);
 
-  // Smart nav: track overflow to collapse items into MegaMenu
+  // Smart nav: track overflow to collapse items into the More panel
   const navRef = useRef<HTMLElement>(null);
   const [maxVisibleNav, setMaxVisibleNav] = useState(6);
 
@@ -341,60 +340,16 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     () => resolveDesktopSection('community-explore'),
     [resolveDesktopSection],
   );
-  const communityItems = useMemo<CommunityNavItem[]>(() => {
-    const items: CommunityNavItem[] = [
-      ...communityMainItems,
-      ...communityLocalItems,
-      ...communityExploreItems,
+  const communityGroups = useMemo<MegaPanelGroup[]>(() => {
+    const groups: MegaPanelGroup[] = [
+      { key: 'main', title: t('sections.main'), tone: 'main', items: communityMainItems },
+      { key: 'community', title: t('sections.community'), tone: 'tools', items: communityLocalItems },
+      { key: 'explore', title: t('sections.explore'), tone: 'explore', items: communityExploreItems },
     ];
-    return items;
-  }, [communityExploreItems, communityLocalItems, communityMainItems]);
-  const visibleCommunityItems = useMemo(
-    () => communityItems.filter(item =>
-      (!item.feature || hasFeature(item.feature))
-      && (!item.features || item.features.every(flag => hasFeature(flag)))),
-    [communityItems, hasFeature],
-  );
-  const communityLeftSections = useMemo<DesktopNavPanelSection[]>(() => {
-    const toPanelItem = (item: CommunityNavItem) => ({
-      label: item.label,
-      desc: item.desc,
-      href: item.href,
-      icon: item.icon,
-    });
-    const mainItems = communityMainItems.map(toPanelItem);
-    const localCommunityItems = communityLocalItems.map(toPanelItem);
+    return groups.filter(group => group.items.length > 0);
+  }, [communityExploreItems, communityLocalItems, communityMainItems, t]);
 
-    return [
-      ...(mainItems.length > 0 ? [{
-        key: 'main',
-        title: t('sections.main'),
-        items: mainItems,
-      }] : []),
-      ...(localCommunityItems.length > 0 ? [{
-        key: 'community',
-        title: t('sections.community'),
-        items: localCommunityItems,
-      }] : []),
-    ];
-  }, [communityLocalItems, communityMainItems, t]);
-  const communityRightSections = useMemo<DesktopNavPanelSection[]>(() => {
-    const toPanelItem = (item: CommunityNavItem) => ({
-      label: item.label,
-      desc: item.desc,
-      href: item.href,
-      icon: item.icon,
-    });
-    const exploreItems = communityExploreItems.map(toPanelItem);
-
-    return exploreItems.length > 0 ? [{
-      key: 'explore',
-      title: t('sections.explore'),
-      items: exploreItems,
-    }] : [];
-  }, [communityExploreItems, t]);
-
-  // ─── Collapsed primary nav items → overflow into MegaMenu ────────────────
+  // ─── Collapsed primary nav items → overflow into the More panel ──────────
   const primaryNavigationItems = useMemo(
     () => resolveDesktopSection('primary'),
     [resolveDesktopSection],
@@ -415,74 +370,66 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const toolsNavigationItems = useMemo(() => resolveDesktopSection('tools'), [resolveDesktopSection]);
   const federationNavigationItems = useMemo(() => resolveDesktopSection('federation'), [resolveDesktopSection]);
   const aboutNavigationItems = useMemo(() => resolveDesktopSection('about'), [resolveDesktopSection]);
-  const impactNavigationItems = useMemo(() => resolveDesktopSection('community-pages'), [resolveDesktopSection]);
+  const pinnedPageNavigationItems = useMemo(() => resolveDesktopSection('community-pages'), [resolveDesktopSection]);
 
-  // ─── Left column sections ────────────────────────────────────────────────
-  const leftSections = useMemo(() => [
-    // Overflow section — only visible when primary nav items are collapsed
-    ...(overflowNavItems.length > 0 ? [{
-      key: 'main',
-      title: t('sections.main'),
-      items: overflowNavItems,
-    }] : []),
-    {
-      key: 'engage',
-      title: t('sections.engage'),
-      items: engageNavigationItems,
-    },
-    {
-      key: 'progress',
-      title: t('sections.progress'),
-      collapsible: true,
-      defaultExpanded: false,
-      items: progressNavigationItems,
-    },
-    {
-      key: 'tools',
-      title: t('sections.tools'),
-      collapsible: true,
-      defaultExpanded: false,
-      items: toolsNavigationItems,
-    },
-    ...(federationNavigationItems.length > 0 ? [{
-      key: 'federation',
-      title: t('sections.partner_communities'),
-      collapsible: true,
-      defaultExpanded: false,
-      items: federationNavigationItems,
-    }] : []),
-  ], [engageNavigationItems, federationNavigationItems, overflowNavItems, progressNavigationItems, t, toolsNavigationItems]);
+  // A community's own Page Builder pages, as panel items.
+  const toPageItems = useCallback((pages: MenuPage[] | undefined): MegaPanelItem[] => (
+    (pages ?? []).map(page => ({
+      label: page.title,
+      desc: page.description ?? undefined,
+      href: tenantPath(`/page/${page.slug}`),
+      icon: FileText,
+    }))
+  ), [tenantPath]);
 
-  // ─── Right column sections ───────────────────────────────────────────────
-  const rightSections = useMemo(() => [
-    {
-      key: 'about',
-      title: t('sections.about'),
-      items: [
-        ...aboutNavigationItems,
-        ...(tenant?.menu_pages?.about || []).map((pg: { title: string; slug: string }) => ({
-          label: pg.title,
-          desc: undefined as string | undefined,
-          href: tenantPath(`/page/${pg.slug}`),
-          icon: FileText,
-        })),
-      ],
-    },
-    ...(impactNavigationItems.length > 0 ? [{
-      key: 'impact',
-      title: t('sections.impact'),
-      collapsible: true,
-      defaultExpanded: false,
-      items: impactNavigationItems,
-    }] : []),
-  ], [aboutNavigationItems, impactNavigationItems, t, tenant?.menu_pages?.about, tenantPath]);
+  // The bootstrap turns "1"/"0"/"true"/"false" into booleans, so only a
+  // non-empty string counts as a configured title.
+  const headerColumnSetting = tenant?.settings?.header_column_title;
+  const communityColumnTitle = typeof headerColumnSetting === 'string' && headerColumnSetting.trim() !== ''
+    ? headerColumnSetting.trim()
+    : t('sections.community_pages');
+
+  // ─── More panel groups — one open column each, in this order ─────────────
+  const moreGroups = useMemo<MegaPanelGroup[]>(() => {
+    const groups: MegaPanelGroup[] = [
+      // Overflow — only has items when primary nav items are collapsed
+      { key: 'main', title: t('sections.main'), tone: 'main', items: overflowNavItems },
+      { key: 'engage', title: t('sections.engage'), tone: 'engage', items: engageNavigationItems },
+      { key: 'progress', title: t('sections.progress'), tone: 'progress', items: progressNavigationItems },
+      { key: 'tools', title: t('sections.tools'), tone: 'tools', items: toolsNavigationItems },
+      { key: 'partner', title: t('sections.partner_communities'), tone: 'partner', items: federationNavigationItems },
+      {
+        key: 'about',
+        title: t('sections.about'),
+        tone: 'about',
+        items: [...aboutNavigationItems, ...toPageItems(tenant?.menu_pages?.about)],
+      },
+      {
+        key: 'community',
+        title: communityColumnTitle,
+        tone: 'community',
+        items: [...pinnedPageNavigationItems, ...toPageItems(tenant?.menu_pages?.header)],
+      },
+    ];
+    return groups.filter(group => group.items.length > 0);
+  }, [
+    aboutNavigationItems,
+    communityColumnTitle,
+    engageNavigationItems,
+    federationNavigationItems,
+    overflowNavItems,
+    pinnedPageNavigationItems,
+    progressNavigationItems,
+    t,
+    tenant?.menu_pages?.about,
+    tenant?.menu_pages?.header,
+    toPageItems,
+    toolsNavigationItems,
+  ]);
 
   const timebankingPaths = useMemo(() => timebankingItems.map(i => i.href), [timebankingItems]);
-  const communityPaths = useMemo(() => visibleCommunityItems.map(i => i.href), [visibleCommunityItems]);
-  const morePaths = useMemo(() => [
-    ...leftSections.flatMap(s => s.items.map(i => i.href)),
-    ...rightSections.flatMap(s => s.items.map(i => i.href)),
-  ], [leftSections, rightSections]);
+  const communityPaths = useMemo(() => communityGroups.flatMap(g => g.items.map(i => i.href)), [communityGroups]);
+  const morePaths = useMemo(() => moreGroups.flatMap(g => g.items.map(i => i.href)), [moreGroups]);
   const accessibleFrontendUrl = useMemo(
     () => buildAccessibleFrontendUrl(tenant?.slug, '/', undefined, tenant?.accessible_domain),
     [tenant?.slug, tenant?.accessible_domain],
@@ -659,8 +606,11 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
           </div>
         </div>
 
-        {/* Main Navigation Bar */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Navigation Bar — the containing block (`relative`) and the
+            bounds (`data-mega-panel-bounds`) for the More and Community panels.
+            Nothing between this div and the panel triggers may be positioned,
+            or the panels would attach to that element instead. */}
+        <div data-mega-panel-bounds className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* min-h keeps the bar compact for wide/initials logos but lets it grow
               to fit a tall square/stacked logo. py-1.5 gives a tall logo breathing
               room top & bottom (a no-op for compact logos, where min-h dominates);
@@ -817,32 +767,29 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                 </NavLink>
               )}
 
-              {/* Community Dropdown — always visible on desktop */}
-              {visibleCommunityItems.length > 0 && (
-                <DesktopNavPanel
-                  ariaLabel={t('aria.community_navigation')}
-                  isActive={isActiveGroup(communityPaths)}
-                  isOpen={communityOpen}
-                  leftSections={communityLeftSections}
-                  onNavigate={dropdownNavigate}
-                  onOpenChange={handleCommunityOpenChange}
-                  rightSections={communityRightSections}
-                  triggerIcon={Users}
-                  triggerLabel={t('nav.community')}
-                />
-              )}
+              {/* Community — open mega panel; renders nothing when every group is gated away */}
+              <DesktopMegaPanel
+                ariaLabel={t('aria.community_navigation')}
+                triggerLabel={t('nav.community')}
+                triggerIcon={Users}
+                isActive={isActiveGroup(communityPaths)}
+                isOpen={communityOpen}
+                onOpenChange={handleCommunityOpenChange}
+                groups={communityGroups}
+                onNavigate={dropdownNavigate}
+              />
 
-              {/* More — Multi-column mega menu; hidden when every section is gated away */}
-              {morePaths.length > 0 && (
-                <MegaMenu
-                  isOpen={moreOpen}
-                  onOpenChange={handleMoreOpenChange}
-                  isActive={isActiveGroup(morePaths)}
-                  leftSections={leftSections}
-                  rightSections={rightSections}
-                  onNavigate={dropdownNavigate}
-                />
-              )}
+              {/* More — open mega panel; renders nothing when every group is gated away */}
+              <DesktopMegaPanel
+                ariaLabel={t('aria.more_navigation')}
+                triggerLabel={t('nav.more')}
+                triggerIcon={Menu}
+                isActive={isActiveGroup(morePaths)}
+                isOpen={moreOpen}
+                onOpenChange={handleMoreOpenChange}
+                groups={moreGroups}
+                onNavigate={dropdownNavigate}
+              />
               </>
               )}
             </nav>

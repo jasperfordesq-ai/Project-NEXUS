@@ -36,6 +36,7 @@ const StubIcon: LucideIcon = (({ ref, ...props }: Record<string, unknown> & { re
 
 import { DesktopMegaPanel } from './DesktopMegaPanel';
 import type { DesktopMegaPanelProps, MegaPanelGroup } from './DesktopMegaPanel';
+import { MEGA_PANEL_MIN_COLUMN_PX } from './megaPanelLayout';
 
 const LONG_DESC = 'A deliberately long description that goes on and on so that it would need far more than two lines to show'.padEnd(120, '.');
 
@@ -196,6 +197,17 @@ describe('DesktopMegaPanel', () => {
         textNodes.push(walker.currentNode.textContent ?? '');
       }
       expect(textNodes).toEqual(['Contact']);
+    });
+
+    it('holds every column to the minimum width the layout rule assumes', () => {
+      renderPanel();
+      const panel = document.querySelector<HTMLElement>('[data-mega-panel]')!;
+      expect(panel.style.getPropertyValue('--mega-col-min')).toBe(`${MEGA_PANEL_MIN_COLUMN_PX}px`);
+      const columns = Array.from(getNav().querySelectorAll('[data-mega-group]'));
+      expect(columns).toHaveLength(3);
+      for (const column of columns) {
+        expect(column).toHaveClass('min-w-[var(--mega-col-min)]');
+      }
     });
 
     it('lays out three groups in one row when they fit', () => {

@@ -40,7 +40,7 @@ import ChevronDown from 'lucide-react/icons/chevron-down';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ScrollShadow } from '@/components/ui/ScrollShadow';
-import { layoutMegaPanel, type MegaPanelLayout } from './megaPanelLayout';
+import { layoutMegaPanel, MEGA_PANEL_MIN_COLUMN_PX, type MegaPanelLayout } from './megaPanelLayout';
 
 export type MegaPanelTone = 'main' | 'engage' | 'progress' | 'tools' | 'partner' | 'about' | 'community' | 'explore';
 
@@ -290,7 +290,7 @@ export function DesktopMegaPanel({
         key={group.key}
         data-mega-group={group.key}
         style={toneStyle}
-        className={`min-w-0 p-2 ${indexInRow > 0 ? 'border-l border-[var(--border-default)]' : ''} ${row > 0 ? 'border-t border-[var(--border-default)]' : ''}`}
+        className={`min-w-[var(--mega-col-min)] p-2 ${indexInRow > 0 ? 'border-l border-[var(--border-default)]' : ''} ${row > 0 ? 'border-t border-[var(--border-default)]' : ''}`}
       >
         <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-theme-subtle">
           {group.title}
@@ -308,6 +308,11 @@ export function DesktopMegaPanel({
   const panelStyle = {
     '--mega-panel-left': `${anchorLeft}px`,
     '--mega-cols': layout.columnsPerRow,
+    // Every column is at least as wide as the layout rule assumed when it
+    // chose one row or two. Without this a column of short labels ("Goals",
+    // "Polls") shrinks to the label and squeezes its descriptions to a few
+    // characters per line.
+    '--mega-col-min': `${MEGA_PANEL_MIN_COLUMN_PX}px`,
   } as CSSProperties;
 
   return (

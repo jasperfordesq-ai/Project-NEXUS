@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, userEvent, waitFor } from '@/test/test-utils';
+import { render, screen, userEvent, waitFor, within } from '@/test/test-utils';
 import React from 'react';
 
 // --- Mocks ---
@@ -48,13 +48,18 @@ const mockUseAuth = vi.fn();
 const mockUseTenant = vi.fn();
 const mockUseNotifications = vi.fn();
 const mockUseTheme = vi.fn();
+const DEFAULT_MENU_CONTEXT = { headerMenus: [], mobileMenus: [], hasCustomMenus: false };
+const mockUseMenuContext = vi.fn(() => DEFAULT_MENU_CONTEXT);
+// Lets one test replace the navigation registry's answer; every other test
+// gets the real registry (the override returns undefined).
+const mockNavigationOverride = vi.fn((..._args: unknown[]): unknown => undefined);
 
 vi.mock('@/contexts', () => ({
   useAuth: (...args: unknown[]) => mockUseAuth(...args),
   useTenant: (...args: unknown[]) => mockUseTenant(...args),
   useNotifications: (...args: unknown[]) => mockUseNotifications(...args),
   useTheme: (...args: unknown[]) => mockUseTheme(...args),
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
+  useMenuContext: () => mockUseMenuContext(),
 
   usePusher: () => ({ channel: null, isConnected: false }),
   usePusherOptional: () => null,
@@ -78,8 +83,17 @@ vi.mock('@/contexts/ThemeContext', () => ({
   useTheme: (...args: unknown[]) => mockUseTheme(...args),
 }));
 vi.mock('@/contexts/MenuContextCore', () => ({
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
+  useMenuContext: () => mockUseMenuContext(),
 }));
+
+vi.mock('@/components/navigation/navigationRegistry', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/navigation/navigationRegistry')>();
+  const realGetNavigationItems = actual.getNavigationItems as (...args: unknown[]) => unknown;
+  return {
+    ...actual,
+    getNavigationItems: (...args: unknown[]) => mockNavigationOverride(...args) ?? realGetNavigationItems(...args),
+  };
+});
 
 vi.mock('@/components/LanguageSwitcher', () => ({
   LanguageSwitcher: ({ triggerClassName }: { triggerClassName?: string }) => (
@@ -146,6 +160,17 @@ const i18nMap: Record<string, string> = {
   'sections.main': 'Main',
   'sections.community': 'Community',
   'sections.explore': 'Explore',
+  'sections.engage': 'Engage',
+  'sections.progress': 'Progress',
+  'sections.tools': 'Tools',
+  'sections.about': 'About',
+  'sections.partner_communities': 'Partner Communities',
+  'sections.community_pages': 'Our Pages',
+  'aria.more_navigation': 'More navigation',
+  'nav.skills': 'Skills',
+  'nav.matches': 'Matches',
+  'nav.ai_chat': 'AI Assistant',
+  'nav.strategic_plan': 'Strategic Plan',
   'nav.unread_notifications': 'Notifications, 5 unread',
   'nav.accessibility_alpha': 'WCAG 2.2 AA Version',
   'nav.switch_community': 'Switch community',
@@ -262,6 +287,8 @@ function setupDefaultMocks(overrides: {
     counts: { messages: 0, notifications: 0 },
     ...overrides.notifications,
   });
+  mockUseMenuContext.mockReturnValue(DEFAULT_MENU_CONTEXT);
+  mockNavigationOverride.mockImplementation(() => undefined);
   mockUseTheme.mockReturnValue({
     resolvedTheme: 'light',
     theme: 'light',
@@ -777,13 +804,13 @@ describe('Navbar', () => {
       await user.click(screen.getByRole('button', { name: 'Community' }));
 
       const panel = screen.getByRole('navigation', { name: 'Community navigation' });
-      expect(panel.className).toContain('desktop-nav-panel');
+      expect(panel.closest('[data-mega-panel]')).not.toBeNull();
       expect(screen.getByText('Main')).toBeInTheDocument();
       expect(screen.getAllByText('Community').length).toBeGreaterThanOrEqual(2);
       expect(screen.getByText('Explore')).toBeInTheDocument();
 
       const membersItem = screen.getByRole('button', { name: /^Members\b/ });
-      expect(membersItem.className).toContain('desktop-nav-panel-item');
+      expect(membersItem).toHaveAttribute('data-mega-item');
     });
 
     it('does NOT render Community dropdown when no community features are enabled', () => {
@@ -884,6 +911,27 @@ describe('Navbar', () => {
       const panelText = screen.getByRole('navigation', { name: 'Community navigation' }).textContent ?? '';
       expect(panelText.indexOf('Courses')).toBeLessThan(panelText.indexOf('Podcasts'));
       expect(panelText.indexOf('Podcasts')).toBeLessThan(panelText.indexOf('Premium'));
+    });
+
+    it('renders the Community menu as open columns with Main, Community and Explore headings', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' }, isAuthenticated: true },
+        tenant: {
+          hasFeature: vi.fn((feature: string) => ['connections', 'events', 'groups', 'resources', 'marketplace'].includes(feature)),
+          hasModule: vi.fn((module: string) => module === 'dashboard'),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'Community' }));
+
+      const panel = screen.getByRole('navigation', { name: 'Community navigation' });
+      expect(panel.querySelectorAll('button[aria-expanded]')).toHaveLength(0);
+      const headings = Array.from(panel.querySelectorAll('[data-mega-group] > p')).map(p => p.textContent);
+      expect(headings).toEqual(['Main', 'Community', 'Explore']);
+      expect(within(panel).getByRole('button', { name: /^Members\b/ })).toBeVisible();
+      expect(within(panel).getByRole('button', { name: /^Marketplace\b/ })).toBeVisible();
     });
   });
 
@@ -1045,8 +1093,173 @@ describe('Navbar', () => {
 
       const ideasItem = screen.getByRole('button', { name: /^Ideas\b/ });
       expect(ideasItem).toBeInTheDocument();
-      expect(ideasItem.className).toContain('desktop-nav-panel-item');
+      expect(ideasItem).toHaveAttribute('data-mega-item');
       expect(screen.queryByText('Ideation Challenges')).not.toBeInTheDocument();
+    });
+
+    const member = { id: 1, first_name: 'A', last_name: 'B', email: 'a@b.com', role: 'member' };
+    const columnHeadings = (panel: HTMLElement) =>
+      Array.from(panel.querySelectorAll('[data-mega-group] > p')).map(p => p.textContent);
+    const columnByHeading = (panel: HTMLElement, heading: string) => {
+      const column = Array.from(panel.querySelectorAll<HTMLElement>('[data-mega-group]'))
+        .find(group => group.querySelector('p')?.textContent === heading);
+      if (!column) throw new Error(`No "${heading}" column`);
+      return column;
+    };
+
+    it('shows every More group open with no chevron toggles', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: member, isAuthenticated: true },
+        tenant: {
+          hasFeature: vi.fn((feature: string) => ['goals', 'gamification'].includes(feature)),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      expect(panel.querySelectorAll('button[aria-expanded]')).toHaveLength(0);
+      for (const heading of ['Engage', 'Progress', 'Tools', 'About']) {
+        expect(within(panel).getByText(heading)).toBeVisible();
+      }
+      // Items in the formerly collapsed Tools column are on screen without a click.
+      expect(within(panel).getByRole('button', { name: /^Skills\b/ })).toBeVisible();
+    });
+
+    it('builds the community column from pinned pages and header pages under the configured title', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: member, isAuthenticated: true },
+        tenant: {
+          tenant: {
+            id: 2,
+            name: 'hOUR Timebank',
+            slug: 'hour-timebank',
+            menu_pages: {
+              about: [{ title: 'Our Story', slug: 'our-story' }],
+              header: [{ title: 'Annual Review', slug: 'annual-review', description: 'Built in the Page Builder' }],
+            },
+            settings: { header_column_title: 'Impact' },
+          },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      expect(columnHeadings(panel)).toContain('Impact');
+      expect(columnHeadings(panel)).not.toContain('Our Pages');
+      const community = columnByHeading(panel, 'Impact');
+      expect(within(community).getByText('Strategic Plan')).toBeInTheDocument();
+      expect(within(community).getByText('Annual Review')).toBeInTheDocument();
+      expect(within(community).getByText('Built in the Page Builder')).toBeInTheDocument();
+      // Pinned pages come first, then the community's own header pages.
+      const labels = Array.from(community.querySelectorAll('[data-mega-item]')).map(item => item.textContent ?? '');
+      expect(labels.findIndex(label => label.includes('Strategic Plan')))
+        .toBeLessThan(labels.findIndex(label => label.includes('Annual Review')));
+      // The About column keeps the community's about pages after the built-ins.
+      expect(within(columnByHeading(panel, 'About')).getByText('Our Story')).toBeInTheDocument();
+
+      await user.click(within(community).getByRole('button', { name: /^Annual Review\b/ }));
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/page/annual-review');
+      });
+    });
+
+    it('names the community column Our Pages when no title is configured', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 3,
+            name: 'Other',
+            slug: 'other',
+            menu_pages: { header: [{ title: 'Annual Review', slug: 'annual-review' }] },
+            // The bootstrap turns "1" into a boolean, so a non-string must fall back.
+            settings: { header_column_title: true },
+          },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      expect(columnHeadings(panel)).toContain('Our Pages');
+      expect(within(columnByHeading(panel, 'Our Pages')).getByText('Annual Review')).toBeInTheDocument();
+      expect(within(panel).queryByText('Strategic Plan')).not.toBeInTheDocument();
+    });
+
+    it('omits the community column when there are no pinned pages and no header pages', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        tenant: {
+          tenant: { id: 3, name: 'Other', slug: 'other', settings: { header_column_title: 'Impact' } },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      expect(columnHeadings(panel)).not.toContain('Our Pages');
+      expect(columnHeadings(panel)).not.toContain('Impact');
+      expect(columnHeadings(panel)).toContain('About');
+    });
+
+    it('shows no member-only Tools items to a signed-out visitor and never an empty column', async () => {
+      const user = userEvent.setup();
+      setupDefaultMocks({
+        auth: { user: null, isAuthenticated: false },
+        tenant: {
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+
+      render(<Navbar />);
+      await user.click(screen.getByRole('button', { name: 'More' }));
+
+      const panel = screen.getByRole('navigation', { name: 'More navigation' });
+      for (const label of ['Skills', 'Matches', 'AI Assistant']) {
+        expect(within(panel).queryByText(label)).not.toBeInTheDocument();
+      }
+      expect(columnHeadings(panel)).not.toContain('Tools');
+      const columns = Array.from(panel.querySelectorAll('[data-mega-group]'));
+      expect(columns.length).toBeGreaterThan(0);
+      for (const column of columns) {
+        expect(column.querySelectorAll('[data-mega-item]').length).toBeGreaterThan(0);
+      }
+    });
+
+    it('hides the More trigger when every group is gated away', () => {
+      setupDefaultMocks({ auth: { user: member, isAuthenticated: true } });
+      mockNavigationOverride.mockImplementation(() => []);
+
+      render(<Navbar />);
+
+      expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Community' })).not.toBeInTheDocument();
+    });
+
+    it('renders nothing from the default navigation when the community has custom header menus', () => {
+      setupDefaultMocks({ auth: { user: member, isAuthenticated: true } });
+      mockUseMenuContext.mockReturnValue({ headerMenus: [], mobileMenus: [], hasCustomMenus: true });
+
+      render(<Navbar />);
+
+      expect(screen.queryByRole('button', { name: 'More' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Community' })).not.toBeInTheDocument();
     });
   });
 

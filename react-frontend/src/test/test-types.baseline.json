@@ -893,9 +893,6 @@
     "src/components/landing/HeroSection.test.tsx": {
       "TS2353": 1
     },
-    "src/components/layout/DesktopNavPanel.test.tsx": {
-      "TS2769": 1
-    },
     "src/components/layout/MobileDrawer.test.tsx": {
       "TS18048": 1,
       "TS2345": 3
@@ -1881,7 +1878,7 @@
     }
   },
   "totals": {
-    "fileCount": 555,
-    "errorCount": 1674
+    "fileCount": 554,
+    "errorCount": 1673
   }
 }
