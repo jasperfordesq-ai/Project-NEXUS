@@ -176,3 +176,42 @@ test.describe('Header dropdowns open reliably @smoke', () => {
     expect(errors, `Opening menus threw: ${errors.join(' | ')}`).toHaveLength(0);
   });
 });
+
+test.describe('More panel at a 1024px laptop', () => {
+  test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 1024, height: 800 } });
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('dev_notice_dismissed', '2.1');
+      localStorage.setItem('nexus_cookie_consent', JSON.stringify({
+        essential: true,
+        analytics: false,
+        preferences: true,
+        timestamp: new Date().toISOString(),
+      }));
+    });
+    await primeApiAuth(page, 'user');
+    await goToTenantPage(page, '/feed');
+    await waitForPageLoad(page);
+    await dismissBlockingModals(page);
+  });
+
+  test('opens with every group visible in two rows and no horizontal overflow', async ({ page }) => {
+    const trigger = firstVisible(page.getByRole('button', { name: /^More$/i }));
+    await expect(trigger, 'No visible More menu at 1024px').toBeVisible({ timeout: 15000 });
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+
+    await trigger.click();
+
+    const panel = page.locator('nav[data-rows][data-columns]').filter({ visible: true }).first();
+    await expect(panel, 'The More panel did not open').toBeVisible({ timeout: 8000 });
+    await expect(panel).toHaveAttribute('data-rows', '2');
+
+    // Nothing inside the panel folds open or closed.
+    await expect(panel.locator('[aria-expanded]')).toHaveCount(0);
+
+    const fits = await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    );
+    expect(fits, 'The page scrolls sideways with the More panel open').toBe(true);
+  });
+});
