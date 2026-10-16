@@ -143,7 +143,7 @@
     "marketplace": "Compra e vendi nella tua comunità",
     "premium": "Livelli di abbonamento premium",
     "accessibility_alpha": "Apri il frontend alpha focalizzato sull'accessibilità",
-    "features": "Tutto ciò che fa Project NEXUS, con etichette di maturità oneste",
+    "features": "Cosa può fare questa piattaforma",
     "dashboard": "La tua panoramica personalizzata della casa",
     "courses": "Impara nuove competenze con la tua comunità",
     "podcasts": "Spettacoli comunitari e storie audio",
@@ -259,7 +259,8 @@
     "engage": "Partecipa",
     "progress": "Progresso",
     "tools": "Strumenti",
-    "impact": "Impatto"
+    "impact": "Impatto",
+    "community_pages": "Le nostre pagine"
   },
   "accessibility": {
     "open_menu": "Apri menu",
@@ -994,6 +995,7 @@
     "explore_navigation": "Navigazione esplora",
     "federation_navigation": "Navigazione federazione",
     "about_navigation": "Navigazione informazioni",
+    "community_pages_navigation": "Navigazione delle pagine della comunità",
     "legal_navigation": "Navigazione legale",
     "more_navigation": "Altre voci di navigazione",
     "cookie_settings": "Impostazioni cookie",

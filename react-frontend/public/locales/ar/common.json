@@ -146,7 +146,7 @@
     "marketplace": "اشترِ وبيع في مجتمعك",
     "premium": "مستويات العضوية المميزة",
     "accessibility_alpha": "افتح الواجهة التجريبية ذات الأولوية لإمكانية الوصول",
-    "features": "كل ما يفعله Project NEXUS، مع علامات نضج صادقة",
+    "features": "ما يمكن لهذه المنصة فعله",
     "dashboard": "نظرة عامة على منزلك المخصص",
     "courses": "تعلم مهارات جديدة مع مجتمعك",
     "podcasts": "عروض المجتمع والقصص الصوتية",
@@ -262,7 +262,8 @@
     "engage": "المشاركة",
     "progress": "التقدم",
     "tools": "الأدوات",
-    "impact": "التأثير"
+    "impact": "التأثير",
+    "community_pages": "صفحاتنا"
   },
   "accessibility": {
     "open_menu": "فتح القائمة",
@@ -1006,6 +1007,7 @@
     "explore_navigation": "تنقل الاستكشاف",
     "federation_navigation": "تنقل الاتحاد",
     "about_navigation": "تنقل حول",
+    "community_pages_navigation": "التنقل بين صفحات المجتمع",
     "legal_navigation": "تنقل قانوني",
     "more_navigation": "تنقل المزيد",
     "cookie_settings": "إعدادات ملفات تعريف الارتباط",

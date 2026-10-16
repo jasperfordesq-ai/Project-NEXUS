@@ -560,14 +560,13 @@ describe('MobileDrawer', () => {
         },
       });
       render(<MobileDrawer {...defaultProps} />);
-      // hOUR Timebank items are in the 'About' accordion section (collapsed by default).
+      // The five hOUR Timebank pages moved out of About into the new 'community-pages'
+      // section; the phone drawer renders that section in a later task, so for now
+      // they must simply not appear under About.
       const aboutTrigger = expandSection(/^about$/i);
       expect(aboutTrigger).toBeDefined();
-      expect(screen.getByText('Partner With Us')).toBeInTheDocument();
-      expect(screen.getByText('Social Prescribing')).toBeInTheDocument();
-      expect(screen.getByText('Our Impact')).toBeInTheDocument();
-      expect(screen.getByText('Impact Report')).toBeInTheDocument();
-      expect(screen.getByText('Strategic Plan')).toBeInTheDocument();
+      expect(screen.queryByText('Partner With Us')).not.toBeInTheDocument();
+      expect(screen.queryByText('Strategic Plan')).not.toBeInTheDocument();
     });
 
     it('does NOT show hOUR Timebank items for other tenants', () => {

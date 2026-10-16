@@ -145,7 +145,7 @@
     "marketplace": "Ceannaigh & díol i do phobal",
     "premium": "Tacaigh leis an bpobal seo",
     "accessibility_alpha": "Oscail an leagan inrochtana WCAG 2.2 AA",
-    "features": "Gach rud a dhéanann Project NEXUS, le lipéid aibíochta macánta",
+    "features": "Cad is féidir leis an ardán seo a dhéanamh",
     "dashboard": "Forbhreathnú pearsantaithe ar do leathanach baile",
     "courses": "Foghlaim scileanna nua le do phobal",
     "podcasts": "Seónna pobail agus scéalta fuaime",
@@ -261,7 +261,8 @@
     "engage": "Glac páirt",
     "progress": "Dul chun cinn",
     "tools": "Uirlisí",
-    "impact": "Tionchar"
+    "impact": "Tionchar",
+    "community_pages": "Ár Leathanaigh"
   },
   "accessibility": {
     "open_menu": "Oscail roghchlár",
@@ -1002,6 +1003,7 @@
     "explore_navigation": "Nascleanúint aimsithe",
     "federation_navigation": "Nascleanúint an líonra comhpháirtíochta",
     "about_navigation": "Nascleanúint eolais",
+    "community_pages_navigation": "Nascleanúint leathanaigh an phobail",
     "legal_navigation": "Nascleanúint dhlíthiúil",
     "more_navigation": "Tuilleadh nascleanúna",
     "cookie_settings": "Socruithe fianán",

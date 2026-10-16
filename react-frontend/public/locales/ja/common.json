@@ -142,7 +142,7 @@
     "marketplace": "コミュニティで売買する",
     "premium": "プレミアム会員プラン",
     "accessibility_alpha": "アクセシビリティ重視のアルファフロントエンドを開く",
-    "features": "Project NEXUSのすべての機能と正直な成熟度ラベル",
+    "features": "このプラットフォームでできること",
     "dashboard": "あなただけのパーソナライズされた家の概要",
     "courses": "コミュニティと一緒に新しいスキルを学びましょう",
     "podcasts": "コミュニティ ショーとオーディオ ストーリー",
@@ -258,7 +258,8 @@
     "engage": "参加",
     "progress": "進捗",
     "tools": "ツール",
-    "impact": "インパクト"
+    "impact": "インパクト",
+    "community_pages": "私たちのページ"
   },
   "accessibility": {
     "open_menu": "メニューを開く",
@@ -990,6 +991,7 @@
     "explore_navigation": "探索ナビゲーション",
     "federation_navigation": "フェデレーションナビゲーション",
     "about_navigation": "概要ナビゲーション",
+    "community_pages_navigation": "コミュニティページのナビゲーション",
     "legal_navigation": "法務ナビゲーション",
     "more_navigation": "その他のナビゲーション",
     "cookie_settings": "Cookie設定",

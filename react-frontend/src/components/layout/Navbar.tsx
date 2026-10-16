@@ -415,7 +415,7 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const toolsNavigationItems = useMemo(() => resolveDesktopSection('tools'), [resolveDesktopSection]);
   const federationNavigationItems = useMemo(() => resolveDesktopSection('federation'), [resolveDesktopSection]);
   const aboutNavigationItems = useMemo(() => resolveDesktopSection('about'), [resolveDesktopSection]);
-  const impactNavigationItems = useMemo(() => resolveDesktopSection('impact'), [resolveDesktopSection]);
+  const impactNavigationItems = useMemo(() => resolveDesktopSection('community-pages'), [resolveDesktopSection]);
 
   // ─── Left column sections ────────────────────────────────────────────────
   const leftSections = useMemo(() => [

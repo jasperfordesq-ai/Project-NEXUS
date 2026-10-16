@@ -142,7 +142,7 @@
     "marketplace": "Koop & verkoop in je gemeenschap",
     "premium": "Premium lidmaatschapsniveaus",
     "accessibility_alpha": "Open de alfa-frontend met focus op toegankelijkheid",
-    "features": "Alles wat Project NEXUS doet, met eerlijke volwassenheidslabels",
+    "features": "Wat dit platform kan",
     "dashboard": "Jouw persoonlijke woningoverzicht",
     "courses": "Leer nieuwe vaardigheden met uw community",
     "podcasts": "Communityshows en audioverhalen",
@@ -258,7 +258,8 @@
     "engage": "Meedoen",
     "progress": "Voortgang",
     "tools": "Hulpmiddelen",
-    "impact": "Invloed"
+    "impact": "Invloed",
+    "community_pages": "Onze pagina's"
   },
   "accessibility": {
     "open_menu": "Menu openen",
@@ -990,6 +991,7 @@
     "explore_navigation": "Ontdekkingsnavigatie",
     "federation_navigation": "Federatienavigatie",
     "about_navigation": "Over navigatie",
+    "community_pages_navigation": "Navigatie van de gemeenschapspagina's",
     "legal_navigation": "Juridische navigatie",
     "more_navigation": "Meer navigatie",
     "cookie_settings": "Cookie-instellingen",

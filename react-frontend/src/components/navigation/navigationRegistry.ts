@@ -140,7 +140,7 @@ export type DesktopNavigationSection =
   | 'tools'
   | 'federation'
   | 'about'
-  | 'impact';
+  | 'community-pages';
 
 export type MobileNavigationSection =
   | 'main'
@@ -150,7 +150,11 @@ export type MobileNavigationSection =
   | 'explore'
   | 'federation'
   | 'about'
+  | 'community-pages'
   | 'legal';
+
+/** Desktop sections that make up the More menu, in display order. */
+export const MORE_DESKTOP_SECTIONS = ['primary', 'engage', 'progress', 'tools', 'federation', 'about', 'community-pages'] as const satisfies readonly DesktopNavigationSection[];
 
 export type NavigationSurface = 'desktop' | 'mobile';
 
@@ -292,11 +296,11 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'blog', href: '/blog', labelKey: 'nav.blog', descriptionKey: 'nav_desc.blog', icon: Blog, feature: 'blog', placements: both('about', 'about') },
   { id: 'faq', href: '/faq', labelKey: 'nav.faq', descriptionKey: 'nav_desc.faq', icon: HelpCircle, placements: both('about', 'about') },
   { id: 'timebanking-guide', href: '/timebanking-guide', labelKey: 'nav.timebanking_guide', descriptionKey: 'nav_desc.timebanking_guide', icon: Blog, placements: both('about', 'about') },
-  { id: 'partner-with-us', href: '/partner', labelKey: 'nav.partner_with_us', descriptionKey: 'nav_desc.partner_with_us', icon: Handshake, tenantSlugs: ['hour-timebank'], placements: both('impact', 'about') },
-  { id: 'social-prescribing', href: '/social-prescribing', labelKey: 'nav.social_prescribing', descriptionKey: 'nav_desc.social_prescribing', icon: Stethoscope, tenantSlugs: ['hour-timebank'], placements: both('impact', 'about') },
-  { id: 'our-impact', href: '/impact-summary', labelKey: 'nav.our_impact', descriptionKey: 'nav_desc.our_impact', icon: TrendingUp, tenantSlugs: ['hour-timebank'], placements: both('impact', 'about') },
-  { id: 'impact-report', href: '/impact-report', labelKey: 'nav.impact_report', descriptionKey: 'nav_desc.impact_report', icon: BarChart3, tenantSlugs: ['hour-timebank'], placements: both('impact', 'about') },
-  { id: 'strategic-plan', href: '/strategic-plan', labelKey: 'nav.strategic_plan', descriptionKey: 'nav_desc.strategic_plan', icon: Compass, tenantSlugs: ['hour-timebank'], placements: both('impact', 'about') },
+  { id: 'partner-with-us', href: '/partner', labelKey: 'nav.partner_with_us', descriptionKey: 'nav_desc.partner_with_us', icon: Handshake, tenantSlugs: ['hour-timebank'], placements: both('community-pages', 'community-pages') },
+  { id: 'social-prescribing', href: '/social-prescribing', labelKey: 'nav.social_prescribing', descriptionKey: 'nav_desc.social_prescribing', icon: Stethoscope, tenantSlugs: ['hour-timebank'], placements: both('community-pages', 'community-pages') },
+  { id: 'our-impact', href: '/impact-summary', labelKey: 'nav.our_impact', descriptionKey: 'nav_desc.our_impact', icon: TrendingUp, tenantSlugs: ['hour-timebank'], placements: both('community-pages', 'community-pages') },
+  { id: 'impact-report', href: '/impact-report', labelKey: 'nav.impact_report', descriptionKey: 'nav_desc.impact_report', icon: BarChart3, tenantSlugs: ['hour-timebank'], placements: both('community-pages', 'community-pages') },
+  { id: 'strategic-plan', href: '/strategic-plan', labelKey: 'nav.strategic_plan', descriptionKey: 'nav_desc.strategic_plan', icon: Compass, tenantSlugs: ['hour-timebank'], placements: both('community-pages', 'community-pages') },
 
   { id: 'legal-hub', href: '/legal', labelKey: 'legal.legal_hub', icon: FileText, placements: { mobile: [{ section: 'legal' }] } },
   { id: 'terms', href: '/terms', labelKey: 'legal.terms_of_service', icon: FileText, placements: { mobile: [{ section: 'legal' }] } },

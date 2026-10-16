@@ -142,7 +142,7 @@
     "marketplace": "Buy & sell in your community",
     "premium": "Support this community",
     "accessibility_alpha": "Open the WCAG 2.2 AA accessible version",
-    "features": "Everything Project NEXUS does, with honest maturity labels",
+    "features": "What this platform can do",
     "dashboard": "Your personalised home overview",
     "courses": "Learn new skills with your community",
     "podcasts": "Community shows and audio stories",
@@ -258,7 +258,8 @@
     "engage": "Engage",
     "progress": "Progress",
     "tools": "Tools",
-    "impact": "Impact"
+    "impact": "Impact",
+    "community_pages": "Our Pages"
   },
   "accessibility": {
     "open_menu": "Open menu",
@@ -990,6 +991,7 @@
     "explore_navigation": "Explore navigation",
     "federation_navigation": "Federation navigation",
     "about_navigation": "About navigation",
+    "community_pages_navigation": "Community pages navigation",
     "legal_navigation": "Legal navigation",
     "more_navigation": "More navigation",
     "cookie_settings": "Cookie settings",

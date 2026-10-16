@@ -26,7 +26,7 @@ const DESKTOP_SECTIONS: readonly DesktopNavigationSection[] = [
   'tools',
   'federation',
   'about',
-  'impact',
+  'community-pages',
 ];
 
 const MOBILE_SECTIONS: readonly MobileNavigationSection[] = [
@@ -37,6 +37,7 @@ const MOBILE_SECTIONS: readonly MobileNavigationSection[] = [
   'explore',
   'federation',
   'about',
+  'community-pages',
   'legal',
 ];
 
@@ -241,17 +242,22 @@ describe('navigationRegistry', () => {
     }
   });
 
-  it('keeps tenant-specific impact destinations in parity', () => {
-    const impactIds = ['impact-report', 'our-impact', 'partner-with-us', 'social-prescribing', 'strategic-plan'];
+  it('keeps tenant-specific community pages in parity', () => {
+    const pageIds = ['impact-report', 'our-impact', 'partner-with-us', 'social-prescribing', 'strategic-plan'];
     const ordinaryTenant = allEnabledContext({ tenantSlug: 'another-community' });
     const hourTimebank = allEnabledContext({ tenantSlug: 'hour-timebank' });
 
-    for (const surfaceItems of [desktopItems, mobileItems]) {
-      const ordinaryIds = ids(surfaceItems(ordinaryTenant));
-      const hourTimebankIds = ids(surfaceItems(hourTimebank));
-      impactIds.forEach(id => {
-        expect(ordinaryIds.has(id)).toBe(false);
-        expect(hourTimebankIds.has(id)).toBe(true);
+    const sectionIds = (surface: 'desktop' | 'mobile', context: NavigationGateContext) =>
+      ids(surface === 'desktop'
+        ? getNavigationItems('desktop', 'community-pages', context)
+        : getNavigationItems('mobile', 'community-pages', context));
+
+    for (const surface of ['desktop', 'mobile'] as const) {
+      const ordinaryIds = sectionIds(surface, ordinaryTenant);
+      const hourTimebankIds = sectionIds(surface, hourTimebank);
+      pageIds.forEach(id => {
+        expect(ordinaryIds.has(id), `${id} hidden on ${surface} for other tenants`).toBe(false);
+        expect(hourTimebankIds.has(id), `${id} shown on ${surface} for hour-timebank`).toBe(true);
       });
     }
   });
