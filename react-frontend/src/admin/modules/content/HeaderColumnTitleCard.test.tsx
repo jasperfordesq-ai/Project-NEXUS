@@ -34,7 +34,7 @@ describe('HeaderColumnTitleCard', () => {
 
     await user.clear(input);
     await user.type(input, ' Our Work ');
-    await user.click(screen.getByRole('button', { name: /save/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => expect(mockSettings.update).toHaveBeenCalledWith({ header_column_title: 'Our Work' }));
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
@@ -47,9 +47,18 @@ describe('HeaderColumnTitleCard', () => {
 
     const input = await screen.findByRole('textbox');
     await waitFor(() => expect(input).toHaveValue('Impact'));
-    await user.click(screen.getByRole('button', { name: /save/i }));
+    await user.click(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
     expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
+  it('keeps Save disabled and shows the failure toast when loading fails', async () => {
+    mockSettings.get.mockRejectedValue(new Error('network'));
+    render(<HeaderColumnTitleCard />);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+    expect(mockSettings.update).not.toHaveBeenCalled();
   });
 });

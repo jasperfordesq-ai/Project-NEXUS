@@ -23,19 +23,30 @@ export function HeaderColumnTitleCard() {
   const toast = useToast();
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     adminSettings
       .get()
       .then((res) => {
-        if (cancelled || !res.success || !res.data) return;
+        if (cancelled) return;
+        if (!res.success || !res.data) {
+          toast.error(t('content.header_column_title_failed'));
+          return;
+        }
         setTitle(res.data.settings?.header_column_title ?? '');
+        setLoaded(true);
       })
-      .catch((err) => logError('HeaderColumnTitleCard: load failed', err));
+      .catch((err) => {
+        if (cancelled) return;
+        logError('HeaderColumnTitleCard: load failed', err);
+        toast.error(t('content.header_column_title_failed'));
+      });
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   const handleSave = async () => {
@@ -70,8 +81,8 @@ export function HeaderColumnTitleCard() {
             onValueChange={setTitle}
           />
         </div>
-        <Button onPress={handleSave} isLoading={saving} isDisabled={saving}>
-          {t('content.save')}
+        <Button onPress={handleSave} isLoading={saving} isDisabled={saving || !loaded}>
+          {t('content.save_changes')}
         </Button>
       </CardBody>
     </Card>
