@@ -738,7 +738,7 @@
     "please_select_a_date": "Por favor seleccione una fecha",
     "recent_failures": "Fallos recientes",
     "reg": {
-      "api_key_desc": "Clave API para el proveedor de verificación de identidad seleccionado",
+      "api_key_desc": "La clave API secreta de la cuenta propia de su organización con este proveedor.",
       "active": "Activo",
       "available": "Disponible",
       "cancel": "Cancelar",
@@ -840,7 +840,7 @@
       "post_reject": "Publicar rechazo",
       "post_reject_desc": "¿Qué sucede con la cuenta de un miembro si se rechaza su solicitud?",
       "provider": "Proveedor",
-      "provider_credentials_desc": "Ingrese las credenciales API para el proveedor de verificación de identidad seleccionado",
+      "provider_credentials_desc": "Deje estos campos vacíos para realizar las verificaciones de identidad a través de la cuenta del proveedor de la plataforma. Introduzca las claves de su organización para realizar y pagar las verificaciones a través de su propia cuenta.",
       "provider_idenfy": "Identificar proveedor",
       "provider_jumio": "Proveedor Jumio",
       "provider_onfido": "Proveedor Onfido",
@@ -865,7 +865,7 @@
       "verification_settings": "Configuración de verificación",
       "verification_settings_desc": "Configurar requisitos de verificación de identidad para registros de nuevos miembros",
       "waitlist_info": "Los miembros en la lista de espera son aprobados manualmente por un administrador",
-      "webhook_desc": "Se utiliza para verificar la autenticidad de las cargas útiles de webhooks entrantes.",
+      "webhook_desc": "El secreto de firma del punto de conexión de webhook que registró en la dirección anterior.",
       "your_community": "Tu comunidad",
       "credentials_remove_confirm": "¿Eliminar estas credenciales? Esto no se puede deshacer.",
       "n_configured_many": "{{count}}configurado",
@@ -876,7 +876,10 @@
       "n_available_other": "{{count}}disponible",
       "total_codes_count_many": "Códigos totales: {{count}}",
       "total_codes_count_one": "Códigos totales: {{count}}",
-      "total_codes_count_other": "Códigos totales: {{count}}"
+      "total_codes_count_other": "Códigos totales: {{count}}",
+      "own_account_explainer": "Con sus propias claves, cada verificación y cada resultado pasan por la cuenta de su organización con este proveedor. Se necesitan tanto la clave API como el secreto de firma del webhook; de lo contrario, los resultados no pueden llegar a esta plataforma.",
+      "webhook_url_label": "Dirección de webhook que debe registrar en el proveedor",
+      "webhook_url_desc": "En el panel de su proveedor, añada esta dirección como punto de conexión de webhook y pegue su secreto de firma a continuación."
     },
     "registration_policy_saved_successfully": "Política de registro guardada exitosamente",
     "registration_policy_settings_title": "Registro y verificación de identidad",

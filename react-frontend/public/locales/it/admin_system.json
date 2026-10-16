@@ -735,7 +735,7 @@
     "please_select_a_date": "Seleziona una data",
     "recent_failures": "Fallimenti recenti",
     "reg": {
-      "api_key_desc": "Chiave API per il provider di verifica dell'identità selezionato",
+      "api_key_desc": "La chiave API segreta dell’account della tua organizzazione presso questo fornitore.",
       "active": "Attivo",
       "available": "Disponibile",
       "cancel": "Cancellare",
@@ -837,7 +837,7 @@
       "post_reject": "Pubblica rifiuto",
       "post_reject_desc": "Cosa succede all'account di un membro se la sua richiesta viene respinta",
       "provider": "Fornitore",
-      "provider_credentials_desc": "Inserisci API credenziali per il provider di verifica dell'identità selezionato",
+      "provider_credentials_desc": "Lascia vuoti questi campi per eseguire le verifiche d’identità tramite l’account del fornitore della piattaforma. Inserisci le chiavi della tua organizzazione per eseguire e pagare le verifiche tramite il tuo account.",
       "provider_idenfy": "Identificazione del fornitore",
       "provider_jumio": "Fornitore Jumio",
       "provider_onfido": "Fornitore Onfido",
@@ -859,7 +859,7 @@
       "verification_settings": "Impostazioni di verifica",
       "verification_settings_desc": "Configura i requisiti di verifica dell'identità per le registrazioni di nuovi membri",
       "waitlist_info": "I membri in lista d'attesa vengono approvati manualmente da un amministratore",
-      "webhook_desc": "Utilizzato per verificare l'autenticità dei payload del webhook in entrata",
+      "webhook_desc": "Il segreto di firma dell’endpoint webhook registrato all’indirizzo qui sopra.",
       "your_community": "La tua comunità",
       "credentials_remove_confirm": "Rimuovere queste credenziali? Questa operazione non può essere annullata.",
       "n_configured_one": "{{count}} configurato",
@@ -873,7 +873,10 @@
       "total_codes_count_many": "Codici totali: {{count}}",
       "save_policy": "Salva la Politica di Registrazione",
       "understanding_modes": "Comprendere le modalità di registrazione",
-      "provider_stripe": "Fornitore Stripe"
+      "provider_stripe": "Fornitore Stripe",
+      "own_account_explainer": "Con le tue chiavi, ogni verifica e ogni risultato passano dall’account della tua organizzazione presso questo fornitore. Servono sia la chiave API sia il segreto di firma del webhook, altrimenti i risultati non possono raggiungere questa piattaforma.",
+      "webhook_url_label": "Indirizzo webhook da registrare presso il fornitore",
+      "webhook_url_desc": "Nella dashboard del fornitore, aggiungi questo indirizzo come endpoint webhook e incolla qui sotto il suo segreto di firma."
     },
     "registration_policy_saved_successfully": "Politica di registrazione salvata correttamente",
     "run_now": "Corri adesso",

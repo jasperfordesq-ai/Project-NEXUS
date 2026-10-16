@@ -745,7 +745,7 @@
     "please_select_a_date": "Please Select a Date",
     "recent_failures": "Recent Failures",
     "reg": {
-      "api_key_desc": "API key for the selected identity verification provider",
+      "api_key_desc": "The secret API key from your organisation's own account with this provider.",
       "active": "Active",
       "available": "Available",
       "cancel": "Cancel",
@@ -847,7 +847,7 @@
       "post_reject": "Post Reject",
       "post_reject_desc": "What happens to a member's account if their application is rejected",
       "provider": "Provider",
-      "provider_credentials_desc": "Enter API credentials for the selected identity verification provider",
+      "provider_credentials_desc": "Leave these empty to run identity checks through the platform's own provider account. Enter your organisation's keys to run checks, and pay for them, through your own account instead.",
       "provider_idenfy": "Provider Idenfy",
       "provider_jumio": "Provider Jumio",
       "provider_onfido": "Provider Onfido",
@@ -872,7 +872,7 @@
       "verification_settings": "Verification Settings",
       "verification_settings_desc": "Configure identity verification requirements for new member registrations",
       "waitlist_info": "Members on the waitlist are approved manually by an admin",
-      "webhook_desc": "Used to verify the authenticity of incoming webhook payloads",
+      "webhook_desc": "The signing secret of the webhook endpoint you registered at the address above.",
       "your_community": "Your Community",
       "credentials_remove_confirm": "Remove these credentials? This cannot be undone.",
       "n_configured_one": "{{count}} configured",
@@ -880,7 +880,10 @@
       "n_available_one": "{{count}} available",
       "n_available_other": "{{count}} available",
       "total_codes_count_one": "Total codes: {{count}}",
-      "total_codes_count_other": "Total codes: {{count}}"
+      "total_codes_count_other": "Total codes: {{count}}",
+      "own_account_explainer": "With your own keys, every check and every result goes through your organisation's account with this provider. Both the API key and the webhook signing secret are needed, or results cannot reach this platform.",
+      "webhook_url_label": "Webhook address to register with the provider",
+      "webhook_url_desc": "In your provider dashboard, add this address as a webhook endpoint and paste its signing secret below."
     },
     "registration_policy_saved_successfully": "Registration policy saved successfully",
     "registration_policy_settings_title": "Registration & Identity Verification",

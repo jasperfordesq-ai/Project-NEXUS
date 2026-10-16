@@ -105,7 +105,10 @@ class StripeIdentityProvider implements IdentityVerificationProviderInterface
 
     public function getSessionStatus(string $providerSessionId): array
     {
-        $apiKey = $this->getGlobalApiKey();
+        // The session was created with the key of the community that owns it
+        // (its own key when it stored one, else the platform's). Reading it
+        // back with any other key answers 404, so resolve the same key here.
+        $apiKey = $this->credentialsForSession($providerSessionId)['api_key'];
 
         // Expand verified_outputs to get name/DOB from the document
         $params = ['expand' => ['verified_outputs']];
@@ -180,7 +183,14 @@ class StripeIdentityProvider implements IdentityVerificationProviderInterface
             return false;
         }
 
-        $webhookSecret = $this->getGlobalWebhookSecret();
+        // A community that runs checks through its own Stripe account receives
+        // webhooks from THAT account, signed with the secret of the endpoint it
+        // registered there. The body is decoded only to find which session (and
+        // so which community) the event is about; nothing in it is trusted
+        // until the HMAC below has passed.
+        $decoded = json_decode($rawBody, true);
+        $providerSessionId = is_array($decoded) ? (string) ($decoded['data']['object']['id'] ?? '') : '';
+        $webhookSecret = $this->credentialsForSession($providerSessionId)['webhook_secret'];
         if (!$webhookSecret) {
             \Illuminate\Support\Facades\Log::warning('[StripeIdentityProvider] No webhook secret configured');
             return false;
@@ -214,7 +224,7 @@ class StripeIdentityProvider implements IdentityVerificationProviderInterface
     public function cancelSession(string $providerSessionId): bool
     {
         try {
-            $apiKey = $this->getGlobalApiKey();
+            $apiKey = $this->credentialsForSession($providerSessionId)['api_key'];
             $this->stripeRequest('POST', "/identity/verification_sessions/{$providerSessionId}/cancel", [], $apiKey);
             return true;
         } catch (\Throwable $e) {
@@ -232,12 +242,55 @@ class StripeIdentityProvider implements IdentityVerificationProviderInterface
         return TenantProviderCredentialService::hasCredentials($tenantId, $this->getSlug());
     }
 
+    /**
+     * The Stripe key and webhook secret that apply to an existing verification
+     * session: the owning community's own credentials when it stored them,
+     * otherwise the platform's. A session id that is unknown (or empty) means
+     * the platform's credentials.
+     *
+     * @return array{api_key:string,webhook_secret:string,tenant_id:?int,uses_tenant_key:bool,uses_tenant_webhook_secret:bool}
+     */
+    public function credentialsForSession(string $providerSessionId): array
+    {
+        $tenantId = null;
+        if ($providerSessionId !== '') {
+            try {
+                $session = IdentityVerificationSessionService::findByProviderSession($this->getSlug(), $providerSessionId);
+                $tenantId = $session && !empty($session['tenant_id']) ? (int) $session['tenant_id'] : null;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('[StripeIdentityProvider] Could not look up the session owner; using platform credentials: ' . $e->getMessage());
+            }
+        }
+
+        return $this->credentialsForTenant($tenantId);
+    }
+
+    /**
+     * @return array{api_key:string,webhook_secret:string,tenant_id:?int,uses_tenant_key:bool,uses_tenant_webhook_secret:bool}
+     */
+    public function credentialsForTenant(?int $tenantId): array
+    {
+        $stored = $tenantId ? (TenantProviderCredentialService::get($tenantId, $this->getSlug()) ?? []) : [];
+        $tenantKey = trim((string) ($stored['api_key'] ?? ''));
+        $tenantSecret = trim((string) ($stored['webhook_secret'] ?? ''));
+
+        return [
+            'api_key' => $tenantKey !== '' ? $tenantKey : $this->getGlobalApiKey(),
+            'webhook_secret' => $tenantSecret !== '' ? $tenantSecret : $this->getGlobalWebhookSecret(),
+            'tenant_id' => $tenantId,
+            'uses_tenant_key' => $tenantKey !== '',
+            'uses_tenant_webhook_secret' => $tenantSecret !== '',
+        ];
+    }
+
     // ─── Private helpers ─────────────────────────────────────────────────
 
     private function getApiKey(array $metadata): string
     {
         // Prefer tenant-specific key, fall back to global
-        return $metadata['api_key'] ?? $this->getGlobalApiKey();
+        $tenantKey = trim((string) ($metadata['api_key'] ?? ''));
+
+        return $tenantKey !== '' ? $tenantKey : $this->getGlobalApiKey();
     }
 
     private function getGlobalApiKey(): string

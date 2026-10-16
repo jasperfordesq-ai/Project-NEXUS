@@ -730,7 +730,7 @@
     "please_select_a_date": "Bitte wählen Sie ein Datum aus",
     "recent_failures": "Aktuelle Fehler",
     "reg": {
-      "api_key_desc": "API-Schlüssel für den ausgewählten Identitätsüberprüfungsanbieter",
+      "api_key_desc": "Der geheime API-Schlüssel aus dem eigenen Konto Ihrer Organisation bei diesem Anbieter.",
       "active": "Aktiv",
       "available": "Verfügbar",
       "cancel": "Stornieren",
@@ -830,7 +830,7 @@
       "post_reject": "Post-Ablehnung",
       "post_reject_desc": "Was passiert mit dem Konto eines Mitglieds, wenn sein Antrag abgelehnt wird?",
       "provider": "Anbieter",
-      "provider_credentials_desc": "Geben Sie API-Anmeldeinformationen für den ausgewählten Identitätsüberprüfungsanbieter ein",
+      "provider_credentials_desc": "Lassen Sie diese Felder leer, um Identitätsprüfungen über das Anbieterkonto der Plattform durchzuführen. Tragen Sie die Schlüssel Ihrer Organisation ein, um Prüfungen stattdessen über Ihr eigenes Konto durchzuführen und zu bezahlen.",
       "provider_idenfy": "Anbieteridentifizierung",
       "provider_jumio": "Anbieter Jumio",
       "provider_onfido": "Anbieter Onfido",
@@ -853,7 +853,7 @@
       "verification_settings": "Verifizierungseinstellungen",
       "verification_settings_desc": "Konfigurieren Sie Anforderungen zur Identitätsüberprüfung für die Registrierung neuer Mitglieder",
       "waitlist_info": "Mitglieder auf der Warteliste werden manuell von einem Administrator genehmigt",
-      "webhook_desc": "Wird verwendet, um die Authentizität eingehender Webhook-Nutzlasten zu überprüfen",
+      "webhook_desc": "Das Signaturgeheimnis des Webhook-Endpunkts, den Sie unter der obigen Adresse registriert haben.",
       "your_community": "Ihre Community",
       "credentials_remove_confirm": "Diese Anmeldeinformationen entfernen? Dies kann nicht rückgängig gemacht werden.",
       "n_configured_one": "{{count}}konfiguriert",
@@ -865,7 +865,10 @@
       "save_policy": "Registrierungsrichtlinie speichern",
       "understanding_modes": "Verständnis der Registrierungsmodi",
       "col_code": "Code",
-      "post_limited": "Beitrag Begrenzung"
+      "post_limited": "Beitrag Begrenzung",
+      "own_account_explainer": "Mit Ihren eigenen Schlüsseln laufen alle Prüfungen und Ergebnisse über das Konto Ihrer Organisation bei diesem Anbieter. Sowohl der API-Schlüssel als auch das Webhook-Signaturgeheimnis werden benötigt, sonst erreichen die Ergebnisse diese Plattform nicht.",
+      "webhook_url_label": "Beim Anbieter zu registrierende Webhook-Adresse",
+      "webhook_url_desc": "Fügen Sie diese Adresse im Dashboard Ihres Anbieters als Webhook-Endpunkt hinzu und tragen Sie dessen Signaturgeheimnis unten ein."
     },
     "registration_policy_saved_successfully": "Registrierungsrichtlinie erfolgreich gespeichert",
     "run_now": "Jetzt ausführen",

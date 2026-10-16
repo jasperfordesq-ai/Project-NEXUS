@@ -737,7 +737,7 @@
     "please_select_a_date": "Roghnaigh Dáta le do thoil",
     "recent_failures": "Teipeanna le Déanaí",
     "reg": {
-      "api_key_desc": "Eochair API don soláthraí fíoraithe céannachta roghnaithe",
+      "api_key_desc": "An eochair API rúnda ó chuntas d’eagraíochta féin leis an soláthraí seo.",
       "active": "Gníomhach",
       "available": "Ar fáil",
       "cancel": "Cealaigh",
@@ -839,7 +839,7 @@
       "post_reject": "Post Diúltaigh",
       "post_reject_desc": "Cad a tharlaíonn do chuntas comhalta má dhiúltaítear dá iarratas",
       "provider": "Soláthraí",
-      "provider_credentials_desc": "Cuir isteach dintiúir API don soláthraí fíoraithe céannachta roghnaithe",
+      "provider_credentials_desc": "Fág na réimsí seo folamh chun seiceálacha aitheantais a rith trí chuntas soláthraí an ardáin féin. Cuir isteach eochracha d’eagraíochta chun seiceálacha a rith, agus íoc astu, trí do chuntas féin ina ionad.",
       "provider_idenfy": "Soláthraí Aithin",
       "provider_jumio": "Soláthraí Jumio",
       "provider_onfido": "Soláthraí Onfido",
@@ -862,7 +862,7 @@
       "verification_settings": "Socruithe Fíoraithe",
       "verification_settings_desc": "Cumraigh ceanglais fíoraithe aitheantais le haghaidh clárúcháin ball nua",
       "waitlist_info": "Faomhann riarthóir de láimh na baill ar an liosta feithimh",
-      "webhook_desc": "Úsáidtear é chun barántúlacht na n-ualaí pálasta gréasáin isteach a fhíorú",
+      "webhook_desc": "Rún sínithe an chríochphointe webhook a chláraigh tú ag an seoladh thuas.",
       "your_community": "Do Phobal",
       "credentials_remove_confirm": "Bain na dintiúir seo? Ní féidir é seo a chealú.",
       "n_configured_one": "{{count}}cumraithe",
@@ -881,7 +881,10 @@
       "total_codes_count_many": "Cóid iomlána: {{count}}",
       "total_codes_count_two": "Cóid iomlána: {{count}}",
       "save_policy": "Sábháil Polasaí Clárúcháin",
-      "understanding_modes": "Ag Tuigbheáil Móidí Clárúcháin"
+      "understanding_modes": "Ag Tuigbheáil Móidí Clárúcháin",
+      "own_account_explainer": "Le d’eochracha féin, téann gach seiceáil agus gach toradh trí chuntas d’eagraíochta leis an soláthraí seo. Tá an eochair API agus rún sínithe an webhook araon ag teastáil, nó ní féidir le torthaí an t-ardán seo a shroicheadh.",
+      "webhook_url_label": "Seoladh webhook le clárú leis an soláthraí",
+      "webhook_url_desc": "I ndeais do sholáthraí, cuir an seoladh seo leis mar chríochphointe webhook agus greamaigh a rún sínithe thíos."
     },
     "registration_policy_saved_successfully": "D'éirigh le sábháil an pholasaí clárúcháin",
     "run_now": "Rith Anois",

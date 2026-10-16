@@ -738,7 +738,7 @@
     "please_select_a_date": "Proszę wybrać datę",
     "recent_failures": "Ostatnie awarie",
     "reg": {
-      "api_key_desc": "Klucz API dla wybranego dostawcy weryfikacji tożsamości",
+      "api_key_desc": "Tajny klucz API z własnego konta Twojej organizacji u tego dostawcy.",
       "active": "Aktywny",
       "available": "Dostępny",
       "cancel": "Anuluj",
@@ -840,7 +840,7 @@
       "post_reject": "Odrzucenie wpisu",
       "post_reject_desc": "Co stanie się z kontem członka, jeśli jego wniosek zostanie odrzucony",
       "provider": "Dostawca",
-      "provider_credentials_desc": "Wprowadź poświadczenia API dla wybranego dostawcy weryfikacji tożsamości",
+      "provider_credentials_desc": "Pozostaw te pola puste, aby weryfikacje tożsamości były wykonywane przez konto dostawcy należące do platformy. Wpisz klucze swojej organizacji, aby wykonywać i opłacać weryfikacje przez własne konto.",
       "provider_idenfy": "Identyfikacja dostawcy",
       "provider_jumio": "Dostawca Jumio",
       "provider_onfido": "Dostawca Onfido",
@@ -862,7 +862,7 @@
       "verification_settings": "Ustawienia weryfikacji",
       "verification_settings_desc": "Skonfiguruj wymagania dotyczące weryfikacji tożsamości dla nowych rejestracji członków",
       "waitlist_info": "Członkowie na liście oczekujących są zatwierdzani ręcznie przez administratora",
-      "webhook_desc": "Służy do weryfikowania autentyczności przychodzących ładunków elementu webhook",
+      "webhook_desc": "Sekret podpisu punktu końcowego webhooka zarejestrowanego pod powyższym adresem.",
       "your_community": "Twoja społeczność",
       "credentials_remove_confirm": "Usunąć te dane logowania? Tego nie można cofnąć.",
       "n_configured_one": "{{count}} skonfigurowany",
@@ -879,7 +879,10 @@
       "total_codes_count_many": "Łączna liczba kodów: {{count}}",
       "save_policy": "Zapisz Politykę Rejestracji",
       "understanding_modes": "Zrozumienie trybów rejestracji",
-      "provider_stripe": "Dostawca Stripe"
+      "provider_stripe": "Dostawca Stripe",
+      "own_account_explainer": "Z własnymi kluczami każda weryfikacja i każdy wynik przechodzą przez konto Twojej organizacji u tego dostawcy. Potrzebne są zarówno klucz API, jak i sekret podpisu webhooka, inaczej wyniki nie dotrą do tej platformy.",
+      "webhook_url_label": "Adres webhooka do zarejestrowania u dostawcy",
+      "webhook_url_desc": "W panelu dostawcy dodaj ten adres jako punkt końcowy webhooka i wklej poniżej jego sekret podpisu."
     },
     "registration_policy_saved_successfully": "Zasady rejestracji zostały pomyślnie zapisane",
     "run_now": "Uruchom teraz",

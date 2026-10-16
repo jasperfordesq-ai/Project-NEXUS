@@ -623,11 +623,56 @@ class MemberPremiumService
             'return_url' => $returnUrl,
         ];
         $stripeOptions = DonationStripeAccountService::stripeOptionsForAccountId($sub->stripe_account_id ?? null);
+        if ($stripeOptions) {
+            // A community's own (Express) account has no dashboard in which a
+            // portal configuration could have been saved, and Stripe refuses a
+            // portal session without one. Make sure one exists and name it.
+            $sessionParams['configuration'] = self::ensureConnectedPortalConfiguration($client, $stripeOptions, $tenantId);
+        }
         $session = $stripeOptions
             ? $client->billingPortal->sessions->create($sessionParams, $stripeOptions)
             : $client->billingPortal->sessions->create($sessionParams);
 
         return ['portal_url' => $session->url];
+    }
+
+    /**
+     * The Billing Portal configuration to use on a community's connected
+     * account: the first active one it already has, else a new one that lets a
+     * supporter see invoices, change their card and cancel at period end.
+     */
+    private static function ensureConnectedPortalConfiguration(\Stripe\StripeClient $client, array $stripeOptions, int $tenantId): string
+    {
+        $existing = $client->billingPortal->configurations->all(['limit' => 1, 'active' => true], $stripeOptions);
+        foreach (($existing->data ?? []) as $configuration) {
+            if (!empty($configuration->id)) {
+                return (string) $configuration->id;
+            }
+        }
+
+        $frontendUrl = rtrim(TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix(), '/');
+        $configuration = $client->billingPortal->configurations->create([
+            'business_profile' => [
+                'privacy_policy_url' => $frontendUrl . '/privacy',
+                'terms_of_service_url' => $frontendUrl . '/terms',
+            ],
+            'features' => [
+                'invoice_history' => ['enabled' => true],
+                'payment_method_update' => ['enabled' => true],
+                'subscription_cancel' => ['enabled' => true, 'mode' => 'at_period_end'],
+            ],
+            'metadata' => [
+                'nexus_tenant_id' => (string) $tenantId,
+                'nexus_kind' => 'member_premium',
+            ],
+        ], $stripeOptions);
+
+        Log::info('MemberPremium: created Billing Portal configuration on connected account', [
+            'tenant_id' => $tenantId,
+            'configuration_id' => $configuration->id ?? null,
+        ]);
+
+        return (string) $configuration->id;
     }
 
     /**

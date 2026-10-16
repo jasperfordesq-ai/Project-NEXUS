@@ -248,6 +248,23 @@ describe('RegistrationPolicySettings', () => {
     });
   });
 
+  // A community that brings its own provider keys must register the platform's
+  // webhook address in that provider's dashboard, or results never arrive.
+  it('shows each provider the webhook address to register, with the provider slug in it', async () => {
+    const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
+    render(<RegistrationPolicySettings />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Stripe Identity')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Stripe Identity'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/\/v2\/webhooks\/identity\/stripe_identity$/)).toBeInTheDocument();
+    });
+    expect(screen.getAllByText(/platform's own provider account/i).length).toBeGreaterThan(0);
+  });
+
   it('renders Save Policy button', async () => {
     const { RegistrationPolicySettings } = await import('./RegistrationPolicySettings');
     render(<RegistrationPolicySettings />);

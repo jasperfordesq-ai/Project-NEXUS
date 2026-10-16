@@ -735,7 +735,7 @@
     "please_select_a_date": "Selecione uma data",
     "recent_failures": "Falhas recentes",
     "reg": {
-      "api_key_desc": "Chave de API do provedor de verificação de identidade selecionado",
+      "api_key_desc": "A chave API secreta da conta da sua organização neste fornecedor.",
       "active": "Ativo",
       "available": "Disponível",
       "cancel": "Cancelar",
@@ -837,7 +837,7 @@
       "post_reject": "Pós-rejeição",
       "post_reject_desc": "O que acontece com a conta de um membro se sua inscrição for rejeitada",
       "provider": "Provedor",
-      "provider_credentials_desc": "Insira as credenciais da API para o provedor de verificação de identidade selecionado",
+      "provider_credentials_desc": "Deixe estes campos vazios para fazer as verificações de identidade através da conta do fornecedor da plataforma. Introduza as chaves da sua organização para fazer e pagar as verificações através da sua própria conta.",
       "provider_idenfy": "Identificação do provedor",
       "provider_jumio": "Provedor Jumio",
       "provider_onfido": "Provedor Onfido",
@@ -859,7 +859,7 @@
       "verification_settings": "Configurações de verificação",
       "verification_settings_desc": "Configurar requisitos de verificação de identidade para registros de novos membros",
       "waitlist_info": "Os membros da lista de espera são aprovados manualmente por um administrador",
-      "webhook_desc": "Usado para verificar a autenticidade de cargas úteis de webhook recebidas",
+      "webhook_desc": "O segredo de assinatura do ponto de receção de webhooks que registou no endereço acima.",
       "your_community": "Sua comunidade",
       "credentials_remove_confirm": "Remover essas credenciais? Isto não pode ser desfeito.",
       "n_configured_one": "{{count}}configurado",
@@ -873,7 +873,10 @@
       "total_codes_count_many": "Códigos totais: {{count}}",
       "save_policy": "Salvar Política de Registro",
       "understanding_modes": "Entendendo os Modos de Registro",
-      "provider_stripe": "Provedor Stripe"
+      "provider_stripe": "Provedor Stripe",
+      "own_account_explainer": "Com as suas próprias chaves, cada verificação e cada resultado passam pela conta da sua organização neste fornecedor. São necessários tanto a chave API como o segredo de assinatura do webhook; caso contrário, os resultados não chegam a esta plataforma.",
+      "webhook_url_label": "Endereço de webhook a registar no fornecedor",
+      "webhook_url_desc": "No painel do seu fornecedor, adicione este endereço como ponto de receção de webhooks e cole abaixo o respetivo segredo de assinatura."
     },
     "registration_policy_saved_successfully": "Política de registro salva com sucesso",
     "run_now": "Corra agora",

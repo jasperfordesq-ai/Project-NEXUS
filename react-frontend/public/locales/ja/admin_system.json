@@ -731,7 +731,7 @@
     "please_select_a_date": "日付を選択してください",
     "recent_failures": "最近の失敗",
     "reg": {
-      "api_key_desc": "選択した ID 検証プロバイダーの API キー",
+      "api_key_desc": "このプロバイダーにおける団体自身のアカウントのシークレット API キー。",
       "active": "アクティブ",
       "available": "利用可能",
       "cancel": "キャンセル",
@@ -833,7 +833,7 @@
       "post_reject": "投稿拒否",
       "post_reject_desc": "申請が拒否された場合、メンバーのアカウントはどうなりますか",
       "provider": "プロバイダー",
-      "provider_credentials_desc": "選択した ID 検証プロバイダーの API 資格情報を入力してください",
+      "provider_credentials_desc": "空のままにすると、本人確認はプラットフォーム自身のプロバイダーアカウントで実行されます。団体のキーを入力すると、確認の実行と支払いが団体自身のアカウントで行われます。",
       "provider_idenfy": "プロバイダーの識別",
       "provider_jumio": "プロバイダー ジュミオ",
       "provider_onfido": "プロバイダー Onfido",
@@ -855,7 +855,7 @@
       "verification_settings": "検証設定",
       "verification_settings_desc": "新規会員登録時の本人確認要件を設定する",
       "waitlist_info": "待機リストのメンバーは管理者によって手動で承認されます",
-      "webhook_desc": "受信した Webhook ペイロードの信頼性を検証するために使用されます",
+      "webhook_desc": "上記アドレスで登録した Webhook エンドポイントの署名シークレット。",
       "your_community": "あなたのコミュニティ",
       "credentials_remove_confirm": "これらの資格情報を削除しますか?これを元に戻すことはできません。",
       "n_configured_other": "{{count}} が設定されました",
@@ -866,7 +866,10 @@
       "total_codes_count_one": "合計コード: {{count}}",
       "save_policy": "登録ポリシーを保存",
       "understanding_modes": "登録モードの理解",
-      "provider_stripe": "プロバイダー Stripe"
+      "provider_stripe": "プロバイダー Stripe",
+      "own_account_explainer": "団体のキーを使うと、すべての確認と結果がこのプロバイダーにおける団体のアカウントを経由します。API キーと Webhook 署名シークレットの両方が必要です。どちらかが欠けると、結果がこのプラットフォームに届きません。",
+      "webhook_url_label": "プロバイダーに登録する Webhook アドレス",
+      "webhook_url_desc": "プロバイダーのダッシュボードで、このアドレスを Webhook エンドポイントとして追加し、その署名シークレットを下に貼り付けてください。"
     },
     "registration_policy_saved_successfully": "登録ポリシーが正常に保存されました",
     "run_now": "今すぐ実行",

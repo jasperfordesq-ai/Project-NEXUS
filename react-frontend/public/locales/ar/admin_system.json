@@ -739,7 +739,7 @@
     "please_select_a_date": "الرجاء تحديد التاريخ",
     "recent_failures": "الإخفاقات الأخيرة",
     "reg": {
-      "api_key_desc": "مفتاح API لموفر التحقق من الهوية المحدد",
+      "api_key_desc": "مفتاح API السري من حساب منظمتك الخاص لدى هذا المزوّد.",
       "active": "نشيط",
       "available": "متاح",
       "cancel": "إلغاء",
@@ -841,7 +841,7 @@
       "post_reject": "رفض المشاركة",
       "post_reject_desc": "ماذا يحدث لحساب العضو إذا تم رفض طلبه؟",
       "provider": "مزود",
-      "provider_credentials_desc": "أدخل بيانات اعتماد API لموفر التحقق من الهوية المحدد",
+      "provider_credentials_desc": "اترك هذه الحقول فارغة لإجراء عمليات التحقق من الهوية عبر حساب المنصة لدى مزوّد الخدمة. أدخل مفاتيح منظمتك لإجراء عمليات التحقق ودفع تكلفتها عبر حسابك الخاص بدلًا من ذلك.",
       "provider_idenfy": "معرف الموفر",
       "provider_jumio": "مقدم جوميو",
       "provider_onfido": "مزود اونفيدو",
@@ -863,7 +863,7 @@
       "verification_settings": "إعدادات التحقق",
       "verification_settings_desc": "تكوين متطلبات التحقق من الهوية لتسجيلات الأعضاء الجدد",
       "waitlist_info": "تتم الموافقة على الأعضاء الموجودين في قائمة الانتظار يدويًا بواسطة المسؤول",
-      "webhook_desc": "يُستخدم للتحقق من صحة حمولات webhook الواردة",
+      "webhook_desc": "سر توقيع نقطة نهاية الـ webhook التي سجّلتها على العنوان أعلاه.",
       "your_community": "مجتمعك",
       "credentials_remove_confirm": "هل تريد إزالة بيانات الاعتماد هذه؟ لا يمكن التراجع عن هذا.",
       "n_configured_few": "تم تكوين{{count}}",
@@ -886,7 +886,10 @@
       "total_codes_count_zero": "إجمالي الرموز: {{count}}",
       "save_policy": "حفظ سياسة التسجيل",
       "understanding_modes": "فهم أوضاع التسجيل",
-      "provider_stripe": "مزود Stripe"
+      "provider_stripe": "مزود Stripe",
+      "own_account_explainer": "باستخدام مفاتيحك الخاصة، تمر كل عملية تحقق وكل نتيجة عبر حساب منظمتك لدى هذا المزوّد. يلزم كل من مفتاح API وسر توقيع الـ webhook، وإلا فلن تصل النتائج إلى هذه المنصة.",
+      "webhook_url_label": "عنوان الـ webhook الذي يجب تسجيله لدى المزوّد",
+      "webhook_url_desc": "في لوحة تحكم المزوّد، أضف هذا العنوان كنقطة نهاية للـ webhook والصق سر التوقيع الخاص بها أدناه."
     },
     "registration_policy_saved_successfully": "تم حفظ سياسة التسجيل بنجاح",
     "run_now": "تشغيل الآن",

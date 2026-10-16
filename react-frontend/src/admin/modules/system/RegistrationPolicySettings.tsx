@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Button, Spinner, Chip, Input, Select, SelectItem, useDisclosure, Accordion, AccordionItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tooltip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, useConfirm } from '@/components/ui';
+import { Card, CardBody, CardHeader, Button, Spinner, Chip, Input, Select, SelectItem, useDisclosure, Accordion, AccordionItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tooltip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Snippet, useConfirm } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +34,18 @@ import { useToast,
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { SecretInput } from '../../components/SecretInput';
+
+/**
+ * The address a community registers in its own provider dashboard so results
+ * reach this server. Same base as the API client (VITE_API_BASE, else /api on
+ * this host); read from the environment directly so the module is not tied to
+ * the API client's exports.
+ */
+function identityWebhookUrl(providerSlug: string): string {
+  const apiBase = (import.meta.env.VITE_API_BASE as string | undefined) || '/api';
+  const base = /^https?:\/\//i.test(apiBase) ? apiBase : `${window.location.origin}${apiBase}`;
+  return `${base.replace(/\/+$/, '')}/v2/webhooks/identity/${providerSlug}`;
+}
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -598,6 +610,16 @@ export function RegistrationPolicySettings() {
                         {description && (
                           <p className="text-sm text-muted">{description}</p>
                         )}
+
+                        <p className="text-sm text-muted">{t('system.reg.own_account_explainer')}</p>
+
+                        <div className="space-y-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                            {t('system.reg.webhook_url_label')}
+                          </p>
+                          <Snippet size="sm" symbol="">{identityWebhookUrl(p.slug)}</Snippet>
+                          <p className="text-xs text-muted">{t('system.reg.webhook_url_desc')}</p>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <SecretInput

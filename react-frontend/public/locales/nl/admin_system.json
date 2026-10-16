@@ -734,7 +734,7 @@
     "please_select_a_date": "Selecteer een datum",
     "recent_failures": "Recente mislukkingen",
     "reg": {
-      "api_key_desc": "API sleutel voor de geselecteerde identiteitsverificatieprovider",
+      "api_key_desc": "De geheime API-sleutel van het eigen account van uw organisatie bij deze aanbieder.",
       "active": "Actief",
       "available": "Beschikbaar",
       "cancel": "Annuleren",
@@ -836,7 +836,7 @@
       "post_reject": "Post afwijzen",
       "post_reject_desc": "Wat gebeurt er met de account van een lid als zijn of haar aanvraag wordt afgewezen?",
       "provider": "Aanbieder",
-      "provider_credentials_desc": "Voer API inloggegevens in voor de geselecteerde identiteitsverificatieprovider",
+      "provider_credentials_desc": "Laat deze velden leeg om identiteitscontroles via het eigen account van het platform bij de aanbieder uit te voeren. Vul de sleutels van uw organisatie in om controles via uw eigen account uit te voeren en te betalen.",
       "provider_idenfy": "Provider identificeren",
       "provider_jumio": "Aanbieder Jumio",
       "provider_onfido": "Aanbieder Onfido",
@@ -858,7 +858,7 @@
       "verification_settings": "Verificatie-instellingen",
       "verification_settings_desc": "Configureer vereisten voor identiteitsverificatie voor nieuwe ledenregistraties",
       "waitlist_info": "Leden op de wachtlijst worden handmatig goedgekeurd door een beheerder",
-      "webhook_desc": "Wordt gebruikt om de authenticiteit van inkomende webhook-payloads te verifiëren",
+      "webhook_desc": "Het ondertekeningsgeheim van het webhook-eindpunt dat u op het bovenstaande adres heeft geregistreerd.",
       "your_community": "Jouw gemeenschap",
       "credentials_remove_confirm": "Deze inloggegevens verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "n_configured_one": "{{count}} geconfigureerd",
@@ -869,7 +869,10 @@
       "total_codes_count_other": "Totaal aantal codes: {{count}}",
       "save_policy": "Registratiebeleid opslaan",
       "understanding_modes": "Begrijpen van registratiemodi",
-      "provider_stripe": "Stripe-provider"
+      "provider_stripe": "Stripe-provider",
+      "own_account_explainer": "Met uw eigen sleutels lopen alle controles en resultaten via het account van uw organisatie bij deze aanbieder. Zowel de API-sleutel als het webhook-ondertekeningsgeheim zijn nodig, anders kunnen resultaten dit platform niet bereiken.",
+      "webhook_url_label": "Webhookadres om bij de aanbieder te registreren",
+      "webhook_url_desc": "Voeg dit adres in het dashboard van uw aanbieder toe als webhook-eindpunt en plak het ondertekeningsgeheim hieronder."
     },
     "registration_policy_saved_successfully": "Registratiebeleid succesvol opgeslagen",
     "run_now": "Ren nu",

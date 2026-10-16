@@ -738,7 +738,7 @@
     "please_select_a_date": "Veuillez sélectionner une date",
     "recent_failures": "Échecs récents",
     "reg": {
-      "api_key_desc": "Clé API pour le fournisseur de vérification d'identité sélectionné",
+      "api_key_desc": "La clé API secrète du compte de votre organisation chez ce fournisseur.",
       "active": "Actif",
       "available": "Disponible",
       "cancel": "Annuler",
@@ -840,7 +840,7 @@
       "post_reject": "Post-rejet",
       "post_reject_desc": "Qu'arrive-t-il au compte d'un membre si sa candidature est rejetée",
       "provider": "Fournisseur",
-      "provider_credentials_desc": "Saisissez les informations d'identification de l'API pour le fournisseur de vérification d'identité sélectionné",
+      "provider_credentials_desc": "Laissez ces champs vides pour effectuer les vérifications d’identité via le compte du fournisseur de la plateforme. Saisissez les clés de votre organisation pour effectuer et payer les vérifications via votre propre compte.",
       "provider_idenfy": "Identifier le fournisseur",
       "provider_jumio": "Fournisseur Jumio",
       "provider_onfido": "Fournisseur Onfido",
@@ -865,7 +865,7 @@
       "verification_settings": "Paramètres de vérification",
       "verification_settings_desc": "Configurer les exigences de vérification d'identité pour les inscriptions de nouveaux membres",
       "waitlist_info": "Les membres sur la liste d'attente sont approuvés manuellement par un administrateur",
-      "webhook_desc": "Utilisé pour vérifier l'authenticité des charges utiles du webhook entrant",
+      "webhook_desc": "Le secret de signature du point de terminaison webhook enregistré à l’adresse ci-dessus.",
       "your_community": "Votre communauté",
       "credentials_remove_confirm": "Supprimer ces informations d'identification ? Cela ne peut pas être annulé.",
       "n_configured_many": "{{count}}configuré",
@@ -876,7 +876,10 @@
       "n_available_other": "{{count}}disponible",
       "total_codes_count_many": "Codes totaux: {{count}}",
       "total_codes_count_one": "Codes totaux: {{count}}",
-      "total_codes_count_other": "Codes totaux: {{count}}"
+      "total_codes_count_other": "Codes totaux: {{count}}",
+      "own_account_explainer": "Avec vos propres clés, chaque vérification et chaque résultat passent par le compte de votre organisation chez ce fournisseur. La clé API et le secret de signature du webhook sont tous deux nécessaires, sinon les résultats ne peuvent pas parvenir à cette plateforme.",
+      "webhook_url_label": "Adresse de webhook à enregistrer chez le fournisseur",
+      "webhook_url_desc": "Dans le tableau de bord de votre fournisseur, ajoutez cette adresse comme point de terminaison webhook et collez son secret de signature ci-dessous."
     },
     "registration_policy_saved_successfully": "Politique d'inscription enregistrée avec succès",
     "registration_policy_settings_title": "Enregistrement et vérification d'identité",
