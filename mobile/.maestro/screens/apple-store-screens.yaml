@@ -62,7 +62,7 @@ appId: ie.project.nexus
 - extendedWaitUntil:
     visible: "Save Password\\?"
     timeout: 20000
-  optional: true
+    optional: true
 - tapOn:
     point: "33%,61%"
 - waitForAnimationToEnd:
