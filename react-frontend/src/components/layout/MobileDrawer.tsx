@@ -178,6 +178,13 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
 
   const aboutNavItems = resolveMobileSection('about');
 
+  const communityPagesNavItems = resolveMobileSection('community-pages');
+  const headerPages = tenant?.menu_pages?.header ?? [];
+  const configuredColumnTitle = tenant?.settings?.header_column_title;
+  const communityPagesTitle =
+    (typeof configuredColumnTitle === 'string' && configuredColumnTitle.trim()) ||
+    t('sections.community_pages');
+
   const legalNavItems = resolveMobileSection('legal');
 
   // Track previous pathname to only close on actual navigation
@@ -465,6 +472,25 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
                   }))}
                 </div>
               </AccordionItem>
+
+              {/* The community's own pages (pinned + admin-chosen header pages) */}
+              {communityPagesNavItems.length + headerPages.length > 0 ? (
+                <AccordionItem
+                  key="community-pages"
+                  id="community-pages"
+                  title={communityPagesTitle}
+                  aria-label={t('aria.community_pages_navigation')}
+                >
+                  <div className="space-y-1">
+                    {communityPagesNavItems.map(renderNavLink)}
+                    {headerPages.map((p) => renderNavLink({
+                      label: p.title,
+                      href: `/page/${p.slug}`,
+                      icon: FileText,
+                    }))}
+                  </div>
+                </AccordionItem>
+              ) : null}
 
               {/* Legal */}
               <AccordionItem key="legal" id="legal" title={t('sections.legal')} aria-label={t('aria.legal_navigation')}>

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
+import { render, screen, fireEvent, waitFor, within } from '@/test/test-utils';
 
 // --- Mocks ---
 
@@ -114,6 +114,7 @@ const i18nMap: Record<string, string> = {
   'aria.explore_navigation': 'Explore navigation',
   'aria.federation_navigation': 'Federation navigation',
   'aria.about_navigation': 'About navigation',
+  'sections.community_pages': 'Our Pages', 'aria.community_pages_navigation': 'Our Pages navigation',
   'aria.legal_navigation': 'Legal navigation',
   'sections.language': 'Language',
   'nav.timebanking': 'Timebanking',
@@ -551,7 +552,7 @@ describe('MobileDrawer', () => {
   });
 
   describe('Tenant-specific about items', () => {
-    it('shows hOUR Timebank specific items when slug is hour-timebank', () => {
+    it('renders About without the Timebank Ireland pinned pages', () => {
       setupDefaultMocks({
         tenant: {
           tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' },
@@ -560,13 +561,66 @@ describe('MobileDrawer', () => {
         },
       });
       render(<MobileDrawer {...defaultProps} />);
-      // The five hOUR Timebank pages moved out of About into the new 'community-pages'
-      // section; the phone drawer renders that section in a later task, so for now
-      // they must simply not appear under About.
       const aboutTrigger = expandSection(/^about$/i);
-      expect(aboutTrigger).toBeDefined();
-      expect(screen.queryByText('Partner With Us')).not.toBeInTheDocument();
-      expect(screen.queryByText('Strategic Plan')).not.toBeInTheDocument();
+      const aboutItem = aboutTrigger.closest('[data-slot="accordion-item"]') as HTMLElement;
+      expect(aboutItem).not.toBeNull();
+      expect(within(aboutItem).queryByText('Strategic Plan')).not.toBeInTheDocument();
+    });
+
+    it('renders a community pages section after About with pinned and header pages under the configured title', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 2,
+            name: 'hOUR Timebank',
+            slug: 'hour-timebank',
+            settings: { header_column_title: 'Impact' },
+            menu_pages: { header: [{ title: 'Annual Review', slug: 'annual-review' }] },
+          },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+      render(<MobileDrawer {...defaultProps} />);
+      const aboutTrigger = screen.getAllByRole('button', { name: /^about$/i })[0]!;
+      const impactTrigger = screen.getAllByRole('button', { name: /^impact$/i })[0]!;
+      expect(impactTrigger).toBeDefined();
+      expect(
+        aboutTrigger.compareDocumentPosition(impactTrigger) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expandSection(/^impact$/i);
+      expect(screen.getByText('Strategic Plan')).toBeInTheDocument();
+      expect(screen.getByText('Partner With Us')).toBeInTheDocument();
+      expect(screen.getByText('Annual Review')).toBeInTheDocument();
+    });
+
+    it('falls back to the default title when the configured one is not a usable string', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 2,
+            name: 'hOUR Timebank',
+            slug: 'hour-timebank',
+            settings: { header_column_title: true },
+          },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+      render(<MobileDrawer {...defaultProps} />);
+      expect(screen.getAllByRole('button', { name: /^our pages$/i }).length).toBeGreaterThan(0);
+    });
+
+    it('does not render the community pages section when it would be empty', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: { id: 3, name: 'Other', slug: 'other' },
+          hasFeature: vi.fn(() => false),
+          hasModule: vi.fn(() => true),
+        },
+      });
+      render(<MobileDrawer {...defaultProps} />);
+      expect(screen.queryByRole('button', { name: /our pages/i })).not.toBeInTheDocument();
     });
 
     it('does NOT show hOUR Timebank items for other tenants', () => {
