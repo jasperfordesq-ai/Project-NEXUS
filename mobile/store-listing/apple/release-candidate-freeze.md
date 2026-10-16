@@ -15,8 +15,7 @@ screenshots and App Review notes from referring to a different build than the on
 - [x] The Apple Team ID (`UUQ2A2KD52`) is in the generated `apple-app-site-association`;
   it is live only once the React frontend is deployed.
 - [x] EAS production credentials exist: distribution certificate and provisioning profile
-  (2026-10-16). The APNs key exists at Apple but is not yet uploaded to EAS. No credential is
-  copied into Git.
+  and APNs key (2026-10-16). No credential is copied into Git.
 - [x] The candidate comes from a reviewed Git commit, with no unaccounted working-tree
   changes. Unrelated concurrent work is either committed separately or excluded from the
   candidate by an explicit path review.

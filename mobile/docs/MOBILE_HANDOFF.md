@@ -151,8 +151,9 @@ now done — Team ID `UUQ2A2KD52`, App Store Connect app `6823712395`, EAS-manag
 and the first signed build (1.10.0 build 8) is in TestFlight. What still stands between
 that and a public release: current 6.9-inch screenshots (the capture workflow was fixed the
 same day and needs a push to run), the reviewer demo account (it now demands an
-authenticator code, which App Review cannot supply), the APNs key upload to EAS, and the
-owner's EU trader declaration. See `store-listing/apple/release-candidate-freeze.md`.
+authenticator code, which App Review cannot supply — use a plain member without one) and a
+TestFlight walk on a real iPhone. The APNs key is on EAS and the EU trader declaration
+("not a trader") is recorded. See `store-listing/apple/release-candidate-freeze.md`.
 
 The owner's stated goal is publishing to the App Store once their developer account is
 approved. **No engineering work blocks that.** Everything outstanding flows from the account:
