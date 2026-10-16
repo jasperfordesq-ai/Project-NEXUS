@@ -97,7 +97,7 @@ Configured EAS credentials:
 - Push Notifications (FCM V1): Google Service Account Key assigned to `ie.project.nexus`.
 - Push Notifications (FCM Legacy): intentionally empty.
 - Play Store submissions Google Service Account: not configured yet. Configure this later when submitting directly from EAS to Google Play.
-- Apple distribution certificate, provisioning profile and APNs key: not configured or verified yet; complete after the Apple Developer Program enrollment is approved.
+- Apple distribution certificate and provisioning profile: EAS-managed, created 2026-10-16 (team `UUQ2A2KD52`, expire 2026-10-16 +1y). An App Store Connect API key ("EAS build and submit", Admin) is held outside git in `.secrets.local/apple/`; `eas.json` names it under `submit.production.ios`, so builds and TestFlight uploads need no Apple password. The APNs key `T6LWGFU5D6` is also in `.secrets.local/apple/` but is NOT yet uploaded to EAS (the CLI's team-ID prompt could not be driven from an agent terminal) — iOS push stays silent until it is.
 
 EAS environment variables:
 
@@ -126,8 +126,9 @@ Before release builds:
 5. Confirm the EAS project ID is available through `EAS_PROJECT_ID` or `EXPO_PUBLIC_EAS_PROJECT_ID`.
 6. Build a new native binary; push, camera, and location changes cannot be delivered by OTA alone.
 
-For iOS, configure APNs credentials through EAS after Apple enrollment is approved,
-then prove delivery on a real iPhone. Firebase's `GoogleService-Info.plist` is not an
+For iOS, upload the APNs key held in `.secrets.local/apple/` to EAS (`eas credentials -p ios`
+→ Push Notifications → Add a new push key → use the existing .p8), then prove delivery on a
+real iPhone. Firebase's `GoogleService-Info.plist` is not an
 iOS prerequisite for this Expo notification path.
 
 ## Where a built APK can be put on the live server

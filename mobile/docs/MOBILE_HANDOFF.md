@@ -144,7 +144,15 @@ Xcode-selector step is the signal that the two have realigned.
 this app fine. The mismatch is GitHub's runner image having moved ahead of Expo 54's
 toolchain.
 
-## 🔴 iOS App Store readiness (2026-09-07)
+## 🔴 iOS App Store readiness (2026-09-07; account steps DONE 2026-10-16)
+
+**2026-10-16:** the organisation enrolment was approved and every row in the table below is
+now done — Team ID `UUQ2A2KD52`, App Store Connect app `6823712395`, EAS-managed signing,
+and the first signed build (1.10.0 build 8) is in TestFlight. What still stands between
+that and a public release: current 6.9-inch screenshots (the capture workflow was fixed the
+same day and needs a push to run), the reviewer demo account (it now demands an
+authenticator code, which App Review cannot supply), the APNs key upload to EAS, and the
+owner's EU trader declaration. See `store-listing/apple/release-candidate-freeze.md`.
 
 The owner's stated goal is publishing to the App Store once their developer account is
 approved. **No engineering work blocks that.** Everything outstanding flows from the account:

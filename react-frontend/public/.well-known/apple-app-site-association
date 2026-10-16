@@ -1,0 +1,47 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "UUQ2A2KD52.ie.project.nexus"
+        ],
+        "components": [
+          {
+            "/": "/admin/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/admin-legacy/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/broker/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/super-admin/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/auth/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/verify-identity/callback*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*",
+            "comment": "Open member-facing Project NEXUS links in Timebank Global."
+          }
+        ]
+      }
+    ]
+  }
+}

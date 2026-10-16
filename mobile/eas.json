@@ -132,7 +132,11 @@
         "track": "internal"
       },
       "ios": {
-        "ascAppId": "APPLE_APP_STORE_CONNECT_APP_ID",
+        "ascAppId": "6823712395",
+        "appleTeamId": "UUQ2A2KD52",
+        "ascApiKeyPath": "../.secrets.local/apple/AuthKey_4D9F3259KZ.p8",
+        "ascApiKeyIssuerId": "d7d42c97-496d-4add-a373-0347a78d360b",
+        "ascApiKeyId": "4D9F3259KZ",
         "metadataPath": "./store.config.js"
       }
     }

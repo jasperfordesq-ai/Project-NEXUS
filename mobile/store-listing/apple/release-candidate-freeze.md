@@ -9,13 +9,14 @@ screenshots and App Review notes from referring to a different build than the on
 
 ## Freeze prerequisites
 
-- [ ] Apple Developer Program membership is active and agreements are accepted.
-- [ ] App Store Connect app record exists and the real numeric Apple ID replaces the
-  `APPLE_APP_STORE_CONNECT_APP_ID` placeholder outside source control.
-- [ ] The Apple Team ID is configured outside source control; Associated Domains and the
-  production `apple-app-site-association` file agree with it.
-- [ ] EAS production credentials exist: distribution certificate, provisioning profile and
-  APNs key. No credential is copied into Git.
+- [x] Apple Developer Program membership is active and agreements are accepted (organisation enrolment, 2026-10-16).
+- [x] App Store Connect app record exists (Apple ID `6823712395`, 2026-10-16) and the real
+  numeric Apple ID replaces the `APPLE_APP_STORE_CONNECT_APP_ID` placeholder in `eas.json`.
+- [x] The Apple Team ID (`UUQ2A2KD52`) is in the generated `apple-app-site-association`;
+  it is live only once the React frontend is deployed.
+- [x] EAS production credentials exist: distribution certificate and provisioning profile
+  (2026-10-16). The APNs key exists at Apple but is not yet uploaded to EAS. No credential is
+  copied into Git.
 - [x] The candidate comes from a reviewed Git commit, with no unaccounted working-tree
   changes. Unrelated concurrent work is either committed separately or excluded from the
   candidate by an explicit path review.
@@ -23,14 +24,14 @@ screenshots and App Review notes from referring to a different build than the on
   any path under `mobile/` is staged, modified or untracked. The commit is also embedded as
   `expo.extra.releaseCommit` in the temporary EAS app configuration.
 - [x] Mobile tests, typecheck, lint and Expo Doctor pass at the candidate commit.
-- [ ] `npm run verify:ios-release` passes without the two expected enrolment-dependent
-  failures: the real Team ID/AASA association and numeric App Store Connect Apple ID.
+- [x] `npm run verify:ios-release` passes (2026-10-16).
 - [x] Backend notification tests and the paid-promotion consent tests pass at the same
   backend commit used by production.
 - [x] The unsigned iPhone 16 Pro Max Simulator tour produces the four accepted public
   screenshots and passes checksum, opacity, dimensions, page-content OCR and visual review
   at source commit `87bb709908bf1412d8a7f9c90df6eec9c312f8d4` (run `33319960815`).
-- [ ] A signed EAS production build processes successfully in App Store Connect/TestFlight.
+- [x] A signed EAS production build processes successfully in App Store Connect/TestFlight
+  (1.10.0 build 8, EAS build `96307fd4-9356-4475-afac-7602a440aadf`, 2026-10-16).
 - [ ] A real-iPhone journey pass covers login, tenant selection, permissions, push receipt
   and tap from background/terminated state, deep links, camera/photos/microphone/location,
   Stripe physical-goods return, account deletion, report/mute/block and accessibility.
