@@ -76,10 +76,21 @@ function formatAmount(cents: number): string {
   });
 }
 
-function isTierStripeSynced(tier: MemberPremiumTier): boolean {
+/**
+ * A tier counts as synced only when its Stripe prices exist in the account
+ * payments currently go to. After a community connects its own Stripe
+ * account, prices made earlier in the platform account are no longer the
+ * ones checkout will use (checkout re-creates them on first use), so the
+ * chip must say "Needs sync" rather than reassure.
+ */
+function isTierStripeSynced(tier: MemberPremiumTier, activeStripeAccountId: string): boolean {
   const monthSynced = !!tier.stripe_price_id_monthly || tier.monthly_price_cents === 0;
   const yearSynced = !!tier.stripe_price_id_yearly || tier.yearly_price_cents === 0;
-  return monthSynced && yearSynced;
+  const hasPaidPrice = tier.monthly_price_cents > 0 || tier.yearly_price_cents > 0;
+  const priceAccount = tier.stripe_price_account_id || 'platform_default';
+  const expectedAccount = activeStripeAccountId || 'platform_default';
+  const inActiveAccount = !hasPaidPrice || priceAccount === expectedAccount;
+  return monthSynced && yearSynced && inActiveAccount;
 }
 
 export function MemberPremiumAdminPage() {
@@ -96,6 +107,7 @@ export function MemberPremiumAdminPage() {
   const [saving, setSaving] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [stripeConnectAccountId, setStripeConnectAccountId] = useState('');
+  const [activeStripeAccountId, setActiveStripeAccountId] = useState('');
   const [paymentRoute, setPaymentRoute] = useState<'platform_default' | 'tenant_connect'>('platform_default');
   const [fallbackReason, setFallbackReason] = useState<string | null>(null);
   const [accountStatus, setAccountStatus] = useState<DonationSupportAccountStatus | null>(null);
@@ -123,6 +135,7 @@ export function MemberPremiumAdminPage() {
       const res = await memberPremiumAdminApi.getSettings();
       const settings = res.data?.settings;
       setStripeConnectAccountId(settings?.stripe_connect_account_id ?? '');
+      setActiveStripeAccountId(settings?.active_stripe_account_id ?? '');
       setPaymentRoute(settings?.payment_route ?? 'platform_default');
       setFallbackReason(settings?.fallback_reason ?? null);
       setAccountStatus(settings?.account_status ?? null);
@@ -224,7 +237,7 @@ export function MemberPremiumAdminPage() {
             : item,
         ));
       }
-      if (!syncedTier || !isTierStripeSynced(syncedTier)) {
+      if (!syncedTier || !isTierStripeSynced(syncedTier, activeStripeAccountId)) {
         toast.error(t('member_premium_admin.toasts.stripe_sync_failed'));
         await load();
         return;
@@ -470,7 +483,7 @@ export function MemberPremiumAdminPage() {
               </TableHeader>
               <TableBody>
                 {tiers.map((tier) => {
-                  const fullySynced = isTierStripeSynced(tier);
+                  const fullySynced = isTierStripeSynced(tier, activeStripeAccountId);
                   return (
                     <TableRow key={tier.id}>
                       <TableCell>{tier.name}</TableCell>

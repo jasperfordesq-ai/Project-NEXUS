@@ -270,6 +270,66 @@ describe('MemberPremiumAdminPage', () => {
     });
   });
 
+  // Prices made in the platform account stop being the ones checkout uses
+  // once the community's own Stripe account is live, so "Synced" would be a
+  // false reassurance until Sync to Stripe (or the first checkout) re-creates them.
+  it('shows "Needs sync" when the prices live in the platform account but payments now go to the community account', async () => {
+    mockMemberPremiumApi.getSettings.mockResolvedValueOnce({
+      data: {
+        settings: {
+          stripe_connect_account_id: 'acct_test_123456',
+          active_stripe_account_id: 'acct_test_123456',
+          payment_route: 'tenant_connect',
+          account_status: {
+            state: 'ready',
+            charges_enabled: true,
+            payouts_enabled: true,
+            details_submitted: true,
+            requirements_due: [],
+            disabled_reason: null,
+            error: null,
+          },
+        },
+      },
+    });
+    mockMemberPremiumApi.listTiers.mockResolvedValue({
+      data: { tiers: [{ ...TIER_A, stripe_price_account_id: 'platform_default' }] },
+    });
+    render(<MemberPremiumAdminPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/needs sync/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/^synced$/i)).not.toBeInTheDocument();
+  });
+
+  it('shows "Synced" when the prices live in the community account that payments go to', async () => {
+    mockMemberPremiumApi.getSettings.mockResolvedValueOnce({
+      data: {
+        settings: {
+          stripe_connect_account_id: 'acct_test_123456',
+          active_stripe_account_id: 'acct_test_123456',
+          payment_route: 'tenant_connect',
+          account_status: {
+            state: 'ready',
+            charges_enabled: true,
+            payouts_enabled: true,
+            details_submitted: true,
+            requirements_due: [],
+            disabled_reason: null,
+            error: null,
+          },
+        },
+      },
+    });
+    mockMemberPremiumApi.listTiers.mockResolvedValue({
+      data: { tiers: [{ ...TIER_A, stripe_price_account_id: 'acct_test_123456' }] },
+    });
+    render(<MemberPremiumAdminPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/^synced$/i)).toBeInTheDocument();
+    });
+  });
+
   it('shows "Needs sync" chip when stripe IDs are missing', async () => {
     const unsynced = {
       ...TIER_A,
