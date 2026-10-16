@@ -352,6 +352,10 @@ jobs:
             mkdir -p "$RUNNER_TEMP/maestro-output"
             xcrun simctl terminate "$SIMULATOR_UDID" ie.project.nexus || true
             xcrun simctl uninstall "$SIMULATOR_UDID" ie.project.nexus || true
+            # A signed build keeps its token in the Keychain, which survives an
+            # uninstall; without this a retry starts signed in and the tour,
+            # which begins at the login screen, fails at once (run 38965867800).
+            xcrun simctl keychain "$SIMULATOR_UDID" reset || true
             xcrun simctl install "$SIMULATOR_UDID" .ios-simulator-cache/TimebankGlobal.app
             xcrun simctl launch --console "$SIMULATOR_UDID" ie.project.nexus \
               > "$RUNNER_TEMP/failure-evidence/app-console-attempt-$attempt.log" 2>&1 &

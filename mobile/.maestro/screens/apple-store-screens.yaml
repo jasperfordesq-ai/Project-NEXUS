@@ -52,6 +52,23 @@ appId: ie.project.nexus
 - extendedWaitUntil:
     visible: "Community Feed"
     timeout: 60000
+# A signed Simulator build makes iOS offer "Save Password?" over the feed, and the
+# next tap only dismisses it (run 38965867800: the Listings tap was swallowed). A
+# tap on the status bar dismisses the sheet and is harmless when there is none.
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    point: "50%,2%"
+- waitForAnimationToEnd:
+    timeout: 8000
+# The first-run push prompt card is real UI but not what the store page should show.
+- runFlow:
+    when:
+      visible: "Turn on notifications"
+    commands:
+      - tapOn: "Not now"
+      - waitForAnimationToEnd:
+          timeout: 8000
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: 01-feed
