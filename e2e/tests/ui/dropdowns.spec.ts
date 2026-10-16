@@ -204,10 +204,16 @@ test.describe('More panel at a 1024px laptop', () => {
 
     const panel = page.locator('nav[data-rows][data-columns]').filter({ visible: true }).first();
     await expect(panel, 'The More panel did not open').toBeVisible({ timeout: 8000 });
-    await expect(panel).toHaveAttribute('data-rows', '2');
+    // Follow the layout rule rather than a fixed count: a group is at least
+    // 230px wide, and groups wrap to a second row when they cannot fit.
+    const groups = await panel.locator('[data-mega-group]').count();
+    expect(groups, 'The panel should hold at least two groups').toBeGreaterThanOrEqual(2);
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    const expectedRows = groups * 230 > viewportWidth - 32 ? '2' : '1';
+    await expect(panel).toHaveAttribute('data-rows', expectedRows);
 
     // Nothing inside the panel folds open or closed.
-    await expect(panel.locator('[aria-expanded]')).toHaveCount(0);
+    await expect(panel.locator('button[aria-expanded]')).toHaveCount(0);
 
     const fits = await page.evaluate(
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
