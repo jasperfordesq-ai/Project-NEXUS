@@ -299,6 +299,29 @@ jobs:
         run: |
           app_path='.ios-simulator-cache/TimebankGlobal.app'
           test -d "$app_path"
+          # An unsigned build carries no entitlements, so the Simulator's Keychain
+          # refuses every write ("A required entitlement isn't present"). The app
+          # requires an encrypted write to keep a sign-in, so it shows "Unable to
+          # sign in" although the server said yes (run 38961797989). Ad-hoc signing
+          # with a keychain group is enough for the Simulator; no Apple credential
+          # is involved and the real store build is signed by EAS.
+          entitlements="$RUNNER_TEMP/simulator-keychain.entitlements"
+          cat > "$entitlements" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyLists-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>application-identifier</key>
+            <string>UUQ2A2KD52.ie.project.nexus</string>
+            <key>keychain-access-groups</key>
+            <array>
+              <string>UUQ2A2KD52.ie.project.nexus</string>
+            </array>
+          </dict>
+          </plist>
+          PLIST
+          codesign --force --sign - --entitlements "$entitlements" --timestamp=none "$app_path"
+          codesign -d --entitlements - "$app_path" | grep -q 'keychain-access-groups'
           xcrun simctl install "$SIMULATOR_UDID" "$app_path"
           xcrun simctl launch "$SIMULATOR_UDID" ie.project.nexus
 
