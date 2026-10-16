@@ -86,15 +86,15 @@ export interface DesktopMegaPanelProps {
  * `src/styles/tokens.css`. The `--text-*` status tokens are the
  * contrast-measured foreground shades, so the icon reads on its 12% tint.
  */
-const TONE_COLOUR: Record<MegaPanelTone, string> = {
-  main: 'var(--accent)',
-  engage: 'var(--accent)',
-  explore: 'var(--accent)',
-  about: 'var(--accent)',
-  progress: 'var(--text-warning)',
-  tools: 'var(--text-muted)',
-  partner: 'var(--text-success)',
-  community: 'var(--text-danger)',
+const TONE_CLASS: Record<MegaPanelTone, string> = {
+  main: '[--mega-tone:var(--accent)]',
+  engage: '[--mega-tone:var(--accent)]',
+  explore: '[--mega-tone:var(--accent)]',
+  about: '[--mega-tone:var(--accent)]',
+  progress: '[--mega-tone:var(--text-warning)]',
+  tools: '[--mega-tone:var(--text-muted)]',
+  partner: '[--mega-tone:var(--text-success)]',
+  community: '[--mega-tone:var(--text-danger)]',
 };
 
 const BOUNDS_SELECTOR = '[data-mega-panel-bounds]';
@@ -321,14 +321,12 @@ export function DesktopMegaPanel({
     const perRow = Math.max(layout.columnsPerRow, 1);
     const row = layout.rows === 2 ? Math.floor(index / perRow) : 0;
     const indexInRow = layout.rows === 2 ? index % perRow : index;
-    const toneStyle = { '--mega-tone': TONE_COLOUR[group.tone] } as CSSProperties;
 
     return (
       <div
         key={group.key}
         data-mega-group={group.key}
-        style={toneStyle}
-        className={`min-w-[var(--mega-col-min)] px-2.5 py-2 ${DIVIDER_CLASSES[`${indexInRow > 0}-${row > 0}`]}`}
+        className={`${TONE_CLASS[group.tone]} min-w-[var(--mega-col-min)] px-2.5 py-2 ${DIVIDER_CLASSES[`${indexInRow > 0}-${row > 0}`]}`}
       >
         <p className="mb-1 px-2.5 pt-1 text-xs font-semibold uppercase tracking-wider text-theme-subtle">
           {group.title}
