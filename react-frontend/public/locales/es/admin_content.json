@@ -1345,7 +1345,7 @@
     "header_column_desc": "Se muestra en el menú Más, bajo el título de columna de tu comunidad",
     "location_header": "Encabezado",
     "header_column_title": "Título de la columna del encabezado",
-    "header_column_title_help": "Se muestra encima de tus páginas en el menú Más, en el sitio web y en la aplicación móvil. Déjalo vacío para usar «Nuestras páginas».",
+    "header_column_title_help": "Se muestra encima de tus páginas en el menú Más y en el menú del sitio web en un teléfono. Déjalo vacío para usar «Nuestras páginas».",
     "header_column_title_saved": "Título de la columna del encabezado guardado",
     "header_column_title_failed": "No se pudo guardar el título de la columna del encabezado",
     "meta_description_menu_hint": "Los primeros 45 caracteres también aparecen bajo el nombre de la página en el menú.",

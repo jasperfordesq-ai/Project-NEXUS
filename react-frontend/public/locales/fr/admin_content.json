@@ -1347,7 +1347,7 @@
     "header_column_desc": "Affichée dans le menu Plus, sous le titre de colonne de votre communauté",
     "location_header": "En-tête",
     "header_column_title": "Titre de la colonne de l'en-tête",
-    "header_column_title_help": "Affiché au-dessus de vos pages dans le menu Plus, sur le site web et dans l'application mobile. Laissez vide pour utiliser « Nos pages ».",
+    "header_column_title_help": "Affiché au-dessus de vos pages dans le menu Plus, et dans le menu du site web sur un téléphone. Laissez vide pour utiliser « Nos pages ».",
     "header_column_title_saved": "Titre de la colonne de l'en-tête enregistré",
     "header_column_title_failed": "Impossible d'enregistrer le titre de la colonne de l'en-tête",
     "meta_description_menu_hint": "Les 45 premiers caractères apparaissent aussi sous le nom de la page dans le menu.",

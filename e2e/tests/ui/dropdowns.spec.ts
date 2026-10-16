@@ -198,7 +198,7 @@ test.describe('More panel at a 1024px laptop', () => {
   test('opens with every group visible in two rows and no horizontal overflow', async ({ page }) => {
     const trigger = firstVisible(page.getByRole('button', { name: /^More$/i }));
     await expect(trigger, 'No visible More menu at 1024px').toBeVisible({ timeout: 15000 });
-    await expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
     await trigger.click();
 

@@ -1337,7 +1337,7 @@
     "header_column_desc": "「その他」メニューで、コミュニティの列タイトルの下に表示されます",
     "location_header": "ヘッダー",
     "header_column_title": "ヘッダー列のタイトル",
-    "header_column_title_help": "「その他」メニュー、ウェブサイト、スマホアプリで、ページの上に表示されます。空欄にすると「私たちのページ」が使われます。",
+    "header_column_title_help": "「その他」メニューと、スマホで表示するウェブサイトのメニューで、ページの上に表示されます。空欄にすると「私たちのページ」が使われます。",
     "header_column_title_saved": "ヘッダー列のタイトルを保存しました",
     "header_column_title_failed": "ヘッダー列のタイトルを保存できませんでした",
     "meta_description_menu_hint": "最初の45文字は、メニューのページ名の下にも表示されます。",

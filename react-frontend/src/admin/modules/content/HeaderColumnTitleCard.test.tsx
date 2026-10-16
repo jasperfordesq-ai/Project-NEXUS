@@ -9,9 +9,13 @@ import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const mockToast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }));
+const mockRefreshTenant = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockSettings = vi.hoisted(() => ({ get: vi.fn(), update: vi.fn() }));
 
-vi.mock('@/contexts', () => createMockContexts({ useToast: () => mockToast }));
+vi.mock('@/contexts', () => createMockContexts({
+  useToast: () => mockToast,
+  useTenant: () => ({ tenant: { id: 2, name: 'Test Tenant', slug: 'test' }, refreshTenant: mockRefreshTenant, tenantPath: (p: string) => p, hasFeature: vi.fn((_key: string) => true), hasModule: vi.fn((_key: string) => true) }),
+}));
 vi.mock('../../api/adminApi', () => ({ adminSettings: mockSettings }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
@@ -38,6 +42,7 @@ describe('HeaderColumnTitleCard', () => {
 
     await waitFor(() => expect(mockSettings.update).toHaveBeenCalledWith({ header_column_title: 'Our Work' }));
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    expect(mockRefreshTenant).toHaveBeenCalledTimes(1);
   });
 
   it('shows the failure toast when saving fails', async () => {
@@ -51,6 +56,7 @@ describe('HeaderColumnTitleCard', () => {
 
     await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
     expect(mockToast.success).not.toHaveBeenCalled();
+    expect(mockRefreshTenant).not.toHaveBeenCalled();
   });
 
   it('keeps Save disabled and shows the failure toast when loading fails', async () => {

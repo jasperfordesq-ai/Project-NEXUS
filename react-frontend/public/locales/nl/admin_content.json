@@ -1342,7 +1342,7 @@
     "header_column_desc": "Getoond in het Meer-menu onder de kolomtitel van je gemeenschap",
     "location_header": "Kop",
     "header_column_title": "Titel van de kopkolom",
-    "header_column_title_help": "Getoond boven je pagina's in het Meer-menu, op de website en in de telefoon-app. Laat leeg om \"Onze pagina's\" te gebruiken.",
+    "header_column_title_help": "Getoond boven je pagina's in het Meer-menu en in het menu van de website op een telefoon. Laat leeg om \"Onze pagina's\" te gebruiken.",
     "header_column_title_saved": "Titel van de kopkolom opgeslagen",
     "header_column_title_failed": "Kon de titel van de kopkolom niet opslaan",
     "meta_description_menu_hint": "De eerste 45 tekens verschijnen ook onder de naam van de pagina in het menu.",

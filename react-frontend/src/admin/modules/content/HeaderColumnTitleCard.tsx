@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { logError } from '@/lib/logger';
 import { Button, Card, CardBody, Input } from '@/components/ui';
 import { adminSettings } from '../../api/adminApi';
@@ -21,6 +21,7 @@ const MAX_LENGTH = 30;
 export function HeaderColumnTitleCard() {
   const { t } = useTranslation('admin_content');
   const toast = useToast();
+  const { refreshTenant } = useTenant();
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -56,6 +57,8 @@ export function HeaderColumnTitleCard() {
       if (res?.success) {
         setTitle(title.trim());
         toast.success(t('content.header_column_title_saved'));
+        // So this admin's own header shows the new title without a reload.
+        void refreshTenant();
       } else {
         toast.error(t('content.header_column_title_failed'));
       }

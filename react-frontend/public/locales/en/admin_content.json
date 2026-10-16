@@ -1160,7 +1160,7 @@
     "header_column_desc": "Shown in the More menu under your community's column title",
     "location_header": "Header",
     "header_column_title": "Header column title",
-    "header_column_title_help": "Shown above your pages in the More menu, on the website and in the phone app. Leave empty to use \"Our Pages\".",
+    "header_column_title_help": "Shown above your pages in the More menu, and in the website's menu on a phone. Leave empty to use \"Our Pages\".",
     "header_column_title_saved": "Header column title saved",
     "header_column_title_failed": "Could not save the header column title",
     "meta_description_menu_hint": "The first 45 characters also appear under the page's name in the menu.",

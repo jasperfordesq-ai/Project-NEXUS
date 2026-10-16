@@ -26,6 +26,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -179,6 +180,7 @@ export function DesktopMegaPanel({
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const panelId = useId();
 
   const visibleGroups = useMemo(() => groups.filter(group => group.items.length > 0), [groups]);
   const hasGroups = visibleGroups.length > 0;
@@ -360,8 +362,8 @@ export function DesktopMegaPanel({
       </div>
       <Button
         data-mega-trigger
-        aria-haspopup="true"
         aria-expanded={isOpen}
+        aria-controls={isOpen ? panelId : undefined}
         variant="light"
         size="sm"
         onPress={() => onOpenChange(!isOpen)}
@@ -378,6 +380,7 @@ export function DesktopMegaPanel({
       {isOpen ? (
         <div
           ref={panelRef}
+          id={panelId}
           data-mega-panel
           data-position={position}
           style={panelStyle}

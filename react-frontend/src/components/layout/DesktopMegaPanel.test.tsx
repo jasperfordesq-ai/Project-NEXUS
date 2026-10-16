@@ -130,7 +130,7 @@ function getItems() {
 }
 
 function getTrigger() {
-  return document.querySelector<HTMLButtonElement>('button[aria-haspopup="true"]')!;
+  return document.querySelector<HTMLButtonElement>('button[data-mega-trigger]')!;
 }
 
 function itemButton(label: string) {
@@ -150,12 +150,13 @@ describe('DesktopMegaPanel', () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it('renders the trigger with popup semantics', () => {
+    it('renders the trigger with disclosure semantics, not menu semantics', () => {
       renderPanel({ isOpen: false });
       const trigger = getTrigger();
       expect(trigger).toBeInTheDocument();
-      expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+      expect(trigger).not.toHaveAttribute('aria-haspopup');
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(trigger).not.toHaveAttribute('aria-controls');
       expect(trigger).toHaveTextContent('More');
       expect(getNav()).toBeNull();
     });
@@ -164,6 +165,9 @@ describe('DesktopMegaPanel', () => {
       renderPanel();
       expect(getTrigger()).toHaveAttribute('aria-expanded', 'true');
       expect(getNav()).toBeInTheDocument();
+      const panel = document.querySelector<HTMLElement>('[data-mega-panel]')!;
+      expect(panel.id).not.toBe('');
+      expect(getTrigger()).toHaveAttribute('aria-controls', panel.id);
     });
 
     it('drops empty groups and renders one column per surviving group', () => {

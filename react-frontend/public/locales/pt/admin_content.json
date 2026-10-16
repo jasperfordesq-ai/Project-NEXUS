@@ -1342,7 +1342,7 @@
     "header_column_desc": "Mostrada no menu Mais, sob o título de coluna da sua comunidade",
     "location_header": "Cabeçalho",
     "header_column_title": "Título da coluna do cabeçalho",
-    "header_column_title_help": "Mostrado acima das suas páginas no menu Mais, no site e na aplicação para telemóvel. Deixe vazio para usar «As nossas páginas».",
+    "header_column_title_help": "Mostrado acima das suas páginas no menu Mais e no menu do site num telemóvel. Deixe vazio para usar «As nossas páginas».",
     "header_column_title_saved": "Título da coluna do cabeçalho guardado",
     "header_column_title_failed": "Não foi possível guardar o título da coluna do cabeçalho",
     "meta_description_menu_hint": "Os primeiros 45 caracteres também aparecem sob o nome da página no menu.",

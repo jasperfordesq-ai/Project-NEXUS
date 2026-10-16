@@ -1342,7 +1342,7 @@
     "header_column_desc": "Wird im Menü „Mehr“ unter dem Spaltentitel Ihrer Gemeinschaft angezeigt",
     "location_header": "Kopfzeile",
     "header_column_title": "Titel der Kopfzeilen-Spalte",
-    "header_column_title_help": "Wird im Menü „Mehr“ über Ihren Seiten angezeigt, auf der Website und in der Handy-App. Leer lassen, um „Unsere Seiten“ zu verwenden.",
+    "header_column_title_help": "Wird über Ihren Seiten im Menü „Mehr“ und im Menü der Website auf dem Handy angezeigt. Leer lassen, um „Unsere Seiten“ zu verwenden.",
     "header_column_title_saved": "Titel der Kopfzeilen-Spalte gespeichert",
     "header_column_title_failed": "Der Titel der Kopfzeilen-Spalte konnte nicht gespeichert werden",
     "meta_description_menu_hint": "Die ersten 45 Zeichen erscheinen auch unter dem Namen der Seite im Menü.",

@@ -1344,7 +1344,7 @@
     "header_column_desc": "Mostrata nel menu Altro, sotto il titolo di colonna della tua comunità",
     "location_header": "Intestazione",
     "header_column_title": "Titolo della colonna dell'intestazione",
-    "header_column_title_help": "Mostrato sopra le tue pagine nel menu Altro, sul sito web e nell'app per telefono. Lascia vuoto per usare «Le nostre pagine».",
+    "header_column_title_help": "Mostrato sopra le tue pagine nel menu Altro e nel menu del sito web su un telefono. Lascia vuoto per usare «Le nostre pagine».",
     "header_column_title_saved": "Titolo della colonna dell'intestazione salvato",
     "header_column_title_failed": "Impossibile salvare il titolo della colonna dell'intestazione",
     "meta_description_menu_hint": "I primi 45 caratteri compaiono anche sotto il nome della pagina nel menu.",
