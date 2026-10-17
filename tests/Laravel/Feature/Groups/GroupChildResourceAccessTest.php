@@ -43,8 +43,6 @@ final class GroupChildResourceAccessTest extends TestCase
     private int $otherMediaId;
     private int $legacyPublicMediaId;
     private int $traversalMediaId;
-    private int $collectionId;
-    private int $archivedCollectionId;
 
     protected function setUp(): void
     {
@@ -133,13 +131,6 @@ final class GroupChildResourceAccessTest extends TestCase
             "groups/{$this->testTenantId}/{$this->activeGroupId}/media/../../secret.jpg",
             (int) $this->member->id,
         );
-
-        $this->collectionId = $this->insertCollection('Visible and concealed parents');
-        $this->insertCollectionItem($this->collectionId, $this->activeGroupId, 0);
-        $this->insertCollectionItem($this->collectionId, $this->archivedGroupId, 1);
-        $this->insertCollectionItem($this->collectionId, $this->foreignGroupId, 2);
-        $this->archivedCollectionId = $this->insertCollection('Archived only');
-        $this->insertCollectionItem($this->archivedCollectionId, $this->archivedGroupId, 0);
     }
 
     public function test_member_content_http_matrix_covers_nonmember_pending_member_admin_foreign_and_archived(): void
@@ -305,36 +296,6 @@ final class GroupChildResourceAccessTest extends TestCase
         $this->apiPost("/v2/groups/{$this->activeGroupId}/media")->assertBadRequest();
     }
 
-    public function test_collections_filter_each_group_through_parent_overview_access(): void
-    {
-        $this->authenticateAs($this->nonMember);
-        $collection = $this->apiGet("/v2/group-collections/{$this->collectionId}")->assertOk();
-        $this->assertSame(
-            [$this->activeGroupId],
-            array_map('intval', array_column($collection->json('data.groups'), 'id')),
-        );
-        $this->apiGet("/v2/group-collections/{$this->archivedCollectionId}")->assertNotFound();
-
-        $indexIds = array_map('intval', array_column(
-            $this->apiGet('/v2/group-collections')->assertOk()->json('data'),
-            'id',
-        ));
-        $this->assertContains($this->collectionId, $indexIds);
-        $this->assertNotContains($this->archivedCollectionId, $indexIds);
-
-        $this->authenticateAs($this->tenantAdmin);
-        $adminCollection = $this->apiGet("/v2/group-collections/{$this->collectionId}")->assertOk();
-        $this->assertEqualsCanonicalizing(
-            [$this->activeGroupId, $this->archivedGroupId],
-            array_map('intval', array_column($adminCollection->json('data.groups'), 'id')),
-        );
-        $this->assertNotContains(
-            $this->foreignGroupId,
-            array_map('intval', array_column($adminCollection->json('data.groups'), 'id')),
-        );
-        $this->apiGet("/v2/group-collections/{$this->archivedCollectionId}")->assertOk();
-    }
-
     private function authenticateAs(User $user): void
     {
         Sanctum::actingAs($user, ['*']);
@@ -411,29 +372,6 @@ final class GroupChildResourceAccessTest extends TestCase
             'caption' => 'Protected test media',
             'file_size' => 24,
             'created_at' => now(),
-        ]);
-    }
-
-    private function insertCollection(string $name): int
-    {
-        return (int) DB::table('group_collections')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'name' => $name,
-            'description' => 'Collection access fixture.',
-            'sort_order' => 0,
-            'is_active' => true,
-            'created_by' => $this->tenantAdmin->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    private function insertCollectionItem(int $collectionId, int $groupId, int $sortOrder): void
-    {
-        DB::table('group_collection_items')->insert([
-            'collection_id' => $collectionId,
-            'group_id' => $groupId,
-            'sort_order' => $sortOrder,
         ]);
     }
 }

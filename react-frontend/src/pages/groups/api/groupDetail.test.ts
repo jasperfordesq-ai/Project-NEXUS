@@ -18,7 +18,6 @@ import {
   listGroupInvites,
   listGroupJoinRequests,
   listGroupMembers,
-  listGroupTags,
   removeGroupMember,
   revokeGroupInvite,
   sendGroupInvites,
@@ -77,14 +76,12 @@ describe('group-detail adapter', () => {
     await expect(getGroupDetail(8)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
 
-  it('lists tags and requests through exact read routes', async () => {
+  it('lists join requests through the exact read route', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
 
-    await expect(listGroupTags(8)).resolves.toEqual([]);
     await expect(listGroupJoinRequests(8)).resolves.toEqual([]);
 
-    expect(api.get).toHaveBeenNthCalledWith(1, '/v2/groups/8/tags', { signal: undefined });
-    expect(api.get).toHaveBeenNthCalledWith(2, '/v2/groups/8/requests', { signal: undefined });
+    expect(api.get).toHaveBeenCalledWith('/v2/groups/8/requests', { signal: undefined });
   });
 
   it('loads member 21 through signed cursor paging and binds normalized server search to the cursor route', async () => {

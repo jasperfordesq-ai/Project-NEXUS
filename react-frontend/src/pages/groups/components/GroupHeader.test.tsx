@@ -53,7 +53,6 @@ const makeGroup = (overrides: Partial<Group> = {}): Group => ({
 
 const defaultProps = {
   group: makeGroup(),
-  groupTags: [],
   userIsMember: false,
   userIsAdmin: false,
   isAuthenticated: true,
@@ -209,20 +208,6 @@ describe('GroupHeader', () => {
       b.getAttribute('aria-label')?.toLowerCase().includes('notif') || b.getAttribute('aria-label')?.toLowerCase().includes('setting')
     );
     expect(notifBtn).toBeDefined();
-  });
-
-  it('renders tags when provided', () => {
-    render(
-      <GroupHeader
-        {...defaultProps}
-        groupTags={[
-          { id: 1, name: 'Volunteering', color: 'green' },
-          { id: 2, name: 'Local', color: undefined },
-        ]}
-      />
-    );
-    expect(screen.getByText('Volunteering')).toBeInTheDocument();
-    expect(screen.getByText('Local')).toBeInTheDocument();
   });
 
   it('shows "view pending requests" button for private group admin before loading', () => {

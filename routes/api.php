@@ -719,11 +719,6 @@ Route::post('/v2/groups/{id}/invites/email', [\App\Http\Controllers\Api\GroupInv
 Route::delete('/v2/groups/{id}/invites/{inviteId}', [\App\Http\Controllers\Api\GroupInviteController::class, 'revoke'])->middleware('throttle:groups-invite-write');
 Route::get('/v2/groups/invite/{token}', [\App\Http\Controllers\Api\GroupInviteController::class, 'show'])->middleware('throttle:groups-invite-read');
 Route::post('/v2/groups/invite/{token}/accept', [\App\Http\Controllers\Api\GroupInviteController::class, 'accept'])->middleware('throttle:groups-invite-write');
-Route::get('/v2/groups/{id}/tags', [\App\Http\Controllers\Api\GroupTagController::class, 'index']);
-Route::put('/v2/groups/{id}/tags', [\App\Http\Controllers\Api\GroupTagController::class, 'update']);
-Route::get('/v2/group-tags', [\App\Http\Controllers\Api\GroupTagController::class, 'allTags']);
-Route::get('/v2/group-tags/popular', [\App\Http\Controllers\Api\GroupTagController::class, 'popular']);
-Route::get('/v2/group-tags/suggest', [\App\Http\Controllers\Api\GroupTagController::class, 'suggest']);
 Route::get('/v2/groups/{id}/questions', [\App\Http\Controllers\Api\GroupQAController::class, 'index'])->middleware('group.tab:qa');
 Route::post('/v2/groups/{id}/questions', [\App\Http\Controllers\Api\GroupQAController::class, 'ask'])->middleware('group.tab:qa');
 Route::get('/v2/groups/{id}/questions/{questionId}', [\App\Http\Controllers\Api\GroupQAController::class, 'show'])->middleware('group.tab:qa');
@@ -764,8 +759,6 @@ Route::post('/v2/groups/{id}/scheduled-posts', [\App\Http\Controllers\Api\GroupS
 Route::delete('/v2/groups/{id}/scheduled-posts/{postId}', [\App\Http\Controllers\Api\GroupScheduledPostController::class, 'cancel']);
 Route::get('/v2/groups/{id}/notification-prefs', [\App\Http\Controllers\Api\GroupNotificationPrefController::class, 'get']);
 Route::put('/v2/groups/{id}/notification-prefs', [\App\Http\Controllers\Api\GroupNotificationPrefController::class, 'set']);
-Route::get('/v2/group-collections', [\App\Http\Controllers\Api\GroupCollectionController::class, 'index']);
-Route::get('/v2/group-collections/{id}', [\App\Http\Controllers\Api\GroupCollectionController::class, 'show']);
 Route::get('/v2/groups/{id}/mentions/suggest', [\App\Http\Controllers\Api\GroupMentionController::class, 'suggestions']);
 });
 Route::middleware('feature:connections')->group(function () {
@@ -2574,18 +2567,6 @@ Route::post('/v2/admin/groups/{id}/transfer-ownership', [\App\Http\Controllers\A
 Route::post('/v2/admin/groups/{id}/merge', [\App\Http\Controllers\Api\AdminGroupsController::class, 'mergeGroup']);
 Route::post('/v2/admin/groups/{id}/clone', [\App\Http\Controllers\Api\AdminGroupsController::class, 'cloneGroup']);
 Route::get('/v2/admin/groups/{id}/audit-log', [\App\Http\Controllers\Api\AdminGroupsController::class, 'auditLog']);
-Route::get('/v2/admin/group-tags', [\App\Http\Controllers\Api\AdminGroupsController::class, 'listTags']);
-Route::post('/v2/admin/group-tags', [\App\Http\Controllers\Api\AdminGroupsController::class, 'createTag']);
-Route::delete('/v2/admin/group-tags/{tagId}', [\App\Http\Controllers\Api\AdminGroupsController::class, 'deleteTag']);
-Route::get('/v2/admin/group-collections', [\App\Http\Controllers\Api\AdminGroupsController::class, 'listCollections']);
-Route::post('/v2/admin/group-collections', [\App\Http\Controllers\Api\AdminGroupsController::class, 'createCollection']);
-Route::put('/v2/admin/group-collections/{id}', [\App\Http\Controllers\Api\AdminGroupsController::class, 'updateCollection']);
-Route::delete('/v2/admin/group-collections/{id}', [\App\Http\Controllers\Api\AdminGroupsController::class, 'deleteCollection']);
-Route::put('/v2/admin/group-collections/{id}/groups', [\App\Http\Controllers\Api\AdminGroupsController::class, 'setCollectionGroups']);
-Route::get('/v2/admin/group-auto-assign-rules', [\App\Http\Controllers\Api\AdminGroupsController::class, 'listAutoAssignRules']);
-Route::post('/v2/admin/group-auto-assign-rules', [\App\Http\Controllers\Api\AdminGroupsController::class, 'createAutoAssignRule']);
-Route::put('/v2/admin/group-auto-assign-rules/{id}', [\App\Http\Controllers\Api\AdminGroupsController::class, 'updateAutoAssignRule']);
-Route::delete('/v2/admin/group-auto-assign-rules/{id}', [\App\Http\Controllers\Api\AdminGroupsController::class, 'deleteAutoAssignRule']);
 });
 Route::get('/v2/admin/timebanking/stats', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'stats']);
 Route::get('/v2/admin/timebanking/alerts', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'alerts']);

@@ -230,7 +230,6 @@ function useAdminNav(): NavSection[] {
         { label: t('group_types'), href: '/admin/groups/types', icon: FolderTree },
         { label: t('group_recommendations'), href: '/admin/groups/recommendations', icon: Brain },
         { label: t('group_ranking'), href: '/admin/groups/ranking', icon: Trophy },
-        { label: t('group_organization'), href: '/admin/groups/organization', icon: Tags, keywords: keyword(t('search_keywords.group_organization')) },
       ] : []),
       // Event Settings holds the "Who can create Events" policy. It was
       // previously reachable only via Module Configuration → Events → Configure,

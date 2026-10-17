@@ -46,8 +46,8 @@ final class GroupFeatureBoundaryTest extends TestCase
 
         // 143 since the legacy GET /api/groups directory was retired (F-145);
         // 144 with GET /v2/groups/types (directory type filter); 134 once the
-        // ten group-exchange routes moved to their own switch (HELP-12).
-        self::assertCount(134, $routes, 'The end-user Groups API route inventory changed.');
+        // ten group-exchange routes moved to their own switch (HELP-12); 127 once the unused group tags and collections routes were removed.
+        self::assertCount(127, $routes, 'The end-user Groups API route inventory changed.');
         foreach ($routes as $route) {
             self::assertContains(
                 'feature:groups',
@@ -224,9 +224,7 @@ final class GroupFeatureBoundaryTest extends TestCase
         $uri = $route->uri();
         $prefixes = [
             'api/v2/groups',
-            'api/v2/group-tags',
             'api/v2/group-templates',
-            'api/v2/group-collections',
             'api/v2/group-chatroom',
             'api/v2/team-tasks',
             'api/v2/team-documents',

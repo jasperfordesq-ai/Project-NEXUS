@@ -32,7 +32,6 @@ class GroupDataExportService
         'announcements',
         'events',
         'files',
-        'tags',
         'custom_fields',
         'qa',
         'wiki',
@@ -135,7 +134,6 @@ class GroupDataExportService
             'announcements' => self::exportAnnouncements($groupId, $tenantId),
             'files' => self::exportFileMetadata($groupId, $tenantId),
             'events' => self::exportEvents($groupId, $tenantId),
-            'tags' => GroupTagService::getForGroup($groupId),
             'custom_fields' => GroupCustomFieldService::getValues($groupId),
             'settings' => self::exportSettings($groupId, $tenantId),
             'qa' => [

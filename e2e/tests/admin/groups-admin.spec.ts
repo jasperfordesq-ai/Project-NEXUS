@@ -33,8 +33,6 @@ interface AdminGroupsHarness {
   marker: string;
   originalGroupConfig: Record<string, boolean | number | string>;
   cleanupTypeIds: Set<number>;
-  cleanupTagIds: Set<number>;
-  cleanupRuleIds: Set<number>;
 }
 
 interface JsonEnvelope<T> {
@@ -253,8 +251,6 @@ async function createAdminFixture(admin: ActorSession, member: ActorSession, mar
       marker,
       originalGroupConfig,
       cleanupTypeIds: new Set(),
-      cleanupTagIds: new Set(),
-      cleanupRuleIds: new Set(),
     };
   } catch (error) {
     await apiContext.delete(apiUrl(`/v2/admin/groups/${groupId}`), { headers: headers(admin.token) });
@@ -274,22 +270,6 @@ async function cleanupAdminFixture(current: AdminGroupsHarness): Promise<void> {
     failures.push(`group config restore ${configRestore.status()}: ${JSON.stringify(await responseBody(configRestore))}`);
   }
 
-  for (const ruleId of current.cleanupRuleIds) {
-    const response = await apiContext.delete(apiUrl(`/v2/admin/group-auto-assign-rules/${ruleId}`), {
-      headers: headers(current.admin.token),
-    });
-    if (![200, 204, 404].includes(response.status())) {
-      failures.push(`rule ${ruleId} DELETE ${response.status()}: ${JSON.stringify(await responseBody(response))}`);
-    }
-  }
-  for (const tagId of current.cleanupTagIds) {
-    const response = await apiContext.delete(apiUrl(`/v2/admin/group-tags/${tagId}`), {
-      headers: headers(current.admin.token),
-    });
-    if (![200, 204, 404].includes(response.status())) {
-      failures.push(`tag ${tagId} DELETE ${response.status()}: ${JSON.stringify(await responseBody(response))}`);
-    }
-  }
   for (const typeId of current.cleanupTypeIds) {
     const response = await apiContext.delete(apiUrl(`/v2/admin/groups/types/${typeId}`), {
       headers: headers(current.admin.token),
@@ -414,7 +394,6 @@ test('maps every Groups admin route and linked geocode alias', async ({ page }) 
     ['/admin/groups/types', 'Group Types'],
     ['/admin/groups/recommendations', 'Group Recommendations'],
     ['/admin/groups/ranking', 'Group Ranking'],
-    ['/admin/groups/organization', 'Group Organization'],
     // Legacy aliases redirect to the gated Groups list (F-533) instead of
     // rendering the ungated "not migrated" geocode stub.
     ['/admin/group-locations', 'Group List'],
@@ -639,89 +618,6 @@ test('writes and restores canonical tenant-wide Groups configuration', async ({ 
     }>;
     expect(restoredBody.data?.config?.content_filter_enabled).toBe(originalValue);
   }
-});
-
-test('creates and deletes a tag, then creates, toggles, and deletes a same-tenant auto-assignment rule', async ({ page }) => {
-  const current = getHarness();
-  const tagName = `E2E Tag ${current.marker}`;
-  const ruleValue = `e2e-location-${current.marker}`;
-  await gotoHeading(page, '/admin/groups/organization', 'Group Organization');
-
-  await page.getByRole('tab', { name: 'Tags', exact: true }).click();
-  await page.getByRole('button', { name: 'Create tag', exact: true }).click();
-  const tagDialog = page.getByRole('dialog', { name: 'Create tag' });
-  await tagDialog.getByRole('textbox', { name: /^Tag name/ }).fill(tagName);
-  const tagCreatePromise = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return response.request().method() === 'POST' && url.pathname.endsWith('/api/v2/admin/group-tags');
-  });
-  await tagDialog.getByRole('button', { name: 'Create', exact: true }).click();
-  const tagCreateResponse = await tagCreatePromise;
-  expect(tagCreateResponse.status()).toBe(201);
-  const tagBody = await responseBody(tagCreateResponse) as JsonEnvelope<{ id?: number }> & { id?: number };
-  const tagId = Number(tagBody.data?.id ?? tagBody.id);
-  expect(tagId).toBeGreaterThan(0);
-  current.cleanupTagIds.add(tagId);
-  const tagRow = page.getByRole('row').filter({ hasText: tagName });
-  await expect(tagRow).toBeVisible();
-  await tagRow.getByRole('button', { name: 'Delete tag', exact: true }).click();
-  const tagDeleteDialog = page.getByRole('dialog', { name: 'Confirm' });
-  const tagDeletePromise = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return response.request().method() === 'DELETE'
-      && url.pathname.endsWith(`/api/v2/admin/group-tags/${tagId}`);
-  });
-  await tagDeleteDialog.getByRole('button', { name: 'Delete', exact: true }).click();
-  expect((await tagDeletePromise).status()).toBeLessThan(400);
-  current.cleanupTagIds.delete(tagId);
-  await expect(page.getByRole('row').filter({ hasText: tagName })).toHaveCount(0);
-
-  await page.getByRole('tab', { name: 'Auto-assign rules', exact: true }).click();
-  await page.getByRole('button', { name: 'Create rule', exact: true }).click();
-  const ruleDialog = page.getByRole('dialog', { name: 'Create rule' });
-  await ruleDialog.getByRole('button', { name: 'Select a group Group*', exact: true }).click();
-  await page.getByRole('option', { name: current.group.name, exact: true }).click();
-  await ruleDialog.getByRole('textbox', { name: /^Rule value/ }).fill(ruleValue);
-  const ruleCreatePromise = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return response.request().method() === 'POST'
-      && url.pathname.endsWith('/api/v2/admin/group-auto-assign-rules');
-  });
-  await ruleDialog.getByRole('button', { name: 'Create', exact: true }).click();
-  const ruleCreateResponse = await ruleCreatePromise;
-  expect(ruleCreateResponse.status()).toBe(201);
-  const ruleBody = await responseBody(ruleCreateResponse) as JsonEnvelope<{ id?: number }> & { id?: number };
-  const ruleId = Number(ruleBody.data?.id ?? ruleBody.id);
-  expect(ruleId).toBeGreaterThan(0);
-  current.cleanupRuleIds.add(ruleId);
-
-  const ruleRow = page.getByRole('row').filter({ hasText: ruleValue });
-  await expect(ruleRow).toBeVisible();
-  const ruleToggle = ruleRow.getByRole('switch', {
-    name: `Toggle auto-assignment rule for ${current.group.name}`,
-  });
-  await expect(ruleToggle).toBeChecked();
-  const ruleTogglePromise = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return response.request().method() === 'PUT'
-      && url.pathname.endsWith(`/api/v2/admin/group-auto-assign-rules/${ruleId}`);
-  });
-  await ruleToggle.locator('xpath=ancestor::label[1]').click();
-  expect((await ruleTogglePromise).status()).toBeLessThan(400);
-  await expect(ruleToggle).not.toBeChecked();
-  await expect(ruleRow.getByText('Inactive', { exact: true })).toBeVisible();
-
-  await ruleRow.getByRole('button', { name: 'Delete rule', exact: true }).click();
-  const ruleDeleteDialog = page.getByRole('dialog', { name: 'Confirm' });
-  const ruleDeletePromise = page.waitForResponse((response) => {
-    const url = new URL(response.url());
-    return response.request().method() === 'DELETE'
-      && url.pathname.endsWith(`/api/v2/admin/group-auto-assign-rules/${ruleId}`);
-  });
-  await ruleDeleteDialog.getByRole('button', { name: 'Delete', exact: true }).click();
-  expect((await ruleDeletePromise).status()).toBeLessThan(400);
-  current.cleanupRuleIds.delete(ruleId);
-  await expect(page.getByRole('row').filter({ hasText: ruleValue })).toHaveCount(0);
 });
 
 test('filters and pages the audit log, geocodes the fixture, and preserves the canonical edit route', async ({ page }) => {

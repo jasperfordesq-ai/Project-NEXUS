@@ -182,11 +182,6 @@
         "PageHeader"
       ]
     },
-    "src/admin/modules/groups/GroupOrganization.test.tsx": {
-      "@/admin/components": [
-        "ConfirmModal"
-      ]
-    },
     "src/admin/modules/legal/FadpAdminPage.test.tsx": {
       "@/admin/components": [
         "ConfirmModal"
@@ -539,7 +534,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 81,
-    "rowCount": 257
+    "offenderFileCount": 80,
+    "rowCount": 256
   }
 }

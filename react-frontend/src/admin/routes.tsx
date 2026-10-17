@@ -109,7 +109,6 @@ const GroupTypes = lazy(() => import('./modules/groups/GroupTypes'));
 const GroupDetail = lazy(() => import('./modules/groups/GroupDetail'));
 const GroupRecommendations = lazy(() => import('./modules/groups/GroupRecommendations'));
 const GroupRanking = lazy(() => import('./modules/groups/GroupRanking'));
-const GroupOrganization = lazy(() => import('./modules/groups/GroupOrganization'));
 const ResidencyVerifications = lazy(() => import('./modules/users/ResidencyVerifications'));
 
 // Enterprise module
@@ -591,7 +590,6 @@ export function AdminRoutes() {
       <Route path="groups/:id/edit" element={<TenantParamRedirect to="/groups/edit/:id" />} />
       <Route path="groups/recommendations" element={<Lazy><GroupRecommendations /></Lazy>} />
       <Route path="groups/ranking" element={<Lazy><GroupRanking /></Lazy>} />
-      <Route path="groups/organization" element={<Lazy><GroupOrganization /></Lazy>} />
       <Route path="residency-verifications" element={<FeatureGatedElement feature="caring_community"><Lazy><ResidencyVerifications /></Lazy></FeatureGatedElement>} />
       {/* Legacy hyphenated paths (F-533): the module gate matches by prefix, so these
           duplicates escaped it. Each now redirects to its gated canonical page. */}

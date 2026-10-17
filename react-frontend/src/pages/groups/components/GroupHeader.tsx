@@ -48,15 +48,8 @@ export interface JoinRequest {
   message?: string;
 }
 
-interface GroupTag {
-  id: number;
-  name: string;
-  color?: string;
-}
-
 interface GroupHeaderProps {
   group: GroupDetails;
-  groupTags: GroupTag[];
   userIsMember: boolean;
   userIsAdmin: boolean;
   isAuthenticated: boolean;
@@ -87,7 +80,6 @@ function safeBrandColor(value: string | null | undefined): string | null {
 
 export function GroupHeader({
   group,
-  groupTags,
   userIsMember,
   userIsAdmin,
   isAuthenticated,
@@ -287,22 +279,6 @@ export function GroupHeader({
           </div>
         </div>
       </div>
-
-      {/* Tags */}
-      {groupTags.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
-          {groupTags.map((tag) => (
-            <Chip
-              key={tag.id}
-              size="sm"
-              variant="flat"
-              className="bg-accent/10 text-accent"
-            >
-              {tag.name}
-            </Chip>
-          ))}
-        </div>
-      )}
 
       {/* Description */}
       <MemberPlainText

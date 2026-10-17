@@ -539,21 +539,6 @@ class GroupLifecycleService
             }
             DB::table('group_members')->insert($membershipRows);
 
-            $tagIds = DB::table('group_tag_assignments')
-                ->where('group_id', $sourceGroupId)
-                ->lockForUpdate()
-                ->pluck('tag_id')
-                ->map(static fn (mixed $id): int => (int) $id)
-                ->unique()
-                ->values()
-                ->all();
-            if ($tagIds !== []) {
-                DB::table('group_tag_assignments')->insert(array_map(
-                    static fn (int $tagId): array => ['group_id' => $newGroupId, 'tag_id' => $tagId],
-                    $tagIds,
-                ));
-            }
-
             GroupAuditService::log(
                 GroupAuditService::ACTION_GROUP_CREATED,
                 $newGroupId,

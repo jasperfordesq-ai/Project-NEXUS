@@ -123,7 +123,6 @@ class GroupTemplateService
         return [
             'visibility' => $template['default_visibility'],
             'type_id' => $template['default_type_id'],
-            'tags' => $template['default_tags'] ?? [],
             'features' => $template['features'] ?? [],
             'welcome_message' => $template['welcome_message'],
         ];

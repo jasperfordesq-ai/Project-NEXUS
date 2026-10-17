@@ -52,55 +52,6 @@ export interface FeaturedGroup {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Groups — Tags, Collections & Auto-Assign Rules
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface GroupTag {
-  id: number;
-  tenant_id?: number;
-  name: string;
-  slug: string;
-  color: string | null;
-  usage_count: number;
-  created_at?: string | null;
-}
-
-export interface GroupCollectionGroup {
-  id: number;
-  name: string;
-  image_url?: string | null;
-  cached_member_count?: number;
-  visibility?: string;
-}
-
-export interface GroupCollection {
-  id: number;
-  tenant_id?: number;
-  name: string;
-  description: string | null;
-  image_url: string | null;
-  sort_order: number;
-  is_active?: boolean | number;
-  groups: GroupCollectionGroup[];
-  group_count: number;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-export type GroupAutoAssignRuleType = 'location' | 'interest' | 'role' | 'attribute';
-
-export interface GroupAutoAssignRule {
-  id: number;
-  tenant_id?: number;
-  group_id: number;
-  group_name?: string;
-  rule_type: GroupAutoAssignRuleType;
-  rule_value: string;
-  is_active: boolean | number;
-  created_at?: string | null;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Residency Verification (AG43 — caring_community)
 // ─────────────────────────────────────────────────────────────────────────────
 

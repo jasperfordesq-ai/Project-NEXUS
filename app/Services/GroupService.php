@@ -555,16 +555,12 @@ class GroupService
             $data['type_id'] ??= $template['default_type_id'] !== null
                 ? (int) $template['default_type_id']
                 : null;
-            $data['_template_tags'] = is_array($template['default_tags'] ?? null)
-                ? array_values(array_map('intval', $template['default_tags']))
-                : [];
             $data['_template_features'] = is_array($template['features'] ?? null)
                 ? $template['features']
                 : [];
             $data['_template_welcome'] = trim((string) ($template['welcome_message'] ?? ''));
         } else {
             $data['template_id'] = null;
-            $data['_template_tags'] = [];
             $data['_template_features'] = [];
             $data['_template_welcome'] = '';
         }
@@ -670,9 +666,6 @@ class GroupService
             $group->cached_member_count = 1;
             $group->save();
 
-            if (! empty($data['_template_tags'])) {
-                GroupTagService::setForGroup((int) $group->id, $data['_template_tags']);
-            }
             if (($data['_template_welcome'] ?? '') !== '') {
                 GroupWelcomeService::setConfig((int) $group->id, true, (string) $data['_template_welcome']);
             }
@@ -1419,20 +1412,6 @@ class GroupService
             }
         }
 
-        if (! empty($data['_template_tags'])) {
-            $tagIds = array_values(array_unique(array_filter(
-                array_map('intval', (array) $data['_template_tags']),
-                static fn (int $tagId): bool => $tagId > 0,
-            )));
-            $validCount = DB::table('group_tags')
-                ->where('tenant_id', $tenantId)
-                ->whereIn('id', $tagIds)
-                ->count();
-            if ($validCount !== count($tagIds)) {
-                self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.group_template_invalid'), 'field' => 'template_id'];
-            }
-        }
-
         return self::$errors === [];
     }
 
@@ -1779,7 +1758,7 @@ class GroupService
 
         // Tables without a tenant_id column — group_id alone is the only key
         // available; the parent group was tenant-checked before the cascade.
-        foreach (['group_custom_field_values', 'group_tag_assignments'] as $table) {
+        foreach (['group_custom_field_values'] as $table) {
             if (Schema::hasTable($table)) {
                 DB::table($table)->where('group_id', $groupId)->delete();
             }

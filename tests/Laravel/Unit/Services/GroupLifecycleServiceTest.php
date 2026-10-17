@@ -271,7 +271,7 @@ final class GroupLifecycleServiceTest extends TestCase
         self::assertSame(0, DB::table('group_audit_log')->where('group_id', $group->id)->count());
     }
 
-    public function test_clone_validates_actor_and_name_and_copies_members_tags_and_audit(): void
+    public function test_clone_validates_actor_and_name_and_copies_members_and_audit(): void
     {
         $source = $this->group(GroupStatus::Active);
         $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
@@ -284,14 +284,6 @@ final class GroupLifecycleServiceTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $tagId = (int) DB::table('group_tags')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'name' => 'Clone tag',
-            'slug' => 'clone-tag-' . bin2hex(random_bytes(4)),
-            'created_at' => now(),
-        ]);
-        DB::table('group_tag_assignments')->insert(['group_id' => $source->id, 'tag_id' => $tagId]);
-
         $cloneId = GroupLifecycleService::cloneGroup(
             $source->id,
             'Cloned lifecycle group',
@@ -307,10 +299,6 @@ final class GroupLifecycleServiceTest extends TestCase
             'cached_member_count' => 2,
         ]);
         self::assertSame(2, DB::table('group_members')->where('group_id', $cloneId)->count());
-        self::assertSame(1, DB::table('group_tag_assignments')
-            ->where('group_id', $cloneId)
-            ->where('tag_id', $tagId)
-            ->count());
         $audit = DB::table('group_audit_log')
             ->where('group_id', $cloneId)
             ->where('action', GroupAuditService::ACTION_GROUP_CREATED)

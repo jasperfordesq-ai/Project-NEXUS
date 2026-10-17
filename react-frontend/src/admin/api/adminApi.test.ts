@@ -1063,60 +1063,6 @@ describe('adminGroups', () => {
     await adminGroups.kickMember(5, 10);
     expect(mockDelete).toHaveBeenCalledWith('/v2/admin/groups/5/members/10');
   });
-
-  it('getTags with query', async () => {
-    mockGet.mockResolvedValueOnce({ success: true, data: [] });
-    await adminGroups.getTags({ q: 'sport', limit: 10 });
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/group-tags?q=sport&limit=10');
-  });
-
-  it('createTag posts data', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminGroups.createTag({ name: 'sport', color: '#f00' });
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/group-tags', { name: 'sport', color: '#f00' });
-  });
-
-  it('deleteTag calls DELETE', async () => {
-    mockDelete.mockResolvedValueOnce({ success: true, data: {} });
-    await adminGroups.deleteTag(9);
-    expect(mockDelete).toHaveBeenCalledWith('/v2/admin/group-tags/9');
-  });
-
-  it('getCollections calls endpoint', async () => {
-    mockGet.mockResolvedValueOnce({ success: true, data: [] });
-    await adminGroups.getCollections();
-    expect(mockGet).toHaveBeenCalledWith('/v2/admin/group-collections');
-  });
-
-  it('createCollection posts data', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminGroups.createCollection({ name: 'Featured', sort_order: 1 });
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/group-collections', { name: 'Featured', sort_order: 1 });
-  });
-
-  it('setCollectionGroups puts group_ids', async () => {
-    mockPut.mockResolvedValueOnce({ success: true, data: {} });
-    await adminGroups.setCollectionGroups(2, [1, 2, 3]);
-    expect(mockPut).toHaveBeenCalledWith('/v2/admin/group-collections/2/groups', { group_ids: [1, 2, 3] });
-  });
-
-  it('createAutoAssignRule posts data', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminGroups.createAutoAssignRule({ group_id: 5, rule_type: 'location' as Parameters<typeof adminGroups.createAutoAssignRule>[0]['rule_type'], rule_value: 'Dublin' });
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/group-auto-assign-rules', {
-      group_id: 5,
-      rule_type: 'location',
-      rule_value: 'Dublin',
-    });
-  });
-
-  it('updateAutoAssignRule updates the tenant-scoped rule state', async () => {
-    mockPut.mockResolvedValueOnce({ success: true, data: { id: 17 } });
-    await adminGroups.updateAutoAssignRule(17, { is_active: false });
-    expect(mockPut).toHaveBeenCalledWith('/v2/admin/group-auto-assign-rules/17', {
-      is_active: false,
-    });
-  });
 });
 
 // ─── Residency ────────────────────────────────────────────────────────────────
@@ -1446,12 +1392,6 @@ describe('adminVolunteering', () => {
     mockGet.mockResolvedValueOnce({ success: true, data: [] });
     await adminVolunteering.listHours({ status: 'pending' });
     expect(mockGet).toHaveBeenCalledWith('/v2/admin/volunteering/hours?status=pending');
-  });
-
-  it('reorderCustomFields posts field_ids', async () => {
-    mockPost.mockResolvedValueOnce({ success: true, data: {} });
-    await adminVolunteering.reorderCustomFields([3, 1, 2]);
-    expect(mockPost).toHaveBeenCalledWith('/v2/admin/volunteering/custom-fields/reorder', { field_ids: [3, 1, 2] });
   });
 
   it('getGivingDayDonors with cursor', async () => {

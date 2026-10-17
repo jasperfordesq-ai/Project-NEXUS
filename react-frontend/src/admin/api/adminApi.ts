@@ -63,10 +63,6 @@ import type {
   GroupAnalyticsData,
   GroupModerationItem,
   GroupType,
-  GroupTag,
-  GroupCollection,
-  GroupAutoAssignRule,
-  GroupAutoAssignRuleType,
   ResidencyVerification,
   GroupMember,
   GroupRecommendation,
@@ -1258,45 +1254,6 @@ export const adminGroups = {
 
   toggleFeatured: (groupId: number) =>
     api.put<{ success: boolean }>(`/v2/admin/groups/${groupId}/toggle-featured`, {}),
-
-  // Tags
-  getTags: (params: { q?: string; limit?: number } = {}) =>
-    api.get<GroupTag[]>(`/v2/admin/group-tags${buildQuery(params)}`),
-
-  createTag: (data: { name: string; color?: string | null }) =>
-    api.post<GroupTag>('/v2/admin/group-tags', data),
-
-  deleteTag: (tagId: number) =>
-    api.delete<{ message: string }>(`/v2/admin/group-tags/${tagId}`),
-
-  // Collections
-  getCollections: () =>
-    api.get<GroupCollection[]>('/v2/admin/group-collections'),
-
-  createCollection: (data: { name: string; description?: string | null; image_url?: string | null; sort_order?: number }) =>
-    api.post<{ id: number }>('/v2/admin/group-collections', data),
-
-  updateCollection: (id: number, data: Partial<{ name: string; description: string | null; image_url: string | null; sort_order: number; is_active: boolean }>) =>
-    api.put<{ message: string }>(`/v2/admin/group-collections/${id}`, data),
-
-  deleteCollection: (id: number) =>
-    api.delete<{ message: string }>(`/v2/admin/group-collections/${id}`),
-
-  setCollectionGroups: (id: number, groupIds: number[]) =>
-    api.put<{ message: string }>(`/v2/admin/group-collections/${id}/groups`, { group_ids: groupIds }),
-
-  // Auto-assign rules
-  getAutoAssignRules: () =>
-    api.get<GroupAutoAssignRule[]>('/v2/admin/group-auto-assign-rules'),
-
-  createAutoAssignRule: (data: { group_id: number; rule_type: GroupAutoAssignRuleType; rule_value: string }) =>
-    api.post<{ id: number }>('/v2/admin/group-auto-assign-rules', data),
-
-  updateAutoAssignRule: (id: number, data: Partial<Pick<GroupAutoAssignRule, 'group_id' | 'rule_type' | 'rule_value' | 'is_active'>>) =>
-    api.put<{ id: number }>(`/v2/admin/group-auto-assign-rules/${id}`, data),
-
-  deleteAutoAssignRule: (id: number) =>
-    api.delete<{ message: string }>(`/v2/admin/group-auto-assign-rules/${id}`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2004,12 +1961,6 @@ export const adminVolunteering = {
   reviewCommunityProject: (id: number, data: { status: string; review_notes?: string }) =>
     api.put(`/v2/admin/volunteering/community-projects/${id}/review`, data),
 
-  // Custom Fields
-  getCustomFields: () => api.get('/v2/admin/volunteering/custom-fields'),
-  createCustomField: (data: Record<string, unknown>) => api.post('/v2/admin/volunteering/custom-fields', data),
-  updateCustomField: (id: number, data: Record<string, unknown>) => api.put(`/v2/admin/volunteering/custom-fields/${id}`, data),
-  deleteCustomField: (id: number) => api.delete(`/v2/admin/volunteering/custom-fields/${id}`),
-
   // Organization CRUD + Members
   getOrgMembers: (orgId: number) => api.get(`/v2/admin/volunteering/organizations/${orgId}/members`),
   // Manage an organisation's team (gap D7): roles are owner, admin or member.
@@ -2041,10 +1992,6 @@ export const adminVolunteering = {
 
   getGivingDayTrends: (givingDayId: number, granularity: string = 'day') =>
     api.get(`/v2/admin/volunteering/giving-days/${givingDayId}/trends?granularity=${granularity}`),
-
-  // Custom Fields reorder
-  reorderCustomFields: (fieldIds: number[]) =>
-    api.post('/v2/admin/volunteering/custom-fields/reorder', { field_ids: fieldIds }),
 
   // Reminder delivery logs
   getReminderLogs: (params?: { type?: string; channel?: string; per_page?: number; cursor?: string }) => {

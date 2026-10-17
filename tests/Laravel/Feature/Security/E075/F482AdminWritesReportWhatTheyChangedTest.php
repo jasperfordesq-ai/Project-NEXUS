@@ -172,83 +172,9 @@ final class F482AdminWritesReportWhatTheyChangedTest extends TestCase
     // ------------------------------------------------------------------ 3/8
     //  PUT /v2/admin/group-collections/{id}/groups — the audit-log case
 
-    public function test_group_collection_set_groups_refuses_a_foreign_collection_and_writes_no_audit_row(): void
-    {
-        $owner = $this->admin(self::HOME);
-        $stranger = $this->admin(self::OTHER);
-
-        $collectionId = (int) DB::table('group_collections')->insertGetId([
-            'tenant_id' => self::HOME,
-            'name' => 'E076E victim collection',
-            'sort_order' => 0,
-            'is_active' => 1,
-            'created_by' => $owner->id,
-        ]);
-        $groupId = (int) DB::table('groups')->insertGetId([
-            'tenant_id' => self::HOME,
-            'owner_id' => $owner->id,
-            'name' => 'E076E victim group',
-            'slug' => 'e076e-victim-group',
-            'visibility' => 'public',
-            'status' => 'active',
-            'is_active' => 1,
-        ]);
-        DB::table('group_collection_items')->insert([
-            'collection_id' => $collectionId,
-            'group_id' => $groupId,
-            'sort_order' => 0,
-        ]);
-
-        $logBefore = DB::table('activity_log')
-            ->where('action', 'admin_set_group_collection_groups')
-            ->where('tenant_id', self::OTHER)
-            ->count();
-
-        $this->actAs($stranger, self::OTHER);
-        $attack = $this->putJson("/api/v2/admin/group-collections/{$collectionId}/groups", [
-            'group_ids' => [],
-        ], $this->headers(self::OTHER));
-
-        $this->assertRefused($attack, 'group collection set-groups');
-        self::assertSame(
-            1,
-            DB::table('group_collection_items')->where('collection_id', $collectionId)->count(),
-            'the victim collection still holds its group'
-        );
-        self::assertSame(
-            $logBefore,
-            DB::table('activity_log')
-                ->where('action', 'admin_set_group_collection_groups')
-                ->where('tenant_id', self::OTHER)
-                ->count(),
-            'the administrative audit log must not record an action that did not happen'
-        );
-
-        // CONTROL — the owning administrator's identical call really empties it
-        // and does write its audit row.
-        $this->actAs($owner, self::HOME);
-        $ownerLogBefore = DB::table('activity_log')
-            ->where('action', 'admin_set_group_collection_groups')
-            ->where('tenant_id', self::HOME)
-            ->count();
-        $control = $this->putJson("/api/v2/admin/group-collections/{$collectionId}/groups", [
-            'group_ids' => [],
-        ], $this->headers(self::HOME));
-        $control->assertStatus(200);
-        self::assertSame(
-            0,
-            DB::table('group_collection_items')->where('collection_id', $collectionId)->count(),
-            'control: the owner really does empty it'
-        );
-        self::assertSame(
-            $ownerLogBefore + 1,
-            DB::table('activity_log')
-                ->where('action', 'admin_set_group_collection_groups')
-                ->where('tenant_id', self::HOME)
-                ->count(),
-            'control: the real action is still audited'
-        );
-    }
+    // The route was removed on 2026-10-17 together with the rest of the group
+    // collections feature (admin "Tags & Collections" page). With no route there
+    // is nothing left for a stranger to call, so this case has no test.
 
     // ------------------------------------------------------------------ 4/8
     //  DELETE /v2/admin/caring-community/federation-peers/{id}

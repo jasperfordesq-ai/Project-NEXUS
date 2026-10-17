@@ -530,56 +530,9 @@ class AdminGroupsControllerTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_auto_assign_rules_conceal_foreign_groups_on_create_list_and_update(): void
+    public function test_admin_group_type_mutations_have_durable_activity_logs(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $localGroup = Group::factory()->forTenant($this->testTenantId)->create(['owner_id' => $admin->id]);
-        $foreignOwner = User::factory()->forTenant(999)->create();
-        $foreignName = 'Foreign private rule group ' . bin2hex(random_bytes(5));
-        $foreignGroup = Group::factory()->forTenant(999)->create([
-            'owner_id' => $foreignOwner->id,
-            'name' => $foreignName,
-            'visibility' => 'private',
-        ]);
-        Sanctum::actingAs($admin);
-
-        $this->apiPost('/v2/admin/group-auto-assign-rules', [
-            'group_id' => $foreignGroup->id,
-            'rule_type' => 'location',
-            'rule_value' => 'Hidden',
-        ])->assertNotFound();
-
-        $localRuleId = (int) DB::table('group_auto_assign_rules')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'group_id' => $localGroup->id,
-            'rule_type' => 'location',
-            'rule_value' => 'Local',
-            'is_active' => true,
-            'created_at' => now(),
-        ]);
-        $this->apiPut("/v2/admin/group-auto-assign-rules/{$localRuleId}", [
-            'group_id' => $foreignGroup->id,
-        ])->assertNotFound();
-        self::assertSame((int) $localGroup->id, (int) DB::table('group_auto_assign_rules')
-            ->where('id', $localRuleId)->value('group_id'));
-
-        $poisonedRuleId = (int) DB::table('group_auto_assign_rules')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'group_id' => $foreignGroup->id,
-            'rule_type' => 'role',
-            'rule_value' => 'member',
-            'is_active' => true,
-            'created_at' => now(),
-        ]);
-        $response = $this->apiGet('/v2/admin/group-auto-assign-rules')->assertOk();
-        self::assertNotContains($poisonedRuleId, array_map('intval', array_column($response->json('data'), 'id')));
-        self::assertStringNotContainsString($foreignName, $response->getContent());
-    }
-
-    public function test_admin_group_taxonomy_collection_and_rule_mutations_have_durable_activity_logs(): void
-    {
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $group = Group::factory()->forTenant($this->testTenantId)->create(['owner_id' => $admin->id]);
         Sanctum::actingAs($admin);
         $suffix = bin2hex(random_bytes(4));
 
@@ -592,50 +545,10 @@ class AdminGroupsControllerTest extends TestCase
         ])->assertOk();
         $this->apiDelete("/v2/admin/groups/types/{$typeId}")->assertOk();
 
-        $tag = $this->apiPost('/v2/admin/group-tags', [
-            'name' => "Audit tag {$suffix}",
-            'color' => '#112233',
-        ])->assertCreated();
-        $tagId = (int) $tag->json('data.id');
-        $this->apiDelete("/v2/admin/group-tags/{$tagId}")->assertOk();
-
-        $collection = $this->apiPost('/v2/admin/group-collections', [
-            'name' => "Audit collection {$suffix}",
-        ])->assertCreated();
-        $collectionId = (int) $collection->json('data.id');
-        $this->apiPut("/v2/admin/group-collections/{$collectionId}", [
-            'name' => "Updated audit collection {$suffix}",
-        ])->assertOk();
-        $this->apiPut("/v2/admin/group-collections/{$collectionId}/groups", [
-            'group_ids' => [$group->id],
-        ])->assertOk();
-        $this->apiDelete("/v2/admin/group-collections/{$collectionId}")->assertOk();
-
-        $rule = $this->apiPost('/v2/admin/group-auto-assign-rules', [
-            'group_id' => $group->id,
-            'rule_type' => 'location',
-            'rule_value' => 'private-rule-value',
-        ])->assertCreated();
-        $ruleId = (int) $rule->json('data.id');
-        $this->apiPut("/v2/admin/group-auto-assign-rules/{$ruleId}", [
-            'rule_type' => 'interest',
-            'rule_value' => 'updated-private-rule-value',
-        ])->assertOk();
-        $this->apiDelete("/v2/admin/group-auto-assign-rules/{$ruleId}")->assertOk();
-
         $expectedActions = [
             'admin_create_group_type',
             'admin_update_group_type',
             'admin_delete_group_type',
-            'admin_create_group_tag',
-            'admin_delete_group_tag',
-            'admin_create_group_collection',
-            'admin_update_group_collection',
-            'admin_set_group_collection_groups',
-            'admin_delete_group_collection',
-            'admin_create_group_auto_assign_rule',
-            'admin_update_group_auto_assign_rule',
-            'admin_delete_group_auto_assign_rule',
         ];
         $logs = DB::table('activity_log')
             ->where('tenant_id', $this->testTenantId)
@@ -645,7 +558,6 @@ class AdminGroupsControllerTest extends TestCase
         self::assertEqualsCanonicalizing($expectedActions, $logs->pluck('action')->all());
         foreach ($logs as $log) {
             self::assertSame('admin', (string) $log->action_type);
-            self::assertStringNotContainsString('private-rule-value', (string) $log->details);
         }
     }
 
@@ -659,7 +571,7 @@ class AdminGroupsControllerTest extends TestCase
             ),
         ));
 
-        self::assertCount(45, $routes, 'The Admin Groups route inventory changed.');
+        self::assertCount(33, $routes, 'The Admin Groups route inventory changed.');
         $actionNames = array_map(static fn (LaravelRoute $route): string => $route->getActionName(), $routes);
         self::assertNotContains(
             \App\Http\Controllers\Api\AdminGroupsController::class . '@getPolicies',

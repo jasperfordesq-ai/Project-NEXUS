@@ -66,7 +66,6 @@ final class GroupAuditAtomicityTest extends TestCase
             DB::table('group_announcements')->whereIn('group_id', $this->groupIds)->delete();
             DB::table('group_invites')->whereIn('group_id', $this->groupIds)->delete();
             DB::table('group_audit_log')->whereIn('group_id', $this->groupIds)->delete();
-            DB::table('group_tag_assignments')->whereIn('group_id', $this->groupIds)->delete();
             DB::table('group_members')->whereIn('group_id', $this->groupIds)->delete();
             DB::table('groups')->whereIn('id', $this->groupIds)->delete();
         }
@@ -101,19 +100,12 @@ final class GroupAuditAtomicityTest extends TestCase
             ->where('group_id', $groupId)->where('user_id', $newOwnerId)->value('role'));
     }
 
-    public function test_clone_rolls_back_group_members_and_tags_when_required_audit_fails(): void
+    public function test_clone_rolls_back_group_and_members_when_required_audit_fails(): void
     {
         $ownerId = $this->user();
         $memberId = $this->user();
         $sourceId = $this->group($ownerId, 'Atomic clone source');
         $this->member($sourceId, $memberId, 'member');
-        $tagId = (int) DB::table('group_tags')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'name' => 'Atomic clone tag',
-            'slug' => 'atomic-clone-' . bin2hex(random_bytes(6)),
-            'created_at' => now(),
-        ]);
-        DB::table('group_tag_assignments')->insert(['group_id' => $sourceId, 'tag_id' => $tagId]);
         $this->failGroupAuditInserts();
 
         $error = $this->captureFailure(static fn (): int|null => GroupLifecycleService::cloneGroup(
@@ -128,9 +120,6 @@ final class GroupAuditAtomicityTest extends TestCase
             ->where('tenant_id', $this->testTenantId)
             ->where('name', 'Clone that must roll back')
             ->count());
-        self::assertSame(1, DB::table('group_tag_assignments')->where('group_id', $sourceId)->count());
-        DB::table('group_tag_assignments')->where('group_id', $sourceId)->delete();
-        DB::table('group_tags')->where('id', $tagId)->delete();
     }
 
     public function test_create_and_update_roll_back_when_required_group_audit_fails(): void

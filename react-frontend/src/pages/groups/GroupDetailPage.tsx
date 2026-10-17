@@ -55,7 +55,6 @@ import {
   listGroupInvites,
   listGroupJoinRequests,
   listGroupMembers,
-  listGroupTags,
   muteGroupFeedUser,
   reactToGroupFeedItem,
   removeGroupMember,
@@ -78,7 +77,6 @@ import {
   type GroupInviteRecord,
   type GroupInviteSendResult,
   type GroupMemberRecord,
-  type GroupTagRecord,
   type GroupFormCapabilities,
   type GroupFormDraft,
 } from './api';
@@ -276,9 +274,6 @@ function GroupDetailView({ groupId }: GroupDetailViewProps) {
   const [invitesLoading, setInvitesLoading] = useState(false);
   const [revokingInvite, setRevokingInvite] = useState<number | null>(null);
 
-  // Tags state
-  const [groupTags, setGroupTags] = useState<GroupTagRecord[]>([]);
-
   // Notification preferences modal
   const [showNotifPrefs, setShowNotifPrefs] = useState(false);
 
@@ -369,27 +364,6 @@ function GroupDetailView({ groupId }: GroupDetailViewProps) {
     return () => abortRef.current?.abort();
   }, [loadGroup]);
 
-  // Load tags for the group (requires auth)
-  useEffect(() => {
-    if (!id || !isAuthenticated) return;
-    const controller = new AbortController();
-    let cancelled = false;
-    setGroupTags([]);
-    listGroupTags(groupId, { signal: controller.signal })
-      .then((tags) => {
-        if (cancelled) return;
-        setGroupTags(tags);
-      })
-      .catch((err) => {
-        if (!(err instanceof GroupApiError && err.isCancellation)) {
-          logError('GroupDetailPage.loadTags', err);
-        }
-      });
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [groupId, id, isAuthenticated]);
 
   // Invite handlers
   const loadPendingInvites = useCallback(async () => {
@@ -1511,7 +1485,6 @@ function GroupDetailView({ groupId }: GroupDetailViewProps) {
       {/* Group Header */}
       <GroupHeader
         group={group}
-        groupTags={groupTags}
         userIsMember={userIsMember}
         userIsAdmin={userIsAdmin}
         isAuthenticated={isAuthenticated}

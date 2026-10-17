@@ -28,7 +28,6 @@ const mockGroupApi = vi.hoisted(() => ({
   listGroupInvites: vi.fn(),
   listGroupJoinRequests: vi.fn(),
   listGroupMembers: vi.fn(),
-  listGroupTags: vi.fn(),
   muteGroupFeedUser: vi.fn(),
   reactToGroupFeedItem: vi.fn(),
   removeGroupMember: vi.fn(),
@@ -223,7 +222,6 @@ describe('GroupDetailPage', () => {
     mockRouteGroupId = '1';
     window.history.replaceState({}, '', '/');
     mockGroupApi.getGroupDetail.mockResolvedValue(mockGroup);
-    mockGroupApi.listGroupTags.mockResolvedValue([]);
     mockGroupApi.listGroupFeed.mockResolvedValue({ items: [], cursor: null, hasMore: false });
     mockGroupApi.listGroupDiscussions.mockResolvedValue({ discussions: [], hasMore: false });
     mockGroupApi.listGroupMembers.mockResolvedValue({

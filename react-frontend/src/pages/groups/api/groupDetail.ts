@@ -16,12 +16,6 @@ export interface GroupDetailRecord extends Group {
   recent_posts?: FeedPost[];
 }
 
-export interface GroupTagRecord {
-  id: number;
-  name: string;
-  color?: string;
-}
-
 export interface GroupMemberRecord extends Omit<User, 'role'> {
   name: string;
   role?: 'member' | 'admin' | 'owner';
@@ -267,16 +261,6 @@ export async function getGroupDetail(
     throw normalizeGroupApiError({ code: 'INVALID_RESPONSE' });
   }
   return group as GroupDetailRecord;
-}
-
-export async function listGroupTags(
-  groupId: number,
-  options: GroupDetailReadOptions = {},
-): Promise<GroupTagRecord[]> {
-  return requireArray<GroupTagRecord>(await normalizeRequest(api.get<GroupTagRecord[]>(
-    `/v2/groups/${groupId}/tags`,
-    { signal: options.signal },
-  )));
 }
 
 export async function createGroupInviteLink(groupId: number): Promise<GroupInviteRecord> {

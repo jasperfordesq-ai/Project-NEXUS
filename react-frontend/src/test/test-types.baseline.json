@@ -413,9 +413,6 @@
     "src/admin/modules/groups/GroupDetail.test.tsx": {
       "TS2345": 1
     },
-    "src/admin/modules/groups/GroupOrganization.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/groups/GroupRanking.test.tsx": {
       "TS2345": 1
     },
@@ -1878,7 +1875,7 @@
     }
   },
   "totals": {
-    "fileCount": 554,
-    "errorCount": 1673
+    "fileCount": 553,
+    "errorCount": 1672
   }
 }
