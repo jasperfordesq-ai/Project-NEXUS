@@ -101,7 +101,24 @@
     "unsentDrafts": "Rascunhos não enviados: {{count}}",
     "editUnsentDraft": "Editar rascunho não enviado",
     "unsentDrafts_one": "Rascunho não enviado: {{count}}",
-    "unsentDrafts_other": "Rascunhos não enviados: {{count}}"
+    "unsentDrafts_other": "Rascunhos não enviados: {{count}}",
+    "receipt": {
+      "sending": "A enviar",
+      "sent": "Enviado",
+      "read": "Lido"
+    },
+    "typing": "{{name}} está a escrever…",
+    "reactions": {
+      "title": "Reagir a esta mensagem"
+    },
+    "reactedWith": "Reagiste com {{emoji}}",
+    "copy": "Copiar texto",
+    "copied": "Mensagem copiada",
+    "newMessages": "{{count}} mensagem nova",
+    "newMessages_one": "{{count}} mensagem nova",
+    "newMessages_other": "{{count}} mensagens novas",
+    "scrollToLatest": "Ir para as mensagens mais recentes",
+    "viewProfile": "Ver o perfil de {{name}}"
   },
   "context": {
     "regarding": "Referente a",

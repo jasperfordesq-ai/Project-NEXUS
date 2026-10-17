@@ -1,13 +1,13 @@
 {
   "generated_by": "mobile/scripts/generate-api-consumer-ledger.mjs",
-  "verified_against": "docs/generated/laravel-api-route-inventory.json (2295 distinct API paths)",
+  "verified_against": "docs/generated/laravel-api-route-inventory.json (2317 distinct API paths)",
   "route_inventory_state": "fresh",
   "route_inventory_changed_files": [],
   "summary": {
-    "api_modules": 65,
-    "call_sites": 723,
-    "distinct_endpoints": 571,
-    "verified": 571,
+    "api_modules": 67,
+    "call_sites": 770,
+    "distinct_endpoints": 615,
+    "verified": 615,
     "unverified": 0,
     "missing_from_routes": 0,
     "method_mismatch": 0,
@@ -328,112 +328,107 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:941",
+      "at": "events.ts:954",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1117",
+      "at": "events.ts:1130",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1135",
+      "at": "events.ts:1148",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1147",
+      "at": "events.ts:1160",
       "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1159",
+      "at": "events.ts:1172",
       "http": "DELETE",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1173",
+      "at": "events.ts:1186",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1195",
+      "at": "events.ts:1208",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1214",
+      "at": "events.ts:1231",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1225",
+      "at": "events.ts:1242",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1239",
+      "at": "events.ts:1256",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1252",
+      "at": "events.ts:1269",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1275",
+      "at": "events.ts:1292",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1281",
+      "at": "events.ts:1298",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1297",
+      "at": "events.ts:1314",
       "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1313",
-      "http": "POST",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1324",
-      "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
       "at": "events.ts:1330",
-      "http": "GET",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1336",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1342",
+      "at": "events.ts:1341",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1354",
+      "at": "events.ts:1347",
       "http": "GET",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1364",
+      "at": "events.ts:1353",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1379",
+      "at": "events.ts:1359",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1371",
+      "http": "GET",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1381",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
@@ -443,27 +438,22 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1402",
-      "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1411",
-      "http": "PUT",
-      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
-    },
-    {
-      "at": "events.ts:1420",
+      "at": "events.ts:1413",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1431",
-      "http": "POST",
+      "at": "events.ts:1419",
+      "http": "PUT",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1442",
+      "at": "events.ts:1428",
+      "http": "PUT",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1437",
       "http": "POST",
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
@@ -473,7 +463,17 @@
       "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
     },
     {
-      "at": "events.ts:1499",
+      "at": "events.ts:1459",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1465",
+      "http": "POST",
+      "reason": "variable \"endpoint\" is assigned more than one endpoint in this module"
+    },
+    {
+      "at": "events.ts:1516",
       "http": "POST",
       "reason": "endpoint literal nests a template inside an interpolation and could not be resolved statically"
     },
@@ -577,7 +577,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:231"
+        "auth.ts:240"
       ]
     },
     {
@@ -586,7 +586,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:208"
+        "auth.ts:217"
       ]
     },
     {
@@ -595,7 +595,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:307"
+        "auth.ts:316"
       ]
     },
     {
@@ -604,7 +604,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:321"
+        "auth.ts:330"
       ]
     },
     {
@@ -613,7 +613,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:259"
+        "auth.ts:268"
       ]
     },
     {
@@ -622,7 +622,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:236"
+        "auth.ts:245"
       ]
     },
     {
@@ -631,7 +631,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:241"
+        "auth.ts:250"
       ]
     },
     {
@@ -640,7 +640,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:129"
+        "auth.ts:138"
       ]
     },
     {
@@ -667,7 +667,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:119"
+        "auth.ts:128"
       ]
     },
     {
@@ -676,7 +676,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:124"
+        "auth.ts:133"
       ]
     },
     {
@@ -685,7 +685,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:220"
+        "auth.ts:229"
       ]
     },
     {
@@ -694,7 +694,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:283"
+        "auth.ts:292"
       ]
     },
     {
@@ -1269,7 +1269,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1127"
+        "events.ts:1140"
       ]
     },
     {
@@ -1332,7 +1332,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1244"
+        "events.ts:1261"
       ]
     },
     {
@@ -1341,7 +1341,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1230"
+        "events.ts:1247"
       ]
     },
     {
@@ -2179,7 +2179,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "groups.ts:530"
+        "groups.ts:530",
+        "volunteeringVolunteer.ts:509"
       ]
     },
     {
@@ -4294,7 +4295,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:145"
+        "messages.ts:154"
       ]
     },
     {
@@ -4303,8 +4304,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:225",
-        "messages.ts:226"
+        "messages.ts:242",
+        "messages.ts:243"
       ]
     },
     {
@@ -4313,7 +4314,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:214"
+        "messages.ts:231"
       ]
     },
     {
@@ -4322,7 +4323,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:152"
+        "messages.ts:161"
       ]
     },
     {
@@ -4331,7 +4332,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:210"
+        "messages.ts:227"
       ]
     },
     {
@@ -4340,7 +4341,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:206"
+        "messages.ts:223"
       ]
     },
     {
@@ -4349,7 +4350,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:198"
+        "messages.ts:207"
       ]
     },
     {
@@ -4358,7 +4359,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:178"
+        "messages.ts:187"
       ]
     },
     {
@@ -4367,7 +4368,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:182"
+        "messages.ts:191"
       ]
     },
     {
@@ -4376,7 +4377,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:202"
+        "messages.ts:219"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/messages/typing",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "messages.ts:215"
       ]
     },
     {
@@ -4385,7 +4395,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:194"
+        "messages.ts:203"
       ]
     },
     {
@@ -4394,8 +4404,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "messages.ts:311",
-        "messages.ts:312"
+        "messages.ts:328",
+        "messages.ts:329"
       ]
     },
     {
@@ -4757,7 +4767,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1262"
+        "events.ts:1279"
       ]
     },
     {
@@ -4794,7 +4804,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "events.ts:1270"
+        "events.ts:1287"
       ]
     },
     {
@@ -5114,7 +5124,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "auth.ts:316"
+        "auth.ts:325"
       ]
     },
     {
@@ -5291,11 +5301,29 @@
     },
     {
       "http": "GET",
+      "endpoint": "/api/v2/volunteering/accessibility-needs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:418"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/accessibility-needs",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:426"
+      ]
+    },
+    {
+      "http": "GET",
       "endpoint": "/api/v2/volunteering/applications",
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:471"
+        "volunteering.ts:472"
       ]
     },
     {
@@ -5304,7 +5332,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:507"
+        "volunteering.ts:508"
       ]
     },
     {
@@ -5313,7 +5341,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:496"
+        "volunteering.ts:497"
       ]
     },
     {
@@ -5322,7 +5350,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:601"
+        "volunteering.ts:602"
       ]
     },
     {
@@ -5331,7 +5359,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:605"
+        "volunteering.ts:606"
       ]
     },
     {
@@ -5340,7 +5368,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:738"
+        "volunteering.ts:739"
       ]
     },
     {
@@ -5349,7 +5377,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:733"
+        "volunteering.ts:734"
       ]
     },
     {
@@ -5358,7 +5386,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:632"
+        "volunteering.ts:633"
       ]
     },
     {
@@ -5367,7 +5395,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:679"
+        "volunteering.ts:680"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/emergency-alerts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:218"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/emergency-alerts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:229"
       ]
     },
     {
@@ -5376,7 +5422,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:613"
+        "volunteering.ts:614"
       ]
     },
     {
@@ -5385,7 +5431,8 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:620"
+        "volunteering.ts:621",
+        "volunteeringVolunteer.ts:586"
       ]
     },
     {
@@ -5394,7 +5441,43 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:628"
+        "volunteering.ts:629"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/group-reservations",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:466"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/group-reservations/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:494"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/group-reservations/{param}/members",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:485"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/group-reservations/{param}/members/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:490"
       ]
     },
     {
@@ -5403,7 +5486,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:704"
+        "volunteering.ts:705"
       ]
     },
     {
@@ -5412,7 +5495,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:503"
+        "volunteering.ts:504"
       ]
     },
     {
@@ -5421,7 +5504,34 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:511"
+        "volunteering.ts:512"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/incidents",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:390"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/incidents",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:372"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/incidents/report-options",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:343"
       ]
     },
     {
@@ -5430,7 +5540,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:515"
+        "volunteering.ts:516"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/my-waitlists",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:89"
       ]
     },
     {
@@ -5439,7 +5558,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:454"
+        "volunteering.ts:455"
       ]
     },
     {
@@ -5448,7 +5567,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:687"
+        "volunteering.ts:688"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:55"
       ]
     },
     {
@@ -5457,7 +5585,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:464"
+        "volunteering.ts:465"
       ]
     },
     {
@@ -5466,7 +5594,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:695"
+        "volunteering.ts:696"
       ]
     },
     {
@@ -5475,7 +5603,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:482"
+        "volunteering.ts:483"
       ]
     },
     {
@@ -5484,7 +5612,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:712"
+        "volunteering.ts:713"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/recurring-patterns",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:147"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/recurring-patterns",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:152"
       ]
     },
     {
@@ -5493,7 +5639,17 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:646"
+        "volunteering.ts:647",
+        "volunteeringOrganiser.ts:81"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/opportunities/{param}/shifts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:86"
       ]
     },
     {
@@ -5522,7 +5678,7 @@
       "matched_via": "exact",
       "sites": [
         "organisations.ts:69",
-        "volunteering.ts:522"
+        "volunteering.ts:523"
       ]
     },
     {
@@ -5531,7 +5687,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:590"
+        "volunteering.ts:591"
       ]
     },
     {
@@ -5540,7 +5696,88 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:533"
+        "volunteering.ts:534"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:393"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:398"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:403"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:408"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:418"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/campaigns/{param}/history",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:413"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/expenses",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:260"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/expenses/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:279"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/handovers/{param}/confirm",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:423"
       ]
     },
     {
@@ -5549,7 +5786,16 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:540"
+        "volunteering.ts:541"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/organisations/{param}/opportunities",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:47"
       ]
     },
     {
@@ -5558,7 +5804,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:526"
+        "volunteering.ts:527"
       ]
     },
     {
@@ -5567,7 +5813,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:546"
+        "volunteering.ts:547"
       ]
     },
     {
@@ -5576,7 +5822,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:573"
+        "volunteering.ts:574"
       ]
     },
     {
@@ -5585,7 +5831,61 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:552"
+        "volunteering.ts:553"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/qualifications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:283"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/qualifications",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:314"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/qualifications/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:318"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/qualifications/{param}/withdraw",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:322"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/recurring-patterns/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:166"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/recurring-patterns/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:161"
       ]
     },
     {
@@ -5594,7 +5894,61 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:594"
+        "volunteering.ts:595"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/shifts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:99"
+      ]
+    },
+    {
+      "http": "PUT",
+      "endpoint": "/api/v2/volunteering/shifts/{param}",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:91"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/checkin",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:134"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/checkins",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:202"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/group-reserve",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:477"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/roster",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringOrganiser.ts:197"
       ]
     },
     {
@@ -5603,7 +5957,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:723"
+        "volunteering.ts:724"
       ]
     },
     {
@@ -5612,7 +5966,34 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:716"
+        "volunteering.ts:717"
+      ]
+    },
+    {
+      "http": "DELETE",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/waitlist",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:103"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/waitlist",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:98"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/shifts/{param}/waitlist/promote",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:108"
       ]
     },
     {
@@ -5621,7 +6002,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:639"
+        "volunteering.ts:640"
       ]
     },
     {
@@ -5630,7 +6011,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:663"
+        "volunteering.ts:664"
       ]
     },
     {
@@ -5639,7 +6020,7 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:675"
+        "volunteering.ts:676"
       ]
     },
     {
@@ -5648,7 +6029,25 @@
       "status": "verified",
       "matched_via": "exact",
       "sites": [
-        "volunteering.ts:671"
+        "volunteering.ts:672"
+      ]
+    },
+    {
+      "http": "GET",
+      "endpoint": "/api/v2/volunteering/wellbeing",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:166"
+      ]
+    },
+    {
+      "http": "POST",
+      "endpoint": "/api/v2/volunteering/wellbeing/checkin",
+      "status": "verified",
+      "matched_via": "exact",
+      "sites": [
+        "volunteeringVolunteer.ts:186"
       ]
     },
     {

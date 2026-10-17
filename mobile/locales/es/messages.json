@@ -101,7 +101,24 @@
     "unsentDrafts": "Borradores sin enviar: {{count}}",
     "editUnsentDraft": "Editar borrador sin enviar",
     "unsentDrafts_one": "Borrador sin enviar: {{count}}",
-    "unsentDrafts_other": "Borradores sin enviar: {{count}}"
+    "unsentDrafts_other": "Borradores sin enviar: {{count}}",
+    "receipt": {
+      "sending": "Enviando",
+      "sent": "Enviado",
+      "read": "Leído"
+    },
+    "typing": "{{name}} está escribiendo…",
+    "reactions": {
+      "title": "Reaccionar a este mensaje"
+    },
+    "reactedWith": "Reaccionaste con {{emoji}}",
+    "copy": "Copiar texto",
+    "copied": "Mensaje copiado",
+    "newMessages": "{{count}} mensaje nuevo",
+    "newMessages_one": "{{count}} mensaje nuevo",
+    "newMessages_other": "{{count}} mensajes nuevos",
+    "scrollToLatest": "Ir a los mensajes más recientes",
+    "viewProfile": "Ver el perfil de {{name}}"
   },
   "context": {
     "regarding": "Referente a",

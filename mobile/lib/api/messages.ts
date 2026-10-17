@@ -77,7 +77,16 @@ export interface Message {
   /** Seconds, as stored by the server (`max(1, duration)`); null for text messages. */
   audio_duration?: number | null;
   reactions: Record<string, number>;
+  /** Emoji this member has put on the message, when the server includes them. */
+  my_reactions?: string[];
   is_read: boolean;
+  /** When the other member read it; `is_read` alone is enough for the double tick. */
+  read_at?: string | null;
+  /**
+   * Client-only. Set on the optimistic bubble between tapping Send and the server's reply so
+   * the receipt can show a clock. The server never sends this field.
+   */
+  local_status?: 'sending';
   is_edited?: boolean;
   is_deleted?: boolean;
   listing_id?: number | null;
@@ -196,6 +205,14 @@ export function getUnreadMessageCount(): Promise<{ data: { count: number } }> {
 
 export function markConversationRead(otherUserId: number): Promise<{ data?: { marked_read?: number } }> {
   return api.put(`${API_V2}/messages/${otherUserId}/read`, {});
+}
+
+/**
+ * POST /api/v2/messages/typing — tell `recipientId` this member started or stopped typing.
+ * Limited to 60 a minute server-side; `useTypingSender` keeps well under that.
+ */
+export function sendTypingIndicator(recipientId: number, isTyping: boolean): Promise<{ data?: { success?: boolean } }> {
+  return api.post(`${API_V2}/messages/typing`, { recipient_id: recipientId, is_typing: isTyping });
 }
 
 export function getMessagingRestrictionStatus(): Promise<{ data: MessagingRestrictionStatus }> {

@@ -19,8 +19,10 @@ import ErrorState from '@/components/ui/ErrorState';
 
 import { archiveConversation, getConversations, restoreConversation, displayName, type Conversation, type ConversationListResponse } from '@/lib/api/messages';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
 import { useRealtimeContext } from '@/lib/context/RealtimeContext';
+import { readEventCovers } from '@/lib/messages/readReceipts';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
@@ -108,7 +110,7 @@ function MessagesScreen() {
     server total is the truth; the page sum only fills in before it arrives (audit
     2026-09-07, A/F-06).
   */
-  const { unreadMessages: serverUnread } = useRealtimeContext();
+  const { unreadMessages: serverUnread, subscribeToInbox } = useRealtimeContext();
   const loadedUnread = useMemo(
     () => conversations.reduce((sum, conversation) => sum + (conversation.unread_count ?? 0), 0),
     [conversations],
@@ -128,6 +130,62 @@ function MessagesScreen() {
     // `inboxPage.refresh` is stable per hook instance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverUnread]);
+
+  /*
+    Live rows: a message or a read receipt on the member's channel updates the row in place —
+    preview, tick, count, position — so the list moves while they watch it, not after the
+    next refetch. A conversation we have not loaded (new member, or further down than the
+    first page) is fetched instead of invented.
+  */
+  const { user: authUser } = useAuth();
+  const myUserId = authUser?.id ?? null;
+  const conversationsRef = useRef(conversations);
+  conversationsRef.current = conversations;
+  const mutateInbox = inboxPage.mutateItems;
+  useEffect(() => subscribeToInbox({
+    message: (otherUserId, message) => {
+      if (!conversationsRef.current.some((conversation) => conversation.other_user?.id === otherUserId)) {
+        refreshInbox();
+        return;
+      }
+      mutateInbox((items) => {
+        const index = items.findIndex((conversation) => conversation.other_user?.id === otherUserId);
+        if (index < 0) return items;
+        const current = items[index];
+        const body = message.body || message.content || '';
+        const updated: Conversation = {
+          ...current,
+          last_message: {
+            id: message.id,
+            body,
+            content: body,
+            sender_id: message.sender_id ?? message.sender?.id,
+            created_at: message.created_at,
+            is_read: Boolean(message.is_read),
+          },
+          unread_count: (current.unread_count ?? 0) + (message.is_own ? 0 : 1),
+        };
+        return [updated, ...items.filter((_, itemIndex) => itemIndex !== index)];
+      });
+    },
+    read: (event) => {
+      mutateInbox((items) => items.map((conversation) => {
+        const otherId = conversation.other_user?.id;
+        // We read it on another device: that conversation has nothing unread any more.
+        if (myUserId !== null && event.reader_id === myUserId) {
+          return otherId === event.sender_id && (conversation.unread_count ?? 0) > 0
+            ? { ...conversation, unread_count: 0 }
+            : conversation;
+        }
+        // They read it: our last message earns its double tick.
+        const last = conversation.last_message;
+        if (event.reader_id !== otherId || !last || last.is_read) return conversation;
+        const lastIsOwn = last.is_own ?? (last.sender_id != null ? last.sender_id !== otherId : true);
+        if (!lastIsOwn || (typeof last.id === 'number' && !readEventCovers(event, last.id))) return conversation;
+        return { ...conversation, last_message: { ...last, is_read: true } };
+      }));
+    },
+  }), [mutateInbox, myUserId, refreshInbox, subscribeToInbox]);
 
   const filteredConversations = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -547,8 +605,18 @@ function ConversationCard({
                 </View>
 
                 <View className="flex-row items-center gap-2">
+                  {/* One tick = sent, two = the other member read it. Own last message only. */}
                   {lastMsgIsOwn && lastMsgBody ? (
-                    <Ionicons name="checkmark-done-outline" size={14} color={theme.textMuted} />
+                    <Ionicons
+                      name={lastMsg?.is_read ? 'checkmark-done' : 'checkmark'}
+                      size={14}
+                      color={lastMsg?.is_read ? theme.info : theme.textMuted}
+                      accessible
+                      importantForAccessibility="yes"
+                      accessibilityRole="image"
+                      accessibilityLabel={t(lastMsg?.is_read ? 'thread.receipt.read' : 'thread.receipt.sent')}
+                      testID={lastMsg?.is_read ? 'inbox-receipt-read' : 'inbox-receipt-sent'}
+                    />
                   ) : null}
                   <Text
                     className={`min-w-0 flex-1 text-sm leading-5 ${isUnread ? 'font-semibold' : ''}`}

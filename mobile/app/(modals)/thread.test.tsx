@@ -48,6 +48,8 @@ const mockAudioRecording = {
 };
 const mockCreateRecordingAsync = jest.fn().mockResolvedValue({ recording: mockAudioRecording });
 const mockRequestAudioPermissionsAsync = jest.fn().mockResolvedValue({ granted: true });
+const mockClipboardSet = jest.fn().mockResolvedValue(undefined);
+jest.mock('expo-clipboard', () => ({ setStringAsync: (...args: unknown[]) => mockClipboardSet(...args) }));
 const mockSetAudioModeAsync = jest.fn().mockResolvedValue(undefined);
 type MockThreadMessage = {
   id: number;
@@ -62,6 +64,12 @@ type MockThreadMessage = {
   is_read: boolean;
 };
 let mockRealtimeCallback: ((message: MockThreadMessage) => boolean | void) | null = null;
+type MockConversationHandlers = {
+  message?: (message: MockThreadMessage) => boolean | void;
+  read?: (event: Record<string, unknown>) => void;
+  typing?: (event: { user_id: number; is_typing: boolean }) => void;
+};
+let mockConversationHandlers: MockConversationHandlers | null = null;
 const thumbsUpReaction = '\u{1F44D}';
 
 /*
@@ -144,7 +152,20 @@ jest.mock('react-i18next', () => ({
         'thread.deleteEveryoneConfirm': 'Delete this message for everyone?',
         'thread.deletedMessage': 'This message was deleted.',
         'unknownMember': 'Community member',
+        'thread.typing': `${String(options?.name ?? '')} is typing…`,
+        'thread.today': 'Today',
+        'thread.yesterday': 'Yesterday',
+        'thread.newMessages': `${String(options?.count ?? '')} new messages`,
+        'thread.scrollToLatest': 'Jump to the latest messages',
+        'thread.viewProfile': `View ${String(options?.name ?? '')}'s profile`,
+        'thread.receipt.sending': 'Sending',
+        'thread.receipt.sent': 'Sent',
+        'thread.receipt.read': 'Read',
         'thread.reactWith': `React with ${String(options?.emoji ?? '')}`,
+        'thread.reactedWith': `You reacted with ${String(options?.emoji ?? '')}`,
+        'thread.reactions.title': 'React to this message',
+        'thread.copy': 'Copy text',
+        'thread.copied': 'Message copied',
         'thread.toggleReaction': `Toggle ${String(options?.emoji ?? '')} reaction`,
         'context.regarding': 'Regarding',
         'context.open': 'Open context',
@@ -204,11 +225,18 @@ jest.mock('@/lib/context/RealtimeContext', () => ({
       mockRealtimeCallback = callback;
       return jest.fn();
     }),
+    subscribeToConversation: jest.fn((_otherUserId: number, handlers: MockConversationHandlers) => {
+      mockConversationHandlers = handlers;
+      mockRealtimeCallback = handlers.message ?? null;
+      return jest.fn();
+    }),
+    subscribeToInbox: jest.fn(() => jest.fn()),
     refreshCounts: (...args: unknown[]) => mockRefreshCounts(...args),
   }),
 }));
 
 const mockMarkConversationRead = jest.fn().mockResolvedValue({ data: { marked_read: 1 } });
+const mockSendTypingIndicator = jest.fn().mockResolvedValue({ data: { success: true } });
 const mockToggleMessageReaction = jest.fn().mockResolvedValue({ data: { action: 'added', emoji: thumbsUpReaction, message_id: 1 } });
 const mockGetMessagingRestrictionStatus = jest.fn().mockResolvedValue({
   data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null },
@@ -251,6 +279,7 @@ jest.mock('@/lib/api/messages', () => ({
   getOrCreateThread: jest.fn(),
   getMessagingRestrictionStatus: (...args: unknown[]) => mockGetMessagingRestrictionStatus(...args),
   markConversationRead: (...args: unknown[]) => mockMarkConversationRead(...args),
+  sendTypingIndicator: (...args: unknown[]) => mockSendTypingIndicator(...args),
   sendMessage: jest.fn().mockResolvedValue({ data: { id: 99 } }),
   sendMessageWithAttachments: (...args: unknown[]) => mockSendMessageWithAttachments(...args),
   sendVoiceMessage: (...args: unknown[]) => mockSendVoiceMessage(...args),
@@ -292,10 +321,11 @@ jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/ActionSheet', () => {
   const React = require('react');
   const { Pressable, Text, View } = require('react-native');
-  return ({ visible, title, actions }: { visible: boolean; title?: string; actions: { label: string; onPress: () => void }[] }) => {
+  return ({ visible, title, actions, header }: { visible: boolean; title?: string; header?: React.ReactNode; actions: { label: string; onPress: () => void }[] }) => {
     if (!visible) return null;
     return (
       <View accessibilityLabel={title}>
+        {header}
         {actions.map((action) => (
           <Pressable key={action.label} accessibilityLabel={action.label} onPress={action.onPress}>
             <Text>{action.label}</Text>
@@ -377,14 +407,26 @@ const mockMessages = [
   },
 ];
 
+/*
+  Edit is offered only inside the server's 24-hour window (EDIT_EXPIRED after that), so the
+  tests that edit need messages dated today. Same order and ids as `mockMessages`.
+*/
+const recentMessages = mockMessages.map((message, index) => ({
+  ...message,
+  created_at: new Date(Date.now() - (mockMessages.length - index) * 60_000).toISOString(),
+}));
+
 beforeEach(() => {
+  mockClipboardSet.mockClear();
   mockRecoveryVersion = 0;
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
   mockThreadSearchParams = { id: '5', name: 'Alice' };
   mockRouterPush.mockClear();
   mockRealtimeCallback = null;
+  mockConversationHandlers = null;
   mockFocusCallbacks.length = 0;
   mockMarkConversationRead.mockClear();
+  mockSendTypingIndicator.mockClear();
   mockToggleMessageReaction.mockClear();
   mockGetMessagingRestrictionStatus.mockClear();
   mockUpdateMessage.mockClear();
@@ -1075,7 +1117,7 @@ describe('ThreadScreen', () => {
     });
     mockUseApi.mockReturnValue({
       data: {
-        data: mockMessages,
+        data: recentMessages,
         meta: { conversation: { other_user: { id: 42, name: 'Alice' } } },
       },
       isLoading: false,
@@ -1474,7 +1516,7 @@ describe('ThreadScreen', () => {
 
   it('edits an own text message through message options', async () => {
     mockUseApi.mockReturnValue({
-      data: { data: mockMessages },
+      data: { data: recentMessages },
       isLoading: false,
       error: null,
       refresh: jest.fn(),
@@ -1617,15 +1659,17 @@ describe('ThreadScreen', () => {
       refresh: jest.fn(),
     });
 
-    const { getAllByLabelText, getByText } = render(<ThreadScreen />);
+    const { getAllByLabelText, queryByText } = render(<ThreadScreen />);
 
     fireEvent.press(getAllByLabelText('Message actions')[0]);
     fireEvent.press(getAllByLabelText(`React with ${thumbsUpReaction}`)[0]);
 
     await waitFor(() => {
       expect(mockToggleMessageReaction).toHaveBeenCalledWith(1, thumbsUpReaction);
-      expect(getByText('1')).toBeTruthy();
+      // Mine, and the only one: a selected pill with no count.
+      expect(getAllByLabelText(`You reacted with ${thumbsUpReaction}`)[0].props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
     });
+    expect(queryByText('1')).toBeNull();
   });
 
   it('offers a way back to older messages instead of stopping at the first page', async () => {
@@ -1783,6 +1827,459 @@ describe('ThreadScreen', () => {
     // Tapping the same bubble again folds it away.
     fireEvent.press(getAllByLabelText('Message actions')[0]);
     expect(queryAllByLabelText(`React with ${thumbsUpReaction}`)).toHaveLength(0);
+  });
+});
+
+/*
+  Read receipts: one tick = the server has it, two ticks = the other member has read it.
+  Two states only, no "delivered" — the API has no such state. Own bubbles only.
+*/
+describe('read receipts', () => {
+  function renderWith(messages: unknown[]) {
+    mockUseApi.mockReturnValue({
+      data: { data: messages, meta: { conversation: { other_user: { id: 5, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    return render(<ThreadScreen />);
+  }
+
+  it('shows a single tick on an own message the other member has not read', () => {
+    const screen = renderWith([{ ...mockMessages[1], is_read: false }]);
+    expect(screen.getByTestId('receipt-sent-2')).toBeTruthy();
+    expect(screen.queryByTestId('receipt-read-2')).toBeNull();
+  });
+
+  it('shows a double tick once the server says the message is read', () => {
+    const screen = renderWith([{ ...mockMessages[1], is_read: true }]);
+    expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
+    expect(screen.getByLabelText('Read')).toBeTruthy();
+  });
+
+  it('shows a double tick when only read_at is set', () => {
+    const screen = renderWith([{ ...mockMessages[1], is_read: false, read_at: '2026-03-10T10:05:00Z' }]);
+    expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
+  });
+
+  it('shows no receipt on a received message', () => {
+    const screen = renderWith([{ ...mockMessages[0], is_read: false }]);
+    expect(screen.queryByTestId('receipt-sent-1')).toBeNull();
+    expect(screen.queryByTestId('receipt-read-1')).toBeNull();
+    expect(screen.queryByLabelText('Sent')).toBeNull();
+  });
+
+  it('shows a single tick until message.read arrives, then a double tick', () => {
+    const screen = renderWith([{ ...mockMessages[1], is_read: false }]);
+    expect(screen.getByTestId('receipt-sent-2')).toBeTruthy();
+
+    act(() => { mockConversationHandlers?.read?.({ reader_id: 5, sender_id: 1, up_to_message_id: 2, read_at: '2026-03-10T10:09:00Z' }); });
+
+    expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
+    expect(screen.queryByTestId('receipt-sent-2')).toBeNull();
+  });
+
+  it('message.read with up_to_message_id flips only messages up to it', () => {
+    const later = { ...mockMessages[1], id: 8, body: 'Later one', created_at: '2026-03-10T10:08:00Z', is_read: false };
+    const screen = renderWith([{ ...mockMessages[1], is_read: false }, later]);
+
+    act(() => { mockConversationHandlers?.read?.({ reader_id: 5, sender_id: 1, up_to_message_id: 2 }); });
+
+    expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
+    expect(screen.getByTestId('receipt-sent-8')).toBeTruthy();
+  });
+
+  it('message.read without a scope flips every own message', () => {
+    const later = { ...mockMessages[1], id: 8, body: 'Later one', created_at: '2026-03-10T10:08:00Z', is_read: false };
+    const screen = renderWith([{ ...mockMessages[1], is_read: false }, later]);
+
+    act(() => { mockConversationHandlers?.read?.({ reader_id: 5 }); });
+
+    expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
+    expect(screen.getByTestId('receipt-read-8')).toBeTruthy();
+  });
+
+  it('shows the sending clock on an optimistic message, then the sent tick after the server replies', async () => {
+    let finish!: (value: { data: { id: number } }) => void;
+    (sendMessage as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = renderWith(mockMessages);
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'On its way');
+    fireEvent.press(screen.getByLabelText('Send'));
+
+    await waitFor(() => expect(sendMessage).toHaveBeenCalled());
+    expect(screen.getByLabelText('Sending')).toBeTruthy();
+
+    await act(async () => { finish({ data: { id: 99 } }); });
+    await waitFor(() => expect(screen.getByTestId('receipt-sent-99')).toBeTruthy());
+    expect(screen.queryByLabelText('Sending')).toBeNull();
+  });
+});
+
+describe('live thread updates', () => {
+  function renderThread() {
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 5, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    return render(<ThreadScreen />);
+  }
+
+  it('sender echo of own message does not duplicate the optimistic bubble', async () => {
+    let finish!: (value: { data: { id: number } }) => void;
+    (sendMessage as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+    const screen = renderThread();
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Echo me');
+    fireEvent.press(screen.getByLabelText('Send'));
+    await waitFor(() => expect(sendMessage).toHaveBeenCalled());
+    expect(screen.getAllByText('Echo me')).toHaveLength(1);
+
+    // The server (or another device) echoes the same message before the POST resolves.
+    act(() => {
+      mockConversationHandlers?.message?.({
+        id: 300,
+        body: 'Echo me',
+        sender: { id: 1, name: 'Me', avatar_url: null },
+        sender_id: 1,
+        created_at: new Date().toISOString(),
+        is_own: true,
+        is_voice: false,
+        audio_url: null,
+        reactions: {},
+        is_read: false,
+      });
+    });
+
+    expect(screen.getAllByText('Echo me')).toHaveLength(1);
+    expect(screen.getByTestId('receipt-sent-300')).toBeTruthy();
+    expect(screen.queryByLabelText('Sending')).toBeNull();
+
+    await act(async () => { finish({ data: { id: 300 } }); });
+    expect(screen.getAllByText('Echo me')).toHaveLength(1);
+  });
+
+  it('own message echoed from another device appears as own and unread', async () => {
+    const screen = renderThread();
+
+    let acknowledged: boolean | void = undefined;
+    act(() => {
+      acknowledged = mockConversationHandlers?.message?.({
+        id: 301,
+        body: 'From my tablet',
+        sender: { id: 1, name: 'Me', avatar_url: null },
+        sender_id: 1,
+        created_at: '2026-03-10T10:10:00Z',
+        is_own: true,
+        is_voice: false,
+        audio_url: null,
+        reactions: {},
+        is_read: false,
+      });
+    });
+
+    await waitFor(() => expect(screen.getByText('From my tablet')).toBeTruthy());
+    // Own, so a single tick (not forced read), and never counted against the badge.
+    expect(screen.getByTestId('receipt-sent-301')).toBeTruthy();
+    expect(acknowledged).toBe(true);
+    expect(mockMarkConversationRead).not.toHaveBeenCalledWith(5);
+  });
+});
+
+/*
+  Typing, both ways. Receiving: the other member's `typing` event shows a row under the
+  list and the header says who is typing; it clears on their stop, on their message, or
+  after 5 s of silence (a lost "stopped" must not leave them typing for ever). Sending: a
+  signal 500 ms after the member starts, "stopped" 3 s after they pause, on send, on blur.
+*/
+describe('typing indicator', () => {
+  function renderThread(overrides: Record<string, unknown> = {}) {
+    mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 5, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+      ...overrides,
+    });
+    return render(<ThreadScreen />);
+  }
+
+  beforeEach(() => { jest.useFakeTimers(); });
+  afterEach(() => { jest.useRealTimers(); });
+
+  it('shows who is typing and hides it after 5 s of silence', async () => {
+    const screen = renderThread();
+    await act(async () => {});
+    expect(screen.queryByTestId('thread-typing-row')).toBeNull();
+
+    act(() => { mockConversationHandlers?.typing?.({ user_id: 5, is_typing: true }); });
+    expect(screen.getByTestId('thread-typing-row')).toBeTruthy();
+    expect(screen.getAllByText('Alice is typing…').length).toBeGreaterThan(0);
+
+    act(() => { jest.advanceTimersByTime(4999); });
+    expect(screen.getByTestId('thread-typing-row')).toBeTruthy();
+    act(() => { jest.advanceTimersByTime(1); });
+    expect(screen.queryByTestId('thread-typing-row')).toBeNull();
+    screen.unmount();
+  });
+
+  it('hides the row as soon as they stop, or as soon as their message arrives', async () => {
+    const screen = renderThread();
+    await act(async () => {});
+
+    act(() => { mockConversationHandlers?.typing?.({ user_id: 5, is_typing: true }); });
+    act(() => { mockConversationHandlers?.typing?.({ user_id: 5, is_typing: false }); });
+    expect(screen.queryByTestId('thread-typing-row')).toBeNull();
+
+    act(() => { mockConversationHandlers?.typing?.({ user_id: 5, is_typing: true }); });
+    act(() => {
+      mockConversationHandlers?.message?.({
+        id: 400, body: 'Here it is', sender: { id: 5, name: 'Alice', avatar_url: null }, sender_id: 5,
+        created_at: '2026-03-10T10:20:00Z', is_own: false, is_voice: false, audio_url: null, reactions: {}, is_read: false,
+      });
+    });
+    expect(screen.queryByTestId('thread-typing-row')).toBeNull();
+    screen.unmount();
+  });
+
+  it('tells the other member 500 ms after typing starts and 3 s after it pauses', async () => {
+    const screen = renderThread();
+    await act(async () => {});
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Hel');
+    act(() => { jest.advanceTimersByTime(499); });
+    expect(mockSendTypingIndicator).not.toHaveBeenCalled();
+    act(() => { jest.advanceTimersByTime(1); });
+    expect(mockSendTypingIndicator).toHaveBeenCalledWith(5, true);
+
+    act(() => { jest.advanceTimersByTime(3000); });
+    expect(mockSendTypingIndicator).toHaveBeenLastCalledWith(5, false);
+    screen.unmount();
+  });
+
+  it('tells the other member they stopped when the message is sent', async () => {
+    const screen = renderThread();
+    await act(async () => {});
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Hello');
+    act(() => { jest.advanceTimersByTime(500); });
+    expect(mockSendTypingIndicator).toHaveBeenCalledWith(5, true);
+
+    fireEvent.press(screen.getByLabelText('Send'));
+    expect(mockSendTypingIndicator).toHaveBeenLastCalledWith(5, false);
+    await act(async () => {});
+    screen.unmount();
+  });
+
+  it('tells the other member they stopped when the composer loses focus', async () => {
+    const screen = renderThread();
+    await act(async () => {});
+
+    const input = screen.getByPlaceholderText('Type a message...');
+    fireEvent.changeText(input, 'Hello');
+    act(() => { jest.advanceTimersByTime(500); });
+    fireEvent(input, 'blur');
+    expect(mockSendTypingIndicator).toHaveBeenLastCalledWith(5, false);
+    screen.unmount();
+  });
+
+  it('sends nothing while messaging is restricted', async () => {
+    mockGetMessagingRestrictionStatus.mockResolvedValue({
+      data: { messaging_disabled: true, under_monitoring: true, restriction_reason: 'Safety review' },
+    });
+    const screen = renderThread();
+    await act(async () => {});
+    await waitFor(() => expect(screen.getByText('Messaging paused')).toBeTruthy());
+
+    fireEvent.changeText(screen.getByPlaceholderText('Type a message...'), 'Can I?');
+    act(() => { jest.advanceTimersByTime(1000); });
+    expect(mockSendTypingIndicator).not.toHaveBeenCalled();
+    screen.unmount();
+  });
+});
+
+/*
+  Reactions must be as easy to find as on the web: long-press any message (voice included)
+  and all six are at the top of the sheet; tap a bubble and all six are in the quick row.
+  Copy and Edit live in the same sheet; Edit only inside the server's 24-hour window.
+*/
+describe('reactions made discoverable', () => {
+  const allSix = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+
+  function renderWith(messages: unknown[]) {
+    mockUseApi.mockReturnValue({
+      data: { data: messages, meta: { conversation: { other_user: { id: 5, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    return render(<ThreadScreen />);
+  }
+
+  it('long-press on an own text message opens the sheet with six reactions, Copy, Edit and Delete', () => {
+    const screen = renderWith([recentMessages[1]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+
+    const sheet = screen.getByLabelText('Message options');
+    expect(sheet).toBeTruthy();
+    allSix.forEach((emoji) => expect(screen.getByLabelText(`React with ${emoji}`)).toBeTruthy());
+    expect(screen.getByLabelText('Copy text')).toBeTruthy();
+    expect(screen.getByLabelText('Edit')).toBeTruthy();
+    expect(screen.getByLabelText('Delete for me')).toBeTruthy();
+    expect(screen.getByLabelText('Delete for everyone')).toBeTruthy();
+  });
+
+  it('a reaction picked from the sheet is sent and the sheet closes', async () => {
+    const screen = renderWith([recentMessages[1]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+    fireEvent.press(screen.getByLabelText(`React with ${allSix[2]}`));
+
+    await waitFor(() => expect(mockToggleMessageReaction).toHaveBeenCalledWith(2, allSix[2]));
+    expect(screen.queryByLabelText('Message options')).toBeNull();
+  });
+
+  it('voice long-press offers reactions and delete only', () => {
+    const screen = renderWith([recentMessages[2]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+
+    expect(screen.getByLabelText('Message options')).toBeTruthy();
+    allSix.forEach((emoji) => expect(screen.getByLabelText(`React with ${emoji}`)).toBeTruthy());
+    expect(screen.queryByLabelText('Copy text')).toBeNull();
+    expect(screen.queryByLabelText('Edit')).toBeNull();
+    expect(screen.getByLabelText('Delete for me')).toBeTruthy();
+  });
+
+  it('Edit is absent for an own message older than 24 h, Copy stays', () => {
+    const screen = renderWith([mockMessages[1]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+
+    expect(screen.getByLabelText('Copy text')).toBeTruthy();
+    expect(screen.queryByLabelText('Edit')).toBeNull();
+  });
+
+  it('a deleted message opens nothing', () => {
+    const screen = renderWith([{ ...mockMessages[1], is_deleted: true }]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+    expect(screen.queryByLabelText('Message options')).toBeNull();
+  });
+
+  it('tap reveals six quick reactions and the options button', () => {
+    const screen = renderWith([mockMessages[0]]);
+    fireEvent.press(screen.getAllByLabelText('Message actions')[0]);
+
+    allSix.forEach((emoji) => expect(screen.getByLabelText(`React with ${emoji}`)).toBeTruthy());
+    expect(screen.getByLabelText('Message options')).toBeTruthy();
+  });
+
+  it('my reaction pill is selected and the count hidden at 1; others show their count', () => {
+    const screen = renderWith([
+      { ...mockMessages[0], reactions: { [allSix[0]]: 1 }, my_reactions: [allSix[0]] },
+      { ...mockMessages[1], reactions: { [allSix[1]]: 2 } },
+    ]);
+
+    const mine = screen.getByLabelText(`You reacted with ${allSix[0]}`);
+    expect(mine.props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+    expect(screen.queryByText('1')).toBeNull();
+    expect(screen.getByLabelText(`Toggle ${allSix[1]} reaction`)).toBeTruthy();
+    expect(screen.getByText('2')).toBeTruthy();
+  });
+
+  it('Copy writes the clipboard and confirms with a toast', async () => {
+    const screen = renderWith([mockMessages[1]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+    fireEvent.press(screen.getByLabelText('Copy text'));
+
+    await waitFor(() => expect(mockClipboardSet).toHaveBeenCalledWith('Hi back!'));
+    expect(useAppToast().show).toHaveBeenCalledWith(expect.objectContaining({ title: 'Message copied' }));
+  });
+});
+
+/*
+  Thread polish: day separators and grouped bubbles so a conversation reads as a
+  conversation; a "new messages" pill when something arrives while the member is reading
+  older history; the header opens the other member's profile.
+*/
+describe('thread polish', () => {
+  function renderThread(messages: unknown[] = recentMessages) {
+    mockUseApi.mockReturnValue({
+      data: { data: messages, meta: { conversation: { other_user: { id: 5, name: 'Alice', is_online: true } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    return render(<ThreadScreen />);
+  }
+
+  it('renders Today and Yesterday separators and groups consecutive bubbles from one sender', () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const screen = renderThread([
+      { ...mockMessages[0], id: 90, body: 'From yesterday', created_at: yesterday },
+      ...recentMessages,
+    ]);
+
+    expect(screen.getByText('Yesterday')).toBeTruthy();
+    expect(screen.getByText('Today')).toBeTruthy();
+    expect(screen.getByTestId('message-row-90-single')).toBeTruthy();
+    expect(screen.getByTestId('message-row-1-single')).toBeTruthy();
+    // Messages 2 and 7 are mine, a minute apart: one group.
+    expect(screen.getByTestId('message-row-2-first')).toBeTruthy();
+    expect(screen.getByTestId('message-row-7-last')).toBeTruthy();
+  });
+
+  it('shows a "new messages" pill when a message arrives while scrolled up; tapping scrolls and clears it', async () => {
+    const scrollToEnd = jest.spyOn(FlatList.prototype, 'scrollToEnd').mockImplementation(() => {});
+    jest.spyOn(FlatList.prototype, 'scrollToOffset').mockImplementation(() => {});
+    const screen = renderThread();
+    await act(async () => {});
+    expect(screen.queryByLabelText('Jump to the latest messages')).toBeNull();
+
+    // The member scrolls up into history.
+    const list = screen.UNSAFE_getByType(FlatList);
+    act(() => list.props.onScrollBeginDrag());
+    act(() => list.props.onScroll({ nativeEvent: { contentOffset: { y: 0 }, contentSize: { height: 2000 }, layoutMeasurement: { height: 600 } } }));
+
+    act(() => {
+      mockConversationHandlers?.message?.({
+        id: 500, body: 'While you were reading', sender: { id: 5, name: 'Alice', avatar_url: null }, sender_id: 5,
+        created_at: new Date().toISOString(), is_own: false, is_voice: false, audio_url: null, reactions: {}, is_read: false,
+      });
+    });
+
+    const pill = screen.getByLabelText('Jump to the latest messages');
+    expect(screen.getByText('1 new messages')).toBeTruthy();
+
+    fireEvent.press(pill);
+    expect(scrollToEnd).toHaveBeenCalled();
+    expect(screen.queryByLabelText('Jump to the latest messages')).toBeNull();
+    screen.unmount();
+  });
+
+  it('clears the pill once the member scrolls back to the bottom', async () => {
+    jest.spyOn(FlatList.prototype, 'scrollToOffset').mockImplementation(() => {});
+    const screen = renderThread();
+    await act(async () => {});
+    const list = screen.UNSAFE_getByType(FlatList);
+    act(() => list.props.onScrollBeginDrag());
+    act(() => list.props.onScroll({ nativeEvent: { contentOffset: { y: 0 }, contentSize: { height: 2000 }, layoutMeasurement: { height: 600 } } }));
+    act(() => {
+      mockConversationHandlers?.message?.({
+        id: 501, body: 'Another', sender: { id: 5, name: 'Alice', avatar_url: null }, sender_id: 5,
+        created_at: new Date().toISOString(), is_own: false, is_voice: false, audio_url: null, reactions: {}, is_read: false,
+      });
+    });
+    expect(screen.getByLabelText('Jump to the latest messages')).toBeTruthy();
+
+    act(() => list.props.onScroll({ nativeEvent: { contentOffset: { y: 1400 }, contentSize: { height: 2000 }, layoutMeasurement: { height: 600 } } }));
+    expect(screen.queryByLabelText('Jump to the latest messages')).toBeNull();
+    screen.unmount();
+  });
+
+  it('opens the other member\'s profile from the header', () => {
+    const screen = renderThread();
+    fireEvent.press(screen.getByLabelText("View Alice's profile"));
+    expect(mockRouterPush).toHaveBeenCalledWith({ pathname: '/(modals)/member-profile', params: { id: '5' } });
   });
 });
 

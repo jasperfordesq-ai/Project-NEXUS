@@ -35,6 +35,45 @@ import type { NotificationCounts } from '@/lib/api/notifications';
  */
 type MessageHandler = (msg: Message) => boolean | void;
 
+/**
+ * `message.read` on the user channel. Sent to BOTH the sender's and the reader's channel, so
+ * a thread listens for it keyed by the other member's id (= `reader_id` when they read ours).
+ * Every field beyond `reader_id` is optional: mobile tolerates a server that sends less.
+ */
+export interface MessageReadEvent {
+  reader_id: number;
+  sender_id?: number;
+  conversation_id?: number;
+  /** Everything with an id up to and including this one is now read. */
+  up_to_message_id?: number | null;
+  /** Some servers list the ids instead; when present it wins over `up_to_message_id`. */
+  message_ids?: number[];
+  read_count?: number;
+  read_at?: string;
+  reader_unread_messages?: number;
+  timestamp?: string | number;
+}
+
+/** `typing` on the recipient's user channel. */
+export interface TypingEvent {
+  user_id: number;
+  is_typing: boolean;
+  timestamp?: string | number;
+}
+
+/** What one open conversation wants to hear about the other member. */
+export interface ConversationHandlers {
+  message?: MessageHandler;
+  read?: (event: MessageReadEvent) => void;
+  typing?: (event: TypingEvent) => void;
+}
+
+/** What the inbox list wants to hear about every conversation. */
+export interface InboxHandlers {
+  message?: (otherUserId: number, message: Message) => void;
+  read?: (event: MessageReadEvent) => void;
+}
+
 interface RealtimeContextValue {
   /** Changes after subscription succeeds so views can fetch events missed offline. */
   recoveryVersion: number;
@@ -53,6 +92,14 @@ interface RealtimeContextValue {
    * Returns an unsubscribe function — call it in a useEffect cleanup.
    */
   subscribeToMessages: (conversationId: number, handler: MessageHandler) => () => void;
+  /**
+   * Subscribe an open conversation, keyed by the OTHER member's user id. `message` fires for
+   * a message in that conversation (with `is_own` derived from the session), `read` when that
+   * member reads what we sent, `typing` when they start or stop typing.
+   */
+  subscribeToConversation: (otherUserId: number, handlers: ConversationHandlers) => () => void;
+  /** Subscribe the inbox list to every conversation's messages and read receipts. */
+  subscribeToInbox: (handlers: InboxHandlers) => () => void;
 }
 
 const RealtimeContext = createContext<RealtimeContextValue>({
@@ -61,6 +108,8 @@ const RealtimeContext = createContext<RealtimeContextValue>({
   unreadNotifications: 0,
   refreshCounts: () => undefined,
   subscribeToMessages: () => () => undefined,
+  subscribeToConversation: () => () => undefined,
+  subscribeToInbox: () => () => undefined,
 });
 
 export function useRealtimeContext(): RealtimeContextValue {
@@ -72,6 +121,17 @@ function isMessagePayload(data: unknown): data is { conversation_id: number; mes
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
   return typeof obj.conversation_id === 'number' && typeof obj.message === 'object' && obj.message !== null;
+}
+
+function isReadEvent(data: unknown): data is MessageReadEvent {
+  if (typeof data !== 'object' || data === null) return false;
+  return typeof (data as Record<string, unknown>).reader_id === 'number';
+}
+
+function isTypingEvent(data: unknown): data is TypingEvent {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.user_id === 'number' && typeof obj.is_typing === 'boolean';
 }
 
 /** Minimum interval between foreground-resume refreshes (ms). */
@@ -95,8 +155,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     : 0;
   const channelRef = useRef<Channel | null>(null);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
-  /** conversation_id → set of handlers listening for new messages */
-  const messageListenersRef = useRef<Map<number, Set<MessageHandler>>>(new Map());
+  /** other user id (or legacy conversation id) → handler sets for that open conversation */
+  const conversationListenersRef = useRef<Map<number, Set<ConversationHandlers>>>(new Map());
+  /** Inbox screens listening to every conversation. */
+  const inboxListenersRef = useRef<Set<InboxHandlers>>(new Set());
   /** Track whether the refresh callback is currently registered */
   const refreshCallbackRegisteredRef = useRef(false);
   /** Cached Pusher config — avoids re-fetching on every auth state change */
@@ -215,30 +277,69 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           // one merely existing. Every registered handler is still called - a covered thread
           // must keep receiving and caching - but only a visible one silences the badge.
           let acknowledgedByViewer = false;
+          let isOwn = false;
           if (isMessagePayload(rawPayload)) {
-            const listeners = messageListenersRef.current;
-            // Dispatch by conversation ID
-            const convListeners = listeners.get(rawPayload.conversation_id);
-            convListeners?.forEach((handler) => {
-              if (handler(rawPayload.message) === true) acknowledgedByViewer = true;
+            const raw = rawPayload.message;
+            /*
+              🔴 `is_own` is DERIVED here, never read from the payload. The server sends the
+              event to the recipient only, but a second device of the sender's, or a future
+              server echo, must still land on the right side of the thread — and a payload
+              flag is the server's view of its addressee, not of this phone.
+            */
+            const senderId = typeof raw.sender_id === 'number' ? raw.sender_id : raw.sender?.id;
+            isOwn = senderId === sessionIdentity || raw.sender?.id === sessionIdentity;
+            const otherUserId = isOwn ? raw.receiver_id : senderId;
+            const message: Message = { ...raw, is_own: isOwn };
+
+            const listeners = conversationListenersRef.current;
+            // One delivery per subscriber, whether it registered under the conversation
+            // id (legacy) or the other member's user id (the thread screen).
+            const targets = new Set<ConversationHandlers>();
+            listeners.get(rawPayload.conversation_id)?.forEach((handlers) => targets.add(handlers));
+            if (typeof otherUserId === 'number') {
+              listeners.get(otherUserId)?.forEach((handlers) => targets.add(handlers));
+            }
+            targets.forEach((handlers) => {
+              if (handlers.message?.(message) === true) acknowledgedByViewer = true;
             });
-            // Also dispatch by sender's user ID — the thread screen subscribes
-            // using the other user's ID (not the conversation row ID)
-            const senderId = rawPayload.message.sender?.id;
-            if (senderId) {
-              listeners.get(senderId)?.forEach((handler) => {
-                if (handler(rawPayload.message) === true) acknowledgedByViewer = true;
-              });
+            if (typeof otherUserId === 'number') {
+              inboxListenersRef.current.forEach((handlers) => handlers.message?.(otherUserId, message));
             }
           }
 
-          // Bump the badge unless a thread screen the member can actually see took it.
-          if (!acknowledgedByViewer) {
+          // Bump the badge unless a thread screen the member can actually see took it. A
+          // message the member sent themselves (from another device) is never unread.
+          if (!acknowledgedByViewer && !isOwn) {
             setMessageCount((previous) => ({
               identity: sessionIdentity,
               count: previous.identity === sessionIdentity ? previous.count + 1 : 1,
             }));
           }
+        });
+
+        // The other member read what we sent (reader = them), or we read on another
+        // device (reader = us). Either way the server total may have moved.
+        ch.bind('message.read', (rawPayload: unknown) => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          if (!isReadEvent(rawPayload)) return;
+          conversationListenersRef.current.get(rawPayload.reader_id)?.forEach((handlers) => handlers.read?.(rawPayload));
+          inboxListenersRef.current.forEach((handlers) => handlers.read?.(rawPayload));
+          if (rawPayload.reader_id === sessionIdentity) refreshCounts(true);
+        });
+
+        // Only the conversation with that member hears it; a third member's typing has no
+        // listener under that key, so it is dropped by construction.
+        ch.bind('typing', (rawPayload: unknown) => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          if (!isTypingEvent(rawPayload)) return;
+          conversationListenersRef.current.get(rawPayload.user_id)?.forEach((handlers) => handlers.typing?.(rawPayload));
+        });
+
+        // 🔴 A nudge, not a number. The payload's count is never written to state: the
+        // badge is re-read from /messages/unread-count, the one store that reading clears.
+        ch.bind('unread-count', () => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          refreshCounts(true);
         });
       } catch {
         /* Pusher not configured — silent no-op */
@@ -323,21 +424,44 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     };
   }, [refreshCounts, sessionIdentity]);
 
-  const subscribeToMessages = useCallback(
-    (conversationId: number, handler: MessageHandler): (() => void) => {
-      const map = messageListenersRef.current;
-      if (!map.has(conversationId)) map.set(conversationId, new Set());
-      map.get(conversationId)!.add(handler);
+  const subscribeToConversation = useCallback(
+    (otherUserId: number, handlers: ConversationHandlers): (() => void) => {
+      const map = conversationListenersRef.current;
+      if (!map.has(otherUserId)) map.set(otherUserId, new Set());
+      map.get(otherUserId)!.add(handlers);
       return () => {
-        map.get(conversationId)?.delete(handler);
+        map.get(otherUserId)?.delete(handlers);
       };
     },
     [],
   );
 
+  // Thin wrapper kept so existing callers and their test mocks survive unchanged.
+  const subscribeToMessages = useCallback(
+    (conversationId: number, handler: MessageHandler): (() => void) =>
+      subscribeToConversation(conversationId, { message: handler }),
+    [subscribeToConversation],
+  );
+
+  const subscribeToInbox = useCallback((handlers: InboxHandlers): (() => void) => {
+    const set = inboxListenersRef.current;
+    set.add(handlers);
+    return () => {
+      set.delete(handlers);
+    };
+  }, []);
+
   return (
     <RealtimeContext.Provider
-      value={{ unreadMessages, unreadNotifications, refreshCounts, subscribeToMessages, recoveryVersion }}
+      value={{
+        unreadMessages,
+        unreadNotifications,
+        refreshCounts,
+        subscribeToMessages,
+        subscribeToConversation,
+        subscribeToInbox,
+        recoveryVersion,
+      }}
     >
       {children}
     </RealtimeContext.Provider>

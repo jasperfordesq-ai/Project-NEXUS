@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
+import { Text } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import ActionSheet from './ActionSheet';
@@ -54,5 +55,19 @@ describe('ActionSheet', () => {
     });
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a header above the rows inside the same sheet', () => {
+    const { getByText } = render(
+      <ActionSheet
+        visible
+        onClose={jest.fn()}
+        header={<Text>Pick a reaction</Text>}
+        actions={[{ label: 'Copy text', onPress: jest.fn() }]}
+      />,
+    );
+
+    expect(getByText('Pick a reaction')).toBeTruthy();
+    expect(getByText('Copy text')).toBeTruthy();
   });
 });

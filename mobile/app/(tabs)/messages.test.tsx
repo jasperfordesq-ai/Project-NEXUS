@@ -53,6 +53,8 @@ jest.mock('react-i18next', () => ({
         'empty.archivedTitle': 'No archived conversations',
         'empty.archivedSubtitle': 'Archived conversations will appear here.',
         'thread.you': 'You',
+        'thread.receipt.sent': 'Sent',
+        'thread.receipt.read': 'Read',
         'thread.noMessages': 'No messages yet. Say hello!',
         'unknownMember': 'Community member',
         'common:buttons.retry': 'Retry',
@@ -85,6 +87,31 @@ jest.mock('@/lib/hooks/useTheme', () => ({
 const mockUsePaginatedApi = jest.fn();
 jest.mock('@/lib/hooks/usePaginatedApi', () => ({
   usePaginatedApi: (...args: unknown[]) => mockUsePaginatedApi(...args),
+}));
+
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 1, name: 'Me' }, isAuthenticated: true }),
+}));
+
+type MockInboxHandlers = {
+  message?: (otherUserId: number, message: Record<string, unknown>) => void;
+  read?: (event: Record<string, unknown>) => void;
+};
+let mockInboxHandlers: MockInboxHandlers | null = null;
+let mockServerUnread = 0;
+jest.mock('@/lib/context/RealtimeContext', () => ({
+  useRealtimeContext: () => ({
+    unreadMessages: mockServerUnread,
+    unreadNotifications: 0,
+    recoveryVersion: 0,
+    refreshCounts: jest.fn(),
+    subscribeToMessages: jest.fn(() => jest.fn()),
+    subscribeToConversation: jest.fn(() => jest.fn()),
+    subscribeToInbox: jest.fn((handlers: MockInboxHandlers) => {
+      mockInboxHandlers = handlers;
+      return jest.fn();
+    }),
+  }),
 }));
 
 jest.mock('expo-haptics', () => ({
@@ -161,9 +188,12 @@ const defaultPaginatedState = {
   hasMore: false,
   loadMore: jest.fn(),
   refresh: jest.fn(),
+  mutateItems: jest.fn(),
 };
 
 beforeEach(() => {
+  mockInboxHandlers = null;
+  mockServerUnread = 0;
   mockRouterPush.mockReset();
   mockRouterReplace.mockReset();
   mockShowToast.mockReset();
@@ -303,6 +333,125 @@ describe('MessagesScreen', () => {
 
     const { getByText } = render(<MessagesScreen />);
     expect(getByText('You: Sure, on my way!')).toBeTruthy();
+  });
+
+  it('shows a single tick on an own last message until it is read, then a double tick', () => {
+    mockUsePaginatedApi.mockReturnValue({
+      ...defaultPaginatedState,
+      items: [{
+        ...mockConversation,
+        last_message: { body: 'Sure, on my way!', created_at: '2026-03-20T15:00:00Z', is_own: true, is_read: false },
+      }],
+    });
+    const screen = render(<MessagesScreen />);
+    expect(screen.getByTestId('inbox-receipt-sent')).toBeTruthy();
+    expect(screen.queryByTestId('inbox-receipt-read')).toBeNull();
+
+    mockUsePaginatedApi.mockReturnValue({
+      ...defaultPaginatedState,
+      items: [{
+        ...mockConversation,
+        last_message: { body: 'Sure, on my way!', created_at: '2026-03-20T15:00:00Z', is_own: true, is_read: true },
+      }],
+    });
+    screen.rerender(<MessagesScreen />);
+    expect(screen.getByTestId('inbox-receipt-read')).toBeTruthy();
+    expect(screen.queryByTestId('inbox-receipt-sent')).toBeNull();
+  });
+
+  it('shows no tick on a last message from the other member', () => {
+    mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [mockConversation] });
+    const screen = render(<MessagesScreen />);
+    expect(screen.queryByTestId('inbox-receipt-sent')).toBeNull();
+    expect(screen.queryByTestId('inbox-receipt-read')).toBeNull();
+  });
+
+  /*
+    Live inbox: a message or read receipt arriving on the member's channel updates the row in
+    place — preview, tick, count and position — without waiting for a refetch.
+  */
+  describe('live inbox updates', () => {
+    const convA = { ...mockConversation, id: 7, other_user: { id: 2, name: 'Bob Builder', avatar_url: null } };
+    const convB = {
+      ...mockConversation,
+      id: 8,
+      other_user: { id: 3, name: 'Alice Artist', avatar_url: null },
+      last_message: { id: 40, body: 'Mural planning', created_at: '2026-03-21T09:00:00Z', sender_id: 3, is_read: true },
+      unread_count: 0,
+    };
+
+    function renderInbox(items: unknown[]) {
+      const mutateItems = jest.fn();
+      const refresh = jest.fn();
+      mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items, mutateItems, refresh });
+      render(<MessagesScreen />);
+      expect(mockInboxHandlers).toBeTruthy();
+      const applyLastMutation = (): any[] => {
+        const updater = mutateItems.mock.calls[mutateItems.mock.calls.length - 1][0];
+        return updater(items);
+      };
+      return { mutateItems, refresh, applyLastMutation };
+    }
+
+    it('a realtime message moves its conversation to the top and bumps unread', () => {
+      const { mutateItems, applyLastMutation } = renderInbox([convA, convB]);
+
+      mockInboxHandlers?.message?.(3, {
+        id: 50, body: 'New one', sender_id: 3, receiver_id: 1, created_at: '2026-03-22T10:00:00Z', is_own: false, is_read: false,
+      });
+
+      expect(mutateItems).toHaveBeenCalledTimes(1);
+      const next = applyLastMutation();
+      expect(next.map((c) => c.id)).toEqual([8, 7]);
+      expect(next[0].last_message).toEqual({ id: 50, body: 'New one', content: 'New one', sender_id: 3, created_at: '2026-03-22T10:00:00Z', is_read: false });
+      expect(next[0].unread_count).toBe(1);
+    });
+
+    it('an own echo updates the preview without bumping unread', () => {
+      const { applyLastMutation } = renderInbox([convA, convB]);
+
+      mockInboxHandlers?.message?.(2, {
+        id: 51, body: 'Mine', sender_id: 1, receiver_id: 2, created_at: '2026-03-22T10:01:00Z', is_own: true, is_read: false,
+      });
+
+      const next = applyLastMutation();
+      expect(next[0].id).toBe(7);
+      expect(next[0].last_message).toEqual({ id: 51, body: 'Mine', content: 'Mine', sender_id: 1, created_at: '2026-03-22T10:01:00Z', is_read: false });
+      expect(next[0].unread_count).toBe(0);
+    });
+
+    it('message.read flips the preview tick when the other member reads our last message', () => {
+      const ownLast = { ...convA, last_message: { id: 60, body: 'Sent by me', sender_id: 1, created_at: '2026-03-22T10:02:00Z', is_read: false } };
+      const { applyLastMutation } = renderInbox([ownLast, convB]);
+
+      mockInboxHandlers?.read?.({ reader_id: 2, sender_id: 1, up_to_message_id: 60 });
+
+      const next = applyLastMutation();
+      expect(next[0].last_message.is_read).toBe(true);
+      expect(next[1].last_message.is_read).toBe(true);
+    });
+
+    it('message.read by this member elsewhere clears that conversation\'s unread count', () => {
+      const unreadA = { ...convA, unread_count: 4 };
+      const { applyLastMutation } = renderInbox([unreadA, convB]);
+
+      mockInboxHandlers?.read?.({ reader_id: 1, sender_id: 2 });
+
+      const next = applyLastMutation();
+      expect(next[0].unread_count).toBe(0);
+      expect(next[1].unread_count).toBe(0);
+    });
+
+    it('unknown conversation triggers a refresh', () => {
+      const { mutateItems, refresh } = renderInbox([convA]);
+
+      mockInboxHandlers?.message?.(99, {
+        id: 52, body: 'Stranger', sender_id: 99, receiver_id: 1, created_at: '2026-03-22T10:03:00Z', is_own: false, is_read: false,
+      });
+
+      expect(refresh).toHaveBeenCalledTimes(1);
+      expect(mutateItems).not.toHaveBeenCalled();
+    });
   });
 
   it('shows relative timestamp next to the last message', () => {

@@ -23,6 +23,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from 'expo-audio';
 import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 import * as Haptics from '@/lib/haptics';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Chip } from '@/components/ui/StatusChip';
@@ -35,14 +36,21 @@ import { useApi } from '@/lib/hooks/useApi';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
-import { useRealtimeContext } from '@/lib/context/RealtimeContext';
-import { contrastText, withAlpha } from '@/lib/utils/color';
+import { useRealtimeContext, type MessageReadEvent } from '@/lib/context/RealtimeContext';
+import { readEventCovers } from '@/lib/messages/readReceipts';
+import { contrastText, readReceiptColor, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ActionSheet from '@/components/ui/ActionSheet';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useTypingSender, type TypingSender } from '@/lib/hooks/useTypingSender';
+import TypingRow from '@/components/messages/TypingRow';
+import ReactionRow from '@/components/messages/ReactionRow';
+import NativePressable from '@/components/ui/NativePressable';
+import { MESSAGE_EDIT_WINDOW_MS, REACTION_EMOJIS } from '@/lib/messages/reactions';
+import { buildThreadRows, type GroupPosition, type ThreadRow } from '@/lib/messages/threadRows';
 import Avatar from '@/components/ui/Avatar';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -74,7 +82,6 @@ import {
 } from '@/lib/messageDraftMedia';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-const REACTION_EMOJIS = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 
 const MAX_ATTACHMENTS = 5;
 
@@ -118,7 +125,7 @@ function ThreadScreenInner() {
   const primary = usePrimaryColor();
   const theme = useTheme();
   const bottomInset = useBottomInset();
-  const { subscribeToMessages, refreshCounts, recoveryVersion = 0 } = useRealtimeContext();
+  const { subscribeToConversation, refreshCounts, recoveryVersion = 0 } = useRealtimeContext();
   const { show: showToast } = useAppToast();
   const { confirm, confirmDialog } = useConfirm();
   const unknownMemberLabel = t('unknownMember');
@@ -214,6 +221,35 @@ function ThreadScreenInner() {
   const lastAppStateRef = useRef<string>(AppState.currentState);
   const [messagingRestriction, setMessagingRestriction] = useState<MessagingRestrictionStatus | null>(null);
   /*
+    Messages that arrived while the member was reading older history (or while the screen
+    was covered). Shown as a "N new messages" pill; cleared when they reach the bottom.
+  */
+  const [unseenCount, setUnseenCount] = useState(0);
+  /*
+    The other member is typing. Cleared when they stop, when their message lands, and
+    after 5 s regardless — a lost "stopped" must not leave them typing for ever.
+  */
+  const [otherTyping, setOtherTyping] = useState(false);
+  const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setOtherTypingState = useCallback((typing: boolean) => {
+    if (typingClearTimerRef.current) {
+      clearTimeout(typingClearTimerRef.current);
+      typingClearTimerRef.current = null;
+    }
+    setOtherTyping(typing);
+    if (typing) {
+      typingClearTimerRef.current = setTimeout(() => {
+        typingClearTimerRef.current = null;
+        setOtherTyping(false);
+      }, 5_000);
+    }
+  }, []);
+  useEffect(() => () => {
+    if (typingClearTimerRef.current) clearTimeout(typingClearTimerRef.current);
+  }, []);
+  // Assigned once the recipient is known (below); the text handler is declared earlier.
+  const typingSenderRef = useRef<TypingSender | null>(null);
+  /*
     🔴 Which message shows the 👍 ❤️ 😂 ⋯ quick-react row. It used to be EVERY message: the
     row was as tall as the bubble it belonged to, so a thread showed three messages per
     screen and read as a wall of buttons (emulator, 2026-09-05). Tap a bubble to reveal
@@ -224,6 +260,12 @@ function ThreadScreenInner() {
     setQuickReactFor((current) => (current === messageId ? null : messageId));
   }, []);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  /*
+    "You reacted": which emoji THIS member has on each message. The server sends
+    `my_reactions` when it knows; a local toggle overrides it from then on, so the pill
+    reads as selected the moment it is tapped rather than after the next fetch.
+  */
+  const [myReactions, setMyReactions] = useState<Record<number, string[]>>({});
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [failedDrafts, setFailedDrafts] = useState<FailedMessageDraft[]>([]);
   const [isRecording, setIsRecording] = useState(false);
@@ -308,6 +350,7 @@ function ThreadScreenInner() {
     draftChangedRef.current = true;
     inputTextRef.current = text;
     setInputText(text);
+    typingSenderRef.current?.onTextChange(text);
   }, []);
 
   useUnsavedChangesGuard({
@@ -335,7 +378,7 @@ function ThreadScreenInner() {
     uploadAbortRef.current?.abort();
   }, []);
   const [optionsMessage, setOptionsMessage] = useState<Message | null>(null);
-  const flatListRef = useRef<FlatList<Message>>(null);
+  const flatListRef = useRef<FlatList<ThreadRow>>(null);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recordingRef = useRef<typeof audioRecorder | null>(null);
   const finalizeVoiceRecordingRef = useRef<(() => Promise<void>) | null>(null);
@@ -407,6 +450,16 @@ function ThreadScreenInner() {
     const seen = new Set(messages.map((message) => message.id));
     return [...olderMessages.filter((message) => !seen.has(message.id)), ...messages];
   }, [messages, olderMessages]);
+  const visibleMessagesRef = useRef(visibleMessages);
+  visibleMessagesRef.current = visibleMessages;
+  // Day chips and bubble grouping are derived, never stored; the list renders these rows.
+  const threadRows = useMemo(
+    () => buildThreadRows(visibleMessages, { now: Date.now(), t, locale: dateLocale() }),
+    [t, visibleMessages],
+  );
+  const myReactionsFor = useCallback((message: Message): string[] => (
+    myReactions[message.id] ?? message.my_reactions ?? []
+  ), [myReactions]);
 
   // Fetching a thread marks it read server-side (MessagesController::show calls
   // markAsRead), so the badge is now stale by however many messages this
@@ -442,6 +495,7 @@ function ThreadScreenInner() {
     isNearBottomRef.current = true;
     readerHasScrolledRef.current = false;
     setPreserveHistoryPosition(false);
+    setUnseenCount((count) => (count === 0 ? count : 0));
     const timer = setTimeout(() => {
       followMessageLayout();
     }, 80);
@@ -579,25 +633,62 @@ function ThreadScreenInner() {
 
   useEffect(() => {
     if (!isValidId || !safeThreadLookupId) return undefined;
-    return subscribeToMessages(safeThreadLookupId, (incoming) => {
-      // Read from refs, not from captured values: this handler is registered once and has
-      // to know whether the member can see the screen NOW, not when it subscribed.
-      const visible = isFocusedRef.current && appActiveRef.current;
-      setMessages((prev) => {
-        if (prev.some((message) => message.id === incoming.id)) return prev;
-        const next = incoming.is_own || visible ? { ...incoming, is_read: true } : incoming;
-        return [...prev, next].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-      });
-      if (!incoming.is_own && visible) {
-        void markConversationRead(safeThreadLookupId)
-          .then(() => refreshCounts(true))
-          .catch(() => null);
-      }
-      // An own message never counted towards the badge. One from the other side counts
-      // unless a thread the member can actually see has just shown it to them.
-      return incoming.is_own || visible;
+    const byCreated = (a: Message, b: Message) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return subscribeToConversation(safeThreadLookupId, {
+      message: (incoming) => {
+        // Read from refs, not from captured values: this handler is registered once and has
+        // to know whether the member can see the screen NOW, not when it subscribed.
+        const visible = isFocusedRef.current && appActiveRef.current;
+        if (incoming.is_own) {
+          /*
+            The server does not echo a message to the sender's own phone, but a second
+            device of the member's does arrive here as own — and so would a future echo. If
+            an optimistic bubble is still waiting for the POST with the same content, the
+            echo IS that message: replace the bubble rather than showing it twice. Never
+            force `is_read` on an own message: that is the other member's tick to earn.
+          */
+          setMessages((prev) => {
+            if (prev.some((message) => message.id === incoming.id)) return prev;
+            const own: Message = { ...incoming, is_own: true };
+            const pendingIndex = prev.findIndex((message) => isPendingTwin(message, own));
+            if (pendingIndex >= 0) return prev.map((message, index) => (index === pendingIndex ? own : message));
+            return [...prev, own].sort(byCreated);
+          });
+          return true;
+        }
+        // Their message has landed, so they are no longer typing it.
+        setOtherTypingState(false);
+        setMessages((prev) => {
+          if (prev.some((message) => message.id === incoming.id)) return prev;
+          const next = visible ? { ...incoming, is_read: true } : incoming;
+          return [...prev, next].sort(byCreated);
+        });
+        if (visible) {
+          void markConversationRead(safeThreadLookupId)
+            .then(() => refreshCounts(true))
+            .catch(() => null);
+        }
+        // Not on screen, or on screen but reading older history: offer a way down to it.
+        if (!visible || !isNearBottomRef.current) setUnseenCount((count) => count + 1);
+        // An own message never counted towards the badge. One from the other side counts
+        // unless a thread the member can actually see has just shown it to them.
+        return visible;
+      },
+      read: (event: MessageReadEvent) => {
+        // The other member read what we sent: flip the ticks in scope, in both pages.
+        const flip = (list: Message[]) => list.map((message) => {
+          if (!message.is_own || message.is_read || message.local_status === 'sending') return message;
+          if (!readEventCovers(event, message.id)) return message;
+          return { ...message, is_read: true, read_at: event.read_at ?? message.read_at ?? new Date().toISOString() };
+        });
+        setMessages(flip);
+        setOlderMessages(flip);
+      },
+      typing: (event) => {
+        setOtherTypingState(event.is_typing);
+      },
     });
-  }, [isValidId, refreshCounts, safeThreadLookupId, subscribeToMessages]);
+  }, [isValidId, refreshCounts, safeThreadLookupId, setOtherTypingState, subscribeToConversation]);
 
   /*
     Returning to a thread that took messages while it was covered clears them once, here,
@@ -642,6 +733,19 @@ function ThreadScreenInner() {
     };
   }, []);
 
+  const jumpToLatest = useCallback(() => {
+    isNearBottomRef.current = true;
+    readerHasScrolledRef.current = false;
+    setPreserveHistoryPosition(false);
+    setUnseenCount(0);
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, []);
+
+  const openOtherProfile = useCallback(() => {
+    if (!otherUser?.id) return;
+    router.push({ pathname: '/(modals)/member-profile', params: { id: String(otherUser.id) } } as never);
+  }, [otherUser?.id]);
+
   const resolvedRecipientId = useMemo(() => {
     if (!isValidId) return null;
     if (isNewConversation && safeThreadLookupId > 0) return safeThreadLookupId;
@@ -651,6 +755,12 @@ function ThreadScreenInner() {
     const incoming = data?.data?.find((message) => !message.is_own);
     return incoming?.sender?.id ?? incoming?.sender_id ?? null;
   }, [data, isNewConversation, isValidId, safeThreadLookupId]);
+
+  const typingSender = useTypingSender(
+    resolvedRecipientId,
+    !messagingRestriction?.messaging_disabled && isFocused,
+  );
+  typingSenderRef.current = typingSender;
 
   const newConversationOptions = useMemo<SendMessageOptions | undefined>(() => {
     if (!isNewConversation) return undefined;
@@ -699,6 +809,7 @@ function ThreadScreenInner() {
       return;
     }
 
+    typingSender.onSend();
     const sendIntent = JSON.stringify([
       'message',
       resolvedRecipientId,
@@ -751,6 +862,7 @@ function ThreadScreenInner() {
       audio_url: null,
       reactions: {},
       is_read: false,
+      local_status: 'sending',
       attachments: optimisticAttachments,
     };
 
@@ -871,7 +983,7 @@ function ThreadScreenInner() {
       }
       uploadAbortRef.current = null;
     }
-  }, [editingMessage, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t, writeCurrentMessageDraft]);
+  }, [editingMessage, messagingRestriction?.messaging_disabled, newConversationOptions, pendingAttachments, resolvedRecipientId, showToast, t, typingSender, writeCurrentMessageDraft]);
 
   const startEditingMessage = useCallback((message: Message) => {
     if (!message.is_own || message.is_voice || message.is_deleted || isSending || editingMessage) return;
@@ -924,10 +1036,22 @@ function ThreadScreenInner() {
     });
   }, [confirm, showToast, t]);
 
+  // Voice messages open it too (reactions and delete); a deleted message has nothing to offer.
   const openMessageOptions = useCallback((message: Message) => {
-    if (message.is_deleted || message.is_voice) return;
+    if (message.is_deleted) return;
     setOptionsMessage(message);
   }, []);
+
+  const copyMessageText = useCallback(async (message: Message) => {
+    const text = message.body || message.content || '';
+    if (!text) return;
+    try {
+      await Clipboard.setStringAsync(text);
+      showToast({ title: t('thread.copied'), variant: 'success' });
+    } catch (err) {
+      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('common:errors.generic')), variant: 'danger' });
+    }
+  }, [showToast, t]);
 
   const pickingImagesRef = useRef(false);
   const handlePickImages = useCallback(async () => {
@@ -1116,6 +1240,7 @@ function ThreadScreenInner() {
       return;
     }
     sendInFlightRef.current = true;
+    typingSender.onSend();
 
     const preparedForRecovery = await writeCurrentMessageDraft(true);
     if (!preparedForRecovery) {
@@ -1154,6 +1279,7 @@ function ThreadScreenInner() {
       audio_url: voiceUri,
       reactions: {},
       is_read: false,
+      local_status: 'sending',
     };
 
     // Capture the length BEFORE the counter is reset — the server stores max(1, duration),
@@ -1196,7 +1322,7 @@ function ThreadScreenInner() {
       sendInFlightRef.current = false;
       if (recordingMountedRef.current) setIsSending(false);
     }
-  }, [messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, voiceUri, writeCurrentMessageDraft]);
+  }, [messagingRestriction?.messaging_disabled, newConversationOptions, recordingSeconds, resolvedRecipientId, showToast, t, typingSender, voiceUri, writeCurrentMessageDraft]);
 
   const handleAttachmentOpenFailed = useCallback((err: unknown) => {
     showToast({
@@ -1208,10 +1334,17 @@ function ThreadScreenInner() {
 
   const handleReaction = useCallback(async (messageId: number, emoji: string) => {
     setQuickReactFor(null);
+    void Haptics.selectionAsync();
     try {
       const response = await toggleMessageReaction(messageId, emoji);
       const action = response.data?.action ?? 'added';
-      setMessages((prev) => prev.map((message) => {
+      setMyReactions((prev) => {
+        const message = visibleMessagesRef.current.find((item) => item.id === messageId);
+        const base = prev[messageId] ?? message?.my_reactions ?? [];
+        const next = action === 'removed' ? base.filter((item) => item !== emoji) : Array.from(new Set([...base, emoji]));
+        return { ...prev, [messageId]: next };
+      });
+      const applyCount = (message: Message): Message => {
         if (message.id !== messageId) return message;
         const reactions = { ...(message.reactions ?? {}) };
         const current = reactions[emoji] ?? 0;
@@ -1225,8 +1358,9 @@ function ThreadScreenInner() {
           reactions[emoji] = current + 1;
         }
         return { ...message, reactions };
-      }));
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      };
+      setMessages((prev) => prev.map(applyCount));
+      setOlderMessages((prev) => prev.map(applyCount));
     } catch (err) {
       showToast({ title: t('errors.reactionFailedTitle'), description: describeApiError(err, t('errors.reactionFailed')), variant: 'danger' });
     }
@@ -1285,18 +1419,25 @@ function ThreadScreenInner() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <Surface variant="secondary" className="mx-4 mb-2 mt-3 flex-row items-center gap-3 rounded-panel-inner p-3">
-          <Avatar uri={otherUser?.avatar_url ?? null} name={threadTitle} size={42} />
+        {/* The header is the way to the other member's profile, once the server has named them. */}
+        <ThreadHeaderCard
+          pressable={Boolean(otherUser?.id)}
+          accessibilityLabel={t('thread.viewProfile', { name: threadTitle })}
+          onPress={openOtherProfile}
+        >
+          <Avatar uri={otherUser?.avatar_url ?? null} name={threadTitle} size={42} showOnline={otherUser?.is_online ?? false} />
           <View className="min-w-0 flex-1">
             <Text className="text-base font-semibold" style={{ color: theme.text }} numberOfLines={1}>
               {threadTitle}
             </Text>
             <Text className="text-xs" style={{ color: theme.textSecondary }} numberOfLines={1}>
-              {messages.length > 0 ? t('thread.messageCount', { count: messages.length }) : t('thread.noMessages')}
+              {otherTyping
+                ? t('thread.typing', { name: threadTitle })
+                : messages.length > 0 ? t('thread.messageCount', { count: messages.length }) : t('thread.noMessages')}
             </Text>
           </View>
-          <Ionicons name="lock-closed-outline" size={16} color={theme.textMuted} />
-        </Surface>
+          <Ionicons name={otherUser?.id ? 'chevron-forward' : 'lock-closed-outline'} size={16} color={theme.textMuted} />
+        </ThreadHeaderCard>
 
         {threadContext ? (
           <ThreadContextCard context={threadContext} t={t} theme={theme} primary={primary} />
@@ -1306,10 +1447,10 @@ function ThreadScreenInner() {
           <RestrictionNotice primary={primary} t={t} theme={theme} />
         ) : null}
 
-        <FlatList<Message>
+        <FlatList<ThreadRow>
           ref={flatListRef}
-          data={visibleMessages}
-          keyExtractor={(item) => String(item.id)}
+          data={threadRows}
+          keyExtractor={(row) => row.key}
           maintainVisibleContentPosition={preserveHistoryPosition ? { minIndexForVisible: 0 } : undefined}
           onLayout={followMessageLayout}
           onContentSizeChange={(_width, height) => {
@@ -1327,6 +1468,8 @@ function ThreadScreenInner() {
             if (!readerHasScrolledRef.current) return;
             const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
             isNearBottomRef.current = contentSize.height - layoutMeasurement.height - contentOffset.y < 120;
+            // Back at the bottom: everything that arrived meanwhile is now in view.
+            if (isNearBottomRef.current) setUnseenCount((count) => (count === 0 ? count : 0));
           }}
           scrollEventThrottle={100}
           /*
@@ -1351,19 +1494,25 @@ function ThreadScreenInner() {
               </View>
             ) : null
           }
-          renderItem={({ item }) => (
-            <MessageBubble
-              item={item}
-              primary={primary}
-              theme={theme}
-              t={t}
-              unknownMemberLabel={unknownMemberLabel}
-              showQuickReactions={quickReactFor === item.id}
-              onToggleQuickReactions={toggleQuickReact}
-              onReact={handleReaction}
-              onOptions={openMessageOptions}
-              onAttachmentOpenFailed={handleAttachmentOpenFailed}
-            />
+          renderItem={({ item: row }) => (
+            row.kind === 'date' ? (
+              <DateSeparator label={row.label} />
+            ) : (
+              <MessageBubble
+                item={row.message}
+                groupPosition={row.groupPosition}
+                primary={primary}
+                theme={theme}
+                t={t}
+                unknownMemberLabel={unknownMemberLabel}
+                showQuickReactions={quickReactFor === row.message.id}
+                myReactions={myReactionsFor(row.message)}
+                onToggleQuickReactions={toggleQuickReact}
+                onReact={handleReaction}
+                onOptions={openMessageOptions}
+                onAttachmentOpenFailed={handleAttachmentOpenFailed}
+              />
+            )
           )}
           style={{ flex: 1, backgroundColor: theme.bg }}
           contentContainerStyle={{
@@ -1384,6 +1533,17 @@ function ThreadScreenInner() {
           }
           showsVerticalScrollIndicator={false}
         />
+
+        {unseenCount > 0 ? (
+          <View className="items-center pb-1" accessibilityLiveRegion="polite">
+            <HeroButton size="sm" variant="primary" accessibilityLabel={t('thread.scrollToLatest')} onPress={jumpToLatest}>
+              <AccentIcon name="arrow-down" size={14} />
+              <HeroButton.Label>{t('thread.newMessages', { count: unseenCount })}</HeroButton.Label>
+            </HeroButton>
+          </View>
+        ) : null}
+
+        <TypingRow visible={otherTyping} name={threadTitle} />
 
         {editingMessage ? (
           <Surface variant="secondary" className="mx-3 mb-2 flex-row items-center gap-3 rounded-panel-inner px-3 py-2">
@@ -1546,6 +1706,7 @@ function ThreadScreenInner() {
               style={{ color: theme.text, backgroundColor: theme.bg }}
               value={inputText}
               onChangeText={handleInputTextChange}
+              onBlur={typingSender.onBlur}
               placeholder={t('thread.inputPlaceholder')}
               placeholderTextColor={theme.textMuted}
               multiline
@@ -1578,7 +1739,17 @@ function ThreadScreenInner() {
         visible={Boolean(optionsMessage)}
         onClose={() => setOptionsMessage(null)}
         title={t('thread.messageOptions')}
-        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage, !isSending && !editingMessage)}
+        header={optionsMessage && !optionsMessage.is_deleted ? (
+          <ReactionRow
+            mine={myReactionsFor(optionsMessage)}
+            onReact={(emoji) => {
+              const target = optionsMessage;
+              setOptionsMessage(null);
+              void handleReaction(target.id, emoji);
+            }}
+          />
+        ) : undefined}
+        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage, copyMessageText, !isSending && !editingMessage)}
       />
       {confirmDialog}
     </SafeAreaView>
@@ -1602,6 +1773,41 @@ function AuthenticatedMessageImage({ path }: { path: string }) {
     <Image source={source} className="h-[132px] w-[180px] rounded-panel-inner" resizeMode="cover" />
   ) : (
     <View className="h-[132px] w-[180px] rounded-panel-inner bg-default-100" />
+  );
+}
+
+function ThreadHeaderCard({
+  pressable,
+  accessibilityLabel,
+  onPress,
+  children,
+}: {
+  pressable: boolean;
+  accessibilityLabel: string;
+  onPress: () => void;
+  children: React.ReactNode;
+}) {
+  const card = (
+    <Surface variant="secondary" className="flex-row items-center gap-3 rounded-panel-inner p-3">
+      {children}
+    </Surface>
+  );
+  if (!pressable) return <View className="mx-4 mb-2 mt-3">{card}</View>;
+  return (
+    <NativePressable className="mx-4 mb-2 mt-3" accessibilityLabel={accessibilityLabel} onPress={onPress} feedback="highlight">
+      {card}
+    </NativePressable>
+  );
+}
+
+/** A small centred day chip. Announced as a heading so a screen reader can skip by day. */
+function DateSeparator({ label }: { label: string }) {
+  return (
+    <View className="items-center py-2" accessibilityRole="header" accessible accessibilityLabel={label}>
+      <Chip size="sm" variant="soft" color="default">
+        <Chip.Label>{label}</Chip.Label>
+      </Chip>
+    </View>
   );
 }
 
@@ -1691,11 +1897,21 @@ function buildMessageActions(
   t: (key: string, options?: Record<string, unknown>) => string,
   startEditingMessage: (message: Message) => void,
   handleDeleteMessage: (message: Message, scope: 'self' | 'everyone') => void,
+  copyMessageText: (message: Message) => void,
   canEdit: boolean,
 ) {
   if (!message) return [];
+  const hasText = !message.is_voice && !message.is_deleted && Boolean(message.body || message.content);
+  // The server refuses an edit after 24 h (EDIT_EXPIRED); do not offer what it will refuse.
+  const sentAt = new Date(message.created_at).getTime();
+  const withinEditWindow = Number.isFinite(sentAt) && Date.now() - sentAt < MESSAGE_EDIT_WINDOW_MS;
   return [
-    ...(message.is_own && canEdit ? [{
+    ...(hasText ? [{
+      label: t('thread.copy'),
+      icon: 'copy-outline',
+      onPress: () => copyMessageText(message),
+    }] : []),
+    ...(message.is_own && hasText && canEdit && withinEditWindow ? [{
       label: t('thread.edit'),
       icon: 'pencil-outline',
       onPress: () => startEditingMessage(message),
@@ -1719,22 +1935,27 @@ function buildMessageActions(
 
 function MessageBubble({
   item,
+  groupPosition,
   primary,
   theme,
   t,
   unknownMemberLabel,
   showQuickReactions,
+  myReactions,
   onToggleQuickReactions,
   onReact,
   onOptions,
   onAttachmentOpenFailed,
 }: {
   item: Message;
+  groupPosition: GroupPosition;
   primary: string;
   theme: ReturnType<typeof useTheme>;
   t: (key: string, options?: Record<string, unknown>) => string;
   unknownMemberLabel: string;
   showQuickReactions: boolean;
+  /** Emoji this member has on the message, so their pill reads as selected. */
+  myReactions: readonly string[];
   onToggleQuickReactions: (messageId: number) => void;
   onReact: (messageId: number, emoji: string) => void;
   onOptions: (message: Message) => void;
@@ -1747,14 +1968,24 @@ function MessageBubble({
   const reactions = item.reactions ?? {};
   const hasReactions = Object.keys(reactions).length > 0;
   const body = item.body || item.content || '';
+  // Grouped bubbles sit closer together and share one avatar, on the last of the run.
+  const grouped = groupPosition !== 'single';
+  const showAvatar = groupPosition === 'single' || groupPosition === 'last';
 
   return (
-    <View className={`my-1.5 flex-row items-end gap-2 ${isOwn ? 'justify-end pl-12' : 'justify-start pr-12'}`}>
-      {!isOwn ? <Avatar uri={item.sender?.avatar_url ?? null} name={senderName} size={32} /> : null}
+    <View
+      testID={`message-row-${item.id}-${groupPosition}`}
+      className={`${grouped ? 'my-0.5' : 'my-1.5'} flex-row items-end gap-2 ${isOwn ? 'justify-end pl-12' : 'justify-start pr-12'}`}
+    >
+      {!isOwn ? (
+        showAvatar
+          ? <Avatar uri={item.sender?.avatar_url ?? null} name={senderName} size={32} />
+          : <View style={{ width: 32 }} />
+      ) : null}
       <View className={`max-w-[82%] gap-1.5 ${isOwn ? 'items-end' : 'items-start'}`}>
         <Pressable
           onPress={() => onToggleQuickReactions(item.id)}
-          onLongPress={item.is_deleted || item.is_voice ? undefined : () => onOptions(item)}
+          onLongPress={item.is_deleted ? undefined : () => onOptions(item)}
           accessibilityRole="button"
           accessibilityLabel={t('thread.messageActions')}
           accessibilityState={{ expanded: showQuickReactions }}
@@ -1835,66 +2066,123 @@ function MessageBubble({
               {t('thread.edited')}
             </Text>
           ) : null}
-          <Text
-            className="mt-1 text-[10px]"
-            style={isOwn
-              ? { color: 'rgba(255,255,255,0.75)', textAlign: 'right' }
-              : { color: theme.textMuted, textAlign: 'right' }}
-          >
-            {formatTime(item.created_at)}
-          </Text>
+          <View className="mt-1 flex-row items-center justify-end gap-1">
+            <Text
+              className="text-[10px]"
+              style={isOwn
+                ? { color: withAlpha(onPrimary, 0.75), textAlign: 'right' }
+                : { color: theme.textMuted, textAlign: 'right' }}
+            >
+              {formatTime(item.created_at)}
+            </Text>
+            {isOwn ? <MessageReceipt item={item} primary={primary} onPrimary={onPrimary} t={t} /> : null}
+          </View>
         </Pressable>
         {hasReactions ? (
           <View className="flex-row flex-wrap gap-1.5">
-            {Object.entries(reactions).map(([emoji, count]) => (
-              <HeroButton
-                key={emoji}
-                size="sm"
-                variant="outline"
-                accessibilityRole="button"
-                accessibilityLabel={t('thread.toggleReaction', { emoji })}
-                className="rounded-full px-2 py-1"
-                onPress={() => onReact(item.id, emoji)}
-              >
-                <Text className="text-xs">{emoji}</Text>
-                <Text className="text-[11px] font-semibold" style={{ color: theme.textSecondary }}>{count}</Text>
-              </HeroButton>
-            ))}
+            {Object.entries(reactions).map(([emoji, count]) => {
+              // Mine reads as selected and in the community colour; the number only matters
+              // once somebody else has joined in.
+              const mine = myReactions.includes(emoji);
+              return (
+                <HeroButton
+                  key={emoji}
+                  size="sm"
+                  variant="outline"
+                  accessibilityRole="button"
+                  accessibilityLabel={mine ? t('thread.reactedWith', { emoji }) : t('thread.toggleReaction', { emoji })}
+                  accessibilityState={{ selected: mine }}
+                  className="rounded-full px-2 py-1"
+                  style={mine ? { borderColor: primary, backgroundColor: withAlpha(primary, 0.12) } : undefined}
+                  onPress={() => onReact(item.id, emoji)}
+                >
+                  <Text className="text-xs">{emoji}</Text>
+                  {count > 1 ? (
+                    <Text className="text-[11px] font-semibold" style={{ color: theme.textSecondary }}>{count}</Text>
+                  ) : null}
+                </HeroButton>
+              );
+            })}
           </View>
         ) : null}
         {!item.is_deleted && showQuickReactions ? (
           <View className="flex-row flex-wrap gap-1">
-            {REACTION_EMOJIS.slice(0, 3).map((emoji) => (
+            {REACTION_EMOJIS.map((emoji) => (
               <HeroButton
                 key={emoji}
                 isIconOnly
                 size="sm"
-                variant="secondary"
+                variant={myReactions.includes(emoji) ? 'primary' : 'secondary'}
                 accessibilityRole="button"
                 accessibilityLabel={t('thread.reactWith', { emoji })}
-                className="h-8 w-8 rounded-full"
+                accessibilityState={{ selected: myReactions.includes(emoji) }}
+                className="h-10 w-10 rounded-full"
+                style={{ width: 40, height: 40, minWidth: 40, minHeight: 40 }}
+                hitSlop={4}
                 onPress={() => onReact(item.id, emoji)}
               >
-                <Text className="text-sm">{emoji}</Text>
+                <Text className="text-base">{emoji}</Text>
               </HeroButton>
             ))}
-            {!item.is_voice ? (
-              <HeroButton
-                isIconOnly
-                size="sm"
-                variant="secondary"
-                accessibilityRole="button"
-                accessibilityLabel={t('thread.messageOptions')}
-                className="h-8 w-8 rounded-full"
-                onPress={() => onOptions(item)}
-              >
-                <Ionicons name="ellipsis-horizontal" size={16} color={theme.textSecondary} />
-              </HeroButton>
-            ) : null}
+            <HeroButton
+              isIconOnly
+              size="sm"
+              variant="secondary"
+              accessibilityRole="button"
+              accessibilityLabel={t('thread.messageOptions')}
+              className="h-10 w-10 rounded-full"
+              style={{ width: 40, height: 40, minWidth: 40, minHeight: 40 }}
+              hitSlop={4}
+              onPress={() => onOptions(item)}
+            >
+              <Ionicons name="ellipsis-horizontal" size={16} color={theme.textSecondary} />
+            </HeroButton>
           </View>
         ) : null}
       </View>
     </View>
+  );
+}
+
+/*
+  Read receipts, two states only: one tick = the server has it, two ticks = the other member
+  has read it. There is no "delivered" — the API has no such state and inventing one would
+  tell the sender something nobody knows. A clock shows while the optimistic bubble waits for
+  the server. Own messages only; a received message carries no receipt.
+*/
+type ReceiptState = 'sending' | 'sent' | 'read';
+
+function receiptState(item: Message): ReceiptState {
+  if (item.local_status === 'sending') return 'sending';
+  if (item.is_read || item.read_at) return 'read';
+  return 'sent';
+}
+
+function MessageReceipt({
+  item,
+  primary,
+  onPrimary,
+  t,
+}: {
+  item: Message;
+  primary: string;
+  onPrimary: string;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}) {
+  const state = receiptState(item);
+  const icon: IoniconName = state === 'sending' ? 'time-outline' : state === 'read' ? 'checkmark-done' : 'checkmark';
+  const color = state === 'read' ? readReceiptColor(primary) : withAlpha(onPrimary, 0.75);
+  return (
+    <Ionicons
+      name={icon}
+      size={13}
+      color={color}
+      accessible
+      importantForAccessibility="yes"
+      accessibilityRole="image"
+      accessibilityLabel={t(`thread.receipt.${state}`)}
+      testID={`receipt-${state}-${item.id}`}
+    />
   );
 }
 
@@ -1947,6 +2235,15 @@ function CenteredState({
 function firstParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
+}
+
+/** Is `pending` the optimistic bubble for the server's `incoming` copy of the same message? */
+function isPendingTwin(pending: Message, incoming: Message): boolean {
+  if (pending.local_status !== 'sending' || pending.is_voice !== Boolean(incoming.is_voice)) return false;
+  if ((pending.body ?? '').trim() !== (incoming.body ?? incoming.content ?? '').trim()) return false;
+  if ((pending.attachments?.length ?? 0) !== (incoming.attachments?.length ?? 0)) return false;
+  const gap = Math.abs(new Date(pending.created_at).getTime() - new Date(incoming.created_at).getTime());
+  return Number.isFinite(gap) && gap < 60_000;
 }
 
 function resolveThreadContext(listingId: number | undefined, contextType: string | undefined, contextId: number | undefined): ThreadContext | null {

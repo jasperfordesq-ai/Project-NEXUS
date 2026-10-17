@@ -53,6 +53,12 @@ export interface PaginatedApiState<TItem, TResponse = unknown> {
   hasMore: boolean;
   loadMore: () => void;
   refresh: () => void;
+  /**
+   * Replace the loaded rows in place without a request — for a realtime event that has
+   * already told us what changed (a new message moving its conversation to the top, a read
+   * receipt flipping a tick). The next refresh still replaces everything with the server's view.
+   */
+  mutateItems: (updater: (items: TItem[]) => TItem[]) => void;
 }
 
 interface UsePaginatedApiOptions<TItem> {
@@ -376,5 +382,9 @@ export function usePaginatedApi<TItem, TResponse>(
     if (reconnectStateRef.current.failedEmpty) refresh();
   }), [refresh]);
 
-  return { items, response, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh };
+  const mutateItems = useCallback((updater: (items: TItem[]) => TItem[]) => {
+    setItems((current) => updater(current));
+  }, []);
+
+  return { items, response, isLoading, isLoadingMore, error, errorStatus, errorCode, hasMore, loadMore, refresh, mutateItems };
 }

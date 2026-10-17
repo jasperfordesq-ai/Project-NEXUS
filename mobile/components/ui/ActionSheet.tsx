@@ -23,9 +23,11 @@ interface ActionSheetProps {
   onClose: () => void;
   title?: string;
   actions: Action[];
+  /** Rendered above the rows, inside the same sheet (e.g. a row of reactions). */
+  header?: React.ReactNode;
 }
 
-export default function ActionSheet({ visible, onClose, title, actions }: ActionSheetProps) {
+export default function ActionSheet({ visible, onClose, title, actions, header }: ActionSheetProps) {
   const theme = useTheme();
 
   // No manual snap-point height math — with no snapPoints the BottomSheet
@@ -41,6 +43,7 @@ export default function ActionSheet({ visible, onClose, title, actions }: Action
   return (
     <BottomSheet visible={visible} onClose={onClose} title={title}>
       <View className="pt-1">
+        {header}
         {actions.map((action, index) => (
           <Button
             key={index}

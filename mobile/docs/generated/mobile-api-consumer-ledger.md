@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-10-05
+Last reviewed: 2026-10-17
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -14,17 +14,17 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2295 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2317 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents only a subset of the
 > application routes and has produced false drift findings for working endpoints.
 
 | Measure | Count |
 | --- | --- |
-| API modules read | 65 |
-| Call sites | 723 |
-| Distinct method + endpoint pairs | 571 |
-| Verified against openapi.json | 571 |
+| API modules read | 67 |
+| Call sites | 770 |
+| Distinct method + endpoint pairs | 615 |
+| Verified against openapi.json | 615 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 103 |
@@ -99,36 +99,36 @@ and the places a contract test earns the most.
 | eventTickets.ts:138 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:149 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | eventTickets.ts:161 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:941 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1117 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1135 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1147 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1159 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1173 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1195 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1214 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1225 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1239 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1252 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1275 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1281 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1297 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1313 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1324 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1330 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1336 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1342 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1354 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1364 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1379 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:954 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1130 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1148 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1160 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1172 | DELETE | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1186 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1208 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1231 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1242 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1256 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1269 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1292 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1298 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1314 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1330 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1341 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1347 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1353 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1359 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1371 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1381 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1396 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1402 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1411 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1420 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1431 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1442 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1413 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1419 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1428 | PUT | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1437 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | events.ts:1448 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| events.ts:1499 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
+| events.ts:1459 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1465 | POST | variable "endpoint" is assigned more than one endpoint in this module |
+| events.ts:1516 | POST | endpoint literal nests a template inside an interpolation and could not be resolved statically |
 | feed.ts:288 | GET | variable "path" is not a literal endpoint in this module |
 | ideation.ts:211 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:212 | POST | variable "endpoint" is assigned more than one endpoint in this module |
@@ -149,20 +149,20 @@ and the places a contract test earns the most.
 | POST | `/api/ai/chat/feedback` | chat.ts:131 |
 | GET | `/api/ai/chat/starters` | chat.ts:121 |
 | GET | `/api/ai/conversations/{param}` | chat.ts:117 |
-| POST | `/api/auth/forgot-password` | auth.ts:231 |
-| POST | `/api/auth/login` | auth.ts:208 |
-| POST | `/api/auth/logout` | auth.ts:307 |
-| POST | `/api/auth/refresh-token` | auth.ts:321 |
-| POST | `/api/auth/resend-verification-by-email` | auth.ts:259 |
-| POST | `/api/auth/reset-password` | auth.ts:236 |
-| POST | `/api/auth/verify-email` | auth.ts:241 |
-| POST | `/api/totp/verify` | auth.ts:129 |
+| POST | `/api/auth/forgot-password` | auth.ts:240 |
+| POST | `/api/auth/login` | auth.ts:217 |
+| POST | `/api/auth/logout` | auth.ts:316 |
+| POST | `/api/auth/refresh-token` | auth.ts:330 |
+| POST | `/api/auth/resend-verification-by-email` | auth.ts:268 |
+| POST | `/api/auth/reset-password` | auth.ts:245 |
+| POST | `/api/auth/verify-email` | auth.ts:250 |
+| POST | `/api/totp/verify` | auth.ts:138 |
 | POST | `/api/v2/appreciations` | appreciations.ts:70 |
 | POST | `/api/v2/appreciations/{param}/react` | appreciations.ts:80 |
-| POST | `/api/v2/auth/2fa/setup` | auth.ts:119 |
-| POST | `/api/v2/auth/2fa/verify` | auth.ts:124 |
-| POST | `/api/v2/auth/register` | auth.ts:220 |
-| GET | `/api/v2/auth/registration-info` | auth.ts:283 |
+| POST | `/api/v2/auth/2fa/setup` | auth.ts:128 |
+| POST | `/api/v2/auth/2fa/verify` | auth.ts:133 |
+| POST | `/api/v2/auth/register` | auth.ts:229 |
+| GET | `/api/v2/auth/registration-info` | auth.ts:292 |
 | GET | `/api/v2/blog` | blog.ts:43 |
 | GET | `/api/v2/blog/{param}` | blog.ts:54 |
 | POST | `/api/v2/bookmarks` | feed.ts:399 |
@@ -225,15 +225,15 @@ and the places a contract test earns the most.
 | GET | `/api/v2/events/{param}/people` | eventPeople.ts:116 |
 | GET | `/api/v2/events/{param}/people/{param}/history` | eventPeople.ts:66 |
 | POST | `/api/v2/events/{param}/people/bulk` | eventPeople.ts:173 |
-| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1127 |
+| DELETE | `/api/v2/events/{param}/rsvp` | events.ts:1140 |
 | GET | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:84 |
 | POST | `/api/v2/events/{param}/safety/reviews` | eventSafetyManagement.ts:90 |
 | DELETE | `/api/v2/events/{param}/safety/reviews/{param}` | eventSafetyManagement.ts:95 |
 | GET | `/api/v2/events/{param}/staff` | eventStaff.ts:57 |
 | POST | `/api/v2/events/{param}/staff` | eventStaff.ts:85 |
 | DELETE | `/api/v2/events/{param}/staff/{param}` | eventStaff.ts:92 |
-| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1244 |
-| GET | `/api/v2/events/{param}/waitlist` | events.ts:1230 |
+| DELETE | `/api/v2/events/{param}/waitlist` | events.ts:1261 |
+| GET | `/api/v2/events/{param}/waitlist` | events.ts:1247 |
 | GET | `/api/v2/exchanges` | exchangeRequests.ts:114 |
 | POST | `/api/v2/exchanges` | client.ts:805, exchanges.ts:217 |
 | DELETE | `/api/v2/exchanges/{param}` | exchangeRequests.ts:199 |
@@ -325,7 +325,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/group-exchanges/{param}/confirm` | groupExchanges.ts:169 |
 | POST | `/api/v2/group-exchanges/preview` | groupExchanges.ts:182 |
 | GET | `/api/v2/group-templates` | groups.ts:635 |
-| GET | `/api/v2/groups` | groups.ts:530 |
+| GET | `/api/v2/groups` | groups.ts:530, volunteeringVolunteer.ts:509 |
 | POST | `/api/v2/groups` | groups.ts:622, groups.ts:627 |
 | GET | `/api/v2/groups/{param}` | groups.ts:537 |
 | PUT | `/api/v2/groups/{param}` | groups.ts:631 |
@@ -558,18 +558,19 @@ and the places a contract test earns the most.
 | POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:917 |
 | POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:924 |
 | POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:931 |
-| GET | `/api/v2/messages` | messages.ts:145 |
-| POST | `/api/v2/messages` | messages.ts:225, messages.ts:226 |
-| DELETE | `/api/v2/messages/{param}` | messages.ts:214 |
-| GET | `/api/v2/messages/{param}` | messages.ts:152 |
-| PUT | `/api/v2/messages/{param}` | messages.ts:210 |
-| POST | `/api/v2/messages/{param}/reactions` | messages.ts:206 |
-| PUT | `/api/v2/messages/{param}/read` | messages.ts:198 |
-| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:178 |
-| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:182 |
-| GET | `/api/v2/messages/restriction-status` | messages.ts:202 |
-| GET | `/api/v2/messages/unread-count` | messages.ts:194 |
-| POST | `/api/v2/messages/voice` | messages.ts:311, messages.ts:312 |
+| GET | `/api/v2/messages` | messages.ts:154 |
+| POST | `/api/v2/messages` | messages.ts:242, messages.ts:243 |
+| DELETE | `/api/v2/messages/{param}` | messages.ts:231 |
+| GET | `/api/v2/messages/{param}` | messages.ts:161 |
+| PUT | `/api/v2/messages/{param}` | messages.ts:227 |
+| POST | `/api/v2/messages/{param}/reactions` | messages.ts:223 |
+| PUT | `/api/v2/messages/{param}/read` | messages.ts:207 |
+| DELETE | `/api/v2/messages/conversations/{param}` | messages.ts:187 |
+| POST | `/api/v2/messages/conversations/{param}/restore` | messages.ts:191 |
+| GET | `/api/v2/messages/restriction-status` | messages.ts:219 |
+| POST | `/api/v2/messages/typing` | messages.ts:215 |
+| GET | `/api/v2/messages/unread-count` | messages.ts:203 |
+| POST | `/api/v2/messages/voice` | messages.ts:328, messages.ts:329 |
 | DELETE | `/api/v2/notifications/{param}` | notifications.ts:119 |
 | POST | `/api/v2/notifications/{param}/read` | notifications.ts:105 |
 | GET | `/api/v2/notifications/counts` | notifications.ts:100 |
@@ -609,11 +610,11 @@ and the places a contract test earns the most.
 | POST | `/api/v2/podcasts/episodes/{param}/reaction` | podcasts.ts:222 |
 | POST | `/api/v2/podcasts/episodes/{param}/report` | podcasts.ts:229 |
 | GET | `/api/v2/podcasts/mine` | podcasts.ts:246 |
-| GET | `/api/v2/polls` | events.ts:1262 |
+| GET | `/api/v2/polls` | events.ts:1279 |
 | POST | `/api/v2/polls` | polls.ts:51, polls.ts:52 |
 | POST | `/api/v2/polls/{param}/rank` | polls.ts:56 |
 | GET | `/api/v2/polls/{param}/ranked-results` | polls.ts:62 |
-| POST | `/api/v2/polls/{param}/vote` | events.ts:1270 |
+| POST | `/api/v2/polls/{param}/vote` | events.ts:1287 |
 | GET | `/api/v2/public-page-content/{param}` | staticPages.ts:77 |
 | POST | `/api/v2/reactions` | feed.ts:340 |
 | GET | `/api/v2/reactions/{param}/{param}/users/{param}` | feed.ts:365 |
@@ -648,7 +649,7 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/{param}/public-collections` | savedCollections.ts:59 |
 | GET | `/api/v2/users/blocked` | settings.ts:132 |
 | DELETE | `/api/v2/users/me` | settings.ts:128 |
-| GET | `/api/v2/users/me` | auth.ts:316 |
+| GET | `/api/v2/users/me` | auth.ts:325 |
 | PUT | `/api/v2/users/me` | profile.ts:25 |
 | GET | `/api/v2/users/me/activity/dashboard` | activity.ts:72 |
 | POST | `/api/v2/users/me/avatar` | profile.ts:95 |
@@ -668,46 +669,89 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:279 |
 | PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:175 |
 | PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:182, settings.ts:198 |
-| GET | `/api/v2/volunteering/applications` | volunteering.ts:471 |
-| DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:507 |
-| PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:496 |
-| GET | `/api/v2/volunteering/certificates` | volunteering.ts:601 |
-| POST | `/api/v2/volunteering/certificates` | volunteering.ts:605 |
-| POST | `/api/v2/volunteering/checkin/checkout/{param}` | volunteering.ts:738 |
-| POST | `/api/v2/volunteering/checkin/verify/{param}` | volunteering.ts:733 |
-| GET | `/api/v2/volunteering/donations` | volunteering.ts:632 |
-| POST | `/api/v2/volunteering/donations` | volunteering.ts:679 |
-| GET | `/api/v2/volunteering/expenses` | volunteering.ts:613 |
-| POST | `/api/v2/volunteering/expenses` | volunteering.ts:620 |
-| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:628 |
-| POST | `/api/v2/volunteering/hours` | volunteering.ts:704 |
-| PUT | `/api/v2/volunteering/hours/{param}/verify` | volunteering.ts:503 |
-| GET | `/api/v2/volunteering/hours/summary` | volunteering.ts:511 |
-| GET | `/api/v2/volunteering/my-organisations` | volunteering.ts:515 |
-| GET | `/api/v2/volunteering/opportunities` | volunteering.ts:454 |
-| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:687 |
-| GET | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:464 |
-| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:695 |
-| GET | `/api/v2/volunteering/opportunities/{param}/applications` | volunteering.ts:482 |
-| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:712 |
-| GET | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteering.ts:646 |
+| GET | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:418 |
+| PUT | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:426 |
+| GET | `/api/v2/volunteering/applications` | volunteering.ts:472 |
+| DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:508 |
+| PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:497 |
+| GET | `/api/v2/volunteering/certificates` | volunteering.ts:602 |
+| POST | `/api/v2/volunteering/certificates` | volunteering.ts:606 |
+| POST | `/api/v2/volunteering/checkin/checkout/{param}` | volunteering.ts:739 |
+| POST | `/api/v2/volunteering/checkin/verify/{param}` | volunteering.ts:734 |
+| GET | `/api/v2/volunteering/donations` | volunteering.ts:633 |
+| POST | `/api/v2/volunteering/donations` | volunteering.ts:680 |
+| GET | `/api/v2/volunteering/emergency-alerts` | volunteeringVolunteer.ts:218 |
+| PUT | `/api/v2/volunteering/emergency-alerts/{param}` | volunteeringVolunteer.ts:229 |
+| GET | `/api/v2/volunteering/expenses` | volunteering.ts:614 |
+| POST | `/api/v2/volunteering/expenses` | volunteering.ts:621, volunteeringVolunteer.ts:586 |
+| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:629 |
+| GET | `/api/v2/volunteering/group-reservations` | volunteeringVolunteer.ts:466 |
+| DELETE | `/api/v2/volunteering/group-reservations/{param}` | volunteeringVolunteer.ts:494 |
+| POST | `/api/v2/volunteering/group-reservations/{param}/members` | volunteeringVolunteer.ts:485 |
+| DELETE | `/api/v2/volunteering/group-reservations/{param}/members/{param}` | volunteeringVolunteer.ts:490 |
+| POST | `/api/v2/volunteering/hours` | volunteering.ts:705 |
+| PUT | `/api/v2/volunteering/hours/{param}/verify` | volunteering.ts:504 |
+| GET | `/api/v2/volunteering/hours/summary` | volunteering.ts:512 |
+| GET | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:390 |
+| POST | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:372 |
+| GET | `/api/v2/volunteering/incidents/report-options` | volunteeringVolunteer.ts:343 |
+| GET | `/api/v2/volunteering/my-organisations` | volunteering.ts:516 |
+| GET | `/api/v2/volunteering/my-waitlists` | volunteeringVolunteer.ts:89 |
+| GET | `/api/v2/volunteering/opportunities` | volunteering.ts:455 |
+| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:688 |
+| DELETE | `/api/v2/volunteering/opportunities/{param}` | volunteeringOrganiser.ts:55 |
+| GET | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:465 |
+| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:696 |
+| GET | `/api/v2/volunteering/opportunities/{param}/applications` | volunteering.ts:483 |
+| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:713 |
+| GET | `/api/v2/volunteering/opportunities/{param}/recurring-patterns` | volunteeringOrganiser.ts:147 |
+| POST | `/api/v2/volunteering/opportunities/{param}/recurring-patterns` | volunteeringOrganiser.ts:152 |
+| GET | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteering.ts:647, volunteeringOrganiser.ts:81 |
+| POST | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteeringOrganiser.ts:86 |
 | GET | `/api/v2/volunteering/organisations` | organisations.ts:59 |
 | POST | `/api/v2/volunteering/organisations` | organisations.ts:77, organisations.ts:81 |
-| GET | `/api/v2/volunteering/organisations/{param}` | organisations.ts:69, volunteering.ts:522 |
-| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:590 |
-| GET | `/api/v2/volunteering/organisations/{param}/applications` | volunteering.ts:533 |
-| GET | `/api/v2/volunteering/organisations/{param}/hours/pending` | volunteering.ts:540 |
-| GET | `/api/v2/volunteering/organisations/{param}/stats` | volunteering.ts:526 |
-| GET | `/api/v2/volunteering/organisations/{param}/volunteers` | volunteering.ts:546 |
-| POST | `/api/v2/volunteering/organisations/{param}/wallet/deposit` | volunteering.ts:573 |
-| GET | `/api/v2/volunteering/organisations/{param}/wallet/transactions` | volunteering.ts:552 |
-| GET | `/api/v2/volunteering/shifts` | volunteering.ts:594 |
-| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:723 |
-| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:716 |
-| GET | `/api/v2/volunteering/swaps` | volunteering.ts:639 |
-| POST | `/api/v2/volunteering/swaps` | volunteering.ts:663 |
-| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:675 |
-| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:671 |
+| GET | `/api/v2/volunteering/organisations/{param}` | organisations.ts:69, volunteering.ts:523 |
+| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:591 |
+| GET | `/api/v2/volunteering/organisations/{param}/applications` | volunteering.ts:534 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:393 |
+| POST | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:398 |
+| PUT | `/api/v2/volunteering/organisations/{param}/campaigns/{param}` | volunteeringOrganiser.ts:403 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts` | volunteeringOrganiser.ts:408 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers` | volunteeringOrganiser.ts:418 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/history` | volunteeringOrganiser.ts:413 |
+| GET | `/api/v2/volunteering/organisations/{param}/expenses` | volunteeringOrganiser.ts:260 |
+| PUT | `/api/v2/volunteering/organisations/{param}/expenses/{param}` | volunteeringOrganiser.ts:279 |
+| POST | `/api/v2/volunteering/organisations/{param}/handovers/{param}/confirm` | volunteeringOrganiser.ts:423 |
+| GET | `/api/v2/volunteering/organisations/{param}/hours/pending` | volunteering.ts:541 |
+| GET | `/api/v2/volunteering/organisations/{param}/opportunities` | volunteeringOrganiser.ts:47 |
+| GET | `/api/v2/volunteering/organisations/{param}/stats` | volunteering.ts:527 |
+| GET | `/api/v2/volunteering/organisations/{param}/volunteers` | volunteering.ts:547 |
+| POST | `/api/v2/volunteering/organisations/{param}/wallet/deposit` | volunteering.ts:574 |
+| GET | `/api/v2/volunteering/organisations/{param}/wallet/transactions` | volunteering.ts:553 |
+| GET | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:283 |
+| POST | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:314 |
+| PUT | `/api/v2/volunteering/qualifications/{param}` | volunteeringVolunteer.ts:318 |
+| POST | `/api/v2/volunteering/qualifications/{param}/withdraw` | volunteeringVolunteer.ts:322 |
+| DELETE | `/api/v2/volunteering/recurring-patterns/{param}` | volunteeringOrganiser.ts:166 |
+| PUT | `/api/v2/volunteering/recurring-patterns/{param}` | volunteeringOrganiser.ts:161 |
+| GET | `/api/v2/volunteering/shifts` | volunteering.ts:595 |
+| DELETE | `/api/v2/volunteering/shifts/{param}` | volunteeringOrganiser.ts:99 |
+| PUT | `/api/v2/volunteering/shifts/{param}` | volunteeringOrganiser.ts:91 |
+| GET | `/api/v2/volunteering/shifts/{param}/checkin` | volunteeringVolunteer.ts:134 |
+| GET | `/api/v2/volunteering/shifts/{param}/checkins` | volunteeringOrganiser.ts:202 |
+| POST | `/api/v2/volunteering/shifts/{param}/group-reserve` | volunteeringVolunteer.ts:477 |
+| GET | `/api/v2/volunteering/shifts/{param}/roster` | volunteeringOrganiser.ts:197 |
+| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:724 |
+| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:717 |
+| DELETE | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:103 |
+| POST | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:98 |
+| POST | `/api/v2/volunteering/shifts/{param}/waitlist/promote` | volunteeringVolunteer.ts:108 |
+| GET | `/api/v2/volunteering/swaps` | volunteering.ts:640 |
+| POST | `/api/v2/volunteering/swaps` | volunteering.ts:664 |
+| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:676 |
+| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:672 |
+| GET | `/api/v2/volunteering/wellbeing` | volunteeringVolunteer.ts:166 |
+| POST | `/api/v2/volunteering/wellbeing/checkin` | volunteeringVolunteer.ts:186 |
 | GET | `/api/v2/wallet/balance` | wallet.ts:184 |
 | GET | `/api/v2/wallet/community-fund` | wallet.ts:220 |
 | POST | `/api/v2/wallet/donate` | wallet.ts:259 |

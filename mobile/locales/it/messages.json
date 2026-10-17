@@ -101,7 +101,24 @@
     "unsentDrafts": "Bozze non inviate: {{count}}",
     "editUnsentDraft": "Modifica bozza non inviata",
     "unsentDrafts_one": "Bozza non inviata: {{count}}",
-    "unsentDrafts_other": "Bozze non inviate: {{count}}"
+    "unsentDrafts_other": "Bozze non inviate: {{count}}",
+    "receipt": {
+      "sending": "Invio in corso",
+      "sent": "Inviato",
+      "read": "Letto"
+    },
+    "typing": "{{name}} sta scrivendo…",
+    "reactions": {
+      "title": "Reagisci a questo messaggio"
+    },
+    "reactedWith": "Hai reagito con {{emoji}}",
+    "copy": "Copia testo",
+    "copied": "Messaggio copiato",
+    "newMessages": "{{count}} nuovo messaggio",
+    "newMessages_one": "{{count}} nuovo messaggio",
+    "newMessages_other": "{{count}} nuovi messaggi",
+    "scrollToLatest": "Vai agli ultimi messaggi",
+    "viewProfile": "Vedi il profilo di {{name}}"
   },
   "context": {
     "regarding": "Riguardante",

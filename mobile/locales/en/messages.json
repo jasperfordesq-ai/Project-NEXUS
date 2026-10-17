@@ -101,7 +101,24 @@
     "unsentDrafts": "Unsent drafts: {{count}}",
     "editUnsentDraft": "Edit unsent draft",
     "unsentDrafts_one": "Unsent draft: {{count}}",
-    "unsentDrafts_other": "Unsent drafts: {{count}}"
+    "unsentDrafts_other": "Unsent drafts: {{count}}",
+    "receipt": {
+      "sending": "Sending",
+      "sent": "Sent",
+      "read": "Read"
+    },
+    "typing": "{{name}} is typing…",
+    "reactions": {
+      "title": "React to this message"
+    },
+    "reactedWith": "You reacted with {{emoji}}",
+    "copy": "Copy text",
+    "copied": "Message copied",
+    "newMessages": "{{count}} new message",
+    "newMessages_one": "{{count}} new message",
+    "newMessages_other": "{{count}} new messages",
+    "scrollToLatest": "Jump to the latest messages",
+    "viewProfile": "View {{name}}'s profile"
   },
   "context": {
     "regarding": "Regarding",

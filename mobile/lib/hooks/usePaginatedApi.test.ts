@@ -42,6 +42,17 @@ function extractor(r: FakeResponse) {
 // ---------------------------------------------------------------------------
 
 describe('usePaginatedApi', () => {
+  it('mutateItems replaces items without refetching', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(makeResponse(['a', 'b'], null, false));
+    const { result } = renderHook(() => usePaginatedApi(fetchFn, extractor));
+    await waitFor(() => expect(result.current.items).toEqual(['a', 'b']));
+
+    act(() => result.current.mutateItems((items) => ['z', ...items]));
+
+    expect(result.current.items).toEqual(['z', 'a', 'b']);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps accepted metadata on a failed refresh and clears it when the query is disabled', async () => {
     const accepted = makeResponse(['current'], 'next', true);
     const fetchFn = jest.fn().mockResolvedValueOnce(accepted)

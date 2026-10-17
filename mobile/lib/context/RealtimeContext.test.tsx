@@ -679,7 +679,7 @@ describe('isMessagePayload validation', () => {
     });
 
     // Handler should have been called with the message
-    expect(handler).toHaveBeenCalledWith(fakeMessage);
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining(fakeMessage));
     // Badge should NOT bump: a visible thread reported that it showed the member.
     expect(result.current.unreadMessages).toBe(0);
   });
@@ -732,7 +732,7 @@ describe('isMessagePayload validation', () => {
     act(() => { newMessageHandler!({ conversation_id: 42, message: fakeMessage }); });
 
     // Still delivered — the thread caches it for when the member returns.
-    expect(handler).toHaveBeenCalledWith(fakeMessage);
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining(fakeMessage));
     // And still counted, because the member has not seen it.
     expect(result.current.unreadMessages).toBe(1);
   });
@@ -786,5 +786,192 @@ describe('isMessagePayload validation', () => {
     });
 
     expect(result.current.unreadMessages).toBe(1);
+  });
+});
+
+/*
+  The member's user channel carries four events, not one. `new-message` arrives on the
+  RECIPIENT's channel only; `message.read` reaches both sides; `typing` reaches the recipient;
+  `unread-count` is a nudge to re-read the server total. Mobile derives `is_own` from the
+  session identity and never trusts the payload's flag.
+*/
+describe('typed realtime events on the user channel', () => {
+  type Bound = Record<string, (data: unknown) => void>;
+
+  function setupChannel() {
+    const bound: Bound = {};
+    const channel = {
+      bind: jest.fn((event: string, handler: (data: unknown) => void) => { bound[event] = handler; }),
+      unbind_all: jest.fn(),
+      name: 'private-tenant.2.user.1',
+    };
+    mockInitRealtime.mockReturnValue({
+      subscribe: jest.fn(() => channel),
+      unsubscribe: jest.fn(),
+      connection: { state: 'connected' },
+    });
+    return { bound, channel };
+  }
+
+  function unreadCountCalls() {
+    return mockApiGet.mock.calls.filter(([url]: [string]) => String(url).includes('/messages/unread-count')).length;
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetRealtimeClient.mockReturnValue(null);
+    mockIsAuthenticated = true;
+    mockUserId = 1;
+    mockApiGet.mockImplementation((url: string) => {
+      if (url.includes('/messages/unread-count')) return Promise.resolve({ data: { count: 3 } });
+      if (url.includes('/notifications/counts')) {
+        return Promise.resolve({ data: { total: 5, messages: 99, transactions: 0, social: 0, system: 0 } });
+      }
+      if (url.includes('/pusher/config')) {
+        return Promise.resolve({ enabled: true, key: 'test-key', channels: { user: 'private-tenant.2.user.1' } });
+      }
+      return Promise.resolve({});
+    });
+  });
+
+  async function renderConnected() {
+    const { bound } = setupChannel();
+    const view = renderHook(() => useRealtimeContext(), { wrapper });
+    await waitFor(() => expect(bound['new-message']).toBeDefined());
+    await waitFor(() => expect(view.result.current.unreadMessages).toBe(3));
+    return { bound, ...view };
+  }
+
+  it('binds new-message, message.read, typing and unread-count on the user channel', async () => {
+    const { bound } = await renderConnected();
+    expect(Object.keys(bound)).toEqual(expect.arrayContaining(['new-message', 'message.read', 'typing', 'unread-count']));
+  });
+
+  it('derives is_own from the session identity, never from the payload', async () => {
+    const { bound, result } = await renderConnected();
+    const handler = jest.fn(() => false);
+    act(() => { result.current.subscribeToConversation(9, { message: handler }); });
+
+    act(() => {
+      bound['new-message']({
+        conversation_id: 123,
+        message: { id: 10, body: 'from my other phone', sender_id: 1, receiver_id: 9, sender: { id: 1 }, is_own: false },
+      });
+    });
+
+    // Keyed by the OTHER user (the receiver, since the sender is me), flagged as own.
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ id: 10, is_own: true }));
+  });
+
+  it("never bumps the badge for the member's own message, even with no listener", async () => {
+    const { bound, result } = await renderConnected();
+    act(() => {
+      bound['new-message']({
+        conversation_id: 123,
+        message: { id: 11, body: 'mine', sender_id: 1, receiver_id: 9, sender: { id: 1 }, is_own: false },
+      });
+    });
+    expect(result.current.unreadMessages).toBe(3);
+
+    // A message from the other side with nobody watching still counts.
+    act(() => {
+      bound['new-message']({
+        conversation_id: 123,
+        message: { id: 12, body: 'theirs', sender_id: 9, receiver_id: 1, sender: { id: 9 }, is_own: true },
+      });
+    });
+    expect(result.current.unreadMessages).toBe(4);
+  });
+
+  it('dispatches message.read to the conversation keyed by reader_id and to inbox listeners', async () => {
+    const { bound, result } = await renderConnected();
+    const read = jest.fn();
+    const otherRead = jest.fn();
+    const inboxRead = jest.fn();
+    act(() => {
+      result.current.subscribeToConversation(9, { read });
+      result.current.subscribeToConversation(7, { read: otherRead });
+      result.current.subscribeToInbox({ read: inboxRead });
+    });
+
+    const event = { reader_id: 9, sender_id: 1, conversation_id: 123, up_to_message_id: 50, read_count: 2, read_at: '2026-10-17T10:00:00Z' };
+    act(() => { bound['message.read'](event); });
+
+    expect(read).toHaveBeenCalledWith(event);
+    expect(otherRead).not.toHaveBeenCalled();
+    expect(inboxRead).toHaveBeenCalledWith(event);
+
+    // Malformed: no numeric reader → dropped.
+    act(() => { bound['message.read']({ reader_id: '9' }); });
+    expect(read).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-reads the server unread total when the reader is this member (read elsewhere)', async () => {
+    const { bound } = await renderConnected();
+    const before = unreadCountCalls();
+    act(() => { bound['message.read']({ reader_id: 1, sender_id: 9, conversation_id: 123 }); });
+    await waitFor(() => expect(unreadCountCalls()).toBe(before + 1));
+  });
+
+  it('dispatches typing only to the conversation keyed by user_id', async () => {
+    const { bound, result } = await renderConnected();
+    const typing = jest.fn();
+    const otherTyping = jest.fn();
+    act(() => {
+      result.current.subscribeToConversation(9, { typing });
+      result.current.subscribeToConversation(7, { typing: otherTyping });
+    });
+
+    act(() => { bound['typing']({ user_id: 9, is_typing: true, timestamp: 1 }); });
+    expect(typing).toHaveBeenCalledWith(expect.objectContaining({ user_id: 9, is_typing: true }));
+    expect(otherTyping).not.toHaveBeenCalled();
+
+    act(() => { bound['typing']({ user_id: '9', is_typing: true }); });
+    act(() => { bound['typing']({ user_id: 9, is_typing: 'yes' }); });
+    expect(typing).toHaveBeenCalledTimes(1);
+  });
+
+  it('unread-count re-queries the server and never writes the payload number', async () => {
+    const { bound, result } = await renderConnected();
+    const before = unreadCountCalls();
+    act(() => { bound['unread-count']({ count: 99 }); });
+    await waitFor(() => expect(unreadCountCalls()).toBe(before + 1));
+    expect(result.current.unreadMessages).toBe(3);
+    expect(result.current.unreadMessages).not.toBe(99);
+  });
+
+  it('keeps subscribeToMessages working as a thin wrapper', async () => {
+    const { bound, result } = await renderConnected();
+    const handler = jest.fn(() => true);
+    let unsubscribe!: () => void;
+    act(() => { unsubscribe = result.current.subscribeToMessages(123, handler); });
+    act(() => {
+      bound['new-message']({ conversation_id: 123, message: { id: 13, body: 'hi', sender_id: 9, receiver_id: 1, sender: { id: 9 } } });
+    });
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ id: 13, is_own: false }));
+    expect(result.current.unreadMessages).toBe(3);
+    act(() => { unsubscribe(); });
+    act(() => {
+      bound['new-message']({ conversation_id: 123, message: { id: 14, body: 'hi', sender_id: 9, receiver_id: 1, sender: { id: 9 } } });
+    });
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls inbox handlers with the other user id and unsubscribes idempotently', async () => {
+    const { bound, result } = await renderConnected();
+    const message = jest.fn();
+    let unsubscribe!: () => void;
+    act(() => { unsubscribe = result.current.subscribeToInbox({ message }); });
+    act(() => {
+      bound['new-message']({ conversation_id: 123, message: { id: 15, body: 'hi', sender_id: 9, receiver_id: 1, sender: { id: 9 } } });
+    });
+    expect(message).toHaveBeenCalledWith(9, expect.objectContaining({ id: 15, is_own: false }));
+
+    act(() => { unsubscribe(); });
+    act(() => { unsubscribe(); });
+    act(() => {
+      bound['new-message']({ conversation_id: 123, message: { id: 16, body: 'hi', sender_id: 9, receiver_id: 1, sender: { id: 9 } } });
+    });
+    expect(message).toHaveBeenCalledTimes(1);
   });
 });

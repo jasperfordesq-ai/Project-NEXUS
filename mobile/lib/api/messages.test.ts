@@ -33,6 +33,7 @@ import {
   deleteMessage,
   sendMessageWithAttachments,
   sendVoiceMessage,
+  sendTypingIndicator,
 } from './messages';
 import type { ConversationListResponse, MessageListResponse, Message } from './messages';
 
@@ -225,6 +226,18 @@ describe('sendMessage', () => {
   it('propagates errors from the API', async () => {
     (api.post as jest.Mock).mockRejectedValue(new Error('Forbidden'));
     await expect(sendMessage(2, 'Hi')).rejects.toThrow('Forbidden');
+  });
+});
+
+describe('sendTypingIndicator', () => {
+  beforeEach(() => { jest.clearAllMocks(); });
+
+  it('posts recipient_id and is_typing to /api/v2/messages/typing', async () => {
+    (api.post as jest.Mock).mockResolvedValue({ data: { success: true } });
+    await sendTypingIndicator(2, true);
+    expect(api.post).toHaveBeenCalledWith('/api/v2/messages/typing', { recipient_id: 2, is_typing: true });
+    await sendTypingIndicator(2, false);
+    expect(api.post).toHaveBeenLastCalledWith('/api/v2/messages/typing', { recipient_id: 2, is_typing: false });
   });
 });
 

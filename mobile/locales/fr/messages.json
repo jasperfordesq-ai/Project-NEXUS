@@ -101,7 +101,24 @@
     "unsentDrafts": "Brouillons non envoyés : {{count}}",
     "editUnsentDraft": "Modifier le brouillon non envoyé",
     "unsentDrafts_one": "Brouillon non envoyé : {{count}}",
-    "unsentDrafts_other": "Brouillons non envoyés : {{count}}"
+    "unsentDrafts_other": "Brouillons non envoyés : {{count}}",
+    "receipt": {
+      "sending": "Envoi en cours",
+      "sent": "Envoyé",
+      "read": "Lu"
+    },
+    "typing": "{{name}} est en train d'écrire…",
+    "reactions": {
+      "title": "Réagir à ce message"
+    },
+    "reactedWith": "Vous avez réagi avec {{emoji}}",
+    "copy": "Copier le texte",
+    "copied": "Message copié",
+    "newMessages": "{{count}} nouveau message",
+    "newMessages_one": "{{count}} nouveau message",
+    "newMessages_other": "{{count}} nouveaux messages",
+    "scrollToLatest": "Aller aux derniers messages",
+    "viewProfile": "Voir le profil de {{name}}"
   },
   "context": {
     "regarding": "Concernant",

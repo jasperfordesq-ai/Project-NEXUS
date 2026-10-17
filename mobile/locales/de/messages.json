@@ -101,7 +101,24 @@
     "unsentDrafts": "Nicht gesendete Entwürfe: {{count}}",
     "editUnsentDraft": "Nicht gesendeten Entwurf bearbeiten",
     "unsentDrafts_one": "Nicht gesendeter Entwurf: {{count}}",
-    "unsentDrafts_other": "Nicht gesendete Entwürfe: {{count}}"
+    "unsentDrafts_other": "Nicht gesendete Entwürfe: {{count}}",
+    "receipt": {
+      "sending": "Wird gesendet",
+      "sent": "Gesendet",
+      "read": "Gelesen"
+    },
+    "typing": "{{name}} schreibt…",
+    "reactions": {
+      "title": "Auf diese Nachricht reagieren"
+    },
+    "reactedWith": "Du hast mit {{emoji}} reagiert",
+    "copy": "Text kopieren",
+    "copied": "Nachricht kopiert",
+    "newMessages": "{{count}} neue Nachricht",
+    "newMessages_one": "{{count}} neue Nachricht",
+    "newMessages_other": "{{count}} neue Nachrichten",
+    "scrollToLatest": "Zu den neuesten Nachrichten springen",
+    "viewProfile": "Profil von {{name}} ansehen"
   },
   "context": {
     "regarding": "Bezüglich",

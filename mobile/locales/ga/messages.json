@@ -101,7 +101,24 @@
     "unsentDrafts": "Dréachtaí nár seoladh: {{count}}",
     "editUnsentDraft": "Cuir dréacht nár seoladh in eagar",
     "unsentDrafts_one": "Dréacht nár seoladh: {{count}}",
-    "unsentDrafts_other": "Dréachtaí nár seoladh: {{count}}"
+    "unsentDrafts_other": "Dréachtaí nár seoladh: {{count}}",
+    "receipt": {
+      "sending": "Á sheoladh",
+      "sent": "Seolta",
+      "read": "Léite"
+    },
+    "typing": "Tá {{name}} ag clóscríobh…",
+    "reactions": {
+      "title": "Freagair don teachtaireacht seo"
+    },
+    "reactedWith": "D'fhreagair tú le {{emoji}}",
+    "copy": "Cóipeáil an téacs",
+    "copied": "Teachtaireacht cóipeáilte",
+    "newMessages": "{{count}} teachtaireacht nua",
+    "newMessages_one": "{{count}} teachtaireacht nua",
+    "newMessages_other": "{{count}} teachtaireacht nua",
+    "scrollToLatest": "Léim go dtí na teachtaireachtaí is déanaí",
+    "viewProfile": "Féach ar phróifíl {{name}}"
   },
   "context": {
     "regarding": "Maidir Le",
