@@ -89,6 +89,7 @@ export function PageBuilder() {
   const { user } = useAuth();
   const toast = useToast();
   const contentEditorRef = useRef<PageContentEditorHandle | null>(null);
+  const loadedSlugRef = useRef('');
 
   const [formData, setFormData] = useState<PageFormData>({
     title: '',
@@ -113,6 +114,7 @@ export function PageBuilder() {
         .then((res) => {
           if (res.success && res.data) {
             const page = res.data as Record<string, unknown>;
+            loadedSlugRef.current = (page.slug as string) || '';
             setFormData({
               title: (page.title as string) || '',
               slug: (page.slug as string) || '',
@@ -160,6 +162,8 @@ export function PageBuilder() {
         : formData;
       const payload = {
         ...dataToSave,
+        // Editing: a cleared address keeps the page's current one rather than changing it.
+        slug: isEdit && !dataToSave.slug.trim() ? loadedSlugRef.current : dataToSave.slug,
         design_json: dataToSave.content_format === 'builder' ? dataToSave.design_json : null,
         show_in_menu: dataToSave.show_in_menu ? 1 : 0,
       };

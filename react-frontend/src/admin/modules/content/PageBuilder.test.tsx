@@ -505,4 +505,23 @@ describe('PageBuilder — edit mode (id=3)', () => {
       design_json: null,
     }));
   });
+
+  it('keeps the existing slug when the address field is cleared before saving', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Existing Page', slug: 'existing-page', content: '<p>x</p>', content_format: 'richtext', status: 'draft', menu_location: 'about' },
+    });
+    mockAdminPages.update.mockResolvedValueOnce({ success: true, data: { id: 3, slug: 'existing-page' } });
+
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    await waitFor(() => expect((screen.getAllByRole('textbox')[1] as HTMLInputElement).value).toBe('existing-page'));
+
+    await user.clear(screen.getAllByRole('textbox')[1]!);
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockAdminPages.update).toHaveBeenCalled());
+    expect(mockAdminPages.update).toHaveBeenCalledWith(3, expect.objectContaining({ slug: 'existing-page' }));
+  });
 });

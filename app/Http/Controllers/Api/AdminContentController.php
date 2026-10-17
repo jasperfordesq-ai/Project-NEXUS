@@ -196,7 +196,8 @@ class AdminContentController extends BaseApiController
         $data = [];
 
         if (isset($input['title'])) { $data['title'] = trim($input['title']); }
-        if (isset($input['slug'])) {
+        // An empty slug on update means "no change".
+        if (isset($input['slug']) && trim((string) $input['slug']) !== '') {
             $slugInput = trim((string) $input['slug']);
             if (!$this->isValidSlug($slugInput)) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.slug_invalid'), 'slug', 422);

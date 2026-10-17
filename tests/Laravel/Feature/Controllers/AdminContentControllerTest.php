@@ -239,6 +239,20 @@ class AdminContentControllerTest extends TestCase
         $response->assertJsonPath('errors.0.field', 'slug');
     }
 
+    public function test_update_page_with_empty_slug_keeps_the_existing_slug(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $created = $this->apiPost('/v2/admin/pages', ['title' => 'Keep My Slug', 'slug' => 'keep-my-slug', 'status' => 'draft']);
+        $id = (int) $created->json('data.id');
+
+        $response = $this->apiPut("/v2/admin/pages/{$id}", ['title' => 'Keep My Slug 2', 'slug' => '  ']);
+
+        $response->assertStatus(200);
+        $this->assertSame('keep-my-slug', DB::table('pages')->where('id', $id)->value('slug'));
+    }
+
     public function test_create_page_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();
