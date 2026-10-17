@@ -167,6 +167,33 @@ class AdminContentControllerTest extends TestCase
         $second->assertJsonPath('data.slug', 'shared-slug-1');
     }
 
+    public function test_create_page_returns_the_final_slug(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $payload = ['title' => 'Same Title', 'content' => '<p>x</p>', 'status' => 'draft'];
+        $this->apiPost('/v2/admin/pages', $payload)->assertJsonPath('data.slug', 'same-title');
+
+        $second = $this->apiPost('/v2/admin/pages', $payload);
+        $this->assertContains($second->getStatusCode(), [200, 201]);
+        $this->assertStringEndsWith('-1', (string) $second->json('data.slug'));
+        $this->assertNotEmpty($second->json('data.id'));
+    }
+
+    public function test_update_page_returns_the_saved_slug(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $created = $this->apiPost('/v2/admin/pages', ['title' => 'Renamed Page', 'slug' => 'renamed-page-a', 'status' => 'draft']);
+        $id = (int) $created->json('data.id');
+
+        $response = $this->apiPut("/v2/admin/pages/{$id}", ['slug' => 'renamed-page-b']);
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.slug', 'renamed-page-b');
+    }
+
     public function test_create_page_rejects_reserved_slug(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

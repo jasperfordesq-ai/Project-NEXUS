@@ -1110,6 +1110,7 @@
     "new_tab": "Nouvel onglet",
     "none_top_level": "Aucun (élément de niveau supérieur)",
     "page_created": "Page créée",
+    "saved_with_slug": "Enregistré. L’adresse web est /page/{{slug}} car celle que vous aviez choisie était déjà utilisée.",
     "back": "Dos",
     "cancel": "Annuler",
     "create_pages": "Créer des pages",

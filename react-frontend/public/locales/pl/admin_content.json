@@ -1110,6 +1110,7 @@
     "new_tab": "Nowa karta",
     "none_top_level": "Brak (element najwyższego poziomu)",
     "page_created": "Strona utworzona",
+    "saved_with_slug": "Zapisano. Adres internetowy to /page/{{slug}}, ponieważ wybrany adres był już zajęty.",
     "back": "Z powrotem",
     "cancel": "Anuluj",
     "create_pages": "Twórz strony",

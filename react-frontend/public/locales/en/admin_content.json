@@ -1111,6 +1111,7 @@
     "new_tab": "New Tab",
     "none_top_level": "None (top-level item)",
     "page_created": "Page Created",
+    "saved_with_slug": "Saved. The web address is /page/{{slug}} because the one you chose was already in use.",
     "back": "Back",
     "cancel": "Cancel",
     "create_pages": "Create Pages",

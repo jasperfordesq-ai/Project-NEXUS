@@ -15,6 +15,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast, useAuth } from '@/contexts';
 import { adminPages } from '../../api/adminApi';
+import type { ApiResponse } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { PageContentEditor } from '../../components/PageContentEditor';
@@ -56,6 +57,29 @@ const toSlugInput = (text: string): string =>
     .replace(/[\s_]+/g, '-')
     .replace(/-+/g, '-');
 
+/**
+ * Turn a failed save into the server's own explanation (and the field it is
+ * about), falling back to the generic message when the server gave none.
+ */
+export function describeSaveFailure(
+  res: ApiResponse<unknown> | undefined,
+  fallback = 'An unexpected error occurred',
+): { message: string; field?: string } {
+  const first = res?.errors?.find((e) => e?.message);
+  if (first?.message) return { message: first.message, field: first.field };
+  if (res?.error) return { message: res.error };
+  return { message: fallback };
+}
+
+/** Same, for an error the API client threw (it carries message and fieldErrors). */
+function describeThrownSaveFailure(err: unknown, fallback: string): { message: string; field?: string } {
+  const e = err as { message?: unknown; fieldErrors?: Record<string, string[]> } | null;
+  const entry = e?.fieldErrors ? Object.entries(e.fieldErrors).find(([, msgs]) => msgs?.length) : undefined;
+  if (entry) return { message: entry[1][0]!, field: entry[0] };
+  if (e && typeof e.message === 'string' && e.message) return { message: e.message };
+  return { message: fallback };
+}
+
 export function PageBuilder() {
   const { t } = useTranslation('admin_content');
   const { id } = useParams<{ id: string }>();
@@ -82,6 +106,7 @@ export function PageBuilder() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [slugTouched, setSlugTouched] = useState(isEdit);
+  const [slugError, setSlugError] = useState<string | null>(null);
 
   // Slugs that conflict with built-in React routes — cannot be used as page slugs
   const RESERVED_SLUGS = new Set([
@@ -142,6 +167,11 @@ export function PageBuilder() {
       return;
     }
     setSaving(true);
+    setSlugError(null);
+    const showFailure = (failure: { message: string; field?: string }) => {
+      if (failure.field === 'slug') setSlugError(failure.message);
+      toast.error(failure.message);
+    };
     try {
       const flushed = contentEditorRef.current?.flush();
       const dataToSave = flushed
@@ -152,27 +182,24 @@ export function PageBuilder() {
         design_json: dataToSave.content_format === 'builder' ? dataToSave.design_json : null,
         show_in_menu: dataToSave.show_in_menu ? 1 : 0,
       };
-      if (isEdit) {
-        const res = await adminPages.update(Number(id), payload as Record<string, unknown>);
-        if (res?.success) {
-          toast.success(t('content.page_updated'));
-          refreshTenant();
-          navigate(tenantPath('/admin/pages'));
+      const fallback = t('content.an_unexpected_error_occurred');
+      const res = isEdit
+        ? await adminPages.update(Number(id), payload as Record<string, unknown>)
+        : await adminPages.create(payload);
+      if (res?.success) {
+        const savedSlug = (res.data as { slug?: unknown } | undefined)?.slug;
+        if (typeof savedSlug === 'string' && savedSlug !== '' && savedSlug !== formData.slug) {
+          toast.success(t('content.saved_with_slug', { slug: savedSlug }));
         } else {
-          toast.error(t('content.an_unexpected_error_occurred'));
+          toast.success(t(isEdit ? 'content.page_updated' : 'content.page_created'));
         }
+        refreshTenant();
+        navigate(tenantPath('/admin/pages'));
       } else {
-        const res = await adminPages.create(payload);
-        if (res?.success) {
-          toast.success(t('content.page_created'));
-          refreshTenant();
-          navigate(tenantPath('/admin/pages'));
-        } else {
-          toast.error(t('content.an_unexpected_error_occurred'));
-        }
+        showFailure(describeSaveFailure(res, fallback));
       }
-    } catch {
-      toast.error(t('content.an_unexpected_error_occurred'));
+    } catch (err) {
+      showFailure(describeThrownSaveFailure(err, t('content.an_unexpected_error_occurred')));
     } finally {
       setSaving(false);
     }
@@ -249,12 +276,13 @@ export function PageBuilder() {
               placeholder={t('content.placeholder_slug')}
               variant="secondary"
               description={isReservedSlug ? undefined : t('content.page_slug_description')}
-              isInvalid={isReservedSlug}
-              errorMessage={isReservedSlug ? t('content.slug_reserved_error', { slug: formData.slug }) : undefined}
+              isInvalid={isReservedSlug || slugError !== null}
+              errorMessage={isReservedSlug ? t('content.slug_reserved_error', { slug: formData.slug }) : (slugError ?? undefined)}
               value={formData.slug}
               isDisabled={saving}
               onValueChange={(v) => {
                 setSlugTouched(true);
+                setSlugError(null);
                 handleChange('slug', toSlugInput(v));
               }}
             />

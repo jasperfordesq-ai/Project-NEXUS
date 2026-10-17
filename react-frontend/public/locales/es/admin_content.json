@@ -1110,6 +1110,7 @@
     "new_tab": "Nueva pestaña",
     "none_top_level": "Ninguno (elemento de nivel superior)",
     "page_created": "Página creada",
+    "saved_with_slug": "Guardado. La dirección web es /page/{{slug}} porque la que elegiste ya estaba en uso.",
     "back": "Atrás",
     "cancel": "Cancelar",
     "create_pages": "Crear páginas",

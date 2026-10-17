@@ -1110,6 +1110,7 @@
     "new_tab": "Neuer Tab",
     "none_top_level": "Keine (Element der obersten Ebene)",
     "page_created": "Seite erstellt",
+    "saved_with_slug": "Gespeichert. Die Webadresse lautet /page/{{slug}}, weil die gewählte bereits vergeben war.",
     "back": "Zurück",
     "cancel": "Stornieren",
     "create_pages": "Seiten erstellen",

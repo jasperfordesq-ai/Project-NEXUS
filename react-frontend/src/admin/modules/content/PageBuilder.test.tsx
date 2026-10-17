@@ -255,6 +255,41 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('shows the server message and marks the slug field when the slug is taken', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({
+      success: false,
+      errors: [{ code: 'VALIDATION_ERROR', message: 'Slug already in use', field: 'slug' }],
+    });
+
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    const inputs = screen.getAllByRole('textbox');
+    await user.type(inputs[0]!, 'About Us');
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Slug already in use'));
+    expect(screen.getAllByRole('textbox')[1]).toHaveAttribute('aria-invalid', 'true');
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('tells the admin when the saved slug differs from the typed one', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 9, slug: 'our-story-1' } });
+
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    const inputs = screen.getAllByRole('textbox');
+    await user.type(inputs[0]!, 'Our Story');
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    expect(mockToast.success.mock.calls[0]![0]).toContain('/page/our-story-1');
+    expect(mockNavigate).toHaveBeenCalled();
+  });
+
   it('offers About, Header column and Footer as menu locations', async () => {
     const user = userEvent.setup();
     mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 9 } });

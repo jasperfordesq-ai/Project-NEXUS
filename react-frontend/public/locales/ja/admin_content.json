@@ -1110,6 +1110,7 @@
     "new_tab": "新しいタブ",
     "none_top_level": "なし (最上位項目)",
     "page_created": "ページが作成されました",
+    "saved_with_slug": "保存しました。選択したアドレスは既に使われていたため、ウェブアドレスは /page/{{slug}} になります。",
     "back": "戻る",
     "cancel": "キャンセル",
     "create_pages": "ページの作成",

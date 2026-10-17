@@ -1110,6 +1110,7 @@
     "new_tab": "Nova guia",
     "none_top_level": "Nenhum (item de nível superior)",
     "page_created": "Página criada",
+    "saved_with_slug": "Guardado. O endereço web é /page/{{slug}} porque o que escolheu já estava em uso.",
     "back": "Voltar",
     "cancel": "Cancelar",
     "create_pages": "Criar páginas",
