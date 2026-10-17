@@ -221,7 +221,9 @@ export function DonationRefunds() {
         <span className="text-sm text-foreground">
           {d.is_anonymous
             ? t('donation_refunds.anonymous')
-            : d.user_id
+            : d.donor_name
+              ? d.donor_name
+              : d.user_id
               ? t('donation_refunds.user_number', { id: d.user_id })
               : t('donation_refunds.guest')}
         </span>

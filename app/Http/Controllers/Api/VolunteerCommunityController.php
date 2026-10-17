@@ -922,9 +922,10 @@ class VolunteerCommunityController extends BaseApiController
             'date_to'        => $this->query('date_to'),
         ];
 
-        $rows = $this->volunteerDonationService->exportDonations(TenantContext::getId(), $filters);
+        $tenantId = TenantContext::getId();
+        $rows = $this->volunteerDonationService->exportDonations($tenantId, $filters);
 
-        return $this->respondWithData(['items' => $rows]);
+        return $this->respondWithData(['items' => VolunteerDonationService::withDonorNames($rows, $tenantId)]);
     }
 
     /**

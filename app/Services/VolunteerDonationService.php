@@ -925,6 +925,58 @@ class VolunteerDonationService
     }
 
     /**
+     * Add a `donor_name` to each donation row for the admin donations list:
+     * the member's display name for a member gift, the name typed in for a
+     * guest gift, and null for an anonymous gift (that screen keeps showing
+     * "Anonymous"). Members are looked up in ONE tenant-scoped query.
+     *
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<int, array<string, mixed>>
+     */
+    public static function withDonorNames(array $rows, int $tenantId): array
+    {
+        $ids = collect($rows)
+            ->reject(fn ($row) => !empty($row['is_anonymous']))
+            ->pluck('user_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $names = $ids->isEmpty() ? [] : DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $ids->all())
+            ->select(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name'])
+            ->get()
+            ->mapWithKeys(fn ($user) => [(int) $user->id => \App\Support\UserDisplayName::resolve($user)])
+            ->all();
+
+        $guestIds = collect($rows)
+            ->filter(fn ($row) => empty($row['is_anonymous']) && empty($row['user_id']))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values();
+
+        $guestNames = $guestIds->isEmpty() ? [] : DB::table('vol_donations')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $guestIds->all())
+            ->pluck('donor_name', 'id')
+            ->mapWithKeys(fn ($name, $id) => [(int) $id => $name])
+            ->all();
+
+        return array_map(function (array $row) use ($names, $guestNames): array {
+            $name = null;
+            if (empty($row['is_anonymous'])) {
+                $name = !empty($row['user_id'])
+                    ? ($names[(int) $row['user_id']] ?? null)
+                    : ($guestNames[(int) $row['id']] ?? null);
+            }
+            $row['donor_name'] = ($name === null || trim((string) $name) === '') ? null : (string) $name;
+            return $row;
+        }, $rows);
+    }
+
+    /**
      * @param array<string, mixed> $day
      * @param array<int, string>   $organisationNames
      * @return array<string, mixed>

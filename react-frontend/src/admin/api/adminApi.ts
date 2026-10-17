@@ -3517,6 +3517,8 @@ export const adminSearchAnalytics = {
 export interface AdminDonation {
   id: number;
   user_id: number | null;
+  /** Member's display name, or the name a guest typed in; null when anonymous or unknown. */
+  donor_name?: string | null;
   opportunity_id: number | null;
   giving_day_id: number | null;
   amount: number | string;

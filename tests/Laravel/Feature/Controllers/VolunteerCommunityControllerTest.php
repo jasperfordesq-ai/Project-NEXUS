@@ -94,4 +94,40 @@ class VolunteerCommunityControllerTest extends TestCase
 
         $this->assertLessThan(500, $response->status());
     }
+
+    public function test_admin_donation_list_names_the_donor(): void
+    {
+        $this->enableVolunteeringFeature();
+
+        $admin = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'role' => 'admin',
+        ]);
+        $donor = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Aoife',
+            'last_name' => 'Donorson',
+            'profile_type' => 'individual',
+        ]);
+        $hidden = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Hidden',
+            'last_name' => 'Giver',
+            'profile_type' => 'individual',
+        ]);
+
+        $base = ['tenant_id' => $this->testTenantId, 'amount' => 5, 'currency' => 'EUR', 'status' => 'pending'];
+        $memberGift = DB::table('vol_donations')->insertGetId($base + ['user_id' => $donor->id]);
+        $anonymousGift = DB::table('vol_donations')->insertGetId($base + ['user_id' => $hidden->id, 'is_anonymous' => 1]);
+        $guestGift = DB::table('vol_donations')->insertGetId($base + ['user_id' => null, 'donor_name' => 'Walk-in Guest']);
+
+        Sanctum::actingAs($admin, ['*']);
+        $response = $this->apiGet('/v2/admin/volunteering/donations');
+
+        $response->assertOk();
+        $byId = collect($response->json('data.items'))->keyBy('id');
+        $this->assertSame('Aoife Donorson', $byId[$memberGift]['donor_name']);
+        $this->assertSame('Walk-in Guest', $byId[$guestGift]['donor_name']);
+        // An anonymous gift stays anonymous on this screen.
+        $this->assertNull($byId[$anonymousGift]['donor_name']);
+    }
 }
