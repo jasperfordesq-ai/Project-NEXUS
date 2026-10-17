@@ -192,7 +192,7 @@ describe('PageDesignBuilder', () => {
       expect(mockEditor.setComponents).toHaveBeenCalledWith('<section>Saved fallback</section>');
     });
     expect(mockEditor.addStyle).toHaveBeenCalledWith(expect.stringContaining('.saved{color:red}'));
-    expect(await screen.findByText(/could not be reopened as a GrapesJS project/i)).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('page_builder.legacy_notice', { ns: 'admin_editor' }))).toBeInTheDocument();
   });
 
   it('uploads toolbar images as absolute asset URLs and inserts a GrapesJS image component', async () => {

@@ -14,6 +14,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { ConfirmDialogProvider } from '@/components/ui';
 
 // ─── Common mocks ────────────────────────────────────────────────────────────
 
@@ -173,9 +174,11 @@ import { PageBuilder } from '../content/PageBuilder';
 describe('PageBuilder', () => {
   it('renders without crashing with route param', () => {
     const { container } = render(
-      <WRoute path="/admin/pages/:id" entry="/admin/pages/1">
-        <PageBuilder />
-      </WRoute>
+      <ConfirmDialogProvider>
+        <WRoute path="/admin/pages/:id" entry="/admin/pages/1">
+          <PageBuilder />
+        </WRoute>
+      </ConfirmDialogProvider>
     );
     expect(container.querySelector('div')).toBeTruthy();
   });
