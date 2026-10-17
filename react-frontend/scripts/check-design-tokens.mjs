@@ -83,6 +83,7 @@ const inlineStyleExceptionGroups = [
   {
     reason: 'Third-party rendering or component interoperability requires runtime dimensions, transforms, or style forwarding.',
     files: {
+      'src/admin/modules/content/LandingPageBuilder.tsx': 1,
       'src/admin/modules/content/MenuBuilder.tsx': 1,
       'src/components/compose/MediaUploader.tsx': 1,
       'src/components/location/EntityMapView.tsx': 2,
