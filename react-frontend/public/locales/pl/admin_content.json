@@ -1111,6 +1111,7 @@
     "none_top_level": "Brak (element najwyższego poziomu)",
     "page_created": "Strona utworzona",
     "saved_with_slug": "Zapisano. Adres internetowy to /page/{{slug}}, ponieważ wybrany adres był już zajęty.",
+    "saved_with_generated_slug": "Zapisano. Adres internetowy to /page/{{slug}}.",
     "back": "Z powrotem",
     "cancel": "Anuluj",
     "loading_pages": "Ładowanie stron...",

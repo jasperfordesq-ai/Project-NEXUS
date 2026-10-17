@@ -1111,6 +1111,7 @@
     "none_top_level": "Nessuno (elemento di primo livello)",
     "page_created": "Pagina creata",
     "saved_with_slug": "Salvato. L’indirizzo web è /page/{{slug}} perché quello scelto era già in uso.",
+    "saved_with_generated_slug": "Salvato. L’indirizzo web è /page/{{slug}}.",
     "back": "Indietro",
     "cancel": "Cancellare",
     "loading_pages": "Caricamento pagine...",

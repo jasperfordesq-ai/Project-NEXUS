@@ -1112,6 +1112,7 @@
     "none_top_level": "None (top-level item)",
     "page_created": "Page Created",
     "saved_with_slug": "Saved. The web address is /page/{{slug}} because the one you chose was already in use.",
+    "saved_with_generated_slug": "Saved. The web address is /page/{{slug}}.",
     "back": "Back",
     "cancel": "Cancel",
     "loading_pages": "Loading pages...",

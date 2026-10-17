@@ -1111,6 +1111,7 @@
     "none_top_level": "Aucun (élément de niveau supérieur)",
     "page_created": "Page créée",
     "saved_with_slug": "Enregistré. L’adresse web est /page/{{slug}} car celle que vous aviez choisie était déjà utilisée.",
+    "saved_with_generated_slug": "Enregistré. L’adresse web est /page/{{slug}}.",
     "back": "Dos",
     "cancel": "Annuler",
     "loading_pages": "Chargement des pages...",

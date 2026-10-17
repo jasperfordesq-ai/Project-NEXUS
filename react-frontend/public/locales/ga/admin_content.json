@@ -1111,6 +1111,7 @@
     "none_top_level": "Ceann ar bith (mír ardleibhéil)",
     "page_created": "Leathanach Cruthaithe",
     "saved_with_slug": "Sábháilte. Is é /page/{{slug}} an seoladh gréasáin toisc go raibh an ceann a roghnaigh tú in úsáid cheana.",
+    "saved_with_generated_slug": "Sábháilte. Is é /page/{{slug}} an seoladh gréasáin.",
     "back": "Ar ais",
     "cancel": "Cealaigh",
     "loading_pages": "Leathanaigh á lódáil...",

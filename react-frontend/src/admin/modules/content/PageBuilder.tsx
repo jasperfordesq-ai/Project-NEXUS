@@ -124,6 +124,9 @@ export function PageBuilder() {
   const toast = useToast();
   const contentEditorRef = useRef<PageContentEditorHandle | null>(null);
   const loadedSlugRef = useRef('');
+  // The page's SAVED state, not the form: "Open live page" must not appear
+  // just because Published was picked in the dropdown and not yet saved.
+  const [loadedStatus, setLoadedStatus] = useState('');
 
   const [formData, setFormData] = useState<PageFormData>(EMPTY_FORM);
   // The form as loaded (edit) or as it starts (create): leaving with anything
@@ -145,6 +148,7 @@ export function PageBuilder() {
           if (res.success && res.data) {
             const page = res.data as Record<string, unknown>;
             loadedSlugRef.current = (page.slug as string) || '';
+            setLoadedStatus((page.status as string) || 'draft');
             const loaded: PageFormData = {
               title: (page.title as string) || '',
               slug: (page.slug as string) || '',
@@ -243,9 +247,14 @@ export function PageBuilder() {
         ? await adminPages.update(Number(id), payload as Record<string, unknown>)
         : await adminPages.create(payload);
       if (res?.success) {
+        setLoadedStatus(dataToSave.status);
+        if (typeof payload.slug === 'string' && payload.slug !== '') loadedSlugRef.current = payload.slug;
         const savedSlug = (res.data as { slug?: unknown } | undefined)?.slug;
-        if (typeof savedSlug === 'string' && savedSlug !== '' && savedSlug !== formData.slug) {
+        const typedSlug = formData.slug.trim();
+        if (typeof savedSlug === 'string' && savedSlug !== '' && typedSlug !== '' && savedSlug !== formData.slug) {
           toast.success(t('content.saved_with_slug', { slug: savedSlug }));
+        } else if (!isEdit && typeof savedSlug === 'string' && savedSlug !== '' && typedSlug === '') {
+          toast.success(t('content.saved_with_generated_slug', { slug: savedSlug }));
         } else {
           toast.success(t(isEdit ? 'content.page_updated' : 'content.page_created'));
         }
@@ -308,7 +317,7 @@ export function PageBuilder() {
             >
               {t('content.preview_draft')}
             </Button>
-            {isEdit && formData.slug && formData.status === 'published' && (
+            {isEdit && loadedSlugRef.current && loadedStatus === 'published' && (
               <Button
                 variant="tertiary"
                 startContent={<ExternalLink size={16} />}
@@ -319,8 +328,8 @@ export function PageBuilder() {
                   // panel is accessed directly via /admin without a tenant slug in the URL.
                   const slug = tenant?.slug || user?.tenant_slug;
                   const liveUrl = slug
-                    ? `/${slug}/page/${formData.slug}`
-                    : `/page/${formData.slug}`;
+                    ? `/${slug}/page/${loadedSlugRef.current}`
+                    : `/page/${loadedSlugRef.current}`;
                   window.open(liveUrl, '_blank');
                 }}
               >

@@ -1111,6 +1111,7 @@
     "none_top_level": "Keine (Element der obersten Ebene)",
     "page_created": "Seite erstellt",
     "saved_with_slug": "Gespeichert. Die Webadresse lautet /page/{{slug}}, weil die gewählte bereits vergeben war.",
+    "saved_with_generated_slug": "Gespeichert. Die Webadresse lautet /page/{{slug}}.",
     "back": "Zurück",
     "cancel": "Stornieren",
     "loading_pages": "Seiten werden geladen...",

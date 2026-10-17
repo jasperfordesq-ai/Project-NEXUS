@@ -1111,6 +1111,7 @@
     "none_top_level": "Ninguno (elemento de nivel superior)",
     "page_created": "Página creada",
     "saved_with_slug": "Guardado. La dirección web es /page/{{slug}} porque la que elegiste ya estaba en uso.",
+    "saved_with_generated_slug": "Guardado. La dirección web es /page/{{slug}}.",
     "back": "Atrás",
     "cancel": "Cancelar",
     "loading_pages": "Cargando páginas...",

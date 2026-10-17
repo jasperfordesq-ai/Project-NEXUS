@@ -338,6 +338,21 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 
+  it('does not say the address was in use when the field was empty and the server generated one', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 12, slug: 'page-ab12cd' } });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    await user.type(screen.getAllByRole('textbox')[0]!, '日本語ページ');
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    const message = String(mockToast.success.mock.calls[0]![0]);
+    expect(message).toContain('/page/page-ab12cd');
+    expect(message).not.toMatch(/already in use/i);
+  });
+
   it('offers About and Header column as menu locations', async () => {
     const user = userEvent.setup();
     mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 9 } });
@@ -536,6 +551,42 @@ describe('PageBuilder — edit mode (id=3)', () => {
 
     await waitFor(() => expect(mockAdminPages.update).toHaveBeenCalled());
     expect(mockAdminPages.update).toHaveBeenCalledWith(3, expect.objectContaining({ slug: 'existing-page' }));
+  });
+
+  it('gives only the plain updated message when a cleared address keeps the loaded one', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Existing Page', slug: 'existing-page', content: '<p>x</p>', content_format: 'richtext', status: 'draft', menu_location: 'about' },
+    });
+    mockAdminPages.update.mockResolvedValueOnce({ success: true, data: { id: 3, slug: 'existing-page' } });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    await waitFor(() => expect((screen.getAllByRole('textbox')[1] as HTMLInputElement).value).toBe('existing-page'));
+
+    await user.clear(screen.getAllByRole('textbox')[1]!);
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    const message = String(mockToast.success.mock.calls[0]![0]);
+    expect(message).not.toContain('/page/');
+    expect(message).not.toMatch(/already in use/i);
+  });
+
+  it('does not offer the live page until a draft has been saved as published', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Draft', slug: 'draft-page', content: '<p>x</p>', content_format: 'richtext', status: 'draft', menu_location: 'about' },
+    });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    await user.click(screen.getByRole('button', { name: /status/i }));
+    await user.click(await screen.findByRole('option', { name: 'Published' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /status/i })).toHaveTextContent('Published'));
+    expect(screen.queryByRole('button', { name: 'Open live page' })).not.toBeInTheDocument();
   });
 
   it('offers the live page link only for a published page in edit mode', async () => {

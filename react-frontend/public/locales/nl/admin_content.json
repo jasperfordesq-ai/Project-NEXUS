@@ -1110,6 +1110,7 @@
     "none_top_level": "Geen (item op het hoogste niveau)",
     "page_created": "Pagina gemaakt",
     "saved_with_slug": "Opgeslagen. Het webadres is /page/{{slug}} omdat het gekozen adres al in gebruik was.",
+    "saved_with_generated_slug": "Opgeslagen. Het webadres is /page/{{slug}}.",
     "back": "Rug",
     "cancel": "Annuleren",
     "loading_pages": "Pagina's laden...",

@@ -1111,6 +1111,7 @@
     "none_top_level": "なし (最上位項目)",
     "page_created": "ページが作成されました",
     "saved_with_slug": "保存しました。選択したアドレスは既に使われていたため、ウェブアドレスは /page/{{slug}} になります。",
+    "saved_with_generated_slug": "保存しました。ウェブアドレスは /page/{{slug}} です。",
     "back": "戻る",
     "cancel": "キャンセル",
     "loading_pages": "ページを読み込んでいます...",
