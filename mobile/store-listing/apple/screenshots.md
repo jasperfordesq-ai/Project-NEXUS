@@ -1,6 +1,18 @@
 # Apple screenshot capture plan
 
-Last reviewed: 2026-08-30
+Last reviewed: 2026-10-17
+
+🔴 **2026-10-17 — what was actually submitted, and what changed.** The workflow now builds an
+ad-hoc *signed* Simulator app with Xcode 26.2 (unsigned, the app could not keep a sign-in),
+waits out iOS's "Save Password?" sheet, and resets the Keychain between attempts; it signs
+in as the ordinary Partner Demo member used for App Review. Run `38974515207` produced all
+four images. **App Store Connect now requires the medium iPhone size (1206 × 2622)** and
+treats 6.9-inch as optional, so Feed, Listings and Messages were scaled to 1206 × 2622 and
+uploaded through Media Manager; Apple reuses them for every iPhone size. **Events was left
+out** because Partner Demo had no upcoming events (the screen showed an empty state). The
+Partner Demo header shows the Timebank Ireland logo, a community setting. Full detail:
+[`../../docs/IOS_RELEASE_PROCEDURE.md`](../../docs/IOS_RELEASE_PROCEDURE.md). The text below
+is the original plan.
 
 The first release is iPhone-only. The manually dispatched
 [`iOS Simulator Screenshots`](../../../.github/workflows/ios-simulator-screenshots.yml)

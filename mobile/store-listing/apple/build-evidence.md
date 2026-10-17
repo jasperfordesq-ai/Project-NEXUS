@@ -1,12 +1,25 @@
 # iOS build evidence
 
-Last reviewed: 2026-08-30
+Last reviewed: 2026-10-17
 
 This record captures the checked macOS cloud compile and current Simulator runtime evidence
-for the Expo iOS configuration. It does not certify a
-signed device build, TestFlight, App Review or any runtime journey on an iPhone.
+for the Expo iOS configuration, and (since 2026-10-17) the first signed store build. It does
+not certify App Review or any runtime journey on an iPhone.
 
-## EAS build
+## First signed store build — 1.10.0 (8), 2026-10-16
+
+| Field | Evidence |
+| --- | --- |
+| Result | Finished; uploaded with `eas-submit-ios.js`; processed by Apple; TestFlight "Ready to Submit"; submitted to App Review 2026-10-17 |
+| EAS build ID | `96307fd4-9356-4475-afac-7602a440aadf` |
+| Source commit | `fcd2f46ab289f42b9b45d93fcaa91a63d459e98a` |
+| Profile / distribution | `production` / store |
+| Signing | EAS-managed distribution certificate (serial `56889AC5…`, expires 2027-10-16) and App Store profile `54H8FNR9BG`, team `UUQ2A2KD52` |
+| Signed entitlements (read from the downloaded IPA, 2026-10-17) | `aps-environment production`, `applinks:app.project-nexus.ie`, application identifier `UUQ2A2KD52.ie.project.nexus`, `beta-reports-active` |
+| Over-the-air updates | `EXUpdatesEnabled false` in `Expo.plist` — this build never fetches an update |
+| Archive | 43,451,528 bytes (IPA from EAS) |
+
+## EAS build (Simulator, 2026-08-27)
 
 | Field | Evidence |
 | --- | --- |

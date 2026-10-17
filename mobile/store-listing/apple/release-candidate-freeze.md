@@ -1,6 +1,6 @@
 # iOS release-candidate freeze record
 
-Last reviewed: 2026-08-30
+Last reviewed: 2026-10-17
 
 This record has two stages. The source-candidate fields are frozen as soon as the repository
 work has settled. The signed-build fields are filled only after Apple enrolment is active and
@@ -36,28 +36,37 @@ screenshots and App Review notes from referring to a different build than the on
   Stripe physical-goods return, account deletion, report/mute/block and accessibility.
 - [ ] On-device lock-screen evidence confirms that ordinary pushes do not reveal private
   message, safeguarding, identity, financial or member-detail content.
-- [ ] Store copy, privacy answers, age rating, screenshots, review notes and owner/legal
-  answers are checked against the exact build.
-- [ ] Reviewer credentials are live-verified, then the verification session is logged out.
-- [ ] The owner separately authorises TestFlight external testing, App Review submission and
-  public release at the appropriate gates.
+- [x] Store copy, privacy answers, age rating, screenshots, review notes and owner/legal
+  answers entered in App Store Connect for build 8 (2026-10-16/17): listing via
+  `eas metadata:push`; App Privacy 21 data types published; age rating 18+ override;
+  screenshots Feed/Listings/Messages from run `38974515207`, uploaded at 1206 × 2622.
+  🔴 The App Privacy answers were taken from `app-privacy.md`; the comparison against the
+  signed archive's privacy manifests that `app-privacy.md` asks for was NOT repeated.
+- [x] Reviewer credentials are live-verified, then the verification session is logged out
+  (2026-10-16: the Partner Demo admin now has two-factor sign-in, so the reviewer account
+  became the ordinary member Maya Rivers; sign-in proven against production and in the
+  Simulator screenshot run).
+- [x] The owner authorised App Review submission (2026-10-17: "submit for App Review").
+  External TestFlight testing was not set up. Public release is MANUAL and still needs the
+  owner's go-ahead after approval.
 
 ## Immutable candidate identity
 
 | Field | Frozen value |
 |---|---|
-| Git source tag | `ios-v1.2.0-build3-rc1` (resolve the immutable commit with `git rev-list -n 1`) |
-| Backend commit/version | Same commit resolved by `ios-v1.2.0-build3-rc1` |
-| App semantic version | `1.2.0` |
-| iOS build number | `3` (planned next production build; confirm from EAS artifact) |
-| Expo runtime version | `1.2.0` (`appVersion` policy) |
-| EAS build ID | `______________________________` |
-| App Store Connect build | `______________________________` |
+| Git source tag | none — identified by commit (below) |
+| Backend commit/version | production as deployed on 2026-10-16 (frontend tip `d8ae64349`); the app talks to `api.project-nexus.ie` |
+| App semantic version | `1.10.0` |
+| iOS build number | `8` (EAS remote counter; numbers 3–7 burned by failed credential attempts) |
+| Expo runtime version | `1.10.0` (`appVersion` policy); over-the-air updates OFF in this build |
+| Source commit | `fcd2f46ab289f42b9b45d93fcaa91a63d459e98a` |
+| EAS build ID | `96307fd4-9356-4475-afac-7602a440aadf` |
+| App Store Connect build | 1.10.0 (8), app Apple ID `6823712395`; submitted to App Review 2026-10-17 |
 | Bundle identifier | `ie.project.nexus` |
 | EAS production profile | `production` |
-| Test device / iOS | `______________________________` |
-| Freeze timestamp (UTC) | `______________________________` |
-| Frozen by | `______________________________` |
+| Test device / iOS | owner's iPhone via TestFlight (installed; journey pass not recorded) |
+| Freeze timestamp (UTC) | 2026-10-17, App Review submission |
+| Frozen by | Claude session, at the owner's instruction |
 
 ## Hashes and evidence
 

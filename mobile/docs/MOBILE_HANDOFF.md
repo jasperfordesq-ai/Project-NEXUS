@@ -7,7 +7,7 @@ See NOTICE file for attribution and acknowledgements.
 
 # Mobile hand-off — start here
 
-Last reviewed: 2026-09-07
+Last reviewed: 2026-10-17
 
 Status: **Maintained — short entry point; detailed evidence lives in the linked sources.**
 
@@ -144,16 +144,21 @@ Xcode-selector step is the signal that the two have realigned.
 this app fine. The mismatch is GitHub's runner image having moved ahead of Expo 54's
 toolchain.
 
-## 🔴 iOS App Store readiness (2026-09-07; account steps DONE 2026-10-16)
+## 🔴 iOS App Store readiness (2026-09-07; SUBMITTED to App Review 2026-10-17)
 
-**2026-10-16:** the organisation enrolment was approved and every row in the table below is
-now done — Team ID `UUQ2A2KD52`, App Store Connect app `6823712395`, EAS-managed signing,
-and the first signed build (1.10.0 build 8) is in TestFlight. What still stands between
-that and a public release: current 6.9-inch screenshots (the capture workflow was fixed the
-same day and needs a push to run), the reviewer demo account (it now demands an
-authenticator code, which App Review cannot supply — use a plain member without one) and a
-TestFlight walk on a real iPhone. The APNs key is on EAS and the EU trader declaration
-("not a trader") is recorded. See `store-listing/apple/release-candidate-freeze.md`.
+**2026-10-17:** 1.10.0 build 8 was submitted to App Review ("Waiting for Review", manual
+release). Every account step in the table below is done. **The full release procedure,
+credentials map and the traps hit along the way are in
+[`IOS_RELEASE_PROCEDURE.md`](IOS_RELEASE_PROCEDURE.md) — read it before any iOS work.**
+In short: Team ID `UUQ2A2KD52`, App Store Connect app `6823712395`, seller "hOUR
+Timebank", EAS-managed signing via an App Store Connect API key, push key on EAS, EU trader
+declaration "not a trader", reviewer account = an ordinary Partner Demo member (the admin
+has two-factor sign-in). Still not verified: a notification delivered to an iPhone, iOS
+certificate pinning on a signed build (F-200), and universal links on a device.
+Over-the-air updates were switched back on 2026-10-17 (owner decision) but build 8 cannot
+take them; the next build can.
+
+The rest of this section is the 2026-09-07 readiness record, kept for history.
 
 The owner's stated goal is publishing to the App Store once their developer account is
 approved. **No engineering work blocks that.** Everything outstanding flows from the account:
@@ -300,6 +305,7 @@ status document's backlog.
 
 | Need | Source |
 | --- | --- |
+| 🔴 **Shipping a build to the Apple App Store — credentials, EAS build and submit, App Store Connect, screenshots, every trap from the first release** | [`IOS_RELEASE_PROCEDURE.md`](IOS_RELEASE_PROCEDURE.md) |
 | 🔴 **Shipping a build to Play — order of operations, version codes, review timing, every silent trap** | [`PLAY_RELEASE_PROCEDURE.md`](PLAY_RELEASE_PROCEDURE.md) — and the agent checklist distilled from it, `.agents/skills/play-release/SKILL.md`, whose first rule is: let Play's quick checks finish before pressing Submit |
 | The 2026-09-07 audit — what was read, fixed and left open | [`HISTORY/AUDIT_2026-09-07.md`](HISTORY/AUDIT_2026-09-07.md) |
 | Two-account emulator/device procedure | [`MOBILE_TEST_HARNESS.md`](MOBILE_TEST_HARNESS.md) |
