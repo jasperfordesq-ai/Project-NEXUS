@@ -26,8 +26,12 @@ class AdminContentController extends BaseApiController
     protected bool $isV2Api = true;
     private const PAGE_DESIGN_JSON_MAX_BYTES = 2_000_000;
 
-    /** Where a published page may appear: About menu, the header column of the More menu, or the footer. */
-    private const MENU_LOCATIONS = ['about', 'header', 'footer'];
+    /**
+     * Where a published page may appear: the About menu or the header column of
+     * the More menu. The Footer placement was retired on 2026-10-17 (owner
+     * decision); see the 2026_10_17_120000_retire_footer_page_placement migration.
+     */
+    private const MENU_LOCATIONS = ['about', 'header'];
 
     public function __construct(
         private readonly RedisCache $redisCache,

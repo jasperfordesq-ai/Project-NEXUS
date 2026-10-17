@@ -2998,6 +2998,6 @@ IARRTHÓIRÍ: :candidates',
     'event_safety_publish_draft_required' => 'Ní féidir ach dréacht a fhoilsiú. Sábháil d\'athruithe mar dhréacht ar dtús, ansin foilsigh é.',
     'event_safety_code_of_conduct_changed' => 'Athraíodh an cód iompair ó d\'oscail tú é. Athlódáil an leathanach, léigh an leagan reatha agus aontaigh leis arís.',
     'event_safety_code_of_conduct_not_required' => 'Níl aon chód iompair ag an imeacht seo le haontú leis faoi láthair.',
-    'menu_location_invalid' => 'Ní mór suíomh an roghchláir a bheith ina Maidir Linn, Colún an Cheanntásc nó Buntásc.',
+    'menu_location_invalid' => 'Ní mór suíomh an roghchláir a bheith ina Maidir Linn nó Colún an Cheanntásc.',
     'header_column_title_invalid' => 'Ní mór teideal cholún an cheanntásc a bheith ina ghnáth-théacs nach faide ná :max carachtar.',
 ];

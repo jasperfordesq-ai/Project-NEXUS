@@ -2998,6 +2998,6 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'event_safety_publish_draft_required' => '公開できるのは下書きだけです。まず変更を下書きとして保存してから公開してください。',
     'event_safety_code_of_conduct_changed' => '開いた後に行動規範が変更されました。ページを再読み込みし、最新版を読んでから、もう一度同意してください。',
     'event_safety_code_of_conduct_not_required' => 'このイベントには現在、同意が必要な行動規範はありません。',
-    'menu_location_invalid' => 'メニューの位置は「概要」「ヘッダー列」「フッター」のいずれかにしてください。',
+    'menu_location_invalid' => 'メニューの位置は「概要」または「ヘッダー列」にしてください。',
     'header_column_title_invalid' => 'ヘッダー列のタイトルは、:max 文字以内のプレーンテキストにしてください。',
 ];

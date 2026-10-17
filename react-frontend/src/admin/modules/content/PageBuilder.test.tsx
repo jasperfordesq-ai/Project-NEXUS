@@ -292,7 +292,7 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     expect(mockNavigate).toHaveBeenCalled();
   });
 
-  it('offers About, Header column and Footer as menu locations', async () => {
+  it('offers About and Header column as menu locations', async () => {
     const user = userEvent.setup();
     mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 9 } });
     renderPageBuilder();
@@ -303,7 +303,8 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     await user.click(await screen.findByRole('button', { name: /location/i }));
 
     expect(await screen.findByRole('option', { name: 'About Section' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Footer' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Footer' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('option')).toHaveLength(2);
     await user.click(screen.getByRole('option', { name: /^Header column/ }));
 
     await user.click(screen.getByRole('button', { name: /create|save/i }));
@@ -379,7 +380,7 @@ describe('PageBuilder — edit mode (id=3)', () => {
         meta_description: 'Existing meta',
         status: 'published',
         show_in_menu: true,
-        menu_location: 'footer',
+        menu_location: 'header',
         menu_order: 2,
       },
     });

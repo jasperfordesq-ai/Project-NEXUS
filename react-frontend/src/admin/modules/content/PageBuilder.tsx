@@ -350,7 +350,6 @@ export function PageBuilder() {
                 >
                   <SelectItem key="about" id="about">{t('content.about_section')}</SelectItem>
                   <SelectItem key="header" id="header" description={t('content.header_column_desc')}>{t('content.header_column')}</SelectItem>
-                  <SelectItem key="footer" id="footer">{t('content.footer')}</SelectItem>
                 </Select>
                 <Input
                   type="number"

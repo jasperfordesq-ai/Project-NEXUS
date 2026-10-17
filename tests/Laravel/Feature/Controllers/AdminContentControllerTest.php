@@ -446,12 +446,47 @@ class AdminContentControllerTest extends TestCase
         $pageId = (int) $create->json('data.id');
         $this->assertSame('header', DB::table('pages')->where('id', $pageId)->value('menu_location'));
 
-        $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'footer'])->assertStatus(200);
-        $this->assertSame('footer', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+        $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'about'])->assertStatus(200);
+        $this->assertSame('about', DB::table('pages')->where('id', $pageId)->value('menu_location'));
 
         $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'nowhere'])
             ->assertStatus(422)
             ->assertJsonPath('errors.0.field', 'menu_location');
-        $this->assertSame('footer', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+        $this->assertSame('about', DB::table('pages')->where('id', $pageId)->value('menu_location'));
+    }
+
+    public function test_create_page_rejects_footer_menu_location(): void
+    {
+        // The Footer placement was retired on 2026-10-17 (owner decision).
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/pages', [
+            'title' => 'Footer Page',
+            'show_in_menu' => 1,
+            'menu_location' => 'footer',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'VALIDATION_ERROR')
+            ->assertJsonPath('errors.0.field', 'menu_location');
+    }
+
+    public function test_update_page_rejects_footer_menu_location(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $create = $this->apiPost('/v2/admin/pages', [
+            'title' => 'About Page To Move',
+            'show_in_menu' => 1,
+            'menu_location' => 'about',
+        ]);
+        $create->assertStatus(201);
+        $pageId = (int) $create->json('data.id');
+
+        $this->apiPut("/v2/admin/pages/{$pageId}", ['menu_location' => 'footer'])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.field', 'menu_location');
+        $this->assertSame('about', DB::table('pages')->where('id', $pageId)->value('menu_location'));
     }
 }

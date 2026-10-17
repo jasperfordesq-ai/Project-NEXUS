@@ -2998,6 +2998,6 @@ CANDIDATOS::candidates',
     'event_safety_publish_draft_required' => 'Solo se puede publicar un borrador. Guarda primero tus cambios como borrador y después publícalo.',
     'event_safety_code_of_conduct_changed' => 'El código de conducta ha cambiado desde que lo abriste. Vuelve a cargar la página, lee la versión actual y acéptala de nuevo.',
     'event_safety_code_of_conduct_not_required' => 'Este evento no tiene ningún código de conducta que aceptar en este momento.',
-    'menu_location_invalid' => 'La ubicación en el menú debe ser Acerca de, Columna del encabezado o Pie de página.',
+    'menu_location_invalid' => 'La ubicación en el menú debe ser Acerca de o Columna del encabezado.',
     'header_column_title_invalid' => 'El título de la columna del encabezado debe ser texto sin formato de no más de :max caracteres.',
 ];

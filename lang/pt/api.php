@@ -2998,6 +2998,6 @@ CANDIDATOS::candidates',
     'event_safety_publish_draft_required' => 'Só é possível publicar um rascunho. Salve primeiro suas alterações como rascunho e depois publique.',
     'event_safety_code_of_conduct_changed' => 'O código de conduta mudou desde que você o abriu. Recarregue a página, leia a versão atual e concorde novamente.',
     'event_safety_code_of_conduct_not_required' => 'Este evento não tem nenhum código de conduta para aceitar no momento.',
-    'menu_location_invalid' => 'A localização no menu deve ser Sobre, Coluna do cabeçalho ou Rodapé.',
+    'menu_location_invalid' => 'A localização no menu deve ser Sobre ou Coluna do cabeçalho.',
     'header_column_title_invalid' => 'O título da coluna do cabeçalho deve ser texto simples com no máximo :max caracteres.',
 ];

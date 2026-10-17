@@ -223,20 +223,6 @@ export function Footer({ children, copyright }: FooterProps) {
               </nav>
             </div>
 
-            {/* Dynamic footer pages from admin CMS */}
-            {tenant?.menu_pages?.footer?.length ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-                <div>
-                  <h3 className="text-sm font-semibold text-theme-primary mb-3">{t('footer.pages')}</h3>
-                  <ul className="space-y-2">
-                    {tenant.menu_pages.footer.map((p) => (
-                      <li key={p.slug}><FooterLink href={tenantPath(`/page/${p.slug}`)}>{p.title}</FooterLink></li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ) : null}
-
             {/* Tenant Copyright */}
             <div className="border-t border-theme-default pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-sm text-theme-subtle">{footerText}</p>

@@ -373,6 +373,19 @@ describe('Footer', () => {
     });
   });
 
+  describe('Custom pages', () => {
+    // The Footer page placement was retired on 2026-10-17 (owner decision);
+    // pages filed there now appear in the header column instead.
+    it('renders no custom pages block even when menu_pages.footer is present', () => {
+      setupDefaultMocks({
+        tenant: { menu_pages: { footer: [{ title: 'Seed Stub Page', slug: 'seed-stub-page', description: null }] } },
+      });
+      render(<Footer />);
+      expect(screen.queryByText('Seed Stub Page')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Seed Stub Page' })).not.toBeInTheDocument();
+    });
+  });
+
   describe('Platform links', () => {
     it('renders Listings link', () => {
       render(<Footer />);

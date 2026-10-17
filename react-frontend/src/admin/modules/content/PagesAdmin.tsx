@@ -41,7 +41,9 @@ interface PageItem {
 const MENU_LOCATION_LABEL_KEYS: Record<string, string> = {
   about: 'content.location_about',
   header: 'content.location_header',
-  footer: 'content.footer',
+  // The Footer placement was retired on 2026-10-17. A stored `footer` row the
+  // data migration has not reached is shown in the header column, so say so.
+  footer: 'content.location_header',
 };
 
 export function PagesAdmin() {

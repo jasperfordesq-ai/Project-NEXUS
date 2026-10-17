@@ -616,10 +616,13 @@ class TenantBootstrapControllerTest extends TestCase
                 ['title' => 'Our Story', 'slug' => 'our-story-bootstrap-test', 'description' => 'Written by us'],
                 $menu['about'][0]
             );
-            $this->assertCount(1, $menu['header']);
+            // The Footer placement was retired on 2026-10-17: a stored `footer`
+            // row the data migration has not reached still shows, in the header column.
+            $this->assertCount(2, $menu['header']);
             $this->assertSame('Annual Review', $menu['header'][0]['title']);
             $this->assertNull($menu['header'][0]['description']);
-            $this->assertCount(1, $menu['footer']);
+            $this->assertSame('Credits', $menu['header'][1]['title']);
+            $this->assertArrayNotHasKey('footer', $menu);
         } finally {
             app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
         }

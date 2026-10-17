@@ -25,7 +25,7 @@ const PAGES = vi.hoisted(() => [
     status: 'published',
     sort_order: 1,
     show_in_menu: 1,
-    menu_location: 'footer',
+    menu_location: 'about',
     created_at: '2026-03-01T00:00:00Z',
   },
   {
@@ -99,6 +99,23 @@ describe('PagesAdmin', () => {
     await waitFor(() => expect(screen.getByText('Our Work')).toBeInTheDocument());
     expect(screen.getByText('Header')).toBeInTheDocument();
     expect(screen.getByLabelText(/header column title/i)).toBeInTheDocument();
+  });
+
+  it('labels a legacy footer page as Header, where it now appears', async () => {
+    // The Footer placement was retired on 2026-10-17; the bootstrap shows a
+    // stored `footer` row in the header column, so the admin list says so too.
+    vi.mocked(adminPages.list).mockResolvedValue({
+      success: true,
+      data: [{
+        id: 13, title: 'Old Footer Page', slug: 'old-footer-page', status: 'published', sort_order: 1,
+        show_in_menu: 1, menu_location: 'footer', menu_order: 1, created_at: '2026-03-01T00:00:00Z',
+      }],
+    });
+    render(<PagesAdmin />);
+
+    await waitFor(() => expect(screen.getByText('Old Footer Page')).toBeInTheDocument());
+    expect(screen.getByText('Header')).toBeInTheDocument();
+    expect(screen.queryByText('Footer')).not.toBeInTheDocument();
   });
 
   // ── loading state ─────────────────────────────────────────────────────────

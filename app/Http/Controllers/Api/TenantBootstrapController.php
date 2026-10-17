@@ -669,6 +669,12 @@ class TenantBootstrapController extends BaseApiController
 
             foreach ($rows as $row) {
                 $location = $row->menu_location ?: 'about';
+                // The Footer placement was retired on 2026-10-17. A stored
+                // `footer` row the data migration has not reached still shows,
+                // in the header column where that migration moves it.
+                if ($location === 'footer') {
+                    $location = 'header';
+                }
                 $result[$location][] = [
                     'title' => $row->title,
                     'slug' => $row->slug,

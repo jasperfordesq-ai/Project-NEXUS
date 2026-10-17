@@ -1392,7 +1392,6 @@ export interface TenantConfig {
   menu_pages?: {
     about?: MenuPage[];
     header?: MenuPage[];
-    footer?: MenuPage[];
   };
   /** Listing module configuration */
   listing_config?: ListingConfig;

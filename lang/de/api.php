@@ -2998,6 +2998,6 @@ KANDIDATEN::candidates',
     'event_safety_publish_draft_required' => 'Nur ein Entwurf kann veröffentlicht werden. Speichern Sie Ihre Änderungen zuerst als Entwurf und veröffentlichen Sie ihn dann.',
     'event_safety_code_of_conduct_changed' => 'Der Verhaltenskodex hat sich geändert, seit Sie ihn geöffnet haben. Laden Sie die Seite neu, lesen Sie die aktuelle Fassung und stimmen Sie erneut zu.',
     'event_safety_code_of_conduct_not_required' => 'Für diese Veranstaltung gibt es derzeit keinen Verhaltenskodex, dem Sie zustimmen müssen.',
-    'menu_location_invalid' => 'Der Menüort muss „Über uns“, „Kopfzeilenspalte“ oder „Fußzeile“ sein.',
+    'menu_location_invalid' => 'Der Menüort muss „Über uns“ oder „Kopfzeilenspalte“ sein.',
     'header_column_title_invalid' => 'Der Titel der Kopfzeilenspalte muss reiner Text mit höchstens :max Zeichen sein.',
 ];
