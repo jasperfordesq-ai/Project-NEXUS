@@ -70,6 +70,8 @@ export function describeSaveFailure(
 ): { message: string; field?: string } {
   const first = res?.errors?.find((e) => e?.message);
   if (first?.message) return { message: first.message, field: first.field };
+  // admin-i18n-ignore: localized server message — AdminContentController renders every
+  // page-save refusal with __('api.…') in the caller's locale, so it is already translated
   if (res?.error) return { message: res.error };
   return { message: fallback };
 }
