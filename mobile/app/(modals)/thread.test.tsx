@@ -68,6 +68,9 @@ type MockConversationHandlers = {
   message?: (message: MockThreadMessage) => boolean | void;
   read?: (event: Record<string, unknown>) => void;
   typing?: (event: { user_id: number; is_typing: boolean }) => void;
+  updated?: (event: Record<string, unknown>) => void;
+  deleted?: (event: Record<string, unknown>) => void;
+  reaction?: (event: Record<string, unknown>) => void;
 };
 let mockConversationHandlers: MockConversationHandlers | null = null;
 const thumbsUpReaction = '\u{1F44D}';
@@ -1897,6 +1900,72 @@ describe('read receipts', () => {
 
     expect(screen.getByTestId('receipt-read-2')).toBeTruthy();
     expect(screen.getByTestId('receipt-read-8')).toBeTruthy();
+  });
+
+  it('message.updated replaces the text and shows the edited mark', () => {
+    const screen = renderWith([mockMessages[0], mockMessages[1]]);
+    expect(screen.queryByText('Edited')).toBeNull();
+
+    act(() => {
+      mockConversationHandlers?.updated?.({ id: 1, body: 'Hello there! (fixed)', is_edited: true, sender_id: 5, receiver_id: 1 });
+    });
+
+    expect(screen.getByText('Hello there! (fixed)')).toBeTruthy();
+    expect(screen.queryByText('Hello there!')).toBeNull();
+    expect(screen.getByText('Edited')).toBeTruthy();
+    // The other bubble is untouched.
+    expect(screen.getByText('Hi back!')).toBeTruthy();
+  });
+
+  it('message.deleted for everyone turns the bubble into the deleted placeholder', () => {
+    const screen = renderWith([{ ...mockMessages[0], reactions: { [thumbsUpReaction]: 2 } }, mockMessages[1]]);
+    expect(screen.getByText('2')).toBeTruthy();
+
+    act(() => {
+      mockConversationHandlers?.deleted?.({ id: 1, scope: 'everyone', actor_id: 5, sender_id: 5, receiver_id: 1 });
+    });
+
+    expect(screen.queryByText('Hello there!')).toBeNull();
+    expect(screen.getByText('This message was deleted.')).toBeTruthy();
+    // Its reactions went with it.
+    expect(screen.queryByText('2')).toBeNull();
+    expect(screen.getByText('Hi back!')).toBeTruthy();
+  });
+
+  it('message.deleted for self (this member, another device) removes the bubble', () => {
+    const screen = renderWith([mockMessages[0], mockMessages[1]]);
+
+    act(() => {
+      mockConversationHandlers?.deleted?.({ id: 2, scope: 'self', actor_id: 1, sender_id: 1, receiver_id: 5 });
+    });
+
+    expect(screen.queryByText('Hi back!')).toBeNull();
+    expect(screen.getByText('Hello there!')).toBeTruthy();
+  });
+
+  it('message.reaction sets the counts from the server and marks my own toggle from elsewhere', () => {
+    const screen = renderWith([mockMessages[0], mockMessages[1]]);
+
+    // They reacted to my message: a pill with the server's count appears.
+    act(() => {
+      mockConversationHandlers?.reaction?.({ message_id: 2, emoji: thumbsUpReaction, action: 'added', actor_id: 5, counts: { [thumbsUpReaction]: 2 }, sender_id: 1, receiver_id: 5 });
+    });
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.getAllByLabelText(`Toggle ${thumbsUpReaction} reaction`)[0].props.accessibilityState).toEqual(expect.objectContaining({ selected: false }));
+
+    // I reacted from my other phone: the pill reads as mine.
+    act(() => {
+      mockConversationHandlers?.reaction?.({ message_id: 2, emoji: thumbsUpReaction, action: 'added', actor_id: 1, counts: { [thumbsUpReaction]: 3 }, sender_id: 1, receiver_id: 5 });
+    });
+    expect(screen.getByText('3')).toBeTruthy();
+    expect(screen.getAllByLabelText(`You reacted with ${thumbsUpReaction}`)[0].props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+
+    // A later event with fewer counts wins outright — no local arithmetic.
+    act(() => {
+      mockConversationHandlers?.reaction?.({ message_id: 2, emoji: thumbsUpReaction, action: 'removed', actor_id: 1, counts: {}, sender_id: 1, receiver_id: 5 });
+    });
+    expect(screen.queryByText('3')).toBeNull();
+    expect(screen.queryByLabelText(`You reacted with ${thumbsUpReaction}`)).toBeNull();
   });
 
   it('shows the sending clock on an optimistic message, then the sent tick after the server replies', async () => {

@@ -842,9 +842,75 @@ describe('typed realtime events on the user channel', () => {
     return { bound, ...view };
   }
 
-  it('binds new-message, message.read, typing and unread-count on the user channel', async () => {
+  it('binds new-message, message.read, typing, the three mutation events and unread-count on the user channel', async () => {
     const { bound } = await renderConnected();
-    expect(Object.keys(bound)).toEqual(expect.arrayContaining(['new-message', 'message.read', 'typing', 'unread-count']));
+    expect(Object.keys(bound)).toEqual(expect.arrayContaining([
+      'new-message', 'message.read', 'typing', 'message.updated', 'message.deleted', 'message.reaction', 'unread-count',
+    ]));
+  });
+
+  it('dispatches message.updated to the conversation with the OTHER participant, whoever edited', async () => {
+    const { bound, result } = await renderConnected();
+    const updated = jest.fn();
+    const otherUpdated = jest.fn();
+    act(() => {
+      result.current.subscribeToConversation(9, { updated });
+      result.current.subscribeToConversation(7, { updated: otherUpdated });
+    });
+
+    // They edited what they sent me.
+    const theirs = { id: 50, body: 'fixed', is_edited: true, edited_at: '2026-10-17T10:00:00Z', sender_id: 9, receiver_id: 1, conversation_id: 123 };
+    act(() => { bound['message.updated'](theirs); });
+    expect(updated).toHaveBeenCalledWith(theirs);
+
+    // I edited, on another device, what I sent them: still keyed by them.
+    const mine = { ...theirs, id: 51, sender_id: 1, receiver_id: 9 };
+    act(() => { bound['message.updated'](mine); });
+    expect(updated).toHaveBeenCalledWith(mine);
+    expect(otherUpdated).not.toHaveBeenCalled();
+
+    // Malformed: no body → dropped.
+    act(() => { bound['message.updated']({ id: 52, sender_id: 9, receiver_id: 1 }); });
+    expect(updated).toHaveBeenCalledTimes(2);
+  });
+
+  it('dispatches message.deleted for everyone, and for self only when this member is the actor', async () => {
+    const { bound, result } = await renderConnected();
+    const deleted = jest.fn();
+    act(() => { result.current.subscribeToConversation(9, { deleted }); });
+
+    const everyone = { id: 50, scope: 'everyone', actor_id: 9, sender_id: 9, receiver_id: 1, conversation_id: 123 };
+    act(() => { bound['message.deleted'](everyone); });
+    expect(deleted).toHaveBeenCalledWith(everyone);
+
+    const mySelf = { id: 51, scope: 'self', actor_id: 1, sender_id: 9, receiver_id: 1, conversation_id: 123 };
+    act(() => { bound['message.deleted'](mySelf); });
+    expect(deleted).toHaveBeenCalledWith(mySelf);
+
+    // The other member's "delete for me" must never change what I see.
+    act(() => { bound['message.deleted']({ ...mySelf, id: 52, actor_id: 9 }); });
+    // Malformed: unknown scope → dropped.
+    act(() => { bound['message.deleted']({ ...everyone, id: 53, scope: 'all' }); });
+    expect(deleted).toHaveBeenCalledTimes(2);
+  });
+
+  it('dispatches message.reaction to the conversation with the other participant', async () => {
+    const { bound, result } = await renderConnected();
+    const reaction = jest.fn();
+    const otherReaction = jest.fn();
+    act(() => {
+      result.current.subscribeToConversation(9, { reaction });
+      result.current.subscribeToConversation(7, { reaction: otherReaction });
+    });
+
+    const event = { message_id: 50, emoji: '👍', action: 'added', actor_id: 9, counts: { '👍': 1 }, sender_id: 1, receiver_id: 9, conversation_id: 123 };
+    act(() => { bound['message.reaction'](event); });
+    expect(reaction).toHaveBeenCalledWith(event);
+    expect(otherReaction).not.toHaveBeenCalled();
+
+    // Malformed: counts as a list → dropped.
+    act(() => { bound['message.reaction']({ ...event, counts: [] }); });
+    expect(reaction).toHaveBeenCalledTimes(1);
   });
 
   it('derives is_own from the session identity, never from the payload', async () => {

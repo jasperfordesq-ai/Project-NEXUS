@@ -687,8 +687,59 @@ function ThreadScreenInner() {
       typing: (event) => {
         setOtherTypingState(event.is_typing);
       },
+      updated: (event) => {
+        // A body the server had to cut is not worth showing; the full row comes with a refetch.
+        if (event.is_truncated) {
+          void refresh();
+          return;
+        }
+        const patch = (list: Message[]) => list.map((message) => (
+          message.id === event.id ? { ...message, body: event.body, is_edited: true } : message
+        ));
+        setMessages(patch);
+        setOlderMessages(patch);
+      },
+      deleted: (event) => {
+        // The context only forwards a `self` delete when THIS member did it (elsewhere).
+        if (event.scope === 'self') {
+          const drop = (list: Message[]) => list.filter((message) => message.id !== event.id);
+          setMessages(drop);
+          setOlderMessages(drop);
+        } else {
+          const tombstone = (list: Message[]) => list.map((message) => (
+            message.id === event.id
+              ? { ...message, body: '', is_deleted: true, reactions: {}, attachments: [], audio_url: null }
+              : message
+          ));
+          setMessages(tombstone);
+          setOlderMessages(tombstone);
+        }
+        // Nothing to edit, react to or copy from any more.
+        setEditingMessage((current) => (current?.id === event.id ? null : current));
+        setOptionsMessage((current) => (current?.id === event.id ? null : current));
+        setQuickReactFor((current) => (current === event.id ? null : current));
+      },
+      reaction: (event) => {
+        // Set, never add: the counts are the server's totals after the toggle.
+        const apply = (list: Message[]) => list.map((message) => (
+          message.id === event.message_id ? { ...message, reactions: { ...event.counts } } : message
+        ));
+        setMessages(apply);
+        setOlderMessages(apply);
+        // My own toggle from another device keeps the "you reacted" pill honest here too.
+        if (event.actor_id === authUser?.id) {
+          setMyReactions((prev) => {
+            const message = visibleMessagesRef.current.find((item) => item.id === event.message_id);
+            const base = prev[event.message_id] ?? message?.my_reactions ?? [];
+            const next = event.action === 'removed'
+              ? base.filter((item) => item !== event.emoji)
+              : Array.from(new Set([...base, event.emoji]));
+            return { ...prev, [event.message_id]: next };
+          });
+        }
+      },
     });
-  }, [isValidId, refreshCounts, safeThreadLookupId, setOtherTypingState, subscribeToConversation]);
+  }, [authUser?.id, isValidId, refresh, refreshCounts, safeThreadLookupId, setOtherTypingState, subscribeToConversation]);
 
   /*
     Returning to a thread that took messages while it was covered clears them once, here,

@@ -61,11 +61,57 @@ export interface TypingEvent {
   timestamp?: string | number;
 }
 
+/** `message.updated` on both participants' user channels: the sender changed the text. */
+export interface MessageUpdatedEvent {
+  id: number;
+  body: string;
+  is_edited?: boolean;
+  edited_at?: string;
+  /** True when the server cut the body for the wire; the full row needs a refetch. */
+  is_truncated?: boolean;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id?: number;
+  timestamp?: string | number;
+}
+
+/**
+ * `message.deleted`. `everyone` reaches both participants; `self` reaches the actor's own
+ * channel only (their other devices), so a `self` event whose actor is not this member is
+ * dropped here, never shown.
+ */
+export interface MessageDeletedEvent {
+  id: number;
+  scope: 'everyone' | 'self';
+  actor_id: number;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id?: number;
+  deleted_at?: string;
+  timestamp?: string | number;
+}
+
+/** `message.reaction`: `counts` are the server's totals after the toggle — set, never add. */
+export interface MessageReactionEvent {
+  message_id: number;
+  emoji: string;
+  action: 'added' | 'removed';
+  actor_id: number;
+  counts: Record<string, number>;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id?: number;
+  timestamp?: string | number;
+}
+
 /** What one open conversation wants to hear about the other member. */
 export interface ConversationHandlers {
   message?: MessageHandler;
   read?: (event: MessageReadEvent) => void;
   typing?: (event: TypingEvent) => void;
+  updated?: (event: MessageUpdatedEvent) => void;
+  deleted?: (event: MessageDeletedEvent) => void;
+  reaction?: (event: MessageReactionEvent) => void;
 }
 
 /** What the inbox list wants to hear about every conversation. */
@@ -132,6 +178,41 @@ function isTypingEvent(data: unknown): data is TypingEvent {
   if (typeof data !== 'object' || data === null) return false;
   const obj = data as Record<string, unknown>;
   return typeof obj.user_id === 'number' && typeof obj.is_typing === 'boolean';
+}
+
+function namesBothParticipants(obj: Record<string, unknown>): boolean {
+  return typeof obj.sender_id === 'number' && typeof obj.receiver_id === 'number';
+}
+
+function isUpdatedEvent(data: unknown): data is MessageUpdatedEvent {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.id === 'number' && typeof obj.body === 'string' && namesBothParticipants(obj);
+}
+
+function isDeletedEvent(data: unknown): data is MessageDeletedEvent {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.id === 'number'
+    && (obj.scope === 'everyone' || obj.scope === 'self')
+    && typeof obj.actor_id === 'number'
+    && namesBothParticipants(obj);
+}
+
+function isReactionEvent(data: unknown): data is MessageReactionEvent {
+  if (typeof data !== 'object' || data === null) return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.message_id === 'number'
+    && typeof obj.emoji === 'string'
+    && (obj.action === 'added' || obj.action === 'removed')
+    && typeof obj.actor_id === 'number'
+    && typeof obj.counts === 'object' && obj.counts !== null && !Array.isArray(obj.counts)
+    && namesBothParticipants(obj);
+}
+
+/** The member on the other side of a one-to-one event, from this session's point of view. */
+function otherParticipant(event: { sender_id: number; receiver_id: number }, me: number): number {
+  return event.sender_id === me ? event.receiver_id : event.sender_id;
 }
 
 /** Minimum interval between foreground-resume refreshes (ms). */
@@ -333,6 +414,32 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
           if (!isTypingEvent(rawPayload)) return;
           conversationListenersRef.current.get(rawPayload.user_id)?.forEach((handlers) => handlers.typing?.(rawPayload));
+        });
+
+        // Changes to messages already on a screen. Each names both participants, so the
+        // open conversation with the OTHER one is the only listener that hears it.
+        ch.bind('message.updated', (rawPayload: unknown) => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          if (!isUpdatedEvent(rawPayload) || sessionIdentity === null) return;
+          const otherUserId = otherParticipant(rawPayload, sessionIdentity);
+          conversationListenersRef.current.get(otherUserId)?.forEach((handlers) => handlers.updated?.(rawPayload));
+        });
+
+        ch.bind('message.deleted', (rawPayload: unknown) => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          if (!isDeletedEvent(rawPayload) || sessionIdentity === null) return;
+          // "Delete for me" is the actor's business alone: it is only ever sent to their
+          // own channel, and even if one strayed here it would not be shown.
+          if (rawPayload.scope === 'self' && rawPayload.actor_id !== sessionIdentity) return;
+          const otherUserId = otherParticipant(rawPayload, sessionIdentity);
+          conversationListenersRef.current.get(otherUserId)?.forEach((handlers) => handlers.deleted?.(rawPayload));
+        });
+
+        ch.bind('message.reaction', (rawPayload: unknown) => {
+          if (!mounted || activeSessionIdentityRef.current !== sessionIdentity) return;
+          if (!isReactionEvent(rawPayload) || sessionIdentity === null) return;
+          const otherUserId = otherParticipant(rawPayload, sessionIdentity);
+          conversationListenersRef.current.get(otherUserId)?.forEach((handlers) => handlers.reaction?.(rawPayload));
         });
 
         // 🔴 A nudge, not a number. The payload's count is never written to state: the
