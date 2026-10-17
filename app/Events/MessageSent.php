@@ -167,7 +167,10 @@ class MessageSent implements ShouldBroadcast, ShouldRescue
             return [];
         }
 
-        return $this->message->attachments
+        /** @var \Illuminate\Database\Eloquent\Collection<int, MessageAttachment> $attachments */
+        $attachments = $this->message->getRelation('attachments');
+
+        return $attachments
             ->map(static fn (MessageAttachment $attachment): array => [
                 'id'        => (int) $attachment->getKey(),
                 'url'       => $attachment->url,
