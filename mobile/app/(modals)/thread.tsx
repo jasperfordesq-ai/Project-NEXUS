@@ -454,7 +454,7 @@ function ThreadScreenInner() {
   visibleMessagesRef.current = visibleMessages;
   // Day chips and bubble grouping are derived, never stored; the list renders these rows.
   const threadRows = useMemo(
-    () => buildThreadRows(visibleMessages, { now: Date.now(), t, locale: dateLocale() }),
+    () => buildThreadRows(visibleMessages, { now: Date.now(), t }),
     [t, visibleMessages],
   );
   const myReactionsFor = useCallback((message: Message): string[] => (

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import type { Message } from '@/lib/api/messages';
+import { dateLocale } from '@/lib/utils/dateLocale';
 
 /** Where a bubble sits in a run of consecutive messages from one sender. */
 export type GroupPosition = 'single' | 'first' | 'middle' | 'last';
@@ -16,8 +17,6 @@ export interface BuildThreadRowsOptions {
   /** The current time (ms or Date); drives Today / Yesterday. */
   now: number | Date;
   t: (key: string) => string;
-  /** BCP 47 tag for the day label, e.g. from `dateLocale()`. */
-  locale: string;
 }
 
 /** Two messages this close together from the same sender read as one group. */
@@ -34,18 +33,16 @@ function senderKey(message: Message): string {
   return `${message.is_own ? 'own' : 'other'}:${id ?? 'unknown'}`;
 }
 
-function dayLabel(date: Date, now: Date, t: (key: string) => string, locale: string): string {
+function dayLabel(date: Date, now: Date, t: (key: string) => string): string {
   const key = localDayKey(date);
   if (key === localDayKey(now)) return t('thread.today');
   const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
   if (key === localDayKey(yesterday)) return t('thread.yesterday');
   const options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' };
   if (date.getFullYear() !== now.getFullYear()) options.year = 'numeric';
-  try {
-    return date.toLocaleDateString(locale, options);
-  } catch {
-    return date.toLocaleDateString(undefined, options);
-  }
+  // Always the app's chosen language and the community's region, never the device's
+  // (mobile/scripts/check-date-locale.mjs enforces this).
+  return date.toLocaleDateString(dateLocale(), options);
 }
 
 /**
@@ -71,7 +68,7 @@ export function buildThreadRows(messages: readonly Message[], options: BuildThre
     const date = new Date(message.created_at);
     const day = localDayKey(date);
     if (day !== previousDay) {
-      rows.push({ kind: 'date', key: `date-${day}`, label: dayLabel(date, now, options.t, options.locale) });
+      rows.push({ kind: 'date', key: `date-${day}`, label: dayLabel(date, now, options.t) });
       previousDay = day;
     }
     const joinsPrevious = groupsWith(messages[index - 1], message);

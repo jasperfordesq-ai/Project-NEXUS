@@ -36,7 +36,7 @@ describe('buildThreadRows', () => {
       message(4, 5, new Date(2026, 2, 10, 10, 4)),
       message(5, 1, new Date(2026, 2, 10, 10, 5)),
       message(6, 1, new Date(2026, 2, 10, 10, 11)),
-    ], { now, t, locale: 'en-GB' });
+    ], { now, t });
 
     expect(rows.map((row) => (row.kind === 'date' ? `date:${row.label}` : `${row.message.id}:${row.groupPosition}`))).toEqual([
       'date:Yesterday',
@@ -55,7 +55,7 @@ describe('buildThreadRows', () => {
     const rows = buildThreadRows([
       message(1, 5, new Date(2025, 0, 5, 9, 0)),
       message(2, 5, new Date(2026, 1, 20, 9, 0)),
-    ], { now, t, locale: 'en-GB' });
+    ], { now, t });
 
     const dates = rows.filter((row) => row.kind === 'date').map((row) => (row.kind === 'date' ? row.label : ''));
     expect(dates).toHaveLength(2);
@@ -70,7 +70,7 @@ describe('buildThreadRows', () => {
       message(1, 5, new Date(2026, 2, 9, 23, 59)),
       message(2, 5, new Date(2026, 2, 10, 0, 1)),
       message(3, 1, new Date(2026, 2, 10, 0, 2)),
-    ], { now, t, locale: 'en-GB' });
+    ], { now, t });
 
     expect(rows.map((row) => (row.kind === 'date' ? `date:${row.label}` : `${row.message.id}:${row.groupPosition}`))).toEqual([
       'date:Yesterday', '1:single', 'date:Today', '2:single', '3:single',
@@ -81,13 +81,13 @@ describe('buildThreadRows', () => {
     const rows = buildThreadRows([
       message(1, 5, new Date(2026, 2, 10, 10, 0)),
       message(2, 5, new Date(2026, 2, 10, 10, 1)),
-    ], { now, t, locale: 'en-GB' });
+    ], { now, t });
     const keys = rows.map((row) => row.key);
     expect(new Set(keys).size).toBe(keys.length);
     expect(keys).toEqual(['date-2026-03-10', 'message-1', 'message-2']);
   });
 
   it('returns no rows for no messages', () => {
-    expect(buildThreadRows([], { now, t, locale: 'en-GB' })).toEqual([]);
+    expect(buildThreadRows([], { now, t })).toEqual([]);
   });
 });
