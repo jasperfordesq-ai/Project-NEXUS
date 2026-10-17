@@ -66,7 +66,7 @@ const toSlugInput = (text: string): string => slugBase(text).replace(/^-+/, '');
  */
 export function describeSaveFailure(
   res: ApiResponse<unknown> | undefined,
-  fallback = 'An unexpected error occurred',
+  fallback: string,
 ): { message: string; field?: string } {
   const first = res?.errors?.find((e) => e?.message);
   if (first?.message) return { message: first.message, field: first.field };

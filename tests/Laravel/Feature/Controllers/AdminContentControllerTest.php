@@ -256,6 +256,27 @@ class AdminContentControllerTest extends TestCase
         $response->assertJsonPath('errors.0.field', 'content');
     }
 
+    public function test_publishing_by_status_alone_refuses_a_stored_page_linking_to_member_profiles(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $id = (int) DB::table('pages')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'title' => 'Legacy Jo',
+            'slug' => 'legacy-jo-status',
+            'content' => '<a href="/profile/12">x</a>',
+            'is_published' => 0,
+        ]);
+
+        $response = $this->apiPut("/v2/admin/pages/{$id}", ['status' => 'published']);
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'content');
+        $this->assertSame(0, (int) DB::table('pages')->where('id', $id)->value('is_published'));
+
+        $this->apiPut("/v2/admin/pages/{$id}", ['status' => 'draft'])->assertStatus(200);
+    }
+
     public function test_update_page_rejects_a_slug_with_spaces(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

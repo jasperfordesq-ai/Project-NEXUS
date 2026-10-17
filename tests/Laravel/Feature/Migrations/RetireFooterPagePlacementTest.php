@@ -59,6 +59,31 @@ final class RetireFooterPagePlacementTest extends TestCase
         $spy->shouldHaveReceived('delete')->with('tenant_bootstrap', $otherTenant)->atLeast()->once();
     }
 
+    public function test_menu_items_pointing_at_deleted_stubs_are_removed(): void
+    {
+        $tenantId = $this->testTenantId;
+        DB::table('pages')->where('tenant_id', $tenantId)->whereIn('slug', ['terms', 'faq'])->delete();
+        $stub = $this->footerPage($tenantId, 'terms', 'tiny');
+        $kept = $this->footerPage($tenantId, 'faq', 'Questions people ask.');
+
+        $menuId = (int) DB::table('menus')->insertGetId([
+            'tenant_id' => $tenantId, 'name' => 'Retire test', 'slug' => 'retire-test-' . uniqid(), 'location' => 'footer',
+        ]);
+        $stubItem = (int) DB::table('menu_items')->insertGetId([
+            'menu_id' => $menuId, 'type' => 'page', 'label' => 'Terms', 'page_id' => $stub,
+        ]);
+        $keptItem = (int) DB::table('menu_items')->insertGetId([
+            'menu_id' => $menuId, 'type' => 'page', 'label' => 'FAQ', 'page_id' => $kept,
+        ]);
+
+        $this->app->instance(RedisCache::class, Mockery::spy(RedisCache::class));
+        $migration = require base_path(self::MIGRATION);
+        $migration->up();
+
+        self::assertFalse(DB::table('menu_items')->where('id', $stubItem)->exists());
+        self::assertTrue(DB::table('menu_items')->where('id', $keptItem)->exists());
+    }
+
     public function test_pages_outside_the_footer_are_untouched(): void
     {
         $tenantId = $this->testTenantId;

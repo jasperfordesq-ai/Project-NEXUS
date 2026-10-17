@@ -50,15 +50,27 @@ return new class extends Migration
             return;
         }
 
-        DB::table('pages')
-            ->where('menu_location', 'footer')
-            ->whereIn('slug', self::STUB_SLUGS)
-            ->whereRaw('CHAR_LENGTH(COALESCE(content, \'\')) < ?', [self::STUB_MAX_CHARS])
-            ->delete();
+        DB::transaction(function (): void {
+            $stubIds = DB::table('pages')
+                ->where('menu_location', 'footer')
+                ->whereIn('slug', self::STUB_SLUGS)
+                ->whereRaw("CHAR_LENGTH(COALESCE(content, '')) < ?", [self::STUB_MAX_CHARS])
+                ->pluck('id')
+                ->all();
 
-        DB::table('pages')
-            ->where('menu_location', 'footer')
-            ->update(['menu_location' => 'header']);
+            if ($stubIds !== [] && Schema::hasTable('menu_items')) {
+                // menu_items.page_id has no foreign key; mirror AdminContentController::deletePage.
+                DB::table('menu_items')->whereIn('page_id', $stubIds)->delete();
+            }
+
+            if ($stubIds !== []) {
+                DB::table('pages')->whereIn('id', $stubIds)->delete();
+            }
+
+            DB::table('pages')
+                ->where('menu_location', 'footer')
+                ->update(['menu_location' => 'header']);
+        });
 
         $redis = app(RedisCache::class);
         foreach ($tenantIds as $tenantId) {

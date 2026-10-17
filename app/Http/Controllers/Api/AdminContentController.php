@@ -248,6 +248,17 @@ class AdminContentController extends BaseApiController
             ])) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.page_links_member_profiles'), 'content', 422);
             }
+        } elseif (($input['status'] ?? null) === 'published') {
+            // Publishing by status alone must check what is already stored, or a legacy
+            // page that links to member profiles could be published without an edit.
+            $stored = DB::table('pages')->where('id', $id)->where('tenant_id', $tenantId)->first(['content', 'design_json']);
+            if ($stored && PageContentPolicy::linksToMemberProfiles([
+                'content' => (string) ($stored->content ?? ''),
+                'design_json' => $stored->design_json ?? null,
+                'tenant_id' => $tenantId,
+            ])) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.page_links_member_profiles'), 'content', 422);
+            }
         }
         if (isset($input['status'])) {
             if (!in_array($input['status'], ['draft', 'published'], true)) {
