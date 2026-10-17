@@ -31,6 +31,7 @@ export interface GroupMember {
 }
 
 export interface GroupRecommendation {
+  id: string;
   user_id: number;
   user_name: string;
   group_id: number;
