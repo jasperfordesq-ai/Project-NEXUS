@@ -371,7 +371,27 @@ class MessageService
         if ($cursor !== null) {
             $cursorId = base64_decode($cursor, true);
             if ($cursorId !== false) {
-                if ($direction === 'newer') {
+                $updatedSince = $direction === 'newer' ? self::parseUpdatedSince($filters['updated_since'] ?? null) : null;
+                if ($direction === 'newer' && $updatedSince !== null) {
+                    // Catch-up poll for a client that was not connected to Pusher:
+                    // newer rows as before, PLUS rows at or below the cursor that
+                    // were edited or deleted for everyone since the client's last
+                    // sync. Reactions leave no timestamp on the row (a removal
+                    // deletes its message_reactions row), so they stay live-only.
+                    // `>=` because the columns have second precision and a change
+                    // in the same second as the previous sync must not be lost;
+                    // clients apply these rows idempotently.
+                    $query->where(function ($scope) use ($cursorId, $updatedSince): void {
+                        $scope->where('id', '>', (int) $cursorId)
+                            ->orWhere(function ($changed) use ($cursorId, $updatedSince): void {
+                                $changed->where('id', '<=', (int) $cursorId)
+                                    ->where(function ($when) use ($updatedSince): void {
+                                        $when->where('edited_at', '>=', $updatedSince)
+                                            ->orWhere('deleted_at', '>=', $updatedSince);
+                                    });
+                            });
+                    });
+                } elseif ($direction === 'newer') {
                     $query->where('id', '>', (int) $cursorId);
                 } else {
                     $query->where('id', '<', (int) $cursorId);
@@ -410,6 +430,27 @@ class MessageService
             'cursor'   => $hasMore && $messages->isNotEmpty() ? base64_encode((string) $messages->last()->id) : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    /**
+     * Parse the thread GET's `updated_since` watermark (ISO 8601, as returned
+     * in `meta.synced_at`) into the database's own format. Anything that does
+     * not parse is ignored rather than refused: the poll then behaves as a
+     * plain "newer" poll, which is never wrong, only less complete.
+     */
+    private static function parseUpdatedSince(mixed $raw): ?string
+    {
+        if (! is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+
+        try {
+            return \Illuminate\Support\Carbon::parse($raw)
+                ->setTimezone((string) config('app.timezone', 'UTC'))
+                ->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -1658,6 +1699,15 @@ class MessageService
             app(BrokerMessageVisibilityService::class)->refreshCopyAfterEdit((int) $message->id, $newBody);
         });
 
+        self::broadcastMutation(static fn () => new \App\Events\MessageUpdated(
+            tenantId: (int) app('tenant.id'),
+            messageId: (int) $message->id,
+            body: $newBody,
+            editedAt: $message->edited_at?->toISOString() ?? now()->toISOString(),
+            senderId: (int) $message->sender_id,
+            receiverId: (int) $message->receiver_id,
+        ), $message, 'MessageUpdated');
+
         return [
             'id'         => $message->id,
             'body'       => $newBody,
@@ -1702,6 +1752,7 @@ class MessageService
         }
 
         $tenantId = app('tenant.id');
+        $deletedAt = now();
 
         if ($scope === 'self') {
             // Per-user hide: only affects current user's view, body unchanged
@@ -1716,12 +1767,8 @@ class MessageService
                     ->where('tenant_id', $tenantId)
                     ->update(['is_deleted_receiver' => true]);
             }
-
-            return true;
-        }
-
-        // scope = 'everyone': blank body for both parties
-        if (self::hasDeletedColumn()) {
+        } elseif (self::hasDeletedColumn()) {
+            // scope = 'everyone': blank body for both parties
             DB::table('messages')
                 ->where('id', $messageId)
                 ->where('tenant_id', $tenantId)
@@ -1729,13 +1776,50 @@ class MessageService
                     'is_deleted'  => true,
                     'body'        => '[Message deleted]',
                     'reactions'   => null,
-                    'deleted_at'  => now(),
+                    'deleted_at'  => $deletedAt,
                 ]);
         } else {
             $message->delete();
         }
 
+        // `self` reaches the actor's own channel only (their other devices);
+        // `everyone` reaches both participants. The event decides the channels.
+        self::broadcastMutation(static fn () => new \App\Events\MessageDeleted(
+            tenantId: (int) $tenantId,
+            messageId: $messageId,
+            scope: $scope === 'self' ? 'self' : 'everyone',
+            actorId: $userId,
+            senderId: (int) $message->sender_id,
+            receiverId: (int) $message->receiver_id,
+            deletedAt: $deletedAt->toISOString(),
+        ), $message, 'MessageDeleted');
+
         return true;
+    }
+
+    /**
+     * Broadcast a change to an existing one-to-one message, as a courtesy.
+     *
+     * The change itself is already committed; a failure here must never undo
+     * it or surface to the caller. Group messages (`receiver_id` null) are not
+     * broadcast — group conversations have no live contract yet.
+     *
+     * @param \Closure(): object $event
+     */
+    private static function broadcastMutation(\Closure $event, Message $message, string $name): void
+    {
+        if ((int) ($message->receiver_id ?? 0) <= 0 || (int) ($message->sender_id ?? 0) <= 0) {
+            return;
+        }
+
+        try {
+            event($event());
+        } catch (\Throwable $e) {
+            Log::warning("{$name} broadcast failed", [
+                'message_id' => (int) $message->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     // -----------------------------------------------------------------
@@ -1798,7 +1882,7 @@ class MessageService
             }
         }
 
-        return DB::transaction(function () use ($messageId, $userId, $emoji, $tenantId) {
+        $wasAdded = DB::transaction(function () use ($messageId, $userId, $emoji, $tenantId) {
             // Toggle in message_reactions table
             $existing = DB::table('message_reactions')
                 ->where('tenant_id', $tenantId)
@@ -1863,6 +1947,25 @@ class MessageService
 
             return $wasAdded;
         });
+
+        // The authoritative counts after the toggle, read back from the
+        // normalised table (the same source the thread GET serves), so every
+        // client converges on the server's state whatever order events land in.
+        // Refreshed first: the legacy JSON fallback reads the row's `reactions`
+        // column, and the instance loaded above predates the toggle.
+        $message->refresh();
+        self::broadcastMutation(static fn () => new \App\Events\MessageReaction(
+            tenantId: (int) $tenantId,
+            messageId: $messageId,
+            emoji: $emoji,
+            action: $wasAdded ? 'added' : 'removed',
+            actorId: $userId,
+            counts: self::publicReactionCountsForMessages(new Collection([$message]), $userId)[$messageId] ?? [],
+            senderId: (int) $message->sender_id,
+            receiverId: (int) $message->receiver_id,
+        ), $message, 'MessageReaction');
+
+        return $wasAdded;
     }
 
     /**

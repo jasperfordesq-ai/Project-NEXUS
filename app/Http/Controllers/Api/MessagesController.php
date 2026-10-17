@@ -90,6 +90,16 @@ class MessagesController extends BaseApiController
         if ($this->query('cursor')) {
             $filters['cursor'] = $this->query('cursor');
         }
+        // Catch-up for clients without a live connection: with direction=newer
+        // and a cursor, rows at or below the cursor edited or deleted since this
+        // watermark are returned too. Clients pass back the `synced_at` they
+        // were last given, so the server's clock is the only one involved.
+        if (is_string($this->query('updated_since'))) {
+            $filters['updated_since'] = $this->query('updated_since');
+        }
+        // Taken BEFORE the query runs: a change committed between the query and
+        // the response must fall after the watermark the client polls with next.
+        $syncedAt = now()->toISOString();
 
         $result = $this->messageService->getMessages($otherUserId, $userId, $filters);
 
@@ -104,6 +114,7 @@ class MessagesController extends BaseApiController
             'cursor'       => $result['cursor'],
             'per_page'     => $filters['limit'],
             'has_more'     => $result['has_more'],
+            'synced_at'    => $syncedAt,
         ]);
     }
 
