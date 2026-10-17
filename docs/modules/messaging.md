@@ -63,6 +63,8 @@ Events:
 
 - `app/Events/MessageSent.php` — fired by `MessageService::send()` through `MessageDeliveryOutboxService`; implements `ShouldBroadcast` and goes out as `new-message` on the recipient's user channel and the pair's chat channel (see "Real-time delivery via Pusher").
 - `app/Events/MessageRead.php` — fired by `MessageService::markAsRead()` when at least one message changed to read; goes out as `message.read` on the sender's and the reader's user channels.
+- `app/Events/MessageUpdated.php`, `MessageDeleted.php`, `MessageReaction.php` — fired by `MessageService::editMessage()`, `deleteMessage()` and `toggleReaction()` for one-to-one messages; go out as `message.updated`, `message.deleted` and `message.reaction` on the participants' user channels (see "Changes to existing messages").
+- `app/Support/Messaging/MessageSenderSummary.php` — the seven sender fields `MessageSent` carries onto the queue instead of the full `User` row.
 - `app/Support/Messaging/MessagePairId.php` — the one place the synthetic one-to-one `conversation_id` (crc32 of `{min}-{max}`) and the `chat.{min}-{max}` channel suffix are derived.
 
 Models and tables:
@@ -88,6 +90,8 @@ React entry points:
 
 Opening a conversation (`GET /api/v2/messages/{id}`) automatically marks it as read, unless the client is polling for newer messages (direction=newer with a cursor).
 
+Every thread response carries `meta.synced_at` (the server's clock, taken before the query ran). A `direction=newer` poll that sends it back as `updated_since` also receives the rows at or below its cursor that were **edited or deleted for everyone** at or after that time, so a client without a live connection still catches up on those; it replaces such rows in place and appends the rest. Reactions are not covered by the poll (a removed reaction leaves no timestamp on the row) and a "delete for me" simply disappears from the next full load. An unparseable `updated_since` is ignored and the poll behaves as a plain "newer" poll.
+
 `GET /api/v2/messages/unread-count` returns the aggregate unread count across all conversations for the authenticated user. This is polled by the navigation badge.
 
 ## Sending, editing, and deleting
@@ -103,7 +107,7 @@ Opening a conversation (`GET /api/v2/messages/{id}`) automatically marks it as r
 
 ### Edit
 
-`PUT /api/v2/messages/{id}` allows the **sender only** to edit a message body within a **24-hour window** from creation. Editing an older message returns `EDIT_EXPIRED` (HTTP 403). The `body` is re-sanitized through `HtmlSanitizer::stripAll()`. The `is_edited` and `edited_at` columns are updated on the `messages` row.
+`PUT /api/v2/messages/{id}` allows the **sender only** to edit a message body within a **24-hour window** from creation. Editing an older message returns `EDIT_EXPIRED` (HTTP 403). The `body` is re-sanitized through `HtmlSanitizer::stripAll()`. The `is_edited` and `edited_at` columns are updated on the `messages` row, and `message.updated` is broadcast to both participants.
 
 ### Delete
 
@@ -114,7 +118,7 @@ Opening a conversation (`GET /api/v2/messages/{id}`) automatically marks it as r
 | `everyone` | Yes | Sets `is_deleted = true`, blanks `body` to `[Message deleted]`, clears `reactions`, sets `deleted_at`. Both parties see the placeholder. |
 | `self` | No | Sets `is_deleted_sender` or `is_deleted_receiver` (depending on role). The other party's view is unchanged. |
 
-Only the sender may delete a message with `scope=everyone`; a receiver's attempt is refused with HTTP 403. Either participant may use `scope=self` to hide the message from their own view without changing the other person's view.
+Only the sender may delete a message with `scope=everyone`; a receiver's attempt is refused with HTTP 403. Either participant may use `scope=self` to hide the message from their own view without changing the other person's view. `message.deleted` is broadcast to both participants for `everyone`, and to the actor's own channel only for `self`.
 
 ### Conversation archive and restore
 
@@ -128,7 +132,7 @@ Group create, add-participant and send apply the same sender restrictions as a d
 
 ### Reactions
 
-`POST /api/v2/messages/{id}/reactions` toggles an emoji reaction. Only emojis in `App\Support\EmojiConstants::MESSAGE_REACTIONS` are accepted. Reactions are stored in both the `message_reactions` table (per-user tracking) and the `messages.reactions` JSON column (backward compatibility). `GET /api/v2/messages/reactions/batch?ids=1,2,3` fetches reactions for up to 100 messages in one request.
+`POST /api/v2/messages/{id}/reactions` toggles an emoji reaction. Only emojis in `App\Support\EmojiConstants::MESSAGE_REACTIONS` are accepted. Reactions are stored in both the `message_reactions` table (per-user tracking) and the `messages.reactions` JSON column (backward compatibility). Each toggle on a one-to-one message broadcasts `message.reaction` with the counts after the toggle. `GET /api/v2/messages/reactions/batch?ids=1,2,3` fetches reactions for up to 100 messages in one request.
 
 ## Attachments
 
@@ -205,7 +209,7 @@ Authorisation is `POST /api/pusher/auth` (`PusherController::auth()` → `Pusher
 
 | Channel | Granted to | Used for |
 | --- | --- | --- |
-| `private-tenant.{T}.user.{N}` | member N only | `new-message`, `message.read`, `typing`, notifications |
+| `private-tenant.{T}.user.{N}` | member N only | `new-message`, `message.read`, `message.updated`, `message.deleted`, `message.reaction`, `typing`, notifications |
 | `private-tenant.{T}.chat.{A}-{B}` (smaller id first) | members A and B | `new-message` echo for a sender's other tabs/devices |
 | `private-tenant.{T}.conversation.{id}` | members with a `conversation_participants` row | group conversations only; unreachable for one-to-one chats |
 
@@ -238,7 +242,7 @@ One payload satisfies both clients: the flat keys the web handler reads, plus th
 
 - `conversation_id` is `MessagePairId::of(sender, receiver)` — a stable crc32 of the member-id pair, **not** a database id (one-to-one messages have `messages.conversation_id = null`).
 - `is_own` is the recipient's perspective. A client that can receive the chat-channel echo derives own-ness from `sender_id`.
-- The sender is trimmed to four fields and surnamed per the member-visibility rule (F-084, F-085); never a user row. Attachments are mapped only from the relation the outbox eager-loads (tenant-filtered), because `broadcastWith()` runs on the queue worker, where no tenant context exists.
+- The sender is trimmed to four fields and surnamed per the member-visibility rule (F-084, F-085); never a user row. The event itself carries only a `MessageSenderSummary` (seven fields) onto the queue, not the `User` model. Attachments are mapped only from the relation the outbox eager-loads (tenant-filtered), because `broadcastWith()` runs on the queue worker, where no tenant context exists.
 - Bodies longer than 6 KB are cut and flagged `is_truncated: true` (Pusher's event limit is 10 KB); the web then re-polls for the canonical row.
 
 ### `message.read`
@@ -256,14 +260,54 @@ Clients flip only their own messages with `id <= up_to_message_id`, which is rac
 
 `POST /api/v2/messages/typing` (60 per minute) → `MessageService::setTypingIndicator()` → `PusherService::trigger()` on the **recipient's user channel**, synchronously: `{ "user_id": 5, "is_typing": true, "timestamp": 1760695200 }`. There is no server-side stop; the client sends `is_typing: false` itself.
 
+### Changes to existing messages
+
+Added 2026-10-17. Three queued events, dispatched by `MessageService` after the change is committed, scalars only (no user rows). All three carry `sender_id` and `receiver_id` of the **message** so a client can tell which thread it belongs to and, on mobile, which member to route it to (the mobile app keys an open thread by the other member's id). A failure to broadcast is logged and never undoes the change. Group messages are not broadcast.
+
+#### `message.updated`
+
+`MessageService::editMessage()` (sender only, 24-hour window) → both participants' user channels:
+
+```json
+{ "id": 123, "body": "corrected text", "is_edited": true, "edited_at": "2026-10-17T10:07:00.000000Z",
+  "is_truncated": false, "sender_id": 5, "receiver_id": 9, "conversation_id": 2874163920, "timestamp": 1760695620 }
+```
+
+Clients replace the body and mark the row edited. Bodies over 6 KB are cut and flagged `is_truncated`, as for `new-message`; the web then polls (with `updated_since`) and the mobile app refetches. The web also drops its cached auto-translation for that id so the edited text is translated afresh.
+
+#### `message.deleted`
+
+`MessageService::deleteMessage()`:
+
+| `scope` | Goes to | Client behaviour |
+| --- | --- | --- |
+| `everyone` | both participants' user channels | tombstone: placeholder body, `is_deleted`, reactions and attachments cleared |
+| `self` | the **actor's** user channel only | remove the row — the actor's other devices follow; the other member never learns of it, and a client that is not the actor must ignore a stray one |
+
+```json
+{ "id": 123, "scope": "everyone", "actor_id": 5, "sender_id": 5, "receiver_id": 9,
+  "conversation_id": 2874163920, "deleted_at": "2026-10-17T10:08:00.000000Z", "timestamp": 1760695680 }
+```
+
+#### `message.reaction`
+
+`MessageService::toggleReaction()` → both participants' user channels. `counts` are the server's per-emoji totals **after** the toggle, read back from `message_reactions`, so clients set them rather than incrementing and converge whatever order events arrive in. `actor_id` lets a client keep its own "you reacted" marker right when the toggle came from another of its devices. An empty map is `{}`, never `[]`.
+
+```json
+{ "message_id": 123, "emoji": "👍", "action": "added", "actor_id": 9, "counts": { "👍": 1 },
+  "sender_id": 5, "receiver_id": 9, "conversation_id": 2874163920, "timestamp": 1760695740 }
+```
+
 ### What each client binds
 
-| Client | `new-message` | `message.read` | `typing` |
-| --- | --- | --- | --- |
-| Web (`react-frontend/src/contexts/PusherContext.tsx`) | user channel and chat channel, deduplicated by id | user channel | user channel |
-| Mobile (`mobile/lib/context/RealtimeContext.tsx`) | user channel | user channel | user channel |
+| Client | `new-message` | `message.read` | `message.updated` / `message.deleted` / `message.reaction` | `typing` |
+| --- | --- | --- | --- | --- |
+| Web (`react-frontend/src/contexts/PusherContext.tsx`) | user channel and chat channel, deduplicated by id | user channel | user channel only (a chat-channel copy would double-deliver); `ConversationPage` patches the open thread | user channel |
+| Mobile (`mobile/lib/context/RealtimeContext.tsx`) | user channel | user channel | user channel, routed to the open thread by the other member's id; `thread.tsx` patches the live page and the older-history stack | user channel |
 
-Not broadcast: message edits, deletes and reactions (`message.updated`, `message.deleted`, `message.reaction` are reserved names for a later change — the web's `direction=newer` poll cannot pick those up either, so they need their own design), and group-conversation messages (`GroupConversationService` does not dispatch `MessageSent`).
+Catch-up without a live connection: the web's 30-second poll sends `updated_since` (see "Conversations and threads") and so picks up edits and deletes for everyone; reactions and the inbox list's last-message preview are live-only until the next full load. The mobile app has no poll; it refetches the thread on focus and on reconnect.
+
+Not broadcast: group-conversation messages (`GroupConversationService` does not dispatch `MessageSent`) and any change to a group message.
 
 The `NotifyMessageReceived` listener runs asynchronously on the queue and sends:
 
