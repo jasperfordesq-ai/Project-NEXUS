@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Events\MessageSent;
+use App\Support\Messaging\MessagePairId;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -129,9 +130,16 @@ final class MessageDeliveryOutboxService
         }
 
         try {
+            // Attachments are loaded here, tenant-filtered explicitly, because the
+            // event's broadcast payload runs on the queue worker where no tenant
+            // context exists and a lazy load would be wrong or empty.
+            $tenantId = (int) $row->tenant_id;
             $message = Message::withoutGlobalScopes()
+                ->with(['attachments' => static function ($query) use ($tenantId): void {
+                    $query->withoutGlobalScopes()->where('tenant_id', $tenantId);
+                }])
                 ->whereKey((int) $row->message_id)
-                ->where('tenant_id', (int) $row->tenant_id)
+                ->where('tenant_id', $tenantId)
                 ->first();
             $sender = $message === null
                 ? null
@@ -143,10 +151,8 @@ final class MessageDeliveryOutboxService
                 throw new \RuntimeException('message_delivery_source_missing');
             }
 
-            $ids = [(int) $message->sender_id, (int) $message->receiver_id];
-            sort($ids);
-            $conversationId = crc32(implode('-', $ids));
-            $this->events->dispatch(new MessageSent($message, $sender, $conversationId, (int) $row->tenant_id));
+            $conversationId = MessagePairId::of((int) $message->sender_id, (int) $message->receiver_id);
+            $this->events->dispatch(new MessageSent($message, $sender, $conversationId, $tenantId));
 
             DB::table('message_delivery_outbox')->where('id', $id)->update([
                 'dispatched_at' => now(),

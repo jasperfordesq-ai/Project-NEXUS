@@ -1894,27 +1894,22 @@ class MessageService
     /**
      * Set typing indicator for a conversation.
      *
-     * Broadcasts a typing event to the recipient's private Pusher channel.
-     * No DB persistence needed — purely real-time.
+     * Triggers `typing` on the RECIPIENT's user channel — the channel both the
+     * web and the mobile app already hold open — synchronously, because the
+     * signal is ephemeral and must arrive within the second. No DB persistence.
+     * `PusherService::trigger` is a no-op when Pusher is not configured.
      */
     public static function setTypingIndicator(int $recipientId, int $userId, bool $isTyping): bool
     {
         try {
-            $tenantId = app('tenant.id');
+            $tenantId = tenant_id();
             $channelName = "private-tenant.{$tenantId}.user.{$recipientId}";
 
-            // Broadcast typing event via the configured broadcast driver (Pusher).
-            // Uses the broadcast manager to resolve the underlying Pusher connection.
-            $broadcaster = app('Illuminate\Broadcasting\BroadcastManager');
-            $driver = $broadcaster->connection('pusher');
-
-            // The Pusher broadcaster wraps the Pusher SDK; access it to trigger directly.
-            if (method_exists($driver, 'getPusher')) {
-                $driver->getPusher()->trigger($channelName, 'typing', [
-                    'user_id'   => $userId,
-                    'is_typing' => $isTyping,
-                ]);
-            }
+            PusherService::trigger($channelName, 'typing', [
+                'user_id'   => $userId,
+                'is_typing' => $isTyping,
+                'timestamp' => now()->getTimestamp(),
+            ]);
         } catch (\Throwable $e) {
             Log::debug('Typing indicator broadcast failed', ['error' => $e->getMessage()]);
         }

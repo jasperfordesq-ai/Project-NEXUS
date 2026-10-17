@@ -12,6 +12,7 @@ use App\Events\MessageSent;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\MessageDeliveryOutboxService;
+use App\Support\Messaging\MessagePairId;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +62,10 @@ final class MessageDeliveryOutboxTest extends TestCase
             return (int) $event->message->id === (int) $message->id
                 && (int) $event->sender->id === (int) $sender->id
                 && (int) $event->tenantId === $this->testTenantId
-                && (int) $event->conversationId === (int) crc32(implode('-', [$sender->id, $recipient->id]));
+                && (int) $event->conversationId === MessagePairId::of((int) $sender->id, (int) $recipient->id)
+                // The broadcast payload maps attachments without lazy-loading on the
+                // queue worker (no tenant scope there), so the outbox must load them.
+                && $event->message->relationLoaded('attachments');
         });
         $this->assertNotNull(DB::table('message_delivery_outbox')->where('message_id', $message->id)->value('dispatched_at'));
     }
