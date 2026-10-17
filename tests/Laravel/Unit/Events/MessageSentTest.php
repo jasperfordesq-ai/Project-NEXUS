@@ -30,18 +30,62 @@ use Tests\Laravel\TestCase;
  */
 class MessageSentTest extends TestCase
 {
-    public function test_instantiation_stores_properties(): void
+    public function test_instantiation_stores_properties_and_trims_the_sender(): void
     {
         $message = new Message();
         $sender = new User();
         $sender->id = 10;
+        $sender->first_name = 'Bob';
 
         $event = new MessageSent($message, $sender, 42, 2);
 
         $this->assertSame($message, $event->message);
-        $this->assertSame($sender, $event->sender);
+        // Listeners read these three; the summary keeps the model's property names.
+        $this->assertSame(10, $event->sender->id);
+        $this->assertSame('Bob', $event->sender->first_name);
+        $this->assertIsString($event->sender->name);
         $this->assertSame(42, $event->conversationId);
         $this->assertSame(2, $event->tenantId);
+    }
+
+    public function test_the_queued_event_carries_no_account_fields_for_the_sender(): void
+    {
+        // The event is serialised onto the queue as-is (no SerializesModels, by
+        // design: the worker has no tenant scope). Until 2026-10-17 the whole
+        // User row went with it — password hash included.
+        $sender = new User();
+        $sender->id = 9;
+        $sender->first_name = 'Anna';
+        $sender->last_name = 'Example';
+        $sender->email = 'anna@example.test';
+        $sender->phone = '+1 555 123 4567';
+        $sender->password = 'hashed-secret';
+        $sender->two_factor_secret = 'totp-seed';
+
+        $event = $this->event(senderId: 9, receiverId: 5, tenantId: 4, sender: $sender);
+        $serialised = serialize($event);
+
+        $this->assertInstanceOf(\App\Support\Messaging\MessageSenderSummary::class, $event->sender);
+        foreach (['anna@example.test', '+1 555 123 4567', 'hashed-secret', 'totp-seed', 'email', 'password'] as $needle) {
+            $this->assertStringNotContainsString($needle, $serialised, "queue payload must not carry {$needle}");
+        }
+        // And the summary round-trips with what the listeners need.
+        $restored = unserialize($serialised);
+        $this->assertSame(9, $restored->sender->id);
+        $this->assertSame('Anna', $restored->sender->first_name);
+    }
+
+    public function test_accepts_a_prebuilt_sender_summary(): void
+    {
+        $summary = new \App\Support\Messaging\MessageSenderSummary(
+            id: 9, name: 'Anna Example', first_name: 'Anna', last_name: 'Example',
+            profile_type: 'individual', organization_name: null, avatar_url: null,
+        );
+
+        $event = $this->event(senderId: 9, receiverId: 5, tenantId: 4, sender: $summary);
+
+        $this->assertSame($summary, $event->sender);
+        $this->assertSame('Anna', $event->broadcastWith()['message']['sender']['name']);
     }
 
     public function test_implements_should_broadcast(): void
@@ -192,7 +236,7 @@ class MessageSentTest extends TestCase
         int $receiverId = 5,
         int $tenantId = 4,
         string $body = 'hello',
-        ?User $sender = null,
+        User|\App\Support\Messaging\MessageSenderSummary|null $sender = null,
     ): MessageSent {
         $message = new Message();
         $message->id = 123;

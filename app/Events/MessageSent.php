@@ -11,6 +11,7 @@ use App\Models\MessageAttachment;
 use App\Models\User;
 use App\Support\Members\MemberProfileVisibility;
 use App\Support\Messaging\MessagePairId;
+use App\Support\Messaging\MessageSenderSummary;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -46,12 +47,21 @@ class MessageSent implements ShouldBroadcast, ShouldRescue
      */
     public const MAX_BROADCAST_BODY_BYTES = 6000;
 
+    /**
+     * Only the seven fields the listeners and the broadcast read survive onto
+     * the queue (`MessageSenderSummary`); a full User model is accepted for
+     * the callers' convenience and trimmed here.
+     */
+    public readonly MessageSenderSummary $sender;
+
     public function __construct(
         public readonly Message $message,
-        public readonly User $sender,
+        User|MessageSenderSummary $sender,
         public readonly int $conversationId,
         public readonly int $tenantId,
-    ) {}
+    ) {
+        $this->sender = $sender instanceof User ? MessageSenderSummary::fromUser($sender) : $sender;
+    }
 
     /**
      * @return array<int, PrivateChannel>
@@ -136,12 +146,12 @@ class MessageSent implements ShouldBroadcast, ShouldRescue
     private function senderSummary(): array
     {
         $row = MemberProfileVisibility::withoutSurname([
-            'id'                => (int) $this->sender->id,
-            'name'              => (string) ($this->sender->name ?? ''),
+            'id'                => $this->sender->id,
+            'name'              => $this->sender->name,
             'first_name'        => $this->sender->first_name,
             'last_name'         => $this->sender->last_name,
-            'profile_type'      => $this->sender->profile_type ?? 'individual',
-            'organization_name' => $this->sender->organization_name ?? null,
+            'profile_type'      => $this->sender->profile_type,
+            'organization_name' => $this->sender->organization_name,
             'avatar_url'        => $this->sender->avatar_url,
         ]);
 
