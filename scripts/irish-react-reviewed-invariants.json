@@ -693,14 +693,6 @@
       "value": "Stripe",
       "reason": "brand-product-or-platform-name"
     },
-    "admin_content.content.landing_placeholder_button_link_register": {
-      "value": "/register",
-      "reason": "functional-address-route-or-example"
-    },
-    "admin_content.content.landing_placeholder_button_link_about": {
-      "value": "/about",
-      "reason": "functional-address-route-or-example"
-    },
     "admin_content.federation.csv_id": {
       "value": "ID",
       "reason": "protocol-acronym-or-identifier"
