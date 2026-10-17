@@ -26,7 +26,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
-import { formatMarketplacePrice } from '@/components/marketplace/MarketplaceListingCard';
+import { formatMarketplacePrice, priceChipIcon } from '@/components/marketplace/MarketplaceListingCard';
 import {
   addMarketplaceCollectionItem,
   confirmMarketplacePayment,
@@ -431,9 +431,16 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
       timeCreditPrice: listing.time_credit_price,
       contactLabel: t('priceType.contact'),
       timeCreditsLabel: t('common.timeCreditsPrice', { count: Number(listing.time_credit_price ?? 0) }),
+      borrowLabel: t('common.borrow'),
     },
   );
   const isOwner = Boolean(listing.is_own || (user?.id && listing.user?.id === user.id));
+  /*
+    A borrow & lend listing is never for sale. The API answers 422 to an order or an offer
+    on it, so the screen offers neither; the only action is to message the owner, which
+    reuses the seller-profile messaging flow (`/(modals)/thread` with the owner's id).
+  */
+  const isLendListing = !isAcceptedOfferCheckout && listing.price_type === 'lend';
   const isActiveNonOwner = !isOwner && (
     listing.status === 'active'
     || (isAcceptedOfferCheckout && listing.status === 'reserved')
@@ -452,7 +459,9 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
       ? 'time_credits'
       : checkoutPaymentMethod;
   const canBuy = isActiveNonOwner
+    && !isLendListing
     && (isCashCheckoutEligible || isFreeCheckoutEligible || isTimeCreditListing);
+  const canAskToBorrow = isLendListing && isActiveNonOwner && Boolean(listing.user?.id);
   const supportsShipping = listing.delivery_method === 'shipping' || listing.delivery_method === 'both';
   const supportsPickup = Boolean(listing.local_pickup || listing.delivery_method === 'pickup' || listing.delivery_method === 'both');
   const selectedShippingOptionId = fulfilmentChoice?.startsWith('shipping:')
@@ -893,7 +902,7 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
             <View className="gap-2">
               <View className="flex-row flex-wrap gap-2">
                 <Chip size="sm" variant="secondary">
-                  <Ionicons name={listing.price_type === 'free' ? 'gift-outline' : 'pricetag-outline'} size={12} color={accent} />
+                  <Ionicons name={priceChipIcon(isAcceptedOfferCheckout ? 'fixed' : listing.price_type)} size={12} color={accent} />
                   <Chip.Label>{priceLabel}</Chip.Label>
                 </Chip>
                 <Chip size="sm" variant="secondary">
@@ -976,6 +985,23 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
             </View>
           </HeroCard.Body>
         </HeroCard>
+
+        {isLendListing ? (
+          <HeroCard className="mb-3 rounded-panel p-0" testID="marketplace-loan-terms">
+            <HeroCard.Body className="gap-3 p-4">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="hammer-outline" size={18} color={primary} />
+                <Text className="text-base font-bold" style={{ color: theme.text }}>{t('borrow.termsTitle')}</Text>
+              </View>
+              <Text className="text-sm leading-6" style={{ color: theme.textSecondary }}>
+                {listing.loan_terms?.trim() ? listing.loan_terms : t('borrow.termsMissing')}
+              </Text>
+              {!isOwner ? (
+                <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>{t('borrow.howItWorks')}</Text>
+              ) : null}
+            </HeroCard.Body>
+          </HeroCard>
+        ) : null}
 
         {listing.delivery_method === 'community_delivery' ? (
           <CommunityDeliveryInfoCard primary={primary} theme={theme} />
@@ -1158,7 +1184,18 @@ function MarketplaceDetailScreen({ onUncertain, revision }: { onUncertain: () =>
               </HeroButton>
             </View>
             <View className="flex-row gap-2">
-              {!isAcceptedOfferCheckout ? (
+              {canAskToBorrow ? (
+                <HeroButton
+                  className="flex-1"
+                  variant="primary"
+                  testID="marketplace-ask-to-borrow"
+                  onPress={() => router.push({ pathname: '/(modals)/thread', params: { recipientId: String(listing.user?.id), listing: String(listing.id) } } as unknown as Href)}
+                >
+                  <AccentIcon name="chatbubble-outline" size={17} />
+                  <HeroButton.Label>{t('borrow.askToBorrow')}</HeroButton.Label>
+                </HeroButton>
+              ) : null}
+              {!isAcceptedOfferCheckout && !isLendListing ? (
                 <HeroButton className="flex-1" variant="secondary" onPress={() => setOfferOpen(true)}>
                   <Ionicons name="hand-left-outline" size={17} color={primary} />
                   <HeroButton.Label>{t('detail.makeOffer')}</HeroButton.Label>

@@ -2993,7 +2993,7 @@ return [
         ],
     ],
     'marketplace' => [
-        'title' => 'السوق',
+        'title' => 'السوق & Freecycle',
         'caption' => ':community',
         'description' => 'اشترِ وبِع وتبادل السلع والخدمات مع مجتمعك.',
         'empty' => 'لا يوجد شيء في السوق حتى الآن.',

@@ -35,6 +35,7 @@ class MarketplaceListing extends Model
         'price_currency',
         'price_type',
         'time_credit_price',
+        'loan_terms',
         'quantity',
         'template_data',
         'location',
@@ -149,6 +150,12 @@ class MarketplaceListing extends Model
     public function scopeFree(Builder $query): Builder
     {
         return $query->where('price_type', 'free');
+    }
+
+    /** Borrow & lend listings: the item is lent and returned, never sold. */
+    public function scopeLend(Builder $query): Builder
+    {
+        return $query->where('price_type', 'lend');
     }
 
     /**

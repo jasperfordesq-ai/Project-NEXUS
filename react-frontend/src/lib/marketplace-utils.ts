@@ -21,7 +21,8 @@ export interface ApiMarketplaceListing {
   title: string;
   description?: string;
   price: number | null;
-  price_type: 'fixed' | 'negotiable' | 'free';
+  price_type: 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact' | 'lend';
+  loan_terms?: string | null;
   currency: string;
   condition: string;
   category_id?: number | null;
@@ -55,6 +56,7 @@ export function mapApiToListingItem(
     price: raw.price,
     price_currency: raw.currency || fallbackCurrency,
     price_type: raw.price_type,
+    loan_terms: raw.price_type === 'lend' ? (raw.loan_terms ?? null) : undefined,
     condition: (raw.condition as MarketplaceListingItem['condition']) || null,
     location: raw.location ?? undefined,
     delivery_method: '',

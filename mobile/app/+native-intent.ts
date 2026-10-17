@@ -829,6 +829,7 @@ function mapMarketplacePath(segments: string[], params: Record<string, string>):
     case 'become-partner': return appendParams('/(modals)/marketplace-become-partner', params);
     case 'collections': return appendParams('/(modals)/marketplace-collections', params);
     case 'free': return appendParams('/(modals)/marketplace-free', params);
+    case 'borrow': return appendParams('/(modals)/marketplace-borrow', params);
     case 'map': return appendParams('/(modals)/marketplace-map', params);
     case 'my-listings': return appendParams('/(modals)/marketplace-my-listings', params);
     case 'my-offers': return appendParams('/(modals)/marketplace-offers', params);

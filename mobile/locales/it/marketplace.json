@@ -1,11 +1,11 @@
 {
-  "title": "Mercato",
-  "eyebrow": "Mercato della comunità",
-  "subtitle": "Sfoglia, vendi, salva e gestisci gli elenchi del marketplace della community.",
+  "title": "Mercato & Freecycle",
+  "eyebrow": "Compra, vendi, regala, presta",
+  "subtitle": "Compra e vendi, regala oggetti gratis (Freecycle) e prendi o dai in prestito attrezzi e attrezzature nella tua comunità.",
   "loadMore": "Carica altro",
   "featureGate": {
-    "title": "Il marketplace non è disponibile",
-    "description": "Questa comunità non ha abilitato gli elenchi del marketplace."
+    "title": "Mercato & Freecycle non è disponibile",
+    "description": "Questa comunità non ha abilitato gli annunci di Mercato & Freecycle."
   },
   "actions": {
     "sell": "Vendi oggetto",
@@ -22,7 +22,8 @@
     "search": "Ricerca avanzata",
     "browse": "Sfoglia il marketplace",
     "view": "Visualizza",
-    "viewListing": "Visualizza dettagli per {{title}}"
+    "viewListing": "Visualizza dettagli per {{title}}",
+    "borrowLend": "Prendi e dai in prestito"
   },
   "search": {
     "placeholder": "Cerca nel marketplace...",
@@ -41,7 +42,8 @@
       "fixed": "Prezzo fisso",
       "negotiable": "Negoziabile",
       "contact": "Contatta il venditore",
-      "auction": "Asta"
+      "auction": "Asta",
+      "lend": "In prestito"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Venditore",
     "save_failed": "Impossibile aggiornare le inserzioni salvate.",
     "timeCreditsPrice": "{{count}} crediti tempo",
-    "timeCreditsPrice_one": "{{count}} credito tempo"
+    "timeCreditsPrice_one": "{{count}} credito tempo",
+    "borrow": "In prestito"
   },
   "priceType": {
     "fixed": "Prezzo fisso",
     "negotiable": "Negoziabile",
     "free": "Gratuito",
     "auction": "Asta",
-    "contact": "Contatta il venditore"
+    "contact": "Contatta il venditore",
+    "lend": "Prendi e dai in prestito"
   },
   "condition": {
     "new": "Nuovo",
@@ -213,7 +217,17 @@
     "validation": "Convalida",
     "required": "Titolo e descrizione sono obbligatori.",
     "loadFailed": "Impossibile caricare questo inserzione.",
-    "saveFailed": "Impossibile salvare questa inserzione."
+    "saveFailed": "Impossibile salvare questa inserzione.",
+    "priceTypeLend": "Presta / prendi in prestito (l'oggetto torna indietro)",
+    "createLendTitle": "Presta un oggetto",
+    "lendSubtitle": "Offri un attrezzo o un'attrezzatura che i membri possono prendere in prestito e restituire. Non si vende né si paga nulla.",
+    "lendTitlePlaceholder": "Cosa presti?",
+    "loanTerms": "Condizioni del prestito (facoltativo)",
+    "loanTermsPlaceholder": "Per quanto tempo si può tenere, eventuale cauzione e come restituirlo.",
+    "loanTermsHint": "{{remaining}} caratteri rimanenti",
+    "loanTermsTooLong": "Le condizioni del prestito devono avere meno di {{max}} caratteri.",
+    "lendDeliveryHint": "Gli oggetti in prestito si ritirano di persona o li porta un corriere della comunità; non possono essere spediti.",
+    "footerMissingTitle": "Aggiungi un titolo prima di pubblicare."
   },
   "owner": {
     "title": "Strumenti venditore",
@@ -1052,7 +1066,8 @@
       "price_asc": "Prezzo dal più basso al più alto",
       "price_desc": "Prezzo dal più alto al più basso",
       "popular": "Popolare"
-    }
+    },
+    "listingType": "Tipo di annuncio"
   },
   "shipping": {
     "eyebrow": "Venditore evasione",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "Non è stato possibile caricare alcune categorie o annunci in evidenza del mercato. Riprova.",
     "unable_to_load": "Impossibile caricare le inserzioni del marketplace.",
     "load_more_failed": "Impossibile caricare più elenchi."
+  },
+  "borrow": {
+    "eyebrow": "Prendi e dai in prestito",
+    "title": "Prendi e dai in prestito",
+    "subtitle": "Attrezzi e attrezzature che i membri prestano volentieri. Chiedi in prestito, concorda i dettagli via messaggio e restituisci l'oggetto quando hai finito.",
+    "lendSomething": "Presta qualcosa",
+    "unableToLoad": "Impossibile caricare gli oggetti in prestito.",
+    "loadMoreFailed": "Impossibile caricare altri oggetti in prestito.",
+    "emptyTitle": "Ancora niente da prendere in prestito",
+    "emptySubtitle": "Quando i membri offriranno attrezzi o attrezzature in prestito, compariranno qui.",
+    "askToBorrow": "Chiedi in prestito",
+    "termsTitle": "Condizioni del prestito",
+    "termsMissing": "Il proprietario non ha indicato condizioni di prestito. Chiedile nel tuo messaggio.",
+    "howItWorks": "Qui non c'è nulla da pagare: scrivi al proprietario per concordare per quanto tempo puoi tenerlo e come ritirarlo e restituirlo."
   }
 }

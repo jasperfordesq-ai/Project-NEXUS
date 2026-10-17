@@ -4027,7 +4027,7 @@
                 }
             },
             "marketplace": {
-                "title": "マーケットプレイス",
+                "title": "マーケットプレイス & Freecycle",
                 "caption": ":community",
                 "description": "コミュニティ内でモノやサービスの売買・交換ができます。",
                 "empty": "マーケットプレイスにはまだ何もありません。",
@@ -6493,13 +6493,14 @@
                 "save": "保存",
                 "submit": "提出する",
                 "free": "無料",
+                "borrow": "貸し出し",
                 "credits_label": "タイムクレジット",
                 "credits_price": ":credits 時間クレジット",
                 "view": "ビュー",
                 "no_image": "画像なし"
             },
             "nav": {
-                "heading": "市場",
+                "heading": "市場 & Freecycle",
                 "browse": "ブラウズ",
                 "mine": "私のリスト",
                 "saved": "保存されました",
@@ -6513,6 +6514,7 @@
                 "coupons": "クーポン",
                 "detail_buy": "この商品を購入する",
                 "detail_offer": "オファーをする",
+                "detail_ask_to_borrow": "借りたいと伝える",
                 "detail_save": "このアイテムを保存する",
                 "detail_report": "このアイテムを報告する"
             },
@@ -6534,6 +6536,10 @@
                 "price_type_negotiable": "オファーを受け入れます",
                 "price_type_free": "良い家に自由に",
                 "price_type_contact": "価格はお問い合わせください",
+                "price_type_lend": "貸し出し（借りて返す）",
+                "loan_terms_label": "貸し出しの条件",
+                "loan_terms_hint": "貸し出せる期間、受け取り場所、借りる人が知っておくべきこと。",
+                "error_lend_delivery": "貸し借りの出品は発送できません。受け取りまたは地域配達を選んでください。",
                 "price_label": "価格",
                 "price_hint": "金額を金額で入力します。時間クレジットのみで価格を設定する場合は、空白のままにしてください。",
                 "currency_label": "通貨",

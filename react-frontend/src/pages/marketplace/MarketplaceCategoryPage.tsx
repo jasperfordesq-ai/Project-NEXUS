@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Separator } from '@/components/ui/Separator';
+import { DynamicIcon, ICON_MAP } from '@/components/ui/DynamicIcon';
 import { Spinner } from '@/components/ui/Spinner';
 import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
@@ -78,6 +79,14 @@ const CONDITION_OPTIONS = [
   { value: 'poor' },
 ];
 
+/** Listing types the browse endpoint accepts as a single `price_type` filter. */
+const PRICE_TYPE_OPTIONS = [
+  { value: 'fixed' },
+  { value: 'negotiable' },
+  { value: 'free' },
+  { value: 'lend' },
+] as const;
+
 const SORT_OPTIONS = [
   { value: 'newest' },
   { value: 'price_asc' },
@@ -114,6 +123,8 @@ export function MarketplaceCategoryPage() {
     searchParams.get('condition')?.split(',').filter(Boolean) || []
   );
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest');
+  // Listing type (`price_type`): for sale, negotiable, free (Freecycle) or borrow & lend.
+  const [priceType, setPriceType] = useState(searchParams.get('price_type') || '');
   const [templateFilterValues, setTemplateFilterValues] = useState<Record<string, string>>({});
   const [showFilters, setShowFilters] = useState(false);
   const usesFilterSheet = useMediaQuery('(max-width: 1023px)');
@@ -211,6 +222,7 @@ export function MarketplaceCategoryPage() {
       if (priceMin) params.set('price_min', priceMin);
       if (priceMax) params.set('price_max', priceMax);
       if (selectedConditions.length > 0) params.set('condition', selectedConditions.join(','));
+      if (priceType) params.set('price_type', priceType);
       if (sortBy !== 'newest') params.set('sort', sortBy);
       params.set('limit', String(ITEMS_PER_PAGE));
       if (append && cursorRef.current) {
@@ -243,7 +255,7 @@ export function MarketplaceCategoryPage() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [category, debouncedQuery, priceMin, priceMax, selectedConditions, sortBy, templateFilterValues, toast, t])
+  }, [category, debouncedQuery, priceMin, priceMax, selectedConditions, priceType, sortBy, templateFilterValues, toast, t])
 
   // Refetch on filter/category change
   useEffect(() => {
@@ -251,7 +263,7 @@ export function MarketplaceCategoryPage() {
     cursorRef.current = null;
     setHasMore(true);
     loadListings();
-  }, [category, debouncedQuery, priceMin, priceMax, selectedConditions, sortBy, templateFilterValues]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [category, debouncedQuery, priceMin, priceMax, selectedConditions, priceType, sortBy, templateFilterValues]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync URL
   useEffect(() => {
@@ -260,15 +272,17 @@ export function MarketplaceCategoryPage() {
     if (priceMin) params.set('price_min', priceMin);
     if (priceMax) params.set('price_max', priceMax);
     if (selectedConditions.length > 0) params.set('condition', selectedConditions.join(','));
+    if (priceType) params.set('price_type', priceType);
     if (sortBy !== 'newest') params.set('sort', sortBy);
     setSearchParams(params, { replace: true });
-  }, [debouncedQuery, priceMin, priceMax, selectedConditions, sortBy, setSearchParams]);
+  }, [debouncedQuery, priceMin, priceMax, selectedConditions, priceType, sortBy, setSearchParams]);
 
   // Active filter count
   const activeFilterCount = [
     priceMin,
     priceMax,
     selectedConditions.length > 0 ? 'yes' : '',
+    priceType,
     ...Object.values(templateFilterValues).filter(Boolean),
   ].filter(Boolean).length;
 
@@ -277,6 +291,7 @@ export function MarketplaceCategoryPage() {
     setPriceMin('');
     setPriceMax('');
     setSelectedConditions([]);
+    setPriceType('');
     setSortBy('newest');
     setTemplateFilterValues({});
   };
@@ -391,6 +406,24 @@ export function MarketplaceCategoryPage() {
         </CheckboxGroup>
       </div>
 
+      {/* Listing type (price_type) */}
+      <div>
+        <Select
+          label={t('filters.listing_type')}
+          placeholder={t('filters.listing_type_any')}
+          size="sm"
+          selectedKeys={priceType ? [priceType] : []}
+          onSelectionChange={(keys) => {
+            const selected = Array.from(keys)[0];
+            setPriceType(selected ? String(selected) : '');
+          }}
+        >
+          {PRICE_TYPE_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} id={opt.value}>{t(`price_type.${opt.value}`)}</SelectItem>
+          ))}
+        </Select>
+      </div>
+
       {/* Dynamic template fields */}
       {templateFields.length > 0 && (
         <div className="space-y-3">
@@ -473,10 +506,11 @@ export function MarketplaceCategoryPage() {
         <GlassCard className="p-6">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-              {category.icon ? (
-                <span className="text-2xl">{category.icon}</span>
+              {/* `icon` is a Lucide icon NAME (see MarketplaceCategorySeeder), never text to print. */}
+              {category.icon && ICON_MAP[category.icon] ? (
+                <DynamicIcon name={category.icon} className="w-7 h-7 text-accent" />
               ) : (
-                <Tag className="w-7 h-7 text-accent" />
+                <Tag className="w-7 h-7 text-accent" aria-hidden="true" />
               )}
             </div>
             <div className="flex-1 min-w-0">

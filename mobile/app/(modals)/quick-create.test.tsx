@@ -97,7 +97,7 @@ describe('QuickCreateRoute', () => {
     const { getByText } = render(<QuickCreateRoute />);
 
     expect(getByText('New listing')).toBeTruthy();
-    expect(getByText('Sell item')).toBeTruthy();
+    expect(getByText('Sell, give away or lend')).toBeTruthy();
     expect(getByText('New message')).toBeTruthy();
     expect(getByText('New event')).toBeTruthy();
     expect(getByText('New poll')).toBeTruthy();
@@ -124,7 +124,7 @@ describe('QuickCreateRoute', () => {
   it('opens the marketplace listing creator from quick-create', () => {
     const { getByText } = render(<QuickCreateRoute />);
 
-    fireEvent.press(getByText('Sell item'));
+    fireEvent.press(getByText('Sell, give away or lend'));
 
     expect(mockRouterPush).toHaveBeenCalledWith('/(modals)/new-marketplace-listing');
   });

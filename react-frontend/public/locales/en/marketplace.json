@@ -3,11 +3,11 @@
     "filter_panel": "Filter panel"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Marketplace",
-  "meta_description": "Buy, sell, or share items locally with neighbours — community marketplace listings, free items, group buys, and deliveries within your timebank.",
+  "page_title": "Marketplace & Freecycle",
+  "meta_description": "Buy, sell, give away for free (Freecycle) or borrow and lend items with neighbours — community marketplace listings, free items, tool lending, group buys and deliveries within your timebank.",
   "hub": {
-    "eyebrow": "Community marketplace",
-    "subtitle": "Buy, sell, and trade items in your community",
+    "eyebrow": "Marketplace & Freecycle",
+    "subtitle": "Buy, sell, give away for free or borrow and lend items in your community",
     "sell_something": "Sell Something",
     "categories_stat": "Categories",
     "listings_stat": "Visible listings",
@@ -21,7 +21,7 @@
     "try_again": "Try Again",
     "no_listings_title": "No Listings Found",
     "no_listings_filtered": "Try adjusting your search or filters.",
-    "no_listings_empty": "Be the first to list something for sale!",
+    "no_listings_empty": "Be the first to list something — for sale, for free or to lend!",
     "sidebar_cta_title": "Got something to sell?",
     "sidebar_cta_description": "List your items and reach your community.",
     "categories": "Categories",
@@ -32,11 +32,13 @@
     "load_more_failed": "Failed to load more listings",
     "my_listings": "My Listings",
     "my_offers": "My Offers",
-    "my_orders": "My Orders"
+    "my_orders": "My Orders",
+    "free_items": "Free items",
+    "borrow_lend": "Borrow & lend"
   },
   "hub_feature_gate": {
-    "title": "Marketplace Not Available",
-    "description": "The marketplace feature is not enabled for this community."
+    "title": "Marketplace & Freecycle Not Available",
+    "description": "The Marketplace & Freecycle feature is not enabled for this community."
   },
   "listing": {
     "not_found_title": "Listing Not Found",
@@ -96,7 +98,13 @@
     "available_count_one": "{{count}} available",
     "available_count_other": "{{count}} available",
     "views_count_one": "{{count}} views",
-    "views_count_other": "{{count}} views"
+    "views_count_other": "{{count}} views",
+    "lend": "To borrow",
+    "ask_to_borrow": "Ask to borrow",
+    "loan_terms": "Loan terms",
+    "lend_notice": "This item is offered on loan, not for sale. Message the owner to arrange borrowing it and when to return it.",
+    "borrow_message_template": "Hi, I'd like to ask to borrow: {{title}}",
+    "borrow_in_person_notice": "Borrowing is arranged in person in this community — ask the owner when you see them."
   },
   "offer": {
     "modal_title": "Make an Offer",
@@ -190,7 +198,13 @@
     "created_error_retry": "Failed to create listing. Please try again.",
     "draft_saved": "Draft saved",
     "title_char_count_one": "{{count}}/120 characters",
-    "title_char_count_other": "{{count}}/120 characters"
+    "title_char_count_other": "{{count}}/120 characters",
+    "loan_terms_label": "Loan terms",
+    "loan_terms_placeholder": "e.g. How long it can be borrowed for, any deposit, how to return it...",
+    "loan_terms_hint": "Optional. {{used}}/{{max}} characters.",
+    "loan_terms_too_long": "Loan terms must be {{max}} characters or fewer",
+    "lend_no_price_hint": "A borrow & lend listing has no price. Borrowers message you to arrange the loan and the return.",
+    "lend_delivery_hint": "Items for lending are collected in person — they cannot be posted."
   },
   "search": {
     "category_search": "Search categories...",
@@ -326,7 +340,8 @@
   "price_type": {
     "fixed": "Fixed Price",
     "negotiable": "Negotiable",
-    "free": "Free"
+    "free": "Free",
+    "lend": "Lend / borrow (item comes back)"
   },
   "delivery_method": {
     "pickup": "Pickup Only",
@@ -373,7 +388,9 @@
     "posted_last_days": "Last {{count}} days",
     "apply": "Apply Filters",
     "clear": "Clear All",
-    "title": "Filters"
+    "title": "Filters",
+    "listing_type": "Listing type",
+    "listing_type_any": "Any type"
   },
   "gallery": {
     "no_images": "No images available",
@@ -385,7 +402,8 @@
   "price": {
     "free": "Free",
     "contact": "Contact for price",
-    "negotiable": "Negotiable"
+    "negotiable": "Negotiable",
+    "lend": "To borrow"
   },
   "empty": {
     "no_listings": "No listings yet",
@@ -859,5 +877,17 @@
   "my_offers_tabs_aria": "My offers sections",
   "seller_orders_tabs_aria": "Seller order status filter",
   "seller_profile_tabs_aria": "Seller profile sections",
-  "category_filter_label": "Filter by category"
+  "category_filter_label": "Filter by category",
+  "borrow": {
+    "page_title": "Borrow & Lend",
+    "meta_description": "Borrow tools and equipment from neighbours, or lend yours — Marketplace & Freecycle items that come back.",
+    "subtitle": "Tools and equipment your community is happy to lend",
+    "lend_something": "Lend Something",
+    "cta_title": "Got a tool gathering dust?",
+    "cta_description": "Lend it to a neighbour. List it as borrow & lend — you set the terms and it comes back to you.",
+    "unable_to_load": "Unable to load borrow & lend items",
+    "load_more_failed": "Failed to load more items",
+    "no_items_title": "Nothing to Borrow Yet",
+    "no_items_description": "No one is lending anything right now. Check back later or be the first to lend something!"
+  }
 }

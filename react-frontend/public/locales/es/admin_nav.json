@@ -244,10 +244,11 @@
   "job_pipeline": "Tubería",
   "job_bias_audit": "Auditoría de sesgo",
   "job_templates": "Plantillas",
-  "marketplace": "Mercado",
+  "marketplace": "Mercado & Freecycle",
   "marketplace_dashboard": "Panel",
   "marketplace_moderation": "Moderación",
   "marketplace_sellers": "Vendedores",
+  "marketplace_categories": "Categorías",
   "feature_flags": "Banderas de características",
   "secrets_vault": "Bóveda de los secretos",
   "module_configuration": "Configuración del módulo",
@@ -686,7 +687,19 @@
       "Layers": "Capas",
       "Package": "Paquete",
       "Cookie": "Galletas",
-      "Lightbulb": "Idea"
+      "Lightbulb": "Idea",
+      "Smartphone": "Teléfono móvil",
+      "Armchair": "Sillón",
+      "Shirt": "Camisa",
+      "Car": "Coche",
+      "Bike": "Bicicleta",
+      "Gamepad2": "Mando de juego",
+      "Baby": "Bebé",
+      "Dog": "Perro",
+      "Briefcase": "Maletín",
+      "Palette": "Paleta",
+      "UtensilsCrossed": "Cubiertos",
+      "Hammer": "Martillo"
     }
   },
   "visibility_rules": {

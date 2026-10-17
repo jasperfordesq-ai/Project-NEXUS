@@ -244,10 +244,11 @@
   "job_pipeline": "Rurociąg",
   "job_bias_audit": "Audyt stronniczości",
   "job_templates": "Szablony",
-  "marketplace": "Rynek",
+  "marketplace": "Rynek & Freecycle",
   "marketplace_dashboard": "Panel",
   "marketplace_moderation": "Umiar",
   "marketplace_sellers": "Sprzedawcy",
+  "marketplace_categories": "Kategorie",
   "feature_flags": "Flagi funkcyjne",
   "secrets_vault": "Skarbiec Sekretów",
   "module_configuration": "Konfiguracja modułu",
@@ -689,7 +690,19 @@
       "Layers": "Warstwy",
       "Package": "Pakiet",
       "FolderOpen": "Folder",
-      "Medal": "Medal"
+      "Medal": "Medal",
+      "Smartphone": "Smartfon",
+      "Armchair": "Fotel",
+      "Shirt": "Koszula",
+      "Car": "Samochód",
+      "Bike": "Rower",
+      "Gamepad2": "Kontroler do gier",
+      "Baby": "Dziecko",
+      "Dog": "Pies",
+      "Briefcase": "Teczka",
+      "Palette": "Paleta",
+      "UtensilsCrossed": "Sztućce",
+      "Hammer": "Młotek"
     }
   },
   "visibility_rules": {

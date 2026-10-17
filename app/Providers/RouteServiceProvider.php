@@ -283,6 +283,12 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api-volunteering-qualifications.php'));
 
+            // Marketplace & Freecycle admin category management — same
+            // arrangement, same reason (routes/api.php mid-edit elsewhere).
+            Route::middleware('api')
+                ->prefix('api')
+                ->group(base_path('routes/api-marketplace-admin.php'));
+
             // 🔴 The Blade accessible frontend route group was REMOVED on 2026-08-14.
             //
             // It served `/{tenantSlug}/accessible/...` from routes/govuk-alpha.php through

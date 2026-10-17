@@ -3060,7 +3060,7 @@ return [
         ],
     ],
     'marketplace' => [
-        'title' => 'Marketplace',
+        'title' => 'Marketplace & Freecycle',
         'caption' => ':community',
         'description' => 'Buy, sell and swap goods and services with your community.',
         'empty' => 'There is nothing in the marketplace yet.',

@@ -289,6 +289,70 @@ describe('CreateMarketplaceListingPage', () => {
     }
   });
 
+  describe('borrow & lend listing type', () => {
+    async function fillRequiredFieldsAndPickLend() {
+      const allInputs = screen.getAllByRole('textbox');
+      const titleInput = allInputs[0];
+      await userEvent.type(titleInput!, 'Cordless Drill');
+      const descInput = allInputs.find((el) => el.tagName === 'TEXTAREA');
+      await userEvent.type(descInput!, 'Works well, comes with two batteries');
+
+      const lendRadio = screen.getAllByRole('radio').find(
+        (el) => (el as HTMLInputElement).value === 'lend',
+      );
+      expect(lendRadio).toBeDefined();
+      await userEvent.click(lendRadio!);
+    }
+
+    it('offers a lend price type that hides the price field and shows loan terms', async () => {
+      const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
+      render(<CreateMarketplaceListingPage />);
+      await waitFor(() => mockApi.get.mock.calls.length > 0);
+
+      // Price field is present for the default (fixed) type.
+      expect(screen.getByLabelText(/^price$/i)).toBeInTheDocument();
+      expect(screen.queryByLabelText(/loan terms/i)).not.toBeInTheDocument();
+
+      await fillRequiredFieldsAndPickLend();
+
+      expect(screen.queryByLabelText(/^price$/i)).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/loan terms/i)).toBeInTheDocument();
+      // Only collection remains: a lent item cannot be posted.
+      const deliveryRadios = screen.getAllByRole('radio').filter((el) =>
+        ['pickup', 'shipping', 'both'].includes((el as HTMLInputElement).value),
+      );
+      expect(deliveryRadios.map((el) => (el as HTMLInputElement).value)).toEqual(['pickup']);
+    });
+
+    it('POSTs a lend listing with no price, collection only and the loan terms', async () => {
+      const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
+      render(<CreateMarketplaceListingPage />);
+      await waitFor(() => mockApi.get.mock.calls.length > 0);
+
+      await fillRequiredFieldsAndPickLend();
+      await userEvent.type(screen.getByLabelText(/loan terms/i), 'Back within a week, please');
+
+      const submitBtn = screen.getAllByRole('button').find(
+        (b) => b.textContent?.toLowerCase().includes('publish'),
+      );
+      await userEvent.click(submitBtn!);
+
+      await waitFor(() => {
+        expect(mockApi.post).toHaveBeenCalledWith(
+          '/v2/marketplace/listings',
+          expect.objectContaining({
+            price_type: 'lend',
+            price: 0,
+            time_credit_price: 0,
+            shipping_available: false,
+            delivery_method: 'pickup',
+            loan_terms: 'Back within a week, please',
+          }),
+        );
+      });
+    });
+  });
+
   it('initializes a new listing with the tenant payment currency', async () => {
     mockTenantState.currency = 'jpy';
     const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');

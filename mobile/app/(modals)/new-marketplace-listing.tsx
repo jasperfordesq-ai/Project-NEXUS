@@ -58,10 +58,21 @@ import { MARKETPLACE_MAX_EDGE, prepareImageForUpload } from '@/lib/media/prepare
 import { withRouteGate } from '@/components/withRouteGate';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 
-const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'contact'];
+const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'lend', 'contact'];
 const CURRENCIES = ['EUR', 'GBP', 'USD', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'JPY'] as const;
 const CONDITIONS: MarketplaceCondition[] = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY: MarketplaceDeliveryMethod[] = ['pickup', 'shipping', 'both', 'community_delivery'];
+/**
+ * A borrow & lend listing cannot be posted: the API answers 422 to `shipping` or `both`,
+ * so the form never offers them for `lend` and snaps an earlier choice back to collection.
+ */
+const LEND_DELIVERY: MarketplaceDeliveryMethod[] = ['pickup', 'community_delivery'];
+const LOAN_TERMS_MAX = 500;
+
+/** Price types that carry no money price (the price input is hidden and `price` is sent null). */
+function priceTypeHasNoPrice(priceType: MarketplacePriceType): boolean {
+  return priceType === 'free' || priceType === 'contact' || priceType === 'lend';
+}
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const MAX_IMAGES = 20;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
@@ -117,6 +128,8 @@ export function MarketplaceListingForm() {
   const [timeCredits, setTimeCredits] = useState('');
   const initialPriceType = PRICE_TYPES.includes(params.price_type as MarketplacePriceType) ? params.price_type as MarketplacePriceType : 'fixed';
   const [priceType, setPriceType] = useState<MarketplacePriceType>(initialPriceType);
+  const [loanTerms, setLoanTerms] = useState('');
+  const isLend = priceType === 'lend';
   // Leave unsupported/missing bootstrap values empty so create falls back to
   // the backend's authoritative tenant currency.
   const [currency, setCurrency] = useState(() => normalizeSupportedCurrency(tenant?.currency));
@@ -155,7 +168,7 @@ export function MarketplaceListingForm() {
     no prompt — the same fault the two listing forms had before the 5 September audit.
   */
   useUnsavedChangesGuard({
-    isDirty: Boolean(title.trim() || description.trim() || price.trim() || imageUris.length > 0),
+    isDirty: Boolean(title.trim() || description.trim() || price.trim() || loanTerms.trim() || imageUris.length > 0),
     isSaving: isSubmitting,
     hasSaved: hasSubmitted,
     confirm,
@@ -167,11 +180,17 @@ export function MarketplaceListingForm() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   // The footer says what is missing instead of "publish when ready" over an empty form.
-  const footerIncomplete = !title.trim() || (priceType !== 'free' && toNumber(price) === null);
+  // 🔴 This said `priceType !== 'free'`, so a "contact seller" draft was told it was
+  // missing a price the form never asks for. Same rule as the submit validation now.
+  const footerIncomplete = !title.trim() || (!priceTypeHasNoPrice(priceType) && toNumber(price) === null);
 
   useEffect(() => () => {
     isMountedRef.current = false;
   }, []);
+
+  useEffect(() => {
+    if (isLend && !LEND_DELIVERY.includes(deliveryMethod)) setDeliveryMethod('pickup');
+  }, [deliveryMethod, isLend]);
 
   useEffect(() => {
     let mounted = true;
@@ -211,6 +230,7 @@ export function MarketplaceListingForm() {
         );
         setTimeCredits(listing.time_credit_price !== null && listing.time_credit_price !== undefined ? String(listing.time_credit_price) : '');
         setPriceType(listing.price_type ?? 'fixed');
+        setLoanTerms(listing.price_type === 'lend' ? (listing.loan_terms ?? '') : '');
         setCondition(listing.condition ?? 'good');
         setCategoryId(listing.category?.id ?? null);
         if (listing.template_data && typeof listing.template_data === 'object') {
@@ -310,8 +330,12 @@ export function MarketplaceListingForm() {
     }
 
     const priceValue = priceType === 'free' ? 0 : toNumber(price);
-    if (priceType !== 'free' && priceType !== 'contact' && (priceValue === null || priceValue <= 0)) {
+    if (!priceTypeHasNoPrice(priceType) && (priceValue === null || priceValue <= 0)) {
       showToast({ title: t('forms.validation'), description: t('forms.priceRequired'), variant: 'warning' });
+      return;
+    }
+    if (isLend && loanTerms.trim().length > LOAN_TERMS_MAX) {
+      showToast({ title: t('forms.validation'), description: t('forms.loanTermsTooLong', { max: LOAN_TERMS_MAX }), variant: 'warning' });
       return;
     }
 
@@ -333,14 +357,18 @@ export function MarketplaceListingForm() {
       const filledTemplateFields = Object.fromEntries(
         Object.entries(templateFields).filter(([, value]) => value.trim() !== ''),
       );
+      // Belt and braces with the effect above: a lend listing is never sent as postable.
+      const effectiveDelivery: MarketplaceDeliveryMethod = isLend && !LEND_DELIVERY.includes(deliveryMethod) ? 'pickup' : deliveryMethod;
       const payload: MarketplaceListingPayload = {
         title: title.trim(),
         tagline: tagline.trim() || null,
         description: description.trim(),
-        price: priceType === 'contact' ? null : priceValue,
+        // A lend listing carries no price of either kind; the API rejects one (422).
+        price: priceType === 'contact' || isLend ? null : priceValue,
         ...(currency ? { price_currency: currency } : {}),
         price_type: priceType,
-        time_credit_price: toNumber(timeCredits),
+        time_credit_price: isLend ? null : toNumber(timeCredits),
+        ...(isLend ? { loan_terms: loanTerms.trim() || null } : {}),
         category_id: categoryId,
         condition,
         quantity: toNumber(quantity) ?? 1,
@@ -350,9 +378,9 @@ export function MarketplaceListingForm() {
         location: location.trim() || null,
         latitude: latitudeValue,
         longitude: longitudeValue,
-        delivery_method: deliveryMethod,
-        shipping_available: deliveryMethod === 'shipping' || deliveryMethod === 'both',
-        local_pickup: deliveryMethod === 'pickup' || deliveryMethod === 'both' || deliveryMethod === 'community_delivery',
+        delivery_method: effectiveDelivery,
+        shipping_available: effectiveDelivery === 'shipping' || effectiveDelivery === 'both',
+        local_pickup: effectiveDelivery === 'pickup' || effectiveDelivery === 'both' || effectiveDelivery === 'community_delivery',
         seller_type: sellerType,
         status: 'active',
       };
@@ -553,7 +581,7 @@ export function MarketplaceListingForm() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1, backgroundColor: theme.bg }}>
-      <AppTopBar title={isEditing ? t('forms.editTitle') : t('forms.createTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
+      <AppTopBar title={isEditing ? t('forms.editTitle') : isLend ? t('forms.createLendTitle') : t('forms.createTitle')} backLabel={t('common:back')} fallbackHref={'/(modals)/marketplace' as Href} />
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: theme.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -575,8 +603,8 @@ export function MarketplaceListingForm() {
               </View>
               <View className="min-w-0 flex-1">
                 <Text className="text-xs font-bold uppercase" style={{ color: theme.textSecondary }} numberOfLines={1}>{t('forms.eyebrow')}</Text>
-                <Text className="text-xl font-bold leading-7" style={{ color: theme.text }} numberOfLines={1}>{isEditing ? t('forms.editTitle') : t('forms.createTitle')}</Text>
-                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{t('forms.subtitle')}</Text>
+                <Text className="text-xl font-bold leading-7" style={{ color: theme.text }} numberOfLines={1}>{isEditing ? t('forms.editTitle') : isLend ? t('forms.createLendTitle') : t('forms.createTitle')}</Text>
+                <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} numberOfLines={2}>{isLend ? t('forms.lendSubtitle') : t('forms.subtitle')}</Text>
               </View>
             </View>
           </HeroCard.Body>
@@ -584,15 +612,30 @@ export function MarketplaceListingForm() {
 
         <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: theme.border }}>
           <HeroCard.Body className="gap-5 p-3.5">
-            <FormField label={t('forms.title')} value={title} onChangeText={setTitle} placeholder={t('forms.titlePlaceholder')} />
+            <FormField label={t('forms.title')} value={title} onChangeText={setTitle} placeholder={isLend ? t('forms.lendTitlePlaceholder') : t('forms.titlePlaceholder')} />
             <FormField label={t('forms.tagline')} value={tagline} onChangeText={setTagline} placeholder={t('forms.taglinePlaceholder')} />
             <FormField label={t('forms.description')} value={description} onChangeText={setDescription} placeholder={t('forms.descriptionPlaceholder')} multiline />
             <HeroButton variant="secondary" onPress={() => void generateDescription()} isDisabled={isGeneratingDescription || !title.trim()}>
               <Ionicons name="sparkles-outline" size={16} color={primary} />
               <HeroButton.Label>{isGeneratingDescription ? t('forms.generatingDescription') : t('forms.generateDescription')}</HeroButton.Label>
             </HeroButton>
-            <ButtonGroup label={t('forms.priceType')} values={PRICE_TYPES} selected={priceType} onSelect={setPriceType} labelFor={(value) => t(`priceType.${value}`)} />
-            {priceType !== 'free' && priceType !== 'contact' ? (
+            <ButtonGroup label={t('forms.priceType')} values={PRICE_TYPES} selected={priceType} onSelect={setPriceType} labelFor={(value) => value === 'lend' ? t('forms.priceTypeLend') : t(`priceType.${value}`)} />
+            {isLend ? (
+              <View className="gap-2">
+                <FormField
+                  label={t('forms.loanTerms')}
+                  value={loanTerms}
+                  onChangeText={setLoanTerms}
+                  placeholder={t('forms.loanTermsPlaceholder')}
+                  multiline
+                  maxLength={LOAN_TERMS_MAX}
+                />
+                <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>
+                  {t('forms.loanTermsHint', { remaining: Math.max(0, LOAN_TERMS_MAX - loanTerms.length) })}
+                </Text>
+              </View>
+            ) : null}
+            {!priceTypeHasNoPrice(priceType) ? (
               <>
                 <FormField label={t('forms.price')} value={price} onChangeText={setPrice} placeholder={t('forms.pricePlaceholder')} keyboardType="decimal-pad" />
                 <ButtonGroup
@@ -606,7 +649,9 @@ export function MarketplaceListingForm() {
                 />
               </>
             ) : null}
-            <FormField label={t('forms.timeCredits')} value={timeCredits} onChangeText={setTimeCredits} placeholder={t('forms.timeCreditsPlaceholder')} keyboardType="decimal-pad" />
+            {!isLend ? (
+              <FormField label={t('forms.timeCredits')} value={timeCredits} onChangeText={setTimeCredits} placeholder={t('forms.timeCreditsPlaceholder')} keyboardType="decimal-pad" />
+            ) : null}
             <ButtonGroup label={t('forms.condition')} values={CONDITIONS} selected={condition} onSelect={setCondition} labelFor={(value) => t(`condition.${value}`)} />
             <CategoryGroup
               categories={categories}
@@ -670,7 +715,10 @@ export function MarketplaceListingForm() {
                 </View>
               </View>
             </View>
-            <ButtonGroup label={t('forms.delivery')} values={DELIVERY} selected={deliveryMethod} onSelect={setDeliveryMethod} labelFor={(value) => t(`delivery_method.${value}`)} />
+            <ButtonGroup label={t('forms.delivery')} values={isLend ? LEND_DELIVERY : DELIVERY} selected={deliveryMethod} onSelect={setDeliveryMethod} labelFor={(value) => t(`delivery_method.${value}`)} />
+            {isLend ? (
+              <Text className="text-xs leading-5" style={{ color: theme.textMuted }}>{t('forms.lendDeliveryHint')}</Text>
+            ) : null}
             <ButtonGroup label={t('forms.sellerType')} values={['private', 'business'] as const} selected={sellerType} onSelect={setSellerType} labelFor={(value) => t(`sellerType.${value}`)} />
             <View className="gap-3">
               <View className="flex-row items-center justify-between gap-3">
@@ -772,7 +820,7 @@ export function MarketplaceListingForm() {
       </ScrollView>
       <FormActionFooter
         title={isEditing ? t('forms.footerEditTitle') : t('forms.footerCreateTitle')}
-        subtitle={footerIncomplete ? t('forms.footerMissing') : t('forms.footerSubtitle')}
+        subtitle={footerIncomplete ? (priceTypeHasNoPrice(priceType) ? t('forms.footerMissingTitle') : t('forms.footerMissing')) : t('forms.footerSubtitle')}
         submitLabel={isEditing ? t('forms.update') : t('forms.publish')}
         isDisabled={(isEditing && !hydrated) || isLoadingTemplate || templateLoadFailed}
         isSubmitting={isSubmitting}
@@ -1005,6 +1053,7 @@ function FormField({
   placeholder,
   multiline = false,
   keyboardType,
+  maxLength,
 }: {
   label: string;
   value: string;
@@ -1012,6 +1061,7 @@ function FormField({
   placeholder: string;
   multiline?: boolean;
   keyboardType?: 'default' | 'decimal-pad';
+  maxLength?: number;
 }) {
   const theme = useTheme();
   return (
@@ -1027,6 +1077,7 @@ function FormField({
         onChangeText={onChangeText}
         multiline={multiline}
         keyboardType={keyboardType}
+        maxLength={maxLength}
         accessibilityLabel={label}
       />
     </View>

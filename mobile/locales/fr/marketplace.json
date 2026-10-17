@@ -1,11 +1,11 @@
 {
-  "title": "Place de marché",
-  "eyebrow": "Marché communautaire",
-  "subtitle": "Parcourez, vendez, enregistrez et gérez les listes de places de marché de la communauté.",
+  "title": "Marché & Freecycle",
+  "eyebrow": "Acheter, vendre, donner, prêter",
+  "subtitle": "Achetez et vendez, donnez gratuitement (Freecycle) et empruntez ou prêtez des outils et du matériel au sein de votre communauté.",
   "loadMore": "Charger plus",
   "featureGate": {
-    "title": "La place de marché n'est pas disponible",
-    "description": "Cette communauté n'a pas activé les listes de places de marché."
+    "title": "Marché & Freecycle n'est pas disponible",
+    "description": "Cette communauté n'a pas activé les annonces Marché & Freecycle."
   },
   "actions": {
     "sell": "Vendre l'article",
@@ -22,7 +22,8 @@
     "search": "Recherche avancée",
     "browse": "Parcourir le marché",
     "view": "Afficher",
-    "viewListing": "Afficher les détails pour {{title}}"
+    "viewListing": "Afficher les détails pour {{title}}",
+    "borrowLend": "Emprunter & prêter"
   },
   "search": {
     "placeholder": "Rechercher sur le marché...",
@@ -41,7 +42,8 @@
       "fixed": "Prix fixe",
       "negotiable": "Négociable",
       "contact": "Contacter le vendeur",
-      "auction": "Enchères"
+      "auction": "Enchères",
+      "lend": "À emprunter"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Vendeur",
     "save_failed": "Impossible de mettre à jour les annonces enregistrées.",
     "timeCreditsPrice": "{{count}} crédits-temps",
-    "timeCreditsPrice_one": "{{count}} crédit-temps"
+    "timeCreditsPrice_one": "{{count}} crédit-temps",
+    "borrow": "À emprunter"
   },
   "priceType": {
     "fixed": "Prix fixe",
     "negotiable": "Négociable",
     "free": "Gratuit",
     "auction": "Enchères",
-    "contact": "Contacter le vendeur"
+    "contact": "Contacter le vendeur",
+    "lend": "Emprunter & prêter"
   },
   "condition": {
     "new": "Nouveau",
@@ -213,7 +217,17 @@
     "validation": "Validation",
     "required": "Le titre et la description sont obligatoires.",
     "loadFailed": "Impossible de charger cette annonce.",
-    "saveFailed": "Impossible d'enregistrer cette annonce."
+    "saveFailed": "Impossible d'enregistrer cette annonce.",
+    "priceTypeLend": "Prêter / emprunter (l'objet est rendu)",
+    "createLendTitle": "Prêter un objet",
+    "lendSubtitle": "Proposez un outil ou du matériel que les membres peuvent emprunter puis rendre. Rien n'est vendu ni payé.",
+    "lendTitlePlaceholder": "Que prêtez-vous ?",
+    "loanTerms": "Conditions de prêt (facultatif)",
+    "loanTermsPlaceholder": "Durée du prêt, caution éventuelle et modalités de retour.",
+    "loanTermsHint": "{{remaining}} caractères restants",
+    "loanTermsTooLong": "Les conditions de prêt doivent faire moins de {{max}} caractères.",
+    "lendDeliveryHint": "Les objets prêtés sont retirés sur place ou apportés par un coursier de la communauté ; ils ne peuvent pas être expédiés.",
+    "footerMissingTitle": "Ajoutez un titre avant de publier."
   },
   "owner": {
     "title": "Outils du vendeur",
@@ -1052,7 +1066,8 @@
       "price_asc": "Prix bas à élevé",
       "price_desc": "Prix haut à bas",
       "popular": "Populaire"
-    }
+    },
+    "listingType": "Type d'annonce"
   },
   "shipping": {
     "eyebrow": "Vendeur traitement",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "Certaines catégories ou annonces à la une de la place de marché n’ont pas pu être chargées. Réessayez.",
     "unable_to_load": "Impossible de charger les listes de places de marché.",
     "load_more_failed": "Impossible de charger davantage d'annonces."
+  },
+  "borrow": {
+    "eyebrow": "Emprunter & prêter",
+    "title": "Emprunter & prêter",
+    "subtitle": "Outils et matériel que les membres prêtent volontiers. Demandez à emprunter, convenez des détails par message et rendez l'objet une fois terminé.",
+    "lendSomething": "Prêter quelque chose",
+    "unableToLoad": "Impossible de charger les objets à emprunter.",
+    "loadMoreFailed": "Impossible de charger davantage d'objets à emprunter.",
+    "emptyTitle": "Rien à emprunter pour le moment",
+    "emptySubtitle": "Lorsque des membres proposeront des outils ou du matériel à prêter, ils apparaîtront ici.",
+    "askToBorrow": "Demander à emprunter",
+    "termsTitle": "Conditions de prêt",
+    "termsMissing": "Le propriétaire n'a pas indiqué de conditions de prêt. Posez la question dans votre message.",
+    "howItWorks": "Rien à payer ici : écrivez au propriétaire pour convenir de la durée du prêt et des modalités de retrait et de retour."
   }
 }

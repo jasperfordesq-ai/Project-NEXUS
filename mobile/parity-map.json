@@ -340,6 +340,10 @@
       "status": "native",
       "mobile": "marketplace-free"
     },
+    "marketplace/borrow": {
+      "status": "native",
+      "mobile": "marketplace-borrow"
+    },
     "marketplace/map": {
       "status": "native",
       "mobile": "marketplace-map"

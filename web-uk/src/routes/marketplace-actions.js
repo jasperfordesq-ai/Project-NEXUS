@@ -11,7 +11,7 @@ const { readDate, readDateTime } = require('../lib/date-input');
 
 const router = express.Router();
 
-const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact'];
+const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact', 'lend'];
 const CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS = ['pickup', 'shipping', 'both', 'community_delivery'];
 const REPORT_REASONS = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
@@ -42,6 +42,7 @@ function listingFormValues(body, defaultCurrency) {
     price: String(body.price || ''),
     priceCurrency: trimmed(body.price_currency || defaultCurrency, 3).toUpperCase() || defaultCurrency,
     timeCreditPrice: String(body.time_credit_price || ''),
+    loanTerms: String(body.loan_terms || '').slice(0, 500),
     condition: allowed(body.condition, CONDITIONS, ''),
     categoryId: positiveInteger(body.category_id),
     deliveryMethod: allowed(body.delivery_method, DELIVERY_METHODS, 'pickup'),
@@ -56,6 +57,10 @@ function listingValidationErrorKeys(payload) {
   if (payload.description === '') errorKeys.push('govuk_alpha_commerce.listing_form.error_description');
   if (payload.price_type === 'fixed' && !(Number(payload.price) > 0) && !(Number(payload.time_credit_price) > 0)) {
     errorKeys.push('govuk_alpha_commerce.listing_form.error_price');
+  }
+  // The API refuses a lend listing that could be posted; say so before the round trip.
+  if (payload.price_type === 'lend' && ['shipping', 'both'].includes(payload.delivery_method)) {
+    errorKeys.push('govuk_alpha_commerce.listing_form.error_lend_delivery');
   }
   return errorKeys;
 }
@@ -226,6 +231,12 @@ function listingPayload(body, defaultCurrency = 'EUR', { includeStatus = true } 
   if (priceType === 'free') {
     payload.price = null;
     payload.time_credit_price = null;
+  } else if (priceType === 'lend') {
+    // Borrow & lend: never priced. The owner's conditions travel as plain text.
+    payload.price = null;
+    payload.time_credit_price = null;
+    const loanTerms = trimmed(body.loan_terms, 500);
+    payload.loan_terms = loanTerms !== '' ? loanTerms : null;
   } else {
     const price = decimalNumber(body.price);
     if (String(body.price || '').trim() !== '' && price >= 0) {

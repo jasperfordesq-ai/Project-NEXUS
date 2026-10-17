@@ -51,6 +51,12 @@ jest.mock('react-i18next', () => ({
         'detail.saved': 'Saved',
         'detail.addToCollection': 'Add to collection',
         'detail.makeOffer': 'Make offer',
+        'common.borrow': 'Borrow',
+        'priceType.lend': 'Borrow & lend',
+        'borrow.askToBorrow': 'Ask to borrow',
+        'borrow.termsTitle': 'Borrowing conditions',
+        'borrow.termsMissing': 'The owner has not added borrowing conditions.',
+        'borrow.howItWorks': 'Nothing to pay here: message the owner.',
         'detail.buyNow': 'Buy now',
         'detail.orderCreated': 'Order created',
         'detail.orderCreatedHint': `Order ${String(opts?.order ?? '')} was created. Payment and delivery details can be managed from orders.`,
@@ -168,7 +174,15 @@ jest.mock('@/components/ui/BottomSheet', () => ({
   },
 }));
 jest.mock('@/components/marketplace/MarketplaceListingCard', () => ({
-  formatMarketplacePrice: () => 'EUR 25',
+  formatMarketplacePrice: (
+    _price: unknown,
+    priceType: string | undefined,
+    _currency: unknown,
+    _freeLabel: string,
+    _fallback: unknown,
+    options?: { borrowLabel?: string },
+  ) => (priceType === 'lend' && options?.borrowLabel ? options.borrowLabel : 'EUR 25'),
+  priceChipIcon: () => 'pricetag-outline',
 }));
 jest.mock('@/lib/utils/resolveImageUrl', () => ({
   resolveImageUrl: (value?: string | null) => value ?? null,
@@ -310,6 +324,46 @@ describe('MarketplaceDetailRoute', () => {
       expect(getByText('Material')).toBeTruthy();
       expect(getByText('Oak')).toBeTruthy();
     });
+  });
+
+  /**
+   * A borrow & lend listing cannot be bought or offered on (the API answers 422 to both),
+   * so the screen must show neither control and must route the only action, asking to
+   * borrow, into the existing message thread with the owner.
+   */
+  it('shows borrowing conditions and an ask-to-borrow action instead of buy or offer for a lend listing', async () => {
+    (getMarketplaceListing as jest.Mock).mockResolvedValue({
+      data: { ...mockListing, price: null, price_type: 'lend', loan_terms: 'One week, return it clean.' },
+    });
+
+    const { findByText, getByTestId, queryByTestId, queryByText } = render(<MarketplaceDetailRoute />);
+
+    expect(await findByText('One week, return it clean.')).toBeTruthy();
+    expect(await findByText('Borrowing conditions')).toBeTruthy();
+    expect(queryByText('Make offer')).toBeNull();
+    expect(queryByText(/^Buy for /)).toBeNull();
+    expect(queryByTestId('marketplace-buy-now')).toBeNull();
+
+    fireEvent.press(getByTestId('marketplace-ask-to-borrow'));
+
+    const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/thread',
+      params: { recipientId: '22', listing: '9' },
+    });
+    expect(createMarketplaceOrder).not.toHaveBeenCalled();
+    expect(makeMarketplaceOffer).not.toHaveBeenCalled();
+  });
+
+  it('tells a borrower when the owner wrote no conditions, and hides the ask button from the owner', async () => {
+    (getMarketplaceListing as jest.Mock).mockResolvedValue({
+      data: { ...mockListing, price: null, price_type: 'lend', loan_terms: null, is_own: true },
+    });
+
+    const { findByText, queryByTestId } = render(<MarketplaceDetailRoute />);
+
+    expect(await findByText('The owner has not added borrowing conditions.')).toBeTruthy();
+    expect(queryByTestId('marketplace-ask-to-borrow')).toBeNull();
   });
 
   it('serializes rapid save presses before rendered state catches up', async () => {

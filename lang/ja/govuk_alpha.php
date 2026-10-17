@@ -2993,7 +2993,7 @@ return [
         ],
     ],
     'marketplace' => [
-        'title' => 'マーケットプレイス',
+        'title' => 'マーケットプレイス & Freecycle',
         'caption' => ':community',
         'description' => 'コミュニティ内でモノやサービスの売買・交換ができます。',
         'empty' => 'マーケットプレイスにはまだ何もありません。',

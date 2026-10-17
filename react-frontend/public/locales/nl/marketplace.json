@@ -3,11 +3,11 @@
     "filter_panel": "Filterpaneel"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Marktplaats",
-  "meta_description": "Koop, verkoop of deel spullen lokaal met buren — communitymarktplaats, gratis items, groepsaankopen en leveringen binnen je tijdbank.",
+  "page_title": "Marktplaats & Freecycle",
+  "meta_description": "Koop, verkoop, geef gratis weg (Freecycle) of leen en leen uit aan buren — advertenties van de community-marktplaats, gratis spullen, gereedschap lenen, groepsaankopen en bezorging binnen je tijdbank.",
   "hub": {
-    "eyebrow": "Community-marktplaats",
-    "subtitle": "Koop, verkoop en ruil items in jouw gemeenschap",
+    "eyebrow": "Marktplaats & Freecycle",
+    "subtitle": "Koop, verkoop, geef gratis weg of leen en leen uit in je gemeenschap",
     "sell_something": "Verkoop Iets",
     "categories_stat": "Categorieën",
     "listings_stat": "Zichtbare vermeldingen",
@@ -21,7 +21,7 @@
     "try_again": "Probeer Opnieuw",
     "no_listings_title": "Geen Lijsten Gevonden",
     "no_listings_filtered": "Probeer je zoekopdracht of filters aan te passen.",
-    "no_listings_empty": "Wees de eerste om iets te koop aan te bieden!",
+    "no_listings_empty": "Wees de eerste die iets aanbiedt — te koop, gratis of te leen!",
     "sidebar_cta_title": "Heb je iets te verkopen?",
     "sidebar_cta_description": "Lijst je items en bereik jouw gemeenschap.",
     "categories": "Categorieën",
@@ -32,11 +32,13 @@
     "load_more_failed": "Kon meer lijsten niet laden",
     "my_listings": "Mijn advertenties",
     "my_offers": "Mijn aanbiedingen",
-    "my_orders": "Mijn bestellingen"
+    "my_orders": "Mijn bestellingen",
+    "free_items": "Gratis spullen",
+    "borrow_lend": "Lenen & uitlenen"
   },
   "hub_feature_gate": {
-    "title": "Marktplaats Niet Beschikbaar",
-    "description": "De marktplaatsfunctie is niet ingeschakeld voor deze gemeenschap."
+    "title": "Marktplaats & Freecycle niet beschikbaar",
+    "description": "De functie Marktplaats & Freecycle is niet ingeschakeld voor deze gemeenschap."
   },
   "listing": {
     "not_found_title": "Lijst Niet Gevonden",
@@ -96,7 +98,13 @@
     "available_count_one": "{{count}} beschikbaar",
     "available_count_other": "{{count}} beschikbaar",
     "views_count_one": "{{count}} weergaven",
-    "views_count_other": "{{count}} weergaven"
+    "views_count_other": "{{count}} weergaven",
+    "lend": "Te leen",
+    "ask_to_borrow": "Vraag om te lenen",
+    "loan_terms": "Leenvoorwaarden",
+    "lend_notice": "Dit item wordt uitgeleend, niet verkocht. Stuur de eigenaar een bericht om het lenen en terugbrengen af te spreken.",
+    "borrow_message_template": "Hallo, ik zou graag het volgende lenen: {{title}}",
+    "borrow_in_person_notice": "In deze gemeenschap wordt lenen persoonlijk afgesproken — vraag het de eigenaar wanneer je die ziet."
   },
   "offer": {
     "modal_title": "Doe een bod",
@@ -190,7 +198,13 @@
     "created_error_retry": "Mislukt om advertentie aan te maken. Probeer het opnieuw.",
     "draft_saved": "Concept opgeslagen",
     "title_char_count_one": "{{count}}/120 tekens",
-    "title_char_count_other": "{{count}}/120 tekens"
+    "title_char_count_other": "{{count}}/120 tekens",
+    "loan_terms_label": "Leenvoorwaarden",
+    "loan_terms_placeholder": "bijv. hoe lang het geleend mag worden, eventuele borg, hoe het terug moet...",
+    "loan_terms_hint": "Optioneel. {{used}}/{{max}} tekens.",
+    "loan_terms_too_long": "Leenvoorwaarden mogen maximaal {{max}} tekens lang zijn",
+    "lend_no_price_hint": "Een leenadvertentie heeft geen prijs. Leners sturen je een bericht om het lenen en terugbrengen af te spreken.",
+    "lend_delivery_hint": "Uitleenspullen worden persoonlijk opgehaald — ze kunnen niet worden verzonden."
   },
   "search": {
     "category_search": "Categorieën zoeken...",
@@ -326,7 +340,8 @@
   "price_type": {
     "fixed": "Vaste Prijs",
     "negotiable": "Onderhandelbaar",
-    "free": "Gratis"
+    "free": "Gratis",
+    "lend": "Uitlenen / lenen (het komt terug)"
   },
   "delivery_method": {
     "pickup": "Alleen Afhalen",
@@ -373,7 +388,9 @@
     "posted_last_days": "Laatste {{count}} dagen",
     "apply": "Pas Filters Toe",
     "clear": "Alles wissen",
-    "title": "Filters"
+    "title": "Filters",
+    "listing_type": "Soort advertentie",
+    "listing_type_any": "Alle soorten"
   },
   "gallery": {
     "no_images": "Geen afbeeldingen beschikbaar",
@@ -385,7 +402,8 @@
   "price": {
     "free": "Gratis",
     "contact": "Neem contact op voor prijs",
-    "negotiable": "Onderhandelbaar"
+    "negotiable": "Onderhandelbaar",
+    "lend": "Te leen"
   },
   "empty": {
     "no_listings": "Nog geen aanbiedingen",
@@ -859,5 +877,17 @@
   "my_offers_tabs_aria": "Mijn aanbiedingen secties",
   "seller_orders_tabs_aria": "Statusfilter voor verkopersorders",
   "seller_profile_tabs_aria": "Verkoperprofielsecties",
-  "category_filter_label": "Filter op categorie"
+  "category_filter_label": "Filter op categorie",
+  "borrow": {
+    "page_title": "Lenen & uitlenen",
+    "meta_description": "Leen gereedschap en apparatuur van buren, of leen die van jou uit — Marktplaats & Freecycle-items die terugkomen.",
+    "subtitle": "Gereedschap en apparatuur die je gemeenschap graag uitleent",
+    "lend_something": "Iets uitlenen",
+    "cta_title": "Ligt er gereedschap stof te vangen?",
+    "cta_description": "Leen het uit aan een buur. Zet het bij Lenen & uitlenen — jij bepaalt de voorwaarden en het komt bij je terug.",
+    "unable_to_load": "Kan de leenspullen niet laden",
+    "load_more_failed": "Kan niet meer items laden",
+    "no_items_title": "Nog niets te leen",
+    "no_items_description": "Op dit moment leent niemand iets uit. Kom later terug of wees de eerste die iets uitleent!"
+  }
 }

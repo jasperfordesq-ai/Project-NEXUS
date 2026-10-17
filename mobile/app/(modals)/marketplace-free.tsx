@@ -72,7 +72,8 @@ function MarketplaceFreeScreen() {
       setListings((current) => append ? [...current, ...response.data] : response.data);
     } catch (err) {
       if (!append) {
-        setError(err instanceof Error ? err.message : t('free.unableToLoad'));
+        // describeApiError shows the server's sentence, never an internal JS message (D/F-17).
+        setError(describeApiError(err, t('free.unableToLoad')));
       } else {
         showToast({ title: t('common:errors.alertTitle'), description: t('free.loadMoreFailed'), variant: 'danger' });
       }
@@ -162,7 +163,7 @@ function MarketplaceFreeScreen() {
             <EmptyState
               icon="gift-outline"
               title={error ?? t('free.emptyTitle')}
-              subtitle={t('free.emptySubtitle')}
+              subtitle={error ? undefined : t('free.emptySubtitle')}
               actionLabel={error ? t('common:buttons.retry') : t('free.giveAway')}
               onAction={error ? () => void fetchListings(false) : () => router.push({ pathname: '/(modals)/new-marketplace-listing', params: { price_type: 'free' } } as unknown as Href)}
             />

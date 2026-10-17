@@ -462,7 +462,11 @@ export function MyListingsPage() {
                       </p>
                     </Link>
 
-                    {listing.price != null && listing.price > 0 ? (
+                    {listing.price_type === 'lend' ? (
+                      <p className="text-sm font-bold text-accent mt-1">
+                        {t('price.lend')}
+                      </p>
+                    ) : listing.price != null && listing.price > 0 ? (
                       <p className="text-sm font-bold text-accent mt-1">
                         {formatCurrency(listing.price, listing.price_currency)}
                       </p>

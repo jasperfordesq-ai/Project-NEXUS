@@ -7,7 +7,12 @@ import { api } from '@/lib/api/client';
 import { API_V2 } from '@/lib/constants';
 import { Platform } from 'react-native';
 
-export type MarketplacePriceType = 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact';
+/**
+ * `lend` is a "borrow & lend" listing: the item is lent and comes back, never sold. The
+ * API refuses a cash or time-credit price on it, refuses posting (`shipping` / `both`),
+ * answers 422 to an order or an offer, and only serves `loan_terms` when the type is `lend`.
+ */
+export type MarketplacePriceType = 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact' | 'lend';
 export type MarketplaceCondition = 'new' | 'like_new' | 'good' | 'fair' | 'poor';
 export type MarketplaceDeliveryMethod = 'pickup' | 'shipping' | 'both' | 'community_delivery';
 
@@ -66,6 +71,8 @@ export interface MarketplaceListingItem {
   price_currency: string;
   price_type: MarketplacePriceType;
   time_credit_price?: number | null;
+  /** Plain-text borrowing conditions; only present when `price_type` is `lend` (≤500 chars). */
+  loan_terms?: string | null;
   condition: MarketplaceCondition | null;
   quantity?: number | null;
   location?: string | null;
@@ -515,6 +522,8 @@ export interface MarketplaceListingPayload {
   price_currency?: string | null;
   price_type?: MarketplacePriceType;
   time_credit_price?: number | null;
+  /** Only sent for `lend` listings; the API drops it for every other price type. */
+  loan_terms?: string | null;
   category_id?: number | null;
   condition?: MarketplaceCondition | null;
   quantity?: number | null;

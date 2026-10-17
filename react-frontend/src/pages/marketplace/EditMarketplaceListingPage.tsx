@@ -98,6 +98,7 @@ const PRICE_TYPES = [
   { value: 'fixed', tKey: 'price_type.fixed' },
   { value: 'negotiable', tKey: 'price_type.negotiable' },
   { value: 'free', tKey: 'price_type.free' },
+  { value: 'lend', tKey: 'price_type.lend' },
 ] as const;
 
 const DELIVERY_METHODS = [
@@ -105,6 +106,15 @@ const DELIVERY_METHODS = [
   { value: 'shipping', tKey: 'delivery_method.shipping' },
   { value: 'both', tKey: 'delivery_method.both' },
 ] as const;
+
+/**
+ * A lent item comes back, so it cannot be posted: the API refuses
+ * `shipping`/`both` for `price_type = lend` (422). Only collection is offered.
+ */
+const LEND_DELIVERY_METHODS = DELIVERY_METHODS.filter((dm) => dm.value === 'pickup');
+
+/** Mirrors the API's `loan_terms` max:500 rule. */
+const MAX_LOAN_TERMS_LENGTH = 500;
 
 const MAX_IMAGES = 20;
 
@@ -133,11 +143,20 @@ export function EditMarketplaceListingPage() {
   const [condition, setCondition] = useState('good');
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState(() => normalizeSupportedMarketplaceCurrency(tenant?.currency));
-  const [priceType, setPriceType] = useState('fixed');
+  const [priceType, setPriceTypeState] = useState('fixed');
+  const [loanTerms, setLoanTerms] = useState('');
+  const isLend = priceType === 'lend';
+  const hasPrice = priceType !== 'free' && !isLend;
   const [location, setLocation] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
   const [deliveryMethod, setDeliveryMethod] = useState('pickup');
+  const setPriceType = (v: string) => {
+    setPriceTypeState(v);
+    // Switching to lend while a postal option is selected would be refused by
+    // the API, so fall back to collection rather than leave a hidden invalid value.
+    if (v === 'lend') setDeliveryMethod('pickup');
+  };
   const [quantity, setQuantity] = useState('1');
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<number[]>([]);
@@ -204,7 +223,8 @@ export function EditMarketplaceListingPage() {
           listing.price_currency?.trim().toUpperCase()
             || normalizeSupportedMarketplaceCurrency(tenant?.currency),
         );
-        setPriceType(listing.price_type || 'fixed');
+        setPriceTypeState(listing.price_type || 'fixed');
+        setLoanTerms(listing.price_type === 'lend' ? (listing.loan_terms ?? '') : '');
         setLocation(listing.location || '');
         setLatitude(listing.latitude ?? undefined);
         setLongitude(listing.longitude ?? undefined);
@@ -422,8 +442,12 @@ export function EditMarketplaceListingPage() {
   const handleSubmit = useCallback(async () => {
     if (!title.trim()) { toast.error(t('create.title_required')); return; }
     if (!description.trim()) { toast.error(t('create.description_required')); return; }
-    if (priceType !== 'free' && (!price || parseFloat(price) <= 0)) {
+    if (hasPrice && (!price || parseFloat(price) <= 0)) {
       toast.error(t('create.price_invalid'));
+      return;
+    }
+    if (isLend && loanTerms.trim().length > MAX_LOAN_TERMS_LENGTH) {
+      toast.error(t('create.loan_terms_too_long', { max: MAX_LOAN_TERMS_LENGTH }));
       return;
     }
 
@@ -434,9 +458,19 @@ export function EditMarketplaceListingPage() {
         description: description.trim(),
         condition,
         price_type: priceType,
-        delivery_method: deliveryMethod,
+        // Lend listings are collected in person; the API refuses postal options.
+        delivery_method: isLend ? 'pickup' : deliveryMethod,
         quantity: parseInt(quantity) || 1,
       };
+      if (isLend) {
+        // Explicit zeros: a listing that was for sale keeps its stored price
+        // otherwise, and the API rejects a lend listing carrying any cash or
+        // time-credit price or a postal option.
+        body.price = 0;
+        body.time_credit_price = 0;
+        body.shipping_available = false;
+        body.loan_terms = loanTerms.trim() || null;
+      }
 
       // Only round-trip inventory fields that the API actually supplied, or
       // that the seller explicitly changed. Older responses omitted these
@@ -452,7 +486,7 @@ export function EditMarketplaceListingPage() {
       }
 
       if (categoryId) body.category_id = parseInt(categoryId);
-      if (priceType !== 'free' && price) body.price = parseFloat(price);
+      if (hasPrice && price) body.price = parseFloat(price);
       if (currency) body.price_currency = currency;
       if (location.trim()) body.location = location.trim();
       if (latitude !== undefined) body.latitude = latitude;
@@ -508,7 +542,7 @@ export function EditMarketplaceListingPage() {
       setIsSubmitting(false);
     }
   }, [
-    id, title, description, categoryId, condition, price, currency, priceType,
+    id, title, description, categoryId, condition, price, currency, priceType, hasPrice, isLend, loanTerms,
     location, latitude, longitude, deliveryMethod, quantity, images, removedImageIds, templateFields,
     inventoryUnlimited, inventoryCount, lowStockThreshold, oversoldProtected, loadedInventoryFields,
     toast, navigate, tenantPath, t,
@@ -858,7 +892,23 @@ export function EditMarketplaceListingPage() {
             ))}
           </RadioGroup>
 
-          {priceType !== 'free' && (
+          {isLend && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted">{t('create.lend_no_price_hint')}</p>
+              <Textarea
+                label={t('create.loan_terms_label')}
+                placeholder={t('create.loan_terms_placeholder')}
+                description={t('create.loan_terms_hint', { max: MAX_LOAN_TERMS_LENGTH, used: loanTerms.length })}
+                value={loanTerms}
+                onValueChange={setLoanTerms}
+                maxLength={MAX_LOAN_TERMS_LENGTH}
+                minRows={3}
+                maxRows={6}
+              />
+            </div>
+          )}
+
+          {hasPrice && (
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
                 label={t('create.price_label')}
@@ -926,11 +976,12 @@ export function EditMarketplaceListingPage() {
 
           <RadioGroup
             label={t('create.delivery_method_label')}
-            value={deliveryMethod}
+            value={isLend ? 'pickup' : deliveryMethod}
             onValueChange={setDeliveryMethod}
             orientation="horizontal"
+            description={isLend ? t('create.lend_delivery_hint') : undefined}
           >
-            {DELIVERY_METHODS.map((dm) => (
+            {(isLend ? LEND_DELIVERY_METHODS : DELIVERY_METHODS).map((dm) => (
               <Radio key={dm.value} value={dm.value}>
                 {t(dm.tKey)}
               </Radio>

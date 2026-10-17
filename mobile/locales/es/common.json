@@ -1,5 +1,9 @@
 {
-  "mediaRecovery": {"retry":"Reintentar subir la imagen","choose":"Elegir otra imagen","continue":"Ir al elemento guardado"},
+  "mediaRecovery": {
+    "retry": "Reintentar subir la imagen",
+    "choose": "Elegir otra imagen",
+    "continue": "Ir al elemento guardado"
+  },
   "appName": "Timebank Global",
   "attribution": "Project NEXUS es software de código abierto bajo licencia AGPL-3.0.",
   "sourceRepo": {
@@ -26,8 +30,8 @@
     "newExchangeDescription": "Publica una oferta o solicitud de intercambios de banco de tiempo.",
     "newTimebankListing": "Nuevo listado",
     "newTimebankListingDescription": "Publicar una oferta o solicitud de intercambios de banco de tiempo.",
-    "newMarketplaceListing": "Vender artículo",
-    "newMarketplaceListingDescription": "Crear un listado en el mercado con fotos, precio y entrega.",
+    "newMarketplaceListing": "Vender, regalar o prestar",
+    "newMarketplaceListingDescription": "Publica algo para vender, regalar gratis (Freecycle) o prestar a los miembros.",
     "newMessage": "Nuevo mensaje",
     "newMessageDescription": "Elija un miembro y comience un privado conversación.",
     "newEvent": "Nuevo evento",

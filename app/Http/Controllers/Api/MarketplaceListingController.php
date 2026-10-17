@@ -271,8 +271,9 @@ class MarketplaceListingController extends BaseApiController
             'tagline'            => 'nullable|string|max:300',
             'price'              => 'nullable|numeric|min:0',
             'price_currency'     => 'nullable|string|max:3',
-            'price_type'         => 'nullable|string|in:fixed,negotiable,free,auction,contact',
+            'price_type'         => 'nullable|string|in:fixed,negotiable,free,auction,contact,lend',
             'time_credit_price'  => 'nullable|numeric|min:0',
+            'loan_terms'         => 'nullable|string|max:500',
             'category_id'        => ['nullable', 'integer', $this->availableCategoryRule()],
             'condition'          => 'nullable|string|in:new,like_new,good,fair,poor',
             'quantity'           => 'nullable|integer|min:1',
@@ -352,8 +353,9 @@ class MarketplaceListingController extends BaseApiController
             'tagline'            => 'nullable|string|max:300',
             'price'              => 'nullable|numeric|min:0',
             'price_currency'     => 'nullable|string|max:3',
-            'price_type'         => 'nullable|string|in:fixed,negotiable,free,auction,contact',
+            'price_type'         => 'nullable|string|in:fixed,negotiable,free,auction,contact,lend',
             'time_credit_price'  => 'nullable|numeric|min:0',
+            'loan_terms'         => 'nullable|string|max:500',
             'category_id'        => ['nullable', 'integer', $this->availableCategoryRule()],
             'condition'          => 'nullable|string|in:new,like_new,good,fair,poor',
             'quantity'           => 'nullable|integer|min:1',
@@ -1393,7 +1395,7 @@ class MarketplaceListingController extends BaseApiController
             if (!empty($data['price_currency'])) {
                 $listingData['price_currency'] = strtoupper(substr(trim($data['price_currency']), 0, 3));
             }
-            if (!empty($data['price_type']) && in_array($data['price_type'], ['fixed', 'negotiable', 'free', 'auction', 'contact'], true)) {
+            if (!empty($data['price_type']) && in_array($data['price_type'], ['fixed', 'negotiable', 'free', 'auction', 'contact', 'lend'], true)) {
                 $listingData['price_type'] = $data['price_type'];
             }
             if (!empty($data['category_id'])) {

@@ -30,7 +30,9 @@ router.use((req, res, next) => {
   next();
 });
 
-const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact'];
+// `lend` (17 Oct 2026): "Borrow & lend" — the item is lent and comes back, never
+// sold. No price, no offers, no posting; the call to action is a message to the owner.
+const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact', 'lend'];
 const CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS = ['pickup', 'shipping', 'both', 'community_delivery'];
 const REPORT_REASONS = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
@@ -52,7 +54,8 @@ const PRICE_TYPE_KEYS = {
   fixed: 'govuk_alpha_commerce.listing_form.price_type_fixed',
   negotiable: 'govuk_alpha_commerce.listing_form.price_type_negotiable',
   free: 'govuk_alpha_commerce.listing_form.price_type_free',
-  contact: 'govuk_alpha_commerce.listing_form.price_type_contact'
+  contact: 'govuk_alpha_commerce.listing_form.price_type_contact',
+  lend: 'govuk_alpha_commerce.listing_form.price_type_lend'
 };
 const CONDITION_KEYS = {
   new: 'govuk_alpha_commerce.listing_form.condition_new',
@@ -379,7 +382,7 @@ function isNotFound(error) {
   return error instanceof ApiError && error.status === 404;
 }
 
-function renderMarketplaceError(error, res, title = 'Marketplace') {
+function renderMarketplaceError(error, res, title = 'Marketplace & Freecycle') {
   if (isAuthError(error)) {
     redirectTo(res, loginRedirect());
     return true;
@@ -542,6 +545,9 @@ function buyTotalLabel(item, quantity) {
  * buy and not.
  */
 function priceLabel(row) {
+  // A borrow & lend listing has no price at all; without this it would read "Free",
+  // which invites someone to keep it.
+  if (trimmed(row.price_type) === 'lend') return translateForRequest('govuk_alpha_commerce.common.borrow');
   const credits = decimalNumber(row.time_credit_price);
   const money = decimalNumber(row.price);
   if (credits > 0 && money > 0) {
@@ -568,6 +574,7 @@ function formatMonthYearLabel(value) {
 }
 
 function priceTagClass(row) {
+  if (trimmed(row.price_type) === 'lend') return 'govuk-tag--turquoise';
   const credits = decimalNumber(row.time_credit_price);
   const money = decimalNumber(row.price);
   if (credits <= 0 && money <= 0) return 'govuk-tag--green';
@@ -626,7 +633,7 @@ function decorateCategory(category) {
 function decorateListing(listing) {
   const row = listing && typeof listing === 'object' ? listing : {};
   const id = positiveInteger(row.id);
-  const title = trimmed(row.title) || 'Marketplace';
+  const title = trimmed(row.title) || 'Marketplace & Freecycle';
   const images = imageUrls(row);
   const seller = row.user && typeof row.user === 'object' ? row.user : {};
   const sellerId = positiveInteger(seller.id) || positiveInteger(row.user_id);
@@ -657,8 +664,13 @@ function decorateListing(listing) {
     price: row.price ?? '',
     priceCurrency: trimmed(row.price_currency || 'EUR', 3).toUpperCase() || 'EUR',
     timeCreditPrice: row.time_credit_price ?? '',
+    loanTerms: priceType === 'lend' ? stripHtml(row.loan_terms || '') : '',
+    isLend: priceType === 'lend',
     canBuy: trimmed(row.status) === 'active'
+      && priceType !== 'lend'
       && ((priceType === 'fixed' && money > 0) || priceType === 'free' || credits > 0),
+    // The API refuses offers on a lend listing (422), so do not show the button.
+    canOffer: priceType !== 'lend',
     condition,
     conditionLabel: condition ? (CONDITION_KEYS[condition] ? translateForRequest(CONDITION_KEYS[condition]) : condition) : '',
     deliveryMethod,
@@ -1595,7 +1607,7 @@ router.get('/', asyncRoute(async (req, res) => {
       loadCategories(token)
     ]);
     return res.render('marketplace/index', {
-      title: 'Marketplace',
+      title: 'Marketplace & Freecycle',
       titleKey: 'marketplace.title',
       activeNav: 'explore',
       activeTab: 'browse',

@@ -1,11 +1,11 @@
 {
-  "title": "Margadh",
-  "eyebrow": "Margadh pobail",
-  "subtitle": "Brabhsáil, díol, sábháil, agus bainistigh liostaí margadh an phobail.",
+  "title": "Margadh & Freecycle",
+  "eyebrow": "Ceannaigh, díol, bronn, faigh ar iasacht",
+  "subtitle": "Ceannaigh agus díol, tabhair rudaí uait saor in aisce (Freecycle), agus faigh nó tabhair uirlisí agus trealamh ar iasacht laistigh de do phobal.",
   "loadMore": "Lódáil tuilleadh",
   "featureGate": {
-    "title": "Níl Marketplace ar fáil",
-    "description": "Níor chumasaigh an pobal seo liostaí margadh."
+    "title": "Níl Margadh & Freecycle ar fáil",
+    "description": "Níor chumasaigh an pobal seo liostaí Margadh & Freecycle."
   },
   "actions": {
     "sell": "Díol mír",
@@ -22,7 +22,8 @@
     "search": "Cuardach ardleibhéil",
     "browse": "Brabhsáil an margadh",
     "view": "Féach",
-    "viewListing": "Féach ar mhionsonraí {{title}}"
+    "viewListing": "Féach ar mhionsonraí {{title}}",
+    "borrowLend": "Faigh & tabhair ar iasacht"
   },
   "search": {
     "placeholder": "Cuardaigh an margadh...",
@@ -41,7 +42,8 @@
       "fixed": "Praghas seasta",
       "negotiable": "Inidirbheartaithe",
       "contact": "Déan teagmháil leis an díoltóir",
-      "auction": "Ceant"
+      "auction": "Ceant",
+      "lend": "Ar iasacht"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Díoltóir",
     "save_failed": "Níorbh fhéidir na liostaí sábháilte a nuashonrú.",
     "timeCreditsPrice": "{{count}} creidmheas ama",
-    "timeCreditsPrice_one": "{{count}} chreidmheas ama"
+    "timeCreditsPrice_one": "{{count}} chreidmheas ama",
+    "borrow": "Ar iasacht"
   },
   "priceType": {
     "fixed": "Praghas seasta",
     "negotiable": "Soshannta",
     "free": "Saor",
     "auction": "Ceant",
-    "contact": "Déan teagmháil leis an díoltóir"
+    "contact": "Déan teagmháil leis an díoltóir",
+    "lend": "Faigh & tabhair ar iasacht"
   },
   "condition": {
     "new": "Nua",
@@ -213,7 +217,17 @@
     "validation": "Bailíochtú",
     "required": "Tá teideal agus cur síos riachtanach.",
     "loadFailed": "Níorbh fhéidir an liostú seo a lódáil.",
-    "saveFailed": "Níorbh fhéidir an liostú seo a shábháil."
+    "saveFailed": "Níorbh fhéidir an liostú seo a shábháil.",
+    "priceTypeLend": "Tabhair / faigh ar iasacht (tagann an mhír ar ais)",
+    "createLendTitle": "Tabhair mír ar iasacht",
+    "lendSubtitle": "Tairg uirlis nó píosa trealaimh is féidir le baill a fháil ar iasacht agus a thabhairt ar ais. Ní dhíoltar ná ní íoctar as aon rud.",
+    "lendTitlePlaceholder": "Cad atá á thabhairt ar iasacht agat?",
+    "loanTerms": "Coinníollacha iasachta (roghnach)",
+    "loanTermsPlaceholder": "Cá fhad is féidir é a choinneáil, aon éarlais, agus conas é a thabhairt ar ais.",
+    "loanTermsHint": "{{remaining}} carachtar fágtha",
+    "loanTermsTooLong": "Coinnigh na coinníollacha iasachta faoi bhun {{max}} carachtar.",
+    "lendDeliveryHint": "Bailítear míreanna ar iasacht nó tugann teachtaire pobail leis iad; ní féidir iad a sheoladh sa phost.",
+    "footerMissingTitle": "Cuir teideal leis sula bhfoilseoidh tú."
   },
   "owner": {
     "title": "Uirlisí díoltóra",
@@ -1052,7 +1066,8 @@
       "price_asc": "Praghas íseal go hard",
       "price_desc": "Praghas ard go híseal",
       "popular": "Coitianta"
-    }
+    },
+    "listingType": "Cineál liosta"
   },
   "shipping": {
     "eyebrow": "Comhlíonadh an díoltóra",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "Níorbh fhéidir roinnt catagóirí ná liostaí faoi thrácht sa mhargadh a lódáil. Bain triail eile as.",
     "unable_to_load": "Níorbh fhéidir liostaí an mhargaidh a lódáil.",
     "load_more_failed": "Níorbh fhéidir tuilleadh liostaí a lódáil."
+  },
+  "borrow": {
+    "eyebrow": "Faigh & tabhair ar iasacht",
+    "title": "Faigh & tabhair ar iasacht",
+    "subtitle": "Uirlisí agus trealamh atá baill sásta a thabhairt ar iasacht. Iarr iasacht, socraigh na sonraí trí theachtaireacht, agus tabhair ar ais é nuair a bheidh tú críochnaithe.",
+    "lendSomething": "Tabhair rud éigin ar iasacht",
+    "unableToLoad": "Níorbh fhéidir na míreanna ar iasacht a lódáil.",
+    "loadMoreFailed": "Níorbh fhéidir tuilleadh míreanna ar iasacht a lódáil.",
+    "emptyTitle": "Níl aon rud le fáil ar iasacht fós",
+    "emptySubtitle": "Nuair a thairgfidh baill uirlisí nó trealamh ar iasacht, beidh siad le feiceáil anseo.",
+    "askToBorrow": "Iarr ar iasacht",
+    "termsTitle": "Coinníollacha iasachta",
+    "termsMissing": "Níor chuir an t-úinéir coinníollacha iasachta leis. Fiafraigh díobh i do theachtaireacht.",
+    "howItWorks": "Níl aon rud le híoc anseo: seol teachtaireacht chuig an úinéir chun a shocrú cá fhad is féidir leat é a choinneáil agus conas é a bhailiú agus a thabhairt ar ais."
   }
 }

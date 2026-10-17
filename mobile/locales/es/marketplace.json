@@ -1,11 +1,11 @@
 {
-  "title": "Mercado",
-  "eyebrow": "Mercado comunitario",
-  "subtitle": "Explore, venda, guarde y administre listados de mercados comunitarios.",
+  "title": "Mercado & Freecycle",
+  "eyebrow": "Compra, vende, regala, presta",
+  "subtitle": "Compra y vende, regala cosas gratis (Freecycle) y pide prestadas o presta herramientas y equipos dentro de tu comunidad.",
   "loadMore": "Cargar más",
   "featureGate": {
-    "title": "El mercado no está disponible",
-    "description": "Esta comunidad no ha habilitado listados de mercados."
+    "title": "Mercado & Freecycle no está disponible",
+    "description": "Esta comunidad no ha habilitado los anuncios de Mercado & Freecycle."
   },
   "actions": {
     "sell": "Vender artículo",
@@ -22,7 +22,8 @@
     "search": "Búsqueda avanzada",
     "browse": "Buscar mercado",
     "view": "Ver",
-    "viewListing": "Ver detalles de {{title}}"
+    "viewListing": "Ver detalles de {{title}}",
+    "borrowLend": "Pedir y prestar"
   },
   "search": {
     "placeholder": "Buscar en el mercado...",
@@ -41,7 +42,8 @@
       "fixed": "Precio fijo",
       "negotiable": "Negociable",
       "contact": "Contactar al vendedor",
-      "auction": "Subasta"
+      "auction": "Subasta",
+      "lend": "En préstamo"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Vendedor",
     "save_failed": "No se pudieron actualizar los listados guardados.",
     "timeCreditsPrice": "{{count}} créditos de tiempo",
-    "timeCreditsPrice_one": "{{count}} crédito de tiempo"
+    "timeCreditsPrice_one": "{{count}} crédito de tiempo",
+    "borrow": "En préstamo"
   },
   "priceType": {
     "fixed": "Precio fijo",
     "negotiable": "Negociable",
     "free": "Gratis",
     "auction": "Subasta",
-    "contact": "Contactar al vendedor"
+    "contact": "Contactar al vendedor",
+    "lend": "Pedir y prestar"
   },
   "condition": {
     "new": "Nuevo",
@@ -213,7 +217,17 @@
     "validation": "Validación",
     "required": "El título y la descripción son obligatorios.",
     "loadFailed": "No se pudo cargar este listado.",
-    "saveFailed": "No se pudo guardar este listado."
+    "saveFailed": "No se pudo guardar este listado.",
+    "priceTypeLend": "Prestar / pedir prestado (el artículo se devuelve)",
+    "createLendTitle": "Prestar un artículo",
+    "lendSubtitle": "Ofrece una herramienta o un equipo para que los miembros lo pidan prestado y lo devuelvan. No se vende ni se paga nada.",
+    "lendTitlePlaceholder": "¿Qué vas a prestar?",
+    "loanTerms": "Condiciones del préstamo (opcional)",
+    "loanTermsPlaceholder": "Cuánto tiempo se puede tener, si hay depósito y cómo devolverlo.",
+    "loanTermsHint": "Quedan {{remaining}} caracteres",
+    "loanTermsTooLong": "Las condiciones del préstamo deben tener menos de {{max}} caracteres.",
+    "lendDeliveryHint": "Los artículos prestados se recogen o los lleva un mensajero de la comunidad; no se pueden enviar por correo.",
+    "footerMissingTitle": "Añade un título antes de publicar."
   },
   "owner": {
     "title": "Herramientas del vendedor",
@@ -1052,7 +1066,8 @@
       "price_asc": "Precio de menor a mayor",
       "price_desc": "Precio de mayor a menor",
       "popular": "Popular"
-    }
+    },
+    "listingType": "Tipo de anuncio"
   },
   "shipping": {
     "eyebrow": "Vendedor cumplimiento",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "No se pudieron cargar algunas categorías o publicaciones destacadas del mercado. Inténtalo de nuevo.",
     "unable_to_load": "No se pudieron cargar listados de mercado.",
     "load_more_failed": "No se pudieron cargar más listados."
+  },
+  "borrow": {
+    "eyebrow": "Pedir y prestar",
+    "title": "Pedir y prestar",
+    "subtitle": "Herramientas y equipos que los miembros prestan con gusto. Pide prestado, acuerda los detalles por mensaje y devuélvelo cuando termines.",
+    "lendSomething": "Prestar algo",
+    "unableToLoad": "No se pudieron cargar los artículos en préstamo.",
+    "loadMoreFailed": "No se pudieron cargar más artículos en préstamo.",
+    "emptyTitle": "Todavía no hay nada para pedir prestado",
+    "emptySubtitle": "Cuando los miembros ofrezcan herramientas o equipos en préstamo, aparecerán aquí.",
+    "askToBorrow": "Pedir prestado",
+    "termsTitle": "Condiciones del préstamo",
+    "termsMissing": "El propietario no ha añadido condiciones de préstamo. Pregúntale al escribirle.",
+    "howItWorks": "Aquí no se paga nada: escribe al propietario para acordar cuánto tiempo puedes tenerlo y cómo recogerlo y devolverlo."
   }
 }

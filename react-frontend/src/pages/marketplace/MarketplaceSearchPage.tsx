@@ -74,6 +74,14 @@ const SORT_OPTIONS = [
   { value: 'popular' },
 ];
 
+/** Listing types the browse endpoint accepts as a single `price_type` filter. */
+const PRICE_TYPE_OPTIONS = [
+  { value: 'fixed' },
+  { value: 'negotiable' },
+  { value: 'free' },
+  { value: 'lend' },
+] as const;
+
 const POSTED_WITHIN_OPTIONS = [
   { value: '', tKey: 'filters.posted_any_time' },
   { value: '1', tKey: 'filters.posted_today' },
@@ -105,6 +113,8 @@ export function MarketplaceSearchPage() {
   );
   const [sellerType, setSellerType] = useState(searchParams.get('seller_type') || '');
   const [deliveryMethod, setDeliveryMethod] = useState(searchParams.get('delivery_method') || '');
+  // Listing type (`price_type`): for sale, negotiable, free (Freecycle) or borrow & lend.
+  const [priceType, setPriceType] = useState(searchParams.get('price_type') || '');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest');
   const [postedWithin, setPostedWithin] = useState(searchParams.get('posted_within') || '');
   const [showFilters, setShowFilters] = useState(false);
@@ -174,6 +184,7 @@ export function MarketplaceSearchPage() {
       if (selectedConditions.length > 0) params.set('condition', selectedConditions.join(','));
       if (sellerType) params.set('seller_type', sellerType);
       if (deliveryMethod) params.set('delivery_method', deliveryMethod);
+      if (priceType) params.set('price_type', priceType);
       if (sortBy !== 'newest') params.set('sort', sortBy);
       if (postedWithin) params.set('posted_within', postedWithin);
       params.set('limit', String(ITEMS_PER_PAGE));
@@ -212,14 +223,14 @@ export function MarketplaceSearchPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, sortBy, postedWithin, toast, t])
+  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, priceType, sortBy, postedWithin, toast, t])
 
   // Refetch on filter change
   useEffect(() => {
     cursorRef.current = null;
     setHasMore(true);
     loadListings();
-  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, sortBy, postedWithin]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, priceType, sortBy, postedWithin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync URL
   useEffect(() => {
@@ -231,10 +242,11 @@ export function MarketplaceSearchPage() {
     if (selectedConditions.length > 0) params.set('condition', selectedConditions.join(','));
     if (sellerType) params.set('seller_type', sellerType);
     if (deliveryMethod) params.set('delivery_method', deliveryMethod);
+    if (priceType) params.set('price_type', priceType);
     if (sortBy !== 'newest') params.set('sort', sortBy);
     if (postedWithin) params.set('posted_within', postedWithin);
     setSearchParams(params, { replace: true });
-  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, sortBy, postedWithin, setSearchParams]);
+  }, [debouncedQuery, categoryId, priceMin, priceMax, selectedConditions, sellerType, deliveryMethod, priceType, sortBy, postedWithin, setSearchParams]);
 
   // Count active filters
   const activeFilterCount = [
@@ -244,6 +256,7 @@ export function MarketplaceSearchPage() {
     selectedConditions.length > 0 ? 'yes' : '',
     sellerType,
     deliveryMethod,
+    priceType,
     postedWithin,
   ].filter(Boolean).length;
 
@@ -261,6 +274,7 @@ export function MarketplaceSearchPage() {
       }
       if (tagKey === 'seller') setSellerType('');
       if (tagKey === 'delivery') setDeliveryMethod('');
+      if (tagKey === 'price_type') setPriceType('');
       if (tagKey === 'posted') setPostedWithin('');
     });
   };
@@ -273,6 +287,7 @@ export function MarketplaceSearchPage() {
     setSelectedConditions([]);
     setSellerType('');
     setDeliveryMethod('');
+    setPriceType('');
     setSortBy('newest');
     setPostedWithin('');
   };
@@ -399,6 +414,24 @@ export function MarketplaceSearchPage() {
         >
           <SelectItem key="private" id="private">{t('search.private')}</SelectItem>
           <SelectItem key="business" id="business">{t('search.business')}</SelectItem>
+        </Select>
+      </div>
+
+      {/* Listing type (price_type) */}
+      <div>
+        <Select
+          label={t('filters.listing_type')}
+          placeholder={t('filters.listing_type_any')}
+          selectedKeys={priceType ? [priceType] : []}
+          onSelectionChange={(keys) => {
+            const selected = Array.from(keys)[0];
+            setPriceType(selected ? String(selected) : '');
+          }}
+          size="sm"
+        >
+          {PRICE_TYPE_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} id={opt.value}>{t(`price_type.${opt.value}`)}</SelectItem>
+          ))}
         </Select>
       </div>
 
@@ -556,6 +589,11 @@ export function MarketplaceSearchPage() {
               {deliveryMethod && (
                 <Tag id="delivery" textValue={t(`delivery_method.${deliveryMethod}`)}>
                   {t(`delivery_method.${deliveryMethod}`)}
+                </Tag>
+              )}
+              {priceType && (
+                <Tag id="price_type" textValue={t(`price_type.${priceType}`)}>
+                  {t(`price_type.${priceType}`)}
                 </Tag>
               )}
               {postedWithin && (

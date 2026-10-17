@@ -89,6 +89,8 @@ interface MarketplaceListingDraft {
   condition: string;
   priceType: string;
   price: string;
+  /** Borrow & lend only. Optional even then; absent from drafts saved before it existed. */
+  loanTerms?: string;
 }
 
 const CONDITIONS = [
@@ -103,6 +105,7 @@ const PRICE_TYPES = [
   { value: 'fixed', tKey: 'price_type.fixed' },
   { value: 'negotiable', tKey: 'price_type.negotiable' },
   { value: 'free', tKey: 'price_type.free' },
+  { value: 'lend', tKey: 'price_type.lend' },
 ] as const;
 
 const DELIVERY_METHODS = [
@@ -110,6 +113,15 @@ const DELIVERY_METHODS = [
   { value: 'shipping', tKey: 'delivery_method.shipping' },
   { value: 'both', tKey: 'delivery_method.both' },
 ] as const;
+
+/**
+ * A lent item comes back, so it cannot be posted: the API refuses
+ * `shipping`/`both` for `price_type = lend` (422). Only collection is offered.
+ */
+const LEND_DELIVERY_METHODS = DELIVERY_METHODS.filter((dm) => dm.value === 'pickup');
+
+/** Mirrors the API's `loan_terms` max:500 rule. */
+const MAX_LOAN_TERMS_LENGTH = 500;
 
 const MAX_IMAGES = 20;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -132,7 +144,7 @@ export function CreateMarketplaceListingPage() {
   const [draft, setDraft, clearDraft] = useDraftPersistence<MarketplaceListingDraft>(
     // F-109: drafts belong to one member of one community.
     userScopedStorageKey('marketplace-listing-draft', tenant?.id, user?.id),
-    { title: '', description: '', categoryId: '', condition: 'good', priceType: 'fixed', price: '' },
+    { title: '', description: '', categoryId: '', condition: 'good', priceType: 'fixed', price: '', loanTerms: '' },
   );
   const title = draft.title;
   const description = draft.description;
@@ -140,6 +152,9 @@ export function CreateMarketplaceListingPage() {
   const condition = draft.condition;
   const priceType = draft.priceType;
   const price = draft.price;
+  const loanTerms = draft.loanTerms ?? '';
+  const isLend = priceType === 'lend';
+  const hasPrice = priceType !== 'free' && !isLend;
   // An unsupported or missing bootstrap value stays empty so the backend can
   // apply its authoritative tenant-currency default instead of sending EUR.
   const [currency, setCurrency] = useState(() => normalizeSupportedMarketplaceCurrency(tenant?.currency));
@@ -148,12 +163,18 @@ export function CreateMarketplaceListingPage() {
   const setDescription = useCallback((v: string) => setDraft((prev) => ({ ...prev, description: v })), [setDraft]);
   const setCategoryId = (v: string) => setDraft((prev) => ({ ...prev, categoryId: v }));
   const setCondition = (v: string) => setDraft((prev) => ({ ...prev, condition: v }));
-  const setPriceType = (v: string) => setDraft((prev) => ({ ...prev, priceType: v }));
   const setPrice = (v: string) => setDraft((prev) => ({ ...prev, price: v }));
+  const setLoanTerms = (v: string) => setDraft((prev) => ({ ...prev, loanTerms: v }));
   const [location, setLocation] = useState('');
   const [latitude, setLatitude] = useState<number | undefined>();
   const [longitude, setLongitude] = useState<number | undefined>();
   const [deliveryMethod, setDeliveryMethod] = useState('pickup');
+  const setPriceType = (v: string) => {
+    setDraft((prev) => ({ ...prev, priceType: v }));
+    // Switching to lend while a postal option is selected would be refused by
+    // the API, so fall back to collection rather than leave a hidden invalid value.
+    if (v === 'lend') setDeliveryMethod('pickup');
+  };
   const [quantity, setQuantity] = useState('1');
   const [images, setImages] = useState<ImagePreview[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -343,8 +364,12 @@ export function CreateMarketplaceListingPage() {
     // Validation
     if (!title.trim()) { toast.error(t('create.title_required')); return; }
     if (!description.trim()) { toast.error(t('create.description_required')); return; }
-    if (priceType !== 'free' && (!price || parseFloat(price) <= 0)) {
+    if (hasPrice && (!price || parseFloat(price) <= 0)) {
       toast.error(t('create.price_invalid'));
+      return;
+    }
+    if (isLend && loanTerms.trim().length > MAX_LOAN_TERMS_LENGTH) {
+      toast.error(t('create.loan_terms_too_long', { max: MAX_LOAN_TERMS_LENGTH }));
       return;
     }
 
@@ -356,13 +381,22 @@ export function CreateMarketplaceListingPage() {
         description: description.trim(),
         condition,
         price_type: priceType,
-        delivery_method: deliveryMethod,
+        // Lend listings are collected in person; the API refuses postal options.
+        delivery_method: isLend ? 'pickup' : deliveryMethod,
         quantity: parseInt(quantity) || 1,
         status: 'active',
       };
 
       if (categoryId) body.category_id = parseInt(categoryId);
-      if (priceType !== 'free' && price) body.price = parseFloat(price);
+      if (hasPrice && price) body.price = parseFloat(price);
+      if (isLend) {
+        // Explicit zeros: the API rejects a lend listing that carries any
+        // cash or time-credit price, and nothing may be posted.
+        body.price = 0;
+        body.time_credit_price = 0;
+        body.shipping_available = false;
+        body.loan_terms = loanTerms.trim() || null;
+      }
       if (currency) body.price_currency = currency;
       if (location.trim()) body.location = location.trim();
       if (latitude !== undefined) body.latitude = latitude;
@@ -423,7 +457,7 @@ export function CreateMarketplaceListingPage() {
       setIsSubmitting(false);
     }
   }, [
-    title, description, categoryId, condition, price, currency, priceType,
+    title, description, categoryId, condition, price, currency, priceType, hasPrice, isLend, loanTerms,
     location, latitude, longitude, deliveryMethod, quantity, images, templateFields,
     clearDraft, t, toast, navigate, tenantPath, videoFile, videoPreviewUrl,
   ]);
@@ -754,7 +788,23 @@ export function CreateMarketplaceListingPage() {
             ))}
           </RadioGroup>
 
-          {priceType !== 'free' && (
+          {isLend && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted">{t('create.lend_no_price_hint')}</p>
+              <Textarea
+                label={t('create.loan_terms_label')}
+                placeholder={t('create.loan_terms_placeholder')}
+                description={t('create.loan_terms_hint', { max: MAX_LOAN_TERMS_LENGTH, used: loanTerms.length })}
+                value={loanTerms}
+                onValueChange={setLoanTerms}
+                maxLength={MAX_LOAN_TERMS_LENGTH}
+                minRows={3}
+                maxRows={6}
+              />
+            </div>
+          )}
+
+          {hasPrice && (
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input
                 label={t('create.price_label')}
@@ -817,11 +867,12 @@ export function CreateMarketplaceListingPage() {
 
           <RadioGroup
             label={t('create.delivery_method_label')}
-            value={deliveryMethod}
+            value={isLend ? 'pickup' : deliveryMethod}
             onValueChange={setDeliveryMethod}
             orientation="horizontal"
+            description={isLend ? t('create.lend_delivery_hint') : undefined}
           >
-            {DELIVERY_METHODS.map((dm) => (
+            {(isLend ? LEND_DELIVERY_METHODS : DELIVERY_METHODS).map((dm) => (
               <Radio key={dm.value} value={dm.value}>
                 {t(dm.tKey)}
               </Radio>

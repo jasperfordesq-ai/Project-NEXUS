@@ -966,6 +966,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('marketplace:free.title') }}
       />
       <Stack.Screen
+        name="(modals)/marketplace-borrow"
+        options={{ ...modalOptions, headerShown: false, title: t('marketplace:borrow.title') }}
+      />
+      <Stack.Screen
         name="(modals)/marketplace-category"
         options={{ ...modalOptions, headerShown: false, title: t('marketplace:category.title') }}
       />

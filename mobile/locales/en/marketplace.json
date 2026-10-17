@@ -1,11 +1,11 @@
 {
-  "title": "Marketplace",
-  "eyebrow": "Community marketplace",
-  "subtitle": "Browse, sell, save, and manage community marketplace listings.",
+  "title": "Marketplace & Freecycle",
+  "eyebrow": "Buy, sell, give away, borrow",
+  "subtitle": "Buy and sell, give things away for free (Freecycle), and borrow or lend tools and equipment within your community.",
   "loadMore": "Load more",
   "featureGate": {
-    "title": "Marketplace is not available",
-    "description": "This community has not enabled marketplace listings."
+    "title": "Marketplace & Freecycle is not available",
+    "description": "This community has not enabled Marketplace & Freecycle listings."
   },
   "actions": {
     "sell": "Sell item",
@@ -22,7 +22,8 @@
     "search": "Advanced search",
     "browse": "Browse marketplace",
     "view": "View",
-    "viewListing": "View details for {{title}}"
+    "viewListing": "View details for {{title}}",
+    "borrowLend": "Borrow & lend"
   },
   "search": {
     "placeholder": "Search marketplace...",
@@ -41,7 +42,8 @@
       "fixed": "Fixed price",
       "negotiable": "Negotiable",
       "contact": "Contact seller",
-      "auction": "Auction"
+      "auction": "Auction",
+      "lend": "Borrow"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Seller",
     "save_failed": "Could not update saved listings.",
     "timeCreditsPrice": "{{count}} time credits",
-    "timeCreditsPrice_one": "{{count}} time credit"
+    "timeCreditsPrice_one": "{{count}} time credit",
+    "borrow": "Borrow"
   },
   "priceType": {
     "fixed": "Fixed price",
     "negotiable": "Negotiable",
     "free": "Free",
     "auction": "Auction",
-    "contact": "Contact seller"
+    "contact": "Contact seller",
+    "lend": "Borrow & lend"
   },
   "condition": {
     "new": "New",
@@ -213,7 +217,17 @@
     "validation": "Validation",
     "required": "Title and description are required.",
     "loadFailed": "Could not load this listing.",
-    "saveFailed": "Could not save this listing."
+    "saveFailed": "Could not save this listing.",
+    "priceTypeLend": "Lend / borrow (item comes back)",
+    "createLendTitle": "Lend an item",
+    "lendSubtitle": "Offer a tool or piece of equipment for members to borrow and return. Nothing is sold or paid for.",
+    "lendTitlePlaceholder": "What are you lending?",
+    "loanTerms": "Loan terms (optional)",
+    "loanTermsPlaceholder": "How long it can be borrowed, any deposit, and how to return it.",
+    "loanTermsHint": "{{remaining}} characters left",
+    "loanTermsTooLong": "Keep the loan terms under {{max}} characters.",
+    "lendDeliveryHint": "Borrowed items are collected or brought by a community courier; they cannot be posted.",
+    "footerMissingTitle": "Add a title before publishing."
   },
   "owner": {
     "title": "Seller tools",
@@ -1052,7 +1066,8 @@
       "price_asc": "Price low to high",
       "price_desc": "Price high to low",
       "popular": "Popular"
-    }
+    },
+    "listingType": "Listing type"
   },
   "shipping": {
     "eyebrow": "Seller fulfilment",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "Some marketplace categories or featured listings could not be loaded. Try again.",
     "unable_to_load": "Could not load marketplace listings.",
     "load_more_failed": "Could not load more listings."
+  },
+  "borrow": {
+    "eyebrow": "Borrow & lend",
+    "title": "Borrow & lend",
+    "subtitle": "Tools and equipment members are happy to lend. Ask to borrow, agree the details by message, and return it when you are done.",
+    "lendSomething": "Lend something",
+    "unableToLoad": "Could not load items to borrow.",
+    "loadMoreFailed": "Could not load more items to borrow.",
+    "emptyTitle": "Nothing to borrow yet",
+    "emptySubtitle": "When members offer tools or equipment to lend, they will appear here.",
+    "askToBorrow": "Ask to borrow",
+    "termsTitle": "Borrowing conditions",
+    "termsMissing": "The owner has not added borrowing conditions. Ask about them when you message.",
+    "howItWorks": "Nothing to pay here: message the owner to agree how long you can borrow it and how to collect and return it."
   }
 }

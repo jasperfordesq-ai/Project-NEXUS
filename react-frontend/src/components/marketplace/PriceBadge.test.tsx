@@ -26,6 +26,26 @@ describe('PriceBadge — free', () => {
   });
 });
 
+describe('PriceBadge — lend', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('renders the borrow chip for a lend listing', () => {
+    render(<PriceBadge price={null} currency="EUR" priceType="lend" />);
+    expect(screen.getByText(/borrow/i)).toBeInTheDocument();
+  });
+
+  it('never shows a price amount for a lend listing, even if one is supplied', () => {
+    render(<PriceBadge price={10} currency="EUR" priceType="lend" />);
+    expect(screen.queryByText(/10/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/free/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the borrow chip in overlay mode', () => {
+    render(<PriceBadge price={null} currency="EUR" priceType="lend" isOverlay />);
+    expect(screen.getByText(/borrow/i)).toBeInTheDocument();
+  });
+});
+
 describe('PriceBadge — contact', () => {
   beforeEach(() => vi.clearAllMocks());
 

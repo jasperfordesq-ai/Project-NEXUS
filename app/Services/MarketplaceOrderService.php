@@ -366,6 +366,10 @@ class MarketplaceOrderService
                         // choose, so older clients may safely omit this hint.
                         $requestedPaymentMethod = 'time_credits';
                     }
+                    if ($priceType === 'lend') {
+                        // Borrow & lend: the item is never sold. Borrowers message the owner.
+                        throw new \InvalidArgumentException(__('api.marketplace_lend_listing_not_for_sale'));
+                    }
                     if (! in_array($priceType, ['fixed', 'free'], true)) {
                         throw new \InvalidArgumentException(__('api.marketplace_listing_offer_purchase_required'));
                     }

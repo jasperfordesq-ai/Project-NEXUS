@@ -2993,7 +2993,7 @@ return [
         ],
     ],
     'marketplace' => [
-        'title' => 'Mercado',
+        'title' => 'Mercado & Freecycle',
         'caption' => ':community',
         'description' => 'Compre, venda e troque bens e serviços com a sua comunidade.',
         'empty' => 'Ainda não há nada no mercado.',

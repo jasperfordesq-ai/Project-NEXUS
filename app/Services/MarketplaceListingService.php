@@ -656,6 +656,7 @@ class MarketplaceListingService
                 $listing->price_currency = $data['price_currency'] ?? strtoupper(TenantContext::getCurrency());
                 $listing->price_type = $data['price_type'] ?? 'fixed';
                 $listing->time_credit_price = $data['time_credit_price'] ?? null;
+                $listing->loan_terms = $data['loan_terms'] ?? null;
                 $listing->category_id = $data['category_id'] ?? null;
                 $listing->condition = $data['condition'] ?? null;
                 $listing->quantity = $data['quantity'] ?? 1;
@@ -793,7 +794,7 @@ class MarketplaceListingService
 
         $fillable = [
             'title', 'description', 'tagline', 'price', 'price_currency',
-            'price_type', 'time_credit_price', 'category_id', 'condition',
+            'price_type', 'time_credit_price', 'loan_terms', 'category_id', 'condition',
             'quantity', 'inventory_count', 'low_stock_threshold', 'is_oversold_protected',
             'location', 'latitude', 'longitude',
             'shipping_available', 'local_pickup', 'delivery_method',
@@ -814,6 +815,7 @@ class MarketplaceListingService
             'price_currency',
             'price_type',
             'time_credit_price',
+            'loan_terms',
             'category_id',
             'condition',
             'quantity',
@@ -1219,6 +1221,7 @@ class MarketplaceListingService
             'time_credit_price' => $listing->time_credit_price !== null
                 ? (float) $listing->time_credit_price
                 : null,
+            'loan_terms' => $listing->price_type === 'lend' ? $listing->loan_terms : null,
             'condition' => $listing->condition,
             'location' => $listing->location,
             'delivery_method' => $listing->delivery_method,
@@ -1280,6 +1283,7 @@ class MarketplaceListingService
             'time_credit_price' => $listing->time_credit_price !== null
                 ? (float) $listing->time_credit_price
                 : null,
+            'loan_terms' => $listing->price_type === 'lend' ? $listing->loan_terms : null,
             'category' => $listing->category ? [
                 'id' => $listing->category->id,
                 'name' => $listing->category->name,
@@ -1449,6 +1453,20 @@ class MarketplaceListingService
             && $priceType === 'free'
             && ! MarketplaceConfigurationService::allowFreeItems()) {
             throw new \InvalidArgumentException(__('api.marketplace_free_items_disabled'));
+        }
+
+        // A "borrow & lend" listing is never for sale: it carries no cash or
+        // time-credit price, and nothing may be posted or stocked. The owner's
+        // conditions live in loan_terms (optional, plain text).
+        if ($priceType === 'lend') {
+            $cash = (float) ($data['price'] ?? ($isCreate ? 0 : ($existing?->price ?? 0)));
+            $credits = (float) ($data['time_credit_price'] ?? ($isCreate ? 0 : ($existing?->time_credit_price ?? 0)));
+            if ($cash > 0 || $credits > 0) {
+                throw new \InvalidArgumentException(__('api.marketplace_lend_listing_has_price'));
+            }
+            if (($data['shipping_available'] ?? false) || in_array($data['delivery_method'] ?? '', ['shipping', 'both'], true)) {
+                throw new \InvalidArgumentException(__('api.marketplace_lend_listing_no_shipping'));
+            }
         }
 
         $sellerType = (string) ($data['seller_type'] ?? $existing?->seller_type ?? 'private');

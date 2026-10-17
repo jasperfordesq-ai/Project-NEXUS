@@ -6,7 +6,9 @@
 /**
  * MarketplaceFacetedSearch - Filter sidebar for marketplace browse
  *
- * Provides category, price range, condition, seller type, delivery method, * sort, and time-posted filters. Collapsible on mobile via HeroUI Accordion.
+ * Provides category, price range, condition, listing type (for sale / free /
+ * borrow & lend), seller type, delivery method, sort, and time-posted filters.
+ * Collapsible on mobile via HeroUI Accordion.
  */
 
 import { useState, useCallback } from 'react';
@@ -35,6 +37,14 @@ const CONDITION_OPTIONS = [
   { value: 'good' },
   { value: 'fair' },
   { value: 'poor' },
+] as const;
+
+/** Listing types the browse endpoint accepts as a single `price_type` filter. */
+const PRICE_TYPE_OPTIONS = [
+  { value: 'fixed' },
+  { value: 'negotiable' },
+  { value: 'free' },
+  { value: 'lend' },
 ] as const;
 
 const SORT_OPTIONS = [
@@ -153,6 +163,25 @@ export function MarketplaceFacetedSearch({
             </Checkbox>
           ))}
         </CheckboxGroup>
+      </div>
+
+      {/* Listing type (price_type) */}
+      <div>
+        <RadioGroup
+          label={t('filters.listing_type')}
+          size="sm"
+          value={localFilters.price_type ?? 'all'}
+          onValueChange={(value) =>
+            updateFilter('price_type', value === 'all' ? undefined : value)
+          }
+        >
+          <Radio value="all">{t('filters.listing_type_any')}</Radio>
+          {PRICE_TYPE_OPTIONS.map((opt) => (
+            <Radio key={opt.value} value={opt.value}>
+              {t(`price_type.${opt.value}`)}
+            </Radio>
+          ))}
+        </RadioGroup>
       </div>
 
       {/* Seller type */}

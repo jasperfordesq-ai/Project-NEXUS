@@ -244,10 +244,11 @@
   "job_pipeline": "Conduttura",
   "job_bias_audit": "Controllo dei pregiudizi",
   "job_templates": "Modelli",
-  "marketplace": "Mercato",
+  "marketplace": "Mercato & Freecycle",
   "marketplace_dashboard": "Pannello di controllo",
   "marketplace_moderation": "Moderazione",
   "marketplace_sellers": "Venditori",
+  "marketplace_categories": "Categorie",
   "feature_flags": "Flag di funzionalità",
   "secrets_vault": "Deposito di segreti",
   "module_configuration": "Configurazione del modulo",
@@ -686,7 +687,19 @@
       "Package": "Pacchetto",
       "Home": "Home",
       "Lightbulb": "Idea",
-      "Puzzle": "Puzzle"
+      "Puzzle": "Puzzle",
+      "Smartphone": "Smartphone",
+      "Armchair": "Poltrona",
+      "Shirt": "Camicia",
+      "Car": "Auto",
+      "Bike": "Bicicletta",
+      "Gamepad2": "Controller di gioco",
+      "Baby": "Bambino",
+      "Dog": "Cane",
+      "Briefcase": "Valigetta",
+      "Palette": "Tavolozza",
+      "UtensilsCrossed": "Posate",
+      "Hammer": "Martello"
     }
   },
   "visibility_rules": {

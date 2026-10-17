@@ -244,10 +244,11 @@
   "job_pipeline": "Pipeline",
   "job_bias_audit": "Audit de biais",
   "job_templates": "Modèles",
-  "marketplace": "Marché",
+  "marketplace": "Marché & Freecycle",
   "marketplace_dashboard": "Tableau de bord",
   "marketplace_moderation": "Modération",
   "marketplace_sellers": "Vendeurs",
+  "marketplace_categories": "Catégories",
   "feature_flags": "Indicateurs de fonctionnalités",
   "secrets_vault": "Coffre à secrets",
   "module_configuration": "Configuration des modules",
@@ -686,7 +687,19 @@
       "FileText": "Document",
       "Cookie": "Cookies",
       "Mic": "Microphone",
-      "Puzzle": "Puzzle"
+      "Puzzle": "Puzzle",
+      "Smartphone": "Smartphone",
+      "Armchair": "Fauteuil",
+      "Shirt": "Chemise",
+      "Car": "Voiture",
+      "Bike": "Vélo",
+      "Gamepad2": "Manette de jeu",
+      "Baby": "Bébé",
+      "Dog": "Chien",
+      "Briefcase": "Mallette",
+      "Palette": "Palette",
+      "UtensilsCrossed": "Couverts",
+      "Hammer": "Marteau"
     }
   },
   "visibility_rules": {

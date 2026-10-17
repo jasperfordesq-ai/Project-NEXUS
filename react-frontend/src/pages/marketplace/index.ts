@@ -18,3 +18,5 @@ export { BuyerOrdersPage } from './BuyerOrdersPage';
 export { SellerOrdersPage } from './SellerOrdersPage';
 export { StripeOnboardingPage } from './StripeOnboardingPage';
 export { MerchantOnboardingPage } from './MerchantOnboardingPage';
+export { FreeItemsPage } from './FreeItemsPage';
+export { BorrowLendPage } from './BorrowLendPage';

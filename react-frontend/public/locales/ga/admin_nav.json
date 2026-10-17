@@ -244,10 +244,11 @@
   "job_pipeline": "Píblíne",
   "job_bias_audit": "Iniúchadh Laofachta",
   "job_templates": "Teimpléid",
-  "marketplace": "Margadh",
+  "marketplace": "Margadh & Freecycle",
   "marketplace_dashboard": "Deais",
   "marketplace_moderation": "measarthacht",
   "marketplace_sellers": "Díoltóirí",
+  "marketplace_categories": "Catagóirí",
   "feature_flags": "Bratacha Gné",
   "secrets_vault": "Cruinneachán Rúin",
   "module_configuration": "Cumraíocht an Mhodúil",
@@ -692,7 +693,19 @@
       "Wrench": "Uirlisí",
       "Puzzle": "Físeán",
       "Layers": "Sraitheanna",
-      "Package": "Pacáiste"
+      "Package": "Pacáiste",
+      "Smartphone": "Fón cliste",
+      "Armchair": "Cathaoir uilleann",
+      "Shirt": "Léine",
+      "Car": "Carr",
+      "Bike": "Rothar",
+      "Gamepad2": "Rialtán cluiche",
+      "Baby": "Leanbh",
+      "Dog": "Madra",
+      "Briefcase": "Mála cáipéisí",
+      "Palette": "Pailéad",
+      "UtensilsCrossed": "Sceanra",
+      "Hammer": "Casúr"
     }
   },
   "visibility_rules": {

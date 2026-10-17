@@ -1,5 +1,9 @@
 {
-  "mediaRecovery": {"retry":"Retry image upload","choose":"Choose another image","continue":"Continue to saved item"},
+  "mediaRecovery": {
+    "retry": "Retry image upload",
+    "choose": "Choose another image",
+    "continue": "Continue to saved item"
+  },
   "appName": "Timebank Global",
   "attribution": "Project NEXUS is open-source software licensed under AGPL-3.0-or-later.",
   "sourceRepo": {
@@ -26,8 +30,8 @@
     "newExchangeDescription": "Post an offer or request for timebank exchanges.",
     "newTimebankListing": "New listing",
     "newTimebankListingDescription": "Post an offer or request for timebank exchanges.",
-    "newMarketplaceListing": "Sell item",
-    "newMarketplaceListingDescription": "Create a marketplace listing with photos, price, and delivery.",
+    "newMarketplaceListing": "Sell, give away or lend",
+    "newMarketplaceListingDescription": "List something to sell, give away for free (Freecycle), or lend to members.",
     "newMessage": "New message",
     "newMessageDescription": "Choose a member and start a private conversation.",
     "newEvent": "New event",

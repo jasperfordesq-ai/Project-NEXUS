@@ -3,11 +3,11 @@
     "filter_panel": "Panel filtrów"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Rynek",
-  "meta_description": "Kupuj, sprzedawaj lub dziel się przedmiotami lokalnie z sąsiadami — ogłoszenia rynku społecznościowego, darmowe przedmioty, zakupy grupowe i dostawy w ramach twojego banku czasu.",
+  "page_title": "Rynek & Freecycle",
+  "meta_description": "Kupuj, sprzedawaj, oddawaj za darmo (Freecycle) albo pożyczaj i wypożyczaj rzeczy sąsiadom — ogłoszenia rynku społecznościowego, darmowe przedmioty, wypożyczanie narzędzi, zakupy grupowe i dostawy w Twoim banku czasu.",
   "hub": {
-    "eyebrow": "Społecznościowy marketplace",
-    "subtitle": "Kupuj, sprzedawaj i wymieniaj rzeczy w swojej społeczności",
+    "eyebrow": "Rynek & Freecycle",
+    "subtitle": "Kupuj, sprzedawaj, oddawaj za darmo albo pożyczaj i wypożyczaj rzeczy w swojej społeczności",
     "sell_something": "Sprzedaj coś",
     "categories_stat": "Kategorie",
     "listings_stat": "Widoczne ogłoszenia",
@@ -21,7 +21,7 @@
     "try_again": "Spróbuj ponownie",
     "no_listings_title": "Nie znaleziono ogłoszeń",
     "no_listings_filtered": "Dostosuj wyszukiwanie lub filtry.",
-    "no_listings_empty": "Bądź pierwszy, który wystawi coś na sprzedaż!",
+    "no_listings_empty": "Bądź pierwszą osobą, która coś wystawi — na sprzedaż, za darmo lub do wypożyczenia!",
     "sidebar_cta_title": "Masz coś na sprzedaż?",
     "sidebar_cta_description": "Wystaw swoje przedmioty i dotrzyj do społeczności.",
     "categories": "Kategorie",
@@ -32,11 +32,13 @@
     "load_more_failed": "Nie udało się załadować kolejnych ogłoszeń",
     "my_listings": "Moje ogłoszenia",
     "my_offers": "Moje oferty",
-    "my_orders": "Moje zamówienia"
+    "my_orders": "Moje zamówienia",
+    "free_items": "Darmowe przedmioty",
+    "borrow_lend": "Pożycz i wypożycz"
   },
   "hub_feature_gate": {
-    "title": "Marketplace niedostępny",
-    "description": "Funkcja marketplace nie jest włączona dla tej społeczności."
+    "title": "Rynek & Freecycle niedostępny",
+    "description": "Funkcja Rynek & Freecycle nie jest włączona w tej społeczności."
   },
   "listing": {
     "not_found_title": "Nie znaleziono ogłoszenia",
@@ -100,7 +102,13 @@
     "views_count_few": "Wyświetleń: {{count}}",
     "views_count_many": "Wyświetleń: {{count}}",
     "views_count_one": "Wyświetleń: {{count}}",
-    "views_count_other": "Wyświetleń: {{count}}"
+    "views_count_other": "Wyświetleń: {{count}}",
+    "lend": "Do wypożyczenia",
+    "ask_to_borrow": "Poproś o wypożyczenie",
+    "loan_terms": "Warunki wypożyczenia",
+    "lend_notice": "Ten przedmiot jest oferowany do wypożyczenia, nie na sprzedaż. Napisz do właściciela, aby umówić wypożyczenie i zwrot.",
+    "borrow_message_template": "Cześć, chciałbym/chciałabym pożyczyć: {{title}}",
+    "borrow_in_person_notice": "W tej społeczności wypożyczenie ustala się osobiście — zapytaj właściciela, gdy się spotkacie."
   },
   "offer": {
     "modal_title": "Złóż ofertę",
@@ -196,7 +204,13 @@
     "title_char_count_few": "{{count}}/120 znaków",
     "title_char_count_many": "{{count}}/120 znaków",
     "title_char_count_one": "{{count}}/120 znaków",
-    "title_char_count_other": "{{count}}/120 znaków"
+    "title_char_count_other": "{{count}}/120 znaków",
+    "loan_terms_label": "Warunki wypożyczenia",
+    "loan_terms_placeholder": "np. na jak długo można pożyczyć, czy jest kaucja, jak zwrócić...",
+    "loan_terms_hint": "Opcjonalnie. {{used}}/{{max}} znaków.",
+    "loan_terms_too_long": "Warunki wypożyczenia mogą mieć najwyżej {{max}} znaków",
+    "lend_no_price_hint": "Ogłoszenie o wypożyczeniu nie ma ceny. Zainteresowani napiszą do Ciebie, aby umówić wypożyczenie i zwrot.",
+    "lend_delivery_hint": "Wypożyczane przedmioty odbiera się osobiście — nie można ich wysłać pocztą."
   },
   "search": {
     "category_search": "Szukaj kategorii...",
@@ -342,7 +356,8 @@
   "price_type": {
     "fixed": "Cena stała",
     "negotiable": "Do negocjacji",
-    "free": "Za darmo"
+    "free": "Za darmo",
+    "lend": "Wypożycz / pożycz (przedmiot wraca)"
   },
   "delivery_method": {
     "pickup": "Tylko odbiór osobisty",
@@ -389,7 +404,9 @@
     "posted_last_days": "Ostatnie {{count}} dni",
     "apply": "Zastosuj filtry",
     "clear": "Wyczyść wszystko",
-    "title": "Filtry"
+    "title": "Filtry",
+    "listing_type": "Rodzaj ogłoszenia",
+    "listing_type_any": "Dowolny rodzaj"
   },
   "gallery": {
     "no_images": "Brak dostępnych obrazów",
@@ -401,7 +418,8 @@
   "price": {
     "free": "Za darmo",
     "contact": "Cena do uzgodnienia",
-    "negotiable": "Do negocjacji"
+    "negotiable": "Do negocjacji",
+    "lend": "Do wypożyczenia"
   },
   "empty": {
     "no_listings": "Brak ogłoszeń",
@@ -897,5 +915,17 @@
   "my_offers_tabs_aria": "Sekcje Moje oferty",
   "seller_orders_tabs_aria": "Filtr statusu zamówienia sprzedawcy",
   "seller_profile_tabs_aria": "Sekcje profilu sprzedawcy",
-  "category_filter_label": "Filtruj według kategorii"
+  "category_filter_label": "Filtruj według kategorii",
+  "borrow": {
+    "page_title": "Pożycz i wypożycz",
+    "meta_description": "Pożyczaj narzędzia i sprzęt od sąsiadów albo wypożyczaj swoje — przedmioty z Rynku & Freecycle, które wracają do właściciela.",
+    "subtitle": "Narzędzia i sprzęt, które Twoja społeczność chętnie wypożycza",
+    "lend_something": "Wypożycz coś",
+    "cta_title": "Masz narzędzie, które się kurzy?",
+    "cta_description": "Wypożycz je sąsiadowi. Wystaw je w Pożycz i wypożycz — Ty ustalasz warunki, a przedmiot do Ciebie wraca.",
+    "unable_to_load": "Nie udało się wczytać przedmiotów do wypożyczenia",
+    "load_more_failed": "Nie udało się wczytać więcej przedmiotów",
+    "no_items_title": "Nie ma jeszcze nic do wypożyczenia",
+    "no_items_description": "Nikt teraz niczego nie wypożycza. Zajrzyj później albo bądź pierwszą osobą, która coś wypożyczy!"
+  }
 }

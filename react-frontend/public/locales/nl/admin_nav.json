@@ -244,10 +244,11 @@
   "job_pipeline": "Pijpleiding",
   "job_bias_audit": "Bias-audit",
   "job_templates": "Sjablonen",
-  "marketplace": "Marktplaats",
+  "marketplace": "Marktplaats & Freecycle",
   "marketplace_dashboard": "Dashboard",
   "marketplace_moderation": "Moderatie",
   "marketplace_sellers": "Verkopers",
+  "marketplace_categories": "Categorieën",
   "feature_flags": "Functievlaggen",
   "secrets_vault": "Geheimen kluis",
   "module_configuration": "Moduleconfiguratie",
@@ -683,7 +684,19 @@
       "Home": "Startpagina",
       "HelpCircle": "Help",
       "FileText": "Document",
-      "Camera": "Camera"
+      "Camera": "Camera",
+      "Smartphone": "Smartphone",
+      "Armchair": "Fauteuil",
+      "Shirt": "Overhemd",
+      "Car": "Auto",
+      "Bike": "Fiets",
+      "Gamepad2": "Gamecontroller",
+      "Baby": "Baby",
+      "Dog": "Hond",
+      "Briefcase": "Aktetas",
+      "Palette": "Palet",
+      "UtensilsCrossed": "Bestek",
+      "Hammer": "Hamer"
     }
   },
   "visibility_rules": {

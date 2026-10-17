@@ -7,6 +7,7 @@ import LayoutGrid from 'lucide-react/icons/layout-grid';
 import { useTranslation } from 'react-i18next';
 import type { Key } from '@heroui/react/rac';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
+import { DynamicIcon, ICON_MAP } from '@/components/ui/DynamicIcon';
 import type { MarketplaceCategory } from '@/types/marketplace';
 
 interface CategoryChipsProps {
@@ -49,6 +50,10 @@ export function CategoryChips({ categories, activeId, onSelect }: CategoryChipsP
           key={category.id}
           id={String(category.id)}
         >
+          {/* `icon` is a Lucide icon name from the category seeder; unknown names render no icon. */}
+          {category.icon && ICON_MAP[category.icon] && (
+            <DynamicIcon name={category.icon} className="w-3.5 h-3.5" />
+          )}
           {category.name}
         </ToggleButton>
       ))}

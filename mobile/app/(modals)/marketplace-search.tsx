@@ -31,6 +31,7 @@ import {
   type MarketplaceCondition,
   type MarketplaceDeliveryMethod,
   type MarketplaceListingItem,
+  type MarketplacePriceType,
 } from '@/lib/api/marketplace';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
@@ -41,6 +42,8 @@ import { withRouteGate } from '@/components/withRouteGate';
 const CONDITIONS: MarketplaceCondition[] = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS: (MarketplaceDeliveryMethod | '')[] = ['', 'pickup', 'shipping', 'both', 'community_delivery'];
 const SELLER_TYPES: ('private' | 'business' | '')[] = ['', 'private', 'business'];
+/** Same set and order as the hub's PRICE_FILTERS, so both screens filter the same way. */
+const PRICE_TYPES: (MarketplacePriceType | '')[] = ['', 'free', 'lend', 'fixed', 'negotiable', 'contact'];
 const SORTS: ('newest' | 'price_asc' | 'price_desc' | 'popular')[] = ['newest', 'price_asc', 'price_desc', 'popular'];
 const POSTED_WITHIN = ['', '1', '3', '7', '30'];
 
@@ -63,6 +66,7 @@ function MarketplaceSearchScreen() {
     condition?: string | string[];
     seller_type?: string | string[];
     delivery_method?: string | string[];
+    price_type?: string | string[];
     sort?: string | string[];
     posted_within?: string | string[];
   }>();
@@ -82,6 +86,7 @@ function MarketplaceSearchScreen() {
   const [conditions, setConditions] = useState<MarketplaceCondition[]>(parseConditions(firstParam(params.condition)));
   const [sellerType, setSellerType] = useState<'private' | 'business' | ''>(initialSellerType);
   const [deliveryMethod, setDeliveryMethod] = useState<MarketplaceDeliveryMethod | ''>(initialDeliveryMethod);
+  const [priceType, setPriceType] = useState<MarketplacePriceType | ''>(normalizePriceType(firstParam(params.price_type)));
   const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc' | 'popular'>(initialSort);
   const [postedWithin, setPostedWithin] = useState(firstParam(params.posted_within) ?? '');
   const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
@@ -122,9 +127,10 @@ function MarketplaceSearchScreen() {
     conditions.length ? 'conditions' : '',
     sellerType,
     deliveryMethod,
+    priceType,
     postedWithin,
     sort !== 'newest' ? sort : '',
-  ].filter(Boolean).length, [categoryId, conditions.length, deliveryMethod, postedWithin, priceMax, priceMin, sellerType, sort]);
+  ].filter(Boolean).length, [categoryId, conditions.length, deliveryMethod, postedWithin, priceMax, priceMin, priceType, sellerType, sort]);
 
   const fetchListings = useCallback(async (append = false) => {
     if (!hasFeature('marketplace')) return;
@@ -141,6 +147,7 @@ function MarketplaceSearchScreen() {
         condition: conditions.join(','),
         seller_type: sellerType,
         delivery_method: deliveryMethod,
+        price_type: priceType,
         sort,
         posted_within: postedWithin,
         cursor: append ? cursor : null,
@@ -151,7 +158,8 @@ function MarketplaceSearchScreen() {
       setItems((current) => append ? [...current, ...response.data] : response.data);
     } catch (err) {
       if (!append) {
-        setError(err instanceof Error ? err.message : t('advancedSearch.loadFailed'));
+        // describeApiError shows the server's sentence, never an internal JS message (D/F-17).
+        setError(describeApiError(err, t('advancedSearch.loadFailed')));
       } else {
         showToast({ title: t('common:errors.alertTitle'), description: t('advancedSearch.loadMoreFailed'), variant: 'danger' });
       }
@@ -160,12 +168,12 @@ function MarketplaceSearchScreen() {
       setIsRefreshing(false);
       setIsLoadingMore(false);
     }
-  }, [categoryId, conditions, cursor, debouncedQuery, deliveryMethod, hasFeature, postedWithin, priceMax, priceMin, sellerType, showToast, sort, t]);
+  }, [categoryId, conditions, cursor, debouncedQuery, deliveryMethod, hasFeature, postedWithin, priceMax, priceMin, priceType, sellerType, showToast, sort, t]);
 
   useEffect(() => {
     void fetchListings(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, categoryId, priceMin, priceMax, conditions.join(','), sellerType, deliveryMethod, sort, postedWithin]);
+  }, [debouncedQuery, categoryId, priceMin, priceMax, conditions.join(','), sellerType, deliveryMethod, priceType, sort, postedWithin]);
 
   function resetFilters() {
     setCategoryId(undefined);
@@ -174,6 +182,7 @@ function MarketplaceSearchScreen() {
     setConditions([]);
     setSellerType('');
     setDeliveryMethod('');
+    setPriceType('');
     setSort('newest');
     setPostedWithin('');
   }
@@ -263,6 +272,12 @@ function MarketplaceSearchScreen() {
                   {categoriesFailed ? (
                     <FilterButton active={false} label={t('advancedSearch.categoriesUnavailable')} onPress={() => setCategoriesAttempt((n) => n + 1)} />
                   ) : null}
+                </FilterStrip>
+
+                <FilterStrip label={t('advancedSearch.listingType')}>
+                  {PRICE_TYPES.map((value) => (
+                    <FilterButton key={value || 'all'} active={priceType === value} label={t(`filters.priceType.${value || 'all'}`)} onPress={() => setPriceType(value)} />
+                  ))}
                 </FilterStrip>
 
                 <FilterStrip label={t('advancedSearch.condition')}>
@@ -413,6 +428,11 @@ function normalizeSellerType(value?: string): 'private' | 'business' | '' {
 
 function normalizeDeliveryMethod(value?: string): MarketplaceDeliveryMethod | '' {
   return value === 'pickup' || value === 'shipping' || value === 'both' || value === 'community_delivery' ? value : '';
+}
+
+/** Only the types the chip row can show; an unknown or hidden type from a link applies no filter. */
+function normalizePriceType(value?: string): MarketplacePriceType | '' {
+  return PRICE_TYPES.includes(value as MarketplacePriceType) ? (value as MarketplacePriceType) : '';
 }
 
 function normalizeSort(value?: string): 'newest' | 'price_asc' | 'price_desc' | 'popular' {

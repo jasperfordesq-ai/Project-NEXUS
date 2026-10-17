@@ -111,6 +111,15 @@
         <div id="time_credit_price-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_form.time_credit_hint") }}</div>
         <input class="govuk-input govuk-input--width-5" id="time_credit_price" name="time_credit_price" type="text" inputmode="decimal" value="{{ listing.timeCreditPrice }}" aria-describedby="time_credit_price-hint">
       </div>
+
+      {# Borrow & lend only reads this field (the server ignores it for every other
+         type), but it is always rendered: there is no JavaScript to show it on choice,
+         and the hint says what it is for. #}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="loan_terms">{{ t("govuk_alpha_commerce.listing_form.loan_terms_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="loan_terms-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_form.loan_terms_hint") }}</div>
+        <textarea class="govuk-textarea" id="loan_terms" name="loan_terms" rows="3" maxlength="500" aria-describedby="loan_terms-hint">{{ listing.loanTerms }}</textarea>
+      </div>
     </fieldset>
 
     <fieldset class="govuk-fieldset govuk-!-margin-top-4">

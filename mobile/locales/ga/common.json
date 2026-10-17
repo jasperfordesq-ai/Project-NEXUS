@@ -1,5 +1,9 @@
 {
-  "mediaRecovery": {"retry":"Bain triail eile as an íomhá a uaslódáil","choose":"Roghnaigh íomhá eile","continue":"Téigh chuig an mír shábháilte"},
+  "mediaRecovery": {
+    "retry": "Bain triail eile as an íomhá a uaslódáil",
+    "choose": "Roghnaigh íomhá eile",
+    "continue": "Téigh chuig an mír shábháilte"
+  },
   "appName": "Timebank Global",
   "attribution": "Is bogearraí foinse oscailte é Project NEXUS faoi cheadúnas AGPL-3.0.",
   "sourceRepo": {
@@ -26,8 +30,8 @@
     "newExchangeDescription": " Post tairiscint nó iarratas ar mhalartuithe bainc ama.",
     "newTimebankListing": "Liostú nua",
     "newTimebankListingDescription": " Post tairiscint nó iarratas ar mhalartuithe bainc ama.",
-    "newMarketplaceListing": "Díol an mhír",
-    "newMarketplaceListingDescription": "Cruthaigh liostú margadh le grianghraif, praghas agus seachadadh.",
+    "newMarketplaceListing": "Díol, bronn nó tabhair ar iasacht",
+    "newMarketplaceListingDescription": "Liostaigh rud éigin le díol, le tabhairt uait saor in aisce (Freecycle), nó le tabhairt ar iasacht do bhaill.",
     "newMessage": "Teachtaireacht nua",
     "newMessageDescription": "Roghnaigh ball agus cuir tús le comhrá príobháideach.",
     "newEvent": "Imeacht nua",

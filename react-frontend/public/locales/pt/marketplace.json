@@ -3,11 +3,11 @@
     "filter_panel": "Painel de filtros"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Mercado",
-  "meta_description": "Compre, venda ou compartilhe artigos localmente com os seus vizinhos — anúncios do mercado comunitário, artigos gratuitos, compras em grupo e entregas no seu banco de tempo.",
+  "page_title": "Mercado & Freecycle",
+  "meta_description": "Compre, venda, doe gratuitamente (Freecycle) ou peça emprestado e empreste objetos entre vizinhos — anúncios do mercado da comunidade, artigos grátis, empréstimo de ferramentas, compras em grupo e entregas no seu banco de tempo.",
   "hub": {
-    "eyebrow": "Mercado da comunidade",
-    "subtitle": "Compre, venda e troque itens na sua comunidade",
+    "eyebrow": "Mercado & Freecycle",
+    "subtitle": "Compre, venda, doe gratuitamente ou peça emprestado e empreste objetos na sua comunidade",
     "sell_something": "Vender Algo",
     "categories_stat": "Categorias",
     "listings_stat": "Anúncios visíveis",
@@ -21,7 +21,7 @@
     "try_again": "Tente Novamente",
     "no_listings_title": "Nenhum Anúncio Encontrado",
     "no_listings_filtered": "Tente ajustar sua pesquisa ou filtros.",
-    "no_listings_empty": "Seja o primeiro a listar algo à venda!",
+    "no_listings_empty": "Seja a primeira pessoa a anunciar algo — para venda, grátis ou para emprestar!",
     "sidebar_cta_title": "Tem algo para vender?",
     "sidebar_cta_description": "Liste seus itens e alcance sua comunidade.",
     "categories": "Categorias",
@@ -32,11 +32,13 @@
     "load_more_failed": "Falha ao carregar mais anúncios",
     "my_listings": "Os meus anúncios",
     "my_offers": "As minhas ofertas",
-    "my_orders": "As minhas encomendas"
+    "my_orders": "As minhas encomendas",
+    "free_items": "Artigos grátis",
+    "borrow_lend": "Pedir emprestado e emprestar"
   },
   "hub_feature_gate": {
-    "title": "Mercado Não Disponível",
-    "description": "O recurso de mercado não está habilitado para esta comunidade."
+    "title": "Mercado & Freecycle indisponível",
+    "description": "A funcionalidade Mercado & Freecycle não está ativada para esta comunidade."
   },
   "listing": {
     "not_found_title": "Anúncio Não Encontrado",
@@ -98,7 +100,13 @@
     "available_count_other": "{{count}} disponível",
     "views_count_many": "{{count}} visualizações",
     "views_count_one": "{{count}} visualizações",
-    "views_count_other": "{{count}} visualizações"
+    "views_count_other": "{{count}} visualizações",
+    "lend": "Para emprestar",
+    "ask_to_borrow": "Pedir emprestado",
+    "loan_terms": "Condições do empréstimo",
+    "lend_notice": "Este objeto é oferecido por empréstimo, não para venda. Envie uma mensagem ao proprietário para combinar o empréstimo e a devolução.",
+    "borrow_message_template": "Olá, gostaria de pedir emprestado: {{title}}",
+    "borrow_in_person_notice": "Nesta comunidade o empréstimo combina-se pessoalmente — fale com o proprietário quando o encontrar."
   },
   "offer": {
     "modal_title": "Fazer uma Oferta",
@@ -193,7 +201,13 @@
     "draft_saved": "Rascunho salvo",
     "title_char_count_many": "{{count}}/120 caracteres",
     "title_char_count_one": "{{count}}/120 caracteres",
-    "title_char_count_other": "{{count}}/120 caracteres"
+    "title_char_count_other": "{{count}}/120 caracteres",
+    "loan_terms_label": "Condições do empréstimo",
+    "loan_terms_placeholder": "ex.: por quanto tempo pode ser emprestado, se há caução, como devolver...",
+    "loan_terms_hint": "Opcional. {{used}}/{{max}} caracteres.",
+    "loan_terms_too_long": "As condições do empréstimo não podem exceder {{max}} caracteres",
+    "lend_no_price_hint": "Um anúncio de empréstimo não tem preço. Quem quiser pedir emprestado envia-lhe uma mensagem para combinar o empréstimo e a devolução.",
+    "lend_delivery_hint": "Os objetos para emprestar são levantados em pessoa — não podem ser enviados pelo correio."
   },
   "search": {
     "category_search": "Pesquisar categorias...",
@@ -334,7 +348,8 @@
   "price_type": {
     "fixed": "Preço fixo",
     "negotiable": "Negociável",
-    "free": "Grátis"
+    "free": "Grátis",
+    "lend": "Emprestar / pedir emprestado (o objeto volta)"
   },
   "delivery_method": {
     "pickup": "Apenas retirada",
@@ -381,7 +396,9 @@
     "posted_last_days": "Últimos {{count}} dias",
     "apply": "Aplicar filtros",
     "clear": "Limpar Tudo",
-    "title": "Filtros"
+    "title": "Filtros",
+    "listing_type": "Tipo de anúncio",
+    "listing_type_any": "Qualquer tipo"
   },
   "gallery": {
     "no_images": "Nenhuma imagem disponível",
@@ -393,7 +410,8 @@
   "price": {
     "free": "Grátis",
     "contact": "Contato para preço",
-    "negotiable": "Negociável"
+    "negotiable": "Negociável",
+    "lend": "Para emprestar"
   },
   "empty": {
     "no_listings": "Nenhum anúncio ainda",
@@ -878,5 +896,17 @@
   "my_offers_tabs_aria": "Minhas seções de ofertas",
   "seller_orders_tabs_aria": "Filtro de status do pedido do vendedor",
   "seller_profile_tabs_aria": "Seções de perfil do vendedor",
-  "category_filter_label": "Filtrar por categoria"
+  "category_filter_label": "Filtrar por categoria",
+  "borrow": {
+    "page_title": "Pedir emprestado e emprestar",
+    "meta_description": "Peça emprestadas ferramentas e equipamentos aos vizinhos, ou empreste os seus — artigos do Mercado & Freecycle que voltam para casa.",
+    "subtitle": "Ferramentas e equipamentos que a sua comunidade empresta de bom grado",
+    "lend_something": "Emprestar algo",
+    "cta_title": "Tem uma ferramenta a ganhar pó?",
+    "cta_description": "Empreste-a a um vizinho. Anuncie-a em Pedir emprestado e emprestar — você define as condições e ela volta para si.",
+    "unable_to_load": "Não foi possível carregar os artigos para emprestar",
+    "load_more_failed": "Não foi possível carregar mais artigos",
+    "no_items_title": "Ainda não há nada para pedir emprestado",
+    "no_items_description": "Ninguém está a emprestar nada neste momento. Volte mais tarde ou seja a primeira pessoa a emprestar algo!"
+  }
 }

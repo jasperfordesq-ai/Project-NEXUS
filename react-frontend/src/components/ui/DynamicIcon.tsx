@@ -75,6 +75,21 @@ import Wrench from 'lucide-react/icons/wrench';
 import Puzzle from 'lucide-react/icons/puzzle';
 import Layers from 'lucide-react/icons/layers';
 import Package from 'lucide-react/icons/package';
+// Marketplace category icons (database/seeders/MarketplaceCategorySeeder.php).
+// Every seeded `icon` value must resolve here, or the category page and the
+// admin category editor fall back to a generic tag.
+import Smartphone from 'lucide-react/icons/smartphone';
+import Armchair from 'lucide-react/icons/armchair';
+import Shirt from 'lucide-react/icons/shirt';
+import Car from 'lucide-react/icons/car';
+import Bike from 'lucide-react/icons/bike';
+import Gamepad2 from 'lucide-react/icons/gamepad-2';
+import Baby from 'lucide-react/icons/baby';
+import Dog from 'lucide-react/icons/dog';
+import Briefcase from 'lucide-react/icons/briefcase';
+import Palette from 'lucide-react/icons/palette';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Hammer from 'lucide-react/icons/hammer';
 
 /**
  * Curated map of Lucide icons available for dynamic rendering.
@@ -153,6 +168,19 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Puzzle,
   Layers,
   Package,
+  // Marketplace categories
+  Smartphone,
+  Armchair,
+  Shirt,
+  Car,
+  Bike,
+  Gamepad2,
+  Baby,
+  Dog,
+  Briefcase,
+  Palette,
+  UtensilsCrossed,
+  Hammer,
 };
 
 /** All available icon names for the icon picker */

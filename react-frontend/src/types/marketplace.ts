@@ -19,8 +19,14 @@ export interface MarketplaceListingItem {
   tagline?: string;
   price: number | null;
   price_currency: string;
-  price_type: 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact';
+  price_type: 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact' | 'lend';
   time_credit_price?: number | null;
+  /**
+   * Owner's conditions for a borrow & lend listing (`price_type === 'lend'`):
+   * plain text, at most 500 characters. The API only returns it for lend
+   * listings; it is null/absent for everything else.
+   */
+  loan_terms?: string | null;
   condition: 'new' | 'like_new' | 'good' | 'fair' | 'poor' | null;
   location?: string;
   delivery_method: string;
@@ -120,6 +126,8 @@ export interface MarketplaceFilters {
   delivery_method?: string;
   sort?: string;
   posted_within?: number;
+  /** One `price_type` value (`fixed`, `negotiable`, `free`, `lend`, ...). */
+  price_type?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

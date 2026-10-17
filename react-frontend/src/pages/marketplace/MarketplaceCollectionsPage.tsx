@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import FolderHeart from 'lucide-react/icons/folder-heart';
 import Plus from 'lucide-react/icons/plus';
@@ -53,6 +53,7 @@ export function MarketplaceCollectionsPage() {
   usePageTitle(t('collections.page_title'));
   const { isAuthenticated } = useAuth();
   const { tenant, tenantPath, hasFeature } = useTenant();
+  const navigate = useNavigate();
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const featureEnabled = hasFeature('marketplace');
@@ -221,7 +222,7 @@ export function MarketplaceCollectionsPage() {
     const params = new URLSearchParams();
     if (search.search_query) params.set('q', search.search_query);
     if (search.filters?.category_id) params.set('category_id', String(search.filters.category_id));
-    window.location.href = tenantPath(`/marketplace/search?${params.toString()}`);
+    navigate(tenantPath(`/marketplace/search?${params.toString()}`));
   };
 
   // ─── Feature gate ──────────────────────────────────────────────────
@@ -300,7 +301,7 @@ export function MarketplaceCollectionsPage() {
               description={t('collections.empty_description')}
               action={{
                 label: t('collections.browse_marketplace'),
-                onClick: () => { window.location.href = tenantPath('/marketplace'); },
+                onClick: () => navigate(tenantPath('/marketplace')),
               }}
             />
           ) : (
@@ -332,7 +333,9 @@ export function MarketplaceCollectionsPage() {
                       {item.listing.title}
                     </Link>
                     <p className="text-sm font-semibold text-accent mt-1">
-                      {item.listing.price_type === 'free'
+                      {item.listing.price_type === 'lend'
+                        ? t('price.lend')
+                        : item.listing.price_type === 'free'
                         ? t('common.free')
                         : item.listing.price != null
                           ? formatMarketplaceCurrency(
@@ -464,7 +467,7 @@ export function MarketplaceCollectionsPage() {
                 description={t('saved_searches.empty_description')}
                 action={{
                   label: t('saved_searches.browse'),
-                  onClick: () => { window.location.href = tenantPath('/marketplace/search'); },
+                  onClick: () => navigate(tenantPath('/marketplace/search')),
                 }}
               />
             ) : (

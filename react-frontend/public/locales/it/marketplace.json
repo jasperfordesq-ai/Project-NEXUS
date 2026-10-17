@@ -3,11 +3,11 @@
     "filter_panel": "Pannello dei filtri"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Mercato",
-  "meta_description": "Compra, vendi o condividi oggetti localmente con i tuoi vicini — annunci del mercato comunitario, articoli gratuiti, acquisti di gruppo e consegne all'interno della tua banca del tempo.",
+  "page_title": "Mercato & Freecycle",
+  "meta_description": "Compra, vendi, regala gratuitamente (Freecycle) oppure prendi in prestito e presta oggetti tra vicini: annunci del mercato della comunità, oggetti gratuiti, prestito di attrezzi, acquisti di gruppo e consegne nella tua banca del tempo.",
   "hub": {
-    "eyebrow": "Mercato della comunità",
-    "subtitle": "Compra, vendi e scambia articoli nella tua comunità",
+    "eyebrow": "Mercato & Freecycle",
+    "subtitle": "Compra, vendi, regala gratuitamente oppure prendi in prestito e presta oggetti nella tua comunità",
     "sell_something": "Vendi Qualcosa",
     "categories_stat": "Categorie",
     "listings_stat": "Annunci visibili",
@@ -21,7 +21,7 @@
     "try_again": "Riprova",
     "no_listings_title": "Nessun Annuncio Trovato",
     "no_listings_filtered": "Prova ad aggiustare la tua ricerca o i filtri.",
-    "no_listings_empty": "Sii il primo a mettere in vendita qualcosa!",
+    "no_listings_empty": "Sii la prima persona a pubblicare qualcosa: in vendita, gratis o in prestito!",
     "sidebar_cta_title": "Hai qualcosa da vendere?",
     "sidebar_cta_description": "Elenca i tuoi articoli e raggiungi la tua comunità.",
     "categories": "Categorie",
@@ -32,11 +32,13 @@
     "load_more_failed": "Caricamento di ulteriori annunci non riuscito",
     "my_listings": "I miei annunci",
     "my_offers": "Le mie offerte",
-    "my_orders": "I miei ordini"
+    "my_orders": "I miei ordini",
+    "free_items": "Oggetti gratuiti",
+    "borrow_lend": "Prendi in prestito e presta"
   },
   "hub_feature_gate": {
-    "title": "Mercato Non Disponibile",
-    "description": "La funzione mercato non è abilitata per questa comunità."
+    "title": "Mercato & Freecycle non disponibile",
+    "description": "La funzione Mercato & Freecycle non è attiva per questa comunità."
   },
   "listing": {
     "not_found_title": "Annuncio Non Trovato",
@@ -98,7 +100,13 @@
     "available_count_other": "{{count}} disponibili",
     "views_count_many": "{{count}} visualizzazioni",
     "views_count_one": "{{count}} visualizzazioni",
-    "views_count_other": "{{count}} visualizzazioni"
+    "views_count_other": "{{count}} visualizzazioni",
+    "lend": "In prestito",
+    "ask_to_borrow": "Chiedi in prestito",
+    "loan_terms": "Condizioni del prestito",
+    "lend_notice": "Questo oggetto è offerto in prestito, non in vendita. Scrivi a chi lo possiede per accordarti sul prestito e sulla restituzione.",
+    "borrow_message_template": "Ciao, vorrei chiedere in prestito: {{title}}",
+    "borrow_in_person_notice": "In questa comunità il prestito si concorda di persona: chiedi a chi possiede l'oggetto quando lo incontri."
   },
   "offer": {
     "modal_title": "Fai un'offerta",
@@ -193,7 +201,13 @@
     "draft_saved": "Bozza salvata",
     "title_char_count_many": "{{count}}/120 caratteri",
     "title_char_count_one": "{{count}}/120 caratteri",
-    "title_char_count_other": "{{count}}/120 caratteri"
+    "title_char_count_other": "{{count}}/120 caratteri",
+    "loan_terms_label": "Condizioni del prestito",
+    "loan_terms_placeholder": "es. per quanto tempo si può prendere in prestito, eventuale cauzione, come restituirlo...",
+    "loan_terms_hint": "Facoltativo. {{used}}/{{max}} caratteri.",
+    "loan_terms_too_long": "Le condizioni del prestito non possono superare i {{max}} caratteri",
+    "lend_no_price_hint": "Un annuncio di prestito non ha prezzo. Chi vuole prenderlo in prestito ti scrive per accordarsi su prestito e restituzione.",
+    "lend_delivery_hint": "Gli oggetti in prestito si ritirano di persona: non possono essere spediti."
   },
   "search": {
     "category_search": "Cerca categorie...",
@@ -334,7 +348,8 @@
   "price_type": {
     "fixed": "Prezzo fisso",
     "negotiable": "Trattabile",
-    "free": "Gratis"
+    "free": "Gratis",
+    "lend": "Prestare / prendere in prestito (l'oggetto torna indietro)"
   },
   "delivery_method": {
     "pickup": "Solo ritiro",
@@ -381,7 +396,9 @@
     "posted_last_days": "Ultimi {{count}} giorni",
     "apply": "Applica filtri",
     "clear": "Cancella tutto",
-    "title": "Filtri"
+    "title": "Filtri",
+    "listing_type": "Tipo di annuncio",
+    "listing_type_any": "Qualsiasi tipo"
   },
   "gallery": {
     "no_images": "Nessuna immagine disponibile",
@@ -393,7 +410,8 @@
   "price": {
     "free": "Gratis",
     "contact": "Contatta per il prezzo",
-    "negotiable": "Trattabile"
+    "negotiable": "Trattabile",
+    "lend": "In prestito"
   },
   "empty": {
     "no_listings": "Nessun annuncio ancora",
@@ -878,5 +896,17 @@
   "my_offers_tabs_aria": "Le mie sezioni offerte",
   "seller_orders_tabs_aria": "Filtro sullo stato dell'ordine del venditore",
   "seller_profile_tabs_aria": "Sezioni del profilo del venditore",
-  "category_filter_label": "Filtra per categoria"
+  "category_filter_label": "Filtra per categoria",
+  "borrow": {
+    "page_title": "Prendi in prestito e presta",
+    "meta_description": "Prendi in prestito attrezzi e attrezzature dai vicini, o presta i tuoi: oggetti del Mercato & Freecycle che tornano indietro.",
+    "subtitle": "Attrezzi e attrezzature che la tua comunità presta volentieri",
+    "lend_something": "Presta qualcosa",
+    "cta_title": "Hai un attrezzo che prende polvere?",
+    "cta_description": "Prestalo a un vicino. Pubblicalo in Prendi in prestito e presta: decidi tu le condizioni e ti torna indietro.",
+    "unable_to_load": "Impossibile caricare gli oggetti in prestito",
+    "load_more_failed": "Impossibile caricare altri oggetti",
+    "no_items_title": "Ancora niente da prendere in prestito",
+    "no_items_description": "Al momento nessuno presta nulla. Torna più tardi o sii la prima persona a prestare qualcosa!"
+  }
 }

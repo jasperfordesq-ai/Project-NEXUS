@@ -4027,7 +4027,7 @@
                 }
             },
             "marketplace": {
-                "title": "Rynek",
+                "title": "Rynek & Freecycle",
                 "caption": ":community",
                 "description": "Kupuj, sprzedawaj i wymieniaj towary oraz usługi ze swoją społecznością.",
                 "empty": "W rynku nie ma jeszcze żadnych ofert.",
@@ -6493,13 +6493,14 @@
                 "save": "Ratować",
                 "submit": "Składać",
                 "free": "Bezpłatny",
+                "borrow": "Do wypożyczenia",
                 "credits_label": "kredyty czasowe",
                 "credits_price": ":credits kredytów czasu",
                 "view": "Pogląd",
                 "no_image": "Brak obrazu"
             },
             "nav": {
-                "heading": "Rynek",
+                "heading": "Rynek & Freecycle",
                 "browse": "Przeglądać",
                 "mine": "Moje zestawienia",
                 "saved": "Zapisano",
@@ -6513,6 +6514,7 @@
                 "coupons": "Kupony",
                 "detail_buy": "Kup ten przedmiot",
                 "detail_offer": "Złóż ofertę",
+                "detail_ask_to_borrow": "Poproś o wypożyczenie",
                 "detail_save": "Zapisz ten element",
                 "detail_report": "Zgłoś ten przedmiot"
             },
@@ -6534,6 +6536,10 @@
                 "price_type_negotiable": "Otwarty na oferty",
                 "price_type_free": "Za darmo do dobrego domu",
                 "price_type_contact": "Skontaktuj się w sprawie ceny",
+                "price_type_lend": "Do wypożyczenia (pożycz i oddaj)",
+                "loan_terms_label": "Warunki wypożyczenia",
+                "loan_terms_hint": "Na jak długo można pożyczyć, gdzie odebrać i co powinna wiedzieć osoba pożyczająca.",
+                "error_lend_delivery": "Ogłoszenia o wypożyczeniu nie można wysłać pocztą. Wybierz odbiór osobisty lub dostawę sąsiedzką.",
                 "price_label": "Cena",
                 "price_hint": "Wprowadź kwotę w pieniądzu. Jeśli wyceniasz wyłącznie kredyty czasowe, pozostaw puste.",
                 "currency_label": "Waluta",

@@ -244,10 +244,11 @@
   "job_pipeline": "Gasoduto",
   "job_bias_audit": "Auditoria tendenciosa",
   "job_templates": "Modelos",
-  "marketplace": "Mercado",
+  "marketplace": "Mercado & Freecycle",
   "marketplace_dashboard": "Painel",
   "marketplace_moderation": "Moderação",
   "marketplace_sellers": "Vendedores",
+  "marketplace_categories": "Categorias",
   "feature_flags": "Sinalizadores de recursos",
   "secrets_vault": "Cofre de Segredos",
   "module_configuration": "Configuração do módulo",
@@ -686,7 +687,19 @@
       "Wrench": "Ferramentas",
       "Puzzle": "Quebra-cabeça",
       "Layers": "Camadas",
-      "Package": "Pacote"
+      "Package": "Pacote",
+      "Smartphone": "Telemóvel",
+      "Armchair": "Poltrona",
+      "Shirt": "Camisa",
+      "Car": "Carro",
+      "Bike": "Bicicleta",
+      "Gamepad2": "Comando de jogo",
+      "Baby": "Bebé",
+      "Dog": "Cão",
+      "Briefcase": "Pasta",
+      "Palette": "Paleta",
+      "UtensilsCrossed": "Talheres",
+      "Hammer": "Martelo"
     }
   },
   "visibility_rules": {

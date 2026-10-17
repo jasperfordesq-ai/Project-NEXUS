@@ -83,6 +83,21 @@ describe('DynamicIcon', () => {
     expect(container.querySelector('svg')).not.toBeNull();
   });
 
+  it('resolves every icon name the marketplace category seeder uses', () => {
+    // Mirrors database/seeders/MarketplaceCategorySeeder.php. A name missing
+    // here is what made members see the literal word "Smartphone" as an icon.
+    const SEEDED = [
+      'Smartphone', 'Armchair', 'Shirt', 'Home', 'Car', 'Bike', 'BookOpen', 'Gamepad2',
+      'Baby', 'Heart', 'Dog', 'Music', 'Briefcase', 'Palette', 'UtensilsCrossed',
+      'Wrench', 'Gift', 'Package', 'Hammer',
+    ];
+    for (const name of SEEDED) {
+      expect(ICON_MAP, `ICON_MAP is missing ${name}`).toHaveProperty(name);
+      const { container } = render(<DynamicIcon name={name} />);
+      expect(container.querySelector('svg'), `${name} did not render`).not.toBeNull();
+    }
+  });
+
   it('passes size prop to the icon', () => {
     const { container } = render(<DynamicIcon name="Trophy" size={32} />);
     const svg = container.querySelector('svg');

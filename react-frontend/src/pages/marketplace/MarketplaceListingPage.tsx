@@ -37,6 +37,7 @@ import Package from 'lucide-react/icons/package';
 import User from 'lucide-react/icons/user';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Flag from 'lucide-react/icons/flag';
+import Handshake from 'lucide-react/icons/handshake';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -78,8 +79,10 @@ interface ListingDetail {
   tagline?: string;
   price: number | null;
   price_currency: string;
-  price_type: 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact';
+  price_type: 'fixed' | 'negotiable' | 'free' | 'auction' | 'contact' | 'lend';
   time_credit_price?: number | null;
+  /** Owner's conditions for a borrow & lend listing; the API returns it only when price_type is 'lend'. */
+  loan_terms?: string | null;
   condition: string;
   quantity: number;
   category?: { id: number; name: string; slug: string; icon?: string } | null;
@@ -136,8 +139,16 @@ const CONDITION_COLORS: Record<string, 'success' | 'primary' | 'warning' | 'dang
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function formatPrice(price: number | null, priceType: string, currency: string, freeLabel: string): string {
-  if (priceType === 'free' || price === null || price === 0) return freeLabel;
+interface PriceLabels {
+  free: string;
+  lend: string;
+}
+
+function formatPrice(price: number | null, priceType: string, currency: string, labels: PriceLabels): string {
+  // Lend first: a lend listing also has a null/zero price, but it is not "free" —
+  // the item comes back.
+  if (priceType === 'lend') return labels.lend;
+  if (priceType === 'free' || price === null || price === 0) return labels.free;
   return formatMarketplaceCurrency(price, currency);
 }
 
@@ -182,7 +193,7 @@ function buildProductSchema(
       '@type': 'Offer',
       'url': canonicalUrl,
       'priceCurrency': listing.price_currency,
-      'price': listing.price_type === 'free' ? '0' : String(listing.price ?? 0),
+      'price': listing.price_type === 'free' || listing.price_type === 'lend' ? '0' : String(listing.price ?? 0),
       'availability': AVAILABILITY_MAP[listing.status] ?? 'https://schema.org/InStock',
       'itemCondition': listing.condition
         ? (CONDITION_MAP[listing.condition] ?? 'https://schema.org/UsedCondition')
@@ -349,10 +360,13 @@ export function MarketplaceListingPage() {
   const { t } = useTranslation('marketplace');
   usePageTitle(t('page_title'));
   const { isAuthenticated } = useAuth();
-  const { tenant, tenantPath, branding } = useTenant();
+  const { tenant, tenantPath, branding, hasModule, hasFeature } = useTenant();
+  // Same gate as SellerProfilePage: without messaging there is nothing behind
+  // "Message seller" / "Ask to borrow", so the buttons must not render.
+  const canMessage = hasModule('messages') && hasFeature('direct_messaging');
   const toast = useToast();
   const offerModal = useDisclosure();
-  const freeLabel = t('price.free');
+  const priceLabels: PriceLabels = { free: t('price.free'), lend: t('price.lend') };
 
   // State
   const [listing, setListing] = useState<ListingDetail | null>(null);
@@ -543,9 +557,19 @@ export function MarketplaceListingPage() {
   }
 
   const listingCurrency = listing.price_currency || tenant?.currency || '';
-  const priceDisplay = formatPrice(listing.price, listing.price_type, listingCurrency, freeLabel);
+  const priceDisplay = formatPrice(listing.price, listing.price_type, listingCurrency, priceLabels);
   const shippingRequired = Boolean(listing.shipping_available || listing.local_pickup);
   const isOwnListing = listing.is_own;
+  // Borrow & lend: never bought, never offered on — the API answers 422 to both.
+  // Borrowers ask the owner through the existing message-seller route.
+  const isLendListing = listing.price_type === 'lend';
+  const messageSellerHref = listing.user
+    ? tenantPath(
+        `/messages?to=${listing.user.id}&ref=marketplace&listing_id=${listing.id}`
+        + `&listing_title=${encodeURIComponent(listing.title)}`
+        + `&body=${encodeURIComponent(t(isLendListing ? 'listing.borrow_message_template' : 'listing.message_template', { title: listing.title }))}`,
+      )
+    : undefined;
   const hasCashCheckout = listing.price_type === 'fixed'
     && listing.price != null
     && listing.price > 0;
@@ -615,7 +639,19 @@ export function MarketplaceListingPage() {
             <GlassCard className="p-5 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-3xl font-bold text-foreground">{priceDisplay}</span>
+                  {isLendListing ? (
+                    <Chip
+                      size="lg"
+                      color="accent"
+                      variant="primary"
+                      className="font-semibold"
+                      startContent={<Handshake className="w-4 h-4" aria-hidden="true" />}
+                    >
+                      {t('listing.lend')}
+                    </Chip>
+                  ) : (
+                    <span className="text-3xl font-bold text-foreground">{priceDisplay}</span>
+                  )}
                   {listing.price_type === 'negotiable' && (
                     <Chip size="sm" color="warning" variant="soft" className="ml-2">
                       {t('listing.negotiable')}
@@ -692,7 +728,7 @@ export function MarketplaceListingPage() {
 
               {/* Action buttons */}
               {!isOwnListing && <div className="flex flex-col gap-2 pt-2">
-                {((listing.price_type === 'fixed' && listing.price != null && listing.price > 0)
+                {!isLendListing && ((listing.price_type === 'fixed' && listing.price != null && listing.price > 0)
                   || listing.price_type === 'free'
                   || Number(listing.time_credit_price ?? 0) > 0) && (
                   <>
@@ -758,31 +794,53 @@ export function MarketplaceListingPage() {
                     />
                   </>
                 )}
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  {listing.price_type !== 'free' && (
+                {isLendListing ? (
+                  canMessage ? (
+                    // One prominent action: asking to borrow IS messaging the owner.
                     <Button
                       fullWidth
-                      startContent={<DollarSign className="w-4 h-4" aria-hidden="true" />}
-                      onPress={offerModal.onOpen}
-                      isDisabled={!isAuthenticated}
+                      size="lg"
+                      startContent={<Handshake className="w-4 h-4" aria-hidden="true" />}
+                      as={listing.user ? Link : undefined}
+                      to={messageSellerHref}
+                      isDisabled={!isAuthenticated || !listing.user}
                     >
-                      {t('listing.make_offer')}
+                      {t('listing.ask_to_borrow')}
                     </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    fullWidth
-                    startContent={<MessageCircle className="w-4 h-4" aria-hidden="true" />}
-                    as={listing.user ? Link : undefined}
-                    to={listing.user ? tenantPath(`/messages?to=${listing.user.id}&ref=marketplace&listing_id=${listing.id}&listing_title=${encodeURIComponent(listing.title)}&body=${encodeURIComponent(t('listing.message_template', { title: listing.title }))}`) : undefined}
-                    isDisabled={!isAuthenticated || !listing.user}
-                  >
-                    {t('listing.message_seller')}
-                  </Button>
-                </div>
+                  ) : (
+                    <p className="text-sm text-muted" data-testid="borrow-in-person">
+                      {t('listing.borrow_in_person_notice')}
+                    </p>
+                  )
+                ) : (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    {listing.price_type !== 'free' && (
+                      <Button
+                        fullWidth
+                        startContent={<DollarSign className="w-4 h-4" aria-hidden="true" />}
+                        onPress={offerModal.onOpen}
+                        isDisabled={!isAuthenticated}
+                      >
+                        {t('listing.make_offer')}
+                      </Button>
+                    )}
+                    {canMessage && (
+                      <Button
+                        variant="secondary"
+                        fullWidth
+                        startContent={<MessageCircle className="w-4 h-4" aria-hidden="true" />}
+                        as={listing.user ? Link : undefined}
+                        to={messageSellerHref}
+                        isDisabled={!isAuthenticated || !listing.user}
+                      >
+                        {t('listing.message_seller')}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>}
 
-              {!isOwnListing && !isAuthenticated && (
+              {!isOwnListing && !isAuthenticated && canMessage && (
                 <p className="text-xs text-muted text-center">
                   <Link to={tenantPath('/login')} className="text-accent hover:underline">
                     {t('listing.sign_in')}
@@ -791,6 +849,20 @@ export function MarketplaceListingPage() {
                 </p>
               )}
             </GlassCard>
+
+            {/* Loan terms — borrow & lend listings only */}
+            {isLendListing && (
+              <GlassCard className="p-5 space-y-2 border border-accent/30" data-testid="loan-terms">
+                <h3 className="text-sm font-semibold text-muted uppercase tracking-wide flex items-center gap-2">
+                  <Handshake className="w-4 h-4 text-accent" aria-hidden="true" />
+                  {t('listing.loan_terms')}
+                </h3>
+                {listing.loan_terms?.trim() && (
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{listing.loan_terms}</p>
+                )}
+                <p className="text-xs text-muted">{t('listing.lend_notice')}</p>
+              </GlassCard>
+            )}
 
             {/* Seller card */}
             {listing.user && (
@@ -933,7 +1005,7 @@ export function MarketplaceListingPage() {
                           item.price,
                           item.price_type,
                           item.price_currency || tenant?.currency || '',
-                          freeLabel,
+                          priceLabels,
                         )}
                       </p>
                     </div>

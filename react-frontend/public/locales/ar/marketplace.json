@@ -3,11 +3,11 @@
     "filter_panel": "لوحة التصفية"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "السوق",
-  "meta_description": "اشترِ أو بِع أو شارك المنتجات محلياً مع جيرانك — قوائم السوق المجتمعي، المنتجات المجانية، المشتريات الجماعية، والتوصيل داخل بنك وقتك.",
+  "page_title": "السوق & Freecycle",
+  "meta_description": "اشترِ وبِع وتبرّع مجاناً (Freecycle) أو استعر وأعِر الأغراض مع جيرانك — إعلانات سوق المجتمع، والأغراض المجانية، وإعارة الأدوات، والشراء الجماعي، والتوصيل داخل بنك الوقت الخاص بك.",
   "hub": {
-    "eyebrow": "سوق المجتمع",
-    "subtitle": "اشترِ، وابِع، وتبادَل العناصر في مجتمعك",
+    "eyebrow": "السوق & Freecycle",
+    "subtitle": "اشترِ وبِع وتبرّع مجاناً أو استعر وأعِر الأغراض في مجتمعك",
     "sell_something": "بيع شيء",
     "categories_stat": "الفئات",
     "listings_stat": "الإعلانات المرئية",
@@ -21,7 +21,7 @@
     "try_again": "حاول مرة أخرى",
     "no_listings_title": "لم يتم العثور على قوائم",
     "no_listings_filtered": "حاول تعديل بحثك أو الفلاتر.",
-    "no_listings_empty": "كن أول من يدرج شيئًا للبيع!",
+    "no_listings_empty": "كن أول من يعرض شيئاً — للبيع أو مجاناً أو للإعارة!",
     "sidebar_cta_title": "هل لديك شيء لتبيعه؟",
     "sidebar_cta_description": "قم بإدراج عناصرك واصل إلى مجتمعك.",
     "categories": "الفئات",
@@ -32,11 +32,13 @@
     "load_more_failed": "فشل في تحميل المزيد من القوائم",
     "my_listings": "قوائمي",
     "my_offers": "عروضي",
-    "my_orders": "طلباتي"
+    "my_orders": "طلباتي",
+    "free_items": "أغراض مجانية",
+    "borrow_lend": "استعارة وإعارة"
   },
   "hub_feature_gate": {
-    "title": "السوق غير متاح",
-    "description": "ميزة السوق غير مفعلة لهذا المجتمع."
+    "title": "السوق & Freecycle غير متاح",
+    "description": "ميزة السوق & Freecycle غير مفعّلة لهذا المجتمع."
   },
   "listing": {
     "not_found_title": "القائمة غير موجودة",
@@ -104,7 +106,13 @@
     "views_count_one": "{{count}} مشاهدات",
     "views_count_other": "{{count}} مشاهدات",
     "views_count_two": "{{count}} مشاهدات",
-    "views_count_zero": "{{count}} مشاهدات"
+    "views_count_zero": "{{count}} مشاهدات",
+    "lend": "للاستعارة",
+    "ask_to_borrow": "اطلب الاستعارة",
+    "loan_terms": "شروط الإعارة",
+    "lend_notice": "هذا الغرض معروض للإعارة وليس للبيع. راسل المالك للاتفاق على الاستعارة وموعد الإعادة.",
+    "borrow_message_template": "مرحباً، أودّ استعارة: {{title}}",
+    "borrow_in_person_notice": "في هذا المجتمع تُرتَّب الاستعارة شخصياً — اسأل المالك عندما تلتقي به."
   },
   "offer": {
     "modal_title": "قدم عرضاً",
@@ -202,7 +210,13 @@
     "title_char_count_one": "{{count}}/120 حرف",
     "title_char_count_other": "{{count}}/120 حرف",
     "title_char_count_two": "{{count}}/120 حرف",
-    "title_char_count_zero": "{{count}}/120 حرف"
+    "title_char_count_zero": "{{count}}/120 حرف",
+    "loan_terms_label": "شروط الإعارة",
+    "loan_terms_placeholder": "مثلاً: مدة الاستعارة، وجود تأمين، طريقة الإعادة...",
+    "loan_terms_hint": "اختياري. {{used}}/{{max}} حرفاً.",
+    "loan_terms_too_long": "يجب ألا تتجاوز شروط الإعارة {{max}} حرفاً",
+    "lend_no_price_hint": "إعلان الإعارة ليس له سعر. يراسلك الراغبون في الاستعارة للاتفاق على الإعارة والإعادة.",
+    "lend_delivery_hint": "تُستلم الأغراض المُعارة شخصياً — لا يمكن إرسالها بالبريد."
   },
   "search": {
     "category_search": "البحث في الفئات...",
@@ -358,7 +372,8 @@
   "price_type": {
     "fixed": "سعر ثابت",
     "negotiable": "قابل للتفاوض",
-    "free": "مجاناً"
+    "free": "مجاناً",
+    "lend": "إعارة / استعارة (يُعاد الغرض)"
   },
   "delivery_method": {
     "pickup": "استلام فقط",
@@ -405,7 +420,9 @@
     "posted_last_days": "آخر {{count}} يوم",
     "apply": "تطبيق الفلاتر",
     "clear": "مسح الكل",
-    "title": "الفلاتر"
+    "title": "الفلاتر",
+    "listing_type": "نوع الإعلان",
+    "listing_type_any": "كل الأنواع"
   },
   "gallery": {
     "no_images": "لا توجد صور متاحة",
@@ -417,7 +434,8 @@
   "price": {
     "free": "مجاناً",
     "contact": "تواصل للسعر",
-    "negotiable": "قابل للتفاوض"
+    "negotiable": "قابل للتفاوض",
+    "lend": "للاستعارة"
   },
   "empty": {
     "no_listings": "لا توجد قوائم حتى الآن",
@@ -935,5 +953,17 @@
   "my_offers_tabs_aria": "أقسام عروضي",
   "seller_orders_tabs_aria": "مرشح حالة طلب البائع",
   "seller_profile_tabs_aria": "أقسام ملف تعريف البائع",
-  "category_filter_label": "تصفية حسب الفئة"
+  "category_filter_label": "تصفية حسب الفئة",
+  "borrow": {
+    "page_title": "استعارة وإعارة",
+    "meta_description": "استعر الأدوات والمعدات من جيرانك أو أعِر أدواتك — أغراض من السوق & Freecycle تعود إلى أصحابها.",
+    "subtitle": "أدوات ومعدات يسعد مجتمعك بإعارتها",
+    "lend_something": "أعِر شيئاً",
+    "cta_title": "هل لديك أداة يعلوها الغبار؟",
+    "cta_description": "أعِرها لأحد الجيران. اعرضها في «استعارة وإعارة» — أنت تحدد الشروط وتعود إليك.",
+    "unable_to_load": "تعذّر تحميل أغراض الاستعارة",
+    "load_more_failed": "تعذّر تحميل المزيد من الأغراض",
+    "no_items_title": "لا يوجد ما يُستعار بعد",
+    "no_items_description": "لا أحد يُعير شيئاً حالياً. عُد لاحقاً أو كن أول من يُعير شيئاً!"
+  }
 }

@@ -57,6 +57,7 @@ return [
         'save' => 'Save',
         'submit' => 'Submit',
         'free' => 'Free',
+        'borrow' => 'Borrow',
         'credits_label' => 'time credits',
 
         'credits_price' => ':credits time credits',
@@ -65,7 +66,7 @@ return [
     ],
 
     'nav' => [
-        'heading' => 'Marketplace',
+        'heading' => 'Marketplace & Freecycle',
         'browse' => 'Browse',
         'mine' => 'My listings',
         'saved' => 'Saved',
@@ -79,6 +80,7 @@ return [
         'coupons' => 'Coupons',
         'detail_buy' => 'Buy this item',
         'detail_offer' => 'Make an offer',
+        'detail_ask_to_borrow' => 'Ask to borrow',
         'detail_save' => 'Save this item',
         'detail_report' => 'Report this item',
     ],
@@ -101,6 +103,10 @@ return [
         'price_type_negotiable' => 'Open to offers',
         'price_type_free' => 'Free to a good home',
         'price_type_contact' => 'Contact for price',
+        'price_type_lend' => 'To lend (borrow and return)',
+        'loan_terms_label' => 'Loan terms',
+        'loan_terms_hint' => 'How long it can be borrowed for, where to collect it, and anything the borrower should know.',
+        'error_lend_delivery' => 'A borrow-and-lend listing cannot be posted. Choose local pickup or community delivery.',
         'price_label' => 'Price',
         'price_hint' => 'Enter an amount in money. Leave blank if you are pricing in time credits only.',
         'currency_label' => 'Currency',

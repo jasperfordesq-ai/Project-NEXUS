@@ -62,12 +62,16 @@ const moderationColors: Record<string, 'success' | 'warning' | 'danger' | 'defau
   flagged: 'danger',
 };
 
-const statusColors: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+const statusColors: Record<string, 'success' | 'warning' | 'danger' | 'default' | 'primary'> = {
   active: 'success',
   inactive: 'default',
-  sold: 'default',
+  sold: 'primary',
   expired: 'warning',
+  draft: 'default',
 };
+
+/** Price types that carry no amount — rendered as a label, not a currency value. */
+const PRICE_TYPES_WITHOUT_AMOUNT = new Set(['free', 'lend', 'contact']);
 
 const MODERATION_TABS = ['all', 'pending', 'approved', 'rejected', 'flagged'] as const;
 
@@ -205,7 +209,7 @@ export function MarketplaceModerationPage() {
       render: (item) => (
         <Avatar
           src={item.image || undefined}
-          name={item.title.charAt(0)}
+          name={(item.title ?? '').charAt(0)}
           size="sm"
           radius="lg"
           className="shrink-0"
@@ -234,10 +238,12 @@ export function MarketplaceModerationPage() {
       sortable: true,
       render: (item) => (
         <span className="text-sm text-muted">
-          {formatMarketplaceCurrency(
-            Number(item.price ?? 0),
-            item.price_currency || tenant?.currency || '',
-          )}
+          {PRICE_TYPES_WITHOUT_AMOUNT.has(item.price_type)
+            ? t(`marketplace.price_type.${item.price_type}`)
+            : formatMarketplaceCurrency(
+              Number(item.price ?? 0),
+              item.price_currency || tenant?.currency || '',
+            )}
         </span>
       ),
     },
@@ -535,6 +541,7 @@ export function MarketplaceModerationPage() {
           title={t('marketplace.delete_listing_title')}
           message={t('marketplace.delete_listing_message')}
           confirmLabel={t('marketplace.delete_btn')}
+          cancelLabel={t('marketplace.cancel')}
           confirmColor="danger"
           isLoading={actionLoading}
         />

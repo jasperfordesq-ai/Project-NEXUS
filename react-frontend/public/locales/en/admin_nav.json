@@ -272,10 +272,11 @@
   "job_pipeline": "Pipeline",
   "job_bias_audit": "Bias Audit",
   "job_templates": "Templates",
-  "marketplace": "Marketplace",
+  "marketplace": "Marketplace & Freecycle",
   "marketplace_dashboard": "Dashboard",
   "marketplace_moderation": "Moderation",
   "marketplace_sellers": "Sellers",
+  "marketplace_categories": "Categories",
   "feature_flags": "Feature Flags",
   "secrets_vault": "Secrets Vault",
   "module_configuration": "Module Configuration",
@@ -711,7 +712,19 @@
       "Wrench": "Tools",
       "Puzzle": "Puzzle",
       "Layers": "Layers",
-      "Package": "Package"
+      "Package": "Package",
+      "Smartphone": "Smartphone",
+      "Armchair": "Armchair",
+      "Shirt": "Shirt",
+      "Car": "Car",
+      "Bike": "Bicycle",
+      "Gamepad2": "Game controller",
+      "Baby": "Baby",
+      "Dog": "Dog",
+      "Briefcase": "Briefcase",
+      "Palette": "Palette",
+      "UtensilsCrossed": "Cutlery",
+      "Hammer": "Hammer"
     }
   },
   "visibility_rules": {

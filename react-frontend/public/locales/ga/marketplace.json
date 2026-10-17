@@ -3,11 +3,11 @@
     "filter_panel": "Painéal scagairí"
   },
   "breadcrumb": "Conair nascleanúna",
-  "page_title": "Margadh",
-  "meta_description": "Ceannaigh, díol nó roinn earraí go háitiúil le do chomharsana — liostuithe sa mhargadh pobail, earraí saor in aisce, comhcheannacháin agus seachadtaí laistigh de do bhanc ama.",
+  "page_title": "Margadh & Freecycle",
+  "meta_description": "Ceannaigh, díol, tabhair uait saor in aisce (Freecycle) nó faigh ar iasacht agus tabhair ar iasacht earraí le comharsana — liostuithe mhargadh an phobail, earraí saor in aisce, iasacht uirlisí, ceannach grúpa agus seachadtaí laistigh de do bhanc ama.",
   "hub": {
-    "eyebrow": "Margadh pobail",
-    "subtitle": "Ceannaigh, díol agus trádáil earraí i do phobal",
+    "eyebrow": "Margadh & Freecycle",
+    "subtitle": "Ceannaigh, díol, tabhair uait saor in aisce nó faigh ar iasacht agus tabhair ar iasacht earraí i do phobal",
     "sell_something": "Díol rud éigin",
     "categories_stat": "Catagóirí",
     "listings_stat": "Liostuithe infheicthe",
@@ -21,7 +21,7 @@
     "try_again": "Bain triail eile as",
     "no_listings_title": "Níor aimsíodh aon liostú",
     "no_listings_filtered": "Coigeartaigh do chuardach nó do chuid scagairí.",
-    "no_listings_empty": "Bí ar an gcéad duine a chuirfidh rud éigin ar díol!",
+    "no_listings_empty": "Bí ar an gcéad duine a liostaíonn rud éigin — le díol, saor in aisce nó ar iasacht!",
     "sidebar_cta_title": "Rud éigin le díol agat?",
     "sidebar_cta_description": "Liostaigh do chuid earraí agus cuir os comhair do phobail iad.",
     "categories": "Catagóirí",
@@ -32,11 +32,13 @@
     "load_more_failed": "Níorbh fhéidir tuilleadh liostuithe a luchtú",
     "my_listings": "Mo chuid liostuithe",
     "my_offers": "Mo chuid tairiscintí",
-    "my_orders": "M’orduithe"
+    "my_orders": "M’orduithe",
+    "free_items": "Earraí saor in aisce",
+    "borrow_lend": "Iasacht a fháil & a thabhairt"
   },
   "hub_feature_gate": {
-    "title": "Níl an margadh ar fáil",
-    "description": "Níl gné an mhargaidh cumasaithe don phobal seo."
+    "title": "Níl Margadh & Freecycle ar fáil",
+    "description": "Níl gné Margadh & Freecycle cumasaithe don phobal seo."
   },
   "listing": {
     "not_found_title": "Níor aimsíodh an liostú",
@@ -102,7 +104,13 @@
     "views_count_many": "{{count}} amharc",
     "views_count_one": "{{count}} amharc",
     "views_count_other": "{{count}} amharc",
-    "views_count_two": "{{count}} amharc"
+    "views_count_two": "{{count}} amharc",
+    "lend": "Ar iasacht",
+    "ask_to_borrow": "Iarr ar iasacht",
+    "loan_terms": "Téarmaí iasachta",
+    "lend_notice": "Tá an earra seo á thairiscint ar iasacht, ní le díol. Seol teachtaireacht chuig an úinéir chun an iasacht agus an t-aischur a shocrú.",
+    "borrow_message_template": "Dia dhuit, ba mhaith liom an méid seo a fháil ar iasacht: {{title}}",
+    "borrow_in_person_notice": "Sa phobal seo socraítear iasacht go pearsanta — iarr ar an úinéir nuair a fheiceann tú é nó í."
   },
   "offer": {
     "modal_title": "Déan tairiscint",
@@ -199,7 +207,13 @@
     "title_char_count_many": "{{count}}/120 carachtar",
     "title_char_count_one": "{{count}}/120 carachtar",
     "title_char_count_other": "{{count}}/120 carachtar",
-    "title_char_count_two": "{{count}}/120 carachtar"
+    "title_char_count_two": "{{count}}/120 carachtar",
+    "loan_terms_label": "Téarmaí iasachta",
+    "loan_terms_placeholder": "m.sh. cá fhad is féidir é a fháil ar iasacht, éarlais ar bith, conas é a thabhairt ar ais...",
+    "loan_terms_hint": "Roghnach. {{used}}/{{max}} carachtar.",
+    "loan_terms_too_long": "Ní mór do na téarmaí iasachta a bheith {{max}} carachtar nó níos lú",
+    "lend_no_price_hint": "Níl aon phraghas ar liostú iasachta. Seolann iasachtaithe teachtaireacht chugat chun an iasacht agus an t-aischur a shocrú.",
+    "lend_delivery_hint": "Bailítear earraí ar iasacht go pearsanta — ní féidir iad a sheoladh sa phost."
   },
   "search": {
     "category_search": "Cuardaigh catagóirí...",
@@ -350,7 +364,8 @@
   "price_type": {
     "fixed": "Praghas seasta",
     "negotiable": "Soshannta",
-    "free": "Saor in aisce"
+    "free": "Saor in aisce",
+    "lend": "Tabhair / faigh ar iasacht (tagann an earra ar ais)"
   },
   "delivery_method": {
     "pickup": "Bailiú amháin",
@@ -397,7 +412,9 @@
     "posted_last_days": "Le {{count}} lá anuas",
     "apply": "Cuir na scagairí i bhfeidhm",
     "clear": "Glan iad uile",
-    "title": "Scagairí"
+    "title": "Scagairí",
+    "listing_type": "Cineál liostaithe",
+    "listing_type_any": "Gach cineál"
   },
   "gallery": {
     "no_images": "Níl aon íomhánna ar fáil",
@@ -409,7 +426,8 @@
   "price": {
     "free": "Saor in aisce",
     "contact": "Déan teagmháil le haghaidh praghais",
-    "negotiable": "Soshannta"
+    "negotiable": "Soshannta",
+    "lend": "Ar iasacht"
   },
   "empty": {
     "no_listings": "Níl aon liostú ann fós",
@@ -916,5 +934,17 @@
   "my_offers_tabs_aria": "Mo rannóga tairiscintí",
   "seller_orders_tabs_aria": "Scagaire stádais ordú díoltóra",
   "seller_profile_tabs_aria": "Ailt phróifíl an díoltóra",
-  "category_filter_label": "Scag de réir catagóire"
+  "category_filter_label": "Scag de réir catagóire",
+  "borrow": {
+    "page_title": "Iasacht a fháil & a thabhairt",
+    "meta_description": "Faigh uirlisí agus trealamh ar iasacht ó chomharsana, nó tabhair do chuid féin ar iasacht — earraí Margadh & Freecycle a thagann ar ais.",
+    "subtitle": "Uirlisí agus trealamh a thugann do phobal ar iasacht go fonnmhar",
+    "lend_something": "Tabhair rud éigin ar iasacht",
+    "cta_title": "An bhfuil uirlis agat atá ag bailiú deannaigh?",
+    "cta_description": "Tabhair ar iasacht do chomharsa í. Liostaigh í faoi Iasacht a fháil & a thabhairt — socraíonn tusa na téarmaí agus tagann sí ar ais chugat.",
+    "unable_to_load": "Ní féidir earraí iasachta a lódáil",
+    "load_more_failed": "Níorbh fhéidir tuilleadh earraí a lódáil",
+    "no_items_title": "Níl aon rud le fáil ar iasacht go fóill",
+    "no_items_description": "Níl aon duine ag tabhairt rud ar bith ar iasacht faoi láthair. Fill ar ball nó bí ar an gcéad duine a thugann rud éigin ar iasacht!"
+  }
 }

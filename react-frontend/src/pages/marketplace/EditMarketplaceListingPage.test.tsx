@@ -388,6 +388,49 @@ describe('EditMarketplaceListingPage', () => {
     });
   });
 
+  describe('borrow & lend listing', () => {
+    it('pre-fills the loan terms and hides the price field for a lend listing', async () => {
+      setupMocks({ price: null, price_type: 'lend', loan_terms: 'Return clean within 7 days' });
+      const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+      render(<EditMarketplaceListingPage />);
+
+      await waitFor(() => screen.getByDisplayValue('Vintage Lamp'));
+      expect(screen.getByDisplayValue('Return clean within 7 days')).toBeInTheDocument();
+      // No price spinbutton: the only numeric fields left are quantity / inventory.
+      const priceInput = screen.getAllByRole('spinbutton').find(
+        (el) => (el as HTMLInputElement).value === '25',
+      );
+      expect(priceInput).toBeUndefined();
+    });
+
+    it('saves a lend listing with explicit zero price, collection only and loan terms', async () => {
+      setupMocks({ price: null, price_type: 'lend', loan_terms: 'Return clean within 7 days' });
+      mockApi.put.mockResolvedValue({ success: true });
+      const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
+      render(<EditMarketplaceListingPage />);
+
+      await waitFor(() => screen.getByDisplayValue('Vintage Lamp'));
+      const saveBtn = screen.getAllByRole('button').find(
+        (b) => b.textContent?.toLowerCase().includes('save'),
+      );
+      fireEvent.click(saveBtn!);
+
+      await waitFor(() => {
+        expect(mockApi.put).toHaveBeenCalledWith(
+          '/v2/marketplace/listings/77',
+          expect.objectContaining({
+            price_type: 'lend',
+            price: 0,
+            time_credit_price: 0,
+            shipping_available: false,
+            delivery_method: 'pickup',
+            loan_terms: 'Return clean within 7 days',
+          }),
+        );
+      });
+    });
+  });
+
   it('renders Generate with AI button after load', async () => {
     const { EditMarketplaceListingPage } = await import('./EditMarketplaceListingPage');
     render(<EditMarketplaceListingPage />);

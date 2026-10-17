@@ -52,6 +52,20 @@ export function PriceBadge({ price, currency, priceType, timeCreditPrice, isOver
     );
   }
 
+  // Borrow & lend: the item comes back, so there is no price to show at all.
+  if (priceType === 'lend') {
+    return (
+      <Chip
+        color="accent"
+        variant="primary"
+        size="sm"
+        className={isOverlay ? 'font-semibold shadow-lg ring-1 ring-black/10' : 'font-semibold'}
+      >
+        {t('price.lend')}
+      </Chip>
+    );
+  }
+
   if (priceType === 'contact') {
     return (
       <Chip

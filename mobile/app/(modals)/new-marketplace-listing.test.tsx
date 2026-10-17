@@ -109,6 +109,17 @@ jest.mock('react-i18next', () => ({
         'priceType.negotiable': 'Negotiable',
         'priceType.free': 'Free',
         'priceType.contact': 'Contact seller',
+        'priceType.lend': 'Borrow & lend',
+        'forms.priceTypeLend': 'Lend / borrow (item comes back)',
+        'forms.createLendTitle': 'Lend an item',
+        'forms.lendSubtitle': 'Offer a tool for members to borrow and return.',
+        'forms.lendTitlePlaceholder': 'What are you lending?',
+        'forms.loanTerms': 'Loan terms (optional)',
+        'forms.loanTermsPlaceholder': 'How long it can be borrowed.',
+        'forms.loanTermsHint': 'characters left',
+        'forms.loanTermsTooLong': 'Keep the loan terms under 500 characters.',
+        'forms.lendDeliveryHint': 'Borrowed items cannot be posted.',
+        'forms.footerMissingTitle': 'Add a title before publishing.',
         'condition.new': 'New',
         'condition.like_new': 'Like new',
         'condition.good': 'Good',
@@ -415,6 +426,73 @@ describe('NewMarketplaceListingRoute', () => {
       }));
     });
     expect(createMarketplaceListing).not.toHaveBeenCalled();
+  });
+
+  /**
+   * A borrow & lend listing is never for sale. The API refuses a cash or time-credit
+   * price on it and refuses posting, so the form must not ask for either and must send
+   * `price: null`, no time credits, the loan terms, and a collection delivery method.
+   */
+  it('creates a lend listing from the borrow route with no price and collection-only delivery', async () => {
+    mockParams = { price_type: 'lend' };
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 91 } } as never);
+
+    const { getByPlaceholderText, getByText, getAllByText, queryByPlaceholderText, queryByText } = render(<NewMarketplaceListingRoute />);
+
+    expect(getAllByText('Lend an item').length).toBeGreaterThan(0);
+    expect(queryByPlaceholderText('0.00')).toBeNull();
+    expect(queryByPlaceholderText('Optional')).toBeNull();
+    expect(queryByText('Shipping')).toBeNull();
+    expect(getByText('Borrowed items cannot be posted.')).toBeTruthy();
+
+    fireEvent.changeText(getByPlaceholderText('What are you lending?'), 'Cordless drill');
+    fireEvent.changeText(getByPlaceholderText('Details'), 'Two batteries and a charger included.');
+    fireEvent.changeText(getByPlaceholderText('How long it can be borrowed.'), 'Up to a week; please return it charged.');
+    fireEvent.press(getByText('Publish'));
+
+    await waitFor(() => {
+      expect(createMarketplaceListing).toHaveBeenCalledWith(expect.objectContaining({
+        price_type: 'lend',
+        price: null,
+        time_credit_price: null,
+        loan_terms: 'Up to a week; please return it charged.',
+        delivery_method: 'pickup',
+        shipping_available: false,
+        local_pickup: true,
+      }), 'marketplace-create-key');
+    });
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Validation' }));
+  });
+
+  it('snaps a postable delivery choice back to collection when the type changes to lend', async () => {
+    jest.mocked(createMarketplaceListing).mockResolvedValue({ data: { id: 92 } } as never);
+
+    const { getByPlaceholderText, getByText } = render(<NewMarketplaceListingRoute />);
+
+    fireEvent.press(getByText('Shipping'));
+    fireEvent.press(getByText('Lend / borrow (item comes back)'));
+    fireEvent.changeText(getByPlaceholderText('What are you lending?'), 'Pressure washer');
+    fireEvent.changeText(getByPlaceholderText('Details'), 'Works on mains water.');
+    fireEvent.press(getByText('Publish'));
+
+    await waitFor(() => {
+      expect(createMarketplaceListing).toHaveBeenCalledWith(expect.objectContaining({
+        price_type: 'lend',
+        delivery_method: 'pickup',
+        shipping_available: false,
+        loan_terms: null,
+      }), 'marketplace-create-key');
+    });
+    expect(createMarketplaceListing).not.toHaveBeenCalledWith(expect.objectContaining({ price: expect.any(Number) }), expect.anything());
+  });
+
+  it('does not tell a contact-seller draft that it is missing a price', () => {
+    const { getByPlaceholderText, getByText } = render(<NewMarketplaceListingRoute />);
+
+    fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Garden shears');
+    fireEvent.press(getByText('Contact seller'));
+
+    expect(getByText('Publish when ready.')).toBeTruthy();
   });
 
   it('uploads a selected listing video after creating the listing', async () => {

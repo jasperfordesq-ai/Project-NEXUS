@@ -78,7 +78,7 @@ describe('Laravel-first Marketplace document-title localization', () => {
   });
 
   it.each([
-    ['/marketplace', 'marketplace/index', 'Marketplace', 'marketplace.title'],
+    ['/marketplace', 'marketplace/index', 'Marketplace & Freecycle', 'marketplace.title'],
     ['/marketplace/create', 'marketplace/form', 'Create a listing', 'govuk_alpha_commerce.listing_form.title_create'],
     ['/marketplace/mine', 'marketplace/manage', 'My listings', 'govuk_alpha_commerce.my_listings.title'],
     ['/marketplace/saved', 'marketplace/listing-list', 'Saved items', 'govuk_alpha_commerce.saved.title'],

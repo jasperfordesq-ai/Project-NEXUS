@@ -1,11 +1,11 @@
 {
-  "title": "Marktplatz",
-  "eyebrow": "Community-Marktplatz",
-  "subtitle": "Community-Marktplatzeinträge durchsuchen, verkaufen, speichern und verwalten.",
+  "title": "Marktplatz & Freecycle",
+  "eyebrow": "Kaufen, verkaufen, verschenken, leihen",
+  "subtitle": "Kaufen und verkaufen Sie, verschenken Sie Dinge kostenlos (Freecycle) und leihen oder verleihen Sie Werkzeuge und Geräte in Ihrer Community.",
   "loadMore": "Mehr laden",
   "featureGate": {
-    "title": "Marktplatz ist nicht verfügbar",
-    "description": "Diese Community hat Marktplatzeinträge nicht aktiviert."
+    "title": "Marktplatz & Freecycle ist nicht verfügbar",
+    "description": "Diese Community hat Marktplatz-&-Freecycle-Einträge nicht aktiviert."
   },
   "actions": {
     "sell": "Artikel verkaufen",
@@ -22,7 +22,8 @@
     "search": "Erweiterte Suche",
     "browse": "Durchsuchen Marktplatz",
     "view": "Anzeigen",
-    "viewListing": "Details anzeigen für {{title}}"
+    "viewListing": "Details anzeigen für {{title}}",
+    "borrowLend": "Leihen & verleihen"
   },
   "search": {
     "placeholder": "Marktplatz durchsuchen...",
@@ -41,7 +42,8 @@
       "fixed": "Festpreis",
       "negotiable": "Verhandelbar",
       "contact": "Verkäufer kontaktieren",
-      "auction": "Auktion"
+      "auction": "Auktion",
+      "lend": "Leihen"
     }
   },
   "empty": {
@@ -53,14 +55,16 @@
     "seller": "Verkäufer",
     "save_failed": "Gespeicherte Einträge konnten nicht aktualisiert werden.",
     "timeCreditsPrice": "{{count}} Zeitgutschriften",
-    "timeCreditsPrice_one": "{{count}} Zeitgutschrift"
+    "timeCreditsPrice_one": "{{count}} Zeitgutschrift",
+    "borrow": "Leihen"
   },
   "priceType": {
     "fixed": "Behoben Preis",
     "negotiable": "Verhandelbar",
     "free": "Kostenlos",
     "auction": "Auktion",
-    "contact": "Verkäufer kontaktieren"
+    "contact": "Verkäufer kontaktieren",
+    "lend": "Leihen & verleihen"
   },
   "condition": {
     "new": "Neu",
@@ -213,7 +217,17 @@
     "validation": "Validierung",
     "required": "Titel und Beschreibung sind erforderlich.",
     "loadFailed": "Dieser Eintrag konnte nicht geladen werden.",
-    "saveFailed": "Dieser Eintrag konnte nicht gespeichert werden."
+    "saveFailed": "Dieser Eintrag konnte nicht gespeichert werden.",
+    "priceTypeLend": "Verleihen / ausleihen (Gegenstand kommt zurück)",
+    "createLendTitle": "Einen Gegenstand verleihen",
+    "lendSubtitle": "Bieten Sie ein Werkzeug oder Gerät an, das Mitglieder ausleihen und zurückgeben. Nichts wird verkauft oder bezahlt.",
+    "lendTitlePlaceholder": "Was verleihen Sie?",
+    "loanTerms": "Leihbedingungen (optional)",
+    "loanTermsPlaceholder": "Wie lange es ausgeliehen werden kann, eine etwaige Kaution und wie es zurückgegeben wird.",
+    "loanTermsHint": "Noch {{remaining}} Zeichen",
+    "loanTermsTooLong": "Halten Sie die Leihbedingungen unter {{max}} Zeichen.",
+    "lendDeliveryHint": "Leihgegenstände werden abgeholt oder von einem Community-Kurier gebracht; sie können nicht verschickt werden.",
+    "footerMissingTitle": "Fügen Sie vor dem Veröffentlichen einen Titel hinzu."
   },
   "owner": {
     "title": "Verkäufertools",
@@ -1052,7 +1066,8 @@
       "price_asc": "Preis niedrig bis hoch",
       "price_desc": "Preis hoch bis niedrig",
       "popular": "Beliebt"
-    }
+    },
+    "listingType": "Art des Eintrags"
   },
   "shipping": {
     "eyebrow": "Versand durch Verkäufer",
@@ -1201,5 +1216,19 @@
     "supporting_load_failed": "Einige Marktplatzkategorien oder hervorgehobene Angebote konnten nicht geladen werden. Versuche es erneut.",
     "unable_to_load": "Marktplatzeinträge konnten nicht geladen werden.",
     "load_more_failed": "Es konnten keine weiteren Einträge geladen werden."
+  },
+  "borrow": {
+    "eyebrow": "Leihen & verleihen",
+    "title": "Leihen & verleihen",
+    "subtitle": "Werkzeuge und Geräte, die Mitglieder gern verleihen. Fragen Sie an, klären Sie die Einzelheiten per Nachricht und geben Sie den Gegenstand danach zurück.",
+    "lendSomething": "Etwas verleihen",
+    "unableToLoad": "Leihartikel konnten nicht geladen werden.",
+    "loadMoreFailed": "Es konnten keine weiteren Leihartikel geladen werden.",
+    "emptyTitle": "Noch nichts zum Ausleihen",
+    "emptySubtitle": "Wenn Mitglieder Werkzeuge oder Geräte zum Verleihen anbieten, erscheinen sie hier.",
+    "askToBorrow": "Ausleihen anfragen",
+    "termsTitle": "Leihbedingungen",
+    "termsMissing": "Der Besitzer hat keine Leihbedingungen angegeben. Fragen Sie in Ihrer Nachricht danach.",
+    "howItWorks": "Hier ist nichts zu bezahlen: Schreiben Sie dem Besitzer, um zu vereinbaren, wie lange Sie den Gegenstand ausleihen können und wie Abholung und Rückgabe ablaufen."
   }
 }

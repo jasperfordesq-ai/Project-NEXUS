@@ -27,7 +27,8 @@ import RemoteImage from '@/components/ui/RemoteImage';
  * 🔴 "Free" used to be returned for ANY empty price. A "contact seller" listing and one
  * priced only in time credits therefore both showed a green Free chip everywhere — while
  * the detail screen offered "Pay with 3 time credits" underneath it (audit 2026-09-07,
- * D/F-5). Only `price_type: 'free'` is free.
+ * D/F-5). Only `price_type: 'free'` is free. A zero or missing money price with no time
+ * credits now reads as the formatted zero price (as the web PriceBadge does), not "Free".
  */
 export function formatMarketplacePrice(
   price: number | null | undefined,
@@ -35,19 +36,22 @@ export function formatMarketplacePrice(
   currency: string | undefined,
   freeLabel: string,
   fallbackCurrency?: string,
-  options?: { timeCreditPrice?: number | null; contactLabel?: string; timeCreditsLabel?: string },
+  options?: { timeCreditPrice?: number | null; contactLabel?: string; timeCreditsLabel?: string; borrowLabel?: string },
 ): string {
   if (priceType === 'free') return freeLabel;
+  // A lend listing is never for sale: it shows "Borrow", never a price and never "Free".
+  if (priceType === 'lend' && options?.borrowLabel) return options.borrowLabel;
   if (priceType === 'contact' && options?.contactLabel) return options.contactLabel;
 
-  if (price === null || price === undefined || Number(price) === 0) {
+  // Same rule as the web PriceBadge: a contact chip only for `contact`, otherwise the
+  // formatted price — a zero-priced fixed listing reads as its zero price, never "Free".
+  const money = Number(price ?? 0);
+  if (!(money > 0)) {
     const credits = Number(options?.timeCreditPrice ?? 0);
     if (credits > 0 && options?.timeCreditsLabel) return options.timeCreditsLabel;
-    if (priceType === 'contact' || options?.contactLabel === undefined) return freeLabel;
-    return freeLabel;
   }
 
-  return formatMarketplaceCurrency(Number(price), currency || fallbackCurrency);
+  return formatMarketplaceCurrency(Number.isFinite(money) ? money : 0, currency || fallbackCurrency);
 }
 
 function MarketplaceListingCardRow({
@@ -82,6 +86,7 @@ function MarketplaceListingCardRow({
       timeCreditPrice: item.time_credit_price,
       contactLabel: t('priceType.contact'),
       timeCreditsLabel: t('common.timeCreditsPrice', { count: Number(item.time_credit_price ?? 0) }),
+      borrowLabel: t('common.borrow'),
     },
   );
   const inventory = inventoryChip(item);
@@ -131,7 +136,7 @@ function MarketplaceListingCardRow({
 
         <View className="flex-row flex-wrap gap-1.5">
           <Chip size="sm" variant="secondary">
-            <Ionicons name={item.price_type === 'free' ? 'gift-outline' : 'pricetag-outline'} size={12} color={accent} />
+            <Ionicons name={priceChipIcon(item.price_type)} size={12} color={accent} />
             <Chip.Label>{price}</Chip.Label>
           </Chip>
           {item.condition ? (
@@ -180,6 +185,13 @@ function MarketplaceListingCardRow({
       </HeroCard.Body>
     </HeroCard>
   );
+}
+
+/** The glyph beside the price label: gift for free, hammer for borrow & lend, tag otherwise. */
+export function priceChipIcon(priceType: string | undefined): React.ComponentProps<typeof Ionicons>['name'] {
+  if (priceType === 'free') return 'gift-outline';
+  if (priceType === 'lend') return 'hammer-outline';
+  return 'pricetag-outline';
 }
 
 function inventoryChip(item: MarketplaceListingItem): null | {

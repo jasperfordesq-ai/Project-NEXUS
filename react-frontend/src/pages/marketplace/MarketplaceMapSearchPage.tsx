@@ -481,7 +481,9 @@ export function MarketplaceMapSearchPage() {
                               {listing.title}
                             </p>
                             <p className="text-sm font-bold text-accent mt-0.5">
-                              {listing.price_type === 'free' || listing.price === null || listing.price === 0
+                              {listing.price_type === 'lend'
+                                ? t('price.lend')
+                                : listing.price_type === 'free' || listing.price === null || listing.price === 0
                                 ? t('price.free')
                                 : formatMarketplaceCurrency(
                                   listing.price,

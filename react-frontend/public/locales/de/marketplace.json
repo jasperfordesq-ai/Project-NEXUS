@@ -3,11 +3,11 @@
     "filter_panel": "Filterbereich"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Marktplatz",
-  "meta_description": "Kaufen, verkaufen oder teilen Sie Gegenstände lokal mit Nachbarn — Community-Marktplatz, kostenlose Artikel, Gruppenbestellungen und Lieferungen in Ihrer Zeitbank.",
+  "page_title": "Marktplatz & Freecycle",
+  "meta_description": "Kaufen, verkaufen, kostenlos verschenken (Freecycle) oder Gegenstände mit Nachbarn leihen und verleihen — Angebote des Community-Marktplatzes, kostenlose Artikel, Werkzeugverleih, Sammelkäufe und Lieferungen in Ihrer Zeitbank.",
   "hub": {
-    "eyebrow": "Community-Marktplatz",
-    "subtitle": "Kaufen, verkaufen und tauschen Sie Artikel in Ihrer Gemeinschaft",
+    "eyebrow": "Marktplatz & Freecycle",
+    "subtitle": "Kaufen, verkaufen, kostenlos verschenken oder in Ihrer Gemeinschaft leihen und verleihen",
     "sell_something": "Etwas verkaufen",
     "categories_stat": "Kategorien",
     "listings_stat": "Sichtbare Einträge",
@@ -21,7 +21,7 @@
     "try_again": "Erneut versuchen",
     "no_listings_title": "Keine Inserate gefunden",
     "no_listings_filtered": "Versuchen Sie, Ihre Suche oder Filter anzupassen.",
-    "no_listings_empty": "Seien Sie die erste Person, die etwas zum Verkauf anbietet!",
+    "no_listings_empty": "Seien Sie die erste Person, die etwas inseriert — zum Verkauf, kostenlos oder zum Verleihen!",
     "sidebar_cta_title": "Haben Sie etwas zu verkaufen?",
     "sidebar_cta_description": "Inserieren Sie Ihre Artikel und erreichen Sie Ihre Gemeinschaft.",
     "categories": "Kategorien",
@@ -32,11 +32,13 @@
     "load_more_failed": "Weitere Inserate konnten nicht geladen werden",
     "my_listings": "Meine Inserate",
     "my_offers": "Meine Angebote",
-    "my_orders": "Meine Bestellungen"
+    "my_orders": "Meine Bestellungen",
+    "free_items": "Kostenlose Artikel",
+    "borrow_lend": "Leihen & Verleihen"
   },
   "hub_feature_gate": {
-    "title": "Marktplatz nicht verfügbar",
-    "description": "Die Marktplatzfunktion ist für diese Gemeinschaft nicht aktiviert."
+    "title": "Marktplatz & Freecycle nicht verfügbar",
+    "description": "Die Funktion Marktplatz & Freecycle ist für diese Gemeinschaft nicht aktiviert."
   },
   "listing": {
     "not_found_title": "Inserat nicht gefunden",
@@ -96,7 +98,13 @@
     "available_count_one": "{{count}} verfügbar",
     "available_count_other": "{{count}} verfügbar",
     "views_count_one": "{{count}} Aufrufe",
-    "views_count_other": "{{count}} Aufrufe"
+    "views_count_other": "{{count}} Aufrufe",
+    "lend": "Zum Ausleihen",
+    "ask_to_borrow": "Ausleihen anfragen",
+    "loan_terms": "Leihbedingungen",
+    "lend_notice": "Dieser Artikel wird verliehen, nicht verkauft. Schreiben Sie der Besitzerin oder dem Besitzer, um das Ausleihen und die Rückgabe zu vereinbaren.",
+    "borrow_message_template": "Hallo, ich würde gern Folgendes ausleihen: {{title}}",
+    "borrow_in_person_notice": "In dieser Gemeinschaft wird das Ausleihen persönlich vereinbart — fragen Sie die Besitzerin oder den Besitzer, wenn Sie sie treffen."
   },
   "offer": {
     "modal_title": "Angebot machen",
@@ -190,7 +198,13 @@
     "created_error_retry": "Inserat konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     "draft_saved": "Entwurf gespeichert",
     "title_char_count_one": "{{count}}/120 Zeichen",
-    "title_char_count_other": "{{count}}/120 Zeichen"
+    "title_char_count_other": "{{count}}/120 Zeichen",
+    "loan_terms_label": "Leihbedingungen",
+    "loan_terms_placeholder": "z. B. Wie lange ausgeliehen werden kann, ob eine Kaution anfällt, wie die Rückgabe abläuft ...",
+    "loan_terms_hint": "Optional. {{used}}/{{max}} Zeichen.",
+    "loan_terms_too_long": "Die Leihbedingungen dürfen höchstens {{max}} Zeichen lang sein",
+    "lend_no_price_hint": "Ein Leih-Angebot hat keinen Preis. Interessierte schreiben Ihnen, um Ausleihe und Rückgabe zu vereinbaren.",
+    "lend_delivery_hint": "Leihgegenstände werden persönlich abgeholt — sie können nicht verschickt werden."
   },
   "search": {
     "category_search": "Kategorien suchen...",
@@ -326,7 +340,8 @@
   "price_type": {
     "fixed": "Festpreis",
     "negotiable": "Verhandelbar",
-    "free": "Kostenlos"
+    "free": "Kostenlos",
+    "lend": "Verleihen / Ausleihen (Artikel kommt zurück)"
   },
   "delivery_method": {
     "pickup": "Nur Abholung",
@@ -373,7 +388,9 @@
     "posted_last_days": "Letzte {{count}} Tage",
     "apply": "Filter anwenden",
     "clear": "Alle löschen",
-    "title": "Filter"
+    "title": "Filter",
+    "listing_type": "Angebotsart",
+    "listing_type_any": "Alle Arten"
   },
   "gallery": {
     "no_images": "Keine Bilder verfügbar",
@@ -385,7 +402,8 @@
   "price": {
     "free": "Kostenlos",
     "contact": "Preis auf Anfrage",
-    "negotiable": "Verhandelbar"
+    "negotiable": "Verhandelbar",
+    "lend": "Zum Ausleihen"
   },
   "empty": {
     "no_listings": "Noch keine Inserate",
@@ -859,5 +877,17 @@
   "my_offers_tabs_aria": "Meine Angebotsbereiche",
   "seller_orders_tabs_aria": "Filter für den Bestellstatus des Verkäufers",
   "seller_profile_tabs_aria": "Abschnitte des Verkäuferprofils",
-  "category_filter_label": "Nach Kategorie filtern"
+  "category_filter_label": "Nach Kategorie filtern",
+  "borrow": {
+    "page_title": "Leihen & Verleihen",
+    "meta_description": "Leihen Sie Werkzeuge und Geräte von Nachbarn oder verleihen Sie Ihre eigenen — Marktplatz & Freecycle-Artikel, die zurückkommen.",
+    "subtitle": "Werkzeuge und Geräte, die Ihre Gemeinschaft gern verleiht",
+    "lend_something": "Etwas verleihen",
+    "cta_title": "Haben Sie ein Werkzeug, das Staub ansetzt?",
+    "cta_description": "Verleihen Sie es an Nachbarn. Inserieren Sie es unter Leihen & Verleihen — Sie legen die Bedingungen fest und bekommen es zurück.",
+    "unable_to_load": "Leih-Angebote konnten nicht geladen werden",
+    "load_more_failed": "Weitere Artikel konnten nicht geladen werden",
+    "no_items_title": "Noch nichts zum Ausleihen",
+    "no_items_description": "Derzeit verleiht niemand etwas. Schauen Sie später wieder vorbei oder verleihen Sie als Erste oder Erster etwas!"
+  }
 }

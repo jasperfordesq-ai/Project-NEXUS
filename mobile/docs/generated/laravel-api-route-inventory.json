@@ -2,12 +2,16 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2791,
-  "api_route_rows": 2756,
-  "distinct_api_paths": 2300,
+  "total_registered_routes": 2796,
+  "api_route_rows": 2761,
+  "distinct_api_paths": 2303,
   "route_source_fingerprint": {
-    "digest": "5a3ce459d0d9e1bac0eee1cb4ac77d27ac914647a16898e2e341b878cf9462d3",
+    "digest": "5436ddd9c9bba1c37e5ebcf4a9becc2ac926693c4fd36d3c853fdc77ef6532e6",
     "files": [
+      {
+        "file": "routes/api-marketplace-admin.php",
+        "sha256": "ecce8d456ddaf3b4a888d7e57ad97f9ab50c6d8960f2bc57636b946e2de1cf1a"
+      },
       {
         "file": "routes/api-volunteering-qualifications.php",
         "sha256": "423ddab28b18c662f7ac5bf84fcc4fc7f98c231beb772e1fb9bd92660f972dc5"
@@ -2202,6 +2206,17 @@
     ],
     "/api/v2/admin/marketplace/bulk-reject": [
       "POST"
+    ],
+    "/api/v2/admin/marketplace/categories": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/marketplace/categories/reorder": [
+      "PUT"
+    ],
+    "/api/v2/admin/marketplace/categories/{id}": [
+      "DELETE",
+      "PUT"
     ],
     "/api/v2/admin/marketplace/coupons": [
       "GET"

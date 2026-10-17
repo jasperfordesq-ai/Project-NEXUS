@@ -25,11 +25,13 @@ import { getFormattingLocale } from '@/lib/helpers';
 import { formatMarketplaceCurrency } from '@/lib/marketplaceNumbers';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
+import { MarketplaceCategoriesPanel } from './MarketplaceCategoriesPanel';
 
 /**
- * Admin Marketplace Dashboard
- * Overview with key metrics, recent listings, and quick navigation to
- * the moderation queue and seller management sub-pages.
+ * Admin Marketplace & Freecycle Dashboard
+ * Overview with key metrics, recent listings, the community's category
+ * manager, and quick navigation to the moderation queue and seller
+ * management sub-pages.
  */
 
 
@@ -77,12 +79,19 @@ const moderationColors: Record<string, 'success' | 'warning' | 'danger' | 'defau
   draft: 'default',
 };
 
-const statusColors: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+const statusColors: Record<string, 'success' | 'warning' | 'danger' | 'default' | 'primary'> = {
   active: 'success',
   inactive: 'default',
-  sold: 'primary' as 'success',
+  sold: 'primary',
   expired: 'warning',
+  draft: 'default',
 };
+
+/**
+ * Price types that carry no amount. Everything else (fixed, negotiable,
+ * auction) renders as a currency value.
+ */
+const PRICE_TYPES_WITHOUT_AMOUNT = new Set(['free', 'lend', 'contact']);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
@@ -252,6 +261,9 @@ export function MarketplaceAdmin() {
         </Link>
       </div>
 
+      {/* Categories (owner, 17 Oct 2026: "a place to add categories") */}
+      <MarketplaceCategoriesPanel />
+
       {/* Recent Listings Table */}
       <Card className="border border-divider/70 bg-surface">
         <CardHeader className="flex items-center justify-between px-4 pt-4">
@@ -288,8 +300,8 @@ export function MarketplaceAdmin() {
                     </TableCell>
                     <TableCell className="text-muted">{listing.user?.name ?? '--'}</TableCell>
                     <TableCell className="text-muted">
-                      {listing.price_type === 'free'
-                        ? tm('price.free')
+                      {PRICE_TYPES_WITHOUT_AMOUNT.has(listing.price_type)
+                        ? t(`marketplace.price_type.${listing.price_type}`)
                         : formatMarketplaceCurrency(
                           parseFloat(String(listing.price)) || 0,
                           listing.price_currency || tenant?.currency || '',

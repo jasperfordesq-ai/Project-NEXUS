@@ -30,6 +30,13 @@ jest.mock('react-i18next', () => ({
         'advancedSearch.maxPlaceholder': '100',
         'advancedSearch.category': 'Category',
         'advancedSearch.condition': 'Condition',
+        'advancedSearch.listingType': 'Listing type',
+        'filters.priceType.all': 'All prices',
+        'filters.priceType.free': 'Free',
+        'filters.priceType.lend': 'Borrow',
+        'filters.priceType.fixed': 'Fixed price',
+        'filters.priceType.negotiable': 'Negotiable',
+        'filters.priceType.contact': 'Contact seller',
         'advancedSearch.sellerType': 'Seller type',
         'advancedSearch.allSellers': 'All sellers',
         'advancedSearch.delivery': 'Delivery',
@@ -147,6 +154,27 @@ describe('MarketplaceSearchRoute', () => {
         q: 'bike',
         price_min: '10',
       }));
+    }, { timeout: 3000 });
+  });
+
+  it('filters by listing type with the same values as the hub, and clears it with the other filters', async () => {
+    const { getByText } = render(<MarketplaceSearchRoute />);
+    await waitFor(() => expect(getMarketplaceListings).toHaveBeenCalledTimes(1));
+    expect(getByText('Listing type')).toBeTruthy();
+
+    fireEvent.press(getByText('Borrow'));
+    await waitFor(() => {
+      expect(getMarketplaceListings).toHaveBeenLastCalledWith(expect.objectContaining({ price_type: 'lend' }));
+    }, { timeout: 3000 });
+
+    fireEvent.press(getByText('Fixed price'));
+    await waitFor(() => {
+      expect(getMarketplaceListings).toHaveBeenLastCalledWith(expect.objectContaining({ price_type: 'fixed' }));
+    }, { timeout: 3000 });
+
+    fireEvent.press(getByText(/^Reset /));
+    await waitFor(() => {
+      expect(getMarketplaceListings).toHaveBeenLastCalledWith(expect.objectContaining({ price_type: '' }));
     }, { timeout: 3000 });
   });
 });

@@ -841,6 +841,10 @@ class MarketplaceOfferService
         if ((string) $listing->status !== 'active') {
             throw new \InvalidArgumentException(__('api.marketplace_listing_unavailable_for_purchase'));
         }
+        if ((string) $listing->price_type === 'lend') {
+            // Borrow & lend: no price to negotiate. Borrowers message the owner.
+            throw new \InvalidArgumentException(__('api.marketplace_lend_listing_not_for_sale'));
+        }
         if ((string) $listing->moderation_status !== 'approved') {
             throw new \InvalidArgumentException(__('api.marketplace_listing_not_approved'));
         }

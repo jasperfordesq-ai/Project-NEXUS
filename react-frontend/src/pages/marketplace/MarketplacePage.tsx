@@ -25,7 +25,10 @@
 
 import { getFormattingLocale } from '@/lib/helpers';
 import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';import Search from 'lucide-react/icons/search';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import Search from 'lucide-react/icons/search';
+import Gift from 'lucide-react/icons/gift';
+import Handshake from 'lucide-react/icons/handshake';
 import Plus from 'lucide-react/icons/plus';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
 import Star from 'lucide-react/icons/star';
@@ -146,6 +149,7 @@ export function MarketplacePage() {
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State
@@ -296,12 +300,28 @@ export function MarketplacePage() {
   // Phone: the `hidden lg:block` sidebar's quick links, which phones and tablets
   // never get. Re-homed below the grid so hiding the hero costs no functionality.
   const phoneQuickLinks = useMemo<PhoneQuickLink[]>(() => {
-    const links: PhoneQuickLink[] = [{
-      key: 'advanced-search',
-      to: tenantPath('/marketplace/search'),
-      label: t('hub.advanced_search'),
-      icon: <Search className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
-    }];
+    const links: PhoneQuickLink[] = [
+      {
+        key: 'advanced-search',
+        to: tenantPath('/marketplace/search'),
+        label: t('hub.advanced_search'),
+        icon: <Search className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      // Freecycle and the tool library are listing types, not categories, so
+      // they need their own doors — the category chips cannot reach them.
+      {
+        key: 'free-items',
+        to: tenantPath('/marketplace/free'),
+        label: t('hub.free_items'),
+        icon: <Gift className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'borrow-lend',
+        to: tenantPath('/marketplace/borrow'),
+        label: t('hub.borrow_lend'),
+        icon: <Handshake className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+    ];
     if (!isAuthenticated) return links;
     links.push(
       {
@@ -563,7 +583,7 @@ export function MarketplacePage() {
                 }
                 action={
                   isAuthenticated
-                    ? { label: t('hub.sell_something'), onClick: () => window.location.href = tenantPath('/marketplace/sell') }
+                    ? { label: t('hub.sell_something'), onClick: () => navigate(tenantPath('/marketplace/sell')) }
                     : undefined
                 }
               />
@@ -654,6 +674,20 @@ export function MarketplacePage() {
                 >
                   <Search className="w-4 h-4" aria-hidden="true" />
                   {t('hub.advanced_search')}
+                </Link>
+                <Link
+                  to={tenantPath('/marketplace/free')}
+                  className="flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors"
+                >
+                  <Gift className="w-4 h-4" aria-hidden="true" />
+                  {t('hub.free_items')}
+                </Link>
+                <Link
+                  to={tenantPath('/marketplace/borrow')}
+                  className="flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors"
+                >
+                  <Handshake className="w-4 h-4" aria-hidden="true" />
+                  {t('hub.borrow_lend')}
                 </Link>
                 {isAuthenticated && (
                   <>

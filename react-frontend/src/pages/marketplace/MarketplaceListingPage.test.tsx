@@ -9,7 +9,7 @@ import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
-const { mockApi, stableTenantPath, stableT } = vi.hoisted(() => ({
+const { mockApi, stableTenantPath, stableT, tenantGates } = vi.hoisted(() => ({
   mockApi: {
     get: vi.fn(),
     post: vi.fn(),
@@ -22,7 +22,13 @@ const { mockApi, stableTenantPath, stableT } = vi.hoisted(() => ({
   // Stable function references — prevents effect re-runs from identity churn
   stableTenantPath: (p: string) => `/test${p}`,
   stableT: (key: string) => key,
+  // Tenant gates the page reads. Everything is on by default; a test flips
+  // `messaging` off to exercise the no-messaging branch.
+  tenantGates: { messaging: true },
 }));
+
+const gateAnswer = (key: string): boolean =>
+  key === 'messages' || key === 'direct_messaging' ? tenantGates.messaging : true;
 
 vi.mock('@/lib/api', () => ({
   api: mockApi,
@@ -74,8 +80,8 @@ vi.mock('@/contexts', () =>
     useTenant: () => ({
       tenant: { id: 2, name: 'Test', slug: 'test' },
       tenantPath: stableTenantPath,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
+      hasFeature: vi.fn(gateAnswer),
+      hasModule: vi.fn(gateAnswer),
       branding: { name: 'Test Platform' },
     }),
   })
@@ -99,8 +105,8 @@ vi.mock('@/contexts/ToastContext', async (importOriginal) => {
 vi.mock('@/contexts/TenantContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/contexts/TenantContext')>();
   return { ...actual, useTenant: () => ({
-    hasFeature: vi.fn((_key: string) => true),
-    hasModule: vi.fn((_key: string) => true),
+    hasFeature: vi.fn(gateAnswer),
+    hasModule: vi.fn(gateAnswer),
     tenant: { id: 2, name: 'Test', slug: 'test' },
     tenantPath: stableTenantPath,
     branding: { name: 'Test Platform' },
@@ -209,6 +215,7 @@ const { makeListing, makeSellerListings } = vi.hoisted(() => ({
     price_type: string;
     price_currency: string;
     time_credit_price: number | null;
+    loan_terms: string | null;
     condition: string;
     is_own: boolean;
     is_saved: boolean;
@@ -288,7 +295,32 @@ function setupMocks(listingOverrides = {}) {
 describe('MarketplaceListingPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    tenantGates.messaging = true;
     setupMocks();
+  });
+
+  describe('tenant without messaging', () => {
+    beforeEach(() => { tenantGates.messaging = false; });
+
+    it('hides "Message seller" and the sign-in-to-contact prompt but keeps Buy Now', async () => {
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.queryByText('listing.message_seller')).not.toBeInTheDocument();
+      expect(screen.queryByText('listing.sign_in_to_contact')).not.toBeInTheDocument();
+      expect(screen.getByTestId('buy-now-btn')).toBeInTheDocument();
+    });
+
+    it('replaces "Ask to borrow" with the arrange-in-person note on a lend listing', async () => {
+      setupMocks({ price: null, price_type: 'lend', loan_terms: null });
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.queryByText('listing.ask_to_borrow')).not.toBeInTheDocument();
+      expect(screen.getByTestId('borrow-in-person')).toHaveTextContent('listing.borrow_in_person_notice');
+    });
   });
 
   it('shows skeleton loading state initially', async () => {
@@ -464,6 +496,69 @@ describe('MarketplaceListingPage', () => {
       // Free badge / chip or free label text
       const freeEls = screen.getAllByText(/free/i);
       expect(freeEls.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('borrow & lend listing', () => {
+    const LEND = { price: null, price_type: 'lend', time_credit_price: null, loan_terms: 'Return within 7 days, cleaned.' };
+
+    it('hides Buy Now and Make Offer and shows a single "Ask to borrow" action', async () => {
+      setupMocks(LEND);
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.queryByTestId('buy-now-btn')).not.toBeInTheDocument();
+      expect(screen.queryByText('listing.make_offer')).not.toBeInTheDocument();
+      expect(screen.queryByText('listing.message_seller')).not.toBeInTheDocument();
+      expect(screen.getByText('listing.ask_to_borrow')).toBeInTheDocument();
+    });
+
+    it('routes "Ask to borrow" through the existing message-seller link with a borrow template', async () => {
+      setupMocks(LEND);
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      const action = await screen.findByText('listing.ask_to_borrow');
+      const link = action.closest('a');
+      expect(link).not.toBeNull();
+      const href = link!.getAttribute('href') ?? '';
+      expect(href).toContain('/test/messages?to=20');
+      expect(href).toContain('ref=marketplace');
+      expect(href).toContain('listing_id=55');
+      expect(href).toContain(encodeURIComponent('listing.borrow_message_template'));
+      expect(href).not.toContain(encodeURIComponent('listing.message_template'));
+    });
+
+    it('shows the lend chip instead of a price, and the loan terms block', async () => {
+      setupMocks(LEND);
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.getByText('listing.lend')).toBeInTheDocument();
+      expect(screen.queryByText('price.free')).not.toBeInTheDocument();
+      const terms = screen.getByTestId('loan-terms');
+      expect(terms).toHaveTextContent('listing.loan_terms');
+      expect(terms).toHaveTextContent('Return within 7 days, cleaned.');
+      expect(terms).toHaveTextContent('listing.lend_notice');
+    });
+
+    it('still shows the notice when the owner left loan terms empty', async () => {
+      setupMocks({ ...LEND, loan_terms: null });
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.getByTestId('loan-terms')).toHaveTextContent('listing.lend_notice');
+    });
+
+    it('does not show the loan terms block for a listing that is for sale', async () => {
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => expect(screen.getByText('Cosy Armchair')).toBeInTheDocument());
+      expect(screen.queryByTestId('loan-terms')).not.toBeInTheDocument();
     });
   });
 

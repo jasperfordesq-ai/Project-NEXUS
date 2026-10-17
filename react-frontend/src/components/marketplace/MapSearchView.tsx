@@ -64,6 +64,7 @@ const PIN_COLORS: Record<string, string> = {
   negotiable: '#eab308', // yellow
   auction: '#f97316',    // orange
   contact: '#8b5cf6',    // purple
+  lend: '#0ea5e9',       // sky — borrow & lend (the item comes back)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -269,6 +270,10 @@ export function MapSearchView({
           <div className="flex items-center gap-1.5">
             <Badge isDot color="warning" size="sm" />
             <span className="text-xs text-muted">{t('price_type.negotiable')}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-block size-2 rounded-full bg-sky-500" aria-hidden="true" />
+            <span className="text-xs text-muted">{t('price_type.lend')}</span>
           </div>
         </div>
       </div>

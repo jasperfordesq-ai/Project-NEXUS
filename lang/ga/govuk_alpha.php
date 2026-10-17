@@ -2995,7 +2995,7 @@ return [
         ],
     ],
     'marketplace' => [
-        'title' => 'Margadh',
+        'title' => 'Margadh & Freecycle',
         'caption' => ':community',
         'description' => 'Ceannaigh, díol agus malartaigh earraí agus seirbhísí le do phobal.',
         'empty' => 'Níl aon rud sa mhargadh fós.',

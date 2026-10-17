@@ -11,7 +11,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';import Gift from 'lucide-react/icons/gift';
+import { Link, useNavigate } from 'react-router-dom';
+import Gift from 'lucide-react/icons/gift';
 import Plus from 'lucide-react/icons/plus';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,7 @@ const ITEMS_PER_PAGE = 24;
 export function FreeItemsPage() {
   const { t } = useTranslation('marketplace');
   usePageTitle(t('free.page_title'));
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
@@ -221,7 +223,7 @@ export function FreeItemsPage() {
               isAuthenticated
                 ? {
                     label: t('free.give_away'),
-                    onClick: () => { window.location.href = tenantPath('/marketplace/sell'); },
+                    onClick: () => navigate(tenantPath('/marketplace/sell')),
                   }
                 : undefined
             }

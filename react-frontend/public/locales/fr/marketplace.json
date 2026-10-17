@@ -3,11 +3,11 @@
     "filter_panel": "Panneau de filtres"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "Marché",
-  "meta_description": "Achetez, vendez ou partagez des articles localement avec vos voisins — annonces du marché communautaire, articles gratuits, achats groupés et livraisons au sein de votre banque de temps.",
+  "page_title": "Marché & Freecycle",
+  "meta_description": "Achetez, vendez, donnez gratuitement (Freecycle) ou empruntez et prêtez des objets entre voisins — annonces du marché communautaire, objets gratuits, prêt d'outils, achats groupés et livraisons au sein de votre banque de temps.",
   "hub": {
-    "eyebrow": "Marché communautaire",
-    "subtitle": "Achetez, vendez et échangez des articles dans votre communauté",
+    "eyebrow": "Marché & Freecycle",
+    "subtitle": "Achetez, vendez, donnez gratuitement ou empruntez et prêtez des objets dans votre communauté",
     "sell_something": "Vendre quelque chose",
     "categories_stat": "Catégories",
     "listings_stat": "Annonces visibles",
@@ -21,7 +21,7 @@
     "try_again": "Réessayer",
     "no_listings_title": "Aucune annonce trouvée",
     "no_listings_filtered": "Essayez d'ajuster votre recherche ou vos filtres.",
-    "no_listings_empty": "Soyez le premier à mettre quelque chose en vente !",
+    "no_listings_empty": "Soyez la première personne à publier une annonce — à vendre, à donner ou à prêter !",
     "sidebar_cta_title": "Vous avez quelque chose à vendre ?",
     "sidebar_cta_description": "Listez vos articles et atteignez votre communauté.",
     "categories": "Catégories",
@@ -32,11 +32,13 @@
     "load_more_failed": "Échec du chargement de plus d'annonces",
     "my_listings": "Mes annonces",
     "my_offers": "Mes offres",
-    "my_orders": "Mes commandes"
+    "my_orders": "Mes commandes",
+    "free_items": "Objets gratuits",
+    "borrow_lend": "Emprunter & prêter"
   },
   "hub_feature_gate": {
-    "title": "Marché non disponible",
-    "description": "La fonctionnalité de marché n'est pas activée pour cette communauté."
+    "title": "Marché & Freecycle non disponible",
+    "description": "La fonctionnalité Marché & Freecycle n'est pas activée pour cette communauté."
   },
   "listing": {
     "not_found_title": "Annonce non trouvée",
@@ -98,7 +100,13 @@
     "available_count_other": "{{count}} disponible",
     "views_count_many": "{{count}} vues",
     "views_count_one": "{{count}} vues",
-    "views_count_other": "{{count}} vues"
+    "views_count_other": "{{count}} vues",
+    "lend": "À emprunter",
+    "ask_to_borrow": "Demander à emprunter",
+    "loan_terms": "Conditions de prêt",
+    "lend_notice": "Cet objet est proposé en prêt, pas à la vente. Envoyez un message à son propriétaire pour convenir de l'emprunt et du retour.",
+    "borrow_message_template": "Bonjour, j'aimerais emprunter : {{title}}",
+    "borrow_in_person_notice": "Dans cette communauté, l'emprunt se convient en personne — demandez au propriétaire quand vous le voyez."
   },
   "offer": {
     "modal_title": "Faire une offre",
@@ -193,7 +201,13 @@
     "draft_saved": "Brouillon enregistré",
     "title_char_count_many": "{{count}}/120 caractères",
     "title_char_count_one": "{{count}}/120 caractères",
-    "title_char_count_other": "{{count}}/120 caractères"
+    "title_char_count_other": "{{count}}/120 caractères",
+    "loan_terms_label": "Conditions de prêt",
+    "loan_terms_placeholder": "ex. : durée du prêt, caution éventuelle, modalités de retour...",
+    "loan_terms_hint": "Facultatif. {{used}}/{{max}} caractères.",
+    "loan_terms_too_long": "Les conditions de prêt ne doivent pas dépasser {{max}} caractères",
+    "lend_no_price_hint": "Une annonce de prêt n'a pas de prix. Les emprunteurs vous écrivent pour convenir du prêt et du retour.",
+    "lend_delivery_hint": "Les objets prêtés sont récupérés en personne — ils ne peuvent pas être expédiés."
   },
   "search": {
     "category_search": "Rechercher des catégories...",
@@ -334,7 +348,8 @@
   "price_type": {
     "fixed": "Prix fixe",
     "negotiable": "Négociable",
-    "free": "Gratuit"
+    "free": "Gratuit",
+    "lend": "Prêter / emprunter (l'objet revient)"
   },
   "delivery_method": {
     "pickup": "Ramassage uniquement",
@@ -381,7 +396,9 @@
     "posted_last_days": "{{count}} derniers jours",
     "apply": "Appliquer les filtres",
     "clear": "Tout effacer",
-    "title": "Filtres"
+    "title": "Filtres",
+    "listing_type": "Type d'annonce",
+    "listing_type_any": "Tous les types"
   },
   "gallery": {
     "no_images": "Aucune image disponible",
@@ -393,7 +410,8 @@
   "price": {
     "free": "Gratuit",
     "contact": "Contactez pour le prix",
-    "negotiable": "Négociable"
+    "negotiable": "Négociable",
+    "lend": "À emprunter"
   },
   "empty": {
     "no_listings": "Aucune annonce pour le moment",
@@ -878,5 +896,17 @@
   "my_offers_tabs_aria": "Mes rubriques offres",
   "seller_orders_tabs_aria": "Filtre de statut de commande du vendeur",
   "seller_profile_tabs_aria": "Sections du profil du vendeur",
-  "category_filter_label": "Filtrer par catégorie"
+  "category_filter_label": "Filtrer par catégorie",
+  "borrow": {
+    "page_title": "Emprunter & prêter",
+    "meta_description": "Empruntez des outils et du matériel à vos voisins, ou prêtez les vôtres — des objets du Marché & Freecycle qui reviennent.",
+    "subtitle": "Outils et matériel que votre communauté est heureuse de prêter",
+    "lend_something": "Prêter quelque chose",
+    "cta_title": "Un outil qui prend la poussière ?",
+    "cta_description": "Prêtez-le à un voisin. Publiez-le dans Emprunter & prêter — vous fixez les conditions et il vous revient.",
+    "unable_to_load": "Impossible de charger les objets à emprunter",
+    "load_more_failed": "Impossible de charger plus d'objets",
+    "no_items_title": "Rien à emprunter pour l'instant",
+    "no_items_description": "Personne ne prête rien pour le moment. Revenez plus tard ou soyez la première personne à prêter quelque chose !"
+  }
 }

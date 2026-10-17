@@ -33,6 +33,7 @@ jest.mock('react-i18next', () => ({
         'actions.pickups': 'Pickups',
         'actions.tools': 'Tools',
         'actions.freeItems': 'Free items',
+        'actions.borrowLend': 'Borrow & lend',
         'actions.collections': 'Collections',
         'actions.search': 'Advanced search',
         'actions.coupons': 'Coupons',
@@ -43,6 +44,7 @@ jest.mock('react-i18next', () => ({
         'filters.allCategories': 'All categories',
         'filters.priceType.all': 'All prices',
         'filters.priceType.free': 'Free',
+        'filters.priceType.lend': 'Borrow',
         'filters.priceType.fixed': 'Fixed price',
         'filters.priceType.negotiable': 'Negotiable',
         'filters.priceType.contact': 'Contact seller',
@@ -259,6 +261,39 @@ describe('MarketplaceRoute', () => {
     await act(async () => { finishOld({ data: [{ id: 1, title: 'Old catalogue' }] }); });
     expect(screen.queryByText('Old catalogue')).toBeNull();
     expect(screen.getByText('Free drill')).toBeTruthy();
+  });
+
+  it('ignores a deep-link price type that has no chip, so no invisible filter is applied', async () => {
+    mockParams = { price_type: 'auction' };
+    render(<MarketplaceRoute />);
+    await waitFor(() => expect(getMarketplaceListings).toHaveBeenCalledTimes(1));
+    expect(getMarketplaceListings).toHaveBeenCalledWith(expect.objectContaining({ price_type: '' }));
+  });
+
+  it('shows a zero-priced fixed listing as its price, not as free, and a contact chip only for contact', () => {
+    const { formatMarketplacePrice } = jest.requireActual('@/components/marketplace/MarketplaceListingCard');
+    const options = { contactLabel: 'Contact seller', timeCreditsLabel: '2 time credits', borrowLabel: 'Borrow' };
+    const zeroFixed = formatMarketplacePrice(0, 'fixed', 'EUR', 'Free', undefined, { ...options, timeCreditPrice: null });
+    expect(zeroFixed).not.toBe('Free');
+    expect(zeroFixed).toContain('0');
+    expect(zeroFixed).not.toBe('Contact seller');
+    expect(formatMarketplacePrice(null, 'negotiable', 'EUR', 'Free', undefined, { ...options, timeCreditPrice: 2 })).toBe('2 time credits');
+    expect(formatMarketplacePrice(null, 'contact', 'EUR', 'Free', undefined, options)).toBe('Contact seller');
+    expect(formatMarketplacePrice(0, 'free', 'EUR', 'Free', undefined, options)).toBe('Free');
+    expect(formatMarketplacePrice(null, 'lend', 'EUR', 'Free', undefined, options)).toBe('Borrow');
+  });
+
+  it('filters the catalogue to borrow & lend listings and opens the borrow screen', async () => {
+    const screen = render(<MarketplaceRoute />);
+    await waitFor(() => expect(getMarketplaceListings).toHaveBeenCalledTimes(1));
+    jest.mocked(getMarketplaceListings).mockResolvedValueOnce({ data: [{ id: 3, title: 'Ladder to borrow' }] } as never);
+    fireEvent.press(screen.getByText('Borrow'));
+    await waitFor(() => expect(screen.getByText('Ladder to borrow')).toBeTruthy());
+    expect(getMarketplaceListings).toHaveBeenLastCalledWith(expect.objectContaining({ price_type: 'lend' }));
+
+    fireEvent.press(screen.getByText('Borrow & lend'));
+    const { router } = jest.requireMock('expo-router') as { router: { push: jest.Mock } };
+    expect(router.push).toHaveBeenCalledWith('/(modals)/marketplace-borrow');
   });
 
   it('dispatches one later-page request for two same-frame end events', async () => {

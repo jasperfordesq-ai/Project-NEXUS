@@ -78,8 +78,13 @@ Models / tables (all carry `tenant_id`):
 
 Frontend entry points:
 
-- React: `react-frontend/src/pages/marketplace/` (`MarketplacePage`, `MarketplaceListingPage`, `CreateMarketplaceListingPage`, `BuyerOrdersPage`, `SellerOrdersPage`, `StripeOnboardingPage`, `FreeItemsPage`, `MarketplaceCollectionsPage`, seller sub-pages incl. `SellerPickupSlotsPage`, etc.), routed in `react-frontend/src/routes/AppRoutes.tsx`.
-- Accessible (GOV.UK): commerce parity routes under `app/Http/Controllers/GovukAlpha/` (`CommerceParity` concern).
+- React: `react-frontend/src/pages/marketplace/` (`MarketplacePage`, `MarketplaceListingPage`, `CreateMarketplaceListingPage`, `BuyerOrdersPage`, `SellerOrdersPage`, `StripeOnboardingPage`, `FreeItemsPage`, `BorrowLendPage`, `MarketplaceCollectionsPage`, seller sub-pages incl. `SellerPickupSlotsPage`, etc.), routed in `react-frontend/src/routes/AppRoutes.tsx`.
+- Accessible (GOV.UK): `web-uk/src/routes/marketplace.js` and `marketplace-actions.js` (the Blade `GovukAlpha` controllers were deleted on 2026-08-14).
+- Mobile (Expo): `mobile/app/(modals)/marketplace*.tsx`, API client `mobile/lib/api/marketplace.ts`.
+
+### Member-facing name: "Marketplace & Freecycle" (17 Oct 2026)
+
+The module is presented to members as **Marketplace & Freecycle**: a place to buy, sell, give away for free and — since 17 Oct 2026 — borrow and lend. Only the display copy changed; the feature flag (`marketplace`), every route (`/marketplace/*`, `/v2/marketplace/*`), table name and code identifier keep the `marketplace` name. "Freecycle" is used as a proper name in every locale. 🔴 "Freecycle" is also the registered trade mark of The Freecycle Network; the owner chose the name and has been told.
 
 ## Item types & pricing
 
@@ -92,6 +97,7 @@ There is no separate "swap" listing type. Item pricing is driven by `marketplace
 | `free` | Give-away / free item (gated by the `marketplace.allow_free_items` config, default on). Surfaced by `GET /v2/marketplace/listings/free`. |
 | `auction` | Auction-style listing. |
 | `contact` | "Contact for price". |
+| `lend` | **Borrow & lend** (added 17 Oct 2026, appended to the enum with `ALGORITHM=INSTANT`). The item is lent and comes back; it is never sold. No cash or time-credit price is allowed, it cannot be posted (`delivery_method` must be `pickup` or `community_delivery`), buy-now (`POST /v2/marketplace/orders`) and price offers both answer 422 with `api.marketplace_lend_listing_not_for_sale`, and the member-facing call to action is "Ask to borrow", which opens a message to the owner. The optional `loan_terms` column (`varchar(500)`, plain text) holds the owner's conditions and is returned on items and detail **only** when `price_type = lend`. Browse with `GET /v2/marketplace/listings?price_type=lend`. Lending is a listing *type*, not a category, because a category could not switch off buying, offers and shipping; the seeded "Tools & Equipment" category simply groups the things people most often lend. |
 
 Additional pricing fields are `price` (`decimal(10,2)`), `price_currency`, and optional `time_credit_price` (`decimal(8,2)`). New listings default to the tenant's configured currency, not a platform-wide EUR assumption. Cash currencies are normalized and checked by `App\Support\StripeCurrency`: supported two-decimal currencies use two fractional digits; Stripe zero-decimal currencies such as JPY reject fractional values; ISK and UGX also reject fractional major-unit input. Three-decimal presentment currencies are deliberately unsupported. Orders record `time_credits_used` when settled with credits. `condition` is `new | like_new | good | fair | poor`; `seller_type` is `private | business`; `delivery_method` is `pickup | shipping | both | community_delivery`.
 
@@ -110,6 +116,8 @@ Ownership is enforced in the controller (`ensureOwner()` → `FORBIDDEN` when `l
 ## Categories
 
 `marketplace_categories` is a per-tenant (or global, `tenant_id = NULL`) hierarchy with `parent_id`, `slug` (unique per tenant), `icon`, `sort_order`, and `is_active`. Listings reference `category_id` (FK `ON DELETE SET NULL`). Category templates (`MarketplaceCategoryTemplate`, served by `categoryTemplate()`) drive per-category structured fields stored in the listing's `template_data` JSON.
+
+**Admin management (added 17 Oct 2026 — until then there was no screen or endpoint to add a category).** `AdminMarketplaceCategoryController` serves `/v2/admin/marketplace/categories` (`GET` list incl. hidden rows and live listing counts, `POST` create, `PUT {id}` update, `PUT reorder`, `DELETE {id}`), declared in `routes/api-marketplace-admin.php` (loaded by `RouteServiceProvider` beside `routes/api.php`) under `auth:sanctum` + `admin`, with `requireAdmin()` and the `marketplace` feature gate re-checked in the controller. Rules: platform categories (`tenant_id = NULL`) are listed with `is_platform: true` and are read-only (`403 CATEGORY_READ_ONLY`); another community's category is a `404`; a parent must be a top-level platform or own category (two levels only, `422`); the slug must be unique against both the community's and the platform's slugs because members browse `/marketplace/category/{slug}` across both sets; hiding a parent hides its children; `DELETE` answers `409 CATEGORY_IN_USE` while any non-removed listing points at the category or a child, so the admin hides it instead — the FK would otherwise blank `category_id` on live listings. The React admin exposes this as the "Categories" panel on the Marketplace & Freecycle dashboard (`react-frontend/src/admin/modules/marketplace/`). Regression tests: `tests/Laravel/Feature/Controllers/AdminMarketplaceCategoryControllerTest.php`.
 
 ## Buyer/seller order flow
 

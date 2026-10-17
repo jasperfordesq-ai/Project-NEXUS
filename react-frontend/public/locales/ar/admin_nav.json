@@ -244,10 +244,11 @@
   "job_pipeline": "خط أنابيب",
   "job_bias_audit": "تدقيق التحيز",
   "job_templates": "قوالب",
-  "marketplace": "السوق",
+  "marketplace": "السوق و Freecycle",
   "marketplace_dashboard": "لوحة القيادة",
   "marketplace_moderation": "الاعتدال",
   "marketplace_sellers": "البائعين",
+  "marketplace_categories": "الفئات",
   "feature_flags": "أعلام مميزة",
   "secrets_vault": "قبو الأسرار",
   "module_configuration": "تكوين الوحدة",
@@ -695,7 +696,19 @@
       "Wrench": "أدوات",
       "Puzzle": "لغز",
       "Layers": "طبقات",
-      "Package": "حزمة"
+      "Package": "حزمة",
+      "Smartphone": "هاتف ذكي",
+      "Armchair": "كرسي بذراعين",
+      "Shirt": "قميص",
+      "Car": "سيارة",
+      "Bike": "دراجة",
+      "Gamepad2": "ذراع تحكم",
+      "Baby": "طفل",
+      "Dog": "كلب",
+      "Briefcase": "حقيبة أعمال",
+      "Palette": "لوحة ألوان",
+      "UtensilsCrossed": "أدوات مائدة",
+      "Hammer": "مطرقة"
     }
   },
   "visibility_rules": {

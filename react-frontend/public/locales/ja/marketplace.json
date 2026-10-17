@@ -3,11 +3,11 @@
     "filter_panel": "フィルターパネル"
   },
   "breadcrumb": "Breadcrumb",
-  "page_title": "マーケットプレイス",
-  "meta_description": "ご近所さんと地域でアイテムを売買・シェアしましょう — コミュニティマーケットプレイスの出品、無料アイテム、グループ購入、タイムバンク内の配送。",
+  "page_title": "マーケットプレイス & Freecycle",
+  "meta_description": "ご近所同士で売る・買う・無料で譲る（Freecycle）・借りる・貸す — コミュニティマーケットプレイスの出品、無料の品、工具の貸し借り、共同購入、タイムバンク内の配達。",
   "hub": {
-    "eyebrow": "コミュニティマーケットプレイス",
-    "subtitle": "コミュニティ内でアイテムを売買・交換",
+    "eyebrow": "マーケットプレイス & Freecycle",
+    "subtitle": "コミュニティで売る・買う・無料で譲る・借りる・貸す",
     "sell_something": "出品する",
     "categories_stat": "カテゴリー",
     "listings_stat": "表示中の出品",
@@ -21,7 +21,7 @@
     "try_again": "再試行",
     "no_listings_title": "リスティングが見つかりません",
     "no_listings_filtered": "検索またはフィルターを調整してみてください。",
-    "no_listings_empty": "最初に出品してみませんか!",
+    "no_listings_empty": "最初の出品者になりましょう — 販売、無料、貸し出しのいずれでも！",
     "sidebar_cta_title": "売りたいものはありますか?",
     "sidebar_cta_description": "アイテムを出品してコミュニティに届けましょう。",
     "categories": "カテゴリ",
@@ -32,11 +32,13 @@
     "load_more_failed": "追加のリスティングの読み込みに失敗しました",
     "my_listings": "マイ出品",
     "my_offers": "マイオファー",
-    "my_orders": "マイ注文"
+    "my_orders": "マイ注文",
+    "free_items": "無料の品",
+    "borrow_lend": "借りる・貸す"
   },
   "hub_feature_gate": {
-    "title": "マーケットプレイスはご利用いただけません",
-    "description": "このコミュニティではマーケットプレイス機能が有効になっていません。"
+    "title": "マーケットプレイス & Freecycle は利用できません",
+    "description": "このコミュニティではマーケットプレイス & Freecycle 機能が有効になっていません。"
   },
   "listing": {
     "not_found_title": "リスティングが見つかりません",
@@ -96,7 +98,13 @@
     "available_count_other": "{{count}} 点在庫あり",
     "views_count_other": "{{count}} 回閲覧",
     "available_count_one": "{{count}} 利用可能",
-    "views_count_one": "{{count}} 回閲覧"
+    "views_count_one": "{{count}} 回閲覧",
+    "lend": "貸し出し",
+    "ask_to_borrow": "借りたいと伝える",
+    "loan_terms": "貸し出し条件",
+    "lend_notice": "この品物は販売ではなく貸し出しです。持ち主にメッセージを送り、借りる方法と返却について相談してください。",
+    "borrow_message_template": "こんにちは。次の品物をお借りしたいです：{{title}}",
+    "borrow_in_person_notice": "このコミュニティでは貸し借りは直接会って相談します — 持ち主に会ったときに声をかけてください。"
   },
   "offer": {
     "modal_title": "オファーを出す",
@@ -190,7 +198,13 @@
     "created_error_retry": "リスティングの作成に失敗しました。もう一度お試しください。",
     "draft_saved": "下書きを保存しました",
     "title_char_count_other": "{{count}}/120 文字",
-    "title_char_count_one": "{{count}}/120 文字"
+    "title_char_count_one": "{{count}}/120 文字",
+    "loan_terms_label": "貸し出し条件",
+    "loan_terms_placeholder": "例：貸し出し期間、保証金の有無、返却方法など",
+    "loan_terms_hint": "任意。{{used}}/{{max}}文字。",
+    "loan_terms_too_long": "貸し出し条件は{{max}}文字以内で入力してください",
+    "lend_no_price_hint": "貸し出しの出品には価格がありません。借りたい人からメッセージが届き、貸し出しと返却について相談します。",
+    "lend_delivery_hint": "貸し出す品物は直接の受け渡しのみです — 郵送はできません。"
   },
   "search": {
     "category_search": "カテゴリを検索...",
@@ -326,7 +340,8 @@
   "price_type": {
     "fixed": "定価",
     "negotiable": "応相談",
-    "free": "無料"
+    "free": "無料",
+    "lend": "貸す / 借りる（品物は返却されます）"
   },
   "delivery_method": {
     "pickup": "引き取りのみ",
@@ -373,7 +388,9 @@
     "posted_last_days": "過去{{count}}日間",
     "apply": "フィルターを適用",
     "clear": "すべてクリア",
-    "title": "フィルター"
+    "title": "フィルター",
+    "listing_type": "出品の種類",
+    "listing_type_any": "すべての種類"
   },
   "gallery": {
     "no_images": "画像はありません",
@@ -385,7 +402,8 @@
   "price": {
     "free": "無料",
     "contact": "価格はお問い合わせください",
-    "negotiable": "応相談"
+    "negotiable": "応相談",
+    "lend": "貸し出し"
   },
   "empty": {
     "no_listings": "リスティングはまだありません",
@@ -859,5 +877,17 @@
   "my_offers_tabs_aria": "私のオファーセクション",
   "seller_orders_tabs_aria": "販売者の注文ステータスフィルター",
   "seller_profile_tabs_aria": "販売者のプロフィールセクション",
-  "category_filter_label": "カテゴリでフィルタリングする"
+  "category_filter_label": "カテゴリでフィルタリングする",
+  "borrow": {
+    "page_title": "借りる・貸す",
+    "meta_description": "ご近所から工具や機材を借りたり、自分のものを貸したり — 返ってくるマーケットプレイス & Freecycle の品物。",
+    "subtitle": "コミュニティが喜んで貸してくれる工具や機材",
+    "lend_something": "何かを貸す",
+    "cta_title": "使っていない工具はありませんか？",
+    "cta_description": "ご近所に貸しましょう。「借りる・貸す」として出品すれば、条件はあなたが決め、品物は手元に戻ります。",
+    "unable_to_load": "貸し出しの品物を読み込めませんでした",
+    "load_more_failed": "さらに読み込めませんでした",
+    "no_items_title": "まだ借りられる品物はありません",
+    "no_items_description": "今は誰も貸し出していません。後でもう一度確認するか、最初に何かを貸してみましょう！"
+  }
 }

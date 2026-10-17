@@ -205,9 +205,10 @@ export function MarketplaceSellerAdmin() {
           size="sm"
           variant="soft"
           color={typeColors[item.seller_type] || 'default'}
-          className="capitalize"
         >
-          {item.seller_type}
+          {t(`marketplace.seller_type.${item.seller_type}`, {
+            defaultValue: t('marketplace.seller_type.unknown'),
+          })}
         </Chip>
       ),
     },
@@ -367,6 +368,7 @@ export function MarketplaceSellerAdmin() {
           title={t('marketplace.verify_seller_title')}
           message={t('marketplace.verify_seller_message')}
           confirmLabel={t('marketplace.verify_btn')}
+          cancelLabel={t('marketplace.cancel')}
           confirmColor="primary"
           isLoading={actionLoading}
         />
@@ -381,6 +383,7 @@ export function MarketplaceSellerAdmin() {
           title={t('marketplace.suspend_seller_title')}
           message={t('marketplace.suspend_seller_message')}
           confirmLabel={t('marketplace.suspend_btn')}
+          cancelLabel={t('marketplace.cancel')}
           confirmColor="danger"
           isLoading={actionLoading}
         />

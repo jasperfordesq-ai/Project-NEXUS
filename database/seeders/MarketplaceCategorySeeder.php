@@ -41,6 +41,11 @@ class MarketplaceCategorySeeder extends Seeder
             ['name' => 'Food & Drink', 'icon' => 'UtensilsCrossed', 'sort_order' => 15],
             ['name' => 'Services', 'icon' => 'Wrench', 'sort_order' => 16],
             ['name' => 'Free Items', 'icon' => 'Gift', 'sort_order' => 17],
+            // Marketplace & Freecycle (17 Oct 2026): a home for the things
+            // people most often lend rather than sell. Lending itself is a
+            // listing type (price_type = lend), so this category simply groups
+            // tools, DIY and garden kit whatever the listing type.
+            ['name' => 'Tools & Equipment', 'icon' => 'Hammer', 'sort_order' => 18],
             ['name' => 'Other', 'icon' => 'Package', 'sort_order' => 99],
         ];
 

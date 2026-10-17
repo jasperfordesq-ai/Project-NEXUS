@@ -42,7 +42,7 @@ import { describeApiError } from '@/lib/api/describeApiError';
 import AccentIcon from '@/components/ui/AccentIcon';
 import { withRouteGate } from '@/components/withRouteGate';
 
-const PRICE_FILTERS: (MarketplacePriceType | '')[] = ['', 'free', 'fixed', 'negotiable', 'contact'];
+const PRICE_FILTERS: (MarketplacePriceType | '')[] = ['', 'free', 'lend', 'fixed', 'negotiable', 'contact'];
 
 function MarketplaceRoute() {
   return (
@@ -324,6 +324,7 @@ function MarketplaceScreen() {
                   <ShortcutButton label={t('actions.pickups')} icon="qr-code-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-pickups' as Href)} />
                   <ShortcutButton label={t('actions.tools')} icon="construct-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-tools' as Href)} />
                   <ShortcutButton label={t('actions.freeItems')} icon="gift-outline" color={theme.success} onPress={() => router.push('/(modals)/marketplace-free' as Href)} />
+                  <ShortcutButton label={t('actions.borrowLend')} icon="hammer-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-borrow' as Href)} />
                   <ShortcutButton label={t('actions.collections')} icon="folder-open-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-collections' as Href)} />
                   <ShortcutButton label={t('actions.search')} icon="options-outline" color={primary} onPress={() => router.push('/(modals)/marketplace-search' as Href)} />
                   {hasFeature('merchant_coupons') ? (
@@ -467,10 +468,12 @@ function firstParam(value?: string | string[]): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
+/**
+ * Only the types the chip row can show. This also accepted `auction`, which has no chip,
+ * so a deep link could apply a filter the member could see no sign of and could not clear.
+ */
 function normalizePriceType(value?: string): MarketplacePriceType | '' {
-  return value === 'fixed' || value === 'negotiable' || value === 'free' || value === 'auction' || value === 'contact'
-    ? value
-    : '';
+  return PRICE_FILTERS.includes(value as MarketplacePriceType) ? (value as MarketplacePriceType) : '';
 }
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -35,6 +35,12 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
+}));
+
+// The category manager has its own suite (MarketplaceCategoriesPanel.test.tsx)
+// and its own GET; stubbing it keeps the sequenced api.get mocks below honest.
+vi.mock('./MarketplaceCategoriesPanel', () => ({
+  MarketplaceCategoriesPanel: () => <div data-testid="marketplace-categories-panel" />,
 }));
 
 // Mock admin sub-components that reference their own contexts
@@ -204,6 +210,36 @@ describe('MarketplaceAdmin', () => {
     // Quick action cards rendered as links
     const links = screen.getAllByRole('link');
     expect(links.length).toBeGreaterThan(0);
+  });
+
+  it('mounts the category manager and renders the rebranded title', async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: mockStats })
+      .mockResolvedValueOnce({ success: true, data: [] });
+
+    render(<MarketplaceAdmin />);
+
+    expect(screen.getByTestId('marketplace-categories-panel')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Marketplace & Freecycle' })).toBeInTheDocument();
+  });
+
+  it('renders a "Borrow & lend" listing as a label, not a currency amount', async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: mockStats })
+      .mockResolvedValueOnce({
+        success: true,
+        data: [
+          { ...mockListings[0], id: 5, title: 'Ladder', price: 0, price_type: 'lend' },
+          { ...mockListings[0], id: 6, title: 'Sofa', price: 0, price_type: 'free' },
+        ],
+      });
+
+    render(<MarketplaceAdmin />);
+
+    expect(await screen.findByText('Borrow & lend')).toBeInTheDocument();
+    expect(screen.getByText('Free')).toBeInTheDocument();
+    // The price column must not fall through to a formatted zero amount.
+    expect(within(screen.getByRole('grid')).queryByText(/0\.00/)).not.toBeInTheDocument();
   });
 
   it('shows table grid when listings data is loaded', async () => {

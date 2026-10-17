@@ -47,6 +47,11 @@ export default function AdminCouponsPage() {
     setLoading(true);
     try {
       const res = await api.get<{ items: AdminCoupon[] }>('/v2/admin/marketplace/coupons');
+      if (!res.success) {
+        // A refused load used to render as "No coupons." — an empty list is not an error.
+        toast.error(t('marketplace.coupons.failed_load'));
+        return;
+      }
       setItems(res.data?.items ?? []);
     } catch {
       toast.error(t('marketplace.coupons.failed_load'));
@@ -144,7 +149,9 @@ export default function AdminCouponsPage() {
                         color={c.status === 'active' ? 'success' : c.status === 'paused' ? 'warning' : 'default'}
                         variant="soft"
                       >
-                        {t(`marketplace.coupons.status.${c.status}`)}
+                        {t(`marketplace.coupons.status.${c.status}`, {
+                          defaultValue: t('marketplace.coupons.status.unknown'),
+                        })}
                       </Chip>
                     </TableCell>
                     <TableCell>{c.usage_count}</TableCell>
