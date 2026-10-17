@@ -4,23 +4,18 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
+import { ConfirmDialogProvider } from '@/components/ui';
+import type { LandingPageConfig } from '@/types/landing-page';
 
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
 const { mockAdminLandingPage } = vi.hoisted(() => ({
-  mockAdminLandingPage: {
-    get: vi.fn(),
-    update: vi.fn(),
-  },
+  mockAdminLandingPage: { get: vi.fn(), update: vi.fn() },
 }));
 
-vi.mock('../../api/adminApi', () => ({
-  adminLandingPage: mockAdminLandingPage,
-}));
-
-// ─── Mock @/lib/logger ───────────────────────────────────────────────────────
+vi.mock('../../api/adminApi', () => ({ adminLandingPage: mockAdminLandingPage }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Mock contexts ────────────────────────────────────────────────────────────
@@ -29,14 +24,33 @@ const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-  })
+    // The shared default has no `branding`, which the hero form reads for the
+    // standard introduction, so this override widens the shape.
+    useTenant: (() => ({
+      tenant: { id: 2, name: 'Test Timebank', slug: 'test' },
+      tenantPath: (p: string) => `/test${p}`,
+      branding: { name: 'Test Timebank' },
+      hasFeature: vi.fn((_key: string) => true),
+      hasModule: vi.fn((_key: string) => true),
+    })) as never,
+  }),
 );
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
-// Stub Select/SelectItem to avoid HeroUI jsdom infinite-loop
+// The preview renders the real public sections; here it only needs to prove it
+// received the draft wording.
+vi.mock('./landing-page-builder/SectionPreview', () => ({
+  SectionPreview: ({ section }: { section: { id: string; content?: unknown } }) => (
+    <div data-testid={`preview-${section.id}`}>{JSON.stringify(section.content ?? null)}</div>
+  ),
+  WholePagePreview: ({ sections }: { sections: { id: string; enabled: boolean }[] }) => (
+    <div data-testid="preview-page">{sections.filter((s) => s.enabled).map((s) => s.id).join(',')}</div>
+  ),
+}));
+
+// Stub Select/Switch to avoid HeroUI jsdom infinite-loop
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
   return {
@@ -46,13 +60,21 @@ vi.mock('@/components/ui', async (importOriginal) => {
         {children}
       </select>
     ),
-    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
-      <option value={id ?? ''}>{children}</option>
-    ),
-    Switch: ({ children, isSelected, onValueChange }: { children?: React.ReactNode; isSelected?: boolean; onValueChange?: (v: boolean) => void }) => (
+    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => <option value={id ?? ''}>{children}</option>,
+    Switch: ({
+      children,
+      isSelected,
+      onValueChange,
+      'aria-label': ariaLabel,
+    }: {
+      children?: React.ReactNode;
+      isSelected?: boolean;
+      onValueChange?: (v: boolean) => void;
+      'aria-label'?: string;
+    }) => (
       <input
         type="checkbox"
-        aria-label={typeof children === 'string' ? children : 'switch'}
+        aria-label={ariaLabel ?? (typeof children === 'string' ? children : 'switch')}
         checked={!!isSelected}
         onChange={(e) => onValueChange?.(e.target.checked)}
       />
@@ -61,221 +83,208 @@ vi.mock('@/components/ui', async (importOriginal) => {
 });
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
-const makeLandingConfig = () => ({
+const customConfig = (): LandingPageConfig => ({
   sections: [
     { id: 'hero', type: 'hero', order: 1, enabled: true, content: { headline_1: 'Welcome', badge_text: 'New' } },
     { id: 'cta', type: 'cta', order: 2, enabled: false, content: { title: 'Join us' } },
+    { id: 'stats', type: 'stats', order: 3, enabled: true, content: { show_live_stats: false } },
   ],
 });
 
-const makeSuccessResponse = (config = makeLandingConfig()) => ({
-  success: true,
-  data: { config },
-});
+const respond = (config: LandingPageConfig | null) => ({ success: true, data: { config } });
+
+async function renderBuilder() {
+  const { LandingPageBuilder } = await import('./LandingPageBuilder');
+  const utils = render(
+    <ConfirmDialogProvider>
+      <LandingPageBuilder />
+    </ConfirmDialogProvider>,
+  );
+  await waitFor(() => {
+    const busy = screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
+    expect(busy).toBeUndefined();
+  });
+  return utils;
+}
+
+const saveButton = () => screen.getByRole('button', { name: /save changes/i });
+const outline = () => screen.getByRole('list', { name: 'Page order' });
+const selectBlock = (name: string) => fireEvent.click(within(outline()).getByRole('button', { name }));
+const lastSavedPayload = () => mockAdminLandingPage.update.mock.calls[mockAdminLandingPage.update.mock.calls.length - 1]?.[0] as LandingPageConfig | null;
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('LandingPageBuilder', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAdminLandingPage.get.mockResolvedValue(makeSuccessResponse());
+    mockAdminLandingPage.get.mockResolvedValue(respond(null));
     mockAdminLandingPage.update.mockResolvedValue({ success: true });
   });
 
-  it('shows loading spinner while fetching config', async () => {
+  it('shows a loading state while fetching', async () => {
     mockAdminLandingPage.get.mockImplementationOnce(() => new Promise(() => {}));
     const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    const statuses = screen.getAllByRole('status');
-    const busy = statuses.find((el) => el.getAttribute('aria-busy') === 'true');
+    render(
+      <ConfirmDialogProvider>
+        <LandingPageBuilder />
+      </ConfirmDialogProvider>,
+    );
+    const busy = screen.getAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
     expect(busy).toBeDefined();
   });
 
-  it('renders section cards after loading', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    // Wait for the spinner to disappear and sections to show
-    await waitFor(() => {
-      // The hero and cta section cards should now be in the document
-      // LandingPageBuilder renders section labels from i18n keys; just assert it no longer shows spinner
-      const spinners = screen.queryAllByRole('status');
-      const busy = spinners.find((el) => el.getAttribute('aria-busy') === 'true');
-      expect(busy).toBeUndefined();
-    });
+  it('lists the seven blocks in plain English, selects the first, and explains the page', async () => {
+    await renderBuilder();
+    const names = ['Welcome banner', 'Start-here cards', 'Quick highlights', 'Live numbers', 'How it works', 'Our values', 'Final invitation'];
+    for (const name of names) {
+      expect(within(outline()).getByRole('button', { name })).toBeInTheDocument();
+    }
+    expect(screen.getByRole('heading', { name: 'Wording for Welcome banner' })).toBeInTheDocument();
+    expect(screen.getByText('How this page works')).toBeInTheDocument();
+    expect(screen.getByText('7 of 7 blocks shown')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /open the live page/i })).toHaveAttribute('target', '_blank');
+    expect(saveButton()).toHaveAttribute('data-disabled');
   });
 
-  it('calls adminLandingPage.get on mount', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-    await waitFor(() => expect(mockAdminLandingPage.get).toHaveBeenCalledTimes(1));
+  it('selecting a block in the outline switches the editor to it', async () => {
+    await renderBuilder();
+    selectBlock('Final invitation');
+    expect(screen.getByRole('heading', { name: 'Wording for Final invitation' })).toBeInTheDocument();
+    expect(screen.getByTestId('preview-cta')).toBeInTheDocument();
   });
 
-  it('save button is disabled when config is not dirty', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
+  it('shows the standard wording beside each box and sends only what was typed', async () => {
+    await renderBuilder();
+    const headline = screen.getByLabelText('Headline line 1');
+    expect(headline).toHaveAttribute('placeholder', 'Exchange Skills,');
+    expect(screen.getAllByText('Leave empty to keep: “Exchange Skills,”').length).toBeGreaterThan(0);
 
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
+    fireEvent.change(headline, { target: { value: 'Share your time' } });
+    expect(screen.getByTestId('preview-hero')).toHaveTextContent('Share your time');
+    expect(saveButton()).not.toHaveAttribute('data-disabled');
 
-    // Save Changes button should be disabled (not dirty)
-    const saveBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('save')
-    );
-    expect(saveBtn).toBeDefined();
-    expect(saveBtn).toHaveAttribute('data-disabled');
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminLandingPage.update).toHaveBeenCalledTimes(1));
+    const payload = lastSavedPayload()!;
+    const hero = payload.sections.find((s) => s.id === 'hero')!;
+    expect(hero.content).toEqual({ headline_1: 'Share your time' });
+    expect(payload.sections.find((s) => s.id === 'cta')!.content).toBeUndefined();
+    expect(JSON.stringify(payload)).not.toContain('_key');
+    expect(mockToast.success).toHaveBeenCalled();
+    await waitFor(() => expect(saveButton()).toHaveAttribute('data-disabled'));
   });
 
-  it('renders Reset to Defaults button', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
-
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('reset')
-    );
-    expect(resetBtn).toBeDefined();
+  it('loads a saved page: customised chip, hidden chip, missing blocks come back hidden, stats folded to hidden', async () => {
+    mockAdminLandingPage.get.mockResolvedValue(respond(customConfig()));
+    await renderBuilder();
+    // The saved page named three blocks; the four it never mentioned were not rendered, so they load as hidden.
+    expect(screen.getByText('1 of 7 blocks shown')).toBeInTheDocument();
+    expect(screen.getAllByText('Customised')).toHaveLength(2);
+    const showSwitch = (name: string) => screen.getByRole('checkbox', { name: `Show ${name} on the page` });
+    expect(showSwitch('Live numbers')).not.toBeChecked();
+    expect(showSwitch('Final invitation')).not.toBeChecked();
+    expect(showSwitch('Welcome banner')).toBeChecked();
+    expect(screen.getByLabelText('Headline line 1')).toHaveValue('Welcome');
   });
 
-  it('clicking Reset shows confirm/cancel buttons', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
+  it('hiding a block and moving it down are saved as enabled/order changes', async () => {
+    await renderBuilder();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Show Our values on the page' }));
+    expect(screen.getByText('6 of 7 blocks shown')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Move Welcome banner down' }));
 
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
-
-    // "Reset to defaults" button — matches exactly on "defaults"
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('defaults') || b.textContent?.includes('Reset to defaults')
-    );
-    if (resetBtn) fireEvent.click(resetBtn);
-
-    await waitFor(() => {
-      // After click, "Yes, reset" confirm button appears
-      const confirmBtn = screen.getAllByRole('button').find((b) =>
-        b.textContent?.includes('Yes') || b.textContent?.includes('reset')
-      );
-      expect(confirmBtn).toBeDefined();
-    });
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminLandingPage.update).toHaveBeenCalledTimes(1));
+    const payload = lastSavedPayload()!;
+    const ordered = [...payload.sections].sort((a, b) => a.order - b.order).map((s) => s.id);
+    expect(ordered.slice(0, 2)).toEqual(['audience_cards', 'hero']);
+    expect(payload.sections.find((s) => s.id === 'core_values')!.enabled).toBe(false);
   });
 
-  it('calls adminLandingPage.update(null) on reset confirm', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
+  it('a list starts on the standard items; "Edit these items" copies them in; clearing a title blocks Save by name', async () => {
+    await renderBuilder();
+    selectBlock('Start-here cards');
+    expect(screen.getByText('Standard items')).toBeInTheDocument();
+    expect(screen.getByText('New here?')).toBeInTheDocument();
 
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
+    fireEvent.click(screen.getByRole('button', { name: 'Edit these items' }));
+    expect(screen.getByText('Card 1')).toBeInTheDocument();
+    expect(screen.getByText('Card 3')).toBeInTheDocument();
+    const titles = screen.getAllByLabelText('Title');
+    expect(titles[0]).toHaveValue('New here?');
 
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('defaults')
-    );
-    if (resetBtn) fireEvent.click(resetBtn);
+    fireEvent.change(titles[0]!, { target: { value: '' } });
+    expect(screen.getAllByText('Card 1 in “Start-here cards” needs a title.').length).toBeGreaterThan(0);
+    expect(saveButton()).toHaveAttribute('data-disabled');
 
-    // Wait for confirm button ("Yes, reset")
-    await waitFor(() => {
-      const confirmBtn = screen.getAllByRole('button').find((b) =>
-        b.textContent?.includes('Yes') || b.textContent?.includes('Yes, reset')
-      );
-      expect(confirmBtn).toBeDefined();
-    });
-
-    const confirmBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('Yes') || b.textContent?.includes('Yes, reset')
-    );
-    if (confirmBtn) fireEvent.click(confirmBtn);
-
-    await waitFor(() => {
-      expect(mockAdminLandingPage.update).toHaveBeenCalledWith(null);
-    });
+    fireEvent.change(titles[0]!, { target: { value: 'Newcomers' } });
+    expect(saveButton()).not.toHaveAttribute('data-disabled');
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminLandingPage.update).toHaveBeenCalledTimes(1));
+    const cards = (lastSavedPayload()!.sections.find((s) => s.id === 'audience_cards')!.content as { cards: { title: string; icon?: string }[] }).cards;
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toMatchObject({ title: 'Newcomers', icon: 'user-plus', target_url: '/about' });
   });
 
-  it('shows success toast after successful reset', async () => {
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
-
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('defaults')
-    );
-    if (resetBtn) fireEvent.click(resetBtn);
-
-    await waitFor(() => {
-      const confirmBtn = screen.getAllByRole('button').find((b) =>
-        b.textContent?.includes('Yes')
-      );
-      expect(confirmBtn).toBeDefined();
-    });
-
-    const confirmBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('Yes')
-    );
-    if (confirmBtn) fireEvent.click(confirmBtn);
-
-    await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalled();
-    });
+  it('a button link that is not a path or web address blocks Save', async () => {
+    await renderBuilder();
+    selectBlock('Final invitation');
+    fireEvent.change(screen.getByLabelText('Button link'), { target: { value: 'register' } });
+    expect(saveButton()).toHaveAttribute('data-disabled');
+    expect(screen.getAllByText('A button link in “Final invitation” must start with / or https://.').length).toBeGreaterThan(0);
   });
 
-  it('shows error toast when reset API call fails', async () => {
-    // Test the reset error path: update returns success:false
+  it('going back to the standard wording for a block, then saving, sends null so the server deletes the row', async () => {
+    mockAdminLandingPage.get.mockResolvedValue(
+      respond({ sections: [{ id: 'hero', type: 'hero', order: 0, enabled: true, content: { headline_1: 'Welcome' } }] }),
+    );
+    await renderBuilder();
+    // The older saved config lacked the other blocks; they come back hidden, so show them first.
+    for (const name of ['Start-here cards', 'Quick highlights', 'Live numbers', 'How it works', 'Our values', 'Final invitation']) {
+      fireEvent.click(screen.getByRole('checkbox', { name: `Show ${name} on the page` }));
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Go back to the standard wording for this block' }));
+    expect(screen.getByLabelText('Headline line 1')).toHaveValue('');
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminLandingPage.update).toHaveBeenCalledWith(null));
+  });
+
+  it('"Start again" asks first, then resets the draft without saving', async () => {
+    mockAdminLandingPage.get.mockResolvedValue(respond(customConfig()));
+    await renderBuilder();
+    fireEvent.click(screen.getByRole('button', { name: 'Start again from the standard page' }));
+    const confirmBtn = await screen.findByRole('button', { name: 'Yes, start again' });
+    fireEvent.click(confirmBtn);
+    await waitFor(() => expect(screen.getByText('7 of 7 blocks shown')).toBeInTheDocument());
+    expect(mockAdminLandingPage.update).not.toHaveBeenCalled();
+    expect(saveButton()).not.toHaveAttribute('data-disabled');
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockAdminLandingPage.update).toHaveBeenCalledWith(null));
+  });
+
+  it('Discard puts the saved page back', async () => {
+    mockAdminLandingPage.get.mockResolvedValue(respond(customConfig()));
+    await renderBuilder();
+    fireEvent.change(screen.getByLabelText('Headline line 1'), { target: { value: 'Changed' } });
+    fireEvent.click(screen.getByRole('button', { name: /discard/i }));
+    expect(screen.getByLabelText('Headline line 1')).toHaveValue('Welcome');
+    expect(saveButton()).toHaveAttribute('data-disabled');
+  });
+
+  it('reports a failed save and keeps the draft dirty', async () => {
     mockAdminLandingPage.update.mockResolvedValueOnce({ success: false });
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
-
-    // Click "Reset to defaults" → then confirm with "Yes, reset"
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('defaults')
-    );
-    if (resetBtn) fireEvent.click(resetBtn);
-
-    await waitFor(() => {
-      const confirmBtn = screen.getAllByRole('button').find((b) =>
-        b.textContent?.includes('Yes')
-      );
-      expect(confirmBtn).toBeDefined();
-    });
-
-    const confirmBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.includes('Yes')
-    );
-    if (confirmBtn) fireEvent.click(confirmBtn);
-
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
-    });
+    await renderBuilder();
+    fireEvent.change(screen.getByLabelText('Headline line 1'), { target: { value: 'Oops' } });
+    fireEvent.click(saveButton());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(saveButton()).not.toHaveAttribute('data-disabled');
   });
 
-  it('uses defaults when API returns no config', async () => {
-    mockAdminLandingPage.get.mockResolvedValueOnce({ success: true, data: { config: null } });
-    const { LandingPageBuilder } = await import('./LandingPageBuilder');
-    render(<LandingPageBuilder />);
-
-    // Should render without crashing even with null config
-    await waitFor(() => {
-      const spinners = screen.queryAllByRole('status');
-      expect(spinners.find((el) => el.getAttribute('aria-busy') === 'true')).toBeUndefined();
-    });
-    // Multiple section cards should be present (defaults have 7 sections)
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThan(0);
+  it('the whole-page preview lists only the shown blocks in order', async () => {
+    mockAdminLandingPage.get.mockResolvedValue(respond(customConfig()));
+    await renderBuilder();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Show Our values on the page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Move Our values up' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Whole page' }));
+    expect(screen.getByTestId('preview-page')).toHaveTextContent(/^hero,core_values$/);
   });
 });

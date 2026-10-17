@@ -1,1120 +1,463 @@
-import { Card, CardBody, CardHeader, Input, Button, Textarea, Spinner, Select, SelectItem, Switch, Chip } from '@/components/ui';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { Separator } from '@/components/ui';
-import ChevronUp from 'lucide-react/icons/chevron-up';
-import ChevronDown from 'lucide-react/icons/chevron-down';
-import Save from 'lucide-react/icons/save';
-import RotateCcw from 'lucide-react/icons/rotate-ccw';
-import Plus from 'lucide-react/icons/plus';
-import Trash2 from 'lucide-react/icons/trash-2';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import Layers from 'lucide-react/icons/layers';
-import Sparkles from 'lucide-react/icons/sparkles';
-import LayoutGrid from 'lucide-react/icons/layout-grid';
-import ListChecks from 'lucide-react/icons/list-checks';
-import BarChart3 from 'lucide-react/icons/bar-chart-3';
-import Footprints from 'lucide-react/icons/footprints';
-import HeartHandshake from 'lucide-react/icons/heart-handshake';
-import Megaphone from 'lucide-react/icons/megaphone';
-import type { LucideIcon } from 'lucide-react';
-import { usePageTitle } from '@/hooks';
-import { useToast } from '@/contexts';
-import { adminLandingPage } from '../../api/adminApi';
-import { PageHeader } from '../../components/PageHeader';
-import type {
-  LandingPageConfig,
-  LandingSection,
-  LandingSectionType,
-  LandingIconId,
-  HeroContent,
-  AudienceCardsContent,
-  AudienceCard,
-  FeaturePillsContent,
-  FeaturePillItem,
-  StatsContent,
-  HowItWorksContent,
-  HowItWorksStep,
-  CoreValuesContent,
-  CoreValue,
-  CtaContent,
-} from '@/types/landing-page';
-import { DEFAULT_LANDING_PAGE_CONFIG, createDefaultAudienceCards } from '@/types/landing-page';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Landing Page Builder
- * Admin UI for customizing the tenant's public landing page sections.
- * Supports enable/disable, reorder, and content editing per section.
+ * Landing page editor (/admin/landing-page).
+ *
+ * Edits the public front page a visitor sees before signing in. The page is
+ * seven blocks stacked top to bottom; each can be shown or hidden, moved, and
+ * given its own wording. An empty box keeps the standard wording.
+ *
+ * Layout: a "Page order" outline on the left (drag, arrows, Shown switch), the
+ * selected block on the right with a live preview of the real public section
+ * above its form, and a sticky save bar. Nothing reaches visitors until Save.
+ * Redesigned 2026-10-17; see .local-docs-archive/landing-page-builder-redesign/.
  */
 
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import ChevronUp from 'lucide-react/icons/chevron-up';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import GripVertical from 'lucide-react/icons/grip-vertical';
+import ExternalLink from 'lucide-react/icons/external-link';
+import RotateCcw from 'lucide-react/icons/rotate-ccw';
+import Undo2 from 'lucide-react/icons/undo-2';
+import Eye from 'lucide-react/icons/eye';
+import EyeOff from 'lucide-react/icons/eye-off';
+import Info from 'lucide-react/icons/info';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import { Alert, Button, Card, CardBody, Chip, Spinner, Switch, useConfirm } from '@/components/ui';
+import { usePageTitle } from '@/hooks';
+import { useTenant, useToast } from '@/contexts';
+import type {
+  AudienceCardsContent,
+  CoreValuesContent,
+  CtaContent,
+  FeaturePillsContent,
+  HeroContent,
+  HowItWorksContent,
+  LandingPageConfig,
+  LandingSection,
+} from '@/types/landing-page';
+import { adminLandingPage } from '../../api/adminApi';
+import { PageHeader } from '../../components/PageHeader';
+import { AdminSaveBar } from '../../components/AdminSaveBar';
+import { useUnsavedChangesGuard } from '../../components/useUnsavedChangesGuard';
+import {
+  cleanConfig,
+  cloneConfig,
+  configSignature,
+  defaultConfig,
+  findConfigProblems,
+  isDefaultConfig,
+  moveSectionBy,
+  moveSectionTo,
+  normaliseLoadedConfig,
+  sectionHasCustomContent,
+  sortedSections,
+  withListKeys,
+  type ConfigProblem,
+} from './landing-page-builder/configUtils';
+import { SECTION_META } from './landing-page-builder/sectionMeta';
+import { SectionPreview, WholePagePreview } from './landing-page-builder/SectionPreview';
+import {
+  AudienceCardsEditor,
+  CoreValuesEditor,
+  CtaEditor,
+  FeaturePillsEditor,
+  HeroEditor,
+  HowItWorksEditor,
+  StatsEditor,
+} from './landing-page-builder/editors';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Constants
+// Outline row
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SECTION_LABEL_KEYS: Record<LandingSectionType, string> = {
-  hero: 'content.landing_section_hero',
-  audience_cards: 'content.landing_section_audience_cards',
-  feature_pills: 'content.landing_section_feature_pills',
-  stats: 'content.landing_section_stats',
-  how_it_works: 'content.landing_section_how_it_works',
-  core_values: 'content.landing_section_core_values',
-  cta: 'content.landing_section_cta',
-};
-
-const SECTION_ICONS: Record<LandingSectionType, LucideIcon> = {
-  hero: Sparkles,
-  audience_cards: LayoutGrid,
-  feature_pills: ListChecks,
-  stats: BarChart3,
-  how_it_works: Footprints,
-  core_values: HeartHandshake,
-  cta: Megaphone,
-};
-
-const ICON_OPTIONS: LandingIconId[] = [
-  'clock',
-  'users',
-  'zap',
-  'user-plus',
-  'search',
-  'handshake',
-  'coins',
-  'heart',
-  'shield',
-  'star',
-  'globe',
-  'book-open',
-  'message-circle',
-  'award',
-  'target',
-  'thumbs-up',
-];
-
-const HELPER_TEXT_KEY = 'content.landing_helper_text';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** Deep-clone a config to avoid mutation */
-function cloneConfig(config: LandingPageConfig): LandingPageConfig {
-  return JSON.parse(JSON.stringify(config));
-}
-
-/** Monotonic client-only id source for stable list keys (never persisted). */
-let _listKeySeq = 0;
-function genListKey(): string {
-  _listKeySeq += 1;
-  return `lpk-${_listKeySeq}`;
-}
-
-/**
- * Inject a stable client-only `_key` into every content-array item that lacks one,
- * so React keys survive reorder/delete — index keys misassociate input focus/state
- * when items move. cleanConfig() strips `_key` again before save, so the persisted
- * config (and the public landing page) never sees it.
- */
-function withListKeys(config: LandingPageConfig): LandingPageConfig {
-  const next = cloneConfig(config);
-  for (const section of next.sections) {
-    if (!section.content) continue;
-    const content = section.content as Record<string, unknown>;
-    for (const key of Object.keys(content)) {
-      const val = content[key];
-      if (!Array.isArray(val)) continue;
-      for (const item of val) {
-        if (item && typeof item === 'object' && !(item as Record<string, unknown>)._key) {
-          (item as Record<string, unknown>)._key = genListKey();
-        }
-      }
-    }
-  }
-  return next;
-}
-
-/** Sort sections by order */
-function sortedSections(sections: LandingSection[]): LandingSection[] {
-  return [...sections].sort((a, b) => a.order - b.order);
-}
-
-/**
- * Strip empty content fields so the backend only gets explicitly set values.
- * If all fields in a section's content are empty, remove the content key entirely.
- */
-function cleanConfig(config: LandingPageConfig): LandingPageConfig {
-  const cleaned = cloneConfig(config);
-  for (const section of cleaned.sections) {
-    if (!section.content) continue;
-    const content = section.content as Record<string, unknown>;
-    // Remove empty string values at the top level
-    for (const key of Object.keys(content)) {
-      const val = content[key];
-      if (val === '' || val === undefined || val === null) {
-        delete content[key];
-      }
-      // Clean arrays: strip the client-only `_key`, then remove all-empty items.
-      if (Array.isArray(val)) {
-        const filtered = val
-          .map((item: Record<string, unknown>) => {
-            const rest = { ...item };
-            delete rest._key;
-            return rest;
-          })
-          .filter((item: Record<string, unknown>) =>
-            Object.values(item).some(
-              (v) => v !== '' && v !== undefined && v !== null,
-            ),
-          );
-        if (filtered.length === 0) {
-          delete content[key];
-        } else {
-          content[key] = filtered;
-        }
-      }
-    }
-    // If content is now empty, remove it
-    if (Object.keys(content).length === 0) {
-      delete section.content;
-    }
-  }
-  return cleaned;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Icon Select Component
-// ─────────────────────────────────────────────────────────────────────────────
-
-function IconSelect({
-  value,
-  onChange,
-  label,
-  placeholder,
-}: {
-  value?: LandingIconId;
-  onChange: (val: LandingIconId | undefined) => void;
-  label: string;
-  placeholder: string;
-}) {
-  return (
-    <Select
-      label={label}
-      placeholder={placeholder}
-      selectedKeys={value ? [value] : []}
-      onSelectionChange={(keys) => {
-        const selected = Array.from(keys)[0] as string | undefined;
-        onChange(selected as LandingIconId | undefined);
-      }}
-      variant="secondary"
-      size="sm"
-    >
-      {ICON_OPTIONS.map((icon) => (
-        <SelectItem key={icon} id={icon}>{icon}</SelectItem>
-      ))}
-    </Select>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Content Editors
-// ─────────────────────────────────────────────────────────────────────────────
-
-function HeroEditor({
-  content,
-  onChange,
-}: {
-  content: HeroContent;
-  onChange: (c: HeroContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const update = (field: keyof HeroContent, value: string) => {
-    onChange({ ...content, [field]: value });
-  };
-  return (
-    <div className="flex flex-col gap-4">
-      <Input
-        label={t('content.landing_label_badge_text')}
-        placeholder={t('content.landing_placeholder_badge_text')}
-        value={content.badge_text || ''}
-        onValueChange={(v) => update('badge_text', v)}
-        variant="secondary"
-        size="sm"
-      />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_headline_line_1')}
-          placeholder={t('content.landing_placeholder_headline_1')}
-          value={content.headline_1 || ''}
-          onValueChange={(v) => update('headline_1', v)}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_headline_line_2')}
-          placeholder={t('content.landing_placeholder_headline_2')}
-          value={content.headline_2 || ''}
-          onValueChange={(v) => update('headline_2', v)}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <Textarea
-        label={t('content.landing_label_subheadline')}
-        placeholder={t('content.landing_placeholder_subheadline')}
-        value={content.subheadline || ''}
-        onValueChange={(v) => update('subheadline', v)}
-        variant="secondary"
-        size="sm"
-        minRows={2}
-      />
-      <Separator />
-      <p className="text-sm font-medium text-muted">{t('content.landing_primary_cta')}</p>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_button_text')}
-          placeholder={t('content.landing_placeholder_button_text_get_started')}
-          value={content.cta_primary_text || ''}
-          onValueChange={(v) => update('cta_primary_text', v)}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_button_link')}
-          placeholder={t('content.landing_placeholder_button_link_register')}
-          value={content.cta_primary_link || ''}
-          onValueChange={(v) => update('cta_primary_link', v)}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <p className="text-sm font-medium text-muted">{t('content.landing_secondary_cta')}</p>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_button_text')}
-          placeholder={t('content.landing_placeholder_button_text_learn_more')}
-          value={content.cta_secondary_text || ''}
-          onValueChange={(v) => update('cta_secondary_text', v)}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_button_link')}
-          placeholder={t('content.landing_placeholder_button_link_about')}
-          value={content.cta_secondary_link || ''}
-          onValueChange={(v) => update('cta_secondary_link', v)}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-function AudienceCardsEditor({
-  content,
-  onChange,
-}: {
-  content: AudienceCardsContent;
-  onChange: (c: AudienceCardsContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const { t: tPublic } = useTranslation('public');
-  const cards = content.cards || [];
-
-  const updateCard = (index: number, field: keyof AudienceCard, value: string) => {
-    const updated: AudienceCard[] = [...cards];
-    updated[index] = { ...updated[index], [field]: value } as AudienceCard;
-    onChange({ ...content, cards: updated });
-  };
-
-  const updateCardIcon = (index: number, value: LandingIconId | undefined) => {
-    const updated: AudienceCard[] = [...cards];
-    updated[index] = { ...updated[index], icon: value } as AudienceCard;
-    onChange({ ...content, cards: updated });
-  };
-
-  const moveCard = (index: number, direction: 'up' | 'down') => {
-    const swapIndex = direction === 'up' ? index - 1 : index + 1;
-    if (swapIndex < 0 || swapIndex >= cards.length) return;
-    const updated: AudienceCard[] = [...cards];
-    const current = updated[index];
-    const swap = updated[swapIndex];
-    if (!current || !swap) return;
-    updated[index] = swap;
-    updated[swapIndex] = current;
-    onChange({ ...content, cards: updated });
-  };
-
-  const addCard = () => {
-    if (cards.length >= 4) return;
-    onChange({
-      ...content,
-      cards: [
-        ...cards,
-        { _key: genListKey(), title: '', description: '', cta_label: t('content.landing_default_cta_learn_more'), target_url: '/' },
-      ],
-    });
-  };
-
-  const removeCard = (index: number) => {
-    onChange({ ...content, cards: cards.filter((_, i) => i !== index) });
-  };
-
-  const resetToDefaults = () => {
-    onChange({ ...content, cards: createDefaultAudienceCards((key) => tPublic(key)) });
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_section_title_optional')}
-          placeholder={t('content.landing_placeholder_audience_title')}
-          value={content.title || ''}
-          onValueChange={(v) => onChange({ ...content, title: v })}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_section_subtitle_optional')}
-          placeholder={t('content.landing_placeholder_audience_subtitle')}
-          value={content.subtitle || ''}
-          onValueChange={(v) => onChange({ ...content, subtitle: v })}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <Separator />
-      <p className="text-xs text-muted">
-        {t('content.landing_audience_cards_hint')}
-      </p>
-      {cards.map((card, i) => (
-        <Card key={card._key ?? i} variant="transparent" className="border border-border bg-surface">
-          <CardBody className="flex flex-col gap-3 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {t('content.landing_card_number', { number: i + 1 })}
-              </span>
-              <div className="flex items-center gap-1">
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="tertiary"
-                  isDisabled={i === 0}
-                  onPress={() => moveCard(i, 'up')}
-                  aria-label={t('content.landing_move_card_up', { number: i + 1 })}
-                >
-                  <ChevronUp size={14} />
-                </Button>
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="tertiary"
-                  isDisabled={i === cards.length - 1}
-                  onPress={() => moveCard(i, 'down')}
-                  aria-label={t('content.landing_move_card_down', { number: i + 1 })}
-                >
-                  <ChevronDown size={14} />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="danger-soft"
-                  startContent={<Trash2 size={14} />}
-                  onPress={() => removeCard(i)}
-                >
-                  {t('content.landing_remove')}
-                </Button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <IconSelect
-                value={card.icon}
-                onChange={(val) => updateCardIcon(i, val)}
-                label={t('content.landing_label_icon')}
-                placeholder={t('content.landing_placeholder_select_icon')}
-              />
-              <Input
-                label={t('content.landing_label_title')}
-                placeholder={t('content.landing_placeholder_card_title')}
-                value={card.title}
-                onValueChange={(v) => updateCard(i, 'title', v)}
-                variant="secondary"
-                size="sm"
-              />
-            </div>
-            <Textarea
-              label={t('content.landing_label_description')}
-              placeholder={t('content.landing_placeholder_card_description')}
-              value={card.description}
-              onValueChange={(v) => updateCard(i, 'description', v)}
-              variant="secondary"
-              size="sm"
-              minRows={2}
-            />
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Input
-                label={t('content.landing_label_button_label')}
-                placeholder={t('content.landing_placeholder_button_text_get_started')}
-                value={card.cta_label}
-                onValueChange={(v) => updateCard(i, 'cta_label', v)}
-                variant="secondary"
-                size="sm"
-              />
-              <Input
-                label={t('content.landing_label_link')}
-                placeholder={t('content.landing_placeholder_button_link_about')}
-                value={card.target_url}
-                onValueChange={(v) => updateCard(i, 'target_url', v)}
-                variant="secondary"
-                size="sm"
-              />
-            </div>
-          </CardBody>
-        </Card>
-      ))}
-      <div className="flex flex-wrap gap-2">
-        {cards.length < 4 && (
-          <Button
-            size="sm"
-            variant="secondary"
-            startContent={<Plus size={14} />}
-            onPress={addCard}
-          >
-            {t('content.landing_add_card')}
-          </Button>
-        )}
-        <Button
-          size="sm"
-          variant="secondary"
-          startContent={<RotateCcw size={14} />}
-          onPress={resetToDefaults}
-        >
-          {t('content.landing_reset_cards_to_defaults')}
-        </Button>
-      </div>
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-function FeaturePillsEditor({
-  content,
-  onChange,
-}: {
-  content: FeaturePillsContent;
-  onChange: (c: FeaturePillsContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const items = content.items || [];
-
-  const updateItem = (index: number, field: keyof FeaturePillItem, value: string) => {
-    const updated: FeaturePillItem[] = [...items];
-    updated[index] = { ...updated[index], [field]: value } as FeaturePillItem;
-    onChange({ ...content, items: updated });
-  };
-
-  const updateItemIcon = (index: number, value: LandingIconId | undefined) => {
-    const updated: FeaturePillItem[] = [...items];
-    updated[index] = { ...updated[index], icon: value } as FeaturePillItem;
-    onChange({ ...content, items: updated });
-  };
-
-  const addItem = () => {
-    if (items.length >= 6) return;
-    onChange({
-      ...content,
-      items: [...items, { _key: genListKey(), title: '', description: '' }],
-    });
-  };
-
-  const removeItem = (index: number) => {
-    const updated = items.filter((_, i) => i !== index);
-    onChange({ ...content, items: updated });
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      {items.map((item, i) => (
-        <Card key={item._key ?? i} variant="transparent" className="border border-border bg-surface">
-          <CardBody className="flex flex-col gap-3 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {t('content.landing_item_number', { number: i + 1 })}
-              </span>
-              <Button
-                size="sm"
-                variant="danger-soft"
-                startContent={<Trash2 size={14} />}
-                onPress={() => removeItem(i)}
-              >
-                {t('content.landing_remove')}
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <IconSelect
-                value={item.icon}
-                onChange={(val) => updateItemIcon(i, val)}
-                label={t('content.landing_label_icon')}
-                placeholder={t('content.landing_placeholder_select_icon')}
-              />
-              <Input
-                label={t('content.landing_label_title')}
-                value={item.title}
-                onValueChange={(v) => updateItem(i, 'title', v)}
-                variant="secondary"
-                size="sm"
-              />
-              <Input
-                label={t('content.landing_label_description')}
-                value={item.description}
-                onValueChange={(v) => updateItem(i, 'description', v)}
-                variant="secondary"
-                size="sm"
-              />
-            </div>
-          </CardBody>
-        </Card>
-      ))}
-      {items.length < 6 && (
-        <Button
-          size="sm"
-          variant="secondary"
-          startContent={<Plus size={14} />}
-          onPress={addItem}
-          className="self-start"
-        >
-          {t('content.landing_add_item')}
-        </Button>
-      )}
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-function StatsEditor({
-  content,
-  onChange,
-}: {
-  content: StatsContent;
-  onChange: (c: StatsContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  return (
-    <div className="flex flex-col gap-4">
-      <Switch
-        isSelected={content.show_live_stats !== false}
-        onValueChange={(val) => onChange({ ...content, show_live_stats: val })}
-        size="sm"
-      >
-        {t('content.landing_show_live_stats')}
-      </Switch>
-      <p className="text-xs text-muted">
-        {t('content.landing_show_live_stats_desc')}
-      </p>
-    </div>
-  );
-}
-
-function HowItWorksEditor({
-  content,
-  onChange,
-}: {
-  content: HowItWorksContent;
-  onChange: (c: HowItWorksContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const steps = content.steps || [];
-
-  const updateStep = (index: number, field: keyof HowItWorksStep, value: string) => {
-    const updated: HowItWorksStep[] = [...steps];
-    updated[index] = { ...updated[index], [field]: value } as HowItWorksStep;
-    onChange({ ...content, steps: updated });
-  };
-
-  const updateStepIcon = (index: number, value: LandingIconId | undefined) => {
-    const updated: HowItWorksStep[] = [...steps];
-    updated[index] = { ...updated[index], icon: value } as HowItWorksStep;
-    onChange({ ...content, steps: updated });
-  };
-
-  const addStep = () => {
-    onChange({
-      ...content,
-      steps: [...steps, { _key: genListKey(), title: '', description: '' }],
-    });
-  };
-
-  const removeStep = (index: number) => {
-    onChange({ ...content, steps: steps.filter((_, i) => i !== index) });
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_section_title')}
-          placeholder={t('content.landing_placeholder_section_title_how_it_works')}
-          value={content.title || ''}
-          onValueChange={(v) => onChange({ ...content, title: v })}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_section_subtitle')}
-          placeholder={t('content.landing_placeholder_section_subtitle_how_it_works')}
-          value={content.subtitle || ''}
-          onValueChange={(v) => onChange({ ...content, subtitle: v })}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <Separator />
-      {steps.map((step, i) => (
-        <Card key={step._key ?? i} variant="transparent" className="border border-border bg-surface">
-          <CardBody className="flex flex-col gap-3 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {t('content.landing_step_number', { number: i + 1 })}
-              </span>
-              <Button
-                size="sm"
-                variant="danger-soft"
-                startContent={<Trash2 size={14} />}
-                onPress={() => removeStep(i)}
-              >
-                {t('content.landing_remove')}
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <IconSelect
-                value={step.icon}
-                onChange={(val) => updateStepIcon(i, val)}
-                label={t('content.landing_label_icon')}
-                placeholder={t('content.landing_placeholder_select_icon')}
-              />
-              <Input
-                label={t('content.landing_label_title')}
-                value={step.title}
-                onValueChange={(v) => updateStep(i, 'title', v)}
-                variant="secondary"
-                size="sm"
-              />
-              <Input
-                label={t('content.landing_label_description')}
-                value={step.description}
-                onValueChange={(v) => updateStep(i, 'description', v)}
-                variant="secondary"
-                size="sm"
-              />
-            </div>
-          </CardBody>
-        </Card>
-      ))}
-      <Button
-        size="sm"
-        variant="secondary"
-        startContent={<Plus size={14} />}
-        onPress={addStep}
-        className="self-start"
-      >
-        {t('content.landing_add_step')}
-      </Button>
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-function CoreValuesEditor({
-  content,
-  onChange,
-}: {
-  content: CoreValuesContent;
-  onChange: (c: CoreValuesContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const values = content.values || [];
-
-  const updateValue = (index: number, field: keyof CoreValue, value: string) => {
-    const updated: CoreValue[] = [...values];
-    updated[index] = { ...updated[index], [field]: value } as CoreValue;
-    onChange({ ...content, values: updated });
-  };
-
-  const addValue = () => {
-    onChange({
-      ...content,
-      values: [...values, { _key: genListKey(), title: '', description: '' }],
-    });
-  };
-
-  const removeValue = (index: number) => {
-    onChange({ ...content, values: values.filter((_, i) => i !== index) });
-  };
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_section_title')}
-          placeholder={t('content.landing_placeholder_section_title_core_values')}
-          value={content.title || ''}
-          onValueChange={(v) => onChange({ ...content, title: v })}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_section_subtitle')}
-          placeholder={t('content.landing_placeholder_section_subtitle_core_values')}
-          value={content.subtitle || ''}
-          onValueChange={(v) => onChange({ ...content, subtitle: v })}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <Separator />
-      {values.map((val, i) => (
-        <Card key={val._key ?? i} variant="transparent" className="border border-border bg-surface">
-          <CardBody className="flex flex-col gap-3 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                {t('content.landing_value_number', { number: i + 1 })}
-              </span>
-              <Button
-                size="sm"
-                variant="danger-soft"
-                startContent={<Trash2 size={14} />}
-                onPress={() => removeValue(i)}
-              >
-                {t('content.landing_remove')}
-              </Button>
-            </div>
-            <Input
-              label={t('content.landing_label_title')}
-              value={val.title}
-              onValueChange={(v) => updateValue(i, 'title', v)}
-              variant="secondary"
-              size="sm"
-            />
-            <Textarea
-              label={t('content.landing_label_description')}
-              value={val.description}
-              onValueChange={(v) => updateValue(i, 'description', v)}
-              variant="secondary"
-              size="sm"
-              minRows={2}
-            />
-          </CardBody>
-        </Card>
-      ))}
-      <Button
-        size="sm"
-        variant="secondary"
-        startContent={<Plus size={14} />}
-        onPress={addValue}
-        className="self-start"
-      >
-        {t('content.landing_add_value')}
-      </Button>
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-function CtaEditor({
-  content,
-  onChange,
-}: {
-  content: CtaContent;
-  onChange: (c: CtaContent) => void;
-}) {
-  const { t } = useTranslation('admin_content');
-  const update = (field: keyof CtaContent, value: string) => {
-    onChange({ ...content, [field]: value });
-  };
-  return (
-    <div className="flex flex-col gap-4">
-      <Input
-        label={t('content.landing_label_title')}
-        placeholder={t('content.landing_placeholder_cta_title')}
-        value={content.title || ''}
-        onValueChange={(v) => update('title', v)}
-        variant="secondary"
-        size="sm"
-      />
-      <Textarea
-        label={t('content.landing_label_description')}
-        placeholder={t('content.landing_placeholder_cta_description')}
-        value={content.description || ''}
-        onValueChange={(v) => update('description', v)}
-        variant="secondary"
-        size="sm"
-        minRows={2}
-      />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Input
-          label={t('content.landing_label_button_text')}
-          placeholder={t('content.landing_placeholder_button_text_join_now')}
-          value={content.button_text || ''}
-          onValueChange={(v) => update('button_text', v)}
-          variant="secondary"
-          size="sm"
-        />
-        <Input
-          label={t('content.landing_label_button_link')}
-          placeholder={t('content.landing_placeholder_button_link_register')}
-          value={content.button_link || ''}
-          onValueChange={(v) => update('button_link', v)}
-          variant="secondary"
-          size="sm"
-        />
-      </div>
-      <p className="text-xs text-muted">{t(HELPER_TEXT_KEY)}</p>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section Card Component
-// ─────────────────────────────────────────────────────────────────────────────
-
-function SectionCard({
+function OutlineRow({
   section,
-  isFirst,
-  isLast,
-  isExpanded,
-  onToggleExpand,
+  position,
+  total,
+  isSelected,
+  onSelect,
   onToggleEnabled,
-  onMoveUp,
-  onMoveDown,
-  onContentChange,
+  onMove,
 }: {
   section: LandingSection;
-  isFirst: boolean;
-  isLast: boolean;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
+  position: number;
+  total: number;
+  isSelected: boolean;
+  onSelect: () => void;
   onToggleEnabled: (enabled: boolean) => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onContentChange: (content: LandingSection['content']) => void;
+  onMove: (direction: 'up' | 'down') => void;
 }) {
   const { t } = useTranslation('admin_content');
-  const sectionType = section.type as LandingSectionType;
-  const labelKey = SECTION_LABEL_KEYS[sectionType];
-  const label = labelKey ? t(labelKey) : sectionType;
-  const SectionIcon = SECTION_ICONS[sectionType] ?? Layers;
-
-  const renderEditor = () => {
-    switch (sectionType) {
-      case 'hero':
-        return (
-          <HeroEditor
-            content={(section.content as HeroContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'audience_cards':
-        return (
-          <AudienceCardsEditor
-            content={(section.content as AudienceCardsContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'feature_pills':
-        return (
-          <FeaturePillsEditor
-            content={(section.content as FeaturePillsContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'stats':
-        return (
-          <StatsEditor
-            content={(section.content as StatsContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'how_it_works':
-        return (
-          <HowItWorksEditor
-            content={(section.content as HowItWorksContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'core_values':
-        return (
-          <CoreValuesEditor
-            content={(section.content as CoreValuesContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      case 'cta':
-        return (
-          <CtaEditor
-            content={(section.content as CtaContent) || {}}
-            onChange={(c) => onContentChange(c)}
-          />
-        );
-      default:
-        return <p className="text-sm text-muted">{t('content.landing_no_editor_available')}</p>;
-    }
-  };
+  const meta = SECTION_META[section.type];
+  const name = t(meta.nameKey);
+  const Icon = meta.icon;
+  const customised = sectionHasCustomContent(section);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 };
 
   return (
-    <Card className={`border border-border bg-surface transition-all hover:border-primary-300 ${!section.enabled ? 'opacity-60' : ''}`}>
-      <CardHeader
-        className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 hover:bg-surface-secondary/50 transition-colors"
-        onClick={onToggleExpand}
+    <li ref={setNodeRef} style={style} aria-current={isSelected ? 'true' : undefined}>
+      {/* The row's onClick only widens the pointer hit area: the block name below
+          is a real button that selects on keyboard, so no role/tabIndex here (the
+          nested-interactive check exists to stop a focusable wrapper around
+          focusable controls). */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div
+        onClick={onSelect}
+        className={`flex cursor-pointer items-start gap-1.5 rounded-xl border p-2 transition-colors ${
+          isSelected ? 'border-accent bg-accent/5' : 'border-border bg-surface hover:border-border-secondary'
+        }`}
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <ChevronRight
-            size={16}
-            className={`text-muted transition-transform shrink-0 ${
-              isExpanded ? 'rotate-90' : ''
-            }`}
-          />
-          <span className="inline-flex items-center justify-center size-8 rounded-md bg-accent/10 text-accent shrink-0">
-            <SectionIcon size={16} />
+      <Button
+        isIconOnly
+        variant="tertiary"
+        size="sm"
+        className="min-h-8 min-w-8 shrink-0 cursor-grab self-center p-0.5 text-muted hover:text-foreground active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+        aria-label={t('content.landing_drag_to_reorder', { block: name })}
+      >
+        <GripVertical size={16} aria-hidden="true" />
+      </Button>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        {/* Name row: icon, name, Shown switch. The switch stops the row's select. */}
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex size-7 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ${section.enabled ? '' : 'opacity-60'}`}
+          >
+            <Icon size={14} aria-hidden="true" />
           </span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">{label}</p>
-            <Chip
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect();
+            }}
+            className={`min-w-0 flex-1 truncate text-left text-sm font-semibold text-foreground underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${section.enabled ? '' : 'opacity-60'}`}
+          >
+            {name}
+          </button>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+          <span className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <Switch
               size="sm"
-              variant="flat"
-              color={section.enabled ? 'success' : 'default'}
-              className="mt-0.5"
-            >
-              {section.enabled ? t('content.landing_visible') : t('content.landing_hidden')}
+              isSelected={section.enabled}
+              onValueChange={onToggleEnabled}
+              aria-label={t('content.landing_show_block', { block: name })}
+            />
+          </span>
+        </div>
+        <p className={`line-clamp-2 text-xs text-muted ${section.enabled ? '' : 'opacity-60'}`}>{t(meta.descKey)}</p>
+        {/* Status row: position, chips, move arrows. */}
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div className="flex flex-wrap items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <span className="text-[11px] text-muted">{t('content.landing_position', { position, total })}</span>
+          {!section.enabled && (
+            <Chip size="sm" variant="soft" color="default" startContent={<EyeOff size={11} aria-hidden="true" />}>
+              {t('content.landing_hidden')}
             </Chip>
+          )}
+          {customised && (
+            <Chip size="sm" variant="soft" color="accent">
+              {t('content.landing_status_customised')}
+            </Chip>
+          )}
+          <span className="ml-auto flex items-center">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="tertiary"
+              className="min-h-7 min-w-7"
+              isDisabled={position === 1}
+              onPress={() => onMove('up')}
+              aria-label={t('content.landing_move_up', { section: name })}
+            >
+              <ChevronUp size={14} aria-hidden="true" />
+            </Button>
+            <Button
+              isIconOnly
+              size="sm"
+              variant="tertiary"
+              className="min-h-7 min-w-7"
+              isDisabled={position === total}
+              onPress={() => onMove('down')}
+              aria-label={t('content.landing_move_down', { section: name })}
+            >
+              <ChevronDown size={14} aria-hidden="true" />
+            </Button>
+          </span>
+        </div>
+      </div>
+      </div>
+    </li>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Block editor pane
+// ─────────────────────────────────────────────────────────────────────────────
+
+function BlockEditor({
+  section,
+  allSections,
+  onToggleEnabled,
+  onContentChange,
+  onClearContent,
+}: {
+  section: LandingSection;
+  allSections: LandingSection[];
+  onToggleEnabled: (enabled: boolean) => void;
+  onContentChange: (content: LandingSection['content']) => void;
+  onClearContent: () => void;
+}) {
+  const { t } = useTranslation('admin_content');
+  const [previewMode, setPreviewMode] = useState<'block' | 'page'>('block');
+  const meta = SECTION_META[section.type];
+  const name = t(meta.nameKey);
+  const Icon = meta.icon;
+  const customised = sectionHasCustomContent(section);
+  const anyShown = allSections.some((s) => s.enabled);
+
+  const form = (() => {
+    switch (section.type) {
+      case 'hero':
+        return <HeroEditor content={(section.content as HeroContent) ?? {}} onChange={onContentChange} />;
+      case 'audience_cards':
+        return <AudienceCardsEditor content={(section.content as AudienceCardsContent) ?? {}} onChange={onContentChange} />;
+      case 'feature_pills':
+        return <FeaturePillsEditor content={(section.content as FeaturePillsContent) ?? {}} onChange={onContentChange} />;
+      case 'stats':
+        return <StatsEditor />;
+      case 'how_it_works':
+        return <HowItWorksEditor content={(section.content as HowItWorksContent) ?? {}} onChange={onContentChange} />;
+      case 'core_values':
+        return <CoreValuesEditor content={(section.content as CoreValuesContent) ?? {}} onChange={onContentChange} />;
+      case 'cta':
+        return <CtaEditor content={(section.content as CtaContent) ?? {}} onChange={onContentChange} />;
+      default:
+        return null;
+    }
+  })();
+
+  return (
+    <Card className="border border-border bg-surface">
+      <CardBody className="flex flex-col gap-5 p-4 sm:p-5">
+        {/* Block header */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <Icon size={20} aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-lg font-semibold text-foreground">{name}</h2>
+              <p className="text-sm text-muted">{t(meta.descKey)}</p>
+            </div>
           </div>
+          <Switch size="sm" isSelected={section.enabled} onValueChange={onToggleEnabled}>
+            {t('content.landing_shown_on_page')}
+          </Switch>
         </div>
-        <div role="presentation" className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <Switch
-            size="sm"
-            isSelected={section.enabled}
-            onValueChange={onToggleEnabled}
-            aria-label={t('content.landing_toggle_section', { section: label })}
-          />
-          <Button
-            isIconOnly
-            size="sm"
-            variant="tertiary"
-            isDisabled={isFirst}
-            onPress={onMoveUp}
-            aria-label={t('content.landing_move_up', { section: label })}
-          >
-            <ChevronUp size={16} />
-          </Button>
-          <Button
-            isIconOnly
-            size="sm"
-            variant="tertiary"
-            isDisabled={isLast}
-            onPress={onMoveDown}
-            aria-label={t('content.landing_move_down', { section: label })}
-          >
-            <ChevronDown size={16} />
-          </Button>
-        </div>
-      </CardHeader>
-      {isExpanded && (
-        <CardBody className="px-4 pb-4 pt-0">
-          <Separator className="mb-4" />
-          {renderEditor()}
-        </CardBody>
-      )}
+
+        {/* Preview */}
+        <section aria-labelledby="landing-preview-heading" className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 id="landing-preview-heading" className="text-sm font-semibold text-foreground">
+                {t('content.landing_preview_title')}
+              </h3>
+              <p className="text-xs text-muted">{t('content.landing_preview_hint')}</p>
+            </div>
+            <div className="flex items-center gap-1" role="group" aria-label={t('content.landing_preview_title')}>
+              <Button
+                size="sm"
+                variant={previewMode === 'block' ? 'secondary' : 'tertiary'}
+                aria-pressed={previewMode === 'block'}
+                onPress={() => setPreviewMode('block')}
+              >
+                {t('content.landing_preview_this_block')}
+              </Button>
+              <Button
+                size="sm"
+                variant={previewMode === 'page' ? 'secondary' : 'tertiary'}
+                aria-pressed={previewMode === 'page'}
+                onPress={() => setPreviewMode('page')}
+              >
+                {t('content.landing_preview_whole_page')}
+              </Button>
+            </div>
+          </div>
+          {previewMode === 'block' ? (
+            <>
+              {!section.enabled && (
+                <p className="flex items-center gap-2 rounded-lg bg-surface-secondary px-3 py-2 text-xs text-muted">
+                  <EyeOff size={14} aria-hidden="true" />
+                  {t('content.landing_preview_hidden_note')}
+                </p>
+              )}
+              <SectionPreview section={section} label={t('content.landing_preview_aria_block', { block: name })} />
+            </>
+          ) : anyShown ? (
+            <WholePagePreview sections={allSections} label={t('content.landing_preview_aria_page')} />
+          ) : (
+            <p className="rounded-lg bg-surface-secondary px-3 py-2 text-xs text-muted">
+              {t('content.landing_preview_whole_page_empty')}
+            </p>
+          )}
+        </section>
+
+        {/* Form */}
+        <section aria-label={t('content.landing_wording_heading', { block: name })} className="flex flex-col gap-4">
+          <h3 className="text-sm font-semibold text-foreground">{t('content.landing_wording_heading', { block: name })}</h3>
+          {form}
+          {customised && section.type !== 'stats' && (
+            <div>
+              <Button size="sm" variant="tertiary" startContent={<Undo2 size={14} aria-hidden="true" />} onPress={onClearContent}>
+                {t('content.landing_clear_block_changes')}
+              </Button>
+            </div>
+          )}
+        </section>
+      </CardBody>
     </Card>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main Component
+// Main
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function LandingPageBuilder() {
   const { t } = useTranslation('admin_content');
   usePageTitle(t('content.landing_page_title'));
   const toast = useToast();
+  const confirm = useConfirm();
+  const { tenantPath } = useTenant();
 
-  // State
-  const [config, setConfig] = useState<LandingPageConfig>(() =>
-    cloneConfig(DEFAULT_LANDING_PAGE_CONFIG),
-  );
-  const [savedConfig, setSavedConfig] = useState<LandingPageConfig | null>(null);
+  const [config, setConfig] = useState<LandingPageConfig>(defaultConfig);
+  const [savedConfig, setSavedConfig] = useState<LandingPageConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [isDirty, setIsDirty] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
-  const initialLoadDone = useRef(false);
+  const [selectedId, setSelectedId] = useState<string>('hero');
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  // ─── Fetch config on mount ──────────────────────────────────────────────
+  // ─── Load ───────────────────────────────────────────────────────────────
   const fetchConfig = useCallback(async () => {
     setLoading(true);
     try {
       const res = await adminLandingPage.get();
       if (res.success && res.data) {
         const result = res.data as unknown as { config: LandingPageConfig | null };
-        if (result.config) {
-          setConfig(withListKeys(result.config));
-          setSavedConfig(cloneConfig(result.config));
-        } else {
-          // No custom config — use defaults
-          const defaults = withListKeys(cloneConfig(DEFAULT_LANDING_PAGE_CONFIG));
-          setConfig(defaults);
-          setSavedConfig(null);
-        }
+        const loaded = result.config ? normaliseLoadedConfig(result.config) : defaultConfig();
+        setConfig(loaded);
+        setSavedConfig(cloneConfig(loaded));
+        setSelectedId(sortedSections(loaded.sections)[0]?.id ?? 'hero');
+      } else {
+        toast.error(t('content.landing_failed_to_load'));
       }
     } catch {
       toast.error(t('content.landing_failed_to_load'));
     } finally {
       setLoading(false);
-      initialLoadDone.current = true;
     }
   }, [t, toast]);
 
-
   useEffect(() => {
-    fetchConfig();
+    void fetchConfig();
   }, [fetchConfig]);
 
-  // ─── Track dirty state ──────────────────────────────────────────────────
-  useEffect(() => {
-    if (!initialLoadDone.current) return;
-    const currentJson = JSON.stringify(cleanConfig(config));
-    const savedJson = savedConfig
-      ? JSON.stringify(cleanConfig(savedConfig))
-      : JSON.stringify(cleanConfig(cloneConfig(DEFAULT_LANDING_PAGE_CONFIG)));
-    setIsDirty(currentJson !== savedJson);
-  }, [config, savedConfig]);
+  // ─── Derived ────────────────────────────────────────────────────────────
+  const sections = useMemo(() => sortedSections(config.sections), [config.sections]);
+  const isDirty = useMemo(() => configSignature(config) !== configSignature(savedConfig), [config, savedConfig]);
+  const problems = useMemo(() => findConfigProblems(config), [config]);
+  const shownCount = sections.filter((s) => s.enabled).length;
+  const selected = sections.find((s) => s.id === selectedId) ?? sections[0];
 
-  // ─── Warn on navigation with unsaved changes ───────────────────────────
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
+  useUnsavedChangesGuard(isDirty && !saving);
+
+  const problemText = useCallback(
+    (problem: ConfigProblem): string => {
+      const block = t(SECTION_META[problem.sectionType].nameKey);
+      switch (problem.kind) {
+        case 'card_title':
+          return t('content.landing_problem_card_title', { number: problem.number, block });
+        case 'card_link':
+          return t('content.landing_problem_card_link', { number: problem.number, block });
+        case 'item_title':
+          return t('content.landing_problem_item_title', { number: problem.number, block });
+        case 'button_link':
+          return t('content.landing_problem_button_link', { block });
+        default:
+          return '';
       }
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [isDirty]);
+    },
+    [t],
+  );
 
-  // ─── Save ───────────────────────────────────────────────────────────────
+  // ─── Section operations ────────────────────────────────────────────────
+  const updateSection = (id: string, updater: (s: LandingSection) => LandingSection) => {
+    setConfig((prev) => ({ ...prev, sections: prev.sections.map((s) => (s.id === id ? updater(s) : s)) }));
+  };
+  const toggleEnabled = (id: string, enabled: boolean) => updateSection(id, (s) => ({ ...s, enabled }));
+  const updateContent = (id: string, content: LandingSection['content']) => updateSection(id, (s) => ({ ...s, content }));
+  const clearContent = (id: string) =>
+    updateSection(id, (s) => {
+      const { content: _dropped, ...rest } = s;
+      return rest;
+    });
+  const move = (id: string, direction: 'up' | 'down') =>
+    setConfig((prev) => ({ ...prev, sections: moveSectionBy(prev.sections, id, direction) }));
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setConfig((prev) => ({ ...prev, sections: moveSectionTo(prev.sections, String(active.id), String(over.id)) }));
+  };
+
+  const select = (id: string) => {
+    setSelectedId(id);
+    // Below the two-column breakpoint (xl) the editor sits under the outline.
+    if (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 1279px)').matches) {
+      editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // ─── Save / discard / start again ──────────────────────────────────────
   const handleSave = async () => {
+    if (problems.length > 0) return;
     setSaving(true);
     try {
-      const cleaned = cleanConfig(config);
-      const res = await adminLandingPage.update(cleaned);
+      const payload = isDefaultConfig(config) ? null : cleanConfig(config);
+      const res = await adminLandingPage.update(payload);
       if (res.success) {
-        toast.success(t('content.landing_saved'));
         setSavedConfig(cloneConfig(config));
-        setIsDirty(false);
+        toast.success(t('content.landing_saved_live'));
       } else {
         toast.error(t('content.landing_failed_to_save'));
       }
@@ -1125,176 +468,160 @@ export function LandingPageBuilder() {
     }
   };
 
-  // ─── Reset to defaults ─────────────────────────────────────────────────
-  const handleReset = async () => {
-    setSaving(true);
-    try {
-      const res = await adminLandingPage.update(null);
-      if (res.success) {
-        const defaults = withListKeys(cloneConfig(DEFAULT_LANDING_PAGE_CONFIG));
-        setConfig(defaults);
-        setSavedConfig(null);
-        setIsDirty(false);
-        setExpandedSections(new Set());
-        toast.success(t('content.landing_reset_success'));
-      } else {
-        toast.error(t('content.landing_failed_to_reset'));
-      }
-    } catch {
-      toast.error(t('content.landing_failed_to_reset'));
-    } finally {
-      setSaving(false);
-      setConfirmReset(false);
-    }
+  const handleDiscard = () => {
+    setConfig(withListKeys(cloneConfig(savedConfig)));
+    toast.info(t('content.landing_discarded'));
   };
 
-  // ─── Section operations ─────────────────────────────────────────────────
-  const sections = sortedSections(config.sections);
-
-  const updateSection = (id: string, updater: (s: LandingSection) => LandingSection) => {
-    setConfig((prev) => ({
-      ...prev,
-      sections: prev.sections.map((s) => (s.id === id ? updater(s) : s)),
-    }));
-  };
-
-  const toggleEnabled = (id: string, enabled: boolean) => {
-    updateSection(id, (s) => ({ ...s, enabled }));
-  };
-
-  const moveSection = (id: string, direction: 'up' | 'down') => {
-    setConfig((prev) => {
-      const sorted = sortedSections(prev.sections);
-      const index = sorted.findIndex((s) => s.id === id);
-      if (
-        (direction === 'up' && index <= 0) ||
-        (direction === 'down' && index >= sorted.length - 1)
-      ) {
-        return prev;
-      }
-      const swapIndex = direction === 'up' ? index - 1 : index + 1;
-      const updated: LandingSection[] = [...sorted];
-      const current = updated[index];
-      const swap = updated[swapIndex];
-      if (!current || !swap) return prev;
-      // Swap order values
-      const tempOrder = current.order;
-      updated[index] = { ...current, order: swap.order };
-      updated[swapIndex] = { ...swap, order: tempOrder };
-      return { ...prev, sections: updated };
+  const handleStartAgain = async () => {
+    const ok = await confirm({
+      title: t('content.landing_start_again_confirm_title'),
+      body: t('content.landing_start_again_confirm_body'),
+      confirmLabel: t('content.landing_start_again_confirm'),
+      status: 'warning',
     });
-  };
-
-  const updateContent = (id: string, content: LandingSection['content']) => {
-    updateSection(id, (s) => ({ ...s, content }));
-  };
-
-  const toggleExpanded = (id: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    if (!ok) return;
+    setConfig(defaultConfig());
   };
 
   // ─── Render ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div role="status" aria-busy="true" aria-label={t('content.landing_loading_aria')} className="flex justify-center py-4"><Spinner size="lg" label={t('content.landing_loading')} /></div>
+        <div role="status" aria-busy="true" aria-label={t('content.landing_loading_aria')} className="flex justify-center py-4">
+          <Spinner size="lg" label={t('content.landing_loading')} />
+        </div>
       </div>
     );
   }
 
+  const livePath = tenantPath('/');
+  const liveUrl = typeof window !== 'undefined' ? new URL(livePath, window.location.origin).toString() : livePath;
+
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <PageHeader
         title={t('content.landing_builder_title')}
         description={t('content.landing_builder_description')}
         actions={
-          <div className="flex items-center gap-2">
-            {confirmReset ? (
-              <>
-                <span className="text-sm text-danger">{t('content.landing_reset_confirm_prompt')}</span>
-                <Button
-                  size="sm"
-                  variant="danger-soft"
-                  onPress={handleReset}
-                  isLoading={saving}
-                >
-                  {t('content.landing_confirm_reset')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onPress={() => setConfirmReset(false)}
-                  isDisabled={saving}
-                >
-                  {t('content.landing_cancel')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                size="sm"
-                variant="secondary"
-                startContent={<RotateCcw size={14} />}
-                onPress={() => setConfirmReset(true)}
-                isDisabled={saving}
-              >
-                {t('content.landing_reset_to_defaults')}
-              </Button>
-            )}
-            <Button
-              size="sm"
-              startContent={<Save size={14} />}
-              onPress={handleSave}
-              isDisabled={!isDirty || saving}
-              isLoading={saving}
-            >
-              {t('content.landing_save_changes')}
-            </Button>
-          </div>
+          <Button
+            as="a"
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            variant="secondary"
+            endContent={<ExternalLink size={14} aria-hidden="true" />}
+          >
+            {t('content.landing_open_live_page')}
+          </Button>
         }
       />
 
-      {/* Section ordering info */}
-      <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-surface-secondary px-4 py-3">
-        <Layers size={16} className="text-muted" />
-        <p className="text-sm text-muted">
-          {t('content.landing_ordering_info')}
-        </p>
-      </div>
+      {/* How this page works */}
+      <Card className="mb-4 border border-border bg-surface">
+        <CardBody className="flex flex-row items-start gap-3 p-4">
+          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+            <Info size={16} aria-hidden="true" />
+          </span>
+          <div className="min-w-0 text-sm">
+            <p className="font-semibold text-foreground">{t('content.landing_intro_title')}</p>
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-muted">
+              <li>{t('content.landing_intro_blocks')}</li>
+              <li>{t('content.landing_intro_blank')}</li>
+              <li>{t('content.landing_intro_save')}</li>
+              <li>{t('content.landing_intro_live_link')}</li>
+            </ul>
+          </div>
+        </CardBody>
+      </Card>
 
-      {/* Section list */}
-      <div className="flex flex-col gap-3">
-        {sections.map((section, index) => (
-          <SectionCard
-            key={section.id}
-            section={section}
-            isFirst={index === 0}
-            isLast={index === sections.length - 1}
-            isExpanded={expandedSections.has(section.id)}
-            onToggleExpand={() => toggleExpanded(section.id)}
-            onToggleEnabled={(enabled) => toggleEnabled(section.id, enabled)}
-            onMoveUp={() => moveSection(section.id, 'up')}
-            onMoveDown={() => moveSection(section.id, 'down')}
-            onContentChange={(content) => updateContent(section.id, content)}
-          />
-        ))}
-      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] xl:items-start">
+        {/* Page order */}
+        <Card className="border border-border bg-surface xl:sticky xl:top-4">
+          <CardBody className="flex flex-col gap-3 p-3 sm:p-4">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">{t('content.landing_outline_title')}</h2>
+              <p className="text-xs text-muted">{t('content.landing_outline_hint')}</p>
+              <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+                <Eye size={12} aria-hidden="true" />
+                {t('content.landing_blocks_shown_count', { shown: shownCount, total: sections.length })}
+              </p>
+            </div>
+            {shownCount === 0 && (
+              <Alert color="warning" title={t('content.landing_all_hidden_warning')} icon={<AlertTriangle size={16} />} />
+            )}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                <ol className="flex flex-col gap-2" aria-label={t('content.landing_outline_title')}>
+                  {sections.map((section, index) => (
+                    <OutlineRow
+                      key={section.id}
+                      section={section}
+                      position={index + 1}
+                      total={sections.length}
+                      isSelected={selected?.id === section.id}
+                      onSelect={() => select(section.id)}
+                      onToggleEnabled={(enabled) => toggleEnabled(section.id, enabled)}
+                      onMove={(direction) => move(section.id, direction)}
+                    />
+                  ))}
+                </ol>
+              </SortableContext>
+            </DndContext>
+          </CardBody>
+        </Card>
 
-      {/* Dirty state indicator */}
-      {isDirty && (
-        <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3">
-          <p className="text-sm text-warning-soft-foreground">
-            {t('content.landing_unsaved_changes')}
-          </p>
+        {/* Selected block */}
+        <div ref={editorRef} className="min-w-0 scroll-mt-4">
+          {selected && (
+            <BlockEditor
+              key={selected.id}
+              section={selected}
+              allSections={sections}
+              onToggleEnabled={(enabled) => toggleEnabled(selected.id, enabled)}
+              onContentChange={(content) => updateContent(selected.id, content)}
+              onClearContent={() => clearContent(selected.id)}
+            />
+          )}
         </div>
+      </div>
+
+      {problems.length > 0 && (
+        <Alert
+          color="danger"
+          className="mt-4"
+          icon={<AlertTriangle size={16} />}
+          title={t('content.landing_problems_title')}
+          description={
+            <ul className="list-disc pl-4">
+              {problems.map((problem, index) => (
+                <li key={index}>{problemText(problem)}</li>
+              ))}
+            </ul>
+          }
+        />
       )}
+
+      <AdminSaveBar
+        dirty={isDirty}
+        saving={saving}
+        blockedReason={problems.length > 0 ? problemText(problems[0]!) : null}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
+        saveLabel={t('content.landing_save_changes')}
+        secondaryActions={
+          <Button
+            size="sm"
+            variant="tertiary"
+            startContent={<RotateCcw size={14} aria-hidden="true" />}
+            onPress={handleStartAgain}
+            isDisabled={saving}
+          >
+            {t('content.landing_start_again')}
+          </Button>
+        }
+      />
     </div>
   );
 }
