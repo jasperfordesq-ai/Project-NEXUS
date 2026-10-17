@@ -47,7 +47,7 @@ import { useNotifications, useToast } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
 import { useAuth, useTenant } from '@/contexts';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
-import { usePusherOptional, type NewMessageEvent, type TypingEvent } from '@/contexts/PusherContext';
+import { usePusherOptional, type MessageReadEvent, type NewMessageEvent, type TypingEvent } from '@/contexts/PusherContext';
 import { usePageTitle } from '@/hooks';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { PageMeta } from '@/components/seo';
@@ -330,6 +330,10 @@ export function ConversationPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageIdRef = useRef<number | null>(null);
+  // The realtime effect below needs the poll (declared later) to fetch the
+  // canonical row of a truncated broadcast; a ref avoids ordering the hooks
+  // around that one call.
+  const pollForNewMessagesRef = useRef<() => Promise<void>>(async () => {});
   // Scroll-position tracking for auto-scroll, the scroll-to-bottom button and
   // keyboard handling. isNearBottomRef mirrors the 100px auto-scroll rule.
   const isNearBottomRef = useRef(true);
@@ -591,59 +595,94 @@ export function ConversationPage() {
   }, [pusher]);
 
   // Subscribe to Pusher channel for real-time updates
+  const currentUserId = user?.id;
   useEffect(() => {
     if (!targetId || !pusher) return;
 
     const otherUserId = parseInt(targetId, 10);
     pusher.subscribeToConversation(otherUserId);
 
-    // Listen for new messages
+    // Listen for new messages. Two shapes reach this thread:
+    //   - from the other user, on our user channel (and echoed on the chat channel)
+    //   - our own message sent from another device, on the chat channel
+    // The context dedupes by id across channels; this handler still guards by
+    // id in case a poll landed the same row first.
     const unsubMessage = pusher.onNewMessage((event: NewMessageEvent) => {
       // Backend may send from_user_id instead of sender_id; normalize
       const senderId: number | undefined = event.sender_id || event.from_user_id;
+      const isFromOtherUser = senderId === otherUserId;
+      const isOwnEcho = senderId === currentUserId && event.receiver_id === otherUserId;
 
-      // Only handle messages from the other user in this conversation
-      if (senderId === otherUserId) {
-        // Update last message ID
+      if (!isFromOtherUser && !isOwnEcho) return;
+
+      // The server shortens long bodies on the wire; let the poll bring the
+      // canonical row rather than showing a cut-off message. The poll's cursor
+      // is the last known id, so it is deliberately not advanced here.
+      if (event.message?.is_truncated && lastMessageIdRef.current) {
+        void pollForNewMessagesRef.current();
+      } else {
         lastMessageIdRef.current = event.id;
 
-        // Add the message to the conversation
         setConversation((prev) => {
           if (!prev) return null;
+          if (prev.messages.some((m) => m.id === event.id)) return prev;
 
-          // Check if message already exists
-          if (prev.messages.some((m) => m.id === event.id)) {
-            return prev;
-          }
-
-          const newMsg: Message = {
-            id: event.id,
-            body: event.body || event.preview || '',
-            sender_id: senderId,
-            is_own: false,
-            created_at: event.created_at || new Date().toISOString(),
-          };
+          // Prefer the full row (attachments, voice, sender) when the server
+          // included it; fall back to the flat fields for older payloads.
+          const newMsg: Message = event.message
+            ? {
+                ...event.message,
+                is_own: isOwnEcho,
+                // The wire uses null for "no audio"; the Message type uses undefined.
+                audio_url: event.message.audio_url ?? undefined,
+                audio_duration: event.message.audio_duration ?? undefined,
+              }
+            : {
+                id: event.id,
+                body: event.body || event.preview || '',
+                sender_id: senderId as number,
+                is_own: isOwnEcho,
+                created_at: event.created_at || new Date().toISOString(),
+              };
 
           return {
             ...prev,
             messages: [...prev.messages, newMsg],
           };
         });
+      }
 
-        // Mark incoming message as read immediately (user is viewing this conversation)
-        if (targetId) {
-          api.put(`/v2/messages/${targetId}/read`).catch(() => {
-            // non-critical — will sync on next load
-          });
-        }
-
-        // Scroll to bottom for new messages — but only when the user is
-        // already reading the latest ones. When scrolled up into history the
-        // scroll-to-bottom button badges the new message instead.
-        requestAnimationFrame(() => {
-          if (isNearBottomRef.current) scrollToBottom();
+      // Mark an incoming message as read immediately (the user is viewing this
+      // conversation). Our own echo has nothing to mark.
+      if (isFromOtherUser && targetId) {
+        api.put(`/v2/messages/${targetId}/read`).catch(() => {
+          // non-critical — will sync on next load
         });
       }
+
+      // Scroll to bottom for new messages — but only when the user is
+      // already reading the latest ones. When scrolled up into history the
+      // scroll-to-bottom button badges the new message instead.
+      requestAnimationFrame(() => {
+        if (isNearBottomRef.current) scrollToBottom();
+      });
+    });
+
+    // Read receipts: when the other user reads up to a message, every own
+    // message at or below that id turns read. Two states only (sent / read).
+    const unsubMessageRead = pusher.onMessageRead((event: MessageReadEvent) => {
+      if (event.reader_id !== otherUserId) return;
+      setConversation((prev) => {
+        if (!prev) return null;
+        let changed = false;
+        const messages = prev.messages.map((m) => {
+          const isOwn = m.is_own || m.sender_id === currentUserId;
+          if (!isOwn || m.id > event.up_to_message_id || m.is_read) return m;
+          changed = true;
+          return { ...m, is_read: true, read_at: event.read_at };
+        });
+        return changed ? { ...prev, messages } : prev;
+      });
     });
 
     // Listen for typing indicators
@@ -667,13 +706,14 @@ export function ConversationPage() {
       if (pusher) {
         pusher.unsubscribeFromConversation(otherUserId);
         if (typeof unsubMessage === 'function') unsubMessage();
+        if (typeof unsubMessageRead === 'function') unsubMessageRead();
         if (typeof unsubTyping === 'function') unsubTyping();
       }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [targetId, pusher, id]);
+  }, [targetId, pusher, id, currentUserId]);
 
   const loadUserForNewConversation = useCallback(async (userIdToLoad: number) => {
     try {
@@ -805,6 +845,7 @@ export function ConversationPage() {
       // Silent fail for polling - don't spam console
     }
   }, [applySafeguardingMeta, targetId]);
+  pollForNewMessagesRef.current = pollForNewMessages;
 
   // Memoize loadConversation
   const loadConversation = useCallback(async () => {

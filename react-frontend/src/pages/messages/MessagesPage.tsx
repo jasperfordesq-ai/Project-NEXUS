@@ -39,7 +39,7 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 import { PresenceIndicator } from '@/components/social/PresenceIndicator';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
-import { usePusherOptional, type NewMessageEvent } from '@/contexts/PusherContext';
+import { usePusherOptional, type MessageReadEvent, type NewMessageEvent } from '@/contexts/PusherContext';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
@@ -239,12 +239,33 @@ export function MessagesPage() {
     loadConversations();
   }, [loadConversations]);
 
+  /**
+   * This user read a thread (here or on another device): clear that
+   * conversation's badge locally. 1:1 conversations are keyed by the partner's
+   * id, which is the `sender_id` of the messages that were read.
+   */
+  const currentUserId = currentUser?.id;
+  const handleMessageRead = useCallback((event: MessageReadEvent) => {
+    if (event.reader_id !== currentUserId) return;
+    setConversations((prev) => {
+      const index = prev.findIndex((conv) => conv.id === event.sender_id);
+      const existing = index >= 0 ? prev[index] : undefined;
+      if (!existing || !existing.unread_count) return prev;
+      const updated = [...prev];
+      updated[index] = { ...existing, unread_count: 0 };
+      return updated;
+    });
+  }, [currentUserId]);
+
   // Subscribe to Pusher for real-time updates
   useEffect(() => {
     if (!pusher) return;
 
     // Subscribe to the user's notification channel for new messages
     const unsubMessage = pusher.onNewMessage(handleNewMessage);
+
+    // Read receipts addressed to this user clear a badge without a reload
+    const unsubMessageRead = pusher.onMessageRead(handleMessageRead);
 
     // Also listen for unread count updates (triggers a reload)
     const unsubUnread = pusher.onUnreadCount(() => {
@@ -254,9 +275,10 @@ export function MessagesPage() {
 
     return () => {
       unsubMessage();
+      unsubMessageRead();
       unsubUnread();
     };
-  }, [pusher, handleNewMessage, loadConversations]);
+  }, [pusher, handleNewMessage, handleMessageRead, loadConversations]);
 
   // Presence context for online indicators
   const presence = usePresenceOptional();

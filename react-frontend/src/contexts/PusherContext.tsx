@@ -9,10 +9,29 @@
  * Provides WebSocket connectivity for real-time features:
  * - New message notifications
  * - Typing indicators
+ * - Read receipts
  * - Presence (online status)
  * - Unread count updates
  *
  * Automatically subscribes to user-specific and conversation channels.
+ *
+ * Realtime contract (must match PusherService / MessageSent on the Laravel side):
+ *
+ *   private-tenant.{T}.user.{userId}
+ *     new-message   {id, sender_id, receiver_id, body, created_at, timestamp,
+ *                    conversation_id, message: BroadcastMessage} — recipient only
+ *     message.read  MessageReadEvent — sent to BOTH the sender's and the reader's
+ *                    user channel
+ *     typing        {user_id, is_typing, timestamp} — recipient only
+ *     unread-count  {notifications, messages, timestamp}
+ *     notification / notification.created / new-notification, transaction
+ *
+ *   private-tenant.{T}.chat.{min}-{max}
+ *     new-message   same payload as above, so the sender's other tabs get an echo
+ *
+ * The same message id can therefore arrive on both channels; `emitNewMessage`
+ * dedupes by id before fanning out to `onNewMessage` listeners. The server never
+ * emits anything on the sender's own user channel for a new message.
  */
 
 import { createContext, use, useEffect, useState, useCallback, useMemo, useRef, type ReactNode } from 'react';
@@ -22,6 +41,7 @@ import { useAuth } from './AuthContext';
 import { api, tokenManager } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import type { Notification } from '@/types';
+import type { MessageAttachment } from '@/types/api';
 
 interface PusherConfig {
   key: string;
@@ -53,12 +73,49 @@ interface PusherContextValue {
   onTransaction: (callback: (event: TransactionEvent) => void) => () => void;
   /** Register a callback for typing indicators */
   onTyping: (callback: (event: TypingEvent) => void) => () => void;
+  /** Register a callback for read receipts (message.read on the user channel) */
+  onMessageRead: (callback: (event: MessageReadEvent) => void) => () => void;
   /** Register a callback for unread count updates */
   onUnreadCount: (callback: (event: UnreadCountEvent) => void) => () => void;
   /** Register a callback for new feed posts broadcast to the tenant channel */
   onFeedPost: (callback: (event: FeedPostEvent) => void) => () => void;
   /** Send typing indicator */
   sendTyping: (toUserId: number, isTyping: boolean) => void;
+}
+
+export interface BroadcastMessageSender {
+  id: number;
+  name: string;
+  first_name?: string;
+  avatar_url?: string;
+}
+
+/**
+ * The full message row carried inside a `new-message` event. It is built from
+ * the recipient's perspective, so `is_own` is always false on the wire — derive
+ * own-ness from `sender_id === user.id` instead.
+ */
+export interface BroadcastMessage {
+  id: number;
+  body: string;
+  sender_id: number;
+  receiver_id: number;
+  sender: BroadcastMessageSender;
+  created_at: string;
+  is_own: boolean;
+  is_read: boolean;
+  is_edited: boolean;
+  is_deleted: boolean;
+  is_voice: boolean;
+  audio_url: string | null;
+  audio_duration: number | null;
+  reactions: Record<string, number>;
+  attachments: MessageAttachment[];
+  listing_id: number | null;
+  context_type: string | null;
+  context_id: number | null;
+  /** True when the server shortened `body` for the wire; fetch the canonical row. */
+  is_truncated?: boolean;
 }
 
 export interface NewMessageEvent {
@@ -68,12 +125,27 @@ export interface NewMessageEvent {
   body: string;
   created_at: string;
   timestamp: number;
+  /** crc32 pair id for the conversation, not a database id */
+  conversation_id?: number;
+  /** The full message row (attachments, voice, sender) when the server includes it */
+  message?: BroadcastMessage;
   /** Backend may send from_user_id instead of sender_id in some event payloads */
   from_user_id?: number;
   /** Some event payloads include a preview field instead of body */
   preview?: string;
-  /** Some event payloads use message instead of body. */
-  message?: string;
+}
+
+export interface MessageReadEvent {
+  reader_id: number;
+  sender_id: number;
+  conversation_id: number;
+  up_to_message_id: number;
+  read_count: number;
+  /** ISO 8601 */
+  read_at: string;
+  /** The reader's remaining unread message count after this read */
+  reader_unread_messages: number;
+  timestamp: number;
 }
 
 export interface TransactionEvent {
@@ -84,7 +156,7 @@ export interface TransactionEvent {
 export interface TypingEvent {
   user_id: number;
   is_typing: boolean;
-  timestamp: number;
+  timestamp?: number;
 }
 
 export interface UnreadCountEvent {
@@ -130,9 +202,24 @@ export function PusherProvider({ children }: PusherProviderProps) {
   const notificationListenersRef = useRef<Set<(notification: Notification) => void>>(new Set());
   const transactionListenersRef = useRef<Set<(event: TransactionEvent) => void>>(new Set());
   const typingListenersRef = useRef<Set<(event: TypingEvent) => void>>(new Set());
+  const messageReadListenersRef = useRef<Set<(event: MessageReadEvent) => void>>(new Set());
   const unreadListenersRef = useRef<Set<(event: UnreadCountEvent) => void>>(new Set());
   const feedPostListenersRef = useRef<Set<(event: FeedPostEvent) => void>>(new Set());
   const seenNotificationIdsRef = useRef<Set<number>>(new Set());
+  // A new message arrives on the recipient's user channel AND on the pair's chat
+  // channel; conversation listeners must see it once.
+  const seenMessageIdsRef = useRef<Set<number>>(new Set());
+
+  const emitNewMessage = useCallback((data: NewMessageEvent) => {
+    const seen = seenMessageIdsRef.current;
+    if (seen.has(data.id)) return;
+    seen.add(data.id);
+    if (seen.size > 500) {
+      const oldestId = seen.values().next().value;
+      if (oldestId !== undefined) seen.delete(oldestId);
+    }
+    messageListenersRef.current.forEach((listener) => listener(data));
+  }, []);
 
   // Tenant feed channel ref (unsubscribed on cleanup alongside user channel)
   const feedChannelRef = useRef<Channel | null>(null);
@@ -178,6 +265,7 @@ export function PusherProvider({ children }: PusherProviderProps) {
     let reconnectAttempts = 0;
     const reconnectTimeouts: ReturnType<typeof setTimeout>[] = [];
     const seenNotificationIds = seenNotificationIdsRef.current;
+    const seenMessageIds = seenMessageIdsRef.current;
 
     void import('pusher-js')
       .then(({ default: PusherClient }) => {
@@ -296,8 +384,18 @@ export function PusherProvider({ children }: PusherProviderProps) {
     });
 
     userChannel.bind('new-message', (data: NewMessageEvent) => {
-      messageListenersRef.current.forEach((listener) => listener(data));
+      emitNewMessage(data);
+      // Badge / toast path: the user channel only ever carries messages addressed
+      // to this user, and each arrives here once, so no dedupe is needed.
       userMessageListenersRef.current.forEach((listener) => listener(data));
+    });
+
+    userChannel.bind('typing', (data: TypingEvent) => {
+      typingListenersRef.current.forEach((listener) => listener(data));
+    });
+
+    userChannel.bind('message.read', (data: MessageReadEvent) => {
+      messageReadListenersRef.current.forEach((listener) => listener(data));
     });
 
     userChannel.bind('unread-count', (data: UnreadCountEvent) => {
@@ -366,11 +464,12 @@ export function PusherProvider({ children }: PusherProviderProps) {
       feedChannelRef.current = null;
       currentConversationChannels.clear();
       seenNotificationIds.clear();
+      seenMessageIds.clear();
       setIsConnected(false);
       setIsNotificationChannelReady(false);
       try { delete (window as NexusWindow).__nexus_disconnectPusher; } catch { /* non-blocking */ }
     };
-  }, [isAuthenticated, user?.id, config, user?.tenant_id]);
+  }, [isAuthenticated, user?.id, config, user?.tenant_id, emitNewMessage]);
 
   /**
    * Subscribe to a conversation channel for real-time messages and typing
@@ -394,16 +493,12 @@ export function PusherProvider({ children }: PusherProviderProps) {
 
     const channel = pusherRef.current.subscribe(channelName);
 
-    channel.bind('message', (data: NewMessageEvent) => {
-      messageListenersRef.current.forEach((listener) => listener(data));
-    });
-
-    channel.bind('typing', (data: TypingEvent) => {
-      typingListenersRef.current.forEach((listener) => listener(data));
-    });
+    // The chat channel only carries the sender-side echo of `new-message`;
+    // typing and read receipts travel on the user channel.
+    channel.bind('new-message', emitNewMessage);
 
     conversationChannelsRef.current.set(channelName, channel);
-  }, [user?.id, user?.tenant_id]);
+  }, [user?.id, user?.tenant_id, emitNewMessage]);
 
   /**
    * Unsubscribe from a conversation channel
@@ -480,6 +575,17 @@ export function PusherProvider({ children }: PusherProviderProps) {
   }, []);
 
   /**
+   * Register a callback for read receipts
+   * Returns an unsubscribe function
+   */
+  const onMessageRead = useCallback((callback: (event: MessageReadEvent) => void) => {
+    messageReadListenersRef.current.add(callback);
+    return () => {
+      messageReadListenersRef.current.delete(callback);
+    };
+  }, []);
+
+  /**
    * Register a callback for unread count updates
    * Returns an unsubscribe function
    */
@@ -530,11 +636,12 @@ export function PusherProvider({ children }: PusherProviderProps) {
       onNotification,
       onTransaction,
       onTyping,
+      onMessageRead,
       onUnreadCount,
       onFeedPost,
       sendTyping,
     }),
-    [isConnected, isNotificationChannelReady, tenantIdValue, subscribeToConversation, unsubscribeFromConversation, onNewMessage, onUserMessage, onNotification, onTransaction, onTyping, onUnreadCount, onFeedPost, sendTyping]
+    [isConnected, isNotificationChannelReady, tenantIdValue, subscribeToConversation, unsubscribeFromConversation, onNewMessage, onUserMessage, onNotification, onTransaction, onTyping, onMessageRead, onUnreadCount, onFeedPost, sendTyping]
   );
 
   return (

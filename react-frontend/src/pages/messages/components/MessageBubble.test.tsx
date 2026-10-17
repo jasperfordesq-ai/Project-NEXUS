@@ -219,6 +219,33 @@ describe('MessageBubble', () => {
   });
 });
 
+/**
+ * Two-state receipts only (sent / read). The realtime `message.read` handler
+ * flips `is_read` + `read_at`; these pin what the bubble shows for each state.
+ */
+describe('MessageBubble — read receipts', () => {
+  it('renders the sent tick for an own unread message', () => {
+    render(<MessageBubble {...defaultProps} message={{ ...mockMessage, is_read: false, read_at: null } as Message} />);
+
+    expect(screen.getByRole('img', { name: 'aria_read_receipt_sent' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'aria_read_receipt_read' })).toBeNull();
+  });
+
+  it('renders the read tick when is_read is true', () => {
+    render(<MessageBubble {...defaultProps} message={{ ...mockMessage, is_read: true } as Message} />);
+
+    expect(screen.getByRole('img', { name: 'aria_read_receipt_read' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'aria_read_receipt_sent' })).toBeNull();
+  });
+
+  it('renders no receipt on the other user\'s message', () => {
+    render(<MessageBubble {...defaultProps} isOwn={false} message={{ ...mockMessage, is_own: false, sender_id: 20 } as Message} />);
+
+    expect(screen.queryByRole('img', { name: 'aria_read_receipt_sent' })).toBeNull();
+    expect(screen.queryByRole('img', { name: 'aria_read_receipt_read' })).toBeNull();
+  });
+});
+
 describe('MessageBubble — mobile action sheet (<640px)', () => {
   beforeEach(() => {
     vi.clearAllMocks();

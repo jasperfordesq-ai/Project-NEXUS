@@ -27,6 +27,7 @@ import { useAuth } from './AuthContext';
 import { useTenant } from './TenantContext';
 import {
   usePusherOptional,
+  type MessageReadEvent,
   type NewMessageEvent,
   type TransactionEvent,
 } from './PusherContext';
@@ -205,13 +206,27 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       },
     }));
 
-    const text = data.body || data.preview || data.message || '';
+    // `message` is the full row object on the current contract, never a string.
+    const text = data.body || data.preview || data.message?.body || '';
     toastRef.current.info(
       i18n.t('realtime.new_message', { ns: 'notifications' }),
       text.substring(0, 50) ||
         i18n.t('realtime.new_message_fallback', { ns: 'notifications' })
     );
   }, [messagesEnabled]);
+
+  // The server tells the reader how many unread messages remain after a read;
+  // that is the badge, so take it as authoritative rather than decrementing.
+  const handleMessageRead = useCallback((data: MessageReadEvent) => {
+    if (!messagesEnabled || data.reader_id !== user?.id) return;
+    setState((previous) => ({
+      ...previous,
+      counts: {
+        ...previous.counts,
+        messages: Math.max(0, data.reader_unread_messages),
+      },
+    }));
+  }, [messagesEnabled, user?.id]);
 
   const handleTransaction = useCallback((data: TransactionEvent) => {
     if (!walletEnabled) return;
@@ -240,6 +255,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const onNotification = realtime?.onNotification;
   const onUserMessage = realtime?.onUserMessage;
   const onTransaction = realtime?.onTransaction;
+  const onMessageRead = realtime?.onMessageRead;
 
   // Consume the canonical user's channel. This provider deliberately contains
   // no pusher-js import, client construction, subscription, or disconnection.
@@ -249,7 +265,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       !user?.id ||
       !onNotification ||
       !onUserMessage ||
-      !onTransaction
+      !onTransaction ||
+      !onMessageRead
     ) {
       return;
     }
@@ -257,11 +274,13 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const unsubscribeNotification = onNotification(handleNewNotification);
     const unsubscribeMessage = onUserMessage(handleNewMessage);
     const unsubscribeTransaction = onTransaction(handleTransaction);
+    const unsubscribeMessageRead = onMessageRead(handleMessageRead);
 
     return () => {
       unsubscribeNotification();
       unsubscribeMessage();
       unsubscribeTransaction();
+      unsubscribeMessageRead();
     };
   }, [
     isAuthenticated,
@@ -269,9 +288,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     onNotification,
     onUserMessage,
     onTransaction,
+    onMessageRead,
     handleNewNotification,
     handleNewMessage,
     handleTransaction,
+    handleMessageRead,
   ]);
 
   const isRealtimeHealthy = Boolean(

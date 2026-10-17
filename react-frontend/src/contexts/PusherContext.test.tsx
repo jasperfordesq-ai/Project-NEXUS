@@ -8,28 +8,59 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
-import React from 'react';
-import { PusherProvider, usePusher, usePusherOptional } from './PusherContext';
+import { render, screen, act, waitFor } from '@testing-library/react';
+import React, { useEffect } from 'react';
+import {
+  PusherProvider,
+  usePusher,
+  usePusherOptional,
+  type MessageReadEvent,
+  type NewMessageEvent,
+  type TypingEvent,
+} from './PusherContext';
 
-// Mock Pusher
-const mockSubscribe = vi.fn().mockReturnValue({
-  bind: vi.fn(),
+// Mock Pusher. Every subscribed channel records its `bind` handlers by event
+// name so a test can replay a server event and watch what the context does.
+type BoundHandler = (data: unknown) => void;
+const channelBindings = new Map<string, Map<string, BoundHandler[]>>();
+
+function emitOnChannel(channelName: string, eventName: string, data: unknown) {
+  const handlers = channelBindings.get(channelName)?.get(eventName) ?? [];
+  handlers.forEach((handler) => handler(data));
+}
+
+const mockSubscribe = vi.fn((channelName: string) => {
+  const bindings = new Map<string, BoundHandler[]>();
+  channelBindings.set(channelName, bindings);
+  return {
+    name: channelName,
+    bind: vi.fn((eventName: string, handler: BoundHandler) => {
+      const list = bindings.get(eventName) ?? [];
+      list.push(handler);
+      bindings.set(eventName, list);
+    }),
+    unbind_all: vi.fn(),
+  };
 });
 const mockUnsubscribe = vi.fn();
 const mockDisconnect = vi.fn();
 const mockConnectionBind = vi.fn();
 
 vi.mock('pusher-js', () => {
+  // A plain `function` so the context's `new PusherClient(...)` works: a
+  // vi.fn with an arrow-function implementation is not constructible.
   return {
-    default: vi.fn().mockImplementation(() => ({
-      subscribe: mockSubscribe,
-      unsubscribe: mockUnsubscribe,
-      disconnect: mockDisconnect,
-      connection: {
-        bind: mockConnectionBind,
-      },
-    })),
+    default: vi.fn(function MockPusher() {
+      return {
+        subscribe: mockSubscribe,
+        unsubscribe: mockUnsubscribe,
+        disconnect: mockDisconnect,
+        connection: {
+          bind: mockConnectionBind,
+          state: 'connected',
+        },
+      };
+    }),
   };
 });
 
@@ -43,11 +74,14 @@ vi.mock('@/lib/api', () => ({
   },
   tokenManager: {
     getTenantId: vi.fn().mockReturnValue(2),
+    getAccessToken: vi.fn().mockReturnValue('test-token'),
+    getCsrfToken: vi.fn().mockReturnValue(''),
   },
 }));
 
 vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
+  logWarn: vi.fn(),
 }));
 
 // Mock AuthContext
@@ -193,6 +227,147 @@ describe('PusherContext', () => {
     await act(async () => {
       screen.getByRole('button', { name: 'Send Typing' }).click();
     });
+  });
+});
+
+/**
+ * The realtime contract the Laravel server emits (see PusherContext header):
+ *   user channel  private-tenant.{T}.user.{id}      → new-message, typing, message.read, unread-count
+ *   chat channel  private-tenant.{T}.chat.{min}-{max} → new-message (echo for the sender's other tabs)
+ */
+describe('PusherContext realtime contract', () => {
+  const USER_CHANNEL = 'private-tenant.2.user.1';
+  const CHAT_CHANNEL = 'private-tenant.2.chat.1-5';
+
+  const receivedMessages: NewMessageEvent[] = [];
+  const receivedTyping: TypingEvent[] = [];
+  const receivedReads: MessageReadEvent[] = [];
+
+  function ContractConsumer() {
+    const { onNewMessage, onTyping, onMessageRead, subscribeToConversation, isConnected } = usePusher();
+    useEffect(() => onNewMessage((event) => { receivedMessages.push(event); }), [onNewMessage]);
+    useEffect(() => onTyping((event) => { receivedTyping.push(event); }), [onTyping]);
+    useEffect(() => onMessageRead((event) => { receivedReads.push(event); }), [onMessageRead]);
+    return (
+      <div>
+        <div data-testid="connected">{String(isConnected)}</div>
+        <button onClick={() => subscribeToConversation(5)}>Open Chat</button>
+      </div>
+    );
+  }
+
+  async function renderConnected() {
+    mockIsAuthenticated = true;
+    mockUser = { id: 1, tenant_id: 2 };
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: { enabled: true, key: 'test-key', cluster: 'eu', authEndpoint: '/pusher/auth' },
+    });
+
+    render(
+      <PusherProvider>
+        <ContractConsumer />
+      </PusherProvider>
+    );
+
+    // Config load → dynamic pusher-js import → subscribe; wait for the user channel.
+    await waitFor(() => expect(channelBindings.has(USER_CHANNEL)).toBe(true));
+  }
+
+  function makeMessage(id: number): NewMessageEvent {
+    return {
+      id,
+      sender_id: 5,
+      receiver_id: 1,
+      body: 'hello',
+      created_at: '2026-10-17T10:00:00Z',
+      timestamp: 1760695200,
+      conversation_id: 123,
+    };
+  }
+
+  beforeEach(() => {
+    channelBindings.clear();
+    receivedMessages.length = 0;
+    receivedTyping.length = 0;
+    receivedReads.length = 0;
+  });
+
+  it('binds new-message, typing and message.read on the user channel', async () => {
+    await renderConnected();
+
+    const userBindings = channelBindings.get(USER_CHANNEL)!;
+    expect(userBindings.has('new-message')).toBe(true);
+    expect(userBindings.has('typing')).toBe(true);
+    expect(userBindings.has('message.read')).toBe(true);
+    expect(userBindings.has('unread-count')).toBe(true);
+  });
+
+  it('delivers one onNewMessage call when the same id arrives on the user and chat channels', async () => {
+    await renderConnected();
+
+    act(() => {
+      screen.getByRole('button', { name: 'Open Chat' }).click();
+    });
+    expect(channelBindings.has(CHAT_CHANNEL)).toBe(true);
+
+    act(() => {
+      emitOnChannel(USER_CHANNEL, 'new-message', makeMessage(77));
+      emitOnChannel(CHAT_CHANNEL, 'new-message', makeMessage(77));
+    });
+
+    expect(receivedMessages).toHaveLength(1);
+    expect(receivedMessages[0]?.id).toBe(77);
+
+    // A different id is still delivered.
+    act(() => {
+      emitOnChannel(CHAT_CHANNEL, 'new-message', makeMessage(78));
+    });
+    expect(receivedMessages).toHaveLength(2);
+  });
+
+  it('typing on the user channel reaches onTyping listeners', async () => {
+    await renderConnected();
+
+    act(() => {
+      emitOnChannel(USER_CHANNEL, 'typing', { user_id: 5, is_typing: true, timestamp: 1760695200 });
+    });
+
+    expect(receivedTyping).toEqual([{ user_id: 5, is_typing: true, timestamp: 1760695200 }]);
+  });
+
+  it('onMessageRead listeners receive message.read', async () => {
+    await renderConnected();
+
+    const readEvent: MessageReadEvent = {
+      reader_id: 5,
+      sender_id: 1,
+      conversation_id: 123,
+      up_to_message_id: 77,
+      read_count: 2,
+      read_at: '2026-10-17T10:05:00Z',
+      reader_unread_messages: 0,
+      timestamp: 1760695500,
+    };
+
+    act(() => {
+      emitOnChannel(USER_CHANNEL, 'message.read', readEvent);
+    });
+
+    expect(receivedReads).toEqual([readEvent]);
+  });
+
+  it('chat channel binds new-message and not typing', async () => {
+    await renderConnected();
+
+    act(() => {
+      screen.getByRole('button', { name: 'Open Chat' }).click();
+    });
+
+    const chatBindings = channelBindings.get(CHAT_CHANNEL)!;
+    expect(chatBindings.has('new-message')).toBe(true);
+    expect(chatBindings.has('typing')).toBe(false);
+    expect(chatBindings.has('message')).toBe(false);
   });
 });
 

@@ -151,6 +151,7 @@ const { mockRealtime } = vi.hoisted(() => ({
     onNotification: vi.fn(),
     onUserMessage: vi.fn(),
     onTransaction: vi.fn(),
+    onMessageRead: vi.fn(),
   },
 }));
 
@@ -241,6 +242,12 @@ describe('NotificationsContext', () => {
       channelEventHandlers.transaction = handler;
       return () => {
         delete channelEventHandlers.transaction;
+      };
+    });
+    mockRealtime.onMessageRead.mockImplementation((handler: EventHandler) => {
+      channelEventHandlers['message.read'] = handler;
+      return () => {
+        delete channelEventHandlers['message.read'];
       };
     });
 
@@ -624,6 +631,7 @@ describe('NotificationsContext', () => {
         expect(mockRealtime.onNotification).toHaveBeenCalledOnce();
         expect(mockRealtime.onUserMessage).toHaveBeenCalledOnce();
         expect(mockRealtime.onTransaction).toHaveBeenCalledOnce();
+        expect(mockRealtime.onMessageRead).toHaveBeenCalledOnce();
       });
 
       expect(MockPusher).not.toHaveBeenCalled();
