@@ -14,7 +14,10 @@ import {
   PusherProvider,
   usePusher,
   usePusherOptional,
+  type MessageDeletedEvent,
+  type MessageReactionEvent,
   type MessageReadEvent,
+  type MessageUpdatedEvent,
   type NewMessageEvent,
   type TypingEvent,
 } from './PusherContext';
@@ -242,12 +245,21 @@ describe('PusherContext realtime contract', () => {
   const receivedMessages: NewMessageEvent[] = [];
   const receivedTyping: TypingEvent[] = [];
   const receivedReads: MessageReadEvent[] = [];
+  const receivedUpdates: MessageUpdatedEvent[] = [];
+  const receivedDeletes: MessageDeletedEvent[] = [];
+  const receivedReactions: MessageReactionEvent[] = [];
 
   function ContractConsumer() {
-    const { onNewMessage, onTyping, onMessageRead, subscribeToConversation, isConnected } = usePusher();
+    const {
+      onNewMessage, onTyping, onMessageRead, onMessageUpdated, onMessageDeleted, onMessageReaction,
+      subscribeToConversation, isConnected,
+    } = usePusher();
     useEffect(() => onNewMessage((event) => { receivedMessages.push(event); }), [onNewMessage]);
     useEffect(() => onTyping((event) => { receivedTyping.push(event); }), [onTyping]);
     useEffect(() => onMessageRead((event) => { receivedReads.push(event); }), [onMessageRead]);
+    useEffect(() => onMessageUpdated((event) => { receivedUpdates.push(event); }), [onMessageUpdated]);
+    useEffect(() => onMessageDeleted((event) => { receivedDeletes.push(event); }), [onMessageDeleted]);
+    useEffect(() => onMessageReaction((event) => { receivedReactions.push(event); }), [onMessageReaction]);
     return (
       <div>
         <div data-testid="connected">{String(isConnected)}</div>
@@ -291,16 +303,49 @@ describe('PusherContext realtime contract', () => {
     receivedMessages.length = 0;
     receivedTyping.length = 0;
     receivedReads.length = 0;
+    receivedUpdates.length = 0;
+    receivedDeletes.length = 0;
+    receivedReactions.length = 0;
   });
 
-  it('binds new-message, typing and message.read on the user channel', async () => {
+  it('binds new-message, typing, message.read and the three mutation events on the user channel', async () => {
     await renderConnected();
 
     const userBindings = channelBindings.get(USER_CHANNEL)!;
     expect(userBindings.has('new-message')).toBe(true);
     expect(userBindings.has('typing')).toBe(true);
     expect(userBindings.has('message.read')).toBe(true);
+    expect(userBindings.has('message.updated')).toBe(true);
+    expect(userBindings.has('message.deleted')).toBe(true);
+    expect(userBindings.has('message.reaction')).toBe(true);
     expect(userBindings.has('unread-count')).toBe(true);
+  });
+
+  it('delivers message.updated, message.deleted and message.reaction to their listeners', async () => {
+    await renderConnected();
+
+    const updated: MessageUpdatedEvent = {
+      id: 77, body: 'corrected', is_edited: true, edited_at: '2026-10-17T10:06:00Z',
+      sender_id: 5, receiver_id: 1, conversation_id: 123, timestamp: 1760695560,
+    };
+    const deleted: MessageDeletedEvent = {
+      id: 78, scope: 'everyone', actor_id: 5, sender_id: 5, receiver_id: 1,
+      conversation_id: 123, deleted_at: '2026-10-17T10:07:00Z', timestamp: 1760695620,
+    };
+    const reaction: MessageReactionEvent = {
+      message_id: 77, emoji: '👍', action: 'added', actor_id: 1, counts: { '👍': 1 },
+      sender_id: 5, receiver_id: 1, conversation_id: 123, timestamp: 1760695680,
+    };
+
+    act(() => {
+      emitOnChannel(USER_CHANNEL, 'message.updated', updated);
+      emitOnChannel(USER_CHANNEL, 'message.deleted', deleted);
+      emitOnChannel(USER_CHANNEL, 'message.reaction', reaction);
+    });
+
+    expect(receivedUpdates).toEqual([updated]);
+    expect(receivedDeletes).toEqual([deleted]);
+    expect(receivedReactions).toEqual([reaction]);
   });
 
   it('delivers one onNewMessage call when the same id arrives on the user and chat channels', async () => {
@@ -368,6 +413,10 @@ describe('PusherContext realtime contract', () => {
     expect(chatBindings.has('new-message')).toBe(true);
     expect(chatBindings.has('typing')).toBe(false);
     expect(chatBindings.has('message')).toBe(false);
+    // Mutations arrive on the user channel only; a chat-channel copy would double-deliver.
+    expect(chatBindings.has('message.updated')).toBe(false);
+    expect(chatBindings.has('message.deleted')).toBe(false);
+    expect(chatBindings.has('message.reaction')).toBe(false);
   });
 });
 

@@ -22,6 +22,11 @@
  *                    conversation_id, message: BroadcastMessage} — recipient only
  *     message.read  MessageReadEvent — sent to BOTH the sender's and the reader's
  *                    user channel
+ *     message.updated  MessageUpdatedEvent — both participants
+ *     message.deleted  MessageDeletedEvent — both participants for scope
+ *                    'everyone'; the ACTOR only for scope 'self'
+ *     message.reaction MessageReactionEvent — both participants; `counts` are
+ *                    the authoritative totals after the toggle (set, never add)
  *     typing        {user_id, is_typing, timestamp} — recipient only
  *     unread-count  {notifications, messages, timestamp}
  *     notification / notification.created / new-notification, transaction
@@ -75,6 +80,12 @@ interface PusherContextValue {
   onTyping: (callback: (event: TypingEvent) => void) => () => void;
   /** Register a callback for read receipts (message.read on the user channel) */
   onMessageRead: (callback: (event: MessageReadEvent) => void) => () => void;
+  /** Register a callback for edited messages (message.updated on the user channel) */
+  onMessageUpdated: (callback: (event: MessageUpdatedEvent) => void) => () => void;
+  /** Register a callback for deleted messages (message.deleted on the user channel) */
+  onMessageDeleted: (callback: (event: MessageDeletedEvent) => void) => () => void;
+  /** Register a callback for reaction toggles (message.reaction on the user channel) */
+  onMessageReaction: (callback: (event: MessageReactionEvent) => void) => () => void;
   /** Register a callback for unread count updates */
   onUnreadCount: (callback: (event: UnreadCountEvent) => void) => () => void;
   /** Register a callback for new feed posts broadcast to the tenant channel */
@@ -148,6 +159,51 @@ export interface MessageReadEvent {
   timestamp: number;
 }
 
+/** `message.updated`: the sender changed the text. Replace the body; mark edited. */
+export interface MessageUpdatedEvent {
+  id: number;
+  body: string;
+  is_edited: boolean;
+  /** ISO 8601 */
+  edited_at: string;
+  /** True when the server shortened `body` for the wire; fetch the canonical row. */
+  is_truncated?: boolean;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id: number;
+  timestamp: number;
+}
+
+/**
+ * `message.deleted`. For scope 'everyone' show the tombstone. For scope 'self'
+ * the server sends it to the actor's own channel only (their other devices);
+ * a client that is not the actor must ignore it.
+ */
+export interface MessageDeletedEvent {
+  id: number;
+  scope: 'everyone' | 'self';
+  actor_id: number;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id: number;
+  /** ISO 8601 */
+  deleted_at: string;
+  timestamp: number;
+}
+
+/** `message.reaction`: `counts` are the server's totals after the toggle. */
+export interface MessageReactionEvent {
+  message_id: number;
+  emoji: string;
+  action: 'added' | 'removed';
+  actor_id: number;
+  counts: Record<string, number>;
+  sender_id: number;
+  receiver_id: number;
+  conversation_id: number;
+  timestamp: number;
+}
+
 export interface TransactionEvent {
   type: string;
   amount: number;
@@ -203,6 +259,9 @@ export function PusherProvider({ children }: PusherProviderProps) {
   const transactionListenersRef = useRef<Set<(event: TransactionEvent) => void>>(new Set());
   const typingListenersRef = useRef<Set<(event: TypingEvent) => void>>(new Set());
   const messageReadListenersRef = useRef<Set<(event: MessageReadEvent) => void>>(new Set());
+  const messageUpdatedListenersRef = useRef<Set<(event: MessageUpdatedEvent) => void>>(new Set());
+  const messageDeletedListenersRef = useRef<Set<(event: MessageDeletedEvent) => void>>(new Set());
+  const messageReactionListenersRef = useRef<Set<(event: MessageReactionEvent) => void>>(new Set());
   const unreadListenersRef = useRef<Set<(event: UnreadCountEvent) => void>>(new Set());
   const feedPostListenersRef = useRef<Set<(event: FeedPostEvent) => void>>(new Set());
   const seenNotificationIdsRef = useRef<Set<number>>(new Set());
@@ -398,6 +457,19 @@ export function PusherProvider({ children }: PusherProviderProps) {
       messageReadListenersRef.current.forEach((listener) => listener(data));
     });
 
+    // Changes to existing messages. Each arrives on the user channel only, once.
+    userChannel.bind('message.updated', (data: MessageUpdatedEvent) => {
+      messageUpdatedListenersRef.current.forEach((listener) => listener(data));
+    });
+
+    userChannel.bind('message.deleted', (data: MessageDeletedEvent) => {
+      messageDeletedListenersRef.current.forEach((listener) => listener(data));
+    });
+
+    userChannel.bind('message.reaction', (data: MessageReactionEvent) => {
+      messageReactionListenersRef.current.forEach((listener) => listener(data));
+    });
+
     userChannel.bind('unread-count', (data: UnreadCountEvent) => {
       unreadListenersRef.current.forEach((listener) => listener(data));
     });
@@ -585,6 +657,30 @@ export function PusherProvider({ children }: PusherProviderProps) {
     };
   }, []);
 
+  /** Register a callback for edited messages. Returns an unsubscribe function. */
+  const onMessageUpdated = useCallback((callback: (event: MessageUpdatedEvent) => void) => {
+    messageUpdatedListenersRef.current.add(callback);
+    return () => {
+      messageUpdatedListenersRef.current.delete(callback);
+    };
+  }, []);
+
+  /** Register a callback for deleted messages. Returns an unsubscribe function. */
+  const onMessageDeleted = useCallback((callback: (event: MessageDeletedEvent) => void) => {
+    messageDeletedListenersRef.current.add(callback);
+    return () => {
+      messageDeletedListenersRef.current.delete(callback);
+    };
+  }, []);
+
+  /** Register a callback for reaction toggles. Returns an unsubscribe function. */
+  const onMessageReaction = useCallback((callback: (event: MessageReactionEvent) => void) => {
+    messageReactionListenersRef.current.add(callback);
+    return () => {
+      messageReactionListenersRef.current.delete(callback);
+    };
+  }, []);
+
   /**
    * Register a callback for unread count updates
    * Returns an unsubscribe function
@@ -637,11 +733,14 @@ export function PusherProvider({ children }: PusherProviderProps) {
       onTransaction,
       onTyping,
       onMessageRead,
+      onMessageUpdated,
+      onMessageDeleted,
+      onMessageReaction,
       onUnreadCount,
       onFeedPost,
       sendTyping,
     }),
-    [isConnected, isNotificationChannelReady, tenantIdValue, subscribeToConversation, unsubscribeFromConversation, onNewMessage, onUserMessage, onNotification, onTransaction, onTyping, onMessageRead, onUnreadCount, onFeedPost, sendTyping]
+    [isConnected, isNotificationChannelReady, tenantIdValue, subscribeToConversation, unsubscribeFromConversation, onNewMessage, onUserMessage, onNotification, onTransaction, onTyping, onMessageRead, onMessageUpdated, onMessageDeleted, onMessageReaction, onUnreadCount, onFeedPost, sendTyping]
   );
 
   return (

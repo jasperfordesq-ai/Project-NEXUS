@@ -15,7 +15,14 @@
 import { render, screen, waitFor } from '@/test/test-utils';
 import { act, type FormEventHandler } from 'react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { MessageReadEvent, NewMessageEvent, TypingEvent } from '@/contexts/PusherContext';
+import type {
+  MessageDeletedEvent,
+  MessageReactionEvent,
+  MessageReadEvent,
+  MessageUpdatedEvent,
+  NewMessageEvent,
+  TypingEvent,
+} from '@/contexts/PusherContext';
 
 const stableMocks = vi.hoisted(() => ({
   hasFeature: vi.fn(() => true),
@@ -33,6 +40,9 @@ const fakePusher = vi.hoisted(() => {
   const messageListeners = new Set<Listener<unknown>>();
   const typingListeners = new Set<Listener<unknown>>();
   const readListeners = new Set<Listener<unknown>>();
+  const updatedListeners = new Set<Listener<unknown>>();
+  const deletedListeners = new Set<Listener<unknown>>();
+  const reactionListeners = new Set<Listener<unknown>>();
   const register = (set: Set<Listener<unknown>>) => (cb: Listener<unknown>) => {
     set.add(cb);
     return () => { set.delete(cb); };
@@ -51,6 +61,9 @@ const fakePusher = vi.hoisted(() => {
       onTransaction: register(new Set<Listener<unknown>>()),
       onTyping: register(typingListeners),
       onMessageRead: register(readListeners),
+      onMessageUpdated: register(updatedListeners),
+      onMessageDeleted: register(deletedListeners),
+      onMessageReaction: register(reactionListeners),
       onUnreadCount: register(new Set<Listener<unknown>>()),
       onFeedPost: register(new Set<Listener<unknown>>()),
       sendTyping: vi.fn(),
@@ -58,6 +71,9 @@ const fakePusher = vi.hoisted(() => {
     emitNewMessage: (event: unknown) => messageListeners.forEach((cb) => cb(event)),
     emitTyping: (event: unknown) => typingListeners.forEach((cb) => cb(event)),
     emitMessageRead: (event: unknown) => readListeners.forEach((cb) => cb(event)),
+    emitMessageUpdated: (event: unknown) => updatedListeners.forEach((cb) => cb(event)),
+    emitMessageDeleted: (event: unknown) => deletedListeners.forEach((cb) => cb(event)),
+    emitMessageReaction: (event: unknown) => reactionListeners.forEach((cb) => cb(event)),
   };
 });
 
@@ -145,10 +161,14 @@ vi.mock('@/components/verification/VerificationBadge', () => ({
 }));
 
 // Expose exactly what the realtime handlers change on a message so each case
-// can assert on it: body, own-ness, read state and attachment count.
+// can assert on it: body, own-ness, read state, attachment count, edited and
+// deleted flags, and the reaction counts.
 vi.mock('./components/MessageBubble', () => ({
   MessageBubble: ({ message, isOwn }: {
-    message: { id: number; body: string; is_read?: boolean; read_at?: string | null; attachments?: unknown[] };
+    message: {
+      id: number; body: string; is_read?: boolean; read_at?: string | null; attachments?: unknown[];
+      is_edited?: boolean; is_deleted?: boolean; reactions?: Record<string, number>;
+    };
     isOwn: boolean;
   }) => (
     <div
@@ -157,6 +177,9 @@ vi.mock('./components/MessageBubble', () => ({
       data-own={String(isOwn)}
       data-read={String(Boolean(message.is_read || message.read_at))}
       data-attachments={message.attachments?.length ?? 0}
+      data-edited={String(Boolean(message.is_edited))}
+      data-deleted={String(Boolean(message.is_deleted))}
+      data-reactions={JSON.stringify(message.reactions ?? {})}
     >
       {message.body}
     </div>
@@ -198,6 +221,8 @@ const mockMessages = [
   { id: 1, body: 'Hello Bob!', sender_id: 1, is_own: true, created_at: '2026-10-17T10:00:00Z', is_read: false, is_deleted: false, is_edited: false, is_voice: false, attachments: [], reactions: {} },
 ];
 
+const INITIAL_SYNCED_AT = '2026-10-17T10:03:00.000000Z';
+
 const mockConversationResponse = {
   success: true,
   data: mockMessages,
@@ -209,8 +234,50 @@ const mockConversationResponse = {
     },
     cursor: null,
     has_more: false,
+    synced_at: INITIAL_SYNCED_AT,
   },
 };
+
+function updatedEvent(id: number, body: string, overrides: Partial<MessageUpdatedEvent> = {}): MessageUpdatedEvent {
+  return {
+    id,
+    body,
+    is_edited: true,
+    edited_at: '2026-10-17T10:07:00Z',
+    sender_id: OTHER_USER_ID,
+    receiver_id: 1,
+    conversation_id: 4242,
+    timestamp: 1760695620,
+    ...overrides,
+  };
+}
+
+function deletedEvent(id: number, scope: 'everyone' | 'self', actorId: number): MessageDeletedEvent {
+  return {
+    id,
+    scope,
+    actor_id: actorId,
+    sender_id: actorId === 1 ? 1 : OTHER_USER_ID,
+    receiver_id: actorId === 1 ? OTHER_USER_ID : 1,
+    conversation_id: 4242,
+    deleted_at: '2026-10-17T10:08:00Z',
+    timestamp: 1760695680,
+  };
+}
+
+function reactionEvent(messageId: number, counts: Record<string, number>): MessageReactionEvent {
+  return {
+    message_id: messageId,
+    emoji: '👍',
+    action: 'added',
+    actor_id: OTHER_USER_ID,
+    counts,
+    sender_id: 1,
+    receiver_id: OTHER_USER_ID,
+    conversation_id: 4242,
+    timestamp: 1760695740,
+  };
+}
 
 function broadcastMessage(overrides: Partial<NewMessageEvent['message']> & { id: number; sender_id: number; receiver_id: number; body: string }) {
   return {
@@ -380,6 +447,150 @@ describe('ConversationPage realtime', () => {
     expect(bubble(5).dataset.read).toBe('false');
     // The other user's own message is untouched.
     expect(bubble(2).dataset.read).toBe('true');
+  });
+
+  it('replaces the body and marks the row edited on message.updated', async () => {
+    await renderLoaded();
+    expect(bubble(2).dataset.edited).toBe('false');
+
+    act(() => {
+      fakePusher.emitMessageUpdated(updatedEvent(2, 'Hi Alice! (fixed the typo)'));
+    });
+
+    expect(bubble(2)).toHaveTextContent('Hi Alice! (fixed the typo)');
+    expect(bubble(2).dataset.edited).toBe('true');
+    expect(screen.getAllByTestId('message-bubble')).toHaveLength(3);
+  });
+
+  it('ignores a message.updated for a conversation with someone else', async () => {
+    await renderLoaded();
+
+    act(() => {
+      fakePusher.emitMessageUpdated(updatedEvent(2, 'Not for this thread', { sender_id: 99, receiver_id: 1 }));
+    });
+
+    expect(bubble(2)).toHaveTextContent('Hi Alice!');
+    expect(bubble(2).dataset.edited).toBe('false');
+  });
+
+  it('shows the tombstone on message.deleted for everyone', async () => {
+    await renderLoaded();
+
+    act(() => {
+      fakePusher.emitMessageDeleted(deletedEvent(2, 'everyone', OTHER_USER_ID));
+    });
+
+    expect(bubble(2).dataset.deleted).toBe('true');
+    expect(bubble(2)).toHaveTextContent('message_deleted_placeholder');
+    expect(bubble(2).dataset.reactions).toBe('{}');
+    expect(screen.getAllByTestId('message-bubble')).toHaveLength(3);
+  });
+
+  it('removes the row on my own "delete for me" from another device, never on someone else\'s', async () => {
+    await renderLoaded();
+
+    // The other member's self-delete should never reach us; if it did, nothing changes.
+    act(() => {
+      fakePusher.emitMessageDeleted(deletedEvent(2, 'self', OTHER_USER_ID));
+    });
+    expect(screen.getAllByTestId('message-bubble')).toHaveLength(3);
+    expect(bubble(2).dataset.deleted).toBe('false');
+
+    act(() => {
+      fakePusher.emitMessageDeleted(deletedEvent(1, 'self', 1));
+    });
+    expect(screen.getAllByTestId('message-bubble')).toHaveLength(2);
+    expect(screen.queryByText('Hello Bob!')).toBeNull();
+  });
+
+  it('sets the reaction counts from message.reaction instead of counting', async () => {
+    await renderLoaded();
+    expect(bubble(1).dataset.reactions).toBe('{}');
+
+    act(() => {
+      fakePusher.emitMessageReaction(reactionEvent(1, { '👍': 2, '❤️': 1 }));
+    });
+    expect(JSON.parse(bubble(1).dataset.reactions ?? '{}')).toEqual({ '👍': 2, '❤️': 1 });
+
+    // A later event with fewer counts wins outright: no local arithmetic.
+    act(() => {
+      fakePusher.emitMessageReaction({ ...reactionEvent(1, { '❤️': 1 }), action: 'removed' });
+    });
+    expect(JSON.parse(bubble(1).dataset.reactions ?? '{}')).toEqual({ '❤️': 1 });
+  });
+
+  it('translates an edited message again when auto-translate is on', async () => {
+    window.localStorage.setItem('nexus_auto_translate_test', JSON.stringify({ [String(OTHER_USER_ID)]: 'fr' }));
+    mockApi.post.mockImplementation((url: string) => {
+      if (url.endsWith('/translate')) {
+        return Promise.resolve({ success: true, data: { translated_text: 'Salut Alice !' } });
+      }
+      return Promise.resolve({ success: true });
+    });
+    try {
+      await renderLoaded();
+      const translateCalls = () => mockApi.post.mock.calls.filter(([url]) => url === '/v2/messages/2/translate').length;
+      await waitFor(() => expect(translateCalls()).toBe(1));
+
+      act(() => {
+        fakePusher.emitMessageUpdated(updatedEvent(2, 'Hi Alice! (edited)'));
+      });
+
+      // The cached translation is for the old text; the edited body is fetched afresh.
+      await waitFor(() => expect(translateCalls()).toBe(2));
+    } finally {
+      window.localStorage.removeItem('nexus_auto_translate_test');
+    }
+  });
+
+  it('polls with updated_since and replaces edited or deleted rows in place', async () => {
+    // Only the poll interval is faked: load-time waits and the 100 ms scroll
+    // timeout keep real timers so renderLoaded's waitFor still resolves.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    await renderLoaded();
+    const pollUrls: string[] = [];
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/v2/messages/restriction-status')) {
+        return Promise.resolve({ success: true, data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null } });
+      }
+      if (url.includes('direction=newer')) {
+        pollUrls.push(url);
+        return Promise.resolve({
+          success: true,
+          data: [
+            { ...mockMessages[1], body: 'Hi Alice! (edited while you were away)', is_edited: true },
+            { ...mockMessages[2], body: '[Message deleted]', is_deleted: true },
+            { id: 9, body: 'And a new one', sender_id: OTHER_USER_ID, is_own: false, created_at: '2026-10-17T10:09:00Z', is_read: false, is_deleted: false, is_edited: false, is_voice: false, attachments: [], reactions: {} },
+          ],
+          meta: { conversation: mockConversationResponse.meta.conversation, cursor: null, has_more: false, synced_at: '2026-10-17T10:09:30.000000Z' },
+        });
+      }
+      return Promise.resolve(mockConversationResponse);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+
+    expect(pollUrls).toHaveLength(1);
+    expect(pollUrls[0]).toContain(`cursor=${btoa('5')}`);
+    expect(pollUrls[0]).toContain(`updated_since=${encodeURIComponent(INITIAL_SYNCED_AT)}`);
+
+    // In place, in order: 1 (tombstoned), 2 (edited), 5 (untouched), 9 (new).
+    const ids = screen.getAllByTestId('message-bubble').map((node) => node.dataset.id);
+    expect(ids).toEqual(['1', '2', '5', '9']);
+    expect(bubble(2)).toHaveTextContent('Hi Alice! (edited while you were away)');
+    expect(bubble(2).dataset.edited).toBe('true');
+    expect(bubble(1).dataset.deleted).toBe('true');
+    expect(bubble(1).dataset.own).toBe('true');
+
+    // Next poll carries the new cursor and the newer watermark.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(pollUrls).toHaveLength(2);
+    expect(pollUrls[1]).toContain(`cursor=${btoa('9')}`);
+    expect(pollUrls[1]).toContain(`updated_since=${encodeURIComponent('2026-10-17T10:09:30.000000Z')}`);
   });
 
   it('shows the typing indicator and clears it after 5 s', async () => {

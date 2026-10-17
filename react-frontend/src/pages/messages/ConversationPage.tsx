@@ -47,7 +47,15 @@ import { useNotifications, useToast } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
 import { useAuth, useTenant } from '@/contexts';
 import { usePresenceOptional } from '@/contexts/PresenceContext';
-import { usePusherOptional, type MessageReadEvent, type NewMessageEvent, type TypingEvent } from '@/contexts/PusherContext';
+import {
+  usePusherOptional,
+  type MessageDeletedEvent,
+  type MessageReactionEvent,
+  type MessageReadEvent,
+  type MessageUpdatedEvent,
+  type NewMessageEvent,
+  type TypingEvent,
+} from '@/contexts/PusherContext';
 import { usePageTitle } from '@/hooks';
 import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { PageMeta } from '@/components/seo';
@@ -330,6 +338,9 @@ export function ConversationPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageIdRef = useRef<number | null>(null);
+  // `meta.synced_at` from the last thread response. The poll sends it back as
+  // `updated_since` so edits and deletes below the cursor are picked up too.
+  const lastSyncedAtRef = useRef<string | null>(null);
   // The realtime effect below needs the poll (declared later) to fetch the
   // canonical row of a truncated broadcast; a ref avoids ordering the hooks
   // around that one call.
@@ -472,6 +483,22 @@ export function ConversationPage() {
   const autoTranslatingRef = useRef(false);
   const translatedIdsRef = useRef<Set<number>>(new Set());
   const autoTranslateAbortRef = useRef<AbortController | null>(null);
+  // Bumped when an existing message's text changes so the auto-translate effect
+  // re-runs; its other trigger is the message COUNT, which an edit leaves alone.
+  const [translationRevision, setTranslationRevision] = useState(0);
+
+  // Forget the cached translation of a message whose body changed. The next
+  // auto-translate pass then fetches the edited text afresh.
+  const invalidateAutoTranslation = useCallback((messageId: number) => {
+    translatedIdsRef.current.delete(messageId);
+    setAutoTranslations((prev) => {
+      if (!prev.has(messageId)) return prev;
+      const next = new Map(prev);
+      next.delete(messageId);
+      return next;
+    });
+    setTranslationRevision((revision) => revision + 1);
+  }, []);
 
   // Sync autoTranslateOn from localStorage when the other user changes
   useEffect(() => {
@@ -544,8 +571,8 @@ export function ConversationPage() {
       setAutoTranslations(newTranslations);
       autoTranslatingRef.current = false;
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- autoTranslateOn + messages length + language change trigger re-translation
-  }, [autoTranslateOn, conversation?.messages?.length, i18n.language]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- autoTranslateOn + messages length + an edit + language change trigger re-translation
+  }, [autoTranslateOn, conversation?.messages?.length, translationRevision, i18n.language]);
 
   function handleAutoTranslateToggle() {
     const otherUser = conversation?.meta?.other_user;
@@ -702,17 +729,98 @@ export function ConversationPage() {
       }
     });
 
+    // Changes to messages already on screen. Each event names both participants,
+    // so a thread with someone else ignores it.
+    const concernsThisThread = (event: { sender_id: number; receiver_id: number }): boolean =>
+      (event.sender_id === otherUserId && event.receiver_id === currentUserId)
+      || (event.sender_id === currentUserId && event.receiver_id === otherUserId);
+
+    const unsubMessageUpdated = pusher.onMessageUpdated((event: MessageUpdatedEvent) => {
+      if (!concernsThisThread(event)) return;
+      // A cut body is not worth showing; the catch-up poll brings the full row.
+      if (event.is_truncated) {
+        void pollForNewMessagesRef.current();
+        return;
+      }
+      setConversation((prev) => {
+        if (!prev) return null;
+        if (!prev.messages.some((m) => m.id === event.id)) return prev;
+        return {
+          ...prev,
+          messages: prev.messages.map((m) => (
+            m.id === event.id ? { ...m, body: event.body, is_edited: true } : m
+          )),
+        };
+      });
+      invalidateAutoTranslation(event.id);
+    });
+
+    const unsubMessageDeleted = pusher.onMessageDeleted((event: MessageDeletedEvent) => {
+      if (!concernsThisThread(event)) return;
+      if (event.scope === 'self') {
+        // Only the actor's own devices should ever receive this. Hidden for me
+        // elsewhere means hidden here; anyone else's "delete for me" is theirs.
+        if (event.actor_id !== currentUserId) return;
+        setConversation((prev) => {
+          if (!prev) return null;
+          if (!prev.messages.some((m) => m.id === event.id)) return prev;
+          return { ...prev, messages: prev.messages.filter((m) => m.id !== event.id) };
+        });
+        return;
+      }
+      setConversation((prev) => {
+        if (!prev) return null;
+        if (!prev.messages.some((m) => m.id === event.id)) return prev;
+        return {
+          ...prev,
+          messages: prev.messages.map((m) => (
+            m.id === event.id
+              ? {
+                  ...m,
+                  body: t('message_deleted_placeholder'),
+                  is_deleted: true,
+                  reactions: {},
+                  attachments: [],
+                  audio_url: undefined,
+                  audio_duration: undefined,
+                  transcript: undefined,
+                }
+              : m
+          )),
+        };
+      });
+    });
+
+    const unsubMessageReaction = pusher.onMessageReaction((event: MessageReactionEvent) => {
+      if (!concernsThisThread(event)) return;
+      // Set, never add: the counts are the server's totals after the toggle.
+      setConversation((prev) => {
+        if (!prev) return null;
+        if (!prev.messages.some((m) => m.id === event.message_id)) return prev;
+        return {
+          ...prev,
+          messages: prev.messages.map((m) => (
+            m.id === event.message_id ? { ...m, reactions: { ...event.counts } } : m
+          )),
+        };
+      });
+    });
+
     return () => {
       if (pusher) {
         pusher.unsubscribeFromConversation(otherUserId);
         if (typeof unsubMessage === 'function') unsubMessage();
         if (typeof unsubMessageRead === 'function') unsubMessageRead();
         if (typeof unsubTyping === 'function') unsubTyping();
+        if (typeof unsubMessageUpdated === 'function') unsubMessageUpdated();
+        if (typeof unsubMessageDeleted === 'function') unsubMessageDeleted();
+        if (typeof unsubMessageReaction === 'function') unsubMessageReaction();
       }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- t and invalidateAutoTranslation are stable; re-subscribing on them would drop events
   }, [targetId, pusher, id, currentUserId]);
 
   const loadUserForNewConversation = useCallback(async (userIdToLoad: number) => {
@@ -798,9 +906,19 @@ export function ConversationPage() {
     if (!targetId || !lastMessageIdRef.current) return;
 
     try {
-      // Use the last message ID as cursor to get only newer messages
+      // The last message ID is the cursor for newer messages. With the last
+      // sync time the server also returns rows at or below the cursor that were
+      // edited or deleted for everyone since — the only way a tab without a
+      // live connection learns of those. Reactions are live-only by design.
       const cursor = btoa(String(lastMessageIdRef.current));
-      const response = await api.get<Message[]>(`/v2/messages/${targetId}?direction=newer&cursor=${cursor}`);
+      const since = lastSyncedAtRef.current
+        ? `&updated_since=${encodeURIComponent(lastSyncedAtRef.current)}`
+        : '';
+      const response = await api.get<Message[]>(`/v2/messages/${targetId}?direction=newer&cursor=${cursor}${since}`);
+      const syncedAt = (response.meta as { synced_at?: unknown } | undefined)?.synced_at;
+      if (response.success && typeof syncedAt === 'string') {
+        lastSyncedAtRef.current = syncedAt;
+      }
       // An incremental "newer messages" fetch is not a policy preflight. api.ts
       // resolves rather than throws on 503 / maintenance / expired session, and
       // those envelopes carry no meta at all — while evaluateSafeguardingMeta
@@ -819,32 +937,46 @@ export function ConversationPage() {
       }
 
       if (response.success && response.data && response.data.length > 0) {
-        const newMessages = response.data;
+        const polled = response.data;
 
-        // Update the last message ID
-        const lastNewMsg = newMessages[newMessages.length - 1];
-        if (lastNewMsg) lastMessageIdRef.current = lastNewMsg.id;
+        // Only ever move the cursor forward: a changed older row sorts first
+        // and must not drag it back.
+        const newestId = Math.max(...polled.map((m) => m.id));
+        if (lastMessageIdRef.current === null || newestId > lastMessageIdRef.current) {
+          lastMessageIdRef.current = newestId;
+        }
 
-        // Append new messages to the conversation
+        const editedIds: number[] = [];
         setConversation((prev) => {
           if (!prev) return null;
 
-          // Filter out any duplicates (by ID)
-          const existingIds = new Set(prev.messages.map((m) => m.id));
-          const uniqueNewMessages = newMessages.filter((m) => !existingIds.has(m.id));
+          // Rows already on screen are replaced in place (edit or tombstone);
+          // the rest are appended in id order.
+          const existing = new Map(prev.messages.map((m) => [m.id, m]));
+          const changed = polled.filter((m) => existing.has(m.id));
+          const appended = polled.filter((m) => !existing.has(m.id));
+          if (changed.length === 0 && appended.length === 0) return prev;
 
-          if (uniqueNewMessages.length === 0) return prev;
+          const replacements = new Map(changed.map((m) => [m.id, m]));
+          const messages = prev.messages.map((m) => {
+            const next = replacements.get(m.id);
+            if (!next) return m;
+            if (next.body !== m.body && !next.is_deleted) editedIds.push(m.id);
+            // Keep the client-side view flag; the server row has no is_own.
+            return { ...next, is_own: m.is_own };
+          });
 
           return {
             ...prev,
-            messages: [...prev.messages, ...uniqueNewMessages],
+            messages: [...messages, ...appended],
           };
         });
+        editedIds.forEach((messageId) => invalidateAutoTranslation(messageId));
       }
     } catch {
       // Silent fail for polling - don't spam console
     }
-  }, [applySafeguardingMeta, targetId]);
+  }, [applySafeguardingMeta, invalidateAutoTranslation, targetId]);
   pollForNewMessagesRef.current = pollForNewMessages;
 
   // Memoize loadConversation
@@ -870,6 +1002,8 @@ export function ConversationPage() {
       // URL wiped all chat history because it skipped the API call entirely.
       const response = await api.get<Message[]>(`/v2/messages/${targetId}`);
       const meta = response.meta;
+      const loadedSyncedAt = (meta as { synced_at?: unknown } | undefined)?.synced_at;
+      lastSyncedAtRef.current = response.success && typeof loadedSyncedAt === 'string' ? loadedSyncedAt : null;
       if (response.success && response.data && meta?.conversation) {
         const messages = response.data as Message[];
 
