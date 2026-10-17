@@ -1567,37 +1567,6 @@ class AdminVolunteerController extends BaseApiController
         }
     }
 
-    /** POST /api/v2/admin/volunteering/custom-fields/reorder */
-    public function reorderCustomFields(): JsonResponse
-    {
-        $this->requireAdmin();
-        $this->ensureFeature();
-        $tenantId = TenantContext::getId();
-        $fieldIds = $this->input('field_ids');
-
-        if (!is_array($fieldIds) || empty($fieldIds)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.field_ids_required'), 'field_ids', 400);
-        }
-        if (count($fieldIds) > 100) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.too_many_fields', ['max' => 100]), 'field_ids', 400);
-        }
-
-        try {
-            $updated = 0;
-            foreach ($fieldIds as $order => $fieldId) {
-                $affected = DB::update(
-                    "UPDATE vol_custom_fields SET display_order = ? WHERE id = ? AND tenant_id = ?",
-                    [$order, (int) $fieldId, $tenantId]
-                );
-                $updated += $affected;
-            }
-            return $this->respondWithData(['success' => true, 'updated_count' => $updated]);
-        } catch (\Exception $e) {
-            Log::error("AdminVolunteerController::reorderCustomFields error: " . $e->getMessage());
-            return $this->respondWithError('SERVER_ERROR', __('api.failed_reorder_fields'), null, 500);
-        }
-    }
-
     /** GET /api/v2/admin/volunteering/giving-days/{id}/donors */
     public function givingDayDonors(int $id): JsonResponse
     {

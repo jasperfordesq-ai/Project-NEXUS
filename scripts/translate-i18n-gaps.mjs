@@ -180,7 +180,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   'USD ($)',
   'User-agent: *\nDisallow: /admin/',
   'Cloudflare (CDN / WAF)',
-  'application.created, shift.completed, hours.logged',
+  'shift.completed, job.application.created',
   'bern-cooperative',
   // Technical field placeholder. Keep this aligned with the regression
   // checker so it is never sent to a translation provider.
@@ -248,7 +248,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   "child@example.com",
   "Cloudflare (CDN / WAF)",
   "Komunitin (JSON:API)",
-  "application.created, shift.completed, hours.logged",
+  "shift.completed, job.application.created",
   "GBP (£)",
   "USD ($)",
   "EUR (€)",

@@ -120,7 +120,9 @@ class WebhookDispatchService
                         'status' => ($httpCode >= 200 && $httpCode < 300) ? 'success' : 'failed',
                         'created_at' => now(),
                     ]);
+                    self::recordDeliveryOutcome((int) $tenantId, (int) $webhook->id, $httpCode >= 200 && $httpCode < 300);
                 } catch (\Exception $e) {
+                    self::recordDeliveryOutcome((int) $tenantId, (int) $webhook->id, false);
                     DB::table('outbound_webhook_logs')->insert([
                         'tenant_id' => $tenantId,
                         'webhook_id' => $webhook->id,
@@ -141,6 +143,27 @@ class WebhookDispatchService
     /**
      * Get all webhooks for the current tenant.
      */
+    /**
+     * Keep outbound_webhooks.failure_count honest: +1 per failed delivery,
+     * back to 0 (and last_triggered_at stamped) on a successful one. The admin
+     * page reads this count; nothing wrote it before 17 Oct 2026.
+     */
+    public static function recordDeliveryOutcome(int $tenantId, int $webhookId, bool $succeeded): void
+    {
+        try {
+            $query = DB::table('outbound_webhooks')
+                ->where('id', $webhookId)
+                ->where('tenant_id', $tenantId);
+            if ($succeeded) {
+                $query->update(['failure_count' => 0, 'last_triggered_at' => now()]);
+            } else {
+                $query->update(['failure_count' => DB::raw('failure_count + 1'), 'last_triggered_at' => now()]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('WebhookDispatchService::recordDeliveryOutcome error: ' . $e->getMessage());
+        }
+    }
+
     public static function getWebhooks(): array
     {
         $tenantId = TenantContext::getId();

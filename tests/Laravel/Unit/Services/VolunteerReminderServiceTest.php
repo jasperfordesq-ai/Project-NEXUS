@@ -20,12 +20,14 @@ class VolunteerReminderServiceTest extends TestCase
         DB::shouldReceive('delete')->andReturn(0);
     }
 
-    public function test_sendReminders_returns_zero_when_no_setting(): void
+    public function test_sendReminders_returns_zero_when_switched_off(): void
     {
+        // No saved row now means the defaults apply (see
+        // VolunteerConfigPageWiringTest); only an explicit "off" stops the run.
         $this->expectStaleClaimCleanup();
         DB::shouldReceive('table')->with('vol_reminder_settings')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn(null);
+        DB::shouldReceive('first')->andReturn((object) ['enabled' => 0, 'hours_before' => 24, 'email_enabled' => 1]);
 
         $this->assertEquals(0, VolunteerReminderService::sendReminders(2, 1));
     }
@@ -33,7 +35,7 @@ class VolunteerReminderServiceTest extends TestCase
     public function test_sendReminders_returns_zero_when_no_shifts(): void
     {
         $this->expectStaleClaimCleanup();
-        $setting = (object) ['hours_before' => 24, 'push_enabled' => true, 'email_enabled' => true, 'sms_enabled' => false];
+        $setting = (object) ['enabled' => true, 'hours_before' => 24, 'push_enabled' => true, 'email_enabled' => true, 'sms_enabled' => false];
         DB::shouldReceive('table')->andReturnSelf();
         DB::shouldReceive('where')->andReturnSelf();
         DB::shouldReceive('first')->andReturn($setting);

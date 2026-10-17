@@ -1922,7 +1922,7 @@
       "reason": "functional-address-route-or-example"
     },
     "admin_volunteering.volunteering.webhook_events_placeholder": {
-      "value": "application.created, shift.completed, hours.logged",
+      "value": "shift.completed, job.application.created",
       "reason": "reviewed-locale-invariant"
     },
     "admin_volunteering.volunteering.webhook_url": {

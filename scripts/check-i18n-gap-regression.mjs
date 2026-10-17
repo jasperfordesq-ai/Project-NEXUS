@@ -153,7 +153,7 @@ const NO_TRANSLATE_VALUES = new Set([
   "child@example.com",
   "Cloudflare (CDN / WAF)",
   "Komunitin (JSON:API)",
-  "application.created, shift.completed, hours.logged",
+  "shift.completed, job.application.created",
   "GBP (£)",
   "USD ($)",
   "EUR (€)",

@@ -588,85 +588,6 @@ class VolunteerCommunityController extends BaseApiController
     }
 
     // ========================================
-    // CUSTOM FIELDS
-    // ========================================
-
-    /** Public endpoint -- custom fields needed for application forms */
-    public function getCustomFields(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->rateLimit('vol_public_read', 60, 30);
-
-        $orgId = $this->query('organization_id') ? (int) $this->query('organization_id') : null;
-        $appliesTo = $this->query('applies_to') ?: 'application';
-
-        $fields = $this->volunteerFormService->getCustomFields($orgId, $appliesTo);
-        return $this->respondWithData($fields);
-    }
-
-    public function adminCustomFields(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $orgId = $this->query('organization_id') ? (int) $this->query('organization_id') : null;
-        $fields = $this->volunteerFormService->getCustomFields($orgId);
-        return $this->respondWithData($fields);
-    }
-
-    public function createCustomField(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-        $this->rateLimit('vol_custom_field_create', 10, 60);
-
-        $data = $this->getAllInput();
-
-        if (empty($data['field_label']) && empty($data['label'])) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_field_label_required'), 'field_label', 422);
-        }
-
-        try {
-            $result = $this->volunteerFormService->createField($data);
-            return $this->respondWithData($result, null, 201);
-        } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning("VolunteerCommunityController::createCustomField error: " . $e->getMessage());
-            return $this->respondWithError('INTERNAL_ERROR', __('api.vol_custom_field_create_failed'), null, 500);
-        }
-    }
-
-    public function updateCustomField($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $data = $this->getAllInput();
-        $result = $this->volunteerFormService->updateField((int) $id, $data);
-
-        if (!$result) {
-            return $this->respondWithError('NOT_FOUND', __('api.vol_custom_field_not_found'), null, 404);
-        }
-
-        return $this->respondWithData(['success' => true]);
-    }
-
-    public function deleteCustomField($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $result = $this->volunteerFormService->deleteField((int) $id);
-
-        if (!$result) {
-            return $this->respondWithError('NOT_FOUND', __('api.vol_custom_field_not_found'), null, 404);
-        }
-
-        return $this->respondWithData(['success' => true]);
-    }
-
-    // ========================================
     // ACCESSIBILITY
     // ========================================
 
@@ -1181,7 +1102,11 @@ class VolunteerCommunityController extends BaseApiController
         $this->ensureFeature();
         $this->requireAdmin();
 
-        $result = $this->webhookDispatchService->testWebhook((int) $id);
+        try {
+            $result = $this->webhookDispatchService->testWebhook((int) $id);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('NOT_FOUND', __('api.webhook_not_found'), null, 404);
+        }
         return $this->respondWithData($result);
     }
 

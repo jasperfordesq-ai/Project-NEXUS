@@ -2841,14 +2841,9 @@ Route::post('/v2/admin/volunteering/hours/{id}/verify', [\App\Http\Controllers\A
 // Analytics, activity feed, reorder, donors, trends
 Route::get('/v2/admin/volunteering/trends', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'trends']);
 Route::get('/v2/admin/volunteering/reminder-logs', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'reminderLogs']);
-Route::post('/v2/admin/volunteering/custom-fields/reorder', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'reorderCustomFields']);
 Route::get('/v2/admin/volunteering/giving-days/{id}/donors', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'givingDayDonors']);
 Route::get('/v2/admin/volunteering/giving-days/{id}/trends', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'givingDayTrends']);
 Route::get('/v2/admin/volunteering/activity-feed', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'activityFeed']);
-Route::get('/v2/admin/volunteering/custom-fields', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminCustomFields']);
-Route::post('/v2/admin/volunteering/custom-fields', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createCustomField']);
-Route::put('/v2/admin/volunteering/custom-fields/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateCustomField']);
-Route::delete('/v2/admin/volunteering/custom-fields/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'deleteCustomField']);
 Route::get('/v2/admin/volunteering/reminder-settings', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getReminderSettings']);
 Route::put('/v2/admin/volunteering/reminder-settings', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateReminderSettings']);
 Route::get('/v2/admin/volunteering/community-projects', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminCommunityProjects']);
@@ -3939,7 +3934,6 @@ Route::post('/v2/volunteering/incidents/{id}/additions', [\App\Http\Controllers\
 Route::get('/v2/volunteering/organisations/{orgId}/incidents', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'organisationIncidents'])->whereNumber('orgId');
 Route::get('/v2/volunteering/organisations/{orgId}/incidents/{id}', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'organisationIncident'])->whereNumber(['orgId', 'id']);
 Route::post('/v2/volunteering/organisations/{orgId}/incidents/{id}/updates', [\App\Http\Controllers\Api\VolunteerIncidentCaseController::class, 'organisationUpdate'])->whereNumber(['orgId', 'id']);
-Route::get('/v2/volunteering/custom-fields', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getCustomFields']);
 Route::get('/v2/volunteering/accessibility-needs', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'myAccessibilityNeeds']);
 Route::put('/v2/volunteering/accessibility-needs', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateAccessibilityNeeds']);
 Route::get('/v2/volunteering/community-projects', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getCommunityProjects']);

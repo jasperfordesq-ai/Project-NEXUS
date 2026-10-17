@@ -257,15 +257,17 @@ class VolunteerReminderService
         self::releaseStaleReminderDeliveryClaims();
 
         // Get the pre_shift reminder setting for this tenant
+        // No saved row = the defaults (on, 24 hours, email), the same rule the
+        // nightly sendPreShiftReminders() applies. Only an explicit "off" stops it.
         $setting = DB::table('vol_reminder_settings')
             ->where('tenant_id', $tenantId)
             ->where('reminder_type', 'pre_shift')
-            ->where('enabled', true)
             ->first();
 
-        if (!$setting) {
+        if ($setting !== null && !(bool) $setting->enabled) {
             return 0;
         }
+        $setting ??= (object) ['hours_before' => 24, 'email_enabled' => true];
 
         $hoursBefore = (int) ($setting->hours_before ?? 24);
 

@@ -42,7 +42,7 @@
     "USD ($)",
     "User-agent: *\nDisallow: /admin/",
     "XP",
-    "application.created, shift.completed, hours.logged",
+    "shift.completed, job.application.created",
     "km",
     "mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback",
     ":action",

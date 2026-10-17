@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
@@ -12,11 +12,6 @@ import userEvent from '@testing-library/user-event';
 // ─── Mock adminVolunteering API ───────────────────────────────────────────────
 const { mockAdminVolunteering } = vi.hoisted(() => ({
   mockAdminVolunteering: {
-    getCustomFields: vi.fn(),
-    createCustomField: vi.fn(),
-    updateCustomField: vi.fn(),
-    deleteCustomField: vi.fn(),
-    reorderCustomFields: vi.fn(),
     getReminderSettings: vi.fn(),
     updateReminderSettings: vi.fn(),
     getReminderLogs: vi.fn(),
@@ -143,17 +138,6 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
-const makeField = (overrides = {}): Record<string, unknown> => ({
-  id: 1,
-  label: 'Emergency Contact',
-  field_type: 'text',
-  applies_to: 'application',
-  is_required: false,
-  options: null,
-  sort_order: 0,
-  ...overrides,
-});
-
 const makeReminderResponse = () => ([
   {
     reminder_type: 'pre_shift',
@@ -172,218 +156,123 @@ const makeWebhook = () => ({
   id: 10,
   name: 'My Webhook',
   url: 'https://example.com/hook',
-  events: ['shift.created'],
+  events: ['shift.completed'],
   is_active: true,
   failure_count: 0,
   created_at: '2025-01-01T00:00:00Z',
 });
 
+async function renderPage() {
+  const { default: VolunteerConfig } = await import('./VolunteerConfig');
+  render(<VolunteerConfig />);
+  await waitFor(() => expect(screen.getAllByRole('tab').length).toBeGreaterThan(0));
+}
+
+async function openWebhooksTab(user: ReturnType<typeof userEvent.setup>) {
+  const tab = screen.getAllByRole('tab').find((t) => /webhook/i.test(t.textContent ?? ''));
+  expect(tab).toBeDefined();
+  await user.click(tab!);
+  await waitFor(() => expect(screen.getByText('My Webhook')).toBeInTheDocument());
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('VolunteerConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAdminVolunteering.getCustomFields.mockResolvedValue({ success: true, data: [makeField()] });
     mockAdminVolunteering.getReminderSettings.mockResolvedValue({ success: true, data: makeReminderResponse() });
     mockAdminVolunteering.getReminderLogs.mockResolvedValue({ success: true, data: [] });
     mockAdminVolunteering.getWebhooks.mockResolvedValue({ success: true, data: [makeWebhook()] });
-    mockAdminVolunteering.createCustomField.mockResolvedValue({ success: true });
-    mockAdminVolunteering.updateCustomField.mockResolvedValue({ success: true });
-    mockAdminVolunteering.deleteCustomField.mockResolvedValue({ success: true });
     mockAdminVolunteering.updateReminderSettings.mockResolvedValue({ success: true });
     mockAdminVolunteering.sendShiftReminders.mockResolvedValue({ success: true, data: { reminders_sent: 3 } });
     mockAdminVolunteering.createWebhook.mockResolvedValue({ success: true });
     mockAdminVolunteering.deleteWebhook.mockResolvedValue({ success: true });
-    mockAdminVolunteering.testWebhook.mockResolvedValue({ success: true });
+    mockAdminVolunteering.testWebhook.mockResolvedValue({ success: true, data: { success: true, http_code: 200, response: 'ok' } });
+    mockAdminVolunteering.getWebhookLogs.mockResolvedValue({ success: true, data: [] });
   });
 
-  it('renders the three main config tabs', async () => {
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => {
-      const tabs = screen.getAllByRole('tab');
-      expect(tabs.length).toBeGreaterThanOrEqual(3);
-    });
-  });
-
-  it('loads custom fields on mount', async () => {
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => {
-      expect(mockAdminVolunteering.getCustomFields).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('renders custom field row in table after load', async () => {
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Emergency Contact')).toBeInTheDocument();
-    });
-  });
-
-  it('shows empty state when no fields returned', async () => {
-    mockAdminVolunteering.getCustomFields.mockResolvedValueOnce({ success: true, data: [] });
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('empty-state')).toBeInTheDocument();
-    });
-  });
-
-  it('opens create field modal when Add Field button clicked', async () => {
-    const user = userEvent.setup();
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => expect(screen.getByText('Emergency Contact')).toBeInTheDocument());
-
-    const addBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('add') ||
-      b.textContent?.toLowerCase().includes('new') ||
-      b.textContent?.toLowerCase().includes('create')
-    );
-
-    if (addBtn) {
-      await user.click(addBtn);
-      await waitFor(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        expect(dialog).toBeTruthy();
-      });
-    } else {
-      // Button may be present but text hidden behind icon
-      const buttons = screen.getAllByRole('button');
-      expect(buttons.length).toBeGreaterThan(0);
-    }
-  });
-
-  it('calls createCustomField when form submitted', async () => {
-    const user = userEvent.setup();
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => expect(screen.getByText('Emergency Contact')).toBeInTheDocument());
-
-    const addBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('add') ||
-      b.textContent?.toLowerCase().includes('create')
-    );
-
-    if (addBtn) {
-      await user.click(addBtn);
-      await waitFor(() => document.querySelector('[role="dialog"]'));
-
-      // Fill in the label field
-      const labelInput = screen.getAllByRole('textbox').find((inp) =>
-        inp.getAttribute('aria-label')?.toLowerCase().includes('label') ||
-        inp.getAttribute('placeholder')?.toLowerCase().includes('label') ||
-        (inp as HTMLInputElement).name?.toLowerCase().includes('label')
-      );
-
-      if (labelInput) {
-        await user.clear(labelInput);
-        await user.type(labelInput, 'Phone Number');
-
-        const saveBtn = screen.getAllByRole('button').find((b) =>
-          b.textContent?.toLowerCase().includes('create') ||
-          b.textContent?.toLowerCase().includes('save')
-        );
-        if (saveBtn) {
-          await user.click(saveBtn);
-          await waitFor(() => {
-            expect(mockAdminVolunteering.createCustomField).toHaveBeenCalled();
-          });
-        }
-      }
-    }
-    // Guard: API was at minimum loaded
-    expect(mockAdminVolunteering.getCustomFields).toHaveBeenCalled();
-  });
-
-  it('switches to Reminders tab and loads reminder settings', async () => {
-    const user = userEvent.setup();
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => screen.getAllByRole('tab'));
+  it('has only the Reminders and Webhooks tabs (Custom Fields was removed)', async () => {
+    await renderPage();
 
     const tabs = screen.getAllByRole('tab');
-    const remindersTab = tabs.find((t) =>
-      t.textContent?.toLowerCase().includes('reminder')
-    );
-
-    if (remindersTab) {
-      await user.click(remindersTab);
-      await waitFor(() => {
-        expect(mockAdminVolunteering.getReminderSettings).toHaveBeenCalled();
-      });
-    }
+    expect(tabs).toHaveLength(2);
+    expect(tabs.some((t) => /custom/i.test(t.textContent ?? ''))).toBe(false);
   });
 
-  it('switches to Webhooks tab and loads webhooks', async () => {
+  it('opens on Reminders and loads the reminder settings', async () => {
+    await renderPage();
+
+    await waitFor(() => expect(mockAdminVolunteering.getReminderSettings).toHaveBeenCalledTimes(1));
+  });
+
+  it('offers only the email channel — there is no SMS or push sender', async () => {
+    await renderPage();
+
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: /email/i })).toBeInTheDocument());
+    expect(screen.queryByRole('checkbox', { name: /sms/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /push/i })).not.toBeInTheDocument();
+  });
+
+  it('saves reminders without SMS or push settings and confirms', async () => {
     const user = userEvent.setup();
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
+    await renderPage();
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: /email/i })).toBeInTheDocument());
 
-    await waitFor(() => screen.getAllByRole('tab'));
+    const saveBtn = screen.getAllByRole('button').find((b) => /save/i.test(b.textContent ?? ''));
+    expect(saveBtn).toBeDefined();
+    await user.click(saveBtn!);
 
-    const tabs = screen.getAllByRole('tab');
-    const webhooksTab = tabs.find((t) =>
-      t.textContent?.toLowerCase().includes('webhook')
-    );
-
-    if (webhooksTab) {
-      await user.click(webhooksTab);
-      await waitFor(() => {
-        expect(mockAdminVolunteering.getWebhooks).toHaveBeenCalled();
-      });
-    }
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+    const sent = mockAdminVolunteering.updateReminderSettings.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(sent).toMatchObject({ reminder_type: 'pre_shift', email_enabled: true, hours_before: 24 });
+    expect(sent).not.toHaveProperty('sms_enabled');
+    expect(sent).not.toHaveProperty('push_enabled');
   });
 
-  it('shows error toast when field load fails', async () => {
-    mockAdminVolunteering.getCustomFields.mockRejectedValueOnce(new Error('network'));
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
-
-    await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+  it('reports a webhook test as failed when the receiving system rejects it', async () => {
+    mockAdminVolunteering.testWebhook.mockResolvedValueOnce({
+      success: true,
+      data: { success: false, http_code: 500, response: 'boom' },
     });
+    const user = userEvent.setup();
+    await renderPage();
+    await openWebhooksTab(user);
+
+    await user.click(screen.getByRole('button', { name: /test webhook/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalled());
+    expect(mockToast.success).not.toHaveBeenCalled();
   });
 
-  it('shows success toast after saving reminders', async () => {
+  it('reports a webhook test as sent when the receiving system accepts it', async () => {
     const user = userEvent.setup();
-    const { default: VolunteerConfig } = await import('./VolunteerConfig');
-    render(<VolunteerConfig />);
+    await renderPage();
+    await openWebhooksTab(user);
 
-    await waitFor(() => screen.getAllByRole('tab'));
+    await user.click(screen.getByRole('button', { name: /test webhook/i }));
 
-    const tabs = screen.getAllByRole('tab');
-    const remindersTab = tabs.find((t) =>
-      t.textContent?.toLowerCase().includes('reminder')
-    );
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
+  });
 
-    if (remindersTab) {
-      await user.click(remindersTab);
+  it('shows the event name and response code in the webhook log', async () => {
+    mockAdminVolunteering.getWebhookLogs.mockResolvedValueOnce({
+      success: true,
+      data: [{
+        id: 1,
+        webhook_id: 10,
+        event_type: 'shift.completed',
+        response_code: 503,
+        response_body: 'unavailable',
+        status: 'failed',
+        created_at: '2026-10-17T10:00:00Z',
+      }],
+    });
+    const user = userEvent.setup();
+    await renderPage();
+    await openWebhooksTab(user);
 
-      await waitFor(() => {
-        const saveBtn = screen.getAllByRole('button').find((b) =>
-          b.textContent?.toLowerCase().includes('save')
-        );
-        expect(saveBtn).toBeDefined();
-      });
+    await user.click(screen.getByRole('button', { name: /view logs/i }));
 
-      const saveBtn = screen.getAllByRole('button').find((b) =>
-        b.textContent?.toLowerCase().includes('save')
-      );
-      if (saveBtn) {
-        await user.click(saveBtn);
-        await waitFor(() => {
-          expect(mockToast.success).toHaveBeenCalled();
-        });
-      }
-    }
+    await waitFor(() => expect(screen.getAllByText('shift.completed').length).toBeGreaterThan(1));
+    expect(screen.getByText('503')).toBeInTheDocument();
   });
 });

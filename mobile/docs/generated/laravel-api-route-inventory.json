@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2816,
-  "api_route_rows": 2781,
-  "distinct_api_paths": 2317,
+  "total_registered_routes": 2791,
+  "api_route_rows": 2756,
+  "distinct_api_paths": 2300,
   "route_source_fingerprint": {
-    "digest": "4070998c1d94b5ccc760c8b262d7abfbd66c7ff94a12ffb2ede694b99fd7f45a",
+    "digest": "5a3ce459d0d9e1bac0eee1cb4ac77d27ac914647a16898e2e341b878cf9462d3",
     "files": [
       {
         "file": "routes/api-volunteering-qualifications.php",
@@ -14,7 +14,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "36510c6496c22b6eee6d263647c338b220b1863cfb44d73e3d619a80823dc76f"
+        "sha256": "085ddab14988a0ed8bf1a12f09f6cb9a11d206bab6c4661c55351b4a3b8b1565"
       },
       {
         "file": "routes/channels.php",
@@ -1879,32 +1879,6 @@
       "DELETE",
       "GET"
     ],
-    "/api/v2/admin/group-auto-assign-rules": [
-      "GET",
-      "POST"
-    ],
-    "/api/v2/admin/group-auto-assign-rules/{id}": [
-      "DELETE",
-      "PUT"
-    ],
-    "/api/v2/admin/group-collections": [
-      "GET",
-      "POST"
-    ],
-    "/api/v2/admin/group-collections/{id}": [
-      "DELETE",
-      "PUT"
-    ],
-    "/api/v2/admin/group-collections/{id}/groups": [
-      "PUT"
-    ],
-    "/api/v2/admin/group-tags": [
-      "GET",
-      "POST"
-    ],
-    "/api/v2/admin/group-tags/{tagId}": [
-      "DELETE"
-    ],
     "/api/v2/admin/groups": [
       "GET"
     ],
@@ -3370,17 +3344,6 @@
       "GET"
     ],
     "/api/v2/admin/volunteering/community-projects/{id}/review": [
-      "PUT"
-    ],
-    "/api/v2/admin/volunteering/custom-fields": [
-      "GET",
-      "POST"
-    ],
-    "/api/v2/admin/volunteering/custom-fields/reorder": [
-      "POST"
-    ],
-    "/api/v2/admin/volunteering/custom-fields/{id}": [
-      "DELETE",
       "PUT"
     ],
     "/api/v2/admin/volunteering/donations": [
@@ -4998,12 +4961,6 @@
       "GET",
       "POST"
     ],
-    "/api/v2/group-collections": [
-      "GET"
-    ],
-    "/api/v2/group-collections/{id}": [
-      "GET"
-    ],
     "/api/v2/group-exchanges": [
       "GET",
       "POST"
@@ -5030,15 +4987,6 @@
     ],
     "/api/v2/group-exchanges/{id}/start": [
       "POST"
-    ],
-    "/api/v2/group-tags": [
-      "GET"
-    ],
-    "/api/v2/group-tags/popular": [
-      "GET"
-    ],
-    "/api/v2/group-tags/suggest": [
-      "GET"
     ],
     "/api/v2/group-templates": [
       "GET"
@@ -5255,10 +5203,6 @@
     ],
     "/api/v2/groups/{id}/similar": [
       "GET"
-    ],
-    "/api/v2/groups/{id}/tags": [
-      "GET",
-      "PUT"
     ],
     "/api/v2/groups/{id}/task-stats": [
       "GET"
@@ -7059,9 +7003,6 @@
       "DELETE"
     ],
     "/api/v2/volunteering/credentials/{id}/download": [
-      "GET"
-    ],
-    "/api/v2/volunteering/custom-fields": [
       "GET"
     ],
     "/api/v2/volunteering/donations": [
