@@ -39,6 +39,31 @@ class PageContentPolicyTest extends TestCase
         ]));
     }
 
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function profileBoundaryProvider(): array
+    {
+        return [
+            'space after the id' => ['/profile/12 text', true],
+            'line break after the id' => ["/members/7\n", true],
+            'letter glued to the id' => ['/profile/12s', false],
+            'sub-path after the id' => ['/profile/12/edit', true],
+            'not an id' => ['/profile/abc', false],
+        ];
+    }
+
+    /**
+     * @dataProvider profileBoundaryProvider
+     */
+    public function test_a_space_or_line_break_ends_a_member_link(string $content, bool $expected): void
+    {
+        $this->assertSame($expected, PageContentPolicy::linksToMemberProfiles([
+            'content' => $content,
+            'tenant_id' => $this->testTenantId,
+        ]));
+    }
+
     public function test_it_sees_a_members_grid_block(): void
     {
         $this->assertTrue(PageContentPolicy::linksToMemberProfiles([

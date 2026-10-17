@@ -37,6 +37,9 @@ class PageContentPolicy
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $content = rawurldecode(str_replace(['\/', '\\"', "\'"], ['/', '"', "'"], $content));
 
+        // The boundary class after the id includes whitespace (\s) on purpose. Before
+        // 2026-10-17 the controller's single-quoted copy of this pattern escaped it wrongly,
+        // so it matched a literal backslash or the letter "s" instead of a space or line break.
         if (preg_match(
             '~/(?:users?|members?|profile)/(?:[0-9]+|[0-9a-f]{8}-[0-9a-f-]{27,})(?=[/?#"\'\\s<]|$)~i',
             $content
