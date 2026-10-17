@@ -324,6 +324,28 @@ describe('AuthContext', () => {
     await waitFor(() => expect(mockRegisterForPushNotifications).toHaveBeenCalledTimes(1));
   });
 
+  it('asks iOS for notification permission once a session is restored, but not Android', async () => {
+    const { Platform } = jest.requireActual<typeof import('react-native')>('react-native');
+    const originalOS = Platform.OS;
+    try {
+      for (const [os, expected] of [['ios', true], ['android', false]] as const) {
+        mockRegisterForPushNotifications.mockClear();
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
+        mockStorageGet.mockResolvedValue('stored-token');
+        mockStorageGetJson.mockResolvedValue(mockUser);
+        mockGetMe.mockResolvedValue({ data: mockFullUser });
+
+        const { result, unmount } = renderHook(() => useAuthContext(), { wrapper });
+
+        await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+        await waitFor(() => expect(mockRegisterForPushNotifications).toHaveBeenCalledWith(expected));
+        unmount();
+      }
+    } finally {
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOS });
+    }
+  });
+
   it('clears session when the stored token is rejected and there is no cache', async () => {
     mockStorageGet.mockResolvedValue('bad-token');
     mockStorageGetJson.mockResolvedValue(null);

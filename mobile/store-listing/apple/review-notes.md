@@ -16,8 +16,10 @@ inside the mobile app.
 Useful review routes:
 
 - Settings contains privacy controls, data export, blocked users and in-app account deletion.
-- Device notifications are enabled only from Settings. Paid promotional notifications have
-  a separate, default-off opt-in and can be switched off there at any time.
+- On iPhone the system notification dialog appears once, straight after sign-in, from
+  the build after 1.10.0 (8) (build 8 asked only from the Home card or Settings). Settings
+  can change it later. Paid promotional notifications have a separate, default-off opt-in
+  and can be switched off there at any time.
 - A feed item's overflow menu provides Not interested, Hide, Mute member and Report.
   Reports notify the community moderation team.
 - A same-community member profile has a Safety section with Block member. Blocking removes

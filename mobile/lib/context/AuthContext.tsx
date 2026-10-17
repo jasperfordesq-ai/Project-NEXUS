@@ -12,6 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 import { router } from 'expo-router';
 
 import {
@@ -195,8 +196,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     registerUnauthorizedCallback(handleUnauthorized);
   }, [handleUnauthorized]);
 
+  /*
+    🔴 On iOS, ask for notification permission as soon as a member is signed in (owner,
+    17 Oct 2026: "the same way as Android"). Android 13+ raises its own dialog when the
+    app creates its notification channel, so a member there is asked on first open; iOS
+    shows nothing until the app asks, so members only got notifications after finding the
+    Home card or Settings. iOS presents the dialog once per install — after any answer
+    `requestPermissionsAsync` returns the stored decision silently — so this cannot nag.
+    The Home card stays as the way back in for anyone who said "Don't Allow".
+  */
   const registerPushBestEffort = useCallback(() => {
-    registerForPushNotifications()
+    registerForPushNotifications(Platform.OS === 'ios')
       .catch(() => { /* best-effort */ });
   }, []);
 
