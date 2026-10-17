@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 import { ConfirmDialogProvider } from '@/components/ui';
@@ -348,7 +348,7 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     await user.click(screen.getByRole('switch'));
     await user.click(await screen.findByRole('button', { name: /location/i }));
 
-    expect(await screen.findByRole('option', { name: 'About Section' })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: 'About' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Footer' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('option')).toHaveLength(2);
     await user.click(screen.getByRole('option', { name: /^Header column/ }));
@@ -572,5 +572,82 @@ describe('PageBuilder — edit mode (id=3)', () => {
     await screen.findByTestId('rich-text-editor');
     await user.click(screen.getByRole('button', { name: /create|save/i }));
     await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This page links to member profiles, which pages may not do.'));
+  });
+});
+
+describe('PageBuilder — plain wording and unsaved changes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockContentEditorState.flushPayload = null;
+    mockRouterState.params = { id: undefined };
+  });
+
+  it('calls the create screen "New page" and its button "Create page"', async () => {
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    expect(screen.getByRole('heading', { name: 'New page' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create page' })).toBeInTheDocument();
+  });
+
+  it('calls the edit screen "Edit page"', async () => {
+    mockRouterState.params = { id: '3' };
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Existing', slug: 'existing', content: 'x', content_format: 'plaintext', status: 'draft', menu_location: 'about' },
+    });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    expect(screen.getByRole('heading', { name: 'Edit page' })).toBeInTheDocument();
+  });
+
+  it('leaves straight away from Back when nothing has changed', async () => {
+    const user = userEvent.setup();
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/pages');
+    expect(screen.queryByText('Leave without saving?')).not.toBeInTheDocument();
+  });
+
+  it('asks before leaving from Back or Cancel when the form has unsaved changes', async () => {
+    const user = userEvent.setup();
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    await user.type(screen.getAllByRole('textbox')[0]!, 'Draft title');
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByText('Leave without saving?')).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Stay on page' }));
+    await waitFor(() => expect(screen.queryByText('Leave without saving?')).not.toBeInTheDocument());
+    expect(mockNavigate).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(await screen.findByRole('button', { name: 'Leave page' }));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/test/admin/pages'));
+  });
+
+  it('does not count the Design editor re-reading the saved page as a change', async () => {
+    mockRouterState.params = { id: '3' };
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Designed', slug: 'designed', content: '<section>a</section>', content_format: 'builder', design_json: '{"pages":[]}', status: 'draft', menu_location: 'about' },
+    });
+    const user = userEvent.setup();
+    renderPageBuilder();
+    const editor = await screen.findByTestId('rich-text-editor');
+    await waitFor(() => expect(editor).toHaveValue('<section>a</section>'));
+
+    // The design editor reports the page back once it has opened it.
+    fireEvent.change(editor, { target: { value: '<section class="x">a</section>' } });
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/pages');
+    mockNavigate.mockClear();
+
+    // A real edit after that does count.
+    fireEvent.change(editor, { target: { value: '<section class="x">ab</section>' } });
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByText('Leave without saving?')).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

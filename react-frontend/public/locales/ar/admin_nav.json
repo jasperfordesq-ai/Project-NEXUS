@@ -518,7 +518,8 @@
     "opportunities": "الفرص والمناوبات",
     "certificates": "الشهادات",
     "group_bookings": "الحجوزات الجماعية",
-    "stripe_account": "حساب Stripe"
+    "stripe_account": "حساب Stripe",
+    "new_page": "صفحة جديدة"
   },
   "aria": {
     "breadcrumbs": "فتات الخبز"

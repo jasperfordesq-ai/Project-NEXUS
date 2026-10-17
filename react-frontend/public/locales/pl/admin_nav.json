@@ -518,7 +518,8 @@
     "opportunities": "Oferty i zmiany",
     "certificates": "Certyfikaty",
     "group_bookings": "Rezerwacje grupowe",
-    "stripe_account": "Konto Stripe"
+    "stripe_account": "Konto Stripe",
+    "new_page": "Nowa strona"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"

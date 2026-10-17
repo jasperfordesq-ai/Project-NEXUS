@@ -15,9 +15,10 @@ import FileText from 'lucide-react/icons/file-text';
 import Plus from 'lucide-react/icons/plus';
 import Pencil from 'lucide-react/icons/pencil';
 import Trash2 from 'lucide-react/icons/trash-2';
+import ExternalLink from 'lucide-react/icons/external-link';
 import { useNavigate } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
-import { useTenant, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
 import { adminPages } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { DataTable, StatusBadge, type Column } from '../../components/DataTable';
@@ -38,18 +39,24 @@ interface PageItem {
   created_at: string;
 }
 
+// Same words as the Location dropdown on the page editor.
 const MENU_LOCATION_LABEL_KEYS: Record<string, string> = {
   about: 'content.location_about',
-  header: 'content.location_header',
+  header: 'content.header_column',
   // The Footer placement was retired on 2026-10-17. A stored `footer` row the
   // data migration has not reached is shown in the header column, so say so.
-  footer: 'content.location_header',
+  footer: 'content.header_column',
 };
 
 export function PagesAdmin() {
   const { t } = useTranslation('admin_content');
   usePageTitle(t('content.page_title'));
-  const { tenantPath, refreshTenant } = useTenant();
+  const { tenantPath, tenant, refreshTenant } = useTenant();
+  const { user } = useAuth();
+  // tenant.slug, falling back to the signed-in admin's own community, so the
+  // link carries the community prefix even when the admin opened /admin directly.
+  const communitySlug = tenant?.slug || user?.tenant_slug;
+  const livePageUrl = (slug: string) => (communitySlug ? `/${communitySlug}/page/${slug}` : `/page/${slug}`);
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -123,7 +130,7 @@ export function PagesAdmin() {
       key: 'slug',
       label: t('content.label_slug'),
       sortable: true,
-      render: (item) => <span className="text-sm text-muted">/{item.slug}</span>,
+      render: (item) => <span className="text-sm text-muted">{`/page/${item.slug}`}</span>,
     },
     {
       key: 'status',
@@ -136,9 +143,14 @@ export function PagesAdmin() {
       label: t('content.in_menu'),
       sortable: true,
       render: (item) => item.show_in_menu ? (
-        <Chip size="sm" variant="soft">
-          {t(MENU_LOCATION_LABEL_KEYS[item.menu_location] ?? 'content.location_about')}
-        </Chip>
+        item.status === 'published' ? (
+          <Chip size="sm" variant="soft">
+            {t(MENU_LOCATION_LABEL_KEYS[item.menu_location] ?? 'content.location_about')}
+          </Chip>
+        ) : (
+          // A draft is not in the menu yet, whatever its menu setting says.
+          <span className="text-sm text-muted">{t('content.not_shown_draft')}</span>
+        )
       ) : (
         <span className="text-sm text-muted">{t('content.label_no')}</span>
       ),
@@ -157,7 +169,18 @@ export function PagesAdmin() {
       key: 'actions',
       label: t('content.label_actions'),
       render: (item) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
+          {item.status === 'published' && (
+            <a
+              href={livePageUrl(item.slug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-sm text-accent hover:underline"
+            >
+              <ExternalLink size={14} aria-hidden="true" />
+              {t('content.view_live')}
+            </a>
+          )}
           <Button
             isIconOnly
             size="sm"
@@ -234,7 +257,7 @@ export function PagesAdmin() {
           onClose={() => setConfirmDelete(null)}
           onConfirm={handleDelete}
           title={t('content.delete_page_title')}
-          message={t('content.delete_page_confirm')}
+          message={t('content.delete_page_confirm_named', { title: confirmDelete.title })}
           confirmLabel={t('content.delete')}
           confirmColor="danger"
           isLoading={actionLoading}

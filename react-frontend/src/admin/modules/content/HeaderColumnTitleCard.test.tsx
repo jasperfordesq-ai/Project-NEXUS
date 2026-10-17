@@ -68,4 +68,24 @@ describe('HeaderColumnTitleCard', () => {
     expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
     expect(mockSettings.update).not.toHaveBeenCalled();
   });
+
+  it('explains what the title is for and counts characters as the admin types', async () => {
+    const user = userEvent.setup();
+    render(<HeaderColumnTitleCard />);
+
+    expect(screen.getByText('Pages you file under "Header column" appear in the More menu under this heading.')).toBeInTheDocument();
+    const input = await screen.findByRole('textbox');
+    await waitFor(() => expect(input).toHaveValue('Impact'));
+    expect(screen.getByText(/6\/30/)).toBeInTheDocument();
+
+    await user.type(input, '!!');
+    expect(screen.getByText(/8\/30/)).toBeInTheDocument();
+  });
+
+  it('says the title could not be loaded (not saved) when loading fails', async () => {
+    mockSettings.get.mockRejectedValue(new Error('network'));
+    render(<HeaderColumnTitleCard />);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Could not load the header column title'));
+  });
 });

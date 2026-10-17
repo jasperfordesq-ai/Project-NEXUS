@@ -518,7 +518,8 @@
     "opportunities": "Gelegenheiten & Schichten",
     "certificates": "Bescheinigungen",
     "group_bookings": "Gruppenbuchungen",
-    "stripe_account": "Stripe-Konto"
+    "stripe_account": "Stripe-Konto",
+    "new_page": "Neue Seite"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"

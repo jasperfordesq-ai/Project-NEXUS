@@ -403,11 +403,11 @@
   },
   "page_builder": {
     "builder_error": "De paginabuilder kon niet laden. Gebruik in plaats daarvan de HTML-modus.",
-    "hint_design": "Ontwerp een responsieve webpagina met GrapesJS-blokken, secties, formulieren, tabbladen, afbeeldingen en aangepaste code.",
+    "hint_design": "Ontwerp een pagina visueel met secties, formulieren, tabbladen, afbeeldingen en aangepaste code.",
     "hint_html": "Plak of schrijf de volledige HTML voor deze pagina.",
     "hint_plaintext": "Schrijf een eenvoudige tekstpagina. Regeleinden blijven behouden bij publicatie.",
     "hint_richtext": "Schrijf en formatteer een pagina met de Rich Text-werkbalk.",
-    "legacy_notice": "Dit paginaontwerp kan niet opnieuw worden geopend als een GrapesJS-project. De opgeslagen HTML is nog steeds beschikbaar en u kunt deze opnieuw opbouwen vanuit blokken.",
+    "legacy_notice": "Het opgeslagen ontwerp van deze pagina kon niet opnieuw worden geopend. De opgeslagen pagina is nog steeds zichtbaar voor leden; je kunt hem opnieuw opbouwen met blokken.",
     "plaintext_placeholder": "Schrijf hier de pagina-inhoud in platte tekst...",
     "preview_title": "Paginavoorbeeld",
     "reset": "Begin vanaf blanco",
@@ -745,5 +745,10 @@
       "new_window": "Nieuw venster"
     }
   },
-  "saving": "Opslaan…"
+  "saving": "Opslaan…",
+  "devices": {
+    "desktop": "Desktop",
+    "tablet": "Tablet",
+    "mobile_portrait": "Mobiel"
+  }
 }

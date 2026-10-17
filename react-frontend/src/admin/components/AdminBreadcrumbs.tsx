@@ -316,6 +316,16 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   metrics: 'breadcrumbs.metrics',
 };
 
+// Labels that depend on where the segment sits. `new` is the id of a record
+// not yet saved, so its meaning comes from the screen it belongs to
+// (/admin/menus/builder/new is a new menu, not a new page).
+const PATH_SUFFIX_LABEL_KEYS: Record<string, string> = {
+  'pages/builder/new': 'breadcrumbs.new_page',
+};
+
+// Segments with no screen of their own: shown as plain text, never a link.
+const NON_LINKING_SEGMENTS = new Set<string>(['builder']);
+
 export function AdminBreadcrumbs({ items }: AdminBreadcrumbsProps) {
   const { t } = useTranslation('admin_nav');
   const location = useLocation();
@@ -349,7 +359,8 @@ export function AdminBreadcrumbs({ items }: AdminBreadcrumbsProps) {
       // segment in English — that way missing mappings are noticed and
       // fixed rather than hiding as "fine-looking" hardcoded English.
       // CI guardrail: scripts/check-admin-breadcrumbs.mjs blocks unmapped segments.
-      const labelKey = SEGMENT_LABEL_KEYS[segment];
+      const suffix = segments.slice(Math.max(0, i - 2), i + 1).join('/');
+      const labelKey = PATH_SUFFIX_LABEL_KEYS[suffix] ?? SEGMENT_LABEL_KEYS[segment];
       let label: string;
       if (labelKey) {
         const translated = t(labelKey);
@@ -361,7 +372,7 @@ export function AdminBreadcrumbs({ items }: AdminBreadcrumbsProps) {
 
       crumbs.push({
         label,
-        href: isLast ? undefined : currentPath,
+        href: isLast || NON_LINKING_SEGMENTS.has(segment) ? undefined : currentPath,
       });
     }
 

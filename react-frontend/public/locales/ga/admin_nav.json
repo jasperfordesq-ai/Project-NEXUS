@@ -518,7 +518,8 @@
     "opportunities": "Deiseanna & sealanna",
     "certificates": "Teastais",
     "group_bookings": "Áirithintí grúpa",
-    "stripe_account": "Cuntas Stripe"
+    "stripe_account": "Cuntas Stripe",
+    "new_page": "Leathanach nua"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"

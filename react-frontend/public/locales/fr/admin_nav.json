@@ -518,7 +518,8 @@
     "opportunities": "Missions et créneaux",
     "certificates": "Certificats",
     "group_bookings": "Réservations de groupe",
-    "stripe_account": "Compte Stripe"
+    "stripe_account": "Compte Stripe",
+    "new_page": "Nouvelle page"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"

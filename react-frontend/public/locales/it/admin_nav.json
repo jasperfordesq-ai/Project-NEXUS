@@ -518,7 +518,8 @@
     "opportunities": "Opportunità e turni",
     "certificates": "Certificati",
     "group_bookings": "Prenotazioni di gruppo",
-    "stripe_account": "Account Stripe"
+    "stripe_account": "Account Stripe",
+    "new_page": "Nuova pagina"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"

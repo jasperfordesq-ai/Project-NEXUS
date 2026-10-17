@@ -547,7 +547,8 @@
     "opportunities": "Opportunities & shifts",
     "certificates": "Certificates",
     "group_bookings": "Group bookings",
-    "stripe_account": "Stripe account"
+    "stripe_account": "Stripe account",
+    "new_page": "New page"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"

@@ -403,11 +403,11 @@
   },
   "page_builder": {
     "builder_error": "Nie można załadować narzędzia do tworzenia stron. Zamiast tego użyj trybu HTML.",
-    "hint_design": "Zaprojektuj responsywną stronę internetową z blokami, sekcjami, formularzami, zakładkami, obrazami i niestandardowym kodem GrapesJS.",
+    "hint_design": "Projektuj stronę wizualnie za pomocą sekcji, formularzy, zakładek, obrazów i własnego kodu.",
     "hint_html": "Wklej lub napisz pełny kod HTML tej strony.",
     "hint_plaintext": "Napisz prostą stronę zawierającą wyłącznie tekst. Podziały wierszy są zachowywane po opublikowaniu.",
     "hint_richtext": "Napisz i sformatuj stronę za pomocą paska narzędzi tekstu sformatowanego.",
-    "legacy_notice": "Nie można ponownie otworzyć tego projektu strony jako projektu GrapesJS. Zapisany kod HTML jest nadal dostępny i można go odbudować z bloków.",
+    "legacy_notice": "Nie udało się ponownie otworzyć zapisanego projektu tej strony. Zapisana strona jest nadal widoczna dla członków; możesz odbudować ją z bloków.",
     "plaintext_placeholder": "Wpisz tutaj treść strony w postaci zwykłego tekstu...",
     "preview_title": "Podgląd strony",
     "reset": "Zacznij od pustego miejsca",
@@ -745,5 +745,10 @@
       "new_window": "Nowe okno"
     }
   },
-  "saving": "Zapisywanie…"
+  "saving": "Zapisywanie…",
+  "devices": {
+    "desktop": "Komputer stacjonarny",
+    "tablet": "Tablet",
+    "mobile_portrait": "Mobilny"
+  }
 }

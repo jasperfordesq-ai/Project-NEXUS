@@ -403,11 +403,11 @@
   },
   "page_builder": {
     "builder_error": "The page builder could not load. Please use HTML mode instead.",
-    "hint_design": "Design a responsive web page with GrapesJS blocks, sections, forms, tabs, images and custom code.",
+    "hint_design": "Design a page visually with sections, forms, tabs, images and custom code.",
     "hint_html": "Paste or write full HTML for this page.",
     "hint_plaintext": "Write a simple text-only page. Line breaks are preserved when published.",
     "hint_richtext": "Write and format a page with the rich text toolbar.",
-    "legacy_notice": "This page design could not be reopened as a GrapesJS project. The saved HTML is still available, and you can rebuild from blocks.",
+    "legacy_notice": "This page's saved design could not be reopened. The saved page still shows to members; you can rebuild it from blocks.",
     "plaintext_placeholder": "Write the plain-text page content here...",
     "preview_title": "Page preview",
     "reset": "Start from blank",
@@ -745,5 +745,10 @@
       "recover_unsaved": "Do you want to recover unsaved changes?"
     }
   },
-  "saving": "Saving…"
+  "saving": "Saving…",
+  "devices": {
+    "desktop": "Desktop",
+    "tablet": "Tablet",
+    "mobile_portrait": "Mobile"
+  }
 }

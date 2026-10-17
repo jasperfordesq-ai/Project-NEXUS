@@ -16,10 +16,12 @@
  *
  * Programmatic navigation and the browser back button are not intercepted;
  * the save bar's "Unsaved changes" chip remains the visible reminder there.
+ * A page's own Back / Cancel buttons call the returned `confirmLeave()` so
+ * they ask through the same dialog before navigating.
  * Same approach as the broker panel's hook; this copy reads admin_system.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useConfirm } from '@/components/ui';
@@ -29,10 +31,28 @@ function isPlainNavigationClick(event: MouseEvent): boolean {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
-export function useUnsavedChangesGuard(when: boolean): void {
+export function useUnsavedChangesGuard(when: boolean): { confirmLeave: () => Promise<boolean> } {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const { t } = useTranslation('admin_system');
+
+  const askToLeave = useCallback(
+    () =>
+      confirm({
+        title: t('admin_settings.unsaved_leave_title'),
+        body: t('admin_settings.unsaved_leave_body'),
+        confirmLabel: t('admin_settings.unsaved_leave_confirm'),
+        cancelLabel: t('admin_settings.unsaved_leave_stay'),
+        status: 'warning',
+      }),
+    [confirm, t],
+  );
+
+  /** Resolves true when it is fine to leave: nothing unsaved, or the admin agreed. */
+  const confirmLeave = useCallback(
+    async () => (when ? askToLeave() : true),
+    [when, askToLeave],
+  );
 
   useEffect(() => {
     if (!when) return undefined;
@@ -67,13 +87,7 @@ export function useUnsavedChangesGuard(when: boolean): void {
       event.preventDefault();
       event.stopPropagation();
       void (async () => {
-        const ok = await confirm({
-          title: t('admin_settings.unsaved_leave_title'),
-          body: t('admin_settings.unsaved_leave_body'),
-          confirmLabel: t('admin_settings.unsaved_leave_confirm'),
-          cancelLabel: t('admin_settings.unsaved_leave_stay'),
-          status: 'warning',
-        });
+        const ok = await askToLeave();
         if (ok) navigate(`${url.pathname}${url.search}${url.hash}`);
       })();
     };
@@ -84,7 +98,9 @@ export function useUnsavedChangesGuard(when: boolean): void {
       window.removeEventListener('beforeunload', onBeforeUnload);
       document.removeEventListener('click', onClick, true);
     };
-  }, [when, confirm, navigate, t]);
+  }, [when, askToLeave, navigate]);
+
+  return { confirmLeave };
 }
 
 export default useUnsavedChangesGuard;

@@ -518,7 +518,8 @@
     "opportunities": "Oportunidades e turnos",
     "certificates": "Certificados",
     "group_bookings": "Reservas de grupo",
-    "stripe_account": "Conta Stripe"
+    "stripe_account": "Conta Stripe",
+    "new_page": "Nova página"
   },
   "aria": {
     "breadcrumbs": "Pão ralado"

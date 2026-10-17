@@ -403,11 +403,11 @@
   },
   "page_builder": {
     "builder_error": "Níorbh fhéidir an tógálaí leathanaigh a lódáil. Úsáid mód HTML ina ionad le do thoil.",
-    "hint_design": "Dear leathanach gréasáin sofhreagrach le bloic GrapesJS, ailt, foirmeacha, cluaisíní, íomhánna agus cód saincheaptha.",
+    "hint_design": "Dear leathanach go físiúil le hailt, foirmeacha, cluaisíní, íomhánna agus cód saincheaptha.",
     "hint_html": "Greamaigh nó scríobh HTML iomlán don leathanach seo.",
     "hint_plaintext": "Scríobh leathanach simplí téacs-amháin. Caomhnaítear sosanna líne nuair a fhoilsítear iad.",
     "hint_richtext": "Scríobh agus formáid leathanach leis an mbarra uirlisí saibhir téacs.",
-    "legacy_notice": "Níorbh fhéidir dearadh an leathanaigh seo a athoscailt mar thionscadal GrapesJS. Tá an HTML sábháilte fós ar fáil, agus is féidir leat a atógáil ó bhloic.",
+    "legacy_notice": "Níorbh fhéidir dearadh sábháilte an leathanaigh seo a athoscailt. Taispeántar an leathanach sábháilte do bhaill fós; is féidir leat é a atógáil ó bhloic.",
     "plaintext_placeholder": "Scríobh ábhar an leathanaigh gnáth-théacs anseo...",
     "preview_title": "Réamhamharc leathanach",
     "reset": "Tosaigh ó bán",
@@ -745,5 +745,10 @@
       "recover_unsaved": "Ar mhaith leat athruithe nár sábháladh a aisghabháil?"
     }
   },
-  "saving": "Ag sábháil…"
+  "saving": "Ag sábháil…",
+  "devices": {
+    "desktop": "Deasc",
+    "tablet": "Táibléad",
+    "mobile_portrait": "Soghluaiste"
+  }
 }

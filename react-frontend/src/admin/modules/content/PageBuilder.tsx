@@ -20,6 +20,7 @@ import type { ApiResponse } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { BuilderPreviewModal } from '../../components/BuilderPreviewModal';
+import { useUnsavedChangesGuard } from '../../components/useUnsavedChangesGuard';
 import { PageContentEditor } from '../../components/PageContentEditor';
 import type { PageContentEditorHandle } from '../../components/PageContentEditor';
 import type { ContentFormat } from '../../components/contentFormat';
@@ -98,11 +99,25 @@ function plainTextToHtml(text: string): string {
     .join('');
 }
 
+const EMPTY_FORM: PageFormData = {
+  title: '',
+  slug: '',
+  content: '',
+  content_format: 'richtext',
+  design_json: null,
+  meta_description: '',
+  status: 'draft',
+  show_in_menu: false,
+  menu_location: 'about',
+  menu_order: 0,
+};
+
 export function PageBuilder() {
   const { t } = useTranslation('admin_content');
   const { id } = useParams<{ id: string }>();
   const isEdit = id !== undefined && id !== 'new';
-  usePageTitle(t(isEdit ? 'content.edit_pages' : 'content.create_pages'));
+  const screenTitle = t(isEdit ? 'content.edit_page' : 'content.new_page');
+  usePageTitle(screenTitle);
   const navigate = useNavigate();
   const { tenantPath, tenant, refreshTenant } = useTenant();
   const { user } = useAuth();
@@ -110,18 +125,13 @@ export function PageBuilder() {
   const contentEditorRef = useRef<PageContentEditorHandle | null>(null);
   const loadedSlugRef = useRef('');
 
-  const [formData, setFormData] = useState<PageFormData>({
-    title: '',
-    slug: '',
-    content: '',
-    content_format: 'richtext',
-    design_json: null,
-    meta_description: '',
-    status: 'draft',
-    show_in_menu: false,
-    menu_location: 'about',
-    menu_order: 0,
-  });
+  const [formData, setFormData] = useState<PageFormData>(EMPTY_FORM);
+  // The form as loaded (edit) or as it starts (create): leaving with anything
+  // different from this asks first.
+  const [baseline, setBaseline] = useState<PageFormData | null>(isEdit ? null : EMPTY_FORM);
+  // Rich text and Design re-write the saved HTML once when they open it. That
+  // first report is the editor reading the page back, not an admin edit.
+  const editorEchoPendingRef = useRef(true);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [slugTouched, setSlugTouched] = useState(isEdit);
@@ -135,7 +145,7 @@ export function PageBuilder() {
           if (res.success && res.data) {
             const page = res.data as Record<string, unknown>;
             loadedSlugRef.current = (page.slug as string) || '';
-            setFormData({
+            const loaded: PageFormData = {
               title: (page.title as string) || '',
               slug: (page.slug as string) || '',
               content: (page.content as string) || '',
@@ -146,7 +156,10 @@ export function PageBuilder() {
               show_in_menu: !!(page.show_in_menu),
               menu_location: (page.menu_location as string) || 'about',
               menu_order: Number(page.menu_order) || 0,
-            });
+            };
+            editorEchoPendingRef.current = true;
+            setFormData(loaded);
+            setBaseline(loaded);
           }
         })
         .catch(() => toast.error(t('content.failed_to_load_pages')))
@@ -157,6 +170,32 @@ export function PageBuilder() {
 
   const handleChange = (field: keyof PageFormData, value: string | boolean | number | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const isDirty = baseline !== null && JSON.stringify(formData) !== JSON.stringify(baseline);
+  const { confirmLeave } = useUnsavedChangesGuard(isDirty && !saving);
+
+  const leaveToList = async () => {
+    if (await confirmLeave()) navigate(tenantPath('/admin/pages'));
+  };
+
+  const handleEditorChange = (next: { content: string; content_format: ContentFormat; design_json?: string | null }) => {
+    const echoes = baseline !== null
+      && next.content_format === baseline.content_format
+      && (baseline.content_format === 'builder' || (baseline.content_format === 'richtext' && baseline.content !== ''));
+    if (editorEchoPendingRef.current && echoes) {
+      setBaseline((prev) => prev && {
+        ...prev,
+        content: next.content,
+        design_json: 'design_json' in next ? next.design_json ?? null : prev.design_json,
+      });
+    }
+    editorEchoPendingRef.current = false;
+    handleChange('content', next.content);
+    handleChange('content_format', next.content_format);
+    if ('design_json' in next) {
+      handleChange('design_json', next.design_json ?? null);
+    }
   };
 
   // Show what would be saved (the latest editor content, flushed the way saving does) without saving.
@@ -226,7 +265,7 @@ export function PageBuilder() {
     return (
       <div>
         <PageHeader
-          title={isEdit ? t('content.edit_pages') : t('content.pages_admin_title')}
+          title={screenTitle}
           description={t('content.loading_pages')}
         />
         <div role="status" aria-busy="true" aria-label={t('common.loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>
@@ -249,7 +288,7 @@ export function PageBuilder() {
         }}
       />
       <PageHeader
-        title={isEdit ? t('content.edit_pages') : t('content.pages_admin_title')}
+        title={screenTitle}
         description={t('content.pages_admin_desc')}
         actions={
           <div className="flex gap-2">
@@ -257,7 +296,7 @@ export function PageBuilder() {
               variant="tertiary"
               startContent={<ArrowLeft size={16} />}
               isDisabled={saving}
-              onPress={() => navigate(tenantPath('/admin/pages'))}
+              onPress={() => void leaveToList()}
             >
               {t('content.back')}
             </Button>
@@ -329,13 +368,7 @@ export function PageBuilder() {
               format={formData.content_format}
               designJson={formData.design_json}
               isDisabled={saving}
-              onChange={(next) => {
-                handleChange('content', next.content);
-                handleChange('content_format', next.content_format);
-                if ('design_json' in next) {
-                  handleChange('design_json', next.design_json ?? null);
-                }
-              }}
+              onChange={handleEditorChange}
             />
             <Input
               label={t('content.label_meta_description')}
@@ -368,6 +401,7 @@ export function PageBuilder() {
             <Switch
               isSelected={formData.show_in_menu}
               isDisabled={saving}
+              classNames={{ content: 'flex flex-row items-center gap-3' }}
               onValueChange={(v) => handleChange('show_in_menu', v)}
             >
               {t('content.show_in_menu')}
@@ -385,8 +419,8 @@ export function PageBuilder() {
                     if (selected) handleChange('menu_location', selected);
                   }}
                 >
-                  <SelectItem key="about" id="about">{t('content.about_section')}</SelectItem>
-                  <SelectItem key="header" id="header" description={t('content.header_column_desc')}>{t('content.header_column')}</SelectItem>
+                  <SelectItem key="about" id="about">{t('content.location_about')}</SelectItem>
+                  <SelectItem key="header" id="header">{t('content.header_column')}</SelectItem>
                 </Select>
                 <Input
                   type="number"
@@ -403,13 +437,13 @@ export function PageBuilder() {
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Button variant="tertiary" isDisabled={saving} onPress={() => navigate(tenantPath('/admin/pages'))}>{t('content.cancel')}</Button>
+          <Button variant="tertiary" isDisabled={saving} onPress={() => void leaveToList()}>{t('content.cancel')}</Button>
           <Button
             startContent={<Save size={16} />}
             onPress={handleSave}
             isLoading={saving}
           >
-            {isEdit ? t('content.save_changes') : t('content.create_pages')}
+            {isEdit ? t('content.save_changes') : t('content.create_page')}
           </Button>
         </div>
       </div>

@@ -154,11 +154,16 @@ export function CustomPage() {
           transition={{ duration: 0.4 }}
         >
           {rendersAsCustomHtml ? (
-            page.content && (
-              <div
-                dangerouslySetInnerHTML={{ __html: sanitizeCustomPageHtml(page.content) }}
-              />
-            )
+            <>
+              {/* Custom HTML and Design pages carry their own visual title (or none),
+                  so the page still gets a heading screen readers can find. */}
+              <h1 className="sr-only">{page.title}</h1>
+              {page.content && (
+                <div
+                  dangerouslySetInnerHTML={{ __html: sanitizeCustomPageHtml(page.content) }}
+                />
+              )}
+            </>
           ) : (
             <GlassCard className="p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">

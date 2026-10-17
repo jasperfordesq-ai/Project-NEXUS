@@ -403,11 +403,11 @@
   },
   "page_builder": {
     "builder_error": "Le générateur de page n'a pas pu se charger. Veuillez plutôt utiliser le mode HTML.",
-    "hint_design": "Concevez une page Web réactive avec des blocs, des sections, des formulaires, des onglets, des images et du code personnalisé GrapesJS.",
+    "hint_design": "Concevez une page visuellement avec des sections, des formulaires, des onglets, des images et du code personnalisé.",
     "hint_html": "Collez ou écrivez le code HTML complet pour cette page.",
     "hint_plaintext": "Écrivez une simple page de texte uniquement. Les sauts de ligne sont conservés lors de la publication.",
     "hint_richtext": "Écrivez et formatez une page avec la barre d'outils de texte enrichi.",
-    "legacy_notice": "Cette conception de page n'a pas pu être rouverte en tant que projet GrapesJS. Le HTML enregistré est toujours disponible et vous pouvez reconstruire à partir de blocs.",
+    "legacy_notice": "Le design enregistré de cette page n'a pas pu être rouvert. La page enregistrée reste visible pour les membres ; vous pouvez la reconstruire à partir de blocs.",
     "plaintext_placeholder": "Écrivez ici le contenu de la page en texte brut...",
     "preview_title": "Aperçu de la page",
     "reset": "Repartir de zéro",
@@ -745,5 +745,10 @@
       "new_window": "Nouvelle fenêtre"
     }
   },
-  "saving": "Enregistrement…"
+  "saving": "Enregistrement…",
+  "devices": {
+    "desktop": "Ordinateur de bureau",
+    "tablet": "Tablette",
+    "mobile_portrait": "Mobile"
+  }
 }

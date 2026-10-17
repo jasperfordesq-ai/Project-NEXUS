@@ -86,7 +86,7 @@ describe('PagesAdmin', () => {
     vi.clearAllMocks();
   });
 
-  it('labels a header page as Header in the In Menu column', async () => {
+  it('labels a header page as Header column in the In Menu column', async () => {
     vi.mocked(adminPages.list).mockResolvedValue({
       success: true,
       data: [{
@@ -97,11 +97,11 @@ describe('PagesAdmin', () => {
     render(<PagesAdmin />);
 
     await waitFor(() => expect(screen.getByText('Our Work')).toBeInTheDocument());
-    expect(screen.getByText('Header')).toBeInTheDocument();
+    expect(screen.getByText('Header column')).toBeInTheDocument();
     expect(screen.getByLabelText(/header column title/i)).toBeInTheDocument();
   });
 
-  it('labels a legacy footer page as Header, where it now appears', async () => {
+  it('labels a legacy footer page as Header column, where it now appears', async () => {
     // The Footer placement was retired on 2026-10-17; the bootstrap shows a
     // stored `footer` row in the header column, so the admin list says so too.
     vi.mocked(adminPages.list).mockResolvedValue({
@@ -114,7 +114,7 @@ describe('PagesAdmin', () => {
     render(<PagesAdmin />);
 
     await waitFor(() => expect(screen.getByText('Old Footer Page')).toBeInTheDocument());
-    expect(screen.getByText('Header')).toBeInTheDocument();
+    expect(screen.getByText('Header column')).toBeInTheDocument();
     expect(screen.queryByText('Footer')).not.toBeInTheDocument();
   });
 
@@ -307,5 +307,44 @@ describe('PagesAdmin', () => {
     expect(mockNavigate).toHaveBeenCalledWith(
       expect.stringContaining(`/pages/builder/${PAGES[0].id}`),
     );
+  });
+
+  it('says a draft page is not shown, even when it is set to appear in the menu', async () => {
+    vi.mocked(adminPages.list).mockResolvedValue({
+      success: true,
+      data: [{
+        id: 14, title: 'Coming Soon', slug: 'coming-soon', status: 'draft', sort_order: 1,
+        show_in_menu: 1, menu_location: 'header', menu_order: 1, created_at: '2026-03-01T00:00:00Z',
+      }],
+    } as never);
+    render(<PagesAdmin />);
+
+    await waitFor(() => expect(screen.getByText('Coming Soon')).toBeInTheDocument());
+    expect(screen.getByText('Not shown (draft)')).toBeInTheDocument();
+    expect(screen.queryByText('Header column')).not.toBeInTheDocument();
+  });
+
+  it("shows each page's real address and a View link only for published pages", async () => {
+    vi.mocked(adminPages.list).mockResolvedValue({ success: true, data: PAGES } as never);
+    render(<PagesAdmin />);
+
+    await waitFor(() => expect(screen.getByText('About Us')).toBeInTheDocument());
+    expect(screen.getByText('/page/about-us')).toBeInTheDocument();
+    expect(screen.getByText('/page/contact')).toBeInTheDocument();
+
+    const views = screen.getAllByRole('link', { name: 'View' });
+    expect(views).toHaveLength(1);
+    expect(views[0]).toHaveAttribute('href', '/test/page/about-us');
+    expect(views[0]).toHaveAttribute('target', '_blank');
+  });
+
+  it('names the page in the delete confirmation', async () => {
+    vi.mocked(adminPages.list).mockResolvedValue({ success: true, data: PAGES } as never);
+    const user = userEvent.setup();
+    render(<PagesAdmin />);
+
+    await waitFor(() => expect(screen.getByText('About Us')).toBeInTheDocument());
+    await user.click(screen.getAllByRole('button', { name: /delete page/i })[0]!);
+    expect(await screen.findByText('Delete "About Us"? This cannot be undone.')).toBeInTheDocument();
   });
 });

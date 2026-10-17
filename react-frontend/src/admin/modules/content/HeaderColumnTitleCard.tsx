@@ -33,7 +33,7 @@ export function HeaderColumnTitleCard() {
       .then((res) => {
         if (cancelled) return;
         if (!res.success || !res.data) {
-          toast.error(t('content.header_column_title_failed'));
+          toast.error(t('content.header_column_title_load_failed'));
           return;
         }
         setTitle(res.data.settings?.header_column_title ?? '');
@@ -42,7 +42,7 @@ export function HeaderColumnTitleCard() {
       .catch((err) => {
         if (cancelled) return;
         logError('HeaderColumnTitleCard: load failed', err);
-        toast.error(t('content.header_column_title_failed'));
+        toast.error(t('content.header_column_title_load_failed'));
       });
     return () => {
       cancelled = true;
@@ -72,21 +72,24 @@ export function HeaderColumnTitleCard() {
 
   return (
     <Card className="mb-4">
-      <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <Input
-            label={t('content.header_column_title')}
-            description={t('content.header_column_title_help')}
-            variant="secondary"
-            maxLength={MAX_LENGTH}
-            value={title}
-            isDisabled={saving}
-            onValueChange={setTitle}
-          />
+      <CardBody className="flex flex-col gap-3">
+        <p className="text-sm text-muted">{t('content.header_column_title_intro')}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Input
+              label={t('content.header_column_title')}
+              description={`${t('content.header_column_title_help')} ${title.length}/${MAX_LENGTH}`}
+              variant="secondary"
+              maxLength={MAX_LENGTH}
+              value={title}
+              isDisabled={saving}
+              onValueChange={setTitle}
+            />
+          </div>
+          <Button onPress={handleSave} isLoading={saving} isDisabled={saving || !loaded}>
+            {t('content.save_changes')}
+          </Button>
         </div>
-        <Button onPress={handleSave} isLoading={saving} isDisabled={saving || !loaded}>
-          {t('content.save_changes')}
-        </Button>
       </CardBody>
     </Card>
   );

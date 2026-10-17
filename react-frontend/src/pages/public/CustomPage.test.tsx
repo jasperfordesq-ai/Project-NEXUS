@@ -84,6 +84,13 @@ vi.mock('dompurify', () => ({
   default: { addHook: vi.fn(), sanitize: (html: string) => html },
 }));
 
+// The dompurify stub above returns strings, not the DOM fragment the custom-page
+// sanitiser walks; the sanitiser has its own tests, so pass custom HTML through.
+vi.mock('@/lib/sanitize', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/sanitize')>()),
+  sanitizeCustomPageHtml: (html: string) => html,
+}));
+
 import { CustomPage } from './CustomPage';
 
 describe('CustomPage', () => {
@@ -132,5 +139,23 @@ describe('CustomPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Page Not Found')).toBeInTheDocument();
     });
+  });
+
+  it.each(['html', 'builder'])('gives a %s page a heading named after the page for screen readers', async (format) => {
+    mockApiGet.mockResolvedValue({
+      success: true,
+      data: {
+        id: 2,
+        title: 'Designed Page',
+        slug: 'test-page',
+        content: '<section><p>Body</p></section>',
+        content_format: format,
+        created_at: '2026-01-01',
+        updated_at: '2026-01-01',
+      },
+    });
+    render(<CustomPage />);
+    const heading = await screen.findByRole('heading', { level: 1, name: 'Designed Page' });
+    expect(heading).toHaveClass('sr-only');
   });
 });

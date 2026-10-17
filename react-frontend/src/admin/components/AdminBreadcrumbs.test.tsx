@@ -238,4 +238,29 @@ describe('AdminBreadcrumbs', () => {
       expect(nav!.getAttribute('aria-label')).toBeTruthy();
     });
   });
+
+  it('names the new-page screen and does not link to the builder segment, which has no page', async () => {
+    mockLocation.pathname = '/hour-timebank/admin/pages/builder/new';
+    const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');
+    render(<AdminBreadcrumbs />);
+
+    await waitFor(() => {
+      const nav = document.querySelector('nav');
+      expect(nav).toBeTruthy();
+      expect(nav!.textContent).toContain('New page');
+      expect(nav!.textContent).not.toMatch(/⚠/);
+    });
+    expect(screen.getByRole('link', { name: 'Pages' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Builder' })).not.toBeInTheDocument();
+    expect(screen.getByText('Builder')).toBeInTheDocument();
+  });
+
+  it('does not call a new menu a new page', async () => {
+    mockLocation.pathname = '/hour-timebank/admin/menus/builder/new';
+    const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');
+    render(<AdminBreadcrumbs />);
+
+    await waitFor(() => expect(document.querySelector('nav')).toBeTruthy());
+    expect(document.querySelector('nav')!.textContent).not.toContain('New page');
+  });
 });

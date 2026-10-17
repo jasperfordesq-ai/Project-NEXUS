@@ -518,7 +518,8 @@
     "opportunities": "Kansen & diensten",
     "certificates": "Certificaten",
     "group_bookings": "Groepsboekingen",
-    "stripe_account": "Stripe-account"
+    "stripe_account": "Stripe-account",
+    "new_page": "Nieuwe pagina"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"
