@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'Kategoria o tej nazwie już istnieje',
     'slug_reserved' => 'Ślimak „:slug” jest zarezerwowany i nie można go użyć na stronie.',
     'slug_reserved_short' => 'Ślimak „:slug” jest zarezerwowany.',
+    'slug_invalid' => 'Adres internetowy może zawierać tylko małe litery, cyfry i myślniki.',
     'only_draft_can_be_edited' => 'Można edytować tylko wersje robocze',
     'only_draft_can_be_deleted' => 'Można usuwać tylko wersje robocze',
     'version_does_not_belong' => 'Wersja nie należy do tego dokumentu',

@@ -1161,6 +1161,7 @@
     "show_in_menu": "Toon in menu",
     "slug_description": "Slug",
     "slug_must_be_url_safe": "Slug moet URL-veilig zijn",
+    "slug_set_on_save": "Wordt ingesteld wanneer je opslaat",
     "slug_reserved": "Slug gereserveerd",
     "slug_reserved_error": "\"{{slug}}\" is een gereserveerde systeemroute. Kies een andere slug.",
     "slug_reserved_message": "De slug \"{{slug}}\" is gereserveerd door het systeem. Kies een andere slug.",

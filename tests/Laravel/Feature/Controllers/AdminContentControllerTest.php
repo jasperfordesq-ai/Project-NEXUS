@@ -194,17 +194,46 @@ class AdminContentControllerTest extends TestCase
         $response->assertJsonPath('data.slug', 'renamed-page-b');
     }
 
-    public function test_create_page_rejects_reserved_slug(): void
+    public function test_create_page_with_non_latin_title_gets_a_generated_slug(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->apiPost('/v2/admin/pages', [
-            'title' => 'Reserved Slug',
-            'slug' => 'login',
+            'title' => '日本語ページ',
             'content' => '<p>Test content</p>',
             'status' => 'draft',
         ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+        $this->assertMatchesRegularExpression('/^page-[0-9a-f]{6}$/', (string) $response->json('data.slug'));
+    }
+
+    public function test_create_page_accepts_formerly_reserved_slug_about(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/pages', [
+            'title' => 'About',
+            'slug' => 'about',
+            'content' => '<p>Test content</p>',
+            'status' => 'draft',
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+        $this->assertStringStartsWith('about', (string) $response->json('data.slug'));
+    }
+
+    public function test_update_page_rejects_a_slug_with_spaces(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $created = $this->apiPost('/v2/admin/pages', ['title' => 'Spacey Page', 'slug' => 'spacey-page', 'status' => 'draft']);
+        $id = (int) $created->json('data.id');
+
+        $response = $this->apiPut("/v2/admin/pages/{$id}", ['slug' => 'has spaces in it']);
 
         $response->assertStatus(422);
         $response->assertJsonPath('errors.0.field', 'slug');

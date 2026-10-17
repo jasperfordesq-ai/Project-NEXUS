@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'هناك فئة بهذا الاسم موجودة بالفعل',
     'slug_reserved' => 'الارتباط الثابت ":slug" محجوز ولا يمكن استخدامه لصفحة ما.',
     'slug_reserved_short' => 'سبيكة ":slug" محجوزة.',
+    'slug_invalid' => 'يمكن أن يحتوي عنوان الويب على أحرف صغيرة وأرقام وواصلات فقط.',
     'only_draft_can_be_edited' => 'يمكن تحرير إصدارات المسودات فقط',
     'only_draft_can_be_deleted' => 'يمكن حذف إصدارات المسودات فقط',
     'version_does_not_belong' => 'الإصدار لا ينتمي إلى هذا المستند',

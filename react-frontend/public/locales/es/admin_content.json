@@ -1162,6 +1162,7 @@
     "show_in_menu": "Mostrar en el menú",
     "slug_description": "slug",
     "slug_must_be_url_safe": "Slug debe ser seguro para URL",
+    "slug_set_on_save": "Se establecerá al guardar",
     "slug_reserved": "Slug reservado",
     "slug_reserved_error": "\"{{slug}}\" es una ruta del sistema reservada. Elige otro slug.",
     "slug_reserved_message": "El slug \"{{slug}}\" está reservado por el sistema. Elige un slug diferente.",

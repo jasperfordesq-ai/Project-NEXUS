@@ -1177,6 +1177,7 @@
     "show_in_menu": "Show in menu",
     "slug_description": "Slug",
     "slug_must_be_url_safe": "Slug must be URL-safe",
+    "slug_set_on_save": "Will be set when you save",
     "slug_reserved": "Slug Reserved",
     "slug_reserved_error": "\"{{slug}}\" is a reserved system route. Choose a different slug.",
     "slug_reserved_message": "The slug \"{{slug}}\" is reserved by the system. Please choose a different slug.",

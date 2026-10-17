@@ -1161,6 +1161,7 @@
     "show_in_menu": "Im Menü anzeigen",
     "slug_description": "Slug",
     "slug_must_be_url_safe": "Slug muss URL-sicher sein",
+    "slug_set_on_save": "Wird beim Speichern festgelegt",
     "slug_reserved": "Slug reserviert",
     "slug_reserved_error": "\"{{slug}}\" ist eine reservierte Systemroute. Wählen Sie einen anderen Slug.",
     "slug_reserved_message": "Der Slug „{{slug}}“ ist vom System reserviert. Bitte wählen Sie einen anderen Slug.",

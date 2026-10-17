@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'Er bestaat al een categorie met deze naam',
     'slug_reserved' => 'De slug ":slug" is gereserveerd en kan niet voor een pagina worden gebruikt.',
     'slug_reserved_short' => 'De slug ":slug" is gereserveerd.',
+    'slug_invalid' => 'Een webadres mag alleen kleine letters, cijfers en koppeltekens bevatten.',
     'only_draft_can_be_edited' => 'Alleen conceptversies kunnen worden bewerkt',
     'only_draft_can_be_deleted' => 'Alleen conceptversies kunnen worden verwijderd',
     'version_does_not_belong' => 'Versie hoort niet bij dit document',

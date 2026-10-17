@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'Eine Kategorie mit diesem Namen existiert bereits',
     'slug_reserved' => 'Der Slug „:slug“ ist reserviert und kann nicht für eine Seite verwendet werden.',
     'slug_reserved_short' => 'Der Slug „:slug“ ist reserviert.',
+    'slug_invalid' => 'Die Webadresse darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten.',
     'only_draft_can_be_edited' => 'Es können nur Entwurfsversionen bearbeitet werden',
     'only_draft_can_be_deleted' => 'Es können nur Entwurfsversionen gelöscht werden',
     'version_does_not_belong' => 'Die Version gehört nicht zu diesem Dokument',

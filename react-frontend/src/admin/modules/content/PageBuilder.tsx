@@ -41,21 +41,20 @@ interface PageFormData {
   menu_order: number;
 }
 
-const toSlug = (text: string): string =>
+// Accented letters are transliterated (Über -> uber) so every Latin-script
+// language yields a readable address; scripts with no Latin form (e.g. Japanese)
+// yield '' and the server generates a page-xxxxxx address on save.
+const slugBase = (text: string): string =>
   text
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, '-');
 
-const toSlugInput = (text: string): string =>
-  text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_]+/g, '-')
-    .replace(/-+/g, '-');
+const toSlug = (text: string): string => slugBase(text).replace(/^-+|-+$/g, '');
+
+// Used while typing: keeps a trailing hyphen so "my-" can become "my-page".
+const toSlugInput = (text: string): string => slugBase(text).replace(/^-+/, '');
 
 /**
  * Turn a failed save into the server's own explanation (and the field it is
@@ -108,21 +107,6 @@ export function PageBuilder() {
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [slugError, setSlugError] = useState<string | null>(null);
 
-  // Slugs that conflict with built-in React routes — cannot be used as page slugs
-  const RESERVED_SLUGS = new Set([
-    'login', 'register', 'password', 'logout', 'dashboard', 'listings',
-    'events', 'groups', 'messages', 'notifications', 'wallet', 'feed',
-    'search', 'members', 'profile', 'settings', 'exchanges', 'achievements',
-    'leaderboard', 'goals', 'volunteering', 'blog', 'resources',
-    'organisations', 'federation', 'onboarding', 'group-exchanges', 'matches', 'newsletter',
-    'help', 'contact', 'about', 'faq', 'legal', 'terms',
-    'privacy', 'accessibility', 'cookies', 'development-status', 'features', 'changelog',
-    'timebanking-guide', 'partner', 'social-prescribing', 'impact-summary', 'impact-report', 'strategic-plan',
-    'admin', 'admin-legacy', 'super-admin', 'api', 'assets',
-    'uploads', 'classic', 'health', 'page',
-  ]);
-  const isReservedSlug = RESERVED_SLUGS.has(formData.slug.toLowerCase());
-
   useEffect(() => {
     if (isEdit) {
       adminPages.get(Number(id))
@@ -158,12 +142,9 @@ export function PageBuilder() {
       toast.warning(t('content.page_title_required'));
       return;
     }
-    if (!formData.slug.trim() || formData.slug !== toSlug(formData.slug)) {
+    // An empty slug is allowed: the server then generates one (page-xxxxxx).
+    if (formData.slug !== toSlug(formData.slug)) {
       toast.warning(t('content.slug_must_be_url_safe'));
-      return;
-    }
-    if (isReservedSlug) {
-      toast.warning(t('content.slug_reserved_message', { slug: formData.slug }));
       return;
     }
     setSaving(true);
@@ -273,11 +254,11 @@ export function PageBuilder() {
             />
             <Input
               label={t('content.label_url_slug')}
-              placeholder={t('content.placeholder_slug')}
+              placeholder={formData.title.trim() && !toSlug(formData.title) ? t('content.slug_set_on_save') : t('content.placeholder_slug')}
               variant="secondary"
-              description={isReservedSlug ? undefined : t('content.page_slug_description')}
-              isInvalid={isReservedSlug || slugError !== null}
-              errorMessage={isReservedSlug ? t('content.slug_reserved_error', { slug: formData.slug }) : (slugError ?? undefined)}
+              description={t('content.page_slug_description')}
+              isInvalid={slugError !== null}
+              errorMessage={slugError ?? undefined}
               value={formData.slug}
               isDisabled={saving}
               onValueChange={(v) => {

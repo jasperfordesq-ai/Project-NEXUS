@@ -1163,6 +1163,7 @@
     "show_in_menu": "Taispeáin sa roghchlár",
     "slug_description": "Sluga",
     "slug_must_be_url_safe": "Caithfidh sluga a bheith sábháilte ó thaobh URL",
+    "slug_set_on_save": "Socrófar nuair a shábhálfaidh tú é",
     "slug_reserved": "Sluga in áirithe",
     "slug_reserved_error": "Is bealach córais forchoimeádta é \"{{slug}}\". Roghnaigh slug eile.",
     "slug_reserved_message": "Tá an sluga \"{{slug}}\" in áirithe ag an gcóras. Roghnaigh sluga eile le do thoil.",

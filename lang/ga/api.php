@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'Tá catagóir leis an ainm seo ann cheana',
     'slug_reserved' => 'Tá an seilide ":slug" in áirithe agus ní féidir é a úsáid le haghaidh leathanach.',
     'slug_reserved_short' => 'Tá an seilide ":slug" in áirithe.',
+    'slug_invalid' => 'Ní féidir ach litreacha beaga, uimhreacha agus fleiscíní a bheith i seoladh gréasáin.',
     'only_draft_can_be_edited' => 'Ní féidir ach dréachtleaganacha a chur in eagar',
     'only_draft_can_be_deleted' => 'Ní féidir ach dréachtleaganacha a scriosadh',
     'version_does_not_belong' => 'Ní bhaineann an leagan leis an doiciméad seo',

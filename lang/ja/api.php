@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'この名前のカテゴリはすでに存在します',
     'slug_reserved' => 'スラグ「:slug」は予約されているため、ページには使用できません。',
     'slug_reserved_short' => 'スラグ「:slug」は予約されています。',
+    'slug_invalid' => 'ウェブアドレスに使用できるのは、小文字の英字、数字、ハイフンのみです。',
     'only_draft_can_be_edited' => '編集できるのは下書きバージョンのみです',
     'only_draft_can_be_deleted' => '削除できるのは下書きバージョンのみです',
     'version_does_not_belong' => 'バージョンはこのドキュメントに属していません',

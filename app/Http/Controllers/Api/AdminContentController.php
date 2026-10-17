@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Core\TenantContext;
 use App\Models\ActivityLog;
 use App\Models\Page;
@@ -112,6 +113,10 @@ class AdminContentController extends BaseApiController
         }
 
         $slugInput = trim((string) ($input['slug'] ?? ''));
+        // A supplied slug must already be a clean address; only a derived one is generated.
+        if ($slugInput !== '' && !$this->isValidSlug($slugInput)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.slug_invalid'), 'slug', 422);
+        }
         $slug = $this->generateSlug($slugInput !== '' ? $slugInput : $title);
         $content = $input['content'] ?? '';
         $contentFormat = $input['content_format'] ?? 'richtext';
@@ -137,10 +142,6 @@ class AdminContentController extends BaseApiController
         $designJson = $this->validatedPageDesignJson($contentFormat, $designJson);
         if ($designJson instanceof JsonResponse) {
             return $designJson;
-        }
-
-        if ($this->isReservedPageSlug($slug)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.slug_reserved', ['slug' => $slug]), 'slug', 422);
         }
 
         $isPublished = ($status === 'published') ? 1 : 0;
@@ -196,10 +197,11 @@ class AdminContentController extends BaseApiController
 
         if (isset($input['title'])) { $data['title'] = trim($input['title']); }
         if (isset($input['slug'])) {
-            $slug = $this->generateSlug($input['slug']);
-            if ($this->isReservedPageSlug($slug)) {
-                return $this->respondWithError('VALIDATION_ERROR', __('api.slug_reserved_short', ['slug' => $slug]), 'slug', 422);
+            $slugInput = trim((string) $input['slug']);
+            if (!$this->isValidSlug($slugInput)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.slug_invalid'), 'slug', 422);
             }
+            $slug = $this->generateSlug($slugInput);
             $conflict = DB::selectOne("SELECT id FROM pages WHERE slug = ? AND tenant_id = ? AND id != ?", [$slug, $tenantId, $id]);
             if ($conflict) {
                 return $this->respondWithError('VALIDATION_ERROR', __('api.slug_already_in_use'), 'slug', 422);
@@ -918,25 +920,15 @@ class AdminContentController extends BaseApiController
 
     private function generateSlug(string $value): string
     {
-        return strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $value), '-'));
+        $slug = Str::slug($value);
+
+        // A title with no Latin form (e.g. Japanese) transliterates to nothing.
+        return $slug !== '' ? $slug : 'page-' . substr(bin2hex(random_bytes(4)), 0, 6);
     }
 
-    private const RESERVED_PAGE_SLUGS = [
-        'login', 'register', 'password', 'logout', 'dashboard', 'listings',
-        'events', 'groups', 'messages', 'notifications', 'wallet', 'feed',
-        'search', 'members', 'profile', 'settings', 'exchanges', 'achievements',
-        'leaderboard', 'goals', 'volunteering', 'blog', 'resources',
-        'organisations', 'federation', 'onboarding', 'group-exchanges', 'matches', 'newsletter',
-        'help', 'contact', 'about', 'faq', 'legal', 'terms',
-        'privacy', 'accessibility', 'cookies', 'development-status', 'features', 'changelog',
-        'timebanking-guide', 'partner', 'social-prescribing', 'impact-summary', 'impact-report', 'strategic-plan',
-        'admin', 'admin-legacy', 'super-admin', 'api', 'assets',
-        'uploads', 'classic', 'health', 'page',
-    ];
-
-    private function isReservedPageSlug(string $slug): bool
+    private function isValidSlug(string $slug): bool
     {
-        return in_array(strtolower($slug), self::RESERVED_PAGE_SLUGS, true);
+        return preg_match('/^[a-z0-9-]+$/', $slug) === 1;
     }
 
     private function ensureUniqueSlug(string $table, string $slug, int $tenantId): string

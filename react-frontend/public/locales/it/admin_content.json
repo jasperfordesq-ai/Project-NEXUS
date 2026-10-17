@@ -1163,6 +1163,7 @@
     "show_in_menu": "Mostra nel menu",
     "slug_description": "Slug",
     "slug_must_be_url_safe": "Lo slug deve essere sicuro per gli URL",
+    "slug_set_on_save": "Verrà impostato al salvataggio",
     "slug_reserved": "Slug riservato",
     "slug_reserved_error": "\"{{slug}}\" è una route di sistema riservata. Scegli uno slug diverso.",
     "slug_reserved_message": "Lo slug \"{{slug}}\" è riservato dal sistema. Scegli uno slug diverso.",

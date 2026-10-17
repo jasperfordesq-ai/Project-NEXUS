@@ -175,6 +175,52 @@ describe('PageBuilder — create mode (id=undefined)', () => {
     expect(hasSlugValue).toBe(true);
   });
 
+  it('transliterates accented titles into the slug', async () => {
+    const user = userEvent.setup();
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    const inputs = screen.getAllByRole('textbox');
+    await user.type(inputs[0]!, 'Über uns café');
+
+    expect((screen.getAllByRole('textbox')[1] as HTMLInputElement).value).toBe('uber-uns-cafe');
+  });
+
+  it('accepts about as a slug now that pages live under /page/', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 11, slug: 'about' } });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    const inputs = screen.getAllByRole('textbox');
+    await user.type(inputs[0]!, 'Our Charity');
+    await user.clear(inputs[1]!);
+    await user.type(inputs[1]!, 'about');
+    expect(screen.getAllByRole('textbox')[1]).not.toHaveAttribute('aria-invalid', 'true');
+
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockAdminPages.create).toHaveBeenCalled());
+    expect(mockAdminPages.create).toHaveBeenCalledWith(expect.objectContaining({ slug: 'about' }));
+    expect(mockToast.warning).not.toHaveBeenCalled();
+  });
+
+  it('lets a title with no latin letters save and leaves the slug for the server', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.create.mockResolvedValueOnce({ success: true, data: { id: 12, slug: 'page-a1b2c3' } });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+
+    await user.type(screen.getAllByRole('textbox')[0]!, '日本語ページ');
+    expect((screen.getAllByRole('textbox')[1] as HTMLInputElement).value).toBe('');
+
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+
+    await waitFor(() => expect(mockAdminPages.create).toHaveBeenCalled());
+    expect(mockAdminPages.create).toHaveBeenCalledWith(expect.objectContaining({ slug: '' }));
+    expect(mockToast.warning).not.toHaveBeenCalled();
+  });
+
   it('shows warning toast when saving with empty title', async () => {
     const user = userEvent.setup();
     renderPageBuilder();

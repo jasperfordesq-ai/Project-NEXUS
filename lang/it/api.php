@@ -144,6 +144,7 @@ return [
     'category_duplicate' => 'Esiste già una categoria con questo nome',
     'slug_reserved' => 'Lo slug ":slug" è riservato e non può essere utilizzato per una pagina.',
     'slug_reserved_short' => 'Lo slug ":slug" è riservato.',
+    'slug_invalid' => 'L\'indirizzo web può contenere solo lettere minuscole, numeri e trattini.',
     'only_draft_can_be_edited' => 'È possibile modificare solo le versioni bozza',
     'only_draft_can_be_deleted' => 'È possibile eliminare solo le versioni bozza',
     'version_does_not_belong' => 'La versione non appartiene a questo documento',

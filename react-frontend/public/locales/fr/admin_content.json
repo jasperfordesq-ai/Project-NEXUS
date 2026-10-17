@@ -1163,6 +1163,7 @@
     "show_in_menu": "Afficher dans le menu",
     "slug_description": "Slug",
     "slug_must_be_url_safe": "Le slug doit être compatible avec les URL",
+    "slug_set_on_save": "Sera définie à l'enregistrement",
     "slug_reserved": "Slug réservé",
     "slug_reserved_error": "\"{{slug}}\" est une route système réservée. Choisissez un autre slug.",
     "slug_reserved_message": "Le slug «{{slug}}» est réservé par le système. Veuillez choisir un autre slug.",

@@ -1163,6 +1163,7 @@
     "show_in_menu": "メニューに表示",
     "slug_description": "スラッグ",
     "slug_must_be_url_safe": "スラッグは URL セーフでなければなりません",
+    "slug_set_on_save": "保存時に設定されます",
     "slug_reserved": "スラッグ予約済み",
     "slug_reserved_error": "「{{slug}}」は予約済みのシステムルートです。別のスラッグを選択してください。",
     "slug_reserved_message": "スラッグ「{{slug}}」はシステムによって予約されています。別のスラッグを選択してください。",
