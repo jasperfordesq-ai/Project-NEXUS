@@ -43,6 +43,7 @@ describe('HeaderColumnTitleCard', () => {
     await waitFor(() => expect(mockSettings.update).toHaveBeenCalledWith({ header_column_title: 'Our Work' }));
     await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
     expect(mockRefreshTenant).toHaveBeenCalledTimes(1);
+    expect(mockRefreshTenant).toHaveBeenCalledWith({ silent: true });
   });
 
   it('shows the failure toast when saving fails', async () => {

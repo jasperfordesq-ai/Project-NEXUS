@@ -33,6 +33,7 @@ import { detectTenantFromUrl, tenantPath as buildTenantPath } from '@/lib/tenant
 import { validateResponseIfPresent } from '@/lib/api-validation';
 import { tenantBootstrapSchema } from '@/lib/api-schemas';
 import { queueSentryTenant } from '@/lib/telemetryQueue';
+import { logError } from '@/lib/logger';
 import { setRegion } from '@/lib/regionStore';
 import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type { TenantConfig, TenantFeatures, TenantModules, TenantBranding, GroupTabConfig, ListingConfig, VolunteeringConfig, JobConfig, LandingPageConfig, AuthenticationConfig } from '@/types';
@@ -62,7 +63,12 @@ interface TenantContextValue extends TenantState {
   hasFeature: (feature: keyof TenantFeatures) => boolean;
   hasModule: (module: keyof TenantModules) => boolean;
   hasGroupTab: (tab: keyof GroupTabConfig) => boolean;
-  refreshTenant: () => Promise<void>;
+  /**
+   * Re-fetch the tenant bootstrap. With `{ silent: true }` the current tenant
+   * stays on screen (no full-screen loading state) and a failed re-fetch is
+   * logged, not shown. Default behaviour is unchanged.
+   */
+  refreshTenant: (options?: { silent?: boolean }) => Promise<void>;
   /** The current tenant slug from URL (path or subdomain). Null if no slug in URL. */
   tenantSlug: string | null;
   /** Build a path with the tenant slug prefix (if present). */
@@ -365,8 +371,11 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   /**
    * Fetch tenant bootstrap data
    */
-  const loadTenant = useCallback(async (forceFresh: boolean) => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null, notFoundSlug: null }));
+  const loadTenant = useCallback(async (forceFresh: boolean, options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      setState((prev) => ({ ...prev, isLoading: true, error: null, notFoundSlug: null }));
+    }
     const sessionGenerationAtStart = tokenManager.getSessionGeneration();
 
     try {
@@ -460,6 +469,10 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
           error: null,
           notFoundSlug: null,
         });
+      } else if (silent) {
+        // A quiet refresh must never turn into a full-screen state: keep the
+        // tenant that is already showing and just record the failure.
+        logError('Silent tenant refresh failed', response.code ?? 'TENANT_BOOTSTRAP_FAILED');
       } else if (response.code === 'MAINTENANCE_MODE') {
         // API is in maintenance mode — synthesise a tenant that triggers MaintenancePage
         setTelemetryTenant(null);
@@ -491,7 +504,11 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
           notFoundSlug: null,
         }));
       }
-    } catch {
+    } catch (err) {
+      if (silent) {
+        logError('Silent tenant refresh failed', err);
+        return;
+      }
       setTelemetryTenant(null);
       setState((prev) => ({
         tenant: prev.tenant && (
@@ -505,7 +522,7 @@ export function TenantProvider({ children, tenantSlug }: TenantProviderProps) {
   }, [effectiveTenantSlug]);
 
   const refreshTenant = useCallback(
-    () => loadTenant(true),
+    (options?: { silent?: boolean }) => loadTenant(true, options),
     [loadTenant],
   );
 

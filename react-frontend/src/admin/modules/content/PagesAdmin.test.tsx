@@ -231,7 +231,7 @@ describe('PagesAdmin', () => {
       expect(adminPages.delete).toHaveBeenCalledWith(PAGES[0].id);
     });
     expect(mockToast.success).toHaveBeenCalled();
-    expect(mockRefreshTenant).toHaveBeenCalled();
+    expect(mockRefreshTenant).toHaveBeenCalledWith({ silent: true });
   });
 
   it('shows error toast when delete fails', async () => {

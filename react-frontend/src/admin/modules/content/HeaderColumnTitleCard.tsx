@@ -58,7 +58,7 @@ export function HeaderColumnTitleCard() {
         setTitle(title.trim());
         toast.success(t('content.header_column_title_saved'));
         // So this admin's own header shows the new title without a reload.
-        void refreshTenant();
+        void refreshTenant({ silent: true });
       } else {
         toast.error(t('content.header_column_title_failed'));
       }

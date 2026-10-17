@@ -84,6 +84,7 @@ vi.mock('../../components/PageContentEditor', async () => {
 
 // ── contexts ──────────────────────────────────────────────────────────────
 const mockNavigate = vi.fn();
+const mockRefreshTenant = vi.fn();
 const mockToast = {
   success: vi.fn(),
   error: vi.fn(),
@@ -99,7 +100,7 @@ vi.mock('@/contexts', () =>
       tenantPath: (p: string) => `/test${p}`,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
-      refreshTenant: vi.fn(),
+      refreshTenant: mockRefreshTenant,
     }),
     useAuth: () => ({
       user: { tenant_slug: 'test' },
@@ -210,6 +211,7 @@ describe('PageBuilder — create mode (id=undefined)', () => {
       expect(mockToast.success).toHaveBeenCalled();
     });
     expect(mockNavigate).toHaveBeenCalled();
+    expect(mockRefreshTenant).toHaveBeenCalledWith({ silent: true });
   });
 
   it('sends the manually edited slug when creating a page', async () => {

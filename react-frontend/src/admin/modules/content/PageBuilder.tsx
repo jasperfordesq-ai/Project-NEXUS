@@ -193,7 +193,7 @@ export function PageBuilder() {
         } else {
           toast.success(t(isEdit ? 'content.page_updated' : 'content.page_created'));
         }
-        refreshTenant();
+        void refreshTenant({ silent: true });
         navigate(tenantPath('/admin/pages'));
       } else {
         showFailure(describeSaveFailure(res, fallback));

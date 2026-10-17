@@ -79,6 +79,7 @@ const mockTenantConfig = {
 function TestConsumer() {
   const {
     tenant,
+    refreshTenant,
     isLoading,
     error,
     branding,
@@ -101,6 +102,8 @@ function TestConsumer() {
       <div data-testid="branding-name">{branding.name}</div>
       <div data-testid="branding-color">{branding.primaryColor}</div>
       <div data-testid="path-test">{tenantPath('/dashboard')}</div>
+      <button data-testid="refresh-silent" onClick={() => void refreshTenant({ silent: true })}>silent</button>
+      <button data-testid="refresh-loud" onClick={() => void refreshTenant()}>loud</button>
     </div>
   );
 }
@@ -178,6 +181,54 @@ describe('TenantContext', () => {
     window.removeEventListener('nexus:community_changed', heard);
     vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
     vi.mocked(tokenManager.getTenantId).mockReturnValue(null);
+  });
+
+  it('silent refresh keeps the current tenant on screen while re-fetching', async () => {
+    mockApiGet.mockResolvedValueOnce({ success: true, data: mockTenantConfig });
+    render(<TenantProvider><TestConsumer /></TenantProvider>);
+    await waitFor(() => expect(screen.getByTestId('tenant-name')).toHaveTextContent('hOUR Timebank'));
+
+    const seenLoading: string[] = [];
+    const observer = new MutationObserver(() => seenLoading.push(screen.getByTestId('loading').textContent ?? ''));
+    observer.observe(screen.getByTestId('loading'), { childList: true, characterData: true, subtree: true });
+
+    let resolveRefresh!: (value: unknown) => void;
+    mockApiGet.mockReturnValueOnce(new Promise((resolve) => { resolveRefresh = resolve; }));
+    screen.getByTestId('refresh-silent').click();
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledTimes(2));
+
+    expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    expect(screen.getByTestId('tenant-name')).toHaveTextContent('hOUR Timebank');
+
+    resolveRefresh({ success: true, data: { ...mockTenantConfig, name: 'Renamed Timebank' } });
+    await waitFor(() => expect(screen.getByTestId('tenant-name')).toHaveTextContent('Renamed Timebank'));
+    observer.disconnect();
+    expect(seenLoading).not.toContain('true');
+  });
+
+  it('silent refresh that fails keeps the current tenant and shows no error', async () => {
+    mockApiGet.mockResolvedValueOnce({ success: true, data: mockTenantConfig });
+    render(<TenantProvider><TestConsumer /></TenantProvider>);
+    await waitFor(() => expect(screen.getByTestId('tenant-name')).toHaveTextContent('hOUR Timebank'));
+
+    mockApiGet.mockResolvedValueOnce({ success: false, code: 'SERVER_ERROR' });
+    screen.getByTestId('refresh-silent').click();
+    await waitFor(() => expect(mockApiGet).toHaveBeenCalledTimes(2));
+    await Promise.resolve();
+
+    expect(screen.getByTestId('tenant-name')).toHaveTextContent('hOUR Timebank');
+    expect(screen.getByTestId('error')).toHaveTextContent('none');
+    expect(screen.getByTestId('loading')).toHaveTextContent('false');
+  });
+
+  it('a normal refresh still shows the loading state', async () => {
+    mockApiGet.mockResolvedValueOnce({ success: true, data: mockTenantConfig });
+    render(<TenantProvider><TestConsumer /></TenantProvider>);
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'));
+
+    mockApiGet.mockReturnValueOnce(new Promise(() => {}));
+    screen.getByTestId('refresh-loud').click();
+    await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('true'));
   });
 
   it('shows loading state initially', async () => {

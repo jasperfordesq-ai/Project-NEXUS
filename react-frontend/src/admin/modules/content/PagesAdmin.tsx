@@ -89,7 +89,7 @@ export function PagesAdmin() {
       if (res?.success) {
         toast.success(t('content.page_deleted_successfully'));
         fetchData();
-        refreshTenant();
+        void refreshTenant({ silent: true });
       } else {
         toast.error(t('content.failed_to_delete_page'));
       }
