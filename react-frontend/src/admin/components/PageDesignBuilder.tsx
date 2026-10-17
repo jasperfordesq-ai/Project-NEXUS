@@ -685,7 +685,10 @@ export const PageDesignBuilder = forwardRef<PageDesignBuilderHandle, PageDesignB
       addNexusBlocks(ed, initT, tenantRoot);
       localizePagePluginBlocks(ed, initT);
 
-      const syncEditorLocale = (language: string) => {
+      // 'init' runs before the canvas exists: GrapesJS renders its panels itself
+      // once loaded, and the layer/trait panels throw if redrawn before the root
+      // component exists. Only a later language change redraws them.
+      const syncEditorLocale = (language: string, phase: 'init' | 'change') => {
         const locale = normalizeGrapesJsLocale(language);
         const fixedT = i18n.getFixedT(language, 'admin_editor') as BuilderTranslate;
         ed.I18n.addMessages({ [locale]: pageEditorMessages(fixedT, locale) });
@@ -695,13 +698,24 @@ export const PageDesignBuilder = forwardRef<PageDesignBuilderHandle, PageDesignB
         ed.Devices?.get('Mobile portrait')?.set('name', fixedT('devices.mobile_portrait'));
         localizePagePluginBlocks(ed, fixedT);
         localizeNexusBlocks(ed, fixedT, tenantRoot);
-        ed.BlockManager.render();
-        ed.StyleManager.render();
-        ed.TraitManager.render();
-        ed.LayerManager.render();
+        if (phase === 'init') return;
+        const redraw = (panel: string, render: () => void) => {
+          try {
+            render();
+          } catch (err) {
+            logError(`PageDesignBuilder: ${panel} redraw after language change failed`, err);
+          }
+        };
+        redraw('blocks', () => ed.BlockManager.render());
+        redraw('styles', () => ed.StyleManager.render());
+        if (ed.getWrapper()) {
+          redraw('traits', () => ed.TraitManager.render());
+          redraw('layers', () => ed.LayerManager.render());
+        }
       };
-      syncEditorLocale(i18n.resolvedLanguage ?? i18n.language);
-      i18n.on('languageChanged', syncEditorLocale);
+      syncEditorLocale(i18n.resolvedLanguage ?? i18n.language, 'init');
+      const onLanguageChanged = (lang: string) => syncEditorLocale(lang, 'change');
+      i18n.on('languageChanged', onLanguageChanged);
 
       ed.Css.setRule('.nexus-page-section', {});
       ed.addStyle(DEFAULT_PAGE_CSS);
@@ -768,7 +782,7 @@ export const PageDesignBuilder = forwardRef<PageDesignBuilderHandle, PageDesignB
         ed.off('component:selected component:deselected', syncSelection);
         ed.off('change:device', syncDevice);
         ed.off('component:add', handleComponentAdd);
-        i18n.off('languageChanged', syncEditorLocale);
+        i18n.off('languageChanged', onLanguageChanged);
         if (debounceRef.current) clearTimeout(debounceRef.current);
         try {
           ed.destroy();

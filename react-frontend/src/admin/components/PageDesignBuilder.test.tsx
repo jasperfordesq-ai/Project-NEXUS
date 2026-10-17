@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
+import i18n from 'i18next';
+import { act, fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import { ConfirmDialogProvider } from '@/components/ui';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -26,6 +27,7 @@ const { mockBlockModels, mockEditor, mockGrapesInit } = vi.hoisted(() => {
     StyleManager: { render: vi.fn() },
     TraitManager: { render: vi.fn() },
     LayerManager: { render: vi.fn() },
+    getWrapper: vi.fn((): object | undefined => ({})),
     addStyle: vi.fn(),
     addComponents: vi.fn(() => ({ id: 'image-component' })),
     select: vi.fn(),
@@ -113,6 +115,57 @@ describe('PageDesignBuilder', () => {
     mockEditor.getSelected.mockReset();
     mockAdminBuilderAssets.uploadImage.mockReset();
     mockAdminBuilderAssets.listImages.mockReset();
+    mockEditor.getWrapper.mockReset();
+    mockEditor.getWrapper.mockReturnValue({});
+    mockEditor.LayerManager.render.mockReset();
+    mockEditor.TraitManager.render.mockReset();
+  });
+
+  // Real GrapesJS: the layer and trait panels read the root component, which
+  // does not exist until the canvas has loaded. Rendering them earlier throws.
+  function panelsThrowWithoutWrapper() {
+    const noWrapperYet = () => {
+      if (!mockEditor.getWrapper()) {
+        throw new TypeError("Cannot read properties of undefined (reading 'get')");
+      }
+    };
+    mockEditor.LayerManager.render.mockImplementation(noWrapperYet);
+    mockEditor.TraitManager.render.mockImplementation(noWrapperYet);
+  }
+
+  it('does not fail initialisation when the layer and trait panels cannot render yet', async () => {
+    mockEditor.getWrapper.mockReturnValue(undefined);
+    panelsThrowWithoutWrapper();
+
+    const { container } = renderBuilder(null);
+    await waitFor(() => expect(mockGrapesInit).toHaveBeenCalled());
+
+    expect(screen.queryByText('The page builder could not load. Please use HTML mode instead.')).not.toBeInTheDocument();
+    expect(container.querySelector('.nb-root')).not.toBeNull();
+    expect(mockEditor.LayerManager.render).not.toHaveBeenCalled();
+    expect(mockEditor.TraitManager.render).not.toHaveBeenCalled();
+  });
+
+  it('re-renders the layer panel on a language change once the editor has a wrapper', async () => {
+    mockEditor.getWrapper.mockReturnValue(undefined);
+    panelsThrowWithoutWrapper();
+
+    renderBuilder(null);
+    await waitFor(() => expect(mockGrapesInit).toHaveBeenCalled());
+
+    // Before the canvas has loaded, a language change must skip the panels.
+    act(() => {
+      i18n.emit('languageChanged', 'en');
+    });
+    expect(mockEditor.LayerManager.render).not.toHaveBeenCalled();
+
+    mockEditor.getWrapper.mockReturnValue({});
+    act(() => {
+      i18n.emit('languageChanged', 'en');
+    });
+    expect(mockEditor.LayerManager.render).toHaveBeenCalledTimes(1);
+    expect(mockEditor.TraitManager.render).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('The page builder could not load. Please use HTML mode instead.')).not.toBeInTheDocument();
   });
 
   it('uses the tenant-aware home path in generated starter blocks', async () => {

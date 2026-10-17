@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import i18n from 'i18next';
+import { act, render, screen } from '@/test/test-utils';
 
 // GrapesJS is imperative and needs a real canvas/iframe — mock it so the
 // component's lifecycle (init on mount, destroy on unmount, config, seed/restore)
@@ -31,6 +32,7 @@ const { editorMock, initMock } = vi.hoisted(() => {
     StyleManager: { render: vi.fn() },
     TraitManager: { render: vi.fn() },
     LayerManager: { render: vi.fn() },
+    getWrapper: vi.fn((): object | undefined => ({})),
     UndoManager: { undo: vi.fn(), redo: vi.fn(), hasUndo: vi.fn(() => false), hasRedo: vi.fn(() => false) },
   };
   return { editorMock, initMock: vi.fn(() => editorMock) };
@@ -104,6 +106,57 @@ describe('NewsletterBuilder', () => {
     editorMock.destroy.mockClear();
     editorMock.loadProjectData.mockClear();
     editorMock.setComponents.mockClear();
+    editorMock.getWrapper.mockReset();
+    editorMock.getWrapper.mockReturnValue({});
+    editorMock.LayerManager.render.mockReset();
+    editorMock.TraitManager.render.mockReset();
+  });
+
+  // Real GrapesJS: the layer and trait panels read the root component, which
+  // does not exist until the canvas has loaded. Rendering them earlier throws.
+  function panelsThrowWithoutWrapper() {
+    const noWrapperYet = () => {
+      if (!editorMock.getWrapper()) {
+        throw new TypeError("Cannot read properties of undefined (reading 'get')");
+      }
+    };
+    editorMock.LayerManager.render.mockImplementation(noWrapperYet);
+    editorMock.TraitManager.render.mockImplementation(noWrapperYet);
+  }
+
+  it('does not fail initialisation when the layer and trait panels cannot render yet', () => {
+    editorMock.getWrapper.mockReturnValue(undefined);
+    panelsThrowWithoutWrapper();
+
+    const { container } = render(<NewsletterBuilder html="" onChange={vi.fn()} />);
+
+    expect(initMock).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByText('The visual builder could not load. Please use the HTML mode instead.'),
+    ).not.toBeInTheDocument();
+    expect(container.querySelector('.nb-root')).not.toBeNull();
+    expect(editorMock.LayerManager.render).not.toHaveBeenCalled();
+    expect(editorMock.TraitManager.render).not.toHaveBeenCalled();
+  });
+
+  it('re-renders the layer panel on a language change once the editor has a wrapper', () => {
+    editorMock.getWrapper.mockReturnValue(undefined);
+    panelsThrowWithoutWrapper();
+
+    render(<NewsletterBuilder html="" onChange={vi.fn()} />);
+
+    // Before the canvas has loaded, a language change must skip the panels.
+    act(() => {
+      i18n.emit('languageChanged', 'en');
+    });
+    expect(editorMock.LayerManager.render).not.toHaveBeenCalled();
+
+    editorMock.getWrapper.mockReturnValue({});
+    act(() => {
+      i18n.emit('languageChanged', 'en');
+    });
+    expect(editorMock.LayerManager.render).toHaveBeenCalledTimes(1);
+    expect(editorMock.TraitManager.render).toHaveBeenCalledTimes(1);
   });
 
   it('initializes GrapesJS on mount and subscribes to update', () => {
