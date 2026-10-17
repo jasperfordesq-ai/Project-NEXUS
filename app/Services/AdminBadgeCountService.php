@@ -21,13 +21,20 @@ class AdminBadgeCountService
 {
     private ?array $cachedCounts = null;
 
+    /** Whose counts $cachedCounts holds — some counts depend on the viewer. */
+    private ?int $cachedViewerId = null;
+
     /**
      * Get all badge counts for the current tenant.
      * Results are cached for the request lifetime.
+     *
+     * @param int|null $viewerId The admin looking at the badges. Queues that
+     *                           hide the viewer's own rows (unreviewed_messages)
+     *                           must hide them from the count too.
      */
-    public function getCounts(): array
+    public function getCounts(?int $viewerId = null): array
     {
-        if ($this->cachedCounts !== null) {
+        if ($this->cachedCounts !== null && $this->cachedViewerId === $viewerId) {
             return $this->cachedCounts;
         }
 
@@ -42,12 +49,13 @@ class AdminBadgeCountService
             $counts['gdpr_requests'] = $this->countGdprRequests($tenantId);
             $counts['404_errors'] = $this->count404Errors();
             $counts['pending_exchanges'] = $this->countPendingExchanges($tenantId);
-            $counts['unreviewed_messages'] = $this->countUnreviewedMessages($tenantId);
+            $counts['unreviewed_messages'] = $this->countUnreviewedMessages($tenantId, $viewerId);
         } catch (\Exception $e) {
             Log::warning('AdminBadgeCountService error: ' . $e->getMessage());
         }
 
         $this->cachedCounts = $counts;
+        $this->cachedViewerId = $viewerId;
         return $counts;
     }
 
@@ -66,6 +74,7 @@ class AdminBadgeCountService
     public function clearCache(): void
     {
         $this->cachedCounts = null;
+        $this->cachedViewerId = null;
     }
 
     /**
@@ -185,13 +194,28 @@ class AdminBadgeCountService
         }
     }
 
-    private function countUnreviewedMessages(int $tenantId): int
+    /**
+     * 🔴 Must match the queue the badge opens (/broker/messages?status=unreviewed,
+     * AdminBrokerController::messages with filter=unreviewed), which applies
+     * F-436: a viewer's own conversations are not in their queue, because
+     * nobody reviews their own messages. This counted every unreviewed copy,
+     * so an admin who was a party to copied messages saw a number the queue
+     * could never reach — reported from Timebank Ireland on 2026-10-17 as "7"
+     * over an empty list, all seven being the admin's own conversations.
+     */
+    private function countUnreviewedMessages(int $tenantId, ?int $viewerId): int
     {
         try {
-            return (int) DB::table('broker_message_copies')
+            $query = DB::table('broker_message_copies')
                 ->where('tenant_id', $tenantId)
-                ->whereNull('reviewed_at')
-                ->count();
+                ->whereNull('reviewed_at');
+
+            if ($viewerId !== null) {
+                $query->where('sender_id', '<>', $viewerId)
+                    ->where('receiver_id', '<>', $viewerId);
+            }
+
+            return (int) $query->count();
         } catch (\Exception $e) {
             Log::warning('[AdminBadgeCount] Failed to count unreviewed messages: ' . $e->getMessage());
             return 0;

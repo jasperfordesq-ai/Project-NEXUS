@@ -272,10 +272,12 @@ class AdminDashboardController extends BaseApiController
      */
     public function badgeCounts(): JsonResponse
     {
-        $this->requireAdmin();
+        $viewerId = $this->requireAdmin();
 
+        // The viewer is passed so a count whose queue hides the viewer's own
+        // rows (unreviewed_messages, F-436) hides them too.
         return $this->respondWithData(
-            app(\App\Services\AdminBadgeCountService::class)->getCounts()
+            app(\App\Services\AdminBadgeCountService::class)->getCounts($viewerId)
         );
     }
 

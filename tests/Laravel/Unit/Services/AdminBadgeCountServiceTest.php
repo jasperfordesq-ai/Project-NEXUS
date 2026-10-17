@@ -144,10 +144,105 @@ class AdminBadgeCountServiceTest extends TestCase
         );
     }
 
-    private function seedUser(int $tenantId, array $overrides = []): void
+    // -------------------------------------------------------------------------
+    // unreviewed_messages must agree with the queue the badge links to
+    // -------------------------------------------------------------------------
+    //
+    // 🔴 The "Messages to review" badge opens /broker/messages?status=unreviewed,
+    // which AdminBrokerController::messages() serves with the F-436 rule: the
+    // viewer's own conversations are not in their queue. The badge counted
+    // every unreviewed copy, so an admin who was a party to copied messages saw
+    // a number the list could never reach — on Timebank Ireland, 17 Oct 2026,
+    // "7" over an empty queue, all seven being the admin's own conversations.
+
+    public function test_unreviewed_messages_excludes_the_viewers_own_conversations(): void
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Badge Msg Test', 'slug' => 'badge-msg-' . uniqid('', true),
+            'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $otherTenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Badge Msg Other', 'slug' => 'badge-msg-other-' . uniqid('', true),
+            'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $admin = $this->seedUser($tenantId, ['role' => 'admin', 'is_approved' => 1, 'status' => 'active']);
+        $alice = $this->seedUser($tenantId, ['is_approved' => 1, 'status' => 'active']);
+        $bob = $this->seedUser($tenantId, ['is_approved' => 1, 'status' => 'active']);
+        $outsider = $this->seedUser($otherTenantId, ['is_approved' => 1, 'status' => 'active']);
+
+        $this->seedCopy($tenantId, $alice, $bob);                          // counts
+        $this->seedCopy($tenantId, $bob, $alice);                          // counts
+        $this->seedCopy($tenantId, $alice, $bob, ['reviewed_at' => now()]); // already reviewed
+        $this->seedCopy($tenantId, $admin, $alice);                        // admin sent it
+        $this->seedCopy($tenantId, $bob, $admin);                          // admin received it
+        $this->seedCopy($otherTenantId, $outsider, $outsider);             // other community
+
+        \App\Core\TenantContext::setById($tenantId);
+        $counts = (new AdminBadgeCountService())->getCounts($admin);
+
+        $this->assertSame(
+            2,
+            $counts['unreviewed_messages'],
+            'Only unreviewed copies between other people may count — the admin cannot review their own.'
+        );
+
+        // The list the badge opens, run directly (AdminBrokerController::messages
+        // with filter=unreviewed). If either side changes alone, this fails.
+        $queueCount = (int) DB::table('broker_message_copies')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('reviewed_at')
+            ->where('sender_id', '<>', $admin)
+            ->where('receiver_id', '<>', $admin)
+            ->count();
+
+        $this->assertSame($queueCount, $counts['unreviewed_messages']);
+    }
+
+    public function test_cached_counts_are_not_shared_between_viewers(): void
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Badge Cache Test', 'slug' => 'badge-cache-' . uniqid('', true),
+            'is_active' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $first = $this->seedUser($tenantId, ['role' => 'admin', 'is_approved' => 1, 'status' => 'active']);
+        $second = $this->seedUser($tenantId, ['role' => 'admin', 'is_approved' => 1, 'status' => 'active']);
+        $this->seedCopy($tenantId, $first, $second);
+
+        \App\Core\TenantContext::setById($tenantId);
+        // The service is a container singleton, so one instance answers both.
+        $service = new AdminBadgeCountService();
+
+        $this->assertSame(0, $service->getCounts($first)['unreviewed_messages']);
+        $this->assertSame(0, $service->getCounts($second)['unreviewed_messages']);
+
+        $third = $this->seedUser($tenantId, ['role' => 'admin', 'is_approved' => 1, 'status' => 'active']);
+        $this->assertSame(1, $service->getCounts($third)['unreviewed_messages']);
+    }
+
+    private function seedCopy(int $tenantId, int $senderId, int $receiverId, array $overrides = []): void
+    {
+        $messageId = (int) DB::table('messages')->insertGetId([
+            'tenant_id' => $tenantId, 'sender_id' => $senderId, 'receiver_id' => $receiverId,
+            'body' => 'badge test', 'created_at' => now(),
+        ]);
+        DB::table('broker_message_copies')->insert(array_merge([
+            'tenant_id' => $tenantId,
+            'original_message_id' => $messageId,
+            'conversation_key' => 'badge-' . uniqid('', true),
+            'sender_id' => $senderId,
+            'receiver_id' => $receiverId,
+            'message_body' => 'badge test',
+            'sent_at' => now(),
+            'copy_reason' => 'first_contact',
+            'created_at' => now(),
+        ], $overrides));
+    }
+
+    private function seedUser(int $tenantId, array $overrides = []): int
     {
         $unique = uniqid('badge_', true);
-        DB::table('users')->insert(array_merge([
+        return (int) DB::table('users')->insertGetId(array_merge([
             'tenant_id' => $tenantId,
             'name' => 'Badge User ' . $unique,
             'first_name' => 'Badge', 'last_name' => 'User',

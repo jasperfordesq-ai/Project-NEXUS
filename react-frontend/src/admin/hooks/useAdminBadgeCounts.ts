@@ -59,12 +59,24 @@ export function useAdminBadgeCounts() {
       if (!cancelled) void load();
     };
 
+    // Re-check the moment the admin returns, not up to a minute later: a queue
+    // worked through in another tab (the broker panel, say) must not leave the
+    // old figure on the dashboard. Skipped while hidden, so a background tab
+    // costs nothing extra.
+    const onReturn = () => {
+      if (document.visibilityState !== 'hidden') run();
+    };
+
     run();
     const timer = window.setInterval(run, REFRESH_MS);
+    window.addEventListener('focus', onReturn);
+    document.addEventListener('visibilitychange', onReturn);
 
     return () => {
       cancelled = true;
       window.clearInterval(timer);
+      window.removeEventListener('focus', onReturn);
+      document.removeEventListener('visibilitychange', onReturn);
     };
   }, [load]);
 

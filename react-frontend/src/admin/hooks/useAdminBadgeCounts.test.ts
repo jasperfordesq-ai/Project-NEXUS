@@ -82,4 +82,35 @@ describe('useAdminBadgeCounts', () => {
     await waitFor(() => expect(mockGet).toHaveBeenCalled());
     expect(result.current.counts).toEqual({});
   });
+
+  it('re-checks as soon as the admin comes back to the window', async () => {
+    // Reported 17 Oct 2026: messages were reviewed in another tab and the
+    // dashboard still showed the old "Messages to review" figure on return,
+    // because the only re-check was the once-a-minute timer.
+    mockGet.mockResolvedValueOnce({ success: true, data: { unreviewed_messages: 7 } });
+
+    const { result } = renderHook(() => useAdminBadgeCounts());
+    await waitFor(() => expect(result.current.counts.unreviewed_messages).toBe(7));
+
+    mockGet.mockResolvedValueOnce({ success: true, data: { unreviewed_messages: 0 } });
+    window.dispatchEvent(new Event('focus'));
+
+    await waitFor(() => expect(result.current.counts.unreviewed_messages).toBe(0));
+  });
+
+  it('does not re-check while the tab is hidden', async () => {
+    const { unmount } = renderHook(() => useAdminBadgeCounts());
+    await waitFor(() => expect(mockGet).toHaveBeenCalledTimes(1));
+
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(mockGet).toHaveBeenCalledTimes(1);
+
+    visibility.mockReturnValue('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await waitFor(() => expect(mockGet).toHaveBeenCalledTimes(2));
+
+    visibility.mockRestore();
+    unmount();
+  });
 });
