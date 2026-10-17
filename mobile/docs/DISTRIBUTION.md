@@ -1,6 +1,6 @@
 # Timebank Global mobile distribution
 
-Last reviewed: 2026-09-25
+Last reviewed: 2026-10-17
 
 This file records the release identity and distribution decisions for the native mobile app.
 
@@ -220,16 +220,20 @@ It is not fine for anything else:
 
 ## Sending an update, and taking one back
 
-🔴 **Over-the-air updates are switched off (owner decision, 2026-09-25).** They were not
-code-signed, and EAS update signing needs a paid Expo plan, so the owner chose to ship
-every app change as a store build instead. `app.json` has `updates.enabled: false` and
-`checkAutomatically: "NEVER"`, `npm run verify:release` fails if either is changed without
-a `codeSigningCertificate`, and `scripts/publish-update.mjs` refuses to publish (exit 79).
-Store builds made before the switch (version code 12 and earlier) still check for updates
-until members install a newer build, so no update may be published to them either;
-`scripts/rollback-update.mjs` remains available to withdraw one published by mistake. The
-rest of this section describes the mechanism as it was, for reference and for any future
-decision to re-enable it with signing.
+🔴 **Over-the-air updates are ON again, unsigned (owner decision, 2026-10-17, permanent).**
+They were switched off on 2026-09-25 (security finding F-201: updates are not code-signed,
+and EAS update signing needs the Production plan). The owner reversed that and accepted
+the risk. `app.json` has `updates.enabled: true` and `checkAutomatically: "ON_LOAD"`, and
+`npm run verify:release` now requires that. The control is the Expo account itself:
+two-factor sign-in, the owner as the only publisher, and no long-lived access tokens.
+
+🔴 **Builds made while updates were off can never take one** — they have
+`EXUpdatesEnabled false` baked in: Android 1.9.0 (code 22) back to code 13, and iOS 1.10.0
+build 8. Updates reach members only from the next store build on each platform.
+`publish-update.mjs` compares the native surface with `live-store-build.json`, which
+records Android only; add an `ios` record when the first update-capable iPhone build goes
+live, and check BOTH before publishing. The Free plan allows 1,000 monthly users who
+download an update (Android and iPhone together); Starter ($19/month) allows 3,000.
 
 🔴 **No over-the-air update had ever been published before 2026-09-10, and the build on
 Play could not have received one.** Opening the version code 8 bundle showed two faults:
