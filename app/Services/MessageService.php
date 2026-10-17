@@ -1075,14 +1075,48 @@ class MessageService
      */
     public static function markAsRead(int $partnerId, int $userId): int
     {
-        $marked = Message::query()
+        // Select first so the live receipt can carry the highest id read, and so
+        // an already-read thread (this runs on every thread GET) costs one indexed
+        // lookup and zero broadcasts.
+        $ids = Message::query()
             ->where('sender_id', $partnerId)
             ->where('receiver_id', $userId)
             ->where('is_read', false)
             ->where('is_federated', 0)
-            ->update(['is_read' => true, 'read_at' => now()]);
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            self::markConversationNotificationsRead($partnerId, $userId);
+
+            return 0;
+        }
+
+        $readAt = now();
+        $marked = Message::query()
+            ->whereIn('id', $ids->all())
+            ->where('receiver_id', $userId)
+            ->update(['is_read' => true, 'read_at' => $readAt]);
 
         self::markConversationNotificationsRead($partnerId, $userId);
+
+        try {
+            event(new \App\Events\MessageRead(
+                tenantId: (int) tenant_id(),
+                readerId: $userId,
+                senderId: $partnerId,
+                upToMessageId: (int) $ids->max(),
+                readCount: (int) $marked,
+                readAt: $readAt->toISOString(),
+                readerUnreadMessages: self::getUnreadCount($userId),
+            ));
+        } catch (\Throwable $e) {
+            // The receipt is a courtesy; the read itself is already committed.
+            Log::warning('MessageRead broadcast failed', [
+                'reader_id' => $userId,
+                'partner_id' => $partnerId,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return $marked;
     }
