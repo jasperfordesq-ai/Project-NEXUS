@@ -405,6 +405,19 @@ describe('PageBuilder — create mode (id=undefined)', () => {
       design_json: null,
     }));
   });
+
+  it('previews an unsaved draft in a modal on the create screen', async () => {
+    const user = userEvent.setup();
+    renderPageBuilder();
+    const editor = await screen.findByTestId('rich-text-editor');
+    await user.type(editor, 'Draft words here');
+
+    await user.click(screen.getByRole('button', { name: 'Preview' }));
+
+    const frame = await screen.findByTitle('Preview');
+    expect(frame.getAttribute('srcdoc')).toContain('Draft words here');
+    expect(mockAdminPages.create).not.toHaveBeenCalled();
+  });
 });
 
 describe('PageBuilder — edit mode (id=3)', () => {
@@ -523,5 +536,41 @@ describe('PageBuilder — edit mode (id=3)', () => {
 
     await waitFor(() => expect(mockAdminPages.update).toHaveBeenCalled());
     expect(mockAdminPages.update).toHaveBeenCalledWith(3, expect.objectContaining({ slug: 'existing-page' }));
+  });
+
+  it('offers the live page link only for a published page in edit mode', async () => {
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Live', slug: 'live-page', content: '<p>x</p>', content_format: 'richtext', status: 'published', menu_location: 'about' },
+    });
+    const first = renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    expect(await screen.findByRole('button', { name: 'Open live page' })).toBeInTheDocument();
+    first.unmount();
+
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Draft', slug: 'draft-page', content: '<p>x</p>', content_format: 'richtext', status: 'draft', menu_location: 'about' },
+    });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    expect(screen.getByRole('button', { name: 'Preview' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open live page' })).not.toBeInTheDocument();
+  });
+
+  it('shows the server message when the page is refused for linking to member profiles', async () => {
+    const user = userEvent.setup();
+    mockAdminPages.get.mockResolvedValueOnce({
+      success: true,
+      data: { title: 'Meet Jo', slug: 'meet-jo', content: '<p>x</p>', content_format: 'richtext', status: 'published', menu_location: 'about' },
+    });
+    mockAdminPages.update.mockResolvedValueOnce({
+      success: false,
+      errors: [{ field: 'content', message: 'This page links to member profiles, which pages may not do.' }],
+    });
+    renderPageBuilder();
+    await screen.findByTestId('rich-text-editor');
+    await user.click(screen.getByRole('button', { name: /create|save/i }));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('This page links to member profiles, which pages may not do.'));
   });
 });

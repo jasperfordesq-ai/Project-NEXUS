@@ -238,6 +238,7 @@ return [
     'slug_reserved'                        => 'The slug ":slug" is reserved and cannot be used for a page.',
     'slug_reserved_short'                  => 'The slug ":slug" is reserved.',
     'slug_invalid' => 'Web address may only contain lowercase letters, numbers and hyphens.',
+    'page_links_member_profiles' => 'This page links to member profiles, which pages may not do. Remove the member links and save again.',
     'only_draft_can_be_edited'             => 'Only draft versions can be edited',
     'only_draft_can_be_deleted'            => 'Only draft versions can be deleted',
     'version_does_not_belong'              => 'Version does not belong to this document',

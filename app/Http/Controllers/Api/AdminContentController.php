@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use App\Core\TenantContext;
 use App\Models\ActivityLog;
 use App\Models\Page;
+use App\Services\PageContentPolicy;
 use App\Services\RedisCache;
 use App\Services\PrerenderContentInvalidator;
 use App\Services\StripeSubscriptionService;
@@ -144,6 +145,15 @@ class AdminContentController extends BaseApiController
             return $designJson;
         }
 
+        // A page that links to member profiles is hidden from the public, so refuse it here.
+        if (PageContentPolicy::linksToMemberProfiles([
+            'content' => (string) $content,
+            'design_json' => $contentFormat === 'builder' ? $designJson : null,
+            'tenant_id' => $tenantId,
+        ])) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.page_links_member_profiles'), 'content', 422);
+        }
+
         $isPublished = ($status === 'published') ? 1 : 0;
         $slug = $this->ensureUniqueSlug('pages', $slug, $tenantId);
 
@@ -227,6 +237,17 @@ class AdminContentController extends BaseApiController
                 return $designJson;
             }
             $data['design_json'] = $designJson;
+        }
+        if (array_key_exists('content', $data) || array_key_exists('design_json', $data)) {
+            // A page that links to member profiles is hidden from the public, so refuse it here.
+            // No id is passed: stored blocks the editor cannot remove must not lock the page.
+            if (PageContentPolicy::linksToMemberProfiles([
+                'content' => (string) ($data['content'] ?? ''),
+                'design_json' => $data['design_json'] ?? null,
+                'tenant_id' => $tenantId,
+            ])) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.page_links_member_profiles'), 'content', 422);
+            }
         }
         if (isset($input['status'])) {
             if (!in_array($input['status'], ['draft', 'published'], true)) {

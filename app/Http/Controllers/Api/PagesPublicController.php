@@ -6,9 +6,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\PageContentPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use stdClass;
 
 /**
  * PagesPublicController — Eloquent-powered public CMS page endpoint.
@@ -52,7 +52,7 @@ class PagesPublicController extends BaseApiController
         // CMS pages are intentionally public editorial content. They must not,
         // however, become an alternate anonymous member directory. Fail closed
         // for legacy dynamic member blocks and direct account-profile links.
-        if ($this->containsAccountDerivedMemberSurface($page)) {
+        if (PageContentPolicy::linksToMemberProfiles($page)) {
             return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.page_not_found'), null, 404);
         }
 
@@ -66,56 +66,5 @@ class PagesPublicController extends BaseApiController
             'created_at' => $page->created_at,
             'updated_at' => $page->updated_at,
         ]);
-    }
-
-    /**
-     * Detect structural references to member-account data without attempting
-     * to infer identity from ordinary editorial names or testimonials.
-     */
-    private function containsAccountDerivedMemberSurface(stdClass $page): bool
-    {
-        $content = (string) ($page->content ?? '') . "\n" . (string) ($page->design_json ?? '');
-        $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $content = rawurldecode(str_replace(['\\/', '\\"', "\\'"], ['/', '"', "'"], $content));
-
-        if (preg_match(
-            '~/(?:users?|members?|profile)/(?:[0-9]+|[0-9a-f]{8}-[0-9a-f-]{27,})(?=[/?#"\'\\\s<]|$)~i',
-            $content
-        ) === 1) {
-            return true;
-        }
-
-        if (preg_match(
-            '~(?:\bmembers-grid\b|pb-member-(?:card|name|avatar|bio)|data-(?:user|member)-id)~i',
-            $content
-        ) === 1) {
-            return true;
-        }
-
-        preg_match_all(
-            '~(?:src|avatar(?:_url)?)["\']?\s*[:=]\s*["\']([^"\']{8,2048})["\']~i',
-            $content,
-            $embeddedImages
-        );
-        $imageUrls = array_values(array_unique(array_filter(
-            array_map('trim', $embeddedImages[1] ?? []),
-            static fn (string $url): bool => $url !== ''
-        )));
-
-        // Compare only the finite set of embedded image candidates. This keeps
-        // the public read fail-closed without running LOCATE over every user row.
-        $containsAccountAvatar = $imageUrls !== [] && DB::table('users')
-            ->where('tenant_id', (int) $page->tenant_id)
-            ->whereIn('avatar_url', array_slice($imageUrls, 0, 100))
-            ->exists();
-
-        if ($containsAccountAvatar) {
-            return true;
-        }
-
-        return DB::table('page_blocks')
-            ->where('page_id', (int) $page->id)
-            ->where('block_type', 'members-grid')
-            ->exists();
     }
 }

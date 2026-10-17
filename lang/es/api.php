@@ -145,6 +145,7 @@ return [
     'slug_reserved' => 'El slug ":slug" está reservado y no se puede utilizar para una página.',
     'slug_reserved_short' => 'El slug ":slug" está reservado.',
     'slug_invalid' => 'La dirección web solo puede contener letras minúsculas, números y guiones.',
+    'page_links_member_profiles' => 'Esta página enlaza a perfiles de miembros, lo que las páginas no pueden hacer. Elimine los enlaces a miembros y guarde de nuevo.',
     'only_draft_can_be_edited' => 'Solo se pueden editar versiones borrador',
     'only_draft_can_be_deleted' => 'Solo se pueden eliminar versiones borrador',
     'version_does_not_belong' => 'La versión no pertenece a este documento.',

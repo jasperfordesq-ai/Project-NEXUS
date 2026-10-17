@@ -145,6 +145,7 @@ return [
     'slug_reserved' => 'Le slug ":slug" est réservé et ne peut pas être utilisé pour une page.',
     'slug_reserved_short' => 'Le slug ":slug" est réservé.',
     'slug_invalid' => 'L\'adresse web ne peut contenir que des lettres minuscules, des chiffres et des tirets.',
+    'page_links_member_profiles' => 'Cette page renvoie vers des profils de membres, ce que les pages n’ont pas le droit de faire. Supprimez les liens vers les membres, puis enregistrez à nouveau.',
     'only_draft_can_be_edited' => 'Seules les versions brouillon peuvent être modifiées',
     'only_draft_can_be_deleted' => 'Seules les versions brouillon peuvent être supprimées',
     'version_does_not_belong' => 'La version n\'appartient pas à ce document',

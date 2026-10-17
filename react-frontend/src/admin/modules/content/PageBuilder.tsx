@@ -11,6 +11,7 @@ import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Save from 'lucide-react/icons/save';
 import Menu from 'lucide-react/icons/menu';
 import ExternalLink from 'lucide-react/icons/external-link';
+import Eye from 'lucide-react/icons/eye';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
 import { useTenant, useToast, useAuth } from '@/contexts';
@@ -18,9 +19,11 @@ import { adminPages } from '../../api/adminApi';
 import type { ApiResponse } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { useTranslation } from 'react-i18next';
+import { BuilderPreviewModal } from '../../components/BuilderPreviewModal';
 import { PageContentEditor } from '../../components/PageContentEditor';
 import type { PageContentEditorHandle } from '../../components/PageContentEditor';
 import type { ContentFormat } from '../../components/contentFormat';
+import { sanitizeCustomPageHtml } from '@/lib/sanitize';
 /**
  * Page Builder
  * Create or edit a CMS page with real API integration.
@@ -79,6 +82,22 @@ function describeThrownSaveFailure(err: unknown, fallback: string): { message: s
   return { message: fallback };
 }
 
+/** Escape plain text and wrap each paragraph in <p>, as the public page does. */
+function plainTextToHtml(text: string): string {
+  const escape = (v: string) => v
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  return text
+    .split(/\n{2,}/)
+    .map((para) => para.trim())
+    .filter(Boolean)
+    .map((para) => `<p>${escape(para).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
 export function PageBuilder() {
   const { t } = useTranslation('admin_content');
   const { id } = useParams<{ id: string }>();
@@ -107,6 +126,7 @@ export function PageBuilder() {
   const [saving, setSaving] = useState(false);
   const [slugTouched, setSlugTouched] = useState(isEdit);
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
   useEffect(() => {
     if (isEdit) {
@@ -137,6 +157,18 @@ export function PageBuilder() {
 
   const handleChange = (field: keyof PageFormData, value: string | boolean | number | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Show what would be saved (the latest editor content, flushed the way saving does) without saving.
+  const handlePreview = () => {
+    const flushed = contentEditorRef.current?.flush();
+    const content = flushed ? flushed.content : formData.content;
+    const format = flushed ? flushed.content_format : formData.content_format;
+    setPreviewHtml(
+      format === 'plaintext'
+        ? plainTextToHtml(content)
+        : sanitizeCustomPageHtml(content),
+    );
   };
 
   const handleSave = async () => {
@@ -204,6 +236,18 @@ export function PageBuilder() {
 
   return (
     <div>
+      <BuilderPreviewModal
+        isOpen={previewHtml !== null}
+        onClose={() => setPreviewHtml(null)}
+        html={previewHtml ?? ''}
+        t={t}
+        labels={{
+          title: t('content.preview_title'),
+          deviceLabel: t('content.preview_device_label'),
+          desktop: t('content.preview_desktop'),
+          mobile: t('content.preview_mobile'),
+        }}
+      />
       <PageHeader
         title={isEdit ? t('content.edit_pages') : t('content.pages_admin_title')}
         description={t('content.pages_admin_desc')}
@@ -217,23 +261,31 @@ export function PageBuilder() {
             >
               {t('content.back')}
             </Button>
-            {isEdit && formData.slug && (
+            <Button
+              variant="tertiary"
+              startContent={<Eye size={16} />}
+              isDisabled={saving}
+              onPress={handlePreview}
+            >
+              {t('content.preview_draft')}
+            </Button>
+            {isEdit && formData.slug && formData.status === 'published' && (
               <Button
                 variant="tertiary"
                 startContent={<ExternalLink size={16} />}
                 isDisabled={saving}
                 onPress={() => {
                   // Use tenant.slug (from TenantContext) or user.tenant_slug (from auth JWT)
-                  // so the preview URL always includes the tenant prefix, even when the admin
+                  // so the URL always includes the tenant prefix, even when the admin
                   // panel is accessed directly via /admin without a tenant slug in the URL.
                   const slug = tenant?.slug || user?.tenant_slug;
-                  const previewUrl = slug
+                  const liveUrl = slug
                     ? `/${slug}/page/${formData.slug}`
                     : `/page/${formData.slug}`;
-                  window.open(previewUrl, '_blank');
+                  window.open(liveUrl, '_blank');
                 }}
               >
-                {t('content.preview')}
+                {t('content.open_live_page')}
               </Button>
             )}
           </div>

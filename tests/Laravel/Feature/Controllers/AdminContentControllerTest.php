@@ -225,6 +225,37 @@ class AdminContentControllerTest extends TestCase
         $this->assertStringStartsWith('about', (string) $response->json('data.slug'));
     }
 
+    public function test_create_page_rejects_content_linking_to_member_profiles(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/pages', [
+            'title' => 'Meet Jo',
+            'slug' => 'meet-jo',
+            'content' => '<a href="/profile/12">Jo</a>',
+            'status' => 'published',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'content');
+        $this->assertDatabaseMissing('pages', ['slug' => 'meet-jo', 'tenant_id' => $this->testTenantId]);
+    }
+
+    public function test_update_page_rejects_content_linking_to_member_profiles(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $created = $this->apiPost('/v2/admin/pages', ['title' => 'Clean Page', 'slug' => 'clean-page-x', 'status' => 'draft']);
+        $id = (int) $created->json('data.id');
+
+        $response = $this->apiPut("/v2/admin/pages/{$id}", ['content' => '<a href="/members/7">Jo</a>']);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'content');
+    }
+
     public function test_update_page_rejects_a_slug_with_spaces(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

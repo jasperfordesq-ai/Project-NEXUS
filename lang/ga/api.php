@@ -145,6 +145,7 @@ return [
     'slug_reserved' => 'Tá an seilide ":slug" in áirithe agus ní féidir é a úsáid le haghaidh leathanach.',
     'slug_reserved_short' => 'Tá an seilide ":slug" in áirithe.',
     'slug_invalid' => 'Ní féidir ach litreacha beaga, uimhreacha agus fleiscíní a bheith i seoladh gréasáin.',
+    'page_links_member_profiles' => 'Tá nasc ar an leathanach seo le próifílí comhaltaí, rud nach gceadaítear do leathanaigh. Bain na naisc chuig comhaltaí agus sábháil arís.',
     'only_draft_can_be_edited' => 'Ní féidir ach dréachtleaganacha a chur in eagar',
     'only_draft_can_be_deleted' => 'Ní féidir ach dréachtleaganacha a scriosadh',
     'version_does_not_belong' => 'Ní bhaineann an leagan leis an doiciméad seo',

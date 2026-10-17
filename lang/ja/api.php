@@ -145,6 +145,7 @@ return [
     'slug_reserved' => 'スラグ「:slug」は予約されているため、ページには使用できません。',
     'slug_reserved_short' => 'スラグ「:slug」は予約されています。',
     'slug_invalid' => 'ウェブアドレスに使用できるのは、小文字の英字、数字、ハイフンのみです。',
+    'page_links_member_profiles' => 'このページにはメンバープロフィールへのリンクが含まれていますが、ページではメンバープロフィールへのリンクは使えません。メンバーへのリンクを削除してから、もう一度保存してください。',
     'only_draft_can_be_edited' => '編集できるのは下書きバージョンのみです',
     'only_draft_can_be_deleted' => '削除できるのは下書きバージョンのみです',
     'version_does_not_belong' => 'バージョンはこのドキュメントに属していません',

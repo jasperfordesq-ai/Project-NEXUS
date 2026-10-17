@@ -145,6 +145,7 @@ return [
     'slug_reserved' => 'Ślimak „:slug” jest zarezerwowany i nie można go użyć na stronie.',
     'slug_reserved_short' => 'Ślimak „:slug” jest zarezerwowany.',
     'slug_invalid' => 'Adres internetowy może zawierać tylko małe litery, cyfry i myślniki.',
+    'page_links_member_profiles' => 'Ta strona zawiera odnośniki do profili członków, na co strony nie pozwalają. Usuń odnośniki do członków i zapisz ponownie.',
     'only_draft_can_be_edited' => 'Można edytować tylko wersje robocze',
     'only_draft_can_be_deleted' => 'Można usuwać tylko wersje robocze',
     'version_does_not_belong' => 'Wersja nie należy do tego dokumentu',
