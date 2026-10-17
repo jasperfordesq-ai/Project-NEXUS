@@ -59,9 +59,11 @@ Listeners (both implement `ShouldQueue`):
 - `app/Listeners/NotifyMessageReceived.php` — sends in-app bell, optional email, and push notification to the recipient in their `preferred_language`.
 - `app/Listeners/CopyMessageForBrokerReview.php` — evaluates the broker copy criteria and writes to `broker_message_copies` when matched.
 
-Event:
+Events:
 
-- `app/Events/MessageSent.php` — fired by `MessageService::send()`; implements `ShouldBroadcast`, broadcasts to the Pusher private channel `tenant.{tenantId}.conversation.{conversationId}` with event name `message.sent`.
+- `app/Events/MessageSent.php` — fired by `MessageService::send()` through `MessageDeliveryOutboxService`; implements `ShouldBroadcast` and goes out as `new-message` on the recipient's user channel and the pair's chat channel (see "Real-time delivery via Pusher").
+- `app/Events/MessageRead.php` — fired by `MessageService::markAsRead()` when at least one message changed to read; goes out as `message.read` on the sender's and the reader's user channels.
+- `app/Support/Messaging/MessagePairId.php` — the one place the synthetic one-to-one `conversation_id` (crc32 of `{min}-{max}`) and the `chat.{min}-{max}` channel suffix are derived.
 
 Models and tables:
 
@@ -195,17 +197,73 @@ After upload, `TranscriptionService::transcribe()` runs non-blocking. On success
 
 ## Real-time delivery via Pusher
 
-`MessageSent` (in `app/Events/MessageSent.php`) implements `ShouldBroadcast` and is dispatched by the shared `MessageService` persistence path for text, attachment, and voice messages. It broadcasts to the Pusher private channel:
+Corrected 2026-10-17. Until then `MessageSent` went out as `message.sent` on `private-tenant.{T}.conversation.{crc32}` — a channel `PusherService::canAccessPrivateChannel()` grants only to members with a `conversation_participants` row, which one-to-one chats never write, and that neither client subscribed to. No live one-to-one event ever reached the web or the mobile app; the web only looked live because it polls every 30 seconds. The contract below is the one both shipped clients bind.
 
+### Channels and who may subscribe
+
+Authorisation is `POST /api/pusher/auth` (`PusherController::auth()` → `PusherService::canAccessPrivateChannel()`), under `auth:sanctum`, so the mobile Bearer token works. All channel names embed the tenant id and are refused for any other tenant.
+
+| Channel | Granted to | Used for |
+| --- | --- | --- |
+| `private-tenant.{T}.user.{N}` | member N only | `new-message`, `message.read`, `typing`, notifications |
+| `private-tenant.{T}.chat.{A}-{B}` (smaller id first) | members A and B | `new-message` echo for a sender's other tabs/devices |
+| `private-tenant.{T}.conversation.{id}` | members with a `conversation_participants` row | group conversations only; unreachable for one-to-one chats |
+
+Clients read the connection settings at runtime: the web from `GET /v2/realtime/config`, the mobile app from `GET /api/pusher/config` (which also returns the member's user channel name). Both are empty/disabled when `PUSHER_APP_KEY` is unset.
+
+### `new-message`
+
+Dispatched by `MessageDeliveryOutboxService` right after the row commits (and by the scheduled outbox consumer if that immediate dispatch failed). `MessageSent` broadcasts, queued, on the recipient's user channel and on the pair's chat channel — never on the sender's own user channel, because the installed mobile build bumps its unread badge for any `new-message` there that no visible thread acknowledges.
+
+One payload satisfies both clients: the flat keys the web handler reads, plus the nested `{conversation_id, message}` the mobile validator requires.
+
+```json
+{
+  "id": 123, "sender_id": 5, "receiver_id": 9,
+  "body": "hello", "created_at": "2026-10-17T10:00:00.000000Z", "timestamp": 1760695200,
+  "conversation_id": 2874163920,
+  "message": {
+    "id": 123, "body": "hello", "sender_id": 5, "receiver_id": 9,
+    "sender": { "id": 5, "name": "Anna", "first_name": "Anna", "avatar_url": "/storage/..." },
+    "created_at": "2026-10-17T10:00:00.000000Z",
+    "is_own": false, "is_read": false, "is_edited": false, "is_deleted": false,
+    "is_voice": false, "audio_url": null, "audio_duration": null,
+    "reactions": {},
+    "attachments": [ { "id": 7, "url": "/api/v2/messages/123/attachments/7", "type": "image", "name": "x.png", "size": 1234, "mime_type": "image/png" } ],
+    "listing_id": null, "context_type": null, "context_id": null,
+    "is_truncated": false
+  }
+}
 ```
-private-tenant.{tenantId}.conversation.{conversationId}
+
+- `conversation_id` is `MessagePairId::of(sender, receiver)` — a stable crc32 of the member-id pair, **not** a database id (one-to-one messages have `messages.conversation_id = null`).
+- `is_own` is the recipient's perspective. A client that can receive the chat-channel echo derives own-ness from `sender_id`.
+- The sender is trimmed to four fields and surnamed per the member-visibility rule (F-084, F-085); never a user row. Attachments are mapped only from the relation the outbox eager-loads (tenant-filtered), because `broadcastWith()` runs on the queue worker, where no tenant context exists.
+- Bodies longer than 6 KB are cut and flagged `is_truncated: true` (Pusher's event limit is 10 KB); the web then re-polls for the canonical row.
+
+### `message.read`
+
+`MessageService::markAsRead()` selects the unread ids first; when none changed it broadcasts nothing (it runs on every thread GET). Otherwise `MessageRead` goes out, queued, on the sender's user channel (their ticks turn blue) and on the reader's user channel (their other devices clear their badge):
+
+```json
+{ "reader_id": 9, "sender_id": 5, "conversation_id": 2874163920, "up_to_message_id": 123,
+  "read_count": 3, "read_at": "2026-10-17T10:00:05.000000Z", "reader_unread_messages": 1, "timestamp": 1760695205 }
 ```
 
-with the event name `message.sent`. The broadcast payload includes `id`, `body`, `sender_id`, `created_at`, `is_voice`, and `audio_url`. Full user objects are excluded to avoid leaking email, phone, or other private fields.
+Clients flip only their own messages with `id <= up_to_message_id`, which is race-safe when the sender posts again before the event arrives. This is a two-state model by decision: sent / read. There is no "delivered" state and no column for one. A `direction=newer` poll with a cursor never marks read and therefore never broadcasts.
 
-Typing indicators use a separate path: `POST /api/v2/messages/typing` triggers `MessageService::setTypingIndicator()`, which calls `Pusher::trigger()` directly on the private channel `private-tenant.{tenantId}.user.{recipientId}`. Rate limit: 60 requests per 60 seconds.
+### `typing`
 
-Pusher channel authorization is handled by `PusherController::auth()` at `/pusher/auth`. The React client fetches Pusher connection credentials from `GET /api/v2/pusher/config`.
+`POST /api/v2/messages/typing` (60 per minute) → `MessageService::setTypingIndicator()` → `PusherService::trigger()` on the **recipient's user channel**, synchronously: `{ "user_id": 5, "is_typing": true, "timestamp": 1760695200 }`. There is no server-side stop; the client sends `is_typing: false` itself.
+
+### What each client binds
+
+| Client | `new-message` | `message.read` | `typing` |
+| --- | --- | --- | --- |
+| Web (`react-frontend/src/contexts/PusherContext.tsx`) | user channel and chat channel, deduplicated by id | user channel | user channel |
+| Mobile (`mobile/lib/context/RealtimeContext.tsx`) | user channel | user channel | user channel |
+
+Not broadcast: message edits, deletes and reactions (`message.updated`, `message.deleted`, `message.reaction` are reserved names for a later change — the web's `direction=newer` poll cannot pick those up either, so they need their own design), and group-conversation messages (`GroupConversationService` does not dispatch `MessageSent`).
 
 The `NotifyMessageReceived` listener runs asynchronously on the queue and sends:
 
@@ -309,7 +367,7 @@ For full federation operational notes, partner onboarding, and the external part
 
 | Failure | Effect | Recovery |
 | --- | --- | --- |
-| Pusher unavailable at send time | `MessageSent` broadcast is caught and logged as a warning (`MessageSent broadcast failed`). The message is still persisted and the HTTP 201 response is returned. The recipient misses the real-time event but can poll or refresh. | No action needed. The message is durable. Pusher will reconnect on the next page load. |
+| Pusher unavailable at send time | `MessageSent` and `MessageRead` implement `ShouldRescue`, so a failed broadcast is reported, not thrown. The message is still persisted and the HTTP 201 response is returned. The web falls back to its 30-second poll; the mobile app catches up on the next focus or push. | No action needed. The message is durable. Pusher reconnects on the next page load or app resume. |
 | `NotifyMessageReceived` listener failure | Logged to `Log::error`. The message is already persisted. | The listener has `$tries = 1`. If the queue worker is healthy and the failure was transient, the job is dead. Check `failed_jobs` and re-dispatch if needed. |
 | `CopyMessageForBrokerReview` listener failure | Logged to `Log::error`. The original message is unaffected. The broker copy may be missing. | Check `failed_jobs`. Re-dispatch manually. The idempotency guard (`firstOrCreate`) prevents a double-copy on re-dispatch. |
 | Voice transcription failure | Logged as `Log::warning('Voice message transcription failed')`. The voice message is sent successfully without a transcript. | No action needed. Transcription can be re-attempted manually by updating the `transcript` column directly if required. |
