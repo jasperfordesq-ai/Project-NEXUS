@@ -56,7 +56,6 @@ const inlineStyleExceptionGroups = [
     reason: 'Tenant, administrator, or member-selected colors must be rendered from persisted user data.',
     files: {
       'src/admin/modules/categories/CategoriesAdmin.tsx': 3,
-      'src/admin/modules/groups/GroupOrganization.tsx': 1,
       'src/admin/modules/groups/GroupTypes.tsx': 1,
       'src/admin/modules/system/settings/sections/HeaderColorsSection.tsx': 1,
       'src/components/branding/TenantLogo.tsx': 1,
