@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'Een of meer uitdagingsvelden zijn ongeldig',
     'segment_not_found' => 'Segment niet gevonden',
     'webhook_not_found' => 'Webhook niet gevonden',
+    'webhook_unknown_event' => 'Onbekende gebeurtenis ":event". Het platform verstuurt alleen: :events',
     'subscriber_not_found' => 'Abonnee niet gevonden',
     'deliverable_not_found' => 'Leverbaar niet gevonden',
     'insurance_cert_not_found' => 'Verzekeringscertificaat niet gevonden',

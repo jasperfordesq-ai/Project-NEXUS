@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'واحد أو أكثر من حقول الاختبار غير صالحة',
     'segment_not_found' => 'لم يتم العثور على المقطع',
     'webhook_not_found' => 'لم يتم العثور على الرد التلقائي على الويب',
+    'webhook_unknown_event' => 'حدث غير معروف ":event". لا ترسل المنصة سوى: :events',
     'subscriber_not_found' => 'لم يتم العثور على المشترك',
     'deliverable_not_found' => 'لم يتم العثور على التسليم',
     'insurance_cert_not_found' => 'لم يتم العثور على شهادة التأمين',

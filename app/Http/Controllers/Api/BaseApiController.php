@@ -916,6 +916,57 @@ abstract class BaseApiController extends Controller
     }
 
     /**
+     * Require a god account: the `users.is_god` column, read from the
+     * database (not the role string, not a session flag).
+     *
+     * @return int User ID
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException if not god
+     */
+    protected function requireGod(): int
+    {
+        $userId = $this->requireAuth();
+
+        if (!\App\Models\User::isGod($userId)) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->error(__('api.god_level_access_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
+            );
+        }
+
+        return $userId;
+    }
+
+    /**
+     * Require BOTH god and platform super admin (`is_god` AND `is_super_admin`,
+     * the owner's definition of a god account, AGENTS.md "Authorisation").
+     *
+     * 🔴 Neither existing check gives this on its own: requirePlatformSuperAdmin()
+     * admits `is_god` alone, and requireGod() reads only `is_god`. So a god
+     * account that was never granted global super admin, or a platform super
+     * admin who is not god, must both be refused here. Use for the platform
+     * Integrations endpoints (outbound webhooks). The `super-admin` route
+     * middleware is only the outer fence; this is the gate.
+     *
+     * @return int User ID
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
+    protected function requireGodPlatformAdmin(): int
+    {
+        $userId = $this->requireGod();
+        $user = $this->resolveUser();
+
+        $isPlatformSuperAdmin = ($user->is_super_admin ?? false)
+            || (($user->role ?? 'member') === 'super_admin');
+
+        if (!$isPlatformSuperAdmin) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->error(__('api.super_admin_required'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')
+            );
+        }
+
+        return $userId;
+    }
+
+    /**
      * Non-throwing variant of requirePlatformSuperAdmin(): true only for a
      * PLATFORM-level super admin (is_super_admin / is_god / role), explicitly
      * NOT is_tenant_super_admin. Use for branch decisions (e.g. cross-tenant

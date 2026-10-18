@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => '1 つ以上のチャレンジフィールドが無効です',
     'segment_not_found' => 'セグメントが見つかりません',
     'webhook_not_found' => 'Webhook が見つかりません',
+    'webhook_unknown_event' => '不明なイベント「:event」です。プラットフォームが送信するのは次のみです: :events',
     'subscriber_not_found' => '購読者が見つかりません',
     'deliverable_not_found' => '成果物が見つかりません',
     'insurance_cert_not_found' => '保険証が見つからない',

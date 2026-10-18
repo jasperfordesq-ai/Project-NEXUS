@@ -127,6 +127,7 @@ return [
     'challenge_field_invalid'      => 'One or more challenge fields are invalid',
     'segment_not_found'            => 'Segment not found',
     'webhook_not_found'            => 'Webhook not found',
+    'webhook_unknown_event'        => 'Unknown event ":event". The platform sends only: :events',
     'subscriber_not_found'         => 'Subscriber not found',
     'deliverable_not_found'        => 'Deliverable not found',
     'insurance_cert_not_found'     => 'Insurance certificate not found',

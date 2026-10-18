@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'Um ou mais campos de desafio são inválidos',
     'segment_not_found' => 'Segmento não encontrado',
     'webhook_not_found' => 'Webhook não encontrado',
+    'webhook_unknown_event' => 'Evento desconhecido ":event". A plataforma envia apenas: :events',
     'subscriber_not_found' => 'Assinante não encontrado',
     'deliverable_not_found' => 'Entrega não encontrada',
     'insurance_cert_not_found' => 'Certificado de seguro não encontrado',

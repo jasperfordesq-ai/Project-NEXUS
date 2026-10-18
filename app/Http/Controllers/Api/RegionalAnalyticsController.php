@@ -39,8 +39,13 @@ class RegionalAnalyticsController extends BaseApiController
     /**
      * Admit god accounts only. requireAdmin() runs first so a non-admin still
      * gets the ordinary admin refusal; an admin who is not a god is refused.
+     *
+     * Kept apart from BaseApiController::requireGod() (2026-10-18): this one
+     * also accepts `role = 'god'`, which the shared check deliberately does
+     * not, and changing an analytics gate's reach was out of that change's
+     * scope.
      */
-    private function requireGod(): int
+    private function requireGodForRegionalAnalytics(): int
     {
         $userId = $this->requireAdmin();
         $user = $this->resolveUser();
@@ -70,7 +75,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function overview(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
 
         $data = RegionalAnalyticsService::getOverviewSummary($tenantId);
@@ -84,7 +89,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function heatmap(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_90d');
 
@@ -99,7 +104,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function demandSupply(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_30d');
 
@@ -114,7 +119,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function demographics(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
 
         $data = RegionalAnalyticsService::getDemographics($tenantId);
@@ -128,7 +133,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function engagementTrends(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_12m');
 
@@ -143,7 +148,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function volunteerBreakdown(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_90d');
 
@@ -158,7 +163,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function helpRequests(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_30d');
 
@@ -173,7 +178,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function exportReport(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
         $period   = $this->resolvePeriod('last_30d');
 
@@ -188,7 +193,7 @@ class RegionalAnalyticsController extends BaseApiController
      */
     public function invalidateCache(): JsonResponse
     {
-        $this->requireGod();
+        $this->requireGodForRegionalAnalytics();
         $tenantId = $this->getTenantId();
 
         RegionalAnalyticsService::invalidateCache($tenantId);

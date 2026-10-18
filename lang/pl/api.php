@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'Co najmniej jedno pole wyzwania jest nieprawidłowe',
     'segment_not_found' => 'Nie znaleziono segmentu',
     'webhook_not_found' => 'Nie znaleziono webhooka',
+    'webhook_unknown_event' => 'Nieznane zdarzenie ":event". Platforma wysyła tylko: :events',
     'subscriber_not_found' => 'Nie znaleziono abonenta',
     'deliverable_not_found' => 'Nie znaleziono elementu dostawy',
     'insurance_cert_not_found' => 'Nie znaleziono certyfikatu ubezpieczenia',

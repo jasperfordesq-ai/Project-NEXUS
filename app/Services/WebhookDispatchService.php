@@ -8,17 +8,49 @@ namespace App\Services;
 
 use App\Core\TenantContext;
 use App\Support\OutboundUrlGuard;
+use App\Support\OutboundWebhookTransport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
  * WebhookDispatchService — Outbound webhook management and dispatch.
  *
- * Manages CRUD for outbound webhooks and dispatches events to registered URLs.
- * All queries are tenant-scoped via TenantContext::getId().
+ * One table, `outbound_webhooks`, per tenant. Events are dispatched from the
+ * code paths listed in ALLOWED_EVENTS; nothing else fires a webhook, so the
+ * admin page offers exactly that list.
+ *
+ * Management (list / create / update / delete / test / logs / rotate secret)
+ * is done from the platform-level Integrations page by a god account that is
+ * also a platform super admin (owner decision 2026-10-18), so every management
+ * method takes an explicit `$tenantId` and falls back to TenantContext only
+ * when none is given. dispatch() always uses the current tenant: it is called
+ * from inside the request that caused the event.
+ *
+ * Delivery goes through OutboundWebhookTransport (container-resolved) so tests
+ * can bind a fake and nothing reaches the network.
  */
 class WebhookDispatchService
 {
+    /**
+     * Every event the platform actually dispatches, and the only names a
+     * webhook may subscribe to. Twelve other volunteering event names were
+     * seeded into one community's webhook in 2026-03 and never fired by
+     * anything; they are deliberately not here.
+     *
+     * @var list<string>
+     */
+    public const ALLOWED_EVENTS = [
+        'shift.completed',                      // VolunteerCheckInController QR checkout
+        'job.vacancy.created',                  // JobVacancyService
+        'job.application.created',              // JobVacancyService
+        'job.application.status_changed',       // JobVacancyService
+        'job.application.bulk_status_changed',  // JobVacancyService
+        'job.offer.accepted',                   // JobOfferService
+    ];
+
+    /** Minutes to wait before the Nth retry: 5, 15, 45 … (×3 each time). */
+    private const RETRY_BASE_MINUTES = 5;
+
     /** Private/reserved IP ranges for SSRF protection */
     private const PRIVATE_IP_PREFIXES = ['127.', '10.', '0.', '169.254.', '::1', 'fc00:', 'fe80:'];
 
@@ -56,8 +88,34 @@ class WebhookDispatchService
         return false;
     }
 
+    private static function transport(): OutboundWebhookTransport
+    {
+        return app(OutboundWebhookTransport::class);
+    }
+
     /**
-     * Dispatch an event to all matching webhooks.
+     * Signed POST of one body to one webhook.
+     *
+     * @return array{http_code: int, response: string, error: string}
+     */
+    private static function deliver(object $webhook, string $body, string $eventType): array
+    {
+        $signature = hash_hmac('sha256', $body, $webhook->secret ?? '');
+
+        return self::transport()->post((string) $webhook->url, $body, [
+            'Content-Type: application/json',
+            'X-Webhook-Signature: ' . $signature,
+            'X-Webhook-Event: ' . $eventType,
+        ]);
+    }
+
+    private static function succeeded(int $httpCode): bool
+    {
+        return $httpCode >= 200 && $httpCode < 300;
+    }
+
+    /**
+     * Dispatch an event to all matching webhooks of the current tenant.
      */
     public static function dispatch(string $eventType, array $payload): void
     {
@@ -89,25 +147,8 @@ class WebhookDispatchService
                         'data' => $payload,
                     ]);
 
-                    $signature = hash_hmac('sha256', $body, $webhook->secret ?? '');
-
-                    $ch = curl_init($webhook->url);
-                    curl_setopt_array($ch, OutboundUrlGuard::curlOptionsForUrl($webhook->url) + [
-                        CURLOPT_POST => true,
-                        CURLOPT_POSTFIELDS => $body,
-                        CURLOPT_HTTPHEADER => [
-                            'Content-Type: application/json',
-                            'X-Webhook-Signature: ' . $signature,
-                            'X-Webhook-Event: ' . $eventType,
-                        ],
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_TIMEOUT => 10,
-                    ]);
-
-                    $response = curl_exec($ch);
-                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                    $error = curl_error($ch);
-                    curl_close($ch);
+                    $result = self::deliver($webhook, (string) $body, $eventType);
+                    $ok = self::succeeded($result['http_code']);
 
                     // Log the delivery attempt
                     DB::table('outbound_webhook_logs')->insert([
@@ -115,12 +156,15 @@ class WebhookDispatchService
                         'webhook_id' => $webhook->id,
                         'event_type' => $eventType,
                         'payload' => $body,
-                        'response_code' => $httpCode,
-                        'response_body' => substr($response ?: $error, 0, 1000),
-                        'status' => ($httpCode >= 200 && $httpCode < 300) ? 'success' : 'failed',
+                        'response_code' => $result['http_code'],
+                        'response_body' => substr($result['response'] !== '' ? $result['response'] : $result['error'], 0, 1000),
+                        'status' => $ok ? 'success' : 'failed',
+                        'attempt_count' => 1,
+                        'next_retry_at' => $ok ? null : now()->addMinutes(self::RETRY_BASE_MINUTES),
                         'created_at' => now(),
+                        'attempted_at' => now(),
                     ]);
-                    self::recordDeliveryOutcome((int) $tenantId, (int) $webhook->id, $httpCode >= 200 && $httpCode < 300);
+                    self::recordDeliveryOutcome((int) $tenantId, (int) $webhook->id, $ok);
                 } catch (\Exception $e) {
                     self::recordDeliveryOutcome((int) $tenantId, (int) $webhook->id, false);
                     DB::table('outbound_webhook_logs')->insert([
@@ -131,7 +175,10 @@ class WebhookDispatchService
                         'response_code' => 0,
                         'response_body' => $e->getMessage(),
                         'status' => 'failed',
+                        'attempt_count' => 1,
+                        'next_retry_at' => now()->addMinutes(self::RETRY_BASE_MINUTES),
                         'created_at' => now(),
+                        'attempted_at' => now(),
                     ]);
                 }
             }
@@ -140,9 +187,6 @@ class WebhookDispatchService
         }
     }
 
-    /**
-     * Get all webhooks for the current tenant.
-     */
     /**
      * Keep outbound_webhooks.failure_count honest: +1 per failed delivery,
      * back to 0 (and last_triggered_at stamped) on a successful one. The admin
@@ -164,9 +208,13 @@ class WebhookDispatchService
         }
     }
 
-    public static function getWebhooks(): array
+    /**
+     * All webhooks of a tenant, WITHOUT the signing secret: it is shown once,
+     * when created or rotated, and never listed afterwards.
+     */
+    public static function getWebhooks(?int $tenantId = null): array
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         try {
             return DB::table('outbound_webhooks')
@@ -175,6 +223,7 @@ class WebhookDispatchService
                 ->get()
                 ->map(function ($row) {
                     $row = (array) $row;
+                    unset($row['secret']);
                     $row['events'] = json_decode($row['events'] ?? '[]', true);
                     return $row;
                 })
@@ -186,13 +235,14 @@ class WebhookDispatchService
     }
 
     /**
-     * Create a new webhook.
+     * Create a new webhook. The returned array carries the secret — the only
+     * time it is handed out, so the receiving system can be configured.
      *
      * @throws \InvalidArgumentException
      */
-    public static function createWebhook(int $userId, array $data): array
+    public static function createWebhook(int $userId, array $data, ?int $tenantId = null): array
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         // Validate
         if (empty($data['name'])) {
@@ -206,11 +256,12 @@ class WebhookDispatchService
             throw new \InvalidArgumentException('Webhook URL must not target private or internal IP addresses.');
         }
         if (empty($data['secret'])) {
-            $data['secret'] = bin2hex(random_bytes(24));
+            $data['secret'] = self::generateSecret();
         }
         if (empty($data['events']) || !is_array($data['events'])) {
             throw new \InvalidArgumentException('At least one event type is required.');
         }
+        self::assertKnownEvents($data['events']);
         self::assertFitsColumns($data);
 
         $id = DB::table('outbound_webhooks')->insertGetId([
@@ -219,7 +270,7 @@ class WebhookDispatchService
             'name' => $data['name'],
             'url' => $data['url'],
             'secret' => $data['secret'],
-            'events' => json_encode($data['events']),
+            'events' => json_encode(array_values($data['events'])),
             'is_active' => 1,
             'created_at' => now(),
             'updated_at' => now(),
@@ -229,9 +280,35 @@ class WebhookDispatchService
             'id' => (int) $id,
             'name' => $data['name'],
             'url' => $data['url'],
-            'events' => $data['events'],
+            'events' => array_values($data['events']),
             'is_active' => 1,
+            'secret' => $data['secret'],
         ];
+    }
+
+    private static function generateSecret(): string
+    {
+        return bin2hex(random_bytes(24));
+    }
+
+    /**
+     * Only events the platform dispatches may be subscribed to. Offering a
+     * name nothing fires is how one community's webhook sat subscribed to
+     * twelve events for seven months without receiving one.
+     *
+     * @param array<int, mixed> $events
+     * @throws \InvalidArgumentException
+     */
+    private static function assertKnownEvents(array $events): void
+    {
+        foreach ($events as $event) {
+            if (!is_string($event) || !in_array($event, self::ALLOWED_EVENTS, true)) {
+                throw new \InvalidArgumentException(__('api.webhook_unknown_event', [
+                    'event' => is_string($event) ? $event : '?',
+                    'events' => implode(', ', self::ALLOWED_EVENTS),
+                ]));
+            }
+        }
     }
 
     /**
@@ -260,9 +337,9 @@ class WebhookDispatchService
      *
      * @throws \InvalidArgumentException
      */
-    public static function updateWebhook(int $id, array $data): bool
+    public static function updateWebhook(int $id, array $data, ?int $tenantId = null): bool
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         // Validate URL if provided
         if (isset($data['url'])) {
@@ -284,9 +361,13 @@ class WebhookDispatchService
                 $updateData[$field] = $data[$field];
             }
         }
+        if (array_key_exists('is_active', $updateData)) {
+            $updateData['is_active'] = filter_var($updateData['is_active'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        }
 
         if (isset($data['events']) && is_array($data['events'])) {
-            $updateData['events'] = json_encode($data['events']);
+            self::assertKnownEvents($data['events']);
+            $updateData['events'] = json_encode(array_values($data['events']));
         }
 
         if (empty($updateData)) {
@@ -304,11 +385,33 @@ class WebhookDispatchService
     }
 
     /**
+     * Replace the signing secret and hand the new one out — once.
+     *
+     * @throws \RuntimeException when the webhook does not exist for the tenant
+     */
+    public static function rotateSecret(int $id, ?int $tenantId = null): string
+    {
+        $tenantId ??= TenantContext::getId();
+        $secret = self::generateSecret();
+
+        $affected = DB::table('outbound_webhooks')
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->update(['secret' => $secret, 'updated_at' => now()]);
+
+        if ($affected < 1) {
+            throw new \RuntimeException("Webhook not found (id={$id}).");
+        }
+
+        return $secret;
+    }
+
+    /**
      * Delete a webhook.
      */
-    public static function deleteWebhook(int $id): bool
+    public static function deleteWebhook(int $id, ?int $tenantId = null): bool
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         try {
             // Delete logs first
@@ -334,9 +437,9 @@ class WebhookDispatchService
      *
      * @throws \RuntimeException
      */
-    public static function testWebhook(int $id): array
+    public static function testWebhook(int $id, ?int $tenantId = null): array
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         $webhook = DB::table('outbound_webhooks')
             ->where('id', $id)
@@ -363,39 +466,21 @@ class WebhookDispatchService
             'data' => ['message' => __('svc_notifications_2.webhook.test_delivery')],
         ]);
 
-        $signature = hash_hmac('sha256', $body, $webhook->secret ?? '');
-
-        $ch = curl_init($webhook->url);
-        curl_setopt_array($ch, OutboundUrlGuard::curlOptionsForUrl($webhook->url) + [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $body,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'X-Webhook-Signature: ' . $signature,
-                'X-Webhook-Event: webhook.test',
-            ],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 10,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
+        $result = self::deliver($webhook, (string) $body, 'webhook.test');
 
         return [
-            'success' => $httpCode >= 200 && $httpCode < 300,
-            'http_code' => $httpCode,
-            'response' => $response ?: $error,
+            'success' => self::succeeded($result['http_code']),
+            'http_code' => $result['http_code'],
+            'response' => $result['response'] !== '' ? $result['response'] : $result['error'],
         ];
     }
 
     /**
      * Get delivery logs for a webhook.
      */
-    public static function getLogs(int $id, array $filters = []): array
+    public static function getLogs(int $id, array $filters = [], ?int $tenantId = null): array
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
 
         try {
             $query = DB::table('outbound_webhook_logs')
@@ -420,74 +505,76 @@ class WebhookDispatchService
     }
 
     /**
-     * Retry failed webhook deliveries.
+     * Retry failed deliveries of the last 24 hours that are due and still
+     * under their webhook's `max_retries`. Each attempt is counted and the
+     * next one scheduled further out (5, 15, 45 … minutes), so a dead
+     * endpoint is tried max_retries times and then left alone — until
+     * 2026-10-18 it was re-posted on every five-minute tick for a day.
      *
-     * @return int Number of retried deliveries
+     * @return int Number of deliveries attempted
      */
-    public static function retryFailed(): int
+    public static function retryFailed(?int $tenantId = null): int
     {
-        $tenantId = TenantContext::getId();
+        $tenantId ??= TenantContext::getId();
         $retried = 0;
 
         try {
-            $failedLogs = DB::table('outbound_webhook_logs')
-                ->where('tenant_id', $tenantId)
-                ->where('status', 'failed')
-                ->where('created_at', '>=', now()->subHours(24))
-                ->orderBy('created_at')
+            $due = DB::table('outbound_webhook_logs as l')
+                ->join('outbound_webhooks as w', function ($join): void {
+                    $join->on('w.id', '=', 'l.webhook_id')
+                        ->on('w.tenant_id', '=', 'l.tenant_id');
+                })
+                ->where('l.tenant_id', $tenantId)
+                ->where('l.status', 'failed')
+                ->where('l.created_at', '>=', now()->subHours(24))
+                ->where('w.is_active', 1)
+                ->whereColumn('l.attempt_count', '<', 'w.max_retries')
+                ->where(function ($q): void {
+                    $q->whereNull('l.next_retry_at')
+                        ->orWhere('l.next_retry_at', '<=', now());
+                })
+                ->orderBy('l.created_at')
                 ->limit(50)
-                ->get();
+                ->get([
+                    'l.id', 'l.webhook_id', 'l.payload', 'l.event_type', 'l.attempt_count',
+                    'w.url', 'w.secret',
+                ]);
 
-            foreach ($failedLogs as $log) {
-                $webhook = DB::table('outbound_webhooks')
-                    ->where('id', $log->webhook_id)
-                    ->where('tenant_id', $tenantId)
-                    ->where('is_active', 1)
-                    ->first();
-
-                if (!$webhook) {
-                    continue;
-                }
-
+            foreach ($due as $log) {
                 // SSRF protection: re-check on retry (DNS rebinding defense)
-                if (self::isPrivateUrl($webhook->url)) {
-                    Log::warning('WebhookDispatchService: SSRF blocked on retry — private URL', ['url' => $webhook->url]);
+                if (self::isPrivateUrl((string) $log->url)) {
+                    Log::warning('WebhookDispatchService: SSRF blocked on retry — private URL', ['url' => $log->url]);
                     continue;
                 }
+
+                $attempt = (int) $log->attempt_count + 1;
 
                 try {
-                    $signature = hash_hmac('sha256', $log->payload, $webhook->secret ?? '');
-
-                    $ch = curl_init($webhook->url);
-                    curl_setopt_array($ch, OutboundUrlGuard::curlOptionsForUrl($webhook->url) + [
-                        CURLOPT_POST => true,
-                        CURLOPT_POSTFIELDS => $log->payload,
-                        CURLOPT_HTTPHEADER => [
-                            'Content-Type: application/json',
-                            'X-Webhook-Signature: ' . $signature,
-                            'X-Webhook-Event: ' . ($log->event_type ?? 'retry'),
-                        ],
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_TIMEOUT => 10,
-                    ]);
-
-                    $response = curl_exec($ch);
-                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                    curl_close($ch);
-
-                    $newStatus = ($httpCode >= 200 && $httpCode < 300) ? 'success' : 'failed';
+                    $result = self::deliver($log, (string) $log->payload, (string) ($log->event_type ?? 'retry'));
+                    $ok = self::succeeded($result['http_code']);
 
                     DB::table('outbound_webhook_logs')
                         ->where('id', $log->id)
                         ->update([
-                            'status' => $newStatus,
-                            'response_code' => $httpCode,
-                            'response_body' => substr($response ?: '', 0, 1000),
+                            'status' => $ok ? 'success' : 'failed',
+                            'response_code' => $result['http_code'],
+                            'response_body' => substr($result['response'] !== '' ? $result['response'] : $result['error'], 0, 1000),
+                            'attempt_count' => $attempt,
+                            'attempted_at' => now(),
+                            'next_retry_at' => $ok ? null : now()->addMinutes(self::RETRY_BASE_MINUTES * (3 ** ($attempt - 1))),
                         ]);
+                    self::recordDeliveryOutcome((int) $tenantId, (int) $log->webhook_id, $ok);
 
                     $retried++;
                 } catch (\Exception $e) {
-                    // Skip failed retries
+                    DB::table('outbound_webhook_logs')
+                        ->where('id', $log->id)
+                        ->update([
+                            'attempt_count' => $attempt,
+                            'attempted_at' => now(),
+                            'response_body' => substr($e->getMessage(), 0, 1000),
+                            'next_retry_at' => now()->addMinutes(self::RETRY_BASE_MINUTES * (3 ** ($attempt - 1))),
+                        ]);
                 }
             }
         } catch (\Exception $e) {

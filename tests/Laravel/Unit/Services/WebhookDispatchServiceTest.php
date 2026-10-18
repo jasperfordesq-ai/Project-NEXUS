@@ -88,7 +88,7 @@ class WebhookDispatchServiceTest extends TestCase
 
         $result = WebhookDispatchService::createWebhook(
             1,
-            ['name' => 'Test', 'url' => 'https://93.184.216.34', 'events' => ['test']]
+            ['name' => 'Test', 'url' => 'https://93.184.216.34', 'events' => ['shift.completed']]
         );
 
         $this->assertSame(42, $result['id']);

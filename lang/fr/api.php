@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'Un ou plusieurs champs de défi ne sont pas valides',
     'segment_not_found' => 'Segment introuvable',
     'webhook_not_found' => 'Webhook introuvable',
+    'webhook_unknown_event' => 'Événement inconnu « :event ». La plateforme n\'envoie que : :events',
     'subscriber_not_found' => 'Abonné introuvable',
     'deliverable_not_found' => 'Livrable introuvable',
     'insurance_cert_not_found' => 'Attestation d\'assurance introuvable',

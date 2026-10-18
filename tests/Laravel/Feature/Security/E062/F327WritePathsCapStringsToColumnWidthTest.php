@@ -175,12 +175,19 @@ class F327WritePathsCapStringsToColumnWidthTest extends TestCase
             ->where('tenant_id', $this->testTenantId)->where('provider_key', 'f327sso')->value('client_id'));
     }
 
-    // ------------------------------------------- volunteering outbound webhooks
+    // ----------------------------------------------- outbound webhooks (Integrations)
+    //
+    // Moved from /v2/admin/volunteering/webhooks to the platform-level
+    // Integrations endpoints on 2026-10-18; only a god who is also a platform
+    // super admin may manage them.
 
-    private function volunteeringAdmin(): User
+    private function integrationsAdmin(): User
     {
-        $this->setFeature('volunteering');
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $admin = User::factory()->forTenant($this->testTenantId)->create([
+            'is_god' => true,
+            'is_super_admin' => true,
+            'role' => 'super_admin',
+        ]);
         Sanctum::actingAs($admin);
 
         return $admin;
@@ -191,32 +198,32 @@ class F327WritePathsCapStringsToColumnWidthTest extends TestCase
         return array_merge([
             'name' => 'F327 hook',
             'url' => 'https://93.184.216.34/f327-hook',
-            'events' => ['vol.shift.created'],
+            'events' => ['shift.completed'],
         ], $overrides);
     }
 
     public function test_outbound_webhook_refuses_a_secret_longer_than_the_column(): void
     {
-        $this->volunteeringAdmin();
+        $this->integrationsAdmin();
 
-        $this->apiPost('/v2/admin/volunteering/webhooks', $this->webhookInput([
+        $this->apiPost('/v2/admin/integrations/webhooks', $this->webhookInput([
             'name' => 'F327 long secret', 'secret' => str_repeat('s', 256),
         ]))->assertStatus(422);
         $this->assertFalse(DB::table('outbound_webhooks')->where('tenant_id', $this->testTenantId)->where('name', 'F327 long secret')->exists());
 
-        $this->apiPost('/v2/admin/volunteering/webhooks', $this->webhookInput([
+        $this->apiPost('/v2/admin/integrations/webhooks', $this->webhookInput([
             'name' => str_repeat('n', 256),
         ]))->assertStatus(422);
     }
 
     public function test_outbound_webhook_update_refuses_a_secret_longer_than_the_column(): void
     {
-        $this->volunteeringAdmin();
+        $this->integrationsAdmin();
         $secret = str_repeat('k', 255);
-        $id = (int) $this->apiPost('/v2/admin/volunteering/webhooks', $this->webhookInput(['secret' => $secret]))
+        $id = (int) $this->apiPost('/v2/admin/integrations/webhooks', $this->webhookInput(['secret' => $secret]))
             ->assertStatus(201)->json('data.id');
 
-        $this->apiPut("/v2/admin/volunteering/webhooks/{$id}", ['secret' => str_repeat('z', 256)])->assertStatus(422);
+        $this->apiPut("/v2/admin/integrations/webhooks/{$id}", ['secret' => str_repeat('z', 256)])->assertStatus(422);
 
         $this->assertSame($secret, (string) DB::table('outbound_webhooks')->where('id', $id)->value('secret'),
             'CONTROL + safe behaviour: the full-width secret was stored exactly and the over-long one did not replace it');

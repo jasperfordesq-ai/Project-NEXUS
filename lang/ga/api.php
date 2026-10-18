@@ -85,6 +85,7 @@ return [
     'challenge_field_invalid' => 'Tá réimse dúshlán amháin nó níos mó neamhbhailí',
     'segment_not_found' => 'Deighleog gan aimsiú',
     'webhook_not_found' => 'Níor aimsíodh cuaille gréasáin',
+    'webhook_unknown_event' => 'Teagmhas anaithnid ":event". Ní sheolann an t-ardán ach: :events',
     'subscriber_not_found' => 'Níor aimsíodh an síntiúsóir',
     'deliverable_not_found' => 'Inseachadta gan aimsiú',
     'insurance_cert_not_found' => 'Níor aimsíodh teastas árachais',

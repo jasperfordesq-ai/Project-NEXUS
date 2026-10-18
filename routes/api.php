@@ -3318,6 +3318,20 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 */
 Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
 
+// Integrations — outbound webhooks (moved from /v2/admin/volunteering/webhooks
+// on 2026-10-18). The middleware above is only the outer fence: every action
+// calls requireGodPlatformAdmin() (is_god AND is_super_admin) and checks the
+// managed tenant with SuperPanelAccess::canAccessTenant(). `/events` is
+// declared before `/{id}` so the literal segment wins.
+Route::get('/v2/admin/integrations/webhooks/events', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'events']);
+Route::get('/v2/admin/integrations/webhooks', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'index']);
+Route::post('/v2/admin/integrations/webhooks', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'store']);
+Route::put('/v2/admin/integrations/webhooks/{id}', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'update']);
+Route::delete('/v2/admin/integrations/webhooks/{id}', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'destroy']);
+Route::post('/v2/admin/integrations/webhooks/{id}/test', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'test']);
+Route::post('/v2/admin/integrations/webhooks/{id}/rotate-secret', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'rotateSecret']);
+Route::get('/v2/admin/integrations/webhooks/{id}/logs', [\App\Http\Controllers\Api\AdminOutboundWebhooksController::class, 'logs']);
+
 // Irreversible tenant destruction — god-only, and staying that way.
 Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
 Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge'])->middleware('step-up');

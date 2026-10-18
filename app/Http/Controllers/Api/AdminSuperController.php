@@ -102,22 +102,8 @@ class AdminSuperController extends BaseApiController
         return $userId;
     }
 
-    /**
-     * Require god role (is_god flag in DB). Uses the authenticated user ID from JWT.
-     */
-    private function requireGod(int $userId): void
-    {
-        if (!User::isGod($userId)) {
-            throw new \Illuminate\Http\Exceptions\HttpResponseException(
-                $this->respondWithError(
-                    ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
-                    __('api.god_level_access_required'),
-                    null,
-                    403
-                )
-            );
-        }
-    }
+    // requireGod() is BaseApiController's since 2026-10-18 (same check: the
+    // users.is_god column, 403 AUTH_INSUFFICIENT_PERMISSIONS otherwise).
 
     /**
      * Platform roles are assigned only through the dedicated god-only grant
@@ -820,7 +806,7 @@ class AdminSuperController extends BaseApiController
     public function tenantPurgePreview(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
 
         if (!SuperPanelAccess::canAccessTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
@@ -856,7 +842,7 @@ class AdminSuperController extends BaseApiController
     public function tenantPurge(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
 
         if (!SuperPanelAccess::canAccessTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
@@ -1513,7 +1499,7 @@ class AdminSuperController extends BaseApiController
     public function userGrantGlobalSuperAdmin(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
 
         // Super-admin: cross-tenant by design — restricted to "god" users via requireGod() above
         $user = User::findById($id, false);
@@ -1554,7 +1540,7 @@ class AdminSuperController extends BaseApiController
     public function userRevokeGlobalSuperAdmin(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
 
         // Super-admin: cross-tenant by design — restricted to "god" users via requireGod() above
         $user = User::findById($id, false);
@@ -2794,7 +2780,7 @@ class AdminSuperController extends BaseApiController
     public function getBillingSnapshot(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $snapshot = TenantBillingService::getBillingSnapshot();
         return $this->respondWithData($snapshot);
     }
@@ -2803,7 +2789,7 @@ class AdminSuperController extends BaseApiController
     public function assignPlan(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         $planId   = (int) ($input['pay_plan_id'] ?? 0);
@@ -2843,7 +2829,7 @@ class AdminSuperController extends BaseApiController
     public function getRevenueDashboard(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         return $this->respondWithData(TenantBillingService::getRevenueDashboard());
     }
 
@@ -2851,7 +2837,7 @@ class AdminSuperController extends BaseApiController
     public function exportBillingCsv(): \Illuminate\Http\Response
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $csv = TenantBillingService::exportCsv();
         return response($csv, 200, [
             'Content-Type'        => 'text/csv',
@@ -2863,7 +2849,7 @@ class AdminSuperController extends BaseApiController
     public function grantBillingDelegate(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input        = $this->getAllInput();
         $targetUserId = (int) ($input['user_id'] ?? 0);
         $scope        = $input['scope'] ?? '';
@@ -2878,7 +2864,7 @@ class AdminSuperController extends BaseApiController
     public function revokeBillingDelegate(): JsonResponse
     {
         $userId = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input        = $this->getAllInput();
         $targetUserId = (int) ($input['user_id'] ?? 0);
         $scope        = $input['scope'] ?? '';
@@ -2893,7 +2879,7 @@ class AdminSuperController extends BaseApiController
     public function pauseTenantBilling(): JsonResponse
     {
         $userId   = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         if ($tenantId < 1) {
@@ -2907,7 +2893,7 @@ class AdminSuperController extends BaseApiController
     public function resumeTenantBilling(): JsonResponse
     {
         $userId   = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         if ($tenantId < 1) {
@@ -2921,7 +2907,7 @@ class AdminSuperController extends BaseApiController
     public function setBillingGracePeriod(): JsonResponse
     {
         $userId   = $this->requireSuperAdmin();
-        $this->requireGod($userId);
+        $this->requireGod();
         $input    = $this->getAllInput();
         $tenantId = (int) ($input['tenant_id'] ?? 0);
         $days     = (int) ($input['days'] ?? 0);

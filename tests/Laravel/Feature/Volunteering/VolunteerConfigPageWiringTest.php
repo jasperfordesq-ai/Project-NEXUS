@@ -10,11 +10,9 @@ use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\VolunteeringConfigurationService;
 use App\Services\VolunteerReminderService;
-use App\Services\WebhookDispatchService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
@@ -26,50 +24,9 @@ class VolunteerConfigPageWiringTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private function actAsAdmin(): User
-    {
-        DB::table('tenants')->where('id', $this->testTenantId)->update([
-            'features' => json_encode(['volunteering' => true]),
-        ]);
-        TenantContext::setById($this->testTenantId);
-
-        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        Sanctum::actingAs($admin, ['*']);
-
-        return $admin;
-    }
-
-    public function test_testing_an_unknown_webhook_is_not_found_not_a_server_error(): void
-    {
-        $this->actAsAdmin();
-
-        $this->apiPost('/v2/admin/volunteering/webhooks/999999999/test', [])->assertStatus(404);
-    }
-
-    public function test_webhook_failure_count_rises_on_failure_and_resets_on_success(): void
-    {
-        $admin = $this->actAsAdmin();
-
-        $id = (int) DB::table('outbound_webhooks')->insertGetId([
-            'tenant_id' => $this->testTenantId,
-            'created_by' => $admin->id,
-            'name' => 'Wiring hook',
-            'url' => 'https://example.com/hook',
-            'events' => json_encode(['shift.completed']),
-            'is_active' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        WebhookDispatchService::recordDeliveryOutcome($this->testTenantId, $id, false);
-        WebhookDispatchService::recordDeliveryOutcome($this->testTenantId, $id, false);
-        $this->assertSame(2, (int) DB::table('outbound_webhooks')->where('id', $id)->value('failure_count'));
-
-        WebhookDispatchService::recordDeliveryOutcome($this->testTenantId, $id, true);
-        $row = DB::table('outbound_webhooks')->where('id', $id)->first();
-        $this->assertSame(0, (int) $row->failure_count);
-        $this->assertNotNull($row->last_triggered_at);
-    }
+    // The webhook cases that lived here moved to
+    // tests/Laravel/Feature/Integrations/AdminOutboundWebhooksControllerTest.php
+    // with the endpoints (2026-10-18).
 
     private function forgetReminderSettings(): void
     {
