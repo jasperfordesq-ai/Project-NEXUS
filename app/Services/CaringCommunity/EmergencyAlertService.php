@@ -102,6 +102,8 @@ class EmergencyAlertService
             'sent' => (int) ($decoded['sent'] ?? 0),
             'failed' => (int) ($decoded['failed'] ?? 0),
             'error_count' => is_array($errors) ? count($errors) : (int) ($decoded['error_count'] ?? 0),
+            // True when the transport refused the type for native delivery.
+            'suppressed' => (bool) ($decoded['suppressed'] ?? false),
         ];
     }
 
@@ -230,7 +232,10 @@ class EmergencyAlertService
         DB::table(self::TABLE)
             ->where('id', $alertId)
             ->update([
-                'push_sent'   => 1,
+                // Only claim a push when a device actually took one. caring_* types are
+                // kept out of native push (FCMPushService::shouldSuppressNativePush), so
+                // this is normally 0 and `push_result.suppressed` says why.
+                'push_sent'   => ((int) ($pushResult['sent'] ?? 0)) > 0 ? 1 : 0,
                 // F-128: counts only — never the per-token error strings.
                 'push_result' => json_encode(self::summarisePushResult($pushResult)),
                 'sent_at'     => Carbon::now(),

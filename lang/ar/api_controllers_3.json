@@ -132,6 +132,7 @@
     "only_buyer_confirm": "يمكن للمشتري فقط تأكيد الدفع."
   },
   "admin_bells": {
+    "badge_removed": "تمت إزالة شارة {{badge}} من ملفك الشخصي.",
     "comment_hidden": "تم إخفاء تعليقك بواسطة مشرف.",
     "comment_removed": "تم حذف تعليقك بواسطة مشرف.",
     "post_hidden": "تم إخفاء منشورك بواسطة مشرف.",

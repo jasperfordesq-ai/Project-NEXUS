@@ -415,7 +415,7 @@ class KiAgentService
             case 'send_nudge':
                 $userId = (int) ($proposal['subject_user_id'] ?? 0);
                 if ($userId) {
-                    $title = (string) ($data['title'] ?? 'NEXUS');
+                    $title = (string) ($data['title'] ?? __('notifications.push_default'));
                     $body  = (string) ($data['body'] ?? '');
                     $extra = ['type' => 'caring_smart_nudge', 'link' => '/notifications'];
                     FCMPushService::sendToUsers([$userId], $title, $body, $extra);

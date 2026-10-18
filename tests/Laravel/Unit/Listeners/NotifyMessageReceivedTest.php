@@ -64,6 +64,9 @@ class NotifyMessageReceivedTest extends TestCase
         // The HTML email is built via the real EmailTemplateBuilder against the
         // test tenant context; only the dispatcher call is asserted. Link is the
         // sender's thread: /messages/{senderId}. Content renders via emails.message.in_app_content.
+        // The push context names the sender, groups the tray by sender, and
+        // carries the first line of the message for members who opted in to
+        // previews (FCMPushService drops it otherwise).
         $this->dispatcherAlias
             ->shouldReceive('dispatch')
             ->once()
@@ -74,12 +77,92 @@ class NotifyMessageReceivedTest extends TestCase
                 'new_message',
                 'Bob sent you a message',
                 '/messages/10',
-                Mockery::type('string')
+                Mockery::type('string'),
+                false,
+                null,
+                null,
+                null,
+                ['actor' => 'Bob', 'thread_id' => 'message:10', 'preview' => 'Hello there']
             )
             ->andReturn(true);
 
         $listener = new NotifyMessageReceived();
         $listener->handle($event);
+    }
+
+    public function test_voice_message_passes_no_preview(): void
+    {
+        $sender = new User();
+        $sender->id = 10;
+        $sender->first_name = 'Bob';
+
+        $message = new Message();
+        $message->receiver_id = 20;
+        $message->body = '';
+        $message->is_voice = true;
+
+        $event = new MessageSent($message, $sender, 42, $this->testTenantId);
+
+        $this->dispatcherAlias
+            ->shouldReceive('dispatch')
+            ->once()
+            ->with(
+                20,
+                'global',
+                null,
+                'new_message',
+                'Bob sent you a message',
+                '/messages/10',
+                Mockery::type('string'),
+                false,
+                null,
+                null,
+                null,
+                ['actor' => 'Bob', 'thread_id' => 'message:10']
+            )
+            ->andReturn(true);
+
+        (new NotifyMessageReceived())->handle($event);
+    }
+
+    public function test_email_opt_out_branch_pushes_with_the_same_context(): void
+    {
+        DB::beginTransaction();
+        try {
+            $recipientId = (int) User::factory()->create(['tenant_id' => $this->testTenantId])->id;
+            DB::table('users')->where('id', $recipientId)->update([
+                'notification_preferences' => json_encode(['email_messages' => 0]),
+            ]);
+            \App\Core\TenantContext::setById($this->testTenantId);
+
+            $sender = new User();
+            $sender->id = 10;
+            $sender->first_name = 'Bob';
+
+            $message = new Message();
+            $message->receiver_id = $recipientId;
+            $message->body = '<p>Hello <b>there</b></p>';
+            $message->is_voice = false;
+
+            $event = new MessageSent($message, $sender, 42, $this->testTenantId);
+
+            $this->dispatcherAlias->shouldNotReceive('dispatch');
+            $this->dispatcherAlias
+                ->shouldReceive('fanOutPush')
+                ->once()
+                ->with(
+                    $recipientId,
+                    'new_message',
+                    'Bob sent you a message',
+                    '/messages/10',
+                    false,
+                    ['actor' => 'Bob', 'thread_id' => 'message:10', 'preview' => 'Hello there']
+                );
+
+            (new NotifyMessageReceived())->handle($event);
+        } finally {
+            DB::rollBack();
+        }
     }
 
     public function test_handle_catches_exceptions_and_logs_error(): void

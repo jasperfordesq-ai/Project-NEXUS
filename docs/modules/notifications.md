@@ -90,18 +90,44 @@ The ordinary on-device data payload is string-only and versioned:
 - `link` is a validated member-facing internal route. Credentials, sensitive reset/support
   links, staff/browser-only routes, unsupported routes and unsafe external URLs become
   `/notifications` or are suppressed when even that alert would be misleading.
-- Lock-screen copy is deliberately privacy-limited. The body is generic and the title is a
-  translated category or an explicitly curated safe title rendered in the recipient's locale.
-  Producer-supplied arbitrary fields never leave the server.
+- Lock-screen copy says what happened, within a privacy boundary, and is rendered in the
+  recipient's locale by `App\Support\Push\PushCopy` inside `FCMPushService`:
+  - A catalogued type (`notifications.push.<type>` — messages, connections, time credits,
+    event and shift reminders and cancellations, exchanges, badges, group join requests,
+    comments, replies, mentions, moderation) renders a title and body from a whitelisted
+    producer context — `actor`, `subject`, `time`, `count`, `hours`, `preview`, `thread_id` —
+    passed as the trailing `$pushContext` / `$context` argument of
+    `NotificationDispatcher::dispatch()`, `fanOutPush()` and `FCMPushService::sendToUser()`.
+    Every value is stripped of markup and newlines and capped (`PushCopy::CONTEXT_LIMITS`);
+    unknown keys are dropped; an entry with placeholders renders only when at least one fact
+    was supplied. Example: `New message from Alice` / `Tap to read and reply`.
+  - Any other type sent through `fanOutPush()` (`display_body_safe => '1'`) shows the bell
+    sentence the recipient already sees in the inbox, clamped to 180 characters.
+  - A direct `FCMPushService` producer that passes no context keeps the curated or category
+    title and the generic body. Safeguarding, GDPR, emergency and support-action types always
+    keep the category title and generic body and ignore context.
+  - Message text is the one private value: `preview` reaches the lock screen only when the
+    recipient switched on `push_show_message_preview` (default off; 80 characters), and never
+    on the batch `sendToUsers()` path. Producer-supplied arbitrary fields never leave the server.
+- Delivery shape: `new_message` / `group_chatroom_message` use the Android `messages` channel
+  (high importance in the app), everything else `default`, emergencies `emergency`
+  (`PushCopy::channelFor()`). Messages, event and shift reminders and emergencies are sent at
+  high priority (`PushCopy::isTimeSensitive()`); the iOS `interruptionLevel` stays
+  emergency-only. A valid `thread_id` (`<kind>:<id>`, e.g. `message:10`) travels in `data`, and
+  on the FCM paths also as the Android notification tag / APNs `apns-collapse-id` and
+  `thread-id`, so repeated pushes from one conversation replace rather than stack.
 - The Expo client sends foreground, background and terminated-app responses through
   `mobile/app/+native-intent.ts`, waits for authentication, checks the current tenant's enabled
   modules, and falls back to its notification centre. Missing poll/resource entities render a
   recoverable not-found state rather than a broken screen.
 - Native has no exact story viewer, so story device pushes are suppressed until one exists.
-  Group chat and non-emergency Caring Community activity are also kept out of native push until
-  exact viewers exist. Ordinary Android alerts use the translated `default` channel at default
-  importance; a Caring emergency retains its safe notification-centre route, selects the
-  translated maximum-importance `emergency` channel and requests high-priority FCM/APNs delivery.
+  Non-emergency Caring Community activity is also kept out of native push until exact viewers
+  exist; group chat messages do reach the phone (on the `messages` channel) and open the chatroom. Ordinary Android alerts use the translated `default` channel at default
+  importance and direct messages the `messages` channel; a Caring emergency retains its safe
+  notification-centre route, selects the translated maximum-importance `emergency` channel and
+  requests high-priority FCM/APNs delivery. Because `caring_*` types are kept out of native
+  push, `caring_emergency_alerts.push_sent` is `1` only when a device actually took the push
+  and `push_result.suppressed` records the policy refusal.
 - Exact marketplace order links first fetch the protected order, resolve whether the signed-in
   member is the buyer or seller, then open and highlight that order in Purchases or Sales. The
   direct fetch prevents an older referenced order disappearing behind the first paginated result.

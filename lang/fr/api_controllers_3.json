@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Seul l'acheteur peut confirmer le paiement."
   },
   "admin_bells": {
+    "badge_removed": "Le badge {{badge}} a été retiré de votre profil.",
     "comment_hidden": "Votre commentaire a été masqué par un modérateur.",
     "comment_removed": "Votre commentaire a été supprimé par un modérateur.",
     "post_hidden": "Votre publication a été masquée par un modérateur.",

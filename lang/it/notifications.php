@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Corrispondenza reciproca trovata',
     'push_default' => 'Nuova notifica',
     'push_private_body' => 'Apri Timebank Global per visualizzare questo aggiornamento privato.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nuovo messaggio da :actor',
+            'body' => 'Tocca per leggere e rispondere',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor vuole connettersi',
+            'body' => 'Tocca per accettare o rifiutare',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor ha accettato la tua richiesta di connessione',
+            'body' => 'Ora sei connesso',
+        ],
+        'transaction' => [
+            'title' => 'Hai ricevuto :hours ore da :actor',
+            'body' => 'Tocca per vedere il tuo portafoglio',
+        ],
+        'event_reminder' => [
+            'title' => 'Promemoria: :subject inizia :time',
+            'body' => 'Tocca per i dettagli',
+        ],
+        'event_invitation' => [
+            'title' => ':actor ti ha invitato a :subject',
+            'body' => 'Tocca per rispondere',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject è stato annullato',
+            'body' => 'Tocca per i dettagli',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Il tuo turno alle :subject inizia :time',
+            'body' => 'Tocca per vedere lo spostamento',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Il tuo turno su :time è stato annullato',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nuova richiesta per :subject',
+            'body' => 'Tocca per accettare o rifiutare',
+        ],
+        'exchange_accepted' => [
+            'title' => 'La tua richiesta per :subject è stata accettata',
+            'body' => 'Tocca per organizzare lo scambio',
+        ],
+        'achievement' => [
+            'title' => 'Hai guadagnato il badge :subject',
+            'body' => 'Tocca per vedere i tuoi risultati',
+        ],
+        'group_join_request' => [
+            'title' => ':actor ha chiesto di unirsi a :subject',
+            'body' => 'Tocca per rivedere la richiesta',
+        ],
+        'comment' => [
+            'title' => ':actor ha commentato il tuo post',
+            'body' => 'Tocca per leggerlo',
+        ],
+        'comment_reply' => [
+            'title' => ':actor ha risposto al tuo commento',
+            'body' => 'Tocca per leggerlo',
+        ],
+        'mention' => [
+            'title' => ':actor ti ha menzionato',
+            'body' => 'Tocca per leggerlo',
+        ],
+        'moderation' => [
+            'title' => 'Aggiornamento sulla moderazione',
+            'body' => 'Tocca per i dettagli',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Aggiornamento sul tuo annuncio',
     'push_feed_report_created' => 'Nuova segnalazione',
     'push_social_report_created' => 'Nuova segnalazione',

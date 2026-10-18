@@ -218,6 +218,7 @@ final class EventInvitationDeliveryConsumer
             $path,
             $emailUrl,
             $invitation,
+            $issuer,
         ): array {
             $subject = __('emails.event_invitation.subject', ['event' => (string) $event->title]);
             $message = __('emails.event_invitation.message', ['event' => (string) $event->title]);
@@ -233,7 +234,14 @@ final class EventInvitationDeliveryConsumer
                 ->button(__('emails.event_invitation.accept_button'), $emailUrl)
                 ->render();
 
-            return compact('subject', 'message', 'path', 'html');
+            // Facts for the device push ("<inviter> invited you to <event>").
+            $actor = trim((string) ($issuer->first_name ?? ''));
+            if ($actor === '') {
+                $actor = trim((string) ($issuer->name ?? ''));
+            }
+
+            return compact('subject', 'message', 'path', 'html')
+                + ['actor' => $actor, 'event_title' => (string) $event->title];
         });
 
         $configured = is_array($payload['channels'] ?? null) ? $payload['channels'] : [];
@@ -427,7 +435,7 @@ final class EventInvitationDeliveryConsumer
             $result = FCMPushService::sendToUser($userId, $rendered['subject'], $rendered['message'], [
                 'link' => $rendered['path'],
                 'type' => self::TYPE,
-            ]);
+            ], ['actor' => $rendered['actor'] ?? '', 'subject' => $rendered['event_title'] ?? '']);
             if ((int) ($result['sent'] ?? 0) < 1) {
                 throw new RuntimeException('event_invitation_fcm_provider_rejected');
             }

@@ -81,12 +81,14 @@ class NotifyConnectionAccepted implements ShouldQueue
                 ->where('tenant_id', $event->tenantId)
                 ->value('preferred_language');
 
-            $content = LocaleContext::withLocale($requesterLocale, function () use ($receiver) {
+            [$content, $receiverName] = LocaleContext::withLocale($requesterLocale, function () use ($receiver): array {
                 $receiverName = UserDisplayName::resolve($receiver)
                     ?: ($receiver->name ?? __('emails.common.fallback_someone'));
-                return __('emails_misc.social.connection_accepted', ['name' => $receiverName]);
+                return [__('emails_misc.social.connection_accepted', ['name' => $receiverName]), $receiverName];
             });
             $link = '/connections';
+            // Lock-screen copy names who accepted ("Alice accepted your connection request").
+            $pushContext = ['actor' => $receiverName];
 
             // Respect email_connections opt-out preference
             $emailEnabled = true;
@@ -97,7 +99,7 @@ class NotifyConnectionAccepted implements ShouldQueue
                 // Default to sending if preference lookup fails
             }
 
-            LocaleContext::withLocale($requesterLocale, function () use ($emailEnabled, $requesterId, $content, $link) {
+            LocaleContext::withLocale($requesterLocale, function () use ($emailEnabled, $requesterId, $content, $link, $pushContext) {
                 if ($emailEnabled) {
                     NotificationDispatcher::dispatch(
                         $requesterId,
@@ -106,12 +108,17 @@ class NotifyConnectionAccepted implements ShouldQueue
                         'connection_accepted',
                         $content,
                         $link,
-                        null
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        $pushContext
                     );
                 } else {
                     // Bell notification only — user opted out of connection emails
                     Notification::createNotification($requesterId, $content, $link, 'connection_accepted');
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($requesterId), 'connection_accepted', $content, $link);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($requesterId), 'connection_accepted', $content, $link, false, $pushContext);
                 }
             });
 

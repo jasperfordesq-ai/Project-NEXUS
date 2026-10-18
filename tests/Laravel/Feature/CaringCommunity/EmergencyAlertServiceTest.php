@@ -58,8 +58,13 @@ class EmergencyAlertServiceTest extends TestCase
         $this->assertSame('Storm warning', $alert['title']);
         $this->assertSame('danger', $alert['severity']);
         $this->assertSame(1, (int) $alert['is_active']);
-        $this->assertSame(1, (int) $alert['push_sent']);
+        // No device received this alert (no tokens here, and caring_* types are
+        // kept out of native push), so the row must not claim a push was sent.
+        $this->assertSame(0, (int) $alert['push_sent']);
         $this->assertNotNull($alert['sent_at']);
+        $summary = json_decode((string) $alert['push_result'], true);
+        $this->assertSame(0, $summary['sent']);
+        $this->assertArrayHasKey('suppressed', $summary);
 
         $row = DB::table('caring_emergency_alerts')->where('id', $alert['id'])->first();
         $this->assertNotNull($row);

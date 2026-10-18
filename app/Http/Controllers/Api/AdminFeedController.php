@@ -349,7 +349,7 @@ class AdminFeedController extends BaseApiController
                     false,
                     $itemTenantId
                 );
-                \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $feedItem->user_id), 'moderation', __('api_controllers_3.admin_bells.post_hidden'), null);
+                \App\Services\NotificationDispatcher::fanOutPush((int) ((int) $feedItem->user_id), 'moderation', __('api_controllers_3.admin_bells.post_hidden'), '/feed');
             }
         } catch (\Throwable $e) {
             Log::warning("AdminFeedController::hide notification failed for {$sourceType} #{$id}: " . $e->getMessage());
@@ -434,7 +434,7 @@ class AdminFeedController extends BaseApiController
                     false,
                     $itemTenantId
                 );
-                \App\Services\NotificationDispatcher::fanOutPush((int) ($creatorUserId), 'moderation', __('api_controllers_3.admin_bells.post_removed'), null);
+                \App\Services\NotificationDispatcher::fanOutPush((int) ($creatorUserId), 'moderation', __('api_controllers_3.admin_bells.post_removed'), '/feed');
 
                 // The bell/push above give no reason or recourse. Send a durable
                 // email with WHY it was removed and HOW to contest (DSA

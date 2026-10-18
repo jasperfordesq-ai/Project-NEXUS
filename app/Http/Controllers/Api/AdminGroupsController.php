@@ -359,7 +359,7 @@ class AdminGroupsController extends BaseApiController
                             false,
                             $tenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) ($membership->user_id), 'info', $msg, null);
+                        \App\Services\NotificationDispatcher::fanOutPush((int) ($membership->user_id), 'info', $msg, '/notifications');
                     });
                 }
             } catch (\Throwable $e) {

@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Tylko kupujący może potwierdzić płatność."
   },
   "admin_bells": {
+    "badge_removed": "Odznaka {{badge}} została usunięta z Twojego profilu.",
     "comment_hidden": "Twój komentarz został ukryty przez moderatora.",
     "comment_removed": "Twój komentarz został usunięty przez moderatora.",
     "post_hidden": "Twój post został ukryty przez moderatora.",

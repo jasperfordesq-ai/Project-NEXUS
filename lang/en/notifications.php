@@ -186,6 +186,84 @@ return [
     'push_default'                   => 'New Notification',
     'push_private_body'              => 'Open Timebank Global to view this private update.',
 
+    // =========================================================================
+    // PushCopy — tailored lock-screen copy per type (App\Support\Push\PushCopy).
+    // Rendered in the recipient's locale. Placeholders are whitelisted and
+    // capped by PushCopy::sanitiseContext(); an unset one renders as ''.
+    // =========================================================================
+    'push' => [
+        'new_message' => [
+            'title' => 'New message from :actor',
+            'body' => 'Tap to read and reply',
+            // Only used when the recipient opted in to message previews.
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor wants to connect',
+            'body' => 'Tap to accept or decline',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor accepted your connection request',
+            'body' => 'You are now connected',
+        ],
+        'transaction' => [
+            'title' => 'You received :hours hours from :actor',
+            'body' => 'Tap to see your wallet',
+        ],
+        'event_reminder' => [
+            'title' => 'Reminder: :subject starts :time',
+            'body' => 'Tap for the details',
+        ],
+        'event_invitation' => [
+            'title' => ':actor invited you to :subject',
+            'body' => 'Tap to reply',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject has been cancelled',
+            'body' => 'Tap for the details',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Your shift at :subject starts :time',
+            'body' => 'Tap to see the shift',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Your shift on :time was cancelled',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'New request for :subject',
+            'body' => 'Tap to accept or decline',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Your request for :subject was accepted',
+            'body' => 'Tap to arrange the exchange',
+        ],
+        'achievement' => [
+            'title' => 'You earned the :subject badge',
+            'body' => 'Tap to see your achievements',
+        ],
+        'group_join_request' => [
+            'title' => ':actor asked to join :subject',
+            'body' => 'Tap to review the request',
+        ],
+        'comment' => [
+            'title' => ':actor commented on your post',
+            'body' => 'Tap to read it',
+        ],
+        'comment_reply' => [
+            'title' => ':actor replied to your comment',
+            'body' => 'Tap to read it',
+        ],
+        'mention' => [
+            'title' => ':actor mentioned you',
+            'body' => 'Tap to read it',
+        ],
+        'moderation' => [
+            'title' => 'Moderation update',
+            'body' => 'Tap for the details',
+        ],
+    ],
+
     'push_marketplace_enforcement' => 'Update on your listing',
     'push_feed_report_created' => 'New content report',
     'push_social_report_created' => 'New content report',

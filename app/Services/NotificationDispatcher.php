@@ -75,6 +75,7 @@ class NotificationDispatcher
         ?int $fromUserId = null,
         ?array $deliveryPolicy = null,
         ?string $idempotencyKey = null,
+        array $pushContext = [],
     ): bool
     {
         $recipientTenantId = self::resolveTenantIdForQueue((int) $userId);
@@ -86,11 +87,15 @@ class NotificationDispatcher
             return false;
         }
 
-        return TenantContext::runForTenant($recipientTenantId, function () use ($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey): bool {
-            return self::dispatchForResolvedTenant($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey);
+        return TenantContext::runForTenant($recipientTenantId, function () use ($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey, $pushContext): bool {
+            return self::dispatchForResolvedTenant($userId, $contextType, $contextId, $activityType, $content, $link, $htmlContent, $isOrganizer, $fromUserId, $deliveryPolicy, $idempotencyKey, $pushContext);
         });
     }
 
+    /**
+     * @param array<string, mixed> $pushContext Lock-screen facts for the device
+     *   push (see App\Support\Push\PushCopy::CONTEXT_LIMITS); sanitised in fanOutPush().
+     */
     private static function dispatchForResolvedTenant(
         $userId,
         $contextType,
@@ -103,6 +108,7 @@ class NotificationDispatcher
         ?int $fromUserId = null,
         ?array $deliveryPolicy = null,
         ?string $idempotencyKey = null,
+        array $pushContext = [],
     ): bool
     {
         // 1. Create In-App Notification (The "Bell") with 60-second deduplication window
@@ -294,7 +300,7 @@ class NotificationDispatcher
         // For digest frequencies push only curated push-title types, so routine
         // digest items don't all turn into device push. Deduped 60s in fanOutPush().
         if ($pushEnabled && ! $policyMuted && $bellCreated && !$isDuplicateBell) {
-            self::fanOutPush((int) $userId, (string) $activityType, (string) $content, $link, $frequency !== 'instant');
+            self::fanOutPush((int) $userId, (string) $activityType, (string) $content, $link, $frequency !== 'instant', $pushContext);
         }
 
         // 6. TRAFFIC LIGHT LOGIC
@@ -550,8 +556,12 @@ class NotificationDispatcher
      *   that have a curated notifications.push_<type> title. When false, an
      *   explicit caller has decided this event warrants push, so the generic
      *   title is used as a fallback for uncurated types.
+     * @param array<string, mixed> $context Lock-screen facts for the device push —
+     *   `actor`, `subject`, `time`, `count`, `hours`, `preview`, `thread_id` (see
+     *   App\Support\Push\PushCopy). Sanitised once here; FCMPushService renders
+     *   the catalogue copy from it in the recipient's locale. Web push is unchanged.
      */
-    public static function fanOutPush(int $userId, string $activityType, string $content, ?string $link, bool $onlyCurated = false): void
+    public static function fanOutPush(int $userId, string $activityType, string $content, ?string $link, bool $onlyCurated = false, array $context = []): void
     {
         if ($userId <= 0) {
             return;
@@ -572,11 +582,12 @@ class NotificationDispatcher
         $pushContent = $content;
         $pushLink = (string) ($link ?? '');
         $pushType = $activityType;
+        $pushContext = \App\Support\Push\PushCopy::sanitiseContext($context);
         // Captured now so push_log records the right tenant even though $send
         // runs after the response (when the request's tenant context is gone).
         $tid = TenantContext::currentId();
 
-        $deliver = function () use ($uid, $pushTitle, $pushContent, $pushLink, $pushType, $tid) {
+        $deliver = function () use ($uid, $pushTitle, $pushContent, $pushLink, $pushType, $pushContext, $tid) {
             // Web push (browser) and native mobile push (Expo/FCM) fan out in
             // parallel — a user on multiple devices is notified everywhere they
             // are subscribed. Failure-isolated so one provider being down does
@@ -604,7 +615,11 @@ class NotificationDispatcher
                         'link' => $pushLink,
                         // resolvePushTitle() only returns translation-catalogue copy.
                         'display_title_safe' => '1',
-                    ]);
+                        // $content is the bell sentence the recipient already sees in
+                        // the inbox (and already receives as web push), so it may be
+                        // the lock-screen body for types without catalogue copy.
+                        'display_body_safe' => '1',
+                    ], $pushContext);
                     $fcmSent = (int) ($result['sent'] ?? 0);
                     $fcmFailed = (int) ($result['failed'] ?? 0);
                     foreach ((array) ($result['errors'] ?? []) as $fcmErr) {
@@ -1061,8 +1076,12 @@ class NotificationDispatcher
             $link = self::buildNotificationLink($type, $data);
 
             Notification::createNotification($userId, $content, $link, $type);
-            // Device push for exchange/broker lifecycle events.
-            self::fanOutPush((int) $userId, (string) $type, $content, $link);
+            // Device push for exchange/broker lifecycle events. The listing title
+            // and proposed hours feed the catalogue copy ("New request for Gardening").
+            self::fanOutPush((int) $userId, (string) $type, $content, $link, false, [
+                'subject' => $data['listing_title'] ?? '',
+                'hours' => $data['proposed_hours'] ?? '',
+            ]);
 
             // Send email immediately for exchange notifications
             self::sendExchangeEmailImmediately($userId, $type, $data, $content, $link);

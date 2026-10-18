@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Correspondência mútua encontrada',
     'push_default' => 'Nova notificação',
     'push_private_body' => 'Abra o Timebank Global para ver esta atualização privada.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nova mensagem de :actor',
+            'body' => 'Toque para ler e responder',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor quer se conectar',
+            'body' => 'Toque para aceitar ou recusar',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor aceitou sua solicitação de conexão',
+            'body' => 'Agora você está conectado',
+        ],
+        'transaction' => [
+            'title' => 'Você recebeu :hours horas de :actor',
+            'body' => 'Toque para ver sua carteira',
+        ],
+        'event_reminder' => [
+            'title' => 'Lembrete: :subject inicia :time',
+            'body' => 'Toque para ver os detalhes',
+        ],
+        'event_invitation' => [
+            'title' => ':actor convidou você para :subject',
+            'body' => 'Toque para responder',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject foi cancelado',
+            'body' => 'Toque para ver os detalhes',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Seu turno em :subject começa :time',
+            'body' => 'Toque para ver a mudança',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Seu turno em :time foi cancelado',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nova solicitação para :subject',
+            'body' => 'Toque para aceitar ou recusar',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Sua solicitação de :subject foi aceita',
+            'body' => 'Toque para organizar a troca',
+        ],
+        'achievement' => [
+            'title' => 'Você ganhou o selo :subject',
+            'body' => 'Toque para ver suas conquistas',
+        ],
+        'group_join_request' => [
+            'title' => ':actor pediu para participar :subject',
+            'body' => 'Toque para revisar a solicitação',
+        ],
+        'comment' => [
+            'title' => ':actor comentou sua postagem',
+            'body' => 'Toque para ler',
+        ],
+        'comment_reply' => [
+            'title' => ':actor respondeu ao seu comentário',
+            'body' => 'Toque para ler',
+        ],
+        'mention' => [
+            'title' => ':actor mencionou você',
+            'body' => 'Toque para ler',
+        ],
+        'moderation' => [
+            'title' => 'Atualização de moderação',
+            'body' => 'Toque para ver os detalhes',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Atualização sobre o seu anúncio',
     'push_feed_report_created' => 'Novo relatório',
     'push_social_report_created' => 'Novo relatório',

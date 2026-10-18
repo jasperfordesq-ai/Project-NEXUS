@@ -121,6 +121,77 @@ return [
     'push_mutual_match' => 'Wederzijdse match gevonden',
     'push_default' => 'Nieuwe melding',
     'push_private_body' => 'Open Timebank Global om deze privé-update te bekijken.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nieuw bericht van :actor',
+            'body' => 'Tik om te lezen en te reageren',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor wil verbinding maken',
+            'body' => 'Tik om te accepteren of te weigeren',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor heeft je verbindingsverzoek geaccepteerd',
+            'body' => 'U bent nu verbonden',
+        ],
+        'transaction' => [
+            'title' => 'Je hebt :hours uur ontvangen van :actor',
+            'body' => 'Tik om uw portemonnee te bekijken',
+        ],
+        'event_reminder' => [
+            'title' => 'Herinnering: :subject start :time',
+            'body' => 'Tik voor de details',
+        ],
+        'event_invitation' => [
+            'title' => ':actor heeft je uitgenodigd voor :subject',
+            'body' => 'Tik om te antwoorden',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject is geannuleerd',
+            'body' => 'Tik voor de details',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Je dienst bij :subject begint met :time',
+            'body' => 'Tik om de dienst te zien',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Je dienst op :time is geannuleerd',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nieuw verzoek voor :subject',
+            'body' => 'Tik om te accepteren of te weigeren',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Je verzoek voor :subject is geaccepteerd',
+            'body' => 'Tik om de uitwisseling te regelen',
+        ],
+        'achievement' => [
+            'title' => 'Je hebt de badge :subject verdiend',
+            'body' => 'Tik om je prestaties te bekijken',
+        ],
+        'group_join_request' => [
+            'title' => ':actor heeft gevraagd om lid te worden van :subject',
+            'body' => 'Tik om het verzoek te bekijken',
+        ],
+        'comment' => [
+            'title' => ':actor heeft gereageerd op je bericht',
+            'body' => 'Tik om het te lezen',
+        ],
+        'comment_reply' => [
+            'title' => ':actor heeft op je reactie gereageerd',
+            'body' => 'Tik om het te lezen',
+        ],
+        'mention' => [
+            'title' => ':actor heeft je genoemd',
+            'body' => 'Tik om het te lezen',
+        ],
+        'moderation' => [
+            'title' => 'Moderatie-update',
+            'body' => 'Tik voor de details',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Update over je advertentie',
     'push_feed_report_created' => 'Nieuwe melding',
     'push_social_report_created' => 'Nieuwe melding',

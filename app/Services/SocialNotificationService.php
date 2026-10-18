@@ -138,7 +138,10 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name', 'avatar_url'])
                 ->first();
-            $commenterName = $commenter->name ?? __('emails.common.fallback_someone');
+            // '' is a real value for an account without a personal name; `??` would keep it.
+            $commenterName = trim((string) ($commenter->name ?? '')) !== ''
+                ? (string) $commenter->name
+                : __('emails.common.fallback_someone');
 
             $owner = DB::table('users')
                 ->where('id', $contentOwnerId)
@@ -162,7 +165,8 @@ class SocialNotificationService
 
                 // 1. Create platform notification (bell)
                 Notification::createNotification((int) $contentOwnerId, $message, $link, 'comment');
-                \App\Services\NotificationDispatcher::fanOutPush((int) ($contentOwnerId), 'comment', $message, $link);
+                // Lock-screen copy names the commenter, never the comment text.
+                \App\Services\NotificationDispatcher::fanOutPush((int) ($contentOwnerId), 'comment', $message, $link, false, ['actor' => $commenterName]);
 
                 // 2. Send email notification (if user has email and hasn't opted out)
                 if ($ownerEmail && self::shouldSendEmail($contentOwnerId, 'comment')) {
@@ -200,7 +204,9 @@ class SocialNotificationService
                 ->where('tenant_id', $tenantId)
                 ->select(['name', 'avatar_url'])
                 ->first();
-            $replierName = $replier->name ?? __('emails.common.fallback_someone');
+            $replierName = trim((string) ($replier->name ?? '')) !== ''
+                ? (string) $replier->name
+                : __('emails.common.fallback_someone');
 
             $owner = DB::table('users')
                 ->where('id', $commentOwnerId)
@@ -219,7 +225,8 @@ class SocialNotificationService
                 $message = __('notifications.replied_to_your_comment', ['name' => $replierName, 'comment' => $shortReply]);
 
                 Notification::createNotification((int) $commentOwnerId, $message, $link, 'comment_reply');
-                \App\Services\NotificationDispatcher::fanOutPush((int) ($commentOwnerId), 'comment_reply', $message, $link);
+                // Lock-screen copy names the replier, never the reply text.
+                \App\Services\NotificationDispatcher::fanOutPush((int) ($commentOwnerId), 'comment_reply', $message, $link, false, ['actor' => $replierName]);
 
                 if ($ownerEmail && self::shouldSendEmail($commentOwnerId, 'comment')) {
                     TenantContext::runForTenant((int) $owner->tenant_id, function () use ($owner, $replier, $contentType, $replyText, $link) {
@@ -480,7 +487,10 @@ class SocialNotificationService
             $fullLink = TenantContext::getFrontendUrl() . $link;
             $tenantId = (int) $owner->tenant_id;
 
-            $commenterName = $commenter->name ?? __('emails.common.fallback_someone');
+            // '' is a real value for an account without a personal name; `??` would keep it.
+            $commenterName = trim((string) ($commenter->name ?? '')) !== ''
+                ? (string) $commenter->name
+                : __('emails.common.fallback_someone');
             $contentLabel = self::getContentLabel($contentType);
 
             $title = __('notifications.email_new_comment_title', ['content_type' => ucfirst($contentLabel)]);
@@ -519,7 +529,9 @@ class SocialNotificationService
             $fullLink = TenantContext::getFrontendUrl() . $link;
             $tenantId = (int) $owner->tenant_id;
 
-            $replierName = $replier->name ?? __('emails.common.fallback_someone');
+            $replierName = trim((string) ($replier->name ?? '')) !== ''
+                ? (string) $replier->name
+                : __('emails.common.fallback_someone');
             $contentLabel = self::getContentLabel($contentType);
 
             $title = __('notifications.email_new_comment_reply_title');

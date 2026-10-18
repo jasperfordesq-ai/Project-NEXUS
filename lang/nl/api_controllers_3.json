@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Alleen de koper kan de betaling bevestigen."
   },
   "admin_bells": {
+    "badge_removed": "De badge {{badge}} is van je profiel verwijderd.",
     "comment_hidden": "Uw commentaar is verborgen door een moderator.",
     "comment_removed": "Uw commentaar is verwijderd door een moderator.",
     "post_hidden": "Uw bericht is verborgen door een moderator.",

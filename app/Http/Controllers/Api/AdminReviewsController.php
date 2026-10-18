@@ -329,7 +329,7 @@ class AdminReviewsController extends BaseApiController
                         true,
                         $reviewTenantId
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $reviewerId, 'moderation', $msg, null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $reviewerId, 'moderation', $msg, '/reviews');
                 });
             }
         } catch (\Throwable $e) {
@@ -396,7 +396,7 @@ class AdminReviewsController extends BaseApiController
                         true,
                         $reviewTenantId
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $reviewerId, 'moderation', $msg, null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $reviewerId, 'moderation', $msg, '/reviews');
                 });
             }
         } catch (\Throwable $e) {

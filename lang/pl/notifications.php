@@ -121,6 +121,77 @@ return [
     'push_mutual_match' => 'Znaleziono wzajemne dopasowanie',
     'push_default' => 'Nowe powiadomienie',
     'push_private_body' => 'Otwórz Timebank Global, aby wyświetlić tę prywatną aktualizację.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nowa wiadomość od :actor',
+            'body' => 'Kliknij, aby przeczytać i odpowiedzieć',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor chce się połączyć',
+            'body' => 'Kliknij, aby zaakceptować lub odrzucić',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor zaakceptował Twoją prośbę o połączenie',
+            'body' => 'Jesteś teraz połączony',
+        ],
+        'transaction' => [
+            'title' => 'Otrzymałeś :hours godzin od :actor',
+            'body' => 'Kliknij, aby zobaczyć swój portfel',
+        ],
+        'event_reminder' => [
+            'title' => 'Przypomnienie: :subject rozpoczyna się :time',
+            'body' => 'Kliknij, aby zobaczyć szczegóły',
+        ],
+        'event_invitation' => [
+            'title' => ':actor zaprosił Cię do :subject',
+            'body' => 'Kliknij, aby odpowiedzieć',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject zostało anulowane',
+            'body' => 'Kliknij, aby zobaczyć szczegóły',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Twoja zmiana o :subject rozpoczyna się :time',
+            'body' => 'Kliknij, aby zobaczyć zmianę',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Twoja zmiana na :time została anulowana',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nowe żądanie dla :subject',
+            'body' => 'Kliknij, aby zaakceptować lub odrzucić',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Twoja prośba o :subject została zaakceptowana',
+            'body' => 'Kliknij, aby umówić się na wymianę',
+        ],
+        'achievement' => [
+            'title' => 'Zdobyłeś odznakę :subject',
+            'body' => 'Kliknij, aby zobaczyć swoje osiągnięcia',
+        ],
+        'group_join_request' => [
+            'title' => ':actor poprosił o dołączenie :subject',
+            'body' => 'Kliknij, aby przejrzeć prośbę',
+        ],
+        'comment' => [
+            'title' => ':actor skomentował Twój post',
+            'body' => 'Kliknij, żeby przeczytać',
+        ],
+        'comment_reply' => [
+            'title' => ':actor odpowiedział na Twój komentarz',
+            'body' => 'Kliknij, żeby przeczytać',
+        ],
+        'mention' => [
+            'title' => ':actor wspomniał o Tobie',
+            'body' => 'Kliknij, żeby przeczytać',
+        ],
+        'moderation' => [
+            'title' => 'Aktualizacja moderacji',
+            'body' => 'Kliknij, aby zobaczyć szczegóły',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Aktualizacja Twojego ogłoszenia',
     'push_feed_report_created' => 'Nowe zgłoszenie',
     'push_social_report_created' => 'Nowe zgłoszenie',

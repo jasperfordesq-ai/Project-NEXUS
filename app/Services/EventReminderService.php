@@ -88,6 +88,48 @@ class EventReminderService
         }
     }
 
+    /**
+     * The short form of the event start for the lock-screen title
+     * ("19 Oct 2026 10:00"), in the event's (else the community's) timezone and
+     * the current Carbon locale. The long email/bell form with the timezone
+     * suffix would be cut mid-word by PushCopy's 40-character `time` cap.
+     */
+    private static function formatEventTimeForPush(
+        int $tenantId,
+        mixed $startTime,
+        ?string $eventTimezone,
+    ): string {
+        if (!$startTime) {
+            return '';
+        }
+
+        try {
+            $timezone = trim((string) $eventTimezone);
+            if (!self::isIanaTimezone($timezone)) {
+                $timezone = trim((string) (
+                    app(\App\Services\TenantSettingsService::class)
+                        ->get($tenantId, 'general.timezone', 'UTC') ?: 'UTC'
+                ));
+            }
+            if (!self::isIanaTimezone($timezone)) {
+                $timezone = 'UTC';
+            }
+
+            return \Carbon\Carbon::parse($startTime, 'UTC')
+                ->setTimezone($timezone)
+                ->locale(\App\I18n\FormattingLocale::carbon())
+                ->isoFormat('lll');
+        } catch (\Throwable) {
+            try {
+                return \Carbon\Carbon::parse($startTime, 'UTC')
+                    ->locale(\App\I18n\FormattingLocale::carbon())
+                    ->isoFormat('lll');
+            } catch (\Throwable) {
+                return '';
+            }
+        }
+    }
+
     private static function isIanaTimezone(string $timezone): bool
     {
         if ($timezone === 'UTC') {
@@ -395,6 +437,10 @@ class EventReminderService
                             $message,
                             $html,
                             $link,
+                            [
+                                'subject' => $title,
+                                'time' => self::formatEventTimeForPush($tenantId, $event->start_time, $event->timezone ?? null),
+                            ],
                         );
                         if (!$this->channelDeliveries->allTerminal($statuses)) {
                             self::releaseReminderDeliveryClaim($tenantId, $eventId, $userId, $reminderType);
@@ -532,6 +578,10 @@ class EventReminderService
                         $message,
                         $html,
                         $link,
+                        [
+                            'subject' => $title,
+                            'time' => self::formatEventTimeForPush($tenantId, $reminder->start_time, $reminder->timezone ?? null),
+                        ],
                     );
                     if (!$this->channelDeliveries->allTerminal($statuses)) {
                         self::releaseReminderDeliveryClaim($tenantId, $eventId, $userId, $reminderType);
@@ -620,6 +670,7 @@ class EventReminderService
         string $message,
         string $html,
         string $link,
+        array $pushContext = [],
     ): array {
         $deliveries = $this->channelDeliveries->ensureChannels(
             $tenantId,
@@ -655,7 +706,7 @@ class EventReminderService
             }
 
             if ($channel === 'push') {
-                $this->deliverReminderPush($tenantId, $userId, $delivery, $subject, $message, $link);
+                $this->deliverReminderPush($tenantId, $userId, $delivery, $subject, $message, $link, $pushContext);
             }
         }
 
@@ -801,6 +852,7 @@ class EventReminderService
         string $title,
         string $message,
         string $link,
+        array $pushContext = [],
     ): void {
         $deliveryId = (int) $delivery['id'];
         $preferences = \App\Models\User::getNotificationPreferences($userId);
@@ -834,7 +886,8 @@ class EventReminderService
                 $delivered = WebPushService::sendToUserStatic($userId, $title, $message, $link, 'event_reminder');
             }
             if ($hasFcm) {
-                $fcm = FCMPushService::sendToUser($userId, $title, $message, ['link' => $link, 'type' => 'event_reminder']);
+                // Lock-screen copy: "Reminder: <event> starts <when>" from the context.
+                $fcm = FCMPushService::sendToUser($userId, $title, $message, ['link' => $link, 'type' => 'event_reminder'], $pushContext);
                 $delivered = $delivered || (int) ($fcm['sent'] ?? 0) > 0;
             }
 

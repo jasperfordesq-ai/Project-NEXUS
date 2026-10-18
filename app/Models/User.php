@@ -420,6 +420,8 @@ class User extends Authenticatable
             'email_events' => 1,
             'push_enabled' => 1,
             'push_campaigns_opted_in' => 0,
+            // Message text on the lock screen is opt-in (Apple 4.5.4): off by default.
+            'push_show_message_preview' => 0,
             'email_org_payments' => 1,
             'email_org_transfers' => 1,
             'email_org_membership' => 1,
@@ -458,6 +460,7 @@ class User extends Authenticatable
             'email_messages', 'email_listings', 'email_digest',
             'email_connections', 'email_transactions',
             'email_reviews', 'email_events', 'push_enabled', 'push_campaigns_opted_in',
+            'push_show_message_preview',
             'email_org_payments', 'email_org_transfers', 'email_org_membership',
             'email_org_admin', 'email_gamification_digest',
             'email_gamification_milestones',

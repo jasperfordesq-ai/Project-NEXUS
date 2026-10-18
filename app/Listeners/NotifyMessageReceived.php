@@ -116,6 +116,19 @@ class NotifyMessageReceived implements ShouldQueue
 
                 $htmlContent = $this->buildMessageEmailHtml($event, $senderName, $link);
 
+                // Lock-screen facts for the device push: who wrote, which thread to
+                // group under, and the first line of the text. FCMPushService drops
+                // the preview unless the recipient opted in (push_show_message_preview)
+                // and PushCopy caps every value, so the raw body never travels as-is.
+                $pushContext = [
+                    'actor' => $senderName,
+                    'thread_id' => 'message:' . (int) $senderId,
+                ];
+                $rawBody = (string) ($event->message->body ?? '');
+                if (!$event->message->is_voice && trim(strip_tags($rawBody)) !== '') {
+                    $pushContext['preview'] = strip_tags($rawBody);
+                }
+
                 $emailEnabled = true;
                 try {
                     $prefs = User::getNotificationPreferences($recipientId);
@@ -135,11 +148,16 @@ class NotifyMessageReceived implements ShouldQueue
                         'new_message',
                         $content,
                         $link,
-                        $htmlContent
+                        $htmlContent,
+                        false,
+                        null,
+                        null,
+                        null,
+                        $pushContext
                     );
                 } else {
                     Notification::createNotification($recipientId, $content, $link, 'new_message');
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $recipientId, 'new_message', $content, $link);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $recipientId, 'new_message', $content, $link, false, $pushContext);
                     return true;
                 }
             });

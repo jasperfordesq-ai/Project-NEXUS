@@ -817,6 +817,8 @@ class UsersController extends BaseApiController
             'federation_notifications_enabled' => $fedEnabled,
             'push_enabled'                  => (bool) ($prefs['push_enabled'] ?? true),
             'push_campaigns_opted_in'       => (bool) ($prefs['push_campaigns_opted_in'] ?? false),
+            // Show the first line of a new message in the device push (opt-in, 80 chars).
+            'push_show_message_preview'     => (bool) ($prefs['push_show_message_preview'] ?? false),
         ]);
     }
 
@@ -838,7 +840,7 @@ class UsersController extends BaseApiController
             'email_gamification_digest', 'email_gamification_milestones',
             'email_org_payments', 'email_org_transfers', 'email_org_membership', 'email_org_admin',
             'caring_smart_nudges',
-            'push_enabled', 'push_campaigns_opted_in',
+            'push_enabled', 'push_campaigns_opted_in', 'push_show_message_preview',
         ];
 
         foreach ($allowedKeys as $key) {

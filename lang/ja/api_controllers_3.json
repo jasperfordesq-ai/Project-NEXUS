@@ -132,6 +132,7 @@
     "only_buyer_confirm": "購入者のみが支払いを確認できます。"
   },
   "admin_bells": {
+    "badge_removed": "{{badge}}バッジがプロフィールから削除されました。",
     "comment_hidden": "あなたのコメントがモデレーターによって非表示にされました。",
     "comment_removed": "あなたのコメントがモデレーターによって削除されました。",
     "post_hidden": "あなたの投稿がモデレーターによって非表示にされました。",

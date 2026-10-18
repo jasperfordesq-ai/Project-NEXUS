@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Gegenseitige Übereinstimmung gefunden',
     'push_default' => 'Neue Benachrichtigung',
     'push_private_body' => 'Öffnen Sie Timebank Global, um dieses private Update anzusehen.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Neue Nachricht von :actor',
+            'body' => 'Zum Lesen und Antworten tippen',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor möchte eine Verbindung herstellen',
+            'body' => 'Tippen Sie zum Akzeptieren oder Ablehnen',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor hat Ihre Verbindungsanfrage angenommen',
+            'body' => 'Sie sind jetzt verbunden',
+        ],
+        'transaction' => [
+            'title' => 'Sie haben :hours Stunden von :actor erhalten',
+            'body' => 'Tippen Sie hier, um Ihre Brieftasche anzuzeigen',
+        ],
+        'event_reminder' => [
+            'title' => 'Erinnerung: :subject startet :time',
+            'body' => 'Tippen Sie für die Details',
+        ],
+        'event_invitation' => [
+            'title' => ':actor hat Sie zu :subject eingeladen',
+            'body' => 'Tippen Sie, um zu antworten',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject wurde abgebrochen',
+            'body' => 'Tippen Sie für die Details',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Ihre Schicht bei :subject beginnt am :time',
+            'body' => 'Tippen Sie, um die Verschiebung anzuzeigen',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Ihre Schicht am :time wurde abgesagt',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Neue Anfrage für :subject',
+            'body' => 'Tippen Sie zum Akzeptieren oder Ablehnen',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Ihre Anfrage für :subject wurde angenommen',
+            'body' => 'Tippen Sie hier, um den Austausch zu vereinbaren',
+        ],
+        'achievement' => [
+            'title' => 'Du hast das Abzeichen :subject erhalten',
+            'body' => 'Tippen Sie hier, um Ihre Erfolge anzuzeigen',
+        ],
+        'group_join_request' => [
+            'title' => ':actor hat darum gebeten, :subject beizutreten',
+            'body' => 'Tippen Sie, um die Anfrage zu überprüfen',
+        ],
+        'comment' => [
+            'title' => ':actor hat Ihren Beitrag kommentiert',
+            'body' => 'Tippen Sie, um es zu lesen',
+        ],
+        'comment_reply' => [
+            'title' => ':actor hat auf Ihren Kommentar geantwortet',
+            'body' => 'Tippen Sie, um es zu lesen',
+        ],
+        'mention' => [
+            'title' => ':actor hat Sie erwähnt',
+            'body' => 'Tippen Sie, um es zu lesen',
+        ],
+        'moderation' => [
+            'title' => 'Moderations-Update',
+            'body' => 'Tippen Sie für die Details',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Update zu Ihrem Inserat',
     'push_feed_report_created' => 'Neue Inhaltsmeldung',
     'push_social_report_created' => 'Neue Inhaltsmeldung',

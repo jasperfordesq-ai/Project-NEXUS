@@ -77,6 +77,9 @@ class GroupNotificationService
                         false,
                         $userId,
                         $deliveryPolicy,
+                        null,
+                        // Lock-screen copy: "<member> asked to join <group>".
+                        ['actor' => $userName, 'subject' => (string) $group->name],
                     );
                 } catch (\Throwable $e) {
                     Log::error('GroupNotification: failed to dispatch join request notification', [

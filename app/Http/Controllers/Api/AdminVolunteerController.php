@@ -1224,7 +1224,7 @@ class AdminVolunteerController extends BaseApiController
                             true,
                             $tenantId
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $applicantId, 'moderation', __('api_controllers_3.admin_bells.volunteer_declined'), null);
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $applicantId, 'moderation', __('api_controllers_3.admin_bells.volunteer_declined'), '/volunteering?tab=applications');
                     });
                 }
             } catch (\Throwable $e) {

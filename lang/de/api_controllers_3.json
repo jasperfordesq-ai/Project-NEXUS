@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Nur der Käufer kann die Zahlung bestätigen."
   },
   "admin_bells": {
+    "badge_removed": "Das Abzeichen „{{badge}}“ wurde aus Ihrem Profil entfernt.",
     "comment_hidden": "Ihr Kommentar wurde von einem Moderator ausgeblendet.",
     "comment_removed": "Ihr Kommentar wurde von einem Moderator entfernt.",
     "post_hidden": "Ihr Beitrag wurde von einem Moderator ausgeblendet.",

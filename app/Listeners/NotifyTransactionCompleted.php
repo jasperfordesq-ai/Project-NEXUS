@@ -69,14 +69,19 @@ class NotifyTransactionCompleted implements ShouldQueue
                     $content .= ' ' . __('notifications.credit_received_for', ['description' => $description]);
                 }
 
-                self::deliverTransactionBell((int) $transaction->id, (int) $receiver->id, 'credit_received', function () use ($receiver, $content): int {
+                self::deliverTransactionBell((int) $transaction->id, (int) $receiver->id, 'credit_received', function () use ($receiver, $content, $senderName, $amount): int {
                     $bellId = Notification::createNotification(
                         $receiver->id,
                         $content,
                         '/wallet',
                         'transaction'
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($receiver->id), 'transaction', $content, '/wallet');
+                    // Lock-screen copy: "You received 1.5 hours from Alice" — the time
+                    // credits and the sender, never the transaction description.
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($receiver->id), 'transaction', $content, '/wallet', false, [
+                        'actor' => $senderName,
+                        'hours' => $amount,
+                    ]);
                     return $bellId;
                 });
 

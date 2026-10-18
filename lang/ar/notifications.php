@@ -121,6 +121,77 @@ return [
     'push_mutual_match' => 'تم العثور على تطابق متبادل',
     'push_default' => 'إشعار جديد',
     'push_private_body' => 'افتح Timebank Global لعرض هذا التحديث الخاص.',
+    'push' => [
+        'new_message' => [
+            'title' => 'رسالة جديدة من :actor',
+            'body' => 'انقر للقراءة والرد',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor يريد الاتصال',
+            'body' => 'انقر للقبول أو الرفض',
+        ],
+        'connection_accepted' => [
+            'title' => 'وافق :actor على طلب الاتصال الخاص بك',
+            'body' => 'أنت الآن متصل',
+        ],
+        'transaction' => [
+            'title' => 'لقد تلقيت :hours ساعة من :actor',
+            'body' => 'انقر لرؤية محفظتك',
+        ],
+        'event_reminder' => [
+            'title' => 'تذكير: :subject يبدأ :time',
+            'body' => 'انقر للحصول على التفاصيل',
+        ],
+        'event_invitation' => [
+            'title' => ':actor دعاك إلى :subject',
+            'body' => 'انقر للرد',
+        ],
+        'event_cancelled' => [
+            'title' => 'تم إلغاء :subject',
+            'body' => 'انقر للحصول على التفاصيل',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'تبدأ مناوبتك عند :subject :time',
+            'body' => 'انقر لرؤية التحول',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'تم إلغاء مناوبتك على :time',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'طلب جديد لـ :subject',
+            'body' => 'انقر للقبول أو الرفض',
+        ],
+        'exchange_accepted' => [
+            'title' => 'تم قبول طلبك الخاص بـ :subject',
+            'body' => 'انقر لترتيب التبادل',
+        ],
+        'achievement' => [
+            'title' => 'لقد حصلت على شارة :subject',
+            'body' => 'انقر لرؤية إنجازاتك',
+        ],
+        'group_join_request' => [
+            'title' => 'طلب :actor الانضمام إلى :subject',
+            'body' => 'انقر لمراجعة الطلب',
+        ],
+        'comment' => [
+            'title' => 'علق :actor على مشاركتك',
+            'body' => 'انقر لقراءتها',
+        ],
+        'comment_reply' => [
+            'title' => 'قام :actor بالرد على تعليقك',
+            'body' => 'انقر لقراءتها',
+        ],
+        'mention' => [
+            'title' => 'ذكرك :actor',
+            'body' => 'انقر لقراءتها',
+        ],
+        'moderation' => [
+            'title' => 'تحديث الاعتدال',
+            'body' => 'انقر للحصول على التفاصيل',
+        ],
+    ],
     'push_marketplace_enforcement' => 'تحديث بشأن إعلانك',
     'push_feed_report_created' => 'بلاغ جديد',
     'push_social_report_created' => 'بلاغ جديد',

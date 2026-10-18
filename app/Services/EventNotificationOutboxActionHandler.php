@@ -1344,7 +1344,10 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
                 'in_app' => $this->deliverInApp($deliveryService, $tenantId, $userId, $delivery, $rendered['message'], $rendered['path'], $descriptor['notification_type']),
                 'push' => $this->deliverPush($deliveryService, $tenantId, $userId, $delivery, $rendered['message'], $rendered['path'], $descriptor['notification_type']),
                 'web_push' => $this->deliverWebPush($deliveryService, $tenantId, $userId, $delivery, $rendered['subject'], $rendered['message'], $rendered['path'], $descriptor['notification_type']),
-                'fcm' => $this->deliverFcm($deliveryService, $tenantId, $userId, $delivery, $rendered['subject'], $rendered['message'], $rendered['path'], $descriptor['notification_type']),
+                'fcm' => $this->deliverFcm($deliveryService, $tenantId, $userId, $delivery, $rendered['subject'], $rendered['message'], $rendered['path'], $descriptor['notification_type'], [
+                    'subject' => $rendered['event_title'] ?? '',
+                    'time' => $rendered['event_when'] ?? '',
+                ]),
                 'realtime' => $this->deliverRealtime($deliveryService, $tenantId, $userId, $delivery, $rendered['message'], $rendered['path'], $descriptor['notification_type']),
                 'email' => $this->deliverEmail($deliveryService, $outbox, $recipientDescriptor, $recipient, $delivery, $rendered),
                 default => null,
@@ -1434,6 +1437,11 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             $when = (bool) ($event->all_day ?? false)
                 ? $start->isoFormat('LL')
                 : $start->isoFormat('LLLL') . ' (' . $timezone . ')';
+            // Short form for the lock screen ("19 Oct 2026 10:00"); the long form
+            // above would be cut off at the push copy's 40-character cap.
+            $pushWhen = (bool) ($event->all_day ?? false)
+                ? $start->isoFormat('ll')
+                : $start->isoFormat('lll');
             $offset = $this->reminderLeadTime(
                 max(1, (int) ($payload['offset_minutes'] ?? 1)),
                 CarbonImmutable::parse((string) $event->start_time, 'UTC'),
@@ -1542,7 +1550,10 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             ->button(__('event_notifications.view_event'), $url)
             ->render();
 
-        return compact('subject', 'message', 'path', 'html');
+        // event_title / event_when feed the device push copy (PushCopy): the event
+        // name and, for reminders, the short start time.
+        return compact('subject', 'message', 'path', 'html')
+            + ['event_title' => $title, 'event_when' => $pushWhen ?? ''];
     }
 
     private function reminderChannelSuppression(
@@ -1809,6 +1820,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
         string $message,
         string $path,
         string $type,
+        array $pushContext = [],
     ): void {
         $deliveryId = (int) $delivery['id'];
         $hasDestination = Schema::hasTable('fcm_device_tokens')
@@ -1829,7 +1841,7 @@ final class EventNotificationOutboxActionHandler implements EventNotificationOut
             $result = FCMPushService::sendToUser($userId, $title, $message, [
                 'link' => $path,
                 'type' => $type,
-            ]);
+            ], $pushContext);
             if ((int) ($result['sent'] ?? 0) < 1) {
                 throw new RuntimeException('event_notification_fcm_provider_rejected');
             }

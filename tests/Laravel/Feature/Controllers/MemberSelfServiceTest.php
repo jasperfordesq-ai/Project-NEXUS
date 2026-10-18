@@ -265,6 +265,23 @@ class MemberSelfServiceTest extends TestCase
         }
     }
 
+    public function test_message_preview_preference_is_off_by_default_and_persists_when_switched_on(): void
+    {
+        $this->makeMember();
+
+        // Message text stays off the lock screen until the member opts in.
+        $this->apiGet('/v2/users/me/notifications')
+            ->assertStatus(200)
+            ->assertJsonPath('data.push_show_message_preview', false);
+
+        $this->apiPut('/v2/users/me/notifications', ['push_show_message_preview' => true])
+            ->assertStatus(200);
+
+        $this->apiGet('/v2/users/me/notifications')
+            ->assertStatus(200)
+            ->assertJsonPath('data.push_show_message_preview', true);
+    }
+
     public function test_update_notification_preferences_persists_a_toggle(): void
     {
         $this->makeMember();

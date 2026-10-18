@@ -46,6 +46,23 @@ class EventReminderServiceTest extends TestCase
     // cancelReminder()
     // =========================================================================
 
+    public function test_push_reminder_time_is_short_enough_for_a_lock_screen_title(): void
+    {
+        // The email/bell form is "Monday, 19 October 2026 10:00 (Europe/Dublin)",
+        // which the push copy's 40-character cap would cut mid-word. The push
+        // gets the short form in the event's timezone.
+        $method = new \ReflectionMethod(EventReminderService::class, 'formatEventTimeForPush');
+        $method->setAccessible(true);
+
+        $short = $method->invoke(null, $this->testTenantId, '2026-10-19 09:00:00', 'Europe/Dublin');
+
+        $this->assertLessThanOrEqual(40, mb_strlen($short), $short);
+        $this->assertStringContainsString('10:00', $short);
+        $this->assertStringContainsString('2026', $short);
+        $this->assertStringNotContainsString('Europe/Dublin', $short);
+        $this->assertSame('', $method->invoke(null, $this->testTenantId, null, 'Europe/Dublin'));
+    }
+
     public function test_cancelReminder_returns_true_on_success(): void
     {
         DB::shouldReceive('delete')->once()->andReturn(1);

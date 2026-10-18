@@ -506,6 +506,14 @@ class VolunteerShiftManagementService
                     'title' => $opportunityTitle,
                     'date'  => date('j M Y H:i', strtotime($startTime) ?: time()),
                 ]);
+                // Lock-screen copy: "Your shift on <when> was cancelled" / the opportunity.
+                // Carbon's locale follows LocaleContext, so the date reads in the
+                // volunteer's language.
+                try {
+                    $when = \Illuminate\Support\Carbon::parse($startTime)->isoFormat('lll');
+                } catch (\Throwable) {
+                    $when = '';
+                }
                 NotificationDispatcher::dispatch(
                     $userId,
                     'global',
@@ -514,7 +522,11 @@ class VolunteerShiftManagementService
                     $content,
                     '/volunteering?tab=applications',
                     null,
-                    false
+                    false,
+                    null,
+                    null,
+                    null,
+                    ['subject' => $opportunityTitle, 'time' => $when]
                 );
             });
         } catch (\Throwable $e) {

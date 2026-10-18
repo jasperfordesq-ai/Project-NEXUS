@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\I18n\LocaleContext;
 use App\Jobs\CheckExpoPushReceipts;
+use App\Support\Push\PushCopy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -57,19 +58,30 @@ class FCMPushService
      *
      * @return array{sent: int, failed: int, errors: string[]}
      */
-    public static function sendToUser(int $userId, string $title, string $body, array $data = []): array
+    public static function sendToUser(int $userId, string $title, string $body, array $data = [], array $context = []): array
     {
         // Honour the user's push_enabled preference. Default true so legacy
         // users with no JSON pref still receive notifications until they
         // explicitly opt out. Best-effort — pref-lookup failures don't block.
+        $allowPreview = false;
         try {
             $prefs = \App\Models\User::getNotificationPreferences($userId);
             if (!(bool) ($prefs['push_enabled'] ?? true)) {
                 return ['sent' => 0, 'failed' => 0, 'errors' => []];
             }
+            // Message text is the one private value that can reach a lock screen.
+            // It travels only when THIS member switched on push_show_message_preview
+            // (default off); a failed lookup keeps it off.
+            $allowPreview = (bool) ($prefs['push_show_message_preview'] ?? false);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::debug('FCMPushService: pref lookup failed: ' . $e->getMessage());
         }
+        if (!$allowPreview) {
+            unset($context['preview']);
+        }
+        // Badge counts are deliberately not set here: a message-only count would be
+        // wrong on every non-message push, and the app already syncs its badge from
+        // /api/v2/notifications/counts.
 
         $tenantId = TenantContext::getId();
         $tokens = DB::table('fcm_device_tokens')
@@ -86,7 +98,7 @@ class FCMPushService
 
         return LocaleContext::withLocale(
             $preferredLocale ?? (string) config('app.locale', 'en'),
-            fn (): array => self::sendToTokens($tokens, $title, $body, $data),
+            fn (): array => self::sendToTokens($tokens, $title, $body, $data, $context),
         );
     }
 
@@ -95,11 +107,14 @@ class FCMPushService
      *
      * @return array{sent: int, failed: int, errors: string[]}
      */
-    public static function sendToUsers(array $userIds, string $title, string $body, array $data = []): array
+    public static function sendToUsers(array $userIds, string $title, string $body, array $data = [], array $context = []): array
     {
         if (empty($userIds)) {
             return ['sent' => 0, 'failed' => 0, 'errors' => []];
         }
+        // A batch cannot honour each recipient's preview preference, so message
+        // text never travels on this path.
+        unset($context['preview']);
 
         $tenantId = TenantContext::getId();
         $tokenGroups = self::tokensGroupedByRecipientLocale($userIds, $tenantId);
@@ -111,11 +126,14 @@ class FCMPushService
         foreach ($tokenGroups as $locale => $tokens) {
             $result = LocaleContext::withLocale(
                 $locale !== '' ? $locale : (string) config('app.locale', 'en'),
-                fn (): array => self::sendToTokens($tokens, $title, $body, $data),
+                fn (): array => self::sendToTokens($tokens, $title, $body, $data, $context),
             );
             $combined['sent'] += $result['sent'];
             $combined['failed'] += $result['failed'];
             array_push($combined['errors'], ...$result['errors']);
+            if (!empty($result['suppressed'])) {
+                $combined['suppressed'] = true;
+            }
         }
 
         return $combined;
@@ -322,14 +340,24 @@ class FCMPushService
      *
      * @return array{sent: int, failed: int, errors: string[]}
      */
-    private static function sendToTokens(array $tokens, string $title, string $body, array $data): array
+    private static function sendToTokens(array $tokens, string $title, string $body, array $data, array $context = []): array
     {
         if (self::shouldSuppressNativePush($data)) {
-            return ['sent' => 0, 'failed' => 0, 'errors' => []];
+            // `suppressed` lets a caller tell "kept off phones by policy" from
+            // "no device registered" — EmergencyAlertService records it.
+            return ['sent' => 0, 'failed' => 0, 'errors' => [], 'suppressed' => true];
         }
         $highPriority = self::shouldUseHighPriority($data);
         $ttlSeconds = $highPriority ? 900 : 86400;
-        [$title, $body, $data] = self::lockScreenSafePresentation($title, $body, $data);
+        [$title, $body, $data] = self::lockScreenSafePresentation($title, $body, $data, $context);
+        $type = is_string($data['type'] ?? null) ? $data['type'] : '';
+        $channelId = PushCopy::channelFor($type, $highPriority);
+        // Prompt delivery (and an Android heads-up) for messages and reminders too,
+        // not only emergencies; the iOS interruption level stays emergency-only.
+        $promptDelivery = $highPriority || PushCopy::isTimeSensitive($type);
+        // Repeated pushes from one conversation replace each other instead of
+        // stacking. Already validated by PushCopy::sanitiseContext().
+        $threadId = is_string($data['thread_id'] ?? null) ? $data['thread_id'] : null;
 
         $sent = 0;
         $failed = 0;
@@ -392,13 +420,18 @@ class FCMPushService
                     $message['message']['android'] = [
                         'ttl' => $ttlSeconds . 's',
                         'notification' => [
-                            'channel_id' => $highPriority ? 'emergency' : 'default',
+                            'channel_id' => $channelId,
                         ],
                     ];
                     $message['message']['apns'] = [
                         'headers' => self::apnsHeadersForDelivery($highPriority, $ttlSeconds),
                     ];
-                    if ($highPriority) {
+                    if ($threadId !== null) {
+                        $message['message']['android']['notification']['tag'] = $threadId;
+                        $message['message']['apns']['headers']['apns-collapse-id'] = $threadId;
+                        $message['message']['apns']['payload'] = ['aps' => ['thread-id' => $threadId]];
+                    }
+                    if ($promptDelivery) {
                         $message['message']['android']['priority'] = 'HIGH';
                     }
 
@@ -453,15 +486,19 @@ class FCMPushService
                     'notification' => [
                         'title' => $title,
                         'body' => $body,
-                        'android_channel_id' => $highPriority ? 'emergency' : 'default',
+                        'android_channel_id' => $channelId,
                     ],
                     'time_to_live' => $ttlSeconds,
                 ];
 
+                if ($threadId !== null) {
+                    $payload['notification']['tag'] = $threadId;
+                    $payload['collapse_key'] = $threadId;
+                }
                 if (!empty($data)) {
                     $payload['data'] = $data;
                 }
-                if ($highPriority) {
+                if ($promptDelivery) {
                     $payload['priority'] = 'high';
                 }
 
@@ -525,10 +562,20 @@ class FCMPushService
      * Apple App Review Guideline 4.5.4:
      * https://developer.apple.com/app-store/review/guidelines/#apple-sites-and-services
      *
+     * Since the tailored-copy change the body is no longer always generic:
+     *  1. a catalogued type with producer context renders PushCopy's title and
+     *     body in the recipient's locale ("New message from Alice");
+     *  2. an uncatalogued dispatcher push (`display_body_safe => '1'`, set only by
+     *     NotificationDispatcher::fanOutPush) shows the clamped bell sentence the
+     *     recipient already sees in the inbox;
+     *  3. anything else keeps the generic sentence. Safeguarding, GDPR, emergency
+     *     and support-action types always take this branch and ignore context.
+     *
      * @param array<string,mixed> $data
+     * @param array<string,mixed> $context Producer facts, see PushCopy::CONTEXT_LIMITS.
      * @return array{0:string,1:string,2:array<string,mixed>}
      */
-    private static function lockScreenSafePresentation(string $title, string $body, array $data): array
+    private static function lockScreenSafePresentation(string $title, string $body, array $data, array $context = []): array
     {
         if (($data['campaign_type'] ?? null) === 'paid_push') {
             $campaignId = is_scalar($data['campaign_id'] ?? null)
@@ -545,8 +592,17 @@ class FCMPushService
         }
 
         $type = is_string($data['type'] ?? null) ? (string) $data['type'] : '';
-        $mayDisplayCuratedTitle = ($data['display_title_safe'] ?? null) === '1'
-            && !self::requiresCategoryOnlyTitle($type);
+        $categoryOnly = self::requiresCategoryOnlyTitle($type);
+        if ($categoryOnly) {
+            $context = [];
+        }
+
+        $copy = $categoryOnly ? null : PushCopy::render($type, $context);
+        if ($copy !== null) {
+            return [$copy['title'], $copy['body'], self::safeNavigationData($data, $context)];
+        }
+
+        $mayDisplayCuratedTitle = ($data['display_title_safe'] ?? null) === '1' && !$categoryOnly;
         // Never trust the caller-rendered title for ordinary pushes. A queued or
         // after-response producer may have rendered it in the actor's locale;
         // this method runs inside the recipient LocaleContext and can render the
@@ -555,10 +611,28 @@ class FCMPushService
             ? NotificationDispatcher::recipientPushTitle($type)
             : self::privacySafeTitleForData($data);
 
+        // The bell-sentence fallback is for types with no catalogue entry. A
+        // catalogued type that could not render (a commenter with an empty display
+        // name, say) must not fall through to the bell text, which for comments,
+        // replies and mentions carries the member's words. Money and identity
+        // outcomes keep the generic body regardless (Apple 4.5.4 names them).
+        $safeBody = '';
+        if (
+            !$categoryOnly
+            && ($data['display_body_safe'] ?? null) === '1'
+            && !PushCopy::isCurated($type)
+            && !self::requiresGenericBody($type)
+        ) {
+            $safeBody = PushCopy::plainBody($body);
+        }
+        if ($safeBody === '') {
+            $safeBody = (string) __('notifications.push_private_body');
+        }
+
         return [
             $safeTitle,
-            __('notifications.push_private_body'),
-            self::safeNavigationData($data),
+            $safeBody,
+            self::safeNavigationData($data, $context),
         ];
     }
 
@@ -571,6 +645,23 @@ class FCMPushService
         }
 
         return NotificationDispatcher::privacySafePushTitle($type);
+    }
+
+    /**
+     * Types whose bell sentence states an amount, a payment outcome, an identity
+     * check result or a staff-facing complaint summary. They keep the generic
+     * lock-screen body even though their title is allowed.
+     */
+    private static function requiresGenericBody(string $type): bool
+    {
+        $normalized = strtolower($type);
+        foreach (['payout', 'billing', 'premium', 'verification', 'support_report', 'donation', 'adjustment', 'refund', 'invoice'] as $marker) {
+            if (str_contains($normalized, $marker)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function requiresCategoryOnlyTitle(string $type): bool
@@ -589,9 +680,10 @@ class FCMPushService
      * Reduce producer data to the versioned fields the native tap handler consumes.
      *
      * @param array<string,mixed> $data
+     * @param array<string,mixed> $context
      * @return array<string,string>
      */
-    private static function safeNavigationData(array $data): array
+    private static function safeNavigationData(array $data, array $context = []): array
     {
         $result = [
             'schema_version' => '1',
@@ -601,6 +693,13 @@ class FCMPushService
         $type = $data['type'] ?? null;
         if (is_string($type) && preg_match('/^[a-z0-9_:-]{1,80}$/i', $type) === 1) {
             $result['type'] = $type;
+        }
+
+        // `<kind>:<id>` lets the app group a conversation's alerts and clear them
+        // once the thread is opened. Only the validated form is forwarded.
+        $threadId = PushCopy::sanitiseContext($context)['thread_id'] ?? null;
+        if ($threadId !== null) {
+            $result['thread_id'] = $threadId;
         }
 
         return $result;
@@ -886,18 +985,24 @@ class FCMPushService
         bool $highPriority = false,
     ): array
     {
-        $messages = array_map(static function (string $token) use ($title, $body, $data, $highPriority): array {
+        $type = is_string($data['type'] ?? null) ? $data['type'] : '';
+        // Expo's message object has no collapse/thread field; `data.thread_id` is
+        // what the app uses to group and clear a conversation's alerts itself.
+        $messages = array_map(static function (string $token) use ($title, $body, $data, $highPriority, $type): array {
             $message = [
                 'to' => $token,
                 'title' => $title,
                 'body' => $body,
                 'sound' => 'default',
-                'channelId' => $highPriority ? 'emergency' : 'default',
+                'channelId' => PushCopy::channelFor($type, $highPriority),
                 'ttl' => $highPriority ? 900 : 86400,
                 'data' => array_map('strval', $data),
             ];
-            if ($highPriority) {
+            if ($highPriority || PushCopy::isTimeSensitive($type)) {
                 $message['priority'] = 'high';
+            }
+            if ($highPriority) {
+                // Needs the iOS time-sensitive entitlement; reserved for emergencies.
                 $message['interruptionLevel'] = 'time-sensitive';
             }
 

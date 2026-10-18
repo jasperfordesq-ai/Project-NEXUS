@@ -141,15 +141,223 @@ class FCMPushServiceTest extends TestCase
             'type' => 'new_message',
             'link' => '/notifications',
             'display_title_safe' => '1',
-        ]);
+        ], ['actor' => 'Bob']);
 
         $this->assertSame(1, $result['sent']);
         Http::assertSent(function ($request): bool {
             $payload = $request->data();
 
-            return $payload['title'] === 'Teachtaireacht Nua'
-                && $payload['body'] === 'Oscail Timebank Global chun an nuashonrú príobháideach seo a fheiceáil.';
+            // The catalogue copy, in the recipient's language, naming the sender.
+            return $payload['title'] === 'Teachtaireacht nua ó Bob'
+                && $payload['body'] === 'Tapáil chun í a léamh agus freagra a thabhairt';
         });
+    }
+
+    public function test_new_message_push_is_tailored_grouped_and_high_priority(): void
+    {
+        Queue::fake();
+        config([
+            'services.fcm.server_key' => null,
+            'services.fcm.project_id' => null,
+            'services.fcm.service_account_path' => base_path('missing-firebase-service-account.json'),
+        ]);
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'ticket-nm']],
+            ], 200),
+        ]);
+        $this->mockSingleRecipientLookups('{"push_enabled":1}', 'en');
+
+        $result = FCMPushService::sendToUser(1, 'New Message', 'Alice sent you a message', [
+            'schema_version' => '1',
+            'type' => 'new_message',
+            'link' => '/messages/10',
+            'display_title_safe' => '1',
+            'display_body_safe' => '1',
+        ], ['actor' => 'Alice', 'thread_id' => 'message:10', 'preview' => 'Secret text']);
+
+        $this->assertSame(1, $result['sent']);
+        $payload = Http::recorded()[0][0]->data();
+        $this->assertSame('New message from Alice', $payload['title']);
+        // Preview stays off the lock screen until the member opts in.
+        $this->assertSame('Tap to read and reply', $payload['body']);
+        $this->assertSame('messages', $payload['channelId']);
+        $this->assertSame('high', $payload['priority']);
+        $this->assertSame(86400, $payload['ttl']);
+        $this->assertArrayNotHasKey('interruptionLevel', $payload);
+        $this->assertSame([
+            'schema_version' => '1',
+            'link' => '/messages/10',
+            'type' => 'new_message',
+            'thread_id' => 'message:10',
+        ], $payload['data']);
+    }
+
+    public function test_message_preview_is_shown_only_when_the_recipient_opted_in_and_is_clamped(): void
+    {
+        Queue::fake();
+        config([
+            'services.fcm.server_key' => null,
+            'services.fcm.project_id' => null,
+            'services.fcm.service_account_path' => base_path('missing-firebase-service-account.json'),
+        ]);
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'ticket-pv']],
+            ], 200),
+        ]);
+        $this->mockSingleRecipientLookups('{"push_enabled":1,"push_show_message_preview":1}', 'en');
+
+        $longPreview = str_repeat('word ', 30);
+        FCMPushService::sendToUser(1, 'New Message', 'Alice sent you a message', [
+            'type' => 'new_message',
+            'link' => '/messages/10',
+            'display_title_safe' => '1',
+        ], ['actor' => 'Alice', 'preview' => $longPreview]);
+
+        $payload = Http::recorded()[0][0]->data();
+        $this->assertSame('New message from Alice', $payload['title']);
+        $this->assertStringStartsWith('word word', $payload['body']);
+        $this->assertLessThanOrEqual(80, mb_strlen($payload['body']));
+        $this->assertNotSame('Tap to read and reply', $payload['body']);
+    }
+
+    public function test_batch_sends_never_carry_a_message_preview(): void
+    {
+        Queue::fake();
+        config([
+            'services.fcm.server_key' => null,
+            'services.fcm.project_id' => null,
+            'services.fcm.service_account_path' => base_path('missing-firebase-service-account.json'),
+        ]);
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'ticket-batch']],
+            ], 200),
+        ]);
+
+        $query = \Mockery::mock();
+        $query->shouldReceive('join')->andReturnSelf();
+        $query->shouldReceive('where')->andReturnSelf();
+        $query->shouldReceive('whereIn')->andReturnSelf();
+        $query->shouldReceive('get')->once()->andReturn(collect([
+            (object) [
+                'token' => 'ExponentPushToken[batch1]',
+                'preferred_language' => 'en',
+                'notification_preferences' => '{"push_enabled":1,"push_show_message_preview":1}',
+            ],
+        ]));
+        DB::shouldReceive('table')->with('fcm_device_tokens as device_tokens')->once()->andReturn($query);
+
+        FCMPushService::sendToUsers([1], 'New Message', 'Alice sent you a message', [
+            'type' => 'new_message',
+            'link' => '/messages/10',
+            'display_title_safe' => '1',
+        ], ['actor' => 'Alice', 'preview' => 'Secret text']);
+
+        $payload = Http::recorded()[0][0]->data();
+        $this->assertSame('New message from Alice', $payload['title']);
+        $this->assertSame('Tap to read and reply', $payload['body']);
+    }
+
+    public function test_sensitive_category_types_ignore_producer_context(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        [$title, $body, $data] = $method->invoke(null, 'GDPR request from Jane Doe', 'Delete Jane Doe account', [
+            'type' => 'gdpr_request',
+            'link' => '/notifications',
+            'display_title_safe' => '1',
+            'display_body_safe' => '1',
+        ], ['actor' => 'Jane Doe', 'subject' => 'Jane Doe', 'thread_id' => 'gdpr:1']);
+
+        $this->assertSame('Security', $title);
+        $this->assertSame('Open Timebank Global to view this private update.', $body);
+        $this->assertArrayNotHasKey('thread_id', $data);
+    }
+
+    public function test_uncatalogued_dispatcher_push_falls_back_to_the_clamped_bell_sentence(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        $longBell = str_repeat('Someone posted something new in your group. ', 10);
+        [$title, $body] = $method->invoke(null, 'New Post', $longBell, [
+            'schema_version' => '1',
+            'type' => 'new_topic',
+            'link' => '/groups/44',
+            'display_title_safe' => '1',
+            'display_body_safe' => '1',
+        ]);
+
+        $this->assertSame('New Post', $title);
+        $this->assertStringStartsWith('Someone posted something new in your group.', $body);
+        $this->assertLessThanOrEqual(180, mb_strlen($body));
+        $this->assertNotSame('Open Timebank Global to view this private update.', $body);
+    }
+
+    public function test_a_curated_type_that_cannot_render_never_falls_back_to_the_bell_sentence(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        // A commenter with an empty display name: no actor fact survives, so the
+        // catalogue cannot render — the bell sentence (which carries the comment
+        // text) must still stay off the lock screen.
+        foreach (['comment', 'comment_reply', 'mention', 'new_message'] as $type) {
+            [, $body] = $method->invoke(null, 'Activity', 'Someone commented on your post: "my private comment text"', [
+                'schema_version' => '1',
+                'type' => $type,
+                'link' => '/feed/posts/42#comment-91',
+                'display_title_safe' => '1',
+                'display_body_safe' => '1',
+            ], ['actor' => '']);
+
+            $this->assertSame('Open Timebank Global to view this private update.', $body, $type);
+        }
+    }
+
+    public function test_money_and_identity_types_keep_the_generic_body(): void
+    {
+        $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
+        $method->setAccessible(true);
+
+        foreach ([
+            'marketplace_payout' => 'Your payout of €40.00 for order #77 is on its way',
+            'member_premium_billing' => 'Payment failed for your Gold membership',
+            'verification_failed' => 'Your identity verification was unsuccessful. Reason: blurry document',
+            'support_report' => 'New support report #12: member says a neighbour threatened them',
+            'donation' => 'New donation: €25 from Jane Doe',
+            'marketplace_refund' => 'Your refund of €12.50 was issued',
+        ] as $type => $bell) {
+            [, $body] = $method->invoke(null, 'Update', $bell, [
+                'schema_version' => '1',
+                'type' => $type,
+                'link' => '/notifications',
+                'display_title_safe' => '1',
+                'display_body_safe' => '1',
+            ]);
+
+            $this->assertSame('Open Timebank Global to view this private update.', $body, $type);
+        }
+    }
+
+    private function mockSingleRecipientLookups(string $preferencesJson, string $locale): void
+    {
+        $tokenQuery = \Mockery::mock();
+        $tokenQuery->shouldReceive('where')->with('user_id', 1)->once()->andReturnSelf();
+        $tokenQuery->shouldReceive('where')->with('tenant_id', $this->testTenantId)->once()->andReturnSelf();
+        $tokenQuery->shouldReceive('pluck')->with('token')->once()->andReturn(collect(['ExponentPushToken[single]']));
+
+        $userQuery = \Mockery::mock();
+        $userQuery->shouldReceive('where')->with('id', 1)->twice()->andReturnSelf();
+        $userQuery->shouldReceive('where')->with('tenant_id', $this->testTenantId)->twice()->andReturnSelf();
+        $userQuery->shouldReceive('value')->with('notification_preferences')->once()->andReturn($preferencesJson);
+        $userQuery->shouldReceive('value')->with('preferred_language')->once()->andReturn($locale);
+
+        DB::shouldReceive('table')->with('fcm_device_tokens')->once()->andReturn($tokenQuery);
+        DB::shouldReceive('table')->with('users')->twice()->andReturn($userQuery);
     }
 
     public function test_native_payload_removes_confidential_content_and_unsafe_navigation_data(): void
@@ -180,6 +388,8 @@ class FCMPushServiceTest extends TestCase
         $method = new \ReflectionMethod(FCMPushService::class, 'lockScreenSafePresentation');
         $method->setAccessible(true);
 
+        // A direct producer that passes no context and no display_body_safe flag:
+        // curated title, generic body, and producer fields never leave the server.
         [$title, $body, $data] = $method->invoke(null, 'New Message', 'Private message contents', [
             'schema_version' => '1',
             'type' => 'new_message',
@@ -194,6 +404,23 @@ class FCMPushServiceTest extends TestCase
             'schema_version' => '1',
             'link' => '/messages/123?context_type=listing&context_id=44',
             'type' => 'new_message',
+        ], $data);
+
+        // With context the catalogue wins and a valid thread id travels in data.
+        [$title, $body, $data] = $method->invoke(null, 'New Message', 'Private message contents', [
+            'schema_version' => '1',
+            'type' => 'new_message',
+            'link' => '/messages/123',
+            'display_title_safe' => '1',
+        ], ['actor' => 'Jane', 'thread_id' => 'message:123', 'secret' => 'x']);
+
+        $this->assertSame('New message from Jane', $title);
+        $this->assertSame('Tap to read and reply', $body);
+        $this->assertSame([
+            'schema_version' => '1',
+            'link' => '/messages/123',
+            'type' => 'new_message',
+            'thread_id' => 'message:123',
         ], $data);
     }
 

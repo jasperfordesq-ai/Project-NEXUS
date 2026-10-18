@@ -115,7 +115,8 @@ class CaringEmergencyAlertExposureTest extends TestCase
             'errors' => ['Token ' . self::DEVICE_TOKEN . ': UNREGISTERED'],
         ]);
 
-        $this->assertSame(['sent' => 2, 'failed' => 1, 'error_count' => 1], $summary);
+        // Counts and the policy flag only — never the per-token error strings.
+        $this->assertSame(['sent' => 2, 'failed' => 1, 'error_count' => 1, 'suppressed' => false], $summary);
         $this->assertStringNotContainsString(self::DEVICE_TOKEN, (string) json_encode($summary));
     }
 

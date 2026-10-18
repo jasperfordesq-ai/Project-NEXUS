@@ -347,7 +347,7 @@ class AdminCommentsController extends BaseApiController
                     'moderation',
                     true
                 );
-                \App\Services\NotificationDispatcher::fanOutPush((int) $commentAuthorId, 'moderation', __('api_controllers_3.admin_bells.comment_removed'), null);
+                \App\Services\NotificationDispatcher::fanOutPush((int) $commentAuthorId, 'moderation', __('api_controllers_3.admin_bells.comment_removed'), '/notifications');
 
                 // The bell/push above give no reason or recourse. Send a durable
                 // email with WHY it was removed and HOW to contest (DSA

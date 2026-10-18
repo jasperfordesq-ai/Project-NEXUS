@@ -121,6 +121,77 @@ return [
     'push_mutual_match' => '相互一致が見つかりました',
     'push_default' => '新しい通知',
     'push_private_body' => 'この非公開の更新を表示するにはTimebank Globalを開いてください。',
+    'push' => [
+        'new_message' => [
+            'title' => ':actor からの新しいメッセージ',
+            'body' => 'タップして読んで返信します',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor が接続を希望しています',
+            'body' => 'タップして承諾または拒否します',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor が接続リクエストを受け入れました',
+            'body' => 'これで接続されました',
+        ],
+        'transaction' => [
+            'title' => ':actor から :hours 時間受け取りました',
+            'body' => 'タップしてウォレットを表示します',
+        ],
+        'event_reminder' => [
+            'title' => 'リマインダー: :subject は :time を開始します',
+            'body' => 'タップすると詳細が表示されます',
+        ],
+        'event_invitation' => [
+            'title' => ':actor が :subject に招待しました',
+            'body' => 'タップして返信する',
+        ],
+        'event_cancelled' => [
+            'title' => ':subjectはキャンセルされました',
+            'body' => 'タップすると詳細が表示されます',
+        ],
+        'vol_shift_reminder' => [
+            'title' => ':subject でのシフトは :time から始まります',
+            'body' => 'タップするとシフトが表示されます',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => ':time のシフトがキャンセルされました',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => ':subject の新しいリクエスト',
+            'body' => 'タップして承諾または拒否します',
+        ],
+        'exchange_accepted' => [
+            'title' => ':subject のリクエストが受け入れられました',
+            'body' => 'タップして交換を手配します',
+        ],
+        'achievement' => [
+            'title' => ':subject バッジを獲得しました',
+            'body' => 'タップして実績を確認します',
+        ],
+        'group_join_request' => [
+            'title' => ':actor が :subject への参加をリクエストしました',
+            'body' => 'タップしてリクエストを確認します',
+        ],
+        'comment' => [
+            'title' => ':actor があなたの投稿にコメントしました',
+            'body' => 'タップして読んでください',
+        ],
+        'comment_reply' => [
+            'title' => ':actor があなたのコメントに返信しました',
+            'body' => 'タップして読んでください',
+        ],
+        'mention' => [
+            'title' => ':actor があなたについて言及しました',
+            'body' => 'タップして読んでください',
+        ],
+        'moderation' => [
+            'title' => 'モデレーションの更新',
+            'body' => 'タップすると詳細が表示されます',
+        ],
+    ],
     'push_marketplace_enforcement' => '出品に関する更新',
     'push_feed_report_created' => '新しい通報',
     'push_social_report_created' => '新しい通報',

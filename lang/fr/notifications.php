@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Correspondance mutuelle trouvée',
     'push_default' => 'Nouvelle notification',
     'push_private_body' => 'Ouvrez Timebank Global pour consulter cette mise à jour privée.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nouveau message de :actor',
+            'body' => 'Appuyez pour lire et répondre',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor veut se connecter',
+            'body' => 'Appuyez pour accepter ou refuser',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor a accepté votre demande de connexion',
+            'body' => 'Vous êtes maintenant connecté',
+        ],
+        'transaction' => [
+            'title' => 'Vous avez reçu :hours heures de :actor',
+            'body' => 'Appuyez pour voir votre portefeuille',
+        ],
+        'event_reminder' => [
+            'title' => 'Rappel : :subject démarre :time',
+            'body' => 'Appuyez pour les détails',
+        ],
+        'event_invitation' => [
+            'title' => ':actor vous a invité à :subject',
+            'body' => 'Appuyez pour répondre',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject a été annulé',
+            'body' => 'Appuyez pour les détails',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Votre quart de travail à :subject commence :time',
+            'body' => 'Appuyez pour voir le changement',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Votre équipe du :time a été annulée',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nouvelle demande pour :subject',
+            'body' => 'Appuyez pour accepter ou refuser',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Votre demande de :subject a été acceptée',
+            'body' => 'Appuyez pour organiser l\'échange',
+        ],
+        'achievement' => [
+            'title' => 'Vous avez obtenu le badge :subject',
+            'body' => 'Appuyez pour voir vos réalisations',
+        ],
+        'group_join_request' => [
+            'title' => ':actor a demandé à rejoindre :subject',
+            'body' => 'Appuyez pour examiner la demande',
+        ],
+        'comment' => [
+            'title' => ':actor a commenté votre message',
+            'body' => 'Appuyez pour le lire',
+        ],
+        'comment_reply' => [
+            'title' => ':actor a répondu à votre commentaire',
+            'body' => 'Appuyez pour le lire',
+        ],
+        'mention' => [
+            'title' => ':actor vous a mentionné',
+            'body' => 'Appuyez pour le lire',
+        ],
+        'moderation' => [
+            'title' => 'Mise à jour de modération',
+            'body' => 'Appuyez pour les détails',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Mise à jour sur votre annonce',
     'push_feed_report_created' => 'Nouveau signalement',
     'push_social_report_created' => 'Nouveau signalement',

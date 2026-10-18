@@ -213,7 +213,7 @@ final class AgentExecutor
                 if (!$userId) {
                     return;
                 }
-                $title = (string) ($payload['title'] ?? 'NEXUS');
+                $title = (string) ($payload['title'] ?? __('notifications.push_default'));
                 $body  = (string) ($payload['body']  ?? '');
                 // Agent-authored payloads must not choose an arbitrary native
                 // destination. Caring nudges are deliberately outside the 18+

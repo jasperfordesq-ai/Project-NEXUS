@@ -36,6 +36,7 @@ class NotificationSettingsService
         'caring_smart_nudges' => true,
         'push_enabled' => true,
         'push_campaigns_opted_in' => false,
+        'push_show_message_preview' => false,
     ];
 
     public const FEDERATION_KEY = 'federation_notifications_enabled';

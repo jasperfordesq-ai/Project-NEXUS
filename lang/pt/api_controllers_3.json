@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Somente o comprador pode confirmar o pagamento."
   },
   "admin_bells": {
+    "badge_removed": "O emblema {{badge}} foi removido do seu perfil.",
     "comment_hidden": "O seu comentário foi ocultado por um moderador.",
     "comment_removed": "O seu comentário foi removido por um moderador.",
     "post_hidden": "A sua publicação foi ocultada por um moderador.",

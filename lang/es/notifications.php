@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Coincidencia mutua encontrada',
     'push_default' => 'Nueva Notificación',
     'push_private_body' => 'Abre Timebank Global para ver esta actualización privada.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Nuevo mensaje de :actor',
+            'body' => 'Toca para leer y responder',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => ':actor quiere conectarse',
+            'body' => 'Toca para aceptar o rechazar',
+        ],
+        'connection_accepted' => [
+            'title' => ':actor aceptó su solicitud de conexión',
+            'body' => 'Ahora estás conectado',
+        ],
+        'transaction' => [
+            'title' => 'Recibiste :hours horas de :actor',
+            'body' => 'Toca para ver tu billetera',
+        ],
+        'event_reminder' => [
+            'title' => 'Recordatorio: :subject inicia :time',
+            'body' => 'Toca para ver los detalles',
+        ],
+        'event_invitation' => [
+            'title' => ':actor te invitó a :subject',
+            'body' => 'Toca para responder',
+        ],
+        'event_cancelled' => [
+            'title' => ':subject ha sido cancelado',
+            'body' => 'Toca para ver los detalles',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Tu turno en :subject comienza :time',
+            'body' => 'Toca para ver el turno',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Tu turno el :time fue cancelado',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Nueva solicitud para :subject',
+            'body' => 'Toca para aceptar o rechazar',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Su solicitud de :subject fue aceptada',
+            'body' => 'Toca para organizar el intercambio',
+        ],
+        'achievement' => [
+            'title' => 'Obtuviste la insignia :subject',
+            'body' => 'Toca para ver tus logros',
+        ],
+        'group_join_request' => [
+            'title' => ':actor pidió unirse :subject',
+            'body' => 'Toca para revisar la solicitud',
+        ],
+        'comment' => [
+            'title' => ':actor comentó tu publicación',
+            'body' => 'Toca para leerlo',
+        ],
+        'comment_reply' => [
+            'title' => ':actor respondió a tu comentario',
+            'body' => 'Toca para leerlo',
+        ],
+        'mention' => [
+            'title' => ':actor te mencionó',
+            'body' => 'Toca para leerlo',
+        ],
+        'moderation' => [
+            'title' => 'Actualización de moderación',
+            'body' => 'Toca para ver los detalles',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Actualización sobre tu anuncio',
     'push_feed_report_created' => 'Nuevo informe',
     'push_social_report_created' => 'Nuevo informe',

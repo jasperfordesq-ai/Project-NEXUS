@@ -65,7 +65,13 @@ class NotifyConnectionRequestTest extends TestCase
                 'connection_request',
                 'Alice sent you a connection request',
                 '/connections',
-                null
+                null,
+                false,
+                null,
+                null,
+                null,
+                // Lock-screen copy names the requester.
+                ['actor' => 'Alice']
             );
 
         $listener = new NotifyConnectionRequest();
@@ -95,7 +101,12 @@ class NotifyConnectionRequestTest extends TestCase
                 'connection_request',
                 'Someone sent you a connection request',
                 '/connections',
-                null
+                null,
+                false,
+                null,
+                null,
+                null,
+                ['actor' => 'Someone']
             );
 
         $listener = new NotifyConnectionRequest();

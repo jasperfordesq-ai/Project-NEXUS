@@ -635,7 +635,7 @@ class AdminUsersController extends BaseApiController
                             'system',
                             true
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('api_controllers_3.admin_bells.account_suspended'), null);
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('api_controllers_3.admin_bells.account_suspended'), '/notifications');
                     });
                 } elseif ($statusForNotification === 'banned') {
                     LocaleContext::withLocale($recipientLocale, function () use ($id) {
@@ -646,7 +646,7 @@ class AdminUsersController extends BaseApiController
                             'system',
                             true
                         );
-                        \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('api_controllers_3.admin_bells.account_banned'), null);
+                        \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('api_controllers_3.admin_bells.account_banned'), '/notifications');
                     });
                 }
             } catch (\Throwable $e) {
@@ -1586,17 +1586,25 @@ class AdminUsersController extends BaseApiController
         DB::delete("DELETE FROM user_badges WHERE id = ? AND user_id = ? AND tenant_id = ?", [$badgeId, $id, $tenantId]);
         ActivityLog::log($adminId, 'admin_remove_badge', "Removed badge #{$badgeId} from user #{$id}");
 
-        // Notify the user (bell notification only)
+        // Notify the user (bell + device push), rendered in the recipient's language.
         try {
             $badgeDisplayName = $badge->badge_name ?? ucwords(str_replace(['-', '_'], ' ', $badge->badge_key ?? 'Unknown'));
-            Notification::createNotification(
-                $id,
-                "The {$badgeDisplayName} badge has been removed from your profile.",
-                '/achievements',
-                'system',
-                false
-            );
-            \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', "The {$badgeDisplayName} badge has been removed from your profile.", '/achievements');
+            $recipient = DB::table('users')
+                ->where('id', $id)
+                ->where('tenant_id', $tenantId)
+                ->select(['preferred_language'])
+                ->first();
+            LocaleContext::withLocale($recipient, function () use ($id, $badgeDisplayName): void {
+                $message = __('api_controllers_3.admin_bells.badge_removed', ['badge' => $badgeDisplayName]);
+                Notification::createNotification(
+                    $id,
+                    $message,
+                    '/achievements',
+                    'system',
+                    false
+                );
+                \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', $message, '/achievements');
+            });
         } catch (\Throwable $e) {
             Log::warning("[AdminUsers] Failed to create badge removal bell notification for user #{$id}: " . $e->getMessage());
         }
@@ -1988,7 +1996,7 @@ class AdminUsersController extends BaseApiController
                         'system',
                         true
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', $message, null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', $message, '/notifications');
                 });
             } catch (\Throwable $e) {
                 Log::warning("[AdminUsers] Failed to create super admin role change notification for user #{$id}: " . $e->getMessage());
@@ -2063,7 +2071,7 @@ class AdminUsersController extends BaseApiController
                         'system',
                         true
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', $message, null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', $message, '/notifications');
                 });
             } catch (\Throwable $e) {
                 Log::warning("[AdminUsers] Failed to create global super admin role change notification for user #{$id}: " . $e->getMessage());
@@ -2425,7 +2433,7 @@ class AdminUsersController extends BaseApiController
                     'system',
                     true
                 );
-                \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('emails_misc.admin_actions.suspension_bell'), null);
+                \App\Services\NotificationDispatcher::fanOutPush((int) $id, 'system', __('emails_misc.admin_actions.suspension_bell'), '/notifications');
             });
         } catch (\Throwable $e) {
             Log::warning("[AdminUsers] Failed to create suspension bell notification for user #{$id}: " . $e->getMessage());

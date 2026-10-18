@@ -74,7 +74,7 @@ class NotifyConnectionRequest implements ShouldQueue
             // Render bell + email content in the TARGET's language (this listener runs
             // in a queue worker where config('app.locale') defaults to 'en').
             $targetLocale = $event->target->preferred_language ?? null;
-            $content = LocaleContext::withLocale($targetLocale, function () use ($event) {
+            [$content, $requesterName] = LocaleContext::withLocale($targetLocale, function () use ($event): array {
                 // `?? $user->name` could never reach the fallback: User::getNameAttribute()
                 // is typed `: string` and returns '' for a nameless account, and '' is not
                 // null. A member with no first name got a notification reading " sent you
@@ -89,8 +89,10 @@ class NotifyConnectionRequest implements ShouldQueue
                 $requesterName = (!$isOrganisation && $firstName !== '')
                     ? $firstName
                     : UserDisplayName::resolve($requester, __('emails.common.fallback_someone'));
-                return __('emails_misc.social.connection_request', ['name' => $requesterName]);
+                return [__('emails_misc.social.connection_request', ['name' => $requesterName]), $requesterName];
             });
+            // Lock-screen copy names the requester ("Alice wants to connect").
+            $pushContext = ['actor' => $requesterName];
 
             // Check email_connections preference — default to sending (opt-out model)
             $emailEnabled = true;
@@ -104,7 +106,7 @@ class NotifyConnectionRequest implements ShouldQueue
                 ]);
             }
 
-            LocaleContext::withLocale($targetLocale, function () use ($emailEnabled, $targetUserId, $content, $link) {
+            LocaleContext::withLocale($targetLocale, function () use ($emailEnabled, $targetUserId, $content, $link, $pushContext) {
                 if ($emailEnabled) {
                     // Bell + email (via dispatcher) — dispatcher also renders strings via __().
                     NotificationDispatcher::dispatch(
@@ -114,12 +116,17 @@ class NotifyConnectionRequest implements ShouldQueue
                         'connection_request',
                         $content,
                         $link,
-                        null
+                        null,
+                        false,
+                        null,
+                        null,
+                        null,
+                        $pushContext
                     );
                 } else {
                     // Bell only — user opted out of connection emails
                     Notification::createNotification($targetUserId, $content, $link, 'connection_request');
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($targetUserId), 'connection_request', $content, $link);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($targetUserId), 'connection_request', $content, $link, false, $pushContext);
                 }
             });
 

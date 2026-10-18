@@ -118,6 +118,77 @@ return [
     'push_mutual_match' => 'Comhoiriúnacht Aimsithe',
     'push_default' => 'Fógra Nua',
     'push_private_body' => 'Oscail Timebank Global chun an nuashonrú príobháideach seo a fheiceáil.',
+    'push' => [
+        'new_message' => [
+            'title' => 'Teachtaireacht nua ó :actor',
+            'body' => 'Tapáil chun í a léamh agus freagra a thabhairt',
+            'body_preview' => ':preview',
+        ],
+        'connection_request' => [
+            'title' => 'Ba mhaith le :actor nascadh leat',
+            'body' => 'Tapáil chun glacadh leis nó é a dhiúltú',
+        ],
+        'connection_accepted' => [
+            'title' => 'Ghlac :actor le d\'iarratas nasctha',
+            'body' => 'Tá sibh nasctha anois',
+        ],
+        'transaction' => [
+            'title' => 'Fuair tú :hours uair an chloig ó :actor',
+            'body' => 'Tapáil chun do sparán a fheiceáil',
+        ],
+        'event_reminder' => [
+            'title' => 'Meabhrúchán: tosaíonn :subject :time',
+            'body' => 'Tapáil le haghaidh na sonraí',
+        ],
+        'event_invitation' => [
+            'title' => 'Thug :actor cuireadh duit chuig :subject',
+            'body' => 'Tapáil chun freagra a thabhairt',
+        ],
+        'event_cancelled' => [
+            'title' => 'Cuireadh :subject ar ceal',
+            'body' => 'Tapáil le haghaidh na sonraí',
+        ],
+        'vol_shift_reminder' => [
+            'title' => 'Tosaíonn do sheal ag :subject :time',
+            'body' => 'Tapáil chun an seal a fheiceáil',
+        ],
+        'vol_shift_cancelled' => [
+            'title' => 'Cuireadh do sheal ar :time ar ceal',
+            'body' => ':subject',
+        ],
+        'exchange_request_received' => [
+            'title' => 'Iarratas nua ar :subject',
+            'body' => 'Tapáil chun glacadh leis nó é a dhiúltú',
+        ],
+        'exchange_accepted' => [
+            'title' => 'Glacadh le d\'iarratas ar :subject',
+            'body' => 'Tapáil chun an malartú a shocrú',
+        ],
+        'achievement' => [
+            'title' => 'Ghnóthaigh tú an suaitheantas :subject',
+            'body' => 'Tapáil chun d\'éachtaí a fheiceáil',
+        ],
+        'group_join_request' => [
+            'title' => 'D\'iarr :actor a bheith páirteach i :subject',
+            'body' => 'Tapáil chun an t-iarratas a athbhreithniú',
+        ],
+        'comment' => [
+            'title' => 'Rinne :actor trácht ar do phostáil',
+            'body' => 'Tapáil chun é a léamh',
+        ],
+        'comment_reply' => [
+            'title' => 'D\'fhreagair :actor do thrácht',
+            'body' => 'Tapáil chun é a léamh',
+        ],
+        'mention' => [
+            'title' => 'Luaigh :actor thú',
+            'body' => 'Tapáil chun é a léamh',
+        ],
+        'moderation' => [
+            'title' => 'Nuashonrú modhnóireachta',
+            'body' => 'Tapáil le haghaidh na sonraí',
+        ],
+    ],
     'push_marketplace_enforcement' => 'Nuashonrú ar do liostú',
     'push_feed_report_created' => 'Tuairisc nua',
     'push_social_report_created' => 'Tuairisc nua',

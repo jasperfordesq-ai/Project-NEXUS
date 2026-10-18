@@ -402,7 +402,7 @@ class AdminReportsController extends BaseApiController
                         'moderation',
                         false
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($reporterId), 'moderation', $msg, null);
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($reporterId), 'moderation', $msg, '/notifications');
                 });
             }
         } catch (\Throwable $e) {

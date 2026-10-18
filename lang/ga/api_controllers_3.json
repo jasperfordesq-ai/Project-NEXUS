@@ -132,6 +132,7 @@
     "only_buyer_confirm": "Ní féidir ach leis an gceannaitheoir íocaíocht a dhearbhú."
   },
   "admin_bells": {
+    "badge_removed": "Baineadh an suaitheantas {{badge}} de do phróifíl.",
     "comment_hidden": "Chuir modaróir do thrácht i bhfolach.",
     "comment_removed": "Bhain modaróir do thrácht.",
     "post_hidden": "Chuir modaróir do phost i bhfolach.",

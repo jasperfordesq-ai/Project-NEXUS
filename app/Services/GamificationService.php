@@ -522,7 +522,10 @@ class GamificationService
                 '/achievements',
                 'achievement'
             );
-            \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'achievement', __('svc_notifications.gamification.badge_earned', ['name' => $badge['name'], 'icon' => $badge['icon']]), '/achievements');
+            // Lock-screen copy: "You earned the <badge> badge".
+            \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'achievement', __('svc_notifications.gamification.badge_earned', ['name' => $badge['name'], 'icon' => $badge['icon']]), '/achievements', false, [
+                'subject' => (string) ($badge['name'] ?? ''),
+            ]);
         });
 
         // Broadcast badge earned event

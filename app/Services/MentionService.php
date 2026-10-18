@@ -118,7 +118,12 @@ class MentionService
             ->select(['name', 'first_name'])
             ->first();
 
-        $mentionerName = $mentioner->name ?? $mentioner->first_name ?? __('emails.common.fallback_someone');
+        // '' is a real value for an account without a personal name; `??` would keep it.
+        $mentionerName = trim((string) ($mentioner->name ?? '')) !== ''
+            ? (string) $mentioner->name
+            : (trim((string) ($mentioner->first_name ?? '')) !== ''
+                ? (string) $mentioner->first_name
+                : __('emails.common.fallback_someone'));
 
         // Batch-load preferred_language for every mentioned user so we can render
         // each recipient's bell text in their own locale.
@@ -176,7 +181,8 @@ class MentionService
                         $link,
                         'mention'
                     );
-                    \App\Services\NotificationDispatcher::fanOutPush((int) ($mentionedUserId), 'mention', $message, $link);
+                    // Lock-screen copy names who mentioned them, never the text preview.
+                    \App\Services\NotificationDispatcher::fanOutPush((int) ($mentionedUserId), 'mention', $message, $link, false, ['actor' => $mentionerName]);
                 });
             } catch (\Exception $e) {
                 // Ignore duplicate mention errors, log others

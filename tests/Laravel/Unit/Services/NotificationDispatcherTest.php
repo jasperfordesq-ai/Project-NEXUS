@@ -100,8 +100,11 @@ class NotificationDispatcherTest extends TestCase
                 'schema_version' => '1',
                 'type' => 'new_topic',
                 'link' => '/groups/44',
+                // resolvePushTitle() only returns translation-catalogue copy.
                 'display_title_safe' => '1',
-            ])
+                // The bell sentence is what the recipient already sees in the inbox.
+                'display_body_safe' => '1',
+            ], [])
             ->andReturn(['sent' => 1, 'failed' => 0, 'errors' => []]);
 
         $log = Mockery::mock('alias:App\Models\PushLog');
@@ -112,6 +115,36 @@ class NotificationDispatcherTest extends TestCase
             'new_topic',
             'Private post content',
             '/groups/44',
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function test_push_fanout_forwards_only_sanitised_whitelisted_context(): void
+    {
+        $web = Mockery::mock('alias:App\Services\WebPushService');
+        $web->shouldReceive('sendToUserStatic')->once()->andReturn(true);
+
+        $fcm = Mockery::mock('alias:App\Services\FCMPushService');
+        $fcm->shouldReceive('sendToUser')
+            ->once()
+            ->with($this->userId, 'New Message', 'Al sent you a message', Mockery::type('array'), ['actor' => 'Al'])
+            ->andReturn(['sent' => 1, 'failed' => 0, 'errors' => []]);
+
+        $log = Mockery::mock('alias:App\Models\PushLog');
+        $log->shouldReceive('record')->once()->andReturnNull();
+
+        NotificationDispatcher::fanOutPush(
+            $this->userId,
+            'new_message',
+            'Al sent you a message',
+            '/messages/5',
+            false,
+            ['actor' => '<b>Al</b>', 'secret' => 'x'],
         );
 
         $this->addToAssertionCount(1);
