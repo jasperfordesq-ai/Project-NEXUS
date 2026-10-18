@@ -13,7 +13,7 @@
  *
  * This check scans react-frontend/src/admin/routes.tsx for every URL segment
  * and verifies each is mapped in AdminBreadcrumbs.tsx's SEGMENT_LABEL_KEYS,
- * and that the referenced admin.breadcrumbs.<key> exists in en/admin.json.
+ * and that the referenced admin.breadcrumbs.<key> exists in en/admin_nav.json.
  *
  * Exit 0 = all admin URL segments are translatable.
  * Exit 1 = at least one segment falls back to hardcoded English.
@@ -27,7 +27,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const ROUTES = path.join(ROOT, 'react-frontend/src/admin/routes.tsx');
 const BREADCRUMBS = path.join(ROOT, 'react-frontend/src/admin/components/AdminBreadcrumbs.tsx');
-const EN_ADMIN = path.join(ROOT, 'react-frontend/public/locales/en/admin.json');
+// The breadcrumb labels live in the admin_nav namespace (AdminBreadcrumbs.tsx
+// reads `breadcrumbs.*` from it); this read `admin.json`, which has no such
+// block, from the day the check left CI (2026-04-22) until 2026-10-18.
+const EN_ADMIN = path.join(ROOT, 'react-frontend/public/locales/en/admin_nav.json');
 
 const routesSrc = fs.readFileSync(ROUTES, 'utf8');
 const bcSrc = fs.readFileSync(BREADCRUMBS, 'utf8');
@@ -70,7 +73,7 @@ console.log('============================================================');
 console.log(`  Total admin URL segments: ${segments.size}`);
 console.log(`  Mapped in SEGMENT_LABEL_KEYS: ${mapped.size}`);
 console.log(`  Unmapped (would render hardcoded English): ${unmapped.length}`);
-console.log(`  Mapped but missing from en/admin.json: ${missingInLocale.length}`);
+console.log(`  Mapped but missing from en/admin_nav.json: ${missingInLocale.length}`);
 
 if (unmapped.length > 0) {
   console.error('');
@@ -78,7 +81,7 @@ if (unmapped.length > 0) {
   for (const s of unmapped) console.error(`    - ${s}`);
   console.error('');
   console.error('  Fix: add each segment to SEGMENT_LABEL_KEYS in AdminBreadcrumbs.tsx');
-  console.error('       and add breadcrumbs.<key> to react-frontend/public/locales/en/admin.json');
+  console.error('       and add breadcrumbs.<key> to react-frontend/public/locales/en/admin_nav.json');
   process.exit(1);
 }
 

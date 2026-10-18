@@ -179,6 +179,25 @@ describe('AdminBreadcrumbs', () => {
     });
   });
 
+  // The hubs (2026-10-18): a tab address must read as its hub and its tab,
+  // never as "⚠ records" or "⚠ donations".
+  it.each([
+    ['/hour-timebank/admin/volunteering/records/qualifications', ['Training & certificates', 'Qualifications']],
+    ['/hour-timebank/admin/volunteering/opportunities/swaps', ['Opportunities & shifts', 'Swap requests']],
+    ['/hour-timebank/admin/volunteering/fundraising/donations', ['Fundraising & donations', 'Donations']],
+  ])('names every segment of %s', async (pathname, labels) => {
+    mockLocation.pathname = pathname;
+    const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');
+    render(<AdminBreadcrumbs />);
+
+    await waitFor(() => {
+      const nav = document.querySelector('nav');
+      expect(nav).toBeTruthy();
+      for (const label of labels) expect(nav!.textContent).toContain(label);
+      expect(nav!.textContent).not.toMatch(/⚠/);
+    });
+  });
+
   it('names the admin Group bookings page', async () => {
     mockLocation.pathname = '/hour-timebank/admin/volunteering/group-bookings';
     const { AdminBreadcrumbs } = await import('./AdminBreadcrumbs');

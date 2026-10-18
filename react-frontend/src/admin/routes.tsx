@@ -177,6 +177,16 @@ const VolunteerGivingDays = lazy(() => import('./modules/volunteering/VolunteerG
 const VolunteerProjects = lazy(() => import('./modules/volunteering/VolunteerProjects'));
 const VolunteerConfig = lazy(() => import('./modules/volunteering/VolunteerConfig'));
 const DonationRefunds = lazy(() => import('./modules/volunteering/DonationRefunds'));
+// Hubs (2026-10-18): one sidebar entry each, former pages as tabs with their own addresses.
+const OpportunitiesHub = lazy(() => import('./modules/volunteering/OpportunitiesHub'));
+const RecordsHub = lazy(() => import('./modules/volunteering/RecordsHub'));
+const FundraisingHub = lazy(() => import('./modules/volunteering/FundraisingHub'));
+
+/** Volunteering → Settings opens the Module Configuration window on volunteering. */
+function VolunteeringSettingsRedirect() {
+  const { tenantPath } = useTenant();
+  return <Navigate to={`${tenantPath('/admin/module-configuration')}?configure=volunteering`} replace />;
+}
 
 // Integrations (platform level)
 const OutboundWebhooks = lazy(() => import('./modules/integrations/OutboundWebhooks'));
@@ -611,30 +621,52 @@ export function AdminRoutes() {
       <Route path="smart-match-monitoring" element={<TenantRedirect to="/admin/smart-matching/analytics" />} />
       <Route path="volunteering" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteeringOverview /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/approvals" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerApprovals /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/swaps" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerSwaps /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/opportunities" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerOpportunities /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/organizations" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerOrganizations /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/expenses" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerExpenses /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/training" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerTraining /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/qualifications" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerQualifications /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/certificates" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerCertificates /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/group-bookings" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerGroupBookings /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerSafeguarding /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/safeguarding/:id" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerIncidentCaseRoute /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/hours" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerHoursAudit /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/giving-days" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerGivingDays /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/donations" element={<FeatureGatedElement feature="volunteering"><Lazy><DonationRefunds /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/projects" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerProjects /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/config" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerConfig /></Lazy></FeatureGatedElement>} />
+      {/* Three hubs (2026-10-18): one sidebar entry each, the former pages as
+          tabs at their own addresses so breadcrumbs, bookmarks and sidebar
+          search still work. Swap requests and Group bookings are tabs only
+          when their community setting is on (OpportunitiesHub). */}
+      <Route path="volunteering/opportunities" element={<FeatureGatedElement feature="volunteering"><Lazy><OpportunitiesHub /></Lazy></FeatureGatedElement>}>
+        <Route index element={<Lazy><VolunteerOpportunities /></Lazy>} />
+        <Route path="swaps" element={<Lazy><VolunteerSwaps /></Lazy>} />
+        <Route path="group-bookings" element={<Lazy><VolunteerGroupBookings /></Lazy>} />
+      </Route>
+      <Route path="volunteering/records" element={<FeatureGatedElement feature="volunteering"><Lazy><RecordsHub /></Lazy></FeatureGatedElement>}>
+        <Route index element={<Navigate to="training" replace />} />
+        <Route path="training" element={<Lazy><VolunteerTraining /></Lazy>} />
+        <Route path="qualifications" element={<Lazy><VolunteerQualifications /></Lazy>} />
+        <Route path="certificates" element={<Lazy><VolunteerCertificates /></Lazy>} />
+      </Route>
+      <Route path="volunteering/fundraising" element={<FeatureGatedElement feature="volunteering"><Lazy><FundraisingHub /></Lazy></FeatureGatedElement>}>
+        <Route index element={<Navigate to="campaigns" replace />} />
+        <Route path="campaigns" element={<Lazy><VolunteerGivingDays /></Lazy>} />
+        <Route path="donations" element={<Lazy><DonationRefunds /></Lazy>} />
+      </Route>
+      {/* The old addresses of the pages that became tabs. */}
+      <Route path="volunteering/swaps" element={<TenantRedirect to="/admin/volunteering/opportunities/swaps" />} />
+      <Route path="volunteering/group-bookings" element={<TenantRedirect to="/admin/volunteering/opportunities/group-bookings" />} />
+      <Route path="volunteering/training" element={<TenantRedirect to="/admin/volunteering/records/training" />} />
+      <Route path="volunteering/qualifications" element={<TenantRedirect to="/admin/volunteering/records/qualifications" />} />
+      <Route path="volunteering/certificates" element={<TenantRedirect to="/admin/volunteering/records/certificates" />} />
+      <Route path="volunteering/giving-days" element={<TenantRedirect to="/admin/volunteering/fundraising/campaigns" />} />
+      <Route path="volunteering/donations" element={<TenantRedirect to="/admin/volunteering/fundraising/donations" />} />
       {/* Guessed volunteering addresses (gap D8): the obvious name for a page
           that lives under another one lands on it instead of "page not found". */}
       <Route path="volunteering/applications" element={<TenantRedirect to="/admin/volunteering/approvals" />} />
       <Route path="volunteering/incidents" element={<TenantRedirect to="/admin/volunteering/safeguarding" />} />
       <Route path="volunteering/incidents/:id" element={<TenantParamRedirect to="/admin/volunteering/safeguarding/:id" />} />
-      <Route path="volunteering/settings" element={<TenantRedirect to="/admin/volunteering/config" />} />
+      {/* Settings: every volunteering setting is in the Module Configuration
+          window since 2026-10-18; the sidebar entry links there and these two
+          old addresses follow. */}
+      <Route path="volunteering/settings" element={<VolunteeringSettingsRedirect />} />
       <Route path="volunteering/organisations" element={<TenantRedirect to="/admin/volunteering/organizations" />} />
-      <Route path="volunteering/fundraising" element={<TenantRedirect to="/admin/volunteering/giving-days" />} />
-      <Route path="volunteering/shift-swaps" element={<TenantRedirect to="/admin/volunteering/swaps" />} />
+      <Route path="volunteering/shift-swaps" element={<TenantRedirect to="/admin/volunteering/opportunities/swaps" />} />
       <Route path="volunteering/shifts" element={<TenantRedirect to="/admin/volunteering/opportunities" />} />
       <Route path="volunteering/wellbeing" element={<TenantRedirect to="/admin/volunteering" />} />
       {/* ─── CARING COMMUNITY — retired from /admin, now lives at /caring/* ─── */}

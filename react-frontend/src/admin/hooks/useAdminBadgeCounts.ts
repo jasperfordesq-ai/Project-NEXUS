@@ -33,6 +33,13 @@ export interface AdminBadgeCounts {
   pending_exchanges?: number;
   unreviewed_messages?: number;
   '404_errors'?: number;
+  // Volunteering queues (2026-10-18): the same counts feed the volunteering
+  // Overview's "Needs your attention" row (AdminBadgeCountService).
+  pending_vol_applications?: number;
+  pending_vol_hours?: number;
+  pending_vol_expenses?: number;
+  pending_vol_projects?: number;
+  pending_vol_swaps?: number;
 }
 
 /** How often to re-check while the admin sits on a page. */

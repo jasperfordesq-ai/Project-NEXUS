@@ -87,15 +87,12 @@ import X from 'lucide-react/icons/x';
 import BellRing from 'lucide-react/icons/bell-ring';
 import Bug from 'lucide-react/icons/bug';
 import HelpCircle from 'lucide-react/icons/help-circle';
-import HandCoins from 'lucide-react/icons/hand-coins';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
 import Receipt from 'lucide-react/icons/receipt';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
-import Award from 'lucide-react/icons/award';
-import BadgeCheck from 'lucide-react/icons/badge-check';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Gift from 'lucide-react/icons/gift';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
@@ -187,6 +184,14 @@ function useAdminNav(): NavSection[] {
   const { counts } = useAdminBadgeCounts();
   const pendingUsersBadge = badgeForCount(counts.pending_users);
   const pendingOrgsBadge = badgeForCount(counts.pending_orgs);
+  // The volunteering queues (2026-10-18): what an admin has to work through,
+  // beside the entry that opens each queue. Same counts as the Overview's
+  // "Needs your attention" row.
+  const pendingVolApplicationsBadge = badgeForCount(counts.pending_vol_applications);
+  const pendingVolHoursBadge = badgeForCount(counts.pending_vol_hours);
+  const pendingVolExpensesBadge = badgeForCount(counts.pending_vol_expenses);
+  const pendingVolProjectsBadge = badgeForCount(counts.pending_vol_projects);
+  const pendingVolSwapsBadge = badgeForCount(counts.pending_vol_swaps);
 
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
@@ -351,12 +356,18 @@ function useAdminNav(): NavSection[] {
        * 🔴 Volunteering is a main module, so it is a section of its own.
        *
        * Until 2026-10-02 it was ONE link, to the overview page, inside
-       * "Community". Its eleven working pages had no sidebar entry and no search
-       * keywords: an admin could reach Organisations, Applications, Hours and
-       * the rest only through shortcut cards below the trends chart on the
-       * overview — "it seems hard to find", as the owner put it. Every page
-       * under /admin/volunteering is now listed here, and nowhere else (Donation
-       * refunds moved in from Financial), so each has one obvious home.
+       * "Community"; its pages were reachable only through shortcut cards on
+       * the overview — "it seems hard to find", as the owner put it. Then it
+       * was SIXTEEN links. Since 2026-10-18 (owner decision: clear for a
+       * non-technical admin) it is eleven, grouped by what the admin is doing:
+       * the queues to work through carry a count; the pages that are always
+       * empty unless a setting is on (Shift swaps, Group bookings) are tabs
+       * under Opportunities & shifts that appear only then; Training,
+       * Qualifications and Certificates are tabs of one entry, as are the
+       * fundraising campaigns and donation refunds; Settings opens the Module
+       * Configuration window on volunteering, where every volunteering setting
+       * now lives. Every page under /admin/volunteering is reachable from
+       * here and nowhere else.
        *
        * The gate mirrors routes.tsx: every one of these routes is wrapped in
        * FeatureGatedElement feature="volunteering". If you add a volunteering
@@ -368,32 +379,57 @@ function useAdminNav(): NavSection[] {
         icon: HandHeart,
         zone: 'community' as const,
         items: [
-          { label: t('volunteering_nav.overview'), href: '/admin/volunteering', icon: LayoutDashboard, group: t('volunteering_nav.group_day_to_day') },
-          { label: t('volunteering_nav.applications'), href: '/admin/volunteering/approvals', icon: ClipboardCheck, keywords: keyword(t('volunteering_nav.keywords.applications')) },
-          { label: t('volunteering_nav.hours'), href: '/admin/volunteering/hours', icon: Clock, keywords: keyword(t('volunteering_nav.keywords.hours')) },
-          { label: t('volunteering_nav.opportunities'), href: '/admin/volunteering/opportunities', icon: CalendarClock, keywords: keyword(t('volunteering_nav.keywords.opportunities')) },
-          { label: t('volunteering_nav.shift_swaps'), href: '/admin/volunteering/swaps', icon: ArrowLeftRight, keywords: keyword(t('volunteering_nav.keywords.shift_swaps')) },
-          { label: t('volunteering_nav.expenses'), href: '/admin/volunteering/expenses', icon: Receipt, keywords: keyword(t('volunteering_nav.keywords.expenses')) },
-          { label: t('volunteering_nav.projects'), href: '/admin/volunteering/projects', icon: FolderKanban, keywords: keyword(t('volunteering_nav.keywords.projects')) },
+          { label: t('volunteering_nav.overview'), href: '/admin/volunteering', icon: LayoutDashboard },
+          {
+            label: t('volunteering_nav.applications'), href: '/admin/volunteering/approvals', icon: ClipboardCheck,
+            group: t('volunteering_nav.group_to_approve'), keywords: keyword(t('volunteering_nav.keywords.applications')),
+            ...(pendingVolApplicationsBadge ? { badge: pendingVolApplicationsBadge, attention: 'warning' } : {}),
+          },
+          {
+            label: t('volunteering_nav.hours'), href: '/admin/volunteering/hours', icon: Clock,
+            keywords: keyword(t('volunteering_nav.keywords.hours')),
+            ...(pendingVolHoursBadge ? { badge: pendingVolHoursBadge, attention: 'warning' } : {}),
+          },
+          {
+            label: t('volunteering_nav.expenses'), href: '/admin/volunteering/expenses', icon: Receipt,
+            keywords: keyword(t('volunteering_nav.keywords.expenses')),
+            ...(pendingVolExpensesBadge ? { badge: pendingVolExpensesBadge, attention: 'warning' } : {}),
+          },
+          {
+            label: t('volunteering_nav.projects'), href: '/admin/volunteering/projects', icon: FolderKanban,
+            keywords: keyword(t('volunteering_nav.keywords.projects')),
+            ...(pendingVolProjectsBadge ? { badge: pendingVolProjectsBadge, attention: 'warning' } : {}),
+          },
+          {
+            label: t('volunteering_nav.opportunities'), href: '/admin/volunteering/opportunities', icon: CalendarClock,
+            group: t('volunteering_nav.group_running'), keywords: keyword(t('volunteering_nav.keywords.opportunities')),
+            // Swap requests waiting for an admin (only when the community
+            // requires admin approval for swaps — otherwise always 0).
+            ...(pendingVolSwapsBadge ? { badge: pendingVolSwapsBadge, attention: 'warning' } : {}),
+          },
           {
             label: t('volunteering_nav.organisations'),
             href: '/admin/volunteering/organizations',
             icon: Building2,
-            group: t('volunteering_nav.group_organisations_safety'),
             keywords: keyword(t('volunteering_nav.keywords.organisations')),
             // An organisation awaiting approval cannot post opportunities, so it
             // is surfaced in "Needs attention" — the same count the dashboard
             // card uses (AdminBadgeCountService::countPendingOrganizations).
             ...(pendingOrgsBadge ? { badge: pendingOrgsBadge, attention: 'warning' } : {}),
           },
-          { label: t('volunteering_nav.training'), href: '/admin/volunteering/training', icon: GraduationCap, keywords: keyword(t('volunteering_nav.keywords.training')) },
-          { label: t('volunteering_nav.qualifications'), href: '/admin/volunteering/qualifications', icon: BadgeCheck, keywords: keyword(t('volunteering_nav.keywords.qualifications')) },
-          { label: t('volunteering_nav.certificates'), href: '/admin/volunteering/certificates', icon: Award, keywords: keyword(t('volunteering_nav.keywords.certificates')) },
-          { label: t('volunteering_nav.group_bookings'), href: '/admin/volunteering/group-bookings', icon: Users, keywords: keyword(t('volunteering_nav.keywords.group_bookings')) },
+          {
+            label: t('volunteering_nav.training_certificates'), href: '/admin/volunteering/records/training', icon: GraduationCap,
+            group: t('volunteering_nav.group_volunteers_safety'), keywords: keyword(t('volunteering_nav.keywords.training_certificates')),
+          },
           { label: t('volunteering_nav.safeguarding'), href: '/admin/volunteering/safeguarding', icon: ShieldAlert, keywords: keyword(t('volunteering_nav.keywords.safeguarding')) },
-          { label: t('volunteering_nav.giving_days'), href: '/admin/volunteering/giving-days', icon: Gift, group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.giving_days')) },
-          { label: t('donation_refunds'), href: '/admin/volunteering/donations', icon: HandCoins, keywords: keyword(t('search_keywords.donation_refunds')) },
-          { label: t('volunteering_nav.settings'), href: '/admin/volunteering/config', icon: Settings, group: t('volunteering_nav.group_setup'), keywords: keyword(t('volunteering_nav.keywords.settings')) },
+          {
+            label: t('volunteering_nav.fundraising_donations'), href: '/admin/volunteering/fundraising/campaigns', icon: Gift,
+            group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.fundraising_donations')),
+          },
+          {
+            label: t('volunteering_nav.settings'), href: '/admin/module-configuration?configure=volunteering', icon: Settings,
+            group: t('volunteering_nav.group_setup'), keywords: keyword(t('volunteering_nav.keywords.settings')),
+          },
         ],
       }] : []),
       ...(hasModule('listings') ? [{
@@ -733,7 +769,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, t]);
+  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, t]);
 }
 
 interface AdminSidebarProps {

@@ -275,6 +275,14 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
   tenant: 'breadcrumbs.tenant',
   webhooks: 'breadcrumbs.webhooks',
   integrations: 'breadcrumbs.integrations',
+  // Volunteering hubs (2026-10-18): the former Shift swaps, Group bookings,
+  // Training, Qualifications, Certificates, Fundraising campaigns and
+  // Donation refunds pages are tabs under three hub addresses.
+  swaps: 'breadcrumbs.swaps',
+  donations: 'breadcrumbs.donations',
+  records: 'breadcrumbs.records',
+  fundraising: 'breadcrumbs.fundraising',
+  // `campaigns` is already mapped above (marketing campaigns share the label).
   login: 'breadcrumbs.login',
   podcasts: 'breadcrumbs.podcasts',
   'member-premium': 'breadcrumbs.member_premium',

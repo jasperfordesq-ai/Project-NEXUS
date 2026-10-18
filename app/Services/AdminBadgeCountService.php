@@ -50,6 +50,7 @@ class AdminBadgeCountService
             $counts['404_errors'] = $this->count404Errors();
             $counts['pending_exchanges'] = $this->countPendingExchanges($tenantId);
             $counts['unreviewed_messages'] = $this->countUnreviewedMessages($tenantId, $viewerId);
+            $counts = array_merge($counts, $this->getVolunteeringAttention($tenantId));
         } catch (\Exception $e) {
             Log::warning('AdminBadgeCountService error: ' . $e->getMessage());
         }
@@ -57,6 +58,57 @@ class AdminBadgeCountService
         $this->cachedCounts = $counts;
         $this->cachedViewerId = $viewerId;
         return $counts;
+    }
+
+    /**
+     * The volunteering queues an admin has to work through, for the sidebar
+     * badges and the Overview's "Needs your attention" row (2026-10-18). One
+     * place, so the two never disagree.
+     *
+     * 🔴 Each count must match the list its badge opens: Applications =
+     * `vol_applications.status = 'pending'` (VolunteerApprovals, pending
+     * tab); Hours = `vol_logs.status = 'pending'` (VolunteerHoursAudit);
+     * Expenses = `vol_expenses.status = 'pending'`; Community projects =
+     * proposals not yet decided (`proposed` or `under_review`); Swap
+     * requests = `vol_shift_swap_requests.status = 'admin_pending'`, which
+     * only exist when the community has switched on "swaps need admin
+     * approval" — with it off the count is always 0 and the sidebar shows
+     * no badge, matching the empty page.
+     *
+     * @return array{pending_vol_applications: int, pending_vol_hours: int, pending_vol_expenses: int, pending_vol_projects: int, pending_vol_swaps: int}
+     */
+    public function getVolunteeringAttention(?int $tenantId = null): array
+    {
+        $tenantId ??= TenantContext::getId();
+
+        $swapsNeedAdmin = (bool) VolunteeringConfigurationService::getForTenant(
+            $tenantId,
+            VolunteeringConfigurationService::CONFIG_SWAP_REQUIRES_ADMIN
+        );
+
+        return [
+            'pending_vol_applications' => $this->countRows('vol_applications', $tenantId, ['pending']),
+            'pending_vol_hours' => $this->countRows('vol_logs', $tenantId, ['pending']),
+            'pending_vol_expenses' => $this->countRows('vol_expenses', $tenantId, ['pending']),
+            'pending_vol_projects' => $this->countRows('vol_community_projects', $tenantId, ['proposed', 'under_review']),
+            'pending_vol_swaps' => $swapsNeedAdmin
+                ? $this->countRows('vol_shift_swap_requests', $tenantId, ['admin_pending'])
+                : 0,
+        ];
+    }
+
+    /** @param list<string> $statuses */
+    private function countRows(string $table, int $tenantId, array $statuses): int
+    {
+        try {
+            return (int) DB::table($table)
+                ->where('tenant_id', $tenantId)
+                ->whereIn('status', $statuses)
+                ->count();
+        } catch (\Exception $e) {
+            Log::warning("[AdminBadgeCount] Failed to count {$table}: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**

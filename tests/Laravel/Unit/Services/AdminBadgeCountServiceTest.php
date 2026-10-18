@@ -29,6 +29,95 @@ class AdminBadgeCountServiceTest extends TestCase
         $this->markTestIncomplete('Requires integration test — many DB::table calls with different tables');
     }
 
+    // ── Volunteering queues (sidebar badges + Overview "Needs your attention") ──
+
+    private function volunteeringRows(): void
+    {
+        $tid = $this->testTenantId;
+        $user = \App\Models\User::factory()->forTenant($tid)->create();
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $tid, 'title' => 'Badge opp', 'description' => 'x', 'is_active' => 1, 'created_at' => now(),
+        ]);
+        foreach (['pending', 'pending', 'approved'] as $status) {
+            DB::table('vol_applications')->insert([
+                'tenant_id' => $tid, 'opportunity_id' => $oppId, 'user_id' => $user->id, 'status' => $status, 'created_at' => now(),
+            ]);
+        }
+        foreach (['pending', 'approved', 'declined'] as $status) {
+            DB::table('vol_logs')->insert([
+                'tenant_id' => $tid, 'opportunity_id' => $oppId, 'user_id' => $user->id, 'hours' => 1, 'status' => $status,
+                'date_logged' => now()->toDateString(), 'created_at' => now(),
+            ]);
+        }
+        foreach (['pending', 'pending', 'pending', 'paid'] as $status) {
+            DB::table('vol_expenses')->insert([
+                'tenant_id' => $tid, 'user_id' => $user->id, 'expense_type' => 'travel', 'amount' => 5, 'status' => $status,
+            ]);
+        }
+        foreach (['proposed', 'under_review', 'approved', 'rejected'] as $status) {
+            DB::table('vol_community_projects')->insert([
+                'tenant_id' => $tid, 'title' => 'Idea ' . $status, 'description' => 'x', 'proposed_by' => $user->id,
+                'status' => $status, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+    }
+
+    public function test_counts_the_volunteering_queues_an_admin_must_work_through(): void
+    {
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $this->volunteeringRows();
+
+        $counts = $this->service->getVolunteeringAttention($this->testTenantId);
+
+        $this->assertSame(2, $counts['pending_vol_applications']);
+        $this->assertSame(1, $counts['pending_vol_hours']);
+        $this->assertSame(3, $counts['pending_vol_expenses']);
+        $this->assertSame(2, $counts['pending_vol_projects'], 'proposed and under review are both waiting for a decision');
+    }
+
+    /**
+     * A swap request only waits for an admin when the community has switched
+     * on "swaps need admin approval". With it off the page is always empty,
+     * so the badge must be 0 too, whatever rows the table holds.
+     */
+    public function test_swap_requests_count_only_when_the_community_requires_admin_approval(): void
+    {
+        $tid = $this->testTenantId;
+        \App\Core\TenantContext::setById($tid);
+        $user = \App\Models\User::factory()->forTenant($tid)->create();
+        $other = \App\Models\User::factory()->forTenant($tid)->create();
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $tid, 'title' => 'Swap opp', 'description' => 'x', 'is_active' => 1, 'created_at' => now(),
+        ]);
+        $shiftId = (int) DB::table('vol_shifts')->insertGetId([
+            'tenant_id' => $tid, 'opportunity_id' => $oppId,
+            'start_time' => now()->addDay()->format('Y-m-d H:i:s'), 'end_time' => now()->addDay()->addHours(2)->format('Y-m-d H:i:s'), 'capacity' => 5,
+        ]);
+        DB::table('vol_shift_swap_requests')->insert([
+            'tenant_id' => $tid, 'from_shift_id' => $shiftId, 'to_shift_id' => $shiftId,
+            'from_user_id' => $user->id, 'to_user_id' => $other->id,
+            'status' => 'admin_pending', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        \App\Services\VolunteeringConfigurationService::set(\App\Services\VolunteeringConfigurationService::CONFIG_SWAP_REQUIRES_ADMIN, false);
+        $this->assertSame(0, $this->service->getVolunteeringAttention($tid)['pending_vol_swaps']);
+
+        \App\Services\VolunteeringConfigurationService::set(\App\Services\VolunteeringConfigurationService::CONFIG_SWAP_REQUIRES_ADMIN, true);
+        $this->assertSame(1, $this->service->getVolunteeringAttention($tid)['pending_vol_swaps']);
+    }
+
+    public function test_badge_counts_carry_the_volunteering_queues(): void
+    {
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $this->volunteeringRows();
+
+        $counts = $this->service->getCounts();
+
+        $this->assertSame(2, $counts['pending_vol_applications']);
+        $this->assertSame(3, $counts['pending_vol_expenses']);
+        $this->assertArrayHasKey('pending_vol_swaps', $counts);
+    }
+
     public function test_getCount_returns_zero_for_unknown_key(): void
     {
         // Force cached counts with an empty array

@@ -567,6 +567,11 @@ class AdminVolunteerController extends BaseApiController
                 'total_opportunities' => 0, 'active_opportunities' => 0,
                 'total_applications' => 0, 'pending_applications' => 0,
                 'total_hours_logged' => 0, 'active_volunteers' => 0,
+                // The queues waiting for an admin — the Overview's "Needs
+                // your attention" row. Same source as the sidebar badges
+                // (AdminBadgeCountService) so the two never disagree.
+                'attention' => app(\App\Services\AdminBadgeCountService::class)->getVolunteeringAttention($tenantId)
+                    + ['pending_organisations' => 0],
             ],
             'recent_opportunities' => [],
         ];
@@ -574,6 +579,8 @@ class AdminVolunteerController extends BaseApiController
         if (!$this->tableExists('vol_opportunities')) {
             return $this->respondWithData($data);
         }
+
+        $data['stats']['attention']['pending_organisations'] = app(\App\Services\AdminBadgeCountService::class)->getCount('pending_orgs');
 
         try {
             $row = DB::selectOne(

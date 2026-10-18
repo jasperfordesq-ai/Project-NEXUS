@@ -40,6 +40,37 @@ class AdminVolunteerControllerTest extends TestCase
         $this->assertTrue(in_array($response->status(), [200, 403]));
     }
 
+    /**
+     * The Overview's "Needs your attention" row (2026-10-18) reads the same
+     * queue counts the sidebar badges use, so the two can never disagree.
+     */
+    public function test_index_reports_the_queues_waiting_for_an_admin(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode(['volunteering' => true])]);
+        \App\Core\TenantContext::setById($this->testTenantId);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+        $volunteer = User::factory()->forTenant($this->testTenantId)->create();
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'title' => 'Attention opp', 'description' => 'x', 'is_active' => 1, 'created_at' => now(),
+        ]);
+        DB::table('vol_applications')->insert([
+            'tenant_id' => $this->testTenantId, 'opportunity_id' => $oppId, 'user_id' => $volunteer->id, 'status' => 'pending', 'created_at' => now(),
+        ]);
+        DB::table('vol_expenses')->insert([
+            'tenant_id' => $this->testTenantId, 'user_id' => $volunteer->id, 'expense_type' => 'travel', 'amount' => 5,
+            'status' => 'pending',
+        ]);
+
+        $attention = $this->apiGet('/v2/admin/volunteering')->assertOk()->json('data.stats.attention');
+
+        $this->assertSame(1, $attention['pending_vol_applications']);
+        $this->assertSame(1, $attention['pending_vol_expenses']);
+        foreach (['pending_vol_hours', 'pending_vol_projects', 'pending_vol_swaps', 'pending_organisations'] as $key) {
+            $this->assertArrayHasKey($key, $attention);
+        }
+    }
+
     public function test_index_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();

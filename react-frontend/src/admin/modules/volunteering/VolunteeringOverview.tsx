@@ -27,6 +27,7 @@ import { adminVolunteering } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { WellbeingAlertsPanel } from './WellbeingAlertsPanel';
+import { ReminderEmailsPanel } from './ReminderEmailsPanel';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 
@@ -36,6 +37,16 @@ import type { TFunction } from 'i18next';
  */
 
 
+/** The queues waiting for an admin — same source as the sidebar badges. */
+interface AttentionCounts {
+  pending_vol_applications: number;
+  pending_vol_hours: number;
+  pending_vol_expenses: number;
+  pending_vol_projects: number;
+  pending_vol_swaps: number;
+  pending_organisations: number;
+}
+
 interface VolStats {
   total_opportunities: number;
   active_opportunities: number;
@@ -43,6 +54,7 @@ interface VolStats {
   pending_applications: number;
   total_hours_logged: number;
   active_volunteers: number;
+  attention?: Partial<AttentionCounts>;
 }
 
 interface Opportunity {
@@ -87,12 +99,17 @@ interface ActivityItem {
   entity_id: number;
 }
 
-interface QuickAction {
-  label: string;
-  description: string;
+/**
+ * One row of the "Needs your attention" strip: a queue, how many items wait
+ * in it, and where to go. Replaces the five shortcut cards that duplicated
+ * the sidebar (2026-10-18): a non-technical admin needs to know what to do
+ * today, not another list of pages.
+ */
+interface AttentionItem {
+  key: keyof AttentionCounts;
+  labelKey: string;
   icon: typeof ClipboardCheck;
   path: string;
-  color: 'primary' | 'warning' | 'secondary' | 'success';
 }
 
 const ACTIVITY_TYPE_COLORS: Record<string, 'success' | 'warning' | 'danger' | 'primary' | 'default'> = {
@@ -140,7 +157,7 @@ export function VolunteeringOverview() {
   const toast = useToast();
   const navigate = useNavigate();
   // Gap D3: admin paths need the community prefix, as every other admin link has.
-  const { tenantPath } = useTenant();
+  const { tenantPath, volunteeringConfig } = useTenant();
   const [stats, setStats] = useState<VolStats | null>(null);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,13 +271,20 @@ export function VolunteeringOverview() {
     volunteers: trends.volunteers_by_period[i]?.count ?? 0,
   })) : [];
 
-  const quickActions: QuickAction[] = [
-    { label: t('volunteering.review_applications'), description: t('volunteering.review_applications_desc'), icon: ClipboardCheck, path: '/admin/volunteering/approvals', color: 'warning' },
-    { label: t('volunteering.verify_hours'), description: t('volunteering.verify_hours_desc'), icon: Clock, path: '/admin/volunteering/hours', color: 'success' },
-    { label: t('volunteering.manage_organizations'), description: t('volunteering.manage_organizations_desc'), icon: Building2, path: '/admin/volunteering/organizations', color: 'secondary' },
-    { label: t('volunteering.view_expenses'), description: t('volunteering.view_expenses_desc'), icon: DollarSign, path: '/admin/volunteering/expenses', color: 'primary' },
-    { label: t('volunteering.manage_swaps'), description: t('volunteering.manage_swaps_desc'), icon: ArrowLeftRight, path: '/admin/volunteering/swaps', color: 'secondary' },
+  const attentionItems: AttentionItem[] = [
+    { key: 'pending_vol_applications', labelKey: 'volunteering.attention_applications', icon: ClipboardCheck, path: '/admin/volunteering/approvals' },
+    { key: 'pending_vol_hours', labelKey: 'volunteering.attention_hours', icon: Clock, path: '/admin/volunteering/hours' },
+    { key: 'pending_vol_expenses', labelKey: 'volunteering.attention_expenses', icon: DollarSign, path: '/admin/volunteering/expenses' },
+    { key: 'pending_vol_projects', labelKey: 'volunteering.attention_projects', icon: Briefcase, path: '/admin/volunteering/projects' },
+    { key: 'pending_organisations', labelKey: 'volunteering.attention_organisations', icon: Building2, path: '/admin/volunteering/organizations' },
+    // Only when the community requires admin approval for swaps; otherwise
+    // the queue cannot exist and the row would always read 0.
+    ...(volunteeringConfig?.['volunteering.swap_requires_admin'] === true
+      ? [{ key: 'pending_vol_swaps' as const, labelKey: 'volunteering.attention_swaps', icon: ArrowLeftRight, path: '/admin/volunteering/opportunities/swaps' }]
+      : []),
   ];
+  const attention = stats?.attention ?? {};
+  const waiting = attentionItems.filter((item) => (attention[item.key] ?? 0) > 0);
 
   // Build alert banners for urgent items
   const alerts: { message: string; path?: string }[] = [];
@@ -425,39 +449,47 @@ export function VolunteeringOverview() {
         </CardBody>
       </Card>
 
-      {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {quickActions.map((action) => {
-          const colorClasses: Record<string, { bg: string; text: string }> = {
-            primary: { bg: 'bg-accent/10', text: 'text-accent' },
-            secondary: { bg: 'bg-accent-soft', text: 'text-accent' },
-            success: { bg: 'bg-success/10', text: 'text-success' },
-            warning: { bg: 'bg-warning/10', text: 'text-warning' },
-            danger: { bg: 'bg-danger/10', text: 'text-danger' },
-          };
-          const cc = colorClasses[action.color] ?? { bg: 'bg-surface-tertiary', text: 'text-muted' };
-          return (
-          <Card
-            key={action.path}
+      {/* Needs your attention — the queues with something waiting */}
+      {!loading && (
+        <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+          <CardHeader><h3 className="text-lg font-semibold">{t('volunteering.attention_heading')}</h3></CardHeader>
+          <CardBody>
+            {waiting.length === 0 ? (
+              <p className="text-sm text-muted">{t('volunteering.attention_all_clear')}</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {waiting.map((item) => (
+                  <Card
+                    key={item.key}
+                    isPressable
+                    onPress={() => navigate(tenantPath(item.path))}
+                    className="border border-warning/40 bg-warning/5 shadow-none transition-transform hover:-translate-y-0.5"
+                  >
+                    <CardBody className="flex flex-row items-center gap-3 p-4">
+                      <div className="rounded-lg bg-warning/10 p-2">
+                        <item.icon size={20} className="text-warning" />
+                      </div>
+                      <p className="min-w-0 flex-1 text-sm font-semibold">
+                        {t(item.labelKey, { count: attention[item.key] ?? 0 })}
+                      </p>
+                      <ChevronRight size={16} className="shrink-0 text-muted" />
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
 
-            isPressable
-            onPress={() => navigate(tenantPath(action.path))}
-            className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03] transition-transform hover:-translate-y-0.5"
-          >
-            <CardBody className="flex flex-row items-center gap-3 p-4">
-              <div className={`p-2 rounded-lg ${cc.bg}`}>
-                <action.icon size={20} className={cc.text} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">{action.label}</p>
-                <p className="text-xs text-muted truncate">{action.description}</p>
-              </div>
-              <ChevronRight size={16} className="text-muted shrink-0" />
-            </CardBody>
-          </Card>
-          );
-        })}
-      </div>
+      {/* Reminder emails — what the reminder jobs sent; moved here from the
+          retired volunteering Settings page (2026-10-18) */}
+      <Card className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">
+        <CardHeader><h3 className="text-lg font-semibold">{t('volunteering.reminder_emails_title')}</h3></CardHeader>
+        <CardBody>
+          <ReminderEmailsPanel refreshKey={wellbeingRefreshKey} />
+        </CardBody>
+      </Card>
 
       {/* Recent Opportunities */}
       <Card  className="border border-divider/70 bg-surface shadow-sm shadow-black/[0.03]">

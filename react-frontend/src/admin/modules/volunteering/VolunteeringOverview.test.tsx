@@ -28,6 +28,9 @@ const mockAdminVolunteering = vi.hoisted(() => ({
   getOverview: vi.fn(),
   getTrends: vi.fn(),
   getActivityFeed: vi.fn(),
+  // ReminderEmailsPanel (hosted on the Overview since 2026-10-18)
+  getReminderLogs: vi.fn(),
+  sendShiftReminders: vi.fn(),
 }));
 
 vi.mock('@/admin/api/adminApi', () => ({
@@ -71,6 +74,14 @@ const MOCK_STATS = {
   pending_applications: 3,
   total_hours_logged: 150,
   active_volunteers: 12,
+  attention: {
+    pending_vol_applications: 3,
+    pending_vol_hours: 0,
+    pending_vol_expenses: 2,
+    pending_vol_projects: 0,
+    pending_vol_swaps: 4,
+    pending_organisations: 1,
+  },
 };
 
 const MOCK_OVERVIEW_RESPONSE = {
@@ -114,6 +125,7 @@ const MOCK_ACTIVITY_RESPONSE = {
 beforeEach(() => {
   mockApi.get.mockResolvedValue({ success: true, data: [] });
   mockApi.put.mockResolvedValue({ success: true });
+  mockAdminVolunteering.getReminderLogs.mockResolvedValue({ success: true, data: [] });
 });
 
 describe('VolunteeringOverview — loading state', () => {
@@ -350,14 +362,46 @@ describe('VolunteeringOverview — refresh', () => {
     }
   });
 
-  // Gap D3: the quick actions navigated without the community prefix, so on a community
-  // reached by its slug they left that community.
-  it('keeps quick-action navigation inside the community', async () => {
+  // "Needs your attention" (2026-10-18) replaced the five shortcut cards that
+  // duplicated the sidebar: it lists only the queues with something waiting,
+  // with the count, and opens the queue inside the community (gap D3).
+  it('lists the queues with something waiting and opens one inside the community', async () => {
     mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
 
     render(<VolunteeringOverview />);
-    fireEvent.click(await screen.findByRole('button', { name: /Verify hours/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering/hours');
+
+    expect(await screen.findByText('Needs your attention')).toBeInTheDocument();
+    expect(screen.getByText('3 applications waiting')).toBeInTheDocument();
+    expect(screen.getByText('2 expense claims waiting')).toBeInTheDocument();
+    expect(screen.getByText('1 organisation awaiting approval')).toBeInTheDocument();
+    // Nothing waiting → not listed, rather than a card reading "0".
+    expect(screen.queryByText(/hours entr/i)).not.toBeInTheDocument();
+    // Swap requests only when the community requires admin approval (off here).
+    expect(screen.queryByText(/swap request/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('2 expense claims waiting'));
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering/expenses');
+  });
+
+  it('says so when nothing is waiting', async () => {
+    mockAdminVolunteering.getOverview.mockResolvedValue({
+      ...MOCK_OVERVIEW_RESPONSE,
+      data: { ...MOCK_OVERVIEW_RESPONSE.data, stats: { ...MOCK_STATS, attention: { pending_vol_applications: 0, pending_vol_hours: 0, pending_vol_expenses: 0, pending_vol_projects: 0, pending_vol_swaps: 0, pending_organisations: 0 } } },
+    });
+    mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
+
+    render(<VolunteeringOverview />);
+
+    expect(await screen.findByText(/nothing is waiting/i)).toBeInTheDocument();
+  });
+
+  it('hosts the reminder emails panel', async () => {
+    mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
+
+    render(<VolunteeringOverview />);
+
+    expect(await screen.findByText('Reminder emails')).toBeInTheDocument();
+    await waitFor(() => expect(mockAdminVolunteering.getReminderLogs).toHaveBeenCalled());
   });
 });
 

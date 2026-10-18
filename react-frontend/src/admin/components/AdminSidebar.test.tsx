@@ -439,23 +439,56 @@ describe('AdminSidebar', () => {
   // working pages — organisations, applications, hours, expenses and the rest —
   // had no sidebar entry and no search keywords, so an admin could reach them
   // only through shortcut cards at the bottom of the overview (2026-10-02).
+  // Eleven entries since 2026-10-18 (owner decision: clear for a non-technical
+  // admin). Shift swaps and Group bookings are tabs under Opportunities &
+  // shifts that only appear when their setting is on; Training, Qualifications
+  // and Certificates are tabs of one entry, as are campaigns and donation
+  // refunds; Settings opens the Module Configuration window on volunteering.
   const VOLUNTEERING_LINKS: Array<[string, string]> = [
     ['Overview', '/test/admin/volunteering'],
     ['Applications', '/test/admin/volunteering/approvals'],
     ['Hours to verify', '/test/admin/volunteering/hours'],
-    ['Shift swaps', '/test/admin/volunteering/swaps'],
     ['Expenses', '/test/admin/volunteering/expenses'],
     ['Community projects', '/test/admin/volunteering/projects'],
+    ['Opportunities & shifts', '/test/admin/volunteering/opportunities'],
     ['Organisations', '/test/admin/volunteering/organizations'],
-    ['Training', '/test/admin/volunteering/training'],
-    ['Qualifications', '/test/admin/volunteering/qualifications'],
-    ['Certificates', '/test/admin/volunteering/certificates'],
-    ['Group bookings', '/test/admin/volunteering/group-bookings'],
+    ['Training & certificates', '/test/admin/volunteering/records/training'],
     ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
-    ['Fundraising campaigns', '/test/admin/volunteering/giving-days'],
-    ['Donation Refunds', '/test/admin/volunteering/donations'],
-    ['Settings', '/test/admin/volunteering/config'],
+    ['Fundraising & donations', '/test/admin/volunteering/fundraising/campaigns'],
+    ['Settings', '/test/admin/module-configuration?configure=volunteering'],
   ];
+
+  it('lists exactly eleven volunteering entries, with the old separate pages folded in', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    const trigger = screen.getByRole('button', { name: 'Volunteering' });
+    await userEvent.click(trigger);
+    const panel = document.getElementById(trigger.getAttribute('aria-controls') ?? '') as HTMLElement;
+    expect(within(panel).getAllByRole('link')).toHaveLength(VOLUNTEERING_LINKS.length);
+    for (const gone of ['/admin/volunteering/swaps', '/admin/volunteering/training', '/admin/volunteering/giving-days', '/admin/volunteering/config']) {
+      expect(within(panel).queryAllByRole('link').map((l) => l.getAttribute('href'))).not.toContain(`/test${gone}`);
+    }
+  });
+
+  it('shows how many applications, hours, expenses and project ideas are waiting', async () => {
+    mockApi.get.mockImplementation((url: string) => Promise.resolve(
+      url === '/v2/admin/badge-counts'
+        ? { success: true, data: { pending_vol_applications: 4, pending_vol_hours: 2, pending_vol_expenses: 1, pending_vol_projects: 3, pending_vol_swaps: 0 } }
+        : { success: true, data: {} },
+    ));
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Volunteering' }));
+    await waitFor(() => {
+      const byHref = (href: string) => screen.getAllByRole('link', { hidden: true }).find((l) => l.getAttribute('href') === href);
+      expect(byHref('/test/admin/volunteering/approvals')).toHaveTextContent('4');
+      expect(byHref('/test/admin/volunteering/hours')).toHaveTextContent('2');
+      expect(byHref('/test/admin/volunteering/expenses')).toHaveTextContent('1');
+      expect(byHref('/test/admin/volunteering/projects')).toHaveTextContent('3');
+    });
+  });
 
   it('gives Volunteering its own section linking every volunteering page', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
@@ -486,7 +519,9 @@ describe('AdminSidebar', () => {
     ['charity', '/test/admin/volunteering/organizations'],
     ['receipts', '/test/admin/volunteering/expenses'],
     ['timesheets', '/test/admin/volunteering/hours'],
-    ['rota', '/test/admin/volunteering/swaps'],
+    ['rota', '/test/admin/volunteering/opportunities'],
+    ['first aid', '/test/admin/volunteering/records/training'],
+    ['refunds', '/test/admin/volunteering/fundraising/campaigns'],
   ])('finds a volunteering page when searching "%s"', async (query, href) => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);

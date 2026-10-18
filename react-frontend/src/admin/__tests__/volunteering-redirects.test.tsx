@@ -49,12 +49,24 @@ vi.mock('../modules/volunteering/VolunteerSafeguarding', () => ({ default: () =>
 vi.mock('../modules/volunteering/incidents/VolunteerIncidentCase', () => ({ default: () => <div>Incident page</div> }));
 vi.mock('../modules/volunteering/VolunteerGivingDays', () => ({ default: () => <div>Giving days page</div> }));
 vi.mock('../modules/volunteering/VolunteerConfig', () => ({ default: () => <div>Config page</div> }));
+vi.mock('../modules/volunteering/VolunteerTraining', () => ({ default: () => <div>Training page</div> }));
+vi.mock('../modules/volunteering/VolunteerQualifications', () => ({ default: () => <div>Qualifications page</div> }));
+vi.mock('../modules/volunteering/VolunteerCertificates', () => ({ default: () => <div>Certificates page</div> }));
+vi.mock('../modules/volunteering/VolunteerGroupBookings', () => ({ default: () => <div>Group bookings page</div> }));
+vi.mock('../modules/volunteering/DonationRefunds', () => ({ default: () => <div>Donations page</div> }));
+vi.mock('../modules/config/ModuleConfiguration', () => ({ default: () => <div>Module configuration page</div> }));
+// The hubs (2026-10-18) are tab strips around a router outlet; the strip is
+// tested in VolunteeringHubTabs.test.tsx, so here they are just the outlet.
+vi.mock('../modules/volunteering/OpportunitiesHub', () => ({ default: () => <Outlet /> }));
+vi.mock('../modules/volunteering/RecordsHub', () => ({ default: () => <Outlet /> }));
+vi.mock('../modules/volunteering/FundraisingHub', () => ({ default: () => <Outlet /> }));
 vi.mock('../modules/AdminNotFound', () => ({ default: () => <div>Admin Not Found</div> }));
 
 import { AdminRoutes } from '../routes';
 
 function LocationProbe() {
-  return <output aria-label="path">{useLocation().pathname}</output>;
+  const location = useLocation();
+  return <output aria-label="path">{location.pathname + location.search}</output>;
 }
 
 function renderAt(path: string) {
@@ -74,12 +86,23 @@ describe('guessed volunteering admin addresses', () => {
   it.each([
     ['applications', '/test/admin/volunteering/approvals', 'Approvals page'],
     ['incidents', '/test/admin/volunteering/safeguarding', 'Safeguarding page'],
-    ['settings', '/test/admin/volunteering/config', 'Config page'],
     ['organisations', '/test/admin/volunteering/organizations', 'Organisations page'],
-    ['fundraising', '/test/admin/volunteering/giving-days', 'Giving days page'],
-    ['shift-swaps', '/test/admin/volunteering/swaps', 'Swaps page'],
     ['shifts', '/test/admin/volunteering/opportunities', 'Opportunities page'],
     ['wellbeing', '/test/admin/volunteering', 'Overview page'],
+    // Since 2026-10-18 these pages are tabs under three hubs; their old
+    // addresses (and the guessed ones) follow them.
+    ['swaps', '/test/admin/volunteering/opportunities/swaps', 'Swaps page'],
+    ['shift-swaps', '/test/admin/volunteering/opportunities/swaps', 'Swaps page'],
+    ['group-bookings', '/test/admin/volunteering/opportunities/group-bookings', 'Group bookings page'],
+    ['training', '/test/admin/volunteering/records/training', 'Training page'],
+    ['qualifications', '/test/admin/volunteering/records/qualifications', 'Qualifications page'],
+    ['certificates', '/test/admin/volunteering/records/certificates', 'Certificates page'],
+    ['records', '/test/admin/volunteering/records/training', 'Training page'],
+    ['giving-days', '/test/admin/volunteering/fundraising/campaigns', 'Giving days page'],
+    ['fundraising', '/test/admin/volunteering/fundraising/campaigns', 'Giving days page'],
+    ['donations', '/test/admin/volunteering/fundraising/donations', 'Donations page'],
+    // Every volunteering setting is in the Module Configuration window now.
+    ['settings', '/test/admin/module-configuration?configure=volunteering', 'Module configuration page'],
   ])('/admin/volunteering/%s lands on the real page', async (guess, target, page) => {
     renderAt(`/test/admin/volunteering/${guess}`);
 
