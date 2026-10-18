@@ -538,7 +538,7 @@
         {
           "input": "/groups/1?tab=discussion&discussion_id=1",
           "expected": "native",
-          "native_href": "/(modals)/group-detail?tab=discussion&discussion_id=1&id=1"
+          "native_href": "/(modals)/feed-item-detail?type=discussion&id=1"
         },
         {
           "input": "/feed/posts/1#comment-2",

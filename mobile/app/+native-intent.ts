@@ -300,7 +300,12 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
   const { section, segments, params, fragment } = parsed;
   const [id, detail] = segments;
 
-  const discussionId = fragment?.match(/^discussion-(\d+)$/)?.[1];
+  const commentId = fragment?.match(/^comment-(\d+)$/)?.[1];
+  // A discussion is named either in the fragment (`#discussion-48`) or, by the discussion
+  // notification itself, in the query (`?tab=discussion&discussion_id=48`). Both open the
+  // discussion; a comment fragment is handled below so the comment sheet opens too.
+  const discussionId = fragment?.match(/^discussion-(\d+)$/)?.[1]
+    ?? (section === 'groups' && !commentId && fragment !== 'comments' ? params.discussion_id : undefined);
   if (section === 'groups' && discussionId) {
     return appendParams('/(modals)/feed-item-detail', {
       type: 'discussion',
@@ -308,7 +313,6 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
     });
   }
 
-  const commentId = fragment?.match(/^comment-(\d+)$/)?.[1];
   if (commentId || fragment === 'comments') {
     const commentParams = {
       ...params,

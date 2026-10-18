@@ -74,6 +74,11 @@ describe('native intent route rewriting', () => {
       .toBe('/(modals)/feed-item-detail?openComments=1&type=event&id=45');
     expect(mapSystemPathToNativeRoute('/groups/8#discussion-48'))
       .toBe('/(modals)/feed-item-detail?type=discussion&id=48');
+    // The discussion notification names the discussion in the query, not the fragment
+    // (SocialNotificationService). It used to open the group's discussion TAB and drop
+    // the discussion itself (push audit, 2026-10-18).
+    expect(mapSystemPathToNativeRoute('/groups/8?tab=discussion&discussion_id=48'))
+      .toBe('/(modals)/feed-item-detail?type=discussion&id=48');
   });
 
   it('maps create aliases to native create surfaces', () => {
