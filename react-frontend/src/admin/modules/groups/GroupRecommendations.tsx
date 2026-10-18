@@ -112,7 +112,7 @@ export default function GroupRecommendations() {
             items={recommendations}
           >
             {(rec) => (
-              <TableRow key={`${rec.user_id}-${rec.group_id}`}>
+              <TableRow id={`${rec.user_id}-${rec.group_id}`}>
                 <TableCell>{rec.user_name}</TableCell>
                 <TableCell>{rec.group_name}</TableCell>
                 <TableCell>

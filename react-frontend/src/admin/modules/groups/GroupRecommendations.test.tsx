@@ -32,7 +32,6 @@ vi.mock('@/contexts/ToastContext', async (importOriginal) => {
 const MOCK_STATS = vi.hoisted(() => ({ total: 42, avg_score: 0.75, join_rate: 33 }));
 const MOCK_RECS = vi.hoisted(() => [
   {
-    id: '1-10',
     user_id: 1,
     user_name: 'Alice',
     group_id: 10,
@@ -42,7 +41,6 @@ const MOCK_RECS = vi.hoisted(() => [
     created_at: '2025-01-15T00:00:00Z',
   },
   {
-    id: '2-11',
     user_id: 2,
     user_name: 'Bob',
     group_id: 11,
