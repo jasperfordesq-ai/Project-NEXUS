@@ -396,11 +396,27 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       { key: 'volunteering.swap_requires_admin', type: 'boolean', defaultValue: false, category: 'shifts_applications' },
       { key: 'volunteering.auto_approve_applications', type: 'boolean', defaultValue: false, category: 'shifts_applications' },
       { key: 'volunteering.require_org_note_on_decline', type: 'boolean', defaultValue: false, category: 'shifts_applications' },
-      { key: 'volunteering.cancellation_deadline_hours', type: 'number', defaultValue: 24, category: 'shifts_applications', min: 0, max: 168 },
-      { key: 'volunteering.max_hours_per_shift', type: 'number', defaultValue: 8, category: 'shifts_applications', min: 1, max: 24 },
+      // Defaults and ranges mirror VolunteeringConfigurationService::DEFAULTS and
+      // ::RANGES. The server always answers with its own defaults, so a registry
+      // default that disagreed only flashed a wrong number before the load.
+      { key: 'volunteering.cancellation_deadline_hours', type: 'number', defaultValue: 0, category: 'shifts_applications', min: 0, max: 168 },
+      { key: 'volunteering.max_hours_per_shift', type: 'number', defaultValue: 24, category: 'shifts_applications', min: 1, max: 24 },
       // Hours & Verification
       { key: 'volunteering.hours_require_verification', type: 'boolean', defaultValue: true, category: 'hours_verification' },
-      { key: 'volunteering.min_hours_for_certificate', type: 'number', defaultValue: 1, category: 'hours_verification', min: 1, max: 100 },
+      { key: 'volunteering.min_hours_for_certificate', type: 'number', defaultValue: 0, category: 'hours_verification', min: 0, max: 100 },
+      // Reminders — moved here from the retired /admin/volunteering/config page
+      // (2026-10-18). Email is the only channel, so each reminder is one
+      // on/off switch plus one timing.
+      { key: 'volunteering.reminder_pre_shift_enabled', type: 'boolean', defaultValue: true, category: 'reminders' },
+      { key: 'volunteering.reminder_pre_shift_hours_before', type: 'number', defaultValue: 24, category: 'reminders', min: 1, max: 168 },
+      { key: 'volunteering.reminder_post_shift_feedback_enabled', type: 'boolean', defaultValue: true, category: 'reminders' },
+      { key: 'volunteering.reminder_post_shift_feedback_hours_after', type: 'number', defaultValue: 2, category: 'reminders', min: 1, max: 168 },
+      { key: 'volunteering.reminder_lapsed_volunteer_enabled', type: 'boolean', defaultValue: true, category: 'reminders' },
+      { key: 'volunteering.reminder_lapsed_volunteer_days_inactive', type: 'number', defaultValue: 30, category: 'reminders', min: 1, max: 365 },
+      { key: 'volunteering.reminder_credential_expiry_enabled', type: 'boolean', defaultValue: true, category: 'reminders' },
+      { key: 'volunteering.reminder_credential_expiry_days_before', type: 'number', defaultValue: 30, category: 'reminders', min: 1, max: 90 },
+      { key: 'volunteering.reminder_training_expiry_enabled', type: 'boolean', defaultValue: true, category: 'reminders' },
+      { key: 'volunteering.reminder_training_expiry_days_before', type: 'number', defaultValue: 14, category: 'reminders', min: 1, max: 90 },
       // Expenses
       { key: 'volunteering.expenses_enabled', type: 'boolean', defaultValue: true, category: 'expenses' },
       { key: 'volunteering.expense_require_receipt', type: 'boolean', defaultValue: false, category: 'expenses' },

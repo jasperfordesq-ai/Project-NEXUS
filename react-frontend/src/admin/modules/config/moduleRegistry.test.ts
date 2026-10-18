@@ -187,4 +187,47 @@ describe('module registry volunteering module', () => {
     expect(categories.has('emergency_alerts')).toBe(false);
     expect(categories.has('wellbeing_safety')).toBe(false);
   });
+
+  // The five reminders moved here from the retired /admin/volunteering/config
+  // page on 2026-10-18: one on/off switch and one timing each, in their own
+  // category, with the same ranges the server enforces
+  // (VolunteeringConfigurationService::RANGES).
+  it('offers the five reminders as on/off plus timing pairs with the server ranges', () => {
+    const volunteering = getFeatureModules().find(candidate => candidate.id === 'volunteering');
+    const reminders = volunteering?.configOptions.filter(option => option.category === 'reminders') ?? [];
+
+    expect(reminders.map(option => [option.key, option.type, option.defaultValue, option.min, option.max])).toEqual([
+      ['volunteering.reminder_pre_shift_enabled', 'boolean', true, undefined, undefined],
+      ['volunteering.reminder_pre_shift_hours_before', 'number', 24, 1, 168],
+      ['volunteering.reminder_post_shift_feedback_enabled', 'boolean', true, undefined, undefined],
+      ['volunteering.reminder_post_shift_feedback_hours_after', 'number', 2, 1, 168],
+      ['volunteering.reminder_lapsed_volunteer_enabled', 'boolean', true, undefined, undefined],
+      ['volunteering.reminder_lapsed_volunteer_days_inactive', 'number', 30, 1, 365],
+      ['volunteering.reminder_credential_expiry_enabled', 'boolean', true, undefined, undefined],
+      ['volunteering.reminder_credential_expiry_days_before', 'number', 30, 1, 90],
+      ['volunteering.reminder_training_expiry_enabled', 'boolean', true, undefined, undefined],
+      ['volunteering.reminder_training_expiry_days_before', 'number', 14, 1, 90],
+    ]);
+
+    const config = adminLocale.config;
+    expect(config.option_category_reminders).toBeTypeOf('string');
+    for (const option of reminders) {
+      const token = optionToken(option.key);
+      expect(config[`option_${token}_label`], `${option.key} label`).toBeTypeOf('string');
+      expect(config[`option_${token}_desc`], `${option.key} description`).toBeTypeOf('string');
+    }
+  });
+
+  // The window shows the registry default only until the server answers, and
+  // the server always answers with its own DEFAULTS — so a registry default
+  // that disagrees is a flash of a wrong number. Mirror the server.
+  it('matches the server defaults for the three numbers that used to disagree', () => {
+    const volunteering = getFeatureModules().find(candidate => candidate.id === 'volunteering');
+    const byKey = new Map(volunteering?.configOptions.map(option => [option.key, option]));
+
+    expect(byKey.get('volunteering.cancellation_deadline_hours')?.defaultValue).toBe(0);
+    expect(byKey.get('volunteering.max_hours_per_shift')?.defaultValue).toBe(24);
+    expect(byKey.get('volunteering.min_hours_for_certificate')?.defaultValue).toBe(0);
+    expect(byKey.get('volunteering.min_hours_for_certificate')?.min).toBe(0);
+  });
 });

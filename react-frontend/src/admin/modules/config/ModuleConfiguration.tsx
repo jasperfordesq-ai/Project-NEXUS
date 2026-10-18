@@ -16,7 +16,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Construction from 'lucide-react/icons/construction';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePageTitle } from '@/hooks';
 import { useToast, useTenant } from '@/contexts';
 import { adminConfig } from '../../api/adminApi';
@@ -60,6 +60,7 @@ export default function ModuleConfiguration() {
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [selectedModule, setSelectedModule] = useState<ModuleDefinition | null>(null);
   const [pendingPasskeyDisable, setPendingPasskeyDisable] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const handleConfigure = useCallback((module: ModuleDefinition) => {
     if (module.detailPageUrl) {
@@ -71,6 +72,38 @@ export default function ModuleConfiguration() {
 
   const coreModules = getCoreModules();
   const featureModules = getFeatureModules();
+
+  /**
+   * `?configure=<module id>` opens that module's window straight away. The
+   * volunteering sidebar's "Settings" entry links here this way, so a
+   * community admin lands in the volunteering settings instead of on a page
+   * of platform-wide switches. Only module ids the registry knows are
+   * honoured; anything else is ignored.
+   */
+  const configureParam = searchParams.get('configure');
+  const openedFromLink = configureParam !== null;
+  useEffect(() => {
+    if (!configureParam) return;
+    const target = [...coreModules, ...featureModules].find((module) => module.id === configureParam);
+    if (target && !target.detailPageUrl) {
+      setSelectedModule(target);
+    }
+    // The module lists are constant registry data; re-running on them would
+    // reopen the window after every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configureParam]);
+
+  const handleModalClose = useCallback(() => {
+    setSelectedModule(null);
+    if (!openedFromLink) return;
+    // Opened from a module's own sidebar entry: go back there rather than
+    // leaving the admin on this page, which their sidebar may not even list.
+    if (configureParam === 'volunteering') {
+      navigate(tenantPath('/admin/volunteering'));
+      return;
+    }
+    setSearchParams({}, { replace: true });
+  }, [openedFromLink, configureParam, navigate, tenantPath, setSearchParams]);
 
   const loadConfig = useCallback(async () => {
     setLoading(true);
@@ -347,7 +380,7 @@ export default function ModuleConfiguration() {
       <ModuleConfigModal
         module={selectedModule}
         isOpen={selectedModule !== null}
-        onClose={() => setSelectedModule(null)}
+        onClose={handleModalClose}
       />
 
       <Modal isOpen={pendingPasskeyDisable} onOpenChange={setPendingPasskeyDisable}>

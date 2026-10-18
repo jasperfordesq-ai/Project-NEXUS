@@ -4,16 +4,16 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { getFormattingLocale } from '@/lib/helpers';
-import { Button, Chip, Input, Textarea, Card, CardBody, Select, SelectItem, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tab, Tabs } from '@/components/ui';
+import { Button, Chip, Input, Textarea, Card, CardBody, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Switch, Tab, Tabs } from '@/components/ui';
 
 /**
  * Volunteer Configuration
- * Tabbed settings page: Reminder Settings, Webhooks.
+ * Tabbed page: Reminder emails (what was sent), Webhooks.
  *
- * A Custom Fields tab lived here until 17 Oct 2026. It was removed with its
- * endpoints: no client ever showed those fields to a volunteer or saved an
- * answer. Reminders are email-only (there is no SMS or push sender), so the
- * reminder cards offer only the email channel.
+ * A Custom Fields tab lived here until 17 Oct 2026 (nothing ever used it).
+ * The reminder SETTINGS moved into the Module Configuration window on
+ * 18 Oct 2026 so every volunteering setting is edited in one place; the
+ * Reminders tab here now shows the delivery log only.
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -22,42 +22,21 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Plus from 'lucide-react/icons/plus';
 import Edit2 from 'lucide-react/icons/pen';
 import Trash2 from 'lucide-react/icons/trash-2';
-import Save from 'lucide-react/icons/save';
 import Webhook from 'lucide-react/icons/webhook';
 import Bell from 'lucide-react/icons/bell';
 import Play from 'lucide-react/icons/play';
 import FileText from 'lucide-react/icons/file-text';
-import Send from 'lucide-react/icons/send';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Search from 'lucide-react/icons/search';
-import Clock from 'lucide-react/icons/clock';
 import { usePageTitle } from '@/hooks';
-import { useAuth, useToast } from '@/contexts';
+import { useToast } from '@/contexts';
 import { adminVolunteering } from '../../api/adminApi';
 import { DataTable, type Column } from '../../components/DataTable';
 import { PageHeader } from '../../components/PageHeader';
 import { EmptyState } from '../../components/EmptyState';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { useTranslation } from 'react-i18next';
-
-// ─── Reminder types ────────────────────────────────────────────────────────────
-
-interface ReminderSetting {
-  key: string;
-  enabled: boolean;
-  timing_value: number;
-  email_enabled: boolean;
-}
-
-interface ReminderSettingResponse {
-  reminder_type: string;
-  enabled: boolean;
-  hours_before: number | null;
-  hours_after: number | null;
-  days_inactive: number | null;
-  days_before_expiry: number | null;
-  email_enabled: boolean;
-}
+import { ReminderEmailsPanel } from './ReminderEmailsPanel';
 
 // ─── Webhook types ─────────────────────────────────────────────────────────────
 
@@ -148,351 +127,16 @@ export default function VolunteerConfig() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab 1: Reminder Settings
+// Tab 1: Reminder emails
 // ─────────────────────────────────────────────────────────────────────────────
-
-const defaultReminders: ReminderSetting[] = [
-  { key: 'pre_shift', enabled: true, timing_value: 24, email_enabled: true },
-  { key: 'post_shift_feedback', enabled: true, timing_value: 2, email_enabled: true },
-  { key: 'lapsed_volunteer', enabled: true, timing_value: 30, email_enabled: true },
-  // Qualification expiry: the register's nightly job reminds 30 days ahead by
-  // default, so the setting shows the same figure until the community changes it.
-  { key: 'credential_expiry', enabled: true, timing_value: 30, email_enabled: true },
-  { key: 'training_expiry', enabled: true, timing_value: 14, email_enabled: true },
-];
-
-function fromReminderResponse(row: ReminderSettingResponse): ReminderSetting {
-  const template = defaultReminders.find((item) => item.key === row.reminder_type);
-  const timingValue = row.hours_before ?? row.hours_after ?? row.days_inactive ?? row.days_before_expiry ?? template?.timing_value ?? 0;
-  return {
-    key: row.reminder_type,
-    enabled: row.enabled,
-    timing_value: timingValue,
-    email_enabled: row.email_enabled,
-  };
-}
-
-function toReminderRequest(reminder: ReminderSetting): Record<string, unknown> {
-  return {
-    reminder_type: reminder.key,
-    enabled: reminder.enabled,
-    hours_before: reminder.key === 'pre_shift' ? reminder.timing_value : null,
-    hours_after: reminder.key === 'post_shift_feedback' ? reminder.timing_value : null,
-    days_inactive: reminder.key === 'lapsed_volunteer' ? reminder.timing_value : null,
-    days_before_expiry: ['credential_expiry', 'training_expiry'].includes(reminder.key) ? reminder.timing_value : null,
-    email_enabled: reminder.email_enabled,
-  };
-}
+//
+// The five reminder SETTINGS moved into the Module Configuration window on
+// 2026-10-18 (sidebar: Volunteering → Settings), beside every other
+// volunteering setting. This tab keeps the operational half: what has been
+// sent, and the super-admin "run due reminders now" button.
 
 function RemindersTab() {
-  const { t } = useTranslation('admin_volunteering');
-  const toast = useToast();
-  const { user } = useAuth();
-  const canRunReminderJobs = Boolean(
-    user?.is_super_admin ||
-    user?.is_god ||
-    user?.is_tenant_super_admin ||
-    user?.role === 'super_admin',
-  );
-
-  const [reminders, setReminders] = useState<ReminderSetting[]>(defaultReminders);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [runningReminderJob, setRunningReminderJob] = useState(false);
-  const { isOpen: isTestOpen, onOpen: onTestOpen, onClose: onTestClose } = useDisclosure();
-
-  // Delivery log state
-  interface DeliveryLog {
-    id: number;
-    user_name: string;
-    user_avatar: string | null;
-    reminder_type: string;
-    channel: string;
-    sent_at: string;
-  }
-  interface DeliveryStats {
-    total_sent: number;
-    by_channel: Record<string, number>;
-    by_type: Record<string, number>;
-  }
-  const [deliveryLogs, setDeliveryLogs] = useState<DeliveryLog[]>([]);
-  const [deliveryStats, setDeliveryStats] = useState<DeliveryStats | null>(null);
-  const [deliveryLoading, setDeliveryLoading] = useState(false);
-  const [deliveryFilterType, setDeliveryFilterType] = useState('');
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await adminVolunteering.getReminderSettings();
-      if (res.success && res.data) {
-        const payload = res.data as unknown;
-        let data: ReminderSettingResponse[];
-        if (Array.isArray(payload)) {
-          data = payload;
-        } else if (payload && typeof payload === 'object' && 'data' in payload) {
-          data = (payload as { data: ReminderSettingResponse[] }).data || [];
-        } else {
-          data = [];
-        }
-        if (data.length > 0) setReminders(data.map(fromReminderResponse));
-      }
-    } catch {
-      // Use defaults on failure
-    }
-    setLoading(false);
-  }, []);
-
-  const loadDeliveryLogs = useCallback(async (type?: string) => {
-    setDeliveryLoading(true);
-    try {
-      const res = await adminVolunteering.getReminderLogs({
-        type: type || undefined,
-        per_page: 10,
-      });
-      if (res.success && res.data) {
-        const rows = Array.isArray(res.data) ? res.data as DeliveryLog[] : [];
-        const meta = res.meta as { stats?: DeliveryStats } | undefined;
-        setDeliveryLogs(rows);
-        if (meta?.stats) setDeliveryStats(meta.stats);
-      }
-    } catch {
-      setDeliveryLogs([]);
-    }
-    setDeliveryLoading(false);
-  }, []);
-
-  useEffect(() => { loadData(); }, [loadData]);
-  useEffect(() => { loadDeliveryLogs(); }, [loadDeliveryLogs]);
-
-  const updateReminder = (index: number, updates: Partial<ReminderSetting>) => {
-    setReminders((prev) => prev.map((r, i) => (i === index ? { ...r, ...updates } : r)));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Each reminder is an independent PUT, so a partial failure persists some
-      // and not others. Use allSettled so one failure doesn't mask the rest,
-      // name which reminders failed, and reload below so the form reflects the
-      // true saved state instead of the optimistic values.
-      const results = await Promise.allSettled(
-        reminders.map((reminder) => adminVolunteering.updateReminderSettings(toReminderRequest(reminder))),
-      );
-      const failedKeys = reminders
-        .filter((_, i) => {
-          const r = results[i];
-          return !r || r.status !== 'fulfilled' || !r.value.success;
-        })
-        .map((reminder) => reminder.key);
-
-      if (failedKeys.length === 0) {
-        toast.success(t('volunteering.reminders_saved'));
-      } else {
-        toast.error(`${t('volunteering.failed_to_save_reminders')} (${failedKeys.join(', ')})`);
-      }
-    } finally {
-      await loadData();
-      setSaving(false);
-    }
-  };
-
-  const handleTestSend = async () => {
-    setRunningReminderJob(true);
-    try {
-      const res = await adminVolunteering.sendShiftReminders();
-      if (!res.success) {
-        throw new Error('send_shift_reminders_failed');
-      }
-      onTestClose();
-      toast.success(
-        t('volunteering.reminder_job_sent', {
-          count: (res.data as { reminders_sent?: number } | undefined)?.reminders_sent ?? 0,
-        }),
-      );
-      loadDeliveryLogs();
-    } catch {
-      toast.error(t('volunteering.reminder_job_failed'));
-    } finally {
-      setRunningReminderJob(false);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold">{t('volunteering.reminders_heading')}</h3>
-        <div className="flex gap-2">
-          <Button variant="secondary" startContent={<RefreshCw size={16} />} onPress={loadData} isLoading={loading}>
-            {t('volunteering.refresh')}
-          </Button>
-          {canRunReminderJobs && (
-            <Button variant="secondary"  startContent={<Send size={16} />} onPress={onTestOpen} isLoading={runningReminderJob}>
-              {t('volunteering.run_due_reminders')}
-            </Button>
-          )}
-          <Button  startContent={<Save size={16} />} onPress={handleSave} isLoading={saving}>
-            {t('volunteering.save')}
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-4">
-        {reminders.map((reminder, index) => (
-          <Card key={reminder.key} className="border border-divider/70 p-0 shadow-sm shadow-black/[0.03]">
-            <CardBody className="p-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Switch
-                      isSelected={reminder.enabled}
-                      onValueChange={(v) => updateReminder(index, { enabled: v })}
-                    />
-                    <span className="font-medium">
-                      {t(`volunteering.reminder_${reminder.key}`)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Chip size="sm" variant="soft" color={reminder.enabled ? 'success' : 'default'}>
-                      {reminder.enabled
-                        ? t('volunteering.enabled')
-                        : t('volunteering.disabled')}
-                    </Chip>
-                  </div>
-                </div>
-
-                {reminder.enabled && (
-                  <div className="flex flex-wrap items-center gap-4 ml-12">
-                    <Input
-                      type="number"
-                      label={t('volunteering.timing_value')}
-                      value={String(reminder.timing_value)}
-                      onValueChange={(v) => updateReminder(index, { timing_value: Number(v) || 0 })}
-                      variant="secondary"
-                      className="w-28"
-                      size="sm"
-                      endContent={
-                        <span className="text-xs text-muted whitespace-nowrap">
-                          {t(`volunteering.timing_unit_${reminder.key}`)}
-                        </span>
-                      }
-                    />
-                    <Switch
-                      size="sm"
-                      isSelected={reminder.email_enabled}
-                      onValueChange={(v) => updateReminder(index, { email_enabled: v })}
-                    >
-                      {t('volunteering.channel_email')}
-                    </Switch>
-                  </div>
-                )}
-              </div>
-            </CardBody>
-          </Card>
-        ))}
-      </div>
-
-      {/* Recent Deliveries */}
-      <div className="space-y-3 pt-2">
-        <h4 className="text-md flex items-center gap-2 font-semibold">
-          <Clock size={16} />
-          {t('volunteering.recent_deliveries')}
-        </h4>
-
-        {/* Stats summary */}
-        {deliveryStats && (
-          <div className="flex flex-wrap gap-2">
-            <Chip size="sm" variant="soft" color="default">
-              {t('volunteering.delivery_total_sent', { count: deliveryStats.total_sent })}
-            </Chip>
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="flex gap-2 rounded-2xl border border-divider/70 bg-surface p-3 shadow-sm shadow-black/[0.03]">
-          <Select
-            label={t('volunteering.filter_type')}
-            size="sm"
-            variant="secondary"
-            className="w-44"
-            selectedKeys={deliveryFilterType ? [deliveryFilterType] : []}
-            onSelectionChange={(keys) => {
-              const val = Array.from(keys)[0] as string || '';
-              setDeliveryFilterType(val);
-              loadDeliveryLogs(val);
-            }}
-          >
-            <SelectItem key="" id="">{t('volunteering.tab_all')}</SelectItem>
-            <SelectItem key="pre_shift" id="pre_shift">{t('volunteering.reminder_pre_shift')}</SelectItem>
-            <SelectItem key="post_shift_feedback" id="post_shift_feedback">{t('volunteering.reminder_post_shift_feedback')}</SelectItem>
-            <SelectItem key="lapsed_volunteer" id="lapsed_volunteer">{t('volunteering.reminder_lapsed_volunteer')}</SelectItem>
-            <SelectItem key="credential_expiry" id="credential_expiry">{t('volunteering.reminder_credential_expiry')}</SelectItem>
-            <SelectItem key="training_expiry" id="training_expiry">{t('volunteering.reminder_training_expiry')}</SelectItem>
-          </Select>
-        </div>
-
-        {/* Log list */}
-        {deliveryLoading ? (
-          <Card className="border border-divider/70 bg-surface-secondary/50">
-            <CardBody className="p-6 flex justify-center">
-              <div className="flex items-center gap-2 text-muted">
-                <RefreshCw size={16} className="animate-spin" />
-                <span className="text-sm">{t('volunteering.loading')}</span>
-              </div>
-            </CardBody>
-          </Card>
-        ) : deliveryLogs.length === 0 ? (
-          <Card className="border border-divider/70 bg-surface-secondary/50">
-            <CardBody className="p-6 text-center">
-              <Clock size={32} className="mx-auto mb-3 text-muted" />
-              <p className="text-muted text-sm">
-                {t('volunteering.no_delivery_logs')}
-              </p>
-            </CardBody>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {deliveryLogs.map((log) => (
-              <Card key={log.id} className="border border-divider/70 p-0 shadow-sm shadow-black/[0.02]">
-                <CardBody className="p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">{log.user_name}</span>
-                    </div>
-                    <Chip size="sm" variant="soft" color="accent">
-                      {t(`volunteering.reminder_${log.reminder_type}`)}
-                    </Chip>
-                    <span className="text-xs text-muted whitespace-nowrap">
-                      {log.sent_at ? new Date(log.sent_at).toLocaleString(getFormattingLocale()) : ''}
-                    </span>
-                  </div>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Reminder Job Confirmation Modal */}
-      {canRunReminderJobs && (
-        <Modal isOpen={isTestOpen} onClose={onTestClose} size="sm">
-          <ModalContent>
-            <ModalHeader>{t('volunteering.run_reminder_job_title')}</ModalHeader>
-            <ModalBody>
-              <p className="text-foreground">
-                {t('volunteering.run_reminder_job_confirm')}
-              </p>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="secondary" onPress={onTestClose}>{t('volunteering.cancel')}</Button>
-              <Button  startContent={<Send size={14} />} onPress={handleTestSend} isLoading={runningReminderJob}>
-                {t('volunteering.confirm_run_reminders')}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
-    </div>
-  );
+  return <ReminderEmailsPanel />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

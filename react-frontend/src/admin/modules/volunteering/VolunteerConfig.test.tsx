@@ -12,8 +12,6 @@ import userEvent from '@testing-library/user-event';
 // ─── Mock adminVolunteering API ───────────────────────────────────────────────
 const { mockAdminVolunteering } = vi.hoisted(() => ({
   mockAdminVolunteering: {
-    getReminderSettings: vi.fn(),
-    updateReminderSettings: vi.fn(),
     getReminderLogs: vi.fn(),
     sendShiftReminders: vi.fn(),
     getWebhooks: vi.fn(),
@@ -138,20 +136,6 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
-const makeReminderResponse = () => ([
-  {
-    reminder_type: 'pre_shift',
-    enabled: true,
-    hours_before: 24,
-    hours_after: null,
-    days_inactive: null,
-    days_before_expiry: null,
-    email_enabled: true,
-    push_enabled: true,
-    sms_enabled: false,
-  },
-]);
-
 const makeWebhook = () => ({
   id: 10,
   name: 'My Webhook',
@@ -179,10 +163,8 @@ async function openWebhooksTab(user: ReturnType<typeof userEvent.setup>) {
 describe('VolunteerConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockAdminVolunteering.getReminderSettings.mockResolvedValue({ success: true, data: makeReminderResponse() });
     mockAdminVolunteering.getReminderLogs.mockResolvedValue({ success: true, data: [] });
     mockAdminVolunteering.getWebhooks.mockResolvedValue({ success: true, data: [makeWebhook()] });
-    mockAdminVolunteering.updateReminderSettings.mockResolvedValue({ success: true });
     mockAdminVolunteering.sendShiftReminders.mockResolvedValue({ success: true, data: { reminders_sent: 3 } });
     mockAdminVolunteering.createWebhook.mockResolvedValue({ success: true });
     mockAdminVolunteering.deleteWebhook.mockResolvedValue({ success: true });
@@ -198,34 +180,15 @@ describe('VolunteerConfig', () => {
     expect(tabs.some((t) => /custom/i.test(t.textContent ?? ''))).toBe(false);
   });
 
-  it('opens on Reminders and loads the reminder settings', async () => {
+  // The reminder settings moved into the Module Configuration window on
+  // 18 Oct 2026; this tab keeps only the delivery log.
+  it('opens on Reminders and shows the delivery log, with no settings to save', async () => {
     await renderPage();
 
-    await waitFor(() => expect(mockAdminVolunteering.getReminderSettings).toHaveBeenCalledTimes(1));
-  });
-
-  it('offers only the email channel — there is no SMS or push sender', async () => {
-    await renderPage();
-
-    await waitFor(() => expect(screen.getByRole('checkbox', { name: /email/i })).toBeInTheDocument());
-    expect(screen.queryByRole('checkbox', { name: /sms/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /push/i })).not.toBeInTheDocument();
-  });
-
-  it('saves reminders without SMS or push settings and confirms', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-    await waitFor(() => expect(screen.getByRole('checkbox', { name: /email/i })).toBeInTheDocument());
-
-    const saveBtn = screen.getAllByRole('button').find((b) => /save/i.test(b.textContent ?? ''));
-    expect(saveBtn).toBeDefined();
-    await user.click(saveBtn!);
-
-    await waitFor(() => expect(mockToast.success).toHaveBeenCalled());
-    const sent = mockAdminVolunteering.updateReminderSettings.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect(sent).toMatchObject({ reminder_type: 'pre_shift', email_enabled: true, hours_before: 24 });
-    expect(sent).not.toHaveProperty('sms_enabled');
-    expect(sent).not.toHaveProperty('push_enabled');
+    await waitFor(() => expect(mockAdminVolunteering.getReminderLogs).toHaveBeenCalled());
+    expect(screen.getByText(/recent deliveries/i)).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: /email/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button').some((b) => /^save$/i.test(b.textContent ?? ''))).toBe(false);
   });
 
   it('reports a webhook test as failed when the receiving system rejects it', async () => {

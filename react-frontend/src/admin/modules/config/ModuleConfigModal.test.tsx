@@ -237,14 +237,14 @@ const makeAlphaOptionModule = (): ModuleDefinition => ({
   configSource: 'tenant_modules',
   configOptions: [
     {
-      key: 'wallet.group_booking',
+      key: 'wallet.group_booking',
       type: 'boolean',
       defaultValue: false,
       category: 'Limits',
       stage: 'alpha',
     },
     {
-      key: 'wallet.min_transfer',
+      key: 'wallet.min_transfer',
       type: 'number',
       defaultValue: 0.25,
       category: 'Limits',
@@ -524,6 +524,61 @@ describe('ModuleConfigModal', () => {
       expect(mockRefreshTenant).toHaveBeenCalled();
       expect(onClose).toHaveBeenCalled();
     });
+  });
+
+  // The five volunteer reminders moved into this window on 2026-10-18 from the
+  // retired /admin/volunteering/config page: one switch + one timing each.
+  it('shows the volunteering Reminders category with five switches and five timings', async () => {
+    const { getFeatureModules } = await import('./moduleRegistry');
+    const volunteering = getFeatureModules().find((m) => m.id === 'volunteering')!;
+    mockAdminConfig.getVolunteeringConfig.mockResolvedValue({
+      success: true,
+      data: { config: { 'volunteering.reminder_pre_shift_hours_before': 48 } },
+    });
+
+    const { default: ModuleConfigModal } = await import('./ModuleConfigModal');
+    render(<ModuleConfigModal module={volunteering} isOpen={true} onClose={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText('Reminders')).toBeInTheDocument());
+
+    const reminderOptions = volunteering.configOptions.filter((o) => o.category === 'reminders');
+    expect(reminderOptions).toHaveLength(10);
+    const switches = reminderOptions.filter((o) => o.type === 'boolean');
+    const numbers = reminderOptions.filter((o) => o.type === 'number');
+    expect(switches).toHaveLength(5);
+    expect(numbers).toHaveLength(5);
+
+    // Every reminder control is on screen under its plain-English label, and
+    // the saved value (48 hours) is what the number box shows.
+    expect(screen.getByRole('checkbox', { name: /remind volunteers before a shift/i })).toBeInTheDocument();
+    const hoursBefore = screen.getByRole('spinbutton', { name: /hours before the shift/i });
+    expect(hoursBefore).toHaveValue(48);
+    expect(hoursBefore).toHaveAttribute('min', '1');
+    expect(hoursBefore).toHaveAttribute('max', '168');
+  });
+
+  // The server refuses a number outside its range with a message naming the
+  // limits; the admin must see that message, not a generic "save failed".
+  it("shows the server's own message when the volunteering save is refused", async () => {
+    const { getFeatureModules } = await import('./moduleRegistry');
+    const volunteering = getFeatureModules().find((m) => m.id === 'volunteering')!;
+    mockAdminConfig.getVolunteeringConfig.mockResolvedValue({ success: true, data: { config: {} } });
+    mockAdminConfig.updateVolunteeringConfigBulk.mockResolvedValue({
+      success: false,
+      errors: [{ code: 'VALIDATION_ERROR', message: 'Value must be between 1 and 168', field: 'volunteering.reminder_pre_shift_hours_before' }],
+    });
+
+    const { default: ModuleConfigModal } = await import('./ModuleConfigModal');
+    render(<ModuleConfigModal module={volunteering} isOpen={true} onClose={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText('Reminders')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: /hours before the shift/i }), { target: { value: '999' } });
+    const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save'));
+    expect(saveBtn).toBeDefined();
+    fireEvent.click(saveBtn!);
+
+    await waitFor(() => expect(mockAdminConfig.updateVolunteeringConfigBulk).toHaveBeenCalled());
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringContaining('between 1 and 168')));
   });
 
   it('shows coming-soon chip on options marked comingSoon', async () => {

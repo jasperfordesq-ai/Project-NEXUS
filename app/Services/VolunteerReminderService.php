@@ -20,9 +20,8 @@ use Illuminate\Support\Facades\Log;
  * `volunteering.reminder_*` configuration (VolunteeringConfigurationService,
  * read with getForTenant() because the sweeps loop over every tenant in one
  * process). Deliveries are recorded in `vol_reminders_sent`. Email is the only
- * channel. The `vol_reminder_settings` table is retired (2026-10-18): no
- * sweep reads it; only the legacy settings endpoints (getSettings /
- * updateSetting, removed with the old admin page) still touch it.
+ * channel. The `vol_reminder_settings` table is retired (2026-10-18) and read
+ * by nothing; it stays one release for the other blue/green colour.
  */
 class VolunteerReminderService
 {
@@ -425,99 +424,6 @@ class VolunteerReminderService
 
         return $sentCount;
     }
-
-    /**
-     * Get all reminder settings for the current tenant.
-     *
-     * Returns one row per reminder_type, or synthesises defaults for types
-     * that have no row yet.
-     *
-     * @return array  Keyed list of reminder settings
-     */
-    public static function getSettings(): array
-    {
-        $tenantId = TenantContext::getId();
-
-        $rows = DB::table('vol_reminder_settings')
-            ->where('tenant_id', $tenantId)
-            ->get()
-            ->keyBy('reminder_type');
-
-        $defaults = [
-            'pre_shift' => [
-                'hours_before' => 24,
-                'hours_after' => null,
-                'days_inactive' => null,
-                'days_before_expiry' => null,
-            ],
-            'post_shift_feedback' => [
-                'hours_before' => null,
-                'hours_after' => 2,
-                'days_inactive' => null,
-                'days_before_expiry' => null,
-            ],
-            'lapsed_volunteer' => [
-                'hours_before' => null,
-                'hours_after' => null,
-                'days_inactive' => 30,
-                'days_before_expiry' => null,
-            ],
-            'credential_expiry' => [
-                'hours_before' => null,
-                'hours_after' => null,
-                'days_inactive' => null,
-                'days_before_expiry' => 14,
-            ],
-            'training_expiry' => [
-                'hours_before' => null,
-                'hours_after' => null,
-                'days_inactive' => null,
-                'days_before_expiry' => 14,
-            ],
-        ];
-
-        $settings = [];
-
-        foreach ($defaults as $type => $typeDefaults) {
-            $row = $rows->get($type);
-
-            if ($row) {
-                $settings[] = [
-                    'id' => (int) $row->id,
-                    'reminder_type' => $row->reminder_type,
-                    'enabled' => (bool) $row->enabled,
-                    'hours_before' => $row->hours_before !== null ? (int) $row->hours_before : null,
-                    'hours_after' => $row->hours_after !== null ? (int) $row->hours_after : null,
-                    'days_inactive' => $row->days_inactive !== null ? (int) $row->days_inactive : null,
-                    'days_before_expiry' => $row->days_before_expiry !== null ? (int) $row->days_before_expiry : null,
-                    'email_template' => $row->email_template,
-                    'push_enabled' => (bool) $row->push_enabled,
-                    'email_enabled' => (bool) $row->email_enabled,
-                    'sms_enabled' => (bool) $row->sms_enabled,
-                    'updated_at' => $row->updated_at,
-                ];
-            } else {
-                // Synthesise a default entry (not yet persisted)
-                $settings[] = [
-                    'id' => null,
-                    'reminder_type' => $type,
-                    'enabled' => true,
-                    'hours_before' => $typeDefaults['hours_before'],
-                    'hours_after' => $typeDefaults['hours_after'],
-                    'days_inactive' => $typeDefaults['days_inactive'],
-                    'days_before_expiry' => $typeDefaults['days_before_expiry'],
-                    'email_template' => null,
-                    'push_enabled' => true,
-                    'email_enabled' => true,
-                    'sms_enabled' => false,
-                    'updated_at' => null,
-                ];
-            }
-        }
-
-        return $settings;
-    }
-
     // ─── Cron-callable reminder jobs ───────────────────────────────────────────
 
     /**
@@ -1172,60 +1078,5 @@ class VolunteerReminderService
         }
 
         return $totalSent;
-    }
-
-    /**
-     * Create or update a reminder setting for the current tenant.
-     *
-     * Uses UPSERT on (tenant_id, reminder_type).
-     *
-     * @param string $type  One of: pre_shift, post_shift_feedback, lapsed_volunteer, credential_expiry, training_expiry
-     * @param array  $data  Setting fields to update
-     * @return bool  True on success
-     */
-    public static function updateSetting(string $type, array $data): bool
-    {
-        $tenantId = TenantContext::getId();
-
-        $allowedTypes = ['pre_shift', 'post_shift_feedback', 'lapsed_volunteer', 'credential_expiry', 'training_expiry'];
-        if (!in_array($type, $allowedTypes, true)) {
-            return false;
-        }
-
-        $values = [
-            'tenant_id' => $tenantId,
-            'reminder_type' => $type,
-            'enabled' => isset($data['enabled']) ? (bool) $data['enabled'] : true,
-            'hours_before' => isset($data['hours_before']) ? (int) $data['hours_before'] : null,
-            'hours_after' => isset($data['hours_after']) ? (int) $data['hours_after'] : null,
-            'days_inactive' => isset($data['days_inactive']) ? (int) $data['days_inactive'] : null,
-            'days_before_expiry' => isset($data['days_before_expiry']) ? (int) $data['days_before_expiry'] : null,
-            'email_template' => isset($data['email_template']) ? trim((string) $data['email_template']) : null,
-            'push_enabled' => isset($data['push_enabled']) ? (bool) $data['push_enabled'] : true,
-            'email_enabled' => isset($data['email_enabled']) ? (bool) $data['email_enabled'] : true,
-            'sms_enabled' => isset($data['sms_enabled']) ? (bool) $data['sms_enabled'] : false,
-            'updated_at' => now(),
-        ];
-
-        try {
-            $existing = DB::table('vol_reminder_settings')
-                ->where('tenant_id', $tenantId)
-                ->where('reminder_type', $type)
-                ->first();
-
-            if ($existing) {
-                DB::table('vol_reminder_settings')
-                    ->where('id', $existing->id)
-                    ->update($values);
-            } else {
-                $values['created_at'] = now();
-                DB::table('vol_reminder_settings')->insert($values);
-            }
-
-            return true;
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("VolunteerReminderService::updateSetting error: " . $e->getMessage());
-            return false;
-        }
     }
 }

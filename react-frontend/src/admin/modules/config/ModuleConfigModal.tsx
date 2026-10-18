@@ -344,7 +344,9 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
         refreshTenant();
         onClose();
       } else {
-        toast.error(t('config.modal_save_failed'));
+        // The server refuses a number outside its range with a message that
+        // names the limits; show that rather than a generic failure.
+        toast.error(res.errors?.[0]?.message ?? res.message ?? t('config.modal_save_failed'));
       }
     } catch {
       toast.error(t('config.modal_save_failed'));

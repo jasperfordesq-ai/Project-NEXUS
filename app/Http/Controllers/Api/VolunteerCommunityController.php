@@ -25,7 +25,6 @@ use App\Services\VolunteerFormService;
 use App\Services\CommunityProjectService;
 use App\Services\VolunteerDonationService;
 use App\Services\WebhookDispatchService;
-use App\Services\VolunteerReminderService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
 
@@ -48,7 +47,6 @@ class VolunteerCommunityController extends BaseApiController
         private readonly CommunityProjectService $communityProjectService,
         private readonly VolunteerDonationService $volunteerDonationService,
         private readonly WebhookDispatchService $webhookDispatchService,
-        private readonly VolunteerReminderService $volunteerReminderService,
     ) {}
 
     private function ensureFeature(): void
@@ -1124,36 +1122,10 @@ class VolunteerCommunityController extends BaseApiController
         return $this->respondWithData($logs);
     }
 
-    // ========================================
-    // REMINDERS
-    // ========================================
-
-    public function getReminderSettings(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $settings = $this->volunteerReminderService->getSettings();
-        return $this->respondWithData($settings);
-    }
-
-    public function updateReminderSettings(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-        $this->rateLimit('vol_reminder_settings_update', 10, 60);
-
-        $data = $this->getAllInput();
-        $type = $data['reminder_type'] ?? '';
-
-        $allowedTypes = ['pre_shift', 'post_shift_feedback', 'lapsed_volunteer', 'credential_expiry', 'training_expiry'];
-        if (!in_array($type, $allowedTypes, true)) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_invalid_reminder_type', ['types' => implode(', ', $allowedTypes)]), 'reminder_type', 422);
-        }
-
-        $result = $this->volunteerReminderService->updateSetting($type, $data);
-        return $this->respondWithData(['success' => $result]);
-    }
+    // Reminder settings (GET/PUT /v2/admin/volunteering/reminder-settings) were
+    // removed 2026-10-18: the five reminders are ordinary volunteering
+    // configuration now, saved through AdminConfigController's
+    // /v2/admin/config/volunteering/bulk like every other volunteering setting.
 
     // ========================================
     // GUARDIAN CONSENTS — RETIRED

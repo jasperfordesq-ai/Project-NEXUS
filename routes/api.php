@@ -2844,8 +2844,6 @@ Route::get('/v2/admin/volunteering/reminder-logs', [\App\Http\Controllers\Api\Ad
 Route::get('/v2/admin/volunteering/giving-days/{id}/donors', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'givingDayDonors']);
 Route::get('/v2/admin/volunteering/giving-days/{id}/trends', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'givingDayTrends']);
 Route::get('/v2/admin/volunteering/activity-feed', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'activityFeed']);
-Route::get('/v2/admin/volunteering/reminder-settings', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getReminderSettings']);
-Route::put('/v2/admin/volunteering/reminder-settings', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateReminderSettings']);
 Route::get('/v2/admin/volunteering/community-projects', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminCommunityProjects']);
 Route::put('/v2/admin/volunteering/community-projects/{id}/review', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'reviewCommunityProject']);
 Route::get('/v2/admin/volunteering/webhooks', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getWebhooks']);

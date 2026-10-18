@@ -1507,6 +1507,17 @@ export interface VolunteeringConfig {
   // Hours & Verification
   'volunteering.hours_require_verification': boolean;
   'volunteering.min_hours_for_certificate': number;
+  // Reminders (email only): one on/off switch and one timing each
+  'volunteering.reminder_pre_shift_enabled': boolean;
+  'volunteering.reminder_pre_shift_hours_before': number;
+  'volunteering.reminder_post_shift_feedback_enabled': boolean;
+  'volunteering.reminder_post_shift_feedback_hours_after': number;
+  'volunteering.reminder_lapsed_volunteer_enabled': boolean;
+  'volunteering.reminder_lapsed_volunteer_days_inactive': number;
+  'volunteering.reminder_credential_expiry_enabled': boolean;
+  'volunteering.reminder_credential_expiry_days_before': number;
+  'volunteering.reminder_training_expiry_enabled': boolean;
+  'volunteering.reminder_training_expiry_days_before': number;
   // Expenses
   'volunteering.expenses_enabled': boolean;
   'volunteering.expense_require_receipt': boolean;

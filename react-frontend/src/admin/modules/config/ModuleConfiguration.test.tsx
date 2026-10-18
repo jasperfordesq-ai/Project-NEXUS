@@ -52,8 +52,19 @@ vi.mock('./ModuleCard', () => ({
 }));
 
 vi.mock('./ModuleConfigModal', () => ({
-  default: () => null,
+  default: ({ module, isOpen, onClose }: { module: { id: string } | null; isOpen: boolean; onClose: () => void }) =>
+    isOpen && module ? (
+      <div data-testid="module-config-modal" data-module={module.id}>
+        <button onClick={onClose}>Close window</button>
+      </div>
+    ) : null,
 }));
+
+const mockNavigate = vi.hoisted(() => vi.fn());
+vi.mock('react-router-dom', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('react-router-dom')>();
+  return { ...orig, useNavigate: () => mockNavigate };
+});
 
 vi.mock('./PlatformInfrastructure', () => ({
   default: () => <div data-testid="platform-infrastructure" />,
@@ -70,6 +81,7 @@ vi.mock('./moduleRegistry', () => ({
     { id: 'gamification', name: 'Gamification', description: 'Badges & XP', configOptions: [] },
     { id: 'two_factor_authentication', name: 'two_factor_authentication', description: 'two_factor_authentication', configOptions: [] },
     { id: 'biometric_login', name: 'biometric_login', description: 'biometric_login', configOptions: [] },
+    { id: 'volunteering', name: 'Volunteering', description: 'Volunteering', configOptions: [] },
   ],
 }));
 
@@ -98,6 +110,36 @@ const MOCK_CONFIG: TenantConfig = {
 describe('ModuleConfiguration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.replaceState({}, '', '/admin/module-configuration');
+  });
+
+  // The volunteering sidebar's "Settings" entry links here with
+  // ?configure=volunteering so a community admin lands straight in the
+  // volunteering window instead of hunting for it on a page of platform-wide
+  // switches; closing the window takes them back to volunteering.
+  it('opens the named module window from ?configure= and returns to volunteering on close', async () => {
+    vi.mocked(adminConfig.get).mockResolvedValue({ success: true, data: MOCK_CONFIG });
+    window.history.replaceState({}, '', '/admin/module-configuration?configure=volunteering');
+
+    render(<ModuleConfiguration />);
+
+    const modal = await screen.findByTestId('module-config-modal');
+    expect(modal).toHaveAttribute('data-module', 'volunteering');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close window' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering');
+  });
+
+  it('ignores an unknown ?configure= module and leaves the page as it is', async () => {
+    vi.mocked(adminConfig.get).mockResolvedValue({ success: true, data: MOCK_CONFIG });
+    window.history.replaceState({}, '', '/admin/module-configuration?configure=nonsense');
+
+    render(<ModuleConfiguration />);
+
+    await screen.findByText('Listings');
+    expect(screen.queryByTestId('module-config-modal')).not.toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('renders a loading spinner while config loads', () => {

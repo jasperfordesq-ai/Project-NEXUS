@@ -61,39 +61,6 @@ class VolunteerReminderServiceTest extends TestCase
         $this->assertSame(0, VolunteerReminderService::sendReminders($this->testTenantId, $oppId));
     }
 
-    public function test_updateSetting_returns_false_for_invalid_type(): void
-    {
-        $this->assertFalse(VolunteerReminderService::updateSetting('invalid_type', ['enabled' => true]));
-    }
-
-    public function test_updateSetting_accepts_valid_types(): void
-    {
-        $validTypes = ['pre_shift', 'post_shift_feedback', 'lapsed_volunteer', 'credential_expiry', 'training_expiry'];
-
-        foreach ($validTypes as $type) {
-            // Mock DB for each call
-            DB::shouldReceive('table')->with('vol_reminder_settings')->andReturnSelf();
-            DB::shouldReceive('where')->andReturnSelf();
-            DB::shouldReceive('first')->andReturn(null);
-            DB::shouldReceive('insert')->andReturn(true);
-
-            $this->assertTrue(VolunteerReminderService::updateSetting($type, ['enabled' => true]));
-        }
-    }
-
-    public function test_getSettings_returns_defaults_when_no_rows(): void
-    {
-        DB::shouldReceive('table')->with('vol_reminder_settings')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('get')->andReturn(collect([]));
-
-        $result = VolunteerReminderService::getSettings();
-
-        $this->assertCount(5, $result);
-        $this->assertEquals('pre_shift', $result[0]['reminder_type']);
-        $this->assertNull($result[0]['id']);
-    }
-
     public function test_email_channel_claims_are_released_when_recipient_email_is_not_valid(): void
     {
         $source = file_get_contents(app_path('Services/VolunteerReminderService.php'));
