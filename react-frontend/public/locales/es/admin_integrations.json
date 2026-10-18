@@ -1,0 +1,86 @@
+{
+  "page_title": "Webhooks salientes",
+  "page_desc": "Avisa a otro sistema cuando ocurre algo aquí. La plataforma envía un mensaje firmado a la dirección que indiques.",
+  "community": "Comunidad",
+  "community_help": "Los webhooks pertenecen a una comunidad. Elige de quién son los webhooks que vas a gestionar.",
+  "failed_to_load_communities": "No se pudo cargar la lista de comunidades",
+  "refresh": "Actualizar",
+  "add_webhook": "Añadir webhook",
+  "edit_webhook": "Editar webhook",
+  "no_webhooks": "Todavía no hay webhooks",
+  "no_webhooks_desc": "Añade un webhook para enviar un mensaje a otro sistema cuando se complete un turno o cambie una candidatura de empleo.",
+  "col_name": "Nombre",
+  "col_url": "Dirección",
+  "col_events": "Envía un mensaje cuando",
+  "col_active": "Estado",
+  "col_failures": "Entregas fallidas",
+  "col_actions": "Acciones",
+  "active": "Activo",
+  "inactive": "En pausa",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "close": "Cerrar",
+  "cancel": "Cancelar",
+  "create": "Crear",
+  "save": "Guardar",
+  "webhook_name": "Nombre",
+  "webhook_name_help": "Un nombre que reconozcas, como el sistema que recibe los mensajes.",
+  "webhook_url": "Dirección (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Activo",
+  "events_heading": "Enviar un mensaje cuando…",
+  "events_help": "Solo se muestran los eventos que la plataforma envía de verdad.",
+  "name_url_required": "El nombre y la dirección son obligatorios",
+  "events_required": "Elige al menos un evento",
+  "events": {
+    "shift_completed": {
+      "label": "Un voluntario completa un turno",
+      "desc": "Se envía cuando un voluntario cierra un turno con un código QR."
+    },
+    "job_vacancy_created": {
+      "label": "Se publica una oferta de empleo",
+      "desc": "Se envía cuando se crea una nueva oferta de empleo."
+    },
+    "job_application_created": {
+      "label": "Alguien solicita un empleo",
+      "desc": "Se envía cuando un miembro presenta una candidatura."
+    },
+    "job_application_status_changed": {
+      "label": "Cambia el estado de una candidatura",
+      "desc": "Se envía cuando una candidatura pasa a un nuevo estado."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Varias candidaturas cambian de estado a la vez",
+      "desc": "Se envía cuando se mueven candidaturas en bloque."
+    },
+    "job_offer_accepted": {
+      "label": "Se acepta una oferta de empleo",
+      "desc": "Se envía cuando un miembro acepta una oferta de empleo."
+    }
+  },
+  "secret_title": "Tu secreto de firma",
+  "secret_desc": "Cópialo ahora y pégalo en el sistema receptor. Solo se muestra esta vez. Más adelante puedes generar uno nuevo.",
+  "secret_copied_done": "Ya lo he copiado",
+  "generate_secret": "Generar un secreto nuevo",
+  "generate_secret_title": "¿Generar un nuevo secreto de firma?",
+  "generate_secret_confirm": "El sistema receptor necesitará el nuevo secreto antes de poder comprobar más mensajes. El secreto anterior deja de funcionar de inmediato.",
+  "generate_secret_action": "Generar",
+  "send_test": "Enviar prueba",
+  "test_sent": "El sistema receptor aceptó el mensaje de prueba",
+  "test_failed": "El sistema receptor no aceptó el mensaje de prueba",
+  "view_deliveries": "Ver entregas",
+  "deliveries_title": "Entregas",
+  "filter_deliveries": "Filtrar por evento o código de respuesta…",
+  "no_deliveries": "Todavía no hay entregas para este webhook.",
+  "no_matching_deliveries": "Ninguna entrega coincide con tu filtro.",
+  "delete_webhook_title": "Eliminar webhook",
+  "delete_webhook_confirm": "¿Eliminar este webhook? El sistema receptor dejará de recibir mensajes.",
+  "webhook_created": "Webhook añadido",
+  "webhook_updated": "Webhook actualizado",
+  "webhook_deleted": "Webhook eliminado",
+  "failed_to_load_webhooks": "No se pudieron cargar los webhooks",
+  "failed_to_save_webhook": "No se pudo guardar el webhook",
+  "failed_to_delete_webhook": "No se pudo eliminar el webhook",
+  "failed_to_load_deliveries": "No se pudieron cargar las entregas",
+  "failed_to_rotate_secret": "No se pudo generar un secreto nuevo"
+}

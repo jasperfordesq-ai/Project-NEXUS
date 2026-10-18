@@ -1,0 +1,86 @@
+{
+  "page_title": "Outbound webhooks",
+  "page_desc": "Tell another system when something happens here. The platform sends a signed message to the address you give.",
+  "community": "Community",
+  "community_help": "Webhooks belong to one community. Choose whose webhooks to manage.",
+  "failed_to_load_communities": "Could not load the list of communities",
+  "refresh": "Refresh",
+  "add_webhook": "Add webhook",
+  "edit_webhook": "Edit webhook",
+  "no_webhooks": "No webhooks yet",
+  "no_webhooks_desc": "Add a webhook to send a message to another system when a shift is completed or a job application changes.",
+  "col_name": "Name",
+  "col_url": "Address",
+  "col_events": "Sends a message when",
+  "col_active": "Status",
+  "col_failures": "Failed deliveries",
+  "col_actions": "Actions",
+  "active": "Active",
+  "inactive": "Paused",
+  "edit": "Edit",
+  "delete": "Delete",
+  "close": "Close",
+  "cancel": "Cancel",
+  "create": "Create",
+  "save": "Save",
+  "webhook_name": "Name",
+  "webhook_name_help": "A name you will recognise, such as the system that receives the messages.",
+  "webhook_url": "Address (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Active",
+  "events_heading": "Send a message when…",
+  "events_help": "Only events the platform really sends are listed.",
+  "name_url_required": "Name and address are required",
+  "events_required": "Choose at least one event",
+  "events": {
+    "shift_completed": {
+      "label": "A volunteer completes a shift",
+      "desc": "Sent when a volunteer checks out of a shift with a QR code."
+    },
+    "job_vacancy_created": {
+      "label": "A job vacancy is posted",
+      "desc": "Sent when a new job vacancy is created."
+    },
+    "job_application_created": {
+      "label": "Someone applies for a job",
+      "desc": "Sent when a member sends in a job application."
+    },
+    "job_application_status_changed": {
+      "label": "A job application's status changes",
+      "desc": "Sent when one application is moved to a new status."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Several job applications change status at once",
+      "desc": "Sent when applications are moved in bulk."
+    },
+    "job_offer_accepted": {
+      "label": "A job offer is accepted",
+      "desc": "Sent when a member accepts a job offer."
+    }
+  },
+  "secret_title": "Your signing secret",
+  "secret_desc": "Copy it now and paste it into the receiving system. It is shown only this once. You can generate a new one later.",
+  "secret_copied_done": "I have copied it",
+  "generate_secret": "Generate a new secret",
+  "generate_secret_title": "Generate a new signing secret?",
+  "generate_secret_confirm": "The receiving system will need the new secret before it can check any further message. The old secret stops working at once.",
+  "generate_secret_action": "Generate",
+  "send_test": "Send test",
+  "test_sent": "The receiving system accepted the test message",
+  "test_failed": "The receiving system did not accept the test message",
+  "view_deliveries": "View deliveries",
+  "deliveries_title": "Deliveries",
+  "filter_deliveries": "Filter by event or response code…",
+  "no_deliveries": "No deliveries yet for this webhook.",
+  "no_matching_deliveries": "No deliveries match your filter.",
+  "delete_webhook_title": "Delete webhook",
+  "delete_webhook_confirm": "Delete this webhook? The receiving system will stop getting messages.",
+  "webhook_created": "Webhook added",
+  "webhook_updated": "Webhook updated",
+  "webhook_deleted": "Webhook deleted",
+  "failed_to_load_webhooks": "Could not load the webhooks",
+  "failed_to_save_webhook": "Could not save the webhook",
+  "failed_to_delete_webhook": "Could not delete the webhook",
+  "failed_to_load_deliveries": "Could not load the deliveries",
+  "failed_to_rotate_secret": "Could not generate a new secret"
+}

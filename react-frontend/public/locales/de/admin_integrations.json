@@ -1,0 +1,86 @@
+{
+  "page_title": "Ausgehende Webhooks",
+  "page_desc": "Ein anderes System benachrichtigen, wenn hier etwas passiert. Die Plattform sendet eine signierte Nachricht an die angegebene Adresse.",
+  "community": "Gemeinschaft",
+  "community_help": "Webhooks gehören zu einer Gemeinschaft. Wählen Sie, wessen Webhooks Sie verwalten.",
+  "failed_to_load_communities": "Die Liste der Gemeinschaften konnte nicht geladen werden",
+  "refresh": "Aktualisieren",
+  "add_webhook": "Webhook hinzufügen",
+  "edit_webhook": "Webhook bearbeiten",
+  "no_webhooks": "Noch keine Webhooks",
+  "no_webhooks_desc": "Fügen Sie einen Webhook hinzu, um ein anderes System zu benachrichtigen, wenn eine Schicht abgeschlossen wird oder sich eine Stellenbewerbung ändert.",
+  "col_name": "Name",
+  "col_url": "Adresse",
+  "col_events": "Sendet eine Nachricht, wenn",
+  "col_active": "Status",
+  "col_failures": "Fehlgeschlagene Zustellungen",
+  "col_actions": "Aktionen",
+  "active": "Aktiv",
+  "inactive": "Pausiert",
+  "edit": "Bearbeiten",
+  "delete": "Löschen",
+  "close": "Schließen",
+  "cancel": "Abbrechen",
+  "create": "Erstellen",
+  "save": "Speichern",
+  "webhook_name": "Name",
+  "webhook_name_help": "Ein Name, den Sie wiedererkennen, etwa das System, das die Nachrichten empfängt.",
+  "webhook_url": "Adresse (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Aktiv",
+  "events_heading": "Nachricht senden, wenn …",
+  "events_help": "Es werden nur Ereignisse aufgeführt, die die Plattform tatsächlich sendet.",
+  "name_url_required": "Name und Adresse sind erforderlich",
+  "events_required": "Wählen Sie mindestens ein Ereignis",
+  "events": {
+    "shift_completed": {
+      "label": "Eine freiwillige Person schließt eine Schicht ab",
+      "desc": "Wird gesendet, wenn sich eine freiwillige Person per QR-Code aus einer Schicht auscheckt."
+    },
+    "job_vacancy_created": {
+      "label": "Eine Stelle wird ausgeschrieben",
+      "desc": "Wird gesendet, wenn eine neue Stellenausschreibung angelegt wird."
+    },
+    "job_application_created": {
+      "label": "Jemand bewirbt sich auf eine Stelle",
+      "desc": "Wird gesendet, wenn ein Mitglied eine Bewerbung einreicht."
+    },
+    "job_application_status_changed": {
+      "label": "Der Status einer Bewerbung ändert sich",
+      "desc": "Wird gesendet, wenn eine Bewerbung in einen neuen Status versetzt wird."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Mehrere Bewerbungen ändern gleichzeitig den Status",
+      "desc": "Wird gesendet, wenn Bewerbungen gesammelt verschoben werden."
+    },
+    "job_offer_accepted": {
+      "label": "Ein Stellenangebot wird angenommen",
+      "desc": "Wird gesendet, wenn ein Mitglied ein Stellenangebot annimmt."
+    }
+  },
+  "secret_title": "Ihr Signaturgeheimnis",
+  "secret_desc": "Kopieren Sie es jetzt und fügen Sie es im empfangenden System ein. Es wird nur dieses eine Mal angezeigt. Sie können später ein neues erzeugen.",
+  "secret_copied_done": "Ich habe es kopiert",
+  "generate_secret": "Neues Geheimnis erzeugen",
+  "generate_secret_title": "Neues Signaturgeheimnis erzeugen?",
+  "generate_secret_confirm": "Das empfangende System braucht das neue Geheimnis, bevor es weitere Nachrichten prüfen kann. Das alte Geheimnis funktioniert sofort nicht mehr.",
+  "generate_secret_action": "Erzeugen",
+  "send_test": "Test senden",
+  "test_sent": "Das empfangende System hat die Testnachricht angenommen",
+  "test_failed": "Das empfangende System hat die Testnachricht nicht angenommen",
+  "view_deliveries": "Zustellungen ansehen",
+  "deliveries_title": "Zustellungen",
+  "filter_deliveries": "Nach Ereignis oder Antwortcode filtern …",
+  "no_deliveries": "Noch keine Zustellungen für diesen Webhook.",
+  "no_matching_deliveries": "Keine Zustellungen passen zu Ihrem Filter.",
+  "delete_webhook_title": "Webhook löschen",
+  "delete_webhook_confirm": "Diesen Webhook löschen? Das empfangende System erhält dann keine Nachrichten mehr.",
+  "webhook_created": "Webhook hinzugefügt",
+  "webhook_updated": "Webhook aktualisiert",
+  "webhook_deleted": "Webhook gelöscht",
+  "failed_to_load_webhooks": "Die Webhooks konnten nicht geladen werden",
+  "failed_to_save_webhook": "Der Webhook konnte nicht gespeichert werden",
+  "failed_to_delete_webhook": "Der Webhook konnte nicht gelöscht werden",
+  "failed_to_load_deliveries": "Die Zustellungen konnten nicht geladen werden",
+  "failed_to_rotate_secret": "Es konnte kein neues Geheimnis erzeugt werden"
+}

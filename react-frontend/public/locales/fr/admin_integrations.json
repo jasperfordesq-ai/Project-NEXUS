@@ -1,0 +1,86 @@
+{
+  "page_title": "Webhooks sortants",
+  "page_desc": "Prévenez un autre système quand quelque chose se passe ici. La plateforme envoie un message signé à l'adresse que vous indiquez.",
+  "community": "Communauté",
+  "community_help": "Les webhooks appartiennent à une communauté. Choisissez de qui vous gérez les webhooks.",
+  "failed_to_load_communities": "Impossible de charger la liste des communautés",
+  "refresh": "Actualiser",
+  "add_webhook": "Ajouter un webhook",
+  "edit_webhook": "Modifier le webhook",
+  "no_webhooks": "Aucun webhook pour l'instant",
+  "no_webhooks_desc": "Ajoutez un webhook pour envoyer un message à un autre système quand un créneau est terminé ou qu'une candidature change.",
+  "col_name": "Nom",
+  "col_url": "Adresse",
+  "col_events": "Envoie un message quand",
+  "col_active": "État",
+  "col_failures": "Livraisons échouées",
+  "col_actions": "Actions",
+  "active": "Actif",
+  "inactive": "En pause",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "close": "Fermer",
+  "cancel": "Annuler",
+  "create": "Créer",
+  "save": "Enregistrer",
+  "webhook_name": "Nom",
+  "webhook_name_help": "Un nom que vous reconnaîtrez, par exemple le système qui reçoit les messages.",
+  "webhook_url": "Adresse (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Actif",
+  "events_heading": "Envoyer un message quand…",
+  "events_help": "Seuls les événements que la plateforme envoie réellement sont listés.",
+  "name_url_required": "Le nom et l'adresse sont obligatoires",
+  "events_required": "Choisissez au moins un événement",
+  "events": {
+    "shift_completed": {
+      "label": "Un bénévole termine un créneau",
+      "desc": "Envoyé quand un bénévole pointe sa sortie de créneau avec un code QR."
+    },
+    "job_vacancy_created": {
+      "label": "Une offre d'emploi est publiée",
+      "desc": "Envoyé quand une nouvelle offre d'emploi est créée."
+    },
+    "job_application_created": {
+      "label": "Quelqu'un postule à un emploi",
+      "desc": "Envoyé quand un membre dépose une candidature."
+    },
+    "job_application_status_changed": {
+      "label": "Le statut d'une candidature change",
+      "desc": "Envoyé quand une candidature passe à un nouveau statut."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Plusieurs candidatures changent de statut en même temps",
+      "desc": "Envoyé quand des candidatures sont déplacées en masse."
+    },
+    "job_offer_accepted": {
+      "label": "Une offre d'emploi est acceptée",
+      "desc": "Envoyé quand un membre accepte une offre d'emploi."
+    }
+  },
+  "secret_title": "Votre secret de signature",
+  "secret_desc": "Copiez-le maintenant et collez-le dans le système destinataire. Il n'est affiché que cette fois-ci. Vous pourrez en générer un nouveau plus tard.",
+  "secret_copied_done": "Je l'ai copié",
+  "generate_secret": "Générer un nouveau secret",
+  "generate_secret_title": "Générer un nouveau secret de signature ?",
+  "generate_secret_confirm": "Le système destinataire aura besoin du nouveau secret pour vérifier les prochains messages. L'ancien secret cesse de fonctionner immédiatement.",
+  "generate_secret_action": "Générer",
+  "send_test": "Envoyer un test",
+  "test_sent": "Le système destinataire a accepté le message de test",
+  "test_failed": "Le système destinataire n'a pas accepté le message de test",
+  "view_deliveries": "Voir les livraisons",
+  "deliveries_title": "Livraisons",
+  "filter_deliveries": "Filtrer par événement ou code de réponse…",
+  "no_deliveries": "Aucune livraison pour ce webhook pour l'instant.",
+  "no_matching_deliveries": "Aucune livraison ne correspond à votre filtre.",
+  "delete_webhook_title": "Supprimer le webhook",
+  "delete_webhook_confirm": "Supprimer ce webhook ? Le système destinataire ne recevra plus de messages.",
+  "webhook_created": "Webhook ajouté",
+  "webhook_updated": "Webhook mis à jour",
+  "webhook_deleted": "Webhook supprimé",
+  "failed_to_load_webhooks": "Impossible de charger les webhooks",
+  "failed_to_save_webhook": "Impossible d'enregistrer le webhook",
+  "failed_to_delete_webhook": "Impossible de supprimer le webhook",
+  "failed_to_load_deliveries": "Impossible de charger les livraisons",
+  "failed_to_rotate_secret": "Impossible de générer un nouveau secret"
+}

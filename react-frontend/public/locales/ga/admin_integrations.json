@@ -1,0 +1,86 @@
+{
+  "page_title": "Cuaillí gréasáin amach",
+  "page_desc": "Cuir córas eile ar an eolas nuair a tharlaíonn rud anseo. Seolann an t-ardán teachtaireacht shínithe chuig an seoladh a thugann tú.",
+  "community": "Pobal",
+  "community_help": "Baineann cuaillí gréasáin le pobal amháin. Roghnaigh cé na cuaillí gréasáin atá le bainistiú.",
+  "failed_to_load_communities": "Níorbh fhéidir liosta na bpobal a lódáil",
+  "refresh": "Athnuaigh",
+  "add_webhook": "Cuir cuaille gréasáin leis",
+  "edit_webhook": "Cuir an cuaille gréasáin in eagar",
+  "no_webhooks": "Níl aon chuaille gréasáin fós",
+  "no_webhooks_desc": "Cuir cuaille gréasáin leis chun teachtaireacht a sheoladh chuig córas eile nuair a chríochnaítear seal oibre nó nuair a athraíonn iarratas ar phost.",
+  "col_name": "Ainm",
+  "col_url": "Seoladh",
+  "col_events": "Seolann teachtaireacht nuair",
+  "col_active": "Stádas",
+  "col_failures": "Seachadtaí teipthe",
+  "col_actions": "Gníomhartha",
+  "active": "Gníomhach",
+  "inactive": "Ar sos",
+  "edit": "Cuir in eagar",
+  "delete": "Scrios",
+  "close": "Dún",
+  "cancel": "Cealaigh",
+  "create": "Cruthaigh",
+  "save": "Sábháil",
+  "webhook_name": "Ainm",
+  "webhook_name_help": "Ainm a aithneoidh tú, mar shampla an córas a fhaigheann na teachtaireachtaí.",
+  "webhook_url": "Seoladh (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Gníomhach",
+  "events_heading": "Seol teachtaireacht nuair…",
+  "events_help": "Ní liostaítear ach na teagmhais a sheolann an t-ardán i ndáiríre.",
+  "name_url_required": "Tá ainm agus seoladh riachtanach",
+  "events_required": "Roghnaigh teagmhas amháin ar a laghad",
+  "events": {
+    "shift_completed": {
+      "label": "Críochnaíonn deonach seal oibre",
+      "desc": "Seoltar é nuair a sheiceálann deonach amach as seal oibre le cód QR."
+    },
+    "job_vacancy_created": {
+      "label": "Fógraítear folúntas poist",
+      "desc": "Seoltar é nuair a chruthaítear folúntas poist nua."
+    },
+    "job_application_created": {
+      "label": "Déanann duine iarratas ar phost",
+      "desc": "Seoltar é nuair a chuireann ball iarratas ar phost isteach."
+    },
+    "job_application_status_changed": {
+      "label": "Athraíonn stádas iarratais ar phost",
+      "desc": "Seoltar é nuair a bhogtar iarratas amháin chuig stádas nua."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Athraíonn stádas roinnt iarratas ar phost ag an am céanna",
+      "desc": "Seoltar é nuair a bhogtar iarratais go mórchóir."
+    },
+    "job_offer_accepted": {
+      "label": "Glactar le tairiscint poist",
+      "desc": "Seoltar é nuair a ghlacann ball le tairiscint poist."
+    }
+  },
+  "secret_title": "Do rún sínithe",
+  "secret_desc": "Cóipeáil anois é agus greamaigh isteach sa chóras glactha é. Ní thaispeántar é ach an t-aon uair seo. Is féidir leat ceann nua a ghiniúint níos déanaí.",
+  "secret_copied_done": "Tá sé cóipeáilte agam",
+  "generate_secret": "Gin rún nua",
+  "generate_secret_title": "Rún sínithe nua a ghiniúint?",
+  "generate_secret_confirm": "Beidh an rún nua ag teastáil ón gcóras glactha sula bhféadfaidh sé aon teachtaireacht eile a sheiceáil. Stopann an seanrún ag obair láithreach.",
+  "generate_secret_action": "Gin",
+  "send_test": "Seol tástáil",
+  "test_sent": "Ghlac an córas glactha leis an teachtaireacht tástála",
+  "test_failed": "Níor ghlac an córas glactha leis an teachtaireacht tástála",
+  "view_deliveries": "Féach ar na seachadtaí",
+  "deliveries_title": "Seachadtaí",
+  "filter_deliveries": "Scag de réir teagmhais nó cód freagra…",
+  "no_deliveries": "Níl aon seachadadh fós don chuaille gréasáin seo.",
+  "no_matching_deliveries": "Níl aon seachadadh ag teacht le do scagaire.",
+  "delete_webhook_title": "Scrios an cuaille gréasáin",
+  "delete_webhook_confirm": "An cuaille gréasáin seo a scriosadh? Ní bhfaighidh an córas glactha teachtaireachtaí a thuilleadh.",
+  "webhook_created": "Cuaille gréasáin curtha leis",
+  "webhook_updated": "Cuaille gréasáin nuashonraithe",
+  "webhook_deleted": "Cuaille gréasáin scriosta",
+  "failed_to_load_webhooks": "Níorbh fhéidir na cuaillí gréasáin a lódáil",
+  "failed_to_save_webhook": "Níorbh fhéidir an cuaille gréasáin a shábháil",
+  "failed_to_delete_webhook": "Níorbh fhéidir an cuaille gréasáin a scriosadh",
+  "failed_to_load_deliveries": "Níorbh fhéidir na seachadtaí a lódáil",
+  "failed_to_rotate_secret": "Níorbh fhéidir rún nua a ghiniúint"
+}

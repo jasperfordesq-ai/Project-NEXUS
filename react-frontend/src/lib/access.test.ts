@@ -10,6 +10,7 @@ import {
   hasBrokerRole,
   hasPartnerPanelAccess,
   canAccessSuperPanel,
+  isGodPlatformAdmin,
   isPlatformSuperAdminUser,
   isVisitingManager,
   isRegionalSuperPanelUser,
@@ -99,6 +100,30 @@ describe('isSuperAdminUser', () => {
   it('requires boolean flags to be strictly true', () => {
     expect(isSuperAdminUser({ is_super_admin: 1 })).toBe(false);
     expect(isSuperAdminUser({ is_tenant_super_admin: 'yes' })).toBe(false);
+  });
+});
+
+// The platform Integrations page (outbound webhooks) is for a god account that
+// is ALSO a platform super admin — both flags. isPlatformSuperAdminUser()
+// deliberately admits is_god on its own, so it cannot express this.
+describe('isGodPlatformAdmin', () => {
+  it('admits only a god who is also a platform super admin', () => {
+    expect(isGodPlatformAdmin({ is_god: true, is_super_admin: true })).toBe(true);
+    expect(isGodPlatformAdmin({ is_god: true, role: 'super_admin' })).toBe(true);
+    expect(isGodPlatformAdmin({ role: 'god', is_super_admin: true })).toBe(true);
+  });
+
+  it('refuses a god who is not a platform super admin', () => {
+    expect(isGodPlatformAdmin({ is_god: true })).toBe(false);
+    expect(isGodPlatformAdmin({ role: 'god' })).toBe(false);
+    expect(isGodPlatformAdmin({ is_god: true, is_tenant_super_admin: true })).toBe(false);
+  });
+
+  it('refuses a platform super admin who is not god', () => {
+    expect(isGodPlatformAdmin({ is_super_admin: true })).toBe(false);
+    expect(isGodPlatformAdmin({ role: 'super_admin' })).toBe(false);
+    expect(isGodPlatformAdmin({ role: 'admin', is_admin: true })).toBe(false);
+    expect(isGodPlatformAdmin(null)).toBe(false);
   });
 });
 

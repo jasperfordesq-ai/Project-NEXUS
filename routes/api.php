@@ -2846,12 +2846,6 @@ Route::get('/v2/admin/volunteering/giving-days/{id}/trends', [\App\Http\Controll
 Route::get('/v2/admin/volunteering/activity-feed', [\App\Http\Controllers\Api\AdminVolunteerController::class, 'activityFeed']);
 Route::get('/v2/admin/volunteering/community-projects', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminCommunityProjects']);
 Route::put('/v2/admin/volunteering/community-projects/{id}/review', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'reviewCommunityProject']);
-Route::get('/v2/admin/volunteering/webhooks', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getWebhooks']);
-Route::post('/v2/admin/volunteering/webhooks', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createWebhook']);
-Route::put('/v2/admin/volunteering/webhooks/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateWebhook']);
-Route::delete('/v2/admin/volunteering/webhooks/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'deleteWebhook']);
-Route::post('/v2/admin/volunteering/webhooks/{id}/test', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'testWebhook']);
-Route::get('/v2/admin/volunteering/webhooks/{id}/logs', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'getWebhookLogs']);
 Route::get('/v2/admin/volunteering/giving-days', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'adminGivingDays']);
 Route::post('/v2/admin/volunteering/giving-days', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createGivingDay']);
 Route::put('/v2/admin/volunteering/giving-days/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateGivingDay']);
@@ -3318,7 +3312,6 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 */
 Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
 
-// Integrations — outbound webhooks (moved from /v2/admin/volunteering/webhooks
 // on 2026-10-18). The middleware above is only the outer fence: every action
 // calls requireGodPlatformAdmin() (is_god AND is_super_admin) and checks the
 // managed tenant with SuperPanelAccess::canAccessTenant(). `/events` is

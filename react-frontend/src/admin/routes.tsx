@@ -15,6 +15,7 @@ import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
 import { SuperAdminRoute } from './SuperAdminRoute';
 import { GodOnlyRoute } from './GodOnlyRoute';
+import { GodPlatformRoute } from './GodPlatformRoute';
 import type { TenantFeatures } from '@/types';
 
 /** Small wrapper so Navigate targets can use tenantPath() inside Route elements. */
@@ -176,6 +177,9 @@ const VolunteerGivingDays = lazy(() => import('./modules/volunteering/VolunteerG
 const VolunteerProjects = lazy(() => import('./modules/volunteering/VolunteerProjects'));
 const VolunteerConfig = lazy(() => import('./modules/volunteering/VolunteerConfig'));
 const DonationRefunds = lazy(() => import('./modules/volunteering/DonationRefunds'));
+
+// Integrations (platform level)
+const OutboundWebhooks = lazy(() => import('./modules/integrations/OutboundWebhooks'));
 // Caring Community pages moved to /caring/* (CaringApp) — no longer registered here.
 
 // Advertising module
@@ -455,6 +459,12 @@ export function AdminRoutes() {
         <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
         <Route path="seo/prerender" element={<Lazy><PrerenderAdmin /></Lazy>} />
         <Route path="404-errors" element={<Lazy><Error404Tracking /></Lazy>} />
+      </Route>
+      {/* Integrations — outbound webhooks. A god account that is ALSO a platform
+          super admin, both flags (owner decision 2026-10-18); moved here from
+          /admin/volunteering/config. The API enforces the same rule. */}
+      <Route element={<GodPlatformRoute />}>
+        <Route path="integrations/webhooks" element={<Lazy><OutboundWebhooks /></Lazy>} />
       </Route>
       <Route element={<SuperAdminRoute />}>
         <Route path="platform-capabilities" element={<Lazy><PlatformCapabilities /></Lazy>} />

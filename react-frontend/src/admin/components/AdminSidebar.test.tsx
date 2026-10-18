@@ -405,6 +405,35 @@ describe('AdminSidebar', () => {
     expect(hrefs.filter((h) => h?.includes('/admin/cron-jobs'))).toEqual([]);
   });
 
+  // ─── Integrations ─────────────────────────────────────────────────────────
+  // Outbound webhooks moved from the volunteering Settings page to a platform
+  // Integrations section on 2026-10-18 (owner decision), for a god account that
+  // is ALSO a platform super admin — both flags. The route is guarded by
+  // GodPlatformRoute too, so a typed URL does not reach the page.
+  it('shows the Integrations section with Outbound webhooks to a god who is also a platform super admin', async () => {
+    authState.user = { id: 1, name: 'Owner', role: 'super_admin', is_god: true, is_super_admin: true } as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Integrations' }));
+    const link = screen.getByRole('link', { name: 'Outbound webhooks' });
+    expect(link).toHaveAttribute('href', '/test/admin/integrations/webhooks');
+  });
+
+  it.each([
+    ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
+    ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true }],
+    ['a god who is not a platform super admin', { id: 1, name: 'God', role: 'admin', is_god: true }],
+  ])('hides the Integrations section from %s', async (_who, user) => {
+    authState.user = user as User;
+    const { AdminSidebar } = await import('./AdminSidebar');
+    render(<AdminSidebar collapsed={false} />);
+
+    expect(screen.queryByRole('button', { name: 'Integrations' })).not.toBeInTheDocument();
+    const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
+    expect(hrefs.filter((h) => h?.includes('/admin/integrations'))).toEqual([]);
+  });
+
   // ─── Volunteering ──────────────────────────────────────────────────────────
   // Regression: Volunteering was a single link to its overview page. Its eleven
   // working pages — organisations, applications, hours, expenses and the rest —

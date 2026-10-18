@@ -31,6 +31,7 @@ import Building2 from 'lucide-react/icons/building-2';
 import Smartphone from 'lucide-react/icons/smartphone';
 import Globe from 'lucide-react/icons/globe';
 import Settings from 'lucide-react/icons/settings';
+import Webhook from 'lucide-react/icons/webhook';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import UserCheck from 'lucide-react/icons/user-check';
@@ -101,7 +102,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { canAccessSuperPanel, isGodUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { canAccessSuperPanel, isGodPlatformAdmin, isGodUser, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
 import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
 interface NavItem {
@@ -151,7 +152,7 @@ const ZONES: NavZone[] = [
   { key: 'communications', label: 'zone_communications', sectionKeys: ['communications', 'marketing', 'advertising'] },
   { key: 'growth', label: 'zone_growth', sectionKeys: ['engagement', 'analytics', 'discovery'] },
   { key: 'commerce', label: 'zone_commerce', sectionKeys: ['financial', 'marketplace'] },
-  { key: 'platform', label: 'zone_platform', sectionKeys: ['system', 'enterprise'] },
+  { key: 'platform', label: 'zone_platform', sectionKeys: ['system', 'enterprise', 'integrations'] },
   { key: 'diagnostics', label: 'zone_diagnostics', sectionKeys: ['intelligence'] },
 ];
 
@@ -190,6 +191,9 @@ function useAdminNav(): NavSection[] {
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
   const isPlatformSuperAdmin = isPlatformSuperAdminUser(user);
+  // Both flags — a god who is also a platform super admin (owner decision
+  // 2026-10-18). Neither isGod nor isPlatformSuperAdmin alone means this.
+  const canSeeIntegrations = isGodPlatformAdmin(user);
   // Server-resolved: covers both a platform super-admin and the super-admin of a
   // community that has communities beneath it. See the super-admin entry below.
   const canSeeSuperPanel = canAccessSuperPanel(user);
@@ -676,6 +680,19 @@ function useAdminNav(): NavSection[] {
           ...(isGod ? [{ label: t('monitoring'), href: '/admin/enterprise/monitoring', icon: Heart }] : []),
         ],
       },
+      // Integrations — outbound webhooks, moved from the volunteering Settings
+      // page (owner decision 2026-10-18). Visible only to a god who is also a
+      // platform super admin; the route is guarded by GodPlatformRoute too, so
+      // a typed URL does not reach the page.
+      ...(canSeeIntegrations ? [{
+        key: 'integrations',
+        label: t('integrations'),
+        icon: Webhook,
+        zone: 'platform' as const,
+        items: [
+          { label: t('outbound_webhooks'), href: '/admin/integrations/webhooks', icon: Webhook, keywords: keyword(t('search_keywords.outbound_webhooks')) },
+        ],
+      }] : []),
       {
         key: 'intelligence',
         label: t('intelligence_diagnostics'),
@@ -716,7 +733,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, t]);
+  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, t]);
 }
 
 interface AdminSidebarProps {

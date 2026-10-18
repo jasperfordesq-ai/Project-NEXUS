@@ -146,6 +146,20 @@ export function isGodUser(user: UserLike): boolean {
 }
 
 /**
+ * A god account that is ALSO a platform super admin — both flags, the owner's
+ * definition of a god account (AGENTS.md "Authorisation"). For the platform
+ * Integrations page (outbound webhooks; owner decision 2026-10-18).
+ *
+ * isPlatformSuperAdminUser() deliberately admits `is_god` on its own, so it
+ * cannot express "and super admin"; the super-admin leg is tested here without
+ * the god shortcut. Mirrors `BaseApiController::requireGodPlatformAdmin()`.
+ */
+export function isGodPlatformAdmin(user: UserLike): boolean {
+  if (!isGodUser(user)) return false;
+  return userRole(user) === 'super_admin' || user?.is_super_admin === true;
+}
+
+/**
  * How far the super panel reaches for this user. Server-resolved.
  *
  * 'master' is the platform owner only. 'regional' is a tenant super-admin: its

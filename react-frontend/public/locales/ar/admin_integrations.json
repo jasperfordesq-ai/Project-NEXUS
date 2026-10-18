@@ -1,0 +1,86 @@
+{
+  "page_title": "الويب هوك الصادرة",
+  "page_desc": "أبلغ نظاماً آخر عندما يحدث شيء هنا. ترسل المنصة رسالة موقّعة إلى العنوان الذي تحدده.",
+  "community": "المجتمع",
+  "community_help": "ينتمي كل ويب هوك إلى مجتمع واحد. اختر المجتمع الذي تريد إدارة الويب هوك الخاصة به.",
+  "failed_to_load_communities": "تعذّر تحميل قائمة المجتمعات",
+  "refresh": "تحديث",
+  "add_webhook": "إضافة ويب هوك",
+  "edit_webhook": "تعديل الويب هوك",
+  "no_webhooks": "لا توجد ويب هوك بعد",
+  "no_webhooks_desc": "أضف ويب هوك لإرسال رسالة إلى نظام آخر عند اكتمال مناوبة أو تغيّر طلب توظيف.",
+  "col_name": "الاسم",
+  "col_url": "العنوان",
+  "col_events": "يرسل رسالة عندما",
+  "col_active": "الحالة",
+  "col_failures": "عمليات التسليم الفاشلة",
+  "col_actions": "الإجراءات",
+  "active": "نشط",
+  "inactive": "متوقف مؤقتاً",
+  "edit": "تعديل",
+  "delete": "حذف",
+  "close": "إغلاق",
+  "cancel": "إلغاء",
+  "create": "إنشاء",
+  "save": "حفظ",
+  "webhook_name": "الاسم",
+  "webhook_name_help": "اسم تتعرّف عليه بسهولة، مثل اسم النظام الذي يستقبل الرسائل.",
+  "webhook_url": "العنوان (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "نشط",
+  "events_heading": "أرسل رسالة عندما…",
+  "events_help": "لا تُعرض سوى الأحداث التي ترسلها المنصة فعلاً.",
+  "name_url_required": "الاسم والعنوان مطلوبان",
+  "events_required": "اختر حدثاً واحداً على الأقل",
+  "events": {
+    "shift_completed": {
+      "label": "يُكمل متطوع مناوبة",
+      "desc": "يُرسل عندما يسجّل متطوع خروجه من مناوبة باستخدام رمز QR."
+    },
+    "job_vacancy_created": {
+      "label": "يُنشر شاغر وظيفي",
+      "desc": "يُرسل عند إنشاء شاغر وظيفي جديد."
+    },
+    "job_application_created": {
+      "label": "يتقدم شخص لوظيفة",
+      "desc": "يُرسل عندما يقدّم عضو طلب توظيف."
+    },
+    "job_application_status_changed": {
+      "label": "تتغيّر حالة طلب توظيف",
+      "desc": "يُرسل عند نقل طلب واحد إلى حالة جديدة."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "تتغيّر حالة عدة طلبات توظيف دفعة واحدة",
+      "desc": "يُرسل عند نقل الطلبات بشكل جماعي."
+    },
+    "job_offer_accepted": {
+      "label": "يُقبل عرض عمل",
+      "desc": "يُرسل عندما يقبل عضو عرض عمل."
+    }
+  },
+  "secret_title": "مفتاح التوقيع السري الخاص بك",
+  "secret_desc": "انسخه الآن والصقه في النظام المستقبِل. يُعرض هذه المرة فقط. يمكنك إنشاء مفتاح جديد لاحقاً.",
+  "secret_copied_done": "لقد نسخته",
+  "generate_secret": "إنشاء مفتاح سري جديد",
+  "generate_secret_title": "هل تريد إنشاء مفتاح توقيع سري جديد؟",
+  "generate_secret_confirm": "سيحتاج النظام المستقبِل إلى المفتاح الجديد قبل أن يتمكن من التحقق من أي رسالة أخرى. يتوقف المفتاح القديم عن العمل فوراً.",
+  "generate_secret_action": "إنشاء",
+  "send_test": "إرسال اختبار",
+  "test_sent": "قبل النظام المستقبِل رسالة الاختبار",
+  "test_failed": "لم يقبل النظام المستقبِل رسالة الاختبار",
+  "view_deliveries": "عرض عمليات التسليم",
+  "deliveries_title": "عمليات التسليم",
+  "filter_deliveries": "تصفية حسب الحدث أو رمز الاستجابة…",
+  "no_deliveries": "لا توجد عمليات تسليم لهذا الويب هوك بعد.",
+  "no_matching_deliveries": "لا توجد عمليات تسليم مطابقة للتصفية.",
+  "delete_webhook_title": "حذف الويب هوك",
+  "delete_webhook_confirm": "هل تريد حذف هذا الويب هوك؟ سيتوقف النظام المستقبِل عن تلقي الرسائل.",
+  "webhook_created": "تمت إضافة الويب هوك",
+  "webhook_updated": "تم تحديث الويب هوك",
+  "webhook_deleted": "تم حذف الويب هوك",
+  "failed_to_load_webhooks": "تعذّر تحميل الويب هوك",
+  "failed_to_save_webhook": "تعذّر حفظ الويب هوك",
+  "failed_to_delete_webhook": "تعذّر حذف الويب هوك",
+  "failed_to_load_deliveries": "تعذّر تحميل عمليات التسليم",
+  "failed_to_rotate_secret": "تعذّر إنشاء مفتاح سري جديد"
+}

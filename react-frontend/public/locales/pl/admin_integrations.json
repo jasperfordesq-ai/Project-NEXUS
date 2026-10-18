@@ -1,0 +1,86 @@
+{
+  "page_title": "Webhooki wychodzące",
+  "page_desc": "Powiadom inny system, gdy coś się tutaj wydarzy. Platforma wysyła podpisaną wiadomość na podany adres.",
+  "community": "Społeczność",
+  "community_help": "Webhooki należą do jednej społeczności. Wybierz, czyimi webhookami zarządzasz.",
+  "failed_to_load_communities": "Nie udało się wczytać listy społeczności",
+  "refresh": "Odśwież",
+  "add_webhook": "Dodaj webhook",
+  "edit_webhook": "Edytuj webhook",
+  "no_webhooks": "Nie ma jeszcze webhooków",
+  "no_webhooks_desc": "Dodaj webhook, aby wysłać wiadomość do innego systemu, gdy dyżur zostanie ukończony lub zmieni się aplikacja o pracę.",
+  "col_name": "Nazwa",
+  "col_url": "Adres",
+  "col_events": "Wysyła wiadomość, gdy",
+  "col_active": "Stan",
+  "col_failures": "Nieudane dostarczenia",
+  "col_actions": "Działania",
+  "active": "Aktywny",
+  "inactive": "Wstrzymany",
+  "edit": "Edytuj",
+  "delete": "Usuń",
+  "close": "Zamknij",
+  "cancel": "Anuluj",
+  "create": "Utwórz",
+  "save": "Zapisz",
+  "webhook_name": "Nazwa",
+  "webhook_name_help": "Nazwa, którą rozpoznasz, na przykład system odbierający wiadomości.",
+  "webhook_url": "Adres (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Aktywny",
+  "events_heading": "Wyślij wiadomość, gdy…",
+  "events_help": "Na liście są tylko zdarzenia, które platforma naprawdę wysyła.",
+  "name_url_required": "Nazwa i adres są wymagane",
+  "events_required": "Wybierz co najmniej jedno zdarzenie",
+  "events": {
+    "shift_completed": {
+      "label": "Wolontariusz kończy dyżur",
+      "desc": "Wysyłane, gdy wolontariusz wymelduje się z dyżuru kodem QR."
+    },
+    "job_vacancy_created": {
+      "label": "Opublikowano ofertę pracy",
+      "desc": "Wysyłane, gdy powstaje nowa oferta pracy."
+    },
+    "job_application_created": {
+      "label": "Ktoś aplikuje o pracę",
+      "desc": "Wysyłane, gdy członek składa aplikację o pracę."
+    },
+    "job_application_status_changed": {
+      "label": "Zmienia się status aplikacji o pracę",
+      "desc": "Wysyłane, gdy jedna aplikacja trafia do nowego statusu."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Kilka aplikacji zmienia status naraz",
+      "desc": "Wysyłane, gdy aplikacje są przenoszone zbiorczo."
+    },
+    "job_offer_accepted": {
+      "label": "Oferta pracy została przyjęta",
+      "desc": "Wysyłane, gdy członek przyjmuje ofertę pracy."
+    }
+  },
+  "secret_title": "Twój sekret podpisu",
+  "secret_desc": "Skopiuj go teraz i wklej do systemu odbierającego. Jest pokazywany tylko ten jeden raz. Później możesz wygenerować nowy.",
+  "secret_copied_done": "Skopiowałem",
+  "generate_secret": "Wygeneruj nowy sekret",
+  "generate_secret_title": "Wygenerować nowy sekret podpisu?",
+  "generate_secret_confirm": "System odbierający będzie potrzebował nowego sekretu, aby sprawdzać kolejne wiadomości. Stary sekret natychmiast przestaje działać.",
+  "generate_secret_action": "Wygeneruj",
+  "send_test": "Wyślij test",
+  "test_sent": "System odbierający przyjął wiadomość testową",
+  "test_failed": "System odbierający nie przyjął wiadomości testowej",
+  "view_deliveries": "Zobacz dostarczenia",
+  "deliveries_title": "Dostarczenia",
+  "filter_deliveries": "Filtruj według zdarzenia lub kodu odpowiedzi…",
+  "no_deliveries": "Ten webhook nie ma jeszcze żadnych dostarczeń.",
+  "no_matching_deliveries": "Żadne dostarczenie nie pasuje do filtra.",
+  "delete_webhook_title": "Usuń webhook",
+  "delete_webhook_confirm": "Usunąć ten webhook? System odbierający przestanie otrzymywać wiadomości.",
+  "webhook_created": "Webhook dodany",
+  "webhook_updated": "Webhook zaktualizowany",
+  "webhook_deleted": "Webhook usunięty",
+  "failed_to_load_webhooks": "Nie udało się wczytać webhooków",
+  "failed_to_save_webhook": "Nie udało się zapisać webhooka",
+  "failed_to_delete_webhook": "Nie udało się usunąć webhooka",
+  "failed_to_load_deliveries": "Nie udało się wczytać dostarczeń",
+  "failed_to_rotate_secret": "Nie udało się wygenerować nowego sekretu"
+}

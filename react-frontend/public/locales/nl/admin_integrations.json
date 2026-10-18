@@ -1,0 +1,86 @@
+{
+  "page_title": "Uitgaande webhooks",
+  "page_desc": "Laat een ander systeem weten wanneer hier iets gebeurt. Het platform stuurt een ondertekend bericht naar het adres dat u opgeeft.",
+  "community": "Gemeenschap",
+  "community_help": "Webhooks horen bij één gemeenschap. Kies van wie u de webhooks beheert.",
+  "failed_to_load_communities": "De lijst met gemeenschappen kon niet worden geladen",
+  "refresh": "Vernieuwen",
+  "add_webhook": "Webhook toevoegen",
+  "edit_webhook": "Webhook bewerken",
+  "no_webhooks": "Nog geen webhooks",
+  "no_webhooks_desc": "Voeg een webhook toe om een ander systeem een bericht te sturen wanneer een dienst is afgerond of een sollicitatie verandert.",
+  "col_name": "Naam",
+  "col_url": "Adres",
+  "col_events": "Stuurt een bericht wanneer",
+  "col_active": "Status",
+  "col_failures": "Mislukte afleveringen",
+  "col_actions": "Acties",
+  "active": "Actief",
+  "inactive": "Gepauzeerd",
+  "edit": "Bewerken",
+  "delete": "Verwijderen",
+  "close": "Sluiten",
+  "cancel": "Annuleren",
+  "create": "Aanmaken",
+  "save": "Opslaan",
+  "webhook_name": "Naam",
+  "webhook_name_help": "Een naam die u herkent, zoals het systeem dat de berichten ontvangt.",
+  "webhook_url": "Adres (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Actief",
+  "events_heading": "Stuur een bericht wanneer…",
+  "events_help": "Alleen gebeurtenissen die het platform echt verstuurt staan in de lijst.",
+  "name_url_required": "Naam en adres zijn verplicht",
+  "events_required": "Kies minstens één gebeurtenis",
+  "events": {
+    "shift_completed": {
+      "label": "Een vrijwilliger rondt een dienst af",
+      "desc": "Verstuurd wanneer een vrijwilliger met een QR-code uitcheckt bij een dienst."
+    },
+    "job_vacancy_created": {
+      "label": "Een vacature wordt geplaatst",
+      "desc": "Verstuurd wanneer een nieuwe vacature wordt aangemaakt."
+    },
+    "job_application_created": {
+      "label": "Iemand solliciteert op een vacature",
+      "desc": "Verstuurd wanneer een lid een sollicitatie instuurt."
+    },
+    "job_application_status_changed": {
+      "label": "De status van een sollicitatie verandert",
+      "desc": "Verstuurd wanneer één sollicitatie een nieuwe status krijgt."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Meerdere sollicitaties veranderen tegelijk van status",
+      "desc": "Verstuurd wanneer sollicitaties in bulk worden verplaatst."
+    },
+    "job_offer_accepted": {
+      "label": "Een aanbod wordt aanvaard",
+      "desc": "Verstuurd wanneer een lid een baan aanvaardt."
+    }
+  },
+  "secret_title": "Uw ondertekeningsgeheim",
+  "secret_desc": "Kopieer het nu en plak het in het ontvangende systeem. Het wordt alleen deze ene keer getoond. U kunt later een nieuw geheim genereren.",
+  "secret_copied_done": "Ik heb het gekopieerd",
+  "generate_secret": "Nieuw geheim genereren",
+  "generate_secret_title": "Een nieuw ondertekeningsgeheim genereren?",
+  "generate_secret_confirm": "Het ontvangende systeem heeft het nieuwe geheim nodig om verdere berichten te kunnen controleren. Het oude geheim werkt meteen niet meer.",
+  "generate_secret_action": "Genereren",
+  "send_test": "Test versturen",
+  "test_sent": "Het ontvangende systeem heeft het testbericht aanvaard",
+  "test_failed": "Het ontvangende systeem heeft het testbericht niet aanvaard",
+  "view_deliveries": "Afleveringen bekijken",
+  "deliveries_title": "Afleveringen",
+  "filter_deliveries": "Filteren op gebeurtenis of antwoordcode…",
+  "no_deliveries": "Nog geen afleveringen voor deze webhook.",
+  "no_matching_deliveries": "Geen afleveringen passen bij uw filter.",
+  "delete_webhook_title": "Webhook verwijderen",
+  "delete_webhook_confirm": "Deze webhook verwijderen? Het ontvangende systeem krijgt dan geen berichten meer.",
+  "webhook_created": "Webhook toegevoegd",
+  "webhook_updated": "Webhook bijgewerkt",
+  "webhook_deleted": "Webhook verwijderd",
+  "failed_to_load_webhooks": "De webhooks konden niet worden geladen",
+  "failed_to_save_webhook": "De webhook kon niet worden opgeslagen",
+  "failed_to_delete_webhook": "De webhook kon niet worden verwijderd",
+  "failed_to_load_deliveries": "De afleveringen konden niet worden geladen",
+  "failed_to_rotate_secret": "Er kon geen nieuw geheim worden gegenereerd"
+}

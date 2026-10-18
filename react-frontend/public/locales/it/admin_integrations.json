@@ -1,0 +1,86 @@
+{
+  "page_title": "Webhook in uscita",
+  "page_desc": "Avvisa un altro sistema quando qui succede qualcosa. La piattaforma invia un messaggio firmato all'indirizzo che indichi.",
+  "community": "Comunità",
+  "community_help": "I webhook appartengono a una comunità. Scegli di quale comunità gestire i webhook.",
+  "failed_to_load_communities": "Impossibile caricare l'elenco delle comunità",
+  "refresh": "Aggiorna",
+  "add_webhook": "Aggiungi webhook",
+  "edit_webhook": "Modifica webhook",
+  "no_webhooks": "Nessun webhook per ora",
+  "no_webhooks_desc": "Aggiungi un webhook per inviare un messaggio a un altro sistema quando un turno viene completato o una candidatura cambia.",
+  "col_name": "Nome",
+  "col_url": "Indirizzo",
+  "col_events": "Invia un messaggio quando",
+  "col_active": "Stato",
+  "col_failures": "Consegne fallite",
+  "col_actions": "Azioni",
+  "active": "Attivo",
+  "inactive": "In pausa",
+  "edit": "Modifica",
+  "delete": "Elimina",
+  "close": "Chiudi",
+  "cancel": "Annulla",
+  "create": "Crea",
+  "save": "Salva",
+  "webhook_name": "Nome",
+  "webhook_name_help": "Un nome che riconoscerai, ad esempio il sistema che riceve i messaggi.",
+  "webhook_url": "Indirizzo (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Attivo",
+  "events_heading": "Invia un messaggio quando…",
+  "events_help": "Sono elencati solo gli eventi che la piattaforma invia davvero.",
+  "name_url_required": "Nome e indirizzo sono obbligatori",
+  "events_required": "Scegli almeno un evento",
+  "events": {
+    "shift_completed": {
+      "label": "Un volontario completa un turno",
+      "desc": "Inviato quando un volontario registra l'uscita da un turno con un codice QR."
+    },
+    "job_vacancy_created": {
+      "label": "Viene pubblicata un'offerta di lavoro",
+      "desc": "Inviato quando viene creata una nuova offerta di lavoro."
+    },
+    "job_application_created": {
+      "label": "Qualcuno si candida per un lavoro",
+      "desc": "Inviato quando un membro presenta una candidatura."
+    },
+    "job_application_status_changed": {
+      "label": "Cambia lo stato di una candidatura",
+      "desc": "Inviato quando una candidatura passa a un nuovo stato."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Più candidature cambiano stato insieme",
+      "desc": "Inviato quando le candidature vengono spostate in blocco."
+    },
+    "job_offer_accepted": {
+      "label": "Viene accettata un'offerta di lavoro",
+      "desc": "Inviato quando un membro accetta un'offerta di lavoro."
+    }
+  },
+  "secret_title": "Il tuo segreto di firma",
+  "secret_desc": "Copialo adesso e incollalo nel sistema ricevente. Viene mostrato solo questa volta. Potrai generarne uno nuovo in seguito.",
+  "secret_copied_done": "L'ho copiato",
+  "generate_secret": "Genera un nuovo segreto",
+  "generate_secret_title": "Generare un nuovo segreto di firma?",
+  "generate_secret_confirm": "Il sistema ricevente avrà bisogno del nuovo segreto per verificare i prossimi messaggi. Il vecchio segreto smette subito di funzionare.",
+  "generate_secret_action": "Genera",
+  "send_test": "Invia test",
+  "test_sent": "Il sistema ricevente ha accettato il messaggio di prova",
+  "test_failed": "Il sistema ricevente non ha accettato il messaggio di prova",
+  "view_deliveries": "Vedi consegne",
+  "deliveries_title": "Consegne",
+  "filter_deliveries": "Filtra per evento o codice di risposta…",
+  "no_deliveries": "Nessuna consegna per questo webhook per ora.",
+  "no_matching_deliveries": "Nessuna consegna corrisponde al filtro.",
+  "delete_webhook_title": "Elimina webhook",
+  "delete_webhook_confirm": "Eliminare questo webhook? Il sistema ricevente smetterà di ricevere messaggi.",
+  "webhook_created": "Webhook aggiunto",
+  "webhook_updated": "Webhook aggiornato",
+  "webhook_deleted": "Webhook eliminato",
+  "failed_to_load_webhooks": "Impossibile caricare i webhook",
+  "failed_to_save_webhook": "Impossibile salvare il webhook",
+  "failed_to_delete_webhook": "Impossibile eliminare il webhook",
+  "failed_to_load_deliveries": "Impossibile caricare le consegne",
+  "failed_to_rotate_secret": "Impossibile generare un nuovo segreto"
+}

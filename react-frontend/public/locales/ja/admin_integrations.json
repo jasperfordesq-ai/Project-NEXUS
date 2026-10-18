@@ -1,0 +1,86 @@
+{
+  "page_title": "送信 Webhook",
+  "page_desc": "ここで何かが起きたときに他のシステムへ知らせます。プラットフォームは指定したアドレスへ署名付きメッセージを送ります。",
+  "community": "コミュニティ",
+  "community_help": "Webhook はひとつのコミュニティに属します。どのコミュニティの Webhook を管理するか選んでください。",
+  "failed_to_load_communities": "コミュニティの一覧を読み込めませんでした",
+  "refresh": "更新",
+  "add_webhook": "Webhook を追加",
+  "edit_webhook": "Webhook を編集",
+  "no_webhooks": "Webhook はまだありません",
+  "no_webhooks_desc": "シフトの完了や求人応募の変更があったときに他のシステムへメッセージを送るには、Webhook を追加してください。",
+  "col_name": "名前",
+  "col_url": "アドレス",
+  "col_events": "送信するタイミング",
+  "col_active": "状態",
+  "col_failures": "失敗した配信",
+  "col_actions": "操作",
+  "active": "有効",
+  "inactive": "停止中",
+  "edit": "編集",
+  "delete": "削除",
+  "close": "閉じる",
+  "cancel": "キャンセル",
+  "create": "作成",
+  "save": "保存",
+  "webhook_name": "名前",
+  "webhook_name_help": "メッセージを受け取るシステム名など、見てわかる名前を付けてください。",
+  "webhook_url": "アドレス (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "有効",
+  "events_heading": "次のときにメッセージを送る…",
+  "events_help": "プラットフォームが実際に送信するイベントだけを表示しています。",
+  "name_url_required": "名前とアドレスは必須です",
+  "events_required": "イベントを少なくとも1つ選んでください",
+  "events": {
+    "shift_completed": {
+      "label": "ボランティアがシフトを完了した",
+      "desc": "ボランティアが QR コードでシフトのチェックアウトをしたときに送信されます。"
+    },
+    "job_vacancy_created": {
+      "label": "求人が掲載された",
+      "desc": "新しい求人が作成されたときに送信されます。"
+    },
+    "job_application_created": {
+      "label": "誰かが求人に応募した",
+      "desc": "メンバーが求人に応募したときに送信されます。"
+    },
+    "job_application_status_changed": {
+      "label": "応募の状態が変わった",
+      "desc": "応募が新しい状態に移されたときに送信されます。"
+    },
+    "job_application_bulk_status_changed": {
+      "label": "複数の応募の状態が一度に変わった",
+      "desc": "応募がまとめて移されたときに送信されます。"
+    },
+    "job_offer_accepted": {
+      "label": "採用の申し出が受け入れられた",
+      "desc": "メンバーが採用の申し出を受け入れたときに送信されます。"
+    }
+  },
+  "secret_title": "署名シークレット",
+  "secret_desc": "今すぐコピーして受信側のシステムに貼り付けてください。表示されるのはこの一度だけです。あとで新しいものを生成できます。",
+  "secret_copied_done": "コピーしました",
+  "generate_secret": "新しいシークレットを生成",
+  "generate_secret_title": "新しい署名シークレットを生成しますか？",
+  "generate_secret_confirm": "受信側のシステムは、以後のメッセージを検証するために新しいシークレットが必要になります。古いシークレットはすぐに使えなくなります。",
+  "generate_secret_action": "生成",
+  "send_test": "テスト送信",
+  "test_sent": "受信側のシステムがテストメッセージを受け付けました",
+  "test_failed": "受信側のシステムがテストメッセージを受け付けませんでした",
+  "view_deliveries": "配信履歴を見る",
+  "deliveries_title": "配信履歴",
+  "filter_deliveries": "イベントや応答コードで絞り込む…",
+  "no_deliveries": "この Webhook の配信はまだありません。",
+  "no_matching_deliveries": "絞り込みに一致する配信はありません。",
+  "delete_webhook_title": "Webhook を削除",
+  "delete_webhook_confirm": "この Webhook を削除しますか？受信側のシステムにはメッセージが届かなくなります。",
+  "webhook_created": "Webhook を追加しました",
+  "webhook_updated": "Webhook を更新しました",
+  "webhook_deleted": "Webhook を削除しました",
+  "failed_to_load_webhooks": "Webhook を読み込めませんでした",
+  "failed_to_save_webhook": "Webhook を保存できませんでした",
+  "failed_to_delete_webhook": "Webhook を削除できませんでした",
+  "failed_to_load_deliveries": "配信履歴を読み込めませんでした",
+  "failed_to_rotate_secret": "新しいシークレットを生成できませんでした"
+}

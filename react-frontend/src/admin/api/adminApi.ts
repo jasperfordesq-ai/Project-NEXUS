@@ -1976,13 +1976,7 @@ export const adminVolunteering = {
   // Reminders
   sendShiftReminders: () => api.post('/v2/admin/volunteering/send-shift-reminders', {}),
 
-  // Webhooks
-  getWebhooks: () => api.get('/v2/admin/volunteering/webhooks'),
-  createWebhook: (data: Record<string, unknown>) => api.post('/v2/admin/volunteering/webhooks', data),
-  updateWebhook: (id: number, data: Record<string, unknown>) => api.put(`/v2/admin/volunteering/webhooks/${id}`, data),
-  deleteWebhook: (id: number) => api.delete(`/v2/admin/volunteering/webhooks/${id}`),
-  testWebhook: (id: number) => api.post(`/v2/admin/volunteering/webhooks/${id}/test`, {}),
-  getWebhookLogs: (id: number) => api.get(`/v2/admin/volunteering/webhooks/${id}/logs`),
+  // Outbound webhooks moved to adminIntegrations (2026-10-18).
 
   // Giving Day Donors & Trends
   getGivingDayDonors: (givingDayId: number, cursor?: string) =>
@@ -2001,6 +1995,55 @@ export const adminVolunteering = {
     const qs = search.toString();
     return api.get(`/v2/admin/volunteering/reminder-logs${qs ? `?${qs}` : ''}`);
   },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Integrations — outbound webhooks (platform level; god + platform super admin)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Every call names the community whose webhooks are managed (`tenantId`); the
+// server defaults to the current community when it is omitted and refuses a
+// community outside the caller's reach.
+
+export interface OutboundWebhook {
+  id: number;
+  name: string;
+  url: string;
+  events: string[];
+  is_active: boolean | number;
+  failure_count: number;
+  last_triggered_at: string | null;
+  created_at: string;
+}
+
+export interface OutboundWebhookDelivery {
+  id: number;
+  webhook_id: number;
+  event_type: string;
+  response_code: number | null;
+  response_body: string | null;
+  status: string;
+  attempt_count?: number;
+  created_at: string;
+}
+
+const tenantQuery = (tenantId?: number) => (tenantId ? `?tenant_id=${tenantId}` : '');
+
+export const adminIntegrations = {
+  getWebhookEvents: () => api.get<string[]>('/v2/admin/integrations/webhooks/events'),
+  getWebhooks: (tenantId?: number) => api.get<OutboundWebhook[]>(`/v2/admin/integrations/webhooks${tenantQuery(tenantId)}`),
+  createWebhook: (data: Record<string, unknown>, tenantId?: number) =>
+    api.post<OutboundWebhook & { secret: string }>('/v2/admin/integrations/webhooks', { ...data, ...(tenantId ? { tenant_id: tenantId } : {}) }),
+  updateWebhook: (id: number, data: Record<string, unknown>, tenantId?: number) =>
+    api.put<{ success: boolean }>(`/v2/admin/integrations/webhooks/${id}`, { ...data, ...(tenantId ? { tenant_id: tenantId } : {}) }),
+  deleteWebhook: (id: number, tenantId?: number) =>
+    api.delete<{ success: boolean }>(`/v2/admin/integrations/webhooks/${id}${tenantQuery(tenantId)}`),
+  testWebhook: (id: number, tenantId?: number) =>
+    api.post<{ success: boolean; http_code: number; response: string }>(`/v2/admin/integrations/webhooks/${id}/test${tenantQuery(tenantId)}`, {}),
+  rotateWebhookSecret: (id: number, tenantId?: number) =>
+    api.post<{ id: number; secret: string }>(`/v2/admin/integrations/webhooks/${id}/rotate-secret${tenantQuery(tenantId)}`, {}),
+  getWebhookDeliveries: (id: number, tenantId?: number) =>
+    api.get<OutboundWebhookDelivery[]>(`/v2/admin/integrations/webhooks/${id}/logs${tenantQuery(tenantId)}`),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

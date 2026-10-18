@@ -24,7 +24,6 @@ use App\Services\VolunteerShiftManagementService;
 use App\Services\VolunteerFormService;
 use App\Services\CommunityProjectService;
 use App\Services\VolunteerDonationService;
-use App\Services\WebhookDispatchService;
 use App\Services\VolunteeringConfigurationService;
 use App\Core\TenantContext;
 
@@ -46,7 +45,6 @@ class VolunteerCommunityController extends BaseApiController
         private readonly VolunteerFormService $volunteerFormService,
         private readonly CommunityProjectService $communityProjectService,
         private readonly VolunteerDonationService $volunteerDonationService,
-        private readonly WebhookDispatchService $webhookDispatchService,
     ) {}
 
     private function ensureFeature(): void
@@ -1043,84 +1041,9 @@ class VolunteerCommunityController extends BaseApiController
         }
     }
 
-    // ========================================
-    // WEBHOOKS
-    // ========================================
-
-    public function getWebhooks(): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $webhooks = $this->webhookDispatchService->getWebhooks();
-        return $this->respondWithData($webhooks);
-    }
-
-    public function createWebhook(): JsonResponse
-    {
-        $this->ensureFeature();
-        $adminId = $this->requireAdmin();
-
-        $data = $this->getAllInput();
-
-        try {
-            $result = $this->webhookDispatchService->createWebhook($adminId, $data);
-            return $this->respondWithData($result, null, 201);
-        } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
-        }
-    }
-
-    public function updateWebhook($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $data = $this->getAllInput();
-        try {
-            $result = $this->webhookDispatchService->updateWebhook((int) $id, $data);
-        } catch (\InvalidArgumentException $e) {
-            // Same refusal as createWebhook (a bad URL here used to be a 500).
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
-        }
-        return $this->respondWithData(['success' => $result]);
-    }
-
-    public function deleteWebhook($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $result = $this->webhookDispatchService->deleteWebhook((int) $id);
-        return $this->respondWithData(['success' => $result]);
-    }
-
-    public function testWebhook($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        try {
-            $result = $this->webhookDispatchService->testWebhook((int) $id);
-        } catch (\RuntimeException $e) {
-            return $this->respondWithError('NOT_FOUND', __('api.webhook_not_found'), null, 404);
-        }
-        return $this->respondWithData($result);
-    }
-
-    public function getWebhookLogs($id): JsonResponse
-    {
-        $this->ensureFeature();
-        $this->requireAdmin();
-
-        $filters = [
-            'cursor' => $this->query('cursor'),
-            'limit' => $this->queryInt('per_page', 20, 1, 50),
-        ];
-
-        $logs = $this->webhookDispatchService->getLogs((int) $id, $filters);
-        return $this->respondWithData($logs);
-    }
+    // Outbound webhooks (/v2/admin/volunteering/webhooks*) moved to the
+    // platform Integrations endpoints, AdminOutboundWebhooksController, on
+    // 2026-10-18 (god + platform super admin only).
 
     // Reminder settings (GET/PUT /v2/admin/volunteering/reminder-settings) were
     // removed 2026-10-18: the five reminders are ordinary volunteering

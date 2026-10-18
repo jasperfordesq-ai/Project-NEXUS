@@ -1,0 +1,86 @@
+{
+  "page_title": "Webhooks de saída",
+  "page_desc": "Avise outro sistema quando algo acontecer aqui. A plataforma envia uma mensagem assinada para o endereço que indicar.",
+  "community": "Comunidade",
+  "community_help": "Os webhooks pertencem a uma comunidade. Escolha de quem são os webhooks a gerir.",
+  "failed_to_load_communities": "Não foi possível carregar a lista de comunidades",
+  "refresh": "Atualizar",
+  "add_webhook": "Adicionar webhook",
+  "edit_webhook": "Editar webhook",
+  "no_webhooks": "Ainda não há webhooks",
+  "no_webhooks_desc": "Adicione um webhook para enviar uma mensagem a outro sistema quando um turno for concluído ou uma candidatura a emprego mudar.",
+  "col_name": "Nome",
+  "col_url": "Endereço",
+  "col_events": "Envia uma mensagem quando",
+  "col_active": "Estado",
+  "col_failures": "Entregas falhadas",
+  "col_actions": "Ações",
+  "active": "Ativo",
+  "inactive": "Em pausa",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "close": "Fechar",
+  "cancel": "Cancelar",
+  "create": "Criar",
+  "save": "Guardar",
+  "webhook_name": "Nome",
+  "webhook_name_help": "Um nome que reconheça, como o sistema que recebe as mensagens.",
+  "webhook_url": "Endereço (URL)",
+  "webhook_url_placeholder": "https://example.com/webhook",
+  "webhook_active": "Ativo",
+  "events_heading": "Enviar uma mensagem quando…",
+  "events_help": "Só são listados os eventos que a plataforma envia de facto.",
+  "name_url_required": "O nome e o endereço são obrigatórios",
+  "events_required": "Escolha pelo menos um evento",
+  "events": {
+    "shift_completed": {
+      "label": "Um voluntário conclui um turno",
+      "desc": "Enviado quando um voluntário faz o check-out de um turno com um código QR."
+    },
+    "job_vacancy_created": {
+      "label": "É publicada uma vaga de emprego",
+      "desc": "Enviado quando é criada uma nova vaga de emprego."
+    },
+    "job_application_created": {
+      "label": "Alguém se candidata a um emprego",
+      "desc": "Enviado quando um membro envia uma candidatura."
+    },
+    "job_application_status_changed": {
+      "label": "O estado de uma candidatura muda",
+      "desc": "Enviado quando uma candidatura passa a um novo estado."
+    },
+    "job_application_bulk_status_changed": {
+      "label": "Várias candidaturas mudam de estado ao mesmo tempo",
+      "desc": "Enviado quando as candidaturas são movidas em bloco."
+    },
+    "job_offer_accepted": {
+      "label": "Uma oferta de emprego é aceite",
+      "desc": "Enviado quando um membro aceita uma oferta de emprego."
+    }
+  },
+  "secret_title": "O seu segredo de assinatura",
+  "secret_desc": "Copie-o agora e cole-o no sistema recetor. Só é mostrado desta vez. Pode gerar um novo mais tarde.",
+  "secret_copied_done": "Já o copiei",
+  "generate_secret": "Gerar um novo segredo",
+  "generate_secret_title": "Gerar um novo segredo de assinatura?",
+  "generate_secret_confirm": "O sistema recetor vai precisar do novo segredo para verificar as próximas mensagens. O segredo antigo deixa de funcionar de imediato.",
+  "generate_secret_action": "Gerar",
+  "send_test": "Enviar teste",
+  "test_sent": "O sistema recetor aceitou a mensagem de teste",
+  "test_failed": "O sistema recetor não aceitou a mensagem de teste",
+  "view_deliveries": "Ver entregas",
+  "deliveries_title": "Entregas",
+  "filter_deliveries": "Filtrar por evento ou código de resposta…",
+  "no_deliveries": "Ainda não há entregas para este webhook.",
+  "no_matching_deliveries": "Nenhuma entrega corresponde ao seu filtro.",
+  "delete_webhook_title": "Eliminar webhook",
+  "delete_webhook_confirm": "Eliminar este webhook? O sistema recetor deixará de receber mensagens.",
+  "webhook_created": "Webhook adicionado",
+  "webhook_updated": "Webhook atualizado",
+  "webhook_deleted": "Webhook eliminado",
+  "failed_to_load_webhooks": "Não foi possível carregar os webhooks",
+  "failed_to_save_webhook": "Não foi possível guardar o webhook",
+  "failed_to_delete_webhook": "Não foi possível eliminar o webhook",
+  "failed_to_load_deliveries": "Não foi possível carregar as entregas",
+  "failed_to_rotate_secret": "Não foi possível gerar um novo segredo"
+}
