@@ -18,6 +18,8 @@ const mockClearLastNotificationResponse = jest.fn();
 const mockResponseSubscriptionRemove = jest.fn();
 const mockAddNotificationResponseReceivedListener = jest.fn();
 const mockScheduleNotificationAsync = jest.fn();
+const mockGetPresentedNotificationsAsync = jest.fn();
+const mockDismissNotificationAsync = jest.fn();
 const mockDeviceState = { isDevice: true };
 
 jest.mock('expo-device', () => ({
@@ -35,6 +37,8 @@ jest.mock('expo-notifications', () => ({
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
   scheduleNotificationAsync: (...args: unknown[]) => mockScheduleNotificationAsync(...args),
+  getPresentedNotificationsAsync: (...args: unknown[]) => mockGetPresentedNotificationsAsync(...args),
+  dismissNotificationAsync: (...args: unknown[]) => mockDismissNotificationAsync(...args),
   IosAuthorizationStatus: { AUTHORIZED: 2, PROVISIONAL: 3, EPHEMERAL: 4 },
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
@@ -87,6 +91,7 @@ jest.mock('@/lib/constants', () => ({
 
 import {
   __resetNotificationResponseStateForTests,
+  dismissThreadNotifications,
   flushPendingPaidCampaignOpen,
   getNotificationLink,
   observeNotificationResponses,
@@ -620,5 +625,36 @@ describe('scheduleDevMessagePush (development reproduction of a message push)', 
       }),
       trigger: { type: 'timeInterval', seconds: 8, channelId: 'messages' },
     });
+  });
+});
+
+describe('dismissThreadNotifications', () => {
+  const presented = (identifier: string, data: Record<string, unknown>) => ({
+    request: { identifier, content: { data } },
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDismissNotificationAsync.mockResolvedValue(undefined);
+  });
+
+  it('clears the tray notifications that belong to the conversation being opened, and no others', async () => {
+    mockGetPresentedNotificationsAsync.mockResolvedValue([
+      presented('a', { thread_id: 'message:674', type: 'new_message', link: '/messages/674' }),
+      presented('b', { thread_id: 'message:9', type: 'new_message', link: '/messages/9' }),
+      // A push from a server that does not send thread_id yet still names the sender in the link.
+      presented('c', { type: 'new_message', link: '/messages/674' }),
+      presented('d', { type: 'event_reminder', link: '/events/674' }),
+    ]);
+
+    await dismissThreadNotifications('674');
+
+    expect(mockDismissNotificationAsync.mock.calls.map((c) => c[0]).sort()).toEqual(['a', 'c']);
+  });
+
+  it('never throws when the tray cannot be read', async () => {
+    mockGetPresentedNotificationsAsync.mockRejectedValue(new Error('no permission'));
+
+    await expect(dismissThreadNotifications('674')).resolves.toBeUndefined();
   });
 });

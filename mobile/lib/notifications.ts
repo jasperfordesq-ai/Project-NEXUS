@@ -459,3 +459,30 @@ export async function scheduleDevMessagePush(senderId: string = '1'): Promise<vo
     },
   });
 }
+
+/**
+ * Clear the tray notifications that belong to one conversation once it is open, so five
+ * "new message" alerts from the same member do not outlive the reply. Matches the
+ * server's `thread_id` (`message:<otherUserId>`) and, for pushes from a server that does
+ * not send it yet, the `/messages/<otherUserId>` link. Never throws: the tray is a
+ * courtesy, not a dependency.
+ */
+export async function dismissThreadNotifications(otherUserId: string): Promise<void> {
+  const threadId = `message:${otherUserId}`;
+  const linkPattern = new RegExp(`^(?:https://app\.project-nexus\.ie)?/messages/${otherUserId}(?:[?#].*)?$`);
+  try {
+    const presented = await Notifications.getPresentedNotificationsAsync();
+    await Promise.all(presented.map(async (notification) => {
+      const data = notification.request?.content?.data as Record<string, unknown> | undefined;
+      const matchesThread = data?.thread_id === threadId;
+      const matchesLink = typeof data?.link === 'string'
+        && (data.type === undefined || data.type === 'new_message')
+        && linkPattern.test(data.link);
+      if (matchesThread || matchesLink) {
+        await Notifications.dismissNotificationAsync(notification.request.identifier);
+      }
+    }));
+  } catch (error) {
+    reportException(error, { tags: { module: 'push-thread-dismiss' } });
+  }
+}

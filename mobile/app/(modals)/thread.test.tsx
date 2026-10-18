@@ -37,6 +37,10 @@ jest.mock('@/lib/messageDraftMedia', () => ({
 }));
 
 let mockThreadSearchParams: Record<string, string> = { id: '5', name: 'Alice' };
+const mockDismissThreadNotifications = jest.fn();
+jest.mock('@/lib/notifications', () => ({
+  dismissThreadNotifications: (...args: unknown[]) => mockDismissThreadNotifications(...args),
+}));
 const mockRouterPush = jest.fn();
 const mockLaunchImageLibraryAsync = jest.fn();
 const mockRequestMediaLibraryPermissionsAsync = jest.fn();
@@ -490,6 +494,14 @@ beforeEach(() => {
 });
 
 describe('ThreadScreen', () => {
+  it('clears the tray notifications of the conversation being opened', async () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMessages, meta: { conversation: { other_user: { id: 5 } } } }, isLoading: false, error: null, refresh: jest.fn() });
+    const view = render(<ThreadScreen />);
+
+    await waitFor(() => expect(mockDismissThreadNotifications).toHaveBeenCalledWith('5'));
+    view.unmount();
+  });
+
   const originalPlatformOS = Platform.OS;
 
   it('clears a recovered legacy draft at its original key after successful send', async () => {

@@ -5,6 +5,7 @@
 
 import { formatDecimal } from '@/lib/utils/decimal';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { dismissThreadNotifications } from '@/lib/notifications';
 import {
   AppState,
   FlatList,
@@ -177,6 +178,14 @@ function ThreadScreenInner() {
     [safeThreadLookupId, isNewConversation],
     { enabled: isValidId },
   );
+  // Once the conversation is open, its "new message" alerts in the tray have done their
+  // job: clear them so five pushes from one member do not outlive the reply (push audit,
+  // 2026-10-18). Matched by the server's thread_id and by the /messages/<id> link.
+  useEffect(() => {
+    if (!isValidId || isNewConversation) return;
+    void dismissThreadNotifications(String(safeThreadLookupId));
+  }, [isValidId, isNewConversation, safeThreadLookupId]);
+
   // The other member, as the server describes them — the deep link may have carried no
   // name, and never carries an avatar (B/F-20).
   const otherUser = (data?.meta as { conversation?: { other_user?: ConversationOtherUser } } | undefined)?.conversation?.other_user;
