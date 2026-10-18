@@ -115,7 +115,76 @@ export async function flushPendingPaidCampaignOpen(): Promise<void> {
 }
 
 /**
- * Observe notification taps in every app state. The initial-response lookup covers a
+ * The last tap this process handled. Module-level on purpose: the root navigator can be
+ * unmounted and remounted (session-restore and update gates), and the observer below is
+ * created again each time, while expo-notifications keeps returning the same stored
+ * response until it is cleared.
+ */
+let lastHandledResponseKey: string | null = null;
+
+/** Test-only: forget the last handled tap. */
+export function __resetNotificationResponseStateForTests(): void {
+  lastHandledResponseKey = null;
+}
+
+function responseKey(response: Notifications.NotificationResponse): string | null {
+  const identifier = response.notification?.request?.identifier;
+  if (typeof identifier !== 'string' || identifier === '') return null;
+  return `${identifier}:${String(response.notification.date)}`;
+}
+
+/** Only a plain tap navigates; a notification action (dismiss, reply…) does not. */
+function isDefaultAction(response: Notifications.NotificationResponse): boolean {
+  const id = response.actionIdentifier;
+  return id === undefined || id === null || id === Notifications.DEFAULT_ACTION_IDENTIFIER;
+}
+
+function clearStoredResponse(): void {
+  try {
+    Notifications.clearLastNotificationResponse();
+  } catch (error) {
+    reportException(error, { tags: { module: 'push-notification-response-clear' } });
+  }
+}
+
+/**
+ * One path for both ways a tap reaches the app. Returns the link that was followed, or
+ * null when the response was ignored or had already been handled.
+ *
+ * 🔴 Android delivers the tap that launched a killed app TWICE — as the stored launch
+ * response and again through the live listener — so the two are deduplicated by the
+ * notification's identifier, not by which path fired first.
+ */
+function handleResponse(
+  response: Notifications.NotificationResponse | null | undefined,
+  onLink: (link: string) => void,
+): string | null {
+  if (!response) return null;
+  if (!isDefaultAction(response)) {
+    clearStoredResponse();
+    return null;
+  }
+  const key = responseKey(response);
+  if (key !== null && key === lastHandledResponseKey) {
+    clearStoredResponse();
+    return null;
+  }
+  if (key !== null) lastHandledResponseKey = key;
+
+  const data = response.notification.request.content.data;
+  const notificationLink = getNotificationLink(data);
+  if (notificationLink) {
+    queuePaidCampaignOpen(data);
+    onLink(notificationLink);
+  }
+  // Cleared on BOTH paths: a warm tap left behind here used to replay on the next
+  // remount of the root navigator.
+  clearStoredResponse();
+  return notificationLink;
+}
+
+/**
+ * Observe notification taps in every app state. The stored launch response covers a
  * notification that launched a terminated app; the listener covers foreground/background
  * interactions. An initial App Link may be supplied so notification intent wins
  * deterministically when Android reports both during startup.
@@ -126,20 +195,19 @@ export function observeNotificationResponses(
 ): () => void {
   let active = true;
 
-  void Promise.all([
-    initialUrl,
-    Notifications.getLastNotificationResponseAsync(),
-  ]).then(([launchUrl, response]) => {
+  // Synchronous in expo-notifications 55 (the async wrappers are deprecated). Read it
+  // now so a listener event arriving first is deduplicated by key, not by timing.
+  let launchResponse: Notifications.NotificationResponse | null = null;
+  try {
+    launchResponse = Notifications.getLastNotificationResponse();
+  } catch (error) {
+    reportException(error, { tags: { module: 'push-notification-response-startup' } });
+  }
+
+  void initialUrl.then((launchUrl) => {
     if (!active) return;
-    const data = response?.notification.request.content.data;
-    const notificationLink = getNotificationLink(data);
-    if (notificationLink) {
-      queuePaidCampaignOpen(data);
-      onLink(notificationLink);
-      void Notifications.clearLastNotificationResponseAsync().catch((error) => {
-        reportException(error, { tags: { module: 'push-notification-response-clear' } });
-      });
-    } else if (launchUrl) {
+    const followed = handleResponse(launchResponse, onLink);
+    if (!followed && !launchResponse && launchUrl) {
       onLink(launchUrl);
     }
   }).catch((error) => {
@@ -147,12 +215,7 @@ export function observeNotificationResponses(
   });
 
   const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    const data = response.notification.request.content.data;
-    const notificationLink = getNotificationLink(data);
-    if (notificationLink) {
-      queuePaidCampaignOpen(data);
-      onLink(notificationLink);
-    }
+    handleResponse(response, onLink);
   });
 
   return () => {
@@ -232,6 +295,38 @@ Notifications.setNotificationHandler({
 });
 
 /**
+ * Android notification channels. Created at runtime, so no native rebuild is needed —
+ * but an existing channel's importance can never be changed, which is why messages get
+ * a channel of their own rather than `default` being raised. The server chooses the
+ * channel per push (`channelId`): `messages` for a direct message, `emergency` for a
+ * supported emergency, `default` for everything else.
+ */
+export async function ensureAndroidNotificationChannels(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+
+  // Brand color — tenant-specific theming is not available at channel setup time.
+  const lightColor = '#006FEE';
+  await Notifications.setNotificationChannelAsync('default', {
+    name: i18n.t('notifications:title'),
+    importance: Notifications.AndroidImportance.DEFAULT,
+    lightColor,
+  });
+  await Notifications.setNotificationChannelAsync('emergency', {
+    name: i18n.t('onboarding:safeguarding_title'),
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor,
+  });
+  await Notifications.setNotificationChannelAsync('messages', {
+    name: i18n.t('messages:title'),
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: 'default',
+    vibrationPattern: [0, 250],
+    lightColor,
+  });
+}
+
+/**
  * Request notification permission and register the device with the backend.
  * Safe to call multiple times — subsequent calls are no-ops if already registered.
  * Never throws; errors are logged silently.
@@ -240,24 +335,12 @@ export async function registerForPushNotifications(
   requestPermission = false,
 ): Promise<PushRegistrationResult> {
   try {
+    // Channels first, even where no token can be issued: a locally scheduled
+    // notification on an emulator must land on the same channels a real push would.
+    await ensureAndroidNotificationChannels();
+
     if (!Device.isDevice) {
       return 'unavailable';
-    }
-
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: i18n.t('notifications:title'),
-        importance: Notifications.AndroidImportance.DEFAULT,
-        // Brand color — tenant-specific theming not available at notification channel setup time
-        lightColor: '#006FEE',
-      });
-      await Notifications.setNotificationChannelAsync('emergency', {
-        name: i18n.t('onboarding:safeguarding_title'),
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        // Brand color — tenant-specific theming not available at notification channel setup time
-        lightColor: '#006FEE',
-      });
     }
 
     let permission = await Notifications.getPermissionsAsync();

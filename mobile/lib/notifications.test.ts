@@ -13,11 +13,16 @@ const mockSetNotificationChannelAsync = jest.fn();
 const mockSetBadgeCountAsync = jest.fn();
 const mockGetLastNotificationResponseAsync = jest.fn();
 const mockClearLastNotificationResponseAsync = jest.fn();
+const mockGetLastNotificationResponse = jest.fn();
+const mockClearLastNotificationResponse = jest.fn();
 const mockResponseSubscriptionRemove = jest.fn();
 const mockAddNotificationResponseReceivedListener = jest.fn();
+const mockDeviceState = { isDevice: true };
 
 jest.mock('expo-device', () => ({
-  isDevice: true,
+  get isDevice() {
+    return mockDeviceState.isDevice;
+  },
 }));
 
 jest.mock('expo-constants', () => ({
@@ -25,7 +30,8 @@ jest.mock('expo-constants', () => ({
 }));
 
 jest.mock('expo-notifications', () => ({
-  AndroidImportance: { DEFAULT: 'default', MAX: 'max' },
+  AndroidImportance: { DEFAULT: 'default', HIGH: 'high', MAX: 'max' },
+  DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
   IosAuthorizationStatus: { AUTHORIZED: 2, PROVISIONAL: 3, EPHEMERAL: 4 },
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
@@ -35,6 +41,8 @@ jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
   getLastNotificationResponseAsync: (...args: unknown[]) => mockGetLastNotificationResponseAsync(...args),
   clearLastNotificationResponseAsync: (...args: unknown[]) => mockClearLastNotificationResponseAsync(...args),
+  getLastNotificationResponse: (...args: unknown[]) => mockGetLastNotificationResponse(...args),
+  clearLastNotificationResponse: (...args: unknown[]) => mockClearLastNotificationResponse(...args),
   addNotificationResponseReceivedListener: (...args: unknown[]) => mockAddNotificationResponseReceivedListener(...args),
 }));
 
@@ -73,6 +81,7 @@ jest.mock('@/lib/constants', () => ({
 }));
 
 import {
+  __resetNotificationResponseStateForTests,
   flushPendingPaidCampaignOpen,
   getNotificationLink,
   observeNotificationResponses,
@@ -209,11 +218,13 @@ describe('push notification response lifecycle', () => {
     jest.clearAllMocks();
     mockGetLastNotificationResponseAsync.mockResolvedValue(null);
     mockClearLastNotificationResponseAsync.mockResolvedValue(undefined);
+    mockGetLastNotificationResponse.mockReturnValue(null);
+    __resetNotificationResponseStateForTests();
     mockAddNotificationResponseReceivedListener.mockReturnValue({ remove: mockResponseSubscriptionRemove });
   });
 
   it('replays and clears the notification that launched a killed app', async () => {
-    mockGetLastNotificationResponseAsync.mockResolvedValue({
+    mockGetLastNotificationResponse.mockReturnValue({
       notification: { request: { content: { data: { link: '/messages/123' } } } },
     });
     const onLink = jest.fn();
@@ -223,7 +234,7 @@ describe('push notification response lifecycle', () => {
     await Promise.resolve();
 
     expect(onLink).toHaveBeenCalledWith('/messages/123');
-    expect(mockClearLastNotificationResponseAsync).toHaveBeenCalledTimes(1);
+    expect(mockClearLastNotificationResponse).toHaveBeenCalledTimes(1);
     unsubscribe();
     expect(mockResponseSubscriptionRemove).toHaveBeenCalledTimes(1);
   });
@@ -447,5 +458,127 @@ describe('push notification registration', () => {
 
     expect(result).toBe('failed');
     expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * 🔴 Android reports a tap that launched a killed app TWICE — once as the stored launch
+ * response and again through the live listener — and the warm listener never cleared the
+ * stored response, so a remount of the root navigator could replay an old tap. Found in
+ * the 2026-10-18 push audit behind the owner's "opens Home" report.
+ */
+describe('push tap lifecycle hardening', () => {
+  const tap = (identifier: string, data: Record<string, unknown>, actionIdentifier?: string) => ({
+    actionIdentifier,
+    notification: { date: 1_700_000_000, request: { identifier, content: { data } } },
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    __resetNotificationResponseStateForTests();
+    mockDeviceState.isDevice = true;
+    mockGetLastNotificationResponse.mockReturnValue(null);
+    mockGetLastNotificationResponseAsync.mockResolvedValue(null);
+    mockAddNotificationResponseReceivedListener.mockReturnValue({ remove: mockResponseSubscriptionRemove });
+  });
+
+  it('handles a cold-start tap once when Android delivers it through both the stored response and the live listener', async () => {
+    const response = tap('n1', { link: '/messages/7' });
+    mockGetLastNotificationResponse.mockReturnValue(response);
+    const onLink = jest.fn();
+
+    observeNotificationResponses(onLink);
+    await Promise.resolve();
+    await Promise.resolve();
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+    listener(response);
+
+    expect(onLink).toHaveBeenCalledTimes(1);
+    expect(onLink).toHaveBeenCalledWith('/messages/7');
+  });
+
+  it('clears the stored response after a warm tap so a remount cannot replay it', () => {
+    observeNotificationResponses(jest.fn());
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+
+    listener(tap('n2', { link: '/events/44' }));
+
+    expect(mockClearLastNotificationResponse).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not replay a tap already handled when the observer is created again', async () => {
+    const response = tap('n3', { link: '/wallet' });
+    const onLink = jest.fn();
+
+    const unsubscribe = observeNotificationResponses(onLink);
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+    listener(response);
+    unsubscribe();
+
+    // The navigator remounts (session-restore gate) and the module-level store still
+    // holds the response the listener delivered.
+    mockGetLastNotificationResponse.mockReturnValue(response);
+    observeNotificationResponses(onLink);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onLink).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a notification action that is not the default tap', () => {
+    const onLink = jest.fn();
+    observeNotificationResponses(onLink);
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+
+    listener(tap('n4', { link: '/messages/7' }, 'dismiss'));
+
+    expect(onLink).not.toHaveBeenCalled();
+  });
+
+  it('reads the stored response without the deprecated async wrapper', async () => {
+    observeNotificationResponses(jest.fn());
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockGetLastNotificationResponse).toHaveBeenCalledTimes(1);
+    expect(mockGetLastNotificationResponseAsync).not.toHaveBeenCalled();
+  });
+
+  it('follows the launch App Link only when no notification launched the app', async () => {
+    const onLink = jest.fn();
+    observeNotificationResponses(onLink, Promise.resolve('https://app.project-nexus.ie/events/44'));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onLink).toHaveBeenCalledWith('https://app.project-nexus.ie/events/44');
+  });
+});
+
+describe('Android notification channels', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDeviceState.isDevice = true;
+    Platform.OS = 'android';
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[abc123]' });
+    mockStorageGet.mockResolvedValue(null);
+    mockPost.mockResolvedValue({});
+  });
+
+  it('creates a high-importance messages channel alongside default and emergency', async () => {
+    await registerForPushNotifications();
+
+    expect(mockSetNotificationChannelAsync).toHaveBeenNthCalledWith(3, 'messages', expect.objectContaining({
+      importance: 'high',
+    }));
+  });
+
+  it('creates the channels even on an emulator, where no push token can be issued', async () => {
+    mockDeviceState.isDevice = false;
+
+    const result = await registerForPushNotifications();
+
+    expect(result).toBe('unavailable');
+    expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('messages', expect.anything());
   });
 });
