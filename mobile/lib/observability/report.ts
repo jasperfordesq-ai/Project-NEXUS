@@ -342,3 +342,22 @@ export function __resetReportBudgetForTests(): void {
 // imports this file during startup, so it is registered before anything interesting
 // happens. If it never ran, reports are dropped rather than crashing.
 registerReporter((error, context) => reportException(error, context));
+
+/**
+ * A Sentry breadcrumb: context that rides along with the next event, never an event of
+ * its own and never sent to our server. Swallowed when Sentry is absent or mocked.
+ */
+export function reportBreadcrumb(
+  category: string,
+  message: string,
+  data: Record<string, string> = {},
+): void {
+  try {
+    Sentry.addBreadcrumb({ category, message, level: 'info', data });
+  } catch {
+    // Breadcrumbs are best-effort by definition.
+  }
+  if (__DEV__) {
+    console.debug(`[${category}] ${message}`, data);
+  }
+}

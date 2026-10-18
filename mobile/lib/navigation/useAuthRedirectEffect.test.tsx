@@ -101,3 +101,42 @@ describe('useAuthRedirectEffect', () => {
     expect(h.navigate).not.toHaveBeenCalled();
   });
 });
+
+const mockCaptureMessage = jest.fn();
+jest.mock('@sentry/react-native', () => ({
+  addBreadcrumb: jest.fn(),
+  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
+  captureException: jest.fn(),
+}));
+jest.mock('@/lib/storage', () => ({
+  storage: { get: jest.fn().mockResolvedValue(null), set: jest.fn(), remove: jest.fn() },
+}));
+
+import { pushLanding } from '@/lib/observability/pushTrail';
+
+describe('useAuthRedirectEffect push trail', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    pushLanding.current = null;
+  });
+
+  it('reports a push tap that ends on Home instead of its screen', () => {
+    const h = harness();
+    h.next({ isLoading: false, isAuthenticated: true, pendingDeepLink: '/messages/7' });
+    expect(pushLanding.current).toEqual(expect.objectContaining({ link: '/messages/7', from: '/' }));
+
+    h.next({ pendingDeepLink: null, pathname: '/' });
+    h.next({ pathname: '/home' });
+
+    expect(mockCaptureMessage).toHaveBeenCalledTimes(1);
+    expect(mockCaptureMessage.mock.calls[0][0]).toContain('landed on Home');
+  });
+
+  it('expects no landing for a link that opened nothing', () => {
+    const h = harness();
+    h.navigate.mockReturnValue('ignored');
+    h.next({ isLoading: false, isAuthenticated: true, pendingDeepLink: '/route-nobody-has/1' });
+
+    expect(pushLanding.current).toBeNull();
+  });
+});

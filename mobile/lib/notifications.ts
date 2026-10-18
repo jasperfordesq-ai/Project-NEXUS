@@ -21,6 +21,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
 import { reportSentryMessage, reportException } from '@/lib/observability/report';
+import { recordPushTap } from '@/lib/observability/pushTrail';
 
 import { api, ApiResponseError } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -133,6 +134,11 @@ function responseKey(response: Notifications.NotificationResponse): string | nul
   return `${identifier}:${String(response.notification.date)}`;
 }
 
+function pushTypeOf(data: unknown): string {
+  const type = data && typeof data === 'object' ? (data as Record<string, unknown>).type : undefined;
+  return typeof type === 'string' && /^[a-z0-9_:-]{1,80}$/i.test(type) ? type : 'unknown';
+}
+
 /** Only a plain tap navigates; a notification action (dismiss, reply…) does not. */
 function isDefaultAction(response: Notifications.NotificationResponse): boolean {
   const id = response.actionIdentifier;
@@ -157,6 +163,7 @@ function clearStoredResponse(): void {
  */
 function handleResponse(
   response: Notifications.NotificationResponse | null | undefined,
+  source: 'launch' | 'listener',
   onLink: (link: string) => void,
 ): string | null {
   if (!response) return null;
@@ -173,6 +180,7 @@ function handleResponse(
 
   const data = response.notification.request.content.data;
   const notificationLink = getNotificationLink(data);
+  recordPushTap({ source, type: pushTypeOf(data), link: notificationLink });
   if (notificationLink) {
     queuePaidCampaignOpen(data);
     onLink(notificationLink);
@@ -206,7 +214,7 @@ export function observeNotificationResponses(
 
   void initialUrl.then((launchUrl) => {
     if (!active) return;
-    const followed = handleResponse(launchResponse, onLink);
+    const followed = handleResponse(launchResponse, 'launch', onLink);
     if (!followed && !launchResponse && launchUrl) {
       onLink(launchUrl);
     }
@@ -215,7 +223,7 @@ export function observeNotificationResponses(
   });
 
   const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    handleResponse(response, onLink);
+    handleResponse(response, 'listener', onLink);
   });
 
   return () => {

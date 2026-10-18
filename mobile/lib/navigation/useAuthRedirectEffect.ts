@@ -12,6 +12,11 @@ import {
 } from './authRedirect';
 import { pendingRecoveryLinkStore } from './pendingRecoveryLinkStore';
 import type { NavigateToLinkResult } from '@/lib/utils/navigateToLink';
+import {
+  pushLanding,
+  recordNavigationIssued,
+  recordRedirectDecision,
+} from '@/lib/observability/pushTrail';
 
 export interface AuthRedirectEffectInput extends Omit<AuthRedirectInput, 'navigationIssuedForPathname'> {
   setPendingDeepLink: (link: string | null) => void;
@@ -52,6 +57,9 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
   callbacksRef.current = input;
 
   useEffect(() => {
+    // Names, in Sentry and the server log, a push tap that has just ended on Home.
+    pushLanding.observe(pathname);
+
     if (
       navigationIssuedForPathnameRef.current !== null
       && navigationIssuedForPathnameRef.current !== pathname
@@ -68,6 +76,7 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
       pendingDeepLink,
       navigationIssuedForPathname: navigationIssuedForPathnameRef.current,
     });
+    recordRedirectDecision(decision, pathname);
     const { setPendingDeepLink, navigate, replace, onDeepLinkFollowed } = callbacksRef.current;
 
     // Recovery links are deliberately ignored for an authenticated member. Clear the
@@ -95,8 +104,10 @@ export function useAuthRedirectEffect(input: AuthRedirectEffectInput): void {
       setPendingDeepLink(null);
       onDeepLinkFollowed?.();
       const result = navigate(decision.url);
+      recordNavigationIssued(result, decision.url, pathname);
       if (result === 'navigated') {
         navigationIssuedForPathnameRef.current = pathname;
+        pushLanding.expect(decision.url, pathname);
       }
       // 'external' / 'ignored': the app has no screen to show for the link, so the
       // next render falls through to Home exactly as before.

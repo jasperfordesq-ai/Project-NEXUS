@@ -46,7 +46,9 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: (...args: unknown[]) => mockAddNotificationResponseReceivedListener(...args),
 }));
 
+const mockAddBreadcrumb = jest.fn();
 jest.mock('@sentry/react-native', () => ({
+  addBreadcrumb: (...args: unknown[]) => mockAddBreadcrumb(...args),
   captureException: jest.fn(),
   captureMessage: jest.fn(),
 }));
@@ -523,6 +525,19 @@ describe('push tap lifecycle hardening', () => {
     await Promise.resolve();
 
     expect(onLink).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves a breadcrumb for every tap, with the link summarised', () => {
+    observeNotificationResponses(jest.fn());
+    const listener = mockAddNotificationResponseReceivedListener.mock.calls[0]?.[0];
+
+    listener(tap('n5', { type: 'new_message', link: '/messages/7' }));
+
+    expect(mockAddBreadcrumb).toHaveBeenCalledWith(expect.objectContaining({
+      category: 'push',
+      message: 'tap',
+      data: { source: 'listener', type: 'new_message', link: '/messages' },
+    }));
   });
 
   it('ignores a notification action that is not the default tap', () => {
