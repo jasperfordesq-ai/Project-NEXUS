@@ -328,7 +328,6 @@ export async function ensureAndroidNotificationChannels(): Promise<void> {
   await Notifications.setNotificationChannelAsync('messages', {
     name: i18n.t('messages:title'),
     importance: Notifications.AndroidImportance.HIGH,
-    sound: 'default',
     vibrationPattern: [0, 250],
     lightColor,
   });
@@ -435,4 +434,28 @@ export async function unregisterPushNotifications(): Promise<void> {
       reportSentryMessage(`Push unregister failed: ${err.message}`, 'warning');
     }
   }
+}
+
+/**
+ * Development only: reproduce a "new message" push on an emulator, which can never
+ * receive a real one. Schedules a local notification carrying EXACTLY the data shape the
+ * server sends (`FCMPushService::safeNavigationData`), on the same channel, eight
+ * seconds out — long enough to kill the app first and tap it from a cold start. Wired to
+ * a `__DEV__`-only row on the Settings screen; nothing ships.
+ */
+export async function scheduleDevMessagePush(senderId: string = '1'): Promise<void> {
+  await Notifications.requestPermissionsAsync();
+  await ensureAndroidNotificationChannels();
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'New message (dev)',
+      body: 'Tap to open the conversation',
+      data: { schema_version: '1', type: 'new_message', link: `/messages/${senderId}` },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 8,
+      channelId: 'messages',
+    },
+  });
 }

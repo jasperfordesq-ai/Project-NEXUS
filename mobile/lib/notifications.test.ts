@@ -17,6 +17,7 @@ const mockGetLastNotificationResponse = jest.fn();
 const mockClearLastNotificationResponse = jest.fn();
 const mockResponseSubscriptionRemove = jest.fn();
 const mockAddNotificationResponseReceivedListener = jest.fn();
+const mockScheduleNotificationAsync = jest.fn();
 const mockDeviceState = { isDevice: true };
 
 jest.mock('expo-device', () => ({
@@ -32,6 +33,8 @@ jest.mock('expo-constants', () => ({
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 'default', HIGH: 'high', MAX: 'max' },
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
+  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
+  scheduleNotificationAsync: (...args: unknown[]) => mockScheduleNotificationAsync(...args),
   IosAuthorizationStatus: { AUTHORIZED: 2, PROVISIONAL: 3, EPHEMERAL: 4 },
   getExpoPushTokenAsync: (...args: unknown[]) => mockGetExpoPushTokenAsync(...args),
   getPermissionsAsync: (...args: unknown[]) => mockGetPermissionsAsync(...args),
@@ -88,6 +91,7 @@ import {
   getNotificationLink,
   observeNotificationResponses,
   registerForPushNotifications,
+  scheduleDevMessagePush,
   syncPushBadge,
   unregisterPushNotifications,
 } from './notifications';
@@ -595,5 +599,26 @@ describe('Android notification channels', () => {
 
     expect(result).toBe('unavailable');
     expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('messages', expect.anything());
+  });
+});
+
+describe('scheduleDevMessagePush (development reproduction of a message push)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    Platform.OS = 'android';
+    mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockScheduleNotificationAsync.mockResolvedValue('local-1');
+  });
+
+  it('schedules a local notification carrying exactly the production data shape on the messages channel', async () => {
+    await scheduleDevMessagePush('42');
+
+    expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('messages', expect.anything());
+    expect(mockScheduleNotificationAsync).toHaveBeenCalledWith({
+      content: expect.objectContaining({
+        data: { schema_version: '1', type: 'new_message', link: '/messages/42' },
+      }),
+      trigger: { type: 'timeInterval', seconds: 8, channelId: 'messages' },
+    });
   });
 });

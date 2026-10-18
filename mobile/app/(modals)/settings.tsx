@@ -43,6 +43,7 @@ import {
 import {
   isPushPermissionGranted,
   registerForPushNotifications,
+  scheduleDevMessagePush,
   unregisterPushNotifications,
 } from '@/lib/notifications';
 import { withRouteGate } from '@/components/withRouteGate';
@@ -636,6 +637,17 @@ function SettingsScreen() {
           >
             <InfoRow label={t('version')} value={appVersion} theme={theme} />
             <InfoRow label={t('license')} value="AGPL-3.0-or-later" theme={theme} />
+            {__DEV__ && (
+              /*
+                Development builds only (never in a store build). An emulator cannot receive a
+                real push, so this schedules a local "new message" notification with the
+                production data shape eight seconds out: kill the app, tap it, and the cold-start
+                path a member's phone takes can be walked. Deliberately untranslated.
+              */
+              <HeroButton size="sm" variant="secondary" onPress={() => { void scheduleDevMessagePush('674'); }}>
+                <HeroButton.Label>DEV: schedule a test message push (8 s)</HeroButton.Label>
+              </HeroButton>
+            )}
           </Section>
 
           <SourceRepositoryLink />
