@@ -344,9 +344,20 @@ export default function ModuleConfigModal({ module, isOpen, onClose }: ModuleCon
         refreshTenant();
         onClose();
       } else {
-        // The server refuses a number outside its range with a message that
-        // names the limits; show that rather than a generic failure.
-        toast.error(res.errors?.[0]?.message ?? res.message ?? t('config.modal_save_failed'));
+        // The server refuses a number outside its range and names the field.
+        // Say which setting and its limits in the admin's own language; the
+        // server's text is never shown on an admin screen.
+        const refusedKey = res.errors?.[0]?.field;
+        const refused = module?.configOptions.find((option) => option.key === refusedKey);
+        if (refused && refused.min !== undefined && refused.max !== undefined) {
+          toast.error(t('config.modal_value_out_of_range', {
+            setting: getOptionLabel(t, refused),
+            min: refused.min,
+            max: refused.max,
+          }));
+        } else {
+          toast.error(t('config.modal_save_failed'));
+        }
       }
     } catch {
       toast.error(t('config.modal_save_failed'));

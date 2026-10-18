@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Exceptions\WebhookValidationException;
 use App\Support\OutboundUrlGuard;
 use App\Support\OutboundWebhookTransport;
 use Illuminate\Support\Facades\DB;
@@ -246,20 +247,20 @@ class WebhookDispatchService
 
         // Validate
         if (empty($data['name'])) {
-            throw new \InvalidArgumentException('Webhook name is required.');
+            throw new WebhookValidationException('WEBHOOK_NAME_REQUIRED', 'Webhook name is required.', 'name');
         }
         if (empty($data['url']) || !filter_var($data['url'], FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException('A valid webhook URL is required.');
+            throw new WebhookValidationException('WEBHOOK_URL_INVALID', 'A valid webhook URL is required.', 'url');
         }
         // SSRF protection: reject URLs targeting private/internal IPs at creation time
         if (self::isPrivateUrl($data['url'])) {
-            throw new \InvalidArgumentException('Webhook URL must not target private or internal IP addresses.');
+            throw new WebhookValidationException('WEBHOOK_URL_NOT_ALLOWED', 'Webhook URL must not target private or internal IP addresses.', 'url');
         }
         if (empty($data['secret'])) {
             $data['secret'] = self::generateSecret();
         }
         if (empty($data['events']) || !is_array($data['events'])) {
-            throw new \InvalidArgumentException('At least one event type is required.');
+            throw new WebhookValidationException('WEBHOOK_EVENTS_REQUIRED', 'At least one event type is required.', 'events');
         }
         self::assertKnownEvents($data['events']);
         self::assertFitsColumns($data);
@@ -303,10 +304,10 @@ class WebhookDispatchService
     {
         foreach ($events as $event) {
             if (!is_string($event) || !in_array($event, self::ALLOWED_EVENTS, true)) {
-                throw new \InvalidArgumentException(__('api.webhook_unknown_event', [
+                throw new WebhookValidationException('WEBHOOK_UNKNOWN_EVENT', __('api.webhook_unknown_event', [
                     'event' => is_string($event) ? $event : '?',
                     'events' => implode(', ', self::ALLOWED_EVENTS),
-                ]));
+                ]), 'events');
             }
         }
     }
@@ -327,7 +328,7 @@ class WebhookDispatchService
                 continue;
             }
             if (mb_strlen((string) $data[$field]) > $max) {
-                throw new \InvalidArgumentException(__('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]));
+                throw new WebhookValidationException('WEBHOOK_FIELD_TOO_LONG', __('api.field_too_long_with_limit', ['field' => $field, 'max' => $max]), $field);
             }
         }
     }
@@ -344,11 +345,11 @@ class WebhookDispatchService
         // Validate URL if provided
         if (isset($data['url'])) {
             if (!filter_var($data['url'], FILTER_VALIDATE_URL)) {
-                throw new \InvalidArgumentException('A valid webhook URL is required.');
+                throw new WebhookValidationException('WEBHOOK_URL_INVALID', 'A valid webhook URL is required.', 'url');
             }
             // SSRF protection: reject URLs targeting private/internal IPs at update time
             if (self::isPrivateUrl($data['url'])) {
-                throw new \InvalidArgumentException('Webhook URL must not target private or internal IP addresses.');
+                throw new WebhookValidationException('WEBHOOK_URL_NOT_ALLOWED', 'Webhook URL must not target private or internal IP addresses.', 'url');
             }
         }
         self::assertFitsColumns($data);

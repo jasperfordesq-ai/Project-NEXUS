@@ -32,6 +32,10 @@
   "events_help": "Só são listados os eventos que a plataforma envia de facto.",
   "name_url_required": "O nome e o endereço são obrigatórios",
   "events_required": "Escolha pelo menos um evento",
+  "error_url_invalid": "Introduza um endereço web completo que comece por https://",
+  "error_url_not_allowed": "Este endereço não pode ser usado. Os webhooks só podem ser enviados para um endereço público da internet que a plataforma consiga encontrar.",
+  "error_unknown_event": "Um dos eventos escolhidos não é enviado pela plataforma. Atualize a página e escolha novamente.",
+  "error_too_long": "O nome ou o endereço é demasiado longo. Encurte-o e tente novamente.",
   "events": {
     "shift_completed": {
       "label": "Um voluntário conclui um turno",

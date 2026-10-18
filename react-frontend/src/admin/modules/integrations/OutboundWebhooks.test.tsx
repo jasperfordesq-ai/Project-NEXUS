@@ -190,6 +190,45 @@ describe('OutboundWebhooks', () => {
     expect(screen.getByText(/shown only this once/i)).toBeInTheDocument();
   });
 
+  it('explains a refused address in its own words, never the server\'s text', async () => {
+    mockIntegrations.createWebhook.mockResolvedValueOnce({
+      success: false,
+      errors: [{ code: 'WEBHOOK_URL_NOT_ALLOWED', message: 'raw server text', field: 'url' }],
+    });
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByRole('button', { name: /add webhook/i }));
+    await user.type(await screen.findByRole('textbox', { name: /^name/i }), 'Payroll');
+    await user.type(screen.getByRole('textbox', { name: /address/i }), 'https://payroll.example.com/hook');
+    await user.click(screen.getByRole('checkbox', { name: /a job offer is accepted/i }));
+    await user.click(screen.getByRole('button', { name: /^create$/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    const shown = String(mockToast.error.mock.calls[0]?.[0]);
+    expect(shown).toMatch(/address/i);
+    expect(shown).not.toContain('raw server text');
+    expect(shown).not.toMatch(/could not save/i);
+  });
+
+  it('falls back to a general message for a refusal it does not recognise', async () => {
+    mockIntegrations.createWebhook.mockResolvedValueOnce({
+      success: false,
+      errors: [{ code: 'SOMETHING_NEW', message: 'raw server text' }],
+    });
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByRole('button', { name: /add webhook/i }));
+    await user.type(await screen.findByRole('textbox', { name: /^name/i }), 'Payroll');
+    await user.type(screen.getByRole('textbox', { name: /address/i }), 'https://payroll.example.com/hook');
+    await user.click(screen.getByRole('checkbox', { name: /a job offer is accepted/i }));
+    await user.click(screen.getByRole('button', { name: /^create$/i }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    expect(String(mockToast.error.mock.calls[0]?.[0])).not.toContain('raw server text');
+  });
+
   it('manages the chosen community\'s webhooks', async () => {
     const user = userEvent.setup();
     await renderPage();

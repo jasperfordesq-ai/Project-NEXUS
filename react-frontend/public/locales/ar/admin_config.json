@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "الإعداد المشروط.",
     "modal_open_broker_page": "صفحة وسيط مفتوحة مشروطة",
     "modal_save_failed": "فشل الحفظ المشروط",
+    "modal_value_out_of_range": "يجب أن تكون قيمة «{{setting}}» بين {{min}} و{{max}}.",
     "modal_title": "مشروط",
     "modal_volunteering_load_failed": "فشل تحميل التطوع المشروط",
     "modal_volunteering_saved": "تم حفظ التطوع المشروط",

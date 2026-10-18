@@ -32,6 +32,10 @@
   "events_help": "Alleen gebeurtenissen die het platform echt verstuurt staan in de lijst.",
   "name_url_required": "Naam en adres zijn verplicht",
   "events_required": "Kies minstens één gebeurtenis",
+  "error_url_invalid": "Voer een volledig webadres in dat begint met https://",
+  "error_url_not_allowed": "Dit adres kan niet worden gebruikt. Webhooks kunnen alleen naar een openbaar internetadres gaan dat het platform kan opzoeken.",
+  "error_unknown_event": "Een van de gekozen gebeurtenissen wordt niet door het platform verstuurd. Vernieuw de pagina en kies opnieuw.",
+  "error_too_long": "De naam of het adres is te lang. Maak het korter en probeer het opnieuw.",
   "events": {
     "shift_completed": {
       "label": "Een vrijwilliger rondt een dienst af",

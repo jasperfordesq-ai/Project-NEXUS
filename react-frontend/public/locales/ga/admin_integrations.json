@@ -32,6 +32,10 @@
   "events_help": "Ní liostaítear ach na teagmhais a sheolann an t-ardán i ndáiríre.",
   "name_url_required": "Tá ainm agus seoladh riachtanach",
   "events_required": "Roghnaigh teagmhas amháin ar a laghad",
+  "error_url_invalid": "Cuir isteach seoladh gréasáin iomlán a thosaíonn le https://",
+  "error_url_not_allowed": "Ní féidir an seoladh seo a úsáid. Ní féidir crúcaí gréasáin a sheoladh ach chuig seoladh poiblí idirlín ar féidir leis an ardán é a aimsiú.",
+  "error_unknown_event": "Ní sheolann an t-ardán ceann de na himeachtaí a roghnaíodh. Athnuaigh an leathanach agus roghnaigh arís.",
+  "error_too_long": "Tá an t-ainm nó an seoladh rófhada. Giorraigh é agus bain triail eile as.",
   "events": {
     "shift_completed": {
       "label": "Críochnaíonn deonach seal oibre",

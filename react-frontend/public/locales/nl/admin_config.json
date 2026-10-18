@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Modale onboarding.",
     "modal_open_broker_page": "Modal Open Broker-pagina",
     "modal_save_failed": "Modaal opslaan mislukt",
+    "modal_value_out_of_range": "‘{{setting}}’ moet tussen {{min}} en {{max}} liggen.",
     "modal_title": "Modaal",
     "modal_volunteering_load_failed": "Modale vrijwilligerswerkbelasting mislukt",
     "modal_volunteering_saved": "Modaal vrijwilligerswerk gered",

@@ -181,6 +181,7 @@
     "modal_onboarding_desc": "Modal Onboarding.",
     "modal_open_broker_page": "Modal Open Broker Page",
     "modal_save_failed": "Modal Save failed",
+    "modal_value_out_of_range": "“{{setting}}” must be between {{min}} and {{max}}.",
     "modal_title": "Modal",
     "modal_volunteering_load_failed": "Modal Volunteering Load failed",
     "modal_volunteering_saved": "Modal Volunteering saved",

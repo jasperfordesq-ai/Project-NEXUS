@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Modales Onboarding.",
     "modal_open_broker_page": "Modale Open-Broker-Seite",
     "modal_save_failed": "Modales Speichern ist fehlgeschlagen",
+    "modal_value_out_of_range": "„{{setting}}“ muss zwischen {{min}} und {{max}} liegen.",
     "modal_volunteering_load_failed": "Das Laden des modalen Freiwilligendienstes ist fehlgeschlagen",
     "modal_volunteering_saved": "Modal Volunteering gespeichert",
     "save_changes": "Änderungen speichern",

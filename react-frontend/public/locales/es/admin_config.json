@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Incorporación modal.",
     "modal_open_broker_page": "Modal: abrir la página del intermediario",
     "modal_save_failed": "Error al guardar modal",
+    "modal_value_out_of_range": "«{{setting}}» debe estar entre {{min}} y {{max}}.",
     "modal_title": "modales",
     "modal_volunteering_load_failed": "Error en la carga de voluntariado modal",
     "modal_volunteering_saved": "Voluntariado modal guardado",

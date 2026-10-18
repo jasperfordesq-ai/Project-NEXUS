@@ -73,6 +73,20 @@ interface WebhookForm {
 
 const emptyForm: WebhookForm = { name: '', url: '', events: [], is_active: true };
 
+/**
+ * The server names the rule a refused webhook broke with a code; the page shows
+ * its own translated wording for it, never the server's text. An unknown code
+ * falls back to the general "could not save" message.
+ */
+const REFUSAL_KEYS: Record<string, string> = {
+  WEBHOOK_NAME_REQUIRED: 'name_url_required',
+  WEBHOOK_URL_INVALID: 'error_url_invalid',
+  WEBHOOK_URL_NOT_ALLOWED: 'error_url_not_allowed',
+  WEBHOOK_EVENTS_REQUIRED: 'events_required',
+  WEBHOOK_UNKNOWN_EVENT: 'error_unknown_event',
+  WEBHOOK_FIELD_TOO_LONG: 'error_too_long',
+};
+
 /** `shift.completed` → `shift_completed`, the locale key token. */
 const eventToken = (event: string) => event.replace(/[^a-zA-Z0-9]+/g, '_');
 
@@ -174,20 +188,27 @@ export default function OutboundWebhooks() {
       const payload = { name: form.name.trim(), url: form.url.trim(), events: form.events, is_active: form.is_active };
       if (editingId) {
         const res = await adminIntegrations.updateWebhook(editingId, payload, communityId);
-        if (!res.success) throw new Error(res.errors?.[0]?.message ?? 'update_failed');
+        if (!res.success) {
+          toast.error(t(REFUSAL_KEYS[res.errors?.[0]?.code ?? ''] ?? 'failed_to_save_webhook'));
+          setSaving(false);
+          return;
+        }
         toast.success(t('webhook_updated'));
         onFormClose();
       } else {
         const res = await adminIntegrations.createWebhook(payload, communityId);
-        if (!res.success || !res.data) throw new Error(res.errors?.[0]?.message ?? 'create_failed');
+        if (!res.success || !res.data) {
+          toast.error(t(REFUSAL_KEYS[res.errors?.[0]?.code ?? ''] ?? 'failed_to_save_webhook'));
+          setSaving(false);
+          return;
+        }
         toast.success(t('webhook_created'));
         onFormClose();
         showSecret(res.data.secret);
       }
       void loadWebhooks();
-    } catch (error) {
-      const message = error instanceof Error && error.message && !/_failed$/.test(error.message) ? error.message : t('failed_to_save_webhook');
-      toast.error(message);
+    } catch {
+      toast.error(t('failed_to_save_webhook'));
     }
     setSaving(false);
   };

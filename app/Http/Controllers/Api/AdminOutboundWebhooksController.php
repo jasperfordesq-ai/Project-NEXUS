@@ -7,6 +7,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Core\SuperPanelAccess;
+use App\Exceptions\WebhookValidationException;
 use App\Services\WebhookDispatchService;
 use Illuminate\Http\JsonResponse;
 
@@ -55,7 +56,7 @@ class AdminOutboundWebhooksController extends BaseApiController
         try {
             $result = WebhookDispatchService::createWebhook($userId, $this->getAllInput(), $tenantId);
         } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+            return $this->refusal($e);
         }
 
         return $this->respondWithData($result, null, 201);
@@ -69,7 +70,7 @@ class AdminOutboundWebhooksController extends BaseApiController
         try {
             $result = WebhookDispatchService::updateWebhook((int) $id, $this->getAllInput(), $tenantId);
         } catch (\InvalidArgumentException $e) {
-            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+            return $this->refusal($e);
         }
 
         return $this->respondWithData(['success' => $result]);
@@ -125,6 +126,20 @@ class AdminOutboundWebhooksController extends BaseApiController
     }
 
     /**
+     * A refused create or update. The code names the rule that was broken so
+     * the admin page can show its own translated wording; the message is for
+     * other API callers.
+     */
+    private function refusal(\InvalidArgumentException $e): JsonResponse
+    {
+        if ($e instanceof WebhookValidationException) {
+            return $this->respondWithError($e->errorCode, $e->getMessage(), $e->field, 422);
+        }
+
+        return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+    }
+
+    /**
      * The gate, then the community being managed. A community outside the
      * caller's reach answers 403, the same as no access at all.
      */
@@ -136,8 +151,14 @@ class AdminOutboundWebhooksController extends BaseApiController
         $tenantId = $requested !== null && $requested !== '' ? (int) $requested : $this->getTenantId();
 
         // Stateless API auth: resolve the super-panel scope for this user
-        // explicitly rather than from a PHP session.
-        SuperPanelAccess::getAccess($userId);
+        // explicitly rather than from a PHP session. SuperPanelAccess caches
+        // its answer for the life of the process, so an answer worked out for
+        // another account must be thrown away first, never reused.
+        $access = SuperPanelAccess::getAccess($userId);
+        if ((int) ($access['user_id'] ?? 0) !== $userId) {
+            SuperPanelAccess::reset();
+            SuperPanelAccess::getAccess($userId);
+        }
         if ($tenantId < 1 || !SuperPanelAccess::canAccessTenant($tenantId)) {
             throw new \Illuminate\Http\Exceptions\HttpResponseException(
                 $this->error(__('api.access_denied'), 403, 'AUTH_INSUFFICIENT_PERMISSIONS')

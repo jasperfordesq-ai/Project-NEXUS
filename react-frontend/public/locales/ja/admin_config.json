@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "モーダルオンボーディング。",
     "modal_open_broker_page": "モーダルオープンブローカーページ",
     "modal_save_failed": "モーダル保存に失敗しました",
+    "modal_value_out_of_range": "「{{setting}}」は {{min}} から {{max}} の間で指定してください。",
     "modal_title": "モーダル",
     "modal_volunteering_load_failed": "モーダル ボランティアのロードに失敗しました",
     "modal_volunteering_saved": "モーダルボランティア活動が保存されました",

@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Intégration modale.",
     "modal_open_broker_page": "Page de courtier ouvert modal",
     "modal_save_failed": "Échec de la sauvegarde modale",
+    "modal_value_out_of_range": "« {{setting}} » doit être compris entre {{min}} et {{max}}.",
     "modal_volunteering_load_failed": "Échec de la charge de volontariat modal",
     "modal_volunteering_saved": "Volontariat modal enregistré",
     "save_changes": "Enregistrer les modifications",

@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Integração Modal.",
     "modal_open_broker_page": "Página Modal do Corretor Aberto",
     "modal_save_failed": "Falha ao salvar modal",
+    "modal_value_out_of_range": "“{{setting}}” deve estar entre {{min}} e {{max}}.",
     "modal_volunteering_load_failed": "Falha na carga de voluntariado modal",
     "modal_volunteering_saved": "Voluntariado Modal salvo",
     "save_changes": "Salvar alterações",

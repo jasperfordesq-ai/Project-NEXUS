@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Dul ar bord Módúil.",
     "modal_open_broker_page": "Leathanach Módúil Bróicéir Oscailte",
     "modal_save_failed": "Theip ar Sábháil Módúil",
+    "modal_value_out_of_range": "Caithfidh “{{setting}}” a bheith idir {{min}} agus {{max}}.",
     "modal_title": "Módúil",
     "modal_volunteering_load_failed": "Theip ar Lucht Deonach Módúil",
     "modal_volunteering_saved": "Sábháladh Obair Dheonach Módúil",

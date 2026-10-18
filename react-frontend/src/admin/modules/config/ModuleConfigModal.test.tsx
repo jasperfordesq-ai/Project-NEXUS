@@ -557,15 +557,17 @@ describe('ModuleConfigModal', () => {
     expect(hoursBefore).toHaveAttribute('max', '168');
   });
 
-  // The server refuses a number outside its range with a message naming the
-  // limits; the admin must see that message, not a generic "save failed".
-  it("shows the server's own message when the volunteering save is refused", async () => {
+  // The server refuses a number outside its range and names the field. The
+  // window must say which setting and what its limits are, in the admin's own
+  // language: never the server's text (admin UI-literal gate), and never a
+  // bare "save failed" that leaves the admin guessing which box is wrong.
+  it('names the refused setting and its limits when the volunteering save is refused', async () => {
     const { getFeatureModules } = await import('./moduleRegistry');
     const volunteering = getFeatureModules().find((m) => m.id === 'volunteering')!;
     mockAdminConfig.getVolunteeringConfig.mockResolvedValue({ success: true, data: { config: {} } });
     mockAdminConfig.updateVolunteeringConfigBulk.mockResolvedValue({
       success: false,
-      errors: [{ code: 'VALIDATION_ERROR', message: 'Value must be between 1 and 168', field: 'volunteering.reminder_pre_shift_hours_before' }],
+      errors: [{ code: 'VALIDATION_ERROR', message: 'raw server text', field: 'volunteering.reminder_pre_shift_hours_before' }],
     });
 
     const { default: ModuleConfigModal } = await import('./ModuleConfigModal');
@@ -578,7 +580,12 @@ describe('ModuleConfigModal', () => {
     fireEvent.click(saveBtn!);
 
     await waitFor(() => expect(mockAdminConfig.updateVolunteeringConfigBulk).toHaveBeenCalled());
-    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringContaining('between 1 and 168')));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledTimes(1));
+    const shown = String(mockToast.error.mock.calls[0]?.[0]);
+    expect(shown).toMatch(/hours before the shift/i);
+    expect(shown).toContain('1');
+    expect(shown).toContain('168');
+    expect(shown).not.toContain('raw server text');
   });
 
   it('shows coming-soon chip on options marked comingSoon', async () => {

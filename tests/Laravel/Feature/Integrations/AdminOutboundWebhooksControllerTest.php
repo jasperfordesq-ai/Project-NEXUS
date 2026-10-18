@@ -95,6 +95,20 @@ final class AdminOutboundWebhooksControllerTest extends TestCase
         $this->apiGet(self::BASE)->assertOk();
     }
 
+    public function test_access_worked_out_earlier_for_another_account_is_not_reused(): void
+    {
+        // SuperPanelAccess caches its answer for the life of the PHP process.
+        // CI on 17b241424 ran an unrelated test first in the same process, and
+        // every request here was refused with 403 on that stale answer.
+        $someoneElse = User::factory()->forTenant($this->testTenantId)->create(['role' => 'member']);
+        \App\Core\SuperPanelAccess::reset();
+        \App\Core\SuperPanelAccess::getAccess((int) $someoneElse->id);
+
+        $this->actAsGodPlatformAdmin();
+
+        $this->apiGet(self::BASE)->assertOk();
+    }
+
     // -------------------------------------------------------------- the events
 
     public function test_lists_only_the_events_the_platform_really_fires(): void
@@ -119,6 +133,45 @@ final class AdminOutboundWebhooksControllerTest extends TestCase
 
         $this->apiPost(self::BASE, $this->input(['events' => ['volunteer.applied']]))->assertStatus(422);
         $this->assertFalse(DB::table('outbound_webhooks')->where('tenant_id', $this->testTenantId)->where('name', 'CRM')->exists());
+    }
+
+    /**
+     * The admin page shows its own translated wording for each refusal, so
+     * every refusal carries a code that says which one it is (the message
+     * text is for API callers only).
+     *
+     * @dataProvider refusals
+     */
+    public function test_each_refusal_says_which_rule_was_broken(array $overrides, string $code, string $field): void
+    {
+        $this->actAsGodPlatformAdmin();
+
+        $error = $this->apiPost(self::BASE, $this->input($overrides))->assertStatus(422)->json('errors.0');
+
+        $this->assertSame($code, $error['code'] ?? null);
+        $this->assertSame($field, $error['field'] ?? null);
+    }
+
+    public static function refusals(): array
+    {
+        return [
+            'no name' => [['name' => ''], 'WEBHOOK_NAME_REQUIRED', 'name'],
+            'not a URL' => [['url' => 'not a url'], 'WEBHOOK_URL_INVALID', 'url'],
+            'internal address' => [['url' => 'http://127.0.0.1/hook'], 'WEBHOOK_URL_NOT_ALLOWED', 'url'],
+            'no events' => [['events' => []], 'WEBHOOK_EVENTS_REQUIRED', 'events'],
+            'unknown event' => [['events' => ['volunteer.applied']], 'WEBHOOK_UNKNOWN_EVENT', 'events'],
+            'name too long' => [['name' => str_repeat('x', 256)], 'WEBHOOK_FIELD_TOO_LONG', 'name'],
+        ];
+    }
+
+    public function test_an_update_to_an_internal_address_is_refused_with_its_code(): void
+    {
+        $this->actAsGodPlatformAdmin();
+        $id = $this->apiPost(self::BASE, $this->input())->assertStatus(201)->json('data.id');
+
+        $error = $this->apiPut(self::BASE . '/' . $id, ['url' => 'http://10.0.0.5/hook'])->assertStatus(422)->json('errors.0');
+
+        $this->assertSame('WEBHOOK_URL_NOT_ALLOWED', $error['code'] ?? null);
     }
 
     // -------------------------------------------------------------- the secret

@@ -32,6 +32,10 @@
   "events_help": "Es werden nur Ereignisse aufgeführt, die die Plattform tatsächlich sendet.",
   "name_url_required": "Name und Adresse sind erforderlich",
   "events_required": "Wählen Sie mindestens ein Ereignis",
+  "error_url_invalid": "Geben Sie eine vollständige Webadresse ein, die mit https:// beginnt.",
+  "error_url_not_allowed": "Diese Adresse kann nicht verwendet werden. Webhooks können nur an eine öffentliche Internetadresse gehen, die die Plattform auflösen kann.",
+  "error_unknown_event": "Eines der gewählten Ereignisse wird von der Plattform nicht gesendet. Laden Sie die Seite neu und wählen Sie erneut.",
+  "error_too_long": "Der Name oder die Adresse ist zu lang. Kürzen Sie ihn und versuchen Sie es erneut.",
   "events": {
     "shift_completed": {
       "label": "Eine freiwillige Person schließt eine Schicht ab",

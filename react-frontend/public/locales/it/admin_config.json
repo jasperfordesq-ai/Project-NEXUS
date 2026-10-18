@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Onboarding modale.",
     "modal_open_broker_page": "Pagina del broker aperto modale",
     "modal_save_failed": "Salvataggio modale non riuscito",
+    "modal_value_out_of_range": "«{{setting}}» deve essere compreso tra {{min}} e {{max}}.",
     "modal_title": "Modale",
     "modal_volunteering_load_failed": "Il caricamento modale del volontariato non è riuscito",
     "modal_volunteering_saved": "Volontariato modale salvato",

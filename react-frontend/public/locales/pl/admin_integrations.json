@@ -32,6 +32,10 @@
   "events_help": "Na liście są tylko zdarzenia, które platforma naprawdę wysyła.",
   "name_url_required": "Nazwa i adres są wymagane",
   "events_required": "Wybierz co najmniej jedno zdarzenie",
+  "error_url_invalid": "Wpisz pełny adres internetowy zaczynający się od https://",
+  "error_url_not_allowed": "Tego adresu nie można użyć. Webhooki mogą trafiać tylko na publiczny adres internetowy, który platforma potrafi odnaleźć.",
+  "error_unknown_event": "Jedno z wybranych zdarzeń nie jest wysyłane przez platformę. Odśwież stronę i wybierz ponownie.",
+  "error_too_long": "Nazwa lub adres jest za długi. Skróć go i spróbuj ponownie.",
   "events": {
     "shift_completed": {
       "label": "Wolontariusz kończy dyżur",

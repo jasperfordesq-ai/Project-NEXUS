@@ -8758,6 +8758,7 @@ export default interface Resources {
       "modal_podcast_saved": "Podcast settings saved.",
       "modal_save_failed": "Modal Save failed",
       "modal_title": "Modal",
+      "modal_value_out_of_range": "“{{setting}}” must be between {{min}} and {{max}}.",
       "modal_volunteering_load_failed": "Modal Volunteering Load failed",
       "modal_volunteering_saved": "Modal Volunteering saved",
       "module_config_load_error_desc": "Module states are hidden until the current tenant configuration can be loaded safely.",
@@ -19824,6 +19825,10 @@ export default interface Resources {
     "deliveries_title": "Deliveries",
     "edit": "Edit",
     "edit_webhook": "Edit webhook",
+    "error_too_long": "The name or the address is too long. Shorten it and try again.",
+    "error_unknown_event": "One of the chosen events is not one the platform sends. Refresh the page and choose again.",
+    "error_url_invalid": "Enter a full web address, starting with https://",
+    "error_url_not_allowed": "This address cannot be used. Webhooks can only go to a public internet address that the platform can look up.",
     "events": {
       "job_application_bulk_status_changed": {
         "desc": "Sent when applications are moved in bulk.",

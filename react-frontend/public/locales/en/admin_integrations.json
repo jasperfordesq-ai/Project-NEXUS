@@ -32,6 +32,10 @@
   "events_help": "Only events the platform really sends are listed.",
   "name_url_required": "Name and address are required",
   "events_required": "Choose at least one event",
+  "error_url_invalid": "Enter a full web address, starting with https://",
+  "error_url_not_allowed": "This address cannot be used. Webhooks can only go to a public internet address that the platform can look up.",
+  "error_unknown_event": "One of the chosen events is not one the platform sends. Refresh the page and choose again.",
+  "error_too_long": "The name or the address is too long. Shorten it and try again.",
   "events": {
     "shift_completed": {
       "label": "A volunteer completes a shift",

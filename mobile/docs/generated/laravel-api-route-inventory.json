@@ -4,9 +4,9 @@
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
   "total_registered_routes": 2796,
   "api_route_rows": 2761,
-  "distinct_api_paths": 2303,
+  "distinct_api_paths": 2304,
   "route_source_fingerprint": {
-    "digest": "5436ddd9c9bba1c37e5ebcf4a9becc2ac926693c4fd36d3c853fdc77ef6532e6",
+    "digest": "745e40b92e98d18d71efc48abc732a88efbbaf36326d9599ad5e0528869cbf24",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "085ddab14988a0ed8bf1a12f09f6cb9a11d206bab6c4661c55351b4a3b8b1565"
+        "sha256": "aa194e9eb82518edcd8dde860f7b9830d32d8aef2a9edcd22387f3cead52da87"
       },
       {
         "file": "routes/channels.php",
@@ -2041,6 +2041,26 @@
     "/api/v2/admin/insurance/{id}/verify": [
       "POST"
     ],
+    "/api/v2/admin/integrations/webhooks": [
+      "GET",
+      "POST"
+    ],
+    "/api/v2/admin/integrations/webhooks/events": [
+      "GET"
+    ],
+    "/api/v2/admin/integrations/webhooks/{id}": [
+      "DELETE",
+      "PUT"
+    ],
+    "/api/v2/admin/integrations/webhooks/{id}/logs": [
+      "GET"
+    ],
+    "/api/v2/admin/integrations/webhooks/{id}/rotate-secret": [
+      "POST"
+    ],
+    "/api/v2/admin/integrations/webhooks/{id}/test": [
+      "POST"
+    ],
     "/api/v2/admin/invite-codes": [
       "GET",
       "POST"
@@ -3474,10 +3494,6 @@
     "/api/v2/admin/volunteering/reminder-logs": [
       "GET"
     ],
-    "/api/v2/admin/volunteering/reminder-settings": [
-      "GET",
-      "PUT"
-    ],
     "/api/v2/admin/volunteering/send-shift-reminders": [
       "POST"
     ],
@@ -3492,20 +3508,6 @@
     ],
     "/api/v2/admin/volunteering/trends": [
       "GET"
-    ],
-    "/api/v2/admin/volunteering/webhooks": [
-      "GET",
-      "POST"
-    ],
-    "/api/v2/admin/volunteering/webhooks/{id}": [
-      "DELETE",
-      "PUT"
-    ],
-    "/api/v2/admin/volunteering/webhooks/{id}/logs": [
-      "GET"
-    ],
-    "/api/v2/admin/volunteering/webhooks/{id}/test": [
-      "POST"
     ],
     "/api/v2/admin/volunteering/wellbeing/alerts": [
       "GET"

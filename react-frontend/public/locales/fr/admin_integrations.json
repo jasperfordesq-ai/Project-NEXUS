@@ -32,6 +32,10 @@
   "events_help": "Seuls les événements que la plateforme envoie réellement sont listés.",
   "name_url_required": "Le nom et l'adresse sont obligatoires",
   "events_required": "Choisissez au moins un événement",
+  "error_url_invalid": "Saisissez une adresse web complète commençant par https://",
+  "error_url_not_allowed": "Cette adresse ne peut pas être utilisée. Les webhooks ne peuvent être envoyés qu’à une adresse Internet publique que la plateforme peut trouver.",
+  "error_unknown_event": "L’un des événements choisis n’est pas envoyé par la plateforme. Actualisez la page et choisissez à nouveau.",
+  "error_too_long": "Le nom ou l’adresse est trop long. Raccourcissez-le et réessayez.",
   "events": {
     "shift_completed": {
       "label": "Un bénévole termine un créneau",

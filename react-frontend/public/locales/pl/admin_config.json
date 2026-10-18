@@ -177,6 +177,7 @@
     "modal_onboarding_desc": "Wdrożenie modalne.",
     "modal_open_broker_page": "Modalna otwarta strona brokera",
     "modal_save_failed": "Zapisywanie modalne nie powiodło się",
+    "modal_value_out_of_range": "„{{setting}}” musi mieścić się w przedziale od {{min}} do {{max}}.",
     "modal_title": "Modalne",
     "modal_volunteering_load_failed": "Modalne ładowanie wolontariatu nie powiodło się",
     "modal_volunteering_saved": "Zapisano wolontariat modalny",
