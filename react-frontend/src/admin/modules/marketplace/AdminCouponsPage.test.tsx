@@ -40,11 +40,14 @@ const mockPausedCoupon = vi.hoisted(() => ({
 }));
 
 // ── mocks ────────────────────────────────────────────────────────────────────
+// Mutable so a test can switch the tenant currency (JPY has no minor unit).
+const mockTenant = vi.hoisted(() => ({ id: 2, name: 'Test Tenant', slug: 'test', currency: 'GBP' }));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
     useTenant: () => ({
-      tenant: { id: 2, name: 'Test Tenant', slug: 'test', currency: 'GBP' },
+      tenant: mockTenant,
       tenantPath: (path: string) => `/test${path}`,
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
@@ -75,7 +78,7 @@ import { api } from '@/lib/api';
 import AdminCouponsPage from './AdminCouponsPage';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-function mockSuccessfulLoad(items = [mockCoupon]) {
+function mockSuccessfulLoad(items: Array<Record<string, unknown>> = [mockCoupon]) {
   vi.mocked(api.get).mockResolvedValue({
     success: true,
     data: { items },
@@ -173,10 +176,27 @@ describe('AdminCouponsPage', () => {
   });
 
   it('formats fixed discounts in the tenant currency', async () => {
+    // discount_value is stored in the currency's minor unit (pence here), the
+    // same way MerchantCouponService::calculateDiscountMinor() reads it.
     mockSuccessfulLoad([{ ...mockCoupon, discount_type: 'fixed', discount_value: 500 }]);
     render(<AdminCouponsPage />);
 
     expect(await screen.findByText('£5.00')).toBeInTheDocument();
+  });
+
+  it('does not divide a fixed discount by 100 for a zero-decimal currency', async () => {
+    mockTenant.currency = 'JPY';
+    try {
+      mockSuccessfulLoad([{ ...mockCoupon, discount_type: 'fixed', discount_value: 500 }]);
+      render(<AdminCouponsPage />);
+
+      // 500 yen is 500 yen ("¥500" or "JP¥500" depending on the formatting
+      // locale); "¥5" would be the old /100 bug.
+      expect(await screen.findByText(/^(JP)?[¥￥]500$/)).toBeInTheDocument();
+      expect(screen.queryByText(/^(JP)?[¥￥]5$/)).not.toBeInTheDocument();
+    } finally {
+      mockTenant.currency = 'GBP';
+    }
   });
 
   it('calls POST /suspend endpoint when Suspend is confirmed', async () => {

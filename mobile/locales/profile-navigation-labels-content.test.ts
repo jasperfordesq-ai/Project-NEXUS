@@ -36,11 +36,10 @@ describe('mobile Irish profile navigation labels and photo states', () => {
       'menuLabels.activity', 'listings', 'marketplace', 'changePhoto',
       'permissionNeeded', 'permissionMessage', 'uploadFailed',
       'uploadFailedMessage', 'edit.uploadingPhoto', 'events', 'ideation',
-      'search', 'jobs', 'marketplaceSection', 'marketplaceBrowse',
-      'marketplaceSell', 'marketplaceMyListings', 'marketplaceOrders',
-      'marketplaceSales', 'marketplaceOffers', 'marketplaceSaved',
-      'marketplacePromotions', 'marketplaceSavedSearches', 'marketplaceTools',
-      'marketplacePayments', 'aiChat', 'volunteering', 'organisations', 'blog',
+      // Only "Browse" survives: the other marketplace shortcuts left the More
+      // menu in June 2026 (shortcut clutter) and their keys were deleted with them.
+      'search', 'jobs', 'marketplaceBrowse',
+      'aiChat', 'volunteering', 'organisations', 'blog',
       'skills', 'federation', 'myProfile', 'mySpace', 'discover', 'account',
       'actions',
     ];

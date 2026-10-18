@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Nie znaleziono ogłoszenia",
     "not_found_description": "To ogłoszenie mogło zostać usunięte lub jest niedostępne.",
-    "back_to_marketplace": "Powrót do marketplace",
-    "marketplace": "Rynek",
+    "back_to_marketplace": "Powrót do Rynku & Freecycle",
+    "marketplace": "Rynek & Freecycle",
     "negotiable": "Do negocjacji",
     "free": "Za darmo",
     "featured": "Wyróżnione",
@@ -143,7 +143,7 @@
     "pay_accepted": "Zapłać zaakceptowaną ofertę"
   },
   "create": {
-    "page_title": "Sprzedaj coś - Marketplace",
+    "page_title": "Sprzedaj coś - Rynek & Freecycle",
     "title": "Sprzedaj coś",
     "subtitle": "Utwórz nowe ogłoszenie na marketplace",
     "photos": "Zdjęcia",
@@ -166,7 +166,7 @@
     "size_limit_error": "{{name}} przekracza limit 10 MB",
     "details": "Szczegóły",
     "title_label": "Tytuł",
-    "title_placeholder": "Co sprzedajesz?",
+    "title_placeholder": "Co oferujesz?",
     "title_char_count": "{{count}}/120 znaków",
     "description_label": "Opis",
     "description_placeholder": "Opisz szczegółowo swój przedmiot...",
@@ -266,8 +266,8 @@
     "page_title": "Profil sprzedawcy",
     "not_found_title": "Nie znaleziono sprzedawcy",
     "not_found_description": "Nie można odnaleźć tego profilu sprzedawcy.",
-    "back_to_marketplace": "Powrót do marketplace",
-    "marketplace": "Rynek",
+    "back_to_marketplace": "Powrót do Rynku & Freecycle",
+    "marketplace": "Rynek & Freecycle",
     "verified": "Zweryfikowany",
     "seller_type_business": "Firma",
     "seller_type_private": "Sprzedawca prywatny",
@@ -294,8 +294,8 @@
   "category": {
     "not_found_title": "Nie znaleziono kategorii",
     "not_found_description": "Ta kategoria nie istnieje.",
-    "back_to_marketplace": "Powrót do marketplace",
-    "marketplace": "Rynek",
+    "back_to_marketplace": "Powrót do Rynku & Freecycle",
+    "marketplace": "Rynek & Freecycle",
     "listings_count_one": "{{count}} ogłoszenie",
     "listings_count_other": "{{count}} ogłoszeń",
     "search_placeholder": "Szukaj w {{name}}...",
@@ -427,7 +427,7 @@
     "start_selling": "Zacznij sprzedawać"
   },
   "edit": {
-    "page_title": "Edytuj ogłoszenie - Marketplace",
+    "page_title": "Edytuj ogłoszenie - Rynek & Freecycle",
     "title": "Edytuj ogłoszenie",
     "subtitle": "Zaktualizuj swoje ogłoszenie na marketplace",
     "not_found": "Nie znaleziono ogłoszenia",
@@ -441,7 +441,7 @@
     "action_edit": "Edytuj"
   },
   "my_listings": {
-    "page_title": "Moje ogłoszenia - Marketplace",
+    "page_title": "Moje ogłoszenia - Rynek & Freecycle",
     "title": "Moje ogłoszenia",
     "subtitle": "Zarządzaj swoimi ogłoszeniami na marketplace",
     "tab_active": "Aktywne",
@@ -477,7 +477,7 @@
     "views_count_aria_other": "{{count}} wyświetleń"
   },
   "my_offers": {
-    "page_title": "Moje oferty - Marketplace",
+    "page_title": "Moje oferty - Rynek & Freecycle",
     "title": "Moje oferty",
     "subtitle": "Śledź wysłane i otrzymane oferty",
     "tab_sent": "Wysłane",
@@ -699,7 +699,7 @@
     "error": "Nie udało się wygenerować odpowiedzi. Spróbuj ponownie."
   },
   "map": {
-    "page_title": "Wyszukiwanie na mapie - Marketplace",
+    "page_title": "Wyszukiwanie na mapie - Rynek & Freecycle",
     "meta_description": "Znajdź ogłoszenia marketplace w pobliżu na mapie.",
     "breadcrumb": "Wyszukiwanie na mapie",
     "search_placeholder": "Szukaj ogłoszeń w pobliżu...",
@@ -792,7 +792,7 @@
       "cancelled": "Anulowane"
     },
     "buyer": {
-      "page_title": "Moje zamówienia - Marketplace",
+      "page_title": "Moje zamówienia - Rynek & Freecycle",
       "title": "Moje zamówienia",
       "subtitle": "Śledź swoje zakupy na marketplace",
       "empty_title": "Brak zamówień",
@@ -809,7 +809,7 @@
       "dispute_open": "Otwarty spór"
     },
     "seller": {
-      "page_title": "Moja sprzedaż - Marketplace",
+      "page_title": "Moja sprzedaż - Rynek & Freecycle",
       "title": "Moja sprzedaż",
       "subtitle": "Zarządzaj zamówieniami ze swojej sprzedaży na marketplace",
       "buyer_label": "Kupujący:",
@@ -863,7 +863,7 @@
     "quantity_multiplier_other": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Wdrożenie sprzedawcy - Marketplace",
+    "page_title": "Wdrożenie sprzedawcy - Rynek & Freecycle",
     "title": "Konfiguracja płatności sprzedawcy",
     "subtitle": "Skonfiguruj Stripe Connect, aby otrzymywać płatności ze sprzedaży na marketplace.",
     "what_is_stripe_title": "Czym jest Stripe Connect?",

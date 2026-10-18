@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "القائمة غير موجودة",
     "not_found_description": "قد تكون هذه القائمة قد أُزيلت أو لم تعد متاحة.",
-    "back_to_marketplace": "العودة إلى السوق",
-    "marketplace": "السوق",
+    "back_to_marketplace": "العودة إلى السوق & Freecycle",
+    "marketplace": "السوق & Freecycle",
     "negotiable": "قابل للتفاوض",
     "free": "مجاناً",
     "featured": "مميز",
@@ -147,7 +147,7 @@
     "pay_accepted": "دفع العرض المقبول"
   },
   "create": {
-    "page_title": "بيع شيء ما - السوق",
+    "page_title": "بيع شيء ما - السوق & Freecycle",
     "title": "بيع شيء ما",
     "subtitle": "إنشاء قائمة جديدة في السوق",
     "photos": "الصور",
@@ -170,7 +170,7 @@
     "size_limit_error": "{{name}} يتجاوز حد 10 ميغابايت",
     "details": "التفاصيل",
     "title_label": "العنوان",
-    "title_placeholder": "ماذا تبيع؟",
+    "title_placeholder": "ماذا تعرض؟",
     "title_char_count": "{{count}}/120 حرف",
     "description_label": "الوصف",
     "description_placeholder": "صف منتجك بالتفصيل...",
@@ -276,8 +276,8 @@
     "page_title": "ملف البائع",
     "not_found_title": "لم يتم العثور على البائع",
     "not_found_description": "لم يتم العثور على هذا الملف الشخصي للبائع.",
-    "back_to_marketplace": "العودة إلى السوق",
-    "marketplace": "السوق",
+    "back_to_marketplace": "العودة إلى السوق & Freecycle",
+    "marketplace": "السوق & Freecycle",
     "verified": "موثق",
     "seller_type_business": "تجاري",
     "seller_type_private": "بائع خاص",
@@ -304,8 +304,8 @@
   "category": {
     "not_found_title": "الفئة غير موجودة",
     "not_found_description": "هذه الفئة غير موجودة.",
-    "back_to_marketplace": "العودة إلى السوق",
-    "marketplace": "السوق",
+    "back_to_marketplace": "العودة إلى السوق & Freecycle",
+    "marketplace": "السوق & Freecycle",
     "listings_count_one": "{{count}} قائمة",
     "listings_count_other": "{{count}} قوائم",
     "search_placeholder": "البحث في {{name}}...",
@@ -443,7 +443,7 @@
     "start_selling": "ابدأ البيع"
   },
   "edit": {
-    "page_title": "تعديل القائمة - السوق",
+    "page_title": "تعديل القائمة - السوق & Freecycle",
     "title": "تعديل القائمة",
     "subtitle": "قم بتحديث قائمة السوق الخاصة بك",
     "not_found": "لم يتم العثور على القائمة",
@@ -457,7 +457,7 @@
     "action_edit": "تعديل"
   },
   "my_listings": {
-    "page_title": "قوائمي - السوق",
+    "page_title": "قوائمي - السوق & Freecycle",
     "title": "قوائمي",
     "subtitle": "إدارة قوائم السوق الخاصة بك",
     "tab_active": "نشط",
@@ -495,7 +495,7 @@
     "views_count_aria_zero": "{{count}} مشاهدة"
   },
   "my_offers": {
-    "page_title": "عروضى - السوق",
+    "page_title": "عروضى - السوق & Freecycle",
     "title": "عروضى",
     "subtitle": "تتبع العروض التي أرسلتها وتلقيتها",
     "tab_sent": "المُرسَلة",
@@ -733,7 +733,7 @@
     "error": "فشل في توليد رد. يرجى المحاولة مرة أخرى."
   },
   "map": {
-    "page_title": "بحث الخريطة - السوق",
+    "page_title": "بحث الخريطة - السوق & Freecycle",
     "meta_description": "ابحث عن قوائم السوق القريبة منك على الخريطة.",
     "breadcrumb": "بحث الخريطة",
     "search_placeholder": "ابحث عن القوائم القريبة...",
@@ -828,7 +828,7 @@
       "cancelled": "ملغى"
     },
     "buyer": {
-      "page_title": "طلباتي - السوق",
+      "page_title": "طلباتي - السوق & Freecycle",
       "title": "طلباتي",
       "subtitle": "تتبع مشترياتك من السوق",
       "empty_title": "لا توجد طلبات حتى الآن",
@@ -845,7 +845,7 @@
       "dispute_open": "النزاع مفتوح"
     },
     "seller": {
-      "page_title": "مبيعاتي - السوق",
+      "page_title": "مبيعاتي - السوق & Freecycle",
       "title": "مبيعاتي",
       "subtitle": "إدارة الطلبات من مبيعات السوق الخاصة بك",
       "buyer_label": "المشتري:",
@@ -901,7 +901,7 @@
     "quantity_multiplier_zero": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "توجيه البائع - السوق",
+    "page_title": "توجيه البائع - السوق & Freecycle",
     "title": "إعداد دفع البائع",
     "subtitle": "قم بإعداد Stripe Connect لتلقي المدفوعات من مبيعات السوق.",
     "what_is_stripe_title": "ما هو Stripe Connect؟",

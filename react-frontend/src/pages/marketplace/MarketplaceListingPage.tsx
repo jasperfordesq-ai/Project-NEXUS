@@ -189,11 +189,17 @@ function buildProductSchema(
       '@type': 'Organization',
       'name': tenantName,
     },
-    'offers': {
+  };
+
+  // A borrow & lend listing is not for sale, so it carries no Offer at all: a
+  // zero-priced Offer would tell search engines the item can be had for nothing.
+  // Free (Freecycle) items genuinely can, so they keep an Offer at price 0.
+  if (listing.price_type !== 'lend') {
+    schema['offers'] = {
       '@type': 'Offer',
       'url': canonicalUrl,
       'priceCurrency': listing.price_currency,
-      'price': listing.price_type === 'free' || listing.price_type === 'lend' ? '0' : String(listing.price ?? 0),
+      'price': listing.price_type === 'free' ? '0' : String(listing.price ?? 0),
       'availability': AVAILABILITY_MAP[listing.status] ?? 'https://schema.org/InStock',
       'itemCondition': listing.condition
         ? (CONDITION_MAP[listing.condition] ?? 'https://schema.org/UsedCondition')
@@ -202,8 +208,8 @@ function buildProductSchema(
         '@type': 'Person',
         'name': listing.user?.name || '',
       },
-    },
-  };
+    };
+  }
 
   // Image URLs
   if (listing.images.length > 0) {

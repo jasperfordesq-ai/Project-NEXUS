@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "リスティングが見つかりません",
     "not_found_description": "このリスティングは削除されたか、利用できなくなった可能性があります。",
-    "back_to_marketplace": "マーケットプレイスに戻る",
-    "marketplace": "マーケットプレイス",
+    "back_to_marketplace": "マーケットプレイス & Freecycle に戻る",
+    "marketplace": "マーケットプレイス & Freecycle",
     "negotiable": "応相談",
     "free": "無料",
     "featured": "注目",
@@ -139,7 +139,7 @@
     "pay_accepted": "支払いが承認されたオファー"
   },
   "create": {
-    "page_title": "出品する - マーケットプレイス",
+    "page_title": "出品する - マーケットプレイス & Freecycle",
     "title": "出品する",
     "subtitle": "新しいマーケットプレイスのリスティングを作成",
     "photos": "写真",
@@ -162,7 +162,7 @@
     "size_limit_error": "{{name}} は 10MB の上限を超えています",
     "details": "詳細",
     "title_label": "タイトル",
-    "title_placeholder": "何を販売しますか?",
+    "title_placeholder": "何を出品しますか?",
     "title_char_count": "{{count}}/120 文字",
     "description_label": "説明",
     "description_placeholder": "アイテムの詳細を記入…",
@@ -256,8 +256,8 @@
     "page_title": "セラープロフィール",
     "not_found_title": "セラーが見つかりません",
     "not_found_description": "このセラープロフィールは見つかりませんでした。",
-    "back_to_marketplace": "マーケットプレイスに戻る",
-    "marketplace": "マーケットプレイス",
+    "back_to_marketplace": "マーケットプレイス & Freecycle に戻る",
+    "marketplace": "マーケットプレイス & Freecycle",
     "verified": "認証済み",
     "seller_type_business": "ビジネス",
     "seller_type_private": "個人セラー",
@@ -284,8 +284,8 @@
   "category": {
     "not_found_title": "カテゴリが見つかりません",
     "not_found_description": "このカテゴリは存在しません。",
-    "back_to_marketplace": "マーケットプレイスに戻る",
-    "marketplace": "マーケットプレイス",
+    "back_to_marketplace": "マーケットプレイス & Freecycle に戻る",
+    "marketplace": "マーケットプレイス & Freecycle",
     "listings_count_one": "{{count}} 件のリスティング",
     "listings_count_other": "{{count}} 件のリスティング",
     "search_placeholder": "{{name}} 内を検索…",
@@ -411,7 +411,7 @@
     "start_selling": "出品を始める"
   },
   "edit": {
-    "page_title": "リスティングを編集 - マーケットプレイス",
+    "page_title": "リスティングを編集 - マーケットプレイス & Freecycle",
     "title": "リスティングを編集",
     "subtitle": "マーケットプレイスのリスティングを更新",
     "not_found": "リスティングが見つかりません",
@@ -425,7 +425,7 @@
     "action_edit": "編集"
   },
   "my_listings": {
-    "page_title": "マイリスティング - マーケットプレイス",
+    "page_title": "マイリスティング - マーケットプレイス & Freecycle",
     "title": "マイリスティング",
     "subtitle": "マーケットプレイスのリスティングを管理",
     "tab_active": "有効",
@@ -459,7 +459,7 @@
     "views_count_aria_one": "{{count}} 回閲覧"
   },
   "my_offers": {
-    "page_title": "マイオファー - マーケットプレイス",
+    "page_title": "マイオファー - マーケットプレイス & Freecycle",
     "title": "マイオファー",
     "subtitle": "送信および受信したオファーを追跡",
     "tab_sent": "送信",
@@ -665,7 +665,7 @@
     "error": "返信の生成に失敗しました。もう一度お試しください。"
   },
   "map": {
-    "page_title": "マップ検索 - マーケットプレイス",
+    "page_title": "マップ検索 - マーケットプレイス & Freecycle",
     "meta_description": "近くのマーケットプレイスのリスティングをマップで探す。",
     "breadcrumb": "マップ検索",
     "search_placeholder": "近くのリスティングを検索…",
@@ -756,7 +756,7 @@
       "cancelled": "キャンセル"
     },
     "buyer": {
-      "page_title": "マイオーダー - マーケットプレイス",
+      "page_title": "マイオーダー - マーケットプレイス & Freecycle",
       "title": "マイオーダー",
       "subtitle": "マーケットプレイスでの購入を追跡",
       "empty_title": "まだ注文がありません",
@@ -773,7 +773,7 @@
       "dispute_open": "異議申立中"
     },
     "seller": {
-      "page_title": "マイセールス - マーケットプレイス",
+      "page_title": "マイセールス - マーケットプレイス & Freecycle",
       "title": "マイセールス",
       "subtitle": "マーケットプレイスの販売注文を管理",
       "buyer_label": "バイヤー:",
@@ -825,7 +825,7 @@
     "quantity_multiplier_one": "x{{count}}"
   },
   "onboarding": {
-    "page_title": "セラーオンボーディング - マーケットプレイス",
+    "page_title": "セラーオンボーディング - マーケットプレイス & Freecycle",
     "title": "セラーの支払い設定",
     "subtitle": "Stripe Connect を設定して、マーケットプレイスの売上を受け取りましょう。",
     "what_is_stripe_title": "Stripe Connect とは?",

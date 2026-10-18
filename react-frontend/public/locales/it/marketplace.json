@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Annuncio Non Trovato",
     "not_found_description": "Questo annuncio potrebbe essere stato rimosso o non è più disponibile.",
-    "back_to_marketplace": "Torna al Mercato",
-    "marketplace": "Mercato",
+    "back_to_marketplace": "Torna a Mercato & Freecycle",
+    "marketplace": "Mercato & Freecycle",
     "negotiable": "Trattabile",
     "free": "Gratis",
     "featured": "In evidenza",
@@ -141,7 +141,7 @@
     "pay_accepted": "Paga l'offerta accettata"
   },
   "create": {
-    "page_title": "Vendi qualcosa - Mercato",
+    "page_title": "Vendi qualcosa - Mercato & Freecycle",
     "title": "Vendi qualcosa",
     "subtitle": "Crea un nuovo annuncio nel mercato",
     "photos": "Foto",
@@ -164,7 +164,7 @@
     "size_limit_error": "{{name}} supera il limite di 10MB",
     "details": "Dettagli",
     "title_label": "Titolo",
-    "title_placeholder": "Cosa stai vendendo?",
+    "title_placeholder": "Cosa offri?",
     "title_char_count": "{{count}}/120 caratteri",
     "description_label": "Descrizione",
     "description_placeholder": "Descrivi il tuo articolo in dettaglio...",
@@ -261,8 +261,8 @@
     "page_title": "Profilo Venditore",
     "not_found_title": "Venditore Non Trovato",
     "not_found_description": "Questo profilo venditore non è stato trovato.",
-    "back_to_marketplace": "Torna al Mercato",
-    "marketplace": "Mercato",
+    "back_to_marketplace": "Torna a Mercato & Freecycle",
+    "marketplace": "Mercato & Freecycle",
     "verified": "Verificato",
     "seller_type_business": "Azienda",
     "seller_type_private": "Venditore Privato",
@@ -289,8 +289,8 @@
   "category": {
     "not_found_title": "Categoria Non Trovata",
     "not_found_description": "Questa categoria non esiste.",
-    "back_to_marketplace": "Torna al Mercato",
-    "marketplace": "Mercato",
+    "back_to_marketplace": "Torna a Mercato & Freecycle",
+    "marketplace": "Mercato & Freecycle",
     "listings_count_one": "{{count}} annuncio",
     "listings_count_other": "{{count}} annunci",
     "search_placeholder": "Cerca in {{name}}...",
@@ -419,7 +419,7 @@
     "start_selling": "Inizia a vendere"
   },
   "edit": {
-    "page_title": "Modifica annuncio - Marketplace",
+    "page_title": "Modifica annuncio - Mercato & Freecycle",
     "title": "Modifica annuncio",
     "subtitle": "Aggiorna il tuo annuncio nel marketplace",
     "not_found": "Annuncio non trovato",
@@ -433,7 +433,7 @@
     "action_edit": "Modifica"
   },
   "my_listings": {
-    "page_title": "I miei annunci - Marketplace",
+    "page_title": "I miei annunci - Mercato & Freecycle",
     "title": "I miei annunci",
     "subtitle": "Gestisci i tuoi annunci nel marketplace",
     "tab_active": "Attivi",
@@ -468,7 +468,7 @@
     "views_count_aria_other": "{{count}} visualizzazioni"
   },
   "my_offers": {
-    "page_title": "Le Mie Offerte - Marketplace",
+    "page_title": "Le Mie Offerte - Mercato & Freecycle",
     "title": "Le Mie Offerte",
     "subtitle": "Tieni traccia delle offerte che hai inviato e ricevuto",
     "tab_sent": "Inviate",
@@ -682,7 +682,7 @@
     "error": "Generazione di una risposta non riuscita. Per favore riprova."
   },
   "map": {
-    "page_title": "Ricerca Mappa - Mercato",
+    "page_title": "Ricerca Mappa - Mercato & Freecycle",
     "meta_description": "Trova annunci di mercato vicino a te sulla mappa.",
     "breadcrumb": "Ricerca Mappa",
     "search_placeholder": "Cerca annunci nelle vicinanze...",
@@ -774,7 +774,7 @@
       "cancelled": "Annullato"
     },
     "buyer": {
-      "page_title": "I miei ordini - Marketplace",
+      "page_title": "I miei ordini - Mercato & Freecycle",
       "title": "I miei ordini",
       "subtitle": "Traccia i tuoi acquisti nel marketplace",
       "empty_title": "Nessun ordine ancora",
@@ -791,7 +791,7 @@
       "dispute_open": "Controversia aperta"
     },
     "seller": {
-      "page_title": "Le mie vendite - Marketplace",
+      "page_title": "Le mie vendite - Mercato & Freecycle",
       "title": "Le mie vendite",
       "subtitle": "Gestisci gli ordini delle tue vendite nel marketplace",
       "buyer_label": "Acquirente:",
@@ -844,7 +844,7 @@
     "quantity_multiplier_other": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Onboarding Venditore - Marketplace",
+    "page_title": "Onboarding Venditore - Mercato & Freecycle",
     "title": "Impostazione Pagamento Venditore",
     "subtitle": "Configura Stripe Connect per ricevere pagamenti dalle vendite del marketplace.",
     "what_is_stripe_title": "Cos'è Stripe Connect?",

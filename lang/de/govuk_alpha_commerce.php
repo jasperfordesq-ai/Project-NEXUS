@@ -98,7 +98,7 @@ return [
         'price_type_label' => 'Wie hoch ist der Preis für diesen Artikel?',
         'price_type_fixed' => 'Festpreis',
         'price_type_negotiable' => 'Offen für Angebote',
-        'price_type_free' => 'Frei in ein gutes Zuhause',
+        'price_type_free' => 'Kostenlos abzugeben (in gute Hände)',
         'price_type_contact' => 'Kontaktieren Sie uns für den Preis',
         'price_type_lend' => 'Zum Verleihen (ausleihen und zurückgeben)',
         'loan_terms_label' => 'Leihbedingungen',

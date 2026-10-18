@@ -18,7 +18,7 @@ import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
-import { formatMarketplaceCurrency } from '@/lib/marketplaceNumbers';
+import { formatMarketplaceMinorAmount } from '@/lib/marketplaceNumbers';
 import { PageHeader } from '../../components/PageHeader';
 
 interface AdminCoupon {
@@ -107,7 +107,8 @@ export default function AdminCouponsPage() {
   const formatDiscount = (c: AdminCoupon): string => {
     if (c.discount_type === 'percent') return t('marketplace.coupons.discount_percent', { value: c.discount_value });
     if (c.discount_type === 'fixed') {
-      return formatMarketplaceCurrency(c.discount_value / 100, tenant?.currency || '');
+      // Stored in the currency's minor unit (see MerchantCouponService::calculateDiscountMinor).
+      return formatMarketplaceMinorAmount(c.discount_value, tenant?.currency || '');
     }
     return t('marketplace.coupons.discount_bogo');
   };

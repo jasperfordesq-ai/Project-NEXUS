@@ -104,6 +104,8 @@ function toSharedCategory(cat: ApiCategory): MarketplaceCategory {
 interface MarketplaceQueryFilters {
   q: string;
   categoryId?: number;
+  /** Listing type (`price_type`): fixed, negotiable, free or lend; empty for any. */
+  priceType?: string;
   limit: number;
   cursor?: string | null;
 }
@@ -114,11 +116,12 @@ interface MarketplaceQueryFilters {
  * drift from the query the visible grid actually ran.
  */
 function buildMarketplaceQueryParams(
-  { q, categoryId, limit, cursor }: MarketplaceQueryFilters,
+  { q, categoryId, priceType, limit, cursor }: MarketplaceQueryFilters,
 ): URLSearchParams {
   const params = new URLSearchParams();
   if (q) params.set('q', q);
   if (categoryId != null) params.set('category_id', String(categoryId));
+  if (priceType) params.set('price_type', priceType);
   params.set('limit', String(limit));
   if (cursor) params.set('cursor', cursor);
   return params;
@@ -166,6 +169,9 @@ export function MarketplacePage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(
     searchParams.get('category') ? Number(searchParams.get('category')) : undefined,
   );
+  // Listing type (`price_type`): for sale, negotiable, free (Freecycle) or borrow & lend.
+  // Phones reach it through the filter sheet; the search and category pages have the same choice.
+  const [priceType, setPriceType] = useState(searchParams.get('price_type') || '');
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listingRequestRef = useRef(0);
   const featureEnabled = hasFeature('marketplace');
@@ -235,6 +241,7 @@ export function MarketplacePage() {
       const params = buildMarketplaceQueryParams({
         q: debouncedQuery,
         categoryId: selectedCategoryId,
+        priceType,
         limit: ITEMS_PER_PAGE,
         cursor: append ? cursorRef.current : null,
       });
@@ -267,7 +274,7 @@ export function MarketplacePage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedQuery, selectedCategoryId, toast, t])
+  }, [debouncedQuery, selectedCategoryId, priceType, toast, t])
 
   // Refetch on filter change
   useEffect(() => {
@@ -275,27 +282,41 @@ export function MarketplacePage() {
     cursorRef.current = null;
     setHasMore(true);
     loadListings();
-  }, [debouncedQuery, selectedCategoryId, featureEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [debouncedQuery, selectedCategoryId, priceType, featureEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync URL params
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) params.set('q', debouncedQuery);
     if (selectedCategoryId != null) params.set('category', String(selectedCategoryId));
+    if (priceType) params.set('price_type', priceType);
     setSearchParams(params, { replace: true });
-  }, [debouncedQuery, selectedCategoryId, setSearchParams]);
+  }, [debouncedQuery, selectedCategoryId, priceType, setSearchParams]);
 
-  // Phone: the applied category as a removable chip under the sticky bar. The
-  // query is not a chip — it shows inside the search pill instead.
+  /** True while any filter other than the query narrows the grid. */
+  const hasFilter = selectedCategoryId != null || priceType !== '';
+
+  // Phone: the applied category and listing type as removable chips under the
+  // sticky bar. The query is not a chip — it shows inside the search pill instead.
   const phoneFilterChips = useMemo(() => {
-    if (selectedCategoryId == null) return [];
-    const category = categories.find((c) => c.id === selectedCategoryId);
-    return [{
-      key: 'category',
-      label: category?.name ?? t('filters.category'),
-      onRemove: () => setSelectedCategoryId(undefined),
-    }];
-  }, [selectedCategoryId, categories, t]);
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (selectedCategoryId != null) {
+      const category = categories.find((c) => c.id === selectedCategoryId);
+      chips.push({
+        key: 'category',
+        label: category?.name ?? t('filters.category'),
+        onRemove: () => setSelectedCategoryId(undefined),
+      });
+    }
+    if (priceType) {
+      chips.push({
+        key: 'price_type',
+        label: t(`price_type.${priceType}`),
+        onRemove: () => setPriceType(''),
+      });
+    }
+    return chips;
+  }, [selectedCategoryId, priceType, categories, t]);
 
   // Phone: the `hidden lg:block` sidebar's quick links, which phones and tablets
   // never get. Re-homed below the grid so hiding the hero costs no functionality.
@@ -530,7 +551,7 @@ export function MarketplacePage() {
           />
         )}
 
-        {/* Phone filter sheet — category chips, applied on tap (no draft, no footer). */}
+        {/* Phone filter sheet — category and listing-type chips, applied on tap (no draft, no footer). */}
         {isPhone && (
           <MarketplaceFilterSheet
             isOpen={isFilterSheetOpen}
@@ -538,6 +559,8 @@ export function MarketplacePage() {
             categories={categories}
             selectedCategoryId={selectedCategoryId}
             onSelectCategory={setSelectedCategoryId}
+            selectedPriceType={priceType}
+            onSelectPriceType={setPriceType}
           />
         )}
 
@@ -546,7 +569,7 @@ export function MarketplacePage() {
           {/* Listings grid */}
           <div className="flex-1 min-w-0">
             {/* Featured listings */}
-            {featuredListings.length > 0 && !debouncedQuery && selectedCategoryId == null && (
+            {featuredListings.length > 0 && !debouncedQuery && !hasFilter && (
               <div className="mb-8">
                 <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
                   <Star className="w-5 h-5 text-warning" aria-hidden="true" />
@@ -577,7 +600,7 @@ export function MarketplacePage() {
                 icon={<ShoppingBag className="w-8 h-8" aria-hidden="true" />}
                 title={t('hub.no_listings_title')}
                 description={
-                  debouncedQuery || selectedCategoryId != null
+                  debouncedQuery || hasFilter
                     ? t('hub.no_listings_filtered')
                     : t('hub.no_listings_empty')
                 }
@@ -591,7 +614,7 @@ export function MarketplacePage() {
               <>
                 <h2 className="text-lg font-semibold text-theme-primary mb-4 flex items-center gap-2">
                   <Grid3X3 className="w-5 h-5 text-muted" aria-hidden="true" />
-                  {debouncedQuery || selectedCategoryId != null ? t('hub.search_results') : t('hub.latest_listings')}
+                  {debouncedQuery || hasFilter ? t('hub.search_results') : t('hub.latest_listings')}
                 </h2>
                 <MarketplaceListingGrid
                   listings={listings}

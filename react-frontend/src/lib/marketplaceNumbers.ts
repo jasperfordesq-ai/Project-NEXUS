@@ -44,6 +44,39 @@ export function formatMarketplaceCurrency(
 }
 
 /**
+ * How many fraction digits a currency's major unit has (2 for EUR, 0 for JPY).
+ * Read from Intl so the answer matches what `formatMarketplaceCurrency` prints
+ * (the digit count is a property of the currency, not of the locale); an
+ * unknown code falls back to 2, the common case.
+ */
+export function marketplaceCurrencyFractionDigits(currency: string): number {
+  const normalizedCurrency = currency.trim().toUpperCase();
+  try {
+    const digits = new Intl.NumberFormat(getFormattingLocale(), {
+      style: 'currency',
+      currency: normalizedCurrency,
+    }).resolvedOptions().maximumFractionDigits;
+    return typeof digits === 'number' && Number.isFinite(digits) ? digits : 2;
+  } catch {
+    return 2;
+  }
+}
+
+/**
+ * Format an amount the API expresses in the currency's MINOR unit (cents,
+ * pence, yen). The backend stores a fixed coupon discount this way:
+ * `MerchantCouponService::calculateDiscountMinor()` compares `discount_value`
+ * directly with the order total in minor units, and the seller form labels the
+ * field "Fixed amount in cents". Dividing by 100 is only right for two-decimal
+ * currencies, so the divisor comes from the currency instead.
+ */
+export function formatMarketplaceMinorAmount(minorValue: number, currency: string): string {
+  const divisor = 10 ** marketplaceCurrencyFractionDigits(currency);
+  const amount = Number(minorValue);
+  return formatMarketplaceCurrency((Number.isFinite(amount) ? amount : 0) / divisor, currency);
+}
+
+/**
  * Laravel serialises decimal database columns as strings. Marketplace UI code
  * performs arithmetic on those values, so normalise them at the API boundary.
  */

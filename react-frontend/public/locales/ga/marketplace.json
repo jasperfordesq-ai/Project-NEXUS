@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Níor aimsíodh an liostú",
     "not_found_description": "Seans gur baineadh an liostú seo nó nach bhfuil sé ar fáil a thuilleadh.",
-    "back_to_marketplace": "Ar ais go dtí an margadh",
-    "marketplace": "Margadh",
+    "back_to_marketplace": "Ar ais go Margadh & Freecycle",
+    "marketplace": "Margadh & Freecycle",
     "negotiable": "Soshannta",
     "free": "Saor in aisce",
     "featured": "Roghnaithe",
@@ -145,7 +145,7 @@
     "pay_accepted": "Íoc as an tairiscint ar glacadh léi"
   },
   "create": {
-    "page_title": "Díol rud éigin - Margadh",
+    "page_title": "Díol rud éigin - Margadh & Freecycle",
     "title": "Díol rud éigin",
     "subtitle": "Cruthaigh liostú nua sa mhargadh",
     "photos": "Grianghraif",
@@ -168,7 +168,7 @@
     "size_limit_error": "Tá {{name}} níos mó ná an teorainn 10 MB",
     "details": "Sonraí",
     "title_label": "Teideal",
-    "title_placeholder": "Cad atá á dhíol agat?",
+    "title_placeholder": "Cad atá á thairiscint agat?",
     "title_char_count": "{{count}}/120 carachtar",
     "description_label": "Cur síos",
     "description_placeholder": "Déan cur síos mionsonraithe ar d'earra...",
@@ -271,8 +271,8 @@
     "page_title": "Próifíl an Díoltóra",
     "not_found_title": "Níor aimsíodh an díoltóir",
     "not_found_description": "Níorbh fhéidir próifíl an díoltóra seo a aimsiú.",
-    "back_to_marketplace": "Ar ais go dtí an margadh",
-    "marketplace": "Margadh",
+    "back_to_marketplace": "Ar ais go Margadh & Freecycle",
+    "marketplace": "Margadh & Freecycle",
     "verified": "Fíoraithe",
     "seller_type_business": "Gnó",
     "seller_type_private": "Díoltóir príobháideach",
@@ -299,8 +299,8 @@
   "category": {
     "not_found_title": "Níor aimsíodh an chatagóir",
     "not_found_description": "Níl an chatagóir seo ann.",
-    "back_to_marketplace": "Ar ais go dtí an margadh",
-    "marketplace": "Margadh",
+    "back_to_marketplace": "Ar ais go Margadh & Freecycle",
+    "marketplace": "Margadh & Freecycle",
     "listings_count_one": "{{count}} liostú",
     "listings_count_other": "{{count}} liostú",
     "search_placeholder": "Cuardaigh i {{name}}...",
@@ -435,7 +435,7 @@
     "start_selling": "Tosaigh ag díol"
   },
   "edit": {
-    "page_title": "Cuir liostú in eagar - Margadh",
+    "page_title": "Cuir liostú in eagar - Margadh & Freecycle",
     "title": "Cuir liostú in eagar",
     "subtitle": "Nuashonraigh do liostú sa mhargadh",
     "not_found": "Níor aimsíodh an liostú",
@@ -449,7 +449,7 @@
     "action_edit": "Cuir in eagar"
   },
   "my_listings": {
-    "page_title": "Mo chuid liostuithe - Margadh",
+    "page_title": "Mo chuid liostuithe - Margadh & Freecycle",
     "title": "Mo chuid liostuithe",
     "subtitle": "Bainistigh do liostuithe sa mhargadh",
     "tab_active": "Gníomhach",
@@ -486,7 +486,7 @@
     "views_count_aria_two": "{{count}} amharc"
   },
   "my_offers": {
-    "page_title": "Mo chuid tairiscintí - Margadh",
+    "page_title": "Mo chuid tairiscintí - Margadh & Freecycle",
     "title": "Mo chuid tairiscintí",
     "subtitle": "Coinnigh súil ar na tairiscintí a sheol tú agus a fuair tú",
     "tab_sent": "Seolta",
@@ -716,7 +716,7 @@
     "error": "Níorbh fhéidir freagra a ghiniúint. Bain triail eile as."
   },
   "map": {
-    "page_title": "Cuardach léarscáile - Margadh",
+    "page_title": "Cuardach léarscáile - Margadh & Freecycle",
     "meta_description": "Aimsigh liostuithe sa mhargadh atá in aice leat ar an léarscáil.",
     "breadcrumb": "Cuardach léarscáile",
     "search_placeholder": "Cuardaigh liostuithe in aice láimhe...",
@@ -810,7 +810,7 @@
       "cancelled": "Cealaithe"
     },
     "buyer": {
-      "page_title": "M’orduithe - Margadh",
+      "page_title": "M’orduithe - Margadh & Freecycle",
       "title": "M’orduithe",
       "subtitle": "Coinnigh súil ar do cheannacháin sa mhargadh",
       "empty_title": "Níl aon ordú agat fós",
@@ -827,7 +827,7 @@
       "dispute_open": "Aighneas oscailte"
     },
     "seller": {
-      "page_title": "Mo dhíolacháin - Margadh",
+      "page_title": "Mo dhíolacháin - Margadh & Freecycle",
       "title": "Mo dhíolacháin",
       "subtitle": "Bainistigh orduithe ó do dhíolacháin sa mhargadh",
       "buyer_label": "Ceannaitheoir:",
@@ -882,7 +882,7 @@
     "quantity_multiplier_two": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Socrú an díoltóra - Margadh",
+    "page_title": "Socrú an díoltóra - Margadh & Freecycle",
     "title": "Socrú íocaíochtaí an díoltóra",
     "subtitle": "Socraigh Stripe Connect chun íocaíochtaí a fháil ó dhíolacháin sa mhargadh.",
     "what_is_stripe_title": "Cad é Stripe Connect?",

@@ -434,9 +434,6 @@
     "src/admin/modules/legal/FadpAdminPage.test.tsx": {
       "TS2322": 1
     },
-    "src/admin/modules/marketplace/AdminCouponsPage.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/marketplace/MarketplaceCasesPage.test.tsx": {
       "TS2353": 3,
       "TS2550": 2
@@ -1875,7 +1872,7 @@
     }
   },
   "totals": {
-    "fileCount": 553,
-    "errorCount": 1672
+    "fileCount": 552,
+    "errorCount": 1671
   }
 }

@@ -99,7 +99,7 @@ return [
         'price_type_label' => 'Conas atá tú ag praghsáil an earra seo?',
         'price_type_fixed' => 'Praghas seasta',
         'price_type_negotiable' => 'Oscailte do thairiscintí',
-        'price_type_free' => 'Saor in aisce ar an teach maith',
+        'price_type_free' => 'Saor in aisce do theach maith',
         'price_type_contact' => 'Déan teagmháil le praghas',
         'price_type_lend' => 'Le tabhairt ar iasacht (faigh ar iasacht agus tabhair ar ais)',
         'loan_terms_label' => 'Téarmaí na hiasachta',

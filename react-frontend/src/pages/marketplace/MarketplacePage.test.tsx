@@ -376,5 +376,38 @@ describe('MarketplacePage', () => {
       });
       expect(screen.queryByText('Show results')).not.toBeInTheDocument();
     });
+
+    it('offers the same listing-type choice as the search page, applied on tap', async () => {
+      const { MarketplacePage } = await import('./MarketplacePage');
+      render(<MarketplacePage />);
+
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/marketplace\/listings\?/));
+      });
+      mockApi.get.mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      const group = await waitFor(() => screen.getByRole('radiogroup', { name: 'Listing type' }));
+      expect(within(group).getByRole('radio', { name: 'Any type' })).toHaveAttribute('aria-checked', 'true');
+      expect(within(group).getByRole('radio', { name: 'Fixed Price' })).toBeInTheDocument();
+      expect(within(group).getByRole('radio', { name: 'Negotiable' })).toBeInTheDocument();
+      expect(within(group).getByRole('radio', { name: 'Lend / borrow (item comes back)' })).toBeInTheDocument();
+
+      fireEvent.click(within(group).getByRole('radio', { name: 'Free' }));
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('price_type=free'));
+      });
+
+      // Applied type shows as a removable chip; removing it drops the param again.
+      const chip = await waitFor(() => screen.getByLabelText('Remove filter: Free'));
+      mockApi.get.mockClear();
+      fireEvent.click(chip);
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/marketplace\/listings\?/));
+      });
+      const calls = mockApi.get.mock.calls;
+      const lastCall = calls[calls.length - 1]?.[0] as string;
+      expect(lastCall).not.toContain('price_type=');
+    });
   });
 });

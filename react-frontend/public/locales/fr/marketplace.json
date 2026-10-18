@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Annonce non trouvée",
     "not_found_description": "Cette annonce a peut-être été supprimée ou n'est plus disponible.",
-    "back_to_marketplace": "Retour au marché",
-    "marketplace": "Marché",
+    "back_to_marketplace": "Retour à Marché & Freecycle",
+    "marketplace": "Marché & Freecycle",
     "negotiable": "Négociable",
     "free": "Gratuit",
     "featured": "En vedette",
@@ -141,7 +141,7 @@
     "pay_accepted": "Payer l'offre acceptée"
   },
   "create": {
-    "page_title": "Vendre quelque chose - Marché",
+    "page_title": "Vendre quelque chose - Marché & Freecycle",
     "title": "Vendre quelque chose",
     "subtitle": "Créer une nouvelle annonce sur le marché",
     "photos": "Photos",
@@ -164,7 +164,7 @@
     "size_limit_error": "{{name}} dépasse la limite de 10 Mo",
     "details": "Détails",
     "title_label": "Titre",
-    "title_placeholder": "Que vendez-vous ?",
+    "title_placeholder": "Que proposez-vous ?",
     "title_char_count": "{{count}}/120 caractères",
     "description_label": "Description",
     "description_placeholder": "Décrivez votre article en détail...",
@@ -261,8 +261,8 @@
     "page_title": "Profil du vendeur",
     "not_found_title": "Vendeur non trouvé",
     "not_found_description": "Ce profil de vendeur n'a pas pu être trouvé.",
-    "back_to_marketplace": "Retour au marché",
-    "marketplace": "Marché",
+    "back_to_marketplace": "Retour à Marché & Freecycle",
+    "marketplace": "Marché & Freecycle",
     "verified": "Vérifié",
     "seller_type_business": "Professionnel",
     "seller_type_private": "Vendeur privé",
@@ -289,8 +289,8 @@
   "category": {
     "not_found_title": "Catégorie non trouvée",
     "not_found_description": "Cette catégorie n'existe pas.",
-    "back_to_marketplace": "Retour au marché",
-    "marketplace": "Marché",
+    "back_to_marketplace": "Retour à Marché & Freecycle",
+    "marketplace": "Marché & Freecycle",
     "listings_count_one": "Annonce de {{count}}",
     "listings_count_other": "Annonces de {{count}}",
     "search_placeholder": "Rechercher dans {{name}}...",
@@ -419,7 +419,7 @@
     "start_selling": "Commencer à vendre"
   },
   "edit": {
-    "page_title": "Modifier l'annonce - Marché",
+    "page_title": "Modifier l'annonce - Marché & Freecycle",
     "title": "Modifier l'annonce",
     "subtitle": "Mettez à jour votre annonce sur le marché",
     "not_found": "Annonce non trouvée",
@@ -433,7 +433,7 @@
     "action_edit": "Modifier"
   },
   "my_listings": {
-    "page_title": "Mes annonces - Marché",
+    "page_title": "Mes annonces - Marché & Freecycle",
     "title": "Mes annonces",
     "subtitle": "Gérez vos annonces sur le marché",
     "tab_active": "Actives",
@@ -468,7 +468,7 @@
     "views_count_aria_other": "{{count}} vues"
   },
   "my_offers": {
-    "page_title": "Mes offres - Marché",
+    "page_title": "Mes offres - Marché & Freecycle",
     "title": "Mes offres",
     "subtitle": "Suivez les offres que vous avez envoyées et reçues",
     "tab_sent": "Envoyées",
@@ -682,7 +682,7 @@
     "error": "Échec de la génération d'une réponse. Veuillez réessayer."
   },
   "map": {
-    "page_title": "Recherche sur la carte - Marché",
+    "page_title": "Recherche sur la carte - Marché & Freecycle",
     "meta_description": "Trouvez des annonces de marché près de chez vous sur la carte.",
     "breadcrumb": "Recherche sur la carte",
     "search_placeholder": "Rechercher des annonces à proximité...",
@@ -774,7 +774,7 @@
       "cancelled": "Annulée"
     },
     "buyer": {
-      "page_title": "Mes commandes - Marché",
+      "page_title": "Mes commandes - Marché & Freecycle",
       "title": "Mes commandes",
       "subtitle": "Suivez vos achats sur le marché",
       "empty_title": "Pas encore de commandes",
@@ -791,7 +791,7 @@
       "dispute_open": "Litige ouvert"
     },
     "seller": {
-      "page_title": "Mes ventes - Marché",
+      "page_title": "Mes ventes - Marché & Freecycle",
       "title": "Mes ventes",
       "subtitle": "Gérez les commandes de vos ventes sur le marché",
       "buyer_label": "Acheteur :",
@@ -844,7 +844,7 @@
     "quantity_multiplier_other": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Intégration des vendeurs - Marché",
+    "page_title": "Intégration des vendeurs - Marché & Freecycle",
     "title": "Configuration du paiement des vendeurs",
     "subtitle": "Configurez Stripe Connect pour recevoir des paiements des ventes sur le marché.",
     "what_is_stripe_title": "Qu'est-ce que Stripe Connect ?",

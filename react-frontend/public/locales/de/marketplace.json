@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Inserat nicht gefunden",
     "not_found_description": "Dieses Inserat wurde möglicherweise entfernt oder ist nicht mehr verfügbar.",
-    "back_to_marketplace": "Zurück zum Marktplatz",
-    "marketplace": "Marktplatz",
+    "back_to_marketplace": "Zurück zu Marktplatz & Freecycle",
+    "marketplace": "Marktplatz & Freecycle",
     "negotiable": "Verhandelbar",
     "free": "Kostenlos",
     "featured": "Empfohlen",
@@ -139,7 +139,7 @@
     "pay_accepted": "Bezahlen Sie das angenommene Angebot"
   },
   "create": {
-    "page_title": "Etwas verkaufen – Marktplatz",
+    "page_title": "Etwas verkaufen – Marktplatz & Freecycle",
     "title": "Etwas verkaufen",
     "subtitle": "Ein neues Marktplatz-Inserat erstellen",
     "photos": "Fotos",
@@ -162,7 +162,7 @@
     "size_limit_error": "{{name}} überschreitet das Limit von 10 MB",
     "details": "Details",
     "title_label": "Titel",
-    "title_placeholder": "Was verkaufen Sie?",
+    "title_placeholder": "Was bieten Sie an?",
     "title_char_count": "{{count}}/120 Zeichen",
     "description_label": "Beschreibung",
     "description_placeholder": "Beschreiben Sie Ihren Artikel im Detail...",
@@ -256,8 +256,8 @@
     "page_title": "Verkäuferprofil",
     "not_found_title": "Verkäufer nicht gefunden",
     "not_found_description": "Dieses Verkäuferprofil konnte nicht gefunden werden.",
-    "back_to_marketplace": "Zurück zum Marktplatz",
-    "marketplace": "Marktplatz",
+    "back_to_marketplace": "Zurück zu Marktplatz & Freecycle",
+    "marketplace": "Marktplatz & Freecycle",
     "verified": "Verifiziert",
     "seller_type_business": "Gewerblich",
     "seller_type_private": "Privater Verkäufer",
@@ -284,8 +284,8 @@
   "category": {
     "not_found_title": "Kategorie nicht gefunden",
     "not_found_description": "Diese Kategorie existiert nicht.",
-    "back_to_marketplace": "Zurück zum Marktplatz",
-    "marketplace": "Marktplatz",
+    "back_to_marketplace": "Zurück zu Marktplatz & Freecycle",
+    "marketplace": "Marktplatz & Freecycle",
     "listings_count_one": "{{count}} Inserat",
     "listings_count_other": "{{count}} Inserate",
     "search_placeholder": "In {{name}} suchen...",
@@ -411,7 +411,7 @@
     "start_selling": "Verkauf starten"
   },
   "edit": {
-    "page_title": "Inserat bearbeiten – Marktplatz",
+    "page_title": "Inserat bearbeiten – Marktplatz & Freecycle",
     "title": "Inserat bearbeiten",
     "subtitle": "Aktualisieren Sie Ihr Marktplatz-Inserat",
     "not_found": "Inserat nicht gefunden",
@@ -425,7 +425,7 @@
     "action_edit": "Bearbeiten"
   },
   "my_listings": {
-    "page_title": "Meine Inserate – Marktplatz",
+    "page_title": "Meine Inserate – Marktplatz & Freecycle",
     "title": "Meine Inserate",
     "subtitle": "Verwalten Sie Ihre Marktplatz-Inserate",
     "tab_active": "Aktiv",
@@ -459,7 +459,7 @@
     "views_count_aria_other": "{{count}} Aufrufe"
   },
   "my_offers": {
-    "page_title": "Meine Angebote – Marktplatz",
+    "page_title": "Meine Angebote – Marktplatz & Freecycle",
     "title": "Meine Angebote",
     "subtitle": "Verfolgen Sie Angebote, die Sie gesendet und erhalten haben",
     "tab_sent": "Gesendet",
@@ -665,7 +665,7 @@
     "error": "Antwort konnte nicht generiert werden. Bitte versuchen Sie es erneut."
   },
   "map": {
-    "page_title": "Kartensuche – Marktplatz",
+    "page_title": "Kartensuche – Marktplatz & Freecycle",
     "meta_description": "Finden Sie Marktplatz-Inserate in Ihrer Nähe auf der Karte.",
     "breadcrumb": "Kartensuche",
     "search_placeholder": "Inserate in der Nähe suchen...",
@@ -756,7 +756,7 @@
       "cancelled": "Storniert"
     },
     "buyer": {
-      "page_title": "Meine Bestellungen – Marktplatz",
+      "page_title": "Meine Bestellungen – Marktplatz & Freecycle",
       "title": "Meine Bestellungen",
       "subtitle": "Verfolgen Sie Ihre Marktplatzkäufe",
       "empty_title": "Noch keine Bestellungen",
@@ -773,7 +773,7 @@
       "dispute_open": "Streitfall offen"
     },
     "seller": {
-      "page_title": "Meine Verkäufe – Marktplatz",
+      "page_title": "Meine Verkäufe – Marktplatz & Freecycle",
       "title": "Meine Verkäufe",
       "subtitle": "Bestellungen aus Ihren Marktplatzverkäufen verwalten",
       "buyer_label": "Käufer:",
@@ -825,7 +825,7 @@
     "quantity_multiplier_other": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Verkäufer-Onboarding – Marktplatz",
+    "page_title": "Verkäufer-Onboarding – Marktplatz & Freecycle",
     "title": "Einrichtung der Verkäuferzahlung",
     "subtitle": "Richten Sie Stripe Connect ein, um Zahlungen aus Marktplatzverkäufen zu erhalten.",
     "what_is_stripe_title": "Was ist Stripe Connect?",

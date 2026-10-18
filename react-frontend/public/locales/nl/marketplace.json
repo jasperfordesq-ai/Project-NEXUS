@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Lijst Niet Gevonden",
     "not_found_description": "Deze lijst kan zijn verwijderd of is niet langer beschikbaar.",
-    "back_to_marketplace": "Terug naar Marktplaats",
-    "marketplace": "Marktplaats",
+    "back_to_marketplace": "Terug naar Marktplaats & Freecycle",
+    "marketplace": "Marktplaats & Freecycle",
     "negotiable": "Onderhandelbaar",
     "free": "Gratis",
     "featured": "Uitgelicht",
@@ -139,7 +139,7 @@
     "pay_accepted": "Betaal geaccepteerd aanbod"
   },
   "create": {
-    "page_title": "Verkoop iets - Marktplaats",
+    "page_title": "Verkoop iets - Marktplaats & Freecycle",
     "title": "Verkoop iets",
     "subtitle": "Maak een nieuwe marktplaats aanbieding",
     "photos": "Foto's",
@@ -162,7 +162,7 @@
     "size_limit_error": "{{name}} overschrijdt de limiet van 10MB",
     "details": "Details",
     "title_label": "Titel",
-    "title_placeholder": "Wat verkoop je?",
+    "title_placeholder": "Wat bied je aan?",
     "title_char_count": "{{count}}/120 tekens",
     "description_label": "Beschrijving",
     "description_placeholder": "Beschrijf je item in detail...",
@@ -256,8 +256,8 @@
     "page_title": "Verkoper profiel",
     "not_found_title": "Verkoper niet gevonden",
     "not_found_description": "Dit verkopersprofiel kon niet worden gevonden.",
-    "back_to_marketplace": "Terug naar de marktplaats",
-    "marketplace": "Marktplaats",
+    "back_to_marketplace": "Terug naar Marktplaats & Freecycle",
+    "marketplace": "Marktplaats & Freecycle",
     "verified": "Geverifieerd",
     "seller_type_business": "Zakelijk",
     "seller_type_private": "Particuliere verkoper",
@@ -284,8 +284,8 @@
   "category": {
     "not_found_title": "Categorie Niet Gevonden",
     "not_found_description": "Deze categorie bestaat niet.",
-    "back_to_marketplace": "Terug naar Marktplaats",
-    "marketplace": "Marktplaats",
+    "back_to_marketplace": "Terug naar Marktplaats & Freecycle",
+    "marketplace": "Marktplaats & Freecycle",
     "listings_count_one": "{{count}} lijst",
     "listings_count_other": "{{count}} lijsten",
     "search_placeholder": "Zoeken in {{name}}...",
@@ -411,7 +411,7 @@
     "start_selling": "Begin met Verkopen"
   },
   "edit": {
-    "page_title": "Bewerk Lijst - Marketplace",
+    "page_title": "Bewerk Lijst - Marktplaats & Freecycle",
     "title": "Bewerk Lijst",
     "subtitle": "Werk je marktplaatsvermelding bij",
     "not_found": "Vermelding niet gevonden",
@@ -425,7 +425,7 @@
     "action_edit": "Bewerken"
   },
   "my_listings": {
-    "page_title": "Mijn Vermeldingen - Marketplace",
+    "page_title": "Mijn Vermeldingen - Marktplaats & Freecycle",
     "title": "Mijn Vermeldingen",
     "subtitle": "Beheer je marktplaatsvermeldingen",
     "tab_active": "Actief",
@@ -459,7 +459,7 @@
     "views_count_aria_other": "{{count}} weergaven"
   },
   "my_offers": {
-    "page_title": "Mijn Aanbiedingen - Marketplace",
+    "page_title": "Mijn Aanbiedingen - Marktplaats & Freecycle",
     "title": "Mijn Aanbiedingen",
     "subtitle": "Volg aanbiedingen die je hebt verzonden en ontvangen",
     "tab_sent": "Verzonden",
@@ -665,7 +665,7 @@
     "error": "Genereren van een antwoord mislukt. Probeer het opnieuw."
   },
   "map": {
-    "page_title": "Kaart Zoekopdracht - Marktplaats",
+    "page_title": "Kaart Zoekopdracht - Marktplaats & Freecycle",
     "meta_description": "Vind marktplaatsvermeldingen bij jou in de buurt op de kaart.",
     "breadcrumb": "Kaart Zoekopdracht",
     "search_placeholder": "Zoek naar vermeldingen in de buurt...",
@@ -756,7 +756,7 @@
       "cancelled": "Geannuleerd"
     },
     "buyer": {
-      "page_title": "Mijn Bestellingen - Marketplace",
+      "page_title": "Mijn Bestellingen - Marktplaats & Freecycle",
       "title": "Mijn Bestellingen",
       "subtitle": "Volg je aankopen op de marketplace",
       "empty_title": "Nog geen bestellingen",
@@ -773,7 +773,7 @@
       "dispute_open": "Geschil Open"
     },
     "seller": {
-      "page_title": "Mijn Verkopen - Marketplace",
+      "page_title": "Mijn Verkopen - Marktplaats & Freecycle",
       "title": "Mijn Verkopen",
       "subtitle": "Beheer bestellingen van je marketplace-verkopen",
       "buyer_label": "Koper:",
@@ -825,7 +825,7 @@
     "quantity_multiplier_other": "×{{count}}"
   },
   "onboarding": {
-    "page_title": "Verkoper Onboarding - Marketplace",
+    "page_title": "Verkoper Onboarding - Marktplaats & Freecycle",
     "title": "Instellen van Verkoper Betalingen",
     "subtitle": "Stel Stripe Connect in om betalingen te ontvangen van marketplace verkopen.",
     "what_is_stripe_title": "Wat is Stripe Connect?",

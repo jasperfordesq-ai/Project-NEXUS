@@ -530,6 +530,34 @@ describe('MarketplaceListingPage', () => {
       expect(href).not.toContain(encodeURIComponent('listing.message_template'));
     });
 
+    it('emits no Offer in the JSON-LD, because the item is not for sale', async () => {
+      setupMocks(LEND);
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => {
+        expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
+      });
+      const script = document.querySelector('script[type="application/ld+json"]');
+      const schema = JSON.parse(script?.textContent ?? '{}') as Record<string, unknown>;
+      expect(schema['@type']).toBe('Product');
+      expect(schema['name']).toBe('Cosy Armchair');
+      expect(schema).not.toHaveProperty('offers');
+    });
+
+    it('keeps the zero-priced Offer for a free (Freecycle) listing', async () => {
+      setupMocks({ price: null, price_type: 'free' });
+      const { MarketplaceListingPage } = await import('./MarketplaceListingPage');
+      render(<MarketplaceListingPage />);
+
+      await waitFor(() => {
+        expect(document.querySelector('script[type="application/ld+json"]')).toBeTruthy();
+      });
+      const script = document.querySelector('script[type="application/ld+json"]');
+      const schema = JSON.parse(script?.textContent ?? '{}') as { offers?: { price?: string } };
+      expect(schema.offers?.price).toBe('0');
+    });
+
     it('shows the lend chip instead of a price, and the loan terms block', async () => {
       setupMocks(LEND);
       const { MarketplaceListingPage } = await import('./MarketplaceListingPage');

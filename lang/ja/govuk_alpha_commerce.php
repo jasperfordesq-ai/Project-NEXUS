@@ -98,7 +98,7 @@ return [
         'price_type_label' => 'この商品の価格設定はどうなっていますか?',
         'price_type_fixed' => '固定価格',
         'price_type_negotiable' => 'オファーを受け入れます',
-        'price_type_free' => '良い家に自由に',
+        'price_type_free' => '無料で差し上げます',
         'price_type_contact' => '価格はお問い合わせください',
         'price_type_lend' => '貸し出し（借りて返す）',
         'loan_terms_label' => '貸し出しの条件',

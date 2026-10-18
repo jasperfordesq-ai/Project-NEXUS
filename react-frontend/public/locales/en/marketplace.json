@@ -43,8 +43,8 @@
   "listing": {
     "not_found_title": "Listing Not Found",
     "not_found_description": "This listing may have been removed or is no longer available.",
-    "back_to_marketplace": "Back to Marketplace",
-    "marketplace": "Marketplace",
+    "back_to_marketplace": "Back to Marketplace & Freecycle",
+    "marketplace": "Marketplace & Freecycle",
     "negotiable": "Negotiable",
     "free": "Free",
     "featured": "Featured",
@@ -139,7 +139,7 @@
     "pay_accepted": "Pay accepted offer"
   },
   "create": {
-    "page_title": "Sell Something - Marketplace",
+    "page_title": "Sell Something - Marketplace & Freecycle",
     "title": "Sell Something",
     "subtitle": "Create a new marketplace listing",
     "photos": "Photos",
@@ -162,7 +162,7 @@
     "size_limit_error": "{{name}} exceeds 10MB limit",
     "details": "Details",
     "title_label": "Title",
-    "title_placeholder": "What are you selling?",
+    "title_placeholder": "What are you offering?",
     "title_char_count": "{{count}}/120 characters",
     "description_label": "Description",
     "description_placeholder": "Describe your item in detail...",
@@ -256,8 +256,8 @@
     "page_title": "Seller Profile",
     "not_found_title": "Seller Not Found",
     "not_found_description": "This seller profile could not be found.",
-    "back_to_marketplace": "Back to Marketplace",
-    "marketplace": "Marketplace",
+    "back_to_marketplace": "Back to Marketplace & Freecycle",
+    "marketplace": "Marketplace & Freecycle",
     "verified": "Verified",
     "seller_type_business": "Business",
     "seller_type_private": "Private Seller",
@@ -284,8 +284,8 @@
   "category": {
     "not_found_title": "Category Not Found",
     "not_found_description": "This category does not exist.",
-    "back_to_marketplace": "Back to Marketplace",
-    "marketplace": "Marketplace",
+    "back_to_marketplace": "Back to Marketplace & Freecycle",
+    "marketplace": "Marketplace & Freecycle",
     "listings_count_one": "{{count}} listing",
     "listings_count_other": "{{count}} listings",
     "search_placeholder": "Search in {{name}}...",
@@ -411,7 +411,7 @@
     "start_selling": "Start Selling"
   },
   "edit": {
-    "page_title": "Edit Listing - Marketplace",
+    "page_title": "Edit Listing - Marketplace & Freecycle",
     "title": "Edit Listing",
     "subtitle": "Update your marketplace listing",
     "not_found": "Listing not found",
@@ -425,7 +425,7 @@
     "action_edit": "Edit"
   },
   "my_listings": {
-    "page_title": "My Listings - Marketplace",
+    "page_title": "My Listings - Marketplace & Freecycle",
     "title": "My Listings",
     "subtitle": "Manage your marketplace listings",
     "tab_active": "Active",
@@ -459,7 +459,7 @@
     "views_count_aria_other": "{{count}} views"
   },
   "my_offers": {
-    "page_title": "My Offers - Marketplace",
+    "page_title": "My Offers - Marketplace & Freecycle",
     "title": "My Offers",
     "subtitle": "Track offers you've sent and received",
     "tab_sent": "Sent",
@@ -665,7 +665,7 @@
     "error": "Failed to generate a reply. Please try again."
   },
   "map": {
-    "page_title": "Map Search - Marketplace",
+    "page_title": "Map Search - Marketplace & Freecycle",
     "meta_description": "Find marketplace listings near you on the map.",
     "breadcrumb": "Map Search",
     "search_placeholder": "Search nearby listings...",
@@ -756,7 +756,7 @@
       "cancelled": "Cancelled"
     },
     "buyer": {
-      "page_title": "My Orders - Marketplace",
+      "page_title": "My Orders - Marketplace & Freecycle",
       "title": "My Orders",
       "subtitle": "Track your marketplace purchases",
       "empty_title": "No Orders Yet",
@@ -773,7 +773,7 @@
       "dispute_open": "Dispute Open"
     },
     "seller": {
-      "page_title": "My Sales - Marketplace",
+      "page_title": "My Sales - Marketplace & Freecycle",
       "title": "My Sales",
       "subtitle": "Manage orders from your marketplace sales",
       "buyer_label": "Buyer:",
@@ -825,7 +825,7 @@
     "quantity_multiplier_other": "x{{count}}"
   },
   "onboarding": {
-    "page_title": "Seller Onboarding - Marketplace",
+    "page_title": "Seller Onboarding - Marketplace & Freecycle",
     "title": "Seller Payment Setup",
     "subtitle": "Set up Stripe Connect to receive payments from marketplace sales.",
     "what_is_stripe_title": "What is Stripe Connect?",
