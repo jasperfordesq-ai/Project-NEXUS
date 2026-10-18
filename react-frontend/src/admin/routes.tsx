@@ -473,6 +473,8 @@ export function AdminRoutes() {
           super admin, both flags (owner decision 2026-10-18); moved here from
           /admin/volunteering/config. The API enforces the same rule. */}
       <Route element={<GodPlatformRoute />}>
+        {/* The "Integrations" breadcrumb links here; webhooks is its only page. */}
+        <Route path="integrations" element={<Navigate to="webhooks" replace />} />
         <Route path="integrations/webhooks" element={<Lazy><OutboundWebhooks /></Lazy>} />
       </Route>
       <Route element={<SuperAdminRoute />}>

@@ -60,7 +60,9 @@ vi.mock('../modules/volunteering/OpportunitiesHub', () => ({ default: () => <Out
 vi.mock('../modules/volunteering/RecordsHub', () => ({ default: () => <Outlet /> }));
 vi.mock('../modules/volunteering/FundraisingHub', () => ({ default: () => <Outlet /> }));
 vi.mock('../modules/AdminNotFound', () => ({ default: () => <div>Admin Not Found</div> }));
+vi.mock('../modules/integrations/OutboundWebhooks', () => ({ default: () => <div>Outbound webhooks page</div> }));
 
+import { useAuth } from '@/contexts';
 import { AdminRoutes } from '../routes';
 
 function LocationProbe() {
@@ -117,5 +119,24 @@ describe('guessed volunteering admin addresses', () => {
 
     expect(await screen.findByText('Incident page')).toBeInTheDocument();
     expect(screen.getByLabelText('path')).toHaveTextContent('/test/admin/volunteering/safeguarding/42');
+  });
+});
+
+describe('the Integrations breadcrumb', () => {
+  // Found on the e2e walk of 2026-10-18: the "Integrations" crumb above the
+  // Outbound webhooks page linked to /admin/integrations, which had no route.
+  it('/admin/integrations lands on Outbound webhooks for a god platform admin', async () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 1, role: 'super_admin', is_admin: true, is_super_admin: true, is_god: true },
+      isAuthenticated: true,
+      isLoading: false,
+      status: 'authenticated',
+    } as unknown as ReturnType<typeof useAuth>);
+
+    renderAt('/test/admin/integrations');
+
+    expect(await screen.findByText('Outbound webhooks page')).toBeInTheDocument();
+    expect(screen.getByLabelText('path')).toHaveTextContent('/test/admin/integrations/webhooks');
+    expect(screen.queryByText('Admin Not Found')).not.toBeInTheDocument();
   });
 });
