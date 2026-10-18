@@ -175,7 +175,6 @@ const VolunteerIncidentCaseRoute = lazy(() => import('./modules/volunteering/inc
 const VolunteerHoursAudit = lazy(() => import('./modules/volunteering/VolunteerHoursAudit'));
 const VolunteerGivingDays = lazy(() => import('./modules/volunteering/VolunteerGivingDays'));
 const VolunteerProjects = lazy(() => import('./modules/volunteering/VolunteerProjects'));
-const VolunteerConfig = lazy(() => import('./modules/volunteering/VolunteerConfig'));
 const DonationRefunds = lazy(() => import('./modules/volunteering/DonationRefunds'));
 // Hubs (2026-10-18): one sidebar entry each, former pages as tabs with their own addresses.
 const OpportunitiesHub = lazy(() => import('./modules/volunteering/OpportunitiesHub'));
@@ -627,7 +626,7 @@ export function AdminRoutes() {
       <Route path="volunteering/safeguarding/:id" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerIncidentCaseRoute /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/hours" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerHoursAudit /></Lazy></FeatureGatedElement>} />
       <Route path="volunteering/projects" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerProjects /></Lazy></FeatureGatedElement>} />
-      <Route path="volunteering/config" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerConfig /></Lazy></FeatureGatedElement>} />
+      <Route path="volunteering/config" element={<VolunteeringSettingsRedirect />} />
       {/* Three hubs (2026-10-18): one sidebar entry each, the former pages as
           tabs at their own addresses so breadcrumbs, bookmarks and sidebar
           search still work. Swap requests and Group bookings are tabs only

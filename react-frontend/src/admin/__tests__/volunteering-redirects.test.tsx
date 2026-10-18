@@ -48,7 +48,6 @@ vi.mock('../modules/volunteering/VolunteerOrganizations', () => ({ default: () =
 vi.mock('../modules/volunteering/VolunteerSafeguarding', () => ({ default: () => <div>Safeguarding page</div> }));
 vi.mock('../modules/volunteering/incidents/VolunteerIncidentCase', () => ({ default: () => <div>Incident page</div> }));
 vi.mock('../modules/volunteering/VolunteerGivingDays', () => ({ default: () => <div>Giving days page</div> }));
-vi.mock('../modules/volunteering/VolunteerConfig', () => ({ default: () => <div>Config page</div> }));
 vi.mock('../modules/volunteering/VolunteerTraining', () => ({ default: () => <div>Training page</div> }));
 vi.mock('../modules/volunteering/VolunteerQualifications', () => ({ default: () => <div>Qualifications page</div> }));
 vi.mock('../modules/volunteering/VolunteerCertificates', () => ({ default: () => <div>Certificates page</div> }));
@@ -101,8 +100,10 @@ describe('guessed volunteering admin addresses', () => {
     ['giving-days', '/test/admin/volunteering/fundraising/campaigns', 'Giving days page'],
     ['fundraising', '/test/admin/volunteering/fundraising/campaigns', 'Giving days page'],
     ['donations', '/test/admin/volunteering/fundraising/donations', 'Donations page'],
-    // Every volunteering setting is in the Module Configuration window now.
+    // Every volunteering setting is in the Module Configuration window now;
+    // the settings page itself is gone (2026-10-18).
     ['settings', '/test/admin/module-configuration?configure=volunteering', 'Module configuration page'],
+    ['config', '/test/admin/module-configuration?configure=volunteering', 'Module configuration page'],
   ])('/admin/volunteering/%s lands on the real page', async (guess, target, page) => {
     renderAt(`/test/admin/volunteering/${guess}`);
 

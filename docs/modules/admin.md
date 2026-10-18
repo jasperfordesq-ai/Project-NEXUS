@@ -33,7 +33,7 @@ The React admin SPA lives at `/{tenantSlug}/admin` and is rendered by `AdminApp.
 
 `SuperAdminRoute` uses `isPlatformSuperAdminUser(user)`: it allows `role=super_admin`, `role=god`, `is_super_admin=true`, or `is_god=true`, and deliberately rejects `is_tenant_super_admin=true`. The admin sidebar uses the same predicate before showing the platform panel link. These client checks are defence-in-depth only; every sensitive endpoint is independently enforced server-side.
 
-Feature-gated admin sections redirect to `/admin/not-found` when the tenant feature is off, using `FeatureGatedElement` inside `routes.tsx`. The complete set of gated features is `volunteering` (13 routes), `member_premium` (2), `caring_community` (1), `podcasts` (1), and `newsletter` (one layout wrapper around `<Outlet />` at `routes.tsx:408-430` that gates 17 child routes). Federation and the partner API are not gated this way because they no longer exist in the admin panel at all.
+Feature-gated admin sections redirect to `/admin/not-found` when the tenant feature is off, using `FeatureGatedElement` inside `routes.tsx`. The complete set of gated features is `volunteering` (11 routes since 2026-10-18, three of them hubs whose tabs are nested routes), `member_premium` (2), `caring_community` (1), `podcasts` (1), and `newsletter` (one layout wrapper around `<Outlet />` at `routes.tsx:408-430` that gates 17 child routes). Federation and the partner API are not gated this way because they no longer exist in the admin panel at all.
 
 ---
 
