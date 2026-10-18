@@ -174,6 +174,62 @@ final class AdminOutboundWebhooksControllerTest extends TestCase
         $this->assertSame('WEBHOOK_URL_NOT_ALLOWED', $error['code'] ?? null);
     }
 
+    /**
+     * Found in production on 18 Oct 2026: tenant 2's seeded webhook points at an
+     * internal Docker address and subscribes to twelve retired events. The edit
+     * form sends every field back, so switching it off was refused by the
+     * address and event checks, and the admin could not switch it off at all.
+     */
+    private function legacyWebhook(bool $active = true): int
+    {
+        $id = (int) $this->apiPost(self::BASE, $this->input())->assertStatus(201)->json('data.id');
+        DB::table('outbound_webhooks')->where('id', $id)->update([
+            'url' => 'http://172.17.0.1:5080/api/webhooks/volunteering',
+            'events' => json_encode(['volunteer.applied', 'shift.completed', 'hours.logged']),
+            'is_active' => $active ? 1 : 0,
+        ]);
+
+        return $id;
+    }
+
+    public function test_a_legacy_webhook_can_be_switched_off_with_its_old_fields_sent_back(): void
+    {
+        $this->actAsGodPlatformAdmin();
+        $id = $this->legacyWebhook();
+
+        $this->apiPut(self::BASE . '/' . $id, [
+            'name' => 'CRM',
+            'url' => 'http://172.17.0.1:5080/api/webhooks/volunteering',
+            'events' => ['volunteer.applied', 'shift.completed', 'hours.logged'],
+            'is_active' => false,
+        ])->assertOk();
+
+        $this->assertSame(0, (int) DB::table('outbound_webhooks')->where('id', $id)->value('is_active'));
+    }
+
+    public function test_a_legacy_webhook_cannot_be_switched_back_on_until_its_address_is_fixed(): void
+    {
+        $this->actAsGodPlatformAdmin();
+        $id = $this->legacyWebhook(active: false);
+
+        $error = $this->apiPut(self::BASE . '/' . $id, [
+            'url' => 'http://172.17.0.1:5080/api/webhooks/volunteering',
+            'is_active' => true,
+        ])->assertStatus(422)->json('errors.0');
+
+        $this->assertSame('WEBHOOK_URL_NOT_ALLOWED', $error['code'] ?? null);
+        $this->assertSame(0, (int) DB::table('outbound_webhooks')->where('id', $id)->value('is_active'));
+    }
+
+    public function test_a_switched_off_webhook_still_cannot_be_given_a_new_internal_address(): void
+    {
+        $this->actAsGodPlatformAdmin();
+        $id = $this->legacyWebhook(active: false);
+
+        $this->apiPut(self::BASE . '/' . $id, ['url' => 'http://10.0.0.9/hook', 'is_active' => false])->assertStatus(422);
+        $this->assertSame('http://172.17.0.1:5080/api/webhooks/volunteering', DB::table('outbound_webhooks')->where('id', $id)->value('url'));
+    }
+
     // -------------------------------------------------------------- the secret
 
     public function test_the_secret_is_shown_once_on_create_and_never_in_the_list(): void

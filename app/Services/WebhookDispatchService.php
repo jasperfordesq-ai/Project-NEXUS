@@ -342,6 +342,30 @@ class WebhookDispatchService
     {
         $tenantId ??= TenantContext::getId();
 
+        // Switching a webhook off must always work, even when it was saved
+        // before today's rules (an internal address, retired events): the edit
+        // form sends every field back unchanged. So an unchanged address or
+        // event list is only re-checked when the webhook will be active
+        // afterwards; a change to either is always checked.
+        $stored = DB::table('outbound_webhooks')->where('id', $id)->where('tenant_id', $tenantId)->first(['url', 'events', 'is_active']);
+        $willBeActive = array_key_exists('is_active', $data)
+            ? filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN)
+            : (bool) ($stored->is_active ?? true);
+        if ($stored !== null && !$willBeActive) {
+            if (isset($data['url']) && $data['url'] === $stored->url) {
+                unset($data['url']);
+            }
+            if (isset($data['events']) && is_array($data['events'])) {
+                $storedEvents = json_decode((string) $stored->events, true) ?: [];
+                $sent = array_values($data['events']);
+                sort($sent);
+                sort($storedEvents);
+                if ($sent === $storedEvents) {
+                    unset($data['events']);
+                }
+            }
+        }
+
         // Validate URL if provided
         if (isset($data['url'])) {
             if (!filter_var($data['url'], FILTER_VALIDATE_URL)) {
