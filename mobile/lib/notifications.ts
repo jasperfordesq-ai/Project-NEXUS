@@ -469,7 +469,11 @@ export async function scheduleDevMessagePush(senderId: string = '1'): Promise<vo
  */
 export async function dismissThreadNotifications(otherUserId: string): Promise<void> {
   const threadId = `message:${otherUserId}`;
-  const linkPattern = new RegExp(`^(?:https://app\.project-nexus\.ie)?/messages/${otherUserId}(?:[?#].*)?$`);
+  // Every shape the server's link sanitiser lets through: optional trusted host, optional
+  // community-slug segment, then /messages/<id>, then an optional query or fragment.
+  const linkPattern = new RegExp(
+    String.raw`^(?:https://app\.project-nexus\.ie)?(?:/[a-z0-9-]+)?/messages/${otherUserId}(?:[?#].*)?$`,
+  );
   try {
     const presented = await Notifications.getPresentedNotificationsAsync();
     await Promise.all(presented.map(async (notification) => {

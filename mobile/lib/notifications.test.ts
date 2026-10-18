@@ -645,11 +645,17 @@ describe('dismissThreadNotifications', () => {
       // A push from a server that does not send thread_id yet still names the sender in the link.
       presented('c', { type: 'new_message', link: '/messages/674' }),
       presented('d', { type: 'event_reminder', link: '/events/674' }),
+      // Shapes the server's link sanitiser lets through: a community-slug prefix, the
+      // trusted host, a query string. (Review finding, 2026-10-18.)
+      presented('e', { type: 'new_message', link: '/hour-timebank/messages/674' }),
+      presented('f', { type: 'new_message', link: 'https://app.project-nexus.ie/hour-timebank/messages/674?context_type=listing' }),
+      presented('g', { type: 'new_message', link: '/messages/6740' }),
+      presented('h', { type: 'new_message', link: 'https://evil.example/messages/674' }),
     ]);
 
     await dismissThreadNotifications('674');
 
-    expect(mockDismissNotificationAsync.mock.calls.map((c) => c[0]).sort()).toEqual(['a', 'c']);
+    expect(mockDismissNotificationAsync.mock.calls.map((c) => c[0]).sort()).toEqual(['a', 'c', 'e', 'f']);
   });
 
   it('never throws when the tray cannot be read', async () => {
