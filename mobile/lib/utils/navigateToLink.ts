@@ -18,14 +18,21 @@ import i18n from 'i18next';
  * Android App Links and iOS Universal Links. Keeping one route contract prevents push taps
  * from lagging behind newer native modules while cold-start App Links continue to work.
  */
-export function navigateToLink(link: string | null): void {
-  if (!link) return;
+/**
+ * What the call did. The root navigator holds its "default to Home" rule back only
+ * after `'navigated'`: the render that follows a push still reports the previous
+ * pathname, and acting on it replaced the screen the link had just opened.
+ */
+export type NavigateToLinkResult = 'navigated' | 'external' | 'ignored';
+
+export function navigateToLink(link: string | null): NavigateToLinkResult {
+  if (!link) return 'ignored';
 
   if (isSafeExternalBrowserLink(link)) {
     void Linking.openURL(link).catch((error) => {
       reportException(error, { tags: { module: 'push-external-cta' } });
     });
-    return;
+    return 'external';
   }
 
   const mappedHref = mapSystemPathToNativeRoute(link);
@@ -35,7 +42,7 @@ export function navigateToLink(link: string | null): void {
       { link: safeLinkSummary(link) },
       'deeplink-unhandled'
     );
-    return;
+    return 'ignored';
   }
   if (isNativeHrefDisabled(mappedHref)) {
     /*
@@ -49,7 +56,7 @@ export function navigateToLink(link: string | null): void {
       description: i18n.t('common:featureUnavailable.subtitle'),
       variant: 'warning',
     });
-    return;
+    return 'ignored';
   }
 
   const target = routerTarget(mappedHref);
@@ -58,6 +65,7 @@ export function navigateToLink(link: string | null): void {
   } else {
     router.push(target);
   }
+  return 'navigated';
 }
 
 function routerTarget(mappedHref: string): Href {

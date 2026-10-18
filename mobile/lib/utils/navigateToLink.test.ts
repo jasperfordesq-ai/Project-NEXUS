@@ -367,3 +367,38 @@ describe('navigateToLink', () => {
     });
   });
 });
+
+/**
+ * The root navigator must know whether a link really opened a screen: only then may it
+ * hold off its "default to Home" rule for the stale-pathname render that follows. A link
+ * that opened the browser, or that no screen can show, must still fall through to Home.
+ */
+describe('navigateToLink reports what it did', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOpenURL.mockResolvedValue(undefined);
+    setNavigationTenantCapabilities(null);
+  });
+
+  it('returns navigated when an in-app screen was opened', () => {
+    expect(navigateToLink('/messages/7')).toBe('navigated');
+  });
+
+  it('returns external when the link opened the system browser', () => {
+    expect(navigateToLink('https://partner.example.org/book/42?campaign=nexus')).toBe('external');
+  });
+
+  it('returns ignored for a link no screen can show', () => {
+    expect(navigateToLink('/route-that-does-not-exist/1')).toBe('ignored');
+  });
+
+  it('returns ignored when the community has the destination switched off', () => {
+    setNavigationTenantCapabilities({ features: {}, modules: {} });
+    expect(navigateToLink('/events/44')).toBe('ignored');
+    sessionNoticeStore.consume();
+  });
+
+  it('returns ignored for an empty link', () => {
+    expect(navigateToLink(null)).toBe('ignored');
+  });
+});

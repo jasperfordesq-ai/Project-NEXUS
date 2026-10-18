@@ -300,3 +300,68 @@ describe('signed-out-only links', () => {
     expect(decision).toEqual({ action: 'replace', href: '/(tabs)/home' });
   });
 });
+
+/**
+ * 🔴 The render after a deep link is followed still reports the OLD pathname: expo-router
+ * updates `usePathname()` from React Navigation's post-commit `onStateChange`, one render
+ * behind the state itself. The root navigator therefore re-ran this decision with the queue
+ * cleared and `pathname === '/'`, and rule four replaced the conversation a push had just
+ * opened with Home. Reported by the owner on Android (cold starts), 2026-10-18.
+ */
+describe('after a navigation has already been issued from the current pathname', () => {
+  const signedIn = {
+    isLoading: false,
+    isAuthenticated: true,
+    onboardingCompleted: true,
+    hasSelectedTenant: true,
+    pendingDeepLink: null,
+  };
+
+  it('does not replace a just-pushed deep-link screen with Home while the pathname is still stale', () => {
+    expect(decideAuthRedirect({ ...signedIn, pathname: '/', pendingDeepLink: '/messages/7' })).toEqual({
+      action: 'deep-link',
+      url: '/messages/7',
+    });
+
+    expect(decideAuthRedirect({ ...signedIn, pathname: '/', navigationIssuedForPathname: '/' })).toEqual({
+      action: 'none',
+      reason: 'navigation already issued for this pathname',
+    });
+  });
+
+  it('goes home again once the pathname has moved on', () => {
+    expect(decideAuthRedirect({ ...signedIn, pathname: '/login', navigationIssuedForPathname: '/' })).toEqual({
+      action: 'replace',
+      href: '/(tabs)/home',
+    });
+  });
+
+  it('still follows a new deep link queued at the same pathname', () => {
+    expect(decideAuthRedirect({
+      ...signedIn,
+      pathname: '/',
+      pendingDeepLink: '/wallet',
+      navigationIssuedForPathname: '/',
+    })).toEqual({ action: 'deep-link', url: '/wallet' });
+  });
+
+  it('still sends an incomplete member to onboarding', () => {
+    expect(decideAuthRedirect({
+      ...signedIn,
+      onboardingCompleted: false,
+      pathname: '/',
+      navigationIssuedForPathname: '/',
+    })).toEqual({ action: 'replace', href: '/(modals)/onboarding' });
+  });
+
+  it('still sends a signed-out member to login from a route a push just opened', () => {
+    expect(decideAuthRedirect({
+      isLoading: false,
+      isAuthenticated: false,
+      hasSelectedTenant: true,
+      pathname: '/messages',
+      pendingDeepLink: null,
+      navigationIssuedForPathname: '/messages',
+    })).toEqual({ action: 'replace', href: '/(auth)/login' });
+  });
+});

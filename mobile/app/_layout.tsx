@@ -35,11 +35,8 @@ import SessionRestoreGate from '@/components/SessionRestoreGate';
 import UpdateReadyHost from '@/components/ui/UpdateReadyHost';
 import UpdateRequiredGate from '@/components/UpdateRequiredGate';
 import { navigateToLink } from '@/lib/utils/navigateToLink';
-import {
-  decideAuthRedirect,
-  isSignedOutOnlyLink,
-  isTenantSelectionPath,
-} from '@/lib/navigation/authRedirect';
+import { isSignedOutOnlyLink } from '@/lib/navigation/authRedirect';
+import { useAuthRedirectEffect } from '@/lib/navigation/useAuthRedirectEffect';
 import { pendingRecoveryLinkStore } from '@/lib/navigation/pendingRecoveryLinkStore';
 import { createTenantMismatchHandler } from '@/lib/navigation/tenantMismatch';
 import { communityRepairStore } from '@/lib/tenancy/communityRepairStore';
@@ -481,50 +478,27 @@ function RootNavigator() {
     }
   }, [isLoading, isTenantLoading, pathname]);
 
-  useEffect(() => {
-    const decision = decideAuthRedirect({
-      isLoading: isLoading || isTenantLoading,
-      isAuthenticated,
-      onboardingCompleted: user?.onboarding_completed,
-      hasSelectedTenant,
-      pathname,
-      pendingDeepLink,
-    });
-
-    // Recovery links are deliberately ignored for an authenticated member. Clear the
-    // first-run handoff too, otherwise it could be replayed much later if that member
-    // signs out and opens the community picker.
-    if (isAuthenticated && pendingDeepLink && isSignedOutOnlyLink(pendingDeepLink)) {
-      pendingRecoveryLinkStore.clear();
-      setPendingDeepLink(null);
-      return;
-    }
-
-    // The picker finishes fresh-install setup and then consumes this link itself.
-    // Leaving the root navigator idle here avoids a second navigation racing the
-    // tenant write and clearing the handoff before the picker can use it.
-    if (
-      decision.action === 'deep-link'
-      && isTenantSelectionPath(pathname)
-      && isSignedOutOnlyLink(decision.url)
-    ) {
-      return;
-    }
-
-    if (decision.action === 'deep-link') {
-      // Cleared before navigating so a re-render cannot follow the same link twice.
-      setPendingDeepLink(null);
-      // Paid-campaign tap analytics require auth. The response observer queues the
-      // campaign id, and this branch runs only after the auth gate has resolved.
-      void flushPendingPaidCampaignOpen();
-      navigateToLink(decision.url);
-      return;
-    }
-
-    if (decision.action === 'replace') {
-      router.replace(decision.href);
-    }
-  }, [isLoading, isTenantLoading, isAuthenticated, user?.onboarding_completed, hasSelectedTenant, pathname, pendingDeepLink]);
+  /*
+    🔴 The effect itself lives in lib/navigation/useAuthRedirectEffect.ts, where a sequence
+    of renders can be tested. On 2026-10-18 the owner reported that tapping a "new message"
+    push on Android opened Home: the render after the deep-link push still saw
+    `pathname === '/'` and the Home rule replaced the conversation. The hook remembers the
+    pathname it last navigated from until the pathname actually changes.
+  */
+  useAuthRedirectEffect({
+    isLoading: isLoading || isTenantLoading,
+    isAuthenticated,
+    onboardingCompleted: user?.onboarding_completed,
+    hasSelectedTenant,
+    pathname,
+    pendingDeepLink,
+    setPendingDeepLink,
+    navigate: navigateToLink,
+    replace: (href) => router.replace(href as Parameters<typeof router.replace>[0]),
+    // Paid-campaign tap analytics require auth. The response observer queues the
+    // campaign id, and this runs only after the auth gate has resolved.
+    onDeepLinkFollowed: () => { void flushPendingPaidCampaignOpen(); },
+  });
 
   // Shared options for regular modal screens: slide up from bottom, swipe-to-dismiss
   const modalOptions = {

@@ -71,6 +71,15 @@ export interface AuthRedirectInput {
   pathname: string;
   /** A link captured before auth resolved, if any. */
   pendingDeepLink: string | null;
+  /**
+   * The pathname the root navigator last ISSUED a navigation from, until the pathname
+   * actually changes. `usePathname()` lags one render behind React Navigation (expo-router
+   * updates it from a post-commit `onStateChange`), so the render after a deep-link push
+   * still reports the old pathname. Without this, rule four replaced the conversation a
+   * push had just opened with Home on every Android cold-start tap (owner report,
+   * 2026-10-18).
+   */
+  navigationIssuedForPathname?: string | null;
 }
 
 /**
@@ -109,6 +118,7 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
     hasSelectedTenant,
     pathname,
     pendingDeepLink,
+    navigationIssuedForPathname = null,
   } = input;
 
   if (isLoading) {
@@ -133,6 +143,11 @@ export function decideAuthRedirect(input: AuthRedirectInput): AuthRedirect {
 
     const onSignedOutScreen = isPublicAuthPath(pathname) && !isTenantSelectionPath(pathname);
     if (pathname === '/' || onSignedOutScreen) {
+      // A navigation already left this screen; the pathname just has not caught up.
+      // Replacing again here is what put a push tap on Home instead of its screen.
+      if (navigationIssuedForPathname === pathname) {
+        return { action: 'none', reason: 'navigation already issued for this pathname' };
+      }
       return { action: 'replace', href: '/(tabs)/home' };
     }
 
