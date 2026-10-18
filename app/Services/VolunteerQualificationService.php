@@ -38,8 +38,6 @@ class VolunteerQualificationService
     /** Member tab link (tab key stays `credentials` so old links keep working). */
     public const MEMBER_LINK = '/volunteering?tab=credentials';
 
-    public const DEFAULT_REMINDER_WINDOW_DAYS = 30;
-
     public const NOTIFICATION_TYPE = 'qualification_expiry';
 
     /** @var list<string> */
@@ -212,33 +210,28 @@ class VolunteerQualificationService
     // =====================================================================
 
     /**
-     * The tenant's "credential expiry" reminder setting, reused for the
-     * register so the existing admin toggle keeps working. Default window 30
-     * days for this feature. Push/SMS flags are deliberately not read: those
-     * channels are not implemented.
+     * The tenant's "credential expiry" reminder setting
+     * (`volunteering.reminder_credential_expiry_*`), shared with the
+     * safeguarding-training expiry sweep's sibling keys. Email is the only
+     * channel, so "enabled" is the whole story.
      *
-     * @return array{enabled: bool, email_enabled: bool, days: int}
+     * @return array{enabled: bool, days: int}
      */
     public function reminderSetting(int $tenantId): array
     {
-        $row = DB::table('vol_reminder_settings')
-            ->where('tenant_id', $tenantId)
-            ->where('reminder_type', 'credential_expiry')
-            ->first(['enabled', 'email_enabled', 'days_before_expiry']);
-
-        if ($row === null) {
-            return ['enabled' => true, 'email_enabled' => true, 'days' => self::DEFAULT_REMINDER_WINDOW_DAYS];
-        }
-
-        $days = (int) ($row->days_before_expiry ?? 0);
-        if ($days < 1) {
-            $days = self::DEFAULT_REMINDER_WINDOW_DAYS;
-        }
+        $enabled = (bool) VolunteeringConfigurationService::getForTenant(
+            $tenantId,
+            VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED
+        );
+        $days = (int) VolunteeringConfigurationService::getForTenant(
+            $tenantId,
+            VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE
+        );
+        [$min, $max] = VolunteeringConfigurationService::RANGES[VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE];
 
         return [
-            'enabled' => (bool) $row->enabled,
-            'email_enabled' => (bool) $row->email_enabled,
-            'days' => min($days, 365),
+            'enabled' => $enabled,
+            'days' => max($min, min($days, $max)),
         ];
     }
 
@@ -1176,25 +1169,25 @@ class VolunteerQualificationService
 
             foreach ($groups['expired'] as $row) {
                 if (! $dryRun) {
-                    $emailSent = $volunteerActive && $this->notifyVolunteer($tenantId, $volunteer, $row, 'expired', $setting['email_enabled']);
+                    $emailSent = $volunteerActive && $this->notifyVolunteer($tenantId, $volunteer, $row, 'expired');
                     DB::table('vol_qualifications')
                         ->where('tenant_id', $tenantId)
                         ->where('id', (int) $row->id)
                         ->update(['expired_notice_sent_at' => now(), 'updated_at' => now()]);
                     $this->appendEvent($tenantId, (int) $row->id, null, 'expired_notice_sent', null, [
-                        'email' => $this->emailOutcome($setting['email_enabled'], $volunteer, $emailSent),
+                        'email' => $this->emailOutcome($volunteer, $emailSent),
                     ]);
                 }
             }
             foreach ($groups['expiring'] as $row) {
                 if (! $dryRun) {
-                    $emailSent = $volunteerActive && $this->notifyVolunteer($tenantId, $volunteer, $row, 'expiring', $setting['email_enabled']);
+                    $emailSent = $volunteerActive && $this->notifyVolunteer($tenantId, $volunteer, $row, 'expiring');
                     DB::table('vol_qualifications')
                         ->where('tenant_id', $tenantId)
                         ->where('id', (int) $row->id)
                         ->update(['expiry_reminder_sent_at' => now(), 'updated_at' => now()]);
                     $this->appendEvent($tenantId, (int) $row->id, null, 'reminder_sent', null, [
-                        'email' => $this->emailOutcome($setting['email_enabled'], $volunteer, $emailSent),
+                        'email' => $this->emailOutcome($volunteer, $emailSent),
                         'days_until_expiry' => (int) $today->diffInDays(CarbonImmutable::parse($this->dateString($row->expires_at) ?? $today->toDateString()), false),
                     ]);
                 }
@@ -1227,18 +1220,15 @@ class VolunteerQualificationService
                 if ($dryRun) {
                     continue;
                 }
-                $this->notifyOrganizationConfirmer($tenantId, $confirmer, $org, $groups, $setting['email_enabled']);
+                $this->notifyOrganizationConfirmer($tenantId, $confirmer, $org, $groups);
             }
         }
 
         return $result;
     }
 
-    private function emailOutcome(bool $emailEnabled, object $recipient, bool $sent): string
+    private function emailOutcome(object $recipient, bool $sent): string
     {
-        if (! $emailEnabled) {
-            return 'disabled';
-        }
         if (! is_string($recipient->email ?? null) || $recipient->email === '') {
             return 'no_address';
         }
@@ -1252,10 +1242,10 @@ class VolunteerQualificationService
      * @param 'expiring'|'expired' $kind
      * @return bool whether an email was accepted for delivery
      */
-    private function notifyVolunteer(int $tenantId, object $volunteer, object $row, string $kind, bool $emailEnabled): bool
+    private function notifyVolunteer(int $tenantId, object $volunteer, object $row, string $kind): bool
     {
         $sent = false;
-        LocaleContext::withLocale($volunteer, function () use ($tenantId, $volunteer, $row, $kind, $emailEnabled, &$sent): void {
+        LocaleContext::withLocale($volunteer, function () use ($tenantId, $volunteer, $row, $kind, &$sent): void {
             $typeLabel = $this->typeLabel($row);
             $date = $this->humanDate($this->dateString($row->expires_at));
             $params = ['type' => $typeLabel, 'date' => $date];
@@ -1277,7 +1267,7 @@ class VolunteerQualificationService
                 ]);
             }
 
-            if (! $emailEnabled || ! is_string($volunteer->email ?? null) || $volunteer->email === '') {
+            if (! is_string($volunteer->email ?? null) || $volunteer->email === '') {
                 return;
             }
 
@@ -1313,14 +1303,14 @@ class VolunteerQualificationService
     /**
      * @param array{expired: list<array{row: object, volunteer: object}>, expiring: list<array{row: object, volunteer: object}>} $groups
      */
-    private function notifyOrganizationConfirmer(int $tenantId, object $confirmer, object $org, array $groups, bool $emailEnabled): void
+    private function notifyOrganizationConfirmer(int $tenantId, object $confirmer, object $org, array $groups): void
     {
         $orgId = (int) $org->id;
         $orgName = (string) $org->name;
         $link = '/volunteering/org/' . $orgId . '/dashboard?tab=qualifications';
         $number = count($groups['expired']) + count($groups['expiring']);
 
-        LocaleContext::withLocale($confirmer, function () use ($tenantId, $confirmer, $orgName, $link, $number, $groups, $emailEnabled): void {
+        LocaleContext::withLocale($confirmer, function () use ($tenantId, $confirmer, $orgName, $link, $number, $groups): void {
             try {
                 Notification::create([
                     'tenant_id' => $tenantId,
@@ -1338,7 +1328,7 @@ class VolunteerQualificationService
                 ]);
             }
 
-            if (! $emailEnabled || ! is_string($confirmer->email ?? null) || $confirmer->email === '') {
+            if (! is_string($confirmer->email ?? null) || $confirmer->email === '') {
                 return;
             }
 

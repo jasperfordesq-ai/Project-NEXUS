@@ -21,7 +21,7 @@ class ReminderScopingTest extends TestCase
 {
     use DatabaseTransactions;
 
-    public function test_pre_shift_reminder_settings_scan_is_scoped_to_the_target_tenant(): void
+    public function test_pre_shift_tenant_discovery_scan_is_scoped_to_the_target_tenant(): void
     {
         TenantContext::setById($this->testTenantId);
 
@@ -30,17 +30,25 @@ class ReminderScopingTest extends TestCase
         $log = DB::getQueryLog();
         DB::disableQueryLog();
 
-        $settingsScan = collect($log)->first(
-            fn ($q) => stripos($q['query'], 'vol_reminder_settings') !== false
-                && in_array('pre_shift', $q['bindings'], true)
+        // Since 2026-10-18 the settings are tenant configuration, so the sweep
+        // no longer reads the retired vol_reminder_settings table at all; it
+        // discovers tenants from their upcoming shifts.
+        $this->assertNull(
+            collect($log)->first(fn ($q) => stripos($q['query'], 'vol_reminder_settings') !== false),
+            'the sweep must not read the retired vol_reminder_settings table'
         );
 
-        $this->assertNotNull($settingsScan, 'the pre_shift settings scan should run');
-        $bindings = array_map(fn ($b) => is_numeric($b) ? (int) $b : $b, $settingsScan['bindings']);
+        $shiftScan = collect($log)->first(
+            fn ($q) => stripos($q['query'], 'vol_shifts') !== false
+                && stripos($q['query'], 'start_time') !== false
+        );
+
+        $this->assertNotNull($shiftScan, 'the upcoming-shift discovery scan should run');
+        $bindings = array_map(fn ($b) => is_numeric($b) ? (int) $b : $b, $shiftScan['bindings']);
         $this->assertContains(
             $this->testTenantId,
             $bindings,
-            'the pre_shift settings scan must be scoped to the target tenant, not read every tenant'
+            'the discovery scan must be scoped to the target tenant, not read every tenant'
         );
     }
 }

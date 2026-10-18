@@ -59,6 +59,32 @@ class VolunteeringConfigurationService
     public const CONFIG_MIN_HOURS_FOR_CERTIFICATE = 'volunteering.min_hours_for_certificate';
 
     // =========================================================================
+    // Reminders (email only)
+    // =========================================================================
+    //
+    // Moved here from the `vol_reminder_settings` table on 2026-10-18 so every
+    // volunteering setting is edited in one place (the admin Module
+    // Configuration window). Each reminder is an on/off switch plus one timing
+    // value. There is no separate email switch: email is the only channel the
+    // platform sends reminders on, so "on but email off" sent nothing and
+    // confused admins. The retired table is read by nothing; it stays one
+    // release so the other blue/green colour keeps working, then is dropped.
+    //
+    // 🔴 Sweeps run across every tenant in one process — read these with
+    // getForTenant($tenantId, …), never get(), inside a tenant loop.
+
+    public const CONFIG_REMINDER_PRE_SHIFT_ENABLED = 'volunteering.reminder_pre_shift_enabled';
+    public const CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE = 'volunteering.reminder_pre_shift_hours_before';
+    public const CONFIG_REMINDER_POST_SHIFT_FEEDBACK_ENABLED = 'volunteering.reminder_post_shift_feedback_enabled';
+    public const CONFIG_REMINDER_POST_SHIFT_FEEDBACK_HOURS_AFTER = 'volunteering.reminder_post_shift_feedback_hours_after';
+    public const CONFIG_REMINDER_LAPSED_VOLUNTEER_ENABLED = 'volunteering.reminder_lapsed_volunteer_enabled';
+    public const CONFIG_REMINDER_LAPSED_VOLUNTEER_DAYS_INACTIVE = 'volunteering.reminder_lapsed_volunteer_days_inactive';
+    public const CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED = 'volunteering.reminder_credential_expiry_enabled';
+    public const CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE = 'volunteering.reminder_credential_expiry_days_before';
+    public const CONFIG_REMINDER_TRAINING_EXPIRY_ENABLED = 'volunteering.reminder_training_expiry_enabled';
+    public const CONFIG_REMINDER_TRAINING_EXPIRY_DAYS_BEFORE = 'volunteering.reminder_training_expiry_days_before';
+
+    // =========================================================================
     // Expenses
     // =========================================================================
 
@@ -129,6 +155,19 @@ class VolunteeringConfigurationService
         // Hours & Verification
         self::CONFIG_HOURS_REQUIRE_VERIFICATION   => true,
         self::CONFIG_MIN_HOURS_FOR_CERTIFICATE    => 0,  // 0 = no minimum (legacy behaviour preserved)
+        // Reminders. The credential-expiry window is 30 days: the
+        // qualifications register always used 30 while the retired settings
+        // page advertised 14, so an admin saw one number and got another.
+        self::CONFIG_REMINDER_PRE_SHIFT_ENABLED               => true,
+        self::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE          => 24,
+        self::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_ENABLED     => true,
+        self::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_HOURS_AFTER => 2,
+        self::CONFIG_REMINDER_LAPSED_VOLUNTEER_ENABLED        => true,
+        self::CONFIG_REMINDER_LAPSED_VOLUNTEER_DAYS_INACTIVE  => 30,
+        self::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED       => true,
+        self::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE   => 30,
+        self::CONFIG_REMINDER_TRAINING_EXPIRY_ENABLED         => true,
+        self::CONFIG_REMINDER_TRAINING_EXPIRY_DAYS_BEFORE     => 14,
         // Expenses
         self::CONFIG_EXPENSES_ENABLED             => true,
         self::CONFIG_EXPENSE_REQUIRE_RECEIPT       => false,
@@ -140,6 +179,28 @@ class VolunteeringConfigurationService
         self::CONFIG_ENABLE_RECURRING_SHIFTS      => true,
         self::CONFIG_ENABLE_REVIEWS               => true,
         self::CONFIG_ENABLE_MATCHING              => true,
+    ];
+
+    /**
+     * Inclusive [min, max] for every numeric setting. The admin window shows
+     * these on its number boxes, but a browser does not stop a typed value, so
+     * AdminConfigController's bulk save refuses the whole request when any
+     * value is outside its range. Every integer in DEFAULTS has an entry
+     * (pinned by VolunteeringConfigurationServiceTest). The sweeps also use
+     * the maximum as their tenant-discovery window.
+     *
+     * @var array<string, array{0: int, 1: int}>
+     */
+    public const RANGES = [
+        self::CONFIG_CANCELLATION_DEADLINE_HOURS              => [0, 168],
+        self::CONFIG_MAX_HOURS_PER_SHIFT                      => [1, 24],
+        self::CONFIG_MIN_HOURS_FOR_CERTIFICATE                => [0, 100],
+        self::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE          => [1, 168],
+        self::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_HOURS_AFTER => [1, 168],
+        self::CONFIG_REMINDER_LAPSED_VOLUNTEER_DAYS_INACTIVE  => [1, 365],
+        self::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE   => [1, 90],
+        self::CONFIG_REMINDER_TRAINING_EXPIRY_DAYS_BEFORE     => [1, 90],
+        self::CONFIG_EXPENSE_MAX_AMOUNT                       => [1, 10000],
     ];
 
     /** Cache TTL in seconds (5 minutes). */
@@ -177,6 +238,41 @@ class VolunteeringConfigurationService
         }
 
         return self::DEFAULTS[$key] ?? null;
+    }
+
+    /**
+     * A named community's value without switching TenantContext — for the
+     * cron sweeps that loop over every tenant in one process. Stored value,
+     * else DEFAULTS; there is deliberately no caller default (see get()).
+     */
+    public static function getForTenant(int $tenantId, string $key): mixed
+    {
+        if ($key === self::CONFIG_GUARDIAN_CONSENT_REQUIRED) {
+            return false;
+        }
+
+        $allStored = self::getStoredValues($tenantId);
+
+        if (array_key_exists($key, $allStored)) {
+            return $allStored[$key];
+        }
+
+        return self::DEFAULTS[$key] ?? null;
+    }
+
+    /**
+     * Whether an integer value sits inside the key's RANGES entry. Keys with
+     * no range always pass.
+     */
+    public static function isWithinRange(string $key, int $value): bool
+    {
+        if (!isset(self::RANGES[$key])) {
+            return true;
+        }
+
+        [$min, $max] = self::RANGES[$key];
+
+        return $value >= $min && $value <= $max;
     }
 
     public static function set(string $key, mixed $value): void

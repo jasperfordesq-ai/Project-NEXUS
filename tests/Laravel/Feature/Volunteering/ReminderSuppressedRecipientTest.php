@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Volunteering;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\VolunteeringConfigurationService;
 use App\Services\VolunteerReminderService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -64,14 +65,8 @@ class ReminderSuppressedRecipientTest extends TestCase
             'status' => 'approved',
             'created_at' => now(),
         ]);
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $this->testTenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 1,
-            'hours_before' => 24,
-            'email_enabled' => 1,
-            'created_at' => now(),
-        ]);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED, true);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE, 24);
 
         VolunteerReminderService::sendReminders($this->testTenantId, $oppId);
 

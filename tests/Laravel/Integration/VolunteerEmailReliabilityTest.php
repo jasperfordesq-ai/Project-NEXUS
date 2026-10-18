@@ -14,12 +14,43 @@ use App\Services\EmailDispatchService;
 use App\Services\SafeguardingService;
 use App\Services\VolunteerReminderService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
 
 class VolunteerEmailReliabilityTest extends TestCase
 {
     use DatabaseTransactions;
+
+    /**
+     * Reminder settings live in the tenant's `volunteering.reminder_*`
+     * configuration (2026-10-18). Written straight to the table because these
+     * tests deliberately run with a DIFFERENT tenant in TenantContext.
+     */
+    private function seedReminder(int $tenantId, string $type, bool $enabled, ?string $timingKey = null, ?int $timing = null): void
+    {
+        $rows = [[
+            'tenant_id' => $tenantId,
+            'setting_key' => "volunteering.reminder_{$type}_enabled",
+            'setting_value' => $enabled ? 'true' : 'false',
+            'setting_type' => 'boolean',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]];
+        if ($timingKey !== null && $timing !== null) {
+            $rows[] = [
+                'tenant_id' => $tenantId,
+                'setting_key' => "volunteering.reminder_{$type}_{$timingKey}",
+                'setting_value' => (string) $timing,
+                'setting_type' => 'integer',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        DB::table('tenant_settings')->where('tenant_id', $tenantId)->where('setting_key', 'LIKE', "volunteering.reminder\\_{$type}\\_%")->delete();
+        DB::table('tenant_settings')->insert($rows);
+        Cache::forget("volunteering_config:{$tenantId}");
+    }
 
     public function test_shift_reminder_uses_explicit_tenant_context_and_restores_previous_context(): void
     {
@@ -31,17 +62,7 @@ class VolunteerEmailReliabilityTest extends TestCase
         ]);
         [, $opportunityId, $shiftId] = $this->createVolunteerShift($tenantId, (int) $volunteer->id);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 1,
-            'hours_before' => 24,
-            'email_enabled' => 1,
-            'push_enabled' => 1,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'pre_shift', true, 'hours_before', 24);
 
         $mailer = $this->fakeMailer();
         app()->instance(EmailDispatchService::class, $mailer);
@@ -68,26 +89,16 @@ class VolunteerEmailReliabilityTest extends TestCase
             ->count());
     }
 
-    public function test_pre_shift_cron_does_not_stamp_push_sent_without_email_delivery(): void
+    public function test_pre_shift_cron_sends_and_stamps_nothing_when_the_reminder_is_switched_off(): void
     {
         $tenantId = 999;
         $volunteer = User::factory()->forTenant($tenantId)->create([
-            'email' => 'vol-push-only-' . uniqid('', true) . '@example.test',
+            'email' => 'vol-switched-off-' . uniqid('', true) . '@example.test',
             'preferred_language' => 'en',
         ]);
         $this->createVolunteerShift($tenantId, (int) $volunteer->id);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 1,
-            'hours_before' => 24,
-            'email_enabled' => 0,
-            'push_enabled' => 1,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'pre_shift', false, 'hours_before', 24);
 
         $mailer = $this->fakeMailer();
         app()->instance(EmailDispatchService::class, $mailer);
@@ -113,17 +124,7 @@ class VolunteerEmailReliabilityTest extends TestCase
         ]);
         [, , $shiftId] = $this->createVolunteerShift($tenantId, (int) $volunteer->id);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 1,
-            'hours_before' => 24,
-            'email_enabled' => 1,
-            'push_enabled' => 0,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'pre_shift', true, 'hours_before', 24);
 
         app()->instance(EmailDispatchService::class, $this->fakeMailer(false));
 
@@ -178,17 +179,7 @@ class VolunteerEmailReliabilityTest extends TestCase
         ]);
         [, , $shiftId] = $this->createVolunteerShift($tenantId, (int) $volunteer->id);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 1,
-            'hours_before' => 24,
-            'email_enabled' => 1,
-            'push_enabled' => 0,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'pre_shift', true, 'hours_before', 24);
 
         DB::table('vol_reminder_delivery_claims')->insert([
             'tenant_id' => $tenantId,
@@ -239,17 +230,7 @@ class VolunteerEmailReliabilityTest extends TestCase
         ]);
         $this->createVolunteerShift($tenantId, (int) $volunteer->id, now()->subDays(45), now()->subDays(45)->addHours(2));
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'lapsed_volunteer',
-            'enabled' => 1,
-            'days_inactive' => 30,
-            'email_enabled' => 1,
-            'push_enabled' => 0,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'lapsed_volunteer', true, 'days_inactive', 30);
 
         $mailer = $this->fakeMailer();
         app()->instance(EmailDispatchService::class, $mailer);
@@ -295,17 +276,7 @@ class VolunteerEmailReliabilityTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'credential_expiry',
-            'enabled' => 1,
-            'days_before_expiry' => 14,
-            'email_enabled' => 1,
-            'push_enabled' => 0,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'credential_expiry', true, 'days_before', 14);
 
         $mailer = $this->fakeMailer();
         app()->instance(EmailDispatchService::class, $mailer);
@@ -346,17 +317,7 @@ class VolunteerEmailReliabilityTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $tenantId,
-            'reminder_type' => 'training_expiry',
-            'enabled' => 1,
-            'days_before_expiry' => 14,
-            'email_enabled' => 1,
-            'push_enabled' => 0,
-            'sms_enabled' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $this->seedReminder($tenantId, 'training_expiry', true, 'days_before', 14);
 
         $mailer = $this->fakeMailer();
         app()->instance(EmailDispatchService::class, $mailer);

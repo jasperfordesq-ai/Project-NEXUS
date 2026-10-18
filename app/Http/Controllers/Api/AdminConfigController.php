@@ -3289,7 +3289,12 @@ class AdminConfigController extends BaseApiController
             }
         }
 
-        $updated = [];
+        // Coerce every value first and refuse the whole request if any number
+        // is outside its range: the window's number boxes carry min/max, but
+        // a browser does not stop a typed value, and writing the good keys
+        // while skipping the bad one would leave the admin believing the
+        // whole form was saved.
+        $coerced = [];
         foreach ($settings as $key => $value) {
             if (!is_string($key) || !array_key_exists($key, VolunteeringConfigurationService::DEFAULTS)) {
                 continue;
@@ -3300,8 +3305,23 @@ class AdminConfigController extends BaseApiController
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             } elseif (is_int($defaultValue)) {
                 $value = (int) $value;
+                if (!VolunteeringConfigurationService::isWithinRange($key, $value)) {
+                    [$min, $max] = VolunteeringConfigurationService::RANGES[$key];
+
+                    return $this->respondWithError(
+                        'VALIDATION_ERROR',
+                        __('api.value_out_of_range', ['field' => $key, 'min' => $min, 'max' => $max]),
+                        $key,
+                        422
+                    );
+                }
             }
 
+            $coerced[$key] = $value;
+        }
+
+        $updated = [];
+        foreach ($coerced as $key => $value) {
             VolunteeringConfigurationService::set($key, $value);
             $updated[$key] = $value;
         }

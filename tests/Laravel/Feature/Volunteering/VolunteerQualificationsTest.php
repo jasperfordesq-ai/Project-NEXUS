@@ -10,6 +10,7 @@ namespace Tests\Laravel\Feature\Volunteering;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\VolunteeringConfigurationService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -121,20 +122,11 @@ class VolunteerQualificationsTest extends TestCase
         ], $overrides));
     }
 
-    private function setReminderSetting(bool $enabled, bool $emailEnabled, int $days = 30): void
+    private function setReminderSetting(bool $enabled, int $days = 30): void
     {
-        DB::table('vol_reminder_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'reminder_type' => 'credential_expiry'],
-            [
-                'enabled' => $enabled,
-                'email_enabled' => $emailEnabled,
-                'days_before_expiry' => $days,
-                'push_enabled' => 0,
-                'sms_enabled' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
+        TenantContext::setById($this->testTenantId);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED, $enabled);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE, $days);
     }
 
     private function events(int $qualificationId): array
@@ -624,7 +616,7 @@ class VolunteerQualificationsTest extends TestCase
 
     public function test_nightly_command_expires_reminds_once_stamps_and_tells_the_organisation(): void
     {
-        $this->setReminderSetting(true, true, 30);
+        $this->setReminderSetting(true, 30);
         $owner = $this->member(['email' => $this->unroutableEmail()]);
         $orgId = $this->createOrganisation($owner->id);
         $volunteer = $this->member(['email' => $this->unroutableEmail()]);
@@ -676,13 +668,13 @@ class VolunteerQualificationsTest extends TestCase
         $volunteer = $this->member(['email' => $this->unroutableEmail()]);
 
         // Window 7: a record 10 days out is not "soon".
-        $this->setReminderSetting(true, true, 7);
+        $this->setReminderSetting(true, 7);
         $tenDays = $this->recordQualification($volunteer->id, ['expires_at' => now()->addDays(10)->toDateString()]);
         $this->artisan('volunteering:qualification-expiry', ['--tenant' => $this->testTenantId])->assertSuccessful();
         $this->assertNull(DB::table('vol_qualifications')->where('id', $tenDays)->value('expiry_reminder_sent_at'));
 
         // Switched off: records still expire, but nobody is told and nothing is stamped.
-        $this->setReminderSetting(false, true, 30);
+        $this->setReminderSetting(false, 30);
         $past = $this->recordQualification($volunteer->id, ['expires_at' => now()->subDays(2)->toDateString()]);
         $this->artisan('volunteering:qualification-expiry', ['--tenant' => $this->testTenantId])
             ->expectsOutputToContain('reminders switched off')
@@ -692,19 +684,19 @@ class VolunteerQualificationsTest extends TestCase
         $this->assertNull(DB::table('vol_qualifications')->where('id', $tenDays)->value('expiry_reminder_sent_at'));
         $this->assertSame(0, DB::table('notifications')->where('tenant_id', $this->testTenantId)->where('user_id', $volunteer->id)->where('type', 'qualification_expiry')->count());
 
-        // Email off: the bell still goes, the email channel is recorded as disabled.
-        $this->setReminderSetting(true, false, 30);
+        // Switched back on with the default window: the bell goes and both
+        // records are stamped. (Email is the only channel, so there is no
+        // separate "email off" state any more.)
+        $this->setReminderSetting(true, 30);
         $this->artisan('volunteering:qualification-expiry', ['--tenant' => $this->testTenantId])->assertSuccessful();
         $this->assertNotNull(DB::table('vol_qualifications')->where('id', $tenDays)->value('expiry_reminder_sent_at'));
         $this->assertNotNull(DB::table('vol_qualifications')->where('id', $past)->value('expired_notice_sent_at'));
         $this->assertSame(2, DB::table('notifications')->where('tenant_id', $this->testTenantId)->where('user_id', $volunteer->id)->where('type', 'qualification_expiry')->count());
-        $reminder = DB::table('vol_qualification_events')->where('qualification_id', $tenDays)->where('event', 'reminder_sent')->first();
-        $this->assertSame('disabled', json_decode((string) $reminder->details, true)['email']);
     }
 
     public function test_nightly_command_dry_run_writes_nothing(): void
     {
-        $this->setReminderSetting(true, true, 30);
+        $this->setReminderSetting(true, 30);
         $volunteer = $this->member(['email' => $this->unroutableEmail()]);
         $past = $this->recordQualification($volunteer->id, ['expires_at' => now()->subDay()->toDateString()]);
         $soon = $this->recordQualification($volunteer->id, ['expires_at' => now()->addDays(3)->toDateString()]);

@@ -14,11 +14,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * VolunteerReminderService — manages reminder settings and sends shift/credential
- * reminders to volunteers.
+ * VolunteerReminderService — sends shift/credential reminders to volunteers.
  *
- * Backed by `vol_reminder_settings` and `vol_reminders_sent` tables.
- * All queries are tenant-scoped via TenantContext.
+ * Which reminders are on and their timing come from the tenant's
+ * `volunteering.reminder_*` configuration (VolunteeringConfigurationService,
+ * read with getForTenant() because the sweeps loop over every tenant in one
+ * process). Deliveries are recorded in `vol_reminders_sent`. Email is the only
+ * channel. The `vol_reminder_settings` table is retired (2026-10-18): no
+ * sweep reads it; only the legacy settings endpoints (getSettings /
+ * updateSetting, removed with the old admin page) still touch it.
  */
 class VolunteerReminderService
 {
@@ -256,20 +260,13 @@ class VolunteerReminderService
     {
         self::releaseStaleReminderDeliveryClaims();
 
-        // Get the pre_shift reminder setting for this tenant
-        // No saved row = the defaults (on, 24 hours, email), the same rule the
+        // No saved value = the defaults (on, 24 hours), the same rule the
         // nightly sendPreShiftReminders() applies. Only an explicit "off" stops it.
-        $setting = DB::table('vol_reminder_settings')
-            ->where('tenant_id', $tenantId)
-            ->where('reminder_type', 'pre_shift')
-            ->first();
-
-        if ($setting !== null && !(bool) $setting->enabled) {
+        if (!(bool) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED)) {
             return 0;
         }
-        $setting ??= (object) ['hours_before' => 24, 'email_enabled' => true];
 
-        $hoursBefore = (int) ($setting->hours_before ?? 24);
+        $hoursBefore = max(1, (int) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE));
 
         // Find shifts for this opportunity that start within the reminder window
         $shifts = DB::table('vol_shifts')
@@ -314,16 +311,9 @@ class VolunteerReminderService
                 // Record the reminder as sent
                 $claimedChannels = [];
                 try {
-                    // This service currently sends email only. Do not stamp
-                    // push/SMS rows as sent without provider delivery evidence.
-                    $channels = [];
-                    if ($setting->email_enabled ?? true) {
-                        $channels[] = 'email';
-                    }
-
-                    if (empty($channels)) {
-                        continue;
-                    }
+                    // Email is the only channel. Do not stamp push/SMS rows as
+                    // sent without provider delivery evidence.
+                    $channels = ['email'];
 
                     foreach ($channels as $channel) {
                         if (self::claimReminderDelivery($tenantId, (int) $userId, 'pre_shift', (int) $shift->id, $channel)) {
@@ -569,45 +559,28 @@ class VolunteerReminderService
 
         $totalSent = 0;
 
-        // Collect all distinct tenant IDs that have reminder settings enabled,
-        // plus any tenants that have upcoming shifts (fallback 24h window).
-        $tenantIds = DB::table('vol_reminder_settings')
-            ->where('reminder_type', 'pre_shift')
-            ->where('enabled', true)
-            ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
-            ->pluck('tenant_id')
-            ->unique()
-            ->all();
-
-        // Also include tenants that have shifts but no explicit setting (use 24h default).
-        $tenantsWithShifts = DB::table('vol_shifts')
+        // Discover tenants from their data: any shift starting inside the
+        // largest window an admin can set. The tenant's own window and on/off
+        // switch are then read from configuration — there is no settings row
+        // to discover from any more.
+        [, $maxHoursBefore] = VolunteeringConfigurationService::RANGES[VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE];
+        $allTenantIds = DB::table('vol_shifts')
             ->where('start_time', '>', now())
-            ->where('start_time', '<=', now()->addHours(24))
+            ->where('start_time', '<=', now()->addHours($maxHoursBefore))
             ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
+            ->distinct()
             ->pluck('tenant_id')
-            ->unique()
             ->all();
-
-        $allTenantIds = array_unique(array_merge($tenantIds, $tenantsWithShifts));
         $allTenantIds = self::restrictToTenant($allTenantIds, $onlyTenantId);
 
         foreach ($allTenantIds as $tenantId) {
             try {
-                // Get pre_shift reminder setting for this tenant (or use 24h default).
-                // Must NOT filter enabled=true here: a disabled setting would come
-                // back null and fall into the "no setting → send defaults" path.
-                $setting = DB::table('vol_reminder_settings')
-                    ->where('tenant_id', $tenantId)
-                    ->where('reminder_type', 'pre_shift')
-                    ->first();
-
-                // Skip tenant if setting explicitly disabled
-                if ($setting !== null && !(bool) $setting->enabled) {
+                $tenantId = (int) $tenantId;
+                if (!(bool) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED)) {
                     continue;
                 }
 
-                $hoursBefore  = (int) ($setting->hours_before ?? 24);
-                $emailEnabled = (bool) ($setting->email_enabled ?? true);
+                $hoursBefore = max(1, (int) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_HOURS_BEFORE));
 
                 // Find shifts within the reminder window for this tenant. Join
                 // the opportunity and require it to still be active — a cancelled
@@ -652,15 +625,9 @@ class VolunteerReminderService
 
                         $claimedChannels = [];
                         try {
-                            // This service currently sends email only. Do not stamp
-                            // push/SMS rows as sent without provider delivery evidence.
-                            $channels = [];
-                            if ($emailEnabled) {
-                                $channels[] = 'email';
-                            }
-                            if (empty($channels)) {
-                                continue;
-                            }
+                            // Email is the only channel. Do not stamp push/SMS rows
+                            // as sent without provider delivery evidence.
+                            $channels = ['email'];
 
                             foreach ($channels as $channel) {
                                 if (self::claimReminderDelivery((int) $tenantId, (int) $userId, 'pre_shift', (int) $shift->id, $channel)) {
@@ -673,7 +640,7 @@ class VolunteerReminderService
 
                             // Send email
                             $emailOk = true;
-                            if ($emailEnabled && in_array('email', $claimedChannels, true)) {
+                            if (in_array('email', $claimedChannels, true)) {
                                 $user = DB::table('users')
                                     ->where('id', $userId)
                                     ->where('tenant_id', $tenantId)
@@ -781,41 +748,26 @@ class VolunteerReminderService
 
         $totalSent = 0;
 
-        // Collect post_shift_feedback settings for all tenants — including
-        // disabled ones, so the explicit-disable guard below can fire instead
-        // of disabled tenants falling into the "no setting → defaults" path.
-        $settingsByTenant = DB::table('vol_reminder_settings')
-            ->where('reminder_type', 'post_shift_feedback')
-            ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
-            ->get()
-            ->keyBy('tenant_id');
-
-        // Also cover tenants with recently-ended shifts but no explicit setting (default 2h window)
-        $tenantsWithEndedShifts = DB::table('vol_shifts')
+        // Discover tenants from shifts that ended inside the largest window an
+        // admin can set; the tenant's own window and switch come from config.
+        [, $maxHoursAfter] = VolunteeringConfigurationService::RANGES[VolunteeringConfigurationService::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_HOURS_AFTER];
+        $allTenantIds = DB::table('vol_shifts')
             ->where('end_time', '<', now())
-            ->where('end_time', '>=', now()->subHours(2))
+            ->where('end_time', '>=', now()->subHours($maxHoursAfter))
             ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
+            ->distinct()
             ->pluck('tenant_id')
-            ->unique()
             ->all();
-
-        $allTenantIds = array_unique(array_merge(
-            $settingsByTenant->keys()->all(),
-            $tenantsWithEndedShifts
-        ));
         $allTenantIds = self::restrictToTenant($allTenantIds, $onlyTenantId);
 
         foreach ($allTenantIds as $tenantId) {
             try {
-                $setting = $settingsByTenant->get($tenantId);
-
-                // Tenant explicitly disabled post-shift feedback — respect it.
-                if ($setting !== null && !(bool) $setting->enabled) {
+                $tenantId = (int) $tenantId;
+                if (!(bool) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_ENABLED)) {
                     continue;
                 }
 
-                $hoursAfter   = (int) ($setting->hours_after ?? 2);
-                $emailEnabled = (bool) ($setting->email_enabled ?? true);
+                $hoursAfter = max(1, (int) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_POST_SHIFT_FEEDBACK_HOURS_AFTER));
 
                 // Find shifts that ended within the feedback window
                 $shifts = DB::table('vol_shifts')
@@ -850,15 +802,9 @@ class VolunteerReminderService
 
                         $claimedChannels = [];
                         try {
-                            // This service currently sends email only. Do not stamp
-                            // push/SMS rows as sent without provider delivery evidence.
-                            $channels = [];
-                            if ($emailEnabled) {
-                                $channels[] = 'email';
-                            }
-                            if (empty($channels)) {
-                                continue;
-                            }
+                            // Email is the only channel. Do not stamp push/SMS rows
+                            // as sent without provider delivery evidence.
+                            $channels = ['email'];
 
                             foreach ($channels as $channel) {
                                 if (self::claimReminderDelivery((int) $tenantId, (int) $userId, 'post_shift_feedback', (int) $shift->id, $channel)) {
@@ -871,7 +817,7 @@ class VolunteerReminderService
 
                             // Send email
                             $emailOk = true;
-                            if ($emailEnabled && in_array('email', $claimedChannels, true)) {
+                            if (in_array('email', $claimedChannels, true)) {
                                 $user = DB::table('users')
                                     ->where('id', $userId)
                                     ->where('tenant_id', $tenantId)
@@ -963,11 +909,10 @@ class VolunteerReminderService
         self::releaseStaleReminderDeliveryClaims();
 
         $totalSent = 0;
-        $settingsByTenant = DB::table('vol_reminder_settings')
-            ->where('reminder_type', 'lapsed_volunteer')
-            ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
-            ->get()
-            ->keyBy('tenant_id');
+
+        // Discover tenants from their data, using the shortest inactivity an
+        // admin can set; the tenant's own window and switch come from config.
+        [$minDaysInactive] = VolunteeringConfigurationService::RANGES[VolunteeringConfigurationService::CONFIG_REMINDER_LAPSED_VOLUNTEER_DAYS_INACTIVE];
 
         // Dedup in SQL (DISTINCT), not in PHP: the predicate matches essentially
         // every historical application forever, so ->pluck()->unique() pulled one
@@ -979,32 +924,22 @@ class VolunteerReminderService
                     ->on('vs.tenant_id', '=', 'va.tenant_id');
             })
             ->where('va.status', 'approved')
-            ->where('vs.end_time', '<=', now()->subDays(30))
+            ->where('vs.end_time', '<=', now()->subDays($minDaysInactive))
             ->when($onlyTenantId !== null, fn ($q) => $q->where('va.tenant_id', $onlyTenantId))
             ->distinct()
             ->pluck('va.tenant_id')
             ->all();
 
-        $allTenantIds = array_unique(array_merge(
-            $settingsByTenant->keys()->all(),
-            $tenantsWithInactiveVolunteers
-        ));
-        $allTenantIds = self::restrictToTenant($allTenantIds, $onlyTenantId);
+        $allTenantIds = self::restrictToTenant($tenantsWithInactiveVolunteers, $onlyTenantId);
 
         foreach ($allTenantIds as $tenantId) {
             try {
                 $tenantId = (int) $tenantId;
-                $setting = $settingsByTenant->get($tenantId);
-
-                if ($setting !== null && !(bool) $setting->enabled) {
+                if (!(bool) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_LAPSED_VOLUNTEER_ENABLED)) {
                     continue;
                 }
 
-                $daysInactive = max(1, (int) ($setting->days_inactive ?? 30));
-                $emailEnabled = (bool) ($setting->email_enabled ?? true);
-                if (!$emailEnabled) {
-                    continue;
-                }
+                $daysInactive = max(1, (int) VolunteeringConfigurationService::getForTenant($tenantId, VolunteeringConfigurationService::CONFIG_REMINDER_LAPSED_VOLUNTEER_DAYS_INACTIVE));
 
                 $cutoff = now()->subDays($daysInactive)->toDateTimeString();
                 $volunteers = DB::table('vol_applications as va')
@@ -1139,42 +1074,38 @@ class VolunteerReminderService
         self::releaseStaleReminderDeliveryClaims();
 
         $totalSent = 0;
-        $settingsByTenant = DB::table('vol_reminder_settings')
-            ->where('reminder_type', $reminderType)
-            ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
-            ->get()
-            ->keyBy('tenant_id');
 
-        $tenantsWithExpiringRecords = DB::table($table)
+        // Discover tenants from records expiring inside the largest window an
+        // admin can set; the tenant's own window and switch come from config.
+        // (Until 2026-10-18 this scan used a fixed 14 days, so a community
+        // that set a longer window was only found if it had saved a row.)
+        $enabledKey = $reminderType === 'training_expiry'
+            ? VolunteeringConfigurationService::CONFIG_REMINDER_TRAINING_EXPIRY_ENABLED
+            : VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED;
+        $daysKey = $reminderType === 'training_expiry'
+            ? VolunteeringConfigurationService::CONFIG_REMINDER_TRAINING_EXPIRY_DAYS_BEFORE
+            : VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE;
+        [, $maxDaysBefore] = VolunteeringConfigurationService::RANGES[$daysKey];
+
+        $allTenantIds = DB::table($table)
             ->where('status', 'verified')
             ->whereNotNull('expires_at')
             ->whereDate('expires_at', '>=', now()->toDateString())
-            ->whereDate('expires_at', '<=', now()->addDays(14)->toDateString())
+            ->whereDate('expires_at', '<=', now()->addDays($maxDaysBefore)->toDateString())
             ->when($onlyTenantId !== null, fn ($q) => $q->where('tenant_id', $onlyTenantId))
+            ->distinct()
             ->pluck('tenant_id')
-            ->unique()
             ->all();
-
-        $allTenantIds = array_unique(array_merge(
-            $settingsByTenant->keys()->all(),
-            $tenantsWithExpiringRecords
-        ));
         $allTenantIds = self::restrictToTenant($allTenantIds, $onlyTenantId);
 
         foreach ($allTenantIds as $tenantId) {
             try {
                 $tenantId = (int) $tenantId;
-                $setting = $settingsByTenant->get($tenantId);
-
-                if ($setting !== null && !(bool) $setting->enabled) {
+                if (!(bool) VolunteeringConfigurationService::getForTenant($tenantId, $enabledKey)) {
                     continue;
                 }
 
-                $daysBeforeExpiry = max(1, (int) ($setting->days_before_expiry ?? 14));
-                $emailEnabled = (bool) ($setting->email_enabled ?? true);
-                if (!$emailEnabled) {
-                    continue;
-                }
+                $daysBeforeExpiry = max(1, (int) VolunteeringConfigurationService::getForTenant($tenantId, $daysKey));
 
                 $records = DB::table($table)
                     ->where('tenant_id', $tenantId)

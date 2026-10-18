@@ -6,42 +6,59 @@
 
 namespace Tests\Laravel\Unit\Services;
 
+use App\Core\TenantContext;
+use App\Services\VolunteeringConfigurationService;
 use Tests\Laravel\TestCase;
 use App\Services\VolunteerReminderService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 
 class VolunteerReminderServiceTest extends TestCase
 {
-    private function expectStaleClaimCleanup(): void
-    {
-        DB::shouldReceive('table')->with('vol_reminder_delivery_claims')->andReturnSelf();
-        DB::shouldReceive('whereNull')->with('delivered_at')->andReturnSelf();
-        DB::shouldReceive('where')->with('claimed_at', '<', \Mockery::any())->andReturnSelf();
-        DB::shouldReceive('delete')->andReturn(0);
-    }
+    use DatabaseTransactions;
 
+    /**
+     * Reminder settings are tenant configuration (`volunteering.reminder_*`)
+     * since 2026-10-18. No saved value means the defaults apply (see
+     * VolunteerConfigPageWiringTest); only an explicit "off" stops the run.
+     */
     public function test_sendReminders_returns_zero_when_switched_off(): void
     {
-        // No saved row now means the defaults apply (see
-        // VolunteerConfigPageWiringTest); only an explicit "off" stops the run.
-        $this->expectStaleClaimCleanup();
-        DB::shouldReceive('table')->with('vol_reminder_settings')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn((object) ['enabled' => 0, 'hours_before' => 24, 'email_enabled' => 1]);
+        TenantContext::setById($this->testTenantId);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED, false);
 
-        $this->assertEquals(0, VolunteerReminderService::sendReminders(2, 1));
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'title' => 'Reminder off',
+            'description' => 'x',
+            'is_active' => 1,
+            'created_at' => now(),
+        ]);
+        DB::table('vol_shifts')->insert([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'start_time' => now()->addHours(3)->format('Y-m-d H:i:s'),
+            'end_time' => now()->addHours(5)->format('Y-m-d H:i:s'),
+            'capacity' => 5,
+        ]);
+
+        $this->assertSame(0, VolunteerReminderService::sendReminders($this->testTenantId, $oppId));
     }
 
     public function test_sendReminders_returns_zero_when_no_shifts(): void
     {
-        $this->expectStaleClaimCleanup();
-        $setting = (object) ['enabled' => true, 'hours_before' => 24, 'push_enabled' => true, 'email_enabled' => true, 'sms_enabled' => false];
-        DB::shouldReceive('table')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn($setting);
-        DB::shouldReceive('get')->andReturn(collect([]));
+        TenantContext::setById($this->testTenantId);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED, true);
 
-        $this->assertEquals(0, VolunteerReminderService::sendReminders(2, 1));
+        $oppId = (int) DB::table('vol_opportunities')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'title' => 'No shifts',
+            'description' => 'x',
+            'is_active' => 1,
+            'created_at' => now(),
+        ]);
+
+        $this->assertSame(0, VolunteerReminderService::sendReminders($this->testTenantId, $oppId));
     }
 
     public function test_updateSetting_returns_false_for_invalid_type(): void

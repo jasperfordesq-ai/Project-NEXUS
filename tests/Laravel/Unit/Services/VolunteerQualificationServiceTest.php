@@ -11,6 +11,7 @@ namespace Tests\Laravel\Unit\Services;
 use App\Core\TenantContext;
 use App\Exceptions\VolunteerQualificationException;
 use App\Models\User;
+use App\Services\VolunteeringConfigurationService;
 use App\Services\VolunteerQualificationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -104,21 +105,18 @@ class VolunteerQualificationServiceTest extends TestCase
 
     // ---- reminder setting --------------------------------------------------
 
-    public function test_reminder_setting_defaults_to_thirty_days_and_reads_the_credential_expiry_row(): void
+    public function test_reminder_setting_defaults_to_thirty_days_and_reads_the_credential_expiry_config(): void
     {
-        DB::table('vol_reminder_settings')->where('tenant_id', $this->testTenantId)->where('reminder_type', 'credential_expiry')->delete();
-        $this->assertSame(['enabled' => true, 'email_enabled' => true, 'days' => 30], $this->service->reminderSetting($this->testTenantId));
+        DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'LIKE', 'volunteering.reminder\_credential\_expiry\_%')
+            ->delete();
+        Cache::forget("volunteering_config:{$this->testTenantId}");
+        $this->assertSame(['enabled' => true, 'days' => 30], $this->service->reminderSetting($this->testTenantId));
 
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $this->testTenantId,
-            'reminder_type' => 'credential_expiry',
-            'enabled' => 0,
-            'email_enabled' => 0,
-            'days_before_expiry' => 14,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        $this->assertSame(['enabled' => false, 'email_enabled' => false, 'days' => 14], $this->service->reminderSetting($this->testTenantId));
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED, false);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE, 14);
+        $this->assertSame(['enabled' => false, 'days' => 14], $this->service->reminderSetting($this->testTenantId));
     }
 
     // ---- create / update rules ---------------------------------------------
@@ -270,10 +268,8 @@ class VolunteerQualificationServiceTest extends TestCase
 
     public function test_run_expiry_uses_the_given_day_and_is_idempotent(): void
     {
-        DB::table('vol_reminder_settings')->updateOrInsert(
-            ['tenant_id' => $this->testTenantId, 'reminder_type' => 'credential_expiry'],
-            ['enabled' => 1, 'email_enabled' => 0, 'days_before_expiry' => 30, 'created_at' => now(), 'updated_at' => now()]
-        );
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_ENABLED, true);
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_CREDENTIAL_EXPIRY_DAYS_BEFORE, 30);
         $volunteer = $this->user();
         $today = CarbonImmutable::parse('2026-10-05');
 

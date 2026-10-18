@@ -280,6 +280,57 @@ class AdminConfigControllerTest extends TestCase
         $this->assertStringNotContainsString('Settings array is required', $response->getContent());
     }
 
+    /**
+     * The Module Configuration window's number boxes carry a min/max, but the
+     * browser does not stop a typed value, so the server has to. Nothing is
+     * written when any value is out of range.
+     */
+    public function test_bulk_volunteering_config_refuses_a_number_outside_its_range_and_writes_nothing(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+        DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->whereIn('setting_key', ['volunteering.reminder_pre_shift_hours_before', 'volunteering.reminder_lapsed_volunteer_days_inactive'])
+            ->delete();
+
+        $response = $this->apiPut('/v2/admin/config/volunteering/bulk', ['settings' => [
+            'volunteering.reminder_lapsed_volunteer_days_inactive' => 45,
+            'volunteering.reminder_pre_shift_hours_before' => 999,
+        ]]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.field', 'volunteering.reminder_pre_shift_hours_before');
+        $this->assertFalse(
+            DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)
+                ->where('setting_key', 'volunteering.reminder_lapsed_volunteer_days_inactive')->exists(),
+            'a refused request must write nothing, not just skip the bad key'
+        );
+    }
+
+    public function test_bulk_volunteering_config_saves_reminder_settings_within_range(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $this->withHeaders(['Authorization' => 'Bearer ' . app(\App\Services\TokenService::class)->generateToken(
+            $admin->id, $admin->tenant_id, \App\Services\TwoFactorPolicy::claims('totp')
+        )]);
+
+        $response = $this->apiPut('/v2/admin/config/volunteering/bulk', ['settings' => [
+            'volunteering.reminder_pre_shift_enabled' => false,
+            'volunteering.reminder_pre_shift_hours_before' => 48,
+        ]]);
+
+        $response->assertOk();
+        // The keys carry dots themselves, so read the array rather than a JSON path.
+        $updated = $response->json('data.updated');
+        $this->assertSame(false, $updated['volunteering.reminder_pre_shift_enabled'] ?? null);
+        $this->assertSame(48, $updated['volunteering.reminder_pre_shift_hours_before'] ?? null);
+        $this->assertSame('48', DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'volunteering.reminder_pre_shift_hours_before')->value('setting_value'));
+    }
+
     public function test_group_config_validation_errors_are_translated(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();

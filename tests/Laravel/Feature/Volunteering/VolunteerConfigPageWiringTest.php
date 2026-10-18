@@ -8,9 +8,11 @@ namespace Tests\Laravel\Feature\Volunteering;
 
 use App\Core\TenantContext;
 use App\Models\User;
+use App\Services\VolunteeringConfigurationService;
 use App\Services\VolunteerReminderService;
 use App\Services\WebhookDispatchService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
@@ -69,10 +71,19 @@ class VolunteerConfigPageWiringTest extends TestCase
         $this->assertNotNull($row->last_triggered_at);
     }
 
+    private function forgetReminderSettings(): void
+    {
+        DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'LIKE', 'volunteering.reminder\_%')
+            ->delete();
+        Cache::forget("volunteering_config:{$this->testTenantId}");
+    }
+
     public function test_manual_reminder_run_works_for_a_community_that_never_saved_settings(): void
     {
         TenantContext::setById($this->testTenantId);
-        DB::table('vol_reminder_settings')->where('tenant_id', $this->testTenantId)->delete();
+        $this->forgetReminderSettings();
 
         $user = User::factory()->forTenant($this->testTenantId)->create();
         TenantContext::setById($this->testTenantId);
@@ -125,15 +136,8 @@ class VolunteerConfigPageWiringTest extends TestCase
     public function test_manual_reminder_run_still_respects_a_switched_off_reminder(): void
     {
         TenantContext::setById($this->testTenantId);
-        DB::table('vol_reminder_settings')->where('tenant_id', $this->testTenantId)->delete();
-        DB::table('vol_reminder_settings')->insert([
-            'tenant_id' => $this->testTenantId,
-            'reminder_type' => 'pre_shift',
-            'enabled' => 0,
-            'hours_before' => 24,
-            'email_enabled' => 1,
-            'created_at' => now(),
-        ]);
+        $this->forgetReminderSettings();
+        VolunteeringConfigurationService::set(VolunteeringConfigurationService::CONFIG_REMINDER_PRE_SHIFT_ENABLED, false);
 
         $oppId = (int) DB::table('vol_opportunities')->insertGetId([
             'tenant_id' => $this->testTenantId,
