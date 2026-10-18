@@ -64,6 +64,8 @@ device run `33400589987`, and unsigned iOS Simulator run `33400593135` are green
 compiled, installed, toured and content-verified the four current public App Store frames; it does
 not prove APNs delivery, signing, TestFlight or physical-iPhone behaviour.
 
+**18 October push correction.** The owner reported, on a physical Android phone running the corrected build, that a "new message" push opened Home. The server's link was right; the phone lost it on a cold start because `usePathname()` lags one render behind the navigation it has just issued and the root redirect's Home rule fired against the stale `/`. The redirect now remembers the screen it last navigated from (`lib/navigation/useAuthRedirectEffect.ts`), a tap is handled once and cleared, message pushes get a high-importance `messages` channel, every tap leaves a `push` breadcrumb trail with a server-logged "landed on Home" detector, and opening a conversation clears its tray alerts. Proven on the emulator with a locally scheduled notification of the production data shape (ledger row 7.14). The "generic body" below was an August implementation choice, not an owner policy: the server now sends tailored, translated wording (sender's name, event title) with message text only behind an opt-in preference — see `docs/modules/notifications.md`.
+
 **Deeper final-wire audit, 31 August.** The first producer audit did not pass each route
 through the backend privacy sanitizer, which still removed benign fragments after the producer
 tests had gone green. The corrected contract now preserves only reviewed application, comment
