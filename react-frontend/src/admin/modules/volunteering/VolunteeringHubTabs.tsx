@@ -40,12 +40,13 @@ export function VolunteeringHubTabs({ ariaLabel, tabs }: VolunteeringHubTabsProp
 
   const visible = tabs.filter((tab) => tab.visible !== false);
   // Longest match first: `/opportunities/swaps` must beat `/opportunities`.
+  // The location is compared in both forms: in a community addressed by slug
+  // the admin routes run under TenantShell's nested <Routes location> whose
+  // pathname has the slug already stripped, so it never equals tenantPath().
+  const isOn = (base: string) => pathname === base || pathname.startsWith(`${base}/`);
   const current = [...visible]
     .sort((a, b) => b.href.length - a.href.length)
-    .find((tab) => {
-      const full = tenantPath(tab.href);
-      return pathname === full || pathname.startsWith(`${full}/`);
-    });
+    .find((tab) => isOn(tab.href) || isOn(tenantPath(tab.href)));
   const selectedKey = current?.key ?? visible[0]?.key;
 
   return (

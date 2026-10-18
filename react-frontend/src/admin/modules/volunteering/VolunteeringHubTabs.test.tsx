@@ -100,6 +100,25 @@ describe('VolunteeringHubTabs', () => {
     expect(screen.getByText('Tab body')).toBeInTheDocument();
   });
 
+  it('selects the tab when the router presents the address without the community prefix', () => {
+    // Inside a slug-addressed community the admin routes run under a nested
+    // router whose location has the `/test` prefix already stripped, while
+    // tenantPath() still adds it. Found on the e2e walk of 2026-10-18: the
+    // Certificates page highlighted the Training tab.
+    render(
+      <MemoryRouter initialEntries={['/admin/volunteering/records/certificates']}>
+        <Routes>
+          <Route path="/admin/volunteering/*" element={<RecordsHub />}>
+            <Route path="*" element={<div>Tab body</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('tab', { name: 'Certificates' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Training' })).toHaveAttribute('aria-selected', 'false');
+  });
+
   it('navigates to the chosen tab within the community', async () => {
     renderHub('/test/admin/volunteering/records/training', <RecordsHub />);
 
