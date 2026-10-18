@@ -290,4 +290,41 @@ class CourseNotificationServiceTest extends TestCase
         $count = $this->notificationCount($userId, 'course');
         $this->assertGreaterThanOrEqual(2, $count, 'Each event must produce its own notification row');
     }
+
+    /**
+     * The bell and the phone push must carry the same site-relative link every other
+     * producer stores (`/messages/5`, `/events/44`). An absolute URL with the community's
+     * host was downgraded to `/notifications` by the native push sanitiser on any
+     * custom-domain community, and the web dropdown would prefix it with the slug again
+     * (push audit, 2026-10-18).
+     */
+    public function test_enrolled_stores_a_relative_course_link(): void
+    {
+        $authorId = $this->insertUser();
+        $userId   = $this->insertUser();
+        $courseId = $this->insertCourse($authorId);
+        $slug     = DB::table('courses')->where('id', $courseId)->value('slug');
+
+        CourseNotificationService::enrolled($courseId, $userId);
+
+        $link = DB::table('notifications')
+            ->where('user_id', $userId)->where('type', 'course')
+            ->orderByDesc('id')->value('link');
+        $this->assertSame('/courses/' . $slug, $link);
+    }
+
+    public function test_completed_stores_a_relative_course_link(): void
+    {
+        $authorId = $this->insertUser();
+        $userId   = $this->insertUser();
+        $courseId = $this->insertCourse($authorId);
+        $slug     = DB::table('courses')->where('id', $courseId)->value('slug');
+
+        CourseNotificationService::completed($courseId, $userId);
+
+        $link = DB::table('notifications')
+            ->where('user_id', $userId)->where('type', 'course')
+            ->orderByDesc('id')->value('link');
+        $this->assertSame('/courses/' . $slug, $link);
+    }
 }

@@ -37,8 +37,8 @@ class CourseNotificationService
 
             LocaleContext::withLocale($user, function () use ($course, $userId) {
                 $message = __('svc_notifications_2.course.enrolled', ['title' => $course->title]);
-                Notification::createNotification($userId, $message, self::courseUrl($course->slug), 'course');
-                \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'course', $message, self::courseUrl($course->slug));
+                Notification::createNotification($userId, $message, self::coursePath($course->slug), 'course');
+                \App\Services\NotificationDispatcher::fanOutPush((int) $userId, 'course', $message, self::coursePath($course->slug));
             });
         } catch (\Throwable $e) {
             Log::warning('[CourseNotification] enrolled failed', ['error' => $e->getMessage()]);
@@ -75,7 +75,7 @@ class CourseNotificationService
         );
 
         LocaleContext::withLocale($user, function () use ($course, $user, $userId, $idempotencyKey): void {
-            $link = self::courseUrl($course->slug);
+            $link = self::coursePath($course->slug);
             $message = __('svc_notifications_2.course.completed', ['title' => $course->title]);
 
             $bellExists = DB::table('notifications')
@@ -105,7 +105,7 @@ class CourseNotificationService
                 ->title(__('emails_misc.course_completed.title'))
                 ->greeting($firstName)
                 ->paragraph(__('emails_misc.course_completed.body', ['title' => $course->title]))
-                ->button(__('emails_misc.course_completed.cta'), $link)
+                ->button(__('emails_misc.course_completed.cta'), self::courseUrl($course->slug))
                 ->render();
 
             $sent = EmailDispatchService::sendRaw(
@@ -151,6 +151,17 @@ class CourseNotificationService
             ->where('tenant_id', TenantContext::getId())
             ->select('id', 'email', 'name', 'first_name', 'preferred_language', 'tenant_id')
             ->first();
+    }
+
+    /**
+     * The site-relative link the bell and the phone push store, like every other producer
+     * (`/messages/5`, `/events/44`). The web adds the community slug and the phone maps it;
+     * an absolute URL here was downgraded to `/notifications` by the native push sanitiser
+     * on custom-domain communities (push audit, 2026-10-18). Emails need the absolute form.
+     */
+    private static function coursePath(string $slug): string
+    {
+        return '/courses/' . $slug;
     }
 
     private static function courseUrl(string $slug): string
