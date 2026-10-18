@@ -131,6 +131,23 @@ final class CopyVolReminderSettingsIntoTenantSettingsTest extends TestCase
     }
 
     /**
+     * The old page had no limits on its number boxes, so a community may hold
+     * a timing the new window refuses (it saves every key at once, so one
+     * out-of-range value would block every save). Copy such a value clamped
+     * to the range the server now enforces.
+     */
+    public function test_a_timing_outside_the_new_range_is_copied_clamped(): void
+    {
+        $this->oldRow('pre_shift', ['enabled' => 1, 'hours_before' => 300]);
+        $this->oldRow('credential_expiry', ['enabled' => 1, 'days_before_expiry' => 120]);
+
+        $this->runMigration();
+
+        $this->assertSame(['168', 'integer'], $this->pair('volunteering.reminder_pre_shift_hours_before'));
+        $this->assertSame(['90', 'integer'], $this->pair('volunteering.reminder_credential_expiry_days_before'));
+    }
+
+    /**
      * Blue/green runs the migration on each colour. A setting the community has
      * since saved through the new window must win over the old table.
      */

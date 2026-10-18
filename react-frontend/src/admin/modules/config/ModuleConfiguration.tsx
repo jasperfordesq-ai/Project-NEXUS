@@ -61,12 +61,17 @@ export default function ModuleConfiguration() {
   const [selectedModule, setSelectedModule] = useState<ModuleDefinition | null>(null);
   const [pendingPasskeyDisable, setPendingPasskeyDisable] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  // True only while the window that `?configure=` opened is the one showing.
+  // A window opened afterwards by a card's own Configure button must just
+  // close, whatever the URL still says.
+  const [openedByLink, setOpenedByLink] = useState(false);
 
   const handleConfigure = useCallback((module: ModuleDefinition) => {
     if (module.detailPageUrl) {
       navigate(tenantPath(module.detailPageUrl));
       return;
     }
+    setOpenedByLink(false);
     setSelectedModule(module);
   }, [navigate, tenantPath]);
 
@@ -81,11 +86,11 @@ export default function ModuleConfiguration() {
    * honoured; anything else is ignored.
    */
   const configureParam = searchParams.get('configure');
-  const openedFromLink = configureParam !== null;
   useEffect(() => {
     if (!configureParam) return;
     const target = [...coreModules, ...featureModules].find((module) => module.id === configureParam);
     if (target && !target.detailPageUrl) {
+      setOpenedByLink(true);
       setSelectedModule(target);
     }
     // The module lists are constant registry data; re-running on them would
@@ -95,7 +100,8 @@ export default function ModuleConfiguration() {
 
   const handleModalClose = useCallback(() => {
     setSelectedModule(null);
-    if (!openedFromLink) return;
+    if (!openedByLink) return;
+    setOpenedByLink(false);
     // Opened from a module's own sidebar entry: go back there rather than
     // leaving the admin on this page, which their sidebar may not even list.
     if (configureParam === 'volunteering') {
@@ -103,7 +109,7 @@ export default function ModuleConfiguration() {
       return;
     }
     setSearchParams({}, { replace: true });
-  }, [openedFromLink, configureParam, navigate, tenantPath, setSearchParams]);
+  }, [openedByLink, configureParam, navigate, tenantPath, setSearchParams]);
 
   const loadConfig = useCallback(async () => {
     setLoading(true);

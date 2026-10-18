@@ -37,16 +37,18 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // Heavy sub-components — stub them so the tree stays fast
 vi.mock('./ModuleCard', () => ({
-  default: ({ module, enabled, onToggle }: {
+  default: ({ module, enabled, onToggle, onConfigure }: {
     module: { id: string; name: string };
     enabled: boolean;
     onToggle: (id: string, val: boolean) => void;
+    onConfigure?: (module: { id: string; name: string }) => void;
   }) => (
     <div data-testid={`module-card-${module.id}`}>
       <span>{module.name}</span>
       <button onClick={() => onToggle(module.id, !enabled)}>
         {enabled ? 'Disable' : 'Enable'}
       </button>
+      <button onClick={() => onConfigure?.(module)}>Configure {module.name}</button>
     </div>
   ),
 }));
@@ -129,6 +131,25 @@ describe('ModuleConfiguration', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Close window' }));
 
     expect(mockNavigate).toHaveBeenCalledWith('/test/admin/volunteering');
+  });
+
+  // Review finding (18 Oct 2026): the return-to-volunteering rule belongs to
+  // the window the link opened, not to the URL. A different module's window
+  // opened by its own Configure button must just close.
+  it('does not leave the page when a different module window is closed while ?configure= is in the URL', async () => {
+    vi.mocked(adminConfig.get).mockResolvedValue({ success: true, data: MOCK_CONFIG });
+    window.history.replaceState({}, '', '/admin/module-configuration?configure=volunteering');
+
+    render(<ModuleConfiguration />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Close window' }));
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Configure Events' }));
+    expect(screen.getByTestId('module-config-modal')).toHaveAttribute('data-module', 'events');
+    await userEvent.click(screen.getByRole('button', { name: 'Close window' }));
+
+    expect(screen.queryByTestId('module-config-modal')).not.toBeInTheDocument();
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
   });
 
   it('ignores an unknown ?configure= module and leaves the page as it is', async () => {

@@ -5,6 +5,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 use App\Services\RedisCache;
+use App\Services\VolunteeringConfigurationService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,8 @@ use Illuminate\Support\Facades\Schema;
  * timing the type uses. The old page had an on/off switch AND an email switch;
  * email was the only channel, so "on but email off" sent nothing — that
  * community is copied as switched off, which is what it experienced. A NULL
- * timing is not copied, so the platform default applies exactly as before.
+ * timing is not copied, so the platform default applies exactly as before; a
+ * timing outside the range the server now enforces is copied clamped.
  *
  * Idempotent: a key already present in tenant_settings is never overwritten,
  * because blue/green runs this on each colour and a value saved through the
@@ -70,7 +72,14 @@ return new class extends Migration
 
             $timing = $row->{$column} ?? null;
             if ($timing !== null && (int) $timing >= 1) {
-                $this->insertIfMissing($tenantId, "volunteering.reminder_{$type}_{$suffix}", (string) (int) $timing, 'integer');
+                $key = "volunteering.reminder_{$type}_{$suffix}";
+                // The old page had no limits on its number boxes. The new window
+                // saves every key at once and the server refuses the whole save
+                // when any value is outside its range, so an unclamped 300 hours
+                // would lock a community out of saving ANY volunteering setting.
+                [$min, $max] = VolunteeringConfigurationService::RANGES[$key];
+                $clamped = max($min, min((int) $timing, $max));
+                $this->insertIfMissing($tenantId, $key, (string) $clamped, 'integer');
             }
 
             $touchedTenants[$tenantId] = true;
