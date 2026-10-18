@@ -24,6 +24,25 @@ class VolunteeringConfigurationServiceTest extends TestCase
         }
     }
 
+    /**
+     * Three switches sat in the admin's Module Configuration window from
+     * 2026-03 to 2026-10 and were read by nothing on the server: an admin
+     * could toggle them and nothing changed. A setting that is offered must
+     * be enforced somewhere, so the DEFAULTS allow-list must not carry them.
+     */
+    public function test_defaults_do_not_offer_switches_nothing_reads(): void
+    {
+        $defaults = \App\Services\VolunteeringConfigurationService::DEFAULTS;
+
+        foreach ([
+            'volunteering.alert_default_expiry_hours',
+            'volunteering.alert_skill_matching',
+            'volunteering.burnout_detection',
+        ] as $retired) {
+            $this->assertArrayNotHasKey($retired, $defaults, "{$retired} is offered but nothing reads it");
+        }
+    }
+
     public function test_get_returns_default_when_missing(): void
     {
         try {

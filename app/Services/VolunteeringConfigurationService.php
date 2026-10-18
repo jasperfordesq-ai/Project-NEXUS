@@ -59,13 +59,6 @@ class VolunteeringConfigurationService
     public const CONFIG_MIN_HOURS_FOR_CERTIFICATE = 'volunteering.min_hours_for_certificate';
 
     // =========================================================================
-    // Emergency Alerts
-    // =========================================================================
-
-    public const CONFIG_ALERT_DEFAULT_EXPIRY_HOURS = 'volunteering.alert_default_expiry_hours';
-    public const CONFIG_ALERT_SKILL_MATCHING = 'volunteering.alert_skill_matching';
-
-    // =========================================================================
     // Expenses
     // =========================================================================
 
@@ -74,10 +67,16 @@ class VolunteeringConfigurationService
     public const CONFIG_EXPENSE_MAX_AMOUNT = 'volunteering.expense_max_amount';
 
     // =========================================================================
-    // Wellbeing & Safety
+    // Safety
     // =========================================================================
+    //
+    // `alert_default_expiry_hours`, `alert_skill_matching` and
+    // `burnout_detection` were offered here from 2026-03 to 2026-10 and read
+    // by nothing: toggling them changed nothing. Removed 2026-10-18 (owner
+    // decision). A stored tenant_settings row for any of them is harmless —
+    // the bulk PUT skips keys outside DEFAULTS and getAll() only merges stored
+    // rows on top of DEFAULTS, so they never reach the browser.
 
-    public const CONFIG_BURNOUT_DETECTION = 'volunteering.burnout_detection';
     public const CONFIG_GUARDIAN_CONSENT_REQUIRED = 'volunteering.guardian_consent_required';
 
     // =========================================================================
@@ -130,15 +129,11 @@ class VolunteeringConfigurationService
         // Hours & Verification
         self::CONFIG_HOURS_REQUIRE_VERIFICATION   => true,
         self::CONFIG_MIN_HOURS_FOR_CERTIFICATE    => 0,  // 0 = no minimum (legacy behaviour preserved)
-        // Emergency Alerts
-        self::CONFIG_ALERT_DEFAULT_EXPIRY_HOURS   => 24,
-        self::CONFIG_ALERT_SKILL_MATCHING         => true,
         // Expenses
         self::CONFIG_EXPENSES_ENABLED             => true,
         self::CONFIG_EXPENSE_REQUIRE_RECEIPT       => false,
         self::CONFIG_EXPENSE_MAX_AMOUNT           => 500,
-        // Wellbeing & Safety
-        self::CONFIG_BURNOUT_DETECTION            => true,
+        // Safety
         self::CONFIG_GUARDIAN_CONSENT_REQUIRED     => false,
         // Features
         self::CONFIG_ENABLE_QR_CHECKIN            => true,

@@ -1507,15 +1507,10 @@ export interface VolunteeringConfig {
   // Hours & Verification
   'volunteering.hours_require_verification': boolean;
   'volunteering.min_hours_for_certificate': number;
-  // Emergency Alerts
-  'volunteering.alert_default_expiry_hours': number;
-  'volunteering.alert_skill_matching': boolean;
   // Expenses
   'volunteering.expenses_enabled': boolean;
   'volunteering.expense_require_receipt': boolean;
   'volunteering.expense_max_amount': number;
-  // Wellbeing & Safety
-  'volunteering.burnout_detection': boolean;
   // Features
   'volunteering.enable_qr_checkin': boolean;
   'volunteering.enable_recurring_shifts': boolean;

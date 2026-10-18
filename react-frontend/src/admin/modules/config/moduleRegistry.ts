@@ -401,15 +401,10 @@ const FEATURE_MODULES: ModuleDefinition[] = [
       // Hours & Verification
       { key: 'volunteering.hours_require_verification', type: 'boolean', defaultValue: true, category: 'hours_verification' },
       { key: 'volunteering.min_hours_for_certificate', type: 'number', defaultValue: 1, category: 'hours_verification', min: 1, max: 100 },
-      // Emergency Alerts
-      { key: 'volunteering.alert_default_expiry_hours', type: 'number', defaultValue: 24, category: 'emergency_alerts', min: 1, max: 168 },
-      { key: 'volunteering.alert_skill_matching', type: 'boolean', defaultValue: true, category: 'emergency_alerts' },
       // Expenses
       { key: 'volunteering.expenses_enabled', type: 'boolean', defaultValue: true, category: 'expenses' },
       { key: 'volunteering.expense_require_receipt', type: 'boolean', defaultValue: false, category: 'expenses' },
       { key: 'volunteering.expense_max_amount', type: 'number', defaultValue: 500, category: 'expenses', min: 1, max: 10000 },
-      // Wellbeing & Safety
-      { key: 'volunteering.burnout_detection', type: 'boolean', defaultValue: true, category: 'wellbeing_safety' },
       // Features
       { key: 'volunteering.enable_qr_checkin', type: 'boolean', defaultValue: true, category: 'features' },
       { key: 'volunteering.enable_recurring_shifts', type: 'boolean', defaultValue: true, category: 'features' },

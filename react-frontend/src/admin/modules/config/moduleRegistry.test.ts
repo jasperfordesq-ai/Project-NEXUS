@@ -169,3 +169,22 @@ describe('module registry authentication modules', () => {
     }
   });
 });
+
+describe('module registry volunteering module', () => {
+  // Three switches were offered here from 2026-03 to 2026-10 while nothing on
+  // the server read them: an admin could toggle "burnout detection" and
+  // nothing changed. A control that does nothing must not be offered.
+  it('does not offer switches the server never reads', () => {
+    const volunteering = getFeatureModules().find(candidate => candidate.id === 'volunteering');
+    expect(volunteering).toBeDefined();
+
+    const keys = volunteering?.configOptions.map(option => option.key) ?? [];
+    expect(keys).not.toContain('volunteering.alert_default_expiry_hours');
+    expect(keys).not.toContain('volunteering.alert_skill_matching');
+    expect(keys).not.toContain('volunteering.burnout_detection');
+
+    const categories = new Set(volunteering?.configOptions.map(option => option.category));
+    expect(categories.has('emergency_alerts')).toBe(false);
+    expect(categories.has('wellbeing_safety')).toBe(false);
+  });
+});
