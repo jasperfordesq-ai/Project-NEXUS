@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Margadh & Freecycle",
     "subtitle": "Ceannaigh, díol, tabhair uait saor in aisce nó faigh ar iasacht agus tabhair ar iasacht earraí i do phobal",
-    "sell_something": "Díol rud éigin",
+    "sell_something": "Cruthaigh liostú",
     "categories_stat": "Catagóirí",
     "listings_stat": "Liostuithe infheicthe",
     "featured_stat": "Roghnaithe",
@@ -22,8 +22,8 @@
     "no_listings_title": "Níor aimsíodh aon liostú",
     "no_listings_filtered": "Coigeartaigh do chuardach nó do chuid scagairí.",
     "no_listings_empty": "Bí ar an gcéad duine a liostaíonn rud éigin — le díol, saor in aisce nó ar iasacht!",
-    "sidebar_cta_title": "Rud éigin le díol agat?",
-    "sidebar_cta_description": "Liostaigh do chuid earraí agus cuir os comhair do phobail iad.",
+    "sidebar_cta_title": "Rud éigin le tabhairt ar aghaidh agat?",
+    "sidebar_cta_description": "Díol é, tabhair saor in aisce é nó tabhair ar iasacht do do phobal é.",
     "categories": "Catagóirí",
     "quick_links": "Naisc thapa",
     "advanced_search": "Cuardach casta",
@@ -145,9 +145,9 @@
     "pay_accepted": "Íoc as an tairiscint ar glacadh léi"
   },
   "create": {
-    "page_title": "Díol rud éigin - Margadh & Freecycle",
-    "title": "Díol rud éigin",
-    "subtitle": "Cruthaigh liostú nua sa mhargadh",
+    "page_title": "Cruthaigh liostú - Margadh & Freecycle",
+    "title": "Cruthaigh liostú",
+    "subtitle": "Díol, tabhair saor in aisce nó tabhair earra ar iasacht do do phobal",
     "photos": "Grianghraif",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Tarraing íomhánna anseo agus scaoil iad, nó cliceáil chun brabhsáil",
@@ -185,8 +185,8 @@
     "category_specific_details": "Sonraí a bhaineann go sonrach leis an gcatagóir",
     "select_field_placeholder": "Roghnaigh {{field}}",
     "enter_field_placeholder": "Cuir isteach {{field}}",
-    "pricing": "Praghsáil",
-    "price_type_label": "Cineál praghais",
+    "pricing": "Tairiscint & praghas",
+    "price_type_label": "Conas atá tú ag tairiscint na hearra seo?",
     "price_label": "Praghas",
     "currency_label": "Airgeadra",
     "currency_search": "Cuardaigh airgeadra",
@@ -318,7 +318,7 @@
     "no_listings_filtered": "Coigeartaigh do chuardach nó do chuid scagairí.",
     "no_listings_empty": "Níl aon liostú sa chatagóir {{name}} fós. Bí ar an gcéad duine a chuirfidh rud éigin ar díol!",
     "clear_filters": "Glan na scagairí",
-    "sell_something": "Díol rud éigin",
+    "sell_something": "Cruthaigh liostú",
     "results_count_one": "{{count}} toradh",
     "results_count_other": "{{count}} toradh",
     "load_more": "Luchtaigh tuilleadh",
@@ -364,7 +364,7 @@
   "price_type": {
     "fixed": "Praghas seasta",
     "negotiable": "Soshannta",
-    "free": "Saor in aisce",
+    "free": "Saor in aisce (Freecycle)",
     "lend": "Tabhair / faigh ar iasacht (tagann an earra ar ais)"
   },
   "delivery_method": {

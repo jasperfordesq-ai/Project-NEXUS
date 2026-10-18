@@ -8,7 +8,7 @@
     "description": "Cette communauté n'a pas activé les annonces Marché & Freecycle."
   },
   "actions": {
-    "sell": "Vendre l'article",
+    "sell": "Créer une annonce",
     "myListings": "Mes annonces",
     "offers": "Offres",
     "orders": "Commandes",
@@ -38,7 +38,7 @@
     "noCategory": "Aucune catégorie",
     "priceType": {
       "all": "Tous les prix",
-      "free": "Gratuit",
+      "free": "Gratuit (Freecycle)",
       "fixed": "Prix fixe",
       "negotiable": "Négociable",
       "contact": "Contacter le vendeur",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Prix fixe",
     "negotiable": "Négociable",
-    "free": "Gratuit",
+    "free": "Gratuit (Freecycle)",
     "auction": "Enchères",
     "contact": "Contacter le vendeur",
     "lend": "Emprunter & prêter"
@@ -140,12 +140,12 @@
     "unsavedMessage": "Le titre, la description, le prix et les photos choisies seront perdus.",
     "discard": "Abandonner",
     "eyebrow": "Nouvelle annonce sur le marché",
-    "createTitle": "Vendre un article",
+    "createTitle": "Créer une annonce",
     "editTitle": "Modifier l'annonce",
     "published": "Annonce publiée",
-    "subtitle": "Utiliser le mêmes champs de place de marché que l'application Web afin que les acheteurs obtiennent des détails complets.",
+    "subtitle": "Vendez, donnez ou prêtez un objet à votre communauté.",
     "title": "Titre",
-    "titlePlaceholder": "Que vendez-vous ?",
+    "titlePlaceholder": "Que proposez-vous ?",
     "tagline": "Slogan court",
     "taglinePlaceholder": "Un résumé rapide pour parcourir les cartes",
     "description": "Description",
@@ -154,7 +154,7 @@
     "generatingDescription": "Générer une description",
     "generateTitleRequired": "Ajoutez un titre avant de générer un description.",
     "generateDescriptionFailed": "Impossible de générer une description.",
-    "priceType": "Type de prix",
+    "priceType": "Comment proposez-vous cet objet ?",
     "price": "Prix",
     "currency": "Devise",
     "pricePlaceholder": "0,00",

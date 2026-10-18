@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Marktplaats & Freecycle",
     "subtitle": "Koop, verkoop, geef gratis weg of leen en leen uit in je gemeenschap",
-    "sell_something": "Verkoop Iets",
+    "sell_something": "Advertentie maken",
     "categories_stat": "Categorieën",
     "listings_stat": "Zichtbare vermeldingen",
     "featured_stat": "Uitgelicht",
@@ -22,8 +22,8 @@
     "no_listings_title": "Geen Lijsten Gevonden",
     "no_listings_filtered": "Probeer je zoekopdracht of filters aan te passen.",
     "no_listings_empty": "Wees de eerste die iets aanbiedt — te koop, gratis of te leen!",
-    "sidebar_cta_title": "Heb je iets te verkopen?",
-    "sidebar_cta_description": "Lijst je items en bereik jouw gemeenschap.",
+    "sidebar_cta_title": "Heb je iets om door te geven?",
+    "sidebar_cta_description": "Verkoop het, geef het weg of leen het uit aan je gemeenschap.",
     "categories": "Categorieën",
     "quick_links": "Snelle Links",
     "advanced_search": "Geavanceerd Zoeken",
@@ -139,9 +139,9 @@
     "pay_accepted": "Betaal geaccepteerd aanbod"
   },
   "create": {
-    "page_title": "Verkoop iets - Marktplaats & Freecycle",
-    "title": "Verkoop iets",
-    "subtitle": "Maak een nieuwe marktplaats aanbieding",
+    "page_title": "Advertentie maken - Marktplaats & Freecycle",
+    "title": "Advertentie maken",
+    "subtitle": "Verkoop, geef weg of leen een item uit aan je gemeenschap",
     "photos": "Foto's",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Sleep afbeeldingen hierheen, of klik om te bladeren",
@@ -179,8 +179,8 @@
     "category_specific_details": "Categorie-specifieke details",
     "select_field_placeholder": "Selecteer {{field}}",
     "enter_field_placeholder": "Voer {{field}} in",
-    "pricing": "Prijs",
-    "price_type_label": "Prijs Type",
+    "pricing": "Aanbod & prijs",
+    "price_type_label": "Hoe bied je dit item aan?",
     "price_label": "Prijs",
     "currency_label": "Valuta",
     "currency_search": "Zoek valuta",
@@ -303,7 +303,7 @@
     "no_listings_filtered": "Probeer je zoekopdracht of filters aan te passen.",
     "no_listings_empty": "Nog geen lijsten in {{name}}. Wees de eerste om iets te lijsten!",
     "clear_filters": "Filters Wissen",
-    "sell_something": "Verkoop Iets",
+    "sell_something": "Advertentie maken",
     "results_count_one": "{{count}} resultaat",
     "results_count_other": "{{count}} resultaten",
     "load_more": "Laad Meer",
@@ -338,9 +338,9 @@
     "poor": "Slecht"
   },
   "price_type": {
-    "fixed": "Vaste Prijs",
+    "fixed": "Vaste prijs",
     "negotiable": "Onderhandelbaar",
-    "free": "Gratis",
+    "free": "Gratis (Freecycle)",
     "lend": "Uitlenen / lenen (het komt terug)"
   },
   "delivery_method": {

@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Mercato & Freecycle",
     "subtitle": "Compra, vendi, regala gratuitamente oppure prendi in prestito e presta oggetti nella tua comunità",
-    "sell_something": "Vendi Qualcosa",
+    "sell_something": "Crea annuncio",
     "categories_stat": "Categorie",
     "listings_stat": "Annunci visibili",
     "featured_stat": "In evidenza",
@@ -22,8 +22,8 @@
     "no_listings_title": "Nessun Annuncio Trovato",
     "no_listings_filtered": "Prova ad aggiustare la tua ricerca o i filtri.",
     "no_listings_empty": "Sii la prima persona a pubblicare qualcosa: in vendita, gratis o in prestito!",
-    "sidebar_cta_title": "Hai qualcosa da vendere?",
-    "sidebar_cta_description": "Elenca i tuoi articoli e raggiungi la tua comunità.",
+    "sidebar_cta_title": "Hai qualcosa da passare ad altri?",
+    "sidebar_cta_description": "Vendilo, regalalo o prestalo alla tua comunità.",
     "categories": "Categorie",
     "quick_links": "Collegamenti Veloci",
     "advanced_search": "Ricerca Avanzata",
@@ -141,9 +141,9 @@
     "pay_accepted": "Paga l'offerta accettata"
   },
   "create": {
-    "page_title": "Vendi qualcosa - Mercato & Freecycle",
-    "title": "Vendi qualcosa",
-    "subtitle": "Crea un nuovo annuncio nel mercato",
+    "page_title": "Crea annuncio - Mercato & Freecycle",
+    "title": "Crea annuncio",
+    "subtitle": "Vendi, regala o presta un oggetto alla tua comunità",
     "photos": "Foto",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Trascina e rilascia le immagini qui, o clicca per sfogliare",
@@ -181,8 +181,8 @@
     "category_specific_details": "Dettagli specifici per categoria",
     "select_field_placeholder": "Seleziona {{field}}",
     "enter_field_placeholder": "Inserisci {{field}}",
-    "pricing": "Prezzo",
-    "price_type_label": "Tipo di prezzo",
+    "pricing": "Offerta e prezzo",
+    "price_type_label": "Come offri questo oggetto?",
     "price_label": "Prezzo",
     "currency_label": "Valuta",
     "currency_search": "Cerca valuta",
@@ -308,7 +308,7 @@
     "no_listings_filtered": "Prova a modificare la tua ricerca o i filtri.",
     "no_listings_empty": "Nessun annuncio in {{name}} ancora. Sii il primo a elencare qualcosa!",
     "clear_filters": "Cancella Filtri",
-    "sell_something": "Vendi Qualcosa",
+    "sell_something": "Crea annuncio",
     "results_count_one": "{{count}} risultato",
     "results_count_other": "{{count}} risultati",
     "load_more": "Carica di Più",
@@ -348,7 +348,7 @@
   "price_type": {
     "fixed": "Prezzo fisso",
     "negotiable": "Trattabile",
-    "free": "Gratis",
+    "free": "Gratis (Freecycle)",
     "lend": "Prestare / prendere in prestito (l'oggetto torna indietro)"
   },
   "delivery_method": {

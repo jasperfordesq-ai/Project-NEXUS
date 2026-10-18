@@ -58,7 +58,7 @@ import { MARKETPLACE_MAX_EDGE, prepareImageForUpload } from '@/lib/media/prepare
 import { withRouteGate } from '@/components/withRouteGate';
 import ChoiceChips, { toOptions } from '@/components/ui/ChoiceChips';
 
-const PRICE_TYPES: MarketplacePriceType[] = ['fixed', 'negotiable', 'free', 'lend', 'contact'];
+const PRICE_TYPES: MarketplacePriceType[] = ['free', 'lend', 'fixed', 'negotiable', 'contact'];
 const CURRENCIES = ['EUR', 'GBP', 'USD', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'JPY'] as const;
 const CONDITIONS: MarketplaceCondition[] = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY: MarketplaceDeliveryMethod[] = ['pickup', 'shipping', 'both', 'community_delivery'];
@@ -126,7 +126,7 @@ export function MarketplaceListingForm() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [timeCredits, setTimeCredits] = useState('');
-  const initialPriceType = PRICE_TYPES.includes(params.price_type as MarketplacePriceType) ? params.price_type as MarketplacePriceType : 'fixed';
+  const initialPriceType = PRICE_TYPES.includes(params.price_type as MarketplacePriceType) ? params.price_type as MarketplacePriceType : 'free';
   const [priceType, setPriceType] = useState<MarketplacePriceType>(initialPriceType);
   const [loanTerms, setLoanTerms] = useState('');
   const isLend = priceType === 'lend';

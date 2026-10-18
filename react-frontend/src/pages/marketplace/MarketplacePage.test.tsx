@@ -329,7 +329,7 @@ describe('MarketplacePage', () => {
       });
 
       // Re-homed from the hero's action slot into the sticky bar's trailing slot.
-      expect(screen.getByLabelText('Sell Something')).toHaveAttribute('href', '/test/marketplace/sell');
+      expect(screen.getByLabelText('Create Listing')).toHaveAttribute('href', '/test/marketplace/sell');
 
       // Re-homed from the `hidden lg:block` sidebar.
       const quickLinks = screen.getByRole('navigation', { name: 'Quick Links' });
@@ -389,17 +389,17 @@ describe('MarketplacePage', () => {
       fireEvent.click(screen.getByLabelText('More filters'));
       const group = await waitFor(() => screen.getByRole('radiogroup', { name: 'Listing type' }));
       expect(within(group).getByRole('radio', { name: 'Any type' })).toHaveAttribute('aria-checked', 'true');
-      expect(within(group).getByRole('radio', { name: 'Fixed Price' })).toBeInTheDocument();
+      expect(within(group).getByRole('radio', { name: 'Fixed price' })).toBeInTheDocument();
       expect(within(group).getByRole('radio', { name: 'Negotiable' })).toBeInTheDocument();
       expect(within(group).getByRole('radio', { name: 'Lend / borrow (item comes back)' })).toBeInTheDocument();
 
-      fireEvent.click(within(group).getByRole('radio', { name: 'Free' }));
+      fireEvent.click(within(group).getByRole('radio', { name: 'Free (Freecycle)' }));
       await waitFor(() => {
         expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('price_type=free'));
       });
 
       // Applied type shows as a removable chip; removing it drops the param again.
-      const chip = await waitFor(() => screen.getByLabelText('Remove filter: Free'));
+      const chip = await waitFor(() => screen.getByLabelText('Remove filter: Free (Freecycle)'));
       mockApi.get.mockClear();
       fireEvent.click(chip);
       await waitFor(() => {

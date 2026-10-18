@@ -200,15 +200,15 @@ describe('MyListingsPage', () => {
     });
   });
 
-  it('renders the Sell Something button', async () => {
+  it('renders the Create Listing button', async () => {
     const { MyListingsPage } = await import('./MyListingsPage');
     render(<MyListingsPage />);
 
     await waitFor(() => screen.getByTestId('empty-state'));
 
-    // i18n resolves hub.sell_something → "Sell Something" (rendered as <a> link)
+    // i18n resolves hub.sell_something → "Create Listing" (rendered as <a> link)
     const sellBtn = screen.getAllByRole('link').find((el) =>
-      el.textContent?.includes('Sell Something')
+      el.textContent?.includes('Create Listing')
     );
     expect(sellBtn).toBeDefined();
   });

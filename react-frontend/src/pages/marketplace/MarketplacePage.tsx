@@ -11,7 +11,7 @@
  * - Horizontal category pills row (shared CategoryChips)
  * - Responsive listing card grid (shared MarketplaceListingGrid)
  * - Cursor-based "Load more" pagination
- * - Desktop sidebar: categories with counts, "Sell Something" CTA
+ * - Desktop sidebar: categories with counts, "Create Listing" CTA
  * - Featured listings section
  *
  * Phones get the shared directory-page treatment instead of the desktop chrome:

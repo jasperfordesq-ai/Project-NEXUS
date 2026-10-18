@@ -10,7 +10,7 @@
  * - Tabs: Active, Draft, Sold, Expired
  * - Stats summary from seller dashboard endpoint
  * - Per-listing actions: Edit, Renew (expired), Remove
- * - "Sell Something" CTA
+ * - "Create Listing" CTA
  * - Cursor-based pagination
  * - Requires authentication
  */

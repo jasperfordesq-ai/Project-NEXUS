@@ -8,7 +8,7 @@
     "description": "Esta comunidade não ativou os anúncios de Mercado & Freecycle."
   },
   "actions": {
-    "sell": "Vender item",
+    "sell": "Criar anúncio",
     "myListings": "Minhas listagens",
     "offers": "Ofertas",
     "orders": "Pedidos",
@@ -38,7 +38,7 @@
     "noCategory": "Sem categoria",
     "priceType": {
       "all": "Todos os preços",
-      "free": "Grátis",
+      "free": "Grátis (Freecycle)",
       "fixed": "Preço fixo",
       "negotiable": "Negociável",
       "contact": "Entre em contato com o vendedor",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Corrigido preço",
     "negotiable": "Negociável",
-    "free": "Grátis",
+    "free": "Grátis (Freecycle)",
     "auction": "Leilão",
     "contact": "Entre em contato com o vendedor",
     "lend": "Pedir e emprestar"
@@ -140,12 +140,12 @@
     "unsavedMessage": "O título, a descrição, o preço e as fotos escolhidas serão perdidos.",
     "discard": "Descartar",
     "eyebrow": "Nova listagem de mercado",
-    "createTitle": "Vender um item",
+    "createTitle": "Criar anúncio",
     "editTitle": "Editar listagem",
     "published": "Anúncio publicado",
-    "subtitle": "Use os mesmos campos de mercado que o aplicativo da web para que os compradores obtenham detalhes completos.",
+    "subtitle": "Venda, doe ou empreste um item à sua comunidade.",
     "title": "Título",
-    "titlePlaceholder": "O que você está vendendo?",
+    "titlePlaceholder": "O que você está oferecendo?",
     "tagline": "Slogan curto",
     "taglinePlaceholder": "Um rápido resumo para navegar nos cartões",
     "description": "Descrição",
@@ -154,7 +154,7 @@
     "generatingDescription": "Gerando descrição",
     "generateTitleRequired": "Adicione um título antes de gerar uma descrição.",
     "generateDescriptionFailed": "Não foi possível gerar uma descrição.",
-    "priceType": "Tipo de preço",
+    "priceType": "Como você está oferecendo este item?",
     "price": "Preço",
     "currency": "Moeda",
     "pricePlaceholder": "0,00",

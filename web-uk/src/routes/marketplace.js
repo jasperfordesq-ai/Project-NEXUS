@@ -32,7 +32,7 @@ router.use((req, res, next) => {
 
 // `lend` (17 Oct 2026): "Borrow & lend" — the item is lent and comes back, never
 // sold. No price, no offers, no posting; the call to action is a message to the owner.
-const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact', 'lend'];
+const PRICE_TYPES = ['free', 'lend', 'fixed', 'negotiable', 'contact'];
 const CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS = ['pickup', 'shipping', 'both', 'community_delivery'];
 const REPORT_REASONS = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
@@ -1361,7 +1361,7 @@ function tenantCurrency(req) {
 
 function blankListing(defaultCurrency = 'EUR') {
   return decorateListing({
-    price_type: 'fixed',
+    price_type: 'free',
     price_currency: defaultCurrency,
     delivery_method: 'pickup',
     quantity: 1

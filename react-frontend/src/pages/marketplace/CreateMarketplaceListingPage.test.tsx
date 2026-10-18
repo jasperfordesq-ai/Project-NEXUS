@@ -197,7 +197,12 @@ describe('CreateMarketplaceListingPage', () => {
     );
     if (descInput) await userEvent.type(descInput, 'A description of the product');
 
-    // Leave price empty; price type default is 'fixed'
+    // The default type is Free (Freecycle), so pick Fixed price and leave the price empty.
+    const fixedRadio = screen.getAllByRole('radio').find(
+      (el) => (el as HTMLInputElement).value === 'fixed',
+    );
+    expect(fixedRadio).toBeDefined();
+    await userEvent.click(fixedRadio!);
     const submitBtn = screen.getAllByRole('button').find(
       (b) => b.textContent?.toLowerCase().includes('publish') ||
              b.textContent?.toLowerCase().includes('create.publish') ||
@@ -309,8 +314,11 @@ describe('CreateMarketplaceListingPage', () => {
       render(<CreateMarketplaceListingPage />);
       await waitFor(() => mockApi.get.mock.calls.length > 0);
 
-      // Price field is present for the default (fixed) type.
-      expect(screen.getByLabelText(/^price$/i)).toBeInTheDocument();
+      // The default type is Free (Freecycle): no price field, no loan terms, and Free is listed first.
+      const radios = screen.getAllByRole('radio') as HTMLInputElement[];
+      expect(radios.map((el) => el.value).slice(0, 4)).toEqual(['free', 'lend', 'fixed', 'negotiable']);
+      expect(radios.find((el) => el.value === 'free')?.checked).toBe(true);
+      expect(screen.queryByLabelText(/^price$/i)).not.toBeInTheDocument();
       expect(screen.queryByLabelText(/loan terms/i)).not.toBeInTheDocument();
 
       await fillRequiredFieldsAndPickLend();
@@ -358,6 +366,12 @@ describe('CreateMarketplaceListingPage', () => {
     const { CreateMarketplaceListingPage } = await import('./CreateMarketplaceListingPage');
 
     render(<CreateMarketplaceListingPage />);
+
+    // The currency picker only shows for priced listings; the default is Free (Freecycle).
+    const fixedRadio = screen.getAllByRole('radio').find(
+      (el) => (el as HTMLInputElement).value === 'fixed',
+    );
+    await userEvent.click(fixedRadio!);
 
     expect(screen.getByDisplayValue('JPY')).toBeInTheDocument();
   });

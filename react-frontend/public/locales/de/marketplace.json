@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Marktplatz & Freecycle",
     "subtitle": "Kaufen, verkaufen, kostenlos verschenken oder in Ihrer Gemeinschaft leihen und verleihen",
-    "sell_something": "Etwas verkaufen",
+    "sell_something": "Inserat erstellen",
     "categories_stat": "Kategorien",
     "listings_stat": "Sichtbare Einträge",
     "featured_stat": "Hervorgehoben",
@@ -22,8 +22,8 @@
     "no_listings_title": "Keine Inserate gefunden",
     "no_listings_filtered": "Versuchen Sie, Ihre Suche oder Filter anzupassen.",
     "no_listings_empty": "Seien Sie die erste Person, die etwas inseriert — zum Verkauf, kostenlos oder zum Verleihen!",
-    "sidebar_cta_title": "Haben Sie etwas zu verkaufen?",
-    "sidebar_cta_description": "Inserieren Sie Ihre Artikel und erreichen Sie Ihre Gemeinschaft.",
+    "sidebar_cta_title": "Haben Sie etwas weiterzugeben?",
+    "sidebar_cta_description": "Verkaufen, verschenken oder verleihen Sie es an Ihre Gemeinschaft.",
     "categories": "Kategorien",
     "quick_links": "Schnellzugriffe",
     "advanced_search": "Erweiterte Suche",
@@ -139,9 +139,9 @@
     "pay_accepted": "Bezahlen Sie das angenommene Angebot"
   },
   "create": {
-    "page_title": "Etwas verkaufen – Marktplatz & Freecycle",
-    "title": "Etwas verkaufen",
-    "subtitle": "Ein neues Marktplatz-Inserat erstellen",
+    "page_title": "Inserat erstellen - Marktplatz & Freecycle",
+    "title": "Inserat erstellen",
+    "subtitle": "Verkaufen, verschenken oder verleihen Sie einen Artikel an Ihre Gemeinschaft",
     "photos": "Fotos",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Bilder hierher ziehen oder zum Auswählen klicken",
@@ -179,8 +179,8 @@
     "category_specific_details": "Kategoriespezifische Details",
     "select_field_placeholder": "{{field}} auswählen",
     "enter_field_placeholder": "{{field}} eingeben",
-    "pricing": "Preisgestaltung",
-    "price_type_label": "Preistyp",
+    "pricing": "Angebot & Preis",
+    "price_type_label": "Wie bieten Sie diesen Artikel an?",
     "price_label": "Preis",
     "currency_label": "Währung",
     "currency_search": "Suchwährung",
@@ -303,7 +303,7 @@
     "no_listings_filtered": "Versuchen Sie, Ihre Suche oder Filter anzupassen.",
     "no_listings_empty": "Noch keine Inserate in {{name}}. Seien Sie die erste Person, die etwas einstellt!",
     "clear_filters": "Filter löschen",
-    "sell_something": "Etwas verkaufen",
+    "sell_something": "Inserat erstellen",
     "results_count_one": "{{count}} Ergebnis",
     "results_count_other": "{{count}} Ergebnisse",
     "load_more": "Mehr laden",
@@ -340,7 +340,7 @@
   "price_type": {
     "fixed": "Festpreis",
     "negotiable": "Verhandelbar",
-    "free": "Kostenlos",
+    "free": "Kostenlos (Freecycle)",
     "lend": "Verleihen / Ausleihen (Artikel kommt zurück)"
   },
   "delivery_method": {

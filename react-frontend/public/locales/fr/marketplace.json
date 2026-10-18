@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Marché & Freecycle",
     "subtitle": "Achetez, vendez, donnez gratuitement ou empruntez et prêtez des objets dans votre communauté",
-    "sell_something": "Vendre quelque chose",
+    "sell_something": "Créer une annonce",
     "categories_stat": "Catégories",
     "listings_stat": "Annonces visibles",
     "featured_stat": "Mis en avant",
@@ -22,8 +22,8 @@
     "no_listings_title": "Aucune annonce trouvée",
     "no_listings_filtered": "Essayez d'ajuster votre recherche ou vos filtres.",
     "no_listings_empty": "Soyez la première personne à publier une annonce — à vendre, à donner ou à prêter !",
-    "sidebar_cta_title": "Vous avez quelque chose à vendre ?",
-    "sidebar_cta_description": "Listez vos articles et atteignez votre communauté.",
+    "sidebar_cta_title": "Vous avez quelque chose à transmettre ?",
+    "sidebar_cta_description": "Vendez-le, donnez-le ou prêtez-le à votre communauté.",
     "categories": "Catégories",
     "quick_links": "Liens rapides",
     "advanced_search": "Recherche avancée",
@@ -141,9 +141,9 @@
     "pay_accepted": "Payer l'offre acceptée"
   },
   "create": {
-    "page_title": "Vendre quelque chose - Marché & Freecycle",
-    "title": "Vendre quelque chose",
-    "subtitle": "Créer une nouvelle annonce sur le marché",
+    "page_title": "Créer une annonce - Marché & Freecycle",
+    "title": "Créer une annonce",
+    "subtitle": "Vendez, donnez ou prêtez un objet à votre communauté",
     "photos": "Photos",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Faites glisser et déposez des images ici, ou cliquez pour parcourir",
@@ -181,8 +181,8 @@
     "category_specific_details": "Détails spécifiques à la catégorie",
     "select_field_placeholder": "Sélectionner {{field}}",
     "enter_field_placeholder": "Saisir {{field}}",
-    "pricing": "Tarification",
-    "price_type_label": "Type de prix",
+    "pricing": "Offre et prix",
+    "price_type_label": "Comment proposez-vous cet objet ?",
     "price_label": "Prix",
     "currency_label": "Devise",
     "currency_search": "Devise de recherche",
@@ -308,7 +308,7 @@
     "no_listings_filtered": "Essayez d'ajuster votre recherche ou vos filtres.",
     "no_listings_empty": "Aucune annonce dans {{name}} pour l'instant. Soyez le premier à proposer quelque chose !",
     "clear_filters": "Effacer les filtres",
-    "sell_something": "Vendre quelque chose",
+    "sell_something": "Créer une annonce",
     "results_count_one": "Résultat de {{count}}",
     "results_count_other": "Résultats de {{count}}",
     "load_more": "Charger plus",
@@ -348,7 +348,7 @@
   "price_type": {
     "fixed": "Prix fixe",
     "negotiable": "Négociable",
-    "free": "Gratuit",
+    "free": "Gratuit (Freecycle)",
     "lend": "Prêter / emprunter (l'objet revient)"
   },
   "delivery_method": {

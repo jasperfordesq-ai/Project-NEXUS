@@ -41,7 +41,7 @@ import Sparkles from 'lucide-react/icons/sparkles';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Truck from 'lucide-react/icons/truck';
 import Package from 'lucide-react/icons/package';
-import DollarSign from 'lucide-react/icons/dollar-sign';
+import Tag from 'lucide-react/icons/tag';
 import FileText from 'lucide-react/icons/file-text';
 import Upload from 'lucide-react/icons/upload';
 import Video from 'lucide-react/icons/video';
@@ -102,10 +102,10 @@ const CONDITIONS = [
 ] as const;
 
 const PRICE_TYPES = [
-  { value: 'fixed', tKey: 'price_type.fixed' },
-  { value: 'negotiable', tKey: 'price_type.negotiable' },
   { value: 'free', tKey: 'price_type.free' },
   { value: 'lend', tKey: 'price_type.lend' },
+  { value: 'fixed', tKey: 'price_type.fixed' },
+  { value: 'negotiable', tKey: 'price_type.negotiable' },
 ] as const;
 
 const DELIVERY_METHODS = [
@@ -144,7 +144,7 @@ export function CreateMarketplaceListingPage() {
   const [draft, setDraft, clearDraft] = useDraftPersistence<MarketplaceListingDraft>(
     // F-109: drafts belong to one member of one community.
     userScopedStorageKey('marketplace-listing-draft', tenant?.id, user?.id),
-    { title: '', description: '', categoryId: '', condition: 'good', priceType: 'fixed', price: '', loanTerms: '' },
+    { title: '', description: '', categoryId: '', condition: 'good', priceType: 'free', price: '', loanTerms: '' },
   );
   const title = draft.title;
   const description = draft.description;
@@ -771,7 +771,7 @@ export function CreateMarketplaceListingPage() {
         {/* Section 3: Pricing */}
         <GlassCard className="p-6 space-y-4">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-accent" />
+            <Tag className="w-5 h-5 text-accent" />
             {t('create.pricing')}
           </h2>
 

@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Rynek & Freecycle",
     "subtitle": "Kupuj, sprzedawaj, oddawaj za darmo albo pożyczaj i wypożyczaj rzeczy w swojej społeczności",
-    "sell_something": "Sprzedaj coś",
+    "sell_something": "Utwórz ogłoszenie",
     "categories_stat": "Kategorie",
     "listings_stat": "Widoczne ogłoszenia",
     "featured_stat": "Wyróżnione",
@@ -22,8 +22,8 @@
     "no_listings_title": "Nie znaleziono ogłoszeń",
     "no_listings_filtered": "Dostosuj wyszukiwanie lub filtry.",
     "no_listings_empty": "Bądź pierwszą osobą, która coś wystawi — na sprzedaż, za darmo lub do wypożyczenia!",
-    "sidebar_cta_title": "Masz coś na sprzedaż?",
-    "sidebar_cta_description": "Wystaw swoje przedmioty i dotrzyj do społeczności.",
+    "sidebar_cta_title": "Masz coś do przekazania?",
+    "sidebar_cta_description": "Sprzedaj, oddaj za darmo lub pożycz swojej społeczności.",
     "categories": "Kategorie",
     "quick_links": "Szybkie linki",
     "advanced_search": "Wyszukiwanie zaawansowane",
@@ -143,9 +143,9 @@
     "pay_accepted": "Zapłać zaakceptowaną ofertę"
   },
   "create": {
-    "page_title": "Sprzedaj coś - Rynek & Freecycle",
-    "title": "Sprzedaj coś",
-    "subtitle": "Utwórz nowe ogłoszenie na marketplace",
+    "page_title": "Utwórz ogłoszenie - Rynek i Freecycle",
+    "title": "Utwórz ogłoszenie",
+    "subtitle": "Sprzedaj, oddaj za darmo lub pożycz przedmiot swojej społeczności",
     "photos": "Zdjęcia",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Przeciągnij i upuść obrazy tutaj lub kliknij, aby przeglądać",
@@ -183,8 +183,8 @@
     "category_specific_details": "Szczegóły specyficzne dla kategorii",
     "select_field_placeholder": "Wybierz {{field}}",
     "enter_field_placeholder": "Wprowadź {{field}}",
-    "pricing": "Cena",
-    "price_type_label": "Typ ceny",
+    "pricing": "Oferta i cena",
+    "price_type_label": "Jak oferujesz ten przedmiot?",
     "price_label": "Cena",
     "currency_label": "Waluta",
     "currency_search": "Wyszukaj walutę",
@@ -313,7 +313,7 @@
     "no_listings_filtered": "Spróbuj dostosować wyszukiwanie lub filtry.",
     "no_listings_empty": "Brak ogłoszeń w kategorii {{name}}. Bądź pierwszy!",
     "clear_filters": "Wyczyść filtry",
-    "sell_something": "Sprzedaj coś",
+    "sell_something": "Utwórz ogłoszenie",
     "results_count_one": "{{count}} wynik",
     "results_count_other": "{{count}} wyników",
     "load_more": "Załaduj więcej",
@@ -356,7 +356,7 @@
   "price_type": {
     "fixed": "Cena stała",
     "negotiable": "Do negocjacji",
-    "free": "Za darmo",
+    "free": "Za darmo (Freecycle)",
     "lend": "Wypożycz / pożycz (przedmiot wraca)"
   },
   "delivery_method": {

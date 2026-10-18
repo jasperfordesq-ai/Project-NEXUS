@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "السوق & Freecycle",
     "subtitle": "اشترِ وبِع وتبرّع مجاناً أو استعر وأعِر الأغراض في مجتمعك",
-    "sell_something": "بيع شيء",
+    "sell_something": "إنشاء إعلان",
     "categories_stat": "الفئات",
     "listings_stat": "الإعلانات المرئية",
     "featured_stat": "مميز",
@@ -22,8 +22,8 @@
     "no_listings_title": "لم يتم العثور على قوائم",
     "no_listings_filtered": "حاول تعديل بحثك أو الفلاتر.",
     "no_listings_empty": "كن أول من يعرض شيئاً — للبيع أو مجاناً أو للإعارة!",
-    "sidebar_cta_title": "هل لديك شيء لتبيعه؟",
-    "sidebar_cta_description": "قم بإدراج عناصرك واصل إلى مجتمعك.",
+    "sidebar_cta_title": "هل لديك شيء تريد تمريره؟",
+    "sidebar_cta_description": "بعه أو أعطه مجاناً أو أعره لمجتمعك.",
     "categories": "الفئات",
     "quick_links": "روابط سريعة",
     "advanced_search": "بحث متقدم",
@@ -147,9 +147,9 @@
     "pay_accepted": "دفع العرض المقبول"
   },
   "create": {
-    "page_title": "بيع شيء ما - السوق & Freecycle",
-    "title": "بيع شيء ما",
-    "subtitle": "إنشاء قائمة جديدة في السوق",
+    "page_title": "إنشاء إعلان - السوق وإعادة التدوير المجاني",
+    "title": "إنشاء إعلان",
+    "subtitle": "بِع غرضاً أو أعطه مجاناً أو أعره لمجتمعك",
     "photos": "الصور",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "اسحب وأفلت الصور هنا، أو انقر للتصفح",
@@ -187,8 +187,8 @@
     "category_specific_details": "تفاصيل محددة بالفئة",
     "select_field_placeholder": "اختر {{field}}",
     "enter_field_placeholder": "أدخل {{field}}",
-    "pricing": "التسعير",
-    "price_type_label": "نوع السعر",
+    "pricing": "العرض والسعر",
+    "price_type_label": "كيف تعرض هذا الغرض؟",
     "price_label": "السعر",
     "currency_label": "العملة",
     "currency_search": "عملة البحث",
@@ -323,7 +323,7 @@
     "no_listings_filtered": "حاول تعديل بحثك أو فلاترك.",
     "no_listings_empty": "لا توجد قوائم في {{name}} حتى الآن. كن الأول في إدراج شيء!",
     "clear_filters": "مسح الفلاتر",
-    "sell_something": "بيع شيء ما",
+    "sell_something": "إنشاء إعلان",
     "results_count_one": "{{count}} نتيجة",
     "results_count_other": "{{count}} نتائج",
     "load_more": "تحميل المزيد",
@@ -372,7 +372,7 @@
   "price_type": {
     "fixed": "سعر ثابت",
     "negotiable": "قابل للتفاوض",
-    "free": "مجاناً",
+    "free": "مجاناً (إعادة تدوير مجانية)",
     "lend": "إعارة / استعارة (يُعاد الغرض)"
   },
   "delivery_method": {

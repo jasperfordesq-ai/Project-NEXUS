@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "マーケットプレイス & Freecycle",
     "subtitle": "コミュニティで売る・買う・無料で譲る・借りる・貸す",
-    "sell_something": "出品する",
+    "sell_something": "出品を作成",
     "categories_stat": "カテゴリー",
     "listings_stat": "表示中の出品",
     "featured_stat": "注目",
@@ -22,8 +22,8 @@
     "no_listings_title": "リスティングが見つかりません",
     "no_listings_filtered": "検索またはフィルターを調整してみてください。",
     "no_listings_empty": "最初の出品者になりましょう — 販売、無料、貸し出しのいずれでも！",
-    "sidebar_cta_title": "売りたいものはありますか?",
-    "sidebar_cta_description": "アイテムを出品してコミュニティに届けましょう。",
+    "sidebar_cta_title": "誰かに譲りたいものはありますか?",
+    "sidebar_cta_description": "コミュニティに売る、無料で譲る、または貸し出しましょう。",
     "categories": "カテゴリ",
     "quick_links": "クイックリンク",
     "advanced_search": "詳細検索",
@@ -139,9 +139,9 @@
     "pay_accepted": "支払いが承認されたオファー"
   },
   "create": {
-    "page_title": "出品する - マーケットプレイス & Freecycle",
-    "title": "出品する",
-    "subtitle": "新しいマーケットプレイスのリスティングを作成",
+    "page_title": "出品を作成 - マーケットプレイス & フリーサイクル",
+    "title": "出品を作成",
+    "subtitle": "コミュニティに品物を売る、無料で譲る、または貸し出す",
     "photos": "写真",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "画像をここにドラッグ&ドロップするか、クリックして選択",
@@ -179,8 +179,8 @@
     "category_specific_details": "カテゴリ固有の詳細",
     "select_field_placeholder": "{{field}}を選択",
     "enter_field_placeholder": "{{field}}を入力",
-    "pricing": "価格",
-    "price_type_label": "価格タイプ",
+    "pricing": "提供方法と価格",
+    "price_type_label": "この品物をどのように提供しますか?",
     "price_label": "価格",
     "currency_label": "通貨",
     "currency_search": "通貨の検索",
@@ -303,7 +303,7 @@
     "no_listings_filtered": "検索またはフィルターを調整してみてください。",
     "no_listings_empty": "{{name}} にはまだリスティングがありません。最初に出品しましょう!",
     "clear_filters": "フィルターをクリア",
-    "sell_something": "出品する",
+    "sell_something": "出品を作成",
     "results_count_one": "{{count}} 件の結果",
     "results_count_other": "{{count}} 件の結果",
     "load_more": "さらに読み込む",
@@ -340,7 +340,7 @@
   "price_type": {
     "fixed": "定価",
     "negotiable": "応相談",
-    "free": "無料",
+    "free": "無料（フリーサイクル）",
     "lend": "貸す / 借りる（品物は返却されます）"
   },
   "delivery_method": {

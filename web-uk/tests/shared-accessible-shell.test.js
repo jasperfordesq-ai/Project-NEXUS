@@ -34319,10 +34319,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Check the listing details and try again.');
     expect(response.text).toContain('About the item');
     expect(response.text).toContain('Title');
-    expect(response.text).toContain('How are you pricing this item?');
+    expect(response.text).toContain('How are you offering this item?');
     expect(response.text).toContain('Fixed price');
     expect(response.text).toContain('Open to offers');
-    expect(response.text).toContain('Free to a good home');
+    expect(response.text).toContain('Free (Freecycle)');
     expect(response.text).toContain('Transport');
     expect(response.text).toContain('Publish listing');
     expect(response.text).not.toContain('Laravel Blade route');

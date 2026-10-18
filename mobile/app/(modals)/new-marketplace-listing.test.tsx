@@ -253,6 +253,8 @@ describe('NewMarketplaceListingRoute', () => {
     const ui = render(<NewMarketplaceListingRoute />);
     fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Lightly used shears.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(ui.getByText('Fixed price'));
     fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
     fireEvent.press(await ui.findByText('Tools'));
 
@@ -307,6 +309,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Lightly used shears with clean blades.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.changeText(getByPlaceholderText('0.00'), '12.50');
     fireEvent.press(getByText('USD'));
     fireEvent.press(getByText('Publish'));
@@ -336,6 +340,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Drying rack');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Solid beech, folds flat for storage.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.changeText(getByPlaceholderText('0.00'), '12');
     fireEvent.press(getByText('Publish'));
 
@@ -353,6 +359,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Drying rack');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Solid beech, folds flat for storage.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.changeText(getByPlaceholderText('0.00'), '12');
     fireEvent.press(getByText('Publish'));
 
@@ -368,6 +376,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Vintage lamp');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Working lamp in good condition.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.changeText(getByPlaceholderText('0.00'), '2500');
     fireEvent.press(getByText('Publish'));
 
@@ -385,6 +395,8 @@ describe('NewMarketplaceListingRoute', () => {
     const ui = render(<NewMarketplaceListingRoute />);
     fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden fork');
     fireEvent.changeText(ui.getByPlaceholderText('Details'), 'A sturdy garden fork in good condition.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(ui.getByText('Fixed price'));
     fireEvent.changeText(ui.getByPlaceholderText('0.00'), '15');
 
     fireEvent.press(ui.getByText('Publish'));
@@ -399,6 +411,8 @@ describe('NewMarketplaceListingRoute', () => {
     const ui = render(<NewMarketplaceListingRoute />);
     fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Old account item');
     fireEvent.changeText(ui.getByPlaceholderText('Details'), 'This belongs only to the original account.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(ui.getByText('Fixed price'));
     fireEvent.changeText(ui.getByPlaceholderText('0.00'), '5');
     fireEvent.press(ui.getByText('Publish'));
     await waitFor(() => expect(createMarketplaceListing).toHaveBeenCalledTimes(1));
@@ -416,6 +430,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Lightly used shears with clean blades.');
+    // The form defaults to Free (Freecycle); a paid listing has to be chosen before the price rule applies.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.press(getByText('Publish'));
 
     await waitFor(() => {
@@ -508,6 +524,8 @@ describe('NewMarketplaceListingRoute', () => {
 
     fireEvent.changeText(getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(getByPlaceholderText('Details'), 'Lightly used shears with clean blades.');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(getByText('Fixed price'));
     fireEvent.changeText(getByPlaceholderText('0.00'), '12.50');
     fireEvent.press(getByText('Add video'));
 
@@ -540,6 +558,8 @@ describe('NewMarketplaceListingRoute', () => {
     const ui = render(<NewMarketplaceListingRoute />);
     fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Description');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(ui.getByText('Fixed price'));
     fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
     fireEvent.press(ui.getByText('Add images'));
     await ui.findByLabelText('Listing photo');
@@ -570,6 +590,8 @@ describe('NewMarketplaceListingRoute', () => {
     const ui = render(<NewMarketplaceListingRoute />);
     fireEvent.changeText(ui.getByPlaceholderText('What are you selling?'), 'Garden shears');
     fireEvent.changeText(ui.getByPlaceholderText('Details'), 'Description');
+    // The form defaults to Free (Freecycle); the price field only shows for a priced listing.
+    fireEvent.press(ui.getByText('Fixed price'));
     fireEvent.changeText(ui.getByPlaceholderText('0.00'), '12');
     fireEvent.press(ui.getByText('Add images'));
     await waitFor(() => expect(ui.getAllByLabelText('Listing photo')).toHaveLength(2));

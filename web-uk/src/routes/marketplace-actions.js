@@ -11,7 +11,7 @@ const { readDate, readDateTime } = require('../lib/date-input');
 
 const router = express.Router();
 
-const PRICE_TYPES = ['fixed', 'negotiable', 'free', 'contact', 'lend'];
+const PRICE_TYPES = ['free', 'lend', 'fixed', 'negotiable', 'contact'];
 const CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
 const DELIVERY_METHODS = ['pickup', 'shipping', 'both', 'community_delivery'];
 const REPORT_REASONS = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
@@ -38,7 +38,7 @@ function listingFormValues(body, defaultCurrency) {
     title: String(body.title || '').slice(0, 200),
     tagline: String(body.tagline || '').slice(0, 300),
     description: String(body.description || '').slice(0, 10000),
-    priceType: allowed(body.price_type, PRICE_TYPES, 'fixed'),
+    priceType: allowed(body.price_type, PRICE_TYPES, 'free'),
     price: String(body.price || ''),
     priceCurrency: trimmed(body.price_currency || defaultCurrency, 3).toUpperCase() || defaultCurrency,
     timeCreditPrice: String(body.time_credit_price || ''),
@@ -215,7 +215,7 @@ function ordersRedirect(req, status) {
 function listingPayload(body, defaultCurrency = 'EUR', { includeStatus = true } = {}) {
   const title = trimmed(body.title, 200);
   const description = trimmed(body.description, 10000);
-  const priceType = allowed(body.price_type, PRICE_TYPES, 'fixed');
+  const priceType = allowed(body.price_type, PRICE_TYPES, 'free');
   const payload = {
     title,
     description,

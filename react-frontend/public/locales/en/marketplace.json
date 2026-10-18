@@ -8,7 +8,7 @@
   "hub": {
     "eyebrow": "Marketplace & Freecycle",
     "subtitle": "Buy, sell, give away for free or borrow and lend items in your community",
-    "sell_something": "Sell Something",
+    "sell_something": "Create Listing",
     "categories_stat": "Categories",
     "listings_stat": "Visible listings",
     "featured_stat": "Featured",
@@ -22,8 +22,8 @@
     "no_listings_title": "No Listings Found",
     "no_listings_filtered": "Try adjusting your search or filters.",
     "no_listings_empty": "Be the first to list something — for sale, for free or to lend!",
-    "sidebar_cta_title": "Got something to sell?",
-    "sidebar_cta_description": "List your items and reach your community.",
+    "sidebar_cta_title": "Got something to pass on?",
+    "sidebar_cta_description": "Sell it, give it away or lend it to your community.",
     "categories": "Categories",
     "quick_links": "Quick Links",
     "advanced_search": "Advanced Search",
@@ -139,9 +139,9 @@
     "pay_accepted": "Pay accepted offer"
   },
   "create": {
-    "page_title": "Sell Something - Marketplace & Freecycle",
-    "title": "Sell Something",
-    "subtitle": "Create a new marketplace listing",
+    "page_title": "Create a Listing - Marketplace & Freecycle",
+    "title": "Create a Listing",
+    "subtitle": "Sell, give away or lend an item to your community",
     "photos": "Photos",
     "photos_count": "({{current}}/{{max}})",
     "drop_zone_text": "Drag and drop images here, or click to browse",
@@ -179,8 +179,8 @@
     "category_specific_details": "Category-specific details",
     "select_field_placeholder": "Select {{field}}",
     "enter_field_placeholder": "Enter {{field}}",
-    "pricing": "Pricing",
-    "price_type_label": "Price Type",
+    "pricing": "Offer & price",
+    "price_type_label": "How are you offering this item?",
     "price_label": "Price",
     "currency_label": "Currency",
     "currency_search": "Search currency",
@@ -303,7 +303,7 @@
     "no_listings_filtered": "Try adjusting your search or filters.",
     "no_listings_empty": "No listings in {{name}} yet. Be the first to list something!",
     "clear_filters": "Clear Filters",
-    "sell_something": "Sell Something",
+    "sell_something": "Create Listing",
     "results_count_one": "{{count}} result",
     "results_count_other": "{{count}} results",
     "load_more": "Load More",
@@ -338,9 +338,9 @@
     "poor": "Poor"
   },
   "price_type": {
-    "fixed": "Fixed Price",
+    "fixed": "Fixed price",
     "negotiable": "Negotiable",
-    "free": "Free",
+    "free": "Free (Freecycle)",
     "lend": "Lend / borrow (item comes back)"
   },
   "delivery_method": {

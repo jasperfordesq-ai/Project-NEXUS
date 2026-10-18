@@ -8,7 +8,7 @@
     "description": "Níor chumasaigh an pobal seo liostaí Margadh & Freecycle."
   },
   "actions": {
-    "sell": "Díol mír",
+    "sell": "Cruthaigh liostú",
     "myListings": "Mo liostaí",
     "offers": "Tairiscintí",
     "orders": "Orduithe",
@@ -38,7 +38,7 @@
     "noCategory": "Gan chatagóir",
     "priceType": {
       "all": "Gach praghas",
-      "free": "Saor",
+      "free": "Saor in aisce (Freecycle)",
       "fixed": "Praghas seasta",
       "negotiable": "Inidirbheartaithe",
       "contact": "Déan teagmháil leis an díoltóir",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Praghas seasta",
     "negotiable": "Soshannta",
-    "free": "Saor",
+    "free": "Saor in aisce (Freecycle)",
     "auction": "Ceant",
     "contact": "Déan teagmháil leis an díoltóir",
     "lend": "Faigh & tabhair ar iasacht"
@@ -140,12 +140,12 @@
     "unsavedMessage": "Caillfear an teideal, an cur síos, an praghas agus na grianghraif atá roghnaithe agat.",
     "discard": "Cuir i leataobh",
     "eyebrow": "Liostú margadh nua",
-    "createTitle": "Díol mír",
+    "createTitle": "Cruthaigh liostú",
     "editTitle": "Cuir an liostú in eagar",
     "published": "Fógra foilsithe",
-    "subtitle": "Úsáid na réimsí margaidh céanna leis an aip gréasáin chun sonraí iomlána a fháil do cheannaitheoirí.",
+    "subtitle": "Díol, tabhair saor in aisce nó tabhair earra ar iasacht do do phobal.",
     "title": "Teideal",
-    "titlePlaceholder": "Cad atá á dhíol agat?",
+    "titlePlaceholder": "Cad atá á thairiscint agat?",
     "tagline": "Cliblíne gairid",
     "taglinePlaceholder": "Achoimre thapa ar chártaí brabhsála",
     "description": "Cur síos",
@@ -154,7 +154,7 @@
     "generatingDescription": "Cur síos á ghiniúint",
     "generateTitleRequired": "Cuir teideal leis sula ngintear cur síos.",
     "generateDescriptionFailed": "Níorbh fhéidir cur síos a ghiniúint.",
-    "priceType": "Cineál praghais",
+    "priceType": "Conas atá tú ag tairiscint na hearra seo?",
     "price": "Praghas",
     "currency": "Airgeadra",
     "pricePlaceholder": "0. 00",

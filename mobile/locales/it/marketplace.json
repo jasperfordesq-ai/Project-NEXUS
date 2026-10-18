@@ -8,7 +8,7 @@
     "description": "Questa comunità non ha abilitato gli annunci di Mercato & Freecycle."
   },
   "actions": {
-    "sell": "Vendi oggetto",
+    "sell": "Crea annuncio",
     "myListings": "Le mie inserzioni",
     "offers": "Offerte",
     "orders": "Ordini",
@@ -38,7 +38,7 @@
     "noCategory": "Nessuna categoria",
     "priceType": {
       "all": "Tutti i prezzi",
-      "free": "Gratuito",
+      "free": "Gratis (Freecycle)",
       "fixed": "Prezzo fisso",
       "negotiable": "Negoziabile",
       "contact": "Contatta il venditore",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Prezzo fisso",
     "negotiable": "Negoziabile",
-    "free": "Gratuito",
+    "free": "Gratis (Freecycle)",
     "auction": "Asta",
     "contact": "Contatta il venditore",
     "lend": "Prendi e dai in prestito"
@@ -140,12 +140,12 @@
     "unsavedMessage": "Titolo, descrizione, prezzo e le foto scelte andranno persi.",
     "discard": "Elimina",
     "eyebrow": "Nuova scheda del marketplace",
-    "createTitle": "Vendi un articolo",
+    "createTitle": "Crea annuncio",
     "editTitle": "Modifica scheda",
     "published": "Annuncio pubblicato",
-    "subtitle": "Utilizza gli stessi campi del marketplace dell'app Web in modo che gli acquirenti ottengano dettagli completi.",
+    "subtitle": "Vendi, regala o presta un oggetto alla tua comunità.",
     "title": "Titolo",
-    "titlePlaceholder": "Cosa stai vendendo?",
+    "titlePlaceholder": "Cosa offri?",
     "tagline": "Spiegazione breve",
     "taglinePlaceholder": "Un breve riepilogo per sfogliare le schede",
     "description": "Descrizione",
@@ -154,7 +154,7 @@
     "generatingDescription": "Generazione in corso descrizione",
     "generateTitleRequired": "Aggiungi un titolo prima di generare una descrizione.",
     "generateDescriptionFailed": "Impossibile generare una descrizione.",
-    "priceType": "Tipo di prezzo",
+    "priceType": "Come offri questo oggetto?",
     "price": "Prezzo",
     "currency": "Valuta",
     "pricePlaceholder": "0,00",

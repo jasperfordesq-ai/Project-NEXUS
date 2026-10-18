@@ -8,7 +8,7 @@
     "description": "Diese Community hat Marktplatz-&-Freecycle-Einträge nicht aktiviert."
   },
   "actions": {
-    "sell": "Artikel verkaufen",
+    "sell": "Inserat erstellen",
     "myListings": "Meine Angebote",
     "offers": "Angebote",
     "orders": "Bestellungen",
@@ -38,7 +38,7 @@
     "noCategory": "Keine Kategorie",
     "priceType": {
       "all": "Alle Preise",
-      "free": "Kostenlos",
+      "free": "Kostenlos (Freecycle)",
       "fixed": "Festpreis",
       "negotiable": "Verhandelbar",
       "contact": "Verkäufer kontaktieren",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Behoben Preis",
     "negotiable": "Verhandelbar",
-    "free": "Kostenlos",
+    "free": "Kostenlos (Freecycle)",
     "auction": "Auktion",
     "contact": "Verkäufer kontaktieren",
     "lend": "Leihen & verleihen"
@@ -140,12 +140,12 @@
     "unsavedMessage": "Titel, Beschreibung, Preis und die ausgewählten Fotos gehen verloren.",
     "discard": "Verwerfen",
     "eyebrow": "Neuer Marktplatzeintrag",
-    "createTitle": "Einen Artikel verkaufen",
+    "createTitle": "Inserat erstellen",
     "editTitle": "Eintrag bearbeiten",
     "published": "Inserat veröffentlicht",
-    "subtitle": "Verwenden die gleichen Marktplatzfelder wie die Web-App, sodass Käufer vollständige Details erhalten.",
+    "subtitle": "Verkaufen, verschenken oder verleihen Sie einen Artikel an Ihre Gemeinschaft.",
     "title": "Titel",
-    "titlePlaceholder": "Was verkaufen Sie?",
+    "titlePlaceholder": "Was bieten Sie an?",
     "tagline": "Kurzer Slogan",
     "taglinePlaceholder": "Eine kurze Zusammenfassung zum Durchsuchen von Karten",
     "description": "Beschreibung",
@@ -154,7 +154,7 @@
     "generatingDescription": "Beschreibung wird generiert",
     "generateTitleRequired": "Fügen Sie einen Titel hinzu, bevor Sie eine Beschreibung erstellen.",
     "generateDescriptionFailed": "Eine Beschreibung konnte nicht generiert werden.",
-    "priceType": "Preistyp",
+    "priceType": "Wie bieten Sie diesen Artikel an?",
     "price": "Preis",
     "currency": "Währung",
     "pricePlaceholder": "0,00",

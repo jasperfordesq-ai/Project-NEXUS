@@ -8,7 +8,7 @@
     "description": "This community has not enabled Marketplace & Freecycle listings."
   },
   "actions": {
-    "sell": "Sell item",
+    "sell": "Create listing",
     "myListings": "My listings",
     "offers": "Offers",
     "orders": "Orders",
@@ -38,7 +38,7 @@
     "noCategory": "No category",
     "priceType": {
       "all": "All prices",
-      "free": "Free",
+      "free": "Free (Freecycle)",
       "fixed": "Fixed price",
       "negotiable": "Negotiable",
       "contact": "Contact seller",
@@ -61,7 +61,7 @@
   "priceType": {
     "fixed": "Fixed price",
     "negotiable": "Negotiable",
-    "free": "Free",
+    "free": "Free (Freecycle)",
     "auction": "Auction",
     "contact": "Contact seller",
     "lend": "Borrow & lend"
@@ -140,12 +140,12 @@
     "unsavedMessage": "The title, description, price and photos you have chosen will be lost.",
     "discard": "Discard",
     "eyebrow": "New marketplace listing",
-    "createTitle": "Sell an item",
+    "createTitle": "Create a listing",
     "editTitle": "Edit listing",
     "published": "Listing published",
-    "subtitle": "Use the same marketplace fields as the web app so buyers get complete details.",
+    "subtitle": "Sell, give away or lend an item to your community.",
     "title": "Title",
-    "titlePlaceholder": "What are you selling?",
+    "titlePlaceholder": "What are you offering?",
     "tagline": "Short tagline",
     "taglinePlaceholder": "A quick summary for browsing cards",
     "description": "Description",
@@ -154,7 +154,7 @@
     "generatingDescription": "Generating description",
     "generateTitleRequired": "Add a title before generating a description.",
     "generateDescriptionFailed": "Could not generate a description.",
-    "priceType": "Price type",
+    "priceType": "How are you offering this item?",
     "price": "Price",
     "currency": "Currency",
     "pricePlaceholder": "0.00",
