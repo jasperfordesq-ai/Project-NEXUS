@@ -184,6 +184,7 @@ class PushCopyCatalogueTest extends TestCase
         $this->assertTrue(PushCopy::isTimeSensitive('new_message'));
         $this->assertTrue(PushCopy::isTimeSensitive('event_reminder'));
         $this->assertTrue(PushCopy::isTimeSensitive('vol_shift_reminder'));
+        $this->assertTrue(PushCopy::isTimeSensitive('vol_waitlist_spot'));
         $this->assertTrue(PushCopy::isTimeSensitive('volunteer_emergency'));
         $this->assertFalse(PushCopy::isTimeSensitive('comment'));
         $this->assertFalse(PushCopy::isTimeSensitive('new_topic'));

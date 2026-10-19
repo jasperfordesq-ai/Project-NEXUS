@@ -63,6 +63,14 @@ function formatTime(value?: string | null) {
   return new Intl.DateTimeFormat(dateLocale(), { hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
+/** The claim window is measured in hours, so the deadline needs the time as well as the day. */
+function formatDeadline(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
+}
+
 function MyWaitlistsScreen() {
   const { user } = useAuth();
   const { tenant } = useTenant();
@@ -226,6 +234,12 @@ function MyWaitlistsContent() {
                   {free ? (
                     <Text className="text-sm leading-5" style={{ color: theme.success }}>
                       {t('volunteeringVolunteer:waitlist.claimHint')}
+                      {formatDeadline(entry.expires_at) ? (
+                        <Text className="font-semibold" testID={`waitlist-claim-by-${entry.id}`}>
+                          {' '}
+                          {t('volunteeringVolunteer:waitlist.claimBy', { deadline: formatDeadline(entry.expires_at) })}
+                        </Text>
+                      ) : null}
                     </Text>
                   ) : null}
 

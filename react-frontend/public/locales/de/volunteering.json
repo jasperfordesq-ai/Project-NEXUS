@@ -729,8 +729,13 @@
     "claim_success": "Sie sind dabei – haben Sie sich für die Schicht angemeldet!",
     "claim_failed": "Konnte den Platz nicht beanspruchen",
     "claim_hint": "Ein Platz ist für Sie frei geworden. Beanspruchen Sie es bald – nicht beanspruchte Plätze gehen nach 48 Stunden an die nächste Person über.",
-    "spots_one": "{{count}} Plätze",
-    "spots_other": "{{count}} Plätze"
+    "spots_one": "{{count}} Platz",
+    "spots_other": "{{count}} Plätze",
+    "claim_by": "Bis {{deadline}} annehmen.",
+    "view_opportunity": "Einsatz ansehen",
+    "view_opportunity_for": "Einsatz für {{title}} ansehen",
+    "claim_for": "Platz bei {{title}} annehmen",
+    "leave_for": "Warteliste für {{title}} verlassen"
   },
   "swaps": {
     "heading": "Schichttausch",
@@ -835,7 +840,16 @@
     "manage_cancelled_toast": "Angebot abgesagt.",
     "manage_failed": "Das Angebot konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
     "runs_organisation_notice": "Sie leiten diese Organisation und können sich daher nicht für ihre eigenen Einsätze melden. Die Bewerbungen verwalten Sie im Dashboard Ihrer Organisation.",
-    "runs_organisation_link": "Zum Dashboard der Organisation"
+    "runs_organisation_link": "Zum Dashboard der Organisation",
+    "on_waitlist": "Auf der Warteliste · Platz {{position}}",
+    "waitlist_spot_free": "Ein Platz ist für Sie frei",
+    "claim_spot": "Platz annehmen",
+    "leave_waitlist": "Warteliste verlassen",
+    "view_waitlists": "Ihre Wartelisten",
+    "shift_claim_success": "Sie sind dabei – für die Schicht angemeldet!",
+    "shift_claim_failed": "Der Platz konnte nicht angenommen werden. Er ist möglicherweise an jemand anderen gegangen.",
+    "shift_leave_waitlist_success": "Sie haben die Warteliste verlassen.",
+    "shift_leave_waitlist_failed": "Die Warteliste konnte nicht verlassen werden."
   },
   "org_settings": {
     "heading": "Organisationseinstellungen",
@@ -1539,7 +1553,8 @@
     "urgent_list_counts": "Gefragt: {{asked}} · Zugesagt: {{accepted}} · Abgesagt: {{declined}}",
     "urgent_withdraw": "Zurückziehen",
     "urgent_withdrawn": "Anfrage zurückgezogen.",
-    "urgent_withdraw_failed": "Die Anfrage konnte nicht zurückgezogen werden."
+    "urgent_withdraw_failed": "Die Anfrage konnte nicht zurückgezogen werden.",
+    "roster_waitlist_offered": "Platz angeboten"
   },
   "edit_opportunity_title": "Angebot bearbeiten",
   "edit_opportunity_subtitle": "Ändern Sie die Angaben, die Freiwillige sehen. Die Organisation kann nicht geändert werden.",

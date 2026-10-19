@@ -78,6 +78,8 @@ export interface WaitlistEntry {
   position: number;
   status: WaitlistStatus;
   notified_at: string | null;
+  /** When an unclaimed offer passes to the next person; null while still waiting. */
+  expires_at?: string | null;
   shift: { id: number; start_time: string; end_time: string; capacity: number | null };
   opportunity: { id: number; title: string; location?: string | null };
   organization: { id: number; name: string; logo_url?: string | null };

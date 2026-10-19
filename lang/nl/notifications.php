@@ -159,6 +159,10 @@ return [
             'title' => 'Je dienst op :time is geannuleerd',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Er is een plek vrij bij :subject',
+            'body' => 'Dienst op :time – claim hem voordat het aanbod doorgaat',
+        ],
         'exchange_request_received' => [
             'title' => 'Nieuw verzoek voor :subject',
             'body' => 'Tik om te accepteren of te weigeren',

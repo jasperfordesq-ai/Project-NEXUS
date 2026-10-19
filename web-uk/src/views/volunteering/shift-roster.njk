@@ -136,7 +136,12 @@
               {% for entry in roster.waitlist %}
                 <tr class="govuk-table__row">
                   <td class="govuk-table__cell">{{ entry.position }}</td>
-                  <td class="govuk-table__cell">{{ entry.name }}</td>
+                  <td class="govuk-table__cell">
+                    {{ entry.name }}
+                    {% if entry.offered %}
+                      {{ govukTag({ text: t(K ~ "waitlist_offered"), classes: "govuk-tag--green govuk-!-margin-left-2" }) }}
+                    {% endif %}
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>

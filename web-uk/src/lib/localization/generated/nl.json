@@ -5659,12 +5659,17 @@
                 "waitlist_empty": "Wanneer een dienst vol is, kunt u zich op de wachtlijst plaatsen en we sturen u een melding als er een plek vrijkomt.",
                 "waitlist_position": "Positie :position",
                 "waitlist_spot_available": "Er is een plek beschikbaar",
-                "waitlist_notified_hint": "Er is een plek vrijgekomen voor deze dienst. Meld u aan via de kansenpagina om de plek te claimen voordat deze aan de volgende persoon wordt aangeboden.",
+                "waitlist_notified_hint": "Er is een plek vrijgekomen op deze dienst. Claim hem hieronder voordat hij aan de volgende persoon wordt aangeboden.",
                 "waitlist_joined": "Toegevoegd aan wachtlijst",
                 "waitlist_leave": "Wachtlijst verlaten",
                 "waitlist_leave_for": "voor :title",
                 "waitlist_left": "U heeft de wachtlijst verlaten.",
                 "waitlist_leave_failed": "We konden u niet van de wachtlijst verwijderen. Mogelijk staat u er niet op.",
+                "waitlist_claim_by": "Claim vóór :deadline",
+                "waitlist_claim": "Plek claimen",
+                "waitlist_claimed": "U heeft de plek geclaimd. U bent nu ingeschreven voor deze dienst.",
+                "waitlist_claim_failed": "We konden de plek niet claimen. Probeer het opnieuw.",
+                "waitlist_claim_gone": "Die plek is niet meer beschikbaar. Mogelijk is hij naar iemand anders gegaan, of is het aanbod verlopen.",
                 "swaps_title": "Dienstruilingen",
                 "swaps_description": "Vraag een andere vrijwilliger om een van uw diensten te ruilen en reageer op ruilverzoeken die naar u zijn gestuurd.",
                 "swaps_error": "We konden uw ruilverzoeken niet laden. Probeer het opnieuw.",
@@ -11264,7 +11269,8 @@
                 "group_members": "Leden",
                 "group_no_members": "Nog geen bevestigde leden",
                 "waitlist_heading": "Wachtlijst",
-                "col_position": "Plaats in de rij"
+                "col_position": "Plaats in de rij",
+                "waitlist_offered": "Plek aangeboden"
             },
             "certificate_check": {
                 "title": "Een vrijwilligerscertificaat controleren",

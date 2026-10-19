@@ -729,8 +729,13 @@
     "claim_success": "You're in — signed up for the shift!",
     "claim_failed": "Couldn't claim the spot",
     "claim_hint": "A spot opened up for you. Claim it soon — unclaimed spots pass to the next person after 48 hours.",
-    "spots_one": "{{count}} spots",
-    "spots_other": "{{count}} spots"
+    "spots_one": "{{count}} spot",
+    "spots_other": "{{count}} spots",
+    "claim_by": "Claim by {{deadline}}.",
+    "view_opportunity": "View opportunity",
+    "view_opportunity_for": "View the opportunity for {{title}}",
+    "claim_for": "Claim your spot on {{title}}",
+    "leave_for": "Leave the waitlist for {{title}}"
   },
   "swaps": {
     "heading": "Shift Swaps",
@@ -835,7 +840,16 @@
     "manage_cancelled_toast": "Opportunity cancelled.",
     "manage_failed": "Could not change the opportunity. Please try again.",
     "runs_organisation_notice": "You run this organisation, so you can't volunteer for its own opportunities. Manage its applications from your organisation dashboard.",
-    "runs_organisation_link": "Go to the organisation dashboard"
+    "runs_organisation_link": "Go to the organisation dashboard",
+    "on_waitlist": "On the waitlist · place {{position}}",
+    "waitlist_spot_free": "A spot is free for you",
+    "claim_spot": "Claim spot",
+    "leave_waitlist": "Leave waitlist",
+    "view_waitlists": "Your waitlists",
+    "shift_claim_success": "You're in — signed up for the shift!",
+    "shift_claim_failed": "Couldn't claim the spot. It may have gone to someone else.",
+    "shift_leave_waitlist_success": "You have left the waitlist.",
+    "shift_leave_waitlist_failed": "Unable to leave this waitlist."
   },
   "org_settings": {
     "heading": "Organization Settings",
@@ -1539,7 +1553,8 @@
     "urgent_list_counts": "Asked: {{asked}} · Accepted: {{accepted}} · Declined: {{declined}}",
     "urgent_withdraw": "Withdraw",
     "urgent_withdrawn": "Request withdrawn.",
-    "urgent_withdraw_failed": "Could not withdraw the request."
+    "urgent_withdraw_failed": "Could not withdraw the request.",
+    "roster_waitlist_offered": "Offered a place"
   },
   "edit_opportunity_title": "Edit opportunity",
   "edit_opportunity_subtitle": "Change the details volunteers see. The organisation cannot be changed.",

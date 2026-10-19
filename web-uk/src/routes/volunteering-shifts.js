@@ -313,7 +313,10 @@ function presentRoster(raw, hasStarted, t) {
   const waitlist = (Array.isArray(data.waitlist) ? data.waitlist : [])
     .map((entry) => ({
       name: personName(entry && entry.user),
-      position: wholeNumber(entry && entry.position)
+      position: wholeNumber(entry && entry.position),
+      // 'notified': the server has offered this person the freed place and is
+      // waiting for them to claim it — that place is spoken for.
+      offered: Boolean(entry && entry.status === 'notified')
     }))
     .filter((entry) => entry.name)
     .sort((a, b) => a.position - b.position);

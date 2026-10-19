@@ -740,7 +740,7 @@
     "option_volunteering_tab_credentials_label": "Credentials Tab",
     "option_volunteering_tab_credentials_desc": "Credential verification and safeguarding badges",
     "option_volunteering_tab_waitlist_label": "Waitlist Tab",
-    "option_volunteering_tab_waitlist_desc": "View shift waitlist status and auto-promotion",
+    "option_volunteering_tab_waitlist_desc": "Lets volunteers join a full shift’s waitlist, be told when a place frees up, and claim it. An unclaimed place passes to the next person after 48 hours.",
     "option_volunteering_tab_swaps_label": "Shift Swaps Tab",
     "option_volunteering_tab_swaps_desc": "Manage shift swap requests between volunteers",
     "option_volunteering_tab_group_signups_label": "Group Sign-ups Tab",

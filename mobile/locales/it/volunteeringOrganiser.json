@@ -212,7 +212,8 @@
     "checkInsHeading": "Registro delle presenze",
     "checkInsEmpty": "Nessuna presenza registrata per questo turno.",
     "checkInsError": "Impossibile caricare il registro delle presenze.",
-    "openProfile": "Apri il profilo di {{name}}"
+    "openProfile": "Apri il profilo di {{name}}",
+    "waitlistOffered": "Posto offerto"
   },
   "expenses": {
     "title": "Richieste di rimborso spese",

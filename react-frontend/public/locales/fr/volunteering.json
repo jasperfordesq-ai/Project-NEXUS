@@ -726,7 +726,7 @@
     "no_entries_title": "Aucune entrée sur la liste d'attente",
     "no_entries_desc": "Vous n'êtes actuellement sur aucune liste d'attente d'équipe. Lorsqu'un quart de travail est complet, vous pouvez rejoindre la liste d'attente et être averti lorsqu'une place se libère.",
     "position": "Poste {{position}}",
-    "spots": "{{count}} points",
+    "spots": "{{count}} places",
     "joined": "Liste d'attente inscrite",
     "leave": "Partir",
     "leave_confirm": "Etes-vous sûr de vouloir quitter cette liste d'attente ? Vous perdrez votre position actuelle.",
@@ -735,9 +735,14 @@
     "claim_success": "Vous êtes inscrit – inscrivez-vous pour le changement !",
     "claim_failed": "Je n'ai pas pu revendiquer la place",
     "claim_hint": "Une place s'est ouverte pour vous. Réclamez-le rapidement : les places non réclamées sont transférées à la personne suivante après 48 heures.",
-    "spots_one": "{{count}} points",
-    "spots_other": "{{count}} points",
-    "spots_many": "{{count}} points"
+    "spots_one": "{{count}} place",
+    "spots_other": "{{count}} places",
+    "spots_many": "{{count}} points",
+    "claim_by": "À réclamer avant le {{deadline}}.",
+    "view_opportunity": "Voir la mission",
+    "view_opportunity_for": "Voir la mission pour {{title}}",
+    "claim_for": "Réclamer votre place pour {{title}}",
+    "leave_for": "Quitter la liste d’attente pour {{title}}"
   },
   "swaps": {
     "heading": "Échanges de quarts de travail",
@@ -842,7 +847,16 @@
     "manage_cancelled_toast": "Mission annulée.",
     "manage_failed": "Impossible de modifier la mission. Veuillez réessayer.",
     "runs_organisation_notice": "Vous gérez cette organisation : vous ne pouvez donc pas faire du bénévolat pour ses propres missions. Gérez ses candidatures depuis le tableau de bord de votre organisation.",
-    "runs_organisation_link": "Aller au tableau de bord de l'organisation"
+    "runs_organisation_link": "Aller au tableau de bord de l'organisation",
+    "on_waitlist": "Sur la liste d’attente · place {{position}}",
+    "waitlist_spot_free": "Une place est libre pour vous",
+    "claim_spot": "Réclamer la place",
+    "leave_waitlist": "Quitter la liste d’attente",
+    "view_waitlists": "Vos listes d’attente",
+    "shift_claim_success": "C’est bon : vous êtes inscrit(e) au créneau !",
+    "shift_claim_failed": "Impossible de réclamer la place. Elle a peut-être été attribuée à quelqu’un d’autre.",
+    "shift_leave_waitlist_success": "Vous avez quitté la liste d’attente.",
+    "shift_leave_waitlist_failed": "Impossible de quitter cette liste d’attente."
   },
   "org_settings": {
     "heading": "Paramètres de l'organisation",
@@ -1555,7 +1569,8 @@
     "urgent_list_counts": "Sollicités : {{asked}} · Acceptées : {{accepted}} · Refusées : {{declined}}",
     "urgent_withdraw": "Retirer",
     "urgent_withdrawn": "Demande retirée.",
-    "urgent_withdraw_failed": "Impossible de retirer la demande."
+    "urgent_withdraw_failed": "Impossible de retirer la demande.",
+    "roster_waitlist_offered": "Place proposée"
   },
   "edit_opportunity_title": "Modifier la mission",
   "edit_opportunity_subtitle": "Modifiez les informations que voient les bénévoles. L'organisation ne peut pas être changée.",

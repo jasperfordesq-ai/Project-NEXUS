@@ -4625,12 +4625,22 @@ return [
         'waitlist_empty' => 'シフトが満員の場合はキャンセル待ちリストに参加でき、空きができた際にお知らせします。',
         'waitlist_position' => '順番 :position 番目',
         'waitlist_spot_available' => '空きがあります',
-        'waitlist_notified_hint' => 'このシフトに空きができました。次の方に案内される前に、機会ページからサインアップして確保してください。',
+        'waitlist_notified_hint' => 'このシフトに空きが出ました。次の方に案内される前に、下で確保してください。',
         'waitlist_joined' => 'キャンセル待ちリストに登録',
         'waitlist_leave' => 'キャンセル待ちリストを退出',
         'waitlist_leave_for' => ':title の',
         'waitlist_left' => 'キャンセル待ちリストを退出しました。',
         'waitlist_leave_failed' => 'キャンセル待ちリストから削除できませんでした。登録されていない可能性があります。',
+
+        'waitlist_claim_by' => ':deadline までに確保',
+
+        'waitlist_claim' => '枠を確保',
+
+        'waitlist_claimed' => '枠を確保しました。このシフトに登録されました。',
+
+        'waitlist_claim_failed' => '枠を確保できませんでした。もう一度お試しください。',
+
+        'waitlist_claim_gone' => 'その枠はもう空いていません。別の方に渡ったか、案内の期限が切れた可能性があります。',
         'swaps_title' => 'シフト交換',
         'swaps_description' => '他のボランティアにシフトの交換を依頼したり、あなたに届いた交換リクエストに返答したりします。',
         'swaps_error' => 'シフト交換リクエストを読み込めませんでした。もう一度お試しください。',

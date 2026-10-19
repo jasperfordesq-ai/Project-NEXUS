@@ -35,7 +35,7 @@ export interface ShiftRoster {
   summary: { signed_up: number; checked_in: number; no_show: number; group_places: number; waiting: number };
   volunteers: Array<{ user: RosterPerson; check_in_status: CheckInStatus; checked_in_at: string | null; checked_out_at: string | null }>;
   groups: Array<{ id: number; group_name: string; reserved_slots: number; leader: RosterPerson | null; members: RosterPerson[] }>;
-  waitlist: Array<{ user: RosterPerson; position: number }>;
+  waitlist: Array<{ user: RosterPerson; position: number; status?: 'waiting' | 'notified' | string }>;
 }
 
 export interface ShiftRosterModalProps {
@@ -192,7 +192,14 @@ export function ShiftRosterModal({ shiftId, shiftLabel, hasStarted, onClose }: S
                   <ol className="divide-y divide-[var(--border-default)]">
                     {roster.waitlist.map((w) => (
                       <PersonLine key={w.user.id} person={w.user}>
-                        <span className="text-xs text-theme-muted">{t('shift_manager.roster_waitlist_position', { position: w.position })}</span>
+                        <span className="flex items-center gap-2">
+                          {/* 'notified': the server has offered this person the freed place and is waiting
+                              for them to claim it — the organiser should know the place is spoken for. */}
+                          {w.status === 'notified' && (
+                            <Chip size="sm" variant="soft" color="success">{t('shift_manager.roster_waitlist_offered')}</Chip>
+                          )}
+                          <span className="text-xs text-theme-muted">{t('shift_manager.roster_waitlist_position', { position: w.position })}</span>
+                        </span>
                       </PersonLine>
                     ))}
                   </ol>

@@ -778,6 +778,7 @@ return [
         'group_no_members' => '確定したメンバーはまだいません',
         'waitlist_heading' => 'キャンセル待ちリスト',
         'col_position' => '順番',
+        'waitlist_offered' => '枠を案内済み',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

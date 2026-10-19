@@ -82,6 +82,17 @@ interface Shift {
   spots_available: number | null;
 }
 
+type ShiftActionType = 'signup' | 'cancel' | 'waitlist' | 'leave_waitlist' | 'claim';
+
+/** The slice of GET /v2/volunteering/my-waitlists this page reads. */
+interface MyWaitlistEntry {
+  id: number;
+  position: number;
+  status: 'waiting' | 'notified';
+  expires_at?: string | null;
+  shift: { id: number };
+}
+
 interface Application {
   id: number;
   status: string;
@@ -873,12 +884,30 @@ export function OpportunityDetailPage() {
   const [applyMessage, setApplyMessage] = useState('');
   const [isApplying, setIsApplying] = useState(false);
   const [selectedShiftId, setSelectedShiftId] = useState<number | null>(null);
-  const [shiftAction, setShiftAction] = useState<{ id: number; type: 'signup' | 'cancel' | 'waitlist' } | null>(null);
+  const [shiftAction, setShiftAction] = useState<{ id: number; type: ShiftActionType } | null>(null);
   const qrCheckinEnabled = volunteeringConfig?.['volunteering.enable_qr_checkin'] !== false;
+  // The community's waitlist switch hides every waiting-list control, as it hides the tab.
+  const waitlistOn = volunteeringConfig?.['volunteering.tab_waitlist'] !== false;
+  // The member's own waiting-list entries, so a full shift can say "you are on it" (and offer
+  // the freed place) instead of a Join button the server answers 409 to. Loaded only for an
+  // approved volunteer — the only person who can be on one.
+  const [myWaitlists, setMyWaitlists] = useState<MyWaitlistEntry[]>([]);
+  const loadWaitlists = useCallback(async () => {
+    try {
+      const response = await api.get<MyWaitlistEntry[]>('/v2/volunteering/my-waitlists');
+      setMyWaitlists(response.success && Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      logError('Failed to load waitlists', err);
+    }
+  }, []);
 
   const tRef = useRef(t);
   tRef.current = t;
   const abortLoadRef = useRef<AbortController | null>(null);
+  const waitlistOnRef = useRef(waitlistOn);
+  waitlistOnRef.current = waitlistOn;
+  const loadWaitlistsRef = useRef(loadWaitlists);
+  loadWaitlistsRef.current = loadWaitlists;
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -893,6 +922,11 @@ export function OpportunityDetailPage() {
       if (controller.signal.aborted) return;
       if (response.success && response.data) {
         setOpportunity(response.data);
+        const approved = response.data.application?.status === 'approved';
+        const manages = Boolean(response.data.can_manage || response.data.is_owner);
+        if (approved && !manages && waitlistOnRef.current) {
+          void loadWaitlistsRef.current();
+        }
       } else {
         setError(tRef.current('opportunity.not_found'));
       }
@@ -940,22 +974,28 @@ export function OpportunityDetailPage() {
     }
   }
 
-  async function handleShiftAction(shiftId: number, type: 'signup' | 'cancel' | 'waitlist') {
+  async function handleShiftAction(shiftId: number, type: ShiftActionType) {
     try {
       setShiftAction({ id: shiftId, type });
-      const endpoint = type === 'waitlist'
-        ? `/v2/volunteering/shifts/${shiftId}/waitlist`
-        : `/v2/volunteering/shifts/${shiftId}/signup`;
-      const response = type === 'cancel'
-        ? await api.delete(endpoint)
-        : await api.post(endpoint, {});
+      const response = await (() => {
+        switch (type) {
+          case 'signup': return api.post(`/v2/volunteering/shifts/${shiftId}/signup`, {});
+          case 'cancel': return api.delete(`/v2/volunteering/shifts/${shiftId}/signup`);
+          case 'waitlist': return api.post(`/v2/volunteering/shifts/${shiftId}/waitlist`, {});
+          case 'leave_waitlist': return api.delete(`/v2/volunteering/shifts/${shiftId}/waitlist`);
+          // The freed place is claimed against the SHIFT; the server finds the caller's own offer.
+          case 'claim': return api.post(`/v2/volunteering/shifts/${shiftId}/waitlist/promote`, {});
+        }
+      })();
 
       if (response.success) {
         toast.success(t(`opportunity.shift_${type}_success`));
-        load();
       } else {
         toast.error(response.error || t(`opportunity.shift_${type}_failed`));
       }
+      // Reload either way: a refused claim usually means the place went to someone
+      // else, and the page should show that rather than a stale offer.
+      load();
     } catch (err) {
       logError(`Failed to ${type} shift`, err);
       toast.error(t(`opportunity.shift_${type}_failed`));
@@ -1356,6 +1396,8 @@ export function OpportunityDetailPage() {
                 const isCurrentShift = currentShiftId === shift.id;
                 const isOpenShift = shift.spots_available === null || shift.spots_available > 0;
                 const activeShiftAction = shiftAction?.id === shift.id ? shiftAction.type : null;
+                const waitlistEntry = myWaitlists.find((entry) => entry.shift.id === shift.id) ?? null;
+                const offered = waitlistEntry?.status === 'notified';
                 return (
                 <div
                   key={shift.id}
@@ -1379,6 +1421,12 @@ export function OpportunityDetailPage() {
                     </span>
                     {isCurrentShift ? (
                       <Chip size="sm" variant="soft" color="success">{t('opportunity.shift_signed_up')}</Chip>
+                    ) : offered ? (
+                      <Chip size="sm" variant="soft" color="success" data-testid={`shift-offer-${shift.id}`}>{t('opportunity.waitlist_spot_free')}</Chip>
+                    ) : waitlistEntry ? (
+                      <Chip size="sm" variant="soft" color="warning" data-testid={`shift-waitlisted-${shift.id}`}>
+                        {t('opportunity.on_waitlist', { position: waitlistEntry.position })}
+                      </Chip>
                     ) : isOpenShift ? (
                       <Chip size="sm" variant="soft" color="success">{t('opportunity.shift_open')}</Chip>
                     ) : (
@@ -1397,6 +1445,39 @@ export function OpportunityDetailPage() {
                           >
                             {t('opportunity.cancel_shift_signup')}
                           </Button>
+                        ) : waitlistEntry ? (
+                          // On the list for this shift: claim the place once offered, or step off.
+                          <>
+                            {offered && (
+                              <Button
+                                size="sm"
+                                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                                isLoading={activeShiftAction === 'claim'}
+                                isDisabled={!!shiftAction}
+                                onPress={() => handleShiftAction(shift.id, 'claim')}
+                                data-testid={`shift-claim-${shift.id}`}
+                              >
+                                {t('opportunity.claim_spot')}
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="tertiary"
+                              className="text-theme-muted"
+                              isLoading={activeShiftAction === 'leave_waitlist'}
+                              isDisabled={!!shiftAction}
+                              onPress={() => handleShiftAction(shift.id, 'leave_waitlist')}
+                              data-testid={`shift-leave-waitlist-${shift.id}`}
+                            >
+                              {t('opportunity.leave_waitlist')}
+                            </Button>
+                            <Link
+                              to={`${tenantPath('/volunteering')}?tab=waitlist`}
+                              className="text-xs text-accent hover:underline"
+                            >
+                              {t('opportunity.view_waitlists')}
+                            </Link>
+                          </>
                         ) : isOpenShift ? (
                           <Button
                             size="sm"
@@ -1407,7 +1488,7 @@ export function OpportunityDetailPage() {
                           >
                             {currentShiftId ? t('opportunity.switch_shift') : t('opportunity.sign_up_shift')}
                           </Button>
-                        ) : (
+                        ) : waitlistOn ? (
                           <Button
                             size="sm"
                             variant="secondary"
@@ -1415,10 +1496,11 @@ export function OpportunityDetailPage() {
                             isLoading={activeShiftAction === 'waitlist'}
                             isDisabled={!!shiftAction}
                             onPress={() => handleShiftAction(shift.id, 'waitlist')}
+                            data-testid={`shift-join-waitlist-${shift.id}`}
                           >
                             {t('opportunity.join_waitlist')}
                           </Button>
-                        )}
+                        ) : null}
                       </>
                     )}
                   </div>

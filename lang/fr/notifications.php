@@ -156,6 +156,10 @@ return [
             'title' => 'Votre équipe du :time a été annulée',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Une place est libre pour :subject',
+            'body' => 'Créneau le :time : réservez-la avant qu’elle ne passe à la personne suivante',
+        ],
         'exchange_request_received' => [
             'title' => 'Nouvelle demande pour :subject',
             'body' => 'Appuyez pour accepter ou refuser',

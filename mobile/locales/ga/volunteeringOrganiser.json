@@ -212,7 +212,8 @@
     "checkInsHeading": "Logchaite clárúchán isteach",
     "checkInsEmpty": "Níor taifeadadh aon chlárú isteach don sealbhán seo.",
     "checkInsError": "Níorbh fhéidir an logchaite clárúchán isteach a luchtú.",
-    "openProfile": "Oscail próifíl {{name}}"
+    "openProfile": "Oscail próifíl {{name}}",
+    "waitlistOffered": "Áit tairgthe"
   },
   "expenses": {
     "title": "Éilimh chostais",

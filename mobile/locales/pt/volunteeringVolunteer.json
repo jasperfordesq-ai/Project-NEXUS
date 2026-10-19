@@ -77,7 +77,8 @@
     "joinedTitle": "Está na lista de espera",
     "joinedBody": "Avisaremos se ficar uma vaga livre. Pode ver a sua posição em Listas de espera.",
     "joinError": "Não foi possível adicioná-lo à lista de espera.",
-    "leftTitle": "Saiu da lista de espera"
+    "leftTitle": "Saiu da lista de espera",
+    "claimBy": "Garanta até {{deadline}}."
   },
   "alerts": {
     "title": "Pedidos urgentes",

@@ -77,7 +77,8 @@
     "joinedTitle": "È in lista d'attesa",
     "joinedBody": "La avviseremo se si libera un posto. Può vedere la sua posizione in Liste d'attesa.",
     "joinError": "Impossibile aggiungerla alla lista d'attesa.",
-    "leftTitle": "È uscito dalla lista d'attesa"
+    "leftTitle": "È uscito dalla lista d'attesa",
+    "claimBy": "Richiedilo entro il {{deadline}}."
   },
   "alerts": {
     "title": "Richieste urgenti",

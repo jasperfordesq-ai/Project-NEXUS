@@ -716,6 +716,20 @@ function waitlistStatus(status, t = null) {
     'waitlist-leave-failed': {
       type: 'error',
       key: 'govuk_alpha.vol_depth.waitlist_leave_failed'
+    },
+    // Claiming a freed place from this page (19 Oct 2026). Until then the page told
+    // the member to go and sign up from the opportunity page.
+    'waitlist-claimed': {
+      type: 'success',
+      key: 'govuk_alpha.vol_depth.waitlist_claimed'
+    },
+    'waitlist-claim-gone': {
+      type: 'error',
+      key: 'govuk_alpha.vol_depth.waitlist_claim_gone'
+    },
+    'waitlist-claim-failed': {
+      type: 'error',
+      key: 'govuk_alpha.vol_depth.waitlist_claim_failed'
     }
   };
   const config = messages[status] || null;
@@ -1597,7 +1611,10 @@ function normalizeWaitlistEntry(row, t = null) {
     location: trimmed(opportunity.location),
     organizationName: trimmed(organization.name),
     shiftLabel: dateTimeLabel(shift.start_time ?? shift.startTime),
-    joinedAtLabel: dateTimeLabel(entry.joined_at ?? entry.joinedAt ?? entry.created_at ?? entry.createdAt)
+    joinedAtLabel: dateTimeLabel(entry.joined_at ?? entry.joinedAt ?? entry.created_at ?? entry.createdAt),
+    // When an unclaimed offer passes to the next person (API `expires_at`, set only
+    // while the entry is 'notified').
+    claimByLabel: status === 'notified' ? dateTimeLabel(entry.expires_at ?? entry.expiresAt) : ''
   };
 }
 
@@ -3563,6 +3580,27 @@ router.post('/waitlist/:shiftId(\\d+)/leave', asyncRoute(async (req, res) => {
     undefined,
     '/volunteering/waitlist?status=waitlist-left',
     '/volunteering/waitlist?status=waitlist-leave-failed'
+  );
+}));
+
+// Claim the place the server has offered (19 Oct 2026). {shiftId} is the SHIFT: the
+// API resolves the caller's own offer for it, so nobody can claim another member's.
+// The website and the app have had this button since the offer flow was built; the
+// accessible site sent members off to "sign up from the opportunity page" instead.
+router.post('/waitlist/:shiftId(\\d+)/claim', asyncRoute(async (req, res) => {
+  const shiftId = Number(req.params.shiftId);
+  return runAction(
+    req,
+    res,
+    'POST',
+    `/shifts/${shiftId}/waitlist/promote`,
+    {},
+    '/volunteering/waitlist?status=waitlist-claimed',
+    // VALIDATION_ERROR: the place went to someone else, or the offer expired. The
+    // page then explains that, rather than a bare "try again".
+    (error) => (apiErrorCode(error) === 'VALIDATION_ERROR'
+      ? '/volunteering/waitlist?status=waitlist-claim-gone'
+      : '/volunteering/waitlist?status=waitlist-claim-failed')
   );
 }));
 

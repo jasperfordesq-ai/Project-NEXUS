@@ -154,8 +154,8 @@ const ROSTER = {
     { id: 5, group_name: 'Rotary Club', reserved_slots: 3, leader: { id: 20, name: 'Grace Hopper' }, members: [{ id: 21, name: 'Katherine Johnson' }] }
   ],
   waitlist: [
-    { user: { id: 31, name: 'Second Waiter' }, position: 2 },
-    { user: { id: 30, name: 'First Waiter' }, position: 1 }
+    { user: { id: 31, name: 'Second Waiter' }, position: 2, status: 'waiting' },
+    { user: { id: 30, name: 'First Waiter' }, position: 1, status: 'notified' }
   ]
 };
 
@@ -464,6 +464,9 @@ describe('who is coming', () => {
     expect(res.text).toContain('Grace Hopper');
     expect(res.text).toContain('Katherine Johnson');
     expect(res.text.indexOf('First Waiter')).toBeLessThan(res.text.indexOf('Second Waiter'));
+    // The person holding the freed place is marked, once: the organiser should know it is spoken for.
+    expect(res.text.split(t(`${K}waitlist_offered`)).length - 1).toBe(1);
+    expect(res.text.indexOf('First Waiter')).toBeLessThan(res.text.indexOf(t(`${K}waitlist_offered`)));
   });
 
   it('shows attendance once the shift has started', async () => {

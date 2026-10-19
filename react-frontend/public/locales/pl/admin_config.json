@@ -522,7 +522,7 @@
     "option_volunteering_tab_credentials_label": "Karta Poświadczenia",
     "option_volunteering_tab_credentials_desc": "Weryfikacja danych uwierzytelniających i plakietki zabezpieczające",
     "option_volunteering_tab_waitlist_label": "Zakładka Lista oczekujących",
-    "option_volunteering_tab_waitlist_desc": "Zobacz status listy oczekujących na zmianę i automatyczną promocję",
+    "option_volunteering_tab_waitlist_desc": "Pozwala wolontariuszom dołączyć do listy oczekujących na pełną zmianę, otrzymać informację o zwolnionym miejscu i je odebrać. Nieodebrane miejsce przechodzi do następnej osoby po 48 godzinach.",
     "option_volunteering_tab_swaps_label": "Zakładka Shift Swaps",
     "option_volunteering_tab_swaps_desc": "Zarządzaj prośbami o zamianę zmian między wolontariuszami",
     "option_volunteering_tab_group_signups_label": "Zakładka Rejestracje grupowe",

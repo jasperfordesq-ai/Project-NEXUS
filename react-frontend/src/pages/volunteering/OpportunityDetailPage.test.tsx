@@ -576,3 +576,102 @@ describe('OpportunityDetailPage — shift check-in', () => {
     expect(screen.queryByText('check_in.title')).not.toBeInTheDocument();
   });
 });
+
+// Waitlist polish (19 Oct 2026): the page offered "Join waitlist" on every full shift
+// with no idea whether the volunteer was already on it (the server then answered
+// 409), and gave a member holding a freed place no way to claim it from here.
+describe('OpportunityDetailPage — shift waitlist', () => {
+  const later = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+  const fullShift = (id: number, days: number) => ({
+    id, start_time: later(days), end_time: later(days + 0.1), capacity: 2, signup_count: 2, spots_available: 0,
+  });
+  const approvedVolunteer = {
+    ...mockOpportunity,
+    can_manage: false,
+    is_owner: false,
+    shifts: [fullShift(1, 2), fullShift(2, 3), fullShift(3, 4)],
+    has_applied: true,
+    application: { id: 99, status: 'approved', message: null, shift_id: null, created_at: '2026-02-01T00:00:00Z' },
+  };
+  const waitlists = [
+    { id: 501, position: 3, status: 'waiting', expires_at: null, shift: { id: 1 } },
+    { id: 502, position: 1, status: 'notified', expires_at: later(1), shift: { id: 2 } },
+  ];
+  const mockGets = (opp: unknown, entries: unknown = waitlists) => {
+    vi.mocked(api.get).mockImplementation(((endpoint: string) => {
+      if (endpoint.endsWith('/my-waitlists')) return Promise.resolve({ success: true, data: entries });
+      return Promise.resolve({ success: true, data: opp });
+    }) as unknown as typeof api.get);
+  };
+
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('shows the place in the queue, the offer, and a Join button only where the volunteer is not yet listed', async () => {
+    mockGets(approvedVolunteer);
+    render(<OpportunityDetailPage />);
+
+    expect(await screen.findByTestId('shift-waitlisted-1')).toHaveTextContent('opportunity.on_waitlist');
+    expect(screen.getByTestId('shift-offer-2')).toHaveTextContent('opportunity.waitlist_spot_free');
+    expect(screen.getByTestId('shift-claim-2')).toBeInTheDocument();
+    expect(screen.getByTestId('shift-leave-waitlist-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('shift-join-waitlist-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('shift-join-waitlist-3')).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith('/v2/volunteering/my-waitlists');
+  });
+
+  it('claims the offered place against the shift and reloads', async () => {
+    mockGets(approvedVolunteer);
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { message: 'ok' } });
+    render(<OpportunityDetailPage />);
+
+    fireEvent.click(await screen.findByTestId('shift-claim-2'));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/v2/volunteering/shifts/2/waitlist/promote', {}));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('opportunity.shift_claim_success'));
+    const opportunityLoads = vi.mocked(api.get).mock.calls.filter((c) => String(c[0]) === '/v2/volunteering/opportunities/42');
+    expect(opportunityLoads.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('leaves the waitlist from the shift row', async () => {
+    mockGets(approvedVolunteer);
+    vi.mocked(api.delete).mockResolvedValue({ success: true, data: null });
+    render(<OpportunityDetailPage />);
+
+    fireEvent.click(await screen.findByTestId('shift-leave-waitlist-1'));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/volunteering/shifts/1/waitlist'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('opportunity.shift_leave_waitlist_success'));
+  });
+
+  it('asks for no waitlists and offers no Join button when the community has the waitlist switched off', async () => {
+    const { useTenant } = await import('@/contexts');
+    const tenantMock = vi.mocked(useTenant);
+    const previous = tenantMock.getMockImplementation();
+    // Every render reads the switch, so this must hold for the whole test, not one call.
+    tenantMock.mockImplementation((() => ({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+      tenantPath: (p: string) => `/test${p}`,
+      hasFeature: vi.fn(() => true),
+      hasModule: vi.fn(() => true),
+      volunteeringConfig: { 'volunteering.tab_waitlist': false },
+    })) as unknown as typeof useTenant);
+    try {
+      mockGets(approvedVolunteer);
+      render(<OpportunityDetailPage />);
+
+      await screen.findByText('opportunity.upcoming_shifts');
+      expect(screen.queryByTestId('shift-join-waitlist-3')).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.some((c) => String(c[0]).endsWith('/my-waitlists'))).toBe(false);
+    } finally {
+      tenantMock.mockImplementation(previous as typeof useTenant);
+    }
+  });
+
+  it('asks for no waitlists for a volunteer whose application is not approved', async () => {
+    mockGets({ ...approvedVolunteer, application: { ...approvedVolunteer.application, status: 'pending' } });
+    render(<OpportunityDetailPage />);
+
+    await screen.findByText('opportunity.upcoming_shifts');
+    expect(vi.mocked(api.get).mock.calls.some((c) => String(c[0]).endsWith('/my-waitlists'))).toBe(false);
+  });
+});

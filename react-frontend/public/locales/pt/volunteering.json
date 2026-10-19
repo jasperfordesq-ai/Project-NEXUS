@@ -726,7 +726,7 @@
     "no_entries_title": "Nenhuma entrada na lista de espera",
     "no_entries_desc": "Você não está atualmente em nenhuma lista de espera de turno. Quando um turno estiver lotado, você pode entrar na lista de espera e ser notificado quando uma vaga for aberta.",
     "position": "Posição {{position}}",
-    "spots": "{{count}} pontos",
+    "spots": "{{count}} vagas",
     "joined": "Entrou na lista de espera",
     "leave": "Deixar",
     "leave_confirm": "Tem certeza de que deseja sair desta lista de espera? Você perderá sua posição atual.",
@@ -735,9 +735,14 @@
     "claim_success": "Você está dentro - inscreveu-se para a mudança!",
     "claim_failed": "Não foi possível reivindicar o lugar",
     "claim_hint": "Uma vaga se abriu para você. Reivindique logo – as vagas não reclamadas passam para a próxima pessoa após 48 horas.",
-    "spots_one": "{{count}} pontos",
-    "spots_other": "{{count}} pontos",
-    "spots_many": "{{count}} pontos"
+    "spots_one": "{{count}} vaga",
+    "spots_other": "{{count}} vagas",
+    "spots_many": "{{count}} pontos",
+    "claim_by": "Garanta até {{deadline}}.",
+    "view_opportunity": "Ver oportunidade",
+    "view_opportunity_for": "Ver a oportunidade de {{title}}",
+    "claim_for": "Garantir a sua vaga em {{title}}",
+    "leave_for": "Sair da lista de espera de {{title}}"
   },
   "swaps": {
     "heading": "Trocas de turno",
@@ -842,7 +847,16 @@
     "manage_cancelled_toast": "Oportunidade cancelada.",
     "manage_failed": "Não foi possível alterar a oportunidade. Tente novamente.",
     "runs_organisation_notice": "Você gere esta organização, por isso não pode fazer voluntariado nas oportunidades dela. Gerencie as candidaturas pelo painel da sua organização.",
-    "runs_organisation_link": "Ir para o painel da organização"
+    "runs_organisation_link": "Ir para o painel da organização",
+    "on_waitlist": "Na lista de espera · posição {{position}}",
+    "waitlist_spot_free": "Há uma vaga livre para si",
+    "claim_spot": "Garantir vaga",
+    "leave_waitlist": "Sair da lista de espera",
+    "view_waitlists": "As suas listas de espera",
+    "shift_claim_success": "Feito! Está inscrito no turno.",
+    "shift_claim_failed": "Não foi possível garantir a vaga. Pode ter ido para outra pessoa.",
+    "shift_leave_waitlist_success": "Saiu da lista de espera.",
+    "shift_leave_waitlist_failed": "Não foi possível sair desta lista de espera."
   },
   "org_settings": {
     "heading": "Configurações da organização",
@@ -1556,7 +1570,8 @@
     "urgent_list_counts": "Contactados: {{asked}} · Aceitaram: {{accepted}} · Recusaram: {{declined}}",
     "urgent_withdraw": "Retirar",
     "urgent_withdrawn": "Pedido retirado.",
-    "urgent_withdraw_failed": "Não foi possível retirar o pedido."
+    "urgent_withdraw_failed": "Não foi possível retirar o pedido.",
+    "roster_waitlist_offered": "Vaga oferecida"
   },
   "edit_opportunity_title": "Editar oportunidade",
   "edit_opportunity_subtitle": "Altere os detalhes que os voluntários veem. A organização não pode ser alterada.",

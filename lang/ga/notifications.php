@@ -156,6 +156,10 @@ return [
             'title' => 'Cuireadh do sheal ar :time ar ceal',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Tá áit saor ag :subject',
+            'body' => 'Seal ar :time — éiligh í sula dtéann sí chuig an chéad duine eile',
+        ],
         'exchange_request_received' => [
             'title' => 'Iarratas nua ar :subject',
             'body' => 'Tapáil chun glacadh leis nó é a dhiúltú',

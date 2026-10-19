@@ -522,7 +522,7 @@
     "option_volunteering_tab_credentials_label": "「認証情報」タブ",
     "option_volunteering_tab_credentials_desc": "資格証明の検証とバッジの保護",
     "option_volunteering_tab_waitlist_label": "待機リストタブ",
-    "option_volunteering_tab_waitlist_desc": "シフト待ちリストのステータスと自動昇格を表示する",
+    "option_volunteering_tab_waitlist_desc": "満員のシフトにキャンセル待ちで登録し、空きが出たら通知を受けて枠を確保できます。確保されなかった枠は48時間後に次の方へ渡ります。",
     "option_volunteering_tab_swaps_label": "シフトスワップタブ",
     "option_volunteering_tab_swaps_desc": "ボランティア間のシフト交換リクエストを管理する",
     "option_volunteering_tab_group_signups_label": "グループサインアップタブ",

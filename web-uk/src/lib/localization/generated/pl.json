@@ -5659,12 +5659,17 @@
                 "waitlist_empty": "Gdy dyżur jest pełny, możesz dołączyć do jego listy oczekujących, a my powiadomimy Cię, jeśli zwolni się miejsce.",
                 "waitlist_position": "Pozycja :position",
                 "waitlist_spot_available": "Dostępne miejsce",
-                "waitlist_notified_hint": "Zwolniło się miejsce na tym dyżurze. Zapisz się ze strony oferty, aby je zarezerwować, zanim zostanie zaproponowane następnej osobie.",
+                "waitlist_notified_hint": "Na tej zmianie zwolniło się miejsce. Odbierz je poniżej, zanim zostanie zaproponowane następnej osobie.",
                 "waitlist_joined": "Dołączono do listy oczekujących",
                 "waitlist_leave": "Opuść listę oczekujących",
                 "waitlist_leave_for": "dla :title",
                 "waitlist_left": "Opuściłeś listę oczekujących.",
                 "waitlist_leave_failed": "Nie udało się usunąć Cię z listy oczekujących. Możliwe, że nie jesteś na niej.",
+                "waitlist_claim_by": "Odbierz do :deadline",
+                "waitlist_claim": "Odbierz miejsce",
+                "waitlist_claimed": "Miejsce zostało odebrane. Jesteś teraz zapisany(-a) na tę zmianę.",
+                "waitlist_claim_failed": "Nie udało się odebrać miejsca. Spróbuj ponownie.",
+                "waitlist_claim_gone": "To miejsce nie jest już dostępne. Mogło trafić do kogoś innego lub oferta wygasła.",
                 "swaps_title": "Zamiany dyżurów",
                 "swaps_description": "Poproś innego wolontariusza o zamianę jednego z Twoich dyżurów i odpowiadaj na przesłane Ci prośby o zamianę.",
                 "swaps_error": "Nie udało się wczytać Twoich próśb o zamianę. Spróbuj ponownie.",
@@ -11264,7 +11269,8 @@
                 "group_members": "Członkowie",
                 "group_no_members": "Brak jeszcze potwierdzonych członków",
                 "waitlist_heading": "Lista oczekujących",
-                "col_position": "Miejsce w kolejce"
+                "col_position": "Miejsce w kolejce",
+                "waitlist_offered": "Zaproponowano miejsce"
             },
             "certificate_check": {
                 "title": "Sprawdź certyfikat wolontariusza",

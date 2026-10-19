@@ -711,7 +711,7 @@
     "option_volunteering_tab_credentials_label": "Registerkarte „Anmeldeinformationen“.",
     "option_volunteering_tab_credentials_desc": "Berechtigungsüberprüfung und Schutz von Ausweisen",
     "option_volunteering_tab_waitlist_label": "Registerkarte „Warteliste“.",
-    "option_volunteering_tab_waitlist_desc": "Zeigen Sie den Wartelistenstatus und die automatische Beförderung an",
+    "option_volunteering_tab_waitlist_desc": "Freiwillige können sich auf die Warteliste einer vollen Schicht setzen, werden benachrichtigt, wenn ein Platz frei wird, und können ihn annehmen. Ein nicht angenommener Platz geht nach 48 Stunden an die nächste Person.",
     "option_volunteering_tab_swaps_label": "Registerkarte „Schichtwechsel“.",
     "option_volunteering_tab_swaps_desc": "Verwalten Sie Schichttauschanfragen zwischen Freiwilligen",
     "option_volunteering_tab_group_signups_label": "Registerkarte „Gruppenanmeldungen“.",

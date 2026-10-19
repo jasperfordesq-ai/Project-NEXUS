@@ -77,7 +77,8 @@
     "joinedTitle": "Sie stehen auf der Warteliste",
     "joinedBody": "Wir benachrichtigen Sie, sobald ein Platz frei wird. Ihren Platz in der Reihenfolge sehen Sie unter Wartelisten.",
     "joinError": "Sie konnten nicht auf die Warteliste gesetzt werden.",
-    "leftTitle": "Sie haben die Warteliste verlassen"
+    "leftTitle": "Sie haben die Warteliste verlassen",
+    "claimBy": "Bis {{deadline}} annehmen."
   },
   "alerts": {
     "title": "Dringende Anfragen",

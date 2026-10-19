@@ -67,6 +67,7 @@ final class PushCopy
         'event_cancelled',
         'vol_shift_reminder',
         'vol_shift_cancelled',
+        'vol_waitlist_spot',
         'exchange_request_received',
         'exchange_accepted',
         'achievement',
@@ -95,6 +96,8 @@ final class PushCopy
         'group_chatroom_message',
         'event_reminder',
         'vol_shift_reminder',
+        // A freed place passes to the next person after the claim window.
+        'vol_waitlist_spot',
     ];
 
     /** @return list<string> */

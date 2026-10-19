@@ -77,7 +77,8 @@
     "joinedTitle": "Vous êtes sur la liste d'attente",
     "joinedBody": "Nous vous préviendrons si une place se libère. Vous pouvez voir votre rang dans Listes d'attente.",
     "joinError": "Impossible de vous ajouter à la liste d'attente.",
-    "leftTitle": "Vous avez quitté la liste d'attente"
+    "leftTitle": "Vous avez quitté la liste d'attente",
+    "claimBy": "À réclamer avant le {{deadline}}."
   },
   "alerts": {
     "title": "Demandes urgentes",

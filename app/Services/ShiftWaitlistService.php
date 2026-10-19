@@ -20,6 +20,13 @@ use Illuminate\Support\Facades\Log;
  */
 class ShiftWaitlistService
 {
+    /**
+     * How long a member has to claim a freed place once they are told about it.
+     * The sweep (expireStaleNotifications) passes an unclaimed offer on after
+     * this, and every client shows the same deadline from `expires_at`.
+     */
+    public const OFFER_WINDOW_HOURS = 48;
+
     private static array $errors = [];
 
     public static function getErrors(): array
@@ -91,11 +98,13 @@ class ShiftWaitlistService
             return null;
         }
 
-        // Check if already on waitlist
+        // Already queued, or already holding an offer for this shift. (An offer
+        // means the shift has a free place, so without this the member heard
+        // "this shift is not full" instead of "you are already on its list".)
         $onWaitlist = DB::table('vol_shift_waitlist')
             ->where('shift_id', $shiftId)
             ->where('user_id', $userId)
-            ->where('status', 'waiting')
+            ->whereIn('status', ['waiting', 'notified'])
             ->where('tenant_id', $tenantId)
             ->exists();
 
@@ -138,13 +147,40 @@ class ShiftWaitlistService
 
         try {
             return DB::transaction(function () use ($shiftId, $userId, $tenantId) {
-                // Get next position (locked to prevent race condition)
+                // Get next position (locked to prevent race condition). An
+                // outstanding offer keeps its place at the front of the queue.
                 $nextPos = (int) DB::table('vol_shift_waitlist')
                     ->where('shift_id', $shiftId)
-                    ->where('status', 'waiting')
+                    ->whereIn('status', ['waiting', 'notified'])
                     ->where('tenant_id', $tenantId)
                     ->lockForUpdate()
                     ->max('position') + 1;
+
+                // vol_shift_waitlist is UNIQUE on (shift_id, user_id). A member who
+                // left, let an offer lapse, or was promoted and later gave the
+                // place back still owns that row, so it is reactivated rather than
+                // re-inserted — a second INSERT threw and read as a generic failure.
+                $previous = DB::table('vol_shift_waitlist')
+                    ->where('shift_id', $shiftId)
+                    ->where('user_id', $userId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first(['id']);
+
+                if ($previous) {
+                    DB::table('vol_shift_waitlist')
+                        ->where('id', $previous->id)
+                        ->where('tenant_id', $tenantId)
+                        ->update([
+                            'position'    => $nextPos,
+                            'status'      => 'waiting',
+                            'notified_at' => null,
+                            'promoted_at' => null,
+                            'created_at'  => now(),
+                        ]);
+
+                    return (int) $previous->id;
+                }
 
                 return DB::table('vol_shift_waitlist')->insertGetId([
                     'tenant_id'  => $tenantId,
@@ -195,13 +231,7 @@ class ShiftWaitlistService
                     ->where('tenant_id', $tenantId)
                     ->update(['status' => 'cancelled']);
 
-                // Reorder remaining positions
-                DB::table('vol_shift_waitlist')
-                    ->where('shift_id', $shiftId)
-                    ->where('status', 'waiting')
-                    ->where('position', '>', $entry->position)
-                    ->where('tenant_id', $tenantId)
-                    ->decrement('position');
+                self::closeUpPositions($shiftId, $tenantId, (int) $entry->position);
 
                 return $entry;
             });
@@ -219,6 +249,66 @@ class ShiftWaitlistService
             Log::error('ShiftWaitlistService::leave error: ' . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.shift_waitlist_leave_failed')];
             return false;
+        }
+    }
+
+    /**
+     * Everyone queued behind a vacated place moves up one. Covers both the
+     * waiting and the offered ('notified') entries, so the numbers members see
+     * stay true after a leave, a claim, an expiry or a direct sign-up — until
+     * 19 Oct 2026 only a leave did this, and after a claim the next two in line
+     * kept reading "position 2" and "position 3".
+     *
+     * Must run inside the caller's transaction.
+     */
+    private static function closeUpPositions(int $shiftId, int $tenantId, int $vacatedPosition): void
+    {
+        DB::table('vol_shift_waitlist')
+            ->where('shift_id', $shiftId)
+            ->whereIn('status', ['waiting', 'notified'])
+            ->where('position', '>', $vacatedPosition)
+            ->where('tenant_id', $tenantId)
+            ->decrement('position');
+    }
+
+    /**
+     * A member who signs up for a shift through the ordinary route while they
+     * are queued (or holding an offer) for that same shift is settled here:
+     * their entry becomes 'promoted' and the queue closes up. Without this the
+     * offer stayed 'notified' for the whole claim window and "My waitlists"
+     * kept announcing a free place on a shift the member already held.
+     *
+     * Never throws — the sign-up itself has already succeeded.
+     */
+    public static function settleOnSignup(int $shiftId, int $userId, int $tenantId): void
+    {
+        try {
+            DB::transaction(function () use ($shiftId, $userId, $tenantId): void {
+                $entry = DB::table('vol_shift_waitlist')
+                    ->where('shift_id', $shiftId)
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['waiting', 'notified'])
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first(['id', 'position']);
+
+                if (! $entry) {
+                    return;
+                }
+
+                DB::table('vol_shift_waitlist')
+                    ->where('id', $entry->id)
+                    ->where('tenant_id', $tenantId)
+                    ->update(['status' => 'promoted', 'promoted_at' => now()]);
+
+                self::closeUpPositions($shiftId, $tenantId, (int) $entry->position);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('ShiftWaitlistService::settleOnSignup failed', [
+                'shift_id' => $shiftId,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
@@ -296,6 +386,9 @@ class ShiftWaitlistService
                 ->where('w.user_id', $userId)
                 ->where('w.tenant_id', $tenantId)
                 ->whereIn('w.status', ['waiting', 'notified'])
+                // A shift that has started is nothing you can still wait for; the
+                // sweep expires such entries, this hides them until it has run.
+                ->where('s.start_time', '>', now())
                 ->orderBy('s.start_time')
                 ->select(
                     'w.id', 'w.position', 'w.status', 'w.notified_at', 'w.created_at as joined_at',
@@ -311,6 +404,11 @@ class ShiftWaitlistService
                     'position'    => (int) $row->position,
                     'status'      => $row->status,
                     'notified_at' => $row->notified_at,
+                    // When an unclaimed offer passes to the next person. Null while
+                    // the member is still waiting.
+                    'expires_at'  => $row->status === 'notified' && $row->notified_at
+                        ? \Carbon\Carbon::parse($row->notified_at)->addHours(self::OFFER_WINDOW_HOURS)->toDateTimeString()
+                        : null,
                     'shift'       => [
                         'id'         => (int) $row->shift_id,
                         'start_time' => $row->start_time,
@@ -431,6 +529,8 @@ class ShiftWaitlistService
                         'promoted_at' => now(),
                     ]);
 
+                self::closeUpPositions((int) $entry->shift_id, $tenantId, (int) $entry->position);
+
                 return true;
             });
 
@@ -521,8 +621,26 @@ class ShiftWaitlistService
                     ->select(['id', 'preferred_language'])
                     ->first();
 
-                LocaleContext::withLocale($recipient, function () use ($notifiedEntry) {
+                // What the lock screen names: the opportunity and when the shift
+                // is. Both are already visible to every member of the community.
+                $context = DB::table('vol_shifts as s')
+                    ->join('vol_opportunities as opp', function ($join): void {
+                        $join->on('s.opportunity_id', '=', 'opp.id')
+                            ->on('s.tenant_id', '=', 'opp.tenant_id');
+                    })
+                    ->where('s.id', $shiftId)
+                    ->where('s.tenant_id', $tenantId)
+                    ->first(['s.start_time', 'opp.title']);
+
+                LocaleContext::withLocale($recipient, function () use ($notifiedEntry, $context) {
                     $content = __('svc_notifications.shift_waitlist.spot_available');
+                    $pushContext = [];
+                    if ($context) {
+                        $pushContext['subject'] = (string) $context->title;
+                        $pushContext['time'] = \Carbon\Carbon::parse($context->start_time)
+                            ->locale(\App\I18n\FormattingLocale::carbon())
+                            ->isoFormat('lll');
+                    }
                     NotificationDispatcher::dispatch(
                         (int) $notifiedEntry->user_id,
                         'global',
@@ -531,7 +649,11 @@ class ShiftWaitlistService
                         $content,
                         '/volunteering?tab=waitlist',
                         null,
-                        false
+                        false,
+                        null,
+                        null,
+                        null,
+                        $pushContext
                     );
                 });
             } catch (\Throwable $notifErr) {
@@ -597,24 +719,32 @@ class ShiftWaitlistService
      * $hours is marked 'expired' and notifyNext() runs for its shift so the
      * offer cascades down the queue. Returns the number of expired offers.
      */
-    public static function expireStaleNotifications(int $hours = 48): int
+    public static function expireStaleNotifications(int $hours = self::OFFER_WINDOW_HOURS): int
     {
         $cutoff = now()->subHours($hours);
 
         $stale = DB::table('vol_shift_waitlist')
             ->where('status', 'notified')
             ->where('notified_at', '<', $cutoff)
-            ->select(['id', 'shift_id', 'tenant_id'])
+            ->select(['id', 'shift_id', 'tenant_id', 'position'])
             ->get();
 
         $expired = 0;
         foreach ($stale as $entry) {
             try {
-                $affected = DB::table('vol_shift_waitlist')
-                    ->where('id', $entry->id)
-                    ->where('tenant_id', $entry->tenant_id)
-                    ->where('status', 'notified')
-                    ->update(['status' => 'expired']);
+                $affected = DB::transaction(function () use ($entry): int {
+                    $affected = DB::table('vol_shift_waitlist')
+                        ->where('id', $entry->id)
+                        ->where('tenant_id', $entry->tenant_id)
+                        ->where('status', 'notified')
+                        ->update(['status' => 'expired']);
+
+                    if ($affected > 0) {
+                        self::closeUpPositions((int) $entry->shift_id, (int) $entry->tenant_id, (int) $entry->position);
+                    }
+
+                    return $affected;
+                });
 
                 if ($affected > 0) {
                     $expired++;
@@ -628,6 +758,30 @@ class ShiftWaitlistService
             }
         }
 
+        self::expireEntriesForStartedShifts();
+
         return $expired;
+    }
+
+    /**
+     * Housekeeping for the same sweep: nobody can be offered, or claim, a place
+     * on a shift that has already started, so whatever is still queued for one
+     * is closed as 'expired'. Without this a member stayed "waiting" for a shift
+     * in the past until they noticed and left it themselves.
+     */
+    private static function expireEntriesForStartedShifts(): void
+    {
+        try {
+            DB::table('vol_shift_waitlist as w')
+                ->join('vol_shifts as s', function ($join): void {
+                    $join->on('w.shift_id', '=', 's.id')
+                        ->on('w.tenant_id', '=', 's.tenant_id');
+                })
+                ->whereIn('w.status', ['waiting', 'notified'])
+                ->where('s.start_time', '<', now())
+                ->update(['w.status' => 'expired']);
+        } catch (\Throwable $e) {
+            Log::warning('ShiftWaitlistService::expireEntriesForStartedShifts failed', ['error' => $e->getMessage()]);
+        }
     }
 }

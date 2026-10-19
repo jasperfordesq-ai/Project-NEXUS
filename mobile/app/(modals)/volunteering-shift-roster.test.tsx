@@ -48,6 +48,7 @@ jest.mock('react-i18next', () => ({
         'roster.groupLeader': `Booked by ${String(o.name ?? '')}`,
         'roster.waitlistHeading': 'Waitlist',
         'roster.waitlistPosition': `Place in queue: ${String(o.position ?? '')}`,
+        'roster.waitlistOffered': 'Offered a place',
         'roster.checkInsHeading': 'Check-in log',
         'roster.checkInsEmpty': 'No check-ins recorded for this shift.',
         'roster.checkInsError': 'Could not load the check-in log.',
@@ -93,7 +94,10 @@ const ROSTER = {
     { user: { id: 10, name: 'Bea Helper', avatar_url: null }, check_in_status: null, checked_in_at: null, checked_out_at: null },
   ],
   groups: [{ id: 3, group_name: 'Scouts', reserved_slots: 3, leader: { id: 11, name: 'Cal Leader', avatar_url: null }, members: [{ id: 12, name: 'Dee Member', avatar_url: null }] }],
-  waitlist: [{ user: { id: 13, name: 'Eve Waiting', avatar_url: null }, position: 1 }],
+  waitlist: [
+    { user: { id: 13, name: 'Eve Waiting', avatar_url: null }, position: 1, status: 'notified' },
+    { user: { id: 14, name: 'Finn Waiting', avatar_url: null }, position: 2, status: 'waiting' },
+  ],
 };
 
 function mockApis(states: Partial<Record<'roster' | 'checkins', ApiState>> = {}) {
@@ -129,6 +133,10 @@ describe('ShiftRoster', () => {
     expect(screen.getByText('Booked by Cal Leader')).toBeTruthy();
     expect(screen.getByText('Dee Member')).toBeTruthy();
     expect(screen.getByText('Place in queue: 1')).toBeTruthy();
+    // The person holding the freed place is marked, once; the one still waiting is not.
+    expect(screen.getByTestId('shift-roster-waitlist-offered-13')).toBeTruthy();
+    expect(screen.queryByTestId('shift-roster-waitlist-offered-14')).toBeNull();
+    expect(screen.getByText('Place in queue: 2')).toBeTruthy();
     expect(screen.getByTestId('shift-roster-checkin-1')).toBeTruthy();
 
     fireEvent.press(screen.getByLabelText('Open profile for Bea Helper'));

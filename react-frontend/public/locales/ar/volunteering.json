@@ -744,7 +744,7 @@
     "no_entries_title": "لا توجد إدخالات قائمة الانتظار",
     "no_entries_desc": "أنت لست مدرجًا حاليًا في أي قوائم انتظار للمناوبة. عند اكتمال الوردية، يمكنك الانضمام إلى قائمة الانتظار وسيتم إعلامك عند فتح مكان ما.",
     "position": "الموضع {{position}}",
-    "spots": "{{count}} البقع",
+    "spots": "{{count}} أماكن",
     "joined": "انضم إلى قائمة الانتظار",
     "leave": "يترك",
     "leave_confirm": "هل أنت متأكد أنك تريد مغادرة قائمة الانتظار هذه؟ سوف تفقد موقعك الحالي.",
@@ -753,12 +753,17 @@
     "claim_success": "أنت مشترك — اشترك في التحول!",
     "claim_failed": "لا يمكن المطالبة بالمكان",
     "claim_hint": "انفتحت لك مكان . قم بالمطالبة بها قريبًا - تنتقل الأماكن التي لم تتم المطالبة بها إلى الشخص التالي بعد 48 ساعة.",
-    "spots_one": "{{count}} البقع",
-    "spots_other": "{{count}} البقع",
+    "spots_one": "{{count}} مكان",
+    "spots_other": "{{count}} أماكن",
     "spots_few": "{{count}} البقع",
     "spots_many": "{{count}} البقع",
     "spots_two": "{{count}} البقع",
-    "spots_zero": "{{count}} البقع"
+    "spots_zero": "{{count}} البقع",
+    "claim_by": "احجزه قبل {{deadline}}.",
+    "view_opportunity": "عرض الفرصة",
+    "view_opportunity_for": "عرض الفرصة الخاصة بـ {{title}}",
+    "claim_for": "احجز مكانك في {{title}}",
+    "leave_for": "مغادرة قائمة الانتظار لـ {{title}}"
   },
   "swaps": {
     "heading": "مقايضات التحول",
@@ -863,7 +868,16 @@
     "manage_cancelled_toast": "أُلغيت الفرصة.",
     "manage_failed": "تعذّر تغيير الفرصة. يُرجى المحاولة مرة أخرى.",
     "runs_organisation_notice": "أنت تدير هذه المنظمة، لذا لا يمكنك التطوع في فرصها. يمكنك إدارة طلباتها من لوحة تحكم منظمتك.",
-    "runs_organisation_link": "الانتقال إلى لوحة تحكم المنظمة"
+    "runs_organisation_link": "الانتقال إلى لوحة تحكم المنظمة",
+    "on_waitlist": "في قائمة الانتظار · الترتيب {{position}}",
+    "waitlist_spot_free": "هناك مكان شاغر لك",
+    "claim_spot": "احجز المكان",
+    "leave_waitlist": "مغادرة قائمة الانتظار",
+    "view_waitlists": "قوائم انتظارك",
+    "shift_claim_success": "تم! أنت مسجّل في المناوبة.",
+    "shift_claim_failed": "تعذّر حجز المكان. ربما ذهب إلى شخص آخر.",
+    "shift_leave_waitlist_success": "لقد غادرت قائمة الانتظار.",
+    "shift_leave_waitlist_failed": "تعذّرت مغادرة قائمة الانتظار هذه."
   },
   "org_settings": {
     "heading": "إعدادات المنظمة",
@@ -1607,7 +1621,8 @@
     "urgent_list_counts": "طُلب من: {{asked}} · قبلوا: {{accepted}} · رفضوا: {{declined}}",
     "urgent_withdraw": "سحب",
     "urgent_withdrawn": "سُحب الطلب.",
-    "urgent_withdraw_failed": "تعذّر سحب الطلب."
+    "urgent_withdraw_failed": "تعذّر سحب الطلب.",
+    "roster_waitlist_offered": "تم عرض مكان"
   },
   "edit_opportunity_title": "تعديل الفرصة",
   "edit_opportunity_subtitle": "غيّر التفاصيل التي يراها المتطوعون. لا يمكن تغيير المنظمة.",

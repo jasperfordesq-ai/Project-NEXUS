@@ -522,7 +522,7 @@
     "option_volunteering_tab_credentials_label": "Pestaña Credenciales",
     "option_volunteering_tab_credentials_desc": "Insignias de verificación y protección de credenciales",
     "option_volunteering_tab_waitlist_label": "Pestaña Lista de espera",
-    "option_volunteering_tab_waitlist_desc": "Ver el estado de la lista de espera de turnos y la promoción automática",
+    "option_volunteering_tab_waitlist_desc": "Permite a los voluntarios unirse a la lista de espera de un turno completo, recibir aviso cuando se libera una plaza y reclamarla. Una plaza no reclamada pasa a la siguiente persona tras 48 horas.",
     "option_volunteering_tab_swaps_label": "Pestaña de intercambio de turnos",
     "option_volunteering_tab_swaps_desc": "Gestionar solicitudes de intercambio de turnos entre voluntarios.",
     "option_volunteering_tab_group_signups_label": "Pestaña de inscripciones grupales",

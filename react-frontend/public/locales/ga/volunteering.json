@@ -738,7 +738,7 @@
     "no_entries_title": "Níl aon iontrálacha liosta feithimh",
     "no_entries_desc": "Níl tú ar aon liosta feithimh do sheal faoi láthair. Nuair a bhíonn seal lán, is féidir leat dul ar an liosta feithimh agus gheobhaidh tú fógra nuair a bheidh áit ar fáil.",
     "position": "Seasamh {{position}}",
-    "spots": "{{count}} spotaí",
+    "spots": "{{count}} áit",
     "joined": "Cuireadh ar an liosta feithimh thú",
     "leave": "Fág",
     "leave_confirm": "An bhfuil tú cinnte gur mhaith leat an liosta feithimh seo a fhágáil? Caillfidh tú do staid reatha.",
@@ -747,11 +747,16 @@
     "claim_success": "Tá d’áit faighte agat — tá tú cláraithe don seal!",
     "claim_failed": "Níorbh fhéidir an láthair a éileamh",
     "claim_hint": "D'oscail láthair duit. Éiligh go luath é - aistrítear spotaí neamhéilithe chuig an gcéad duine eile tar éis 48 uair an chloig.",
-    "spots_one": "{{count}} spotaí",
-    "spots_other": "{{count}} spotaí",
+    "spots_one": "{{count}} áit",
+    "spots_other": "{{count}} áit",
     "spots_few": "{{count}} spotaí",
     "spots_many": "{{count}} spotaí",
-    "spots_two": "{{count}} spotaí"
+    "spots_two": "{{count}} spotaí",
+    "claim_by": "Éiligh í roimh {{deadline}}.",
+    "view_opportunity": "Féach ar an deis",
+    "view_opportunity_for": "Féach ar an deis do {{title}}",
+    "claim_for": "Éiligh d’áit ar {{title}}",
+    "leave_for": "Fág an liosta feithimh do {{title}}"
   },
   "swaps": {
     "heading": "Babhtálacha Sealanna",
@@ -856,7 +861,16 @@
     "manage_cancelled_toast": "Cuireadh an deis ar ceal.",
     "manage_failed": "Níorbh fhéidir an deis a athrú. Bain triail eile as.",
     "runs_organisation_notice": "Is tusa a reáchtálann an eagraíocht seo, mar sin ní féidir leat obair dheonach a dhéanamh ar a deiseanna féin. Bainistigh a cuid iarratas ó dheais d’eagraíochta.",
-    "runs_organisation_link": "Téigh go deais na heagraíochta"
+    "runs_organisation_link": "Téigh go deais na heagraíochta",
+    "on_waitlist": "Ar an liosta feithimh · áit {{position}}",
+    "waitlist_spot_free": "Tá áit saor duit",
+    "claim_spot": "Éiligh an áit",
+    "leave_waitlist": "Fág an liosta feithimh",
+    "view_waitlists": "Do liostaí feithimh",
+    "shift_claim_success": "Tá tú istigh – cláraithe don seal!",
+    "shift_claim_failed": "Níorbh fhéidir an áit a éileamh. B’fhéidir gur chuaigh sí chuig duine eile.",
+    "shift_leave_waitlist_success": "D’fhág tú an liosta feithimh.",
+    "shift_leave_waitlist_failed": "Níorbh fhéidir an liosta feithimh seo a fhágáil."
   },
   "org_settings": {
     "heading": "Socruithe Eagraíochta",
@@ -1590,7 +1604,8 @@
     "urgent_list_counts": "Iarrtha: {{asked}} · Glactha: {{accepted}} · Diúltaithe: {{declined}}",
     "urgent_withdraw": "Tarraing siar",
     "urgent_withdrawn": "Tarraingíodh siar an t-iarratas.",
-    "urgent_withdraw_failed": "Níorbh fhéidir an t-iarratas a tharraingt siar."
+    "urgent_withdraw_failed": "Níorbh fhéidir an t-iarratas a tharraingt siar.",
+    "roster_waitlist_offered": "Áit tairgthe"
   },
   "edit_opportunity_title": "Cuir an deis in eagar",
   "edit_opportunity_subtitle": "Athraigh na sonraí a fheiceann oibrithe deonacha. Ní féidir an eagraíocht a athrú.",

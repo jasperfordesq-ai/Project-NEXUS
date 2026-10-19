@@ -732,7 +732,7 @@
     "no_entries_title": "Brak wpisów na liście oczekujących",
     "no_entries_desc": "Obecnie nie znajdujesz się na żadnej liście oczekujących na zmianę. Gdy zmiana jest zapełniona, możesz zapisać się na listę oczekujących i otrzymać powiadomienie, gdy zwolni się wolne miejsce.",
     "position": "Pozycja {{position}}",
-    "spots": "Miejsca {{count}}",
+    "spots": "{{count}} miejsc",
     "joined": "Dołączył do listy oczekujących",
     "leave": "Opuść",
     "leave_confirm": "Czy na pewno chcesz opuścić tę listę oczekujących? Stracisz swoją obecną pozycję.",
@@ -741,10 +741,15 @@
     "claim_success": "Jesteś gotowy — zapisałeś się na zmianę!",
     "claim_failed": "Nie udało się zająć tego miejsca",
     "claim_hint": "Otworzyło się dla Ciebie miejsce. Odbierz go szybko – nieodebrane miejsca przechodzą na następną osobę po 48 godzinach.",
-    "spots_one": "Miejsca {{count}}",
-    "spots_other": "Miejsca {{count}}",
+    "spots_one": "{{count}} miejsce",
+    "spots_other": "{{count}} miejsc",
     "spots_few": "Miejsca {{count}}",
-    "spots_many": "Miejsca {{count}}"
+    "spots_many": "Miejsca {{count}}",
+    "claim_by": "Odbierz do {{deadline}}.",
+    "view_opportunity": "Zobacz ofertę",
+    "view_opportunity_for": "Zobacz ofertę {{title}}",
+    "claim_for": "Odbierz swoje miejsce w {{title}}",
+    "leave_for": "Opuść listę oczekujących {{title}}"
   },
   "swaps": {
     "heading": "Zamiana zmian",
@@ -849,7 +854,16 @@
     "manage_cancelled_toast": "Oferta odwołana.",
     "manage_failed": "Nie udało się zmienić oferty. Spróbuj ponownie.",
     "runs_organisation_notice": "Prowadzisz tę organizację, więc nie możesz zgłosić się jako wolontariusz do jej własnych ofert. Zgłoszeniami zarządzaj w panelu swojej organizacji.",
-    "runs_organisation_link": "Przejdź do panelu organizacji"
+    "runs_organisation_link": "Przejdź do panelu organizacji",
+    "on_waitlist": "Na liście oczekujących · miejsce {{position}}",
+    "waitlist_spot_free": "Jest dla Ciebie wolne miejsce",
+    "claim_spot": "Odbierz miejsce",
+    "leave_waitlist": "Opuść listę oczekujących",
+    "view_waitlists": "Twoje listy oczekujących",
+    "shift_claim_success": "Gotowe – zapisano Cię na zmianę!",
+    "shift_claim_failed": "Nie udało się odebrać miejsca. Mogło trafić do kogoś innego.",
+    "shift_leave_waitlist_success": "Opuszczono listę oczekujących.",
+    "shift_leave_waitlist_failed": "Nie udało się opuścić tej listy oczekujących."
   },
   "org_settings": {
     "heading": "Ustawienia organizacji",
@@ -1573,7 +1587,8 @@
     "urgent_list_counts": "Poproszono: {{asked}} · Przyjęło: {{accepted}} · Odmówiło: {{declined}}",
     "urgent_withdraw": "Wycofaj",
     "urgent_withdrawn": "Prośba wycofana.",
-    "urgent_withdraw_failed": "Nie udało się wycofać prośby."
+    "urgent_withdraw_failed": "Nie udało się wycofać prośby.",
+    "roster_waitlist_offered": "Zaproponowano miejsce"
   },
   "edit_opportunity_title": "Edytuj ofertę",
   "edit_opportunity_subtitle": "Zmień informacje, które widzą wolontariusze. Organizacji nie można zmienić.",

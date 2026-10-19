@@ -521,7 +521,7 @@
     "option_volunteering_tab_credentials_label": "علامة تبويب بيانات الاعتماد",
     "option_volunteering_tab_credentials_desc": "التحقق من بيانات الاعتماد وشارات الحماية",
     "option_volunteering_tab_waitlist_label": "علامة تبويب قائمة الانتظار",
-    "option_volunteering_tab_waitlist_desc": "عرض حالة قائمة انتظار التحول والترويج التلقائي",
+    "option_volunteering_tab_waitlist_desc": "يتيح للمتطوعين الانضمام إلى قائمة انتظار مناوبة ممتلئة، وإبلاغهم عند توفر مكان وحجزه. المكان غير المحجوز ينتقل إلى الشخص التالي بعد 48 ساعة.",
     "option_volunteering_tab_swaps_label": "علامة التبويب \"مقايضات التحول\".",
     "option_volunteering_tab_swaps_desc": "إدارة طلبات مبادلة المناوبة بين المتطوعين",
     "option_volunteering_tab_group_signups_label": "علامة تبويب تسجيلات المجموعة",

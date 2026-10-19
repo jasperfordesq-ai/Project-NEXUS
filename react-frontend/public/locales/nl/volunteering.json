@@ -729,8 +729,13 @@
     "claim_success": "Je doet mee - aangemeld voor de dienst!",
     "claim_failed": "Kon de plek niet claimen",
     "claim_hint": "Er is een plekje voor je vrijgekomen. Claim het snel: niet-geclaimde plekken gaan na 48 uur naar de volgende persoon.",
-    "spots_one": "{{count}} plekken",
-    "spots_other": "{{count}} plekken"
+    "spots_one": "{{count}} plek",
+    "spots_other": "{{count}} plekken",
+    "claim_by": "Claim vóór {{deadline}}.",
+    "view_opportunity": "Bekijk vacature",
+    "view_opportunity_for": "Bekijk de vacature voor {{title}}",
+    "claim_for": "Claim je plek bij {{title}}",
+    "leave_for": "Verlaat de wachtlijst voor {{title}}"
   },
   "swaps": {
     "heading": "Wissels van ploegendiensten",
@@ -835,7 +840,16 @@
     "manage_cancelled_toast": "Vacature geannuleerd.",
     "manage_failed": "Kon de vacature niet wijzigen. Probeer het opnieuw.",
     "runs_organisation_notice": "Jij beheert deze organisatie, dus je kunt geen vrijwilligerswerk doen voor haar eigen vacatures. Beheer de aanmeldingen via het dashboard van je organisatie.",
-    "runs_organisation_link": "Naar het dashboard van de organisatie"
+    "runs_organisation_link": "Naar het dashboard van de organisatie",
+    "on_waitlist": "Op de wachtlijst · plaats {{position}}",
+    "waitlist_spot_free": "Er is een plek vrij voor jou",
+    "claim_spot": "Plek claimen",
+    "leave_waitlist": "Wachtlijst verlaten",
+    "view_waitlists": "Jouw wachtlijsten",
+    "shift_claim_success": "Gelukt – je bent ingeschreven voor de dienst!",
+    "shift_claim_failed": "De plek kon niet worden geclaimd. Mogelijk is die naar iemand anders gegaan.",
+    "shift_leave_waitlist_success": "Je hebt de wachtlijst verlaten.",
+    "shift_leave_waitlist_failed": "Deze wachtlijst kon niet worden verlaten."
   },
   "org_settings": {
     "heading": "Organisatie-instellingen",
@@ -1539,7 +1553,8 @@
     "urgent_list_counts": "Gevraagd: {{asked}} · Geaccepteerd: {{accepted}} · Afgewezen: {{declined}}",
     "urgent_withdraw": "Intrekken",
     "urgent_withdrawn": "Verzoek ingetrokken.",
-    "urgent_withdraw_failed": "Kon het verzoek niet intrekken."
+    "urgent_withdraw_failed": "Kon het verzoek niet intrekken.",
+    "roster_waitlist_offered": "Plek aangeboden"
   },
   "edit_opportunity_title": "Vacature bewerken",
   "edit_opportunity_subtitle": "Wijzig de gegevens die vrijwilligers zien. De organisatie kan niet worden gewijzigd.",

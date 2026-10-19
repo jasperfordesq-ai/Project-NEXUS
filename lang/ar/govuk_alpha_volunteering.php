@@ -778,6 +778,8 @@ return [
         'group_no_members' => 'لا يوجد أعضاء مؤكَّدون بعد',
         'waitlist_heading' => 'قائمة الانتظار',
         'col_position' => 'الترتيب في القائمة',
+
+        'waitlist_offered' => 'تم عرض مكان',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

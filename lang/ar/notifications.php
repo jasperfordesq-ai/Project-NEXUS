@@ -159,6 +159,10 @@ return [
             'title' => 'تم إلغاء مناوبتك على :time',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'هناك مكان شاغر في :subject',
+            'body' => 'مناوبة في :time — احجزه قبل أن ينتقل العرض إلى الشخص التالي',
+        ],
         'exchange_request_received' => [
             'title' => 'طلب جديد لـ :subject',
             'body' => 'انقر للقبول أو الرفض',

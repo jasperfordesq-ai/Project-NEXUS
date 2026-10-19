@@ -244,7 +244,15 @@ function ShiftRosterScreen() {
               <SectionHeading>{t('roster.waitlistHeading')}</SectionHeading>
               {roster.waitlist.map((entry) => (
                 <PersonLine key={entry.user.id} person={entry.user} testID={`shift-roster-waitlist-${entry.user.id}`}>
-                  <Text className="text-xs" style={{ color: theme.textMuted }}>{t('roster.waitlistPosition', { position: entry.position })}</Text>
+                  <View className="flex-row flex-wrap items-center gap-2">
+                    {entry.status === 'notified' ? (
+                      // The server has offered this person the freed place: it is spoken for.
+                      <Chip size="sm" variant="secondary" color="success" testID={`shift-roster-waitlist-offered-${entry.user.id}`}>
+                        <Chip.Label>{t('roster.waitlistOffered')}</Chip.Label>
+                      </Chip>
+                    ) : null}
+                    <Text className="text-xs" style={{ color: theme.textMuted }}>{t('roster.waitlistPosition', { position: entry.position })}</Text>
+                  </View>
                 </PersonLine>
               ))}
             </HeroCard.Body>

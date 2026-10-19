@@ -59,7 +59,12 @@
           <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ entry.title }}</h2>
           {% if entry.isNotified %}
             {{ govukTag({ text: t("vol_depth.waitlist_spot_available"), classes: "govuk-tag--green" }) }}
-            <p class="govuk-body govuk-!-margin-top-3">{{ t("vol_depth.waitlist_notified_hint") }}</p>
+            <p class="govuk-body govuk-!-margin-top-3">
+              {{ t("vol_depth.waitlist_notified_hint") }}
+              {% if entry.claimByLabel %}
+                <strong data-testid="waitlist-claim-by-{{ entry.id }}">{{ t("vol_depth.waitlist_claim_by", { deadline: entry.claimByLabel }) }}.</strong>
+              {% endif %}
+            </p>
           {% else %}
             {{ govukTag({ text: t("vol_depth.waitlist_position", { position: entry.position }), classes: "govuk-tag--yellow" }) }}
           {% endif %}
@@ -99,12 +104,22 @@
           </dl>
 
           {% if entry.shiftId %}
-            <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/leave') }}">
-              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
-                {{ t("vol_depth.waitlist_leave") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>
-              </button>
-            </form>
+            <div class="govuk-button-group govuk-!-margin-bottom-0">
+              {% if entry.isNotified %}
+                <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/claim') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true" data-testid="waitlist-claim-{{ entry.id }}">
+                    {{ t("vol_depth.waitlist_claim") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>
+                  </button>
+                </form>
+              {% endif %}
+              <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/leave') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
+                  {{ t("vol_depth.waitlist_leave") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>
+                </button>
+              </form>
+            </div>
           {% endif %}
         </article>
       {% endfor %}

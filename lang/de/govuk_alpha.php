@@ -4625,12 +4625,22 @@ return [
         'waitlist_empty' => 'Wenn eine Schicht voll ist, können Sie sich auf die Warteliste setzen lassen und werden benachrichtigt, wenn ein Platz frei wird.',
         'waitlist_position' => 'Platz :position',
         'waitlist_spot_available' => 'Ein Platz ist verfügbar',
-        'waitlist_notified_hint' => 'Für diese Schicht ist ein Platz frei geworden. Melden Sie sich auf der Seite der Gelegenheit an, um ihn zu beanspruchen, bevor er der nächsten Person angeboten wird.',
+        'waitlist_notified_hint' => 'Für diese Schicht ist ein Platz frei geworden. Nehmen Sie ihn unten an, bevor er der nächsten Person angeboten wird.',
         'waitlist_joined' => 'Warteliste beigetreten',
         'waitlist_leave' => 'Warteliste verlassen',
         'waitlist_leave_for' => 'für :title',
         'waitlist_left' => 'Sie haben die Warteliste verlassen.',
         'waitlist_leave_failed' => 'Sie konnten nicht von der Warteliste entfernt werden. Möglicherweise stehen Sie nicht darauf.',
+
+        'waitlist_claim_by' => 'Bis :deadline annehmen',
+
+        'waitlist_claim' => 'Platz annehmen',
+
+        'waitlist_claimed' => 'Sie haben den Platz angenommen. Sie sind jetzt für diese Schicht angemeldet.',
+
+        'waitlist_claim_failed' => 'Der Platz konnte nicht angenommen werden. Bitte versuchen Sie es erneut.',
+
+        'waitlist_claim_gone' => 'Dieser Platz ist nicht mehr verfügbar. Er ist möglicherweise an jemand anderen gegangen oder das Angebot ist abgelaufen.',
         'swaps_title' => 'Schichttausch',
         'swaps_description' => 'Bitten Sie einen anderen Freiwilligen, eine Ihrer Schichten zu tauschen, und antworten Sie auf an Sie gesendete Tauschbitten.',
         'swaps_error' => 'Ihre Tauschbitten konnten nicht geladen werden. Bitte versuchen Sie es erneut.',

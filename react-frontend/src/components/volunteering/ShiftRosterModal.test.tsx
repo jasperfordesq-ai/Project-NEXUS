@@ -36,7 +36,10 @@ const roster: ShiftRoster = {
     { user: { id: 13, name: 'Cy Coming' }, check_in_status: null, checked_in_at: null, checked_out_at: null },
   ],
   groups: [{ id: 5, group_name: 'Roster Rovers', reserved_slots: 4, leader: { id: 20, name: 'Gina Leader' }, members: [{ id: 21, name: 'Gus Member' }] }],
-  waitlist: [{ user: { id: 30, name: 'Wes Waiting' }, position: 1 }],
+  waitlist: [
+    { user: { id: 30, name: 'Wes Waiting' }, position: 1, status: 'notified' },
+    { user: { id: 31, name: 'Wren Waiting' }, position: 2, status: 'waiting' },
+  ],
 };
 
 describe('ShiftRosterModal', () => {
@@ -60,6 +63,16 @@ describe('ShiftRosterModal', () => {
     expect(screen.getByText('shift_manager.roster_group_leader:name=Gina Leader')).toBeInTheDocument();
     expect(screen.getByText('Gus Member')).toBeInTheDocument();
     expect(screen.getByText('Wes Waiting')).toBeInTheDocument();
+  });
+
+  it('marks the person who has been offered the freed place', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: roster });
+    render(<ShiftRosterModal shiftId={7} shiftLabel="Sun 5 Oct" hasStarted={false} onClose={vi.fn()} />);
+
+    await screen.findByText('Wes Waiting');
+    expect(screen.getAllByText('shift_manager.roster_waitlist_offered')).toHaveLength(1);
+    expect(screen.getByText('shift_manager.roster_waitlist_position:position=1')).toBeInTheDocument();
+    expect(screen.getByText('shift_manager.roster_waitlist_position:position=2')).toBeInTheDocument();
   });
 
   it('before the shift starts, nobody is shown as missing', async () => {

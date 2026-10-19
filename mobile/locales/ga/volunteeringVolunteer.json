@@ -77,7 +77,8 @@
     "joinedTitle": "Tá tú ar an liosta feithimh",
     "joinedBody": "Cuirfimid in iúl duit má bhíonn áit saor. Is féidir leat d'ionad a fheiceáil faoi Liostaí feithimh.",
     "joinError": "Níorbh fhéidir tú a chur ar an liosta feithimh.",
-    "leftTitle": "D'fhág tú an liosta feithimh"
+    "leftTitle": "D'fhág tú an liosta feithimh",
+    "claimBy": "Éiligh í roimh {{deadline}}."
   },
   "alerts": {
     "title": "Iarrataí práinneacha",

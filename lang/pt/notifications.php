@@ -156,6 +156,10 @@ return [
             'title' => 'Seu turno em :time foi cancelado',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Há uma vaga livre em :subject',
+            'body' => 'Turno em :time — garanta-a antes que passe para a próxima pessoa',
+        ],
         'exchange_request_received' => [
             'title' => 'Nova solicitação para :subject',
             'body' => 'Toque para aceitar ou recusar',

@@ -4,113 +4,58 @@
 // See NOTICE file for attribution and acknowledgements.
 
 /**
- * Tests for WaitlistTab
+ * Tests for WaitlistTab — the member's own shift waiting lists.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@/test/test-utils";
-import React from "react";
-vi.mock("@/lib/motion", () => ({
-  motion: new Proxy({}, {
-    get: (_target: object, prop: string | symbol) => {
-      return ({ children, ref, ...props }: Record<string, unknown> & { ref?: React.Ref<HTMLElement> }) => {
-        const motionPropNames = ["variants","initial","animate","exit","transition","whileHover","whileTap","whileInView","layout","layoutId","viewport"];
-        const clean: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(props)) {
-          if (!motionPropNames.includes(k)) clean[k] = v;
-        }
-        const tag = typeof prop === "string" ? prop : "div";
-        return React.createElement(tag, { ...clean, ref }, children);
-      };
-    },
-  }),
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-  useAnimation: () => ({ start: () => Promise.resolve() }),
-  useInView: () => true,
-  useMotionValue: (initial: number) => ({ get: () => initial, set: () => {} }),
-  useTransform: () => ({ get: () => 0 }),
-  useSpring: () => ({ get: () => 0 }),
-}));
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { framerMotionMock } from '@/test/mocks';
+import type { ReactNode } from 'react';
 
-vi.mock("react-i18next", () => ({
+vi.mock('@/lib/motion', () => framerMotionMock);
+
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: vi.fn() },
   useTranslation: () => ({
+    i18n: { language: 'en' },
     t: (key: string, opts?: Record<string, unknown>) => {
-      const translations: Record<string, string> = {
-        "waitlist.heading": "My Waitlists",
-        applications_empty_cta: "Browse opportunities",
-        "waitlist.refresh": "Refresh",
-        "waitlist.load_error": "Unable to load your waitlist entries. Please try again.",
-        "waitlist.try_again": "Try again",
-        "waitlist.no_entries_title": "No waitlist entries",
-        "waitlist.no_entries_desc": "You are not currently waiting for any shifts.",
-        "waitlist.position": "Position {{position}}",
-        "waitlist.spots": "{{count}} spots",
-        "waitlist.joined": "Joined",
-        "waitlist.leave": "Leave",
-        "waitlist.leave_confirm": "Are you sure you want to leave this waitlist?",
-        cancel: "Cancel",
-      };
-      const template = translations[key] ?? key;
-      return template.replace(/\{\{(\w+)\}\}/g, (_: string, k: string) => String(opts?.[k] ?? ""));
+      if (opts && typeof opts === 'object' && Object.keys(opts).length > 0) {
+        return `${key}:${Object.entries(opts).map(([k, v]) => `${k}=${String(v)}`).join(',')}`;
+      }
+      return key;
     },
   }),
-  initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 
-vi.mock("@/lib/api", () => ({
+vi.mock('react-router-dom', async () => {
+  const actual = await import('react-router-dom');
+  const React = await import('react');
+  return {
+    ...actual,
+    Link: ({ children, to, ...rest }: { children: ReactNode; to: string; [k: string]: unknown }) =>
+      React.createElement('a', { href: String(to), ...rest }, children),
+  };
+});
+
+vi.mock('@/lib/api', () => ({
   api: {
-    get: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    delete: vi.fn().mockResolvedValue({ success: true }),
+    get: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
-vi.mock("@/contexts", () => ({
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
-
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useTenant: () => ({ tenant: { id: 2, name: 'Test', slug: 'test', tagline: null }, branding: { name: 'Test', logo_url: null }, tenantSlug: 'test', tenantPath: (p) => '/test' + p, isLoading: false, hasFeature: vi.fn(() => true), hasModule: vi.fn(() => true) }),
+const { mockToast } = vi.hoisted(() => ({
+  mockToast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 
-// Extend the shared UI mock with a Modal/ModalContent that honours `isOpen`
-// and the render-prop `children` API. The generic stub renders children
-// eagerly and does NOT invoke function children, so the render-prop modal body
-// (the leave-confirmation text + footer buttons) never appears under it. These
-// targeted overrides model the real HeroUI behaviour so the confirmation flow
-// can be exercised.
-vi.mock("@/components/ui", async () => {
-  const { uiMock } = await import("@/test/uiMock");
-  return new Proxy(uiMock, {
-    get(target, prop: string | symbol) {
-      if (prop === "Modal") {
-        return ({ isOpen, children }: { isOpen?: boolean; children?: React.ReactNode }) =>
-          isOpen ? <div data-testid="modal">{children}</div> : null;
-      }
-      if (prop === "ModalContent") {
-        return ({ children }: { children: React.ReactNode | ((onClose: () => void) => React.ReactNode) }) => (
-          <div>{typeof children === "function" ? children(() => {}) : children}</div>
-        );
-      }
-      return Reflect.get(target, prop);
-    },
-  });
-});
+vi.mock('@/contexts', () => ({
+  useTenant: () => ({ tenantPath: (p: string) => `/test${p}` }),
+  useToast: () => mockToast,
+}));
 
-vi.mock("@/components/feedback", () => ({
-  EmptyState: ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) => (
+vi.mock('@/components/feedback', () => ({
+  EmptyState: ({ title, description, action }: { title: string; description?: string; action?: ReactNode }) => (
     <div data-testid="empty-state">
       <div>{title}</div>
       {description && <div>{description}</div>}
@@ -119,111 +64,129 @@ vi.mock("@/components/feedback", () => ({
   ),
 }));
 
-vi.mock("@/lib/logger", () => ({
-  logError: vi.fn(),
-}));
+vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-import { WaitlistTab } from "./WaitlistTab";
-import { api } from "@/lib/api";
+import { WaitlistTab } from './WaitlistTab';
+import { api } from '@/lib/api';
 
-const mockEntry = {
-  id: 1,
+const later = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+
+const waiting = {
+  id: 11,
   position: 2,
-  shift: {
-    id: 10,
-    start_time: "2026-03-15T10:00:00Z",
-    end_time: "2026-03-15T14:00:00Z",
-    capacity: 5,
-  },
-  opportunity: {
-    id: 3,
-    title: "Community Kitchen Helper",
-    location: "Cork City",
-  },
-  organization: {
-    id: 7,
-    name: "Food For All",
-    logo_url: null,
-  },
-  joined_at: "2026-03-08T09:00:00Z",
+  status: 'waiting',
+  notified_at: null,
+  expires_at: null,
+  shift: { id: 71, start_time: later(48), end_time: later(50), capacity: 1 },
+  opportunity: { id: 401, title: 'Riverbank clean-up', location: 'Lee Fields' },
+  organization: { id: 9, name: 'Green Cork', logo_url: null },
+  joined_at: '2026-10-01T09:00:00Z',
 };
 
-describe("WaitlistTab", () => {
+const offered = {
+  ...waiting,
+  id: 12,
+  position: 1,
+  status: 'notified',
+  notified_at: '2026-10-18T09:00:00Z',
+  expires_at: later(30),
+  shift: { id: 72, start_time: later(72), end_time: later(74), capacity: 4 },
+  opportunity: { id: 402, title: 'Soup kitchen Saturday', location: '' },
+};
+
+describe('WaitlistTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders the heading", () => {
+  it('shows the empty state with a way to browse opportunities', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<WaitlistTab />);
-    expect(screen.getByText("My Waitlists")).toBeInTheDocument();
+
+    expect(await screen.findByTestId('empty-state')).toHaveTextContent('waitlist.no_entries_title');
+    expect(screen.getByText('applications_empty_cta')).toHaveAttribute('href', '/test/volunteering');
+    expect(api.get).toHaveBeenCalledWith('/v2/volunteering/my-waitlists');
   });
 
-  // Gap C6: the empty state explains how to join a waitlist; it now links to where.
-  it("links an empty waitlist to the opportunities", async () => {
+  it('shows the queue position for a waiting entry and the deadline for an offered one', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [waiting, offered] });
+    render(<WaitlistTab />);
+
+    expect(await screen.findByText('Riverbank clean-up')).toBeInTheDocument();
+    expect(screen.getByText('waitlist.position:position=2')).toBeInTheDocument();
+    expect(screen.getByText('waitlist.spot_available')).toBeInTheDocument();
+    // The offer carries its deadline, so the member knows how long "soon" is.
+    expect(screen.getByTestId('waitlist-claim-by-12')).toHaveTextContent('waitlist.claim_by:deadline=');
+    expect(screen.queryByTestId('waitlist-claim-by-11')).not.toBeInTheDocument();
+    // A single place reads "1 spot", never "1 spots".
+    expect(screen.getByText('waitlist.spots:count=1')).toBeInTheDocument();
+    // Every entry links to the opportunity the shift belongs to.
+    const links = screen.getAllByText('waitlist.view_opportunity').map((el) => el.closest('a'));
+    expect(links[0]).toHaveAttribute('href', '/test/volunteering/opportunities/401');
+    expect(links[1]).toHaveAttribute('href', '/test/volunteering/opportunities/402');
+  });
+
+  it('renders the heading and reloads on Refresh', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<WaitlistTab />);
-    const link = await screen.findByRole("link", { name: /Browse opportunities/ });
-    expect(link).toHaveAttribute("href", "/test/volunteering");
+
+    expect(screen.getByText('waitlist.heading')).toBeInTheDocument();
+    await screen.findByTestId('empty-state');
+    fireEvent.click(screen.getByText('waitlist.refresh'));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
   });
 
-  it("shows empty state when there are no waitlist entries", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+  it('only an offered entry has a Claim button, and claiming posts against the shift', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [waiting, offered] });
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { message: 'ok' } });
     render(<WaitlistTab />);
-    await waitFor(() => {
-      expect(screen.getByText("No waitlist entries")).toBeInTheDocument();
-    });
+
+    await screen.findByText('Soup kitchen Saturday');
+    expect(screen.queryByTestId('waitlist-claim-11')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('waitlist-claim-12'));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/v2/volunteering/shifts/72/waitlist/promote'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('waitlist.claim_success'));
+    // The list is reloaded so the claimed shift drops off it.
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
   });
 
-  it("renders waitlist entry card with opportunity title, org name, and position chip", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockEntry] });
+  it('tells the member when the place went to someone else, and reloads', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [offered] });
+    vi.mocked(api.post).mockResolvedValue({ success: false, error: 'That spot is no longer available.' });
     render(<WaitlistTab />);
-    await waitFor(() => {
-      expect(screen.getByText("Community Kitchen Helper")).toBeInTheDocument();
-    });
-    expect(screen.getByText("Food For All")).toBeInTheDocument();
-    expect(screen.getByText("Position 2")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Leave/i })).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByTestId('waitlist-claim-12'));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('That spot is no longer available.'));
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
   });
 
-  it("opens confirmation modal when Leave button is pressed", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockEntry] });
+  it('asks before leaving, then leaves against the shift and removes the entry', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [waiting] });
+    vi.mocked(api.delete).mockResolvedValue({ success: true, data: null });
     render(<WaitlistTab />);
-    await waitFor(() => screen.getByRole("button", { name: /Leave/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /Leave/i }));
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Are you sure you want to leave this waitlist/),
-      ).toBeInTheDocument();
-    });
+    fireEvent.click(await screen.findByTestId('waitlist-leave-11'));
+    expect(await screen.findByText('waitlist.leave_confirm')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+
+    // The modal's confirm button carries the same label as the row button.
+    const confirmButtons = screen.getAllByText('waitlist.leave');
+    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/volunteering/shifts/71/waitlist'));
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('waitlist.leave_success'));
+    await waitFor(() => expect(screen.queryByText('Riverbank clean-up')).not.toBeInTheDocument());
   });
 
-  it("calls DELETE endpoint when leave is confirmed", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: true, data: [mockEntry] });
-    vi.mocked(api.delete).mockResolvedValue({ success: true });
+  it('shows an error with a retry when the list cannot be loaded', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ success: true, data: [waiting] });
     render(<WaitlistTab />);
-    await waitFor(() => screen.getByRole("button", { name: /Leave/i }));
 
-    // Open the confirmation modal
-    fireEvent.click(screen.getByRole("button", { name: /Leave/i }));
-    await waitFor(() => screen.getByText(/Are you sure you want to leave this waitlist/));
+    expect(await screen.findByRole('alert')).toHaveTextContent('waitlist.load_error');
+    fireEvent.click(screen.getByText('waitlist.try_again'));
 
-    // Confirm via the danger Leave button in the modal footer
-    const leaveButtons = screen.getAllByRole("button", { name: /Leave/i });
-    fireEvent.click(leaveButtons[leaveButtons.length - 1]);
-    await waitFor(() => {
-      expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/shifts/10/waitlist");
-    });
-  });
-
-  it("shows error state when API fails", async () => {
-    vi.mocked(api.get).mockResolvedValue({ success: false, data: null });
-    render(<WaitlistTab />);
-    await waitFor(() => {
-      expect(
-        screen.getByText("Unable to load your waitlist entries. Please try again."),
-      ).toBeInTheDocument();
-    });
+    expect(await screen.findByText('Riverbank clean-up')).toBeInTheDocument();
   });
 });

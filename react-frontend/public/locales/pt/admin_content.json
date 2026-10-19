@@ -713,7 +713,7 @@
     "option_volunteering_tab_credentials_label": "Guia Credenciais",
     "option_volunteering_tab_credentials_desc": "Verificação de credenciais e crachás de proteção",
     "option_volunteering_tab_waitlist_label": "Guia Lista de espera",
-    "option_volunteering_tab_waitlist_desc": "Veja o status da lista de espera do turno e a promoção automática",
+    "option_volunteering_tab_waitlist_desc": "Permite que os voluntários entrem na lista de espera de um turno cheio, sejam avisados quando uma vaga fica livre e a garantam. Uma vaga não reclamada passa para a pessoa seguinte após 48 horas.",
     "option_volunteering_tab_swaps_label": "Guia Trocas de turno",
     "option_volunteering_tab_swaps_desc": "Gerenciar solicitações de troca de turno entre voluntários",
     "option_volunteering_tab_group_signups_label": "Guia Inscrições em Grupo",

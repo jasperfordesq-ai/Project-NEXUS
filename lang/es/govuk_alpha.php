@@ -4625,12 +4625,22 @@ return [
         'waitlist_empty' => 'Cuando un turno esté completo, puede unirse a su lista de espera y le notificaremos si se libera una plaza.',
         'waitlist_position' => 'Posición :position',
         'waitlist_spot_available' => 'Hay una plaza disponible',
-        'waitlist_notified_hint' => 'Se ha liberado una plaza en este turno. Inscríbase desde la página de la oportunidad para reclamarla antes de que se ofrezca a la siguiente persona.',
+        'waitlist_notified_hint' => 'Se ha liberado una plaza en este turno. Reclámela abajo antes de que se ofrezca a la siguiente persona.',
         'waitlist_joined' => 'Unido a la lista de espera',
         'waitlist_leave' => 'Abandonar la lista de espera',
         'waitlist_leave_for' => 'para :title',
         'waitlist_left' => 'Ha abandonado la lista de espera.',
         'waitlist_leave_failed' => 'No hemos podido eliminarle de la lista de espera. Es posible que no esté en ella.',
+
+        'waitlist_claim_by' => 'Reclámela antes del :deadline',
+
+        'waitlist_claim' => 'Reclamar plaza',
+
+        'waitlist_claimed' => 'Ha reclamado la plaza. Ya está inscrito en este turno.',
+
+        'waitlist_claim_failed' => 'No hemos podido reclamar la plaza. Inténtelo de nuevo.',
+
+        'waitlist_claim_gone' => 'Esa plaza ya no está disponible. Puede que se la haya llevado otra persona o que la oferta haya caducado.',
         'swaps_title' => 'Cambios de turno',
         'swaps_description' => 'Pida a otro voluntario que cambie uno de sus turnos y responda a las solicitudes de cambio que le hayan enviado.',
         'swaps_error' => 'No hemos podido cargar sus solicitudes de cambio de turno. Vuelva a intentarlo.',

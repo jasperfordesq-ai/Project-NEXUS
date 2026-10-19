@@ -77,7 +77,8 @@
     "joinedTitle": "You are on the waiting list",
     "joinedBody": "We will tell you if a place comes free. You can see your position under Waiting lists.",
     "joinError": "Could not add you to the waiting list.",
-    "leftTitle": "You have left the waiting list"
+    "leftTitle": "You have left the waiting list",
+    "claimBy": "Claim by {{deadline}}."
   },
   "alerts": {
     "title": "Urgent requests",

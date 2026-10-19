@@ -156,6 +156,10 @@ return [
             'title' => 'Ihre Schicht am :time wurde abgesagt',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Ein Platz ist frei bei :subject',
+            'body' => 'Schicht am :time – sichern Sie ihn, bevor das Angebot weitergeht',
+        ],
         'exchange_request_received' => [
             'title' => 'Neue Anfrage für :subject',
             'body' => 'Tippen Sie zum Akzeptieren oder Ablehnen',

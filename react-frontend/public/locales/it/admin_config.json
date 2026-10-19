@@ -522,7 +522,7 @@
     "option_volunteering_tab_credentials_label": "Scheda Credenziali",
     "option_volunteering_tab_credentials_desc": "Verifica delle credenziali e salvaguardia dei badge",
     "option_volunteering_tab_waitlist_label": "Scheda Lista d'attesa",
-    "option_volunteering_tab_waitlist_desc": "Visualizza lo stato della lista d'attesa del turno e la promozione automatica",
+    "option_volunteering_tab_waitlist_desc": "Consente ai volontari di iscriversi alla lista d’attesa di un turno completo, di essere avvisati quando si libera un posto e di richiederlo. Un posto non richiesto passa alla persona successiva dopo 48 ore.",
     "option_volunteering_tab_swaps_label": "Scheda Scambia turni",
     "option_volunteering_tab_swaps_desc": "Gestire le richieste di scambio turno tra volontari",
     "option_volunteering_tab_group_signups_label": "Scheda Iscrizioni di gruppo",

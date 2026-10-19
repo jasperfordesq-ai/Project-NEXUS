@@ -212,7 +212,8 @@
     "checkInsHeading": "Registo de entradas",
     "checkInsEmpty": "Não foi registada nenhuma entrada neste turno.",
     "checkInsError": "Não foi possível carregar o registo de entradas.",
-    "openProfile": "Abrir o perfil de {{name}}"
+    "openProfile": "Abrir o perfil de {{name}}",
+    "waitlistOffered": "Vaga oferecida"
   },
   "expenses": {
     "title": "Pedidos de reembolso de despesas",

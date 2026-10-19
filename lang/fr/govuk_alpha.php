@@ -4625,12 +4625,22 @@ return [
         'waitlist_empty' => 'Lorsqu\'un créneau est complet, vous pouvez rejoindre sa liste d\'attente et nous vous notifierons si une place se libère.',
         'waitlist_position' => 'Rang :position',
         'waitlist_spot_available' => 'Une place est disponible',
-        'waitlist_notified_hint' => 'Une place s\'est libérée sur ce créneau. Inscrivez-vous depuis la page de l\'opportunité pour la réserver avant qu\'elle ne soit proposée à la personne suivante.',
+        'waitlist_notified_hint' => 'Une place s’est libérée sur ce créneau. Réservez-la ci-dessous avant qu’elle ne soit proposée à la personne suivante.',
         'waitlist_joined' => 'Inscrit sur la liste d\'attente',
         'waitlist_leave' => 'Quitter la liste d\'attente',
         'waitlist_leave_for' => 'pour :title',
         'waitlist_left' => 'Vous avez quitté la liste d\'attente.',
         'waitlist_leave_failed' => 'Nous n\'avons pas pu vous retirer de la liste d\'attente. Il est possible que vous n\'y soyez plus.',
+
+        'waitlist_claim_by' => 'À réclamer avant le :deadline',
+
+        'waitlist_claim' => 'Réclamer la place',
+
+        'waitlist_claimed' => 'Vous avez réclamé la place. Vous êtes maintenant inscrit(e) à ce créneau.',
+
+        'waitlist_claim_failed' => 'Nous n’avons pas pu réclamer la place. Veuillez réessayer.',
+
+        'waitlist_claim_gone' => 'Cette place n’est plus disponible. Elle a peut-être été attribuée à quelqu’un d’autre, ou l’offre a expiré.',
         'swaps_title' => 'Échanges de créneaux',
         'swaps_description' => 'Demandez à un autre bénévole d\'échanger l\'un de vos créneaux, et répondez aux demandes d\'échange qui vous sont adressées.',
         'swaps_error' => 'Nous n\'avons pas pu charger vos demandes d\'échange. Veuillez réessayer.',

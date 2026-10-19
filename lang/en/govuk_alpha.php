@@ -4699,12 +4699,22 @@ return [
         'waitlist_empty' => 'When a shift is full you can join its waitlist and we will notify you if a place frees up.',
         'waitlist_position' => 'Position :position',
         'waitlist_spot_available' => 'A place is available',
-        'waitlist_notified_hint' => 'A place has freed up on this shift. Sign up from the opportunity page to claim it before it is offered to the next person.',
+        'waitlist_notified_hint' => 'A place has freed up on this shift. Claim it below before it is offered to the next person.',
         'waitlist_joined' => 'Joined waitlist',
         'waitlist_leave' => 'Leave waitlist',
         'waitlist_leave_for' => 'for :title',
         'waitlist_left' => 'You have left the waitlist.',
         'waitlist_leave_failed' => 'We could not remove you from the waitlist. You may not be on it.',
+
+        'waitlist_claim_by' => 'Claim by :deadline',
+
+        'waitlist_claim' => 'Claim place',
+
+        'waitlist_claimed' => 'You have claimed the place. You are now signed up for this shift.',
+
+        'waitlist_claim_failed' => 'We could not claim the place. Please try again.',
+
+        'waitlist_claim_gone' => 'That place is no longer available. It may have gone to someone else, or the offer may have expired.',
         // Swaps
         'swaps_title' => 'Shift swaps',
         'swaps_description' => 'Ask another volunteer to swap one of your shifts, and respond to swap requests sent to you.',

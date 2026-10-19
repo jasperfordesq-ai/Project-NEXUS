@@ -28,6 +28,7 @@ jest.mock('react-i18next', () => ({
         'volunteeringVolunteer:waitlist.position': `Position ${String(opts?.position ?? '')}`,
         'volunteeringVolunteer:waitlist.spotAvailable': 'A place is free',
         'volunteeringVolunteer:waitlist.claimHint': 'Claim it soon.',
+        'volunteeringVolunteer:waitlist.claimBy': `Claim by ${String(opts?.deadline ?? '')}.`,
         'volunteeringVolunteer:waitlist.claim': 'Claim place',
         'volunteeringVolunteer:waitlist.claimLabel': `Claim your place on ${String(opts?.title ?? '')}`,
         'volunteeringVolunteer:waitlist.claimedTitle': 'Place claimed',
@@ -102,7 +103,7 @@ const waiting = {
   joined_at: '2026-10-01T10:00:00Z',
 };
 const notified = {
-  ...waiting, id: 2, position: 1, status: 'notified', notified_at: '2026-10-05T10:00:00Z',
+  ...waiting, id: 2, position: 1, status: 'notified', notified_at: '2026-10-05T10:00:00Z', expires_at: '2026-10-07T10:00:00Z',
   shift: { ...waiting.shift, id: 45 }, opportunity: { id: 11, title: 'Soup kitchen', location: null },
 };
 
@@ -122,6 +123,9 @@ describe('MyWaitlistsScreen', () => {
     expect(getByText('A place is free')).toBeTruthy();
     expect(queryByTestId('waitlist-claim-1')).toBeNull();
     expect(getByTestId('waitlist-claim-2')).toBeTruthy();
+    // The offer says when it lapses; a waiting entry has no deadline to show.
+    expect(getByTestId('waitlist-claim-by-2')).toBeTruthy();
+    expect(queryByTestId('waitlist-claim-by-1')).toBeNull();
   });
 
   it('claims the free place against the SHIFT id and reloads', async () => {

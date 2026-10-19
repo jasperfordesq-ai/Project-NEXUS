@@ -778,6 +778,7 @@ return [
         'group_no_members' => 'Nog geen bevestigde leden',
         'waitlist_heading' => 'Wachtlijst',
         'col_position' => 'Plaats in de rij',
+        'waitlist_offered' => 'Plek aangeboden',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

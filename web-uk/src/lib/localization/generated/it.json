@@ -5659,12 +5659,17 @@
                 "waitlist_empty": "Quando un turno è pieno puoi iscriverti alla sua lista d'attesa e ti notificheremo se si libera un posto.",
                 "waitlist_position": "Posizione :position",
                 "waitlist_spot_available": "È disponibile un posto",
-                "waitlist_notified_hint": "Si è liberato un posto per questo turno. Iscriviti dalla pagina dell'opportunità per richiederlo prima che venga offerto alla persona successiva.",
+                "waitlist_notified_hint": "Si è liberato un posto in questo turno. Richiedilo qui sotto prima che venga offerto alla persona successiva.",
                 "waitlist_joined": "Iscritto alla lista d'attesa",
                 "waitlist_leave": "Lascia la lista d'attesa",
                 "waitlist_leave_for": "per :title",
                 "waitlist_left": "Hai lasciato la lista d'attesa.",
                 "waitlist_leave_failed": "Non è stato possibile rimuoverti dalla lista d'attesa. Potresti non essere in lista.",
+                "waitlist_claim_by": "Richiedilo entro il :deadline",
+                "waitlist_claim": "Richiedi il posto",
+                "waitlist_claimed": "Hai richiesto il posto. Ora sei iscritto a questo turno.",
+                "waitlist_claim_failed": "Non è stato possibile richiedere il posto. Riprova.",
+                "waitlist_claim_gone": "Quel posto non è più disponibile. Potrebbe essere andato a qualcun altro, oppure l’offerta è scaduta.",
                 "swaps_title": "Scambi di turno",
                 "swaps_description": "Chiedi a un altro volontario di scambiare uno dei tuoi turni e rispondi alle richieste di scambio che ti vengono inviate.",
                 "swaps_error": "Non è stato possibile caricare le tue richieste di scambio. Riprova.",
@@ -11264,7 +11269,8 @@
                 "group_members": "Membri",
                 "group_no_members": "Nessun membro ancora confermato",
                 "waitlist_heading": "Lista d’attesa",
-                "col_position": "Posizione in coda"
+                "col_position": "Posizione in coda",
+                "waitlist_offered": "Posto offerto"
             },
             "certificate_check": {
                 "title": "Verifica un certificato di volontariato",

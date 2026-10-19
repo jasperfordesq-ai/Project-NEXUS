@@ -131,6 +131,61 @@ describe('joining a full shift\'s waitlist', () => {
   });
 });
 
+describe('claiming an offered place from the waitlist page', () => {
+  function claim() {
+    return request(createApp()).post(`${MOUNT}/waitlist/73/claim`).type('form').send({});
+  }
+
+  it('posts the claim against the shift and comes back confirmed', async () => {
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: { message: 'ok' } });
+
+    const res = await claim();
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe(`${MOUNT}/waitlist?status=waitlist-claimed`);
+    expect(api.callVolunteeringApi.mock.calls[0].slice(0, 3)).toEqual(['test-token', 'POST', '/shifts/73/waitlist/promote']);
+  });
+
+  it('says the place has gone when the server refuses the claim, and "try again" otherwise', async () => {
+    refuse('VALIDATION_ERROR', 400);
+    expect((await claim()).headers.location).toBe(`${MOUNT}/waitlist?status=waitlist-claim-gone`);
+
+    refuse('SERVER_ERROR', 500);
+    expect((await claim()).headers.location).toBe(`${MOUNT}/waitlist?status=waitlist-claim-failed`);
+  });
+
+  it('shows a Claim button and the deadline only for an offered entry', async () => {
+    api.callVolunteeringApi.mockResolvedValueOnce({
+      data: [
+        { id: 9, position: 1, status: 'notified', expires_at: '2099-03-28 14:00:00', shift: { id: 73, start_time: '2099-03-29 14:00:00' }, opportunity: { id: 131, title: 'Food bank sorting' }, organization: { name: 'Food Share' } },
+        { id: 10, position: 2, status: 'waiting', expires_at: null, shift: { id: 74, start_time: '2099-04-02 09:00:00' }, opportunity: { id: 132, title: 'Garden tidy' }, organization: { name: 'Green Fingers' } }
+      ]
+    });
+
+    const res = await request(createApp()).get(`${MOUNT}/waitlist`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(`action="${MOUNT}/waitlist/73/claim"`);
+    expect(res.text).not.toContain(`action="${MOUNT}/waitlist/74/claim"`);
+    expect(res.text).toContain('data-testid="waitlist-claim-by-9"');
+    expect(res.text).not.toContain('data-testid="waitlist-claim-by-10"');
+    expect(res.text).toContain(t('govuk_alpha.vol_depth.waitlist_claim'));
+    // Both entries can still be left.
+    expect(res.text).toContain(`action="${MOUNT}/waitlist/73/leave"`);
+    expect(res.text).toContain(`action="${MOUNT}/waitlist/74/leave"`);
+  });
+
+  it.each([
+    ['waitlist-claimed', 'govuk_alpha.vol_depth.waitlist_claimed'],
+    ['waitlist-claim-gone', 'govuk_alpha.vol_depth.waitlist_claim_gone'],
+    ['waitlist-claim-failed', 'govuk_alpha.vol_depth.waitlist_claim_failed']
+  ])('explains %s in its own words', async (status, key) => {
+    api.callVolunteeringApi.mockResolvedValueOnce({ data: [] });
+    const res = await request(createApp()).get(`${MOUNT}/waitlist?status=${status}`);
+    expect(res.text).toContain(t(key));
+  });
+});
+
 describe('the waitlist page', () => {
   it('links each entry to its opportunity', async () => {
     api.callVolunteeringApi.mockResolvedValueOnce({

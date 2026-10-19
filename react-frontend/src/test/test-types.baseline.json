@@ -1841,9 +1841,7 @@
       "TS2345": 3
     },
     "src/pages/volunteering/WaitlistTab.test.tsx": {
-      "TS2345": 1,
-      "TS2769": 1,
-      "TS7006": 1
+      "TS2345": 1
     },
     "src/pages/volunteering/WellbeingTab.test.tsx": {
       "TS2769": 1,
@@ -1873,6 +1871,6 @@
   },
   "totals": {
     "fileCount": 552,
-    "errorCount": 1671
+    "errorCount": 1669
   }
 }

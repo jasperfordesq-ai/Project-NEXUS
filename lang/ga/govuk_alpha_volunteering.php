@@ -778,6 +778,8 @@ return [
         'group_no_members' => 'Níl aon bhall deimhnithe fós',
         'waitlist_heading' => 'Liosta feithimh',
         'col_position' => 'Áit sa scuaine',
+
+        'waitlist_offered' => 'Áit tairgthe',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

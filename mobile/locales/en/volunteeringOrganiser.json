@@ -212,7 +212,8 @@
     "checkInsHeading": "Check-in log",
     "checkInsEmpty": "No check-ins recorded for this shift.",
     "checkInsError": "Could not load the check-in log.",
-    "openProfile": "Open profile for {{name}}"
+    "openProfile": "Open profile for {{name}}",
+    "waitlistOffered": "Offered a place"
   },
   "expenses": {
     "title": "Expense claims",

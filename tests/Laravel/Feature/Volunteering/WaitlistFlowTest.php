@@ -517,4 +517,157 @@ class WaitlistFlowTest extends TestCase
         $this->assertSame($futureShiftId, (int) DB::table('vol_applications')
             ->where('user_id', $bob->id)->where('tenant_id', $this->testTenantId)->value('shift_id'));
     }
+
+    // ================================================================
+    // Polish pass, 19 Oct 2026 — rejoin, queue positions, deadline, direct sign-up
+    // ================================================================
+
+    private function addApprovedApplicationWithoutShift(int $oppId, int $userId): int
+    {
+        return (int) DB::table('vol_applications')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'opportunity_id' => $oppId,
+            'shift_id' => null,
+            'user_id' => $userId,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function waitlistPosition(int $entryId): int
+    {
+        return (int) DB::table('vol_shift_waitlist')->where('id', $entryId)->value('position');
+    }
+
+    public function test_a_member_who_left_can_join_the_same_waitlist_again(): void
+    {
+        // vol_shift_waitlist has UNIQUE (shift_id, user_id): a second INSERT after
+        // leaving threw, and join() reported it as a generic failure.
+        ['shiftId' => $shiftId, 'oppId' => $oppId] = $this->createShift(1);
+        $occupant = User::factory()->forTenant($this->testTenantId)->create();
+        $waiter = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $this->addApprovedSignup($oppId, $shiftId, (int) $occupant->id);
+        $this->addApprovedApplicationWithoutShift($oppId, (int) $waiter->id);
+        $old = $this->addWaitlistEntry($shiftId, (int) $waiter->id, 1, 'cancelled');
+
+        $entryId = ShiftWaitlistService::join($shiftId, (int) $waiter->id);
+
+        $this->assertNotNull($entryId, json_encode(ShiftWaitlistService::getErrors()));
+        $this->assertSame($old, $entryId, 'the existing row is reused, not duplicated');
+        $this->assertSame('waiting', $this->waitlistStatus($entryId));
+        $this->assertSame(1, $this->waitlistPosition($entryId));
+        $this->assertSame(1, DB::table('vol_shift_waitlist')->where('shift_id', $shiftId)->where('user_id', $waiter->id)->count());
+    }
+
+    public function test_a_member_holding_an_offer_cannot_join_again(): void
+    {
+        // With an outstanding offer the shift has a free place, so the old check
+        // answered "this shift is not full" instead of "you are already on it".
+        ['shiftId' => $shiftId, 'oppId' => $oppId] = $this->createShift(1);
+        $waiter = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $this->addApprovedApplicationWithoutShift($oppId, (int) $waiter->id);
+        $this->addWaitlistEntry($shiftId, (int) $waiter->id, 1, 'notified', now()->toDateTimeString());
+
+        $this->assertNull(ShiftWaitlistService::join($shiftId, (int) $waiter->id));
+        $this->assertSame('ALREADY_EXISTS', ShiftWaitlistService::getErrors()[0]['code']);
+    }
+
+    public function test_queue_positions_close_up_after_a_claim(): void
+    {
+        ['shiftId' => $shiftId, 'oppId' => $oppId] = $this->createShift(1);
+        $first = User::factory()->forTenant($this->testTenantId)->create();
+        $second = User::factory()->forTenant($this->testTenantId)->create();
+        $third = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $this->addApprovedApplicationWithoutShift($oppId, (int) $first->id);
+        $e1 = $this->addWaitlistEntry($shiftId, (int) $first->id, 1, 'notified', now()->toDateTimeString());
+        $e2 = $this->addWaitlistEntry($shiftId, (int) $second->id, 2);
+        $e3 = $this->addWaitlistEntry($shiftId, (int) $third->id, 3);
+
+        $this->assertTrue(ShiftWaitlistService::promoteUser($e1, $this->testTenantId), json_encode(ShiftWaitlistService::getErrors()));
+
+        // Until now the two still waiting kept reading "position 2" and "position 3".
+        $this->assertSame(1, $this->waitlistPosition($e2));
+        $this->assertSame(2, $this->waitlistPosition($e3));
+    }
+
+    public function test_queue_positions_close_up_after_an_offer_expires(): void
+    {
+        ['shiftId' => $shiftId] = $this->createShift(1);
+        $first = User::factory()->forTenant($this->testTenantId)->create();
+        $second = User::factory()->forTenant($this->testTenantId)->create();
+        $third = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $e1 = $this->addWaitlistEntry($shiftId, (int) $first->id, 1, 'notified', now()->subHours(49)->toDateTimeString());
+        $e2 = $this->addWaitlistEntry($shiftId, (int) $second->id, 2);
+        $e3 = $this->addWaitlistEntry($shiftId, (int) $third->id, 3);
+
+        $this->assertSame(1, ShiftWaitlistService::expireStaleNotifications(48));
+
+        $this->assertSame('expired', $this->waitlistStatus($e1));
+        $this->assertSame('notified', $this->waitlistStatus($e2), 'the offer cascades to the next in line');
+        $this->assertSame(1, $this->waitlistPosition($e2));
+        $this->assertSame(2, $this->waitlistPosition($e3));
+    }
+
+    public function test_entries_for_shifts_that_have_started_are_expired_by_the_sweep(): void
+    {
+        ['shiftId' => $pastShiftId] = $this->createShift(1, true);
+        ['shiftId' => $futureShiftId] = $this->createShift(1);
+        $waiter = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $stale = $this->addWaitlistEntry($pastShiftId, (int) $waiter->id, 1);
+        $live = $this->addWaitlistEntry($futureShiftId, (int) $waiter->id, 1);
+
+        ShiftWaitlistService::expireStaleNotifications(48);
+
+        $this->assertSame('expired', $this->waitlistStatus($stale));
+        $this->assertSame('waiting', $this->waitlistStatus($live));
+    }
+
+    public function test_my_waitlists_carries_the_claim_deadline_and_skips_started_shifts(): void
+    {
+        ['shiftId' => $pastShiftId] = $this->createShift(1, true);
+        ['shiftId' => $offeredShiftId] = $this->createShift(1);
+        ['shiftId' => $waitingShiftId] = $this->createShift(1);
+        $waiter = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $this->addWaitlistEntry($pastShiftId, (int) $waiter->id, 1);
+        $notifiedAt = now()->subHours(10)->startOfSecond();
+        $offered = $this->addWaitlistEntry($offeredShiftId, (int) $waiter->id, 1, 'notified', $notifiedAt->toDateTimeString());
+        $waiting = $this->addWaitlistEntry($waitingShiftId, (int) $waiter->id, 1);
+
+        $entries = ShiftWaitlistService::getUserWaitlists((int) $waiter->id, $this->testTenantId);
+
+        $byId = collect($entries)->keyBy('id');
+        $this->assertEqualsCanonicalizing([$offered, $waiting], $byId->keys()->all(), 'a shift that has started is not something you can still wait for');
+        $this->assertSame(
+            $notifiedAt->copy()->addHours(ShiftWaitlistService::OFFER_WINDOW_HOURS)->toDateTimeString(),
+            $byId[$offered]['expires_at'],
+        );
+        $this->assertNull($byId[$waiting]['expires_at']);
+    }
+
+    public function test_signing_up_directly_settles_the_members_own_offer(): void
+    {
+        // The accessible website tells a notified member to "sign up from the
+        // opportunity page". That worked, but the offer stayed 'notified' for 48
+        // hours and "My waitlists" kept shouting "a place is free" for a shift the
+        // member already held.
+        $this->enableVolunteeringFeature();
+        ['shiftId' => $shiftId, 'oppId' => $oppId] = $this->createShift(1);
+        $waiter = User::factory()->forTenant($this->testTenantId)->create();
+        TenantContext::setById($this->testTenantId);
+        $this->addApprovedApplicationWithoutShift($oppId, (int) $waiter->id);
+        $entry = $this->addWaitlistEntry($shiftId, (int) $waiter->id, 1, 'notified', now()->toDateTimeString());
+
+        $ok = VolunteerService::signUpForShift($shiftId, (int) $waiter->id);
+
+        $this->assertTrue($ok, json_encode(VolunteerService::getErrors()));
+        $this->assertSame('promoted', $this->waitlistStatus($entry));
+        $this->assertNotNull(DB::table('vol_shift_waitlist')->where('id', $entry)->value('promoted_at'));
+    }
 }

@@ -821,6 +821,8 @@ return [
         'group_no_members' => 'No members confirmed yet',
         'waitlist_heading' => 'Waitlist',
         'col_position' => 'Place in queue',
+
+        'waitlist_offered' => 'Offered a place',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

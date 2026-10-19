@@ -181,7 +181,8 @@ export interface ShiftRoster {
   summary: { signed_up: number; checked_in: number; no_show: number; group_places: number; waiting: number };
   volunteers: { user: RosterPerson; check_in_status: RosterCheckInStatus; checked_in_at: string | null; checked_out_at: string | null }[];
   groups: { id: number; group_name: string; reserved_slots: number; leader: RosterPerson | null; members: RosterPerson[] }[];
-  waitlist: { user: RosterPerson; position: number }[];
+  /** `notified`: the server has offered this person the freed place and awaits their claim. */
+  waitlist: { user: RosterPerson; position: number; status?: 'waiting' | 'notified' | string }[];
 }
 
 export interface ShiftCheckIn {

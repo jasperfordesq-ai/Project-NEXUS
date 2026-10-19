@@ -212,7 +212,8 @@
     "checkInsHeading": "Registro de entradas",
     "checkInsEmpty": "No se ha registrado ninguna entrada en este turno.",
     "checkInsError": "No se ha podido cargar el registro de entradas.",
-    "openProfile": "Abrir el perfil de {{name}}"
+    "openProfile": "Abrir el perfil de {{name}}",
+    "waitlistOffered": "Plaza ofrecida"
   },
   "expenses": {
     "title": "Solicitudes de gastos",

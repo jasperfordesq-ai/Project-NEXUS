@@ -22,6 +22,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import Hash from 'lucide-react/icons/hash';
 import Check from 'lucide-react/icons/check';
 import PartyPopper from 'lucide-react/icons/party-popper';
+import ExternalLink from 'lucide-react/icons/external-link';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
@@ -41,6 +42,8 @@ interface WaitlistEntry {
   position: number;
   status: 'waiting' | 'notified';
   notified_at: string | null;
+  /** When an unclaimed offer passes to the next person; null while still waiting. */
+  expires_at?: string | null;
   shift: {
     id: number;
     start_time: string;
@@ -69,6 +72,19 @@ const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
+
+/** "Claim by" needs date AND time: the window is measured in hours, not days. */
+function formatDeadline(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString(getFormattingLocale(), {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 /* ───────────────────────── Component ───────────────────────── */
 
@@ -267,6 +283,14 @@ export function WaitlistTab() {
                     {entry.status === 'notified' && (
                       <p className="text-sm text-theme-success font-medium mb-2">
                         {t('waitlist.claim_hint')}
+                        {entry.expires_at && formatDeadline(entry.expires_at) && (
+                          <>
+                            {' '}
+                            <span className="whitespace-nowrap" data-testid={`waitlist-claim-by-${entry.id}`}>
+                              {t('waitlist.claim_by', { deadline: formatDeadline(entry.expires_at) })}
+                            </span>
+                          </>
+                        )}
                       </p>
                     )}
 
@@ -305,6 +329,18 @@ export function WaitlistTab() {
                   </div>
 
                   <div className="flex flex-col gap-2 shrink-0">
+                    {/* The shift itself lives on the opportunity page — the other two
+                        frontends link there, the website did not. */}
+                    <Button
+                      as={Link}
+                      to={tenantPath(`/volunteering/opportunities/${entry.opportunity.id}`)}
+                      size="sm"
+                      variant="tertiary"
+                      startContent={<ExternalLink className="w-4 h-4" aria-hidden="true" />}
+                      aria-label={t('waitlist.view_opportunity_for', { title: entry.opportunity.title })}
+                    >
+                      {t('waitlist.view_opportunity')}
+                    </Button>
                     {entry.status === 'notified' && (
                       <Button
                         size="sm"
@@ -312,6 +348,9 @@ export function WaitlistTab() {
                         startContent={!claimingId ? <Check className="w-4 h-4" aria-hidden="true" /> : undefined}
                         onPress={() => handleClaimSpot(entry)}
                         isLoading={claimingId === entry.id}
+                        isDisabled={claimingId !== null && claimingId !== entry.id}
+                        aria-label={t('waitlist.claim_for', { title: entry.opportunity.title })}
+                        data-testid={`waitlist-claim-${entry.id}`}
                       >
                         {t('waitlist.claim')}
                       </Button>
@@ -322,7 +361,9 @@ export function WaitlistTab() {
                       startContent={<X className="w-4 h-4" aria-hidden="true" />}
                       onPress={() => setLeaveTarget(entry.shift.id)}
                       isLoading={removingId === entry.shift.id}
-                      isDisabled={claimingId === entry.id}
+                      isDisabled={claimingId !== null}
+                      aria-label={t('waitlist.leave_for', { title: entry.opportunity.title })}
+                      data-testid={`waitlist-leave-${entry.id}`}
                     >
                       {t('waitlist.leave')}
                     </Button>

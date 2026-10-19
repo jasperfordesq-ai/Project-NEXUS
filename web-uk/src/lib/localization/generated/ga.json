@@ -5659,12 +5659,17 @@
                 "waitlist_empty": "Nuair atá sealaíocht lán is féidir leat dul ar a liosta feithimh agus cuirfimid in iúl duit má éiríonn áit saor.",
                 "waitlist_position": "Suíomh :position",
                 "waitlist_spot_available": "Tá áit ar fáil",
-                "waitlist_notified_hint": "Tá áit saor ar an tsealaíocht seo. Cláraigh ón leathanach deise chun í a éileamh sula dtairgtear í don chéad duine eile.",
+                "waitlist_notified_hint": "Tá áit saor anois ar an seal seo. Éiligh thíos í sula dtairgtear don chéad duine eile í.",
                 "waitlist_joined": "Chuaigh tú ar an liosta feithimh",
                 "waitlist_leave": "Fág an liosta feithimh",
                 "waitlist_leave_for": "do :title",
                 "waitlist_left": "D'fhág tú an liosta feithimh.",
                 "waitlist_leave_failed": "Níorbh fhéidir tú a bhaint den liosta feithimh. Seans nach bhfuil tú air.",
+                "waitlist_claim_by": "Éiligh roimh :deadline",
+                "waitlist_claim": "Éiligh an áit",
+                "waitlist_claimed": "D’éiligh tú an áit. Tá tú cláraithe don seal seo anois.",
+                "waitlist_claim_failed": "Níorbh fhéidir an áit a éileamh. Bain triail eile as.",
+                "waitlist_claim_gone": "Níl an áit sin ar fáil a thuilleadh. B’fhéidir gur chuaigh sí chuig duine eile, nó go bhfuil an tairiscint imithe in éag.",
                 "swaps_title": "Malartuithe sealaíochta",
                 "swaps_description": "Iarr ar dheonach eile ceann de do shealaíochtaí a mhalartú, agus freagair iarratais malartaithe seolta chugat.",
                 "swaps_error": "Níorbh fhéidir d'iarratais malartaithe a lódáil. Bain triail eile as.",
@@ -11264,7 +11269,8 @@
                 "group_members": "Baill",
                 "group_no_members": "Níl aon bhall deimhnithe fós",
                 "waitlist_heading": "Liosta feithimh",
-                "col_position": "Áit sa scuaine"
+                "col_position": "Áit sa scuaine",
+                "waitlist_offered": "Áit tairgthe"
             },
             "certificate_check": {
                 "title": "Seiceáil teastas obair dheonach",

@@ -778,6 +778,8 @@ return [
         'group_no_members' => 'Ainda não há membros confirmados',
         'waitlist_heading' => 'Lista de espera',
         'col_position' => 'Lugar na fila',
+
+        'waitlist_offered' => 'Vaga oferecida',
     ],
     // Public certificate check, /verify-certificate (gap C1, 7 Oct 2026).
     'certificate_check' => [

@@ -159,6 +159,10 @@ return [
             'title' => 'Twoja zmiana na :time została anulowana',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'Zwolniło się miejsce w :subject',
+            'body' => 'Zmiana :time — zajmij je, zanim oferta przejdzie dalej',
+        ],
         'exchange_request_received' => [
             'title' => 'Nowe żądanie dla :subject',
             'body' => 'Kliknij, aby zaakceptować lub odrzucić',

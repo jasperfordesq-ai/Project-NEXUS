@@ -720,7 +720,7 @@
     "no_entries_title": "待機リストへのエントリーはありません",
     "no_entries_desc": "現在、シフト待ちリストには登録されていません。シフトがいっぱいの場合は、待機リストに参加し、空きができたときに通知を受け取ることができます。",
     "position": "位置 {{position}}",
-    "spots": "{{count}} スポット",
+    "spots": "{{count}} 枠",
     "joined": "待機リストに参加しました",
     "leave": "離れる",
     "leave_confirm": "この順番待ちリストを解除してもよろしいですか?現在の地位を失うことになります。",
@@ -729,8 +729,13 @@
     "claim_success": "あなたはシフトに登録しました!",
     "claim_failed": "スポットを主張できませんでした",
     "claim_hint": "スポットがあなたのために開かれました。すぐに請求してください。請求されていないスポットは 48 時間後に次の人に移ります。",
-    "spots_one": "{{count}} スポット",
-    "spots_other": "{{count}} スポット"
+    "spots_one": "{{count}} 枠",
+    "spots_other": "{{count}} 枠",
+    "claim_by": "{{deadline}} までに確保してください。",
+    "view_opportunity": "募集を見る",
+    "view_opportunity_for": "{{title}} の募集を見る",
+    "claim_for": "{{title}} の枠を確保する",
+    "leave_for": "{{title}} のキャンセル待ちをやめる"
   },
   "swaps": {
     "heading": "シフト交換",
@@ -835,7 +840,16 @@
     "manage_cancelled_toast": "募集を中止しました。",
     "manage_failed": "募集を変更できませんでした。もう一度お試しください。",
     "runs_organisation_notice": "あなたはこの団体を運営しているため、この団体自身の募集にボランティアとして参加することはできません。応募の管理は団体のダッシュボードから行ってください。",
-    "runs_organisation_link": "団体のダッシュボードへ"
+    "runs_organisation_link": "団体のダッシュボードへ",
+    "on_waitlist": "キャンセル待ち · {{position}} 番目",
+    "waitlist_spot_free": "あなたのための空きがあります",
+    "claim_spot": "枠を確保",
+    "leave_waitlist": "キャンセル待ちをやめる",
+    "view_waitlists": "キャンセル待ち一覧",
+    "shift_claim_success": "確保できました。シフトに登録されました。",
+    "shift_claim_failed": "枠を確保できませんでした。別の方に渡った可能性があります。",
+    "shift_leave_waitlist_success": "キャンセル待ちをやめました。",
+    "shift_leave_waitlist_failed": "キャンセル待ちをやめられませんでした。"
   },
   "org_settings": {
     "heading": "組織の設定",
@@ -1538,7 +1552,8 @@
     "urgent_list_counts": "依頼：{{asked}} · 承諾：{{accepted}} · 辞退：{{declined}}",
     "urgent_withdraw": "取り下げる",
     "urgent_withdrawn": "依頼を取り下げました。",
-    "urgent_withdraw_failed": "依頼を取り下げられませんでした。"
+    "urgent_withdraw_failed": "依頼を取り下げられませんでした。",
+    "roster_waitlist_offered": "枠を案内済み"
   },
   "edit_opportunity_title": "募集を編集",
   "edit_opportunity_subtitle": "ボランティアに表示される内容を変更します。団体は変更できません。",

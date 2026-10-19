@@ -726,7 +726,7 @@
     "no_entries_title": "Nessuna voce in lista d'attesa",
     "no_entries_desc": "Al momento non sei in nessuna lista d'attesa per il turno. Quando un turno è pieno, puoi iscriverti alla lista d'attesa ed essere avvisato quando si libera un posto.",
     "position": "Posizione {{position}}",
-    "spots": "{{count}} spot",
+    "spots": "{{count}} posti",
     "joined": "Iscrizione alla lista d'attesa",
     "leave": "Partire",
     "leave_confirm": "Sei sicuro di voler lasciare questa lista d'attesa? Perderai la tua posizione attuale.",
@@ -735,9 +735,14 @@
     "claim_success": "Ci sei: iscritto al turno!",
     "claim_failed": "Non ho potuto reclamare il posto",
     "claim_hint": "Ti si è aperto un posto. Richiedilo presto: i posti non rivendicati passano alla persona successiva dopo 48 ore.",
-    "spots_one": "{{count}} spot",
-    "spots_other": "{{count}} spot",
-    "spots_many": "{{count}} spot"
+    "spots_one": "{{count}} posto",
+    "spots_other": "{{count}} posti",
+    "spots_many": "{{count}} spot",
+    "claim_by": "Richiedilo entro il {{deadline}}.",
+    "view_opportunity": "Vedi opportunità",
+    "view_opportunity_for": "Vedi l’opportunità per {{title}}",
+    "claim_for": "Richiedi il tuo posto per {{title}}",
+    "leave_for": "Lascia la lista d’attesa per {{title}}"
   },
   "swaps": {
     "heading": "Scambi di turno",
@@ -842,7 +847,16 @@
     "manage_cancelled_toast": "Opportunità annullata.",
     "manage_failed": "Impossibile modificare l’opportunità. Riprova.",
     "runs_organisation_notice": "Gestisci questa organizzazione, quindi non puoi fare volontariato per le sue opportunità. Gestisci le sue candidature dalla dashboard della tua organizzazione.",
-    "runs_organisation_link": "Vai alla dashboard dell'organizzazione"
+    "runs_organisation_link": "Vai alla dashboard dell'organizzazione",
+    "on_waitlist": "In lista d’attesa · posizione {{position}}",
+    "waitlist_spot_free": "C’è un posto libero per te",
+    "claim_spot": "Richiedi il posto",
+    "leave_waitlist": "Lascia la lista d’attesa",
+    "view_waitlists": "Le tue liste d’attesa",
+    "shift_claim_success": "Fatto: sei iscritto al turno!",
+    "shift_claim_failed": "Impossibile richiedere il posto. Potrebbe essere andato a qualcun altro.",
+    "shift_leave_waitlist_success": "Hai lasciato la lista d’attesa.",
+    "shift_leave_waitlist_failed": "Impossibile lasciare questa lista d’attesa."
   },
   "org_settings": {
     "heading": "Impostazioni dell'organizzazione",
@@ -1555,7 +1569,8 @@
     "urgent_list_counts": "Contattati: {{asked}} · Accettate: {{accepted}} · Rifiutate: {{declined}}",
     "urgent_withdraw": "Ritira",
     "urgent_withdrawn": "Richiesta ritirata.",
-    "urgent_withdraw_failed": "Impossibile ritirare la richiesta."
+    "urgent_withdraw_failed": "Impossibile ritirare la richiesta.",
+    "roster_waitlist_offered": "Posto offerto"
   },
   "edit_opportunity_title": "Modifica opportunità",
   "edit_opportunity_subtitle": "Cambia i dettagli che vedono i volontari. L’organizzazione non si può cambiare.",

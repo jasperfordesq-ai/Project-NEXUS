@@ -1714,6 +1714,12 @@ class VolunteerService
                 ShiftWaitlistService::notifyNext($previousShiftId, $tenantId);
             }
 
+            // If they were queued (or holding an offer) for the very shift they
+            // just took, that entry is settled rather than left "a place is free".
+            if ($ok && self::$lastShiftSignupChanged) {
+                ShiftWaitlistService::settleOnSignup($shiftId, $userId, $tenantId);
+            }
+
             return $ok;
         } catch (\Exception $e) {
             Log::warning("VolunteerService::signUpForShift error: " . $e->getMessage());

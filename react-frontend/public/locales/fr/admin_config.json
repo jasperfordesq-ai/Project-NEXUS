@@ -520,7 +520,7 @@
     "option_volunteering_tab_credentials_label": "Onglet Informations d'identification",
     "option_volunteering_tab_credentials_desc": "Vérification des titres de compétences et badges de protection",
     "option_volunteering_tab_waitlist_label": "Onglet Liste d'attente",
-    "option_volunteering_tab_waitlist_desc": "Afficher l'état de la liste d'attente des équipes et la promotion automatique",
+    "option_volunteering_tab_waitlist_desc": "Permet aux bénévoles de rejoindre la liste d’attente d’un créneau complet, d’être prévenus quand une place se libère et de la réclamer. Une place non réclamée passe à la personne suivante après 48 heures.",
     "option_volunteering_tab_swaps_label": "Onglet Échanges de quarts de travail",
     "option_volunteering_tab_swaps_desc": "Gérer les demandes d'échange de quarts de travail entre bénévoles",
     "option_volunteering_tab_group_signups_label": "Onglet Inscriptions de groupe",

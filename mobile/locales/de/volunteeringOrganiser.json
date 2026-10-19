@@ -212,7 +212,8 @@
     "checkInsHeading": "Check-in-Protokoll",
     "checkInsEmpty": "Für diese Schicht wurden keine Check-ins erfasst.",
     "checkInsError": "Das Check-in-Protokoll konnte nicht geladen werden.",
-    "openProfile": "Profil von {{name}} öffnen"
+    "openProfile": "Profil von {{name}} öffnen",
+    "waitlistOffered": "Platz angeboten"
   },
   "expenses": {
     "title": "Spesenabrechnungen",

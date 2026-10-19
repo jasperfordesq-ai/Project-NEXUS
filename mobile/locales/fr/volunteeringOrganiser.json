@@ -212,7 +212,8 @@
     "checkInsHeading": "Journal des arrivées",
     "checkInsEmpty": "Aucune arrivée enregistrée pour ce créneau.",
     "checkInsError": "Impossible de charger le journal des arrivées.",
-    "openProfile": "Ouvrir le profil de {{name}}"
+    "openProfile": "Ouvrir le profil de {{name}}",
+    "waitlistOffered": "Place proposée"
   },
   "expenses": {
     "title": "Demandes de remboursement",

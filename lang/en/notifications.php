@@ -230,6 +230,10 @@ return [
             'title' => 'Your shift on :time was cancelled',
             'body' => ':subject',
         ],
+        'vol_waitlist_spot' => [
+            'title' => 'A place is free on :subject',
+            'body' => 'Shift on :time — claim it before the offer passes on',
+        ],
         'exchange_request_received' => [
             'title' => 'New request for :subject',
             'body' => 'Tap to accept or decline',

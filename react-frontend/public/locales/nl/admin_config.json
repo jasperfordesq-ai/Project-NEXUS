@@ -522,7 +522,7 @@
     "option_volunteering_tab_credentials_label": "Tabblad Referenties",
     "option_volunteering_tab_credentials_desc": "Referentieverificatie en beschermingsbadges",
     "option_volunteering_tab_waitlist_label": "Tabblad Wachtlijst",
-    "option_volunteering_tab_waitlist_desc": "Bekijk de wachtlijststatus en automatische promotie",
+    "option_volunteering_tab_waitlist_desc": "Laat vrijwilligers op de wachtlijst van een volle dienst staan, horen wanneer er een plek vrijkomt en die claimen. Een niet-geclaimde plek gaat na 48 uur naar de volgende persoon.",
     "option_volunteering_tab_swaps_label": "Tabblad Shiftwissels",
     "option_volunteering_tab_swaps_desc": "Beheer verzoeken om ploegwissels tussen vrijwilligers",
     "option_volunteering_tab_group_signups_label": "Tabblad Groepsaanmeldingen",

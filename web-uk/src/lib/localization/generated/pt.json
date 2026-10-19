@@ -5659,12 +5659,17 @@
                 "waitlist_empty": "Quando um turno estiver completo, pode juntar-se à sua lista de espera e ser notificado se uma vaga ficar disponível.",
                 "waitlist_position": "Posição :position",
                 "waitlist_spot_available": "Há uma vaga disponível",
-                "waitlist_notified_hint": "Ficou disponível uma vaga neste turno. Inscreva-se na página da oportunidade para a reservar antes de ser oferecida à próxima pessoa.",
+                "waitlist_notified_hint": "Ficou uma vaga livre neste turno. Garanta-a abaixo antes de ser oferecida à próxima pessoa.",
                 "waitlist_joined": "Entrou na lista de espera",
                 "waitlist_leave": "Sair da lista de espera",
                 "waitlist_leave_for": "para :title",
                 "waitlist_left": "Saiu da lista de espera.",
                 "waitlist_leave_failed": "Não foi possível removê-lo da lista de espera. Pode não estar nela.",
+                "waitlist_claim_by": "Garanta até :deadline",
+                "waitlist_claim": "Garantir vaga",
+                "waitlist_claimed": "Garantiu a vaga. Está agora inscrito neste turno.",
+                "waitlist_claim_failed": "Não foi possível garantir a vaga. Tente novamente.",
+                "waitlist_claim_gone": "Essa vaga já não está disponível. Pode ter ido para outra pessoa, ou a oferta pode ter expirado.",
                 "swaps_title": "Trocas de turnos",
                 "swaps_description": "Peça a outro voluntário para trocar um dos seus turnos e responda a pedidos de troca que lhe sejam enviados.",
                 "swaps_error": "Não foi possível carregar os seus pedidos de troca. Tente novamente.",
@@ -11264,7 +11269,8 @@
                 "group_members": "Membros",
                 "group_no_members": "Ainda não há membros confirmados",
                 "waitlist_heading": "Lista de espera",
-                "col_position": "Lugar na fila"
+                "col_position": "Lugar na fila",
+                "waitlist_offered": "Vaga oferecida"
             },
             "certificate_check": {
                 "title": "Verificar um certificado de voluntariado",
