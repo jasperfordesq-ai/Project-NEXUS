@@ -223,7 +223,11 @@ class VolunteerSecurityRegressionTest extends \Tests\Laravel\TestCase
         $this->assertFalse($result);
         $errors = ShiftSwapService::getErrors();
         $this->assertNotEmpty($errors);
-        $this->assertSame('VALIDATION_ERROR', $errors[0]['code']);
+        // Since 19 Oct 2026 a request whose volunteer has left the shift is retired
+        // as `expired` before the admin's decision is applied, and the refusal says
+        // so (DECISION_CONFLICT) rather than failing mid-execution (VALIDATION_ERROR).
+        // The property this test protects is unchanged: nothing moves.
+        $this->assertSame('DECISION_CONFLICT', $errors[0]['code']);
 
         $fromShiftAfter = (int)Database::query(
             'SELECT shift_id FROM vol_applications WHERE id = ? AND tenant_id = ?',
@@ -235,7 +239,7 @@ class VolunteerSecurityRegressionTest extends \Tests\Laravel\TestCase
             'SELECT status FROM vol_shift_swap_requests WHERE id = ? AND tenant_id = ?',
             [$swapId, self::TENANT_ID]
         )->fetchColumn();
-        $this->assertSame('admin_pending', $swapStatus);
+        $this->assertSame('expired', $swapStatus, 'a request that cannot complete is retired, never left for the admin to retry');
     }
 
     private function createUser(string $prefix): int

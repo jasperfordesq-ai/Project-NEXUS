@@ -258,6 +258,11 @@ class VolunteerFlowIntegrationTest extends \Tests\Laravel\TestCase
             [self::TENANT_ID, $opportunityId]
         );
         $toShiftId = (int) Database::getInstance()->lastInsertId();
+        // Both volunteers hold the shifts the request names: a request can only
+        // exist that way, and since 19 Oct 2026 one whose holders have gone is
+        // retired as `expired` before it is answered.
+        $this->holdShift($requesterId, $opportunityId, $fromShiftId);
+        $this->holdShift($recipientId, $opportunityId, $toShiftId);
         Database::query(
             "INSERT INTO vol_shift_swap_requests (tenant_id, from_user_id, to_user_id, from_shift_id, to_shift_id, status, requires_admin_approval, created_at) VALUES (?, ?, ?, ?, ?, 'pending', 0, NOW())",
             [self::TENANT_ID, $requesterId, $recipientId, $fromShiftId, $toShiftId]
@@ -297,6 +302,8 @@ class VolunteerFlowIntegrationTest extends \Tests\Laravel\TestCase
             [self::TENANT_ID, $opportunityId]
         );
         $toShiftId = (int) Database::getInstance()->lastInsertId();
+        $this->holdShift($requesterId, $opportunityId, $fromShiftId);
+        $this->holdShift($recipientId, $opportunityId, $toShiftId);
         Database::query(
             "INSERT INTO vol_shift_swap_requests (tenant_id, from_user_id, to_user_id, from_shift_id, to_shift_id, status, requires_admin_approval, created_at) VALUES (?, ?, ?, ?, ?, 'pending', 0, NOW())",
             [self::TENANT_ID, $requesterId, $recipientId, $fromShiftId, $toShiftId]
@@ -413,6 +420,15 @@ class VolunteerFlowIntegrationTest extends \Tests\Laravel\TestCase
         );
         $shiftId = (int)Database::getInstance()->lastInsertId();
         return [$opportunityId, $shiftId];
+    }
+
+    /** An approved application placed on the shift: how a volunteer "holds" a place. */
+    private function holdShift(int $userId, int $opportunityId, int $shiftId): void
+    {
+        Database::query(
+            "INSERT INTO vol_applications (tenant_id, opportunity_id, user_id, shift_id, status, created_at) VALUES (?, ?, ?, ?, 'approved', NOW())",
+            [self::TENANT_ID, $opportunityId, $userId, $shiftId]
+        );
     }
 
     /** @param string[] $tables */
