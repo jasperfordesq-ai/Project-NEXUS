@@ -327,4 +327,135 @@ class VolunteerCertificateControllerTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.valid', false);
     }
+
+    /** A holder with one certificate on record; returns [user, code]. */
+    private function certificateOnRecord(array $organisations, array $overrides = []): array
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Tess',
+            'last_name' => 'Tenant',
+            'name' => 'Tess Tenant',
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+        \App\Core\TenantContext::setById($this->testTenantId);
+
+        $code = strtoupper(substr(md5((string) $user->id), 0, 16));
+        DB::table('vol_certificates')->insert(array_merge([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'verification_code' => $code,
+            'total_hours' => 12.5,
+            'date_range_start' => '2026-01-03',
+            'date_range_end' => '2026-09-28',
+            'organizations' => json_encode($organisations),
+            'generated_at' => '2026-10-19 09:30:00',
+        ], $overrides));
+
+        return [$user, $code];
+    }
+
+    /**
+     * The printable certificate (redesigned 19 Oct 2026) names the community that
+     * issued it, never the platform; shows the hours and period in words; carries
+     * the code, the public check address and a QR code of it; escapes everything
+     * it prints; and makes no outside request, so the saved file renders offline.
+     */
+    public function test_printable_certificate_carries_the_community_and_the_check_details(): void
+    {
+        [, $code] = $this->certificateOnRecord([
+            ['name' => 'Riverside Community Garden', 'hours' => 4.5],
+            ['name' => 'Tom <b>&</b> Jerry\'s Soup Kitchen', 'hours' => 8],
+        ]);
+
+        $response = $this->apiGet('/v2/volunteering/certificates/' . $code . '/html');
+        $response->assertOk();
+        $this->assertStringStartsWith('text/html', (string) $response->headers->get('Content-Type'));
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('Tess Tenant', $html);
+        $this->assertStringContainsString('Hour Timebank', $html, 'the issuing community is named');
+        $this->assertStringNotContainsString('Project NEXUS Community Platform', $html, 'the platform is not the issuer');
+        $this->assertStringContainsString('>12.5<small>hours</small>', $html);
+        $this->assertStringContainsString('between 3 January 2026 and 28 September 2026', $html);
+        $this->assertStringContainsString('Issued on 19 October 2026', $html);
+        $this->assertStringContainsString('<code>' . $code . '</code>', $html);
+        $this->assertStringContainsString(\App\Services\VolunteerCertificateService::publicCheckUrl(), $html);
+        $this->assertStringContainsString('<svg', $html, 'a QR code is drawn inline');
+        $this->assertStringContainsString('size: A4 landscape', $html);
+
+        // Escaping: the organisation's markup is printed as text, not run.
+        $this->assertStringContainsString('Tom &lt;b&gt;&amp;&lt;/b&gt; Jerry&#039;s Soup Kitchen', $html);
+        $this->assertStringNotContainsString('<b>&</b>', $html);
+        // Largest contribution first.
+        $this->assertLessThan(strpos($html, 'Riverside Community Garden'), strpos($html, 'Soup Kitchen'));
+
+        // Self-contained: no scripts and nothing fetched from elsewhere.
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('<link', $html);
+        $this->assertDoesNotMatchRegularExpression('/\bsrc="https?:/', $html);
+
+        $this->assertNotNull(DB::table('vol_certificates')->where('verification_code', $code)->value('downloaded_at'), 'printing marks the certificate downloaded');
+    }
+
+    public function test_printable_certificate_lists_six_organisations_and_summarises_the_rest(): void
+    {
+        $organisations = [];
+        for ($i = 1; $i <= 8; $i++) {
+            $organisations[] = ['name' => 'Organisation ' . $i, 'hours' => $i];
+        }
+        [, $code] = $this->certificateOnRecord($organisations, ['total_hours' => 36]);
+
+        $html = $this->apiGet('/v2/volunteering/certificates/' . $code . '/html')->assertOk()->getContent();
+
+        foreach ([8, 7, 6, 5, 4, 3] as $n) {
+            $this->assertStringContainsString('<td>Organisation ' . $n . '</td>', $html);
+        }
+        $this->assertStringNotContainsString('<td>Organisation 2</td>', $html);
+        $this->assertStringNotContainsString('<td>Organisation 1</td>', $html);
+        $this->assertStringContainsString('and 2 more, listed when this certificate is checked online', $html);
+        $this->assertStringContainsString('>36<small>hours</small>', $html);
+    }
+
+    public function test_single_day_certificate_names_the_day_and_one_hour_is_singular(): void
+    {
+        [, $code] = $this->certificateOnRecord(
+            [['name' => 'Riverside Community Garden', 'hours' => 1]],
+            ['total_hours' => 1, 'date_range_start' => '2026-08-20', 'date_range_end' => '2026-08-20']
+        );
+
+        $html = $this->apiGet('/v2/volunteering/certificates/' . $code . '/html')->assertOk()->getContent();
+
+        $this->assertStringContainsString('>1<small>hour</small>', $html);
+        $this->assertStringContainsString('on 20 August 2026', $html);
+        $this->assertStringNotContainsString('between 20 August 2026', $html);
+    }
+
+    public function test_withdrawn_certificate_is_not_printed_for_its_holder_but_the_admin_copy_is_watermarked(): void
+    {
+        [, $code] = $this->certificateOnRecord(
+            [['name' => 'Riverside Community Garden', 'hours' => 12.5]],
+            ['revoked_at' => '2026-10-01 12:00:00', 'revoke_reason' => 'Logged against the wrong member']
+        );
+
+        $this->apiGet('/v2/volunteering/certificates/' . $code . '/html')->assertNotFound();
+        $this->assertNull(\App\Services\VolunteerCertificateService::generateHtml($code));
+
+        $adminCopy = \App\Services\VolunteerCertificateService::generateHtml($code, true);
+        $this->assertNotNull($adminCopy);
+        $this->assertStringContainsString('class="withdrawn"', $adminCopy);
+        $this->assertStringContainsString('The community withdrew this certificate on 1 October 2026.', $adminCopy);
+        $this->assertStringNotContainsString('wrong member', $adminCopy, 'the reason stays between the admins');
+    }
+
+    public function test_public_check_ignores_spaces_typed_into_the_code(): void
+    {
+        [, $code] = $this->certificateOnRecord([['name' => 'Riverside Community Garden', 'hours' => 12.5]]);
+        $spaced = implode(' ', str_split($code, 4));
+
+        $this->apiPost('/v2/volunteering/certificates/check', ['code' => strtolower($spaced), 'name' => 'tess tenant'])
+            ->assertOk()
+            ->assertJsonPath('data.valid', true);
+    }
 }

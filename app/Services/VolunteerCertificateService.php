@@ -289,6 +289,7 @@ class VolunteerCertificateService
             'user_name' => UserDisplayName::resolve($cert),
             'generated_at' => $cert->generated_at,
             'revoked' => $cert->revoked_at !== null,
+            'revoked_at' => $cert->revoked_at,
             // A revoked certificate (gap D8) is not a verified one.
             'verified' => $cert->revoked_at === null,
         ];
@@ -308,7 +309,8 @@ class VolunteerCertificateService
      */
     public static function check(string $code, string $name): array
     {
-        $cert = self::verify(strtoupper(trim($code)));
+        // The code is printed letter-spaced, so a typed copy may carry spaces.
+        $cert = self::verify(strtoupper((string) preg_replace('/\s+/u', '', $code)));
         // A revoked certificate answers exactly as an unknown one (gap D8).
         if ($cert === null || $cert['revoked']) {
             return ['valid' => false];
@@ -400,8 +402,23 @@ class VolunteerCertificateService
         ];
     }
 
+    /** Organisations printed on the sheet; the rest are summarised so it stays one page. */
+    private const HTML_MAX_ORGANISATIONS = 6;
+
+    /** The brand colour used when the community has not chosen one (the app's default accent). */
+    private const HTML_DEFAULT_BRAND = '#4f46e5';
+
     /**
-     * Generate printable HTML for a certificate.
+     * The printable certificate (19 Oct 2026 redesign).
+     *
+     * One self-contained HTML document, A4 landscape, that the member saves and
+     * prints or saves as a PDF from the browser: no scripts, no external fonts,
+     * no external requests, so it renders identically from a file on disk, from
+     * the accessible site's inline download and from the admin panel. It carries
+     * the community's own name, logo and brand colour (never the platform's),
+     * dates in the reader's language, a QR code for the public check page and
+     * the certificate code. An admin's copy of a withdrawn certificate
+     * ($includeRevoked) is watermarked so it can never be mistaken for a live one.
      *
      * @return string|null  HTML string or null if certificate not found
      */
@@ -414,67 +431,346 @@ class VolunteerCertificateService
             return null;
         }
 
-        $checkNote = htmlspecialchars(__('api.vol_certificate_html_check_at', ['url' => self::publicCheckUrl()]), ENT_QUOTES, 'UTF-8');
-        $userName = htmlspecialchars($cert['user_name'], ENT_QUOTES, 'UTF-8');
-        $hours = $cert['total_hours'];
-        $dateFrom = htmlspecialchars($cert['date_range']['start'], ENT_QUOTES, 'UTF-8');
-        $dateTo = htmlspecialchars($cert['date_range']['end'], ENT_QUOTES, 'UTF-8');
-        $verifyCode = htmlspecialchars($cert['verification_code'], ENT_QUOTES, 'UTF-8');
-        $htmlTitle = htmlspecialchars(__('api.vol_certificate_html_title'), ENT_QUOTES, 'UTF-8');
-        $platformName = htmlspecialchars(__('api.vol_certificate_html_platform'), ENT_QUOTES, 'UTF-8');
-        $hoursLabel = htmlspecialchars(__('api.vol_certificate_html_total_hours'), ENT_QUOTES, 'UTF-8');
-        $periodLabel = htmlspecialchars(__('api.vol_certificate_html_period'), ENT_QUOTES, 'UTF-8');
-        $orgLabel = htmlspecialchars(__('api.vol_certificate_html_org'), ENT_QUOTES, 'UTF-8');
-        $orgHoursLabel = htmlspecialchars(__('api.vol_certificate_html_org_hours'), ENT_QUOTES, 'UTF-8');
-        $verificationLabel = htmlspecialchars(__('api.vol_certificate_html_verification_code'), ENT_QUOTES, 'UTF-8');
-        $verificationNote = htmlspecialchars(__('api.vol_certificate_html_verification_note'), ENT_QUOTES, 'UTF-8');
+        $e = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+
+        $locale = app()->getLocale() ?: 'en';
+        $lang = $e($locale);
+        $dir = in_array(strtolower(substr($locale, 0, 2)), ['ar', 'he', 'fa', 'ur'], true) ? 'rtl' : 'ltr';
+
+        $community = TenantContext::getName();
+        $brand = self::htmlBrandColour();
+        $logo = self::htmlLogoSrc();
+        $checkUrl = self::publicCheckUrl();
+        $qr = self::htmlQrSvg(self::publicCheckUrl((string) $cert['verification_code']));
+
+        $hours = (float) $cert['total_hours'];
+        $hoursUnit = abs($hours - 1.0) < 0.005
+            ? __('api.vol_certificate_html_hour_one')
+            : __('api.vol_certificate_html_hour_other');
+        $start = (string) ($cert['date_range']['start'] ?? '');
+        $end = (string) ($cert['date_range']['end'] ?? '');
+        $when = ($start !== '' && $start === $end)
+            ? __('api.vol_certificate_html_on_date', ['date' => self::htmlLongDate($start)])
+            : __('api.vol_certificate_html_between', ['start' => self::htmlLongDate($start), 'end' => self::htmlLongDate($end)]);
+
+        // Largest contribution first; a long list is summarised rather than
+        // allowed to push the sheet onto a second page.
+        $organisations = array_values(array_filter(
+            is_array($cert['organizations']) ? $cert['organizations'] : [],
+            static fn ($org) => is_array($org)
+        ));
+        usort($organisations, static fn (array $a, array $b) => ((float) ($b['hours'] ?? 0)) <=> ((float) ($a['hours'] ?? 0)));
+        $shown = array_slice($organisations, 0, self::HTML_MAX_ORGANISATIONS);
+        $hidden = count($organisations) - count($shown);
 
         $orgRows = '';
-        foreach ($cert['organizations'] as $org) {
-            $orgName = htmlspecialchars($org['name'] ?? __('api.unknown_user'), ENT_QUOTES, 'UTF-8');
-            $orgHours = round((float) ($org['hours'] ?? 0), 2);
-            $orgRows .= "<tr><td style=\"padding:8px;border:1px solid #ddd;\">{$orgName}</td><td style=\"padding:8px;border:1px solid #ddd;text-align:center;\">{$orgHours}</td></tr>";
+        foreach ($shown as $org) {
+            $orgName = $e(trim((string) ($org['name'] ?? '')) !== '' ? $org['name'] : __('api.vol_certificate_independent'));
+            $orgRows .= '<tr><td>' . $orgName . '</td><td>' . $e(self::formatHours((float) ($org['hours'] ?? 0))) . '</td></tr>';
+        }
+        $moreOrgs = $hidden > 0
+            ? '<p class="more">' . $e(__('api.vol_certificate_html_more_orgs', ['count' => $hidden])) . '</p>'
+            : '';
+
+        $logoHtml = $logo !== null
+            ? '<img src="' . $e($logo) . '" alt="">'
+            : '';
+        $qrHtml = $qr !== ''
+            ? '<div class="qr" aria-hidden="true">' . $qr . '</div>'
+            : '';
+
+        $withdrawn = '';
+        if ($cert['revoked']) {
+            $withdrawn = '<div class="withdrawn" aria-hidden="true"><span>' . $e(__('api.vol_certificate_html_withdrawn')) . '</span></div>'
+                . '<p class="withdrawn-note" role="note">' . $e(__('api.vol_certificate_html_withdrawn_note', ['date' => self::htmlLongDate((string) $cert['revoked_at'])])) . '</p>';
         }
 
-        $lang = htmlspecialchars(app()->getLocale() ?: 'en', ENT_QUOTES, 'UTF-8');
+        $title = $e(__('api.vol_certificate_html_title'));
+        $name = $e($cert['user_name']);
+        $communityHtml = $e($community);
+        $certifies = $e(__('api.vol_certificate_html_certifies'));
+        $hasGiven = $e(__('api.vol_certificate_html_has_given'));
+        $hoursHtml = $e(self::formatHours($hours));
+        $unitHtml = $e($hoursUnit);
+        $toCommunity = $e(__('api.vol_certificate_html_to_community', ['community' => $community]));
+        $whenHtml = $e($when);
+        $codeLabel = $e(__('api.vol_certificate_html_verification_code'));
+        $codeHtml = $e($cert['verification_code']);
+        $breakdown = $e(__('api.vol_certificate_html_breakdown'));
+        $orgLabel = $e(__('api.vol_certificate_html_org'));
+        $orgHoursLabel = $e(__('api.vol_certificate_html_org_hours'));
+        $issuedBy = $e(__('api.vol_certificate_html_issued_by'));
+        $issuedOn = $e(__('api.vol_certificate_html_issued_on', ['date' => self::htmlLongDate((string) $cert['generated_at'])]));
+        $checkTitle = $e(__('api.vol_certificate_html_check_title'));
+        $checkHow = $e(__('api.vol_certificate_html_check_how', ['url' => $checkUrl]));
+        $printHint = $e(__('api.vol_certificate_html_print_hint'));
+        $brandCss = $e($brand);
 
         return <<<HTML
 <!DOCTYPE html>
-<html lang="{$lang}">
+<html lang="{$lang}" dir="{$dir}">
 <head>
 <meta charset="utf-8">
-<title>{$htmlTitle}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{$title} · {$name} · {$communityHtml}</title>
 <style>
-  body { font-family: Georgia, 'Times New Roman', serif; max-width: 800px; margin: 40px auto; padding: 40px; border: 3px double #2563eb; }
-  h1 { text-align: center; color: #1e40af; margin-bottom: 8px; }
-  .subtitle { text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 32px; }
-  .name { text-align: center; font-size: 28px; font-weight: bold; margin: 24px 0; color: #111827; }
-  .hours { text-align: center; font-size: 20px; color: #059669; margin-bottom: 16px; }
-  .period { text-align: center; color: #6b7280; margin-bottom: 24px; }
-  table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-  th { background: #eff6ff; padding: 8px; border: 1px solid #ddd; text-align: left; }
-  .verify { text-align: center; margin-top: 32px; padding: 16px; background: #f9fafb; border-radius: 8px; }
-  .verify code { font-size: 18px; font-weight: bold; color: #1e40af; }
-  @media print { body { border: none; } }
+  :root {
+    --brand: {$brandCss};
+    --ink: #16213a;
+    --muted: #5b6475;
+    --rule: #d9dde6;
+    --paper: #ffffff;
+    --tint: #f4f5f9;
+    --tint: color-mix(in srgb, var(--brand) 6%, white);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #e9ebf0;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .hint {
+    width: 297mm; max-width: calc(100% - 24px); margin: 16px auto 0; padding: 10px 14px;
+    font-size: 13px; line-height: 1.4; color: #334155; background: #fff;
+    border: 1px solid var(--rule); border-radius: 8px;
+  }
+  .sheet {
+    position: relative; width: 297mm; height: 210mm; margin: 12px auto 28px;
+    background: var(--paper); box-shadow: 0 12px 32px rgba(16, 24, 40, .14); overflow: hidden;
+  }
+  .frame { position: absolute; inset: 7mm; border: 0.6mm solid var(--brand); pointer-events: none; }
+  .frame::after { content: ""; position: absolute; inset: 1.5mm; border: 0.2mm solid var(--brand); opacity: .5; }
+  .corner { position: absolute; width: 10mm; height: 10mm; border: 0 solid var(--brand); pointer-events: none; }
+  .corner.tl { top: 10mm; left: 10mm; border-top-width: 0.6mm; border-left-width: 0.6mm; }
+  .corner.tr { top: 10mm; right: 10mm; border-top-width: 0.6mm; border-right-width: 0.6mm; }
+  .corner.bl { bottom: 10mm; left: 10mm; border-bottom-width: 0.6mm; border-left-width: 0.6mm; }
+  .corner.br { bottom: 10mm; right: 10mm; border-bottom-width: 0.6mm; border-right-width: 0.6mm; }
+  .content { position: absolute; inset: 7mm; padding: 12mm 18mm 11mm; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10mm; }
+  .issuer { display: flex; align-items: center; gap: 4mm; min-width: 0; }
+  .issuer img { display: block; height: 14mm; width: auto; max-width: 52mm; object-fit: contain; }
+  .issuer .community { font-size: 15pt; font-weight: 600; letter-spacing: .005em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .serial { text-align: end; flex-shrink: 0; }
+  .serial .label { margin-bottom: 1mm; }
+  .serial code {
+    font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 11pt; letter-spacing: .14em; color: var(--ink); direction: ltr; unicode-bidi: isolate;
+  }
+  main { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 12mm; }
+  .kicker { margin: 0; font-size: 10pt; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; color: var(--brand); }
+  .lead { margin: 6mm 0 0; font-size: 11.5pt; color: var(--muted); }
+  .name {
+    margin: 2.5mm 0 0; font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Charter, Georgia, "Times New Roman", "Noto Serif", serif;
+    font-size: 34pt; line-height: 1.12; font-weight: 400; overflow-wrap: anywhere;
+  }
+  .name::after { content: ""; display: block; width: 34mm; height: 0.5mm; margin: 3.5mm auto 0; background: var(--brand); }
+  .given { margin: 3.5mm 0 0; font-size: 11.5pt; color: var(--muted); }
+  .hours {
+    margin: 1mm 0 0; font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Charter, Georgia, "Times New Roman", "Noto Serif", serif;
+    font-size: 48pt; line-height: 1.05; font-weight: 600; color: var(--brand); letter-spacing: -.01em; font-variant-numeric: lining-nums;
+  }
+  .hours small { font-size: 18pt; font-weight: 400; letter-spacing: .01em; margin-inline-start: 2mm; }
+  .to { margin: 3mm 0 0; font-size: 12.5pt; }
+  .when { margin: 1.5mm 0 0; font-size: 11pt; color: var(--muted); }
+  footer {
+    display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 10mm; align-items: end;
+    padding-top: 5mm; border-top: 0.25mm solid var(--rule);
+  }
+  .label { margin: 0 0 2mm; font-size: 7.5pt; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th { text-align: start; font-size: 7.5pt; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 0 1.2mm; border-bottom: 0.25mm solid var(--rule); }
+  th:last-child, td:last-child { text-align: end; white-space: nowrap; padding-inline-start: 4mm; }
+  td { padding: 1.3mm 0; border-bottom: 0.2mm solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
+  td:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .more { margin: 1.5mm 0 0; font-size: 8.5pt; color: var(--muted); }
+  .issue p { margin: 0; font-size: 9.5pt; line-height: 1.45; }
+  .issue .by { font-weight: 600; }
+  .issue .on { color: var(--muted); }
+  .check { display: flex; align-items: flex-end; gap: 4mm; }
+  .qr { width: 27mm; height: 27mm; flex-shrink: 0; padding: 1mm; background: #fff; border: 0.25mm solid var(--rule); }
+  .qr svg { display: block; width: 100%; height: 100%; }
+  .checktext { max-width: 48mm; }
+  .checktext p { margin: 0; font-size: 8pt; line-height: 1.45; color: var(--muted); overflow-wrap: anywhere; }
+  .withdrawn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .withdrawn span {
+    transform: rotate(-22deg); padding: 6mm 14mm; border: 2.5mm solid rgba(190, 24, 60, .22); border-radius: 5mm;
+    font-size: 60pt; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: rgba(190, 24, 60, .22);
+  }
+  .withdrawn-note { position: absolute; left: 18mm; right: 18mm; bottom: 8.5mm; margin: 0; text-align: center; font-size: 9pt; font-weight: 600; color: #9f1239; }
+  @page { size: A4 landscape; margin: 0; }
+  @media print {
+    body { background: none; }
+    .hint { display: none; }
+    .sheet { margin: 0; box-shadow: none; break-after: avoid; page-break-after: avoid; }
+  }
+  @media screen and (max-width: 1180px) { .sheet { zoom: .72; } }
+  @media screen and (max-width: 860px) { .sheet { zoom: .52; } }
+  @media screen and (max-width: 600px) { .sheet { zoom: .34; } }
 </style>
 </head>
 <body>
-  <h1>{$htmlTitle}</h1>
-  <p class="subtitle">{$platformName}</p>
-  <p class="name">{$userName}</p>
-  <p class="hours">{$hours} {$hoursLabel}</p>
-  <p class="period">{$periodLabel}: {$dateFrom} - {$dateTo}</p>
-  <table>
-    <thead><tr><th>{$orgLabel}</th><th style="text-align:center;">{$orgHoursLabel}</th></tr></thead>
-    <tbody>{$orgRows}</tbody>
-  </table>
-  <div class="verify">
-    <p>{$verificationLabel}: <code>{$verifyCode}</code></p>
-    <p style="font-size:12px;color:#9ca3af;">{$verificationNote} {$checkNote}</p>
+  <p class="hint">{$printHint}</p>
+  <div class="sheet">
+    <div class="frame"></div>
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="content">
+      <header>
+        <div class="issuer">{$logoHtml}<div class="community">{$communityHtml}</div></div>
+        <div class="serial"><p class="label">{$codeLabel}</p><code>{$codeHtml}</code></div>
+      </header>
+      <main>
+        <p class="kicker">{$title}</p>
+        <p class="lead">{$certifies}</p>
+        <h1 class="name">{$name}</h1>
+        <p class="given">{$hasGiven}</p>
+        <p class="hours">{$hoursHtml}<small>{$unitHtml}</small></p>
+        <p class="to">{$toCommunity}</p>
+        <p class="when">{$whenHtml}</p>
+      </main>
+      <footer>
+        <section>
+          <p class="label">{$breakdown}</p>
+          <table>
+            <thead><tr><th>{$orgLabel}</th><th>{$orgHoursLabel}</th></tr></thead>
+            <tbody>{$orgRows}</tbody>
+          </table>
+          {$moreOrgs}
+        </section>
+        <section class="issue">
+          <p class="label">{$issuedBy}</p>
+          <p class="by">{$communityHtml}</p>
+          <p class="on">{$issuedOn}</p>
+        </section>
+        <section class="check">
+          {$qrHtml}
+          <div class="checktext"><p class="label">{$checkTitle}</p><p>{$checkHow}</p></div>
+        </section>
+      </footer>
+    </div>
+    {$withdrawn}
   </div>
 </body>
 </html>
 HTML;
+    }
+
+    /**
+     * Hours as printed on the certificate: no trailing zeros, at most two
+     * decimals, thousands and decimal marks in the reader's language when
+     * the intl extension is present ("124", "12.5", "1,250.25").
+     */
+    public static function formatHours(float $hours): string
+    {
+        $hours = round($hours, 2);
+        if (class_exists(\NumberFormatter::class)) {
+            try {
+                $formatter = new \NumberFormatter(str_replace('-', '_', \App\I18n\FormattingLocale::resolve()), \NumberFormatter::DECIMAL);
+                $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+                $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 2);
+                $formatted = $formatter->format($hours);
+                if (is_string($formatted) && $formatted !== '') {
+                    return $formatted;
+                }
+            } catch (\Throwable) {
+                // Fall through to the plain form below.
+            }
+        }
+
+        $plain = number_format($hours, 2, '.', ',');
+
+        return str_contains($plain, '.') ? rtrim(rtrim($plain, '0'), '.') : $plain;
+    }
+
+    /** A date in the reader's language, long form ("3 January 2026"); the raw value if unparseable. */
+    private static function htmlLongDate(string $value): string
+    {
+        if (trim($value) === '') {
+            return '';
+        }
+        try {
+            return \Carbon\Carbon::parse($value)
+                ->locale(\App\I18n\FormattingLocale::carbon())
+                ->isoFormat('LL');
+        } catch (\Throwable) {
+            return $value;
+        }
+    }
+
+    /** The community's chosen brand colour when it is a plain hex colour; the app default otherwise. */
+    private static function htmlBrandColour(): string
+    {
+        $colour = trim((string) TenantContext::getSetting('primary_color', ''));
+
+        return preg_match('/^#[0-9a-fA-F]{6}$/', $colour) === 1 ? strtolower($colour) : self::HTML_DEFAULT_BRAND;
+    }
+
+    /**
+     * The community logo for the sheet. An uploaded logo is embedded as a data
+     * URI so the saved file still shows it offline and from disk; anything
+     * else that resolves to an https address is referenced; nothing is shown
+     * when the community has no logo.
+     */
+    private static function htmlLogoSrc(): ?string
+    {
+        $logo = trim((string) TenantContext::getSetting('logo_url', ''));
+        if ($logo === '') {
+            return null;
+        }
+
+        if (str_starts_with($logo, '/uploads/')) {
+            $uploads = realpath(base_path('httpdocs/uploads'));
+            $file = $uploads !== false ? realpath(base_path('httpdocs') . $logo) : false;
+            if (
+                $uploads !== false && $file !== false
+                && str_starts_with($file, $uploads . DIRECTORY_SEPARATOR)
+                && is_file($file) && filesize($file) <= 1_500_000
+            ) {
+                $mime = match (strtolower((string) pathinfo($file, PATHINFO_EXTENSION))) {
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'webp' => 'image/webp',
+                    'gif' => 'image/gif',
+                    'svg' => 'image/svg+xml',
+                    default => null,
+                };
+                $bytes = $mime !== null ? @file_get_contents($file) : false;
+                if ($mime !== null && is_string($bytes) && $bytes !== '') {
+                    return 'data:' . $mime . ';base64,' . base64_encode($bytes);
+                }
+            }
+        }
+
+        $absolute = \App\Helpers\UrlHelper::absolute($logo);
+
+        return is_string($absolute) && preg_match('#^https?://#i', $absolute) === 1 ? $absolute : null;
+    }
+
+    /** The public check address as an inline SVG QR code; empty when the library cannot draw it. */
+    private static function htmlQrSvg(string $url): string
+    {
+        try {
+            $builder = new \Endroid\QrCode\Builder\Builder(
+                writer: new \Endroid\QrCode\Writer\SvgWriter(),
+                data: $url,
+                encoding: new \Endroid\QrCode\Encoding\Encoding('UTF-8'),
+                errorCorrectionLevel: \Endroid\QrCode\ErrorCorrectionLevel::Medium,
+                size: 240,
+                margin: 0,
+            );
+            $svg = $builder->build()->getString();
+            $svg = (string) preg_replace('/^<\?xml[^>]*\?>\s*/', '', $svg);
+
+            return str_contains($svg, '<svg') ? trim($svg) : '';
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('VolunteerCertificateService: QR code unavailable: ' . $e->getMessage());
+
+            return '';
+        }
     }
 
     /**

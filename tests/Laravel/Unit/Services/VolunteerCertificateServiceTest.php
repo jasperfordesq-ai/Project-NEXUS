@@ -81,4 +81,16 @@ class VolunteerCertificateServiceTest extends TestCase
         // Reset errors via a call
         $this->assertIsArray(VolunteerCertificateService::getErrors());
     }
+
+    /** Hours print without trailing zeros and with at most two decimals. */
+    public function test_formatHours_prints_clean_figures(): void
+    {
+        app()->setLocale('en');
+
+        $this->assertSame('124', VolunteerCertificateService::formatHours(124.0));
+        $this->assertSame('12.5', VolunteerCertificateService::formatHours(12.50));
+        $this->assertSame('0.75', VolunteerCertificateService::formatHours(0.75));
+        $this->assertSame('2.33', VolunteerCertificateService::formatHours(2.3333));
+        $this->assertSame('1,250.25', VolunteerCertificateService::formatHours(1250.25));
+    }
 }
