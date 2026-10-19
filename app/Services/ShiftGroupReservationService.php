@@ -593,6 +593,9 @@ class ShiftGroupReservationService
             ->where('tenant_id', $tenantId)
             ->whereIn('user_id', $userIds)
             ->update(['shift_id' => null, 'updated_at' => now()]);
+
+        // Swap requests that named any of them on this shift can no longer complete.
+        ShiftSwapService::expireStaleRequests($tenantId);
     }
 
     // ── Admin ──

@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'A troca causaria uma sobreposição de turnos para o destinatário',
     'shift_swap_apply_failed' => 'Não foi possível aplicar as atribuições da troca de forma atómica',
     'shift_swap_execute_failed' => 'Não foi possível executar a troca de turnos',
+    'shift_swap_expired' => 'Este pedido de troca expirou: um turno já começou, ou um de vocês já não está no turno que ele indica.',
     'shift_reservation_min_slots' => 'Tem de reservar pelo menos 1 vaga',
     'shift_reservation_shift_started' => 'Não é possível reservar vagas para um turno que já começou',
     'shift_reservation_leader_only_reserve' => 'Apenas os líderes/administradores do grupo podem reservar vagas para este grupo',

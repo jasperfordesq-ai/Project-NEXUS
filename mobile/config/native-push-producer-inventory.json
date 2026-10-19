@@ -2552,9 +2552,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/ShiftGroupReservationService.php:763:NotificationDispatcher::dispatch",
+            "id": "app/Services/ShiftGroupReservationService.php:766:NotificationDispatcher::dispatch",
             "file": "app/Services/ShiftGroupReservationService.php",
-            "line": 763,
+            "line": 766,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$memberId",
@@ -2565,9 +2565,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/ShiftGroupReservationService.php:811:NotificationDispatcher::dispatch",
+            "id": "app/Services/ShiftGroupReservationService.php:814:NotificationDispatcher::dispatch",
             "file": "app/Services/ShiftGroupReservationService.php",
-            "line": 811,
+            "line": 814,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$recipientId",
@@ -2578,9 +2578,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/ShiftSwapService.php:987:NotificationDispatcher::dispatch",
+            "id": "app/Services/ShiftSwapService.php:1097:NotificationDispatcher::dispatch",
             "file": "app/Services/ShiftSwapService.php",
-            "line": 987,
+            "line": 1097,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$userId",
@@ -2981,9 +2981,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerRosterService.php:278:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerRosterService.php:280:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerRosterService.php",
-            "line": 278,
+            "line": 280,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3020,9 +3020,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:1784:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolunteerService.php:1786:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolunteerService.php",
-            "line": 1784,
+            "line": 1786,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -3033,9 +3033,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2409:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2414:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2409,
+            "line": 2414,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3046,9 +3046,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2422:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2427:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2422,
+            "line": 2427,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3059,9 +3059,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2431:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2436:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2431,
+            "line": 2436,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3072,9 +3072,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:2440:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:2445:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 2440,
+            "line": 2445,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",
@@ -3085,9 +3085,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolunteerService.php:3164:NotificationDispatcher::dispatch",
+            "id": "app/Services/VolunteerService.php:3169:NotificationDispatcher::dispatch",
             "file": "app/Services/VolunteerService.php",
-            "line": 3164,
+            "line": 3169,
             "transport": "NotificationDispatcher::dispatch",
             "role": "producer",
             "recipient_expression": "$volunteerId",

@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'L\'échange placerait le destinataire sur deux créneaux qui se chevauchent',
     'shift_swap_apply_failed' => 'Échec de l\'application atomique des affectations de l\'échange',
     'shift_swap_execute_failed' => 'Échec de l\'exécution de l\'échange de créneaux',
+    'shift_swap_expired' => 'Cette demande d\'échange a expiré : un créneau a commencé, ou l\'un de vous n\'est plus inscrit au créneau qu\'elle désigne.',
     'shift_reservation_min_slots' => 'Vous devez réserver au moins 1 place',
     'shift_reservation_shift_started' => 'Impossible de réserver des places pour un créneau déjà commencé',
     'shift_reservation_leader_only_reserve' => 'Seuls les responsables/administrateurs du groupe peuvent réserver des places pour ce groupe',

@@ -1564,11 +1564,12 @@ describe('VolunteeringScreen', () => {
   function swapPanelApi(
     direction: 'sent' | 'received',
     recipient: { id: number | null; name: string | null; avatar_url: null } = { id: 1, name: 'Current User', avatar_url: null },
+    status: string = 'pending',
   ) {
     let apiCall = 0;
     const swap = {
       id: 77,
-      status: 'pending',
+      status,
       direction,
       requester: { id: 12, name: 'Alex Volunteer', avatar_url: null },
       recipient,
@@ -1685,6 +1686,22 @@ describe('VolunteeringScreen', () => {
     await waitFor(() => expect(respondToShiftSwap).toHaveBeenCalledTimes(2));
     expect(respondToShiftSwap).toHaveBeenNthCalledWith(1, 77, 'accept');
     expect(respondToShiftSwap).toHaveBeenNthCalledWith(2, 77, 'accept');
+  });
+
+  /*
+    Found walking the swaps journey on 19 Oct 2026: the server lets a requester withdraw a
+    request while an admin is still deciding on it, but this card hid the button the moment
+    the other volunteer agreed.
+  */
+  it('still offers Cancel request on a sent swap that is awaiting admin approval', async () => {
+    jest.mocked(cancelShiftSwap).mockReset().mockResolvedValue(undefined);
+    swapPanelApi('sent', { id: 1, name: 'Current User', avatar_url: null }, 'admin_pending');
+    const screen = render(<VolunteeringScreen />);
+    fireEvent.press(screen.getByText('Swaps'));
+
+    fireEvent.press(screen.getByTestId('volunteering-swap-cancel-77'));
+
+    await waitFor(() => expect(cancelShiftSwap).toHaveBeenCalledWith(77));
   });
 
   it('replays the exact sent-swap cancellation once when its response is lost', async () => {

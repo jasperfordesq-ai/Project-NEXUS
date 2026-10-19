@@ -207,6 +207,8 @@ class VolunteerRosterService
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', array_map(static fn ($r) => (int) $r->id, $rows))
                 ->update(['shift_id' => null, 'updated_at' => now()]);
+            // Swap requests that named them on those shifts can no longer complete.
+            ShiftSwapService::expireStaleRequests($tenantId);
         }
 
         return array_values(array_unique(array_merge($released, $this->cancelUpcomingSignups($tenantId, $orgId, $volunteerId))));

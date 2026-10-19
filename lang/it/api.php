@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'Lo scambio creerebbe per il destinatario una sovrapposizione con un altro turno',
     'shift_swap_apply_failed' => 'Impossibile applicare le assegnazioni dello scambio in modo atomico',
     'shift_swap_execute_failed' => 'Impossibile eseguire lo scambio di turni',
+    'shift_swap_expired' => 'Questa richiesta di scambio è scaduta: un turno è iniziato, oppure uno di voi non è più assegnato al turno indicato.',
     'shift_reservation_min_slots' => 'È necessario prenotare almeno 1 posto',
     'shift_reservation_shift_started' => 'Non è possibile prenotare posti per un turno già iniziato',
     'shift_reservation_leader_only_reserve' => 'Solo i responsabili/amministratori del gruppo possono prenotare posti per questo gruppo',

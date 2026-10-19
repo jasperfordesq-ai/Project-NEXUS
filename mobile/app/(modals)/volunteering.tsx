@@ -1455,8 +1455,11 @@ function SwapsPanel({
                   </View>
                 ) : null}
 
-                {swap.direction === 'sent' && swap.status === 'pending' ? (
-                  <HeroButton size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleCancel(swap.id)}>
+                {/* A sent request can be withdrawn until it is decided — including while an
+                    admin has it (the server allowed that all along; this card hid the button
+                    once the other volunteer had agreed). */}
+                {swap.direction === 'sent' && (swap.status === 'pending' || swap.status === 'admin_pending') ? (
+                  <HeroButton size="sm" variant="danger-soft" isDisabled={actioningId !== null} onPress={() => void handleCancel(swap.id)} testID={`volunteering-swap-cancel-${swap.id}`}>
                     {actioningId === swap.id ? <Spinner size="sm" /> : <HeroButton.Label>{t('swaps.cancel')}</HeroButton.Label>}
                   </HeroButton>
                 ) : null}

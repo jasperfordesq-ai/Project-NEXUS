@@ -49,6 +49,11 @@ vi.mock("react-i18next", () => ({
         "swaps.proposed_shift": "Proposed Shift",
         "swaps.to": "To:",
         "swaps.to_unnamed": "To: the volunteer on that shift (named once they agree)",
+        "swaps.cancel": "Cancel",
+        "swaps.accept_failed": "Failed to accept swap request.",
+        "swaps.status_expired": "Expired",
+        "swaps.status_admin_pending": "Pending Admin Review",
+        load_more: "Load more",
       };
       if (typeof fallbackOrOptions === "string") return fallbackOrOptions;
       return translations[key] ?? key;
@@ -61,16 +66,20 @@ vi.mock("@/lib/api", () => ({
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: { swaps: [] } }),
     put: vi.fn().mockResolvedValue({ success: true }),
+    delete: vi.fn().mockResolvedValue({ success: true }),
   },
 }));
 
+// One shared toast so a test can read what the tab told the member.
+const toastMock = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  info: vi.fn(),
+  warning: vi.fn(),
+}));
+
 vi.mock("@/contexts", () => ({
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  useToast: vi.fn(() => toastMock),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
   useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
@@ -106,7 +115,7 @@ import { api } from "@/lib/api";
 
 const makeSwap = (
   direction: "sent" | "received" = "received",
-  status: "pending" | "accepted" | "rejected" = "pending",
+  status: "pending" | "accepted" | "rejected" | "admin_pending" | "expired" = "pending",
 ) => ({
   id: 1,
   status,
@@ -267,5 +276,77 @@ describe("ShiftSwapsTab", () => {
     });
     expect(screen.getByTestId("swap-other-title-1")).toHaveTextContent("Food Bank Shift B");
     expect(screen.getByTestId("swap-other-label-1")).toHaveTextContent("Proposed Shift");
+  });
+
+  /*
+    Found walking the swaps journey on 19 Oct 2026: the server lets a requester withdraw
+    a request while an admin is still deciding on it (and the accessible site offered
+    that), but this tab hid Cancel the moment the other volunteer agreed.
+  */
+  it("still offers Cancel on a sent request that is waiting for an admin", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [makeSwap("sent", "admin_pending")] });
+    render(<ShiftSwapsTab />);
+
+    const cancel = await screen.findByTestId("swap-cancel-1");
+    fireEvent.click(cancel);
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/swaps/1");
+    });
+  });
+
+  it("shows an expired request without any buttons", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [makeSwap("received", "expired")] });
+    render(<ShiftSwapsTab />);
+
+    await screen.findByText("Expired");
+    expect(screen.queryByRole("button", { name: /Accept/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Reject/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("swap-cancel-1")).not.toBeInTheDocument();
+  });
+
+  /*
+    A refused Accept used to say only "Failed to accept swap request", whatever the
+    server's reason (the shift has started, the other volunteer has left it, the request
+    has expired). The reason is shown and the list reloaded, so the card tells the truth.
+  */
+  it("shows the server's reason when an accept is refused, then reloads the list", async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [makeSwap("received", "pending")] })
+      .mockResolvedValueOnce({ success: true, data: [makeSwap("received", "expired")] });
+    vi.mocked(api.put).mockResolvedValue({
+      success: false,
+      errors: [{ code: "DECISION_CONFLICT", message: "This swap request has expired: a shift has started, or one of you is no longer on the shift it names." }],
+    });
+    render(<ShiftSwapsTab />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /Accept/i }));
+
+    await waitFor(() => {
+      expect(toastMock.error).toHaveBeenCalledWith(expect.stringContaining("This swap request has expired"));
+    });
+    await screen.findByText("Expired");
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  /*
+    The server pages twenty at a time and says in `meta` whether more exist; this tab read
+    one page and stopped, so a member's older requests were unreachable.
+  */
+  it("loads the next page of requests on demand", async () => {
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [makeSwap("sent", "accepted")], meta: { cursor: "MjA=", has_more: true, per_page: 20 } })
+      .mockResolvedValueOnce({ success: true, data: [{ ...makeSwap("received", "rejected"), id: 2 }], meta: { cursor: null, has_more: false, per_page: 20 } });
+    render(<ShiftSwapsTab />);
+
+    const more = await screen.findByTestId("swaps-load-more");
+    fireEvent.click(more);
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenLastCalledWith("/v2/volunteering/swaps?cursor=MjA%3D");
+    });
+    await waitFor(() => {
+      expect(screen.getAllByText("Food Bank Shift A")).toHaveLength(2);
+    });
+    expect(screen.queryByTestId("swaps-load-more")).not.toBeInTheDocument();
   });
 });

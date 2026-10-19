@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'Der Tausch würde für die empfangende Person eine Überschneidung mit einer anderen Schicht verursachen',
     'shift_swap_apply_failed' => 'Tauschzuweisungen konnten nicht atomar angewendet werden',
     'shift_swap_execute_failed' => 'Schichttausch konnte nicht ausgeführt werden',
+    'shift_swap_expired' => 'Diese Tauschanfrage ist abgelaufen: Eine Schicht hat begonnen, oder einer von Ihnen ist nicht mehr für die genannte Schicht eingeteilt.',
     'shift_reservation_min_slots' => 'Es muss mindestens 1 Platz reserviert werden',
     'shift_reservation_shift_started' => 'Für eine bereits begonnene Schicht können keine Plätze reserviert werden',
     'shift_reservation_leader_only_reserve' => 'Nur Gruppenleiter/Administratoren können Plätze für diese Gruppe reservieren',

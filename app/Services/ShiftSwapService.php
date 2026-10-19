@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Log;
  */
 class ShiftSwapService
 {
+    /** Statuses a request can still be answered or decided from. */
+    public const OPEN_STATUSES = ['pending', 'admin_pending'];
+
     private static array $errors = [];
 
     public static function getErrors(): array
@@ -335,6 +338,82 @@ class ShiftSwapService
     }
 
     /**
+     * Retire every open request that can no longer complete.
+     *
+     * 🔴 A request names two volunteers and the shifts they held when it was made, and
+     * until 19 Oct 2026 nothing retired it when that stopped being true. A volunteer who
+     * cancelled their shift, moved to another, was taken off the roster, or was moved by
+     * a different swap left behind a request that every client still showed as Pending
+     * with a live Accept. Pressing it failed with a generic message, or — with admin
+     * approval on — parked a dead request in the admin queue, where Approve failed too
+     * and the sidebar badge counted it. A request whose shift had started did the same.
+     *
+     * One rule, applied before every list and every decision and from every place a
+     * volunteer leaves a shift: an open request whose shifts have started, or whose
+     * volunteers no longer hold the shifts it names, becomes `expired`. Clients already
+     * know that status. Nothing here notifies: the card says why, and a bell for a
+     * request that was never going to happen would be noise.
+     *
+     * @return int  How many requests were retired.
+     */
+    public static function expireStaleRequests(?int $tenantId = null): int
+    {
+        $tenantId ??= TenantContext::getId();
+        if ($tenantId <= 0) {
+            return 0;
+        }
+
+        try {
+            $holds = static function ($query, string $userColumn, string $shiftColumn) use ($tenantId): void {
+                $query->select(DB::raw('1'))
+                    ->from('vol_applications as held')
+                    ->whereColumn('held.user_id', $userColumn)
+                    ->whereColumn('held.shift_id', $shiftColumn)
+                    ->where('held.status', 'approved')
+                    ->where('held.tenant_id', $tenantId);
+            };
+
+            $staleIds = DB::table('vol_shift_swap_requests as sr')
+                ->join('vol_shifts as fs', 'sr.from_shift_id', '=', 'fs.id')
+                ->join('vol_shifts as ts', 'sr.to_shift_id', '=', 'ts.id')
+                ->where('sr.tenant_id', $tenantId)
+                ->whereIn('sr.status', self::OPEN_STATUSES)
+                ->where(function ($q) use ($holds) {
+                    $q->where('fs.start_time', '<=', now())
+                        ->orWhere('ts.start_time', '<=', now())
+                        ->orWhereNotExists(fn ($sub) => $holds($sub, 'sr.from_user_id', 'sr.from_shift_id'))
+                        ->orWhereNotExists(fn ($sub) => $holds($sub, 'sr.to_user_id', 'sr.to_shift_id'));
+                })
+                ->pluck('sr.id')
+                ->map(static fn ($id) => (int) $id)
+                ->all();
+
+            if ($staleIds === []) {
+                return 0;
+            }
+
+            $expired = DB::table('vol_shift_swap_requests')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('id', $staleIds)
+                ->whereIn('status', self::OPEN_STATUSES)
+                ->update(['status' => 'expired', 'updated_at' => now()]);
+
+            if ($expired > 0) {
+                Log::info('[ShiftSwap] Retired swap requests that could no longer complete', [
+                    'tenant' => $tenantId,
+                    'ids' => $staleIds,
+                ]);
+            }
+
+            return (int) $expired;
+        } catch (\Throwable $e) {
+            // Housekeeping must never block the list or the decision it runs before.
+            Log::warning('ShiftSwapService::expireStaleRequests failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
      * Respond to a swap request (accept/reject by target user).
      */
     public static function respond(int $swapId, int $userId, string $action): bool
@@ -346,6 +425,10 @@ class ShiftSwapService
             self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.vol_action_accept_reject')];
             return false;
         }
+
+        // A request that can no longer complete is retired before it is answered, so
+        // an accept never parks a dead request in the admin queue.
+        self::expireStaleRequests($tenantId);
 
         $swap = DB::table('vol_shift_swap_requests')
             ->where('id', $swapId)
@@ -367,7 +450,7 @@ class ShiftSwapService
             : $swap->status === 'rejected';
         if ($swap->status !== 'pending') {
             if ($alreadyMatches) return true;
-            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => self::closedMessage((string) $swap->status)];
             return false;
         }
 
@@ -406,7 +489,7 @@ class ShiftSwapService
                         ? in_array($locked->status, ['accepted', 'admin_pending', 'admin_approved'], true)
                         : $locked->status === 'rejected';
                     if ($matches) return true;
-                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => self::closedMessage((string) $locked->status)];
                     return false;
                 }
 
@@ -433,6 +516,11 @@ class ShiftSwapService
                     $action === 'accept' ? 'svc_notifications.shift_swap.accepted' : 'svc_notifications.shift_swap.declined',
                     self::swapLink($swapId)
                 );
+                if ($action === 'accept') {
+                    // Both volunteers just moved: any other open request that named one
+                    // of them on the shift they left can no longer complete.
+                    self::expireStaleRequests($tenantId);
+                }
             }
             return $result;
         } catch (\Exception $e) {
@@ -455,6 +543,9 @@ class ShiftSwapService
             return false;
         }
 
+        // Retire anything that can no longer complete before the admin decides on it.
+        self::expireStaleRequests($tenantId);
+
         $swap = DB::table('vol_shift_swap_requests')
             ->where('id', $swapId)
             ->where('tenant_id', $tenantId)
@@ -470,7 +561,7 @@ class ShiftSwapService
                 ? $swap->status === 'admin_approved'
                 : $swap->status === 'admin_rejected';
             if ($matches) return true;
-            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+            self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => self::closedMessage((string) $swap->status)];
             return false;
         }
 
@@ -511,7 +602,7 @@ class ShiftSwapService
                         ? $locked->status === 'admin_approved'
                         : $locked->status === 'admin_rejected';
                     if ($matches) return true;
-                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => __('api.shift_swap_not_found_or_processed')];
+                    self::$errors[] = ['code' => 'DECISION_CONFLICT', 'message' => self::closedMessage((string) $locked->status)];
                     return false;
                 }
 
@@ -538,6 +629,8 @@ class ShiftSwapService
                 if ($action === 'approve') {
                     self::notifySwap($fromUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.approved_by_admin', self::swapLink($swapId, 'admin'));
                     self::notifySwap($toUserId, 'vol_swap_approved', 'svc_notifications.shift_swap.accepted_swap_approved_by_admin', self::swapLink($swapId, 'admin'));
+                    // Both volunteers just moved (see respond()).
+                    self::expireStaleRequests($tenantId);
                 } else {
                     self::notifySwap($fromUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.declined_by_admin', self::swapLink($swapId, 'admin'));
                     self::notifySwap($toUserId, 'vol_swap_declined', 'svc_notifications.shift_swap.accepted_swap_declined_by_admin', self::swapLink($swapId, 'admin'));
@@ -598,6 +691,9 @@ class ShiftSwapService
         $tenantId = TenantContext::getId();
         $limit = max(1, min((int) ($filters['limit'] ?? 20), 50));
         $cursor = $filters['cursor'] ?? null;
+
+        // A list never shows a Pending request that cannot be answered any more.
+        self::expireStaleRequests($tenantId);
 
         $query = DB::table('vol_shift_swap_requests as sr')
             ->join('users as fu', 'sr.from_user_id', '=', 'fu.id')
@@ -892,6 +988,9 @@ class ShiftSwapService
     {
         $tenantId = TenantContext::getId();
 
+        // The queue never offers Approve on a request that cannot complete.
+        self::expireStaleRequests($tenantId);
+
         $requests = DB::table('vol_shift_swap_requests as sr')
             ->join('users as fu', 'sr.from_user_id', '=', 'fu.id')
             ->join('users as tu', 'sr.to_user_id', '=', 'tu.id')
@@ -934,6 +1033,17 @@ class ShiftSwapService
             ],
             'created_at' => $r->created_at,
         ])->all();
+    }
+
+    /**
+     * Why a request can no longer be acted on, in the caller's words: an expired one
+     * says what happened; anything else was simply decided already.
+     */
+    private static function closedMessage(string $status): string
+    {
+        return $status === 'expired'
+            ? __('api.shift_swap_expired')
+            : __('api.shift_swap_not_found_or_processed');
     }
 
     /**

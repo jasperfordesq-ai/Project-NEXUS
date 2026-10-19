@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'Dhéanfadh an malartú áirithint dhúbailte don fhaighteoir le seal forluiteach',
     'shift_swap_apply_failed' => 'Theip ar shannacháin an mhalartaithe a chur i bhfeidhm go hadamhach',
     'shift_swap_execute_failed' => 'Theip ar mhalartú na sealanna a chur i gcrích',
+    'shift_swap_expired' => 'Tá an iarratas malartaithe seo imithe in éag: tá seal tosaithe, nó níl duine agaibh ar an seal a ainmníonn sé a thuilleadh.',
     'shift_reservation_min_slots' => 'Caithfear áit amháin ar a laghad a chur in áirithe',
     'shift_reservation_shift_started' => 'Ní féidir áiteanna a chur in áirithe do sheal atá tosaithe cheana',
     'shift_reservation_leader_only_reserve' => 'Ní féidir ach le ceannairí/riarthóirí grúpa áiteanna a chur in áirithe don ghrúpa seo',

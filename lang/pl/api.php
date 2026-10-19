@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'Wymiana spowodowałaby podwójny zapis odbiorcy na nakładającą się zmianę',
     'shift_swap_apply_failed' => 'Nie udało się atomowo zastosować przypisań wymiany',
     'shift_swap_execute_failed' => 'Nie udało się wykonać wymiany zmian',
+    'shift_swap_expired' => 'Ta prośba o zamianę wygasła: zmiana już się rozpoczęła albo jedno z was nie jest już zapisane na wskazaną zmianę.',
     'shift_reservation_min_slots' => 'Musisz zarezerwować co najmniej 1 miejsce',
     'shift_reservation_shift_started' => 'Nie można rezerwować miejsc na zmianę, która już się rozpoczęła',
     'shift_reservation_leader_only_reserve' => 'Tylko liderzy/administratorzy grupy mogą rezerwować miejsca dla tej grupy',

@@ -101,7 +101,10 @@ export function VolunteerSwaps() {
         toast.success(action === 'approve' ? t('volunteering.swap_approved') : t('volunteering.swap_rejected'));
         setSwaps((prev) => prev.filter((s) => s.id !== swap.id));
       } else {
-        toast.error(t('volunteering.failed_to_decide_swap'));
+        // The server says why (a shift has started, a volunteer has left it, the
+        // request has expired); the queue is reloaded so a dead request drops out.
+        toast.error(res.errors?.[0]?.message || res.error || t('volunteering.failed_to_decide_swap'));
+        void loadData();
       }
     } catch {
       toast.error(t('volunteering.failed_to_decide_swap'));
@@ -109,7 +112,7 @@ export function VolunteerSwaps() {
       setActionId(null);
       setConfirm(null);
     }
-  }, [toast, t]);
+  }, [toast, t, loadData]);
 
   return (
     <div className="space-y-6">

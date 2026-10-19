@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'El intercambio provocaría que el destinatario tuviera un turno superpuesto',
     'shift_swap_apply_failed' => 'No se pudieron aplicar las asignaciones del intercambio de forma atómica',
     'shift_swap_execute_failed' => 'No se pudo ejecutar el intercambio de turnos',
+    'shift_swap_expired' => 'Esta solicitud de cambio ha caducado: un turno ya ha empezado, o uno de vosotros ya no está en el turno que indica.',
     'shift_reservation_min_slots' => 'Debe reservar al menos 1 plaza',
     'shift_reservation_shift_started' => 'No se pueden reservar plazas para un turno que ya ha comenzado',
     'shift_reservation_leader_only_reserve' => 'Solo los líderes/administradores del grupo pueden reservar plazas para este grupo',

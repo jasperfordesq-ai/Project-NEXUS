@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'سيؤدي التبديل إلى حجز مزدوج للمستلم مع مناوبة متداخلة',
     'shift_swap_apply_failed' => 'فشل تطبيق تعيينات التبديل دفعة واحدة',
     'shift_swap_execute_failed' => 'فشل تنفيذ تبديل المناوبة',
+    'shift_swap_expired' => 'انتهت صلاحية طلب التبديل هذا: بدأت إحدى المناوبات، أو لم يعد أحدكما مسجلاً في المناوبة المذكورة.',
     'shift_reservation_min_slots' => 'يجب حجز مكان واحد على الأقل',
     'shift_reservation_shift_started' => 'لا يمكن حجز أماكن لمناوبة بدأت بالفعل',
     'shift_reservation_leader_only_reserve' => 'يمكن فقط لقادة/مشرفي المجموعة حجز أماكن لهذه المجموعة',

@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => 'De ruil zou de ontvanger dubbel boeken met een overlappende dienst',
     'shift_swap_apply_failed' => 'Atomair toepassen van de ruiltoewijzingen is mislukt',
     'shift_swap_execute_failed' => 'Uitvoeren van de dienstenruil is mislukt',
+    'shift_swap_expired' => 'Dit ruilverzoek is verlopen: een dienst is al begonnen, of een van jullie staat niet meer op de dienst die het noemt.',
     'shift_reservation_min_slots' => 'U moet minimaal 1 plek reserveren',
     'shift_reservation_shift_started' => 'U kunt geen plekken reserveren voor een dienst die al is begonnen',
     'shift_reservation_leader_only_reserve' => 'Alleen groepsleiders/beheerders kunnen plekken reserveren voor deze groep',

@@ -115,6 +115,21 @@ const ownShiftOf = (swap: ShiftSwap): SwapShift =>
 const otherShiftOf = (swap: ShiftSwap): SwapShift =>
   swap.direction === 'received' ? swap.original_shift : swap.proposed_shift;
 
+/**
+ * The server's own reason for a refusal, when it gave one. "Failed to accept swap
+ * request" hid every real answer — the shift has started, the other volunteer has left
+ * it, the request has expired — behind one sentence (found walking the journey, 19 Oct
+ * 2026). The request modal already did this; the decisions now do too.
+ */
+const reasonOf = (
+  response: { errors?: Array<{ message?: string }>; error?: string },
+  fallback: string,
+): string => response.errors?.[0]?.message || response.error || fallback;
+
+/** A sent request can be withdrawn until it is decided — including while an admin has it. */
+const canCancel = (swap: ShiftSwap): boolean =>
+  swap.direction === 'sent' && (swap.status === 'pending' || swap.status === 'admin_pending');
+
 export function ShiftSwapsTab() {
   const { t } = useTranslation('volunteering');
   const { tenantPath } = useTenant();
@@ -125,6 +140,12 @@ export function ShiftSwapsTab() {
   const [actioningId, setActioningId] = useState<number | null>(null);
   const [rejectTarget, setRejectTarget] = useState<number | null>(null);
   const [view, setView] = useState<'all' | 'sent' | 'received'>('all');
+  // The server pages twenty at a time by id and says in `meta` whether more exist.
+  // Until 19 Oct 2026 this tab read one page and stopped, so older requests were
+  // unreachable (the phone app has the same limit until its next release).
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const cursorRef = useRef<string | undefined>(undefined);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -135,27 +156,35 @@ export function ShiftSwapsTab() {
   const toastRef = useRef(toast);
   toastRef.current = toast;
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (append = false) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
-      setIsLoading(true);
-      setError(null);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+        setError(null);
+      }
 
-      const response = await api.get<{ swaps?: ShiftSwap[] }>(
-        '/v2/volunteering/swaps'
+      const cursor = append ? cursorRef.current : undefined;
+      const response = await api.get<ShiftSwap[] | { swaps?: ShiftSwap[] }>(
+        `/v2/volunteering/swaps${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`
       );
 
       if (controller.signal.aborted) return;
       if (response.success && response.data) {
-        // Backend returns {swaps: [...]} wrapper
-        const raw = response.data as Record<string, unknown>;
-        const items = Array.isArray(raw.swaps) ? raw.swaps as ShiftSwap[]
-          : Array.isArray(response.data) ? response.data as ShiftSwap[]
+        // The server answers with a flat list; older builds wrapped it as {swaps: [...]}.
+        const raw: unknown = response.data;
+        const wrapped = (raw as { swaps?: unknown } | null | undefined)?.swaps;
+        const items = Array.isArray(raw) ? (raw as ShiftSwap[])
+          : Array.isArray(wrapped) ? (wrapped as ShiftSwap[])
           : [];
-        setSwaps(items);
+        setSwaps((prev) => (append ? [...prev, ...items] : items));
+        setHasMore(response.meta?.has_more ?? false);
+        cursorRef.current = response.meta?.cursor ?? undefined;
       } else {
         setError(tRef.current('swaps.load_error'));
       }
@@ -164,16 +193,32 @@ export function ShiftSwapsTab() {
       logError('Failed to load shift swaps', err);
       setError(tRef.current('swaps.load_error'));
     } finally {
-      if (!controller.signal.aborted) setIsLoading(false);
+      if (!controller.signal.aborted) {
+        setIsLoading(false);
+        setIsLoadingMore(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    load();
+    void load();
     return () => {
       abortRef.current?.abort();
     };
   }, [load]);
+
+  /**
+   * A refused decision is shown with the server's reason, then the list is reloaded:
+   * the usual cause is that the request has expired (a shift started, or someone left
+   * it), and the fresh list says so on the card instead of leaving a dead button.
+   */
+  const refused = (
+    response: { errors?: Array<{ message?: string }>; error?: string },
+    fallbackKey: string,
+  ) => {
+    toastRef.current.error(reasonOf(response, tRef.current(fallbackKey)));
+    void load();
+  };
 
   const handleAccept = async (swapId: number) => {
     try {
@@ -190,7 +235,7 @@ export function ShiftSwapsTab() {
           tRef.current(newStatus === 'admin_pending' ? 'swaps.accept_pending_admin' : 'swaps.accept_success')
         );
       } else {
-        toastRef.current.error(tRef.current('swaps.accept_failed'));
+        refused(response, 'swaps.accept_failed');
       }
     } catch (err) {
       logError('Failed to accept shift swap', err);
@@ -208,7 +253,7 @@ export function ShiftSwapsTab() {
         setSwaps((prev) => prev.filter((s) => s.id !== swapId));
         toastRef.current.success(tRef.current('swaps.cancel_success'));
       } else {
-        toastRef.current.error(tRef.current('swaps.cancel_failed'));
+        refused(response, 'swaps.cancel_failed');
       }
     } catch (err) {
       logError('Failed to cancel shift swap', err);
@@ -230,7 +275,7 @@ export function ShiftSwapsTab() {
         );
         toastRef.current.success(tRef.current('swaps.reject_success'));
       } else {
-        toastRef.current.error(tRef.current('swaps.reject_failed'));
+        refused(response, 'swaps.reject_failed');
       }
     } catch (err) {
       logError('Failed to reject shift swap', err);
@@ -262,7 +307,7 @@ export function ShiftSwapsTab() {
           size="sm"
           variant="tertiary"
           startContent={<RefreshCw className="w-4 h-4" aria-hidden="true" />}
-          onPress={load}
+          onPress={() => { void load(); }}
           isDisabled={isLoading}
           className="bg-theme-elevated text-theme-muted sm:shrink-0"
         >
@@ -305,7 +350,7 @@ export function ShiftSwapsTab() {
         <GlassCard className="p-8 text-center" role="alert">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <p className="text-theme-muted mb-4">{error}</p>
-          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={load}>
+          <Button className="bg-gradient-to-r from-rose-500 to-pink-600 text-white" onPress={() => { void load(); }}>
             {t('swaps.try_again')}
           </Button>
         </GlassCard>
@@ -471,8 +516,10 @@ export function ShiftSwapsTab() {
                     </div>
                   )}
 
-                  {/* Cancel button for sent pending swaps */}
-                  {swap.direction === 'sent' && swap.status === 'pending' && (
+                  {/* Cancel button for sent swaps not yet decided (the server allows
+                      withdrawing one an admin is still looking at, and so did the
+                      accessible site; this tab hid the button once it reached the admin). */}
+                  {canCancel(swap) && (
                     <div className="flex flex-col gap-2 sm:flex-shrink-0">
                       <Button
                         size="sm"
@@ -480,6 +527,7 @@ export function ShiftSwapsTab() {
                         startContent={<Ban className="w-4 h-4" aria-hidden="true" />}
                         onPress={() => handleCancel(swap.id)}
                         isLoading={actioningId === swap.id}
+                        data-testid={`swap-cancel-${swap.id}`}
                       >
                         {t('swaps.cancel')}
                       </Button>
@@ -490,6 +538,19 @@ export function ShiftSwapsTab() {
             </motion.div>
           ))}
         </motion.div>
+      )}
+
+      {!error && !isLoading && hasMore && (
+        <div className="pt-2 text-center">
+          <Button
+            variant="secondary"
+            onPress={() => { void load(true); }}
+            isLoading={isLoadingMore}
+            data-testid="swaps-load-more"
+          >
+            {t('load_more')}
+          </Button>
+        </div>
       )}
       {/* Reject Confirmation Modal */}
       <Modal

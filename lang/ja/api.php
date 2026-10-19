@@ -2485,6 +2485,7 @@ return [
     'shift_swap_double_book_recipient' => '交代すると、相手のシフトが重複してしまいます',
     'shift_swap_apply_failed' => '交代の割り当ての一括適用に失敗しました',
     'shift_swap_execute_failed' => 'シフト交代の実行に失敗しました',
+    'shift_swap_expired' => 'この交代リクエストは期限切れです。シフトが開始したか、どちらかがそのシフトに登録されていません。',
     'shift_reservation_min_slots' => '少なくとも1枠を予約してください',
     'shift_reservation_shift_started' => 'すでに開始したシフトの枠は予約できません',
     'shift_reservation_leader_only_reserve' => 'このグループの枠を予約できるのは、グループリーダー/管理者のみです',

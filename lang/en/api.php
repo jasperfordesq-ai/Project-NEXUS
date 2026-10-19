@@ -3136,6 +3136,7 @@ return [
     'shift_swap_double_book_recipient' => 'Swap would double-book the recipient with an overlapping shift',
     'shift_swap_apply_failed' => 'Failed to apply swap assignments atomically',
     'shift_swap_execute_failed' => 'Failed to execute shift swap',
+    'shift_swap_expired' => 'This swap request has expired: a shift has started, or one of you is no longer on the shift it names.',
     'shift_reservation_min_slots' => 'Must reserve at least 1 slot',
     'shift_reservation_shift_started' => 'Cannot reserve slots for a shift that has already started',
     'shift_reservation_leader_only_reserve' => 'Only group leaders/admins can reserve slots for this group',

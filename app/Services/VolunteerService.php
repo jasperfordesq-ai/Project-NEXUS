@@ -1712,6 +1712,8 @@ class VolunteerService
             // courtesy cancelShiftSignup/decline already provide).
             if ($ok && self::$lastShiftSignupChanged && $previousShiftId && $previousShiftId !== $shiftId) {
                 ShiftWaitlistService::notifyNext($previousShiftId, $tenantId);
+                // A swap request that named them on the shift they just left is dead.
+                ShiftSwapService::expireStaleRequests($tenantId);
             }
 
             // If they were queued (or holding an offer) for the very shift they
@@ -1789,6 +1791,9 @@ class VolunteerService
 
             // Offer the freed spot to the next person on the waitlist
             ShiftWaitlistService::notifyNext($shiftId, $tenantId);
+
+            // Any swap request that named this volunteer on this shift is now dead.
+            ShiftSwapService::expireStaleRequests($tenantId);
 
             return true;
         } catch (\Exception $e) {
@@ -3197,6 +3202,8 @@ class VolunteerService
             } catch (\Throwable $e) {
                 Log::warning('VolunteerService::removeApprovedVolunteer waitlist offer failed: ' . $e->getMessage());
             }
+            // A swap request that named them on that shift can no longer complete.
+            ShiftSwapService::expireStaleRequests($tenantId);
         }
 
         return true;

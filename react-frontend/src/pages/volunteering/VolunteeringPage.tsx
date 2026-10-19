@@ -7,7 +7,7 @@
  * Volunteering Page - Browse opportunities, track hours, manage applications
  */
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, formatTime } from '@/lib/helpers';
 import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, type Key } from 'react';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -1516,7 +1516,7 @@ function ApplicationsTab() {
                         {app.shift && (
                           <p className="text-xs text-theme-subtle flex items-center gap-1 mb-1">
                             <Clock className="w-3 h-3" aria-hidden="true" />
-                            {new Date(app.shift.start_time).toLocaleString(getFormattingLocale())} - {new Date(app.shift.end_time).toLocaleTimeString(getFormattingLocale())}
+                            {new Date(app.shift.start_time).toLocaleDateString(getFormattingLocale())} {formatTime(app.shift.start_time)} - {formatTime(app.shift.end_time)}
                           </p>
                         )}
 
