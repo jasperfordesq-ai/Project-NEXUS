@@ -104,6 +104,7 @@ extra-web-uk,POST,/volunteering/qualifications,volunteering,,,,,,,,,,,,,web-uk/s
 extra-web-uk,POST,/volunteering/qualifications/{param},volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-my-qualifications.js,
 extra-web-uk,POST,/volunteering/qualifications/{param}/withdraw,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-my-qualifications.js,
 extra-web-uk,POST,/volunteering/swaps/new/{param},volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-actions.js,
+extra-web-uk,POST,/volunteering/waitlist/{param}/claim,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-actions.js,
 ignored-web-uk-infrastructure,GET,/health,health,,,,,,,,,,infrastructure,,,web-uk/src/server.js,
 ignored-web-uk-infrastructure,GET,/service-unavailable,service-unavailable,,,,,,,,,,infrastructure,,,web-uk/src/server.js,
 ignored-web-uk-infrastructure,POST,/session/touch,session,,,,,,,,,,infrastructure,,,web-uk/src/server.js,

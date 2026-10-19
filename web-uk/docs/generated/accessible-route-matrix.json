@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-09T12:35:54.570Z",
+  "generatedAt": "2026-10-19T16:19:46.622Z",
   "provenance": {
-    "generatedAt": "2026-10-09T12:35:54.570Z",
+    "generatedAt": "2026-10-19T16:19:46.622Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
-    "laravelWorkingTreeDirty": true,
+    "laravelCommitSha": "5dc12b1f68a9e454b641071c6e9a3a010041f054",
+    "laravelWorkingTreeDirty": false,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "040b9e89ba0b1871299944c835c5c4c039b79dca",
-    "webUkRepositoryWorkingTreeDirty": true,
-    "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
+    "webUkRepositoryCommitSha": "5dc12b1f68a9e454b641071c6e9a3a010041f054",
+    "webUkRepositoryWorkingTreeDirty": false,
+    "caveat": "Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs."
   },
   "summary": {
-    "generatedAt": "2026-10-09T12:35:54.570Z",
+    "generatedAt": "2026-10-19T16:19:46.622Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 815,
+    "webUkRoutes": 816,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 105,
+    "extraWebUkRoutes": 106,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -151,7 +151,7 @@
       "volunteering": {
         "matched": 52,
         "missing": 0,
-        "extraWebUk": 63,
+        "extraWebUk": 64,
         "ignoredInfrastructure": 0
       },
       "health": {
@@ -2712,6 +2712,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/volunteering/swaps/new/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/volunteering-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/volunteering/waitlist/{param}/claim",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/waitlist/{param}/claim",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/volunteering-actions.js",
       "webUkRouteKind": ""

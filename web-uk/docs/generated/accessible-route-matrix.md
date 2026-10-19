@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-09T12:35:54.570Z
-Laravel commit SHA: `040b9e89ba0b1871299944c835c5c4c039b79dca`
-Web UK repository commit SHA: `040b9e89ba0b1871299944c835c5c4c039b79dca`
-Laravel working tree dirty: yes
-Web UK repository working tree dirty: yes
-Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
+Generated: 2026-10-19T16:19:46.622Z
+Laravel commit SHA: `5dc12b1f68a9e454b641071c6e9a3a010041f054`
+Web UK repository commit SHA: `5dc12b1f68a9e454b641071c6e9a3a010041f054`
+Laravel working tree dirty: no
+Web UK repository working tree dirty: no
+Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 815 |
+| web-uk routes | 816 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 105 |
+| Extra web-uk routes | 106 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 63 | 0 |
+| volunteering | 52 | 0 | 64 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -219,6 +219,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/volunteering/qualifications/{param}` | volunteering |  | web-uk/src/routes/volunteering-my-qualifications.js |
 | POST | `/volunteering/qualifications/{param}/withdraw` | volunteering |  | web-uk/src/routes/volunteering-my-qualifications.js |
 | POST | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
+| POST | `/volunteering/waitlist/{param}/claim` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 
 ## Ignored Web UK Infrastructure Routes
 
