@@ -65,11 +65,15 @@ class EmergencyAlertControllerTest extends TestCase
 
         $alertId = (int) $create->json('data.id');
 
+        // Caring Community is outside both adults-only native apps, so FCMPushService
+        // suppresses every caring_* push by policy. Since 2026-10-18 the service records
+        // push_sent honestly: 1 only when a device was actually sent to. It used to write 1
+        // regardless, which this assertion pinned.
         $this->assertDatabaseHas('caring_emergency_alerts', [
             'id' => $alertId,
             'tenant_id' => $this->testTenantId,
             'is_active' => 1,
-            'push_sent' => 1,
+            'push_sent' => 0,
         ]);
 
         Sanctum::actingAs($member);

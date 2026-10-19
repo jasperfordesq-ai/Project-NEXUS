@@ -13,6 +13,7 @@
 
 import { renderHook } from '@testing-library/react-native';
 import { useAuthRedirectEffect, type AuthRedirectEffectInput } from './useAuthRedirectEffect';
+import { pendingRecoveryLinkStore } from './pendingRecoveryLinkStore';
 
 function harness(overrides: Partial<AuthRedirectEffectInput> = {}) {
   const navigate = jest.fn<'navigated' | 'external' | 'ignored', [string]>(() => 'navigated');
@@ -91,6 +92,32 @@ describe('useAuthRedirectEffect', () => {
     // update does) while usePathname() has not moved off '/' yet.
     h.next({});
     expect(h.replace).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops a queued account-recovery link once the member is signed in, and goes home', () => {
+    pendingRecoveryLinkStore.remember('nexus://reset-password?token=used');
+    const h = harness();
+
+    h.next({ isLoading: false, isAuthenticated: true, pendingDeepLink: 'nexus://reset-password?token=used' });
+
+    expect(h.setPendingDeepLink).toHaveBeenCalledWith(null);
+    expect(h.navigate).not.toHaveBeenCalled();
+    expect(pendingRecoveryLinkStore.consume()).toBeNull();
+  });
+
+  it('leaves a recovery link alone while the community picker is open, which consumes it itself', () => {
+    const h = harness();
+
+    h.next({
+      isLoading: false,
+      isAuthenticated: false,
+      hasSelectedTenant: true,
+      pathname: '/select-tenant',
+      pendingDeepLink: 'nexus://reset-password?token=fresh',
+    });
+
+    expect(h.navigate).not.toHaveBeenCalled();
+    expect(h.replace).not.toHaveBeenCalled();
   });
 
   it('sends a signed-out member to login and clears nothing it did not queue', () => {
