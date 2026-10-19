@@ -488,6 +488,36 @@ SHA-256 `8A23136EE8D15A31FAC14270A490E8CCB1145B371EBEA601B80F1E95BF65B8FD`. The 
 - **Submission 17**, submitted October 9, 2026 at **4:24 PM**, Production — In review. Managed
   publishing is off, so approval releases it automatically. `live-store-build.json` stays on build
   22 until the Production track shows build 23 released.
+  🔴 It then stayed on 22 after build 23 went live: on 2026-10-19 the Production track read
+  "Latest release: 23 (1.10.0)" while the file still said 22. Same lesson as build 17 — update it
+  the moment a release is confirmed live.
+
+On **2026-10-19**, build **24 / 1.11.0** went through both steps the same day, at the owner's
+request, **without a physical-device walk of build 24**. It was built by `build-aab-play.sh
+--version-code 24` from `f45952434` (the version bump on top of `afd395394`, whose CI Pipeline,
+E2E Tests, Security Scan and Docs Lint runs all passed and which was deployed to production the same
+morning). No native dependency or plugin changed since build 23, but `app.json` switched
+over-the-air updates back on (`be92f6c66`), so **build 24 is the first Android build since 22 that
+can receive an update**; the version moved to 1.11.0 because the push-tap fix, the messaging revamp
+and Marketplace & Freecycle are new functionality. The guarded build took **2m 36s**; the
+96,553,135-byte AAB has SHA-256 `09A409C932F81EB5F9FA356C938D6623BE6E4BE45D5C428F26BB678BE231F76D`.
+The owner uploaded it; the agent did everything else in the owner's Chrome. The built-in browser
+pane is not signed in to Google, so the Console is driven through Claude in Chrome.
+
+- **Console slot, 2026-10-19:** `?authuser=<owning account>` landed on `u/0` first time.
+- **Internal testing:** "Ready to release", no quick-checks bar. 0 devices lost on every row
+  (Phone 12,308 / Tablet 6,500 / TV 3 / Chromebook 10 / Android XR 1). New install 33.2 MB
+  (+43.7 KB), update 2.18 MB. Published **8:41 AM** Console time.
+- **Production:** promote carried the bundle, name `24 (1.11.0)` and notes across, with build 23
+  under "Not included". 100.0% roll-out, all targeted countries, 5 active installs.
+- **Quick checks:** the pre-submit bar opened at "up to 14 minutes", counted down a minute at a
+  time and cleared after **about 8 minutes** with "Your changes can now be sent for review" and no
+  issues listed. After submission a second bar opened under "Changes in review" at "up to
+  6 minutes" and ended within about a minute with "Your changes are now in review".
+- **Submission 18**, submitted October 19, 2026 at **8:51 AM**, was released automatically
+  (managed publishing off): the Production track read "24 (1.11.0) · Available on Google Play ·
+  Released on Oct 19 9:13 AM" — **22 minutes** after submission. `mobile/live-store-build.json`
+  records build 24 and commit `f45952434`.
 
 Two Console behaviours worth knowing before you click:
 
