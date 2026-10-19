@@ -1409,7 +1409,22 @@
     "update_send": "Rückmeldung senden",
     "update_too_short": "Bitte schreiben Sie mindestens 20 Zeichen.",
     "update_sent": "Danke. Ihre Rückmeldung wurde gesendet.",
-    "not_found": "Diese Meldung wurde nicht gefunden oder ist nicht mehr mit Ihrer Organisation verknüpft."
+    "not_found": "Diese Meldung wurde nicht gefunden oder ist nicht mehr mit Ihrer Organisation verknüpft.",
+    "summary": "{{open}} noch offen · {{total}} insgesamt",
+    "open_report": "Schutzmeldung Nr. {{id}} öffnen",
+    "view_report": "Meldung ansehen",
+    "confidentiality_note": "Diese Meldungen sind vertraulich. Bitte sprechen Sie nicht mit Freiwilligen oder Mitgliedern darüber und versuchen Sie nie herauszufinden, wer eine Meldung gemacht hat.",
+    "status_now": "Aktueller Stand: {{status}}",
+    "what_to_do": "Teilen Sie dem Team mit, was Ihre Organisation weiß oder getan hat, zum Beispiel ein Gespräch mit der oder dem Freiwilligen oder eine geänderte Schicht. Kontaktieren Sie nicht die Person, die die Meldung gemacht hat.",
+    "closed_no_updates": "Diese Meldung ist geschlossen, daher können keine Aktualisierungen mehr hinzugefügt werden. Wenn etwas Neues auftaucht, wenden Sie sich an das Schutzteam Ihrer Gemeinschaft.",
+    "history_empty": "Zu dieser Meldung ist noch nichts geschehen.",
+    "status_help": {
+      "open": "Das Schutzteam hat diese Meldung erhalten und noch nicht begonnen. Sie müssen nichts tun, es sei denn, das Team meldet sich bei Ihnen.",
+      "investigating": "Das Schutzteam prüft dies gerade. Wenn Sie etwas wissen, das helfen könnte, senden Sie dem Team eine Aktualisierung.",
+      "escalated": "Das Team hat dies an eine Fachstelle oder eine externe Stelle weitergegeben. Bewahren Sie vorhandene Unterlagen sicher auf und ermitteln Sie nicht selbst.",
+      "resolved": "Das Team betrachtet dies als erledigt. Es kann Sie noch um eine letzte Aktualisierung bitten, bevor es die Meldung schließt.",
+      "closed": "Diese Meldung ist geschlossen. Sie bleibt hier als Nachweis erhalten."
+    }
   },
   "shift_manager": {
     "heading": "Schichten",

@@ -1425,7 +1425,22 @@
     "update_send": "Enviar novedades",
     "update_too_short": "Escriba al menos 20 caracteres.",
     "update_sent": "Gracias. Sus novedades se han enviado.",
-    "not_found": "No se ha encontrado esta denuncia o ya no está vinculada a su organización."
+    "not_found": "No se ha encontrado esta denuncia o ya no está vinculada a su organización.",
+    "summary": "{{open}} aún abiertos · {{total}} en total",
+    "open_report": "Abrir el informe de protección n.º {{id}}",
+    "view_report": "Ver informe",
+    "confidentiality_note": "Estos informes son confidenciales. No los comente con voluntarios ni con miembros y no intente nunca averiguar quién hizo uno.",
+    "status_now": "Situación actual: {{status}}",
+    "what_to_do": "Use este espacio para decir al equipo lo que su organización sabe o ha hecho, por ejemplo si ha hablado con el voluntario o ha cambiado un turno. No contacte con la persona que hizo el informe.",
+    "closed_no_updates": "Este informe está cerrado, así que ya no se pueden añadir actualizaciones. Si surge algo nuevo, contacte con el equipo de protección de su comunidad.",
+    "history_empty": "Todavía no ha ocurrido nada en este informe.",
+    "status_help": {
+      "open": "El equipo de protección ha recibido este informe y aún no ha empezado. No tiene que hacer nada salvo que le contacten.",
+      "investigating": "El equipo de protección lo está estudiando. Si sabe algo que pueda ayudar, envíeles una actualización.",
+      "escalated": "El equipo lo ha pasado a un especialista o a un organismo externo. Guarde a salvo los registros que tenga y no investigue por su cuenta.",
+      "resolved": "El equipo lo considera resuelto. Aún puede pedirle una última actualización antes de cerrarlo.",
+      "closed": "Este informe está cerrado. Se conserva aquí como registro."
+    }
   },
   "shift_manager": {
     "heading": "Turnos",

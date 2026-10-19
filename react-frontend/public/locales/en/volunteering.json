@@ -1409,7 +1409,22 @@
     "update_send": "Send update",
     "update_too_short": "Please write at least 20 characters.",
     "update_sent": "Thank you. Your update has been sent.",
-    "not_found": "This report could not be found, or it is no longer linked to your organisation."
+    "not_found": "This report could not be found, or it is no longer linked to your organisation.",
+    "summary": "{{open}} still open · {{total}} in total",
+    "open_report": "Open safeguarding report #{{id}}",
+    "view_report": "View report",
+    "confidentiality_note": "These reports are confidential. Please do not discuss them with volunteers or members, and never try to find out who made one.",
+    "status_now": "Where it stands: {{status}}",
+    "status_help": {
+      "open": "The safeguarding team has received this report and has not started yet. There is nothing you need to do unless they contact you.",
+      "investigating": "The safeguarding team is looking into this now. If you know something that could help, send them an update.",
+      "escalated": "The team has passed this to a specialist or an outside agency. Keep any records you hold safe and do not investigate yourselves.",
+      "resolved": "The team considers this dealt with. They may still ask you for a final update before they close it.",
+      "closed": "This report is closed. It stays here as a record."
+    },
+    "what_to_do": "Use this to tell the team what your organisation knows or has done, for example if you have spoken to the volunteer or changed a shift. Do not contact the person who made the report.",
+    "closed_no_updates": "This report is closed, so updates can no longer be added. If something new comes up, contact your community's safeguarding team.",
+    "history_empty": "Nothing has happened on this report yet."
   },
   "shift_manager": {
     "heading": "Shifts",

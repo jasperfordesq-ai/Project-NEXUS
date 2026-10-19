@@ -23,6 +23,8 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import ChevronRight from 'lucide-react/icons/chevron-right';
+import Lock from 'lucide-react/icons/lock';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -80,6 +82,12 @@ const EVENT_LABEL: Record<OrgEventType, string | null> = {
   shared_with_organisation: 'org_safeguarding.timeline_shared',
   share_withdrawn: 'org_safeguarding.timeline_share_withdrawn',
 };
+
+/** One plain sentence on what a status means for the organisation. */
+function statusHelpKey(status: string): string {
+  const known = ['open', 'investigating', 'escalated', 'resolved', 'closed'];
+  return `org_safeguarding.status_help.${known.includes(status) ? status : 'open'}`;
+}
 
 function formatDate(value: string | null | undefined, withTime = false): string {
   if (!value) return '';
@@ -195,28 +203,50 @@ function IncidentList({ orgId, embedded }: { orgId: number; embedded: boolean })
         <EmptyState icon={<ShieldAlert className="w-12 h-12" aria-hidden="true" />} title={t('org_safeguarding.empty')} />
       )}
       {state === 'ready' && items.length > 0 && (
-        <ul className="space-y-3">
-          {items.map((item) => (
-            <li key={item.id}>
-              <GlassCard className="space-y-2 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link to={tenantPath(`/volunteering/org/${orgId}/safeguarding/${item.id}`)} className="font-semibold text-theme-primary hover:underline">
-                    <span>#{item.id}</span> · <span>{t(`safeguarding.incident_types.${item.type}`)}</span>
-                  </Link>
-                  <Chip size="sm" variant="soft" color={item.severity === 'high' || item.severity === 'critical' ? 'danger' : 'warning'}>
-                    {t(`safeguarding.severity_options.${item.severity}`)}
-                  </Chip>
-                  <Chip size="sm" variant="soft">{t(memberStatusKey(item.status))}</Chip>
-                  {item.full_report_shared && <Chip size="sm" variant="soft" color="success">{t('org_safeguarding.shared_chip')}</Chip>}
-                </div>
-                <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-theme-muted">
-                  <div className="flex gap-1"><dt>{t('org_safeguarding.col_date')}:</dt><dd>{formatDate(item.incident_date || item.created_at)}</dd></div>
-                  {item.opportunity_title && <div className="flex gap-1"><dt>{t('org_safeguarding.col_opportunity')}:</dt><dd>{item.opportunity_title}</dd></div>}
-                </dl>
-              </GlassCard>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="text-sm font-medium text-theme-primary" aria-live="polite">
+            {t('org_safeguarding.summary', { open: items.filter((i) => i.status !== 'closed' && i.status !== 'resolved').length, total: items.length })}
+          </p>
+          <ul className="space-y-3">
+            {items.map((item) => (
+              <li key={item.id}>
+                <Link
+                  to={tenantPath(`/volunteering/org/${orgId}/safeguarding/${item.id}`)}
+                  className="group block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                  aria-label={t('org_safeguarding.open_report', { id: item.id })}
+                >
+                  <GlassCard className="space-y-2 p-4 transition-colors group-hover:bg-theme-hover">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-theme-primary">
+                          <span>#{item.id}</span> · <span>{t(`safeguarding.incident_types.${item.type}`)}</span>
+                        </span>
+                        <Chip size="sm" variant="soft" color={item.severity === 'high' || item.severity === 'critical' ? 'danger' : 'warning'}>
+                          {t(`safeguarding.severity_options.${item.severity}`)}
+                        </Chip>
+                        <Chip size="sm" variant="soft">{t(memberStatusKey(item.status))}</Chip>
+                        {item.full_report_shared && <Chip size="sm" variant="soft" color="success">{t('org_safeguarding.shared_chip')}</Chip>}
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-theme-primary">
+                        <span className="hidden sm:inline">{t('org_safeguarding.view_report')}</span>
+                        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      </span>
+                    </div>
+                    <p className="text-sm text-theme-muted">{t(statusHelpKey(item.status))}</p>
+                    <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-theme-muted">
+                      <div className="flex gap-1"><dt>{t('org_safeguarding.col_date')}:</dt><dd>{formatDate(item.incident_date || item.created_at)}</dd></div>
+                      {item.opportunity_title && <div className="flex gap-1"><dt>{t('org_safeguarding.col_opportunity')}:</dt><dd>{item.opportunity_title}</dd></div>}
+                    </dl>
+                  </GlassCard>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="flex items-start gap-2 text-xs text-theme-subtle">
+            <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {t('org_safeguarding.confidentiality_note')}
+          </p>
+        </>
       )}
     </div>
   );
@@ -314,6 +344,10 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
         </div>
         <h1 className="text-xl font-semibold text-theme-primary">{t('org_safeguarding.detail_title')}</h1>
         <p className="text-sm text-theme-muted">{t('org_safeguarding.team_handling')}</p>
+        <div className="rounded-lg bg-theme-elevated p-3 text-sm">
+          <p className="font-medium text-theme-primary">{t('org_safeguarding.status_now', { status: t(memberStatusKey(incident.status)) })}</p>
+          <p className="mt-1 text-theme-muted">{t(statusHelpKey(incident.status))}</p>
+        </div>
         <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           {facts.filter(([, value]) => !!value).map(([label, value]) => (
             <div key={label}>
@@ -340,6 +374,7 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
 
       <GlassCard className="space-y-3 p-5">
         <h2 className="text-base font-semibold text-theme-primary">{t('org_safeguarding.history_heading')}</h2>
+        {events.length === 0 && <p className="text-sm text-theme-muted">{t('org_safeguarding.history_empty')}</p>}
         <ol className="space-y-4">
           {events.map((event) => (
             <li key={event.id}>
@@ -358,8 +393,14 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
         </ol>
       </GlassCard>
 
+      {incident.status === 'closed' ? (
+        <GlassCard className="p-5">
+          <p className="text-sm text-theme-muted">{t('org_safeguarding.closed_no_updates')}</p>
+        </GlassCard>
+      ) : (
       <GlassCard className="space-y-3 p-5">
         <h2 className="text-base font-semibold text-theme-primary">{t('org_safeguarding.updates_heading')}</h2>
+        <p className="text-sm text-theme-muted">{t('org_safeguarding.what_to_do')}</p>
         <Textarea
           label={t('org_safeguarding.update_label')}
           description={t('org_safeguarding.update_hint')}
@@ -373,6 +414,7 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
           {t('org_safeguarding.update_send')}
         </Button>
       </GlassCard>
+      )}
     </div>
   );
 }

@@ -1425,7 +1425,22 @@
     "update_send": "Envoyer",
     "update_too_short": "Veuillez écrire au moins 20 caractères.",
     "update_sent": "Merci. Vos nouvelles ont été envoyées.",
-    "not_found": "Ce signalement est introuvable ou n'est plus lié à votre organisation."
+    "not_found": "Ce signalement est introuvable ou n'est plus lié à votre organisation.",
+    "summary": "{{open}} encore ouvert(s) · {{total}} au total",
+    "open_report": "Ouvrir le signalement de protection n° {{id}}",
+    "view_report": "Voir le signalement",
+    "confidentiality_note": "Ces signalements sont confidentiels. Ne les évoquez pas avec les bénévoles ou les membres et n'essayez jamais de savoir qui en est l'auteur.",
+    "status_now": "Où en est-on : {{status}}",
+    "what_to_do": "Utilisez ce champ pour dire à l'équipe ce que votre organisation sait ou a fait, par exemple si vous avez parlé au bénévole ou modifié un créneau. Ne contactez pas la personne qui a fait le signalement.",
+    "closed_no_updates": "Ce signalement est clos : il n'est plus possible d'ajouter de mises à jour. Si un élément nouveau apparaît, contactez l'équipe de protection de votre communauté.",
+    "history_empty": "Rien ne s'est encore passé sur ce signalement.",
+    "status_help": {
+      "open": "L'équipe de protection a reçu ce signalement et n'a pas encore commencé. Vous n'avez rien à faire, sauf si elle vous contacte.",
+      "investigating": "L'équipe de protection examine ce signalement. Si vous savez quelque chose d'utile, envoyez-lui une mise à jour.",
+      "escalated": "L'équipe l'a transmis à un spécialiste ou à un organisme extérieur. Conservez en lieu sûr les documents que vous détenez et n'enquêtez pas vous-mêmes.",
+      "resolved": "L'équipe considère ce signalement comme traité. Elle peut encore vous demander une dernière mise à jour avant de le clore.",
+      "closed": "Ce signalement est clos. Il reste ici à titre de trace."
+    }
   },
   "shift_manager": {
     "heading": "Créneaux",

@@ -1425,7 +1425,22 @@
     "update_send": "Invia aggiornamento",
     "update_too_short": "Scrivi almeno 20 caratteri.",
     "update_sent": "Grazie. Il tuo aggiornamento è stato inviato.",
-    "not_found": "Impossibile trovare questa segnalazione, oppure non è più collegata alla tua organizzazione."
+    "not_found": "Impossibile trovare questa segnalazione, oppure non è più collegata alla tua organizzazione.",
+    "summary": "{{open}} ancora aperte · {{total}} in totale",
+    "open_report": "Apri la segnalazione di tutela n. {{id}}",
+    "view_report": "Vedi la segnalazione",
+    "confidentiality_note": "Queste segnalazioni sono riservate. Non parlatene con volontari o membri e non cercate mai di scoprire chi l'ha fatta.",
+    "status_now": "Stato attuale: {{status}}",
+    "what_to_do": "Usate questo spazio per dire al team cosa sa o ha fatto la vostra organizzazione, ad esempio se avete parlato con il volontario o cambiato un turno. Non contattate la persona che ha fatto la segnalazione.",
+    "closed_no_updates": "Questa segnalazione è chiusa, quindi non si possono più aggiungere aggiornamenti. Se emerge qualcosa di nuovo, contattate il team di tutela della vostra comunità.",
+    "history_empty": "Per questa segnalazione non è ancora successo nulla.",
+    "status_help": {
+      "open": "Il team di tutela ha ricevuto questa segnalazione e non ha ancora iniziato. Non dovete fare nulla, a meno che non vi contatti.",
+      "investigating": "Il team di tutela la sta esaminando. Se sapete qualcosa che può aiutare, inviate un aggiornamento.",
+      "escalated": "Il team l'ha passata a uno specialista o a un ente esterno. Conservate al sicuro i documenti in vostro possesso e non indagate da soli.",
+      "resolved": "Il team la considera risolta. Potrebbe chiedervi un ultimo aggiornamento prima di chiuderla.",
+      "closed": "Questa segnalazione è chiusa. Resta qui come registro."
+    }
   },
   "shift_manager": {
     "heading": "Turni",

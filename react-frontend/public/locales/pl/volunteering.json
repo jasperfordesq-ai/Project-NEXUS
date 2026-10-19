@@ -1443,7 +1443,22 @@
     "update_send": "Wyślij informację",
     "update_too_short": "Napisz co najmniej 20 znaków.",
     "update_sent": "Dziękujemy. Twoja informacja została wysłana.",
-    "not_found": "Nie znaleziono tego zgłoszenia albo nie jest już powiązane z Twoją organizacją."
+    "not_found": "Nie znaleziono tego zgłoszenia albo nie jest już powiązane z Twoją organizacją.",
+    "summary": "{{open}} nadal otwartych · {{total}} łącznie",
+    "open_report": "Otwórz zgłoszenie dotyczące ochrony nr {{id}}",
+    "view_report": "Zobacz zgłoszenie",
+    "confidentiality_note": "Te zgłoszenia są poufne. Nie rozmawiaj o nich z wolontariuszami ani członkami i nigdy nie próbuj ustalać, kto je złożył.",
+    "status_now": "Aktualny stan: {{status}}",
+    "what_to_do": "Napisz zespołowi, co wie lub zrobiła Twoja organizacja, na przykład czy rozmawiano z wolontariuszem albo zmieniono zmianę. Nie kontaktuj się z osobą, która złożyła zgłoszenie.",
+    "closed_no_updates": "To zgłoszenie jest zamknięte, więc nie można już dodawać aktualizacji. Jeśli pojawi się coś nowego, skontaktuj się z zespołem ds. ochrony swojej społeczności.",
+    "history_empty": "W tym zgłoszeniu nic się jeszcze nie wydarzyło.",
+    "status_help": {
+      "open": "Zespół ds. ochrony otrzymał to zgłoszenie i jeszcze nie zaczął. Nie musisz nic robić, chyba że zespół się z Tobą skontaktuje.",
+      "investigating": "Zespół ds. ochrony analizuje teraz tę sprawę. Jeśli wiesz coś, co może pomóc, wyślij zespołowi aktualizację.",
+      "escalated": "Zespół przekazał sprawę specjaliście lub zewnętrznej instytucji. Bezpiecznie przechowuj posiadane dokumenty i nie prowadź własnego dochodzenia.",
+      "resolved": "Zespół uważa sprawę za załatwioną. Przed zamknięciem może jeszcze poprosić o ostatnią aktualizację.",
+      "closed": "To zgłoszenie jest zamknięte. Pozostaje tutaj jako zapis."
+    }
   },
   "shift_manager": {
     "heading": "Zmiany",

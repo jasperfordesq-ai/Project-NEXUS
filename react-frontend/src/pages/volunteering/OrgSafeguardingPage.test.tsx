@@ -74,7 +74,7 @@ describe('OrgSafeguardingPage', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { items: [summary(), summary({ id: 13, full_report_shared: true })], relation: 'org_lead' } });
     render(<OrgSafeguardingPage />);
 
-    const row = await screen.findByRole('link', { name: /#12/ });
+    const row = await screen.findByRole('link', { name: /open_report.*12/ });
     expect(api.get).toHaveBeenCalledWith('/v2/volunteering/organisations/3/incidents');
     expect(row).toHaveAttribute('href', '/test/volunteering/org/3/safeguarding/12');
     expect(screen.getAllByText('safeguarding.incident_types.allegation').length).toBeGreaterThan(0);

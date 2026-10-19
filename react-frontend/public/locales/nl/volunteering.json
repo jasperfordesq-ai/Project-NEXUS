@@ -1409,7 +1409,22 @@
     "update_send": "Bericht versturen",
     "update_too_short": "Schrijf minstens 20 tekens.",
     "update_sent": "Dank u. Uw bericht is verstuurd.",
-    "not_found": "Deze melding is niet gevonden of is niet meer aan uw organisatie gekoppeld."
+    "not_found": "Deze melding is niet gevonden of is niet meer aan uw organisatie gekoppeld.",
+    "summary": "{{open}} nog open · {{total}} in totaal",
+    "open_report": "Veiligheidsmelding #{{id}} openen",
+    "view_report": "Melding bekijken",
+    "confidentiality_note": "Deze meldingen zijn vertrouwelijk. Bespreek ze niet met vrijwilligers of leden en probeer nooit te achterhalen wie een melding heeft gedaan.",
+    "status_now": "Stand van zaken: {{status}}",
+    "what_to_do": "Vertel het team wat uw organisatie weet of heeft gedaan, bijvoorbeeld of u met de vrijwilliger heeft gesproken of een dienst heeft gewijzigd. Neem geen contact op met degene die de melding deed.",
+    "closed_no_updates": "Deze melding is gesloten, dus er kunnen geen updates meer worden toegevoegd. Komt er iets nieuws op, neem dan contact op met het veiligheidsteam van uw gemeenschap.",
+    "history_empty": "Er is nog niets gebeurd met deze melding.",
+    "status_help": {
+      "open": "Het veiligheidsteam heeft deze melding ontvangen en is nog niet begonnen. U hoeft niets te doen, tenzij het team contact met u opneemt.",
+      "investigating": "Het veiligheidsteam onderzoekt dit nu. Weet u iets wat kan helpen, stuur het team dan een update.",
+      "escalated": "Het team heeft dit doorgegeven aan een specialist of een externe instantie. Bewaar stukken die u heeft veilig en ga niet zelf onderzoeken.",
+      "resolved": "Het team beschouwt dit als afgehandeld. Het kan u nog om een laatste update vragen voordat het de melding sluit.",
+      "closed": "Deze melding is gesloten. Ze blijft hier staan als vastlegging."
+    }
   },
   "shift_manager": {
     "heading": "Diensten",
