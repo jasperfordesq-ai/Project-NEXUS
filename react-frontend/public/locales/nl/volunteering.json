@@ -1416,7 +1416,7 @@
     "confidentiality_note": "Deze meldingen zijn vertrouwelijk. Bespreek ze niet met vrijwilligers of leden en probeer nooit te achterhalen wie een melding heeft gedaan.",
     "status_now": "Stand van zaken: {{status}}",
     "what_to_do": "Vertel het team wat uw organisatie weet of heeft gedaan, bijvoorbeeld of u met de vrijwilliger heeft gesproken of een dienst heeft gewijzigd. Neem geen contact op met degene die de melding deed.",
-    "closed_no_updates": "Deze melding is gesloten, dus er kunnen geen updates meer worden toegevoegd. Komt er iets nieuws op, neem dan contact op met het veiligheidsteam van uw gemeenschap.",
+    "closed_no_updates": "Deze melding is gesloten, dus er kunnen geen updates meer worden toegevoegd. Komt er iets nieuws op, neem dan contact op met de beheerders of brokers van uw gemeenschap.",
     "history_empty": "Er is nog niets gebeurd met deze melding.",
     "status_help": {
       "open": "Het veiligheidsteam heeft deze melding ontvangen en is nog niet begonnen. U hoeft niets te doen, tenzij het team contact met u opneemt.",
@@ -1424,7 +1424,8 @@
       "escalated": "Het team heeft dit doorgegeven aan een specialist of een externe instantie. Bewaar stukken die u heeft veilig en ga niet zelf onderzoeken.",
       "resolved": "Het team beschouwt dit als afgehandeld. Het kan u nog om een laatste update vragen voordat het de melding sluit.",
       "closed": "Deze melding is gesloten. Ze blijft hier staan als vastlegging."
-    }
+    },
+    "team_meaning": "Op deze pagina betekent “het veiligheidsteam” de beheerders, brokers en coördinatoren van uw gemeenschap. Zij zien elke melding volledig."
   },
   "shift_manager": {
     "heading": "Diensten",

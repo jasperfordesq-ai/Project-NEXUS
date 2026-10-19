@@ -1432,7 +1432,7 @@
     "confidentiality_note": "Ces signalements sont confidentiels. Ne les évoquez pas avec les bénévoles ou les membres et n'essayez jamais de savoir qui en est l'auteur.",
     "status_now": "Où en est-on : {{status}}",
     "what_to_do": "Utilisez ce champ pour dire à l'équipe ce que votre organisation sait ou a fait, par exemple si vous avez parlé au bénévole ou modifié un créneau. Ne contactez pas la personne qui a fait le signalement.",
-    "closed_no_updates": "Ce signalement est clos : il n'est plus possible d'ajouter de mises à jour. Si un élément nouveau apparaît, contactez l'équipe de protection de votre communauté.",
+    "closed_no_updates": "Ce signalement est clos : il n'est plus possible d'ajouter de mises à jour. Si un élément nouveau apparaît, contactez les administrateurs ou les courtiers de votre communauté.",
     "history_empty": "Rien ne s'est encore passé sur ce signalement.",
     "status_help": {
       "open": "L'équipe de protection a reçu ce signalement et n'a pas encore commencé. Vous n'avez rien à faire, sauf si elle vous contacte.",
@@ -1440,7 +1440,8 @@
       "escalated": "L'équipe l'a transmis à un spécialiste ou à un organisme extérieur. Conservez en lieu sûr les documents que vous détenez et n'enquêtez pas vous-mêmes.",
       "resolved": "L'équipe considère ce signalement comme traité. Elle peut encore vous demander une dernière mise à jour avant de le clore.",
       "closed": "Ce signalement est clos. Il reste ici à titre de trace."
-    }
+    },
+    "team_meaning": "Sur cette page, « l'équipe de protection » désigne les administrateurs, les courtiers et les coordinateurs de votre communauté. Tous voient chaque signalement en entier."
   },
   "shift_manager": {
     "heading": "Créneaux",

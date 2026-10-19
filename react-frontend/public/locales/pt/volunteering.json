@@ -1433,7 +1433,7 @@
     "confidentiality_note": "Estas comunicações são confidenciais. Não as discuta com voluntários ou membros e nunca tente descobrir quem fez uma.",
     "status_now": "Ponto da situação: {{status}}",
     "what_to_do": "Use este espaço para dizer à equipa o que a sua organização sabe ou fez, por exemplo, se falou com o voluntário ou alterou um turno. Não contacte a pessoa que fez a comunicação.",
-    "closed_no_updates": "Esta comunicação está encerrada, por isso já não é possível acrescentar atualizações. Se surgir algo novo, contacte a equipa de proteção da sua comunidade.",
+    "closed_no_updates": "Esta comunicação está encerrada, por isso já não é possível acrescentar atualizações. Se surgir algo novo, contacte os administradores ou mediadores da sua comunidade.",
     "history_empty": "Ainda não aconteceu nada nesta comunicação.",
     "status_help": {
       "open": "A equipa de proteção recebeu esta comunicação e ainda não começou. Não tem de fazer nada, a menos que a equipa entre em contacto.",
@@ -1441,7 +1441,8 @@
       "escalated": "A equipa encaminhou o caso para um especialista ou uma entidade externa. Guarde em segurança os registos que tiver e não investigue por conta própria.",
       "resolved": "A equipa considera o caso resolvido. Ainda pode pedir-lhe uma última atualização antes de o encerrar.",
       "closed": "Esta comunicação está encerrada. Fica aqui como registo."
-    }
+    },
+    "team_meaning": "Nesta página, «a equipa de proteção» significa os administradores, mediadores e coordenadores da sua comunidade. Todos veem cada comunicação por inteiro."
   },
   "shift_manager": {
     "heading": "Turnos",

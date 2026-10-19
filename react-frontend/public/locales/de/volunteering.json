@@ -1416,7 +1416,7 @@
     "confidentiality_note": "Diese Meldungen sind vertraulich. Bitte sprechen Sie nicht mit Freiwilligen oder Mitgliedern darüber und versuchen Sie nie herauszufinden, wer eine Meldung gemacht hat.",
     "status_now": "Aktueller Stand: {{status}}",
     "what_to_do": "Teilen Sie dem Team mit, was Ihre Organisation weiß oder getan hat, zum Beispiel ein Gespräch mit der oder dem Freiwilligen oder eine geänderte Schicht. Kontaktieren Sie nicht die Person, die die Meldung gemacht hat.",
-    "closed_no_updates": "Diese Meldung ist geschlossen, daher können keine Aktualisierungen mehr hinzugefügt werden. Wenn etwas Neues auftaucht, wenden Sie sich an das Schutzteam Ihrer Gemeinschaft.",
+    "closed_no_updates": "Diese Meldung ist geschlossen, daher können keine Aktualisierungen mehr hinzugefügt werden. Wenn etwas Neues auftaucht, wenden Sie sich an die Administratoren oder Vermittler Ihrer Gemeinschaft.",
     "history_empty": "Zu dieser Meldung ist noch nichts geschehen.",
     "status_help": {
       "open": "Das Schutzteam hat diese Meldung erhalten und noch nicht begonnen. Sie müssen nichts tun, es sei denn, das Team meldet sich bei Ihnen.",
@@ -1424,7 +1424,8 @@
       "escalated": "Das Team hat dies an eine Fachstelle oder eine externe Stelle weitergegeben. Bewahren Sie vorhandene Unterlagen sicher auf und ermitteln Sie nicht selbst.",
       "resolved": "Das Team betrachtet dies als erledigt. Es kann Sie noch um eine letzte Aktualisierung bitten, bevor es die Meldung schließt.",
       "closed": "Diese Meldung ist geschlossen. Sie bleibt hier als Nachweis erhalten."
-    }
+    },
+    "team_meaning": "Auf dieser Seite bedeutet „Schutzteam“ die Administratoren, Vermittler und Koordinatoren Ihrer Gemeinschaft. Sie alle sehen jede Meldung vollständig."
   },
   "shift_manager": {
     "heading": "Schichten",

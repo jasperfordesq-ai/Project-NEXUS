@@ -1432,7 +1432,7 @@
     "confidentiality_note": "Estos informes son confidenciales. No los comente con voluntarios ni con miembros y no intente nunca averiguar quién hizo uno.",
     "status_now": "Situación actual: {{status}}",
     "what_to_do": "Use este espacio para decir al equipo lo que su organización sabe o ha hecho, por ejemplo si ha hablado con el voluntario o ha cambiado un turno. No contacte con la persona que hizo el informe.",
-    "closed_no_updates": "Este informe está cerrado, así que ya no se pueden añadir actualizaciones. Si surge algo nuevo, contacte con el equipo de protección de su comunidad.",
+    "closed_no_updates": "Este informe está cerrado, así que ya no se pueden añadir actualizaciones. Si surge algo nuevo, contacte con los administradores o intermediarios de su comunidad.",
     "history_empty": "Todavía no ha ocurrido nada en este informe.",
     "status_help": {
       "open": "El equipo de protección ha recibido este informe y aún no ha empezado. No tiene que hacer nada salvo que le contacten.",
@@ -1440,7 +1440,8 @@
       "escalated": "El equipo lo ha pasado a un especialista o a un organismo externo. Guarde a salvo los registros que tenga y no investigue por su cuenta.",
       "resolved": "El equipo lo considera resuelto. Aún puede pedirle una última actualización antes de cerrarlo.",
       "closed": "Este informe está cerrado. Se conserva aquí como registro."
-    }
+    },
+    "team_meaning": "En esta página, «el equipo de protección» significa los administradores, intermediarios y coordinadores de su comunidad. Todos ven cada informe completo."
   },
   "shift_manager": {
     "heading": "Turnos",

@@ -1432,7 +1432,7 @@
     "confidentiality_note": "Queste segnalazioni sono riservate. Non parlatene con volontari o membri e non cercate mai di scoprire chi l'ha fatta.",
     "status_now": "Stato attuale: {{status}}",
     "what_to_do": "Usate questo spazio per dire al team cosa sa o ha fatto la vostra organizzazione, ad esempio se avete parlato con il volontario o cambiato un turno. Non contattate la persona che ha fatto la segnalazione.",
-    "closed_no_updates": "Questa segnalazione è chiusa, quindi non si possono più aggiungere aggiornamenti. Se emerge qualcosa di nuovo, contattate il team di tutela della vostra comunità.",
+    "closed_no_updates": "Questa segnalazione è chiusa, quindi non si possono più aggiungere aggiornamenti. Se emerge qualcosa di nuovo, contattate gli amministratori o i broker della vostra comunità.",
     "history_empty": "Per questa segnalazione non è ancora successo nulla.",
     "status_help": {
       "open": "Il team di tutela ha ricevuto questa segnalazione e non ha ancora iniziato. Non dovete fare nulla, a meno che non vi contatti.",
@@ -1440,7 +1440,8 @@
       "escalated": "Il team l'ha passata a uno specialista o a un ente esterno. Conservate al sicuro i documenti in vostro possesso e non indagate da soli.",
       "resolved": "Il team la considera risolta. Potrebbe chiedervi un ultimo aggiornamento prima di chiuderla.",
       "closed": "Questa segnalazione è chiusa. Resta qui come registro."
-    }
+    },
+    "team_meaning": "In questa pagina, «il team di tutela» indica gli amministratori, i broker e i coordinatori della vostra comunità. Tutti vedono ogni segnalazione per intero."
   },
   "shift_manager": {
     "heading": "Turni",

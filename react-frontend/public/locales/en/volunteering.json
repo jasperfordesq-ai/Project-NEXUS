@@ -1423,8 +1423,9 @@
       "closed": "This report is closed. It stays here as a record."
     },
     "what_to_do": "Use this to tell the team what your organisation knows or has done, for example if you have spoken to the volunteer or changed a shift. Do not contact the person who made the report.",
-    "closed_no_updates": "This report is closed, so updates can no longer be added. If something new comes up, contact your community's safeguarding team.",
-    "history_empty": "Nothing has happened on this report yet."
+    "closed_no_updates": "This report is closed, so updates can no longer be added. If something new comes up, contact your community’s administrators or brokers.",
+    "history_empty": "Nothing has happened on this report yet.",
+    "team_meaning": "In this page, “the safeguarding team” means your community’s administrators, brokers and coordinators. They all see each report in full."
   },
   "shift_manager": {
     "heading": "Shifts",

@@ -195,6 +195,7 @@ function IncidentList({ orgId, embedded }: { orgId: number; embedded: boolean })
         </>
       )}
       <p className="text-sm text-theme-muted">{t('org_safeguarding.intro')}</p>
+      <p className="text-sm text-theme-muted">{t('org_safeguarding.team_meaning')}</p>
 
       {state === 'loading' && <div role="status" aria-busy="true" className="space-y-3"><CardRowsSkeleton /><CardRowsSkeleton /></div>}
       {state === 'forbidden' && <EmptyState icon={<ShieldAlert className="w-12 h-12" aria-hidden="true" />} title={t('org_safeguarding.forbidden')} />}
@@ -344,6 +345,7 @@ function IncidentView({ orgId, incidentId }: { orgId: number; incidentId: number
         </div>
         <h1 className="text-xl font-semibold text-theme-primary">{t('org_safeguarding.detail_title')}</h1>
         <p className="text-sm text-theme-muted">{t('org_safeguarding.team_handling')}</p>
+        <p className="text-sm text-theme-muted">{t('org_safeguarding.team_meaning')}</p>
         <div className="rounded-lg bg-theme-elevated p-3 text-sm">
           <p className="font-medium text-theme-primary">{t('org_safeguarding.status_now', { status: t(memberStatusKey(incident.status)) })}</p>
           <p className="mt-1 text-theme-muted">{t(statusHelpKey(incident.status))}</p>

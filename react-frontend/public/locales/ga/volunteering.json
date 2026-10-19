@@ -1467,7 +1467,7 @@
     "confidentiality_note": "Tá na tuairiscí seo faoi rún. Ná pléigh iad le hoibrithe deonacha ná le baill agus ná déan iarracht a fháil amach cé a rinne tuairisc.",
     "status_now": "An staid faoi láthair: {{status}}",
     "what_to_do": "Úsáid é seo chun a insint don fhoireann cad atá ar eolas ag d'eagraíocht nó cad a rinne sí, mar shampla má labhair tú leis an oibrí deonach nó má d'athraigh tú sealad. Ná téigh i dteagmháil leis an duine a rinne an tuairisc.",
-    "closed_no_updates": "Tá an tuairisc seo dúnta, mar sin ní féidir nuashonruithe a chur leis a thuilleadh. Má thagann rud nua chun cinn, téigh i dteagmháil le foireann chosanta do phobail.",
+    "closed_no_updates": "Tá an tuairisc seo dúnta, mar sin ní féidir nuashonruithe a chur leis a thuilleadh. Má thagann rud nua chun cinn, téigh i dteagmháil le riarthóirí nó bróicéirí do phobail.",
     "history_empty": "Níor tharla aon rud ar an tuairisc seo fós.",
     "status_help": {
       "open": "Fuair an fhoireann chosanta an tuairisc seo agus níor thosaigh sí fós. Ní gá duit aon rud a dhéanamh mura dtagann an fhoireann i dteagmháil leat.",
@@ -1475,7 +1475,8 @@
       "escalated": "Chuir an fhoireann ar aghaidh chuig speisialtóir nó chuig gníomhaireacht sheachtrach é. Coinnigh aon taifid atá agat slán agus ná déan imscrúdú tú féin.",
       "resolved": "Measann an fhoireann go bhfuil sé réitithe. D'fhéadfadh siad nuashonrú deiridh a iarraidh ort sula ndúnann siad é.",
       "closed": "Tá an tuairisc seo dúnta. Fanann sí anseo mar thaifead."
-    }
+    },
+    "team_meaning": "Ar an leathanach seo, ciallaíonn “an fhoireann chosanta” riarthóirí, bróicéirí agus comhordaitheoirí do phobail. Feiceann siad uile gach tuairisc go hiomlán."
   },
   "shift_manager": {
     "heading": "Sealanna",
