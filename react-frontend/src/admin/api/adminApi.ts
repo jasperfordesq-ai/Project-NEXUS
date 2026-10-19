@@ -1944,9 +1944,12 @@ export const adminVolunteering = {
   /** The community's organisations and their opportunities, for filing an incident. */
   getIncidentReportOptions: () => api.get('/v2/volunteering/incidents/report-options'),
 
-  // DLP
-  assignDlp: (orgId: number, dlpUserId: number) =>
-    api.put(`/v2/admin/volunteering/organizations/${orgId}/dlp`, { dlp_user_id: dlpUserId }),
+  /**
+   * An organisation's safeguarding lead and/or deputy. A key left out is
+   * unchanged; null clears that role.
+   */
+  assignDlp: (orgId: number, leads: { dlp_user_id?: number | null; deputy_dlp_user_id?: number | null }) =>
+    api.put(`/v2/admin/volunteering/organizations/${orgId}/dlp`, leads),
 
   // Giving Days
   getGivingDays: () => api.get('/v2/admin/volunteering/giving-days'),

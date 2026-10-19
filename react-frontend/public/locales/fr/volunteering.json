@@ -643,7 +643,7 @@
     "incident_emergency_warning": "Si quelqu’un est en danger immédiat, appelez maintenant le numéro d’urgence local. Ce formulaire n’est pas surveillé en permanence.",
     "incident_who_is_told_summary": "Qui sera informé de ce signalement",
     "incident_who_is_told_staff": "L’équipe de protection de votre communauté — ses administrateurs, courtiers et coordinateurs — voit immédiatement le signalement complet.",
-    "incident_who_is_told_organisation": "Si vous choisissez une organisation, son propriétaire, ses administrateurs et son référent protection sont informés qu’un signalement lui a été rattaché, de quel type il s’agit et quand cela s’est produit. Ils ne savent pas qui a fait le signalement, qui il concerne ni ce qu’il contient.",
+    "incident_who_is_told_organisation": "Si vous choisissez une organisation, son propriétaire, ses administrateurs et son référent protection sont informés qu'un signalement lui a été lié : le type de signalement, sa gravité, l'opportunité et la date. Ils ne sont pas informés de qui a fait le signalement, de qui il concerne ni de ce qu'il dit.",
     "incident_who_is_told_subject": "La personne concernée par le signalement n’en est pas informée par ce service, et personne ne traite un signalement qui le concerne.",
     "member_status": {
       "received": "Reçu",
@@ -1617,6 +1617,11 @@
     "remove_no": "Garder",
     "creator": "A enregistré l’organisation",
     "you": "Vous",
-    "role_for": "Rôle de {{name}}"
+    "role_for": "Rôle de {{name}}",
+    "safeguarding_title": "Référent protection",
+    "safeguarding_lead": "Référent protection",
+    "safeguarding_deputy": "Suppléant",
+    "safeguarding_nobody": "Personne n'est encore désigné",
+    "safeguarding_help": "Le référent et le suppléant voient un résumé de chaque signalement de protection lié à cette organisation, et le signalement complet seulement si l'équipe de protection de la communauté le partage. Ils ne savent jamais qui a fait un signalement. Les administrateurs de la communauté les désignent : contactez votre communauté si cela doit changer."
   }
 }

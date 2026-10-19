@@ -146,6 +146,8 @@ describe('SafeguardingVolunteeringPage', () => {
     const panel = screen.getByTestId('VolunteerSafeguarding');
     expect(panel).toHaveAttribute('data-embedded', 'true');
     expect(panelProps.VolunteerSafeguarding?.canAssignDlp).toBe(false);
+    // A broker cannot enter the admin panel, so each row must open the broker case file.
+    expect(panelProps.VolunteerSafeguarding?.caseBasePath).toBe('/broker/safeguarding/volunteering');
     const refresh = screen.getByRole('button', { name: 'Refresh' });
     expect(panel.contains(refresh)).toBe(false);
     expect(screen.getByRole('heading', { level: 1 }).closest('.mb-6')?.contains(refresh)).toBe(true);

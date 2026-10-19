@@ -57,6 +57,9 @@ const SEARCH_DEBOUNCE_MS = 300;
 // An organisation account is named by organization_name, never its contact person.
 const resultName = (r: SearchResult) => resolveUserDisplayName(r, `#${r.id}`);
 
+interface SafeguardingPerson { user_id: number; name: string }
+interface SafeguardingLeads { lead: SafeguardingPerson | null; deputy: SafeguardingPerson | null }
+
 interface OrgTeamTabProps {
   orgId: number;
 }
@@ -68,6 +71,7 @@ export default function OrgTeamTab({ orgId }: OrgTeamTabProps) {
 
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [canManage, setCanManage] = useState(false);
+  const [safeguarding, setSafeguarding] = useState<SafeguardingLeads>({ lead: null, deputy: null });
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -85,10 +89,11 @@ export default function OrgTeamTab({ orgId }: OrgTeamTabProps) {
     setLoading(true);
     setLoadFailed(false);
     try {
-      const res = await api.get<{ items?: TeamMember[]; can_manage?: boolean }>(`/v2/volunteering/organisations/${orgId}/members`);
+      const res = await api.get<{ items?: TeamMember[]; can_manage?: boolean; safeguarding?: Partial<SafeguardingLeads> }>(`/v2/volunteering/organisations/${orgId}/members`);
       if (res.success && res.data) {
         setMembers(Array.isArray(res.data.items) ? res.data.items : []);
         setCanManage(Boolean(res.data.can_manage));
+        setSafeguarding({ lead: res.data.safeguarding?.lead ?? null, deputy: res.data.safeguarding?.deputy ?? null });
       } else {
         setLoadFailed(true);
       }
@@ -208,6 +213,21 @@ export default function OrgTeamTab({ orgId }: OrgTeamTabProps) {
       <GlassCard className="p-5">
         <h2 className="text-lg font-semibold text-theme-primary">{t('org_team.title')}</h2>
         <p className="mt-1 text-sm text-theme-muted">{canManage ? t('org_team.intro_owner') : t('org_team.intro_viewer')}</p>
+      </GlassCard>
+
+      <GlassCard className="p-5">
+        <h3 className="font-semibold text-theme-primary">{t('org_team.safeguarding_title')}</h3>
+        <dl className="mt-2 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-theme-muted">{t('org_team.safeguarding_lead')}</dt>
+            <dd className="font-medium text-theme-primary">{safeguarding.lead?.name ?? t('org_team.safeguarding_nobody')}</dd>
+          </div>
+          <div>
+            <dt className="text-theme-muted">{t('org_team.safeguarding_deputy')}</dt>
+            <dd className="font-medium text-theme-primary">{safeguarding.deputy?.name ?? t('org_team.safeguarding_nobody')}</dd>
+          </div>
+        </dl>
+        <p className="mt-3 text-xs text-theme-muted">{t('org_team.safeguarding_help')}</p>
       </GlassCard>
 
       {canManage && (

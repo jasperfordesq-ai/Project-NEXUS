@@ -528,7 +528,7 @@ class VolunteerWellbeingController extends BaseApiController
         return $this->respondWithData([
             'incidents' => $incidents,
             'items' => $incidents,
-            'stats' => $this->safeguardingService->getIncidentStats($tenantId),
+            'stats' => $this->safeguardingService->getIncidentStats($tenantId, $this->getUserId()),
             'dlp_assignments' => $this->safeguardingService->getDlpAssignments($tenantId),
             'handlers' => $this->safeguardingService->getIncidentHandlers($tenantId),
             'total' => $result['total'] ?? 0,
@@ -562,44 +562,47 @@ class VolunteerWellbeingController extends BaseApiController
         return $this->respondWithData(['success' => true]);
     }
 
+    /**
+     * PUT /v2/admin/volunteering/organizations/{id}/dlp {dlp_user_id?, deputy_dlp_user_id?}
+     * Sets the organisation's safeguarding lead and/or deputy. A key that is absent
+     * is left alone; 0 or null clears that role. At least one key is required.
+     */
     public function assignDlp($id): JsonResponse
     {
         $this->ensureFeature();
         $adminId = $this->requireAdmin();
 
         $data = $this->getAllInput();
-
-        $dlpUserId = (int) ($data['dlp_user_id'] ?? 0);
-        if ($dlpUserId <= 0) {
+        $leads = [];
+        foreach (['dlp_user_id', 'deputy_dlp_user_id'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $leads[$field] = $data[$field] === null ? 0 : (int) $data[$field];
+            }
+        }
+        if ($leads === []) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.vol_dlp_user_required'), 'dlp_user_id', 422);
         }
 
         $tenantId = TenantContext::getId();
-        $refusal = $this->safeguardingService->tryAssignOrganizationDlp(
-            (int) $id,
-            $dlpUserId,
-            $adminId,
-            $tenantId
-        );
+        $refusal = $this->safeguardingService->tryAssignOrganizationLeads((int) $id, $leads, $adminId, $tenantId);
 
-        if ($refusal === 'organization_not_found') {
+        if ($refusal !== null && $refusal['reason'] === 'organization_not_found') {
             return $this->respondWithError('NOT_FOUND', __('api.vol_dlp_organization_not_found'), null, 404);
         }
 
         if ($refusal !== null) {
             // Say which rule the chosen person broke, so the admin knows what to
             // fix rather than just "failed". Any active member may be the
-            // organisation's DLP; no staff role is required.
-            $message = match ($refusal) {
+            // organisation's lead or deputy; no staff role is required.
+            $message = match ($refusal['reason']) {
                 'user_not_found' => __('api.vol_dlp_user_not_found'),
                 'user_inactive' => __('api.vol_dlp_user_inactive'),
+                'same_person' => __('api.vol_incident_invalid_field'),
                 default => __('api.vol_dlp_assign_failed'),
             };
-            $field = $refusal === 'error' ? null : 'dlp_user_id';
 
-            return $this->respondWithError('VALIDATION_ERROR', $message, $field, 422);
+            return $this->respondWithError('VALIDATION_ERROR', $message, $refusal['field'], 422);
         }
-
         return $this->respondWithData(['success' => true]);
     }
 

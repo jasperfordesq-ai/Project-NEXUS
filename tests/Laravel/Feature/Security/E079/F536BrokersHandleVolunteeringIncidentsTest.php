@@ -90,7 +90,8 @@ final class F536BrokersHandleVolunteeringIncidentsTest extends TestCase
             ->where('type', 'safeguarding_flag')
             ->orderByDesc('id')
             ->value('link');
-        $this->assertSame('/broker/safeguarding/volunteering', $link);
+        // Since 19 Oct 2026 the alert opens the case itself, inside the broker panel.
+        $this->assertSame('/broker/safeguarding/volunteering/' . (int) $result['id'], $link);
     }
 
     public function test_a_coordinator_can_list_and_update_volunteering_incidents(): void

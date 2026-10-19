@@ -643,7 +643,7 @@
     "incident_emergency_warning": "Si alguien está en peligro inmediato, llame ahora al número de emergencias local. Este formulario no se revisa a todas horas.",
     "incident_who_is_told_summary": "Quién será informado de este informe",
     "incident_who_is_told_staff": "El equipo de protección de su comunidad —sus administradores, intermediarios y coordinadores— ve el informe completo de inmediato.",
-    "incident_who_is_told_organisation": "Si elige una organización, su propietario, sus administradores y su responsable de protección sabrán que se ha vinculado un informe a ella, de qué tipo es y cuándo ocurrió. No sabrán quién presentó el informe, a quién se refiere ni qué dice.",
+    "incident_who_is_told_organisation": "Si elige una organización, su propietario, sus administradores y su responsable de protección son informados de que se le ha vinculado un informe: el tipo de informe, su gravedad, la oportunidad y cuándo ocurrió. No se les dice quién hizo el informe, sobre quién trata ni qué dice.",
     "incident_who_is_told_subject": "Este servicio no informa a la persona a la que se refiere el informe, y nadie gestiona un informe sobre sí mismo.",
     "member_status": {
       "received": "Recibida",
@@ -1617,6 +1617,11 @@
     "remove_no": "Mantener",
     "creator": "Registró la organización",
     "you": "Usted",
-    "role_for": "Rol de {{name}}"
+    "role_for": "Rol de {{name}}",
+    "safeguarding_title": "Responsable de protección",
+    "safeguarding_lead": "Responsable de protección",
+    "safeguarding_deputy": "Suplente",
+    "safeguarding_nobody": "Nadie nombrado todavía",
+    "safeguarding_help": "El responsable y el suplente ven un resumen de cada informe de protección vinculado a esta organización, y el informe completo solo si el personal de protección de la comunidad lo comparte. Nunca se les dice quién hizo un informe. Los nombran los administradores de la comunidad: contacte con su comunidad si hay que cambiarlos."
   }
 }

@@ -43,6 +43,7 @@ class VolunteerOrgMemberController extends BaseApiController
         return $this->respondWithData([
             'items' => $this->members->list($tenantId, $id),
             'can_manage' => $access['can_manage'],
+            'safeguarding' => $this->members->safeguardingLeads($tenantId, $id),
         ]);
     }
 

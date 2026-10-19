@@ -123,7 +123,7 @@ final class IncidentNotificationMatrixTest extends TestCase
         $subjects = array_column($mails, 'subject');
         $this->assertNotEmpty(array_filter($subjects, fn ($s) => str_contains($s, 'INCMATRIX staff report')), 'the staff alert, which carries the title');
         $this->assertNotEmpty(array_filter($subjects, fn ($s) => str_contains($s, 'We have received your safeguarding report')), 'the reporter confirmation');
-        $this->assertContains('/broker/safeguarding/volunteering', $this->bellLinks($admin));
+        $this->assertNotEmpty(array_filter($this->bellLinks($admin), fn ($l) => preg_match('#^/broker/safeguarding/volunteering/\d+$#', (string) $l) === 1), 'the staff alert opens the case');
         // Everyone else on the staff is told exactly as before.
         $this->assertCount(1, $this->mailsTo($otherBroker));
     }

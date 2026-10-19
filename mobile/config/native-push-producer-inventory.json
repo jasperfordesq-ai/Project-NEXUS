@@ -2526,9 +2526,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SafeguardingService.php:417:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SafeguardingService.php:419:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SafeguardingService.php",
-            "line": 417,
+            "line": 419,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $record->user_id",
@@ -2539,9 +2539,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/SafeguardingService.php:496:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/SafeguardingService.php:498:NotificationDispatcher::fanOutPush",
             "file": "app/Services/SafeguardingService.php",
-            "line": 496,
+            "line": 498,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $record->user_id",

@@ -637,7 +637,7 @@
     "incident_emergency_warning": "Als iemand in direct gevaar is, bel dan nu het lokale alarmnummer. Dit formulier wordt niet de klok rond gelezen.",
     "incident_who_is_told_summary": "Wie over deze melding wordt geïnformeerd",
     "incident_who_is_told_staff": "Het veiligheidsteam van uw gemeenschap — beheerders, makelaars en coördinatoren — ziet de volledige melding meteen.",
-    "incident_who_is_told_organisation": "Als u een organisatie kiest, horen de eigenaar, beheerders en veiligheidscontactpersoon daarvan dat er een melding aan de organisatie is gekoppeld, wat voor melding het is en wanneer het gebeurde. Zij horen niet wie de melding deed, over wie die gaat of wat erin staat.",
+    "incident_who_is_told_organisation": "Als u een organisatie kiest, krijgen de eigenaar, beheerders en veiligheidscontactpersoon te horen dat er een melding aan is gekoppeld: het soort melding, hoe ernstig, de activiteit en wanneer het gebeurde. Ze horen niet wie de melding deed, over wie die gaat of wat erin staat.",
     "incident_who_is_told_subject": "De persoon over wie de melding gaat, wordt hierover niet door deze dienst ingelicht, en niemand behandelt een melding over zichzelf.",
     "member_status": {
       "received": "Ontvangen",
@@ -1601,6 +1601,11 @@
     "remove_no": "Behouden",
     "creator": "Heeft de organisatie geregistreerd",
     "you": "U",
-    "role_for": "Rol van {{name}}"
+    "role_for": "Rol van {{name}}",
+    "safeguarding_title": "Veiligheidscontactpersoon",
+    "safeguarding_lead": "Veiligheidscontactpersoon",
+    "safeguarding_deputy": "Plaatsvervanger",
+    "safeguarding_nobody": "Nog niemand aangewezen",
+    "safeguarding_help": "De contactpersoon en plaatsvervanger zien een samenvatting van elke veiligheidsmelding die aan deze organisatie is gekoppeld, en de volledige melding alleen als het veiligheidspersoneel van de gemeenschap die deelt. Ze horen nooit wie een melding deed. Gemeenschapsbeheerders wijzen hen aan: vraag uw gemeenschap als dit moet veranderen."
   }
 }

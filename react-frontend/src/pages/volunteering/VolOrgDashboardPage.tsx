@@ -146,6 +146,9 @@ export default function VolOrgDashboardPage() {
   const initialTab = requestedTab && ORG_DASH_TABS.includes(requestedTab) ? requestedTab : 'overview';
   const [tab, setTabState] = useState<OrgDashTab>(initialTab);
   const [org, setOrg] = useState<OrgDetails | null>(null);
+  // Safeguarding reports are for the organisation's owner and admins only; a
+  // plain team member would see a tab that always says "no access".
+  const [canSeeSafeguarding, setCanSeeSafeguarding] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -219,6 +222,7 @@ export default function VolOrgDashboardPage() {
       }
 
       const stats = statsRes.success ? statsRes.data : null;
+      setCanSeeSafeguarding(!match.member_role || match.member_role === 'owner' || match.member_role === 'admin');
       setOrg({
         id: match.id,
         name: match.name,
@@ -377,7 +381,7 @@ export default function VolOrgDashboardPage() {
 
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
-        {TAB_DEFS.map((td) => {
+        {TAB_DEFS.filter((td) => td.key !== 'safeguarding' || canSeeSafeguarding).map((td) => {
           const Icon = td.icon;
           const isActive = tab === td.key;
           return (
@@ -432,7 +436,7 @@ export default function VolOrgDashboardPage() {
         {tab === 'qualifications' && (
           <OrgQualificationsTab orgId={orgId} />
         )}
-        {tab === 'safeguarding' && (
+        {tab === 'safeguarding' && canSeeSafeguarding && (
           <OrgSafeguardingPage embedded orgId={orgId} />
         )}
         {tab === 'wallet' && (

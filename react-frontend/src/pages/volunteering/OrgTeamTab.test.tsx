@@ -47,7 +47,7 @@ const TEAM = [
   { user_id: 11, name: 'Bob Helper', avatar_url: null, role: 'admin', is_creator: false },
 ];
 
-const teamResponse = (canManage: boolean) => ({ success: true, data: { items: TEAM, can_manage: canManage } });
+const teamResponse = (canManage: boolean) => ({ success: true, data: { items: TEAM, can_manage: canManage, safeguarding: { lead: { user_id: 77, name: 'Lena Lead' }, deputy: null } } });
 
 function routeGets(canManage: boolean) {
   vi.mocked(api.get).mockImplementation(async (url: string) => {
@@ -78,6 +78,14 @@ describe('OrgTeamTab', () => {
     expect(within(rowOf('Bob Helper')).getByText('Admin')).toBeInTheDocument();
     expect(screen.queryByText('Add someone to the team')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
+  });
+
+  it('names the safeguarding lead and deputy, and says who appoints them', async () => {
+    routeGets(false);
+    render(<OrgTeamTab orgId={5} />);
+    await screen.findByText('Lena Lead');
+    expect(screen.getByText('Nobody appointed yet')).toBeInTheDocument();
+    expect(screen.getByText(/Community admins appoint them/)).toBeInTheDocument();
   });
 
   it('lets an owner find someone not yet on the team and add them', async () => {

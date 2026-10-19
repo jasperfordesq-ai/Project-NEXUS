@@ -92,7 +92,12 @@ interface DlpAssignment {
   organization_name: string;
   dlp_user_id: number | null;
   dlp_user_name: string | null;
+  deputy_dlp_user_id?: number | null;
+  deputy_dlp_user_name?: string | null;
 }
+
+type LeadRole = 'lead' | 'deputy';
+const LEAD_FIELD: Record<LeadRole, 'dlp_user_id' | 'deputy_dlp_user_id'> = { lead: 'dlp_user_id', deputy: 'deputy_dlp_user_id' };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -168,6 +173,7 @@ export function VolunteerSafeguarding({
   const [selectedOrg, setSelectedOrg] = useState<DlpAssignment | null>(null);
   const [dlpUserId, setDlpUserId] = useState('');
   const [dlpMember, setDlpMember] = useState<MemberSearchMember | null>(null);
+  const [dlpRole, setDlpRole] = useState<LeadRole>('lead');
   // Why the last attempt was refused, shown in the dialog beside the field.
   const [dlpError, setDlpError] = useState<string | null>(null);
 
@@ -246,6 +252,8 @@ export function VolunteerSafeguarding({
     // under it. Pre-filling the id would make the picker look the person up.
     setDlpUserId('');
     setDlpMember(null);
+    // Fill the empty seat first: the lead if there is none, otherwise the deputy.
+    setDlpRole(assignment.dlp_user_id ? 'deputy' : 'lead');
     setDlpError(null);
     setDlpModal(true);
   };
@@ -257,10 +265,19 @@ export function VolunteerSafeguarding({
       setDlpError(t('volunteering.dlp_choose_person'));
       return;
     }
+    await saveLeads({ [LEAD_FIELD[dlpRole]]: userId });
+  };
+
+  const handleDlpRemove = async (role: LeadRole) => {
+    await saveLeads({ [LEAD_FIELD[role]]: null });
+  };
+
+  const saveLeads = async (leads: { dlp_user_id?: number | null; deputy_dlp_user_id?: number | null }) => {
+    if (!selectedOrg) return;
     setDlpLoading(true);
     setDlpError(null);
     try {
-      const res = await adminVolunteering.assignDlp(selectedOrg.organization_id, userId);
+      const res = await adminVolunteering.assignDlp(selectedOrg.organization_id, leads);
       if (res.success) {
         toast.success(t('volunteering.dlp_assigned'));
         setDlpModal(false);
@@ -509,6 +526,13 @@ export function VolunteerSafeguarding({
                       ) : (
                         <span className="text-warning">{t('volunteering.not_assigned')}</span>
                       )}
+                      {' · '}
+                      {t('volunteering.dlp_deputy_label')}:{' '}
+                      {assignment.deputy_dlp_user_name ? (
+                        <span className="font-medium text-foreground/80">{assignment.deputy_dlp_user_name}</span>
+                      ) : (
+                        <span>{t('volunteering.not_assigned')}</span>
+                      )}
                     </p>
                   </div>
                   {canAssignDlp && (
@@ -541,11 +565,31 @@ export function VolunteerSafeguarding({
               <p className="text-sm text-muted">
                 {t('volunteering.dlp_explanation')}
               </p>
-              {selectedOrg?.dlp_user_name && (
-                <p className="text-sm text-muted">
-                  {t('volunteering.current_dlp')}: <span className="font-medium text-foreground/80">{selectedOrg.dlp_user_name}</span>
-                </p>
+              {selectedOrg && (
+                <dl className="space-y-1 text-sm">
+                  {([['lead', selectedOrg.dlp_user_name], ['deputy', selectedOrg.deputy_dlp_user_name]] as const).map(([role, name]) => (
+                    <div key={role} className="flex items-center justify-between gap-2">
+                      <div>
+                        <dt className="inline text-muted">{t(role === 'lead' ? 'volunteering.dlp_role_lead' : 'volunteering.dlp_role_deputy')}: </dt>
+                        <dd className="inline font-medium text-foreground/80">{name || t('volunteering.not_assigned')}</dd>
+                      </div>
+                      {name && (
+                        <Button size="sm" variant="tertiary" isDisabled={dlpLoading} onPress={() => void handleDlpRemove(role)}>
+                          {t('volunteering.dlp_remove')}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </dl>
               )}
+              <Select
+                label={t('volunteering.dlp_role_label')}
+                selectedKeys={[dlpRole]}
+                onSelectionChange={(keys) => { const k = Array.from(keys)[0]; if (k === 'lead' || k === 'deputy') setDlpRole(k); }}
+              >
+                <SelectItem key="lead" id="lead">{t('volunteering.dlp_role_lead')}</SelectItem>
+                <SelectItem key="deputy" id="deputy">{t('volunteering.dlp_role_deputy')}</SelectItem>
+              </Select>
               <MemberSearchPicker
                 value={dlpUserId}
                 onValueChange={(next) => {

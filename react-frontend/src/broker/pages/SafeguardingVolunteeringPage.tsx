@@ -42,7 +42,7 @@ export default function SafeguardingVolunteeringPage() {
       color="danger"
     >
       <AdminEmbed actionsHost={actionsHost}>
-        <VolunteerSafeguarding canAssignDlp={false} />
+        <VolunteerSafeguarding canAssignDlp={false} caseBasePath="/broker/safeguarding/volunteering" />
         <div className="mt-6">
           <WellbeingAlertsPanel />
         </div>

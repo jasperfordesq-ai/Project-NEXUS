@@ -67,6 +67,32 @@ class VolunteerOrgMemberService
     }
 
     /**
+     * The organisation's safeguarding lead and deputy, for its team page. Names
+     * only; community admins appoint them (PUT /v2/admin/volunteering/organizations/{id}/dlp).
+     *
+     * @return array{lead: ?array{user_id:int,name:string}, deputy: ?array{user_id:int,name:string}}
+     */
+    public function safeguardingLeads(int $tenantId, int $orgId): array
+    {
+        $org = DB::table('vol_organizations')->where('id', $orgId)->where('tenant_id', $tenantId)
+            ->first(['dlp_user_id', 'deputy_dlp_user_id']);
+        $person = function (?int $userId) use ($tenantId): ?array {
+            if (!$userId) {
+                return null;
+            }
+            $row = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->where('status', 'active')
+                ->first(['id', 'first_name', 'last_name', 'name', 'organization_name', 'profile_type']);
+
+            return $row ? ['user_id' => (int) $row->id, 'name' => UserDisplayName::resolve($row)] : null;
+        };
+
+        return [
+            'lead' => $person($org?->dlp_user_id !== null ? (int) $org->dlp_user_id : null),
+            'deputy' => $person($org?->deputy_dlp_user_id !== null ? (int) $org->deputy_dlp_user_id : null),
+        ];
+    }
+
+    /**
      * The active team, owners first.
      *
      * @return list<array<string, mixed>>

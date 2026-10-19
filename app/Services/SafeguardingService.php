@@ -29,7 +29,9 @@ class SafeguardingService
         'open'          => ['open', 'investigating', 'escalated', 'resolved', 'closed'],
         'investigating' => ['investigating', 'escalated', 'resolved', 'closed'],
         'escalated'     => ['escalated', 'investigating', 'resolved', 'closed'],
-        'resolved'      => ['resolved'],
+        // "Dealt with" is not the end: staff can close it (the record is complete)
+        // or reopen it if something new comes to light. Closed is final.
+        'resolved'      => ['resolved', 'investigating', 'closed'],
         'closed'        => ['closed'],
     ];
 
@@ -1170,12 +1172,16 @@ class SafeguardingService
         }
     }
 
-    public function getIncidentStats(int $tenantId): array
+    /** Counts for the staff list. Incidents about the viewer are left out, as the list leaves them out (F-507). */
+    public function getIncidentStats(int $tenantId, ?int $excludeAboutUserId = null): array
     {
         try {
             $rows = DB::table('vol_safeguarding_incidents')
                 ->selectRaw('status, COUNT(*) as count')
                 ->where('tenant_id', $tenantId)
+                ->when($excludeAboutUserId, fn ($q) => $q
+                    ->where(fn ($w) => $w->whereNull('subject_user_id')->orWhere('subject_user_id', '!=', $excludeAboutUserId))
+                    ->where(fn ($w) => $w->whereNull('involved_user_id')->orWhere('involved_user_id', '!=', $excludeAboutUserId)))
                 ->groupBy('status')
                 ->get();
 
@@ -1284,13 +1290,19 @@ class SafeguardingService
                     $join->on('org.dlp_user_id', '=', 'dlp.id')
                         ->where('dlp.tenant_id', '=', $tenantId);
                 })
+                ->leftJoin('users as deputy', function ($join) use ($tenantId) {
+                    $join->on('org.deputy_dlp_user_id', '=', 'deputy.id')
+                        ->where('deputy.tenant_id', '=', $tenantId);
+                })
                 ->where('org.tenant_id', $tenantId)
                 ->orderBy('org.name')
                 ->select(
                     'org.id as organization_id',
                     'org.name as organization_name',
                     'org.dlp_user_id',
-                    'dlp.name as dlp_user_name'
+                    'dlp.name as dlp_user_name',
+                    'org.deputy_dlp_user_id',
+                    'deputy.name as deputy_dlp_user_name'
                 )
                 ->get()
                 ->map(fn ($row) => [
@@ -1298,6 +1310,8 @@ class SafeguardingService
                     'organization_name' => $row->organization_name,
                     'dlp_user_id' => $row->dlp_user_id !== null ? (int) $row->dlp_user_id : null,
                     'dlp_user_name' => $row->dlp_user_name,
+                    'deputy_dlp_user_id' => $row->deputy_dlp_user_id !== null ? (int) $row->deputy_dlp_user_id : null,
+                    'deputy_dlp_user_name' => $row->deputy_dlp_user_name,
                 ])
                 ->all();
         } catch (\Throwable $e) {
@@ -1312,63 +1326,87 @@ class SafeguardingService
     }
 
     /**
-     * Assign an organisation's DLP and say WHY if it was refused.
+     * Set an organisation's safeguarding lead and/or deputy, and say WHY if refused.
      *
-     * 🔴 Any ACTIVE member of this community may be an organisation's DLP — no
-     * broker or admin role is required (owner decision, 4 Oct 2026). The
-     * organisation's DLP is usually someone from the organisation itself, and
-     * every registering organisation must not need a platform staff role to have
-     * one. This is safe because `vol_organizations.dlp_user_id` is a record only:
-     * it grants no access to safeguarding data and receives no notifications.
-     * Do NOT restore a broker-tier check here. The INCIDENT-level assignment,
-     * assignDlp() below, is different and stays broker-tier: it sends the
-     * assignee incident details and a link into the broker panel.
+     * 🔴 Any ACTIVE member of this community may be an organisation's lead or
+     * deputy — no broker or admin role is required (owner decision, 4 Oct 2026).
+     * They are usually someone from the organisation itself. What the role gives
+     * (see IncidentAccess::ORG_LEAD): the organisation's list of linked reports,
+     * each report's summary and history, the FULL report only while staff have
+     * shared it, and the organisation's notices. It never gives access to the
+     * staff case file, and never reveals who made a report. Do NOT restore a
+     * broker-tier check here. The INCIDENT-level handler, assignDlp() below, is
+     * different and stays broker-tier.
      *
-     * Returns null on success, otherwise one reason code: `organization_not_found`,
-     * `user_not_found` (no such member in this community), `user_inactive`, or
-     * `error` (an unexpected failure, already logged).
+     * $leads holds only the keys being changed: 'dlp_user_id' and/or
+     * 'deputy_dlp_user_id', each an int (0 or null clears the role).
+     *
+     * Returns null on success, otherwise ['reason' => ..., 'field' => ...] with
+     * reason one of `organization_not_found`, `user_not_found` (no such member in
+     * this community), `user_inactive`, `same_person` (lead and deputy would be
+     * the same member), or `error` (unexpected failure, already logged).
      */
-    public function tryAssignOrganizationDlp(int $organizationId, int $dlpUserId, int $adminId, int $tenantId): ?string
+    public function tryAssignOrganizationLeads(int $organizationId, array $leads, int $adminId, int $tenantId): ?array
     {
         try {
             $organization = DB::table('vol_organizations')
                 ->where('id', $organizationId)
                 ->where('tenant_id', $tenantId)
-                ->first();
+                ->first(['id', 'dlp_user_id', 'deputy_dlp_user_id']);
 
             if (!$organization) {
-                return 'organization_not_found';
+                return ['reason' => 'organization_not_found', 'field' => null];
             }
 
-            $candidate = User::where('id', $dlpUserId)
-                ->where('tenant_id', $tenantId)
-                ->first();
-
-            if (!$candidate) {
-                return 'user_not_found';
+            $update = [];
+            foreach (['dlp_user_id', 'deputy_dlp_user_id'] as $field) {
+                if (!array_key_exists($field, $leads)) {
+                    continue;
+                }
+                $userId = (int) ($leads[$field] ?? 0);
+                if ($userId <= 0) {
+                    $update[$field] = null;
+                    continue;
+                }
+                $candidate = User::where('id', $userId)->where('tenant_id', $tenantId)->first();
+                if (!$candidate) {
+                    return ['reason' => 'user_not_found', 'field' => $field];
+                }
+                if ($candidate->status !== 'active') {
+                    return ['reason' => 'user_inactive', 'field' => $field];
+                }
+                $update[$field] = $userId;
+            }
+            if ($update === []) {
+                return null;
             }
 
-            if ($candidate->status !== 'active') {
-                return 'user_inactive';
+            $lead = array_key_exists('dlp_user_id', $update) ? $update['dlp_user_id'] : ($organization->dlp_user_id !== null ? (int) $organization->dlp_user_id : null);
+            $deputy = array_key_exists('deputy_dlp_user_id', $update) ? $update['deputy_dlp_user_id'] : ($organization->deputy_dlp_user_id !== null ? (int) $organization->deputy_dlp_user_id : null);
+            if ($lead !== null && $lead === $deputy) {
+                return ['reason' => 'same_person', 'field' => array_key_exists('deputy_dlp_user_id', $update) ? 'deputy_dlp_user_id' : 'dlp_user_id'];
             }
 
             DB::table('vol_organizations')
                 ->where('id', $organizationId)
                 ->where('tenant_id', $tenantId)
-                ->update([
-                    'dlp_user_id' => $dlpUserId,
-                    'updated_at' => now(),
-                ]);
+                ->update($update + ['updated_at' => now()]);
 
-            $this->logActivity($adminId, 'safeguarding_organization_dlp_assigned', 'vol_organization', $organizationId, [
-                'dlp_user_id' => $dlpUserId,
-            ]);
+            $this->logActivity($adminId, 'safeguarding_organization_dlp_assigned', 'vol_organization', $organizationId, $update);
 
             return null;
         } catch (\Throwable $e) {
-            Log::error('SafeguardingService::assignOrganizationDlp error: ' . $e->getMessage());
-            return 'error';
+            Log::error('SafeguardingService::tryAssignOrganizationLeads error: ' . $e->getMessage());
+            return ['reason' => 'error', 'field' => null];
         }
+    }
+
+    /** Set only the lead. Kept for callers and tests that predate the deputy; see tryAssignOrganizationLeads(). */
+    public function tryAssignOrganizationDlp(int $organizationId, int $dlpUserId, int $adminId, int $tenantId): ?string
+    {
+        $refusal = $this->tryAssignOrganizationLeads($organizationId, ['dlp_user_id' => $dlpUserId], $adminId, $tenantId);
+
+        return $refusal['reason'] ?? null;
     }
 
     /**
@@ -1485,7 +1523,7 @@ class SafeguardingService
                         ], __('emails_misc.safeguarding.info_card_incident_details'))
                         ->paragraph(__('emails_misc.safeguarding.dlp_assigned_body'))
                         ->paragraph(__('emails_misc.safeguarding.dlp_assigned_audit_note'))
-                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
+                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering/' . $incidentId))
                         ->render();
 
                     $subject = __('emails_misc.safeguarding.dlp_assigned_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId]);
@@ -1555,7 +1593,7 @@ class SafeguardingService
                         'user_id' => $staff->id,
                         'type' => 'safeguarding_flag',
                         'message' => $message,
-                        'link' => '/broker/safeguarding/volunteering',
+                        'link' => '/broker/safeguarding/volunteering/' . $incidentId,
                         'is_read' => false,
                     ]);
 
@@ -1591,7 +1629,7 @@ class SafeguardingService
                                 ->infoCard($details, __('emails_misc.safeguarding.info_card_incident_details'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_review'))
                                 ->paragraph(__('emails_misc.safeguarding.incident_reported_auto_note'))
-                                ->button(__('emails_misc.safeguarding.incident_reported_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
+                                ->button(__('emails_misc.safeguarding.incident_reported_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering/' . $incidentId))
                                 ->render();
 
                             $sent = EmailDispatchService::sendRaw(
@@ -1970,6 +2008,23 @@ class SafeguardingService
         }
     }
 
+    /** The full report is no longer shared: a bell to the lead and deputy, so they know the page has changed. */
+    public function notifyIncidentShareWithdrawn(int $tenantId, object $incident): void
+    {
+        $orgId = (int) ($incident->organization_id ?? 0);
+        $ids = array_values(array_filter(
+            \App\Services\Volunteering\IncidentAccess::organisationLeadIds($tenantId, $orgId),
+            fn (int $id) => $id !== (int) ($incident->reported_by ?? 0)
+                && !self::isIncidentAboutUser($incident, $id)
+        ));
+        foreach ($this->noticeRecipients($tenantId, $ids) as $lead) {
+            $this->sendIncidentNotice($tenantId, $lead, $incident, self::organisationIncidentLink($incident), [
+                'bell' => 'share_withdrawn_bell', 'subject' => 'share_withdrawn_bell',
+                'title' => 'share_withdrawn_bell', 'body' => 'share_withdrawn_bell', 'cta' => 'shared_cta',
+            ], [], false);
+        }
+    }
+
     /** A status change, for the organisation: a bell only, in plain words, pointing at its page. */
     private function notifyOrganisationOfStatus(int $tenantId, object $incident, string $newStatus): void
     {
@@ -2064,7 +2119,7 @@ class SafeguardingService
                         'user_id' => $dlpUserId,
                         'type' => 'safeguarding_assignment',
                         'message' => __('emails_misc.safeguarding.incident_status_dlp_bell', ['incident_id' => $incidentId, 'status' => $label]),
-                        'link' => '/broker/safeguarding/volunteering',
+                        'link' => '/broker/safeguarding/volunteering/' . $incidentId,
                         'is_read' => false,
                     ]);
                 });
@@ -2140,7 +2195,7 @@ class SafeguardingService
                         ], __('emails_misc.safeguarding.info_card_status_update'))
                         ->paragraph(__('emails_misc.safeguarding.incident_updated_review'))
                         ->paragraph(__('emails_misc.safeguarding.incident_reported_auto_note'))
-                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering'))
+                        ->button(__('emails_misc.safeguarding.dlp_assigned_cta'), EmailTemplateBuilder::tenantUrl('/broker/safeguarding/volunteering/' . $incidentId))
                         ->render();
 
                     $emailSubject = __('emails_misc.safeguarding.incident_updated_subject', ['severity' => $severityLabel, 'incident_id' => $incidentId, 'status' => $label]);

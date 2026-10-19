@@ -76,7 +76,17 @@ export interface StaffIncidentCase {
   organisation_leads: Person[];
 }
 
-const STATUSES: IncidentStatus[] = ['open', 'investigating', 'resolved', 'escalated', 'closed'];
+/**
+ * The moves the server accepts from each status (SafeguardingService::INCIDENT_STATUS_TRANSITIONS).
+ * "Resolved" can be closed or reopened; "Closed" is final.
+ */
+const NEXT_STATUSES: Record<IncidentStatus, IncidentStatus[]> = {
+  open: ['open', 'investigating', 'escalated', 'resolved', 'closed'],
+  investigating: ['investigating', 'escalated', 'resolved', 'closed'],
+  escalated: ['escalated', 'investigating', 'resolved', 'closed'],
+  resolved: ['resolved', 'investigating', 'closed'],
+  closed: ['closed'],
+};
 /** Resolving, escalating or closing is a decision: the server asks why. */
 const NEEDS_REASON: IncidentStatus[] = ['resolved', 'escalated', 'closed'];
 const NO_HANDLER = 'none';
@@ -324,12 +334,16 @@ export function VolunteerIncidentCase({ incidentId, backPath }: VolunteerInciden
             <CardBody className="space-y-6">
               <section aria-labelledby="case-status" className="space-y-3">
                 <h3 id="case-status" className="text-sm font-semibold">{t('volunteering.status')}</h3>
+                {incident.status === 'closed' && (
+                  <p className="text-sm text-muted">{t('volunteering.case_status_closed_final')}</p>
+                )}
                 <Select
                   label={t('volunteering.status')}
+                  isDisabled={incident.status === 'closed'}
                   selectedKeys={[status]}
                   onSelectionChange={(keys) => setStatus(((Array.from(keys)[0] as IncidentStatus) || status))}
                 >
-                  {STATUSES.map((s) => <SelectItem key={s} id={s}>{t(`volunteering.status_${s}`)}</SelectItem>)}
+                  {(NEXT_STATUSES[incident.status] ?? [incident.status]).map((s) => <SelectItem key={s} id={s}>{t(`volunteering.status_${s}`)}</SelectItem>)}
                 </Select>
                 <Textarea
                   label={t('volunteering.case_status_reason')}

@@ -188,6 +188,22 @@ describe('VolOrgDashboardPage', () => {
     // If translation key doesn't resolve to "wallet" text at this level, skip gracefully
   });
 
+  // Safeguarding reports are for owners and admins; a plain team member would
+  // only ever see "no access" behind the tab, so the tab is not shown to them.
+  it('hides the Safeguarding tab from a plain team member', async () => {
+    mockManagedOrgs([{ ...ORG, member_role: 'member' }]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getAllByText('Community Helpers').length).toBeGreaterThan(0));
+    expect(screen.queryByRole('button', { name: /safeguarding/i })).not.toBeInTheDocument();
+  });
+
+  it('shows the Safeguarding tab to an organisation admin', async () => {
+    mockManagedOrgs([{ ...ORG, member_role: 'admin' }]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getAllByText('Community Helpers').length).toBeGreaterThan(0));
+    expect(screen.getByRole('button', { name: /safeguarding/i })).toBeInTheDocument();
+  });
+
   // Expense emails link to /volunteering/org/{id}/dashboard?tab=expenses.
   it('opens the expenses tab from the ?tab=expenses deep link', async () => {
     const { useSearchParams } = await import('react-router-dom');

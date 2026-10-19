@@ -637,7 +637,7 @@
     "incident_emergency_warning": "Wenn jemand in akuter Gefahr ist, rufen Sie jetzt Ihre örtliche Notrufnummer an. Dieses Formular wird nicht rund um die Uhr gelesen.",
     "incident_who_is_told_summary": "Wer über diese Meldung informiert wird",
     "incident_who_is_told_staff": "Das Schutzteam Ihrer Gemeinschaft – Administratoren, Broker und Koordinatoren – sieht die vollständige Meldung sofort.",
-    "incident_who_is_told_organisation": "Wenn Sie eine Organisation auswählen, erfahren deren Inhaber, Administratoren und Schutzbeauftragte, dass eine Meldung mit ihr verknüpft wurde, um welche Art es sich handelt und wann es passiert ist. Sie erfahren nicht, wer die Meldung gemacht hat, wen sie betrifft oder was darin steht.",
+    "incident_who_is_told_organisation": "Wenn Sie eine Organisation auswählen, erfahren deren Inhaber, Administratoren und Schutzbeauftragte/r, dass eine Meldung mit ihr verknüpft wurde: die Art der Meldung, wie schwerwiegend sie ist, die Gelegenheit und wann es geschah. Sie erfahren nicht, wer die Meldung gemacht hat, um wen es geht oder was darin steht.",
     "incident_who_is_told_subject": "Die Person, um die es in der Meldung geht, wird von diesem Dienst nicht darüber informiert, und niemand bearbeitet eine Meldung über sich selbst.",
     "member_status": {
       "received": "Eingegangen",
@@ -1601,6 +1601,11 @@
     "remove_no": "Behalten",
     "creator": "Hat die Organisation registriert",
     "you": "Sie",
-    "role_for": "Rolle von {{name}}"
+    "role_for": "Rolle von {{name}}",
+    "safeguarding_title": "Schutzbeauftragte/r",
+    "safeguarding_lead": "Schutzbeauftragte/r",
+    "safeguarding_deputy": "Stellvertretung",
+    "safeguarding_nobody": "Noch niemand ernannt",
+    "safeguarding_help": "Die/der Schutzbeauftragte und die Stellvertretung sehen eine Zusammenfassung jeder Schutzmeldung, die mit dieser Organisation verknüpft ist, und die vollständige Meldung nur, wenn das Schutzpersonal der Gemeinschaft sie teilt. Sie erfahren nie, wer eine Meldung gemacht hat. Gemeinschafts-Admins ernennen sie: Wenden Sie sich an Ihre Gemeinschaft, wenn sich etwas ändern soll."
   }
 }

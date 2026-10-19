@@ -154,7 +154,9 @@ class VolunteerIncidentCaseController extends BaseApiController
         }
         // Already withdrawn (perhaps by a colleague a moment ago): the outcome the
         // caller wanted is true, so say so rather than "not found".
-        $this->shares->withdraw($tenantId, $incident, $staffId);
+        if ($this->shares->withdraw($tenantId, $incident, $staffId)) {
+            $this->safeguardingService->notifyIncidentShareWithdrawn($tenantId, $incident);
+        }
 
         return $this->respondWithData(['shared' => false]);
     }

@@ -214,9 +214,9 @@ describe('VolunteerSafeguarding', () => {
       expect(screen.getByText('Org Alpha')).toBeInTheDocument();
     });
 
-    // "Assign DLP" button exists for an unassigned org
+    // "Appoint" button exists for an org with no lead yet
     const assignBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign')
+      b.textContent?.toLowerCase().includes('appoint')
     );
     expect(assignBtn).toBeDefined();
   });
@@ -235,7 +235,7 @@ describe('VolunteerSafeguarding', () => {
 
     // The assignment is still listed, but there is no way to change it here.
     const assignBtn = screen.queryAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign')
+      b.textContent?.toLowerCase().includes('appoint')
     );
     expect(assignBtn).toBeUndefined();
   });
@@ -251,7 +251,7 @@ describe('VolunteerSafeguarding', () => {
     await waitFor(() => screen.getByText('Org Alpha'));
 
     const assignBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign')
+      b.textContent?.toLowerCase().includes('appoint')
     );
     expect(assignBtn).toBeDefined();
     if (assignBtn) fireEvent.click(assignBtn);
@@ -273,7 +273,7 @@ describe('VolunteerSafeguarding', () => {
     await waitFor(() => screen.getByText('Org Alpha'));
 
     const assignBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign')
+      b.textContent?.toLowerCase().includes('appoint')
     );
     if (assignBtn) fireEvent.click(assignBtn);
 
@@ -314,7 +314,7 @@ describe('VolunteerSafeguarding', () => {
     await waitFor(() => screen.getByText('Org Alpha'));
 
     const assignBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('assign')
+      b.textContent?.toLowerCase().includes('appoint')
     );
     if (assignBtn) fireEvent.click(assignBtn);
 
@@ -329,7 +329,7 @@ describe('VolunteerSafeguarding', () => {
     if (confirm) fireEvent.click(confirm);
 
     await waitFor(() => {
-      expect(mockAdminVolunteering.assignDlp).toHaveBeenCalledWith(10, 42);
+      expect(mockAdminVolunteering.assignDlp).toHaveBeenCalledWith(10, { dlp_user_id: 42 });
     });
     // The server's own wording is shown beside the field, not a bare "failed".
     expect(await screen.findByText(reason)).toBeInTheDocument();

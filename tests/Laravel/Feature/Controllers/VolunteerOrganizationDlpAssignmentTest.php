@@ -21,9 +21,10 @@ use Tests\Laravel\TestCase;
  *
  * 🔴 Any ACTIVE member of the community may be an organisation's Designated
  * Liaison Person — no broker or admin role (owner decision, 4 Oct 2026). The
- * organisation DLP is a record only: it grants no access and receives no
- * notifications. If a test here fails because an ordinary member was refused,
- * the eligibility rule has been put back; do not "fix" the test.
+ * organisation lead (and deputy) gets the organisation's view of its linked
+ * reports and the organisation's notices — never the staff case file. If a test
+ * here fails because an ordinary member was refused, the eligibility rule has
+ * been put back; do not "fix" the test.
  *
  * Each refusal names its own reason rather than one generic "Unable to assign
  * the DLP"; the control in every refusal is that the stored DLP is unchanged.
@@ -73,8 +74,8 @@ class VolunteerOrganizationDlpAssignmentTest extends TestCase
         $member = $this->account([]);
         $this->apiPut("/v2/admin/volunteering/organizations/{$orgId}/dlp", ['dlp_user_id' => $member->id])->assertStatus(200);
 
-        // Being an organisation's DLP is a record, not a role: the member still
-        // cannot open the safeguarding incident list or reassign a DLP.
+        // Being an organisation's lead is not a staff role: the member still
+        // cannot open the staff incident list or appoint a lead.
         $this->app['auth']->forgetGuards();
         Sanctum::actingAs($member, ['*']);
         $this->apiGet('/v2/admin/volunteering/incidents')->assertStatus(403);

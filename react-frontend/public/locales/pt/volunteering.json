@@ -643,7 +643,7 @@
     "incident_emergency_warning": "Se alguém estiver em perigo imediato, ligue agora para o número de emergência local. Este formulário não é acompanhado a toda a hora.",
     "incident_who_is_told_summary": "Quem será informado desta denúncia",
     "incident_who_is_told_staff": "A equipa de proteção da sua comunidade — administradores, mediadores e coordenadores — vê de imediato a denúncia completa.",
-    "incident_who_is_told_organisation": "Se escolher uma organização, o proprietário, os administradores e o responsável de proteção dessa organização ficam a saber que lhe foi associada uma denúncia, de que tipo é e quando aconteceu. Não ficam a saber quem fez a denúncia, a quem diz respeito nem o que contém.",
+    "incident_who_is_told_organisation": "Se escolher uma organização, o seu proprietário, os administradores e o responsável de proteção são informados de que uma comunicação lhe foi associada: o tipo de comunicação, a gravidade, a oportunidade e quando aconteceu. Não lhes é dito quem fez a comunicação, sobre quem é nem o que diz.",
     "incident_who_is_told_subject": "Este serviço não informa a pessoa a quem a denúncia diz respeito, e ninguém trata uma denúncia sobre si próprio.",
     "member_status": {
       "received": "Recebida",
@@ -1618,6 +1618,11 @@
     "remove_no": "Manter",
     "creator": "Registou a organização",
     "you": "Você",
-    "role_for": "Função de {{name}}"
+    "role_for": "Função de {{name}}",
+    "safeguarding_title": "Responsável de proteção",
+    "safeguarding_lead": "Responsável de proteção",
+    "safeguarding_deputy": "Substituto",
+    "safeguarding_nobody": "Ainda ninguém nomeado",
+    "safeguarding_help": "O responsável e o substituto veem um resumo de cada comunicação de proteção associada a esta organização, e a comunicação completa apenas se a equipa de proteção da comunidade a partilhar. Nunca lhes é dito quem fez uma comunicação. São nomeados pelos administradores da comunidade: contacte a sua comunidade se for preciso mudar."
   }
 }

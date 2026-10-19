@@ -637,7 +637,7 @@
     "incident_emergency_warning": "If someone is in immediate danger, call your local emergency number now. This form is not watched around the clock.",
     "incident_who_is_told_summary": "Who will be told about this report",
     "incident_who_is_told_staff": "Your community’s safeguarding team — its administrators, brokers and coordinators — see the full report straight away.",
-    "incident_who_is_told_organisation": "If you choose an organisation, its owner, administrators and safeguarding contact are told that a report has been linked to it, what kind of report it is and when it happened. They are not told who made the report, who it is about or what it says.",
+    "incident_who_is_told_organisation": "If you choose an organisation, its owner, administrators and safeguarding lead are told that a report has been linked to it: the kind of report, how serious it is, the opportunity and when it happened. They are not told who made the report, who it is about or what it says.",
     "incident_who_is_told_subject": "The person the report is about is not told about it by this service, and nobody handles a report about themselves.",
     "member_status": {
       "received": "Received",
@@ -1601,6 +1601,11 @@
     "remove_no": "Keep",
     "creator": "Registered the organisation",
     "you": "You",
-    "role_for": "Role for {{name}}"
+    "role_for": "Role for {{name}}",
+    "safeguarding_title": "Safeguarding lead",
+    "safeguarding_lead": "Safeguarding lead",
+    "safeguarding_deputy": "Deputy",
+    "safeguarding_nobody": "Nobody appointed yet",
+    "safeguarding_help": "The lead and deputy see a summary of each safeguarding report linked to this organisation, and the full report only if the community's safeguarding staff share it. They are never told who made a report. Community admins appoint them: ask your community if yours needs to change."
   }
 }

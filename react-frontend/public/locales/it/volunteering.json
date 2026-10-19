@@ -643,7 +643,7 @@
     "incident_emergency_warning": "Se qualcuno è in pericolo immediato, chiama subito il numero di emergenza locale. Questo modulo non è controllato 24 ore su 24.",
     "incident_who_is_told_summary": "Chi verrà informato di questa segnalazione",
     "incident_who_is_told_staff": "Il team di tutela della tua comunità — amministratori, broker e coordinatori — vede subito la segnalazione completa.",
-    "incident_who_is_told_organisation": "Se scegli un’organizzazione, il suo proprietario, i suoi amministratori e il referente per la tutela sapranno che le è stata collegata una segnalazione, di che tipo è e quando è successo. Non sapranno chi ha fatto la segnalazione, chi riguarda né cosa contiene.",
+    "incident_who_is_told_organisation": "Se scegliete un'organizzazione, il suo titolare, gli amministratori e il referente per la tutela vengono informati che una segnalazione è stata collegata: il tipo di segnalazione, la gravità, l'opportunità e quando è avvenuto. Non viene detto loro chi ha fatto la segnalazione, chi riguarda o cosa dice.",
     "incident_who_is_told_subject": "La persona a cui si riferisce la segnalazione non viene informata da questo servizio e nessuno gestisce una segnalazione che lo riguarda.",
     "member_status": {
       "received": "Ricevuta",
@@ -1617,6 +1617,11 @@
     "remove_no": "Mantieni",
     "creator": "Ha registrato l’organizzazione",
     "you": "Tu",
-    "role_for": "Ruolo di {{name}}"
+    "role_for": "Ruolo di {{name}}",
+    "safeguarding_title": "Referente per la tutela",
+    "safeguarding_lead": "Referente per la tutela",
+    "safeguarding_deputy": "Vice",
+    "safeguarding_nobody": "Nessuno nominato per ora",
+    "safeguarding_help": "Il referente e il vice vedono un riepilogo di ogni segnalazione di tutela collegata a questa organizzazione, e la segnalazione completa solo se il personale di tutela della comunità la condivide. Non sanno mai chi ha fatto una segnalazione. Li nominano gli amministratori della comunità: rivolgetevi alla vostra comunità se serve un cambiamento."
   }
 }
