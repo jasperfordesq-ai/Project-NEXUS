@@ -782,6 +782,8 @@
     "your_shift": "Twoja zmiana",
     "their_shift": "Jego zmiana",
     "proposed_shift": "Proponowana zmiana",
+    "shift_you_gave_up": "Zmiana, którą oddałeś/aś",
+    "shift_you_now_have": "Zmiana, którą teraz masz",
     "requested": "Wymagany",
     "accept": "Akceptuj",
     "reject": "Odrzuć",

@@ -38,7 +38,8 @@
     "declined_by_admin": "Ihre Schichttausch-Anfrage wurde von einem Administrator abgelehnt",
     "accepted_swap_declined_by_admin": "Ein von Ihnen angenommener Schichttausch wurde von einem Administrator abgelehnt",
     "approved_by_admin": "Ihr Schichttausch wurde von einem Administrator genehmigt",
-    "accepted_swap_approved_by_admin": "Ein von Ihnen angenommener Schichttausch wurde von einem Administrator genehmigt"
+    "accepted_swap_approved_by_admin": "Ein von Ihnen angenommener Schichttausch wurde von einem Administrator genehmigt",
+    "expired": "Ihre Schichttausch-Anfrage für {{date}} ist nicht mehr möglich"
   },
   "group_signup": {
     "added": "{{leader}} hat Sie zur Gruppe {{group}} für {{opportunity}} am {{date}} hinzugefügt. Sie sind jetzt für diese Schicht angemeldet. Wenn Sie nicht kommen können, können Sie die Gruppenanmeldung verlassen.",

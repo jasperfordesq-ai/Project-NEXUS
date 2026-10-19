@@ -111,6 +111,7 @@ return [
     'push_vol_swap_requested' => 'Demande d\'échange d\'équipe',
     'push_vol_swap_approved' => 'Échange de quarts de travail approuvé',
     'push_vol_swap_declined' => 'Échange d\'équipe refusé',
+    'push_vol_swap_expired' => 'Échange d\'équipe expiré',
     'push_new_topic' => 'Nouveau message',
     'push_new_reply' => 'Nouvelle réponse',
     'push_mention' => 'Vous avez été mentionné',
@@ -159,6 +160,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'Une place est libre pour :subject',
             'body' => 'Créneau le :time : réservez-la avant qu’elle ne passe à la personne suivante',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'Votre demande d\'échange pour le :time n\'est plus possible',
+            'body' => 'Touchez pour voir vos échanges d\'équipe',
         ],
         'exchange_request_received' => [
             'title' => 'Nouvelle demande pour :subject',

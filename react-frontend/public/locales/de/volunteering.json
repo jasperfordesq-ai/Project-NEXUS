@@ -768,6 +768,8 @@
     "your_shift": "Ihre Schicht",
     "their_shift": "Ihre Schicht",
     "proposed_shift": "Vorgeschlagene Schicht",
+    "shift_you_gave_up": "Abgegebene Schicht",
+    "shift_you_now_have": "Ihre neue Schicht",
     "requested": "Angefragt",
     "accept": "Annehmen",
     "reject": "Ablehnen",

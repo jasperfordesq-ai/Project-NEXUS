@@ -775,6 +775,8 @@
     "your_shift": "Tu turno",
     "their_shift": "Su turno",
     "proposed_shift": "Cambio propuesto",
+    "shift_you_gave_up": "Turno que cediste",
+    "shift_you_now_have": "Turno que ahora tienes",
     "requested": "Solicitado",
     "accept": "Aceptar",
     "reject": "Rechazar",

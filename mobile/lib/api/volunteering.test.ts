@@ -208,7 +208,7 @@ describe('shift swap helpers', () => {
     const response = { data: { swaps: [] } };
     (api.get as jest.Mock).mockResolvedValue(response);
     const result = await getShiftSwaps();
-    expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', {});
+    expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', { per_page: '20' });
     expect(result.data).toEqual({ swaps: [] });
   });
 
@@ -216,7 +216,14 @@ describe('shift swap helpers', () => {
     const response = { data: { swaps: [] } };
     (api.get as jest.Mock).mockResolvedValue(response);
     await getShiftSwaps('received');
-    expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', { direction: 'received' });
+    expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', { per_page: '20', direction: 'received' });
+  });
+
+  // The list read one page of twenty and stopped (19 Oct 2026); it pages like the others.
+  it('asks for the next page of shift swaps with the cursor the server gave', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: [], meta: { cursor: null, has_more: false } });
+    await getShiftSwaps('all', 'abc');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/volunteering/swaps', { per_page: '20', cursor: 'abc' });
   });
 
   it('sends the same swap-request key in the header and body', async () => {

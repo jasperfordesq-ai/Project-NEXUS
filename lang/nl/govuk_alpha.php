@@ -4662,6 +4662,8 @@ return [
         'swap_new_title' => 'Ruil voor deze dienst aanvragen',
         'swap_new_body' => 'Kies de dienst die u liever zou doen. We vragen het aan degene die erop staat. U ziet de naam pas als die persoon akkoord gaat.',
         'swap_your_shift' => 'Uw dienst',
+        'swap_shift_gave_up' => 'Dienst die u hebt afgestaan',
+        'swap_shift_now_have' => 'Dienst die u nu hebt',
         'swap_choose_legend' => 'Welke dienst zou u liever doen?',
         'swap_choose_required' => 'Kies de dienst die u liever zou doen',
         'swap_none_available' => 'Op geen enkele andere komende dienst van deze vacature staat iemand, dus er is nog niemand om mee te ruilen.',

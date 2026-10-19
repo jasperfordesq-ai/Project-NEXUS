@@ -1390,7 +1390,17 @@ function SwapsPanel({
           const isReceived = swap.direction === 'received';
           const ownShift = isReceived ? swap.proposed_shift : swap.original_shift;
           const otherShift = isReceived ? swap.original_shift : swap.proposed_shift;
-          const otherShiftLabel = isReceived ? t('swaps.theirShift') : t('swaps.proposedShift');
+          /*
+            Once the swap has gone through the two volunteers have changed places, so
+            "Your shift" would name the shift the viewer no longer has (found walking the
+            journey, 19 Oct 2026). A completed card says which shift the viewer gave up
+            and which they now hold instead.
+          */
+          const isCompleted = swap.status === 'accepted' || swap.status === 'admin_approved';
+          const ownShiftLabel = isCompleted ? t('swaps.shiftGaveUp') : t('swaps.yourShift');
+          const otherShiftLabel = isCompleted
+            ? t('swaps.shiftNowHave')
+            : isReceived ? t('swaps.theirShift') : t('swaps.proposedShift');
 
           const originalDate = formatDate(ownShift?.start_time);
           const originalStart = formatTime(ownShift?.start_time);
@@ -1419,7 +1429,7 @@ function SwapsPanel({
 
                 <View className="gap-2">
                   <Surface variant="secondary" className="rounded-panel-inner p-3">
-                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-own-label-${swap.id}`}>{t('swaps.yourShift')}</Text>
+                    <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }} testID={`swap-own-label-${swap.id}`}>{ownShiftLabel}</Text>
                     <Text className="mt-1 text-sm font-semibold" style={{ color: theme.text }} numberOfLines={largeText ? 0 : 2}>
                       {ownShift?.opportunity_title}
                     </Text>
@@ -2554,11 +2564,13 @@ function VolunteeringScreenInner() {
     than twenty applications could not see their oldest, and an organiser's expense list
     ended without saying so. Audit 2026-09-07, fixed 2026-09-09.
 
-    🔴 Two lists on this screen are deliberately NOT paged, because the SERVER does not
+    🔴 One list on this screen is deliberately NOT paged, because the SERVER does not
     offer it: `VolunteerCertificateController::myCertificates` calls
     `getUserCertificates($userId)` with no filters even though the service supports a
-    cursor, and `getSwapRequests` returns everything it finds. Adding a "Load more" here
-    would be a button that cannot work. Both need an API change first.
+    cursor. Adding a "Load more" there would be a button that cannot work; it needs an
+    API change first. (Swaps were in that list too, but `GET /v2/volunteering/swaps`
+    has answered with `meta.cursor` / `meta.has_more` since September 2026, and this
+    screen kept reading one page of twenty and stopping until 19 Oct 2026.)
   */
   const authOnly = { enabled: isAuthenticated };
   const applicationsApi = usePaginatedApi<VolunteerApplication, VolunteerApplicationsResponse>(
@@ -2607,7 +2619,19 @@ function VolunteeringScreenInner() {
     [],
     authOnly,
   );
-  const swapsApi = useApi<VolunteerShiftSwapsResponse>(() => getShiftSwaps(), [], { enabled: isAuthenticated });
+  const swapsApi = usePaginatedApi<VolunteerShiftSwap, VolunteerShiftSwapsResponse>(
+    (cursor) => getShiftSwaps('all', cursor),
+    // The server answers with a flat `data` array; the older `{ swaps: [] }` shape is
+    // still accepted so a cached or older response cannot blank the tab.
+    (response) => ({
+      items: Array.isArray(response.data) ? response.data
+        : Array.isArray(response.data?.swaps) ? response.data.swaps : [],
+      cursor: response.meta?.cursor ?? null,
+      hasMore: Boolean(response.meta?.has_more),
+    }),
+    [],
+    authOnly,
+  );
 
   const opportunities = opportunitiesApi.items;
 
@@ -2625,7 +2649,7 @@ function VolunteeringScreenInner() {
       : activeTab === 'certificates' ? certificatesApi.isLoading && Boolean(certificatesApi.data)
       : activeTab === 'expenses' ? expensesApi.isLoading && expensesApi.items.length > 0
       : activeTab === 'donations' ? donationsApi.isLoading && donationsApi.items.length > 0
-      : activeTab === 'swaps' ? swapsApi.isLoading && Boolean(swapsApi.data)
+      : activeTab === 'swaps' ? swapsApi.isLoading && swapsApi.items.length > 0
       : false
   );
 
@@ -2639,8 +2663,7 @@ function VolunteeringScreenInner() {
   const givingDaysPayload = givingDaysApi.data?.data;
   const givingDays = Array.isArray(givingDaysPayload) ? givingDaysPayload : [];
   const donations = donationsApi.items;
-  const swapsPayload = swapsApi.data?.data;
-  const swaps = Array.isArray(swapsPayload) ? swapsPayload : swapsPayload?.swaps ?? [];
+  const swaps = swapsApi.items;
   const loggableOrganisations = useMemo(
     () => getLoggableOrganisations(organisations, applications),
     [applications, organisations],
@@ -2862,12 +2885,15 @@ function VolunteeringScreenInner() {
             {activeTab === 'tools' ? <VolunteerToolsPanel /> : null}
 
             {activeTab === 'swaps' ? (
-              <SwapsPanel
-                swaps={swaps}
-                isLoading={swapsApi.isLoading}
-                error={swapsApi.error}
-                onRefresh={swapsApi.refresh}
-              />
+              <>
+                <SwapsPanel
+                  swaps={swaps}
+                  isLoading={swapsApi.isLoading}
+                  error={swapsApi.error}
+                  onRefresh={swapsApi.refresh}
+                />
+                <TabLoadMore hasMore={swapsApi.hasMore} isLoadingMore={swapsApi.isLoadingMore} onPress={swapsApi.loadMore} testID="volunteering-swaps-load-more" />
+              </>
             ) : null}
 
             {activeTab === 'certificates' ? (

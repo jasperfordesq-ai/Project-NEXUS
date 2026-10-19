@@ -38,7 +38,8 @@
     "declined_by_admin": "Uw dienstruilverzoek is geweigerd door een beheerder",
     "accepted_swap_declined_by_admin": "Een dienstruil die u heeft geaccepteerd is geweigerd door een beheerder",
     "approved_by_admin": "Uw dienstruil is goedgekeurd door een beheerder",
-    "accepted_swap_approved_by_admin": "Een dienstruil die u heeft geaccepteerd is goedgekeurd door een beheerder"
+    "accepted_swap_approved_by_admin": "Een dienstruil die u heeft geaccepteerd is goedgekeurd door een beheerder",
+    "expired": "Uw dienstruilverzoek voor {{date}} is niet meer mogelijk"
   },
   "group_signup": {
     "added": "{{leader}} heeft u toegevoegd aan de groep {{group}} voor {{opportunity}} op {{date}}. U bent nu ingeschreven voor deze dienst. Kunt u niet komen, dan kunt u de groepsinschrijving verlaten.",

@@ -111,6 +111,7 @@ return [
     'push_vol_swap_requested' => 'Iarratas ar Bhabhtáil Aistrithe',
     'push_vol_swap_approved' => 'Babhtáil Shift Faofa',
     'push_vol_swap_declined' => 'Diúltaíodh don Bhabhtáil Shift',
+    'push_vol_swap_expired' => 'Babhtáil seala imithe in éag',
     'push_new_topic' => 'Post Nua',
     'push_new_reply' => 'Freagra Nua',
     'push_mention' => 'Dúradh leat',
@@ -159,6 +160,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'Tá áit saor ag :subject',
             'body' => 'Seal ar :time — éiligh í sula dtéann sí chuig an chéad duine eile',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'Ní féidir d\'iarratas babhtála don :time a dhéanamh a thuilleadh',
+            'body' => 'Tapáil chun do bhabhtálacha seala a fheiceáil',
         ],
         'exchange_request_received' => [
             'title' => 'Iarratas nua ar :subject',

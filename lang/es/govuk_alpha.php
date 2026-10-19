@@ -4662,6 +4662,8 @@ return [
         'swap_new_title' => 'Pedir un cambio de este turno',
         'swap_new_body' => 'Elija el turno que preferiría hacer. Se lo preguntaremos a quien esté apuntado. No verá su nombre a menos que acepte.',
         'swap_your_shift' => 'Su turno',
+        'swap_shift_gave_up' => 'Turno que cedió',
+        'swap_shift_now_have' => 'Turno que tiene ahora',
         'swap_choose_legend' => '¿Qué turno preferiría hacer?',
         'swap_choose_required' => 'Elija el turno que preferiría hacer',
         'swap_none_available' => 'Ningún otro turno próximo de esta oportunidad tiene a alguien apuntado, así que todavía no hay nadie con quien cambiar.',

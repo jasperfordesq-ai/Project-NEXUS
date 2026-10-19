@@ -38,7 +38,8 @@
     "declined_by_admin": "Twoja prośba o zamianę zmian została odrzucona przez administratora",
     "accepted_swap_declined_by_admin": "Zamiana zmian, którą zaakceptowałeś/aś, została odrzucona przez administratora",
     "approved_by_admin": "Twoja zamiana zmian została zatwierdzona przez administratora",
-    "accepted_swap_approved_by_admin": "Zamiana zmian, którą zaakceptowałeś/aś, została zatwierdzona przez administratora"
+    "accepted_swap_approved_by_admin": "Zamiana zmian, którą zaakceptowałeś/aś, została zatwierdzona przez administratora",
+    "expired": "Twoja prośba o zamianę zmian na {{date}} nie jest już możliwa"
   },
   "group_signup": {
     "added": "{{leader}} dodał(a) Cię do grupy {{group}} na {{opportunity}} w dniu {{date}}. Jesteś teraz zapisany/a na tę zmianę. Jeśli nie możesz przyjść, możesz opuścić zapis grupowy.",

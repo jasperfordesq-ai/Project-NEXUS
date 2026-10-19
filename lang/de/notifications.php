@@ -111,6 +111,7 @@ return [
     'push_vol_swap_requested' => 'Anfrage zum Schichtwechsel',
     'push_vol_swap_approved' => 'Schichtwechsel genehmigt',
     'push_vol_swap_declined' => 'Schichttausch abgelehnt',
+    'push_vol_swap_expired' => 'Schichttausch abgelaufen',
     'push_new_topic' => 'Neuer Beitrag',
     'push_new_reply' => 'Neue Antwort',
     'push_mention' => 'Sie wurden erwähnt',
@@ -159,6 +160,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'Ein Platz ist frei bei :subject',
             'body' => 'Schicht am :time – sichern Sie ihn, bevor das Angebot weitergeht',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'Ihre Tausch-Anfrage für :time ist nicht mehr möglich',
+            'body' => 'Tippen, um Ihre Schichttausche zu sehen',
         ],
         'exchange_request_received' => [
             'title' => 'Neue Anfrage für :subject',

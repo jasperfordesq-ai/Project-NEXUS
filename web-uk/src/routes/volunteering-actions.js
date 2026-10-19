@@ -1691,6 +1691,7 @@ function normalizeSwapRequest(row, t = null) {
   const swap = row && typeof row === 'object' ? row : {};
   const direction = trimmed(swap.direction) === 'received' ? 'received' : 'sent';
   const statusValue = Object.hasOwn(SWAP_STATUS_LABELS, trimmed(swap.status)) ? trimmed(swap.status) : 'pending';
+  const completed = statusValue === 'accepted' || statusValue === 'admin_approved';
   const requester = swap.requester && typeof swap.requester === 'object' ? swap.requester : {};
   const recipient = swap.recipient && typeof swap.recipient === 'object' ? swap.recipient : {};
   return {
@@ -1718,7 +1719,17 @@ function normalizeSwapRequest(row, t = null) {
       : (swap.original_shift ?? swap.originalShift), t),
     otherShift: normalizeSwapShift(direction === 'received'
       ? (swap.original_shift ?? swap.originalShift)
-      : (swap.proposed_shift ?? swap.proposedShift), t)
+      : (swap.proposed_shift ?? swap.proposedShift), t),
+    // Once the swap has gone through the two members have changed places, so "Your
+    // shift" would name the shift the reader no longer has (found walking the journey,
+    // 19 Oct 2026). A completed card says which shift the reader gave up and which they
+    // now hold instead.
+    ownShiftLabel: t
+      ? t(`govuk_alpha.vol_depth.${completed ? 'swap_shift_gave_up' : 'swap_your_shift'}`)
+      : (completed ? 'Shift you gave up' : 'Your shift'),
+    otherShiftLabel: t
+      ? t(`govuk_alpha.vol_depth.${completed ? 'swap_shift_now_have' : (direction === 'received' ? 'swap_original_shift' : 'swap_proposed_shift')}`)
+      : (completed ? 'Shift you now have' : (direction === 'received' ? 'Their shift' : 'Proposed shift'))
   };
 }
 

@@ -768,6 +768,8 @@
     "your_shift": "あなたのシフト",
     "their_shift": "相手のシフト",
     "proposed_shift": "提案されたシフト",
+    "shift_you_gave_up": "譲ったシフト",
+    "shift_you_now_have": "現在のシフト",
     "requested": "リクエスト済み",
     "accept": "受け入れる",
     "reject": "拒否する",

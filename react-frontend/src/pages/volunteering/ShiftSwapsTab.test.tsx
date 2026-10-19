@@ -47,6 +47,8 @@ vi.mock("react-i18next", () => ({
         "swaps.your_shift": "Your Shift",
         "swaps.their_shift": "Their Shift",
         "swaps.proposed_shift": "Proposed Shift",
+        "swaps.shift_you_gave_up": "Shift You Gave Up",
+        "swaps.shift_you_now_have": "Shift You Now Have",
         "swaps.to": "To:",
         "swaps.to_unnamed": "To: the volunteer on that shift (named once they agree)",
         "swaps.cancel": "Cancel",
@@ -115,7 +117,7 @@ import { api } from "@/lib/api";
 
 const makeSwap = (
   direction: "sent" | "received" = "received",
-  status: "pending" | "accepted" | "rejected" | "admin_pending" | "expired" = "pending",
+  status: "pending" | "accepted" | "rejected" | "admin_pending" | "admin_approved" | "expired" = "pending",
 ) => ({
   id: 1,
   status,
@@ -292,6 +294,40 @@ describe("ShiftSwapsTab", () => {
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith("/v2/volunteering/swaps/1");
     });
+  });
+
+  /*
+    Once a swap has gone through, "Your shift" / "Their shift" describe the assignment
+    BEFORE the swap: the shift under "Your shift" is the one the reader no longer has.
+    Found walking the swaps journey on 19 Oct 2026. A completed card says which shift
+    the reader gave up and which they now hold, whichever way the request went.
+  */
+  it("relabels both shifts once a swap has been accepted", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [makeSwap("sent", "accepted")] });
+    render(<ShiftSwapsTab />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("swap-own-label-1")).toHaveTextContent("Shift You Gave Up");
+    });
+    // The requester gave up `original_shift` and now holds `proposed_shift`.
+    expect(screen.getByTestId("swap-own-title-1")).toHaveTextContent("Food Bank Shift A");
+    expect(screen.getByTestId("swap-other-label-1")).toHaveTextContent("Shift You Now Have");
+    expect(screen.getByTestId("swap-other-title-1")).toHaveTextContent("Food Bank Shift B");
+    expect(screen.queryByText("Your Shift")).not.toBeInTheDocument();
+  });
+
+  it("relabels both shifts once an admin has approved a received swap", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [makeSwap("received", "admin_approved")] });
+    render(<ShiftSwapsTab />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("swap-own-label-1")).toHaveTextContent("Shift You Gave Up");
+    });
+    // The recipient gave up `proposed_shift` and now holds `original_shift`.
+    expect(screen.getByTestId("swap-own-title-1")).toHaveTextContent("Food Bank Shift B");
+    expect(screen.getByTestId("swap-other-label-1")).toHaveTextContent("Shift You Now Have");
+    expect(screen.getByTestId("swap-other-title-1")).toHaveTextContent("Food Bank Shift A");
+    expect(screen.queryByText("Their Shift")).not.toBeInTheDocument();
   });
 
   it("shows an expired request without any buttons", async () => {

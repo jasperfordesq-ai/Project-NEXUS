@@ -68,6 +68,7 @@ final class PushCopy
         'vol_shift_reminder',
         'vol_shift_cancelled',
         'vol_waitlist_spot',
+        'vol_swap_expired',
         'exchange_request_received',
         'exchange_accepted',
         'achievement',

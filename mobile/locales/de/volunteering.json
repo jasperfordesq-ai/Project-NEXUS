@@ -485,6 +485,8 @@
     "yourShift": "Deine Schicht",
     "theirShift": "Ihre Schicht",
     "proposedShift": "Vorgeschlagene Schicht",
+    "shiftGaveUp": "Abgegebene Schicht",
+    "shiftNowHave": "Deine neue Schicht",
     "accept": "Accept",
     "reject": "Reject",
     "cancel": "Anfrage zurückziehen",

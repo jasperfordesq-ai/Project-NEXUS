@@ -7,12 +7,14 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\I18n\FormattingLocale;
 use App\I18n\LocaleContext;
 use App\Models\VolApplication;
 use App\Models\VolShift;
 use App\Services\NotificationDispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 /**
  * ShiftSwapService — Laravel DI-based service for shift swap operations.
@@ -373,7 +375,7 @@ class ShiftSwapService
                     ->where('held.tenant_id', $tenantId);
             };
 
-            $staleIds = DB::table('vol_shift_swap_requests as sr')
+            $stale = DB::table('vol_shift_swap_requests as sr')
                 ->join('vol_shifts as fs', 'sr.from_shift_id', '=', 'fs.id')
                 ->join('vol_shifts as ts', 'sr.to_shift_id', '=', 'ts.id')
                 ->where('sr.tenant_id', $tenantId)
@@ -384,13 +386,13 @@ class ShiftSwapService
                         ->orWhereNotExists(fn ($sub) => $holds($sub, 'sr.from_user_id', 'sr.from_shift_id'))
                         ->orWhereNotExists(fn ($sub) => $holds($sub, 'sr.to_user_id', 'sr.to_shift_id'));
                 })
-                ->pluck('sr.id')
-                ->map(static fn ($id) => (int) $id)
-                ->all();
+                ->get(['sr.id', 'sr.from_user_id', 'ts.start_time as to_shift_start']);
 
-            if ($staleIds === []) {
+            if ($stale->isEmpty()) {
                 return 0;
             }
+
+            $staleIds = $stale->map(static fn ($row) => (int) $row->id)->all();
 
             $expired = DB::table('vol_shift_swap_requests')
                 ->where('tenant_id', $tenantId)
@@ -403,6 +405,21 @@ class ShiftSwapService
                     'tenant' => $tenantId,
                     'ids' => $staleIds,
                 ]);
+
+                // The asker is the one left waiting for an answer that can never come,
+                // so they are the one told (19 Oct 2026), naming the shift they asked
+                // for. The other volunteer was only ever asked, and a request they can
+                // no longer act on simply leaves their list.
+                foreach ($stale as $row) {
+                    self::notifySwap(
+                        (int) $row->from_user_id,
+                        'vol_swap_expired',
+                        'svc_notifications.shift_swap.expired',
+                        self::swapLink((int) $row->id),
+                        [],
+                        $row->to_shift_start !== null ? (string) $row->to_shift_start : null,
+                    );
+                }
             }
 
             return (int) $expired;
@@ -1086,13 +1103,27 @@ class ShiftSwapService
         return '/volunteering?tab=swaps&swap=' . $swapId . ($step !== null ? '&step=' . $step : '');
     }
 
-    private static function notifySwap(int $userId, string $activityType, string $contentKey, string $link, array $contentParams = []): void
+    /**
+     * @param array<string, mixed> $contentParams
+     * @param string|null $shiftStart A shift start to name in the bell as `{{date}}`
+     *   and on the lock screen as `:time`, written the way the recipient's language
+     *   writes it — so it is formatted inside the locale switch, not by the caller.
+     */
+    private static function notifySwap(int $userId, string $activityType, string $contentKey, string $link, array $contentParams = [], ?string $shiftStart = null): void
     {
         try {
             $recipientLocale = DB::table('users')->where('id', $userId)->value('preferred_language');
             $localeInput = is_string($recipientLocale) && $recipientLocale !== '' ? $recipientLocale : null;
 
-            LocaleContext::withLocale($localeInput, function () use ($userId, $activityType, $contentKey, $contentParams, $link) {
+            LocaleContext::withLocale($localeInput, function () use ($userId, $activityType, $contentKey, $contentParams, $link, $shiftStart) {
+                $pushContext = [];
+                if ($shiftStart !== null && $shiftStart !== '') {
+                    $when = Carbon::parse($shiftStart)
+                        ->locale(FormattingLocale::carbon())
+                        ->isoFormat('lll');
+                    $contentParams['date'] = $when;
+                    $pushContext['time'] = $when;
+                }
                 $content = __($contentKey, $contentParams);
                 NotificationDispatcher::dispatch(
                     $userId,
@@ -1102,7 +1133,11 @@ class ShiftSwapService
                     $content,
                     $link,
                     null,
-                    false
+                    false,
+                    null,
+                    null,
+                    null,
+                    $pushContext,
                 );
             });
         } catch (\Throwable $e) {

@@ -5691,6 +5691,8 @@
                 "swap_new_title": "Poproś o zamianę tego dyżuru",
                 "swap_new_body": "Wybierz dyżur, który wolisz wziąć. Zapytamy osobę, która jest na niego zapisana. Jej imię zobaczysz dopiero, gdy się zgodzi.",
                 "swap_your_shift": "Twój dyżur",
+                "swap_shift_gave_up": "Dyżur, który oddałeś/aś",
+                "swap_shift_now_have": "Dyżur, który teraz masz",
                 "swap_choose_legend": "Który dyżur wolisz wziąć?",
                 "swap_choose_required": "Wybierz dyżur, który wolisz wziąć",
                 "swap_none_available": "Na żaden inny nadchodzący dyżur w tej ofercie nikt nie jest zapisany, więc na razie nie ma z kim się zamienić.",

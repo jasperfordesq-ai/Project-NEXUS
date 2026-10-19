@@ -193,6 +193,52 @@ describe('the shift swaps page', () => {
     expect(received).toContain(t(`${D}swap_your_shift`));
     expect(res.text.indexOf('Riley wants mine')).toBeLessThan(res.text.indexOf('Riley offers this'));
   });
+
+  /*
+    Once a swap has gone through the two members have changed places, so "Your shift"
+    names the shift the reader no longer has (found walking the journey, 19 Oct 2026). A
+    completed card says which shift the reader gave up and which they now hold.
+  */
+  it('relabels both shifts once a swap has gone through, whichever way it went', async () => {
+    mockApi({
+      swaps: [
+        {
+          id: 7,
+          direction: 'sent',
+          status: 'accepted',
+          requester: { id: 1, name: 'Me' },
+          recipient: { id: 9, name: 'Riley' },
+          original_shift: { id: 71, opportunity_title: 'Shift I gave up', start_time: '2099-03-27 09:00:00' },
+          proposed_shift: { id: 73, opportunity_title: 'Shift I now hold', start_time: '2099-03-29 14:00:00' }
+        },
+        {
+          id: 8,
+          direction: 'received',
+          status: 'admin_approved',
+          requester: { id: 9, name: 'Riley' },
+          recipient: { id: 1, name: 'Me' },
+          original_shift: { id: 80, opportunity_title: 'Riley gave me this', start_time: '2099-04-01 09:00:00' },
+          proposed_shift: { id: 71, opportunity_title: 'Riley took this', start_time: '2099-03-27 09:00:00' }
+        }
+      ]
+    });
+
+    const res = await request(createApp()).get(`${MOUNT}/swaps`);
+
+    const sent = res.text.slice(res.text.indexOf('Shift I gave up') - 600, res.text.indexOf('Shift I now hold') + 200);
+    expect(sent).toContain(t(`${D}swap_shift_gave_up`));
+    expect(sent).toContain(t(`${D}swap_shift_now_have`));
+    expect(sent).not.toContain(t(`${D}swap_your_shift`));
+    expect(sent.indexOf(t(`${D}swap_shift_gave_up`))).toBeLessThan(sent.indexOf('Shift I gave up'));
+    expect(sent.indexOf('Shift I gave up')).toBeLessThan(sent.indexOf(t(`${D}swap_shift_now_have`)));
+
+    const received = res.text.slice(res.text.indexOf('Riley took this') - 600, res.text.indexOf('Riley gave me this') + 200);
+    expect(received).toContain(t(`${D}swap_shift_gave_up`));
+    expect(received).toContain(t(`${D}swap_shift_now_have`));
+    expect(received).not.toContain(t(`${D}swap_original_shift`));
+    // The recipient gave up `proposed_shift` and now holds `original_shift`.
+    expect(received.indexOf('Riley took this')).toBeLessThan(received.indexOf('Riley gave me this'));
+  });
 });
 
 describe('asking to swap one shift', () => {

@@ -166,6 +166,7 @@ return [
     'push_vol_swap_requested'        => 'Shift Swap Request',
     'push_vol_swap_approved'         => 'Shift Swap Approved',
     'push_vol_swap_declined'         => 'Shift Swap Declined',
+    'push_vol_swap_expired'        => 'Shift Swap Expired',
     'vol_application_fallback_opportunity' => 'a volunteer opportunity',
     'vol_application_received_body'  => ':name applied for your volunteer opportunity: :title',
     'vol_application_submitted_body'  => 'Your volunteer application for ":title" was sent. You will hear back once it has been reviewed.',
@@ -233,6 +234,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'A place is free on :subject',
             'body' => 'Shift on :time — claim it before the offer passes on',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'Your swap request for :time is no longer possible',
+            'body' => 'Tap to see your shift swaps',
         ],
         'exchange_request_received' => [
             'title' => 'New request for :subject',

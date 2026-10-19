@@ -486,6 +486,8 @@
     "yourShift": "Votre créneau",
     "theirShift": "Son créneau",
     "proposedShift": "Créneau proposé",
+    "shiftGaveUp": "Créneau que vous avez cédé",
+    "shiftNowHave": "Créneau que vous avez maintenant",
     "accept": "Accept",
     "reject": "Reject",
     "cancel": "Annuler la demande",

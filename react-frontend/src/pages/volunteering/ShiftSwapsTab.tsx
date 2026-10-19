@@ -116,6 +116,15 @@ const otherShiftOf = (swap: ShiftSwap): SwapShift =>
   swap.direction === 'received' ? swap.original_shift : swap.proposed_shift;
 
 /**
+ * Once the swap has gone through, the two people have changed places, so "Your shift" /
+ * "Their shift" describe the assignment BEFORE the swap: the shift under "Your shift" is
+ * the one the reader no longer has (found walking the journey, 19 Oct 2026). A completed
+ * card names the shift the reader gave up and the one they now hold instead.
+ */
+const isCompletedSwap = (swap: ShiftSwap): boolean =>
+  swap.status === 'accepted' || swap.status === 'admin_approved';
+
+/**
  * The server's own reason for a refusal, when it gave one. "Failed to accept swap
  * request" hid every real answer — the shift has started, the other volunteer has left
  * it, the request has expired — behind one sentence (found walking the journey, 19 Oct
@@ -444,7 +453,9 @@ export function ShiftSwapsTab() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                       {/* The viewer's own shift */}
                       <div className="rounded-lg bg-theme-hover/50 p-3">
-                        <p className="text-xs font-medium text-theme-muted mb-1" data-testid={`swap-own-label-${swap.id}`}>{t('swaps.your_shift')}</p>
+                        <p className="text-xs font-medium text-theme-muted mb-1" data-testid={`swap-own-label-${swap.id}`}>
+                          {isCompletedSwap(swap) ? t('swaps.shift_you_gave_up') : t('swaps.your_shift')}
+                        </p>
                         <p className="text-sm font-semibold text-theme-primary" data-testid={`swap-own-title-${swap.id}`}>
                           {ownShiftOf(swap).opportunity_title}
                         </p>
@@ -463,7 +474,9 @@ export function ShiftSwapsTab() {
                       {/* The other person's shift */}
                       <div className="rounded-lg bg-theme-hover/50 p-3">
                         <p className="text-xs font-medium text-theme-muted mb-1" data-testid={`swap-other-label-${swap.id}`}>
-                          {swap.direction === 'received' ? t('swaps.their_shift') : t('swaps.proposed_shift')}
+                          {isCompletedSwap(swap)
+                            ? t('swaps.shift_you_now_have')
+                            : swap.direction === 'received' ? t('swaps.their_shift') : t('swaps.proposed_shift')}
                         </p>
                         <p className="text-sm font-semibold text-theme-primary" data-testid={`swap-other-title-${swap.id}`}>
                           {otherShiftOf(swap).opportunity_title}

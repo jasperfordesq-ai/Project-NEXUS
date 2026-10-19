@@ -411,7 +411,11 @@ export interface VolunteerDonationsResponse {
 
 export type VolunteerGivingDaysResponse = { data: VolunteerGivingDay[] };
 
-export type VolunteerShiftSwapsResponse = { data: VolunteerShiftSwap[] | { swaps?: VolunteerShiftSwap[] } };
+export type VolunteerShiftSwapsResponse = {
+  data: VolunteerShiftSwap[] | { swaps?: VolunteerShiftSwap[] };
+  /** Cursor paging, as every other member list on this screen (served since September 2026). */
+  meta?: { cursor?: string | null; has_more?: boolean };
+};
 
 export interface SubmitVolunteerDonationPayload {
   giving_day_id?: number | null;
@@ -636,9 +640,14 @@ export function getVolunteerDonations(cursor?: string | null): Promise<Volunteer
   });
 }
 
-export function getShiftSwaps(direction: 'all' | 'sent' | 'received' = 'all'): Promise<VolunteerShiftSwapsResponse> {
+export function getShiftSwaps(
+  direction: 'all' | 'sent' | 'received' = 'all',
+  cursor?: string | null,
+): Promise<VolunteerShiftSwapsResponse> {
   return api.get<VolunteerShiftSwapsResponse>(`${API_V2}/volunteering/swaps`, {
+    per_page: '20',
     ...(direction !== 'all' ? { direction } : {}),
+    ...(cursor ? { cursor } : {}),
   });
 }
 

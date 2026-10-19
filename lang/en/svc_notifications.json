@@ -40,7 +40,8 @@
     "declined_by_admin": "Your shift swap request was declined by an admin",
     "accepted_swap_declined_by_admin": "A shift swap you accepted was declined by an admin",
     "approved_by_admin": "Your shift swap was approved by an admin",
-    "accepted_swap_approved_by_admin": "A shift swap you accepted was approved by an admin"
+    "accepted_swap_approved_by_admin": "A shift swap you accepted was approved by an admin",
+    "expired": "Your shift swap request for {{date}} is no longer possible"
   },
   "group_signup": {
     "added": "{{leader}} added you to the group {{group}} for {{opportunity}} on {{date}}. You are now signed up for this shift. If you cannot make it, you can leave the group sign-up.",

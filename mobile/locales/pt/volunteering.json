@@ -486,6 +486,8 @@
     "yourShift": "O seu turno",
     "theirShift": "O turno dele",
     "proposedShift": "Turno proposto",
+    "shiftGaveUp": "Turno que cedeu",
+    "shiftNowHave": "Turno que tem agora",
     "accept": "Accept",
     "reject": "Reject",
     "cancel": "Cancelar o pedido",

@@ -4662,6 +4662,8 @@ return [
         'swap_new_title' => 'このシフトの交換を依頼',
         'swap_new_body' => '代わりに担当したいシフトを選んでください。そのシフトの担当者に依頼します。相手が同意するまで名前は表示されません。',
         'swap_your_shift' => 'あなたのシフト',
+        'swap_shift_gave_up' => '譲ったシフト',
+        'swap_shift_now_have' => '現在のシフト',
         'swap_choose_legend' => '代わりにどのシフトを担当したいですか？',
         'swap_choose_required' => '代わりに担当したいシフトを選んでください',
         'swap_none_available' => 'この募集の今後のシフトに担当者がいるものが他にないため、まだ交換できる相手がいません。',

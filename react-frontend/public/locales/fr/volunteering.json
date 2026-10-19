@@ -775,6 +775,8 @@
     "your_shift": "Votre quart de travail",
     "their_shift": "Son créneau",
     "proposed_shift": "Changement proposé",
+    "shift_you_gave_up": "Créneau que vous avez cédé",
+    "shift_you_now_have": "Créneau que vous avez maintenant",
     "requested": "Demandé",
     "accept": "Accepter",
     "reject": "Rejeter",

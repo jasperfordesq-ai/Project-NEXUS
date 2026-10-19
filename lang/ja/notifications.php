@@ -114,6 +114,7 @@ return [
     'push_vol_swap_requested' => 'シフト交換リクエスト',
     'push_vol_swap_approved' => 'シフト交換が承認されました',
     'push_vol_swap_declined' => 'シフト交換は拒否されました',
+    'push_vol_swap_expired' => 'シフト交換の期限切れ',
     'push_new_topic' => '新しい投稿',
     'push_new_reply' => '新しい返信',
     'push_mention' => 'あなたが言及されました',
@@ -162,6 +163,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => ':subject に空きが出ました',
             'body' => ':time のシフトです。次の方に回る前に確保してください',
+        ],
+        'vol_swap_expired' => [
+            'title' => ':time の交換リクエストは実行できなくなりました',
+            'body' => 'タップしてシフト交換を確認',
         ],
         'exchange_request_received' => [
             'title' => ':subject の新しいリクエスト',

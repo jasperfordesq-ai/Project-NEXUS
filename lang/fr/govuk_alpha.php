@@ -4662,6 +4662,8 @@ return [
         'swap_new_title' => 'Proposer un échange pour ce créneau',
         'swap_new_body' => 'Choisissez le créneau que vous préféreriez faire. Nous demanderons à la personne qui y est inscrite. Vous ne verrez son nom que si elle accepte.',
         'swap_your_shift' => 'Votre créneau',
+        'swap_shift_gave_up' => 'Créneau que vous avez cédé',
+        'swap_shift_now_have' => 'Créneau que vous avez maintenant',
         'swap_choose_legend' => 'Quel créneau préféreriez-vous faire ?',
         'swap_choose_required' => 'Choisissez le créneau que vous préféreriez faire',
         'swap_none_available' => 'Aucun autre créneau à venir de cette mission n’a de personne inscrite : il n’y a donc encore personne avec qui échanger.',

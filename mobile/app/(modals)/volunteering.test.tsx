@@ -112,6 +112,8 @@ jest.mock('react-i18next', () => ({
         'swaps.yourShift': 'Your shift',
         'swaps.proposedShift': 'Proposed shift',
         'swaps.theirShift': 'Their shift',
+        'swaps.shiftGaveUp': 'Shift you gave up',
+        'swaps.shiftNowHave': 'Shift you now have',
         'swaps.accept': 'Accept',
         'swaps.reject': 'Reject',
         'swaps.cancel': 'Cancel request',
@@ -1633,6 +1635,39 @@ describe('VolunteeringScreen', () => {
     expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
   });
 
+  /*
+    Once a swap has gone through the two volunteers have changed places, so "Your shift"
+    names the shift the viewer no longer has (found walking the journey, 19 Oct 2026). A
+    completed card says which shift the viewer gave up and which they now hold.
+  */
+  it('relabels both shifts once a sent swap has been accepted', () => {
+    swapPanelApi('sent', undefined, 'accepted');
+
+    const { getByText, getByTestId, queryByText } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    // The requester gave up `original_shift` and now holds `proposed_shift`.
+    expect(getByTestId('swap-own-label-77').props.children).toBe('Shift you gave up');
+    expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Green Spaces');
+    expect(getByTestId('swap-other-label-77').props.children).toBe('Shift you now have');
+    expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Care Hub');
+    expect(queryByText('Your shift')).toBeNull();
+  });
+
+  it('relabels both shifts once an admin has approved a received swap', () => {
+    swapPanelApi('received', undefined, 'admin_approved');
+
+    const { getByText, getByTestId, queryByText } = render(<VolunteeringScreen />);
+    fireEvent.press(getByText('Swaps'));
+
+    // The recipient gave up `proposed_shift` and now holds `original_shift`.
+    expect(getByTestId('swap-own-label-77').props.children).toBe('Shift you gave up');
+    expect(getByTestId('swap-own-detail-77').props.children.join('')).toContain('Care Hub');
+    expect(getByTestId('swap-other-label-77').props.children).toBe('Shift you now have');
+    expect(getByTestId('swap-other-detail-77').props.children.join('')).toContain('Green Spaces');
+    expect(queryByText('Their shift')).toBeNull();
+  });
+
   // M1 (7 Oct 2026): the server withholds the recipient of a sent request until they
   // agree, and the card read "Sent to " with nothing after it.
   it('says the other volunteer is named once they agree, instead of a blank name, on a sent swap', () => {
@@ -1849,6 +1884,41 @@ describe('VolunteeringScreen', () => {
 
       const { queryByTestId } = render(<VolunteeringScreen />);
       expect(queryByTestId('volunteering-applications-load-more')).toBeNull();
+    });
+
+    /*
+      The swaps list read one page of twenty and stopped, on the stale belief that the
+      server could not page it; `GET /v2/volunteering/swaps` has answered with
+      `meta.cursor` / `meta.has_more` since September 2026 (19 Oct 2026).
+    */
+    it('offers Load more on the swaps tab when the server says there are more', () => {
+      stub(8, {
+        data: {
+          data: [{
+            id: 77, status: 'pending', direction: 'sent',
+            requester: { id: 1, name: 'Current User', avatar_url: null },
+            recipient: { id: 12, name: 'Alex Volunteer', avatar_url: null },
+            original_shift: { id: 42, start_time: '2026-06-01T10:00:00Z', end_time: '2026-06-01T12:00:00Z', opportunity_title: 'Garden Helper', organization_name: 'Green Spaces' },
+            proposed_shift: { id: 43, start_time: '2026-06-02T10:00:00Z', end_time: '2026-06-02T12:00:00Z', opportunity_title: 'Food Pantry', organization_name: 'Care Hub' },
+            message: null, created_at: '2026-05-29T10:00:00Z',
+          }],
+          meta: { cursor: 'abc', has_more: true },
+        },
+        isLoading: false, error: null, refresh: jest.fn(),
+      });
+      mockParams = { tab: 'swaps' };
+
+      const { getByTestId, getByText } = render(<VolunteeringScreen />);
+      expect(getByText('Garden Helper')).toBeTruthy();
+      expect(getByTestId('volunteering-swaps-load-more')).toBeTruthy();
+    });
+
+    it('offers no Load more on the swaps tab when the list is complete', () => {
+      stub(8, { data: { data: [], meta: { cursor: null, has_more: false } }, isLoading: false, error: null, refresh: jest.fn() });
+      mockParams = { tab: 'swaps' };
+
+      const { queryByTestId } = render(<VolunteeringScreen />);
+      expect(queryByTestId('volunteering-swaps-load-more')).toBeNull();
     });
 
     it('offers Load more on donations, which report only a next cursor', () => {

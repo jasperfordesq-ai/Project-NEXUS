@@ -4662,6 +4662,8 @@ return [
         'swap_new_title' => 'Proponi uno scambio per questo turno',
         'swap_new_body' => 'Scegli il turno che preferiresti fare. Lo chiederemo a chi vi è iscritto. Non vedrai il suo nome a meno che non accetti.',
         'swap_your_shift' => 'Il tuo turno',
+        'swap_shift_gave_up' => 'Turno che hai ceduto',
+        'swap_shift_now_have' => 'Turno che hai ora',
         'swap_choose_legend' => 'Quale turno preferiresti fare?',
         'swap_choose_required' => 'Scegli il turno che preferiresti fare',
         'swap_none_available' => 'Nessun altro turno futuro di questa opportunità ha qualcuno iscritto, quindi per ora non c’è nessuno con cui scambiare.',

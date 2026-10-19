@@ -768,6 +768,8 @@
     "your_shift": "Your Shift",
     "their_shift": "Their Shift",
     "proposed_shift": "Proposed Shift",
+    "shift_you_gave_up": "Shift You Gave Up",
+    "shift_you_now_have": "Shift You Now Have",
     "requested": "Requested",
     "accept": "Accept",
     "reject": "Reject",

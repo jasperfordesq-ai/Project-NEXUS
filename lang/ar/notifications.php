@@ -114,6 +114,7 @@ return [
     'push_vol_swap_requested' => 'طلب تبديل التحول',
     'push_vol_swap_approved' => 'تمت الموافقة على تبديل التحول',
     'push_vol_swap_declined' => 'تم رفض تبديل التحول',
+    'push_vol_swap_expired' => 'انتهت صلاحية تبديل الوردية',
     'push_new_topic' => 'مشاركة جديدة',
     'push_new_reply' => 'رد جديد',
     'push_mention' => 'لقد تم ذكرك',
@@ -162,6 +163,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'هناك مكان شاغر في :subject',
             'body' => 'مناوبة في :time — احجزه قبل أن ينتقل العرض إلى الشخص التالي',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'لم يعد طلب التبديل الخاص بك ليوم :time ممكنًا',
+            'body' => 'انقر لعرض تبديلات الورديات',
         ],
         'exchange_request_received' => [
             'title' => 'طلب جديد لـ :subject',

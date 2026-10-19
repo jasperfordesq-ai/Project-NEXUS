@@ -38,7 +38,8 @@
     "declined_by_admin": "シフト交換リクエストが管理者によって拒否されました",
     "accepted_swap_declined_by_admin": "承認したシフト交換が管理者によって拒否されました",
     "approved_by_admin": "シフト交換が管理者によって承認されました",
-    "accepted_swap_approved_by_admin": "承認したシフト交換が管理者によって承認されました"
+    "accepted_swap_approved_by_admin": "承認したシフト交換が管理者によって承認されました",
+    "expired": "{{date}}のシフト交換リクエストは実行できなくなりました"
   },
   "group_signup": {
     "added": "{{leader}}さんがあなたを{{date}}の{{opportunity}}のグループ「{{group}}」に追加しました。このシフトへの登録が完了しています。参加できない場合は、グループ登録から抜けることができます。",

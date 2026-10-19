@@ -5691,6 +5691,8 @@
                 "swap_new_title": "Tausch für diese Schicht anfragen",
                 "swap_new_body": "Wählen Sie die Schicht, die Sie lieber übernehmen würden. Wir fragen die Person, die dort eingetragen ist. Ihren Namen sehen Sie erst, wenn sie zustimmt.",
                 "swap_your_shift": "Ihre Schicht",
+                "swap_shift_gave_up": "Abgegebene Schicht",
+                "swap_shift_now_have": "Ihre neue Schicht",
                 "swap_choose_legend": "Welche Schicht würden Sie lieber übernehmen?",
                 "swap_choose_required": "Wählen Sie die Schicht, die Sie lieber übernehmen würden",
                 "swap_none_available": "Auf keiner anderen kommenden Schicht dieses Angebots ist jemand eingetragen. Es gibt also noch niemanden zum Tauschen.",

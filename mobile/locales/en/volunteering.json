@@ -485,6 +485,8 @@
     "yourShift": "Your shift",
     "theirShift": "Their shift",
     "proposedShift": "Proposed shift",
+    "shiftGaveUp": "Shift you gave up",
+    "shiftNowHave": "Shift you now have",
     "accept": "Accept",
     "reject": "Reject",
     "cancel": "Cancel request",

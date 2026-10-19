@@ -58,7 +58,7 @@ class NotificationService
         'volunteering' => [
             'volunteering', 'volunteer_shift', 'vol_application_received', 'vol_application_submitted',
             'vol_application_approved', 'vol_application_rejected',
-            'vol_swap_requested', 'vol_swap_approved', 'vol_shift_reminder',
+            'vol_swap_requested', 'vol_swap_approved', 'vol_swap_expired', 'vol_shift_reminder',
         ],
         'marketplace'  => ['marketplace_order', 'marketplace_offer', 'marketplace_message'],
         'ideation'     => ['ideation_idea_submitted', 'ideation_idea_voted', 'ideation_idea_commented', 'ideation_idea_status', 'ideation_idea_won'],

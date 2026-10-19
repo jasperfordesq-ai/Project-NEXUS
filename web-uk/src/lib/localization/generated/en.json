@@ -5691,6 +5691,8 @@
                 "swap_new_title": "Ask to swap this shift",
                 "swap_new_body": "Choose the shift you would rather do. We will ask whoever is on it. You will not see their name unless they agree.",
                 "swap_your_shift": "Your shift",
+                "swap_shift_gave_up": "Shift you gave up",
+                "swap_shift_now_have": "Shift you now have",
                 "swap_choose_legend": "Which shift would you rather do?",
                 "swap_choose_required": "Choose the shift you would rather do",
                 "swap_none_available": "No other upcoming shift on this opportunity has anyone on it, so there is nobody to swap with yet.",

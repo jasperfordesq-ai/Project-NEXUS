@@ -38,7 +38,8 @@
     "declined_by_admin": "Su solicitud de cambio de turno fue rechazada por un administrador",
     "accepted_swap_declined_by_admin": "Un cambio de turno que aceptó fue rechazado por un administrador",
     "approved_by_admin": "Su cambio de turno fue aprobado por un administrador",
-    "accepted_swap_approved_by_admin": "Un cambio de turno que aceptó fue aprobado por un administrador"
+    "accepted_swap_approved_by_admin": "Un cambio de turno que aceptó fue aprobado por un administrador",
+    "expired": "Su solicitud de cambio de turno para el {{date}} ya no es posible"
   },
   "group_signup": {
     "added": "{{leader}} le ha añadido al grupo {{group}} para {{opportunity}} el {{date}}. Ya está inscrito/a en este turno. Si no puede asistir, puede abandonar la inscripción de grupo.",

@@ -38,7 +38,8 @@
     "declined_by_admin": "Diúltaíodh d'iarratas malartaithe sealaíochta ag riarthóir",
     "accepted_swap_declined_by_admin": "Diúltaíodh ag riarthóir do mhalartú sealaíochta a ghlac tú leis",
     "approved_by_admin": "D'fhormhuinigh riarthóir do mhalartú sealaíochta",
-    "accepted_swap_approved_by_admin": "D'fhormhuinigh riarthóir malartú sealaíochta a ghlac tú leis"
+    "accepted_swap_approved_by_admin": "D'fhormhuinigh riarthóir malartú sealaíochta a ghlac tú leis",
+    "expired": "Ní féidir d'iarratas malartaithe sealaíochta don {{date}} a dhéanamh a thuilleadh"
   },
   "group_signup": {
     "added": "Chuir {{leader}} leis an ngrúpa {{group}} thú do {{opportunity}} ar {{date}}. Tá tú cláraithe don seal seo anois. Mura féidir leat teacht, is féidir leat an clárú grúpa a fhágáil.",

@@ -111,6 +111,7 @@ return [
     'push_vol_swap_requested' => 'Solicitud de cambio de turno',
     'push_vol_swap_approved' => 'Cambio de turno aprobado',
     'push_vol_swap_declined' => 'Cambio de turno rechazado',
+    'push_vol_swap_expired' => 'Cambio de turno caducado',
     'push_new_topic' => 'Nueva publicación',
     'push_new_reply' => 'Nueva respuesta',
     'push_mention' => 'Fuiste mencionado',
@@ -159,6 +160,10 @@ return [
         'vol_waitlist_spot' => [
             'title' => 'Hay una plaza libre en :subject',
             'body' => 'Turno el :time: reclámala antes de que pase a la siguiente persona',
+        ],
+        'vol_swap_expired' => [
+            'title' => 'Tu solicitud de cambio para el :time ya no es posible',
+            'body' => 'Toca para ver tus cambios de turno',
         ],
         'exchange_request_received' => [
             'title' => 'Nueva solicitud para :subject',

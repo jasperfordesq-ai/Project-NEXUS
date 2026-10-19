@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Models\User;
 use App\Services\ShiftSwapService;
 use App\Services\VolunteerService;
+use App\Support\Push\PushCopy;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
@@ -237,6 +238,68 @@ class ShiftSwapStaleRequestTest extends TestCase
         $this->assertFalse(ShiftSwapService::respond($swapId, $holder, 'accept'));
         $this->assertSame('expired', $this->swapStatus($swapId));
         $this->assertSame([], ShiftSwapService::getAdminPendingSwaps());
+    }
+
+    /**
+     * Nobody was told when a request was retired: the asker kept waiting for an answer
+     * that could never come (19 Oct 2026). One bell and one phone alert now go to the
+     * asker, in their own language, naming the shift they asked for. The other volunteer
+     * is not told — they were only ever asked, and the request simply leaves their list.
+     */
+    public function test_the_asker_is_told_in_their_own_language_when_their_request_expires(): void
+    {
+        [$opportunityId, [$shiftA, $shiftB]] = $this->makeOpportunityWithShifts(2);
+        $asker = $this->volunteerOn($opportunityId, $shiftA);
+        $holder = $this->volunteerOn($opportunityId, $shiftB);
+        DB::table('users')->where('id', $asker)->update(['preferred_language' => 'de']);
+        $swapId = $this->request($asker, $shiftA, $shiftB);
+        $this->assertSame([], $this->bells($asker), 'asking creates no bell for the asker');
+
+        DB::table('vol_applications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $holder)
+            ->update(['shift_id' => null]);
+
+        $this->assertSame(1, ShiftSwapService::expireStaleRequests($this->testTenantId));
+
+        $bells = $this->bells($asker);
+        $this->assertCount(1, $bells);
+        $this->assertSame('vol_swap_expired', $bells[0]->type);
+        $this->assertStringContainsString('ist nicht mehr möglich', $bells[0]->message, 'rendered in the asker\'s language, not the caller\'s');
+        $this->assertStringNotContainsString('{{date}}', $bells[0]->message);
+        // The shift they asked for (shift B), written the way German writes it.
+        $toShiftStart = \Carbon\Carbon::parse((string) DB::table('vol_shifts')->where('id', $shiftB)->value('start_time'));
+        $this->assertStringContainsString($toShiftStart->locale('de')->isoFormat('lll'), $bells[0]->message);
+        $this->assertStringContainsString('swap=' . $swapId, (string) $bells[0]->link);
+
+        // The holder keeps only the original "new swap request" bell: no expiry bell.
+        $holderTypes = array_map(static fn ($bell) => $bell->type, $this->bells($holder));
+        $this->assertSame(['vol_swap_requested'], $holderTypes, 'the volunteer who was asked is not told');
+
+        // Running the sweep again finds nothing and sends nothing more.
+        $this->assertSame(0, ShiftSwapService::expireStaleRequests($this->testTenantId));
+        $this->assertCount(1, $this->bells($asker));
+    }
+
+    /** The phone's lock-screen copy for the new type names the shift and exists in every language. */
+    public function test_the_expiry_push_names_the_shift_on_the_lock_screen(): void
+    {
+        $this->assertTrue(PushCopy::isCurated('vol_swap_expired'));
+        $copy = PushCopy::render('vol_swap_expired', ['time' => '26 Oct 2026, 14:00']);
+        $this->assertNotNull($copy);
+        $this->assertStringContainsString('26 Oct 2026, 14:00', $copy['title']);
+        $this->assertStringNotContainsString(':time', $copy['title']);
+    }
+
+    /** @return list<object{type: string, message: string, link: ?string}> */
+    private function bells(int $userId): array
+    {
+        return DB::table('notifications')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('user_id', $userId)
+            ->orderBy('id')
+            ->get(['type', 'message', 'link'])
+            ->all();
     }
 
     public function test_a_live_request_is_left_alone(): void

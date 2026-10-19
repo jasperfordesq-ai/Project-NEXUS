@@ -89,7 +89,7 @@
 
           <div class="govuk-grid-row">
             <div class="govuk-grid-column-one-half">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth.swap_your_shift") }}</h3>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ swap.ownShiftLabel }}</h3>
               <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.ownShift.title }}</p>
               {% if swap.ownShift.organizationName %}
                 <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.ownShift.organizationName }}</p>
@@ -99,7 +99,7 @@
               {% endif %}
             </div>
             <div class="govuk-grid-column-one-half">
-              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("vol_depth." ~ ("swap_original_shift" if swap.direction == "received" else "swap_proposed_shift")) }}</h3>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ swap.otherShiftLabel }}</h3>
               <p class="govuk-body govuk-!-margin-bottom-1">{{ swap.otherShift.title }}</p>
               {% if swap.otherShift.organizationName %}
                 <p class="govuk-body-s govuk-!-margin-bottom-1">{{ swap.otherShift.organizationName }}</p>
