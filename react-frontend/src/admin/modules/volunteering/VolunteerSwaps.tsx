@@ -102,8 +102,9 @@ export function VolunteerSwaps() {
         setSwaps((prev) => prev.filter((s) => s.id !== swap.id));
       } else {
         // The server says why (a shift has started, a volunteer has left it, the
-        // request has expired); the queue is reloaded so a dead request drops out.
-        toast.error(res.errors?.[0]?.message || res.error || t('volunteering.failed_to_decide_swap'));
+        // request has expired) in the admin's own language, in `errors[0].message`;
+        // the queue is reloaded so a dead request drops out.
+        toast.error(res.errors?.[0]?.message || t('volunteering.failed_to_decide_swap'));
         void loadData();
       }
     } catch {
