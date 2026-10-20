@@ -1146,7 +1146,16 @@
     "share_with_team_desc": "El equipo de tu comunidad verá cómo te sientes y tu nota. Las organizaciones con las que haces voluntariado sabrán cómo te sientes, pero no verán tu nota.",
     "share_with_team_private": "Solo tú verás este registro.",
     "checkin_success_team_notified": "Gracias por contárnoslo. Alguien del equipo de tu comunidad se pondrá en contacto contigo.",
-    "checkin_shared_label": "Compartido con el equipo de tu comunidad"
+    "checkin_shared_label": "Compartido con el equipo de tu comunidad",
+    "outcome_told": "Hemos avisado a {{count}} personas de tu comunidad. Alguien se pondrá en contacto contigo.",
+    "outcome_already_told": "Tu comunidad ya fue avisada hoy ({{time}}). Este registro se ha añadido a lo que pueden ver.",
+    "outcome_nobody": "Todavía no se ha podido avisar a nadie. Lo intentaremos de nuevo con tu próximo registro.",
+    "outcome_private": "Solo tú puedes ver este registro.",
+    "outcome_what_next": "Qué pasa ahora",
+    "outcome_what_next_desc": "Alguien del equipo de tu comunidad leerá tu registro y se pondrá en contacto, normalmente en uno o dos días.",
+    "outcome_dismiss": "Cerrar",
+    "support_heading": "Si necesitas apoyo ahora",
+    "last_told": "El equipo de tu comunidad fue avisado por última vez el {{date}}."
   },
   "check_in": {
     "title": "Registro de turno",

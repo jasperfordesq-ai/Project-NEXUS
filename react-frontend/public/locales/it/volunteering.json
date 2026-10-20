@@ -1146,7 +1146,16 @@
     "share_with_team_desc": "Il team della tua comunità vedrà come ti senti e la tua nota. Le organizzazioni con cui fai volontariato sapranno come ti senti, ma non vedranno la tua nota.",
     "share_with_team_private": "Solo tu vedrai questo check-in.",
     "checkin_success_team_notified": "Grazie per avercelo detto. Qualcuno del team della tua comunità ti contatterà.",
-    "checkin_shared_label": "Condiviso con il team della tua comunità"
+    "checkin_shared_label": "Condiviso con il team della tua comunità",
+    "outcome_told": "Abbiamo avvisato {{count}} persone della tua comunità. Qualcuno si metterà in contatto con te.",
+    "outcome_already_told": "La tua comunità è già stata avvisata oggi ({{time}}). Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcome_nobody": "Nessuno ha ancora potuto essere avvisato. Riproveremo con il tuo prossimo check-in.",
+    "outcome_private": "Solo tu puoi vedere questo check-in.",
+    "outcome_what_next": "Cosa succede ora",
+    "outcome_what_next_desc": "Qualcuno del team della tua comunità leggerà il tuo check-in e si metterà in contatto, di solito entro un giorno o due.",
+    "outcome_dismiss": "Chiudi",
+    "support_heading": "Se hai bisogno di supporto adesso",
+    "last_told": "Il team della tua comunità è stato avvisato l'ultima volta il {{date}}."
   },
   "check_in": {
     "title": "Check-in a turni",

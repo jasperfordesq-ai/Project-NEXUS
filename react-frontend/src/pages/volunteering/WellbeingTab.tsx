@@ -25,6 +25,9 @@ import TrendingDown from 'lucide-react/icons/trending-down';
 import Coffee from 'lucide-react/icons/coffee';
 import Sun from 'lucide-react/icons/sun';
 import MessageSquare from 'lucide-react/icons/message-square';
+import LifeBuoy from 'lucide-react/icons/life-buoy';
+import X from 'lucide-react/icons/x';
+import CheckCircle from 'lucide-react/icons/circle-check-big';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
@@ -53,6 +56,17 @@ interface WellbeingData {
   warnings: string[];
   suggested_rest_days: string[];
   recent_checkins: MoodCheckin[];
+  /** The community's "If you need support now" box, or a translated default. */
+  support?: WellbeingSupport;
+  /** When the community's team was last told about this volunteer, and how many people that reached. */
+  last_team_notified_at?: string | null;
+  last_told_count?: number;
+}
+
+interface WellbeingSupport {
+  text: string;
+  links: Array<{ label: string; url: string }>;
+  is_default: boolean;
 }
 
 interface MoodCheckin {
@@ -70,8 +84,20 @@ interface WellbeingCheckinResult {
   mood: number;
   note: string | null;
   shared: boolean;
-  /** True when the community's team (and organisations) were told about this check-in. */
+  /** True only when at least one person or address was actually reached about this check-in. */
   team_notified: boolean;
+  told_count?: number;
+  told_at?: string | null;
+  /** What happened (20 Oct 2026): told | already_told_today | nobody_available | private | not_low. */
+  outcome?: CheckinOutcome;
+}
+
+type CheckinOutcome = 'told' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
+
+interface OutcomeNotice {
+  outcome: CheckinOutcome;
+  toldCount: number;
+  toldAt: string | null;
 }
 
 /** Moods at or below this level offer to let someone get in touch. */
@@ -95,6 +121,62 @@ function getMoodEmoji(value: number, t: TranslateFn): string {
 
 function getMoodLabel(value: number, t: TranslateFn): string {
   return getMoodOptions(t).find((m) => m.value === value)?.label ?? t('wellbeing.mood_unknown');
+}
+
+/* ───────────────────────── Outcome + support ───────────────────────── */
+
+type TranslateWithOptions = (key: string, opts?: Record<string, unknown>) => string;
+
+function outcomeHeadline(notice: OutcomeNotice, t: TranslateWithOptions): string {
+  switch (notice.outcome) {
+    case 'told':
+      return t('wellbeing.outcome_told', { count: notice.toldCount });
+    case 'already_told_today':
+      return t('wellbeing.outcome_already_told', {
+        time: notice.toldAt ? new Date(notice.toldAt).toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' }) : '',
+      });
+    case 'nobody_available':
+      return t('wellbeing.outcome_nobody');
+    case 'private':
+      return t('wellbeing.outcome_private');
+    default:
+      return t('wellbeing.checkin_success');
+  }
+}
+
+function SupportBox({ support, tenantPath, t, compact = false }: {
+  support: WellbeingSupport;
+  tenantPath: (path: string) => string;
+  t: TranslateFn;
+  compact?: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <LifeBuoy className="w-4 h-4 text-rose-400" aria-hidden="true" />
+        <h3 className={compact ? 'text-sm font-semibold text-theme-primary' : 'font-semibold text-theme-primary'}>{t('wellbeing.support_heading')}</h3>
+      </div>
+      {/* Plain text from the community's admin; React escapes it. */}
+      <p className="text-sm text-theme-muted whitespace-pre-wrap">{support.text}</p>
+      {support.links.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {support.links.map((link) => {
+            const internal = link.url.startsWith('/');
+            const className = 'inline-flex items-center rounded-full border border-divider/70 bg-theme-elevated px-3 py-1 text-sm font-medium text-accent hover:underline';
+            return (
+              <li key={`${link.label}-${link.url}`}>
+                {internal ? (
+                  <Link to={tenantPath(link.url)} className={className}>{link.label}</Link>
+                ) : (
+                  <a href={link.url} className={className} rel="noopener noreferrer" target={link.url.startsWith('https://') ? '_blank' : undefined}>{link.label}</a>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 /* ───────────────────────── Score Color ───────────────────────── */
@@ -155,6 +237,9 @@ export function WellbeingTab() {
   const [shareWithTeam, setShareWithTeam] = useState(true);
   const isLowMood = selectedMood <= LOW_MOOD_MAX;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // The honest answer to "was anyone told?" after the last check-in, shown
+  // on the page (not only as a toast) until the volunteer dismisses it.
+  const [notice, setNotice] = useState<OutcomeNotice | null>(null);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -212,6 +297,14 @@ export function WellbeingTab() {
 
       if (response.success) {
         const teamNotified = response.data?.team_notified === true;
+        const outcome: CheckinOutcome = response.data?.outcome ?? (teamNotified ? 'told' : 'not_low');
+        setNotice({
+          outcome,
+          toldCount: response.data?.told_count ?? 0,
+          toldAt: response.data?.told_at ?? null,
+        });
+        // The toast is the short version; the card below the heading carries
+        // the honest detail, including "nobody could be told yet".
         toastRef.current.success(
           tRef.current(teamNotified ? 'wellbeing.checkin_success_team_notified' : 'wellbeing.checkin_success'),
         );
@@ -248,6 +341,46 @@ export function WellbeingTab() {
           {t('wellbeing.log_feeling')}
         </Button>
       </div>
+
+      {/* What happened after the last check-in (20 Oct 2026): honest, on the page. */}
+      {notice && (
+        <GlassCard
+          className={`p-4 border ${notice.outcome === 'nobody_available' ? 'border-amber-500/40' : 'border-emerald-500/30'}`}
+          role="status"
+          aria-label={outcomeHeadline(notice, (key, opts) => t(key, opts))}
+        >
+          <div className="flex items-start gap-3">
+            {notice.outcome === 'nobody_available' ? (
+              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            ) : (
+              <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-theme-primary">{outcomeHeadline(notice, (key, opts) => t(key, opts))}</p>
+              {notice.outcome === 'told' && (
+                <p className="text-sm text-theme-muted mt-1">
+                  <span className="font-medium text-theme-primary">{t('wellbeing.outcome_what_next')}: </span>
+                  {t('wellbeing.outcome_what_next_desc')}
+                </p>
+              )}
+              {notice.outcome === 'nobody_available' && data?.support && (
+                <div className="mt-2">
+                  <SupportBox support={data.support} tenantPath={tenantPath} t={(key) => t(key)} compact />
+                </div>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              isIconOnly
+              aria-label={t('wellbeing.outcome_dismiss')}
+              onPress={() => setNotice(null)}
+            >
+              <X className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </div>
+        </GlassCard>
+      )}
 
       {/* Error */}
       {error && !isLoading && (
@@ -386,8 +519,25 @@ export function WellbeingTab() {
                 size="lg"
                 aria-label={t('wellbeing.score_aria', { score: data.score })}
               />
+              {data.last_team_notified_at && (
+                <p className="text-xs text-theme-subtle mt-3">
+                  {t('wellbeing.last_told', {
+                    date: new Date(data.last_team_notified_at).toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }),
+                    count: data.last_told_count ?? 0,
+                  })}
+                </p>
+              )}
             </GlassCard>
           </motion.div>
+
+          {/* If you need support now: the community's own text and links, or the default (20 Oct 2026). */}
+          {data.support && (
+            <motion.div variants={itemVariants}>
+              <GlassCard className="p-5">
+                <SupportBox support={data.support} tenantPath={tenantPath} t={(key) => t(key)} />
+              </GlassCard>
+            </motion.div>
+          )}
 
           {/* Warning Cards */}
           {data.warnings.length > 0 && (

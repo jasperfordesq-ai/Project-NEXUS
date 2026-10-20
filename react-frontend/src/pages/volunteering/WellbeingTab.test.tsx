@@ -69,6 +69,15 @@ const stableT = (
     "wellbeing.share_with_team_desc": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note.",
     "wellbeing.share_with_team_private": "Only you will see this check-in.",
     "wellbeing.recent_checkins": "Recent Check-ins",
+    "wellbeing.outcome_told": "We have told {{count}} people from your community. Someone will be in touch.",
+    "wellbeing.outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
+    "wellbeing.outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
+    "wellbeing.outcome_private": "Only you can see this check-in.",
+    "wellbeing.outcome_what_next": "What happens next",
+    "wellbeing.outcome_what_next_desc": "Someone from your community's team will read your check-in and get in touch, usually within a day or two.",
+    "wellbeing.outcome_dismiss": "Dismiss",
+    "wellbeing.support_heading": "If you need support now",
+    "wellbeing.last_told": "Your community's team was last told on {{date}}.",
   };
 
   if (typeof fallbackOrOptions === "string") {
@@ -149,6 +158,9 @@ const mockWellbeingData = {
   warnings: [],
   suggested_rest_days: [],
   recent_checkins: [],
+  support: { text: 'Ring the office any weekday.', links: [{ label: 'Our office', url: 'tel:+353100' }, { label: 'Contact the team', url: '/contact' }], is_default: false },
+  last_team_notified_at: null,
+  last_told_count: 0,
 };
 
 describe("WellbeingTab", () => {
@@ -346,5 +358,57 @@ describe("WellbeingTab", () => {
     });
     render(<WellbeingTab />);
     expect(await screen.findAllByText("Shared with your community's team")).toHaveLength(1);
+  });
+
+  // 20 Oct 2026: the tab must say honestly what happened after a shared check-in.
+  it("says how many people were told, and what happens next, after a shared check-in", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: true, told_count: 2, told_at: '2026-10-20T12:05:22Z', outcome: 'told' },
+    });
+    await openCheckin();
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    expect(await screen.findByText(/we have told 2 people/i)).toBeInTheDocument();
+    expect(screen.getByText(/what happens next/i)).toBeInTheDocument();
+  });
+
+  it("says when nobody could be told, and shows the support box beside it", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'nobody_available' },
+    });
+    await openCheckin();
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    const notice = await screen.findByRole("status", { name: /nobody could be told yet/i });
+    expect(notice).toBeInTheDocument();
+    expect(mockToast.success).not.toHaveBeenCalledWith("Thank you for telling us. Someone from your community's team will be in touch.");
+  });
+
+  it("says the team was already told today", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 2, note: null, shared: true, team_notified: false, told_count: 2, told_at: '2026-10-20T12:05:22Z', outcome: 'already_told_today' },
+    });
+    await openCheckin();
+    pickMood("Low");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    expect(await screen.findByText(/already told today/i)).toBeInTheDocument();
+  });
+
+  it("always shows the community's support box with its links", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockWellbeingData });
+    render(<WellbeingTab />);
+    expect(await screen.findByText("If you need support now")).toBeInTheDocument();
+    expect(screen.getByText("Ring the office any weekday.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Our office" })).toHaveAttribute("href", "tel:+353100");
+    expect(screen.getByRole("link", { name: "Contact the team" })).toHaveAttribute("href", "/test/contact");
+  });
+
+  it("says when the team was last told", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockWellbeingData, last_team_notified_at: '2026-10-20T12:05:22Z', last_told_count: 2 } });
+    render(<WellbeingTab />);
+    expect(await screen.findByText(/was last told on/i)).toBeInTheDocument();
   });
 });

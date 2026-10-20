@@ -1158,7 +1158,16 @@
     "share_with_team_desc": "Zespół Twojej społeczności zobaczy, jak się czujesz, oraz Twoją notatkę. Organizacje, dla których działasz jako wolontariusz, dowiedzą się, jak się czujesz, ale nie zobaczą Twojej notatki.",
     "share_with_team_private": "Tylko Ty zobaczysz ten wpis.",
     "checkin_success_team_notified": "Dziękujemy, że nam o tym mówisz. Ktoś z zespołu Twojej społeczności się z Tobą skontaktuje.",
-    "checkin_shared_label": "Udostępniono zespołowi Twojej społeczności"
+    "checkin_shared_label": "Udostępniono zespołowi Twojej społeczności",
+    "outcome_told": "Powiadomiliśmy {{count}} osób z Twojej społeczności. Ktoś się z Tobą skontaktuje.",
+    "outcome_already_told": "Twoja społeczność została już dziś powiadomiona ({{time}}). To zgłoszenie dodano do tego, co może zobaczyć.",
+    "outcome_nobody": "Nikogo nie udało się jeszcze powiadomić. Spróbujemy ponownie przy Twoim następnym zgłoszeniu.",
+    "outcome_private": "Tylko Ty widzisz to zgłoszenie.",
+    "outcome_what_next": "Co dalej",
+    "outcome_what_next_desc": "Ktoś z zespołu Twojej społeczności przeczyta Twoje zgłoszenie i skontaktuje się, zwykle w ciągu jednego lub dwóch dni.",
+    "outcome_dismiss": "Zamknij",
+    "support_heading": "Jeśli potrzebujesz wsparcia teraz",
+    "last_told": "Zespół Twojej społeczności został ostatnio powiadomiony {{date}}."
   },
   "check_in": {
     "title": "Odprawa zmianowa",

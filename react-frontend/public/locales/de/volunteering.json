@@ -1134,7 +1134,16 @@
     "share_with_team_desc": "Das Team Ihrer Gemeinschaft sieht, wie es Ihnen geht, und Ihre Notiz. Die Organisationen, bei denen Sie sich engagieren, erfahren, wie es Ihnen geht, aber nicht Ihre Notiz.",
     "share_with_team_private": "Nur Sie sehen diesen Check-in.",
     "checkin_success_team_notified": "Danke, dass Sie es uns gesagt haben. Jemand aus dem Team Ihrer Gemeinschaft wird sich bei Ihnen melden.",
-    "checkin_shared_label": "Mit dem Team Ihrer Gemeinschaft geteilt"
+    "checkin_shared_label": "Mit dem Team Ihrer Gemeinschaft geteilt",
+    "outcome_told": "Wir haben {{count}} Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
+    "outcome_already_told": "Deine Gemeinschaft wurde heute bereits informiert ({{time}}). Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcome_nobody": "Niemand konnte bisher informiert werden. Wir versuchen es bei deinem nächsten Check-in erneut.",
+    "outcome_private": "Nur du kannst diesen Check-in sehen.",
+    "outcome_what_next": "Wie es weitergeht",
+    "outcome_what_next_desc": "Jemand aus dem Team deiner Gemeinschaft liest deinen Check-in und meldet sich, meist innerhalb von ein bis zwei Tagen.",
+    "outcome_dismiss": "Schließen",
+    "support_heading": "Wenn du jetzt Unterstützung brauchst",
+    "last_told": "Das Team deiner Gemeinschaft wurde zuletzt am {{date}} informiert."
   },
   "check_in": {
     "title": "Schicht-Check-in",

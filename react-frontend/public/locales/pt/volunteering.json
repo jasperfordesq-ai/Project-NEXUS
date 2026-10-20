@@ -1146,7 +1146,16 @@
     "share_with_team_desc": "A equipe da sua comunidade verá como você está se sentindo e a sua nota. As organizações com as quais você faz voluntariado saberão como você está se sentindo, mas não verão a sua nota.",
     "share_with_team_private": "Só você verá este check-in.",
     "checkin_success_team_notified": "Obrigado por nos contar. Alguém da equipe da sua comunidade entrará em contato com você.",
-    "checkin_shared_label": "Compartilhado com a equipe da sua comunidade"
+    "checkin_shared_label": "Compartilhado com a equipe da sua comunidade",
+    "outcome_told": "Avisámos {{count}} pessoas da sua comunidade. Alguém entrará em contacto consigo.",
+    "outcome_already_told": "A sua comunidade já foi avisada hoje ({{time}}). Este registo foi adicionado ao que ela pode ver.",
+    "outcome_nobody": "Ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo.",
+    "outcome_private": "Só você pode ver este registo.",
+    "outcome_what_next": "O que acontece a seguir",
+    "outcome_what_next_desc": "Alguém da equipa da sua comunidade lerá o seu registo e entrará em contacto, normalmente num ou dois dias.",
+    "outcome_dismiss": "Fechar",
+    "support_heading": "Se precisa de apoio agora",
+    "last_told": "A equipa da sua comunidade foi avisada pela última vez em {{date}}."
   },
   "check_in": {
     "title": "Check-in de turno",

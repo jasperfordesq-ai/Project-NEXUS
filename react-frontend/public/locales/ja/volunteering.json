@@ -1134,7 +1134,16 @@
     "share_with_team_desc": "コミュニティのチームには、今の気持ちとあなたのメモが表示されます。あなたがボランティアをしている団体には今の気持ちが伝えられますが、メモは伝えられません。",
     "share_with_team_private": "このチェックインはあなただけが見られます。",
     "checkin_success_team_notified": "伝えてくれてありがとうございます。コミュニティのチームの誰かから連絡があります。",
-    "checkin_shared_label": "コミュニティのチームと共有済み"
+    "checkin_shared_label": "コミュニティのチームと共有済み",
+    "outcome_told": "コミュニティの {{count}} 人に知らせました。誰かから連絡があります。",
+    "outcome_already_told": "コミュニティには今日すでに知らせています（{{time}}）。このチェックインは、チームが見られる内容に追加されました。",
+    "outcome_nobody": "まだ誰にも知らせることができませんでした。次のチェックインで再度試みます。",
+    "outcome_private": "このチェックインはあなただけが見られます。",
+    "outcome_what_next": "この後の流れ",
+    "outcome_what_next_desc": "コミュニティのチームの誰かがチェックインを読み、通常1〜2日以内に連絡します。",
+    "outcome_dismiss": "閉じる",
+    "support_heading": "今すぐ支援が必要な場合",
+    "last_told": "コミュニティのチームに最後に知らせたのは {{date}} です。"
   },
   "check_in": {
     "title": "シフトチェックイン",

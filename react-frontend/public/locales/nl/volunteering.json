@@ -1134,7 +1134,16 @@
     "share_with_team_desc": "Het team van je gemeenschap ziet hoe je je voelt en je notitie. De organisaties waar je vrijwilligerswerk doet, horen hoe je je voelt, maar zien je notitie niet.",
     "share_with_team_private": "Alleen jij ziet deze check-in.",
     "checkin_success_team_notified": "Bedankt dat je het ons laat weten. Iemand van het team van je gemeenschap neemt contact met je op.",
-    "checkin_shared_label": "Gedeeld met het team van je gemeenschap"
+    "checkin_shared_label": "Gedeeld met het team van je gemeenschap",
+    "outcome_told": "We hebben {{count}} mensen uit je gemeenschap geïnformeerd. Iemand neemt contact met je op.",
+    "outcome_already_told": "Je gemeenschap is vandaag al geïnformeerd ({{time}}). Deze check-in is toegevoegd aan wat zij kunnen zien.",
+    "outcome_nobody": "Niemand kon nog worden geïnformeerd. We proberen het opnieuw bij je volgende check-in.",
+    "outcome_private": "Alleen jij kunt deze check-in zien.",
+    "outcome_what_next": "Wat er nu gebeurt",
+    "outcome_what_next_desc": "Iemand van het team van je gemeenschap leest je check-in en neemt contact op, meestal binnen een dag of twee.",
+    "outcome_dismiss": "Sluiten",
+    "support_heading": "Heb je nu ondersteuning nodig",
+    "last_told": "Het team van je gemeenschap is voor het laatst geïnformeerd op {{date}}."
   },
   "check_in": {
     "title": "Inchecken in ploegendienst",

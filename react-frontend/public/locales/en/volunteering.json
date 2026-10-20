@@ -1134,7 +1134,16 @@
     "share_with_team_desc": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note.",
     "share_with_team_private": "Only you will see this check-in.",
     "checkin_success_team_notified": "Thank you for telling us. Someone from your community's team will be in touch.",
-    "checkin_shared_label": "Shared with your community's team"
+    "checkin_shared_label": "Shared with your community's team",
+    "outcome_told": "We have told {{count}} people from your community. Someone will be in touch.",
+    "outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
+    "outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
+    "outcome_private": "Only you can see this check-in.",
+    "outcome_what_next": "What happens next",
+    "outcome_what_next_desc": "Someone from your community's team will read your check-in and get in touch, usually within a day or two.",
+    "outcome_dismiss": "Dismiss",
+    "support_heading": "If you need support now",
+    "last_told": "Your community's team was last told on {{date}}."
   },
   "check_in": {
     "title": "Shift Check-in",
