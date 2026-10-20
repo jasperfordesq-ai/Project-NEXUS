@@ -157,7 +157,17 @@
     "teamNotified": "Go raibh maith agat as é a insint dúinn. Beidh duine éigin d'fhoireann do phobail i dteagmháil leat.",
     "historyHeading": "Clárúcháin le déanaí",
     "historyEmpty": "Níor chláraigh tú go fóill.",
-    "shared": "Roinnte le foireann do phobail"
+    "shared": "Roinnte le foireann do phobail",
+    "outcomeAlreadyTold": "Cuireadh do phobal ar an eolas inniu cheana. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcomeNobody": "Níorbh fhéidir aon duine a chur ar an eolas go fóill. Bainfimid triail eile as le do chéad seiceáil eile. Féach an tacaíocht thíos.",
+    "outcomePrivate": "Ní fheiceann ach tusa an tseiceáil seo.",
+    "supportHeading": "Má tá tacaíocht uait anois",
+    "lastTold": "Cuireadh foireann do phobail ar an eolas go deireanach ar {{date}}.",
+    "outcomeTold_one": "Chuireamar {{count}} duine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_other": "Chuireamar {{count}} duine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_two": "Chuireamar {{count}} dhuine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_few": "Chuireamar {{count}} dhuine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_many": "Chuireamar {{count}} nduine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat."
   },
   "qualifications": {
     "title": "Cáilíochtaí",

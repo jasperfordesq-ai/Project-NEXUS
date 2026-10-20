@@ -162,6 +162,17 @@ export interface WellbeingDashboard {
   warnings: string[];
   suggested_rest_days: string[];
   recent_checkins: WellbeingCheckin[];
+  /** The community's "If you need support now" box, or a translated default (20 Oct 2026). */
+  support?: WellbeingSupport;
+  /** When the community's team was last told about this member, and how many people that reached. */
+  last_team_notified_at?: string | null;
+  last_told_count?: number;
+}
+
+export interface WellbeingSupport {
+  text: string;
+  links: { label: string; url: string }[];
+  is_default: boolean;
 }
 
 export function getWellbeing(): Promise<{ data: WellbeingDashboard }> {
@@ -180,9 +191,15 @@ export interface WellbeingCheckinResult {
   mood: number;
   note: string | null;
   shared: boolean;
-  /** True when staff were told — the member is thanked and told someone will be in touch. */
+  /** True only when at least one person or address was actually reached. */
   team_notified: boolean;
+  told_count?: number;
+  told_at?: string | null;
+  /** What happened (20 Oct 2026); an older API omits it and `team_notified` decides. */
+  outcome?: WellbeingCheckinOutcome;
 }
+
+export type WellbeingCheckinOutcome = 'told' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
 
 export function submitWellbeingCheckin(payload: WellbeingCheckinPayload): Promise<{ data: WellbeingCheckinResult }> {
   return api.post<{ data: WellbeingCheckinResult }>(`${API_V2}/volunteering/wellbeing/checkin`, {

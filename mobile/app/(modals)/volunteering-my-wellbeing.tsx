@@ -14,7 +14,7 @@
  */
 
 import { useRef, useState } from 'react';
-import { RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
@@ -34,6 +34,8 @@ import { ListSkeleton } from '@/components/ui/Skeleton';
 import { useAppToast } from '@/components/ui/AppToast';
 import { withRouteGate } from '@/components/withRouteGate';
 import { describeApiError } from '@/lib/api/describeApiError';
+import { openExternalUrl } from '@/lib/utils/openExternalUrl';
+import { buildWebUrl } from '@/lib/utils/webUrl';
 import {
   getWellbeing,
   LOW_MOOD_MAX,
@@ -41,6 +43,7 @@ import {
   volunteerSwitchOn,
   WELLBEING_MOODS,
   type WellbeingMood,
+  type WellbeingSupport,
 } from '@/lib/api/volunteeringVolunteer';
 import * as Haptics from '@/lib/haptics';
 import { useApi } from '@/lib/hooks/useApi';
@@ -101,6 +104,51 @@ function StatTile({ label, value, tone, testID }: { label: string; value: string
   );
 }
 
+/**
+ * "If you need support now": the community's own text and links, or the default
+ * (20 Oct 2026). Links are https://, mailto:, tel: or a page on the website; a
+ * page path opens the community's website for this tenant.
+ */
+function SupportCard({ support, tenantSlug }: { support: WellbeingSupport; tenantSlug: string | null }) {
+  const { t } = useTranslation(['volunteeringVolunteer']);
+  const theme = useTheme();
+  const primary = usePrimaryColor();
+  const links = (support.links ?? []).filter((link) => link && link.label && link.url);
+  if (!support.text && links.length === 0) return null;
+  return (
+    <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(primary, 0.25) }} testID="wellbeing-support">
+      <HeroCard.Body className="gap-2 p-4">
+        <View className="flex-row items-center gap-2">
+          <Ionicons name="heart-circle-outline" size={16} color={primary} />
+          <Text className="text-base font-semibold" style={{ color: theme.text }} accessibilityRole="header">
+            {t('volunteeringVolunteer:wellbeing.supportHeading')}
+          </Text>
+        </View>
+        {support.text ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{support.text}</Text> : null}
+        {links.length ? (
+          <View className="flex-row flex-wrap gap-2">
+            {links.map((link) => {
+              const target = link.url.startsWith('/') ? buildWebUrl(tenantSlug, link.url) : link.url;
+              return (
+                <Pressable
+                  key={`${link.label}-${link.url}`}
+                  accessibilityRole="link"
+                  accessibilityLabel={link.label}
+                  onPress={() => { void openExternalUrl(target, { allowSchemes: ['mailto:', 'tel:'] }); }}
+                  className="rounded-full px-3 py-1.5"
+                  style={{ backgroundColor: withAlpha(primary, 0.12) }}
+                >
+                  <Text className="text-sm font-semibold" style={{ color: primary }}>{link.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+      </HeroCard.Body>
+    </HeroCard>
+  );
+}
+
 function MyWellbeingContent() {
   const { t } = useTranslation(['volunteeringVolunteer', 'common']);
   const { tenant } = useTenant();
@@ -134,10 +182,20 @@ function MyWellbeingContent() {
       setShareWithTeam(true);
       summaryApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // The API says what happened (20 Oct 2026). "Nobody could be told yet" is a
+      // warning, not a success: the check-in was saved, the people were not reached.
+      const saved = result.data;
+      const outcome = saved?.outcome ?? (saved?.team_notified ? 'told' : 'not_low');
+      const description = outcome === 'told'
+        ? (saved?.told_count ? t('volunteeringVolunteer:wellbeing.outcomeTold', { count: saved.told_count }) : t('volunteeringVolunteer:wellbeing.teamNotified'))
+        : outcome === 'already_told_today' ? t('volunteeringVolunteer:wellbeing.outcomeAlreadyTold')
+        : outcome === 'nobody_available' ? t('volunteeringVolunteer:wellbeing.outcomeNobody')
+        : outcome === 'private' ? t('volunteeringVolunteer:wellbeing.outcomePrivate')
+        : t('volunteeringVolunteer:wellbeing.recorded');
       showToast({
         title: t('volunteeringVolunteer:wellbeing.recordedTitle'),
-        description: result.data?.team_notified ? t('volunteeringVolunteer:wellbeing.teamNotified') : t('volunteeringVolunteer:wellbeing.recorded'),
-        variant: 'success',
+        description,
+        variant: outcome === 'nobody_available' ? 'warning' : 'success',
       });
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -217,8 +275,17 @@ function MyWellbeingContent() {
                   <StatTile label={t('volunteeringVolunteer:wellbeing.thisMonth')} value={t('volunteeringVolunteer:wellbeing.hours', { count: summary.hours_this_month })} tone={primary} />
                   <StatTile label={t('volunteeringVolunteer:wellbeing.streak')} value={String(summary.streak_days)} tone="#f59e0b" />
                 </View>
+                {summary.last_team_notified_at ? (
+                  <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} testID="wellbeing-last-told">
+                    {t('volunteeringVolunteer:wellbeing.lastTold', { date: formatDate(summary.last_team_notified_at, true) ?? '' })}
+                  </Text>
+                ) : null}
               </HeroCard.Body>
             </HeroCard>
+
+            {summary.support ? (
+              <SupportCard support={summary.support} tenantSlug={tenant?.slug ?? null} />
+            ) : null}
 
             {summary.score < 40 ? (
               <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(theme.warning, 0.3) }} testID="wellbeing-low-score">

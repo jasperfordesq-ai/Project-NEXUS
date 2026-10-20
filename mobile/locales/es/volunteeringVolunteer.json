@@ -157,7 +157,14 @@
     "teamNotified": "Gracias por contárnoslo. Alguien del equipo de su comunidad se pondrá en contacto con usted.",
     "historyHeading": "Registros recientes",
     "historyEmpty": "Aún no ha hecho ningún registro.",
-    "shared": "Compartido con el equipo de su comunidad"
+    "shared": "Compartido con el equipo de su comunidad",
+    "outcomeAlreadyTold": "Tu comunidad ya fue avisada hoy. Este registro se ha añadido a lo que pueden ver.",
+    "outcomeNobody": "Todavía no se ha podido avisar a nadie. Lo intentaremos de nuevo con tu próximo registro. Mira el apoyo más abajo.",
+    "outcomePrivate": "Solo tú puedes ver este registro.",
+    "supportHeading": "Si necesitas apoyo ahora",
+    "lastTold": "El equipo de tu comunidad fue avisado por última vez el {{date}}.",
+    "outcomeTold_one": "Hemos avisado a {{count}} persona de tu comunidad. Alguien se pondrá en contacto contigo.",
+    "outcomeTold_other": "Hemos avisado a {{count}} personas de tu comunidad. Alguien se pondrá en contacto contigo."
   },
   "qualifications": {
     "title": "Cualificaciones",

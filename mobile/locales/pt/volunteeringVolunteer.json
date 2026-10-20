@@ -157,7 +157,14 @@
     "teamNotified": "Obrigado por nos dizer. Alguém da equipa da sua comunidade entrará em contacto.",
     "historyHeading": "Registos recentes",
     "historyEmpty": "Ainda não fez nenhum registo.",
-    "shared": "Partilhado com a equipa da sua comunidade"
+    "shared": "Partilhado com a equipa da sua comunidade",
+    "outcomeAlreadyTold": "A sua comunidade já foi avisada hoje. Este registo foi adicionado ao que ela pode ver.",
+    "outcomeNobody": "Ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo. Veja o apoio abaixo.",
+    "outcomePrivate": "Só você pode ver este registo.",
+    "supportHeading": "Se precisa de apoio agora",
+    "lastTold": "A equipa da sua comunidade foi avisada pela última vez em {{date}}.",
+    "outcomeTold_one": "Avisámos {{count}} pessoa da sua comunidade. Alguém entrará em contacto consigo.",
+    "outcomeTold_other": "Avisámos {{count}} pessoas da sua comunidade. Alguém entrará em contacto consigo."
   },
   "qualifications": {
     "title": "Qualificações",

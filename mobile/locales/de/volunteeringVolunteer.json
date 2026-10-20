@@ -157,7 +157,14 @@
     "teamNotified": "Danke, dass Sie es uns mitgeteilt haben. Jemand aus Ihrem Gemeinschaftsteam wird sich bei Ihnen melden.",
     "historyHeading": "Letzte Rückmeldungen",
     "historyEmpty": "Sie haben noch keine Rückmeldung gegeben.",
-    "shared": "Mit Ihrem Gemeinschaftsteam geteilt"
+    "shared": "Mit Ihrem Gemeinschaftsteam geteilt",
+    "outcomeAlreadyTold": "Deine Gemeinschaft wurde heute bereits informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcomeNobody": "Niemand konnte bisher informiert werden. Wir versuchen es bei deinem nächsten Check-in erneut. Siehe die Unterstützung unten.",
+    "outcomePrivate": "Nur du kannst diesen Check-in sehen.",
+    "supportHeading": "Wenn du jetzt Unterstützung brauchst",
+    "lastTold": "Das Team deiner Gemeinschaft wurde zuletzt am {{date}} informiert.",
+    "outcomeTold_one": "Wir haben {{count}} Person aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
+    "outcomeTold_other": "Wir haben {{count}} Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden."
   },
   "qualifications": {
     "title": "Qualifikationen",

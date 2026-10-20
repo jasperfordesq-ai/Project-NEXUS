@@ -157,7 +157,14 @@
     "teamNotified": "Grazie per avercelo detto. Qualcuno del team della sua comunità la contatterà.",
     "historyHeading": "Controlli recenti",
     "historyEmpty": "Non ha ancora fatto alcun controllo.",
-    "shared": "Condiviso con il team della sua comunità"
+    "shared": "Condiviso con il team della sua comunità",
+    "outcomeAlreadyTold": "La tua comunità è già stata avvisata oggi. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcomeNobody": "Nessuno ha ancora potuto essere avvisato. Riproveremo con il tuo prossimo check-in. Vedi il supporto qui sotto.",
+    "outcomePrivate": "Solo tu puoi vedere questo check-in.",
+    "supportHeading": "Se hai bisogno di supporto adesso",
+    "lastTold": "Il team della tua comunità è stato avvisato l'ultima volta il {{date}}.",
+    "outcomeTold_one": "Abbiamo avvisato {{count}} persona della tua comunità. Qualcuno si metterà in contatto con te.",
+    "outcomeTold_other": "Abbiamo avvisato {{count}} persone della tua comunità. Qualcuno si metterà in contatto con te."
   },
   "qualifications": {
     "title": "Qualifiche",

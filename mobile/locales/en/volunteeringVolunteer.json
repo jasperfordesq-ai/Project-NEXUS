@@ -157,7 +157,14 @@
     "teamNotified": "Thank you for telling us. Someone from your community team will be in touch.",
     "historyHeading": "Recent check-ins",
     "historyEmpty": "You have not checked in yet.",
-    "shared": "Shared with your community team"
+    "shared": "Shared with your community team",
+    "outcomeAlreadyTold": "Your community was already told today. This check-in has been added to what they can see.",
+    "outcomeNobody": "Nobody could be told yet. We will try again with your next check-in. See the support below.",
+    "outcomePrivate": "Only you can see this check-in.",
+    "supportHeading": "If you need support now",
+    "lastTold": "Your community's team was last told on {{date}}.",
+    "outcomeTold_one": "We have told {{count}} person from your community. Someone will be in touch.",
+    "outcomeTold_other": "We have told {{count}} people from your community. Someone will be in touch."
   },
   "qualifications": {
     "title": "Qualifications",

@@ -157,7 +157,14 @@
     "teamNotified": "Merci de nous en avoir informés. Une personne de l'équipe de votre communauté vous contactera.",
     "historyHeading": "Points récents",
     "historyEmpty": "Vous n'avez pas encore fait de point.",
-    "shared": "Partagé avec l'équipe de votre communauté"
+    "shared": "Partagé avec l'équipe de votre communauté",
+    "outcomeAlreadyTold": "Votre communauté a déjà été prévenue aujourd'hui. Ce bilan a été ajouté à ce qu'elle peut voir.",
+    "outcomeNobody": "Personne n'a encore pu être prévenu. Nous réessaierons lors de votre prochain bilan. Voyez le soutien ci-dessous.",
+    "outcomePrivate": "Vous seul pouvez voir ce bilan.",
+    "supportHeading": "Si vous avez besoin de soutien maintenant",
+    "lastTold": "L'équipe de votre communauté a été prévenue pour la dernière fois le {{date}}.",
+    "outcomeTold_one": "Nous avons prévenu {{count}} personne de votre communauté. Quelqu'un prendra contact avec vous.",
+    "outcomeTold_other": "Nous avons prévenu {{count}} personnes de votre communauté. Quelqu'un prendra contact avec vous."
   },
   "qualifications": {
     "title": "Qualifications",

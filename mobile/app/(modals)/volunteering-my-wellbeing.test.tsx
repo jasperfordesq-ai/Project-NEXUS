@@ -54,6 +54,12 @@ jest.mock('react-i18next', () => ({
         'volunteeringVolunteer:wellbeing.recordedTitle': 'Check-in recorded',
         'volunteeringVolunteer:wellbeing.recorded': 'Mood check-in recorded.',
         'volunteeringVolunteer:wellbeing.teamNotified': 'Thank you for telling us. Someone will be in touch.',
+        'volunteeringVolunteer:wellbeing.outcomeTold': `We have told ${String(opts?.count ?? 0)} people. Someone will be in touch.`,
+        'volunteeringVolunteer:wellbeing.outcomeAlreadyTold': 'Your community was already told today.',
+        'volunteeringVolunteer:wellbeing.outcomeNobody': 'Nobody could be told yet. We will try again with your next check-in. See the support below.',
+        'volunteeringVolunteer:wellbeing.outcomePrivate': 'Only you can see this check-in.',
+        'volunteeringVolunteer:wellbeing.supportHeading': 'If you need support now',
+        'volunteeringVolunteer:wellbeing.lastTold': `Your community team was last told on ${String(opts?.date ?? '')}.`,
         'volunteeringVolunteer:wellbeing.submitError': 'Could not record this check-in.',
         'volunteeringVolunteer:wellbeing.historyHeading': 'Recent check-ins',
         'volunteeringVolunteer:wellbeing.historyEmpty': 'No check-ins yet.',
@@ -110,6 +116,9 @@ const dashboard = {
   warnings: ['You volunteered six days in a row.'],
   suggested_rest_days: ['2026-10-12'],
   recent_checkins: [{ id: 9, mood: 4, note: 'Grand', shared: false, created_at: '2026-10-06T10:00:00Z' }],
+  support: { text: 'Ring the office any weekday.', links: [{ label: 'Our office', url: 'tel:+353100' }, { label: 'Contact the team', url: '/contact' }], is_default: false },
+  last_team_notified_at: '2026-10-20T12:05:22Z',
+  last_told_count: 2,
 };
 
 beforeEach(() => {
@@ -170,5 +179,35 @@ describe('MyWellbeingScreen', () => {
     const { getByText } = render(<MyWellbeingScreen />);
     expect(getByText('Not available in this community')).toBeTruthy();
     expect(getWellbeing).not.toHaveBeenCalled();
+  });
+
+  // 20 Oct 2026: the member is told honestly what happened after a shared check-in.
+  it('says how many people were told after a shared check-in', async () => {
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: true, told_count: 2, told_at: '2026-10-20T12:05:22Z', outcome: 'told' } });
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByText('Struggling'));
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'We have told 2 people. Someone will be in touch.' })));
+  });
+
+  it('says when nobody could be told, as a warning, and keeps the support card on screen', async () => {
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'nobody_available' } });
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByText('Struggling'));
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', description: expect.stringMatching(/nobody could be told yet/i) })));
+    expect(getByTestId('wellbeing-support')).toBeTruthy();
+  });
+
+  it('shows the community support card with its links, and when the team was last told', async () => {
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-support')).toBeTruthy());
+    expect(getByText('If you need support now')).toBeTruthy();
+    expect(getByText('Ring the office any weekday.')).toBeTruthy();
+    expect(getByText('Our office')).toBeTruthy();
+    expect(getByText('Contact the team')).toBeTruthy();
+    expect(getByText(/was last told on/)).toBeTruthy();
   });
 });
