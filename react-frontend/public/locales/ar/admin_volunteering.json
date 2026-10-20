@@ -1000,7 +1000,13 @@
     "attention_wellbeing_zero": "{{count}} تنبيه رفاه للمراجعة",
     "attention_wellbeing_two": "تنبيها رفاه ({{count}}) للمراجعة",
     "attention_wellbeing_few": "{{count}} تنبيهات رفاه للمراجعة",
-    "attention_wellbeing_many": "{{count}} تنبيهَ رفاه للمراجعة"
+    "attention_wellbeing_many": "{{count}} تنبيهَ رفاه للمراجعة",
+    "wellbeing_trend_stable": "مستقر",
+    "wellbeing_trend_increasing": "في ازدياد",
+    "wellbeing_trend_slightly_declining": "في انخفاض طفيف",
+    "wellbeing_trend_declining": "في انخفاض",
+    "wellbeing_trend_declining_significantly": "في انخفاض كبير",
+    "wellbeing_trend_unknown": "غير معروف"
   },
   "donation_refunds": {
     "page_title": "استرداد التبرعات",

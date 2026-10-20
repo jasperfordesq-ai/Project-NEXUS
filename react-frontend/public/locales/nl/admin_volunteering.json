@@ -904,7 +904,13 @@
     "wellbeing_safeguarding_card_desc": "Vrijwilligers die aangaven zich somber te voelen of het moeilijk te hebben en vroegen of iemand contact wilde opnemen.",
     "wellbeing_safeguarding_card_open": "Welzijnsmeldingen openen",
     "attention_wellbeing_one": "{{count}} welzijnsmelding om te bekijken",
-    "attention_wellbeing_other": "{{count}} welzijnsmeldingen om te bekijken"
+    "attention_wellbeing_other": "{{count}} welzijnsmeldingen om te bekijken",
+    "wellbeing_trend_stable": "Stabiel",
+    "wellbeing_trend_increasing": "Stijgend",
+    "wellbeing_trend_slightly_declining": "Licht dalend",
+    "wellbeing_trend_declining": "Dalend",
+    "wellbeing_trend_declining_significantly": "Sterk dalend",
+    "wellbeing_trend_unknown": "Onbekend"
   },
   "donation_refunds": {
     "page_title": "Donatieterugbetalingen",

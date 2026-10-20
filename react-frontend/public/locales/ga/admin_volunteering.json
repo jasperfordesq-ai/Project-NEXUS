@@ -976,7 +976,13 @@
     "wellbeing_told_count_many": "Cuireadh {{count}} nduine ar an eolas · {{date}}",
     "attention_wellbeing_two": "{{count}} fholáireamh folláine le breathnú orthu",
     "attention_wellbeing_few": "{{count}} fholáireamh folláine le breathnú orthu",
-    "attention_wellbeing_many": "{{count}} bhfoláireamh folláine le breathnú orthu"
+    "attention_wellbeing_many": "{{count}} bhfoláireamh folláine le breathnú orthu",
+    "wellbeing_trend_stable": "Seasmhach",
+    "wellbeing_trend_increasing": "Ag méadú",
+    "wellbeing_trend_slightly_declining": "Ag laghdú beagán",
+    "wellbeing_trend_declining": "Ag laghdú",
+    "wellbeing_trend_declining_significantly": "Ag laghdú go mór",
+    "wellbeing_trend_unknown": "Anaithnid"
   },
   "donation_refunds": {
     "page_title": "Aisíocaíochtaí Síntiús",

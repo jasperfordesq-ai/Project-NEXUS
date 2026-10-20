@@ -920,7 +920,13 @@
     "wellbeing_safeguarding_card_desc": "Voluntarios que dijeron que se sienten mal o están pasándolo mal y pidieron que alguien se pusiera en contacto.",
     "wellbeing_safeguarding_card_open": "Abrir las alertas de bienestar",
     "attention_wellbeing_one": "{{count}} alerta de bienestar por revisar",
-    "attention_wellbeing_other": "{{count}} alertas de bienestar por revisar"
+    "attention_wellbeing_other": "{{count}} alertas de bienestar por revisar",
+    "wellbeing_trend_stable": "Estable",
+    "wellbeing_trend_increasing": "En aumento",
+    "wellbeing_trend_slightly_declining": "Bajando ligeramente",
+    "wellbeing_trend_declining": "Bajando",
+    "wellbeing_trend_declining_significantly": "Bajando mucho",
+    "wellbeing_trend_unknown": "Desconocido"
   },
   "donation_refunds": {
     "page_title": "Reembolsos de donaciones",

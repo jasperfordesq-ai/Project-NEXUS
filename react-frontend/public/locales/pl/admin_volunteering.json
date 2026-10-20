@@ -952,7 +952,13 @@
     "wellbeing_told_count_few": "Powiadomiono {{count}} osoby · {{date}}",
     "wellbeing_told_count_many": "Powiadomiono {{count}} osób · {{date}}",
     "attention_wellbeing_few": "{{count}} alerty samopoczucia do sprawdzenia",
-    "attention_wellbeing_many": "{{count}} alertów samopoczucia do sprawdzenia"
+    "attention_wellbeing_many": "{{count}} alertów samopoczucia do sprawdzenia",
+    "wellbeing_trend_stable": "Stabilny",
+    "wellbeing_trend_increasing": "Rosnący",
+    "wellbeing_trend_slightly_declining": "Lekko spadający",
+    "wellbeing_trend_declining": "Spadający",
+    "wellbeing_trend_declining_significantly": "Znacznie spadający",
+    "wellbeing_trend_unknown": "Nieznany"
   },
   "donation_refunds": {
     "page_title": "Zwroty darowizn",

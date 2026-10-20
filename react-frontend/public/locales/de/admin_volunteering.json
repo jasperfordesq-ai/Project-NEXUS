@@ -904,7 +904,13 @@
     "wellbeing_safeguarding_card_desc": "Freiwillige, die angegeben haben, dass es ihnen schlecht geht, und darum gebeten haben, dass sich jemand meldet.",
     "wellbeing_safeguarding_card_open": "Wohlbefinden-Hinweise öffnen",
     "attention_wellbeing_one": "{{count}} Wohlbefinden-Hinweis zu prüfen",
-    "attention_wellbeing_other": "{{count}} Wohlbefinden-Hinweise zu prüfen"
+    "attention_wellbeing_other": "{{count}} Wohlbefinden-Hinweise zu prüfen",
+    "wellbeing_trend_stable": "Stabil",
+    "wellbeing_trend_increasing": "Steigend",
+    "wellbeing_trend_slightly_declining": "Leicht rückläufig",
+    "wellbeing_trend_declining": "Rückläufig",
+    "wellbeing_trend_declining_significantly": "Stark rückläufig",
+    "wellbeing_trend_unknown": "Unbekannt"
   },
   "donation_refunds": {
     "page_title": "Spenden-Rückerstattungen",

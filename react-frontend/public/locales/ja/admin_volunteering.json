@@ -904,7 +904,13 @@
     "wellbeing_safeguarding_card_open": "ウェルビーイング・アラートを開く",
     "attention_wellbeing_other": "確認が必要なウェルビーイング・アラート {{count}} 件",
     "wellbeing_told_count_one": "{{count}} 人に通知 · {{date}}",
-    "attention_wellbeing_one": "確認が必要なウェルビーイング・アラート {{count}} 件"
+    "attention_wellbeing_one": "確認が必要なウェルビーイング・アラート {{count}} 件",
+    "wellbeing_trend_stable": "安定",
+    "wellbeing_trend_increasing": "増加",
+    "wellbeing_trend_slightly_declining": "やや減少",
+    "wellbeing_trend_declining": "減少",
+    "wellbeing_trend_declining_significantly": "大きく減少",
+    "wellbeing_trend_unknown": "不明"
   },
   "donation_refunds": {
     "page_title": "寄付の返金",

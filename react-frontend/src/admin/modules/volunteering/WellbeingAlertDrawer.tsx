@@ -118,6 +118,26 @@ const TIER_KEYS: Record<string, string> = {
   community_contact_email: 'volunteering.wellbeing_tier_community_contact_email',
 };
 
+/** Every trend value VolunteerWellbeingService::detectBurnoutRisk() writes. */
+const TREND_KEYS: Record<string, string> = {
+  stable: 'volunteering.wellbeing_trend_stable',
+  increasing: 'volunteering.wellbeing_trend_increasing',
+  slightly_declining: 'volunteering.wellbeing_trend_slightly_declining',
+  declining: 'volunteering.wellbeing_trend_declining',
+  declining_significantly: 'volunteering.wellbeing_trend_declining_significantly',
+};
+
+function trendLabel(trend: string, t: TFunction): string {
+  return t(TREND_KEYS[trend] ?? 'volunteering.wellbeing_trend_unknown');
+}
+
+const STATUS_KEYS: Record<string, string> = {
+  active: 'volunteering.wellbeing_status_active',
+  acknowledged: 'volunteering.wellbeing_status_acknowledged',
+  resolved: 'volunteering.wellbeing_status_resolved',
+  dismissed: 'volunteering.wellbeing_status_dismissed',
+};
+
 const DELIVERY_COLORS: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
   sent: 'success',
   queued: 'warning',
@@ -140,11 +160,11 @@ function indicatorRows(indicators: Record<string, Record<string, unknown>>, t: T
   }
   const hours = indicators.hours_trend;
   if (hours && typeof hours.trend === 'string') {
-    rows.push({ label: t('volunteering.wellbeing_indicator_hours_trend'), value: hours.trend.replace(/_/g, ' ') });
+    rows.push({ label: t('volunteering.wellbeing_indicator_hours_trend'), value: trendLabel(hours.trend, t) });
   }
   const shifts = indicators.shift_frequency;
   if (shifts && typeof shifts.trend === 'string') {
-    rows.push({ label: t('volunteering.wellbeing_indicator_shift_frequency'), value: shifts.trend.replace(/_/g, ' ') });
+    rows.push({ label: t('volunteering.wellbeing_indicator_shift_frequency'), value: trendLabel(shifts.trend, t) });
   }
   const cancel = indicators.cancellation_rate;
   if (cancel && typeof cancel.rate_percent === 'number') {
@@ -272,7 +292,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
                     <Chip size="sm" variant="soft" color={alert.risk_level === 'high' || alert.risk_level === 'critical' ? 'danger' : alert.risk_level === 'moderate' ? 'warning' : 'success'}>
                       {t('volunteering.wellbeing_risk_score', { score: Math.round(alert.risk_score) })}
                     </Chip>
-                    <Chip size="sm" variant="soft">{t(`volunteering.wellbeing_status_${alert.status}` as const, { defaultValue: alert.status })}</Chip>
+                    <Chip size="sm" variant="soft">{t(STATUS_KEYS[alert.status] ?? 'volunteering.wellbeing_status_active')}</Chip>
                   </div>
                   <p className="text-xs text-muted mt-1">
                     {t('volunteering.wellbeing_raised_on', { date: formatDateTime(alert.created_at) })}

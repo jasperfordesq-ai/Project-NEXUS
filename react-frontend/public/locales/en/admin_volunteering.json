@@ -904,7 +904,13 @@
     "wellbeing_safeguarding_card_desc": "Volunteers who said they are low or struggling and asked for someone to get in touch.",
     "wellbeing_safeguarding_card_open": "Open wellbeing alerts",
     "attention_wellbeing_one": "{{count}} wellbeing alert to look at",
-    "attention_wellbeing_other": "{{count}} wellbeing alerts to look at"
+    "attention_wellbeing_other": "{{count}} wellbeing alerts to look at",
+    "wellbeing_trend_stable": "Stable",
+    "wellbeing_trend_increasing": "Increasing",
+    "wellbeing_trend_slightly_declining": "Slightly declining",
+    "wellbeing_trend_declining": "Declining",
+    "wellbeing_trend_declining_significantly": "Declining significantly",
+    "wellbeing_trend_unknown": "Not known"
   },
   "donation_refunds": {
     "page_title": "Donation Refunds",
