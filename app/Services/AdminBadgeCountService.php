@@ -75,7 +75,11 @@ class AdminBadgeCountService
      * approval" — with it off the count is always 0 and the sidebar shows
      * no badge, matching the empty page.
      *
-     * @return array{pending_vol_applications: int, pending_vol_hours: int, pending_vol_expenses: int, pending_vol_projects: int, pending_vol_swaps: int}
+     * Wellbeing = `vol_wellbeing_alerts.status = 'active'` (the Wellbeing page,
+     * active tab): volunteers who said they are struggling and nobody has
+     * acknowledged yet.
+     *
+     * @return array{pending_vol_applications: int, pending_vol_hours: int, pending_vol_expenses: int, pending_vol_projects: int, pending_vol_swaps: int, active_wellbeing_alerts: int}
      */
     public function getVolunteeringAttention(?int $tenantId = null): array
     {
@@ -94,6 +98,7 @@ class AdminBadgeCountService
             'pending_vol_swaps' => $swapsNeedAdmin
                 ? $this->countRows('vol_shift_swap_requests', $tenantId, ['admin_pending'])
                 : 0,
+            'active_wellbeing_alerts' => $this->countRows('vol_wellbeing_alerts', $tenantId, ['active']),
         ];
     }
 

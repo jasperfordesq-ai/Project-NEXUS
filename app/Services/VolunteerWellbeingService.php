@@ -402,7 +402,9 @@ class VolunteerWellbeingService
                 ->orderByDesc('wa.risk_score')
                 ->get();
 
-            return $alerts->map(function ($row) use ($tenantId) {
+            $told = self::toldSummary($tenantId, $alerts->pluck('id')->map(fn ($id) => (int) $id)->all());
+
+            return $alerts->map(function ($row) use ($tenantId, $told) {
                 $indicators = json_decode($row->indicators, true) ?? [];
                 $latestMood = isset($indicators['mood']['latest_mood']) ? (int) $indicators['mood']['latest_mood'] : null;
 
@@ -432,6 +434,8 @@ class VolunteerWellbeingService
                     ] : null,
                     'coordinator_notified' => (bool) $row->coordinator_notified,
                     'coordinator_notes' => $row->coordinator_notes,
+                    'told_count' => $told[(int) $row->id]['told_count'] ?? 0,
+                    'last_told_at' => $told[(int) $row->id]['last_told_at'] ?? null,
                     'status' => $row->status,
                     'created_at' => $row->created_at,
                     'updated_at' => $row->updated_at,
@@ -451,7 +455,7 @@ class VolunteerWellbeingService
      * @param string|null $notes    Optional coordinator notes
      * @return bool  True on success
      */
-    public static function updateAlert(int $alertId, string $action, ?string $notes = null): bool
+    public static function updateAlert(int $alertId, string $action, ?string $notes = null, ?int $authorId = null): bool
     {
         self::$errors = [];
         $tenantId = TenantContext::getId();
@@ -479,9 +483,9 @@ class VolunteerWellbeingService
                 'updated_at' => now(),
             ];
 
-            if ($notes !== null) {
-                $update['coordinator_notes'] = trim(mb_substr($notes, 0, 2000));
-            }
+            // A note is appended to the permanent record (vol_wellbeing_alert_notes);
+            // coordinator_notes is legacy text that is no longer written.
+            $note = $notes !== null ? trim(mb_substr($notes, 0, 5000)) : '';
 
             if ($action === 'resolved') {
                 $update['resolved_at'] = now();
@@ -491,12 +495,245 @@ class VolunteerWellbeingService
                 ->where('id', $alertId)
                 ->where('tenant_id', $tenantId)
                 ->update($update);
+            if ($note !== '' && $authorId !== null) {
+                self::addAlertNote($alertId, $authorId, $note);
+            }
 
             return true;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("VolunteerWellbeingService::updateAlert error: " . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.alert_update_failed')];
             return false;
+        }
+    }
+
+    /**
+     * One alert, opened by staff: the row, its indicators, the volunteer's
+     * SHARED check-ins (note included — staff read it here after signing in),
+     * who was told and whether it worked, and the staff notes. Null when the
+     * alert is not this community's. A query error is thrown, not hidden as
+     * "not found".
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function getAlertDetail(int $alertId): ?array
+    {
+        $tenantId = TenantContext::getId();
+
+        $row = DB::table('vol_wellbeing_alerts as wa')
+            ->join('users as u', function ($join) {
+                $join->on('wa.user_id', '=', 'u.id')->on('wa.tenant_id', '=', 'u.tenant_id');
+            })
+            ->where('wa.tenant_id', $tenantId)
+            ->where('wa.id', $alertId)
+            ->select(
+                'wa.id', 'wa.user_id', 'wa.risk_level', 'wa.risk_score', 'wa.indicators', 'wa.coordinator_notified',
+                'wa.coordinator_notes', 'wa.status', 'wa.resolved_at', 'wa.created_at', 'wa.updated_at',
+                'u.first_name', 'u.last_name', 'u.name', 'u.profile_type', 'u.organization_name', 'u.avatar_url', 'u.email'
+            )
+            ->first();
+        if (!$row) {
+            return null;
+        }
+
+        $indicators = json_decode((string) $row->indicators, true) ?: [];
+        $latestMood = isset($indicators['mood']['latest_mood']) ? (int) $indicators['mood']['latest_mood'] : null;
+        $legacy = trim((string) ($row->coordinator_notes ?? ''));
+
+        $checkins = DB::table('vol_mood_checkins')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $row->user_id)
+            ->where('share_with_team', 1)
+            ->where('created_at', '>=', now()->subDays(90))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get(['id', 'mood', 'note', 'created_at', 'team_notified_at'])
+            ->map(fn ($c) => [
+                'id' => (int) $c->id,
+                'mood' => (int) $c->mood,
+                'note' => $c->note,
+                'created_at' => $c->created_at,
+                'team_notified_at' => $c->team_notified_at,
+            ])
+            ->all();
+
+        $notifications = DB::table('vol_wellbeing_alert_notifications as n')
+            ->leftJoin('users as r', 'r.id', '=', 'n.recipient_user_id')
+            ->where('n.tenant_id', $tenantId)
+            ->where(function ($q) use ($alertId, $row) {
+                $q->where('n.alert_id', $alertId)
+                    // Rows written before the alert existed, or for an earlier alert of
+                    // the same volunteer, still belong to this person's story.
+                    ->orWhere(function ($q2) use ($row) {
+                        $q2->whereNull('n.alert_id')->where('n.volunteer_user_id', $row->user_id);
+                    });
+            })
+            ->orderBy('n.id')
+            ->get([
+                'n.id', 'n.checkin_id', 'n.recipient_user_id', 'n.recipient_tenant_id', 'n.recipient_email',
+                'n.organization_name', 'n.tier', 'n.channel', 'n.status', 'n.error_code', 'n.created_at', 'n.updated_at',
+                'r.first_name', 'r.last_name', 'r.name', 'r.profile_type', 'r.organization_name as r_organization_name',
+            ])
+            ->map(fn ($n) => [
+                'id' => (int) $n->id,
+                'checkin_id' => (int) $n->checkin_id,
+                'recipient' => $n->recipient_user_id !== null ? [
+                    'id' => (int) $n->recipient_user_id,
+                    'name' => UserDisplayName::person([
+                        'first_name' => $n->first_name, 'last_name' => $n->last_name, 'name' => $n->name,
+                        'profile_type' => $n->profile_type, 'organization_name' => $n->r_organization_name,
+                    ], (string) __('api.vol_wellbeing_recipient_unknown')),
+                    'other_community' => $n->recipient_tenant_id !== null,
+                ] : null,
+                'email_masked' => $n->recipient_email !== null ? self::maskEmail((string) $n->recipient_email) : null,
+                'organisation' => $n->organization_name,
+                'tier' => $n->tier,
+                'channel' => $n->channel,
+                'status' => $n->status,
+                'error_code' => $n->error_code,
+                'created_at' => $n->created_at,
+                'updated_at' => $n->updated_at,
+            ])
+            ->all();
+
+        $notes = DB::table('vol_wellbeing_alert_notes as wn')
+            ->leftJoin('users as a', 'a.id', '=', 'wn.author_user_id')
+            ->where('wn.tenant_id', $tenantId)
+            ->where('wn.alert_id', $alertId)
+            ->orderBy('wn.id')
+            ->get(['wn.id', 'wn.author_user_id', 'wn.body', 'wn.created_at', 'a.first_name', 'a.last_name', 'a.name', 'a.profile_type', 'a.organization_name'])
+            ->map(fn ($n) => self::noteRow($n))
+            ->all();
+
+        return [
+            'alert' => [
+                'id' => (int) $row->id,
+                'user_id' => (int) $row->user_id,
+                'user_name' => UserDisplayName::person($row),
+                'avatar_url' => $row->avatar_url,
+                'risk_level' => $row->risk_level,
+                'risk_score' => round((float) $row->risk_score, 2),
+                'reason' => self::isLowMood($latestMood) ? 'low_mood' : 'activity',
+                'status' => $row->status,
+                'coordinator_notified' => (bool) $row->coordinator_notified,
+                'legacy_notes' => $legacy !== '' ? $legacy : null,
+                'resolved_at' => $row->resolved_at,
+                'created_at' => $row->created_at,
+                'updated_at' => $row->updated_at,
+            ],
+            'indicators' => $indicators,
+            'checkins' => $checkins,
+            'notifications' => $notifications,
+            'notes' => $notes,
+        ];
+    }
+
+    /**
+     * Append a staff note. The table refuses UPDATE and DELETE, so a note is a
+     * permanent record with its author and time. Null when the alert is not
+     * this community's.
+     *
+     * @return array{id: int, author: array{id: ?int, name: string}, body: string, created_at: string}|null
+     */
+    public static function addAlertNote(int $alertId, int $authorId, string $body): ?array
+    {
+        $tenantId = TenantContext::getId();
+        $exists = DB::table('vol_wellbeing_alerts')->where('tenant_id', $tenantId)->where('id', $alertId)->exists();
+        if (!$exists) {
+            return null;
+        }
+
+        $id = (int) DB::table('vol_wellbeing_alert_notes')->insertGetId([
+            'tenant_id' => $tenantId,
+            'alert_id' => $alertId,
+            'author_user_id' => $authorId,
+            'body' => $body,
+            'created_at' => now(),
+        ]);
+        DB::table('vol_wellbeing_alerts')->where('tenant_id', $tenantId)->where('id', $alertId)->update(['updated_at' => now()]);
+
+        $row = DB::table('vol_wellbeing_alert_notes as wn')
+            ->leftJoin('users as a', 'a.id', '=', 'wn.author_user_id')
+            ->where('wn.id', $id)
+            ->first(['wn.id', 'wn.author_user_id', 'wn.body', 'wn.created_at', 'a.first_name', 'a.last_name', 'a.name', 'a.profile_type', 'a.organization_name']);
+
+        return $row ? self::noteRow($row) : null;
+    }
+
+    /** @return array{id: int, author: array{id: ?int, name: string}, body: string, created_at: string} */
+    private static function noteRow(object $n): array
+    {
+        return [
+            'id' => (int) $n->id,
+            'author' => [
+                'id' => $n->author_user_id !== null ? (int) $n->author_user_id : null,
+                'name' => UserDisplayName::person($n, (string) __('api.vol_wellbeing_recipient_unknown')),
+            ],
+            'body' => (string) $n->body,
+            'created_at' => (string) $n->created_at,
+        ];
+    }
+
+    /**
+     * When this volunteer's team was last told, and how many people that reached.
+     *
+     * @return array{last_team_notified_at: ?string, last_told_count: int}
+     */
+    public static function lastTeamNotified(int $tenantId, int $userId): array
+    {
+        $checkin = DB::table('vol_mood_checkins')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereNotNull('team_notified_at')
+            ->orderByDesc('team_notified_at')
+            ->first(['id', 'team_notified_at']);
+        if (!$checkin) {
+            return ['last_team_notified_at' => null, 'last_told_count' => 0];
+        }
+
+        return [
+            'last_team_notified_at' => (string) $checkin->team_notified_at,
+            'last_told_count' => self::peopleToldFor($tenantId, (int) $checkin->id),
+        ];
+    }
+
+    /** "s***@community.example": enough to recognise, not enough to copy. */
+    public static function maskEmail(string $email): string
+    {
+        $at = strrpos($email, '@');
+        if ($at === false || $at < 1) {
+            return '***';
+        }
+
+        return mb_substr($email, 0, 1) . '***' . mb_substr($email, $at);
+    }
+
+    /**
+     * told_count and last_told_at for a set of alerts in one grouped query, so
+     * the list is not N+1 (a bell and an email to the same person count once).
+     *
+     * @param list<int> $alertIds
+     * @return array<int, array{told_count: int, last_told_at: ?string}>
+     */
+    private static function toldSummary(int $tenantId, array $alertIds): array
+    {
+        if ($alertIds === []) {
+            return [];
+        }
+        try {
+            return DB::table('vol_wellbeing_alert_notifications')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('alert_id', $alertIds)
+                ->where('status', '!=', 'failed')
+                ->groupBy('alert_id')
+                ->selectRaw('alert_id, COUNT(DISTINCT COALESCE(recipient_user_id, recipient_email)) as told, MAX(created_at) as last_at')
+                ->get()
+                ->mapWithKeys(fn ($r) => [(int) $r->alert_id => ['told_count' => (int) $r->told, 'last_told_at' => $r->last_at]])
+                ->all();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: told summary failed', ['error' => $e->getMessage()]);
+            return [];
         }
     }
 

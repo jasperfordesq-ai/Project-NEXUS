@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Volunteering\ReportIncidentRequest;
 use App\Services\VolunteerWellbeingService;
+use App\Services\Volunteering\WellbeingSettingsService;
 use App\Services\VolunteerEmergencyAlertService;
 use App\Services\SafeguardingService;
 use App\Core\TenantContext;
@@ -32,6 +33,7 @@ class VolunteerWellbeingController extends BaseApiController
         private readonly VolunteerWellbeingService $volunteerWellbeingService,
         private readonly VolunteerEmergencyAlertService $volunteerEmergencyAlertService,
         private readonly SafeguardingService $safeguardingService,
+        private readonly WellbeingSettingsService $wellbeingSettings,
     ) {}
 
     private function ensureFeature(): void
@@ -204,6 +206,8 @@ class VolunteerWellbeingController extends BaseApiController
             \Illuminate\Support\Facades\Log::error('Wellbeing dashboard: recent check-ins failed: ' . $e->getMessage());
         }
 
+        $lastTold = VolunteerWellbeingService::lastTeamNotified($tenantId, $userId);
+
         return $this->respondWithData([
             'score' => $score,
             'hours_this_week' => $hoursThisWeek,
@@ -213,6 +217,10 @@ class VolunteerWellbeingController extends BaseApiController
             'warnings' => $warnings,
             'suggested_rest_days' => $suggestedRest,
             'recent_checkins' => $recentCheckins,
+            // What the volunteer sees under "If you need support now" (admin-editable).
+            'support' => $this->wellbeingSettings->supportBox($tenantId),
+            'last_team_notified_at' => $lastTold['last_team_notified_at'],
+            'last_told_count' => $lastTold['last_told_count'],
         ]);
     }
 
@@ -309,7 +317,7 @@ class VolunteerWellbeingController extends BaseApiController
             }
         }
 
-        $success = $this->volunteerWellbeingService->updateAlert((int) $id, $status, $note);
+        $success = $this->volunteerWellbeingService->updateAlert((int) $id, $status, $note, $this->getUserId());
 
         if (!$success) {
             $errors = $this->volunteerWellbeingService->getErrors();
@@ -317,6 +325,91 @@ class VolunteerWellbeingController extends BaseApiController
         }
 
         return $this->respondWithData(['id' => (int) $id, 'status' => $status]);
+    }
+
+    /**
+     * GET /v2/admin/volunteering/wellbeing/alerts/{id}
+     *
+     * One alert: the shared check-ins (note included), who was told and
+     * whether it worked, and the staff notes. Brokers and coordinators too.
+     */
+    public function adminWellbeingAlertDetail($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->requireBrokerOrAdmin();
+        $this->rateLimit('vol_wellbeing_alert_detail', 60, 60);
+
+        $detail = $this->volunteerWellbeingService->getAlertDetail((int) $id);
+        if ($detail === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.alert_not_found'), null, 404);
+        }
+
+        return $this->respondWithData($detail);
+    }
+
+    /**
+     * POST /v2/admin/volunteering/wellbeing/alerts/{id}/notes {body}
+     *
+     * Appends a permanent staff note (the table refuses UPDATE and DELETE).
+     */
+    public function addWellbeingAlertNote($id): JsonResponse
+    {
+        $this->ensureFeature();
+        $authorId = $this->requireBrokerOrAdmin();
+        $this->rateLimit('vol_wellbeing_alert_note', 30, 60);
+
+        $body = $this->input('body');
+        $body = is_string($body) ? trim($body) : '';
+        if ($body === '' || mb_strlen($body) > 5000) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_wellbeing_note_required'), 'body', 422);
+        }
+
+        $note = $this->volunteerWellbeingService->addAlertNote((int) $id, $authorId, $body);
+        if ($note === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.alert_not_found'), null, 404);
+        }
+
+        return $this->respondWithData(['note' => $note], null, 201);
+    }
+
+    /**
+     * GET /v2/admin/volunteering/wellbeing/settings — community administrators only.
+     */
+    public function wellbeingSettings(): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->requireAdmin();
+        $this->rateLimit('vol_wellbeing_settings_read', 60, 60);
+
+        return $this->respondWithData($this->wellbeingSettings->get(TenantContext::getId()));
+    }
+
+    /**
+     * PUT /v2/admin/volunteering/wellbeing/settings
+     * {contact_user_ids?, contact_email?, support_text?, support_links?}
+     */
+    public function updateWellbeingSettings(): JsonResponse
+    {
+        $this->ensureFeature();
+        $this->requireAdmin();
+        $this->rateLimit('vol_wellbeing_settings_write', 20, 60);
+
+        $tenantId = TenantContext::getId();
+        $refusal = $this->wellbeingSettings->save($tenantId, $this->getAllInput());
+        if ($refusal !== null) {
+            $message = match ($refusal['field'] . ':' . $refusal['reason']) {
+                'contact_user_ids:too_many' => __('api.vol_wellbeing_too_many_contacts', ['max' => WellbeingSettingsService::MAX_CONTACTS]),
+                'contact_user_ids:not_in_community', 'contact_user_ids:invalid' => __('api.vol_wellbeing_contact_not_in_community'),
+                'contact_email:invalid' => __('api.vol_wellbeing_email_invalid'),
+                'support_text:too_long' => __('api.vol_wellbeing_support_text_too_long', ['max' => WellbeingSettingsService::MAX_SUPPORT_TEXT]),
+                'support_links:too_many' => __('api.vol_wellbeing_too_many_links', ['max' => WellbeingSettingsService::MAX_LINKS]),
+                default => __('api.vol_wellbeing_link_invalid'),
+            };
+
+            return $this->respondWithError('VALIDATION_ERROR', $message, $refusal['field'], 422);
+        }
+
+        return $this->respondWithData($this->wellbeingSettings->get($tenantId));
     }
 
     // ========================================
@@ -488,7 +581,7 @@ class VolunteerWellbeingController extends BaseApiController
     }
 
     /**
-     * GET /v2/volunteering/incidents � the reports the caller made. Staff see
+     * GET /v2/volunteering/incidents — the reports the caller made. Staff see
      * every incident through the admin list; here everyone sees only their own.
      */
     public function getIncidents(): JsonResponse

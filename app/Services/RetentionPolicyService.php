@@ -89,6 +89,14 @@ class RetentionPolicyService
             'column' => 'created_at',
             'default_days' => 365,
         ],
+        'vol_wellbeing_alert_notifications' => [
+            // Who was told about a wellbeing alert, by which channel, and the
+            // outcome. Never the note or the mood. Kept as long as the alert.
+            'table' => 'vol_wellbeing_alert_notifications',
+            'column' => 'created_at',
+            'default_days' => 730,
+            'min_days' => 730,
+        ],
         'vol_wellbeing_alerts' => [
             // Burnout-risk alerts about a volunteer. Only concluded alerts
             // are purgeable; active/acknowledged ones stay regardless of age.

@@ -833,6 +833,30 @@ class GdprService
             $wellbeingAlerts = [];
         }
 
+        // Who was told about the member's wellbeing alerts (20 Oct 2026), and the
+        // staff notes on them. The notes table refuses DELETE (append-only), so
+        // erasure of a note is a DPO question (DPO-14), not a code path.
+        try {
+            $wellbeingNotifications = $this->query(
+                "SELECT id, alert_id, checkin_id, recipient_user_id, recipient_email, organization_name, tier, channel, status, created_at
+                 FROM vol_wellbeing_alert_notifications
+                 WHERE volunteer_user_id = ? AND tenant_id = ?
+                 ORDER BY created_at DESC",
+                [$userId, $t]
+            )->fetchAll();
+            $wellbeingNotes = $this->query(
+                "SELECT n.id, n.alert_id, n.author_user_id, n.body, n.created_at
+                 FROM vol_wellbeing_alert_notes n
+                 JOIN vol_wellbeing_alerts a ON a.id = n.alert_id AND a.tenant_id = n.tenant_id
+                 WHERE a.user_id = ? AND n.tenant_id = ?
+                 ORDER BY n.created_at DESC",
+                [$userId, $t]
+            )->fetchAll();
+        } catch (\Throwable $e) {
+            $wellbeingNotifications = [];
+            $wellbeingNotes = [];
+        }
+
         return [
             'applications' => $applications,
             'hour_logs' => $logs,
@@ -859,6 +883,8 @@ class GdprService
             'community_project_support' => $communityProjectSupport,
             'emergency_alert_recipients' => $emergencyAlertRecipients,
             'wellbeing_alerts' => $wellbeingAlerts,
+            'wellbeing_alert_notifications' => $wellbeingNotifications,
+            'wellbeing_alert_notes' => $wellbeingNotes,
         ];
     }
 
@@ -1798,6 +1824,10 @@ class GdprService
                     ]);
                 }
                 $this->query("DELETE FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+                // The notification record names the member as the volunteer told about,
+                // and as a recipient when staff. Both go. Notes cannot be deleted (trigger):
+                // they stay attached to the alert id and are a DPO question (DPO-14).
+                $this->query("DELETE FROM vol_wellbeing_alert_notifications WHERE (volunteer_user_id = ? OR recipient_user_id = ?) AND tenant_id = ?", [$userId, $userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_accessibility_needs WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_guardian_consents WHERE minor_user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
