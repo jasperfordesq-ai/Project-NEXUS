@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-17T14:59:25.370Z",
+  "lastRunAt": "2026-10-20T12:14:34.815Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -22,21 +22,21 @@
     },
     "128022136": {
       "title": "Exception: Scheduled command ['/usr/local/bin/php' 'artisan' queue:verify-liveness] failed with exit code [1].",
-      "culprit": "/vendor/laravel/framework/src/Illuminate/Console/Scheduling/ScheduleRunCommand.php in Illuminate\\Console\\Scheduling\\ScheduleRunCommand::Illuminate\\Console\\Scheduling\\{closure}",
+      "culprit": "/artisan in ?",
       "decision": "watching",
-      "note": "Same single 11 Oct 12:01 queue-liveness alarm as NEXUS-PHP-2F; did not repeat.",
+      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:36.375Z",
-      "decidedAtRelease": "nexus-php@a3d7edf7cdd0"
+      "decidedAt": "2026-10-20T12:17:04.634Z",
+      "decidedAtRelease": "nexus-php@657d7d54e9af"
     },
     "129111072": {
-      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-10-11T12:00:59+00:00 but last processed at 2026-10-11T11:45:22+00:00. Check `ps aux | grep horizon:work` in the queue container.",
+      "title": "RuntimeException: Queue workers are not processing jobs: heartbeat dispatched at 2026-10-19T06:50:51+00:00 but last processed at 2026-10-19T06:35:26+00:00. Check `ps aux | grep horizon:work` in the queue container.",
       "culprit": "/app/Console/Commands/VerifyQueueLiveness.php in App\\Console\\Commands\\VerifyQueueLiveness::handle",
       "decision": "watching",
-      "note": "Single alarm 11 Oct 12:01 (last job processed 11:45); cleared by the next check and did not repeat. Earlier fix still holds.",
+      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:34.405Z",
-      "decidedAtRelease": "nexus-php@a3d7edf7cdd0"
+      "decidedAt": "2026-10-20T12:17:03.096Z",
+      "decidedAtRelease": "nexus-php@657d7d54e9af"
     },
     "130353163": {
       "title": "Geocoding exception",
@@ -60,10 +60,10 @@
       "title": "QUEUE LIVENESS FAILED: heartbeats dispatched but not processed — workers are dead or stuck.",
       "culprit": null,
       "decision": "watching",
-      "note": "Same single 11 Oct 12:01 queue-liveness alarm as NEXUS-PHP-2F; did not repeat.",
+      "note": "Single alarm 19 Oct 06:50 UTC from the OLD release 657d7d54e, three minutes before the 06:53 UTC blue/green switch to afd395394 — workers on the outgoing colour were winding down. Not seen since (incl. the 17:29 UTC deploy). Not a code fault.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:37.691Z",
-      "decidedAtRelease": "nexus-php@a3d7edf7cdd0"
+      "decidedAt": "2026-10-20T12:17:06.115Z",
+      "decidedAtRelease": "nexus-php@657d7d54e9af"
     },
     "137783510": {
       "title": "RedisException: Connection refused",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Same daily 08:05 alarm (latest 17 Oct). Not a failed fix. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Until then members who asked for vetted-only contact are left out of matches; the policy fails safe.",
+      "note": "Same daily 08:05 UTC alarm (latest 20 Oct, release 87ee78250). Not a failed fix. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Policy fails safe until then.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:39.749Z",
-      "decidedAtRelease": "nexus-php@18369a16c20e"
+      "decidedAt": "2026-10-20T12:17:01.625Z",
+      "decidedAtRelease": "nexus-php@87ee782507c5"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -717,10 +717,10 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "Unchanged (latest 17 Oct 09:00 UTC): hourly re-read of the tenant row inside nexus:run-all, info level, no member affected. Cheap; not worth touching TenantContext for.",
+      "note": "Unchanged (latest 20 Oct 09:00 UTC, release 87ee78250): hourly info-level re-read of the tenant row inside nexus:run-all. No member affected.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:38.748Z",
-      "decidedAtRelease": "nexus-php@18369a16c20e"
+      "decidedAt": "2026-10-20T12:17:00.537Z",
+      "decidedAtRelease": "nexus-php@87ee782507c5"
     },
     "145943666": {
       "title": "ApiResponseError: Your session has expired. Please log in again.",
@@ -928,6 +928,15 @@
       "sha": "f18dfd7a8",
       "decidedAt": "2026-10-17T15:01:30.892Z",
       "decidedAtRelease": "nexus-react@18369a16c20e"
+    },
+    "154324975": {
+      "title": "Error: Could not determine key for item",
+      "culprit": "/admin/groups/recommendations",
+      "decision": "watching",
+      "note": "One crash 17 Oct 19:18 UTC on /admin/groups/recommendations from build 4823b51ce (rows keyed by React key, not collection id). Already fixed by 1deafbd72 (18 Oct) and deployed 19 Oct in 87ee78250; its 7 page tests pass. Not resolved by automation because this run did not make the fix; expect no recurrence.",
+      "sha": null,
+      "decidedAt": "2026-10-20T12:16:59.224Z",
+      "decidedAtRelease": "nexus-react@4823b51ce36f"
     }
   }
 }
