@@ -28,6 +28,33 @@ class VolunteerWellbeingMoodCheckinTest extends TestCase
 {
     use DatabaseTransactions;
 
+    /**
+     * Each test runs in a community of its own. The shared test community can hold
+     * staff accounts left by other suites (CI shard 6, 20 Oct 2026: a second staff
+     * member made "told 1 person" read 2), and who is told is exactly what these
+     * tests count.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $id = (int) \Illuminate\Support\Facades\DB::table('tenants')->insertGetId([
+            'name' => 'Wellbeing isolated',
+            'slug' => 'wellbeing-iso-' . uniqid(),
+            'domain' => null,
+            'is_active' => true,
+            'parent_id' => null,
+            'path' => '/',
+            'depth' => 0,
+            'allows_subtenants' => false,
+            'features' => json_encode(['volunteering' => true, 'organisations' => true]),
+            'contact_email' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        \Illuminate\Support\Facades\DB::table('tenants')->where('id', $id)->update(['path' => "/{$id}/"]);
+        $this->withTenant($id);
+    }
+
     private const NOTE = 'Private words only the team should read';
 
     private function enableVolunteering(): void

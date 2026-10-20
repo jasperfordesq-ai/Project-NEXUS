@@ -893,7 +893,7 @@
     "wellbeing_add_link": "リンクを追加",
     "wellbeing_link_label": "リンク {{n}} のラベル",
     "wellbeing_link_url": "リンク {{n}} のアドレス",
-    "wellbeing_link_url_help": "最大5件。https://、mailto:、tel:、または /contact などこのサイトのページ。",
+    "wellbeing_link_url_help": "最大5件。https://、mailto:、tel:、またはこのサイトのページ（例: /contact.）",
     "wellbeing_remove_link": "リンク {{n}} を削除",
     "wellbeing_save_settings": "ウェルビーイング設定を保存",
     "wellbeing_settings_saved": "ウェルビーイング設定を保存しました",
