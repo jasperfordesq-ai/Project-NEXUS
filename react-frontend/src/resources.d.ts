@@ -22459,6 +22459,7 @@ export default interface Resources {
       "warmth_pass": "Warmth Pass",
       "webhooks": "Webhooks",
       "webp_converter": "WebP Converter",
+      "wellbeing": "Wellbeing",
       "whitelist": "Whitelist",
       "workflow": "Workflow"
     },

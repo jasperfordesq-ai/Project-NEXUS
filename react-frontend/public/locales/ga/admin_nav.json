@@ -525,7 +525,8 @@
     "certificates": "Teastais",
     "group_bookings": "Áirithintí grúpa",
     "stripe_account": "Cuntas Stripe",
-    "new_page": "Leathanach nua"
+    "new_page": "Leathanach nua",
+    "wellbeing": "Folláine"
   },
   "aria": {
     "breadcrumbs": "Brioscáin aráin"

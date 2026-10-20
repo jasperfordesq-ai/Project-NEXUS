@@ -525,7 +525,8 @@
     "certificates": "Certificats",
     "group_bookings": "Réservations de groupe",
     "stripe_account": "Compte Stripe",
-    "new_page": "Nouvelle page"
+    "new_page": "Nouvelle page",
+    "wellbeing": "Bien-être"
   },
   "aria": {
     "breadcrumbs": "Fil d'Ariane"

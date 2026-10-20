@@ -525,7 +525,8 @@
     "certificates": "Bescheinigungen",
     "group_bookings": "Gruppenbuchungen",
     "stripe_account": "Stripe-Konto",
-    "new_page": "Neue Seite"
+    "new_page": "Neue Seite",
+    "wellbeing": "Wohlbefinden"
   },
   "aria": {
     "breadcrumbs": "Semmelbrösel"

@@ -554,7 +554,8 @@
     "certificates": "Certificates",
     "group_bookings": "Group bookings",
     "stripe_account": "Stripe account",
-    "new_page": "New page"
+    "new_page": "New page",
+    "wellbeing": "Wellbeing"
   },
   "aria": {
     "breadcrumbs": "Breadcrumbs"

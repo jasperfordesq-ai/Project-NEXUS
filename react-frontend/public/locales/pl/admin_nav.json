@@ -525,7 +525,8 @@
     "certificates": "Certyfikaty",
     "group_bookings": "Rezerwacje grupowe",
     "stripe_account": "Konto Stripe",
-    "new_page": "Nowa strona"
+    "new_page": "Nowa strona",
+    "wellbeing": "Samopoczucie"
   },
   "aria": {
     "breadcrumbs": "Bułka tarta"

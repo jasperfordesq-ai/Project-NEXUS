@@ -525,7 +525,8 @@
     "certificates": "Certificaten",
     "group_bookings": "Groepsboekingen",
     "stripe_account": "Stripe-account",
-    "new_page": "Nieuwe pagina"
+    "new_page": "Nieuwe pagina",
+    "wellbeing": "Welzijn"
   },
   "aria": {
     "breadcrumbs": "Broodkruimels"

@@ -525,7 +525,8 @@
     "certificates": "Certificados",
     "group_bookings": "Reservas de grupo",
     "stripe_account": "Cuenta de Stripe",
-    "new_page": "Nueva página"
+    "new_page": "Nueva página",
+    "wellbeing": "Bienestar"
   },
   "aria": {
     "breadcrumbs": "Pan rallado"

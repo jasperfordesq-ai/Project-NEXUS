@@ -175,6 +175,7 @@ const SEGMENT_LABEL_KEYS: Record<string, string> = {
 
   // Volunteering
   volunteering: 'breadcrumbs.volunteering',
+  wellbeing: 'breadcrumbs.wellbeing',
   organizations: 'breadcrumbs.organizations',
 
   // Events, Polls, Goals, Resources, Jobs, Ideation

@@ -525,7 +525,8 @@
     "certificates": "証明書",
     "group_bookings": "グループ予約",
     "stripe_account": "Stripe アカウント",
-    "new_page": "新しいページ"
+    "new_page": "新しいページ",
+    "wellbeing": "ウェルビーイング"
   },
   "aria": {
     "breadcrumbs": "ブレッドクラム"

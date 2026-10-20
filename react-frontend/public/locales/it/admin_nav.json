@@ -525,7 +525,8 @@
     "certificates": "Certificati",
     "group_bookings": "Prenotazioni di gruppo",
     "stripe_account": "Account Stripe",
-    "new_page": "Nuova pagina"
+    "new_page": "Nuova pagina",
+    "wellbeing": "Benessere"
   },
   "aria": {
     "breadcrumbs": "Pangrattato"

@@ -525,7 +525,8 @@
     "certificates": "الشهادات",
     "group_bookings": "الحجوزات الجماعية",
     "stripe_account": "حساب Stripe",
-    "new_page": "صفحة جديدة"
+    "new_page": "صفحة جديدة",
+    "wellbeing": "الرفاه"
   },
   "aria": {
     "breadcrumbs": "فتات الخبز"
