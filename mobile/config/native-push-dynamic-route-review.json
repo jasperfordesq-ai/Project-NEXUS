@@ -663,6 +663,11 @@
           "input": "/profile/1",
           "expected": "native",
           "native_href": "/(modals)/member-profile?id=1"
+        },
+        {
+          "input": "/volunteering/org/1/dashboard?tab=wellbeing",
+          "expected": "native",
+          "native_href": "/(modals)/volunteering-org-dashboard?tab=wellbeing&id=1"
         }
       ]
     }

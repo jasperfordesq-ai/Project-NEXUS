@@ -212,7 +212,9 @@ class VolunteerWellbeingMoodCheckinTest extends TestCase
             $this->assertStringNotContainsString(self::NOTE, $email['subject'] . $email['body']);
         }
         $this->assertStringContainsString('/admin/volunteering/wellbeing', $sent[$admin->email]['body']);
-        $this->assertStringContainsString('/profile/' . $volunteer->id, $sent[$orgOwner->email]['body']);
+        // The organisation's owner is sent to the dashboard's Wellbeing tab (20 Oct 2026).
+        $this->assertStringContainsString('/volunteering/org/', $sent[$orgOwner->email]['body']);
+        $this->assertStringContainsString('/dashboard?tab=wellbeing', $sent[$orgOwner->email]['body']);
         $this->assertStringContainsString('Wellbeing fixture organisation', $sent[$orgOwner->email]['body']);
         $this->assertStringNotContainsString('{{', $sent[$admin->email]['subject'] . $sent[$admin->email]['body']);
     }

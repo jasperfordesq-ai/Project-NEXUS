@@ -104,7 +104,8 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
                         (string) $row->tier,
                         $row->organization_name !== null ? (string) $row->organization_name : null,
                         $row->alert_id !== null ? (int) $row->alert_id : null,
-                        max(0, $othersTold - 1)
+                        max(0, $othersTold - 1),
+                        $row->organization_id !== null ? (int) $row->organization_id : null
                     ));
                     $this->mark((int) $row->id, $sent ? 'sent' : 'failed', $sent ? null : 'send_false');
                 } catch (\Throwable $e) {

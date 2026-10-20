@@ -1,0 +1,63 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_wellbeing.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block content %}
+  <h1 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_wellbeing.title") }}</h1>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_wellbeing.intro") }}</p>
+
+  {% if not items.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_wellbeing.empty") }}</div>
+  {% else %}
+    {% if openCount > 0 %}
+      <div class="govuk-notification-banner" role="region" aria-labelledby="org-wellbeing-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="org-wellbeing-banner-title">{{ t("govuk_alpha_volunteering.org_wellbeing.important") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ tc("govuk_alpha_volunteering.org_wellbeing.summary", openCount, { count: openCount }) }}</p>
+          <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_wellbeing.what_to_do") }}</p>
+        </div>
+      </div>
+    {% endif %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_wellbeing.title') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_wellbeing.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_wellbeing.col_volunteer") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_wellbeing.col_mood") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_wellbeing.col_checked_in") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_wellbeing.col_told") }}</th>
+          <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.org_wellbeing.col_status") }}</th>
+          <th class="govuk-table__header" scope="col"><span class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_wellbeing.col_actions") }}</span></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for item in items %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/members/' ~ item.volunteerId) }}">{{ item.volunteerName }}</a>
+            </td>
+            <td class="govuk-table__cell">{{ govukTag({ text: item.moodLabel, classes: "govuk-tag--red" if item.isOpen else "govuk-tag--grey" }) }}</td>
+            <td class="govuk-table__cell">{{ item.checkinLabel or "—" }}</td>
+            <td class="govuk-table__cell">{{ item.toldLabel }}</td>
+            <td class="govuk-table__cell">{{ item.statusLabel }}</td>
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/messages/' ~ item.volunteerId) }}">{{ t("govuk_alpha_volunteering.org_wellbeing.message_link", { name: item.volunteerName }) }}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="govuk-body-s">{{ t("govuk_alpha_volunteering.org_wellbeing.confidentiality") }}</p>
+  {% endif %}
+{% endblock %}

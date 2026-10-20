@@ -63,7 +63,8 @@
     "opps_empty_other": "Hier staat niets.",
     "opps_load_error": "Kon je vacatures niet laden.",
     "opps_retry": "Opnieuw proberen",
-    "tab_team": "Team"
+    "tab_team": "Team",
+    "tab_wellbeing": "Welzijn"
   },
   "page_title": "Vrijwilligerswerk",
   "heading": "Vrijwilligerswerk",
@@ -1633,5 +1634,29 @@
     "safeguarding_deputy": "Plaatsvervanger",
     "safeguarding_nobody": "Nog niemand aangewezen",
     "safeguarding_help": "De contactpersoon en plaatsvervanger zien een samenvatting van elke veiligheidsmelding die aan deze organisatie is gekoppeld, en de volledige melding alleen als het veiligheidspersoneel van de gemeenschap die deelt. Ze horen nooit wie een melding deed. Gemeenschapsbeheerders wijzen hen aan: vraag uw gemeenschap als dit moet veranderen."
+  },
+  "org_wellbeing": {
+    "intro": "Vrijwilligers van je organisatie die bij een welzijnscheck-in aangaven zich somber te voelen of het moeilijk te hebben, en vroegen of iemand contact wilde opnemen. Je bent destijds per melding en e-mail geïnformeerd; dit is de volledige lijst. Je ziet hun naam en hoe ze zich voelen, nooit hun notitie.",
+    "forbidden": "Je hebt geen toegang tot de welzijnsmeldingen van deze organisatie.",
+    "load_error": "De welzijnsmeldingen konden niet worden geladen. Probeer het opnieuw.",
+    "empty": "Niemand heeft om hulp gevraagd",
+    "empty_desc": "Geen van je vrijwilligers heeft in de afgelopen 90 dagen een sombere check-in gedeeld.",
+    "summary_one": "{{count}} vrijwilliger wacht tot iemand contact opneemt",
+    "summary_other": "{{count}} vrijwilligers wachten tot iemand contact opneemt",
+    "mood_struggling": "Zegt het moeilijk te hebben",
+    "mood_low": "Zegt zich somber te voelen",
+    "status_active": "Nog niemand heeft gereageerd",
+    "status_acknowledged": "Het team van de gemeenschap pakt het op",
+    "status_resolved": "Opgelost",
+    "status_dismissed": "Gesloten",
+    "checked_in": "Check-in",
+    "told_label": "Je bent geïnformeerd",
+    "told_on": "op {{date}}",
+    "not_told": "nog niet",
+    "what_to_do": "Neem snel contact op met deze persoon. Maak je je nu zorgen om hun veiligheid, bel dan de hulpdiensten en informeer daarna het team van je gemeenschap.",
+    "closed_help": "Het team van de gemeenschap heeft dit afgesloten. Je kunt nog steeds contact opnemen.",
+    "message": "Bericht aan {{name}}",
+    "view_profile": "Profiel bekijken",
+    "confidentiality_note": "Behandel dit vertrouwelijk. Deel het alleen met mensen die het moeten weten en plaats er nooit iets over."
   }
 }

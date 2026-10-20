@@ -412,6 +412,35 @@ class VolunteerWellbeingController extends BaseApiController
         return $this->respondWithData($this->wellbeingSettings->get($tenantId));
     }
 
+    /**
+     * GET /v2/volunteering/organisations/{orgId}/wellbeing
+     *
+     * The organisation's own view: which of its volunteers said they are Low or
+     * Struggling and asked for someone to get in touch, and when the organisation
+     * was told. Owner, admin members and safeguarding leads only; never the note.
+     */
+    public function organisationWellbeing($orgId): JsonResponse
+    {
+        $this->ensureFeature();
+        $userId = $this->getUserId();
+        $this->rateLimit('vol_org_wellbeing', 60, 60);
+        $tenantId = TenantContext::getId();
+        $orgId = (int) $orgId;
+
+        $org = DB::table('vol_organizations')->where('tenant_id', $tenantId)->where('id', $orgId)->first(['id', 'name']);
+        if (!$org) {
+            return $this->respondWithError('NOT_FOUND', __('api.vol_dlp_organization_not_found'), null, 404);
+        }
+        if (\App\Services\Volunteering\IncidentAccess::organisationRelation($tenantId, $userId, $orgId) === \App\Services\Volunteering\IncidentAccess::NONE) {
+            return $this->respondWithError('NOT_ORGANISATION_CONTACT', __('api.vol_incident_not_org_contact'), null, 403);
+        }
+
+        return $this->respondWithData([
+            'organisation' => ['id' => (int) $org->id, 'name' => (string) $org->name],
+            'items' => $this->volunteerWellbeingService->getOrganisationWellbeing($tenantId, $orgId),
+        ]);
+    }
+
     // ========================================
     // EMERGENCY ALERTS
     // ========================================

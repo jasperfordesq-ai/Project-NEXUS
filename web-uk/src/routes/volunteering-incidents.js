@@ -249,6 +249,63 @@ function orgIncidentNotFound(res) {
   return res.status(404).render('errors/404', { title: res.locals.t(`${ORG_KEY}not_found`) });
 }
 
+const WB_KEY = 'govuk_alpha_volunteering.org_wellbeing.';
+const WB_STATUS_KEYS = { active: 'status_active', acknowledged: 'status_acknowledged', resolved: 'status_resolved', dismissed: 'status_dismissed' };
+
+/** One wellbeing row for the organisation: who, how they feel, when, and whether the organisation was told. Never the note. */
+function presentOrgWellbeing(row, t, formatDate) {
+  const item = row && typeof row === 'object' ? row : {};
+  const volunteer = item.volunteer && typeof item.volunteer === 'object' ? item.volunteer : {};
+  const status = typeof item.status === 'string' && Object.hasOwn(WB_STATUS_KEYS, item.status) ? item.status : 'active';
+  return {
+    id: Number(item.alert_id) || 0,
+    volunteerId: Number(volunteer.id) || 0,
+    volunteerName: typeof volunteer.name === 'string' ? volunteer.name : '',
+    moodLabel: t(`${WB_KEY}${Number(item.mood) === 1 ? 'mood_struggling' : 'mood_low'}`),
+    checkinLabel: formatDate(item.checkin_at),
+    toldLabel: item.told_at ? formatDate(item.told_at) : t(`${WB_KEY}not_told`),
+    statusLabel: t(`${WB_KEY}${WB_STATUS_KEYS[status]}`),
+    isOpen: status === 'active' || status === 'acknowledged'
+  };
+}
+
+/**
+ * Organisation dashboard: the volunteers who said they are low or struggling and
+ * asked for someone to get in touch (20 Oct 2026). Same audience as the safeguarding
+ * list — the API answers 403 for anyone who is not an owner, admin or safeguarding lead.
+ */
+router.get('/organisations/:id(\\d+)/wellbeing', asyncRoute(async (req, res) => {
+  const orgId = Number(req.params.id);
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, '/login?status=auth-required');
+  const t = res.locals.t;
+
+  let result;
+  try {
+    result = await callVolunteeringApi(token, 'GET', `/organisations/${encodeURIComponent(orgId)}/wellbeing`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && error.status === 403) {
+      return res.status(403).render('errors/403', { title: t(`${WB_KEY}forbidden`) });
+    }
+    if (error instanceof ApiError && error.status === 404) {
+      return res.status(404).render('errors/404', { title: t(`${WB_KEY}not_found`) });
+    }
+    throw error;
+  }
+
+  const data = result && result.data !== undefined ? result.data : result;
+  const rows = data && Array.isArray(data.items) ? data.items : [];
+  const formatDate = dateFormatter(res);
+  const items = rows.map((row) => presentOrgWellbeing(row, t, formatDate)).filter((row) => row.id > 0);
+  return res.render('volunteering/organisation-wellbeing', {
+    title: t(`${WB_KEY}title`),
+    orgId,
+    items,
+    openCount: items.filter((row) => row.isOpen).length
+  });
+}));
+
 router.get('/organisations/:id(\\d+)/safeguarding', asyncRoute(async (req, res) => {
   const orgId = Number(req.params.id);
   const token = tokenFrom(req);

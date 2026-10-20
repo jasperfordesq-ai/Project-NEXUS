@@ -65,7 +65,8 @@
     "opps_empty_other": "Nada aqui.",
     "opps_load_error": "Não foi possível carregar as suas oportunidades.",
     "opps_retry": "Tentar novamente",
-    "tab_team": "Equipa"
+    "tab_team": "Equipa",
+    "tab_wellbeing": "Bem-estar"
   },
   "page_title": "Voluntariado",
   "heading": "Voluntariado",
@@ -1650,5 +1651,29 @@
     "safeguarding_deputy": "Substituto",
     "safeguarding_nobody": "Ainda ninguém nomeado",
     "safeguarding_help": "O responsável e o substituto veem um resumo de cada comunicação de proteção associada a esta organização, e a comunicação completa apenas se a equipa de proteção da comunidade a partilhar. Nunca lhes é dito quem fez uma comunicação. São nomeados pelos administradores da comunidade: contacte a sua comunidade se for preciso mudar."
+  },
+  "org_wellbeing": {
+    "intro": "Voluntários da sua organização que, num registo de bem-estar, disseram sentir-se em baixo ou com dificuldades e pediram que alguém entrasse em contacto. Foi avisado por alerta e e-mail na altura; esta é a lista completa. Vê o nome e como se sentem, nunca a nota.",
+    "forbidden": "Não tem acesso aos alertas de bem-estar desta organização.",
+    "load_error": "Não foi possível carregar os alertas de bem-estar. Tente novamente.",
+    "empty": "Ninguém pediu ajuda",
+    "empty_desc": "Nenhum dos seus voluntários partilhou um registo em baixo nos últimos 90 dias.",
+    "summary_one": "{{count}} voluntário está à espera de que alguém entre em contacto",
+    "summary_other": "{{count}} voluntários estão à espera de que alguém entre em contacto",
+    "mood_struggling": "Diz que está com dificuldades",
+    "mood_low": "Diz que se sente em baixo",
+    "status_active": "Ninguém respondeu ainda",
+    "status_acknowledged": "A equipa da comunidade está a tratar disto",
+    "status_resolved": "Resolvido",
+    "status_dismissed": "Fechado",
+    "checked_in": "Registo",
+    "told_label": "Foi avisado",
+    "told_on": "em {{date}}",
+    "not_told": "ainda não",
+    "what_to_do": "Entre em contacto com esta pessoa em breve. Se receia pela sua segurança neste momento, contacte os serviços de emergência e depois avise a equipa da sua comunidade.",
+    "closed_help": "A equipa da comunidade fechou este caso. Ainda pode entrar em contacto.",
+    "message": "Enviar mensagem a {{name}}",
+    "view_profile": "Ver perfil",
+    "confidentiality_note": "Trate isto como confidencial. Partilhe apenas com quem precisa de saber e nunca publique nada sobre isto."
   }
 }

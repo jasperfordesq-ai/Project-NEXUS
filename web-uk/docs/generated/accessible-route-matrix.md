@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-20T13:58:49.816Z
-Laravel commit SHA: `3a59867cb26e369786575cf86280340906997692`
-Web UK repository commit SHA: `3a59867cb26e369786575cf86280340906997692`
+Generated: 2026-10-20T17:56:58.071Z
+Laravel commit SHA: `6735049c246460c8e7eeebe33e7213d2a5a4cf33`
+Web UK repository commit SHA: `6735049c246460c8e7eeebe33e7213d2a5a4cf33`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 816 |
+| web-uk routes | 817 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 106 |
+| Extra web-uk routes | 107 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 64 | 0 |
+| volunteering | 52 | 0 | 65 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -184,6 +184,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/organisations/{param}/safeguarding/{param}` | volunteering | volunteering/organisation-safeguarding-incident | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/organisations/{param}/team` | volunteering | volunteering/org-team | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/organisations/{param}/team/{param}/remove` | volunteering | volunteering/org-team-remove | web-uk/src/routes/volunteering-actions.js |
+| GET | `/volunteering/organisations/{param}/wellbeing` | volunteering | volunteering/organisation-wellbeing | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/qualifications` | volunteering | volunteering/my-qualifications | web-uk/src/routes/volunteering-my-qualifications.js |
 | GET | `/volunteering/qualifications/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-my-qualifications.js |
 | GET | `/volunteering/qualifications/{param}/withdraw` | volunteering | volunteering/my-qualification-withdraw | web-uk/src/routes/volunteering-my-qualifications.js |

@@ -65,7 +65,8 @@
     "opps_empty_other": "No hay nada aquí.",
     "opps_load_error": "No se pudieron cargar tus oportunidades.",
     "opps_retry": "Reintentar",
-    "tab_team": "Equipo"
+    "tab_team": "Equipo",
+    "tab_wellbeing": "Bienestar"
   },
   "page_title": "Voluntariado",
   "heading": "Voluntariado",
@@ -1649,5 +1650,29 @@
     "safeguarding_deputy": "Suplente",
     "safeguarding_nobody": "Nadie nombrado todavía",
     "safeguarding_help": "El responsable y el suplente ven un resumen de cada informe de protección vinculado a esta organización, y el informe completo solo si el personal de protección de la comunidad lo comparte. Nunca se les dice quién hizo un informe. Los nombran los administradores de la comunidad: contacte con su comunidad si hay que cambiarlos."
+  },
+  "org_wellbeing": {
+    "intro": "Voluntarios de tu organización que dijeron en un registro de bienestar que se sienten mal o están pasándolo mal y pidieron que alguien se pusiera en contacto. Se te avisó por alerta y correo en su momento; esta es la lista completa. Ves su nombre y cómo se sienten, nunca su nota.",
+    "forbidden": "No tienes acceso a las alertas de bienestar de esta organización.",
+    "load_error": "No se pudieron cargar las alertas de bienestar. Inténtalo de nuevo.",
+    "empty": "Nadie ha pedido ayuda",
+    "empty_desc": "Ninguno de tus voluntarios ha compartido un registro bajo en los últimos 90 días.",
+    "summary_one": "{{count}} voluntario espera que alguien se ponga en contacto",
+    "summary_other": "{{count}} voluntarios esperan que alguien se ponga en contacto",
+    "mood_struggling": "Dice que lo está pasando mal",
+    "mood_low": "Dice que se siente mal",
+    "status_active": "Nadie ha respondido todavía",
+    "status_acknowledged": "El equipo de la comunidad se está ocupando",
+    "status_resolved": "Resuelto",
+    "status_dismissed": "Cerrado",
+    "checked_in": "Registro",
+    "told_label": "Se te avisó",
+    "told_on": "el {{date}}",
+    "not_told": "todavía no",
+    "what_to_do": "Ponte en contacto con esta persona pronto. Si te preocupa su seguridad ahora mismo, llama a los servicios de emergencia y después avisa al equipo de tu comunidad.",
+    "closed_help": "El equipo de la comunidad ha cerrado esto. Aún puedes ponerte en contacto.",
+    "message": "Enviar mensaje a {{name}}",
+    "view_profile": "Ver perfil",
+    "confidentiality_note": "Trátalo como confidencial. Compártelo solo con quien necesite saberlo y nunca publiques nada al respecto."
   }
 }

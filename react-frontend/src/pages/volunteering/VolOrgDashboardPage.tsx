@@ -28,6 +28,7 @@ import BadgeCheck from 'lucide-react/icons/badge-check';
 import Wallet from 'lucide-react/icons/wallet';
 import Settings from 'lucide-react/icons/settings';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import Building2 from 'lucide-react/icons/building-2';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
@@ -56,10 +57,11 @@ const OrgVolunteersTab = React.lazy(() => import('./OrgVolunteersTab'));
 const OrgTeamTab = React.lazy(() => import('./OrgTeamTab'));
 const OrgQualificationsTab = React.lazy(() => import('./OrgQualificationsTab'));
 const OrgSafeguardingPage = React.lazy(() => import('./OrgSafeguardingPage'));
+const OrgWellbeingTab = React.lazy(() => import('./OrgWellbeingTab'));
 const OrgWalletTab = React.lazy(() => import('./OrgWalletTab'));
 const OrgSettingsTab = React.lazy(() => import('./OrgSettingsTab'));
 
-type OrgDashTab = 'overview' | 'opportunities' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'team' | 'qualifications' | 'safeguarding' | 'wallet' | 'settings';
+type OrgDashTab = 'overview' | 'opportunities' | 'applications' | 'hours-review' | 'expenses' | 'fundraising' | 'volunteers' | 'team' | 'qualifications' | 'safeguarding' | 'wellbeing' | 'wallet' | 'settings';
 
 interface OrgDetails {
   id: number;
@@ -98,6 +100,7 @@ const TAB_DEFS: { key: OrgDashTab; icon: typeof LayoutDashboard }[] = [
   { key: 'qualifications', icon: BadgeCheck },
   { key: 'team', icon: UserCog },
   { key: 'safeguarding', icon: ShieldAlert },
+  { key: 'wellbeing', icon: HeartPulse },
   { key: 'wallet', icon: Wallet },
   { key: 'settings', icon: Settings },
 ];
@@ -337,6 +340,7 @@ export default function VolOrgDashboardPage() {
     team: t('org_dashboard.tab_team'),
     qualifications: t('org_dashboard.tab_qualifications'),
     safeguarding: t('org_dashboard.tab_safeguarding'),
+    wellbeing: t('org_dashboard.tab_wellbeing'),
     wallet: t('org_dashboard.tab_wallet'),
     settings: t('org_dashboard.tab_settings'),
   };
@@ -381,7 +385,7 @@ export default function VolOrgDashboardPage() {
 
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2">
-        {TAB_DEFS.filter((td) => td.key !== 'safeguarding' || canSeeSafeguarding).map((td) => {
+        {TAB_DEFS.filter((td) => (td.key !== 'safeguarding' && td.key !== 'wellbeing') || canSeeSafeguarding).map((td) => {
           const Icon = td.icon;
           const isActive = tab === td.key;
           return (
@@ -438,6 +442,11 @@ export default function VolOrgDashboardPage() {
         )}
         {tab === 'safeguarding' && canSeeSafeguarding && (
           <OrgSafeguardingPage embedded orgId={orgId} />
+        )}
+        {/* Who of our volunteers asked for someone to get in touch (20 Oct 2026); same
+            audience as safeguarding — owners and admins, never a plain team member. */}
+        {tab === 'wellbeing' && canSeeSafeguarding && (
+          <OrgWellbeingTab orgId={orgId} />
         )}
         {tab === 'wallet' && (
           <OrgWalletTab

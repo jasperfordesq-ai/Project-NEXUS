@@ -67,7 +67,8 @@
     "opps_empty_other": "Nic tu nie ma.",
     "opps_load_error": "Nie udało się wczytać Twoich ofert.",
     "opps_retry": "Spróbuj ponownie",
-    "tab_team": "Zespół"
+    "tab_team": "Zespół",
+    "tab_wellbeing": "Samopoczucie"
   },
   "page_title": "Zgłaszanie się na ochotnika",
   "heading": "Zgłaszanie się na ochotnika",
@@ -1667,5 +1668,31 @@
     "safeguarding_deputy": "Zastępca",
     "safeguarding_nobody": "Nikogo jeszcze nie wyznaczono",
     "safeguarding_help": "Osoba odpowiedzialna i zastępca widzą podsumowanie każdego zgłoszenia dotyczącego ochrony powiązanego z tą organizacją, a pełne zgłoszenie tylko wtedy, gdy personel ds. ochrony społeczności je udostępni. Nigdy nie dowiadują się, kto złożył zgłoszenie. Wyznaczają ich administratorzy społeczności: skontaktuj się ze swoją społecznością, jeśli trzeba to zmienić."
+  },
+  "org_wellbeing": {
+    "intro": "Wolontariusze Twojej organizacji, którzy w zgłoszeniu samopoczucia podali, że czują się źle lub mają trudności, i poprosili, aby ktoś się skontaktował. Powiadomiono Cię wtedy alertem i e-mailem; to pełna lista. Widzisz ich imię i nazwisko oraz samopoczucie, nigdy notatkę.",
+    "forbidden": "Nie masz dostępu do alertów samopoczucia tej organizacji.",
+    "load_error": "Nie udało się wczytać alertów samopoczucia. Spróbuj ponownie.",
+    "empty": "Nikt nie poprosił o pomoc",
+    "empty_desc": "Żaden z Twoich wolontariuszy nie udostępnił zgłoszenia o złym samopoczuciu w ciągu ostatnich 90 dni.",
+    "summary_one": "{{count}} wolontariusz czeka, aż ktoś się skontaktuje",
+    "summary_other": "{{count}} wolontariusza czeka, aż ktoś się skontaktuje",
+    "mood_struggling": "Podaje, że ma trudności",
+    "mood_low": "Podaje, że czuje się źle",
+    "status_active": "Nikt jeszcze nie odpowiedział",
+    "status_acknowledged": "Zespół społeczności się tym zajmuje",
+    "status_resolved": "Rozwiązane",
+    "status_dismissed": "Zamknięte",
+    "checked_in": "Zgłoszenie",
+    "told_label": "Powiadomiono Cię",
+    "told_on": "{{date}}",
+    "not_told": "jeszcze nie",
+    "what_to_do": "Skontaktuj się z tą osobą wkrótce. Jeśli obawiasz się teraz o jej bezpieczeństwo, zadzwoń po służby ratunkowe, a następnie powiadom zespół swojej społeczności.",
+    "closed_help": "Zespół społeczności zamknął tę sprawę. Nadal możesz się skontaktować.",
+    "message": "Napisz do {{name}}",
+    "view_profile": "Zobacz profil",
+    "confidentiality_note": "Traktuj to jako poufne. Udostępniaj tylko osobom, które muszą wiedzieć, i nigdy o tym nie publikuj.",
+    "summary_few": "{{count}} wolontariuszy czeka, aż ktoś się skontaktuje",
+    "summary_many": "{{count}} wolontariuszy czeka, aż ktoś się skontaktuje"
   }
 }

@@ -63,7 +63,8 @@
     "opps_empty_other": "Nothing here.",
     "opps_load_error": "Could not load your opportunities.",
     "opps_retry": "Try again",
-    "tab_team": "Team"
+    "tab_team": "Team",
+    "tab_wellbeing": "Wellbeing"
   },
   "page_title": "Volunteering",
   "heading": "Volunteering",
@@ -1633,5 +1634,29 @@
     "safeguarding_deputy": "Deputy",
     "safeguarding_nobody": "Nobody appointed yet",
     "safeguarding_help": "The lead and deputy see a summary of each safeguarding report linked to this organisation, and the full report only if the community's safeguarding staff share it. They are never told who made a report. Community admins appoint them: ask your community if yours needs to change."
+  },
+  "org_wellbeing": {
+    "intro": "Volunteers of your organisation who said they are low or struggling in a wellbeing check-in and asked for someone to get in touch. You were told by alert and email at the time; this is the full list. You see their name and how they feel — never their note.",
+    "forbidden": "You don't have access to this organisation's wellbeing alerts.",
+    "load_error": "Wellbeing alerts could not be loaded. Please try again.",
+    "empty": "Nobody has asked for help",
+    "empty_desc": "None of your volunteers has shared a low or struggling check-in in the last 90 days.",
+    "summary_one": "{{count}} volunteer is waiting for someone to get in touch",
+    "summary_other": "{{count}} volunteers are waiting for someone to get in touch",
+    "mood_struggling": "Said they're struggling",
+    "mood_low": "Said they're feeling low",
+    "status_active": "Nobody has responded yet",
+    "status_acknowledged": "The community's team is on it",
+    "status_resolved": "Resolved",
+    "status_dismissed": "Closed",
+    "checked_in": "Checked in",
+    "told_label": "You were told",
+    "told_on": "on {{date}}",
+    "not_told": "not yet",
+    "what_to_do": "Please check in with them soon. If you are worried for their safety right now, contact the emergency services, then tell your community's team.",
+    "closed_help": "The community's team has closed this. You can still get in touch.",
+    "message": "Message {{name}}",
+    "view_profile": "View profile",
+    "confidentiality_note": "Treat this as confidential. Share it only with people who need to know, and never post about it."
   }
 }

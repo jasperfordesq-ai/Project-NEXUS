@@ -65,7 +65,8 @@
     "opps_empty_other": "Rien ici.",
     "opps_load_error": "Impossible de charger vos missions.",
     "opps_retry": "Réessayer",
-    "tab_team": "Équipe"
+    "tab_team": "Équipe",
+    "tab_wellbeing": "Bien-être"
   },
   "page_title": "Bénévolat",
   "heading": "Bénévolat",
@@ -1649,5 +1650,29 @@
     "safeguarding_deputy": "Suppléant",
     "safeguarding_nobody": "Personne n'est encore désigné",
     "safeguarding_help": "Le référent et le suppléant voient un résumé de chaque signalement de protection lié à cette organisation, et le signalement complet seulement si l'équipe de protection de la communauté le partage. Ils ne savent jamais qui a fait un signalement. Les administrateurs de la communauté les désignent : contactez votre communauté si cela doit changer."
+  },
+  "org_wellbeing": {
+    "intro": "Les bénévoles de votre organisation qui ont dit, lors d'un bilan de bien-être, aller mal ou être en difficulté et demandé que quelqu'un prenne contact. Vous avez été prévenu par alerte et par e-mail à ce moment-là ; voici la liste complète. Vous voyez leur nom et comment ils se sentent, jamais leur note.",
+    "forbidden": "Vous n'avez pas accès aux alertes bien-être de cette organisation.",
+    "load_error": "Les alertes bien-être n'ont pas pu être chargées. Veuillez réessayer.",
+    "empty": "Personne n'a demandé d'aide",
+    "empty_desc": "Aucun de vos bénévoles n'a partagé de bilan bas au cours des 90 derniers jours.",
+    "summary_one": "{{count}} bénévole attend que quelqu'un prenne contact",
+    "summary_other": "{{count}} bénévoles attendent que quelqu'un prenne contact",
+    "mood_struggling": "Dit être en difficulté",
+    "mood_low": "Dit aller mal",
+    "status_active": "Personne n'a encore répondu",
+    "status_acknowledged": "L'équipe de la communauté s'en occupe",
+    "status_resolved": "Résolu",
+    "status_dismissed": "Clos",
+    "checked_in": "Bilan",
+    "told_label": "Vous avez été prévenu",
+    "told_on": "le {{date}}",
+    "not_told": "pas encore",
+    "what_to_do": "Prenez des nouvelles de cette personne rapidement. Si vous craignez pour sa sécurité en ce moment, appelez les services d'urgence, puis prévenez l'équipe de votre communauté.",
+    "closed_help": "L'équipe de la communauté a clos ce dossier. Vous pouvez toujours prendre contact.",
+    "message": "Écrire à {{name}}",
+    "view_profile": "Voir le profil",
+    "confidentiality_note": "Traitez ceci comme confidentiel. Ne le partagez qu'avec les personnes qui ont besoin de savoir, et n'en parlez jamais publiquement."
   }
 }

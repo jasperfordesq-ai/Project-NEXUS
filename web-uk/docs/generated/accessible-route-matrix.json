@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-20T13:58:49.816Z",
+  "generatedAt": "2026-10-20T17:56:58.071Z",
   "provenance": {
-    "generatedAt": "2026-10-20T13:58:49.816Z",
+    "generatedAt": "2026-10-20T17:56:58.071Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "3a59867cb26e369786575cf86280340906997692",
+    "laravelCommitSha": "6735049c246460c8e7eeebe33e7213d2a5a4cf33",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "3a59867cb26e369786575cf86280340906997692",
+    "webUkRepositoryCommitSha": "6735049c246460c8e7eeebe33e7213d2a5a4cf33",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-20T13:58:49.816Z",
+    "generatedAt": "2026-10-20T17:56:58.071Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 816,
+    "webUkRoutes": 817,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 106,
+    "extraWebUkRoutes": 107,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -151,7 +151,7 @@
       "volunteering": {
         "matched": 52,
         "missing": 0,
-        "extraWebUk": 64,
+        "extraWebUk": 65,
         "ignoredInfrastructure": 0
       },
       "health": {
@@ -1979,6 +1979,27 @@
       "webUkPath": "/volunteering/organisations/{param}/team/{param}/remove",
       "webUkView": "volunteering/org-team-remove",
       "webUkFile": "web-uk/src/routes/volunteering-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/volunteering/organisations/{param}/wellbeing",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/organisations/{param}/wellbeing",
+      "webUkView": "volunteering/organisation-wellbeing",
+      "webUkFile": "web-uk/src/routes/volunteering-incidents.js",
       "webUkRouteKind": ""
     },
     {

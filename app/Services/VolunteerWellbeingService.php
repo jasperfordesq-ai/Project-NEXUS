@@ -738,6 +738,89 @@ class VolunteerWellbeingService
     }
 
     /**
+     * What an organisation's owner, admins and safeguarding leads see on their
+     * dashboard: each of THEIR volunteers (an approved application to one of the
+     * organisation's opportunities, or approved hours with it, in the last 180
+     * days) who has a wellbeing alert raised because they said they were Low or
+     * Struggling in the last 90 days — name, how they feel, when, the alert's
+     * status, and when this organisation was told. Never the note: that stays
+     * with the community's staff.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function getOrganisationWellbeing(int $tenantId, int $orgId): array
+    {
+        $since = now()->subDays(180);
+        $fromApplications = DB::table('vol_applications as a')
+            ->join('vol_opportunities as o', function ($join) {
+                $join->on('o.id', '=', 'a.opportunity_id')->on('o.tenant_id', '=', 'a.tenant_id');
+            })
+            ->where('a.tenant_id', $tenantId)
+            ->where('o.organization_id', $orgId)
+            ->where('a.status', 'approved')
+            ->where('a.updated_at', '>=', $since)
+            ->pluck('a.user_id');
+        $fromHours = DB::table('vol_logs')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $orgId)
+            ->where('status', 'approved')
+            ->where('date_logged', '>=', $since->toDateString())
+            ->pluck('user_id');
+        $volunteerIds = $fromApplications->merge($fromHours)->map(fn ($id) => (int) $id)->unique()->values()->all();
+        if ($volunteerIds === []) {
+            return [];
+        }
+
+        $alerts = DB::table('vol_wellbeing_alerts as wa')
+            ->join('users as u', function ($join) {
+                $join->on('wa.user_id', '=', 'u.id')->on('wa.tenant_id', '=', 'u.tenant_id');
+            })
+            ->where('wa.tenant_id', $tenantId)
+            ->whereIn('wa.user_id', $volunteerIds)
+            ->where('wa.created_at', '>=', now()->subDays(90))
+            ->orderByDesc('wa.updated_at')
+            ->get(['wa.id', 'wa.user_id', 'wa.status', 'wa.indicators', 'wa.created_at', 'wa.updated_at',
+                'u.first_name', 'u.last_name', 'u.name', 'u.profile_type', 'u.organization_name', 'u.avatar_url']);
+        if ($alerts->isEmpty()) {
+            return [];
+        }
+
+        $told = DB::table('vol_wellbeing_alert_notifications')
+            ->where('tenant_id', $tenantId)
+            ->where('organization_id', $orgId)
+            ->whereIn('alert_id', $alerts->pluck('id')->map(fn ($id) => (int) $id)->all())
+            ->where('status', '!=', 'failed')
+            ->groupBy('alert_id')
+            ->selectRaw('alert_id, MIN(created_at) as first_at')
+            ->pluck('first_at', 'alert_id');
+
+        $items = [];
+        foreach ($alerts as $row) {
+            $indicators = json_decode((string) $row->indicators, true) ?: [];
+            $mood = isset($indicators['mood']['latest_mood']) ? (int) $indicators['mood']['latest_mood'] : null;
+            if (!self::isLowMood($mood)) {
+                continue; // an activity-pattern alert was never the organisation's business
+            }
+            $items[] = [
+                'alert_id' => (int) $row->id,
+                'volunteer' => [
+                    'id' => (int) $row->user_id,
+                    'name' => UserDisplayName::person($row),
+                    'avatar_url' => $row->avatar_url,
+                ],
+                'mood' => $mood,
+                'checkin_at' => $indicators['mood']['latest_at'] ?? null,
+                'status' => $row->status,
+                'told_at' => $told[(int) $row->id] ?? null,
+                'raised_at' => $row->created_at,
+                'updated_at' => $row->updated_at,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
      * Upsert a wellbeing alert — creates or updates an active alert for a user.
      */
     private static function upsertAlert(int $tenantId, int $userId, string $riskLevel, int $riskScore, array $indicators): void
@@ -1019,7 +1102,7 @@ class VolunteerWellbeingService
         foreach ($recipients as $recipient) {
             $m = $meta[(int) $recipient->id];
             $tier = $m['tier'];
-            $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $m['organization_name'], $recipient, $alertId, $tier === 'self' ? $othersCount - 1 : $othersCount, $communityName);
+            $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $m['organization_name'], $recipient, $alertId, $tier === 'self' ? $othersCount - 1 : $othersCount, $communityName, $m['organization_id'], (bool) ($m['org_admin'] ?? false));
             $row = $base + [
                 'recipient_user_id' => (int) $recipient->id,
                 'recipient_tenant_id' => (int) $recipient->tenant_id === $tenantId ? null : (int) $recipient->tenant_id,
@@ -1120,7 +1203,7 @@ class VolunteerWellbeingService
      * @return array{variant: string, params: array<string, string>, link: ?string, absolute_link: string, can_open: bool}
      *   variant: team | self | contact | org | parent | address
      */
-    private static function lowMoodContext(int $volunteerId, string $volunteerName, int $mood, string $tier, ?string $orgName, ?object $recipient, ?int $alertId, int $othersCount, string $communityName): array
+    private static function lowMoodContext(int $volunteerId, string $volunteerName, int $mood, string $tier, ?string $orgName, ?object $recipient, ?int $alertId, int $othersCount, string $communityName, ?int $orgId = null, bool $orgAdmin = false): array
     {
         $params = [
             'name' => $volunteerName,
@@ -1144,8 +1227,13 @@ class VolunteerWellbeingService
             default => 'team',
         };
 
+        // An organisation's owner or admin opens the dashboard's Wellbeing tab, which
+        // lists every volunteer of theirs who asked for someone to get in touch; a
+        // safeguarding lead who is not on the team cannot open the dashboard.
+        $orgPath = $orgId !== null && $orgAdmin ? '/volunteering/org/' . $orgId . '/dashboard?tab=wellbeing' : $profilePath;
         $path = match ($variant) {
-            'org', 'contact' => $profilePath,
+            'org' => $orgPath,
+            'contact' => $profilePath,
             default => $alertsPath,
         };
 
@@ -1230,13 +1318,15 @@ class VolunteerWellbeingService
      * @param int $othersCount how many other people were told (for the volunteer's own copy)
      * @return bool true when the dispatcher accepted the message
      */
-    public static function sendLowMoodEmail(object $recipient, int $tenantId, int $volunteerId, string $volunteerName, int $mood, string $tier = 'staff', ?string $orgName = null, ?int $alertId = null, int $othersCount = 0): bool
+    public static function sendLowMoodEmail(object $recipient, int $tenantId, int $volunteerId, string $volunteerName, int $mood, string $tier = 'staff', ?string $orgName = null, ?int $alertId = null, int $othersCount = 0, ?int $orgId = null): bool
     {
         if (empty($recipient->email)) {
             return false;
         }
         $communityName = (string) (TenantContext::get()['name'] ?? '');
-        $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $orgName, isset($recipient->id) ? $recipient : null, $alertId, $othersCount, $communityName);
+        $orgAdmin = $tier === 'organisation' && $orgId !== null && isset($recipient->id)
+            && in_array((int) $recipient->id, \App\Services\Volunteering\IncidentAccess::organisationAdminIds($tenantId, $orgId), true);
+        $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $orgName, isset($recipient->id) ? $recipient : null, $alertId, $othersCount, $communityName, $orgId, $orgAdmin);
         $variant = $context['variant'];
         $params = $context['params'];
 

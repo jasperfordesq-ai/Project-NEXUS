@@ -49,7 +49,7 @@ final class WellbeingRecipientResolver
     /**
      * @param array<int, string> $organisations organisation id => name, the volunteer's recent ones
      * @return array{
-     *   users: array<int, array{tier: string, tenant_id: int, organization_id: ?int, organization_name: ?string}>,
+     *   users: array<int, array{tier: string, tenant_id: int, organization_id: ?int, organization_name: ?string, org_admin: bool}>,
      *   emails: list<array{email: string, tier: string}>
      * }
      */
@@ -90,12 +90,15 @@ final class WellbeingRecipientResolver
 
         // 3. Organisation contacts.
         foreach ($organisations as $orgId => $orgName) {
+            // Owner and admin members can open the organisation dashboard; a
+            // safeguarding lead who is not on the team is pointed at the profile.
+            $admins = IncidentAccess::organisationAdminIds($tenantId, (int) $orgId);
             foreach (IncidentAccess::organisationContactIds($tenantId, (int) $orgId) as $contactId) {
                 $contactId = (int) $contactId;
                 if ($contactId === $volunteerId || isset($users[$contactId])) {
                     continue;
                 }
-                $users[$contactId] = self::entry('organisation', $tenantId, (int) $orgId, (string) $orgName);
+                $users[$contactId] = self::entry('organisation', $tenantId, (int) $orgId, (string) $orgName, in_array($contactId, $admins, true));
             }
         }
 
@@ -176,9 +179,9 @@ final class WellbeingRecipientResolver
         return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
     }
 
-    /** @return array{tier: string, tenant_id: int, organization_id: ?int, organization_name: ?string} */
-    private static function entry(string $tier, int $tenantId, ?int $orgId = null, ?string $orgName = null): array
+    /** @return array{tier: string, tenant_id: int, organization_id: ?int, organization_name: ?string, org_admin: bool} */
+    private static function entry(string $tier, int $tenantId, ?int $orgId = null, ?string $orgName = null, bool $orgAdmin = false): array
     {
-        return ['tier' => $tier, 'tenant_id' => $tenantId, 'organization_id' => $orgId, 'organization_name' => $orgName];
+        return ['tier' => $tier, 'tenant_id' => $tenantId, 'organization_id' => $orgId, 'organization_name' => $orgName, 'org_admin' => $orgAdmin];
     }
 }

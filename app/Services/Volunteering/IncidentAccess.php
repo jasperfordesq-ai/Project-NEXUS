@@ -110,7 +110,7 @@ final class IncidentAccess
     }
 
     /** @return list<int> owner + active owner/admin members, active users only */
-    private static function organisationAdminIds(int $tenantId, int $organizationId): array
+    public static function organisationAdminIds(int $tenantId, int $organizationId): array
     {
         $owner = (int) DB::table('vol_organizations')
             ->where('id', $organizationId)

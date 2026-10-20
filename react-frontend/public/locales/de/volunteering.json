@@ -63,7 +63,8 @@
     "opps_empty_other": "Hier ist nichts.",
     "opps_load_error": "Ihre Angebote konnten nicht geladen werden.",
     "opps_retry": "Erneut versuchen",
-    "tab_team": "Team"
+    "tab_team": "Team",
+    "tab_wellbeing": "Wohlbefinden"
   },
   "page_title": "Freiwilligenarbeit",
   "heading": "Freiwilligenarbeit",
@@ -1633,5 +1634,29 @@
     "safeguarding_deputy": "Stellvertretung",
     "safeguarding_nobody": "Noch niemand ernannt",
     "safeguarding_help": "Die/der Schutzbeauftragte und die Stellvertretung sehen eine Zusammenfassung jeder Schutzmeldung, die mit dieser Organisation verknüpft ist, und die vollständige Meldung nur, wenn das Schutzpersonal der Gemeinschaft sie teilt. Sie erfahren nie, wer eine Meldung gemacht hat. Gemeinschafts-Admins ernennen sie: Wenden Sie sich an Ihre Gemeinschaft, wenn sich etwas ändern soll."
+  },
+  "org_wellbeing": {
+    "intro": "Freiwillige deiner Organisation, die bei einem Wohlbefinden-Check-in angegeben haben, dass es ihnen schlecht geht, und darum gebeten haben, dass sich jemand meldet. Du wurdest damals per Hinweis und E-Mail informiert; hier ist die vollständige Liste. Du siehst ihren Namen und wie es ihnen geht – nie ihre Notiz.",
+    "forbidden": "Du hast keinen Zugriff auf die Wohlbefinden-Hinweise dieser Organisation.",
+    "load_error": "Die Wohlbefinden-Hinweise konnten nicht geladen werden. Bitte versuche es erneut.",
+    "empty": "Niemand hat um Hilfe gebeten",
+    "empty_desc": "Keine deiner Freiwilligen hat in den letzten 90 Tagen einen Check-in mit schlechtem Befinden geteilt.",
+    "summary_one": "{{count}} freiwillige Person wartet darauf, dass sich jemand meldet",
+    "summary_other": "{{count}} Freiwillige warten darauf, dass sich jemand meldet",
+    "mood_struggling": "Sagt, es geht nicht gut",
+    "mood_low": "Sagt, die Stimmung ist niedrig",
+    "status_active": "Noch niemand hat reagiert",
+    "status_acknowledged": "Das Team der Gemeinschaft kümmert sich",
+    "status_resolved": "Gelöst",
+    "status_dismissed": "Geschlossen",
+    "checked_in": "Check-in",
+    "told_label": "Du wurdest informiert",
+    "told_on": "am {{date}}",
+    "not_told": "noch nicht",
+    "what_to_do": "Bitte melde dich bald bei der Person. Wenn du dir gerade Sorgen um ihre Sicherheit machst, rufe den Notruf und informiere dann das Team deiner Gemeinschaft.",
+    "closed_help": "Das Team der Gemeinschaft hat dies abgeschlossen. Du kannst dich trotzdem melden.",
+    "message": "{{name}} schreiben",
+    "view_profile": "Profil ansehen",
+    "confidentiality_note": "Behandle dies vertraulich. Teile es nur mit Personen, die es wissen müssen, und veröffentliche nie etwas darüber."
   }
 }

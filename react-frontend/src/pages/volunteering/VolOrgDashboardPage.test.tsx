@@ -197,6 +197,19 @@ describe('VolOrgDashboardPage', () => {
     expect(screen.queryByRole('button', { name: /safeguarding/i })).not.toBeInTheDocument();
   });
 
+  it('hides the Wellbeing tab from a plain team member, and shows it to an admin', async () => {
+    mockManagedOrgs([{ ...ORG, member_role: 'member' }]);
+    const first = render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getAllByText('Community Helpers').length).toBeGreaterThan(0));
+    expect(screen.queryByRole('button', { name: /wellbeing/i })).not.toBeInTheDocument();
+    first.unmount();
+
+    mockManagedOrgs([{ ...ORG, member_role: 'admin' }]);
+    render(<VolOrgDashboardPage />);
+    await waitFor(() => expect(screen.getAllByText('Community Helpers').length).toBeGreaterThan(0));
+    expect(screen.getByRole('button', { name: /wellbeing/i })).toBeInTheDocument();
+  });
+
   it('shows the Safeguarding tab to an organisation admin', async () => {
     mockManagedOrgs([{ ...ORG, member_role: 'admin' }]);
     render(<VolOrgDashboardPage />);
