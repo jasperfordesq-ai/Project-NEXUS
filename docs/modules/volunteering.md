@@ -42,6 +42,7 @@ The two hats are enforced in code: an organisation starts at `status = 'pending'
 | Shift swaps | `app/Services/ShiftSwapService.php` |
 | Per-tenant config | `app/Services/VolunteeringConfigurationService.php` |
 | Safeguarding | `app/Services/SafeguardingService.php`, `SafeguardingTriggerService`, `SafeguardingPreferenceService` |
+| Wellbeing | `app/Services/VolunteerWellbeingService.php`, `app/Services/Volunteering/WellbeingRecipientResolver.php`, `WellbeingSettingsService.php`, `app/Jobs/SendVolunteerLowMoodEmails.php` |
 | Vol-log status events | `app/Providers/EventServiceProvider.php` → `App\Events\VolLogStatusChanged` |
 | Listeners | `AwardXpOnVolLogApproved`, `RevertRegionalPointsOnVolLogChange`, `PostFeedActivityOnVolLogApproved` |
 
@@ -105,6 +106,15 @@ All three pin tenant context with `TenantContext::setById()` / `restoreAfterScop
 
 Safeguarding is a cross-cutting concern, not a sub-feature of hour logging. `SafeguardingService` manages guardian↔ward assignments (with an active-user, no-self-assignment guard), safeguarding training records, and incident reporting with a constrained status-transition map. `volunteering.guardian_consent_required` gates guardian-consent flows per tenant. Admin/broker surfaces live under `/v2/admin/safeguarding/*` and `/v2/admin/caring-community/safeguarding/*`. Message-level safeguarding flags flow through `SafeguardingFlaggedEvent` → `NotifySafeguardingStaff`.
 
+## Volunteer wellbeing
+
+A volunteer records how they feel (1 Struggling … 5 Great) with an optional note on the Wellbeing tab (website), `/volunteering/wellbeing` (accessible site) and the phone app. `VolunteerWellbeingService::detectBurnoutRisk()` turns shifts, hours, engagement gaps and the latest **shared** check-in into a 0–100 risk score; `vol_wellbeing_alerts` holds one active row per volunteer once the score reaches 30, written only by the daily `volunteering:assess-wellbeing` (04:00) and by a shared check-in, never by a read.
+
+**Telling people (20 Oct 2026).** For a Low or Struggling check-in with "Let someone get in touch with me" ticked, `recordCheckin()` asks `App\Services\Volunteering\WellbeingRecipientResolver` who to tell, in this order, each person once: the community's named **wellbeing contacts** and extra address (`volunteering.wellbeing_contact_user_ids`, `volunteering.wellbeing_contact_email`); its **safeguarding staff** (`SafeguardingStaff::scope`), **including the volunteer when they are staff** — on a community with one staff account, excluding them meant nobody was told; the contacts of each **organisation** they volunteered with in the last 180 days; the safeguarding staff of the community **directly above** (never a sibling, never tenant 1); and only when none of those exists, the community's `tenants.contact_email`. Each person gets a bell (and the curated, time-sensitive `volunteer_wellbeing` push) at once and an email from the `emails` queue (`SendVolunteerLowMoodEmails`), rendered in their own language and naming the **person** (`UserDisplayName::person()`), never the organisation their account represents. The note is never in a bell, push or email.
+
+**The record.** Every attempt is a row in `vol_wellbeing_alert_notifications` (tier, channel, `queued`/`sent`/`failed`, error code; never the note or the mood). The job marks each row as it goes, so a retry sends only to the people not yet reached. `team_notified` in the check-in response is true only when at least one person or address was reached, and `vol_mood_checkins.team_notified_at` is set only then, so the once-a-day limit cannot be tripped by a day on which nobody could be told. The response also carries `outcome` (`told`, `already_told_today`, `nobody_available`, `private`, `not_low`), `told_count` and `told_at`; all three clients show it honestly.
+
+**Staff side.** `GET /v2/admin/volunteering/wellbeing/alerts` (list, with `told_count`/`last_told_at`), `GET …/alerts/{id}` (indicators, shared check-ins with notes, who was told, notes) and `POST …/alerts/{id}/notes` are open to brokers, coordinators and admins; notes go to `vol_wellbeing_alert_notes`, which database triggers make append-only. `GET`/`PUT …/wellbeing/settings` (the contacts and the "If you need support now" box, `WellbeingSettingsService`) are for community administrators only. The admin page is `/admin/volunteering/wellbeing` (sidebar badge `active_wellbeing_alerts`; bells and emails link to it with `?alert=`); brokers use the panel on `/broker/safeguarding/volunteering`.
 ## Per-tenant configuration
 
 `VolunteeringConfigurationService` stores `volunteering.*` keys in `tenant_settings` (5-minute cache). It controls 17 tab-visibility toggles plus behavioural settings used across the services above: `max_hours_per_shift`, `cancellation_deadline_hours`, `min_hours_for_certificate`, `swap_requires_admin`, `auto_approve_applications`, `guardian_consent_required`, `enable_qr_checkin`, `enable_matching`, and others. Read `DEFAULTS` in that file for the authoritative list and default values.
@@ -126,6 +136,8 @@ Safeguarding is a cross-cutting concern, not a sub-feature of hour logging. `Saf
 | Hours approved but no second credit on retry | Idempotency gate (`already_processed` / `already_paid`). | Expected and correct — no action. |
 | Org wallet shows a negative balance | The mint debits the org unconditionally on approval. | Expected by design; reconcile via `depositFromUser` or `adminAdjustment`. |
 | New organisation not in the organisation directory | Status is `pending` awaiting tenant-admin approval. | Approve it (`/v2/admin/volunteering/organizations/{id}/status`). |
+| A volunteer's shared check-in reached nobody (`team_notified: false`, `outcome: nobody_available`) | No named wellbeing contact, no staff, no recent organisation, no parent-community staff and no `tenants.contact_email`. | Set wellbeing contacts on Admin → Volunteering → Wellbeing alerts, or give the community a contact address; the next check-in retries. `vol_wellbeing_alert_notifications` shows every attempt. |
+| Staff got the bell but no email | `emails` queue not running, or the row is `failed` with an error code. | Check the row's `error_code` and `email_log`; the job's `failed()` marks unsent rows `job_failed`. |
 | Volunteer cannot log hours | Caring Community `allow_member_self_log` is off, or no approved application / org membership. | Grant membership/approve application, or adjust the tenant policy. |
 | Waitlist spot offer never claimed | `notified` offer expired. | `expireStaleNotifications()` (cron) cascades the offer to the next person automatically. |
 | All endpoints return `403 FEATURE_DISABLED` | `volunteering` feature off for the tenant. | Re-enable the feature in tenant settings. |
@@ -151,5 +163,6 @@ Important regression tests:
 - `tests/Laravel/Unit/Services/ShiftWaitlistServiceTest.php`, `ShiftSwapServiceTest.php` — slot-freeing, promotion, double-booking guards.
 - `tests/Laravel/Unit/Services/VolunteerCertificateServiceTest.php`, `VolunteerCheckInServiceTest.php`, `VolunteerMatchingServiceTest.php`, `VolunteeringConfigurationServiceTest.php`.
 - `tests/Laravel/Integration/VolunteerEmailReliabilityTest.php` — recipient-locale notification rendering.
+- `tests/Laravel/Feature/Volunteering/VolunteerWellbeingMoodCheckinTest.php`, `VolunteerWellbeingRecipientChainTest.php`, `SendVolunteerLowMoodEmailsJobTest.php`, `VolunteerWellbeingAlertDetailTest.php`, `VolunteerWellbeingSettingsTest.php` — who is told, the record of it, honest outcomes, notes and settings.
 
 After any schema change, run PHPStan and refresh the schema dump per the project deploy rules.
