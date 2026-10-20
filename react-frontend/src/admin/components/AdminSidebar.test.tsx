@@ -454,11 +454,12 @@ describe('AdminSidebar', () => {
     ['Organisations', '/test/admin/volunteering/organizations'],
     ['Training & certificates', '/test/admin/volunteering/records/training'],
     ['Safeguarding & incidents', '/test/admin/volunteering/safeguarding'],
+    ['Wellbeing alerts', '/test/admin/volunteering/wellbeing'],
     ['Fundraising & donations', '/test/admin/volunteering/fundraising/campaigns'],
     ['Settings', '/test/admin/module-configuration?configure=volunteering'],
   ];
 
-  it('lists exactly eleven volunteering entries, with the old separate pages folded in', async () => {
+  it('lists exactly twelve volunteering entries, with the old separate pages folded in', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
 
@@ -474,7 +475,7 @@ describe('AdminSidebar', () => {
   it('shows how many applications, hours, expenses and project ideas are waiting', async () => {
     mockApi.get.mockImplementation((url: string) => Promise.resolve(
       url === '/v2/admin/badge-counts'
-        ? { success: true, data: { pending_vol_applications: 4, pending_vol_hours: 2, pending_vol_expenses: 1, pending_vol_projects: 3, pending_vol_swaps: 0 } }
+        ? { success: true, data: { pending_vol_applications: 4, pending_vol_hours: 2, pending_vol_expenses: 1, pending_vol_projects: 3, pending_vol_swaps: 0, active_wellbeing_alerts: 5 } }
         : { success: true, data: {} },
     ));
     const { AdminSidebar } = await import('./AdminSidebar');
@@ -487,6 +488,8 @@ describe('AdminSidebar', () => {
       expect(byHref('/test/admin/volunteering/hours')).toHaveTextContent('2');
       expect(byHref('/test/admin/volunteering/expenses')).toHaveTextContent('1');
       expect(byHref('/test/admin/volunteering/projects')).toHaveTextContent('3');
+      // Volunteers who said they are struggling and nobody has acknowledged yet.
+      expect(byHref('/test/admin/volunteering/wellbeing')).toHaveTextContent('5');
     });
   });
 

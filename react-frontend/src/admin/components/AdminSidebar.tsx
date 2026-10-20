@@ -94,6 +94,7 @@ import Receipt from 'lucide-react/icons/receipt';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import Gift from 'lucide-react/icons/gift';
 import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
@@ -192,6 +193,7 @@ function useAdminNav(): NavSection[] {
   const pendingVolExpensesBadge = badgeForCount(counts.pending_vol_expenses);
   const pendingVolProjectsBadge = badgeForCount(counts.pending_vol_projects);
   const pendingVolSwapsBadge = badgeForCount(counts.pending_vol_swaps);
+  const activeWellbeingBadge = badgeForCount(counts.active_wellbeing_alerts);
 
   const isGod = isGodUser(user);
   const isSuperAdmin = isSuperAdminUser(user);
@@ -422,6 +424,13 @@ function useAdminNav(): NavSection[] {
             group: t('volunteering_nav.group_volunteers_safety'), keywords: keyword(t('volunteering_nav.keywords.training_certificates')),
           },
           { label: t('volunteering_nav.safeguarding'), href: '/admin/volunteering/safeguarding', icon: ShieldAlert, keywords: keyword(t('volunteering_nav.keywords.safeguarding')) },
+          {
+            label: t('volunteering_nav.wellbeing'), href: '/admin/volunteering/wellbeing', icon: HeartPulse,
+            keywords: keyword(t('volunteering_nav.keywords.wellbeing')),
+            // Volunteers who said they are struggling and asked for someone to get
+            // in touch, not yet acknowledged. Red: a person is waiting.
+            ...(activeWellbeingBadge ? { badge: activeWellbeingBadge, attention: 'danger' } : {}),
+          },
           {
             label: t('volunteering_nav.fundraising_donations'), href: '/admin/volunteering/fundraising/campaigns', icon: Gift,
             group: t('volunteering_nav.group_giving'), keywords: keyword(t('volunteering_nav.keywords.fundraising_donations')),
@@ -769,7 +778,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, t]);
+  }, [canSeeIntegrations, canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingOrgsBadge, pendingUsersBadge, pendingVolApplicationsBadge, pendingVolExpensesBadge, pendingVolHoursBadge, pendingVolProjectsBadge, pendingVolSwapsBadge, activeWellbeingBadge, t]);
 }
 
 interface AdminSidebarProps {

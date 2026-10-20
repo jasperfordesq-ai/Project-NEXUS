@@ -46,6 +46,7 @@ vi.mock('../modules/volunteering/VolunteerSwaps', () => ({ default: () => <div>S
 vi.mock('../modules/volunteering/VolunteerOpportunities', () => ({ default: () => <div>Opportunities page</div> }));
 vi.mock('../modules/volunteering/VolunteerOrganizations', () => ({ default: () => <div>Organisations page</div> }));
 vi.mock('../modules/volunteering/VolunteerSafeguarding', () => ({ default: () => <div>Safeguarding page</div> }));
+vi.mock('../modules/volunteering/VolunteerWellbeing', () => ({ default: () => <div>Wellbeing page</div> }));
 vi.mock('../modules/volunteering/incidents/VolunteerIncidentCase', () => ({ default: () => <div>Incident page</div> }));
 vi.mock('../modules/volunteering/VolunteerGivingDays', () => ({ default: () => <div>Giving days page</div> }));
 vi.mock('../modules/volunteering/VolunteerTraining', () => ({ default: () => <div>Training page</div> }));
@@ -89,7 +90,8 @@ describe('guessed volunteering admin addresses', () => {
     ['incidents', '/test/admin/volunteering/safeguarding', 'Safeguarding page'],
     ['organisations', '/test/admin/volunteering/organizations', 'Organisations page'],
     ['shifts', '/test/admin/volunteering/opportunities', 'Opportunities page'],
-    ['wellbeing', '/test/admin/volunteering', 'Overview page'],
+    // Since 2026-10-20 wellbeing is its own page (alerts, who was told, notes, settings).
+    ['wellbeing', '/test/admin/volunteering/wellbeing', 'Wellbeing page'],
     // Since 2026-10-18 these pages are tabs under three hubs; their old
     // addresses (and the guessed ones) follow them.
     ['swaps', '/test/admin/volunteering/opportunities/swaps', 'Swaps page'],

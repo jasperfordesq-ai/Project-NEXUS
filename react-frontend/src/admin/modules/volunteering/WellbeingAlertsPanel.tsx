@@ -21,6 +21,7 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Check from 'lucide-react/icons/check';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import X from 'lucide-react/icons/x';
+import ExternalLink from 'lucide-react/icons/external-link';
 import { Card, CardBody, CardHeader, Button, Chip, Skeleton, Select, SelectItem } from '@/components/ui';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -53,6 +54,9 @@ export interface WellbeingAlert {
   /** Why the alert was raised: the volunteer said they feel low, or an activity pattern. */
   reason?: 'low_mood' | 'activity' | string;
   latest_checkin?: WellbeingLatestCheckin | null;
+  /** How many people or addresses were told about this alert, and when last (20 Oct 2026). */
+  told_count?: number;
+  last_told_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -138,9 +142,11 @@ function formatDateTime(value: string | undefined): string | null {
 export interface WellbeingAlertsPanelProps {
   /** Change this value to make the panel reload (e.g. from a page-level Refresh button). */
   refreshKey?: number;
+  /** When set, each alert offers "Open" (the case drawer on the Wellbeing page). */
+  onOpen?: (alert: WellbeingAlert) => void;
 }
 
-export function WellbeingAlertsPanel({ refreshKey = 0 }: WellbeingAlertsPanelProps) {
+export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlertsPanelProps) {
   const { t } = useTranslation('admin_volunteering');
   const toast = useToast();
   const [alerts, setAlerts] = useState<WellbeingAlert[]>([]);
@@ -263,6 +269,13 @@ export function WellbeingAlertsPanel({ refreshKey = 0 }: WellbeingAlertsPanelPro
                         {t('volunteering.wellbeing_raised_on', { date: raisedOn.toLocaleDateString(getFormattingLocale()) })}
                       </p>
                     )}
+                    {typeof alert.told_count === 'number' && (
+                      <p className={`text-xs mt-1 ${alert.told_count > 0 ? 'text-muted' : 'text-warning-foreground'}`}>
+                        {alert.told_count > 0
+                          ? t('volunteering.wellbeing_told_count', { count: alert.told_count, date: formatDateTime(alert.last_told_at ?? undefined) ?? '' })
+                          : t('volunteering.wellbeing_nobody_told')}
+                      </p>
+                    )}
                     {checkinMood && (
                       <p className="text-sm mt-2">
                         {checkinWhen
@@ -279,6 +292,18 @@ export function WellbeingAlertsPanel({ refreshKey = 0 }: WellbeingAlertsPanelPro
                     )}
                   </div>
                   <div className="flex flex-wrap gap-1 shrink-0">
+                    {onOpen && (
+                      <Button
+                        size="sm"
+                        variant="tertiary"
+                        color="primary"
+                        startContent={<ExternalLink size={14} aria-hidden="true" />}
+                        isDisabled={otherBusy}
+                        onPress={() => onOpen(alert)}
+                      >
+                        {t('volunteering.wellbeing_open')}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="tertiary"

@@ -811,12 +811,14 @@
       "training_certificates": "schulung|qualifikationen|zertifikate|erste hilfe|ablauf|nachweise",
       "fundraising_donations": "spendenaktion|spenden|erstattungen|aufrufe|kampagnen",
       "opportunities": "schichten|dienstplan|zeitplan|tauschanfragen|gruppenbuchungen",
-      "settings": "erinnerungen|konfiguration|modulkonfiguration"
+      "settings": "erinnerungen|konfiguration|modulkonfiguration",
+      "wellbeing": "wohlbefinden|stimmung|burnout|check-in|unterstützung"
     },
     "qualifications": "Qualifikationen",
     "opportunities": "Gelegenheiten & Schichten",
     "certificates": "Bescheinigungen",
-    "group_bookings": "Gruppenbuchungen"
+    "group_bookings": "Gruppenbuchungen",
+    "wellbeing": "Wohlbefinden-Hinweise"
   },
   "group_join_requests": "Beitrittsanfragen für Gruppen",
   "group_moderation": "Gruppenmoderation",

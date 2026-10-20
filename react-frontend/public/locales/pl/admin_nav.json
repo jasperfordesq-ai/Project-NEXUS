@@ -819,12 +819,14 @@
       "training_certificates": "szkolenia|kwalifikacje|certyfikaty|pierwsza pomoc|wygaśnięcie|uprawnienia",
       "fundraising_donations": "zbiórki|darowizny|zwroty|apele|kampanie",
       "opportunities": "dyżury|grafik|harmonogram|prośby o zamianę|rezerwacje grupowe",
-      "settings": "przypomnienia|konfiguracja|konfiguracja modułu"
+      "settings": "przypomnienia|konfiguracja|konfiguracja modułu",
+      "wellbeing": "samopoczucie|nastrój|wypalenie|zgłoszenie|wsparcie"
     },
     "qualifications": "Kwalifikacje",
     "opportunities": "Oferty i zmiany",
     "certificates": "Certyfikaty",
-    "group_bookings": "Rezerwacje grupowe"
+    "group_bookings": "Rezerwacje grupowe",
+    "wellbeing": "Alerty samopoczucia"
   },
   "group_join_requests": "Prośby o dołączenie do grup",
   "group_moderation": "Moderacja grup",

@@ -171,6 +171,7 @@ const VolunteerQualifications = lazy(() => import('./modules/volunteering/Volunt
 const VolunteerCertificates = lazy(() => import('./modules/volunteering/VolunteerCertificates'));
 const VolunteerGroupBookings = lazy(() => import('./modules/volunteering/VolunteerGroupBookings'));
 const VolunteerSafeguarding = lazy(() => import('./modules/volunteering/VolunteerSafeguarding'));
+const VolunteerWellbeing = lazy(() => import('./modules/volunteering/VolunteerWellbeing'));
 const VolunteerIncidentCaseRoute = lazy(() => import('./modules/volunteering/incidents/VolunteerIncidentCase'));
 const VolunteerHoursAudit = lazy(() => import('./modules/volunteering/VolunteerHoursAudit'));
 const VolunteerGivingDays = lazy(() => import('./modules/volunteering/VolunteerGivingDays'));
@@ -669,7 +670,9 @@ export function AdminRoutes() {
       <Route path="volunteering/organisations" element={<TenantRedirect to="/admin/volunteering/organizations" />} />
       <Route path="volunteering/shift-swaps" element={<TenantRedirect to="/admin/volunteering/opportunities/swaps" />} />
       <Route path="volunteering/shifts" element={<TenantRedirect to="/admin/volunteering/opportunities" />} />
-      <Route path="volunteering/wellbeing" element={<TenantRedirect to="/admin/volunteering" />} />
+      {/* Wellbeing alerts, who was told, notes and the community's wellbeing settings (20 Oct 2026);
+          bells and emails link here with ?alert={id}. Until then this path only redirected to the overview. */}
+      <Route path="volunteering/wellbeing" element={<FeatureGatedElement feature="volunteering"><Lazy><VolunteerWellbeing /></Lazy></FeatureGatedElement>} />
       {/* ─── CARING COMMUNITY — retired from /admin, now lives at /caring/* ─── */}
       {/* These redirects preserve bookmarks to the old /admin/caring-community/* URLs. */}
       <Route path="caring-community" element={<TenantRedirect to="/caring" />} />

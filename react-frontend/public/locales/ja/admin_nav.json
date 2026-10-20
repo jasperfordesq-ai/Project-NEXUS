@@ -811,12 +811,14 @@
       "training_certificates": "研修|資格|証明書|救急|期限|資格証",
       "fundraising_donations": "募金|寄付|返金|キャンペーン",
       "opportunities": "シフト|ローテーション|予定表|交代申請|団体予約",
-      "settings": "リマインダー|設定|モジュール設定"
+      "settings": "リマインダー|設定|モジュール設定",
+      "wellbeing": "ウェルビーイング|気分|燃え尽き|チェックイン|支援"
     },
     "qualifications": "資格",
     "opportunities": "活動とシフト",
     "certificates": "証明書",
-    "group_bookings": "グループ予約"
+    "group_bookings": "グループ予約",
+    "wellbeing": "ウェルビーイング・アラート"
   },
   "group_join_requests": "グループ参加申請",
   "group_moderation": "グループのモデレーション",

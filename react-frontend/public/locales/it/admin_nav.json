@@ -815,12 +815,14 @@
       "training_certificates": "formazione|qualifiche|certificati|primo soccorso|scadenza|credenziali",
       "fundraising_donations": "raccolta fondi|donazioni|rimborsi|appelli|campagne",
       "opportunities": "turni|turnazione|orario|richieste di scambio|prenotazioni di gruppo",
-      "settings": "promemoria|configurazione|configurazione modulo"
+      "settings": "promemoria|configurazione|configurazione modulo",
+      "wellbeing": "benessere|umore|burnout|check-in|supporto"
     },
     "qualifications": "Qualifiche",
     "opportunities": "Opportunità e turni",
     "certificates": "Certificati",
-    "group_bookings": "Prenotazioni di gruppo"
+    "group_bookings": "Prenotazioni di gruppo",
+    "wellbeing": "Avvisi sul benessere"
   },
   "group_join_requests": "Richieste di adesione ai gruppi",
   "group_moderation": "Moderazione dei gruppi",

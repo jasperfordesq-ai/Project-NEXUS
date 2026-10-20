@@ -15,6 +15,7 @@ import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import Building2 from 'lucide-react/icons/building-2';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import DollarSign from 'lucide-react/icons/dollar-sign';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import Activity from 'lucide-react/icons/activity';
@@ -45,6 +46,7 @@ interface AttentionCounts {
   pending_vol_projects: number;
   pending_vol_swaps: number;
   pending_organisations: number;
+  active_wellbeing_alerts: number;
 }
 
 interface VolStats {
@@ -277,6 +279,7 @@ export function VolunteeringOverview() {
     { key: 'pending_vol_expenses', labelKey: 'volunteering.attention_expenses', icon: DollarSign, path: '/admin/volunteering/expenses' },
     { key: 'pending_vol_projects', labelKey: 'volunteering.attention_projects', icon: Briefcase, path: '/admin/volunteering/projects' },
     { key: 'pending_organisations', labelKey: 'volunteering.attention_organisations', icon: Building2, path: '/admin/volunteering/organizations' },
+    { key: 'active_wellbeing_alerts', labelKey: 'volunteering.attention_wellbeing', icon: HeartPulse, path: '/admin/volunteering/wellbeing' },
     // Only when the community requires admin approval for swaps; otherwise
     // the queue cannot exist and the row would always read 0.
     ...(volunteeringConfig?.['volunteering.swap_requires_admin'] === true

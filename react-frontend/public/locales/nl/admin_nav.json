@@ -811,12 +811,14 @@
       "training_certificates": "training|kwalificaties|certificaten|ehbo|vervaldatum|bewijzen",
       "fundraising_donations": "inzameling|donaties|terugbetalingen|oproepen|acties",
       "opportunities": "diensten|rooster|planning|ruilverzoeken|groepsboekingen",
-      "settings": "herinneringen|configuratie|moduleconfiguratie"
+      "settings": "herinneringen|configuratie|moduleconfiguratie",
+      "wellbeing": "welzijn|stemming|burn-out|check-in|ondersteuning"
     },
     "qualifications": "Kwalificaties",
     "opportunities": "Kansen & diensten",
     "certificates": "Certificaten",
-    "group_bookings": "Groepsboekingen"
+    "group_bookings": "Groepsboekingen",
+    "wellbeing": "Welzijnsmeldingen"
   },
   "group_join_requests": "Lidmaatschapsverzoeken voor groepen",
   "group_moderation": "Groepsmoderatie",

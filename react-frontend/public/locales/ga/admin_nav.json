@@ -823,12 +823,14 @@
       "training_certificates": "oiliúint|cáilíochtaí|teastais|garchabhair|éag|dintiúir",
       "fundraising_donations": "tiomsú airgid|síntiúis|aisíocaíochtaí|achainíocha|feachtais",
       "opportunities": "sealanna oibre|róta|sceideal|clár ama|iarratais ar mhalartú|áirithintí grúpa",
-      "settings": "meabhrúcháin|cumraíocht|cumraíocht modúil"
+      "settings": "meabhrúcháin|cumraíocht|cumraíocht modúil",
+      "wellbeing": "folláine|giúmar|dó amach|seiceáil|tacaíocht"
     },
     "qualifications": "Cáilíochtaí",
     "opportunities": "Deiseanna & sealanna",
     "certificates": "Teastais",
-    "group_bookings": "Áirithintí grúpa"
+    "group_bookings": "Áirithintí grúpa",
+    "wellbeing": "Foláirimh folláine"
   },
   "group_join_requests": "Iarratais ar ghrúpaí a cheangal",
   "group_moderation": "Modhnóireacht grúpaí",

@@ -51,6 +51,22 @@ const STRUGGLING_ALERT = {
   },
 };
 
+const TOLD_ALERT = {
+  ...STRUGGLING_ALERT,
+  id: 73,
+  user_name: 'Pat Murphy',
+  told_count: 2,
+  last_told_at: '2026-10-20T12:05:22Z',
+};
+
+const NOBODY_TOLD_ALERT = {
+  ...STRUGGLING_ALERT,
+  id: 74,
+  user_name: 'Lone Volunteer',
+  told_count: 0,
+  last_told_at: null,
+};
+
 const LOW_ALERT = {
   ...STRUGGLING_ALERT,
   id: 72,
@@ -151,5 +167,16 @@ describe('extractWellbeingAlerts', () => {
     expect(extractWellbeingAlerts({ data: { data: a } })).toEqual(a);
     expect(extractWellbeingAlerts(null)).toEqual([]);
     expect(extractWellbeingAlerts('nope')).toEqual([]);
+  });
+
+  it('says how many people were told, or that nobody could be, and offers to open the alert', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: [TOLD_ALERT, NOBODY_TOLD_ALERT] });
+    const onOpen = vi.fn();
+    render(<WellbeingAlertsPanel onOpen={onOpen} />);
+    expect(await screen.findByText('Pat Murphy')).toBeInTheDocument();
+    expect(screen.getByText(/told 2 people/i)).toBeInTheDocument();
+    expect(screen.getByText(/nobody could be told yet/i)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: /^open$/i })[0] as HTMLElement);
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ id: 73 }));
   });
 });

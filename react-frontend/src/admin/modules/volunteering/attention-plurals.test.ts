@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
  * "5 applications waiting" unless `_few` and `_many` exist. Polish, Irish
  * and Arabic have more categories than one/other; this pins them.
  */
-const KEYS = ['applications', 'hours', 'expenses', 'projects', 'organisations', 'swaps'];
+const KEYS = ['applications', 'hours', 'expenses', 'projects', 'organisations', 'swaps', 'wellbeing'];
 
 const CATEGORIES: Record<string, string[]> = {
   pl: ['one', 'few', 'many', 'other'],

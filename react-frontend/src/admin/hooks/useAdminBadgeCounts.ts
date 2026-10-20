@@ -40,6 +40,8 @@ export interface AdminBadgeCounts {
   pending_vol_expenses?: number;
   pending_vol_projects?: number;
   pending_vol_swaps?: number;
+  /** Volunteers who said they are struggling and nobody has acknowledged yet. */
+  active_wellbeing_alerts?: number;
 }
 
 /** How often to re-check while the admin sits on a page. */

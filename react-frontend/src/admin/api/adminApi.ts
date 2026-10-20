@@ -1936,6 +1936,19 @@ export const adminVolunteering = {
   /** The staff case file: the report, who handles it, sharing, and its full history. */
   getIncidentCase: (id: number) => api.get(`/v2/admin/volunteering/incidents/${id}`),
   addIncidentNote: (id: number, body: string) => api.post(`/v2/admin/volunteering/incidents/${id}/notes`, { body }),
+  // Wellbeing alerts (20 Oct 2026): one alert's case view, permanent notes, and the
+  // community's wellbeing settings (who is told first, the support box; admins only).
+  getWellbeingAlert: (id: number) => api.get(`/v2/admin/volunteering/wellbeing/alerts/${id}`),
+  addWellbeingAlertNote: (id: number, body: string) => api.post(`/v2/admin/volunteering/wellbeing/alerts/${id}/notes`, { body }),
+  updateWellbeingAlert: (id: number, status: 'acknowledged' | 'resolved' | 'dismissed', note?: string) =>
+    api.put(`/v2/admin/volunteering/wellbeing/alerts/${id}`, note ? { status, note } : { status }),
+  getWellbeingSettings: () => api.get('/v2/admin/volunteering/wellbeing/settings'),
+  updateWellbeingSettings: (payload: {
+    contact_user_ids?: number[];
+    contact_email?: string | null;
+    support_text?: string;
+    support_links?: Array<{ label: string; url: string }>;
+  }) => api.put('/v2/admin/volunteering/wellbeing/settings', payload),
   sendIncidentMessage: (id: number, audience: 'reporter' | 'organisation', body: string) =>
     api.post(`/v2/admin/volunteering/incidents/${id}/messages`, { audience, body }),
   /** Share the full report with the linked organisation's safeguarding lead(s). */

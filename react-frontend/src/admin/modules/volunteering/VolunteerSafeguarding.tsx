@@ -14,6 +14,7 @@ import { getFormattingLocale } from '@/lib/helpers';
 import { useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Search from 'lucide-react/icons/search';
@@ -411,6 +412,20 @@ export function VolunteerSafeguarding({
           </Button>
         }
       />
+
+      {/* Wellbeing alerts live on their own page (20 Oct 2026); until then they were
+          only on the Overview, and an admin looking for them here found nothing. */}
+      <Link
+        to={tenantPath('/admin/volunteering/wellbeing')}
+        className="flex items-center gap-3 rounded-xl border border-divider/70 bg-surface px-4 py-3 hover:bg-surface-secondary/40 transition-colors"
+      >
+        <HeartPulse size={18} className="text-danger shrink-0" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">{t('volunteering.wellbeing_safeguarding_card_title')}</span>
+          <span className="block text-xs text-muted">{t('volunteering.wellbeing_safeguarding_card_desc')}</span>
+        </span>
+        <span className="text-sm font-medium text-accent">{t('volunteering.wellbeing_safeguarding_card_open')}</span>
+      </Link>
 
       {/* Stats Row — each tile also filters the list */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

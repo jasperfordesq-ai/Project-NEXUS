@@ -815,12 +815,14 @@
       "training_certificates": "formación|titulaciones|certificados|primeros auxilios|caducidad|credenciales",
       "fundraising_donations": "recaudación|donaciones|reembolsos|campañas",
       "opportunities": "turnos|horario|calendario|solicitudes de cambio|reservas de grupo",
-      "settings": "recordatorios|configuración|configuración del módulo"
+      "settings": "recordatorios|configuración|configuración del módulo",
+      "wellbeing": "bienestar|estado de ánimo|agotamiento|registro|apoyo"
     },
     "qualifications": "Cualificaciones",
     "opportunities": "Oportunidades y turnos",
     "certificates": "Certificados",
-    "group_bookings": "Reservas de grupo"
+    "group_bookings": "Reservas de grupo",
+    "wellbeing": "Alertas de bienestar"
   },
   "group_join_requests": "Solicitudes para unirse a grupos",
   "group_moderation": "Moderación de grupos",

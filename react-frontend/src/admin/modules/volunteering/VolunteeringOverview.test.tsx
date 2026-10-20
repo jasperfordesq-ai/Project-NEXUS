@@ -80,6 +80,7 @@ const MOCK_STATS = {
     pending_vol_expenses: 2,
     pending_vol_projects: 0,
     pending_vol_swaps: 4,
+    active_wellbeing_alerts: 1,
     pending_organisations: 1,
   },
 };
@@ -374,6 +375,7 @@ describe('VolunteeringOverview — refresh', () => {
     expect(screen.getByText('3 applications waiting')).toBeInTheDocument();
     expect(screen.getByText('2 expense claims waiting')).toBeInTheDocument();
     expect(screen.getByText('1 organisation awaiting approval')).toBeInTheDocument();
+    expect(screen.getByText('1 wellbeing alert to look at')).toBeInTheDocument();
     // Nothing waiting → not listed, rather than a card reading "0".
     expect(screen.queryByText(/hours entr/i)).not.toBeInTheDocument();
     // Swap requests only when the community requires admin approval (off here).
@@ -386,7 +388,7 @@ describe('VolunteeringOverview — refresh', () => {
   it('says so when nothing is waiting', async () => {
     mockAdminVolunteering.getOverview.mockResolvedValue({
       ...MOCK_OVERVIEW_RESPONSE,
-      data: { ...MOCK_OVERVIEW_RESPONSE.data, stats: { ...MOCK_STATS, attention: { pending_vol_applications: 0, pending_vol_hours: 0, pending_vol_expenses: 0, pending_vol_projects: 0, pending_vol_swaps: 0, pending_organisations: 0 } } },
+      data: { ...MOCK_OVERVIEW_RESPONSE.data, stats: { ...MOCK_STATS, attention: { pending_vol_applications: 0, pending_vol_hours: 0, pending_vol_expenses: 0, pending_vol_projects: 0, pending_vol_swaps: 0, pending_organisations: 0, active_wellbeing_alerts: 0 } } },
     });
     mockAdminVolunteering.getActivityFeed.mockResolvedValue(MOCK_ACTIVITY_RESPONSE);
 
