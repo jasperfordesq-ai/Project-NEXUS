@@ -305,6 +305,12 @@ return [
         'share_hint' => 'Your community\'s team will see how you\'re feeling and your note. The organisations you volunteer with will be told how you\'re feeling, but not your note. If you choose Okay, Good or Great, only you will see your check-in.',
         'checkin_saved_shared' => 'Thank you for telling us. Someone from your community\'s team will be in touch.',
         'recent_shared' => 'Shared with your community\'s team',
+        'load_error' => 'We could not load your wellbeing dashboard. Please try again.',
+        'checkin_saved_shared_count' => 'Thank you for telling us. We have told :count people from your community, and someone will be in touch.',
+        'checkin_saved_already' => 'Your check-in has been saved. Your community was already told today, and this check-in has been added to what they can see.',
+        'checkin_saved_nobody' => 'Your check-in has been saved, but nobody could be told yet. We will try again with your next check-in. If you need support now, use the links on this page.',
+        'support_title' => 'If you need support now',
+        'last_told' => 'Your community\'s team was last told on :date.',
     ],
 
     // Recommended shifts

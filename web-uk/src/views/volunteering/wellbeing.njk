@@ -13,7 +13,17 @@
 
 {% block content %}
   {% if status %}
-    {% if status.type == "success" %}
+    {% if status.type == "warning" %}
+      {# The check-in was saved; nobody could be told yet. A notice, not an error. #}
+      <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="wellbeing-notice-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="wellbeing-notice-title">{{ t("govuk_alpha.states.important") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% elif status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="wellbeing-success-title">
         <div class="govuk-notification-banner__header">
           <h2 class="govuk-notification-banner__title" id="wellbeing-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
@@ -59,6 +69,24 @@
     {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
     {{ govukTag({ text: wellbeing.risk.label, classes: (wellbeing.risk.className) }) }}
   </p>
+  {% if wellbeing.lastToldLabel %}
+    <p class="govuk-body-s">{{ wellbeing.lastToldLabel }}</p>
+  {% endif %}
+
+  {% if wellbeing.support %}
+    {# The community's own support text and links, or the platform default (20 Oct 2026). #}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.wellbeing.support_title") }}</h2>
+      {% if wellbeing.support.text %}<p class="govuk-body">{{ wellbeing.support.text }}</p>{% endif %}
+      {% if wellbeing.support.links.length %}
+        <ul class="govuk-list">
+          {% for link in wellbeing.support.links %}
+            <li><a class="govuk-link" href="{% if link.internal %}{{ urlFor(link.url) }}{% else %}{{ link.url }}{% endif %}">{{ link.label }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  {% endif %}
 
   <dl class="nexus-alpha-stat-grid">
     <div class="nexus-alpha-stat">

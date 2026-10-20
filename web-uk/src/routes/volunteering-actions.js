@@ -516,7 +516,25 @@ function hoursStatus(status, t = null) {
   return null;
 }
 
-function wellbeingStatus(status, t = null) {
+function wellbeingStatus(status, t = null, told = null) {
+  // 20 Oct 2026: the member is told what actually happened. 'nobody' is a
+  // warning, not an error: the check-in WAS saved; nobody could be reached yet.
+  if (status === 'checkin-saved-nobody') {
+    return {
+      type: 'warning',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_nobody')
+        : 'Your check-in has been saved, but nobody could be told yet. We will try again with your next check-in.'
+    };
+  }
+  if (status === 'checkin-saved-already') {
+    return {
+      type: 'success',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_already')
+        : 'Your check-in has been saved. Your community was already told today.'
+    };
+  }
   if (status === 'checkin-saved') {
     return {
       type: 'success',
@@ -526,10 +544,11 @@ function wellbeingStatus(status, t = null) {
   // Only ever reached when the API answered team_notified: true, i.e. the member
   // chose Low or Struggling, ticked the box, and someone was actually told.
   if (status === 'checkin-saved-shared') {
+    const count = positiveInteger(told);
     return {
       type: 'success',
       message: t
-        ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared')
+        ? (count ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared_count', { count }) : t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared'))
         : "Thank you for telling us. Someone from your community's team will be in touch."
     };
   }
@@ -1048,8 +1067,28 @@ function normalizeWellbeingDashboard(result, t = null) {
       label: moodLabel(value, t),
       checked: value === 3
     })),
-    recentCheckins: checkins.map((checkin) => normalizeCheckin(checkin, t))
+    recentCheckins: checkins.map((checkin) => normalizeCheckin(checkin, t)),
+    support: normalizeWellbeingSupport(data.support),
+    lastToldLabel: (() => {
+      const at = trimmed(data.last_team_notified_at ?? data.lastTeamNotifiedAt);
+      if (!at) return null;
+      const date = bladeDateTimeLabel(at);
+      return t ? t('govuk_alpha_volunteering.wellbeing.last_told', { date }) : `Your community's team was last told on ${date}.`;
+    })()
   };
+}
+
+// The community's "If you need support now" box, as the API sends it (text plus
+// links that are https://, mailto:, tel: or a page on this site). Anything else is dropped.
+function normalizeWellbeingSupport(raw) {
+  const support = raw && typeof raw === 'object' ? raw : {};
+  const text = trimmed(support.text, 2000);
+  const links = (Array.isArray(support.links) ? support.links : [])
+    .map((link) => ({ label: trimmed(link && link.label, 80), url: trimmed(link && link.url, 500) }))
+    .filter((link) => link.label && link.url && (/^(https:\/\/|mailto:|tel:)/i.test(link.url) || (link.url.startsWith('/') && !link.url.startsWith('//'))))
+    .map((link) => ({ ...link, internal: link.url.startsWith('/') }));
+  if (!text && links.length === 0) return null;
+  return { text, links, isDefault: support.is_default === true };
 }
 
 function moneyLabel(value) {
@@ -3208,7 +3247,7 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     wellbeing = normalizeWellbeingDashboard(await callApi(token, 'GET', '/wellbeing'), res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your wellbeing dashboard. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.wellbeing.load_error');
   }
 
   return res.render('volunteering/wellbeing', {
@@ -3217,7 +3256,7 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     wellbeing,
     loadError,
     checkinForm: consumeFormReplay(req, 'volunteering', 'wellbeing'),
-    status: wellbeingStatus(trimmed(req.query.status), res.locals.t),
+    status: wellbeingStatus(trimmed(req.query.status), res.locals.t, trimmed(req.query.told)),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3849,9 +3888,15 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
     // success path it is simply discarded unread.
     (result) => {
       const saved = dataFrom(result);
-      return saved && typeof saved === 'object' && saved.team_notified === true
-        ? '/volunteering/wellbeing?status=checkin-saved-shared'
-        : '/volunteering/wellbeing?status=checkin-saved';
+      const row = saved && typeof saved === 'object' ? saved : {};
+      // The API says what happened (20 Oct 2026); an older API only says team_notified.
+      if (row.outcome === 'nobody_available') return '/volunteering/wellbeing?status=checkin-saved-nobody';
+      if (row.outcome === 'already_told_today') return '/volunteering/wellbeing?status=checkin-saved-already';
+      if (row.team_notified === true) {
+        const told = positiveInteger(row.told_count);
+        return told ? `/volunteering/wellbeing?status=checkin-saved-shared&told=${told}` : '/volunteering/wellbeing?status=checkin-saved-shared';
+      }
+      return '/volunteering/wellbeing?status=checkin-saved';
     },
     '/volunteering/wellbeing?status=checkin-failed'
   );

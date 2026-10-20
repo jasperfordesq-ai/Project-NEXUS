@@ -288,6 +288,12 @@ return [
         'share_hint' => 'Het team van je gemeenschap ziet hoe je je voelt en je opmerking. De organisaties waarvoor je vrijwilligerswerk doet, horen hoe je je voelt, maar niet je opmerking. Als je Oké, Goed of Geweldig kiest, ziet alleen jij je check-in.',
         'checkin_saved_shared' => 'Bedankt dat je het ons laat weten. Iemand van het team van je gemeenschap neemt contact met je op.',
         'recent_shared' => 'Gedeeld met het team van je gemeenschap',
+        'load_error' => 'We konden je welzijnsoverzicht niet laden. Probeer het opnieuw.',
+        'checkin_saved_shared_count' => 'Bedankt dat je het ons hebt verteld. We hebben :count mensen uit je gemeenschap geïnformeerd en iemand neemt contact met je op.',
+        'checkin_saved_already' => 'Je check-in is opgeslagen. Je gemeenschap is vandaag al geïnformeerd en deze check-in is toegevoegd aan wat zij kunnen zien.',
+        'checkin_saved_nobody' => 'Je check-in is opgeslagen, maar niemand kon nog worden geïnformeerd. We proberen het opnieuw bij je volgende check-in. Heb je nu ondersteuning nodig, gebruik dan de links op deze pagina.',
+        'support_title' => 'Heb je nu ondersteuning nodig',
+        'last_told' => 'Het team van je gemeenschap is voor het laatst geïnformeerd op :date.',
     ],
     'recommended' => [
         'title' => 'Aanbevolen voor jou',

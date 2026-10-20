@@ -10787,7 +10787,13 @@
                 "share_label": "Lig do dhuine teagmháil a dhéanamh liom má roghnaím Íseal nó Ag streachailt",
                 "share_hint": "Feicfidh foireann do phobail conas atá tú ag mothú agus do nóta. Inseofar do na heagraíochtaí a ndéanann tú obair dheonach leo conas atá tú ag mothú, ach ní fheicfidh siad do nóta. Má roghnaíonn tú Ceart go leor, Maith nó Go hiontach, is tusa amháin a fheicfidh do sheiceáil isteach.",
                 "checkin_saved_shared": "Go raibh maith agat as é a insint dúinn. Déanfaidh duine éigin ó fhoireann do phobail teagmháil leat.",
-                "recent_shared": "Roinnte le foireann do phobail"
+                "recent_shared": "Roinnte le foireann do phobail",
+                "load_error": "Níorbh fhéidir linn do phainéal folláine a lódáil. Bain triail eile as.",
+                "checkin_saved_shared_count": "Go raibh maith agat as é a rá linn. Chuireamar :count duine ó do phobal ar an eolas, agus déanfaidh duine teagmháil leat.",
+                "checkin_saved_already": "Sábháladh do sheiceáil. Cuireadh do phobal ar an eolas inniu cheana, agus cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+                "checkin_saved_nobody": "Sábháladh do sheiceáil, ach níorbh fhéidir aon duine a chur ar an eolas go fóill. Bainfimid triail eile as le do chéad seiceáil eile. Má tá tacaíocht uait anois, úsáid na naisc ar an leathanach seo.",
+                "support_title": "Má tá tacaíocht uait anois",
+                "last_told": "Cuireadh foireann do phobail ar an eolas go deireanach ar :date."
             },
             "recommended": {
                 "title": "Molta duit",

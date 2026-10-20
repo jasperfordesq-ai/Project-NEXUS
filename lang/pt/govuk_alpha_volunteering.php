@@ -288,6 +288,12 @@ return [
         'share_hint' => 'A equipe da sua comunidade verá como você está se sentindo e a sua observação. As organizações com as quais você faz voluntariado saberão como você está se sentindo, mas não verão a sua observação. Se você escolher "Ok", "Bom" ou "Ótimo", só você verá o seu check-in.',
         'checkin_saved_shared' => 'Obrigado por nos contar. Alguém da equipe da sua comunidade entrará em contato com você.',
         'recent_shared' => 'Compartilhado com a equipe da sua comunidade',
+        'load_error' => 'Não foi possível carregar o seu painel de bem-estar. Tente novamente.',
+        'checkin_saved_shared_count' => 'Obrigado por nos dizer. Avisámos :count pessoas da sua comunidade e alguém entrará em contacto consigo.',
+        'checkin_saved_already' => 'O seu registo foi guardado. A sua comunidade já foi avisada hoje e este registo foi adicionado ao que ela pode ver.',
+        'checkin_saved_nobody' => 'O seu registo foi guardado, mas ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo. Se precisa de apoio agora, use as ligações nesta página.',
+        'support_title' => 'Se precisa de apoio agora',
+        'last_told' => 'A equipa da sua comunidade foi avisada pela última vez em :date.',
     ],
     'recommended' => [
         'title' => 'Recomendado para você',

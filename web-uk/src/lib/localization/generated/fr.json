@@ -10787,7 +10787,13 @@
                 "share_label": "Que quelqu’un me contacte si je choisis « Faible » ou « En difficulté »",
                 "share_hint": "L’équipe de votre communauté verra comment vous vous sentez ainsi que votre note. Les organisations avec lesquelles vous faites du bénévolat sauront comment vous vous sentez, mais ne verront pas votre note. Si vous choisissez « D'accord », « Bien » ou « Génial », vous serez la seule personne à voir votre enregistrement.",
                 "checkin_saved_shared": "Merci de nous l’avoir dit. Quelqu’un de l’équipe de votre communauté vous contactera.",
-                "recent_shared": "Partagé avec l’équipe de votre communauté"
+                "recent_shared": "Partagé avec l’équipe de votre communauté",
+                "load_error": "Nous n'avons pas pu charger votre tableau de bord bien-être. Veuillez réessayer.",
+                "checkin_saved_shared_count": "Merci de nous l'avoir dit. Nous avons prévenu :count personnes de votre communauté, et quelqu'un prendra contact avec vous.",
+                "checkin_saved_already": "Votre bilan a été enregistré. Votre communauté a déjà été prévenue aujourd'hui, et ce bilan a été ajouté à ce qu'elle peut voir.",
+                "checkin_saved_nobody": "Votre bilan a été enregistré, mais personne n'a encore pu être prévenu. Nous réessaierons lors de votre prochain bilan. Si vous avez besoin de soutien maintenant, utilisez les liens de cette page.",
+                "support_title": "Si vous avez besoin de soutien maintenant",
+                "last_told": "L'équipe de votre communauté a été prévenue pour la dernière fois le :date."
             },
             "recommended": {
                 "title": "Recommandé pour vous",

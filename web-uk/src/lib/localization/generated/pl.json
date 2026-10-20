@@ -10787,7 +10787,13 @@
                 "share_label": "Chcę, aby ktoś się ze mną skontaktował, jeśli wybiorę „Niski” lub „Walczę”",
                 "share_hint": "Zespół Twojej społeczności zobaczy, jak się czujesz, oraz Twoją notatkę. Organizacje, w których się udzielasz, dowiedzą się, jak się czujesz, ale nie zobaczą Twojej notatki. Jeśli wybierzesz „OK”, „Dobrze” lub „Świetnie”, tylko Ty zobaczysz swoje zameldowanie.",
                 "checkin_saved_shared": "Dziękujemy za tę informację. Ktoś z zespołu Twojej społeczności się z Tobą skontaktuje.",
-                "recent_shared": "Udostępniono zespołowi Twojej społeczności"
+                "recent_shared": "Udostępniono zespołowi Twojej społeczności",
+                "load_error": "Nie udało się wczytać Twojego panelu samopoczucia. Spróbuj ponownie.",
+                "checkin_saved_shared_count": "Dziękujemy, że nam o tym powiedziałeś(-aś). Powiadomiliśmy :count osób z Twojej społeczności i ktoś się z Tobą skontaktuje.",
+                "checkin_saved_already": "Twoje zgłoszenie zostało zapisane. Twoja społeczność została już dziś powiadomiona, a to zgłoszenie dodano do tego, co może zobaczyć.",
+                "checkin_saved_nobody": "Twoje zgłoszenie zostało zapisane, ale nikogo nie udało się jeszcze powiadomić. Spróbujemy ponownie przy Twoim następnym zgłoszeniu. Jeśli potrzebujesz wsparcia teraz, skorzystaj z linków na tej stronie.",
+                "support_title": "Jeśli potrzebujesz wsparcia teraz",
+                "last_told": "Zespół Twojej społeczności został ostatnio powiadomiony :date."
             },
             "recommended": {
                 "title": "Polecane dla Ciebie",

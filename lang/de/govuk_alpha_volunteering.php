@@ -288,6 +288,12 @@ return [
         'share_hint' => 'Das Team Ihrer Gemeinschaft sieht, wie es Ihnen geht, und Ihre Notiz. Die Organisationen, bei denen Sie sich engagieren, erfahren, wie es Ihnen geht, aber nicht Ihre Notiz. Wenn Sie „Okay“, „Gut“ oder „Großartig“ wählen, sehen nur Sie Ihren Check-in.',
         'checkin_saved_shared' => 'Danke, dass Sie es uns mitgeteilt haben. Jemand aus dem Team Ihrer Gemeinschaft wird sich bei Ihnen melden.',
         'recent_shared' => 'Mit dem Team Ihrer Gemeinschaft geteilt',
+        'load_error' => 'Wir konnten deine Wohlbefinden-Übersicht nicht laden. Bitte versuche es erneut.',
+        'checkin_saved_shared_count' => 'Danke, dass du es uns gesagt hast. Wir haben :count Personen aus deiner Gemeinschaft informiert, und jemand wird sich melden.',
+        'checkin_saved_already' => 'Dein Check-in wurde gespeichert. Deine Gemeinschaft wurde heute bereits informiert, und dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.',
+        'checkin_saved_nobody' => 'Dein Check-in wurde gespeichert, aber niemand konnte bisher informiert werden. Wir versuchen es bei deinem nächsten Check-in erneut. Wenn du jetzt Unterstützung brauchst, nutze die Links auf dieser Seite.',
+        'support_title' => 'Wenn du jetzt Unterstützung brauchst',
+        'last_told' => 'Das Team deiner Gemeinschaft wurde zuletzt am :date informiert.',
     ],
     'recommended' => [
         'title' => 'Für Sie empfohlen',
