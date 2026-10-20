@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 239,
+    "producer_count": 240,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -3108,6 +3108,19 @@
             "body_expression": "$content",
             "type_expression": "vol_shift_cancelled",
             "link_expression": "/volunteering?tab=applications",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/VolunteerWellbeingService.php:966:NotificationDispatcher::fanOutPush",
+            "file": "app/Services/VolunteerWellbeingService.php",
+            "line": 966,
+            "transport": "NotificationDispatcher::fanOutPush",
+            "role": "producer",
+            "recipient_expression": "(int) $recipient->id",
+            "title_expression": null,
+            "body_expression": "$message",
+            "type_expression": "volunteer_wellbeing",
+            "link_expression": "$context['link']",
             "data_expression": null
         }
     ]

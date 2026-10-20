@@ -908,6 +908,18 @@
     "info_card_heading": "Check-in zum Wohlbefinden",
     "info_card_volunteer": "Ehrenamtliche Person",
     "info_card_feeling": "Befinden",
-    "info_card_organisation": "Organisation"
+    "info_card_organisation": "Organisation",
+    "bell_self": "Du hast darum gebeten, dass sich jemand meldet, nachdem du angegeben hast, dass du {{mood}} bist. Niemand sonst in deiner Gemeinschaft konnte bisher informiert werden; dies ist dein Nachweis, dass die Anfrage gestellt wurde.",
+    "bell_self_told": "Du hast darum gebeten, dass sich jemand meldet, nachdem du angegeben hast, dass du {{mood}} bist. Wir haben {{count}} Personen informiert.",
+    "bell_contact": "{{name}} hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und möchte, dass sich jemand meldet. Du bist eine der Wohlbefinden-Kontaktpersonen dieser Gemeinschaft.",
+    "bell_parent": "{{name}}, ehrenamtlich tätig bei {{community}}, hat angegeben, {{mood}} zu sein, und möchte, dass sich jemand meldet.",
+    "self_subject": "Dein Wohlbefinden-Check-in: wer informiert wurde",
+    "self_title": "Dein Wohlbefinden-Check-in",
+    "self_body_alone": "Du hast beim Wohlbefinden-Check-in angegeben, dass du {{mood}} bist, und darum gebeten, dass sich jemand meldet. Niemand sonst in deiner Gemeinschaft konnte bisher informiert werden: Es gibt keine weiteren Mitarbeitenden, Wohlbefinden-Kontaktpersonen oder Organisationskontakte. Diese E-Mail ist dein Nachweis, dass die Anfrage gestellt wurde.",
+    "self_body_told": "Du hast beim Wohlbefinden-Check-in angegeben, dass du {{mood}} bist, und darum gebeten, dass sich jemand meldet. Wir haben {{count}} Personen in deiner Gemeinschaft informiert.",
+    "contact_body": "<strong>{{name}}</strong> hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und darum gebeten, dass sich jemand meldet. Du bist eine der Wohlbefinden-Kontaktpersonen von {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, ehrenamtlich tätig bei {{community}}, hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und darum gebeten, dass sich jemand meldet. Du wirst als Mitarbeitende der übergeordneten Gemeinschaft von {{community}} informiert.",
+    "community_contact_intro": "Dies ist die Kontaktadresse von {{community}}. Niemand aus dem Team der Gemeinschaft konnte informiert werden, daher wurde diese Nachricht stattdessen hierher gesendet.",
+    "info_card_community": "Gemeinschaft"
   }
 }

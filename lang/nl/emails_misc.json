@@ -908,6 +908,18 @@
     "info_card_heading": "Welzijnscheck",
     "info_card_volunteer": "Vrijwilliger",
     "info_card_feeling": "Hoe het gaat",
-    "info_card_organisation": "Organisatie"
+    "info_card_organisation": "Organisatie",
+    "bell_self": "Je hebt gevraagd of iemand contact wil opnemen nadat je aangaf dat je je {{mood}} voelt. Niemand anders in je gemeenschap kon nog worden geïnformeerd, dus dit is je bewijs dat het verzoek is gedaan.",
+    "bell_self_told": "Je hebt gevraagd of iemand contact wil opnemen nadat je aangaf dat je je {{mood}} voelt. We hebben {{count}} mensen geïnformeerd.",
+    "bell_contact": "{{name}} gaf bij de welzijnscheck-in aan zich {{mood}} te voelen en wil graag dat iemand contact opneemt. Je bent een van de welzijnscontactpersonen van deze gemeenschap.",
+    "bell_parent": "{{name}}, vrijwilliger bij {{community}}, gaf aan zich {{mood}} te voelen en wil graag dat iemand contact opneemt.",
+    "self_subject": "Je welzijnscheck-in: wie is geïnformeerd",
+    "self_title": "Je welzijnscheck-in",
+    "self_body_alone": "Je gaf bij je welzijnscheck-in aan dat je je {{mood}} voelt en vroeg of iemand contact wil opnemen. Niemand anders in je gemeenschap kon nog worden geïnformeerd: er zijn geen andere medewerkers, welzijnscontactpersonen of organisatiecontacten om te informeren. Deze e-mail is je bewijs dat het verzoek is gedaan.",
+    "self_body_told": "Je gaf bij je welzijnscheck-in aan dat je je {{mood}} voelt en vroeg of iemand contact wil opnemen. We hebben {{count}} mensen in je gemeenschap geïnformeerd.",
+    "contact_body": "<strong>{{name}}</strong> gaf bij de welzijnscheck-in aan zich {{mood}} te voelen en vroeg of iemand contact wil opnemen. Je bent een van de welzijnscontactpersonen van {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, vrijwilliger bij {{community}}, gaf bij de welzijnscheck-in aan zich {{mood}} te voelen en vroeg of iemand contact wil opnemen. Je wordt geïnformeerd als medewerker van de gemeenschap boven {{community}}.",
+    "community_contact_intro": "Dit is het contactadres van {{community}}. Niemand van het team van de gemeenschap kon worden geïnformeerd, daarom is dit bericht hierheen gestuurd.",
+    "info_card_community": "Gemeenschap"
   }
 }

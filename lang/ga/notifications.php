@@ -112,6 +112,7 @@ return [
     'push_vol_swap_approved' => 'Babhtáil Shift Faofa',
     'push_vol_swap_declined' => 'Diúltaíodh don Bhabhtáil Shift',
     'push_vol_swap_expired' => 'Babhtáil seala imithe in éag',
+    'push_volunteer_wellbeing' => 'Seiceáil folláine',
     'push_new_topic' => 'Post Nua',
     'push_new_reply' => 'Freagra Nua',
     'push_mention' => 'Dúradh leat',
@@ -164,6 +165,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Ní féidir d\'iarratas babhtála don :time a dhéanamh a thuilleadh',
             'body' => 'Tapáil chun do bhabhtálacha seala a fheiceáil',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => 'Ba mhaith le :actor go ndéanfadh duine teagmháil',
+            'body' => 'Dúirt an duine ina sheiceáil folláine go bhfuil sé :subject',
         ],
         'exchange_request_received' => [
             'title' => 'Iarratas nua ar :subject',

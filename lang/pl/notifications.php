@@ -115,6 +115,7 @@ return [
     'push_vol_swap_approved' => 'Zatwierdzono zmianę zmiany',
     'push_vol_swap_declined' => 'Zmiana zmiany odrzucona',
     'push_vol_swap_expired' => 'Zamiana zmian wygasła',
+    'push_volunteer_wellbeing' => 'Zgłoszenie samopoczucia',
     'push_new_topic' => 'Nowy post',
     'push_new_reply' => 'Nowa odpowiedź',
     'push_mention' => 'Zostałeś wspomniany',
@@ -167,6 +168,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Twoja prośba o zamianę na :time nie jest już możliwa',
             'body' => 'Dotknij, aby zobaczyć zamiany zmian',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor prosi, aby ktoś się skontaktował',
+            'body' => 'W zgłoszeniu samopoczucia podano, że czuje się :subject',
         ],
         'exchange_request_received' => [
             'title' => 'Nowe żądanie dla :subject',

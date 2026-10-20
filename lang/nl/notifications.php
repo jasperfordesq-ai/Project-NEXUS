@@ -115,6 +115,7 @@ return [
     'push_vol_swap_approved' => 'Ploegenwissel goedgekeurd',
     'push_vol_swap_declined' => 'Ploegwissel geweigerd',
     'push_vol_swap_expired' => 'Ploegwissel verlopen',
+    'push_volunteer_wellbeing' => 'Welzijnscheck-in',
     'push_new_topic' => 'Nieuw bericht',
     'push_new_reply' => 'Nieuw antwoord',
     'push_mention' => 'Je werd genoemd',
@@ -167,6 +168,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Je ruilverzoek voor :time is niet meer mogelijk',
             'body' => 'Tik om je dienstruilen te bekijken',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor wil graag dat iemand contact opneemt',
+            'body' => 'Gaf bij de welzijnscheck-in aan zich :subject te voelen',
         ],
         'exchange_request_received' => [
             'title' => 'Nieuw verzoek voor :subject',

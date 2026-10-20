@@ -908,6 +908,18 @@
     "info_card_heading": "Check-in de bem-estar",
     "info_card_volunteer": "Pessoa voluntária",
     "info_card_feeling": "Como se sente",
-    "info_card_organisation": "Organização"
+    "info_card_organisation": "Organização",
+    "bell_self": "Pediu que alguém entrasse em contacto consigo depois de dizer que está {{mood}}. Ainda não foi possível avisar mais ninguém na sua comunidade, por isso este é o seu registo de que o pedido foi feito.",
+    "bell_self_told": "Pediu que alguém entrasse em contacto consigo depois de dizer que está {{mood}}. Avisámos {{count}} pessoas.",
+    "bell_contact": "{{name}} disse no registo de bem-estar que está {{mood}} e gostaria que alguém entrasse em contacto. É um dos contactos de bem-estar desta comunidade.",
+    "bell_parent": "{{name}}, voluntário em {{community}}, disse que está {{mood}} e gostaria que alguém entrasse em contacto.",
+    "self_subject": "O seu registo de bem-estar: quem foi avisado",
+    "self_title": "O seu registo de bem-estar",
+    "self_body_alone": "Disse no seu registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto consigo. Ainda não foi possível avisar mais ninguém na sua comunidade: não há outros membros da equipa, contactos de bem-estar nem contactos de organizações para avisar. Este e-mail é o seu registo de que o pedido foi feito.",
+    "self_body_told": "Disse no seu registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto consigo. Avisámos {{count}} pessoas na sua comunidade.",
+    "contact_body": "<strong>{{name}}</strong> disse no registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto. É um dos contactos de bem-estar de {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, voluntário em {{community}}, disse no registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto. Está a ser avisado como membro da equipa da comunidade acima de {{community}}.",
+    "community_contact_intro": "Este é o endereço de contacto de {{community}}. Não foi possível avisar ninguém da equipa da comunidade, por isso esta mensagem foi enviada para aqui.",
+    "info_card_community": "Comunidade"
   }
 }

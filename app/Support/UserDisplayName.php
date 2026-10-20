@@ -227,6 +227,43 @@ final class UserDisplayName
     }
 
     /**
+     * The PERSON behind an account, for messages that are about them as a
+     * human being: first + last name even when the account is an organisation
+     * profile (whose display name is the organisation). Wellbeing messages use
+     * this: "Timebank Ireland said they are feeling low" was wrong.
+     *
+     * Falls back to resolve() when no personal name is stored.
+     *
+     * @param array<string, mixed>|object|null $user
+     */
+    public static function person(array|object|null $user, ?string $fallback = null): string
+    {
+        if ($user === null) {
+            return (string) $fallback;
+        }
+
+        $get = static function (string $key) use ($user): ?string {
+            if (is_array($user)) {
+                return array_key_exists($key, $user) && $user[$key] !== null ? (string) $user[$key] : null;
+            }
+            if ($user instanceof \Illuminate\Database\Eloquent\Model) {
+                $attributes = $user->getAttributes();
+
+                return array_key_exists($key, $attributes) && $attributes[$key] !== null ? (string) $attributes[$key] : null;
+            }
+
+            return isset($user->{$key}) ? (string) $user->{$key} : null;
+        };
+
+        $name = trim(trim((string) $get('first_name')) . ' ' . trim((string) $get('last_name')));
+        if ($name !== '') {
+            return $name;
+        }
+
+        return self::resolve($user, $fallback);
+    }
+
+    /**
      * Initials for an avatar fallback.
      *
      * An organisation gets the initials of its own name, not the contact's.

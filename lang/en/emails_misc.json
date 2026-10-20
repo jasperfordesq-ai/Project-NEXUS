@@ -908,6 +908,18 @@
     "info_card_heading": "Wellbeing check-in",
     "info_card_volunteer": "Volunteer",
     "info_card_feeling": "How they feel",
-    "info_card_organisation": "Organisation"
+    "info_card_organisation": "Organisation",
+    "bell_self": "You asked for someone to get in touch after saying you are {{mood}}. Nobody else in your community could be told yet, so this is your record that the request was made.",
+    "bell_self_told": "You asked for someone to get in touch after saying you are {{mood}}. We have told {{count}} people.",
+    "bell_contact": "{{name}} said in their wellbeing check-in that they are {{mood}}, and would like someone to get in touch. You are one of this community's wellbeing contacts.",
+    "bell_parent": "{{name}}, who volunteers with {{community}}, said they are {{mood}} and would like someone to get in touch.",
+    "self_subject": "Your wellbeing check-in: who has been told",
+    "self_title": "Your wellbeing check-in",
+    "self_body_alone": "You said in your wellbeing check-in that you are {{mood}} and asked for someone to get in touch. Nobody else in your community could be told yet: there are no other staff, wellbeing contacts or organisation contacts to tell. This email is your record that the request was made.",
+    "self_body_told": "You said in your wellbeing check-in that you are {{mood}} and asked for someone to get in touch. We have told {{count}} people in your community.",
+    "contact_body": "<strong>{{name}}</strong> said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them. You are one of {{community}}'s wellbeing contacts.",
+    "parent_body": "<strong>{{name}}</strong>, who volunteers with {{community}}, said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them. You are being told as staff of the community above {{community}}.",
+    "community_contact_intro": "This is {{community}}'s contact address. Nobody on the community's team could be told, so this message has been sent here instead.",
+    "info_card_community": "Community"
   }
 }

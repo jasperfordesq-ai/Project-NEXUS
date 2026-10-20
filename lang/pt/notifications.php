@@ -112,6 +112,7 @@ return [
     'push_vol_swap_approved' => 'Troca de turno aprovada',
     'push_vol_swap_declined' => 'Troca de turno recusada',
     'push_vol_swap_expired' => 'Troca de turno expirada',
+    'push_volunteer_wellbeing' => 'Registo de bem-estar',
     'push_new_topic' => 'Nova postagem',
     'push_new_reply' => 'Nova resposta',
     'push_mention' => 'Você foi mencionado',
@@ -164,6 +165,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Seu pedido de troca para :time já não é possível',
             'body' => 'Toque para ver suas trocas de turno',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor gostaria que alguém entrasse em contacto',
+            'body' => 'No registo de bem-estar disse que está :subject',
         ],
         'exchange_request_received' => [
             'title' => 'Nova solicitação para :subject',

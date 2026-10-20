@@ -69,6 +69,8 @@ final class PushCopy
         'vol_shift_cancelled',
         'vol_waitlist_spot',
         'vol_swap_expired',
+        // A volunteer said they are Low or Struggling and asked for someone to get in touch.
+        'volunteer_wellbeing',
         'exchange_request_received',
         'exchange_accepted',
         'achievement',
@@ -99,6 +101,8 @@ final class PushCopy
         'vol_shift_reminder',
         // A freed place passes to the next person after the claim window.
         'vol_waitlist_spot',
+        // Someone asked for a person to get in touch with them. Prompt, not a digest.
+        'volunteer_wellbeing',
     ];
 
     /** @return list<string> */

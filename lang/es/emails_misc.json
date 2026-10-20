@@ -908,6 +908,18 @@
     "info_card_heading": "Registro de bienestar",
     "info_card_volunteer": "Persona voluntaria",
     "info_card_feeling": "Cómo se siente",
-    "info_card_organisation": "Organización"
+    "info_card_organisation": "Organización",
+    "bell_self": "Pediste que alguien se pusiera en contacto contigo tras decir que estás {{mood}}. Todavía no se ha podido avisar a nadie más de tu comunidad, así que este es tu registro de que la solicitud se hizo.",
+    "bell_self_told": "Pediste que alguien se pusiera en contacto contigo tras decir que estás {{mood}}. Hemos avisado a {{count}} personas.",
+    "bell_contact": "{{name}} dijo en su registro de bienestar que está {{mood}} y le gustaría que alguien se pusiera en contacto. Eres una de las personas de contacto de bienestar de esta comunidad.",
+    "bell_parent": "{{name}}, que colabora como voluntario con {{community}}, dijo que está {{mood}} y le gustaría que alguien se pusiera en contacto.",
+    "self_subject": "Tu registro de bienestar: a quién se ha avisado",
+    "self_title": "Tu registro de bienestar",
+    "self_body_alone": "Dijiste en tu registro de bienestar que estás {{mood}} y pediste que alguien se pusiera en contacto contigo. Todavía no se ha podido avisar a nadie más de tu comunidad: no hay otro personal, personas de contacto de bienestar ni contactos de organizaciones a quienes avisar. Este correo es tu registro de que la solicitud se hizo.",
+    "self_body_told": "Dijiste en tu registro de bienestar que estás {{mood}} y pediste que alguien se pusiera en contacto contigo. Hemos avisado a {{count}} personas de tu comunidad.",
+    "contact_body": "<strong>{{name}}</strong> dijo en su registro de bienestar que está {{mood}} y pidió que alguien se pusiera en contacto. Eres una de las personas de contacto de bienestar de {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, que colabora como voluntario con {{community}}, dijo en su registro de bienestar que está {{mood}} y pidió que alguien se pusiera en contacto. Se te avisa como personal de la comunidad superior a {{community}}.",
+    "community_contact_intro": "Esta es la dirección de contacto de {{community}}. No se ha podido avisar a nadie del equipo de la comunidad, por lo que este mensaje se ha enviado aquí.",
+    "info_card_community": "Comunidad"
   }
 }

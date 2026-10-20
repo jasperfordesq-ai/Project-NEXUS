@@ -112,6 +112,7 @@ return [
     'push_vol_swap_approved' => 'Schichtwechsel genehmigt',
     'push_vol_swap_declined' => 'Schichttausch abgelehnt',
     'push_vol_swap_expired' => 'Schichttausch abgelaufen',
+    'push_volunteer_wellbeing' => 'Wohlbefinden-Check-in',
     'push_new_topic' => 'Neuer Beitrag',
     'push_new_reply' => 'Neue Antwort',
     'push_mention' => 'Sie wurden erwähnt',
@@ -164,6 +165,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Ihre Tausch-Anfrage für :time ist nicht mehr möglich',
             'body' => 'Tippen, um Ihre Schichttausche zu sehen',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor möchte, dass sich jemand meldet',
+            'body' => 'Beim Wohlbefinden-Check-in gab die Person an, :subject zu sein',
         ],
         'exchange_request_received' => [
             'title' => 'Neue Anfrage für :subject',

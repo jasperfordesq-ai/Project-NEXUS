@@ -908,6 +908,18 @@
     "info_card_heading": "Check-in sul benessere",
     "info_card_volunteer": "Persona volontaria",
     "info_card_feeling": "Come si sente",
-    "info_card_organisation": "Organizzazione"
+    "info_card_organisation": "Organizzazione",
+    "bell_self": "Hai chiesto che qualcuno si mettesse in contatto con te dopo aver detto di sentirti {{mood}}. Nessun altro nella tua comunità ha ancora potuto essere avvisato, quindi questa è la traccia che la richiesta è stata fatta.",
+    "bell_self_told": "Hai chiesto che qualcuno si mettesse in contatto con te dopo aver detto di sentirti {{mood}}. Abbiamo avvisato {{count}} persone.",
+    "bell_contact": "{{name}} ha detto nel check-in sul benessere di sentirsi {{mood}} e vorrebbe che qualcuno si mettesse in contatto. Sei uno dei contatti per il benessere di questa comunità.",
+    "bell_parent": "{{name}}, volontario con {{community}}, ha detto di sentirsi {{mood}} e vorrebbe che qualcuno si mettesse in contatto.",
+    "self_subject": "Il tuo check-in sul benessere: chi è stato avvisato",
+    "self_title": "Il tuo check-in sul benessere",
+    "self_body_alone": "Nel check-in sul benessere hai detto di sentirti {{mood}} e hai chiesto che qualcuno si mettesse in contatto con te. Nessun altro nella tua comunità ha ancora potuto essere avvisato: non ci sono altri membri dello staff, contatti per il benessere o contatti di organizzazioni da avvisare. Questa email è la traccia che la richiesta è stata fatta.",
+    "self_body_told": "Nel check-in sul benessere hai detto di sentirti {{mood}} e hai chiesto che qualcuno si mettesse in contatto con te. Abbiamo avvisato {{count}} persone della tua comunità.",
+    "contact_body": "<strong>{{name}}</strong> ha detto nel check-in sul benessere di sentirsi {{mood}} e ha chiesto che qualcuno si mettesse in contatto. Sei uno dei contatti per il benessere di {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, volontario con {{community}}, ha detto nel check-in sul benessere di sentirsi {{mood}} e ha chiesto che qualcuno si mettesse in contatto. Vieni avvisato come staff della comunità superiore a {{community}}.",
+    "community_contact_intro": "Questo è l'indirizzo di contatto di {{community}}. Nessuno del team della comunità ha potuto essere avvisato, quindi questo messaggio è stato inviato qui.",
+    "info_card_community": "Comunità"
   }
 }

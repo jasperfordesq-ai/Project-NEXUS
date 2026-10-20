@@ -17,6 +17,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Emails the people told that a volunteer said they are Low or Struggling.
@@ -26,6 +28,11 @@ use Illuminate\Queue\SerializesModels;
  * response cannot be flushed before deferred work (see SendPasswordResetEmail).
  * The volunteer who has just asked for support is not kept waiting for it.
  * Bells are created in the request; only the emails come here.
+ *
+ * Each recipient is a row of vol_wellbeing_alert_notifications (channel
+ * 'email', status 'queued'). The row records the outcome, so a retry after one
+ * failure sends only to the people not yet reached, and a job that dies leaves
+ * an honest 'failed' on every address it never got to.
  *
  * Each email renders in its recipient's own language, and never carries the
  * volunteer's note.
@@ -41,15 +48,14 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
     public int $timeout = 120;
 
     /**
-     * @param array<int, string|null> $recipients user id => organisation name they are
-     *                                            told about, or null for community staff
+     * @param list<int> $logRowIds vol_wellbeing_alert_notifications ids, channel 'email'
      */
     public function __construct(
         public readonly int $tenantId,
         public readonly int $volunteerId,
         public readonly string $volunteerName,
         public readonly int $mood,
-        public readonly array $recipients,
+        public readonly array $logRowIds,
     ) {
         $this->onQueue('emails');
     }
@@ -57,24 +63,96 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
     public function handle(): void
     {
         TenantContext::runForTenant($this->tenantId, function (): void {
-            $users = User::where('tenant_id', $this->tenantId)
-                ->where('status', 'active')
-                ->whereIn('id', array_keys($this->recipients))
-                ->get(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
+            $rows = $this->rows()->where('status', 'queued')->get();
+            if ($rows->isEmpty()) {
+                return;
+            }
 
-            foreach ($users as $user) {
-                $orgName = $this->recipients[(int) $user->id] ?? null;
-                LocaleContext::withLocale($user, function () use ($user, $orgName): void {
-                    VolunteerWellbeingService::sendLowMoodEmail(
-                        $user,
+            $userIds = $rows->pluck('recipient_user_id')->filter()->map(fn ($id) => (int) $id)->unique()->all();
+            // A recipient may belong to the community above; each row was scoped when written.
+            $users = $userIds === [] ? collect() : User::withoutGlobalScopes()->whereIn('id', $userIds)
+                ->where('status', 'active')
+                ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'name', 'profile_type', 'organization_name',
+                    'preferred_language', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+                ->keyBy('id');
+
+            // The volunteer's own copy says how many OTHER people were told.
+            $othersTold = (int) $rows->count() + (int) $this->rows()->where('status', '!=', 'queued')->count();
+
+            foreach ($rows as $row) {
+                $recipient = null;
+                $locale = null;
+                if ($row->recipient_user_id !== null) {
+                    $recipient = $users->get((int) $row->recipient_user_id);
+                    if ($recipient === null || trim((string) $recipient->email) === '') {
+                        $this->mark((int) $row->id, 'failed', 'no_email');
+                        continue;
+                    }
+                    $locale = $recipient;
+                } else {
+                    $recipient = (object) ['email' => (string) $row->recipient_email];
+                    $locale = (string) config('app.locale', 'en');
+                }
+
+                try {
+                    $sent = (bool) LocaleContext::withLocale($locale, fn () => VolunteerWellbeingService::sendLowMoodEmail(
+                        $recipient,
                         $this->tenantId,
                         $this->volunteerId,
                         $this->volunteerName,
                         $this->mood,
-                        $orgName
-                    );
-                });
+                        (string) $row->tier,
+                        $row->organization_name !== null ? (string) $row->organization_name : null,
+                        $row->alert_id !== null ? (int) $row->alert_id : null,
+                        max(0, $othersTold - 1)
+                    ));
+                    $this->mark((int) $row->id, $sent ? 'sent' : 'failed', $sent ? null : 'send_false');
+                } catch (\Throwable $e) {
+                    Log::error('SendVolunteerLowMoodEmails: one recipient failed', [
+                        'row_id' => $row->id,
+                        'volunteer_id' => $this->volunteerId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->mark((int) $row->id, 'failed', 'exception');
+                }
             }
         });
+    }
+
+    /** The job itself died (timeout, lost worker): every address not yet reached is recorded as failed. */
+    public function failed(\Throwable $e): void
+    {
+        try {
+            $count = $this->rows()->where('status', 'queued')->update([
+                'status' => 'failed',
+                'error_code' => 'job_failed',
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $inner) {
+            $count = 'unknown';
+        }
+        Log::error('SendVolunteerLowMoodEmails: job failed', [
+            'tenant_id' => $this->tenantId,
+            'volunteer_id' => $this->volunteerId,
+            'rows' => $this->logRowIds,
+            'marked_failed' => $count,
+            'error' => $e->getMessage(),
+        ]);
+    }
+
+    private function rows(): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('vol_wellbeing_alert_notifications')
+            ->where('tenant_id', $this->tenantId)
+            ->where('channel', 'email')
+            ->whereIn('id', $this->logRowIds);
+    }
+
+    private function mark(int $rowId, string $status, ?string $errorCode): void
+    {
+        DB::table('vol_wellbeing_alert_notifications')
+            ->where('id', $rowId)
+            ->where('tenant_id', $this->tenantId)
+            ->update(['status' => $status, 'error_code' => $errorCode, 'updated_at' => now()]);
     }
 }

@@ -908,6 +908,18 @@
     "info_card_heading": "Point bien-être",
     "info_card_volunteer": "Bénévole",
     "info_card_feeling": "Ressenti",
-    "info_card_organisation": "Organisation"
+    "info_card_organisation": "Organisation",
+    "bell_self": "Vous avez demandé que quelqu'un prenne contact après avoir indiqué que vous êtes {{mood}}. Personne d'autre dans votre communauté n'a encore pu être prévenu ; ceci est la trace de votre demande.",
+    "bell_self_told": "Vous avez demandé que quelqu'un prenne contact après avoir indiqué que vous êtes {{mood}}. Nous avons prévenu {{count}} personnes.",
+    "bell_contact": "{{name}} a indiqué dans son bilan de bien-être être {{mood}} et souhaite que quelqu'un prenne contact. Vous êtes l'un des contacts bien-être de cette communauté.",
+    "bell_parent": "{{name}}, bénévole auprès de {{community}}, a indiqué être {{mood}} et souhaite que quelqu'un prenne contact.",
+    "self_subject": "Votre bilan de bien-être : qui a été prévenu",
+    "self_title": "Votre bilan de bien-être",
+    "self_body_alone": "Vous avez indiqué dans votre bilan de bien-être être {{mood}} et demandé que quelqu'un prenne contact. Personne d'autre dans votre communauté n'a encore pu être prévenu : il n'y a pas d'autre membre de l'équipe, de contact bien-être ni de contact d'organisation à prévenir. Cet e-mail est la trace de votre demande.",
+    "self_body_told": "Vous avez indiqué dans votre bilan de bien-être être {{mood}} et demandé que quelqu'un prenne contact. Nous avons prévenu {{count}} personnes de votre communauté.",
+    "contact_body": "<strong>{{name}}</strong> a indiqué dans son bilan de bien-être être {{mood}} et a demandé que quelqu'un prenne contact. Vous êtes l'un des contacts bien-être de {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, bénévole auprès de {{community}}, a indiqué dans son bilan de bien-être être {{mood}} et a demandé que quelqu'un prenne contact. Vous êtes prévenu en tant que membre de l'équipe de la communauté au-dessus de {{community}}.",
+    "community_contact_intro": "Ceci est l'adresse de contact de {{community}}. Personne de l'équipe de la communauté n'a pu être prévenu ; ce message a donc été envoyé ici.",
+    "info_card_community": "Communauté"
   }
 }

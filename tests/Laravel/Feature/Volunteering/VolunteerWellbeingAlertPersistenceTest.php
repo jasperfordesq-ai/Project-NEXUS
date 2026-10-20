@@ -160,4 +160,32 @@ class VolunteerWellbeingAlertPersistenceTest extends TestCase
             'status' => 'active',
         ]);
     }
+    /**
+     * A volunteer with no logged hours and no shift signup was never scanned, so
+     * a shared "Struggling" check-in alone (score 55) never reached the daily
+     * assessment: no refresh, no auto-resolve when they later felt better.
+     */
+    public function test_assessment_includes_a_volunteer_whose_only_signal_is_a_shared_low_check_in(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        DB::table('vol_mood_checkins')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'mood' => 1,
+            'note' => null,
+            'share_with_team' => 1,
+            'created_at' => now()->subDay(),
+        ]);
+
+        TenantContext::setById($this->testTenantId);
+        $summary = VolunteerWellbeingService::runTenantAssessment();
+
+        $this->assertContains((int) $user->id, array_column($summary['at_risk_users'], 'user_id'));
+        $this->assertDatabaseHas('vol_wellbeing_alerts', [
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'status' => 'active',
+        ]);
+    }
 }

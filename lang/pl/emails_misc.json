@@ -908,6 +908,18 @@
     "info_card_heading": "Ankieta samopoczucia",
     "info_card_volunteer": "Osoba",
     "info_card_feeling": "Samopoczucie",
-    "info_card_organisation": "Organizacja"
+    "info_card_organisation": "Organizacja",
+    "bell_self": "Poprosiłeś(-aś), aby ktoś się z Tobą skontaktował po tym, jak podałeś(-aś), że czujesz się {{mood}}. Nikogo innego w Twojej społeczności nie udało się jeszcze powiadomić, więc to jest Twój zapis, że prośba została złożona.",
+    "bell_self_told": "Poprosiłeś(-aś), aby ktoś się z Tobą skontaktował po tym, jak podałeś(-aś), że czujesz się {{mood}}. Powiadomiliśmy {{count}} osób.",
+    "bell_contact": "{{name}} w zgłoszeniu samopoczucia podał(a), że czuje się {{mood}}, i prosi, aby ktoś się skontaktował. Jesteś jedną z osób kontaktowych ds. samopoczucia w tej społeczności.",
+    "bell_parent": "{{name}}, wolontariusz(ka) w {{community}}, podał(a), że czuje się {{mood}}, i prosi, aby ktoś się skontaktował.",
+    "self_subject": "Twoje zgłoszenie samopoczucia: kto został powiadomiony",
+    "self_title": "Twoje zgłoszenie samopoczucia",
+    "self_body_alone": "W zgłoszeniu samopoczucia podałeś(-aś), że czujesz się {{mood}}, i poprosiłeś(-aś), aby ktoś się z Tobą skontaktował. Nikogo innego w Twojej społeczności nie udało się jeszcze powiadomić: nie ma innych pracowników, osób kontaktowych ds. samopoczucia ani kontaktów organizacji, których można powiadomić. Ten e-mail jest Twoim zapisem, że prośba została złożona.",
+    "self_body_told": "W zgłoszeniu samopoczucia podałeś(-aś), że czujesz się {{mood}}, i poprosiłeś(-aś), aby ktoś się z Tobą skontaktował. Powiadomiliśmy {{count}} osób w Twojej społeczności.",
+    "contact_body": "<strong>{{name}}</strong> w zgłoszeniu samopoczucia podał(a), że czuje się {{mood}}, i poprosił(a), aby ktoś się skontaktował. Jesteś jedną z osób kontaktowych ds. samopoczucia w {{community}}.",
+    "parent_body": "<strong>{{name}}</strong>, wolontariusz(ka) w {{community}}, w zgłoszeniu samopoczucia podał(a), że czuje się {{mood}}, i poprosił(a), aby ktoś się skontaktował. Otrzymujesz to powiadomienie jako pracownik społeczności nadrzędnej wobec {{community}}.",
+    "community_contact_intro": "To jest adres kontaktowy {{community}}. Nikogo z zespołu społeczności nie udało się powiadomić, dlatego ta wiadomość została wysłana tutaj.",
+    "info_card_community": "Społeczność"
   }
 }

@@ -7,6 +7,7 @@
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\Services\Volunteering\WellbeingRecipientResolver;
 use Illuminate\Support\Facades\DB;
 use App\Support\UserDisplayName;
 
@@ -312,6 +313,18 @@ class VolunteerWellbeingService
                     ->distinct()
                     ->pluck('user_id')
             )
+            // A volunteer whose only signal is a shared Low/Struggling check-in
+            // (no hours, no shift yet) was never scanned, so their alert was
+            // never refreshed and never auto-resolved when they felt better.
+            ->merge(
+                DB::table('vol_mood_checkins')
+                    ->where('tenant_id', $tenantId)
+                    ->where('share_with_team', 1)
+                    ->where('mood', '<=', self::LOW_MOOD_MAX)
+                    ->where('created_at', '>=', now()->subDays(14))
+                    ->distinct()
+                    ->pluck('user_id')
+            )
             ->unique()
             ->values()
             ->all();
@@ -343,7 +356,7 @@ class VolunteerWellbeingService
                 if ($user) {
                     $atRiskUsers[] = [
                         'user_id' => (int) $user->id,
-                        'name' => UserDisplayName::resolve($user),
+                        'name' => UserDisplayName::person($user),
                         'risk_level' => $level,
                         'risk_score' => $assessment['risk_score'],
                     ];
@@ -406,7 +419,7 @@ class VolunteerWellbeingService
                 return [
                     'id' => (int) $row->id,
                     'user_id' => (int) $row->user_id,
-                    'user_name' => UserDisplayName::resolve($row),
+                    'user_name' => UserDisplayName::person($row),
                     'avatar_url' => $row->avatar_url,
                     'risk_level' => $row->risk_level,
                     'risk_score' => round((float) $row->risk_score, 2),
@@ -528,9 +541,12 @@ class VolunteerWellbeingService
     }
 
     /** Moods 1 (Struggling) and 2 (Low) are the ones that ask for support. */
+    /** Moods 1 (Struggling) and 2 (Low) are the ones that may reach staff. */
+    public const LOW_MOOD_MAX = 2;
+
     public static function isLowMood(?int $mood): bool
     {
-        return $mood !== null && $mood >= 1 && $mood <= 2;
+        return $mood !== null && $mood >= 1 && $mood <= self::LOW_MOOD_MAX;
     }
 
     /**
@@ -599,19 +615,30 @@ class VolunteerWellbeingService
 
     /**
      * Record a volunteer's wellbeing check-in, and — when they said they are Low
-     * or Struggling AND agreed to it — raise a wellbeing alert and tell the
-     * community's team and the organisations they volunteer with.
+     * or Struggling AND agreed to it — raise a wellbeing alert and tell the people
+     * WellbeingRecipientResolver names: the community's wellbeing contacts, its
+     * staff (the volunteer included when they are staff), the organisations they
+     * volunteer with, the community above, or as a last resort the community's
+     * own contact address.
      *
-     * Telling people is limited to once per volunteer per 24 hours, so a
-     * volunteer who checks in several times in one bad day does not flood
-     * anyone's inbox; every check-in still counts towards the alert itself.
+     * Telling people is limited to once per volunteer per 24 hours, keyed on a
+     * check-in that actually reached someone: a day on which nobody could be
+     * told does not stop the next check-in from trying again. Every shared
+     * check-in still counts towards the alert itself.
      *
-     * @return array{id: int, mood: int, note: ?string, shared: bool, team_notified: bool}
+     * `team_notified` is honest: true only when at least one person or address
+     * was reached. Until 20 Oct 2026 the check-in was marked "told" even when
+     * the recipient list was empty, and the volunteer read "someone will be in
+     * touch" while nobody had been told.
+     *
+     * @return array{id: int, mood: int, note: ?string, shared: bool, team_notified: bool, told_count: int, told_at: ?string, outcome: string}
+     *   outcome: told | already_told_today | nobody_available | private | not_low
      */
     public static function recordCheckin(int $userId, int $mood, ?string $note, bool $shareWithTeam): array
     {
         $tenantId = TenantContext::getId();
-        $shared = $shareWithTeam && self::isLowMood($mood);
+        $low = self::isLowMood($mood);
+        $shared = $shareWithTeam && $low;
 
         $id = (int) DB::table('vol_mood_checkins')->insertGetId([
             'tenant_id' => $tenantId,
@@ -623,27 +650,43 @@ class VolunteerWellbeingService
         ]);
 
         $teamNotified = false;
+        $toldCount = 0;
+        $toldAt = null;
+        $outcome = !$low ? 'not_low' : (!$shared ? 'private' : 'nobody_available');
+
         if ($shared) {
             // Refresh the staff-visible alert from shared check-ins only.
             self::detectBurnoutRisk($userId, true);
+            $alertId = DB::table('vol_wellbeing_alerts')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('status', 'active')
+                ->value('id');
+            $alertId = $alertId === null ? null : (int) $alertId;
 
-            $alreadyToldToday = DB::table('vol_mood_checkins')
+            $toldToday = DB::table('vol_mood_checkins')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
                 ->whereNotNull('team_notified_at')
                 ->where('team_notified_at', '>=', now()->subDay())
-                ->exists();
+                ->orderByDesc('team_notified_at')
+                ->first(['id', 'team_notified_at']);
 
-            if (!$alreadyToldToday) {
-                $told = self::notifyOfLowMood($tenantId, $userId, $mood);
-                // Marked even when nobody could be told (no staff, no organisation),
-                // so a later check-in does not keep retrying an empty list.
-                DB::table('vol_mood_checkins')
-                    ->where('id', $id)
-                    ->where('tenant_id', $tenantId)
-                    ->update(['team_notified_at' => now()]);
-                if ($told > 0) {
+            if ($toldToday) {
+                $outcome = 'already_told_today';
+                $toldAt = (string) $toldToday->team_notified_at;
+                $toldCount = self::peopleToldFor($tenantId, (int) $toldToday->id);
+            } else {
+                $result = self::notifyOfLowMood($tenantId, $userId, $mood, $id, $alertId);
+                if ($result['told'] > 0) {
                     $teamNotified = true;
+                    $toldCount = $result['told'];
+                    $toldAt = now()->toDateTimeString();
+                    $outcome = 'told';
+                    DB::table('vol_mood_checkins')
+                        ->where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->update(['team_notified_at' => now()]);
                     DB::table('vol_wellbeing_alerts')
                         ->where('tenant_id', $tenantId)
                         ->where('user_id', $userId)
@@ -659,158 +702,348 @@ class VolunteerWellbeingService
             'note' => $note,
             'shared' => $shared,
             'team_notified' => $teamNotified,
+            'told_count' => $toldCount,
+            'told_at' => $toldAt,
+            'outcome' => $outcome,
         ];
     }
 
-    /**
-     * Tell the community's safeguarding staff (bell + email, with a link to the
-     * alert, where the volunteer's note can be read after signing in) and the
-     * people who answer for each organisation the volunteer has worked with in
-     * the last 180 days (bell + email, name and mood only — never the note).
-     * Nobody is told about themselves. Each recipient renders in their own
-     * language.
-     *
-     * @return int how many people were told
-     */
-    private static function notifyOfLowMood(int $tenantId, int $volunteerId, int $mood): int
+    /** How many distinct people or addresses a check-in reached (anything not failed). */
+    public static function peopleToldFor(int $tenantId, int $checkinId): int
     {
-        $volunteer = \App\Models\User::where('tenant_id', $tenantId)
-            ->where('id', $volunteerId)
-            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name']);
-        if (!$volunteer) {
+        try {
+            return (int) DB::table('vol_wellbeing_alert_notifications')
+                ->where('tenant_id', $tenantId)
+                ->where('checkin_id', $checkinId)
+                ->where('status', '!=', 'failed')
+                ->selectRaw("COUNT(DISTINCT COALESCE(recipient_user_id, recipient_email)) as c")
+                ->value('c');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: told count failed', ['checkin_id' => $checkinId, 'error' => $e->getMessage()]);
             return 0;
         }
-        $volunteerName = UserDisplayName::resolve($volunteer);
+    }
 
-        $staffIds = \App\Models\User::where('tenant_id', $tenantId)
+    /**
+     * Tell everyone WellbeingRecipientResolver names: a bell now (and a device
+     * push for curated types), an email on the queue. Every attempt is recorded
+     * in vol_wellbeing_alert_notifications, per person and channel, with its
+     * outcome — never the note, never the mood. Each recipient renders in their
+     * own language.
+     *
+     * @return array{told: int, bells: int, emails_queued: int} told = distinct people or addresses reached
+     */
+    private static function notifyOfLowMood(int $tenantId, int $volunteerId, int $mood, int $checkinId, ?int $alertId): array
+    {
+        $none = ['told' => 0, 'bells' => 0, 'emails_queued' => 0];
+
+        $volunteer = \App\Models\User::where('tenant_id', $tenantId)
+            ->where('id', $volunteerId)
+            ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name']);
+        if (!$volunteer) {
+            return $none;
+        }
+        // A wellbeing message is about a person, never about the organisation
+        // their account represents (production, 20 Oct 2026: "Timebank Ireland
+        // said they are feeling low").
+        $volunteerName = UserDisplayName::person($volunteer);
+        $communityName = (string) (TenantContext::get()['name'] ?? '');
+
+        $resolved = WellbeingRecipientResolver::resolve($tenantId, $volunteerId, self::recentOrganisations($tenantId, $volunteerId));
+        $meta = $resolved['users'];
+        if ($meta === [] && $resolved['emails'] === []) {
+            return $none;
+        }
+
+        // The resolver scoped every id to its community (this one or the parent),
+        // so the tenant scope is bypassed here on purpose and re-checked below.
+        $recipients = $meta === [] ? collect() : \App\Models\User::withoutGlobalScopes()->whereIn('id', array_keys($meta))
             ->where('status', 'active')
-            ->where('id', '!=', $volunteerId)
-            ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
+            ->get(['id', 'tenant_id', 'email', 'first_name', 'last_name', 'name', 'profile_type', 'organization_name',
+                'preferred_language', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
+            ->filter(fn ($u) => (int) $u->tenant_id === $meta[(int) $u->id]['tenant_id'])
+            ->values();
 
-        // recipient id => the organisation they are told about
-        $orgRecipients = [];
-        foreach (self::recentOrganisations($tenantId, $volunteerId) as $orgId => $orgName) {
-            foreach (\App\Services\Volunteering\IncidentAccess::organisationContactIds($tenantId, $orgId) as $contactId) {
-                if ($contactId === $volunteerId || in_array($contactId, $staffIds, true) || isset($orgRecipients[$contactId])) {
-                    continue;
-                }
-                $orgRecipients[$contactId] = $orgName;
+        $othersCount = count($recipients) + count($resolved['emails']);
+        $now = now();
+        $base = [
+            'tenant_id' => $tenantId,
+            'alert_id' => $alertId,
+            'checkin_id' => $checkinId,
+            'volunteer_user_id' => $volunteerId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+
+        $told = 0;
+        $bells = 0;
+        $emailRowIds = [];
+
+        foreach ($recipients as $recipient) {
+            $m = $meta[(int) $recipient->id];
+            $tier = $m['tier'];
+            $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $m['organization_name'], $recipient, $alertId, $tier === 'self' ? $othersCount - 1 : $othersCount, $communityName);
+            $row = $base + [
+                'recipient_user_id' => (int) $recipient->id,
+                'recipient_tenant_id' => (int) $recipient->tenant_id === $tenantId ? null : (int) $recipient->tenant_id,
+                'recipient_email' => null,
+                'organization_id' => $m['organization_id'],
+                'organization_name' => $m['organization_name'],
+                'tier' => $tier,
+            ];
+
+            $bellOk = (bool) \App\I18n\LocaleContext::withLocale($recipient, function () use ($recipient, $context, $checkinId) {
+                return self::sendLowMoodBell($recipient, $context, $checkinId);
+            });
+            self::recordNotification($row + ['channel' => 'bell', 'status' => $bellOk ? 'sent' : 'failed', 'error_code' => $bellOk ? null : 'bell_failed']);
+            if ($bellOk) {
+                $bells++;
+            }
+            $emailRowId = self::recordNotification($row + ['channel' => 'email', 'status' => 'queued', 'error_code' => null]);
+            if ($emailRowId !== null) {
+                $emailRowIds[] = $emailRowId;
+            }
+            $told++;
+        }
+
+        foreach ($resolved['emails'] as $address) {
+            $emailRowId = self::recordNotification($base + [
+                'recipient_user_id' => null,
+                'recipient_tenant_id' => null,
+                'recipient_email' => $address['email'],
+                'organization_id' => null,
+                'organization_name' => null,
+                'tier' => $address['tier'],
+                'channel' => 'email',
+                'status' => 'queued',
+                'error_code' => null,
+            ]);
+            if ($emailRowId !== null) {
+                $emailRowIds[] = $emailRowId;
+                $told++;
             }
         }
 
-        $recipients = \App\Models\User::where('tenant_id', $tenantId)
-            ->where('status', 'active')
-            ->whereIn('id', array_merge($staffIds, array_keys($orgRecipients)))
-            ->get(['id', 'email', 'first_name', 'last_name', 'profile_type', 'organization_name', 'preferred_language']);
-
-        // Bells now: they are quick, and they are what the volunteer is told about.
-        foreach ($recipients as $recipient) {
-            $orgName = $orgRecipients[(int) $recipient->id] ?? null;
-            \App\I18n\LocaleContext::withLocale($recipient, function () use ($recipient, $tenantId, $volunteerId, $volunteerName, $mood, $orgName) {
-                self::sendLowMoodBell($recipient, $tenantId, $volunteerId, $volunteerName, $mood, $orgName);
-            });
+        if ($emailRowIds !== []) {
+            // Emails on the queue: sent one by one in the request they took seconds,
+            // and the volunteer who has just said they are struggling should not be
+            // kept waiting (mod_php cannot answer before deferred work finishes).
+            $job = new \App\Jobs\SendVolunteerLowMoodEmails($tenantId, $volunteerId, $volunteerName, $mood, $emailRowIds);
+            try {
+                dispatch($job);
+            } catch (\Throwable $e) {
+                // The queue is unreachable: a slow request beats an email never sent.
+                \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: low-mood email job could not be queued; sending inline', [
+                    'volunteer_id' => $volunteerId,
+                    'error' => $e->getMessage(),
+                ]);
+                $job->handle();
+            }
         }
 
-        // Emails on the queue: sent one by one in the request they took seconds,
-        // and the volunteer who has just said they are struggling should not be
-        // kept waiting (mod_php cannot answer before deferred work finishes).
-        $job = new \App\Jobs\SendVolunteerLowMoodEmails(
-            $tenantId,
-            $volunteerId,
-            $volunteerName,
-            $mood,
-            $recipients->mapWithKeys(fn ($r) => [(int) $r->id => $orgRecipients[(int) $r->id] ?? null])->all()
-        );
-        try {
-            dispatch($job);
-        } catch (\Throwable $e) {
-            // The queue is unreachable: a slow request beats an email never sent.
-            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: low-mood email job could not be queued; sending inline', [
-                'volunteer_id' => $volunteerId,
-                'error' => $e->getMessage(),
-            ]);
-            $job->handle();
-        }
-
-        return $recipients->count();
+        return ['told' => $told, 'bells' => $bells, 'emails_queued' => count($emailRowIds)];
     }
 
-    /** @return array{0: bool, 1: array<string, string>, 2: string} is-staff, message params, link */
-    private static function lowMoodContext(int $volunteerId, string $volunteerName, int $mood, ?string $orgName): array
+    /**
+     * One row of the notification record. A failure here is logged at error and
+     * returns null; it is never turned into "nobody was told".
+     *
+     * @param array<string, mixed> $row
+     */
+    private static function recordNotification(array $row): ?int
     {
-        $isStaff = $orgName === null;
+        try {
+            return (int) DB::table('vol_wellbeing_alert_notifications')->insertGetId($row);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: notification record failed', [
+                'tier' => $row['tier'] ?? null,
+                'channel' => $row['channel'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /** Staff who open the alert in the admin panel rather than the broker panel. */
+    private static function isAdminTier(object $recipient): bool
+    {
+        return \App\Support\Authorization\AdminTier::allows($recipient);
+    }
+
+    /** Anyone who can open the broker or admin panel to read the alert. */
+    private static function canOpenAlerts(object $recipient): bool
+    {
+        return self::isAdminTier($recipient)
+            || in_array((string) ($recipient->role ?? ''), \App\Support\Authorization\AdminTier::OPERATIONAL_ROLES, true);
+    }
+
+    /**
+     * What to say to one recipient, and where to send them.
+     *
+     * @return array{variant: string, params: array<string, string>, link: ?string, absolute_link: string, can_open: bool}
+     *   variant: team | self | contact | org | parent | address
+     */
+    private static function lowMoodContext(int $volunteerId, string $volunteerName, int $mood, string $tier, ?string $orgName, ?object $recipient, ?int $alertId, int $othersCount, string $communityName): array
+    {
         $params = [
             'name' => $volunteerName,
             'mood' => __('emails_misc.volunteer_wellbeing.mood_' . $mood),
             'organisation' => (string) $orgName,
+            'community' => $communityName,
+            'count' => (string) max(0, $othersCount),
         ];
 
-        return [$isStaff, $params, $isStaff ? '/broker/safeguarding/volunteering' : '/profile/' . $volunteerId];
+        $canOpen = $recipient !== null && self::canOpenAlerts($recipient);
+        $alertQuery = $alertId !== null ? '?alert=' . $alertId : '';
+        $alertsPath = ($recipient !== null && self::isAdminTier($recipient) ? '/admin/volunteering/wellbeing' : '/broker/safeguarding/volunteering') . $alertQuery;
+        $profilePath = '/profile/' . $volunteerId;
+
+        $variant = match ($tier) {
+            'self' => 'self',
+            'organisation' => 'org',
+            'parent_staff' => 'parent',
+            'contact' => $canOpen ? 'team' : 'contact',
+            'contact_email', 'community_contact_email' => 'address',
+            default => 'team',
+        };
+
+        $path = match ($variant) {
+            'org', 'contact' => $profilePath,
+            default => $alertsPath,
+        };
+
+        // A bell is opened inside the recipient's own app, so a recipient in the
+        // community ABOVE gets no bell link (their app would resolve the path
+        // against their own community); the email carries the absolute address.
+        $link = $variant === 'parent' ? null : $path;
+
+        return [
+            'variant' => $variant,
+            'params' => $params,
+            'link' => $link,
+            'absolute_link' => \App\Core\EmailTemplateBuilder::tenantUrl($path),
+            'can_open' => $canOpen,
+        ];
     }
 
-    /** Bell for one recipient, in their language. $orgName null = community staff. */
-    private static function sendLowMoodBell(object $recipient, int $tenantId, int $volunteerId, string $volunteerName, int $mood, ?string $orgName): void
+    /**
+     * Bell for one recipient, in their language, plus a device push for the
+     * curated `volunteer_wellbeing` type. Idempotent per check-in and recipient.
+     *
+     * @param array{variant: string, params: array<string, string>, link: ?string} $context
+     */
+    private static function sendLowMoodBell(object $recipient, array $context, int $checkinId): bool
     {
-        [$isStaff, $params, $link] = self::lowMoodContext($volunteerId, $volunteerName, $mood, $orgName);
+        $variant = $context['variant'];
+        $params = $context['params'];
+        $key = match ($variant) {
+            'self' => (int) $params['count'] > 0 ? 'bell_self_told' : 'bell_self',
+            'org' => 'bell_org',
+            'contact' => 'bell_contact',
+            'parent' => 'bell_parent',
+            default => 'bell_team',
+        };
+        $message = (string) __('emails_misc.volunteer_wellbeing.' . $key, $params);
 
         try {
-            \App\Models\Notification::create([
-                'tenant_id' => $tenantId,
-                'user_id' => $recipient->id,
-                'type' => 'volunteer_wellbeing',
-                'message' => __($isStaff ? 'emails_misc.volunteer_wellbeing.bell_team' : 'emails_misc.volunteer_wellbeing.bell_org', $params),
-                'link' => $link,
-                'is_read' => false,
-            ]);
+            \App\Models\Notification::createNotificationOnce(
+                (int) $recipient->id,
+                $message,
+                $context['link'],
+                'volunteer_wellbeing',
+                (int) $recipient->tenant_id,
+                'wellbeing:' . $checkinId . ':' . (int) $recipient->id
+            );
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: low-mood bell failed', [
                 'user_id' => $recipient->id,
-                'volunteer_id' => $volunteerId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+
+        try {
+            \App\Services\NotificationDispatcher::fanOutPush(
+                (int) $recipient->id,
+                'volunteer_wellbeing',
+                $message,
+                $context['link'],
+                true,
+                [
+                    'actor' => $params['name'],
+                    'subject' => $params['mood'],
+                    'thread_id' => 'wellbeing:' . $checkinId,
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('VolunteerWellbeingService: low-mood push failed', [
+                'user_id' => $recipient->id,
                 'error' => $e->getMessage(),
             ]);
         }
+
+        return true;
     }
 
     /**
      * Email for one recipient, in their language (the caller sets the locale).
      * Never carries the note. Called by the SendVolunteerLowMoodEmails job.
+     *
+     * @param object $recipient a User, or for an address-only recipient an object with `email`
+     * @param int $othersCount how many other people were told (for the volunteer's own copy)
+     * @return bool true when the dispatcher accepted the message
      */
-    public static function sendLowMoodEmail(object $recipient, int $tenantId, int $volunteerId, string $volunteerName, int $mood, ?string $orgName): void
+    public static function sendLowMoodEmail(object $recipient, int $tenantId, int $volunteerId, string $volunteerName, int $mood, string $tier = 'staff', ?string $orgName = null, ?int $alertId = null, int $othersCount = 0): bool
     {
         if (empty($recipient->email)) {
-            return;
+            return false;
         }
-        [$isStaff, $params, $link] = self::lowMoodContext($volunteerId, $volunteerName, $mood, $orgName);
+        $communityName = (string) (TenantContext::get()['name'] ?? '');
+        $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $orgName, isset($recipient->id) ? $recipient : null, $alertId, $othersCount, $communityName);
+        $variant = $context['variant'];
+        $params = $context['params'];
 
         try {
             $safe = array_map(fn (string $v) => htmlspecialchars($v, ENT_QUOTES, 'UTF-8'), $params);
+            $t = fn (string $key) => __('emails_misc.volunteer_wellbeing.' . $key, $safe);
+
             $details = [
                 __('emails_misc.volunteer_wellbeing.info_card_volunteer') => $safe['name'],
                 __('emails_misc.volunteer_wellbeing.info_card_feeling') => htmlspecialchars(__('emails_misc.volunteer_wellbeing.mood_label_' . $mood), ENT_QUOTES, 'UTF-8'),
             ];
-            if (!$isStaff) {
+            if ($variant === 'org') {
                 $details[__('emails_misc.volunteer_wellbeing.info_card_organisation')] = $safe['organisation'];
             }
+            if ($variant === 'parent' || $variant === 'address') {
+                $details[__('emails_misc.volunteer_wellbeing.info_card_community')] = $safe['community'];
+            }
+
+            [$title, $body, $hint, $cta] = match ($variant) {
+                'self' => ['self_title', (int) $params['count'] > 0 ? 'self_body_told' : 'self_body_alone', 'team_note_hint', 'team_cta'],
+                'org' => ['org_title', 'org_body', 'org_team_told', 'org_cta'],
+                'contact' => ['team_title', 'contact_body', 'org_team_told', 'org_cta'],
+                'parent' => ['team_title', 'parent_body', 'team_note_hint', 'team_cta'],
+                'address' => ['team_title', 'team_body', 'community_contact_intro', 'team_cta'],
+                default => ['team_title', 'team_body', 'team_note_hint', 'team_cta'],
+            };
+
+            $greeting = isset($recipient->id)
+                ? htmlspecialchars(UserDisplayName::resolve($recipient), ENT_QUOTES, 'UTF-8')
+                : $safe['community'];
 
             $builder = \App\Core\EmailTemplateBuilder::make()
                 ->theme('warning')
-                ->title(__($isStaff ? 'emails_misc.volunteer_wellbeing.team_title' : 'emails_misc.volunteer_wellbeing.org_title'))
-                ->previewText(__('emails_misc.volunteer_wellbeing.preview', $safe))
-                ->greeting(htmlspecialchars(UserDisplayName::resolve($recipient), ENT_QUOTES, 'UTF-8'))
-                ->paragraph(__($isStaff ? 'emails_misc.volunteer_wellbeing.team_body' : 'emails_misc.volunteer_wellbeing.org_body', $safe))
+                ->title($t($title))
+                ->previewText($t('preview'))
+                ->greeting($greeting)
+                ->paragraph($t($body))
                 ->infoCard($details, __('emails_misc.volunteer_wellbeing.info_card_heading'))
-                ->paragraph(__($isStaff ? 'emails_misc.volunteer_wellbeing.team_note_hint' : 'emails_misc.volunteer_wellbeing.org_team_told'))
-                ->button(
-                    __($isStaff ? 'emails_misc.volunteer_wellbeing.team_cta' : 'emails_misc.volunteer_wellbeing.org_cta'),
-                    \App\Core\EmailTemplateBuilder::tenantUrl($link)
-                );
+                ->paragraph($t($hint))
+                ->button($t($cta), $context['absolute_link']);
 
             $sent = EmailDispatchService::sendRaw(
-                $recipient->email,
-                __('emails_misc.volunteer_wellbeing.subject', $params),
+                (string) $recipient->email,
+                (string) __('emails_misc.volunteer_wellbeing.' . ($variant === 'self' ? 'self_subject' : 'subject'), $params),
                 $builder->render(),
                 null,
                 null,
@@ -820,16 +1053,20 @@ class VolunteerWellbeingService
             );
             if (!$sent) {
                 \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: low-mood email failed to send', [
-                    'user_id' => $recipient->id,
+                    'user_id' => $recipient->id ?? null,
                     'volunteer_id' => $volunteerId,
                 ]);
             }
+
+            return (bool) $sent;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: low-mood email exception', [
-                'user_id' => $recipient->id,
+                'user_id' => $recipient->id ?? null,
                 'volunteer_id' => $volunteerId,
                 'error' => $e->getMessage(),
             ]);
+
+            return false;
         }
     }
 

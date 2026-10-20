@@ -112,6 +112,7 @@ return [
     'push_vol_swap_approved' => 'Cambio de turno aprobado',
     'push_vol_swap_declined' => 'Cambio de turno rechazado',
     'push_vol_swap_expired' => 'Cambio de turno caducado',
+    'push_volunteer_wellbeing' => 'Registro de bienestar',
     'push_new_topic' => 'Nueva publicación',
     'push_new_reply' => 'Nueva respuesta',
     'push_mention' => 'Fuiste mencionado',
@@ -164,6 +165,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'Tu solicitud de cambio para el :time ya no es posible',
             'body' => 'Toca para ver tus cambios de turno',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor quiere que alguien se ponga en contacto',
+            'body' => 'En su registro de bienestar dijo que está :subject',
         ],
         'exchange_request_received' => [
             'title' => 'Nueva solicitud para :subject',

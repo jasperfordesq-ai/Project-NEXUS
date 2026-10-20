@@ -115,6 +115,7 @@ return [
     'push_vol_swap_approved' => 'تمت الموافقة على تبديل التحول',
     'push_vol_swap_declined' => 'تم رفض تبديل التحول',
     'push_vol_swap_expired' => 'انتهت صلاحية تبديل الوردية',
+    'push_volunteer_wellbeing' => 'تسجيل حالة الرفاه',
     'push_new_topic' => 'مشاركة جديدة',
     'push_new_reply' => 'رد جديد',
     'push_mention' => 'لقد تم ذكرك',
@@ -167,6 +168,10 @@ return [
         'vol_swap_expired' => [
             'title' => 'لم يعد طلب التبديل الخاص بك ليوم :time ممكنًا',
             'body' => 'انقر لعرض تبديلات الورديات',
+        ],
+        'volunteer_wellbeing' => [
+            'title' => ':actor يرغب في أن يتواصل معه أحد',
+            'body' => 'قال في تسجيل حالة الرفاه إنه :subject',
         ],
         'exchange_request_received' => [
             'title' => 'طلب جديد لـ :subject',
