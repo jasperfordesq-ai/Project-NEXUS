@@ -6,7 +6,7 @@
   "api_route_rows": 2766,
   "distinct_api_paths": 2307,
   "route_source_fingerprint": {
-    "digest": "2918408eab3a07c9cf86f5e26658e53fda31bf88ab98745ab037fb87da082fbd",
+    "digest": "072890005c7a9d36e48e5ad7bfe29de8a58e0f8c7c9dbbd627df8ee85be1f01f",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -26,7 +26,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "7188717a7a6af65369df5a2f2249312c9dac418f993b4953670ec642fc4a5000"
+        "sha256": "d852c38db196e00be5c1570a16f13b4709b70c83c8c3780c1f1f1207d198624b"
       }
     ]
   },

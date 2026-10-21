@@ -11,6 +11,7 @@ use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\I18n\LocaleContext;
+use App\Support\UserDisplayName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -616,10 +617,7 @@ class CommunityProjectService
     /** An organisation account by its organisation's name, anyone else by their own. */
     private static function proposerName(object $row): ?string
     {
-        if (($row->proposer_profile_type ?? null) === 'organisation' && trim((string) ($row->proposer_organization_name ?? '')) !== '') {
-            return trim((string) $row->proposer_organization_name);
-        }
-        $name = trim(trim((string) ($row->proposer_first_name ?? '')) . ' ' . trim((string) ($row->proposer_last_name ?? '')));
+        $name = trim(UserDisplayName::resolvePrefixed($row, 'proposer_'));
 
         return $name !== '' ? $name : null;
     }

@@ -57,14 +57,19 @@ export function PodcastStudioGuide({ maxAudioMb, expandAll, rssEnabled }: Podcas
           defaultExpandedKeys={expandAll ? [...STEP_IDS] : []}
         >
           <AccordionItem id="create" title={t('studio.guide.create_title')}>
-            <p className="text-sm leading-relaxed">{t('studio.guide.create_body', labels)}</p>
+            <p className="text-sm leading-relaxed">{t('studio.guide.create_body', { public: labels.public })}</p>
           </AccordionItem>
           <AccordionItem id="upload" title={t('studio.guide.upload_title')}>
-            <p className="text-sm leading-relaxed">{t('studio.guide.upload_body', { ...labels, max: maxAudioMb })}</p>
+            <p className="text-sm leading-relaxed">{t('studio.guide.upload_body', {
+              add_episode: labels.add_episode,
+              file_field: labels.file_field,
+              clean: labels.clean,
+              max: maxAudioMb,
+            })}</p>
           </AccordionItem>
           <AccordionItem id="link" title={t('studio.guide.link_title')}>
             <div className="space-y-2 text-sm leading-relaxed">
-              <p>{t('studio.guide.link_body', labels)}</p>
+              <p>{t('studio.guide.link_body', { url_field: labels.url_field })}</p>
               <p>{t('studio.guide.link_test')}</p>
               {/* Foreground text on a tint: the warning colour alone is too pale for AA contrast. */}
               <p className="flex gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-foreground">
@@ -77,14 +82,14 @@ export function PodcastStudioGuide({ maxAudioMb, expandAll, rssEnabled }: Podcas
             </div>
           </AccordionItem>
           <AccordionItem id="publish" title={t('studio.guide.publish_title')}>
-            <p className="text-sm leading-relaxed">{t('studio.guide.publish_body', labels)}</p>
+            <p className="text-sm leading-relaxed">{t('studio.guide.publish_body', { pending: labels.pending, validate: labels.validate })}</p>
           </AccordionItem>
           <AccordionItem id="share" title={t('studio.guide.share_title')}>
             <div className="space-y-2 text-sm leading-relaxed">
-              <p>{t('studio.guide.share_where', labels)}</p>
+              <p>{t('studio.guide.share_where', { my_shows: labels.my_shows })}</p>
               <ul className="list-disc space-y-1 ps-5">
                 <li>{t('studio.guide.share_members')}</li>
-                {rssEnabled && <li>{t('studio.guide.share_public', labels)}</li>}
+                {rssEnabled && <li>{t('studio.guide.share_public', { public: labels.public })}</li>}
               </ul>
             </div>
           </AccordionItem>
