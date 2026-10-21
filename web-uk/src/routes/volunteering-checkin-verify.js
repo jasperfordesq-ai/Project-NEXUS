@@ -87,7 +87,9 @@ router.get('/checkin/:code([A-Za-z0-9]{16,128})', asyncRoute(async (req, res) =>
     state,
     name,
     heading,
-    errorMessage: state === 'error' ? trimmed(outcome.message, 500) || t(`${KEY}error`) : ''
+    errorMessage: state === 'error' ? trimmed(outcome.message, 500) || t(`${KEY}error`) : '',
+    // A refused check-out: the volunteer is still checked in.
+    checkoutRefusal: state === 'checked_in' ? trimmed(outcome.message, 500) : ''
   });
 }, { redirectOn401: LOGIN }));
 
@@ -119,7 +121,9 @@ router.post('/checkin/:code([A-Za-z0-9]{16,128})/checkout', asyncRoute(async (re
     outcome = { state: 'checked_out', name: trimmed(req.body && req.body.name) };
   } catch (error) {
     if (isStatus(error, 401)) return redirectTo(res, LOGIN);
-    outcome = { state: 'error', message: refusalMessage(error, res.locals.t) };
+    // They are still checked in (a check-out before the shift starts is refused), so
+    // keep the Check out button with the reason above it, rather than starting over.
+    outcome = { state: 'checked_in', name: trimmed(req.body && req.body.name), message: refusalMessage(error, res.locals.t) };
   }
   rememberFormReplay(req, REPLAY, code, outcome);
   return redirectTo(res, pagePath(code));

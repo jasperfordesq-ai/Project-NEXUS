@@ -106,6 +106,16 @@ describe('checking a volunteer in', () => {
     expect(forbidden.text).toContain(html(t(`${K}forbidden`)));
   });
 
+  it('keeps Check out after a refused check-out, with the reason', async () => {
+    api.callVolunteeringApi.mockRejectedValue(new api.ApiError('early', 422, { errors: [{ code: 'VALIDATION_ERROR', message: 'Check-out is not available before the shift starts.' }] }));
+    const page = await postAndFollow(request.agent(createVolunteeringApp(routes)), `${PAGE}/checkout`, { name: 'Ada Lovelace' });
+
+    expect(page.text).toContain('data-testid="checkout-error"');
+    expect(page.text).toContain('Check-out is not available before the shift starts.');
+    expect(page.text).toContain(html(t(`${K}checked_in`, { name: 'Ada Lovelace' })));
+    expect(page.text).toContain(`action="/acme/accessible/volunteering/checkin/${CODE}/checkout"`);
+  });
+
   it('does not treat a short or odd address as a code', async () => {
     const res = await request(createVolunteeringApp(routes)).get(`${MOUNT}/checkin/abc`);
     expect(res.status).toBe(404);
