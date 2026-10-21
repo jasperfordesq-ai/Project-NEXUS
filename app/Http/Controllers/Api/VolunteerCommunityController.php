@@ -685,6 +685,13 @@ class VolunteerCommunityController extends BaseApiController
 
         try {
             $result = $this->communityProjectService->propose($userId, $data);
+            // propose() reports a missing title or description, or a malformed date, by
+            // recording an error and returning []. Until 21 Oct 2026 that came back as
+            // 201 Created with nothing saved.
+            $errors = $this->communityProjectService->getErrors();
+            if ($result === [] && $errors !== []) {
+                return $this->respondWithErrors($errors, 422);
+            }
             return $this->respondWithData($result, null, 201);
         } catch (\InvalidArgumentException $e) {
             return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
@@ -731,6 +738,10 @@ class VolunteerCommunityController extends BaseApiController
             $result = $this->communityProjectService->support((int) $id, $userId, $tenantId);
         } catch (SafeguardingPolicyException $e) {
             return $this->safeguardingPolicyError($e);
+        }
+        // support() is false only when the project is not in this community.
+        if (!$result) {
+            return $this->respondWithError('NOT_FOUND', __('api.vol_project_not_found'), null, 404);
         }
         return $this->respondWithData(['success' => $result]);
     }
