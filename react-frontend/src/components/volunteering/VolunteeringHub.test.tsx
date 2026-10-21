@@ -22,7 +22,7 @@ const NO_NUMBERS: VolunteeringHubSummary = {
   hasApprovedApplication: null,
 };
 
-const sections = (...keys: string[]) => keys.map((key) => ({ key, label: key }));
+const sections = (...keys: string[]) => keys;
 
 describe('VolunteeringHub', () => {
   it('shows nothing when the opportunities list is the only section', () => {

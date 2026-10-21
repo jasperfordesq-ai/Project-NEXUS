@@ -1726,8 +1726,6 @@
     "summary_many": "Tá {{count}} n-oibrí deonach ag fanacht go ndéanfadh duine teagmháil"
   },
   "hub": {
-    "preview": "Leagan amach nua don obair dheonach · Réamhamharc",
-    "back_to_current": "Ar ais chuig an leagan amach reatha",
     "title": "Déan difríocht, ar do bhealach féin.",
     "subtitle": "Aimsigh ról. Bí páirteach i bhfoireann. Feic an difríocht a dhéanann tú.",
     "navigation": "Fiosraigh an obair dheonach",
@@ -1744,9 +1742,6 @@
     "explore": "Fiosraigh deiseanna",
     "more_opportunities": "Tuilleadh deiseanna",
     "find_opportunities": "Aimsigh deiseanna",
-    "how_it_works": "Conas a oibríonn an obair dheonach",
-    "how_it_works_description": "Aimsigh deis agus déan iarratas. Nuair a bheidh obair dheonach déanta agat, cláraigh d’uaireanta leis an eagraíocht. Cuirtear uaireanta ceadaithe chun sochair do chuntas bainc ama.",
-    "organiser": "An bhfuil obair dheonach á heagrú agat?",
     "hint_waiting": "Ag fanacht: {{number}}",
     "hint_to_answer": "Le freagairt: {{number}}",
     "next_shift": "An chéad seal eile: {{when}} · {{title}}",
@@ -1771,6 +1766,25 @@
       "wellbeing": "Folláine",
       "safeguarding": "Cosaint",
       "accessibility": "Inrochtaineacht"
+    },
+    "back_home": "Baile na hoibre deonaí",
+    "search_results": "Torthaí cuardaigh",
+    "intro": {
+      "recommended": "Sealanna a roghnaíodh duit, bunaithe ar do scileanna agus ar an am atá saor agat.",
+      "alerts": "Eagraíochtaí a bhfuil oibrithe deonacha ag teastáil uathu gan mórán fógra. Cuir in iúl dóibh an féidir leat cabhrú.",
+      "applications": "Na róil a ndearna tú iarratas orthu, agus ar ghlac gach eagraíocht leat fós.",
+      "hours": "Cláraigh na huaireanta a thug tú, féach ar do chuid seal, agus seiceáil cé na huaireanta atá ceadaithe.",
+      "waitlist": "Sealanna lána a bhfuil tú ag fanacht ar áit iontu.",
+      "swaps": "Babhtáil seal le hoibrí deonach eile, nó freagair iarratais bhabhtála a sheoltar chugat.",
+      "group-signups": "Déan obair dheonach le cairde nó le comhghleacaithe trí chlárú mar ghrúpa.",
+      "community-projects": "Smaointe do thionscadail obair dheonach ó dhaoine sa phobal. Mol do smaoineamh féin.",
+      "donations": "Tabhair airgead chun tacú le tiomsú airgid an phobail seo. Tá sé seo ar leith ó chreidmheasanna ama.",
+      "expenses": "Éiligh ar ais airgead a chaith tú agus tú ag obair go deonach, mar shampla ar thaisteal.",
+      "credentials": "D’oiliúint agus do cháilíochtaí, ionas go bhfeicfidh eagraíochtaí a bhfuil agat agus cathain a rachaidh siad in éag.",
+      "certificates": "Íoslódáil teastas a thaispeánann d’uaireanta ceadaithe obair dheonach go léir.",
+      "wellbeing": "Inis conas atá tú. Má tá cúrsaí deacair, is féidir leat iarraidh ar dhuine teagmháil a dhéanamh leat.",
+      "safeguarding": "D’oiliúint chosanta, agus cá háit ar féidir imní faoi shábháilteacht duine a thuairisciú.",
+      "accessibility": "Inis d’eagraíochtaí faoi aon tacaíocht nó oiriúnú a theastaíonn uait chun obair dheonach a dhéanamh."
     }
   }
 }

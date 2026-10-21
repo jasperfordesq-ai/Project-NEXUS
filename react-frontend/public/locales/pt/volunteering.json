@@ -1686,8 +1686,6 @@
     "confidentiality_note": "Trate isto como confidencial. Partilhe apenas com quem precisa de saber e nunca publique nada sobre isto."
   },
   "hub": {
-    "preview": "Novo layout do voluntariado · Pré-visualização",
-    "back_to_current": "Voltar ao layout atual",
     "title": "Faça a diferença, à sua maneira.",
     "subtitle": "Encontre uma função. Junte-se a uma equipa. Veja a diferença que faz.",
     "navigation": "Explorar o voluntariado",
@@ -1704,9 +1702,6 @@
     "explore": "Explorar oportunidades",
     "more_opportunities": "Mais oportunidades",
     "find_opportunities": "Encontrar oportunidades",
-    "how_it_works": "Como funciona o voluntariado",
-    "how_it_works_description": "Encontre uma oportunidade e candidate-se. Depois de fazer voluntariado, registe as suas horas junto da organização. As horas aprovadas são creditadas na sua conta do banco de tempo.",
-    "organiser": "Organiza voluntariado?",
     "hint_waiting": "Pendentes: {{number}}",
     "hint_to_answer": "Por responder: {{number}}",
     "next_shift": "Próximo turno: {{when}} · {{title}}",
@@ -1731,6 +1726,25 @@
       "wellbeing": "Bem-estar",
       "safeguarding": "Proteção",
       "accessibility": "Acessibilidade"
+    },
+    "back_home": "Início do voluntariado",
+    "search_results": "Resultados da pesquisa",
+    "intro": {
+      "recommended": "Turnos escolhidos para si, com base nas suas competências e na sua disponibilidade.",
+      "alerts": "Organizações que precisam de voluntários com pouca antecedência. Diga-lhes se pode ajudar.",
+      "applications": "As funções a que se candidatou e se cada organização já disse que sim.",
+      "hours": "Registe as horas que deu, veja os seus turnos e confirme que horas estão aprovadas.",
+      "waitlist": "Turnos completos em que espera conseguir lugar.",
+      "swaps": "Troque um turno com outro voluntário ou responda aos pedidos de troca que lhe enviarem.",
+      "group-signups": "Faça voluntariado com amigos ou colegas, inscrevendo-se em grupo.",
+      "community-projects": "Ideias de projetos de voluntariado propostas pela comunidade. Proponha a sua.",
+      "donations": "Doe dinheiro para apoiar as angariações de fundos desta comunidade. É separado dos créditos de tempo.",
+      "expenses": "Peça o reembolso do dinheiro que gastou ao fazer voluntariado, por exemplo em deslocações.",
+      "credentials": "A sua formação e qualificações, para que as organizações vejam o que tem e quando expira.",
+      "certificates": "Descarregue um certificado com todas as suas horas de voluntariado aprovadas.",
+      "wellbeing": "Diga como se sente. Se estiver a ser difícil, pode pedir que alguém entre em contacto consigo.",
+      "safeguarding": "A sua formação em proteção e onde comunicar uma preocupação com a segurança de alguém.",
+      "accessibility": "Diga às organizações que apoio ou adaptações precisa para fazer voluntariado."
     }
   }
 }

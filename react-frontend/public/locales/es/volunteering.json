@@ -1685,8 +1685,6 @@
     "confidentiality_note": "Trátalo como confidencial. Compártelo solo con quien necesite saberlo y nunca publiques nada al respecto."
   },
   "hub": {
-    "preview": "Nuevo diseño de voluntariado · Vista previa",
-    "back_to_current": "Volver al diseño actual",
     "title": "Marca la diferencia a tu manera.",
     "subtitle": "Encuentra una tarea. Únete a un equipo. Descubre el impacto que generas.",
     "navigation": "Explorar el voluntariado",
@@ -1703,9 +1701,6 @@
     "explore": "Explorar oportunidades",
     "more_opportunities": "Más oportunidades",
     "find_opportunities": "Buscar oportunidades",
-    "how_it_works": "Cómo funciona el voluntariado",
-    "how_it_works_description": "Encuentra una oportunidad y presenta tu solicitud. Después de colaborar, registra tus horas con la organización. Las horas aprobadas se abonan en tu cuenta del banco de tiempo.",
-    "organiser": "¿Organizas voluntariado?",
     "hint_waiting": "Pendientes: {{number}}",
     "hint_to_answer": "Por responder: {{number}}",
     "next_shift": "Próximo turno: {{when}} · {{title}}",
@@ -1730,6 +1725,25 @@
       "wellbeing": "Bienestar",
       "safeguarding": "Protección",
       "accessibility": "Accesibilidad"
+    },
+    "back_home": "Inicio del voluntariado",
+    "search_results": "Resultados de la búsqueda",
+    "intro": {
+      "recommended": "Turnos elegidos para ti según tus habilidades y tu disponibilidad.",
+      "alerts": "Organizaciones que necesitan voluntariado con poca antelación. Diles si puedes ayudar.",
+      "applications": "Las tareas a las que te has presentado y si cada organización ya ha dicho que sí.",
+      "hours": "Registra las horas que has dedicado, consulta tus turnos y comprueba qué horas están aprobadas.",
+      "waitlist": "Turnos completos en los que esperas conseguir una plaza.",
+      "swaps": "Cambia un turno con otra persona voluntaria o responde a las solicitudes de cambio que te envíen.",
+      "group-signups": "Haz voluntariado junto a amistades o compañeros inscribiéndoos como grupo.",
+      "community-projects": "Ideas de proyectos de voluntariado propuestas por la comunidad. Propón la tuya.",
+      "donations": "Aporta dinero para apoyar la recaudación de fondos de esta comunidad. Es independiente de los créditos de tiempo.",
+      "expenses": "Recupera el dinero que has gastado durante el voluntariado, por ejemplo en desplazamientos.",
+      "credentials": "Tu formación y tus titulaciones, para que las organizaciones vean qué tienes y cuándo caduca.",
+      "certificates": "Descarga un certificado con todas tus horas de voluntariado aprobadas.",
+      "wellbeing": "Cuéntanos cómo te sientes. Si lo estás pasando mal, puedes pedir que alguien se ponga en contacto contigo.",
+      "safeguarding": "Tu formación en protección y dónde informar de una preocupación por la seguridad de alguien.",
+      "accessibility": "Indica a las organizaciones qué apoyo o adaptaciones necesitas para hacer voluntariado."
     }
   }
 }

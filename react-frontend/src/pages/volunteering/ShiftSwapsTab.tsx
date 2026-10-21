@@ -308,10 +308,6 @@ export function ShiftSwapsTab() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <ArrowLeftRight className="w-5 h-5 text-accent" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('swaps.heading')}</h2>
-        </div>
         <Button
           size="sm"
           variant="tertiary"

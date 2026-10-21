@@ -150,7 +150,6 @@ describe("ShiftSwapsTab", () => {
   it("renders the heading and view filter buttons", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { swaps: [] } });
     render(<ShiftSwapsTab />);
-    expect(screen.getByText("Shift Swaps")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /All \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sent \(0\)/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Received \(0\)/i })).toBeInTheDocument();

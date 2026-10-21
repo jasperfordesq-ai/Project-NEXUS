@@ -194,7 +194,6 @@ describe('DonationsTab', () => {
 
   it('renders the heading and the three actions', async () => {
     render(<DonationsTab />);
-    expect(screen.getByRole('heading', { level: 2, name: 'Donations' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Refresh/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Record a pledge' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Donate by card' })).toBeInTheDocument();

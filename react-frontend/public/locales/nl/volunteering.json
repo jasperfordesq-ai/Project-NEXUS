@@ -1669,8 +1669,6 @@
     "confidentiality_note": "Behandel dit vertrouwelijk. Deel het alleen met mensen die het moeten weten en plaats er nooit iets over."
   },
   "hub": {
-    "preview": "Nieuwe indeling vrijwilligerswerk · Voorbeeld",
-    "back_to_current": "Terug naar de huidige indeling",
     "title": "Maak het verschil, op jouw manier.",
     "subtitle": "Vind een rol. Sluit je aan bij een team. Zie wat je bijdraagt.",
     "navigation": "Vrijwilligerswerk ontdekken",
@@ -1687,9 +1685,6 @@
     "explore": "Vacatures ontdekken",
     "more_opportunities": "Meer vacatures",
     "find_opportunities": "Vacatures zoeken",
-    "how_it_works": "Zo werkt vrijwilligerswerk",
-    "how_it_works_description": "Vind een vacature en meld je aan. Registreer na je inzet je uren bij de organisatie. Goedgekeurde uren worden bijgeschreven op je tijdbankrekening.",
-    "organiser": "Organiseer je vrijwilligerswerk?",
     "hint_waiting": "Wachtend: {{number}}",
     "hint_to_answer": "Te beantwoorden: {{number}}",
     "next_shift": "Volgende dienst: {{when}} · {{title}}",
@@ -1714,6 +1709,25 @@
       "wellbeing": "Welzijn",
       "safeguarding": "Veiligheid en bescherming",
       "accessibility": "Toegankelijkheid"
+    },
+    "back_home": "Startpagina vrijwilligerswerk",
+    "search_results": "Zoekresultaten",
+    "intro": {
+      "recommended": "Diensten voor jou uitgekozen, op basis van je vaardigheden en wanneer je tijd hebt.",
+      "alerts": "Organisaties die op korte termijn vrijwilligers nodig hebben. Laat weten of je kunt helpen.",
+      "applications": "De rollen waarvoor je je hebt aangemeld en of elke organisatie al ja heeft gezegd.",
+      "hours": "Registreer je uren, bekijk je diensten en zie welke uren zijn goedgekeurd.",
+      "waitlist": "Volle diensten waarvoor je op een plek wacht.",
+      "swaps": "Ruil een dienst met een andere vrijwilliger of beantwoord ruilverzoeken die je krijgt.",
+      "group-signups": "Doe samen met vrienden of collega's vrijwilligerswerk door je als groep aan te melden.",
+      "community-projects": "Ideeën voor vrijwilligersprojecten uit de gemeenschap. Doe zelf een voorstel.",
+      "donations": "Geef geld om de inzamelingsacties van deze gemeenschap te steunen. Dit staat los van tijdtegoed.",
+      "expenses": "Declareer geld dat je tijdens je vrijwilligerswerk hebt uitgegeven, zoals reiskosten.",
+      "credentials": "Je opleidingen en kwalificaties, zodat organisaties zien wat je hebt en wanneer het verloopt.",
+      "certificates": "Download een certificaat met al je goedgekeurde vrijwilligersuren.",
+      "wellbeing": "Geef aan hoe je je voelt. Als het zwaar is, kun je vragen of iemand contact met je opneemt.",
+      "safeguarding": "Je opleidingen over veiligheid en waar je een zorg over iemands veiligheid kunt melden.",
+      "accessibility": "Laat organisaties weten welke ondersteuning of aanpassingen je nodig hebt om vrijwilligerswerk te doen."
     }
   }
 }

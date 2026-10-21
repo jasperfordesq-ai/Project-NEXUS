@@ -152,6 +152,35 @@ vi.mock("react-i18next", () => ({
         "volunteering.org_pending_see_all": "See your organisations",
         "volunteering.hero_eyebrow": "Volunteer & earn time credits",
         "volunteering.aria.volunteering_sections": "Volunteering sections",
+        // The volunteering home (hub) and its section pages.
+        "volunteering.hub.title": "Make a difference, your way.",
+        "volunteering.hub.navigation": "Explore volunteering",
+        "volunteering.hub.back_home": "Volunteering home",
+        "volunteering.hub.explore": "Explore opportunities",
+        "volunteering.hub.search_results": "Search results",
+        "volunteering.hub.more_opportunities": "More opportunities",
+        "volunteering.hub.find_opportunities": "Find opportunities",
+        "volunteering.hub.urgent_action": "See urgent requests",
+        "volunteering.hub.links.opportunities": "All opportunities",
+        "volunteering.hub.links.recommended": "Recommended for you",
+        "volunteering.hub.links.alerts": "Urgent requests",
+        "volunteering.hub.links.applications": "My applications",
+        "volunteering.hub.links.hours": "My hours and shifts",
+        "volunteering.hub.links.waitlist": "Waiting lists",
+        "volunteering.hub.links.swaps": "Shift swaps",
+        "volunteering.hub.links.group-signups": "Group sign-ups",
+        "volunteering.hub.links.community-projects": "Community projects",
+        "volunteering.hub.links.donations": "Donations",
+        "volunteering.hub.links.expenses": "Expenses",
+        "volunteering.hub.links.credentials": "Qualifications",
+        "volunteering.hub.links.certificates": "Certificates",
+        "volunteering.hub.links.wellbeing": "Wellbeing",
+        "volunteering.hub.links.safeguarding": "Safeguarding",
+        "volunteering.hub.links.accessibility": "Accessibility",
+        "volunteering.hub.intro.applications": "The roles you've applied for, and whether each organisation has said yes.",
+        "volunteering.welcome.title": "Welcome to volunteering",
+        "volunteering.welcome.dismiss": "Got it",
+        "volunteering.org_register_title": "Run an organisation?",
         // Phone filter sheet sections.
         "volunteering.filter_distance": "Distance",
         "volunteering.filter_format": "Format",
@@ -194,8 +223,13 @@ vi.mock("react-i18next", () => ({
 import { VolunteeringPage } from './VolunteeringPage';
 import { api } from '@/lib/api';
 
+/** Open a section from the home page's hub; its name may be followed by a live number. */
+function openSection(name: string) {
+  fireEvent.click(within(screen.getByTestId('volunteering-hub')).getByRole('button', { name: new RegExp(`^${name}`) }));
+}
+
 describe('VolunteeringPage', () => {
-  describe('reversible hub preview', () => {
+  describe('volunteering home', () => {
     const originalTenant = vi.mocked(useTenant).getMockImplementation();
     const originalAuth = vi.mocked(useAuth).getMockImplementation();
     afterEach(() => {
@@ -203,6 +237,7 @@ describe('VolunteeringPage', () => {
       if (originalAuth) vi.mocked(useAuth).mockImplementation(originalAuth);
       // Put the API back to "everything empty" so later tests start clean.
       vi.mocked(api.get).mockImplementation((async () => ({ success: true, data: [], meta: {} })) as unknown as typeof api.get);
+      window.localStorage.removeItem('nexus_vol_welcome_dismissed_v1');
       window.history.replaceState({}, '', '/');
     });
 
@@ -230,61 +265,75 @@ describe('VolunteeringPage', () => {
       }) as unknown as typeof api.get);
     };
 
-    it('keeps the current layout as the default', () => {
-      render(<VolunteeringPage />);
-      expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument();
-      expect(screen.getByRole('radiogroup', { name: 'Volunteering sections' })).toBeInTheDocument();
-    });
-
-    it.each([false, true])('exposes all allowed sections without a picker (phone: %s)', async (phone) => {
+    it.each([false, true])('opens on the home: its title, the list and every allowed section, with no section picker (phone: %s)', (phone) => {
       isPhoneViewport = phone;
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
+      expect(screen.getByRole('heading', { level: 1, name: 'Make a difference, your way.' })).toBeInTheDocument();
       const hub = within(screen.getByTestId('volunteering-hub'));
       expect(hub.getAllByRole('button')).toHaveLength(16);
-      expect(hub.getByRole('button', { name: 'hub.links.group-signups' })).toBeInTheDocument();
-      expect(hub.getByRole('button', { name: 'hub.links.safeguarding' })).toBeInTheDocument();
+      expect(hub.getByRole('button', { name: 'Group sign-ups' })).toBeInTheDocument();
+      expect(hub.getByRole('button', { name: 'Safeguarding' })).toBeInTheDocument();
       expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
-      fireEvent.click(hub.getByRole('button', { name: 'hub.links.applications' }));
-      await waitFor(() => expect(window.location.search).toContain('tab=applications'));
-      expect(window.location.search).toContain('layout=hub-preview');
-      await waitFor(() => expect(screen.getByRole('heading', { name: 'hub.links.applications' })).toHaveFocus());
-      fireEvent.click(screen.getByRole('button', { name: 'hub.back_to_current' }));
-      await waitFor(() => expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument());
-      expect(window.location.search).toBe('?tab=applications');
+      expect(screen.queryByRole('button', { name: 'Volunteering sections' })).not.toBeInTheDocument();
     });
 
-    it('honours tenant gates even for a disabled deep link', async () => {
+    it('opens a section on a page of its own, and "Volunteering home" goes back the way Back would', async () => {
+      render(<VolunteeringPage />);
+      fireEvent.click(within(screen.getByTestId('volunteering-hub')).getByRole('button', { name: 'My applications' }));
+      await waitFor(() => expect(window.location.search).toBe('?tab=applications'));
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1, name: 'My applications' })).toHaveFocus());
+      expect(screen.getByText("The roles you've applied for, and whether each organisation has said yes.")).toBeInTheDocument();
+      // The section page is focused on its job: no hub cards, no home title.
+      expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Make a difference, your way.' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Volunteering home' }));
+      await waitFor(() => expect(window.location.search).toBe(''));
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1, name: 'Make a difference, your way.' })).toHaveFocus());
+      expect(screen.getByTestId('volunteering-hub')).toBeInTheDocument();
+    });
+
+    it('takes a deep-linked section home with the same button, without leaving the page', async () => {
+      window.history.replaceState({}, '', '/?tab=hours');
+      render(<VolunteeringPage />);
+      expect(await screen.findByRole('heading', { level: 1, name: 'My hours and shifts' })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Volunteering home' }));
+      await waitFor(() => expect(window.location.search).toBe(''));
+      expect(screen.getByTestId('volunteering-hub')).toBeInTheDocument();
+    });
+
+    it('drops the sections a community has switched off, and sends a link to one home', async () => {
       vi.mocked(useTenant).mockImplementation(() => ({
         ...originalTenant!(),
         volunteeringConfig: { 'volunteering.tab_group_signups': false, 'volunteering.expenses_enabled': false, 'volunteering.enable_matching': false },
       }) as ReturnType<typeof useTenant>);
-      window.history.replaceState({}, '', '/?layout=hub-preview&tab=group-signups');
+      window.history.replaceState({}, '', '/?tab=group-signups');
       render(<VolunteeringPage />);
+      await waitFor(() => expect(window.location.search).toBe(''));
       const hub = within(screen.getByTestId('volunteering-hub'));
-      expect(hub.queryByRole('button', { name: 'hub.links.group-signups' })).not.toBeInTheDocument();
-      expect(hub.queryByRole('button', { name: 'hub.links.expenses' })).not.toBeInTheDocument();
-      expect(hub.queryByRole('button', { name: 'hub.links.recommended' })).not.toBeInTheDocument();
-      await waitFor(() => expect(window.location.search).toBe('?layout=hub-preview'));
+      expect(hub.queryByRole('button', { name: 'Group sign-ups' })).not.toBeInTheDocument();
+      expect(hub.queryByRole('button', { name: 'Expenses' })).not.toBeInTheDocument();
+      expect(hub.queryByRole('button', { name: 'Recommended for you' })).not.toBeInTheDocument();
     });
 
     it('shows signed-out visitors the list alone, with no hub and no member buttons', async () => {
       vi.mocked(useAuth).mockReturnValue({ ...originalAuth!(), isAuthenticated: false } as ReturnType<typeof useAuth>);
       mockHubApi({ '/v2/volunteering/opportunities': list([opportunity(1), opportunity(2), opportunity(3), opportunity(4)]) });
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
       expect(await screen.findByText('Opportunity 4')).toBeInTheDocument();
       expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument();
-      expect(screen.queryByText('hub.more_opportunities')).not.toBeInTheDocument();
+      expect(screen.queryByText('More opportunities')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Log Hours' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'hub.find_opportunities' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Find opportunities' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Welcome to volunteering')).not.toBeInTheDocument();
+      // How it works is still one tap away.
+      expect(screen.getByText(/1 time credit for every hour/i)).toBeInTheDocument();
       // Nothing member-only is even asked for.
       expect(vi.mocked(api.get).mock.calls.map(([url]) => url).filter((url) => !String(url).startsWith('/v2/volunteering/opportunities'))).toEqual([]);
     });
 
     it('leads with the first three opportunities, then the hub, then the rest', async () => {
       mockHubApi({ '/v2/volunteering/opportunities': list([1, 2, 3, 4, 5].map(opportunity)) });
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
       const third = await screen.findByText('Opportunity 3');
       const hub = screen.getByTestId('volunteering-hub');
@@ -292,54 +341,85 @@ describe('VolunteeringPage', () => {
       const follows = (a: Node, b: Node) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
       expect(follows(third, hub)).toBe(true);
       expect(follows(hub, fourth)).toBe(true);
-      expect(follows(screen.getByRole('heading', { name: 'hub.more_opportunities' }), fourth)).toBe(true);
+      expect(follows(screen.getByRole('heading', { name: 'More opportunities' }), fourth)).toBe(true);
     });
 
-    it('hides the hub while a search is applied, and brings it back when cleared', async () => {
+    it('shows search results alone, and brings the hub back when the search is cleared', async () => {
       mockHubApi({ '/v2/volunteering/opportunities': list([1, 2, 3, 4].map(opportunity)) });
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
       const search = screen.getByPlaceholderText('Search opportunities...');
       fireEvent.change(search, { target: { value: 'garden' } });
       await waitFor(() => expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument());
+      expect(screen.getByRole('heading', { name: 'Search results' })).toBeInTheDocument();
       expect(await screen.findByText('Opportunity 4')).toBeInTheDocument();
       fireEvent.change(search, { target: { value: '' } });
       await waitFor(() => expect(screen.getByTestId('volunteering-hub')).toBeInTheDocument());
+      expect(screen.getByRole('heading', { name: 'Explore opportunities' })).toBeInTheDocument();
     });
 
     it('offers Log Hours only to a member who can log hours', async () => {
       mockHubApi({ '/v2/volunteering/applications?status=approved': list([{ id: 9, status: 'approved' }]) });
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
-      expect(await screen.findByRole('button', { name: 'Log Hours' })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'hub.find_opportunities' })).not.toBeInTheDocument();
+      fireEvent.click(await screen.findByRole('button', { name: 'Log Hours' }));
+      await waitFor(() => expect(window.location.search).toBe('?tab=hours'));
     });
 
-    it('offers Find opportunities instead to a member who cannot log hours yet', async () => {
+    it('offers Find opportunities instead to a member who cannot log hours yet, and it moves to the list', async () => {
+      window.localStorage.setItem('nexus_vol_welcome_dismissed_v1', '1');
       mockHubApi({});
-      window.history.replaceState({}, '', '/?layout=hub-preview&tab=hours');
       render(<VolunteeringPage />);
-      fireEvent.click(await screen.findByRole('button', { name: 'hub.find_opportunities' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Find opportunities' }));
       expect(screen.queryByRole('button', { name: 'Log Hours' })).not.toBeInTheDocument();
-      await waitFor(() => expect(window.location.search).toBe('?layout=hub-preview'));
+      await waitFor(() => expect(screen.getByRole('heading', { name: 'Explore opportunities' })).toHaveFocus());
     });
 
-    it('raises a banner for an unanswered urgent request and shows live numbers', async () => {
+    it('welcomes a first-time member with the three steps, then keeps a one-line explainer', async () => {
+      render(<VolunteeringPage />);
+      expect(screen.getByText('Welcome to volunteering')).toBeInTheDocument();
+      expect(screen.queryByText(/1 time credit for every hour/i)).not.toBeInTheDocument();
+      // Once it is known this member cannot log hours yet, the welcome's own
+      // "Find opportunities" is the only one — the header does not repeat it.
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/v2/volunteering/applications?status=approved&per_page=1'));
+      await waitFor(() => expect(screen.queryByRole('button', { name: 'Find opportunities' })).not.toBeInTheDocument());
+      fireEvent.click(screen.getAllByRole('button', { name: 'Got it' })[0]!);
+      await waitFor(() => expect(screen.queryByText('Welcome to volunteering')).not.toBeInTheDocument());
+      expect(await screen.findByRole('button', { name: 'Find opportunities' })).toBeInTheDocument();
+      expect(screen.getByText('How volunteering works')).toBeInTheDocument();
+      expect(screen.getByText(/1 time credit for every hour/i)).toBeInTheDocument();
+      expect(window.localStorage.getItem('nexus_vol_welcome_dismissed_v1')).toBe('1');
+    });
+
+    it('gives an organisation manager a clear way in, and keeps "Run an organisation?" for everyone else', async () => {
+      mockHubApi({ '/v2/volunteering/my-organisations': list([{ id: 31, name: 'Garden Club', status: 'active', member_role: 'owner' }]) });
+      render(<VolunteeringPage />);
+      const strip = within(await screen.findByTestId('volunteering-organisation-strip'));
+      expect(strip.getByRole('link', { name: 'Manage organisation' })).toHaveAttribute('href', '/test/volunteering/org/31/dashboard');
+      expect(screen.queryByTestId('volunteering-register-organisation')).not.toBeInTheDocument();
+    });
+
+    it('invites a member with no organisation to register one, at the foot of the page', async () => {
+      render(<VolunteeringPage />);
+      expect(await screen.findByTestId('volunteering-register-organisation')).toHaveTextContent('Run an organisation?');
+      expect(screen.queryByTestId('volunteering-organisation-strip')).not.toBeInTheDocument();
+    });
+
+    it('raises a banner for an unanswered urgent request, and shows live numbers', async () => {
       mockHubApi({
         '/v2/volunteering/emergency-alerts': { success: true, data: { alerts: [{ id: 1, my_response: 'pending' }] } },
         '/v2/volunteering/applications?status=pending': list([{ id: 1, status: 'pending' }, { id: 2, status: 'pending' }]),
         '/v2/volunteering/shifts': { success: true, data: { items: [{ id: 3, start_time: '2099-01-01T10:00:00Z', opportunity_title: 'Garden day' }], cursor: null, has_more: false } },
         '/v2/volunteering/hours/summary': { success: true, data: { total_verified: 12 } },
       });
-      window.history.replaceState({}, '', '/?layout=hub-preview');
       render(<VolunteeringPage />);
       expect(await screen.findByTestId('volunteering-urgent-banner')).toBeInTheDocument();
       expect(await screen.findByText('hub.hint_waiting')).toBeInTheDocument();
       expect(screen.getByText('hub.hint_to_answer')).toBeInTheDocument();
       expect(await screen.findByText('hub.next_shift')).toBeInTheDocument();
       expect(await screen.findByText('hub.hours_approved')).toBeInTheDocument();
-      fireEvent.click(screen.getAllByRole('button', { name: 'hub.urgent_action' })[0]!);
-      await waitFor(() => expect(window.location.search).toContain('tab=alerts'));
+      fireEvent.click(screen.getAllByRole('button', { name: 'See urgent requests' })[0]!);
+      await waitFor(() => expect(window.location.search).toBe('?tab=alerts'));
+      // No need to point at the page the member is already on.
+      expect(screen.queryByTestId('volunteering-urgent-banner')).not.toBeInTheDocument();
     });
   });
 
@@ -351,18 +431,14 @@ describe('VolunteeringPage', () => {
   it('renders the page heading and description', () => {
     render(<VolunteeringPage />);
     expect(screen.getByText('Volunteering')).toBeInTheDocument();
-    expect(screen.getByText('Find opportunities, sign up, and log the hours you give.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Make a difference, your way.' })).toBeInTheDocument();
   });
 
-  it('shows Opportunities tab button', () => {
+  it('shows My applications and My hours and shifts when authenticated', () => {
     render(<VolunteeringPage />);
-    expect(screen.getByText('Opportunities')).toBeInTheDocument();
-  });
-
-  it('shows My Applications and My Hours tabs when authenticated', () => {
-    render(<VolunteeringPage />);
-    expect(screen.getByText('My Applications')).toBeInTheDocument();
-    expect(screen.getByText('My Hours')).toBeInTheDocument();
+    const hub = within(screen.getByTestId('volunteering-hub'));
+    expect(hub.getByRole('button', { name: /^My applications/ })).toBeInTheDocument();
+    expect(hub.getByRole('button', { name: /^My hours and shifts/ })).toBeInTheDocument();
   });
 
   // Gap A7 (6 Oct 2026): the "awaiting approval" card was plain text; the dashboard
@@ -446,7 +522,7 @@ describe('VolunteeringPage', () => {
         application({ id: 4, shift: null }),
       ]);
       render(<VolunteeringPage />);
-      fireEvent.click(screen.getByText('My Applications'));
+      openSection('My applications');
 
       expect(await screen.findByTestId('shift-swap-ask-10')).toBeInTheDocument();
       expect(screen.queryByTestId('shift-swap-ask-11')).not.toBeInTheDocument();
@@ -458,7 +534,7 @@ describe('VolunteeringPage', () => {
       mockApplications([application({ id: 1, shift: futureShift })]);
       vi.mocked(api.post).mockResolvedValue({ success: true, data: { id: 99 } });
       render(<VolunteeringPage />);
-      fireEvent.click(screen.getByText('My Applications'));
+      openSection('My applications');
       fireEvent.click(await screen.findByTestId('shift-swap-ask-10'));
 
       await waitFor(() => {
@@ -493,7 +569,7 @@ describe('VolunteeringPage', () => {
         { success: true, data: [], meta: { cursor: null, has_more: false } }
       )) as unknown as typeof api.get);
       render(<VolunteeringPage />);
-      fireEvent.click(screen.getByText('My Hours'));
+      openSection('My hours and shifts');
 
       const find = await screen.findByTestId('hours-no-org-find');
       const apps = screen.getByTestId('hours-no-org-applications');
@@ -505,7 +581,9 @@ describe('VolunteeringPage', () => {
         expect(window.location.search).toBe('?tab=applications');
       });
 
-      fireEvent.click(screen.getByText('My Hours'));
+      fireEvent.click(screen.getByRole('button', { name: 'Volunteering home' }));
+      await waitFor(() => expect(window.location.search).toBe(''));
+      openSection('My hours and shifts');
       fireEvent.click(await screen.findByTestId('hours-no-org-find'));
       await waitFor(() => {
         expect(window.location.search).toBe('');
@@ -615,54 +693,35 @@ describe('VolunteeringPage', () => {
       expect(screen.getByLabelText('More filters')).toBeInTheDocument();
       expect(screen.getByText('Search opportunities...')).toBeInTheDocument();
 
-      // The hero (title + description + eyebrow) is gone; the title now lives in
-      // the app bar instead.
-      expect(screen.queryByText('Find opportunities, sign up, and log the hours you give.')).not.toBeInTheDocument();
+      // The home's own title stays on phones too, so there is always a heading to orient by.
+      expect(screen.getByRole('heading', { level: 1, name: 'Make a difference, your way.' })).toBeInTheDocument();
       // The desktop inline SearchField is replaced by the pill (a Button).
       expect(screen.queryByPlaceholderText('Search opportunities...')).not.toBeInTheDocument();
     });
 
-    it('keeps the how-it-works explainer reachable as a collapsed disclosure', async () => {
+    it('keeps how volunteering works one tap away once the welcome is dismissed', () => {
+      window.localStorage.setItem('nexus_vol_welcome_dismissed_v1', '1');
       render(<VolunteeringPage />);
-
-      // The heading survives as the disclosure trigger — an anonymous phone
-      // visitor must still be able to find out how hours become time credits.
-      const trigger = screen.getByRole('button', { name: /How volunteering works/i });
-      expect(trigger).toBeInTheDocument();
-      expect(trigger).toHaveAttribute('aria-expanded', 'false');
-
-      fireEvent.click(trigger);
-
-      await waitFor(() => {
-        expect(trigger).toHaveAttribute('aria-expanded', 'true');
-      });
-      // The body copy is the same string the desktop card shows — the exchange-rate
-      // sentence is the part a phone visitor must not lose.
+      // An anonymous phone visitor must still be able to find out how hours
+      // become time credits — the exchange-rate sentence is the part not to lose.
+      expect(screen.getByText('How volunteering works')).toBeInTheDocument();
       expect(screen.getByText(/1 time credit for every hour/i)).toBeInTheDocument();
+      window.localStorage.removeItem('nexus_vol_welcome_dismissed_v1');
     });
 
-    it('re-homes the hero and org-door actions into the compact action row', () => {
+    it('keeps Browse Organisations and the register invitation on phones', async () => {
       render(<VolunteeringPage />);
-      expect(screen.getByText('Log Hours')).toBeInTheDocument();
       expect(screen.getByText('Browse Organisations')).toBeInTheDocument();
-      // No approved org and nothing pending → the register CTA must survive.
-      expect(screen.getByText('Register organisation')).toBeInTheDocument();
+      // No approved org and nothing pending → the register invitation must survive.
+      expect(await screen.findByText('Register organisation')).toBeInTheDocument();
     });
 
-    it('replaces the wrapping section pills with one control that opens a sections sheet', async () => {
+    it('shows the section links on the page itself, with no sections picker to open', () => {
       render(<VolunteeringPage />);
-
-      const sectionsTrigger = screen.getByRole('button', { name: 'Volunteering sections' });
-      expect(sectionsTrigger).toBeInTheDocument();
-      // The secondary-section disclosure is not rendered on phones.
-      expect(screen.queryByText('Show fewer')).not.toBeInTheDocument();
-
-      fireEvent.click(sectionsTrigger);
-      await waitFor(() => {
-        expect(screen.getByRole('radiogroup', { name: 'Volunteering sections' })).toBeInTheDocument();
-      });
-      expect(screen.getByRole('radio', { name: 'My Applications' })).toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'My Hours' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Volunteering sections' })).not.toBeInTheDocument();
+      const hub = within(screen.getByTestId('volunteering-hub'));
+      expect(hub.getByRole('button', { name: /^My applications/ })).toBeInTheDocument();
+      expect(hub.getByRole('button', { name: /^My hours and shifts/ })).toBeInTheDocument();
     });
 
     it('opens the filter sheet with its chip groups and an unknown-count apply button', async () => {
@@ -748,24 +807,22 @@ describe('VolunteeringPage', () => {
       window.history.replaceState({}, '', '/');
     });
 
-    it('does not offer the tab, and a ?tab=group-signups link falls back to Opportunities, when the community has it off', async () => {
+    it('does not offer the section, and a ?tab=group-signups link goes home, when the community has it off', async () => {
       withVolunteeringConfig({ 'volunteering.tab_group_signups': false });
       window.history.replaceState({}, '', '/?tab=group-signups');
       render(<VolunteeringPage />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('radiogroup', { name: 'Volunteering sections' })).toBeInTheDocument();
-      });
-      expect(screen.queryByRole('radio', { name: 'Group Sign-ups' })).not.toBeInTheDocument();
-      expect(screen.getByRole('radio', { name: 'Opportunities' })).toHaveAttribute('aria-checked', 'true');
+      await waitFor(() => expect(window.location.search).toBe(''));
+      expect(within(screen.getByTestId('volunteering-hub')).queryByRole('button', { name: 'Group sign-ups' })).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1, name: 'Make a difference, your way.' })).toBeInTheDocument();
     });
 
-    it('offers the tab when a community admin has turned it on', async () => {
+    it('opens the section when a community admin has turned it on', async () => {
       withVolunteeringConfig({ 'volunteering.tab_group_signups': true });
       window.history.replaceState({}, '', '/?tab=group-signups');
       render(<VolunteeringPage />);
 
-      expect(await screen.findByRole('radio', { name: 'Group Sign-ups' })).toHaveAttribute('aria-checked', 'true');
+      expect(await screen.findByRole('heading', { level: 1, name: 'Group sign-ups' })).toBeInTheDocument();
     });
   });
 });

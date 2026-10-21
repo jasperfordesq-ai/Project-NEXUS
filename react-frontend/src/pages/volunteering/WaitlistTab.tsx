@@ -192,10 +192,6 @@ export function WaitlistTab() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-amber-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('waitlist.heading')}</h2>
-        </div>
         <Button
           size="sm"
           variant="tertiary"

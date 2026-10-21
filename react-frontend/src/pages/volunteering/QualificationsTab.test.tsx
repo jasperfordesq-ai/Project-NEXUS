@@ -205,7 +205,6 @@ describe('QualificationsTab', () => {
 
   it('renders the heading, actions and the intro card with the show-or-send line and vetting link', async () => {
     render(<QualificationsTab />);
-    expect(screen.getByRole('heading', { level: 2, name: 'Qualifications' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Refresh/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add qualification' })).toBeInTheDocument();
 

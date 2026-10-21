@@ -15,14 +15,6 @@ import { motion } from '@/lib/motion';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
-import {
-  Disclosure,
-  DisclosureBody,
-  DisclosureContent,
-  DisclosureHeading,
-  DisclosureIndicator,
-  DisclosureTrigger,
-} from '@/components/ui/Disclosure';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
 import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
@@ -42,8 +34,15 @@ import {
   type VolunteeringFilterDraft,
   type VolunteeringFormat,
 } from '@/components/volunteering/VolunteeringFilterSheet';
-import { VolunteeringSectionsSheet } from '@/components/volunteering/VolunteeringSectionsSheet';
-import { VolunteeringHub, VolunteeringPreviewHeader, VolunteeringUrgentBanner } from '@/components/volunteering/VolunteeringHub';
+import {
+  VolunteeringHub,
+  VolunteeringHomeHeader,
+  VolunteeringOrganisationStrip,
+  VolunteeringRegisterOrganisation,
+  VolunteeringSectionHeader,
+  VolunteeringUrgentBanner,
+} from '@/components/volunteering/VolunteeringHub';
+import { VolunteeringWelcome, isVolunteeringWelcomeDismissed } from './VolunteeringWelcome';
 import { useVolunteeringHubSummary } from '@/components/volunteering/useVolunteeringHubSummary';
 
 import Heart from 'lucide-react/icons/heart';
@@ -55,7 +54,6 @@ import Calendar from 'lucide-react/icons/calendar';
 import Clock from 'lucide-react/icons/clock';
 import Building2 from 'lucide-react/icons/building-2';
 import ChevronRight from 'lucide-react/icons/chevron-right';
-import ChevronDown from 'lucide-react/icons/chevron-down';
 import Send from 'lucide-react/icons/send';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
@@ -64,23 +62,10 @@ import TrendingUp from 'lucide-react/icons/trending-up';
 import Globe from 'lucide-react/icons/globe';
 import Briefcase from 'lucide-react/icons/briefcase';
 import Timer from 'lucide-react/icons/timer';
-import Sparkles from 'lucide-react/icons/sparkles';
-import Award from 'lucide-react/icons/award';
-import Siren from 'lucide-react/icons/siren';
-import Smile from 'lucide-react/icons/smile';
-import BadgeCheck from 'lucide-react/icons/badge-check';
 import ArrowLeftRight from 'lucide-react/icons/arrow-left-right';
-import Users from 'lucide-react/icons/users';
 import MessageSquare from 'lucide-react/icons/message-square';
-import Receipt from 'lucide-react/icons/receipt';
-import Shield from 'lucide-react/icons/shield';
-import Lightbulb from 'lucide-react/icons/lightbulb';
-import HandHeart from 'lucide-react/icons/hand-heart';
-import Info from 'lucide-react/icons/info';
-import Accessibility from 'lucide-react/icons/accessibility';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
-import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
@@ -98,7 +83,6 @@ import type { ProximityFilterParams } from '@/components/proximity/ProximityFilt
 import { extractCollectionItems } from './extractCollectionItems';
 import { ShiftSwapRequestModal, type SwapSourceShift } from './ShiftSwapRequestModal';
 import { MyHoursAndShiftsLists } from './MyHoursAndShiftsLists';
-const VolunteeringWelcome = React.lazy(() => import('./VolunteeringWelcome'));
 const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
 const CertificatesTab = React.lazy(() => import('./CertificatesTab'));
@@ -181,17 +165,14 @@ type VolunteerTab = 'opportunities' | 'applications' | 'hours' | 'recommended' |
 
 const VOLUNTEER_TABS: VolunteerTab[] = ['opportunities', 'applications', 'hours', 'recommended', 'certificates', 'alerts', 'wellbeing', 'credentials', 'waitlist', 'swaps', 'group-signups', 'expenses', 'safeguarding', 'community-projects', 'donations', 'accessibility'];
 
-// The handful of tabs a volunteer reaches for constantly. Everything else is
-// tucked behind a "More" toggle so the page doesn't open as a wall of tabs.
-const PRIMARY_VOLUNTEER_TABS: VolunteerTab[] = ['opportunities', 'applications', 'hours', 'recommended', 'certificates'];
-
 const VOLUNTEER_TAB_FEATURE_GATES: Partial<Record<VolunteerTab, (keyof VolunteeringConfig)[]>> = {
   recommended: ['volunteering.enable_matching'],
   expenses: ['volunteering.expenses_enabled'],
 };
 
 // Volunteering brand gradient — centralized so it can be themed later via tokens.
-const VOL_GRADIENT_BASE = 'bg-linear-to-r from-rose-500 to-pink-600';
+// The deeper end of the pink range: white text on rose-500 falls short of WCAG AA contrast.
+const VOL_GRADIENT_BASE = 'bg-linear-to-r from-rose-600 to-pink-700';
 const VOL_GRADIENT = `${VOL_GRADIENT_BASE} text-white`;
 
 // Today's date as YYYY-MM-DD in the user's LOCAL timezone. `toISOString()`
@@ -240,15 +221,18 @@ export function VolunteeringPage() {
   const isPhone = useMediaQuery('(max-width: 639px)');
   const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
-  const { tenantPath, hasFeature, volunteeringConfig } = useTenant();
+  const { hasFeature, volunteeringConfig } = useTenant();
   const hasOrganisations = hasFeature('organisations');
   const [searchParams, setSearchParams] = useSearchParams();
-  // URL-only opt-in: no tenant setting or persistent preference is changed.
-  const isHubPreview = searchParams.get('layout') === 'hub-preview';
-  const focusPreviewContent = useRef(false);
-  const focusHubContent = useCallback(() => {
-    const heading = document.getElementById('volunteering-content');
-    heading?.focus();
+  const navigate = useNavigate();
+  // Set when the member moves between the home and a section, so the new page's
+  // heading takes focus — never on first load, which must not steal focus.
+  const focusContentOnChange = useRef(false);
+  // `volunteering-content` is the list heading on the home page and the title of a
+  // section page; `volunteering-home-heading` is the home page's own title.
+  const focusContent = useCallback((id = 'volunteering-content') => {
+    const heading = document.getElementById(id);
+    heading?.focus({ preventScroll: true });
     heading?.scrollIntoView?.({ block: 'start' });
   }, []);
   // Check if a volunteering tab is enabled via config
@@ -264,35 +248,47 @@ export function VolunteeringPage() {
   const initialTab = requestedTab && VOLUNTEER_TABS.includes(requestedTab) ? requestedTab : 'opportunities';
   const [tab, setTabState] = useState<VolunteerTab>(initialTab);
 
-  const setTab = useCallback((newTab: VolunteerTab) => {
-    focusPreviewContent.current = true;
-    if (isHubPreview && newTab === tab) focusHubContent();
+  /**
+   * Move between the volunteering home (`opportunities`) and a section. A move the
+   * member chose (`push`) adds a history entry, so the phone's Back button returns
+   * to where they were; automatic corrections replace it instead.
+   */
+  const setTab = useCallback((newTab: VolunteerTab, options?: { push?: boolean }) => {
+    focusContentOnChange.current = true;
+    if (newTab === tab) focusContent();
     setTabState(newTab);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
+      // The hub layout was trialled behind ?layout=hub-preview; old links keep working.
+      next.delete('layout');
       if (newTab === 'opportunities') {
         next.delete('tab');
       } else {
         next.set('tab', newTab);
       }
       return next;
-    }, { replace: true });
-  }, [setSearchParams, isHubPreview, tab, focusHubContent]);
+    }, { replace: !options?.push });
+  }, [setSearchParams, tab, focusContent]);
+  const openSection = useCallback((key: string) => {
+    if (VOLUNTEER_TABS.includes(key as VolunteerTab)) setTab(key as VolunteerTab, { push: true });
+  }, [setTab]);
   useEffect(() => {
-    if (isHubPreview && focusPreviewContent.current) {
+    if (focusContentOnChange.current) {
       // Wait for the URL-driven section and its keyed boundary to settle.
+      // Arriving home from a section starts at the top of the home page.
       const frame = requestAnimationFrame(() => {
-        focusHubContent();
-        focusPreviewContent.current = false;
+        focusContent(tab === 'opportunities' ? 'volunteering-home-heading' : 'volunteering-content');
+        focusContentOnChange.current = false;
       });
       return () => cancelAnimationFrame(frame);
     }
-  }, [tab, isHubPreview, focusHubContent]);
+  }, [tab, focusContent]);
   type MyOrg = { id: number; name: string; status: string; role: string };
   const [myOrgs, setMyOrgs] = useState<MyOrg[]>([]);
-  const [showMoreTabs, setShowMoreTabs] = useState(false);
-  // Phone-only: the wrapping pill wall is replaced by one control + this sheet.
-  const [isSectionsSheetOpen, setIsSectionsSheetOpen] = useState(false);
+  // Only offer "Run an organisation?" once we know the member runs none.
+  const [myOrgsLoaded, setMyOrgsLoaded] = useState(false);
+  // The one-time three-step welcome; replaced by the short "How it works" line once dismissed.
+  const [showWelcome, setShowWelcome] = useState(() => !isVolunteeringWelcomeDismissed());
   // Orgs the user can actually manage (owner/admin) and that are live.
   const manageableOrgs = myOrgs.filter(
     (o) => ['approved', 'active'].includes(o.status) && ['owner', 'admin'].includes(o.role),
@@ -301,31 +297,22 @@ export function VolunteeringPage() {
   const pendingOrgs = myOrgs.filter(
     (o) => o.status === 'pending' && ['owner', 'admin'].includes(o.role),
   );
-  const hasApprovedOrg = manageableOrgs.length > 0;
-  // Captured so TS narrows the index access (noUncheckedIndexedAccess).
-  const soleManagedOrg = manageableOrgs.length === 1 ? manageableOrgs[0] : undefined;
-  const firstPendingOrg = pendingOrgs[0];
-  // Where the "manage" CTA points: straight to the dashboard for a single org,
-  // otherwise the chooser page.
-  const manageHref = soleManagedOrg
-    ? tenantPath(`/volunteering/org/${soleManagedOrg.id}/dashboard`)
-    : tenantPath('/volunteering/my-organisations');
 
   const isTabAllowed = useCallback((tabKey: VolunteerTab): boolean => (
     VOLUNTEER_TABS.includes(tabKey) && (tabKey === 'opportunities' || isAuthenticated) && isTabEnabled(tabKey)
   ), [isAuthenticated, isTabEnabled]);
 
+  // `opportunities` is the volunteering home and is always reachable, even when a
+  // community has switched its list off (the home then shows the hub alone). A
+  // section the member cannot open sends them home rather than to a random section.
   useEffect(() => {
-    if (isTabAllowed(tab)) return;
-    const fallbackTab = VOLUNTEER_TABS.find(isTabAllowed);
-    if (fallbackTab && fallbackTab !== tab) {
-      setTab(fallbackTab);
-    }
+    if (tab === 'opportunities' || isTabAllowed(tab)) return;
+    setTab('opportunities');
   }, [tab, isTabAllowed, setTab]);
 
   useEffect(() => {
     const nextTab = requestedTab && VOLUNTEER_TABS.includes(requestedTab) ? requestedTab : 'opportunities';
-    if (nextTab !== tab && isTabAllowed(nextTab)) {
+    if (nextTab !== tab && (nextTab === 'opportunities' || isTabAllowed(nextTab))) {
       setTabState(nextTab);
     }
   }, [requestedTab, tab, isTabAllowed]);
@@ -339,6 +326,7 @@ export function VolunteeringPage() {
           if (!cancelled && res.success && res.data) {
             const items = extractCollectionItems<{ id: number; name: string; status: string; member_role: string; balance?: number }>(res.data);
             setMyOrgs(items.map((o) => ({ id: o.id, name: o.name, status: o.status, role: o.member_role })));
+            setMyOrgsLoaded(true);
           }
         })
         .catch(() => { /* silent — org tools just won't show */ });
@@ -346,18 +334,37 @@ export function VolunteeringPage() {
     return () => { cancelled = true; };
   }, [isAuthenticated, hasFeature, hasOrganisations]);
 
-  // Hub preview only: the live numbers beside its links, fetched solely for
-  // sections this member can actually open.
-  const allowedSections = useMemo(() => new Set<string>(VOLUNTEER_TABS.filter(isTabAllowed)), [isTabAllowed]);
-  const hubSummary = useVolunteeringHubSummary({ enabled: isHubPreview && isAuthenticated, sections: allowedSections });
+  // The sections this member can open, in hub order, and the live numbers beside
+  // their links — fetched solely for those sections.
+  const visibleSections = useMemo(() => VOLUNTEER_TABS.filter(isTabAllowed), [isTabAllowed]);
+  const allowedSections = useMemo(() => new Set<string>(visibleSections), [visibleSections]);
+  const hubSummary = useVolunteeringHubSummary({ enabled: isAuthenticated, sections: allowedSections });
+  const listEnabled = isTabAllowed('opportunities');
   // Same rule as the Hours tab: an approved application, or membership of a live
   // organisation. `null` until known, so the wrong button never flashes up.
   const isLiveOrgMember = myOrgs.some((o) => ['approved', 'active'].includes(o.status));
-  const previewCanLogHours: boolean | null = !isTabAllowed('hours')
+  const canLogHours: boolean | null = !isTabAllowed('hours')
     ? null
     : (isLiveOrgMember || hubSummary.hasApprovedApplication === true)
       ? true
-      : hubSummary.hasApprovedApplication === false ? false : null;
+      : hubSummary.hasApprovedApplication === false && listEnabled ? false : null;
+
+  // "Volunteering home" goes back through history when the member came from the
+  // home page, so Back and the button agree; a deep link has nowhere to go back to.
+  const openedFromHome = useRef(false);
+  const openSectionFromHome = useCallback((key: string) => {
+    openedFromHome.current = true;
+    openSection(key);
+  }, [openSection]);
+  const goHome = useCallback(() => {
+    if (openedFromHome.current) {
+      openedFromHome.current = false;
+      focusContentOnChange.current = true;
+      navigate(-1);
+    } else {
+      setTab('opportunities', { push: true });
+    }
+  }, [navigate, setTab]);
 
   // Feature gate
   if (!hasFeature('volunteering')) {
@@ -376,479 +383,80 @@ export function VolunteeringPage() {
   }
 
 
+  const onHome = tab === 'opportunities';
+  // No hub when the opportunities list is the only section (a signed-out
+  // visitor, or a community that switched everything else off).
+  const hub = visibleSections.some((key) => key !== 'opportunities') ? <VolunteeringHub
+    sections={visibleSections}
+    onSelect={(key) => (key === 'opportunities' ? setTab('opportunities') : openSectionFromHome(key))}
+    summary={hubSummary}
+  /> : null;
+
   return (
     <div className="space-y-6">
       <PageMeta
         title={t('page_title')}
         description={t('page_description')}
       />
-      {/* The hero owns this page's only <h1> and is hidden on phones, where the
-          title moves into the app bar as plain text — leaving a phone with no
-          heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
-      {isPhone && !isHubPreview && <h1 className="sr-only">{t('heading')}</h1>}
 
-      {isHubPreview && <VolunteeringPreviewHeader
-        canLogHours={previewCanLogHours}
-        onLogHours={() => setTab('hours')}
-        onFindOpportunities={() => setTab('opportunities')}
-        hasOrganisations={hasOrganisations}
-        manageHref={isAuthenticated && hasApprovedOrg ? manageHref : firstPendingOrg ? pendingOrgs.length === 1 ? tenantPath(`/volunteering/org/${firstPendingOrg.id}/dashboard`) : tenantPath('/volunteering/my-organisations') : undefined}
-        canRegisterOrganisation={isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0}
-        canPostOpportunity={isAuthenticated && hasApprovedOrg}
-        pendingOrganisationName={isAuthenticated && !hasApprovedOrg ? firstPendingOrg?.name : undefined}
-        onExit={() => setSearchParams((prev) => {
-          const next = new URLSearchParams(prev);
-          next.delete('layout');
-          return next;
-        })}
-      />}
+      {/* Shown on every page except the urgent-requests section itself. */}
+      {tab !== 'alerts' && <VolunteeringUrgentBanner count={hubSummary.urgentRequests} onOpen={() => openSectionFromHome('alerts')} />}
 
-      {isHubPreview && <VolunteeringUrgentBanner count={hubSummary.urgentRequests} onOpen={() => setTab('alerts')} />}
-
-      {!isHubPreview && <>
-
-      {/* One-time welcome for signed-in members (dismissible, localStorage). */}
-      {isAuthenticated && (
-        <Suspense fallback={null}>
-          <VolunteeringWelcome />
-        </Suspense>
-      )}
-
-      {/* Hero — the VOLUNTEER view. Uses the shared PublicPageHero so it matches
-          the Organisations landing for a consistent, professional look.
-          Phones hide it entirely: the title lives in the app bar
-          (useSetAppBarTitle) and its two actions are re-homed into the compact
-          phone action row below. */}
-      {!isPhone && (
-      <PublicPageHero
-        eyebrow={t('hero_eyebrow')}
-        title={t('heading')}
-        description={t('volunteer_view_subtitle')}
-        accent="rose"
-        icon={<Heart className="h-7 w-7" aria-hidden="true" />}
-        action={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            {isAuthenticated && (
-              <Button
-                as={Link}
-                to={tenantPath('/volunteering?tab=hours')}
-                variant="primary"
-                className="w-full sm:w-auto bg-gradient-to-r from-rose-500 to-pink-600 text-white"
-                startContent={<Timer className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('log_hours')}
-              </Button>
-            )}
-            {hasOrganisations && <Button
-              as={Link}
-              to={tenantPath('/organisations')}
-              variant="secondary"
-              className="w-full sm:w-auto"
-              startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
-            >
-              {t('browse_organisations')}
-            </Button>}
-          </div>
-        }
-      />
-      )}
-
-      {/* Plain-language "how it works" so a first-time volunteer isn't guessing
-          what to do or how they get their time credits. On phones it collapses to
-          a one-line disclosure rather than disappearing: an anonymous phone
-          visitor would otherwise get no explanation anywhere of how volunteered
-          hours become time credits. Signed-in members also get the dismissible
-          VolunteeringWelcome card above. */}
-      {isPhone ? (
-        <GlassCard className="p-4">
-          <Disclosure>
-            <DisclosureHeading>
-              <DisclosureTrigger className="flex w-full min-h-11 items-center justify-between gap-3 text-left">
-                <span className="flex min-w-0 items-center gap-2.5">
-                  <span className="shrink-0 rounded-lg bg-rose-500/10 p-1.5 text-rose-600 dark:text-rose-400">
-                    <Info className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="truncate text-sm font-semibold text-theme-primary">
-                    {t('how_it_works_title')}
-                  </span>
-                </span>
-                <DisclosureIndicator />
-              </DisclosureTrigger>
-            </DisclosureHeading>
-            <DisclosureContent>
-              <DisclosureBody>
-                <p className="pt-2 text-sm text-theme-muted">{t('how_it_works')}</p>
-              </DisclosureBody>
-            </DisclosureContent>
-          </Disclosure>
-        </GlassCard>
+      {onHome ? (
+        <>
+          <VolunteeringHomeHeader
+            canLogHours={canLogHours}
+            onLogHours={() => openSectionFromHome('hours')}
+            onFindOpportunities={() => focusContent()}
+            hasOrganisations={hasOrganisations}
+            welcome={isAuthenticated && showWelcome
+              ? <VolunteeringWelcome onDismiss={() => setShowWelcome(false)} onFind={listEnabled ? () => focusContent() : undefined} />
+              : undefined}
+          />
+          {isAuthenticated && hasOrganisations && <VolunteeringOrganisationStrip managed={manageableOrgs} pending={pendingOrgs} />}
+        </>
       ) : (
-      <GlassCard className="p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400 shrink-0">
-            <Info className="w-5 h-5" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold text-theme-primary">{t('how_it_works_title')}</h2>
-            <p className="text-sm text-theme-muted">{t('how_it_works')}</p>
-          </div>
-        </div>
-      </GlassCard>
+        <VolunteeringSectionHeader section={tab} onBack={goHome} />
       )}
 
-      {/* ───────── The ORGANISATION door — the second "hat". ─────────
-          Kept visually separate from the volunteer hero above so it's obvious
-          these are two different modes: "I volunteer" vs "I run an organisation".
-          Previously the only entry was a button hidden behind hasApprovedOrg, so
-          owners with a pending org saw nothing at all. */}
-      {hasOrganisations && !isPhone && isAuthenticated && hasApprovedOrg && (
-        <GlassCard className="p-4 sm:p-5 border border-rose-500/20">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="rounded-lg bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400 shrink-0">
-                <Building2 className="w-5 h-5" aria-hidden="true" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-theme-danger">{t('for_organisations')}</p>
-                <h2 className="text-base font-semibold text-theme-primary">
-                  {soleManagedOrg
-                    ? t('org_callout_you_manage_one', { name: soleManagedOrg.name })
-                    : t('org_callout_you_manage_many', { count: manageableOrgs.length })}
-                </h2>
-                <p className="text-sm text-theme-muted">{t('org_callout_desc')}</p>
-              </div>
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:shrink-0">
-              <Button
-                as={Link}
-                to={manageHref}
-                variant="primary"
-                className="w-full sm:w-auto"
-                startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('manage_organisation')}
-              </Button>
-              <Button
-                as={Link}
-                to={tenantPath('/volunteering/create')}
-                variant="secondary"
-                className="w-full sm:w-auto"
-                startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('post_opportunity')}
-              </Button>
-            </div>
-          </div>
-        </GlassCard>
+      {onHome && !listEnabled && !hub && (
+        <EmptyState
+          icon={<Heart className="w-12 h-12" aria-hidden="true" />}
+          title={t('no_tabs_available')}
+          description={t('no_tabs_available_desc')}
+        />
       )}
 
-      {/* Org awaiting approval — previously rendered NOTHING, stranding the owner.
-          Deliberately NOT phone-gated: it is two short lines and it is the only
-          place an owner learns their registration is still in review. */}
-      {isAuthenticated && !hasApprovedOrg && pendingOrgs.length > 0 && (
-        <GlassCard className="p-4 sm:p-5 border border-amber-500/20">
-          <div className="flex items-start gap-3">
-            <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400 shrink-0">
-              <Hourglass className="w-5 h-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0 space-y-3">
-              <div>
-                <h2 className="text-base font-semibold text-theme-primary">{t('org_pending_title')}</h2>
-                <p className="text-sm text-theme-muted">{t('org_pending_desc', { name: firstPendingOrg?.name ?? '' })}</p>
-              </div>
-              {/* The dashboard works while the organisation is pending (gap A7, 6 Oct 2026):
-                  the owner can fill in its details and settings while they wait. */}
-              <Button
-                as={Link}
-                to={pendingOrgs.length === 1 && firstPendingOrg
-                  ? tenantPath(`/volunteering/org/${firstPendingOrg.id}/dashboard`)
-                  : tenantPath('/volunteering/my-organisations')}
-                size="sm"
-                variant="secondary"
-                startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
-                data-testid="org-pending-open"
-              >
-                {pendingOrgs.length === 1 ? t('org_pending_setup') : t('org_pending_see_all')}
-              </Button>
-            </div>
-          </div>
-        </GlassCard>
+      {/* Wrapped in a keyed ErrorBoundary so a render error in any single section
+          (eager OR lazy) is contained to it instead of blanking the whole page;
+          the key resets the boundary when the member moves. */}
+      <ErrorBoundary key={tab}><div>
+        {onHome && (listEnabled
+          ? <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} hub={hub} />
+          : hub)}
+        {tab === 'applications' && isTabEnabled('applications') && <ApplicationsTab />}
+        {tab === 'hours' && isTabEnabled('hours') && <HoursTab onNavigateTab={setTab} canOpenApplications={isTabAllowed('applications')} />}
+        <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>}>
+          {tab === 'recommended' && isTabEnabled('recommended') && <RecommendedShiftsTab />}
+          {tab === 'certificates' && isTabEnabled('certificates') && <CertificatesTab />}
+          {tab === 'alerts' && isTabEnabled('alerts') && <EmergencyAlertsTab />}
+          {tab === 'wellbeing' && isTabEnabled('wellbeing') && <WellbeingTab />}
+          {tab === 'credentials' && isTabEnabled('credentials') && <QualificationsTab />}
+          {tab === 'waitlist' && isTabEnabled('waitlist') && <WaitlistTab />}
+          {tab === 'swaps' && isTabEnabled('swaps') && <ShiftSwapsTab />}
+          {tab === 'group-signups' && isTabEnabled('group-signups') && <GroupSignUpTab />}
+          {tab === 'expenses' && isTabEnabled('expenses') && <ExpensesTab />}
+          {tab === 'safeguarding' && isTabEnabled('safeguarding') && <SafeguardingTab />}
+          {tab === 'community-projects' && isTabEnabled('community-projects') && <CommunityProjectsTab />}
+          {tab === 'donations' && isTabEnabled('donations') && <DonationsTab />}
+          {tab === 'accessibility' && isTabEnabled('accessibility') && <AccessibilityTab />}
+        </Suspense>
+      </div></ErrorBoundary>
+
+      {/* The organiser's door for members who run nothing yet, kept quiet at the foot. */}
+      {onHome && isAuthenticated && hasOrganisations && myOrgsLoaded && manageableOrgs.length === 0 && pendingOrgs.length === 0 && (
+        <VolunteeringRegisterOrganisation />
       )}
-
-      {/* No org yet — a quiet nudge that explains the second hat exists.
-          Phone-hidden; its "Register organisation" CTA is re-homed below. */}
-      {hasOrganisations && !isPhone && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
-        <GlassCard className="p-4 sm:p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="rounded-lg bg-theme-elevated p-2 text-theme-muted shrink-0">
-                <Building2 className="w-5 h-5" aria-hidden="true" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-base font-semibold text-theme-primary">{t('org_register_title')}</h2>
-                <p className="text-sm text-theme-muted">{t('org_register_desc')}</p>
-              </div>
-            </div>
-            <Button
-              as={Link}
-              to={tenantPath('/organisations/register')}
-              variant="secondary"
-              className="w-full sm:w-auto sm:shrink-0"
-              startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-            >
-              {t('register_organisation')}
-            </Button>
-          </div>
-        </GlassCard>
-      )}
-
-      {/* ───────── Phone: compact action row ─────────
-          The hero and the two org-door cards above are hidden on phones, and
-          between them they held the ONLY phone entry points to logging hours,
-          browsing organisations, the org dashboard, posting an opportunity and
-          registering an organisation. They are re-homed here as small buttons
-          (44px touch targets) that wrap into at most two rows — roughly a tenth
-          of the height the three cards cost. */}
-      {isPhone && (
-        <div className="flex flex-wrap items-center gap-2 sm:hidden">
-          {isAuthenticated && (
-            <Button
-              as={Link}
-              to={tenantPath('/volunteering?tab=hours')}
-              size="sm"
-              variant="primary"
-              className={`min-h-11 ${VOL_GRADIENT}`}
-              startContent={<Timer className="w-4 h-4" aria-hidden="true" />}
-            >
-              {t('log_hours')}
-            </Button>
-          )}
-          {hasOrganisations && <Button
-            as={Link}
-            to={tenantPath('/organisations')}
-            size="sm"
-            variant="secondary"
-            className="min-h-11"
-            startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
-          >
-            {t('browse_organisations')}
-          </Button>}
-          {hasOrganisations && isAuthenticated && hasApprovedOrg && (
-            <>
-              <Button
-                as={Link}
-                to={manageHref}
-                size="sm"
-                variant="secondary"
-                className="min-h-11"
-                startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('manage_organisation')}
-              </Button>
-              <Button
-                as={Link}
-                to={tenantPath('/volunteering/create')}
-                size="sm"
-                variant="secondary"
-                className="min-h-11"
-                startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('post_opportunity')}
-              </Button>
-            </>
-          )}
-          {hasOrganisations && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
-            <Button
-              as={Link}
-              to={tenantPath('/organisations/register')}
-              size="sm"
-              variant="secondary"
-              className="min-h-11"
-              startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-            >
-              {t('register_organisation')}
-            </Button>
-          )}
-        </div>
-      )}
-
-      </>}
-
-      {/* Tabs */}
-      {/* Tabs — data-driven with config-based visibility */}
-      {(() => {
-        type TabDef = { key: VolunteerTab; icon: typeof Briefcase; label: string; authOnly?: boolean };
-        const allTabs: TabDef[] = [
-          { key: 'opportunities', icon: Briefcase, label: t('tab_opportunities') },
-          { key: 'applications', icon: Send, label: t('tab_applications'), authOnly: true },
-          { key: 'hours', icon: Timer, label: t('tab_hours'), authOnly: true },
-          { key: 'recommended', icon: Sparkles, label: t('tab_for_you'), authOnly: true },
-          { key: 'certificates', icon: Award, label: t('tab_certificates'), authOnly: true },
-          { key: 'alerts', icon: Siren, label: t('tab_alerts'), authOnly: true },
-          { key: 'wellbeing', icon: Smile, label: t('tab_wellbeing'), authOnly: true },
-          // Tab key stays `credentials` so existing links keep working; the label reads "Qualifications".
-          { key: 'credentials', icon: BadgeCheck, label: t('tab_credentials'), authOnly: true },
-          { key: 'waitlist', icon: Clock, label: t('tab_waitlist'), authOnly: true },
-          { key: 'swaps', icon: ArrowLeftRight, label: t('tab_swap_requests'), authOnly: true },
-          { key: 'group-signups', icon: Users, label: t('tab_group_signups'), authOnly: true },
-          { key: 'expenses', icon: Receipt, label: t('tab_expenses'), authOnly: true },
-          { key: 'safeguarding', icon: Shield, label: t('tab_safeguarding'), authOnly: true },
-          { key: 'community-projects', icon: Lightbulb, label: t('tab_community_projects'), authOnly: true },
-          { key: 'donations', icon: HandHeart, label: t('tab_donations'), authOnly: true },
-          { key: 'accessibility', icon: Accessibility, label: t('tab_accessibility'), authOnly: true },
-        ];
-
-        const visibleTabs = allTabs.filter(t => {
-          if (t.authOnly && !isAuthenticated) return false;
-          return isTabEnabled(t.key);
-        });
-        const activeTab = visibleTabs.some(({ key }) => key === tab)
-          ? tab
-          : visibleTabs[0]?.key;
-
-        const primaryTabs = visibleTabs.filter(({ key }) => PRIMARY_VOLUNTEER_TABS.includes(key));
-        const moreTabs = visibleTabs.filter(({ key }) => !PRIMARY_VOLUNTEER_TABS.includes(key));
-        const activeIsMore = !!activeTab && moreTabs.some(({ key }) => key === activeTab);
-        const moreExpanded = showMoreTabs || activeIsMore;
-        // Phone section picker: the trigger shows where you are, the sheet moves you.
-        const activeTabDef = visibleTabs.find(({ key }) => key === activeTab);
-        const ActiveTabIcon = activeTabDef?.icon;
-        // No hub when the opportunities list is the only section (a signed-out
-        // visitor, or a community that switched everything else off).
-        const hub = isHubPreview && visibleTabs.some(({ key }) => key !== 'opportunities') ? <VolunteeringHub
-          sections={visibleTabs}
-          activeSection={activeTab}
-          onSelect={(key) => setTab(key as VolunteerTab)}
-          summary={hubSummary}
-        /> : null;
-        const previewHeading = isHubPreview && activeTab ? <h2
-          id="volunteering-content"
-          tabIndex={-1}
-          className="mb-5 scroll-mt-24 rounded-lg text-xl font-semibold text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-4"
-        >{activeTab === 'opportunities' ? t('hub.explore') : t(`hub.links.${activeTab}`)}</h2> : null;
-
-        const renderToggle = (tabsToRender: TabDef[]) => (
-          <ToggleButtonGroup
-            isDetached
-            selectionMode="single"
-            selectedKeys={activeTab ? new Set([activeTab]) : new Set()}
-            onSelectionChange={(keys) => {
-              const [nextTab] = Array.from(keys as Set<Key>);
-              const nextVolunteerTab = String(nextTab) as VolunteerTab;
-              if (nextTab && VOLUNTEER_TABS.includes(nextVolunteerTab)) {
-                setTab(nextVolunteerTab);
-              }
-            }}
-            className="flex flex-wrap gap-2"
-            aria-label={t('aria.volunteering_sections')}
-          >
-            {tabsToRender.map(({ key, icon: Icon, label }) => (
-              <ToggleButton
-                key={key}
-                id={key}
-                aria-label={label}
-                className={activeTab === key ? VOL_GRADIENT : 'bg-theme-elevated text-theme-muted'}
-              >
-                <Icon className="w-4 h-4" aria-hidden="true" />
-                {label}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        );
-
-        return (
-          <>
-            {visibleTabs.length === 0 && (
-              <EmptyState
-                icon={<Heart className="w-12 h-12" aria-hidden="true" />}
-                title={t('no_tabs_available')}
-                description={t('no_tabs_available_desc')}
-              />
-            )}
-            {/* Desktop / tablet: the original pill wall, untouched. */}
-            {visibleTabs.length > 0 && !isPhone && !isHubPreview && (
-              <div className="space-y-2">
-                {renderToggle(primaryTabs)}
-                {moreTabs.length > 0 && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="tertiary"
-                      onPress={() => setShowMoreTabs((v) => !v)}
-                      endContent={<ChevronRight className={`w-4 h-4 transition-transform ${moreExpanded ? 'rotate-90' : ''}`} aria-hidden="true" />}
-                      aria-expanded={moreExpanded}
-                    >
-                      {moreExpanded ? t('show_fewer_sections') : t('more_sections', { count: moreTabs.length })}
-                    </Button>
-                    {moreExpanded && (
-                      <div className="space-y-1">
-                        <p className="text-xs text-theme-subtle">{t('more_sections_caption')}</p>
-                        {renderToggle(moreTabs)}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Phone: one 44px control in place of up to 16 wrapping pills (plus
-                the "More (11)" disclosure that unfurled six further rows). It
-                names the section you are in and opens the picker sheet. */}
-            {visibleTabs.length > 0 && isPhone && !isHubPreview && (
-              <>
-                <Button
-                  variant="flat"
-                  onPress={() => setIsSectionsSheetOpen(true)}
-                  aria-label={t('aria.volunteering_sections')}
-                  aria-haspopup="dialog"
-                  startContent={ActiveTabIcon ? <ActiveTabIcon className="w-4 h-4 shrink-0" aria-hidden="true" /> : undefined}
-                  endContent={<ChevronDown className="w-4 h-4 shrink-0" aria-hidden="true" />}
-                  className="min-h-11 w-full justify-between rounded-xl border border-theme-default bg-theme-elevated px-3.5 text-sm font-semibold text-theme-primary sm:hidden"
-                >
-                  {activeTabDef?.label ?? t('aria.volunteering_sections')}
-                </Button>
-                <VolunteeringSectionsSheet
-                  isOpen={isSectionsSheetOpen}
-                  onClose={() => setIsSectionsSheetOpen(false)}
-                  sections={visibleTabs.map(({ key, label }) => ({ key, label }))}
-                  activeSection={activeTab ?? ''}
-                  onSelect={(key) => {
-                    const nextVolunteerTab = key as VolunteerTab;
-                    if (VOLUNTEER_TABS.includes(nextVolunteerTab)) setTab(nextVolunteerTab);
-                  }}
-                />
-              </>
-            )}
-
-            {/* Tab Content — wrapped in a keyed ErrorBoundary so a render error in
-                any single tab (eager OR lazy) is contained to the tab instead of
-                blanking the whole page; the key resets the boundary when the user
-                switches tabs. */}
-            {activeTab !== 'opportunities' && hub && <div className="mb-8">{hub}</div>}
-            {activeTab !== 'opportunities' && previewHeading}
-            {activeTab && <ErrorBoundary key={activeTab}><div>
-              {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} isHubPreview={isHubPreview} previewHub={hub} previewHeading={previewHeading} />}
-              {activeTab === 'applications' && isTabEnabled('applications') && <ApplicationsTab />}
-              {activeTab === 'hours' && isTabEnabled('hours') && <HoursTab onNavigateTab={setTab} canOpenApplications={isTabAllowed('applications')} />}
-              <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>}>
-                {activeTab === 'recommended' && isTabEnabled('recommended') && <RecommendedShiftsTab />}
-                {activeTab === 'certificates' && isTabEnabled('certificates') && <CertificatesTab />}
-                {activeTab === 'alerts' && isTabEnabled('alerts') && <EmergencyAlertsTab />}
-                {activeTab === 'wellbeing' && isTabEnabled('wellbeing') && <WellbeingTab />}
-                {activeTab === 'credentials' && isTabEnabled('credentials') && <QualificationsTab />}
-                {activeTab === 'waitlist' && isTabEnabled('waitlist') && <WaitlistTab />}
-                {activeTab === 'swaps' && isTabEnabled('swaps') && <ShiftSwapsTab />}
-                {activeTab === 'group-signups' && isTabEnabled('group-signups') && <GroupSignUpTab />}
-                {activeTab === 'expenses' && isTabEnabled('expenses') && <ExpensesTab />}
-                {activeTab === 'safeguarding' && isTabEnabled('safeguarding') && <SafeguardingTab />}
-                {activeTab === 'community-projects' && isTabEnabled('community-projects') && <CommunityProjectsTab />}
-                {activeTab === 'donations' && isTabEnabled('donations') && <DonationsTab />}
-                {activeTab === 'accessibility' && isTabEnabled('accessibility') && <AccessibilityTab />}
-              </Suspense>
-            </div></ErrorBoundary>}
-          </>
-        );
-      })()}
     </div>
   );
 }
@@ -880,22 +488,18 @@ function buildOpportunityQueryParams(f: OpportunityFilterValues): URLSearchParam
 }
 
 interface OpportunitiesTabProps {
-  /** `?layout=hub-preview` — the hub sits inside the list instead of above the page. */
-  isHubPreview?: boolean;
   /** The hub, shown after the first few opportunities while nothing is filtered. */
-  previewHub?: React.ReactNode;
-  /** The focus target heading the hub's links move to. */
-  previewHeading?: React.ReactNode;
+  hub?: React.ReactNode;
   /** Phone viewport — owns the sticky bar / sheet branch. Resolved by the page. */
   isPhone: boolean;
   /** `useHeaderScroll(64).isUtilityBarVisible`, lifted so there is one listener. */
   showMobileControls: boolean;
 }
 
-/** Hub preview: how many opportunities lead the page before the hub's cards. */
+/** How many opportunities lead the home page before the hub's cards. */
 const HUB_LEAD_OPPORTUNITIES = 3;
 
-function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, previewHub, previewHeading }: OpportunitiesTabProps) {
+function OpportunitiesTab({ isPhone, showMobileControls, hub }: OpportunitiesTabProps) {
   // 'volunteering' stays the default namespace (bare keys are unchanged); 'common'
   // is declared so the shared radius labels resolve explicitly.
   const { t } = useTranslation(['volunteering', 'common']);
@@ -1086,7 +690,8 @@ function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, p
     onOpen();
   };
 
-  const hubInList = Boolean(previewHub) && !debouncedQuery && !proximityParams && format === 'any';
+  const isFiltering = Boolean(debouncedQuery) || Boolean(proximityParams) || format !== 'any';
+  const hubInList = Boolean(hub) && !isFiltering;
 
   const renderOpportunity = (opp: Opportunity) => (
     <motion.div key={opp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -1138,7 +743,7 @@ function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, p
           shared common:filter_bar.* vocabulary. */}
       {isPhone && (
         <MobileFilterBar
-          isVisible={isHubPreview ? true : showMobileControls}
+          isVisible={showMobileControls}
           accent="rose"
           onSearchPress={() => setIsSearchOverlayOpen(true)}
           searchValue={searchQuery}
@@ -1174,7 +779,12 @@ function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, p
         />
       )}
 
-      {previewHeading}
+      {/* The hub's "All opportunities" link and the "Find opportunities" button land here. */}
+      <h2
+        id="volunteering-content"
+        tabIndex={-1}
+        className="mb-5 scroll-mt-24 rounded-lg text-xl font-semibold text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-4"
+      >{isFiltering ? t('hub.search_results') : t('hub.explore')}</h2>
 
       {/* Error */}
       {error && !isLoading && (
@@ -1216,10 +826,10 @@ function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, p
         </>
       )}
 
-      {/* Hub preview: a few opportunities lead, then the hub's cards, then the
-          rest — so the list is never pushed below the fold. Searching or
-          filtering hides the cards and shows the results alone. */}
-      {hubInList && <div className="mt-8">{previewHub}</div>}
+      {/* A few opportunities lead, then the hub's cards, then the rest — so the
+          list is never pushed below the fold. Searching or filtering hides the
+          cards and shows the results alone. */}
+      {hubInList && <div className="mt-8">{hub}</div>}
       {hubInList && !error && !isLoading && (opportunities.length > HUB_LEAD_OPPORTUNITIES || hasMore) && (
         <section className="mt-8 space-y-4" aria-labelledby="volunteering-more-opportunities">
           <h2 id="volunteering-more-opportunities" className="text-xl font-semibold text-theme-primary">{t('hub.more_opportunities')}</h2>

@@ -106,20 +106,21 @@ test.describe('Volunteering module', () => {
     await page.goto(tenantUrl('volunteering'), { waitUntil: 'domcontentloaded' });
     await dismissBlockingModals(page);
 
-    await expect(page.getByRole('heading', { name: /volunteering/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /make a difference/i })).toBeVisible();
     await expect(page.getByPlaceholder(/search opportunities/i)).toBeVisible();
-    await expect(page.getByRole('tab', { name: /opportunities/i })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: /explore opportunities/i })).toBeVisible();
     await expect(page.getByRole('link', { name: opportunity.title })).toBeVisible();
     await expect(page.getByText('Green Streets')).toBeVisible();
     await expect(page.getByRole('button', { name: /view details/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /^apply$/i })).toBeVisible();
   });
 
-  test('syncs the applications tab from the current URL', async ({ page }) => {
+  test('opens the applications section from the current URL', async ({ page }) => {
     await page.goto(tenantUrl('volunteering?tab=applications'), { waitUntil: 'domcontentloaded' });
     await dismissBlockingModals(page);
 
-    await expect(page.getByRole('tab', { name: /my applications/i })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { level: 1, name: /my applications/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /volunteering home/i })).toBeVisible();
     await expect(page.getByText(opportunity.title)).toBeVisible();
     await expect(page.getByText(/approved/i)).toBeVisible();
     await expect(page.getByText(/organiser's note/i)).toBeVisible();

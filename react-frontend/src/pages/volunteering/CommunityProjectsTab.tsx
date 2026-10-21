@@ -206,10 +206,6 @@ export function CommunityProjectsTab() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-amber-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('community_projects.heading')}</h2>
-        </div>
         <Button
           className="bg-gradient-to-r from-rose-500 to-pink-600 text-white"
           size="sm"

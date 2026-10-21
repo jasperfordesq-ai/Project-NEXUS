@@ -20,7 +20,6 @@ import Building2 from 'lucide-react/icons/building-2';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
-import Siren from 'lucide-react/icons/siren';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -146,8 +145,6 @@ export function EmergencyAlertsTab() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Siren className="w-5 h-5 text-red-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('emergency.title')}</h2>
           {alerts.filter(a => a.my_response === 'pending').length > 0 && (
             <Chip size="sm" color="danger" variant="soft">
               {t('emergency.pending_count', { count: alerts.filter(a => a.my_response === 'pending').length })}

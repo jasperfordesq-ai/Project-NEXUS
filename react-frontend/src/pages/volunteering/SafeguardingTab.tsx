@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
-import ShieldCheck from 'lucide-react/icons/shield-check';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import Plus from 'lucide-react/icons/plus';
@@ -124,10 +123,6 @@ export function SafeguardingTab() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-5 h-5 text-rose-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('safeguarding.heading')}</h2>
-        </div>
         {/* Gap C9: reporting a concern is one press from either view; it used to
             appear only after switching to Incident Reports. */}
         <div className="flex flex-wrap gap-2 sm:shrink-0">

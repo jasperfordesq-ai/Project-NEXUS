@@ -97,7 +97,6 @@ describe('CommunityProjectsTab', () => {
   it('renders the heading and Propose a Project button', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { items: [], has_more: false } });
     render(<CommunityProjectsTab />);
-    expect(screen.getByText('Community Projects')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Propose a Project/i })).toBeInTheDocument();
   });
 

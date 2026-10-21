@@ -16,7 +16,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from '@/lib/motion';
-import Sparkles from 'lucide-react/icons/sparkles';
 import MapPin from 'lucide-react/icons/map-pin';
 import Calendar from 'lucide-react/icons/calendar';
 import Clock from 'lucide-react/icons/clock';
@@ -189,10 +188,6 @@ export function RecommendedShiftsTab() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-amber-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('recommendations.title')}</h2>
-        </div>
         <Button
           size="sm"
           variant="tertiary"

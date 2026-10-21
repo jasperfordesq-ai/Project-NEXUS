@@ -93,7 +93,6 @@ describe('AccessibilityTab', () => {
   it('renders the heading and Save Changes button', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<AccessibilityTab />);
-    expect(screen.getByText('Accessibility & Accommodations')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Save Changes/i })).toBeInTheDocument();
   });
 

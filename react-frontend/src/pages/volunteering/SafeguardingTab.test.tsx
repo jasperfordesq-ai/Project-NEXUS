@@ -109,7 +109,6 @@ describe('SafeguardingTab', () => {
   it('renders the heading and sub-view toggle buttons', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<SafeguardingTab />);
-    expect(screen.getByText('Safeguarding')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Training Records/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Incident Reports/i })).toBeInTheDocument();
   });
@@ -184,7 +183,7 @@ describe('SafeguardingTab', () => {
       .mockResolvedValueOnce({ success: true, data: [mockIncident] });
     render(<SafeguardingTab />);
     await waitFor(() => {
-      expect(screen.queryByText('Safeguarding')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Incident Reports/i })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole('button', { name: /Incident Reports/i }));
     await waitFor(() => {
@@ -228,7 +227,7 @@ describe('SafeguardingTab', () => {
       .mockResolvedValueOnce({ success: true, data: [] })
       .mockResolvedValueOnce({ success: true, data: [{ ...mockIncident, id: 5, status: 'investigating' }] });
     render(<SafeguardingTab />);
-    await waitFor(() => expect(screen.queryByText('Safeguarding')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Incident Reports/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /Incident Reports/i }));
 
     const link = await screen.findByRole('link', { name: /Near miss at community garden/ });

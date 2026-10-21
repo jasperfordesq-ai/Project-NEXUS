@@ -404,10 +404,8 @@ export function WellbeingTab() {
       <div>
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-rose-400" aria-hidden="true" />
-            <h2 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-theme-primary outline-none">{t('wellbeing.heading')}</h2>
-          </div>
+          {/* The page's section header shows the title; this one stays as the focus target after a check-in. */}
+            <h2 ref={headingRef} tabIndex={-1} className="sr-only">{t('hub.links.wellbeing')}</h2>
           {!isSwitchedOff && (
             <Button
               ref={logButtonRef}

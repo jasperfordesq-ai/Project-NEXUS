@@ -23,7 +23,8 @@ import { useTenant } from '@/contexts';
 
 const STORAGE_KEY = 'nexus_vol_welcome_dismissed_v1';
 
-function readDismissed(): boolean {
+/** Whether this browser has already dismissed the welcome. */
+export function isVolunteeringWelcomeDismissed(): boolean {
   try {
     return localStorage.getItem(STORAGE_KEY) === '1';
   } catch {
@@ -31,10 +32,17 @@ function readDismissed(): boolean {
   }
 }
 
-export function VolunteeringWelcome() {
+interface VolunteeringWelcomeProps {
+  /** Told when the member dismisses it, so the page can show its short "How it works" line instead. */
+  onDismiss?: () => void;
+  /** When given, "Find opportunities" moves to the list on this page instead of linking to it. */
+  onFind?: () => void;
+}
+
+export function VolunteeringWelcome({ onDismiss, onFind }: VolunteeringWelcomeProps = {}) {
   const { t } = useTranslation('volunteering');
   const { tenantPath } = useTenant();
-  const [dismissed, setDismissed] = useState<boolean>(readDismissed);
+  const [dismissed, setDismissed] = useState<boolean>(isVolunteeringWelcomeDismissed);
 
   if (dismissed) return null;
 
@@ -45,6 +53,7 @@ export function VolunteeringWelcome() {
       /* private mode / storage disabled — still hide for this session */
     }
     setDismissed(true);
+    onDismiss?.();
   };
 
   const steps = [
@@ -59,7 +68,7 @@ export function VolunteeringWelcome() {
         isIconOnly
         size="sm"
         variant="tertiary"
-        className="absolute right-2 top-2"
+        className="absolute right-2 top-2 min-h-11 min-w-11 rtl:left-2 rtl:right-auto"
         onPress={dismiss}
         aria-label={t('welcome.dismiss')}
       >
@@ -85,17 +94,29 @@ export function VolunteeringWelcome() {
       </ol>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Button
-          as={Link}
-          to={tenantPath('/volunteering')}
-          variant="primary"
-          className="w-full sm:w-auto bg-gradient-to-r from-rose-500 to-pink-600 text-white"
-          startContent={<Search className="w-4 h-4" aria-hidden="true" />}
-          onPress={dismiss}
-        >
-          {t('welcome.find_cta')}
-        </Button>
-        <Button variant="tertiary" className="w-full sm:w-auto" onPress={dismiss}>
+        {onFind ? (
+          // Already on the volunteering home: take the member straight to the list.
+          <Button
+            variant="primary"
+            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-rose-600 to-pink-700 text-white"
+            startContent={<Search className="w-4 h-4" aria-hidden="true" />}
+            onPress={() => { dismiss(); onFind(); }}
+          >
+            {t('welcome.find_cta')}
+          </Button>
+        ) : (
+          <Button
+            as={Link}
+            to={tenantPath('/volunteering')}
+            variant="primary"
+            className="min-h-11 w-full sm:w-auto bg-linear-to-r from-rose-600 to-pink-700 text-white"
+            startContent={<Search className="w-4 h-4" aria-hidden="true" />}
+            onPress={dismiss}
+          >
+            {t('welcome.find_cta')}
+          </Button>
+        )}
+        <Button variant="tertiary" className="min-h-11 w-full sm:w-auto" onPress={dismiss}>
           {t('welcome.dismiss')}
         </Button>
       </div>

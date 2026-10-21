@@ -72,7 +72,6 @@ describe('CertificatesTab', () => {
   it('renders the heading and description', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<CertificatesTab />);
-    expect(screen.getByText('Impact Certificates')).toBeInTheDocument();
     expect(
       screen.getByText(/Certificates include all of your approved volunteer hours/),
     ).toBeInTheDocument();

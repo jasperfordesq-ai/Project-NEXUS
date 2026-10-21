@@ -92,10 +92,10 @@ describe("RecommendedShiftsTab", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the heading", async () => {
+  it("leaves the title to the page's section header", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { shifts: [] } });
     render(<RecommendedShiftsTab />);
-    expect(screen.getByText("Recommended for You")).toBeInTheDocument();
+    expect(screen.queryByText("Recommended for You")).not.toBeInTheDocument();
   });
 
   it("shows empty state when there are no recommendations", async () => {

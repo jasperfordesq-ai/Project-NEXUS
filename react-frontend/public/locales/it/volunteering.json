@@ -1685,8 +1685,6 @@
     "confidentiality_note": "Trattalo come riservato. Condividilo solo con chi deve saperlo e non pubblicare mai nulla al riguardo."
   },
   "hub": {
-    "preview": "Nuovo layout del volontariato · Anteprima",
-    "back_to_current": "Torna al layout attuale",
     "title": "Fai la differenza, a modo tuo.",
     "subtitle": "Trova un ruolo. Unisciti a una squadra. Scopri la differenza che fai.",
     "navigation": "Esplora il volontariato",
@@ -1703,9 +1701,6 @@
     "explore": "Esplora le opportunità",
     "more_opportunities": "Altre opportunità",
     "find_opportunities": "Trova opportunità",
-    "how_it_works": "Come funziona il volontariato",
-    "how_it_works_description": "Trova un’opportunità e candidati. Dopo aver fatto volontariato, registra le tue ore presso l’organizzazione. Le ore approvate vengono accreditate sul tuo conto della banca del tempo.",
-    "organiser": "Organizzi attività di volontariato?",
     "hint_waiting": "In attesa: {{number}}",
     "hint_to_answer": "Da rispondere: {{number}}",
     "next_shift": "Prossimo turno: {{when}} · {{title}}",
@@ -1730,6 +1725,25 @@
       "wellbeing": "Benessere",
       "safeguarding": "Tutela",
       "accessibility": "Accessibilità"
+    },
+    "back_home": "Pagina iniziale del volontariato",
+    "search_results": "Risultati della ricerca",
+    "intro": {
+      "recommended": "Turni scelti per te in base alle tue competenze e alla tua disponibilità.",
+      "alerts": "Organizzazioni che hanno bisogno di volontari con poco preavviso. Fai sapere se puoi aiutare.",
+      "applications": "I ruoli per cui ti sei candidato e se ogni organizzazione ha già detto di sì.",
+      "hours": "Registra le ore che hai dedicato, consulta i tuoi turni e verifica quali ore sono approvate.",
+      "waitlist": "Turni al completo per cui aspetti un posto.",
+      "swaps": "Scambia un turno con un altro volontario o rispondi alle richieste di scambio che ricevi.",
+      "group-signups": "Fai volontariato insieme ad amici o colleghi iscrivendovi come gruppo.",
+      "community-projects": "Idee di progetti di volontariato proposte dalla comunità. Proponi la tua.",
+      "donations": "Dona denaro per sostenere le raccolte fondi di questa comunità. È separato dai crediti di tempo.",
+      "expenses": "Chiedi il rimborso del denaro speso durante il volontariato, ad esempio per gli spostamenti.",
+      "credentials": "La tua formazione e le tue qualifiche, così le organizzazioni vedono cosa possiedi e quando scade.",
+      "certificates": "Scarica un certificato con tutte le tue ore di volontariato approvate.",
+      "wellbeing": "Racconta come ti senti. Se è un momento difficile, puoi chiedere che qualcuno ti contatti.",
+      "safeguarding": "La tua formazione sulla tutela e dove segnalare una preoccupazione per la sicurezza di qualcuno.",
+      "accessibility": "Fai sapere alle organizzazioni di quale supporto o adattamento hai bisogno per fare volontariato."
     }
   }
 }

@@ -1,7 +1,5 @@
 {
   "hub": {
-    "preview": "New volunteering layout · Preview",
-    "back_to_current": "Back to current layout",
     "title": "Make a difference, your way.",
     "subtitle": "Find a role. Join a team. See the difference you make.",
     "navigation": "Explore volunteering",
@@ -18,9 +16,6 @@
     "explore": "Explore opportunities",
     "more_opportunities": "More opportunities",
     "find_opportunities": "Find opportunities",
-    "how_it_works": "How volunteering works",
-    "how_it_works_description": "Find an opportunity and apply. Once you have volunteered, log your hours with the organisation. Approved hours are credited to your timebank account.",
-    "organiser": "Organising volunteering?",
     "hint_waiting": "Waiting: {{number}}",
     "hint_to_answer": "To answer: {{number}}",
     "next_shift": "Next shift: {{when}} · {{title}}",
@@ -45,6 +40,25 @@
       "wellbeing": "Wellbeing",
       "safeguarding": "Safeguarding",
       "accessibility": "Accessibility"
+    },
+    "back_home": "Volunteering home",
+    "search_results": "Search results",
+    "intro": {
+      "recommended": "Shifts picked for you, based on your skills and when you're free.",
+      "alerts": "Organisations that need volunteers at short notice. Tell them whether you can help.",
+      "applications": "The roles you've applied for, and whether each organisation has said yes.",
+      "hours": "Record the hours you've given, see your shifts, and check which hours are approved.",
+      "waitlist": "Full shifts you're waiting to get a place on.",
+      "swaps": "Swap a shift with another volunteer, or answer swap requests sent to you.",
+      "group-signups": "Volunteer together with friends or team members by signing up as a group.",
+      "community-projects": "Ideas for volunteering projects from people in the community. Suggest your own.",
+      "donations": "Give money to support this community's fundraising. This is separate from time credits.",
+      "expenses": "Claim back money you spent while volunteering, such as travel.",
+      "credentials": "Your training and qualifications, so organisations can see what you hold and when it runs out.",
+      "certificates": "Download a certificate showing all your approved volunteering hours.",
+      "wellbeing": "Check in on how you're feeling. If things are hard, you can ask for someone to get in touch.",
+      "safeguarding": "Your safeguarding training, and where to report a concern about someone's safety.",
+      "accessibility": "Tell organisations about any support or adjustments you need to volunteer."
     }
   },
   "dashboard": "Dashboard",

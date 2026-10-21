@@ -28,7 +28,6 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import CreditCard from 'lucide-react/icons/credit-card';
 import EyeOff from 'lucide-react/icons/eye-off';
 import FileText from 'lucide-react/icons/file-text';
-import HandHeart from 'lucide-react/icons/hand-heart';
 import Heart from 'lucide-react/icons/heart';
 import Hourglass from 'lucide-react/icons/hourglass';
 import Info from 'lucide-react/icons/info';
@@ -522,10 +521,6 @@ export function DonationsTab() {
       {/* Header: title left, the three actions right. On phones the actions
           become equal-width rows instead of a ragged left-aligned stack. */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2">
-          <HandHeart className="h-5 w-5 text-rose-500" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('donations.heading')}</h2>
-        </div>
         <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center lg:shrink-0">
           <Button
             size="sm"

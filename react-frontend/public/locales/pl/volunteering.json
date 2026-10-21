@@ -1707,8 +1707,6 @@
     "summary_many": "{{count}} wolontariuszy czeka, aż ktoś się skontaktuje"
   },
   "hub": {
-    "preview": "Nowy układ wolontariatu · Podgląd",
-    "back_to_current": "Wróć do obecnego układu",
     "title": "Zmieniaj świat po swojemu.",
     "subtitle": "Znajdź zadanie. Dołącz do zespołu. Zobacz, co zmieniasz.",
     "navigation": "Poznaj wolontariat",
@@ -1725,9 +1723,6 @@
     "explore": "Przeglądaj oferty",
     "more_opportunities": "Więcej ofert",
     "find_opportunities": "Znajdź oferty",
-    "how_it_works": "Jak działa wolontariat",
-    "how_it_works_description": "Znajdź ofertę i zgłoś się. Po zakończeniu pomocy zapisz swoje godziny w organizacji. Zatwierdzone godziny trafiają na Twoje konto w banku czasu.",
-    "organiser": "Organizujesz wolontariat?",
     "hint_waiting": "Oczekujące: {{number}}",
     "hint_to_answer": "Do odpowiedzi: {{number}}",
     "next_shift": "Następny dyżur: {{when}} · {{title}}",
@@ -1752,6 +1747,25 @@
       "wellbeing": "Samopoczucie",
       "safeguarding": "Bezpieczeństwo i ochrona",
       "accessibility": "Dostępność"
+    },
+    "back_home": "Strona główna wolontariatu",
+    "search_results": "Wyniki wyszukiwania",
+    "intro": {
+      "recommended": "Dyżury wybrane dla Ciebie na podstawie Twoich umiejętności i dostępności.",
+      "alerts": "Organizacje, które pilnie potrzebują wolontariuszy. Daj im znać, czy możesz pomóc.",
+      "applications": "Zadania, do których się zgłosiłeś, i czy organizacja już Cię przyjęła.",
+      "hours": "Zapisuj przepracowane godziny, przeglądaj dyżury i sprawdzaj, które godziny zostały zatwierdzone.",
+      "waitlist": "Pełne dyżury, na które czekasz na wolne miejsce.",
+      "swaps": "Zamień dyżur z innym wolontariuszem albo odpowiedz na prośby o zamianę.",
+      "group-signups": "Pomagaj razem z przyjaciółmi lub współpracownikami, zapisując się jako grupa.",
+      "community-projects": "Pomysły na projekty wolontariackie od członków społeczności. Zaproponuj własny.",
+      "donations": "Wesprzyj pieniędzmi zbiórki tej społeczności. To coś innego niż kredyty czasu.",
+      "expenses": "Odzyskaj pieniądze wydane podczas wolontariatu, na przykład na dojazdy.",
+      "credentials": "Twoje szkolenia i kwalifikacje, aby organizacje widziały, co masz i kiedy to wygasa.",
+      "certificates": "Pobierz certyfikat ze wszystkimi zatwierdzonymi godzinami wolontariatu.",
+      "wellbeing": "Daj znać, jak się czujesz. Jeśli jest Ci trudno, możesz poprosić o kontakt.",
+      "safeguarding": "Twoje szkolenia z zakresu ochrony i miejsce, gdzie możesz zgłosić obawy o czyjeś bezpieczeństwo.",
+      "accessibility": "Powiedz organizacjom, jakiego wsparcia lub udogodnień potrzebujesz, by pomagać."
     }
   }
 }

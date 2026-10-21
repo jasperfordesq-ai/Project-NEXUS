@@ -83,10 +83,10 @@ describe("EmergencyAlertsTab", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the heading", async () => {
+  it("leaves the title to the page's section header", async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<EmergencyAlertsTab />);
-    expect(screen.getByText("Emergency Alerts")).toBeInTheDocument();
+    expect(screen.queryByText("Emergency Alerts")).not.toBeInTheDocument();
   });
 
   it("shows empty state when there are no alerts", async () => {

@@ -1685,8 +1685,6 @@
     "confidentiality_note": "Traitez ceci comme confidentiel. Ne le partagez qu'avec les personnes qui ont besoin de savoir, et n'en parlez jamais publiquement."
   },
   "hub": {
-    "preview": "Nouvelle présentation du bénévolat · Aperçu",
-    "back_to_current": "Revenir à la présentation actuelle",
     "title": "Agissez, à votre façon.",
     "subtitle": "Trouvez une mission. Rejoignez une équipe. Voyez ce que vous changez.",
     "navigation": "Découvrir le bénévolat",
@@ -1703,9 +1701,6 @@
     "explore": "Découvrir les missions",
     "more_opportunities": "Autres missions",
     "find_opportunities": "Trouver des missions",
-    "how_it_works": "Comment fonctionne le bénévolat",
-    "how_it_works_description": "Trouvez une mission et postulez. Une fois votre action terminée, enregistrez vos heures auprès de l’organisation. Les heures approuvées sont créditées sur votre compte de banque de temps.",
-    "organiser": "Vous organisez du bénévolat ?",
     "hint_waiting": "En attente : {{number}}",
     "hint_to_answer": "À répondre : {{number}}",
     "next_shift": "Prochain créneau : {{when}} · {{title}}",
@@ -1730,6 +1725,25 @@
       "wellbeing": "Bien-être",
       "safeguarding": "Protection",
       "accessibility": "Accessibilité"
+    },
+    "back_home": "Accueil du bénévolat",
+    "search_results": "Résultats de la recherche",
+    "intro": {
+      "recommended": "Des créneaux choisis pour vous selon vos compétences et vos disponibilités.",
+      "alerts": "Des organisations qui ont besoin de bénévoles rapidement. Dites-leur si vous pouvez aider.",
+      "applications": "Les missions auxquelles vous avez postulé, et si chaque organisation a déjà accepté.",
+      "hours": "Enregistrez vos heures, consultez vos créneaux et vérifiez lesquelles sont approuvées.",
+      "waitlist": "Les créneaux complets pour lesquels vous attendez une place.",
+      "swaps": "Échangez un créneau avec un autre bénévole ou répondez aux demandes d’échange qui vous sont envoyées.",
+      "group-signups": "Faites du bénévolat avec vos amis ou collègues en vous inscrivant en groupe.",
+      "community-projects": "Des idées de projets bénévoles proposées par la communauté. Proposez la vôtre.",
+      "donations": "Donnez de l’argent pour soutenir les collectes de cette communauté. C’est distinct des crédits de temps.",
+      "expenses": "Faites-vous rembourser l’argent dépensé pendant votre bénévolat, par exemple vos trajets.",
+      "credentials": "Vos formations et qualifications, pour que les organisations voient ce que vous avez et quand cela expire.",
+      "certificates": "Téléchargez un certificat récapitulant toutes vos heures de bénévolat approuvées.",
+      "wellbeing": "Indiquez comment vous vous sentez. Si c’est difficile, vous pouvez demander que quelqu’un vous contacte.",
+      "safeguarding": "Vos formations en protection, et où signaler une inquiétude pour la sécurité de quelqu’un.",
+      "accessibility": "Indiquez aux organisations le soutien ou les aménagements dont vous avez besoin pour faire du bénévolat."
     }
   }
 }

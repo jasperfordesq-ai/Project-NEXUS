@@ -130,7 +130,7 @@ describe('WaitlistTab', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<WaitlistTab />);
 
-    expect(screen.getByText('waitlist.heading')).toBeInTheDocument();
+    expect(screen.queryByText('waitlist.heading')).not.toBeInTheDocument();
     await screen.findByTestId('empty-state');
     fireEvent.click(screen.getByText('waitlist.refresh'));
     await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));

@@ -592,10 +592,6 @@ export function QualificationsTab() {
       {/* Header: title left, actions right. On phones the actions become
           equal-width rows instead of a ragged left-aligned stack. */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2">
-          <BadgeCheck className="h-5 w-5 text-rose-500" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('qualifications.heading')}</h2>
-        </div>
         <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center lg:shrink-0">
           <Button
             size="sm"

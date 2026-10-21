@@ -195,7 +195,7 @@ describe("WellbeingTab", () => {
   it("renders the heading and Log Feeling button", () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: null });
     render(<WellbeingTab />);
-    expect(screen.getByText("Volunteer Wellbeing")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /wellbeing/i })).toHaveClass("sr-only");
     expect(screen.getByRole("button", { name: /Log How I.m Feeling/i })).toBeInTheDocument();
   });
 
@@ -210,7 +210,7 @@ describe("WellbeingTab", () => {
     // In practice with testing-library+act, we check for loading state after render.
     // This test verifies that when API returns null (no data), 
     // the heading is still visible and the log button works:
-    expect(screen.getByText("Volunteer Wellbeing")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /wellbeing/i })).toHaveClass("sr-only");
     expect(screen.getByRole("button", { name: /Log How I.m Feeling/i })).toBeInTheDocument();
   });
 

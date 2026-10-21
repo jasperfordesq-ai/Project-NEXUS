@@ -181,10 +181,10 @@ describe("GroupSignUpTab", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the heading", () => {
+  it("leaves the title to the page's section header", () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<GroupSignUpTab />);
-    expect(screen.getByText("Group Sign-ups")).toBeInTheDocument();
+    expect(screen.queryByText("Group Sign-ups")).not.toBeInTheDocument();
   });
 
   it("shows empty state when there are no group reservations", async () => {

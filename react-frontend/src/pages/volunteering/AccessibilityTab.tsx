@@ -160,12 +160,6 @@ export function AccessibilityTab() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Accessibility className="w-5 h-5 text-rose-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">
-            {t('accessibility.heading')}
-          </h2>
-        </div>
         <Button
           size="sm"
           className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"

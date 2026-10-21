@@ -1669,8 +1669,6 @@
     "confidentiality_note": "Behandle dies vertraulich. Teile es nur mit Personen, die es wissen müssen, und veröffentliche nie etwas darüber."
   },
   "hub": {
-    "preview": "Neues Layout für Ehrenamt · Vorschau",
-    "back_to_current": "Zurück zum aktuellen Layout",
     "title": "Etwas bewirken – auf deine Art.",
     "subtitle": "Finde eine Aufgabe. Werde Teil eines Teams. Sieh, was du bewirkst.",
     "navigation": "Ehrenamt entdecken",
@@ -1687,9 +1685,6 @@
     "explore": "Angebote entdecken",
     "more_opportunities": "Weitere Angebote",
     "find_opportunities": "Angebote finden",
-    "how_it_works": "So funktioniert das Ehrenamt",
-    "how_it_works_description": "Finde ein Angebot und bewirb dich. Nach deinem Einsatz trägst du deine Stunden bei der Organisation ein. Bestätigte Stunden werden deinem Zeitbank-Konto gutgeschrieben.",
-    "organiser": "Organisierst du Ehrenamt?",
     "hint_waiting": "Offen: {{number}}",
     "hint_to_answer": "Zu beantworten: {{number}}",
     "next_shift": "Nächste Schicht: {{when}} · {{title}}",
@@ -1714,6 +1709,25 @@
       "wellbeing": "Wohlbefinden",
       "safeguarding": "Schutz und Sicherheit",
       "accessibility": "Barrierefreiheit"
+    },
+    "back_home": "Ehrenamt-Startseite",
+    "search_results": "Suchergebnisse",
+    "intro": {
+      "recommended": "Für dich ausgewählte Schichten – passend zu deinen Fähigkeiten und deiner freien Zeit.",
+      "alerts": "Organisationen, die kurzfristig Ehrenamtliche brauchen. Sag ihnen, ob du helfen kannst.",
+      "applications": "Die Aufgaben, für die du dich beworben hast, und ob die Organisation schon zugesagt hat.",
+      "hours": "Trage deine geleisteten Stunden ein, sieh deine Schichten und prüfe, welche Stunden bestätigt sind.",
+      "waitlist": "Volle Schichten, für die du auf einen Platz wartest.",
+      "swaps": "Tausche eine Schicht mit anderen Ehrenamtlichen oder beantworte Tauschanfragen an dich.",
+      "group-signups": "Engagiere dich gemeinsam mit Freunden oder Kolleginnen und Kollegen, indem ihr euch als Gruppe anmeldet.",
+      "community-projects": "Ideen für Ehrenamtsprojekte aus der Gemeinschaft. Schlag deine eigene vor.",
+      "donations": "Unterstütze die Spendenaktionen dieser Gemeinschaft mit Geld. Das ist getrennt von Zeitgutschriften.",
+      "expenses": "Lass dir Geld erstatten, das du beim Ehrenamt ausgegeben hast, zum Beispiel für Fahrten.",
+      "credentials": "Deine Schulungen und Qualifikationen, damit Organisationen sehen, was du hast und wann es abläuft.",
+      "certificates": "Lade ein Zertifikat mit all deinen bestätigten Ehrenamtsstunden herunter.",
+      "wellbeing": "Halte fest, wie es dir geht. Wenn es dir schwerfällt, kannst du um eine Kontaktaufnahme bitten.",
+      "safeguarding": "Deine Schulungen zum Schutz und wo du Sorgen um die Sicherheit einer Person melden kannst.",
+      "accessibility": "Teile Organisationen mit, welche Unterstützung oder Anpassungen du für dein Ehrenamt brauchst."
     }
   }
 }

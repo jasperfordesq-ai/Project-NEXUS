@@ -156,7 +156,6 @@ describe('ExpensesTab', () => {
   it('renders the heading and Submit Expense button', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { items: [], has_more: false } });
     render(<ExpensesTab />);
-    expect(screen.getByText('My Expenses')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Submit Expense/i })).toBeInTheDocument();
   });
 
