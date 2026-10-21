@@ -260,7 +260,10 @@ function extractLiteralRoutes(english) {
   const routes = new Set();
 
   for (const match of english.matchAll(routePattern)) {
-    const route = match[2];
+    // A full stop after a route ends the sentence, not the route: "such as
+    // /contact." must not demand "/contact." from a language whose sentence
+    // carries on after the route (Japanese puts it mid-sentence).
+    const route = match[2].replace(/\.+$/u, '');
     if (!LOCALIZABLE_SLASH_TOKENS.has(route)) {
       routes.add(route);
     }

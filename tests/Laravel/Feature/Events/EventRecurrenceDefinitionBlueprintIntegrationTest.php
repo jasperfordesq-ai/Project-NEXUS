@@ -38,7 +38,11 @@ final class EventRecurrenceDefinitionBlueprintIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Carbon::setTestNow('2026-10-20 12:00:00');
+        // A Tuesday five days before the October clock change, as 2026-10-20 was.
+        // It must stay in the future: EventService checks a new series' start
+        // against the real clock, so the old 2026-10-20 freeze (fixture start
+        // "tomorrow 09:00" = 2026-10-21) began failing every run on 21 Oct 2026.
+        Carbon::setTestNow('2030-10-22 12:00:00');
         config()->set('events.recurrence.engine_v2_enabled', true);
         config()->set('events.recurrence.max_occurrences', 3);
         config()->set('events.recurrence.materialization.enabled', true);

@@ -42,7 +42,7 @@ import {
   VolunteeringSectionHeader,
   VolunteeringUrgentBanner,
 } from '@/components/volunteering/VolunteeringHub';
-import { VolunteeringWelcome, isVolunteeringWelcomeDismissed } from './VolunteeringWelcome';
+import { isVolunteeringWelcomeDismissed } from './volunteeringWelcomeStorage';
 import { useVolunteeringHubSummary } from '@/components/volunteering/useVolunteeringHubSummary';
 
 import Heart from 'lucide-react/icons/heart';
@@ -83,6 +83,7 @@ import type { ProximityFilterParams } from '@/components/proximity/ProximityFilt
 import { extractCollectionItems } from './extractCollectionItems';
 import { ShiftSwapRequestModal, type SwapSourceShift } from './ShiftSwapRequestModal';
 import { MyHoursAndShiftsLists } from './MyHoursAndShiftsLists';
+const VolunteeringWelcome = React.lazy(() => import('./VolunteeringWelcome'));
 const RecommendedShiftsTab = React.lazy(() => import('./RecommendedShiftsTab'));
 const EmergencyAlertsTab = React.lazy(() => import('./EmergencyAlertsTab'));
 const CertificatesTab = React.lazy(() => import('./CertificatesTab'));
@@ -410,7 +411,11 @@ export function VolunteeringPage() {
             onFindOpportunities={() => focusContent()}
             hasOrganisations={hasOrganisations}
             welcome={isAuthenticated && showWelcome
-              ? <VolunteeringWelcome onDismiss={() => setShowWelcome(false)} onFind={listEnabled ? () => focusContent() : undefined} />
+              ? (
+                <Suspense fallback={null}>
+                  <VolunteeringWelcome onDismiss={() => setShowWelcome(false)} onFind={listEnabled ? () => focusContent() : undefined} />
+                </Suspense>
+              )
               : undefined}
           />
           {isAuthenticated && hasOrganisations && <VolunteeringOrganisationStrip managed={manageableOrgs} pending={pendingOrgs} />}
