@@ -2,17 +2,54 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An organisation's volunteers, active or retired. Retire and Remove ask first on their
+  own page (routes/volunteering-org-roster.js); Reinstate only undoes a retirement and
+  goes straight through, as on the website.
+#}
 {% extends "layouts/base.njk" %}
 {% from "_load-more.njk" import loadMoreNext %}
+
+{% set R = "govuk_alpha_volunteering.org_roster." %}
+{% set base = '/volunteering/organisations/' ~ orgId ~ '/volunteers' %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_volunteers.back_link") }}</a>
 {% endblock %}
 
 {% block content %}
+  {% if outcome %}
+    {% if outcome.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="roster-outcome-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="roster-outcome-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ outcome.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ outcome.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
   <span class="govuk-caption-xl">{{ orgName }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_volunteers.description") }}</p>
+
+  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(R ~ 'tabs_label') }}">
+    <h2 class="govuk-tabs__title">{{ t(R ~ "tabs_label") }}</h2>
+    <ul class="govuk-tabs__list">
+      <li class="govuk-tabs__list-item{% if show == 'active' %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor(base) }}"{% if show == 'active' %} aria-current="page"{% endif %} data-testid="roster-tab-active">{{ t(R ~ "tab_active") }}</a>
+      </li>
+      <li class="govuk-tabs__list-item{% if show == 'retired' %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor(base ~ '?show=retired') }}"{% if show == 'retired' %} aria-current="page"{% endif %} data-testid="roster-tab-retired">{{ t(R ~ "tab_retired") }}</a>
+      </li>
+    </ul>
+  </nav>
 
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -22,14 +59,20 @@
       </div>
     </div>
   {% elif not volunteers.length %}
-    <div class="govuk-inset-text">
-      <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_volunteers.empty") }}</p>
-      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.org_volunteers.empty_hint") }}</p>
+    <div class="govuk-inset-text" data-testid="roster-empty">
+      {% if show == "retired" %}
+        <p class="govuk-body">{{ t(R ~ "none_retired") }}</p>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t(R ~ "none_retired_desc") }}</p>
+      {% else %}
+        <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_volunteers.empty") }}</p>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.org_volunteers.empty_hint") }}</p>
+      {% endif %}
     </div>
   {% else %}
-    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_volunteers.title') }}">
+    {% set caption = t(R ~ "heading_retired") if show == "retired" else t("govuk_alpha_volunteering.org_volunteers.title") %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ caption }}">
     <table class="govuk-table">
-      <caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</caption>
+      <caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">{{ caption }}</caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_volunteers.table_name") }}</th>
@@ -37,17 +80,19 @@
           <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_volunteers.table_hours") }}</th>
           <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_volunteers.table_applications") }}</th>
           <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_volunteers.table_applied_date") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.shift_manager.col_actions") }}</th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
         {% for volunteer in volunteers %}
-          <tr class="govuk-table__row">
+          <tr class="govuk-table__row" data-testid="roster-volunteer-{{ volunteer.id }}">
             <th scope="row" class="govuk-table__header">
               {% if volunteer.id %}
                 <a class="govuk-link" href="{{ urlFor('/members/' ~ volunteer.id) }}">{{ volunteer.name }}</a>
               {% else %}
                 {{ volunteer.name }}
               {% endif %}
+              {% if volunteer.retiredOnLabel %}<br><span class="govuk-body-s nexus-alpha-meta">{{ volunteer.retiredOnLabel }}</span>{% endif %}
             </th>
             <td class="govuk-table__cell">
               {% if volunteer.email %}
@@ -57,6 +102,24 @@
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ volunteer.totalHoursLabel }}</td>
             <td class="govuk-table__cell govuk-table__cell--numeric">{{ volunteer.applicationsCount }}</td>
             <td class="govuk-table__cell">{% if volunteer.appliedAtLabel %}<time datetime="{{ volunteer.appliedAtIso }}">{{ volunteer.appliedAtLabel }}</time>{% endif %}</td>
+            <td class="govuk-table__cell">
+              {% if volunteer.id %}
+                <ul class="govuk-list govuk-!-margin-bottom-0">
+                  {% if show == "retired" %}
+                    <li>
+                      <form method="post" action="{{ urlFor(base ~ '/' ~ volunteer.id ~ '/reinstate') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <input type="hidden" name="name" value="{{ volunteer.name }}">
+                        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(R ~ "reinstate") }}<span class="govuk-visually-hidden">: {{ volunteer.name }}</span></button>
+                      </form>
+                    </li>
+                  {% else %}
+                    <li><a class="govuk-link" href="{{ urlFor(base ~ '/' ~ volunteer.id ~ '/retire') }}">{{ t(R ~ "retire") }}<span class="govuk-visually-hidden">: {{ volunteer.name }}</span></a></li>
+                  {% endif %}
+                  <li><a class="govuk-link" href="{{ urlFor(base ~ '/' ~ volunteer.id ~ '/remove' ~ ('?show=retired' if show == 'retired' else '')) }}">{{ t(R ~ "remove") }}<span class="govuk-visually-hidden">: {{ volunteer.name }}</span></a></li>
+                </ul>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

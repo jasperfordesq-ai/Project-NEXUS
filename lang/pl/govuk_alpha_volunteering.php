@@ -1408,4 +1408,28 @@ return [
         'withdrawn' => 'Prośba wycofana.',
         'withdraw_failed' => 'Nie udało się wycofać prośby.',
     ],
+
+    // Retire, reinstate and remove volunteers on the roster (same wording as the website)
+    'org_roster' => [
+        'tab_active' => 'Aktywni',
+        'tab_retired' => 'Byli',
+        'tabs_label' => 'Pokaż aktywnych lub byłych wolontariuszy',
+        'heading_retired' => 'Byli wolontariusze',
+        'none_retired' => 'Brak byłych wolontariuszy.',
+        'none_retired_desc' => 'Wolontariusze przeniesieni do byłych pozostają tutaj wraz z godzinami i historią. Możesz ich w każdej chwili przywrócić.',
+        'retired_on' => 'Były wolontariusz od :date',
+        'retire' => 'Przenieś do byłych',
+        'retire_title' => 'Przenieść tego wolontariusza do byłych?',
+        'retire_confirm' => ':name trafi do byłych wolontariuszy. Godziny i historia zostaną zachowane, a miejsca na nadchodzących zmianach zostaną zwolnione. Otrzyma powiadomienie, a Ty możesz w każdej chwili przywrócić tę osobę.',
+        'retire_failed' => 'Nie udało się przenieść tego wolontariusza do byłych. Spróbuj ponownie.',
+        'retired' => ':name przeniesiono do byłych.',
+        'reinstate' => 'Przywróć',
+        'reinstated' => ':name wraca na listę aktywnych.',
+        'reinstate_failed' => 'Nie udało się przywrócić tego wolontariusza. Spróbuj ponownie.',
+        'remove' => 'Usuń',
+        'remove_title' => 'Usunąć tego wolontariusza?',
+        'remove_confirm' => ':name zostanie usunięty(-a) ze wszystkich Twoich ofert i nadchodzących zmian. Zarejestrowane godziny zostaną zachowane. Otrzyma powiadomienie i będzie mógł/mogła zgłosić się ponownie później.',
+        'removed' => ':name usunięto.',
+        'remove_failed' => 'Nie udało się usunąć tego wolontariusza. Spróbuj ponownie.',
+    ],
 ];

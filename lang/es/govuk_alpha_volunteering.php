@@ -1408,4 +1408,28 @@ return [
         'withdrawn' => 'Solicitud retirada.',
         'withdraw_failed' => 'No se pudo retirar la solicitud.',
     ],
+
+    // Retire, reinstate and remove volunteers on the roster (same wording as the website)
+    'org_roster' => [
+        'tab_active' => 'Activos',
+        'tab_retired' => 'Retirados',
+        'tabs_label' => 'Mostrar voluntarios activos o retirados',
+        'heading_retired' => 'Voluntarios retirados',
+        'none_retired' => 'No hay voluntarios retirados.',
+        'none_retired_desc' => 'Los voluntarios que retire se quedan aquí con sus horas y su historial. Puede readmitirlos en cualquier momento.',
+        'retired_on' => 'Retirado el :date',
+        'retire' => 'Retirar',
+        'retire_title' => '¿Retirar a este voluntario?',
+        'retire_confirm' => ':name pasará a sus voluntarios retirados. Se conservan sus horas y su historial, y se liberará cualquier plaza que tenga en próximos turnos. Se le avisará y podrá readmitirlo en cualquier momento.',
+        'retire_failed' => 'No se pudo retirar a este voluntario. Inténtelo de nuevo.',
+        'retired' => ':name ha sido retirado.',
+        'reinstate' => 'Readmitir',
+        'reinstated' => ':name vuelve a estar en su lista activa.',
+        'reinstate_failed' => 'No se pudo readmitir a este voluntario. Inténtelo de nuevo.',
+        'remove' => 'Eliminar',
+        'remove_title' => '¿Eliminar a este voluntario?',
+        'remove_confirm' => ':name dejará de participar en todas sus oportunidades y próximos turnos. Las horas que ha registrado se conservan. Se le avisará y podrá volver a solicitarlo más adelante.',
+        'removed' => ':name ha sido eliminado.',
+        'remove_failed' => 'No se pudo eliminar a este voluntario. Inténtelo de nuevo.',
+    ],
 ];

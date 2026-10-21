@@ -1,0 +1,42 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  "Are you sure?" before a volunteer is retired or removed
+  (routes/volunteering-org-roster.js). Both tell the volunteer, so both ask first.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set R = "govuk_alpha_volunteering.org_roster." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(cancelHref) }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ t(R ~ action ~ "_title") }}</h1>
+
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          {{ body }}
+        </strong>
+      </div>
+
+      <div class="govuk-button-group">
+        <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/volunteers/' ~ volunteer.id ~ '/' ~ action) }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="name" value="{{ volunteer.name }}">
+          <input type="hidden" name="show" value="{{ show }}">
+          <button class="govuk-button{% if action == 'remove' %} govuk-button--warning{% endif %}" data-module="govuk-button" data-prevent-double-click="true">{{ confirmLabel }}</button>
+        </form>
+        <a class="govuk-link" href="{{ urlFor(cancelHref) }}">{{ t("actions.cancel") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

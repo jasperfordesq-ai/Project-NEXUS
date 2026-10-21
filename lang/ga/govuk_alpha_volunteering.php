@@ -1408,4 +1408,28 @@ return [
         'withdrawn' => 'Tarraingíodh siar an t-iarratas.',
         'withdraw_failed' => 'Níorbh fhéidir an t-iarratas a tharraingt siar.',
     ],
+
+    // Retire, reinstate and remove volunteers on the roster (same wording as the website)
+    'org_roster' => [
+        'tab_active' => 'Gníomhach',
+        'tab_retired' => 'Ar scor',
+        'tabs_label' => 'Taispeáin oibrithe deonacha gníomhacha nó ar scor',
+        'heading_retired' => 'Oibrithe deonacha ar scor',
+        'none_retired' => 'Níl aon oibrí deonach ar scor.',
+        'none_retired_desc' => 'Coinnítear anseo na hoibrithe deonacha a chuireann tú ar scor, lena n-uaireanta agus a stair. Is féidir leat iad a athbhunú am ar bith.',
+        'retired_on' => 'Ar scor ó :date',
+        'retire' => 'Cuir ar scor',
+        'retire_title' => 'An gcuirfear an t-oibrí deonach seo ar scor?',
+        'retire_confirm' => 'Bogfar :name chuig d’oibrithe deonacha ar scor. Coinneofar a n-uaireanta agus a stair, agus scaoilfear aon áit atá acu ar sheachanna atá le teacht. Cuirfear in iúl dóibh é, agus is féidir leat iad a athbhunú am ar bith.',
+        'retire_failed' => 'Níorbh fhéidir an t-oibrí deonach seo a chur ar scor. Bain triail eile as.',
+        'retired' => 'Cuireadh :name ar scor.',
+        'reinstate' => 'Athbhunaigh',
+        'reinstated' => 'Tá :name ar ais ar do rolla gníomhach.',
+        'reinstate_failed' => 'Níorbh fhéidir an t-oibrí deonach seo a athbhunú. Bain triail eile as.',
+        'remove' => 'Bain',
+        'remove_title' => 'An mbainfear an t-oibrí deonach seo?',
+        'remove_confirm' => 'Bainfear :name de do dheiseanna go léir agus d’aon seachanna atá le teacht. Coinneofar na huaireanta a logáil siad. Cuirfear in iúl dóibh é, agus is féidir leo iarratas a dhéanamh arís níos déanaí.',
+        'removed' => 'Baineadh :name.',
+        'remove_failed' => 'Níorbh fhéidir an t-oibrí deonach seo a bhaint. Bain triail eile as.',
+    ],
 ];

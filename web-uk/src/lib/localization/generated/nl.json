@@ -11880,6 +11880,28 @@
                 "withdraw": "Intrekken",
                 "withdrawn": "Verzoek ingetrokken.",
                 "withdraw_failed": "Kon het verzoek niet intrekken."
+            },
+            "org_roster": {
+                "tab_active": "Actief",
+                "tab_retired": "Oud-vrijwilligers",
+                "tabs_label": "Actieve of oud-vrijwilligers tonen",
+                "heading_retired": "Oud-vrijwilligers",
+                "none_retired": "Geen oud-vrijwilligers.",
+                "none_retired_desc": "Vrijwilligers die u op non-actief zet, blijven hier met hun uren en geschiedenis. U kunt ze op elk moment terugzetten.",
+                "retired_on": "Op non-actief sinds :date",
+                "retire": "Op non-actief zetten",
+                "retire_title": "Deze vrijwilliger op non-actief zetten?",
+                "retire_confirm": ":name gaat naar uw oud-vrijwilligers. Uren en geschiedenis blijven bewaard en eventuele plekken in komende diensten komen vrij. Diegene krijgt bericht en u kunt diegene op elk moment terugzetten.",
+                "retire_failed": "Kan deze vrijwilliger niet op non-actief zetten. Probeer het opnieuw.",
+                "retired": ":name staat nu op non-actief.",
+                "reinstate": "Terugzetten",
+                "reinstated": ":name staat weer op uw actieve rooster.",
+                "reinstate_failed": "Kan deze vrijwilliger niet terugzetten. Probeer het opnieuw.",
+                "remove": "Verwijderen",
+                "remove_title": "Deze vrijwilliger verwijderen?",
+                "remove_confirm": ":name wordt van al uw vacatures en komende diensten gehaald. De geregistreerde uren blijven bewaard. Diegene krijgt bericht en kan zich later opnieuw aanmelden.",
+                "removed": ":name is verwijderd.",
+                "remove_failed": "Kan deze vrijwilliger niet verwijderen. Probeer het opnieuw."
             }
         },
         "govuk_alpha_wallet": {

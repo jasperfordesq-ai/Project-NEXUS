@@ -1407,4 +1407,28 @@ return [
         'withdrawn' => 'Anfrage zurückgezogen.',
         'withdraw_failed' => 'Die Anfrage konnte nicht zurückgezogen werden.',
     ],
+
+    // Retire, reinstate and remove volunteers on the roster (same wording as the website)
+    'org_roster' => [
+        'tab_active' => 'Aktiv',
+        'tab_retired' => 'Ehemalig',
+        'tabs_label' => 'Aktive oder ehemalige Freiwillige anzeigen',
+        'heading_retired' => 'Ehemalige Freiwillige',
+        'none_retired' => 'Keine ehemaligen Freiwilligen.',
+        'none_retired_desc' => 'Freiwillige, die Sie auf „ehemalig“ setzen, bleiben hier mit ihren Stunden und ihrem Verlauf. Sie können sie jederzeit wieder aufnehmen.',
+        'retired_on' => 'Ehemalig seit :date',
+        'retire' => 'Auf ehemalig setzen',
+        'retire_title' => 'Diese Person auf ehemalig setzen?',
+        'retire_confirm' => ':name wird zu Ihren ehemaligen Freiwilligen verschoben. Stunden und Verlauf bleiben erhalten, und belegte Plätze in bevorstehenden Schichten werden frei. Die Person wird benachrichtigt, und Sie können sie jederzeit wieder aufnehmen.',
+        'retire_failed' => 'Die Person konnte nicht auf ehemalig gesetzt werden. Bitte versuchen Sie es erneut.',
+        'retired' => ':name ist jetzt ehemalig.',
+        'reinstate' => 'Wieder aufnehmen',
+        'reinstated' => ':name steht wieder auf Ihrer aktiven Liste.',
+        'reinstate_failed' => 'Die Person konnte nicht wieder aufgenommen werden. Bitte versuchen Sie es erneut.',
+        'remove' => 'Entfernen',
+        'remove_title' => 'Diese Person entfernen?',
+        'remove_confirm' => ':name wird aus allen Ihren Angeboten und bevorstehenden Schichten entfernt. Die erfassten Stunden bleiben erhalten. Die Person wird benachrichtigt und kann sich später erneut bewerben.',
+        'removed' => ':name wurde entfernt.',
+        'remove_failed' => 'Die Person konnte nicht entfernt werden. Bitte versuchen Sie es erneut.',
+    ],
 ];

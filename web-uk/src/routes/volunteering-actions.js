@@ -325,8 +325,9 @@ function orgSettingsRedirect(orgId, status) {
   return `/volunteering/organisations/${orgId}/settings?status=${encodeURIComponent(status)}`;
 }
 
-function orgVolunteersHref(orgId, cursor) {
-  return `/volunteering/organisations/${orgId}/volunteers?cursor=${encodeURIComponent(cursor)}`;
+function orgVolunteersHref(orgId, cursor, show = 'active') {
+  const retired = show === 'retired' ? 'show=retired&' : '';
+  return `/volunteering/organisations/${orgId}/volunteers?${retired}cursor=${encodeURIComponent(cursor)}`;
 }
 
 function opportunityRedirect(id, status) {
@@ -2007,7 +2008,11 @@ function normalizeOrgVolunteer(row, t = null) {
   const volunteer = row && typeof row === 'object' ? row : {};
   const totalHours = Number(volunteer.total_hours ?? volunteer.totalHours);
   const appliedAt = volunteer.applied_at ?? volunteer.appliedAt;
+  const retiredAt = volunteer.retired_at ?? volunteer.retiredAt;
   return {
+    retiredOnLabel: retiredAt && typeof t === 'function'
+      ? t('govuk_alpha_volunteering.org_roster.retired_on', { date: dateLabel(retiredAt) })
+      : '',
     id: positiveInteger(volunteer.id),
     name: trimmed(volunteer.name) || (typeof t === 'function' ? t('members.unknown_member') : 'Unknown member'),
     email: trimmed(volunteer.email),
@@ -2018,10 +2023,10 @@ function normalizeOrgVolunteer(row, t = null) {
   };
 }
 
-function orgVolunteersNextHref(orgId, meta) {
+function orgVolunteersNextHref(orgId, meta, show = 'active') {
   const nextCursor = trimmed(meta.cursor ?? meta.next_cursor ?? meta.nextCursor);
   const hasMore = Boolean(meta.has_more ?? meta.hasMore);
-  return hasMore && nextCursor ? orgVolunteersHref(orgId, nextCursor) : '';
+  return hasMore && nextCursor ? orgVolunteersHref(orgId, nextCursor, show) : '';
 }
 
 function normalizeOrgWalletSummary(result) {
@@ -3102,7 +3107,10 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
 
   const id = Number(req.params.id);
   const cursor = trimmed(req.query.cursor);
+  // Active roster by default; ?show=retired lists those the organisation retired (parity gap 3).
+  const show = req.query.show === 'retired' ? 'retired' : 'active';
   const params = new URLSearchParams({ per_page: '20' });
+  if (show === 'retired') params.set('status', 'retired');
   if (cursor) params.set('cursor', cursor);
 
   let dashboard = normalizeOrgStats({});
@@ -3115,12 +3123,15 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
     volunteers = collectionFrom(result)
       .map((volunteer) => normalizeOrgVolunteer(volunteer, res.locals.t))
       .filter((volunteer) => volunteer.id);
-    nextHref = orgVolunteersNextHref(id, collectionMetaFrom(result));
+    nextHref = orgVolunteersNextHref(id, collectionMetaFrom(result), show);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load the organisation volunteers. Check that you manage this organisation and try again.';
   }
 
+  // What a retire, reinstate or remove just did, from routes/volunteering-org-roster.js.
+  // The name travels in the session, never the address.
+  const outcome = consumeFormReplay(req, 'orgRoster', `roster-${id}`);
   return res.render('volunteering/org-volunteers', {
     title: res.locals.t('govuk_alpha_volunteering.org_volunteers.title'),
     activeNav: 'volunteering',
@@ -3128,7 +3139,12 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
     orgName: dashboard.orgName || res.locals.tenantName,
     volunteers,
     nextHref,
-    loadError
+    loadError,
+    show,
+    outcome: outcome && typeof outcome.message === 'string' && outcome.message
+      ? { type: outcome.type === 'success' ? 'success' : 'error', message: outcome.message }
+      : null,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
 

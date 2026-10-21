@@ -11880,6 +11880,28 @@
                 "withdraw": "Retirar",
                 "withdrawn": "Pedido retirado.",
                 "withdraw_failed": "Não foi possível retirar o pedido."
+            },
+            "org_roster": {
+                "tab_active": "Ativos",
+                "tab_retired": "Retirados",
+                "tabs_label": "Mostrar voluntários ativos ou retirados",
+                "heading_retired": "Voluntários retirados",
+                "none_retired": "Não há voluntários retirados.",
+                "none_retired_desc": "Os voluntários que retirar ficam aqui com as suas horas e histórico. Pode readmiti-los a qualquer momento.",
+                "retired_on": "Retirado em :date",
+                "retire": "Retirar",
+                "retire_title": "Retirar este voluntário?",
+                "retire_confirm": ":name passará para os seus voluntários retirados. As horas e o histórico são mantidos, e quaisquer lugares em turnos futuros serão libertados. A pessoa será avisada e pode readmiti-la a qualquer momento.",
+                "retire_failed": "Não foi possível retirar este voluntário. Tente novamente.",
+                "retired": ":name foi retirado(a).",
+                "reinstate": "Readmitir",
+                "reinstated": ":name está de novo na sua lista ativa.",
+                "reinstate_failed": "Não foi possível readmitir este voluntário. Tente novamente.",
+                "remove": "Remover",
+                "remove_title": "Remover este voluntário?",
+                "remove_confirm": ":name será removido(a) de todas as suas oportunidades e turnos futuros. As horas registadas são mantidas. A pessoa será avisada e poderá candidatar-se novamente mais tarde.",
+                "removed": ":name foi removido(a).",
+                "remove_failed": "Não foi possível remover este voluntário. Tente novamente."
             }
         },
         "govuk_alpha_wallet": {
