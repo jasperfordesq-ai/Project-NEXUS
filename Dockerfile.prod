@@ -58,30 +58,32 @@ RUN docker-php-ext-configure gd \
         pcntl
 
 # Redis extension.
-# pecl.php.net intermittently 504s / serves truncated tarballs, and on
-# 2026-10-21 its REST catalogue came back malformed to the production host
+# Built from the phpredis release on GitHub, not pecl.php.net. On 2026-10-21
+# pecl.php.net first served the production host a malformed REST catalogue
 # ("Package redis Version 6.3.0 does not have REST xml available", even after
-# `pecl channel-update`) while GitHub's runners were served normally: two
-# production builds failed on an unchanged line. So the tarball is fetched by
-# its direct URL (which never touches the catalogue), pinned to the version
-# production already ran, and checked against a SHA-256 before installing.
-# Retry with backoff; fail hard only after 5 genuine failures.
-# To upgrade: change both values here AND in Dockerfile and
+# `pecl channel-update`) and then answered 502/504 to every client: three
+# production deploys and a CI build failed on it. The tag archive is pinned to
+# the version production already ran and checked against a SHA-256 before it
+# is compiled. Retry with backoff; fail hard only after 5 genuine failures.
+# To upgrade: change both values in Dockerfile, Dockerfile.prod AND
 # Dockerfile.bluegreen (the file production blue/green actually builds).
 ARG REDIS_EXT_VERSION=6.3.0
-ARG REDIS_EXT_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
+ARG REDIS_EXT_SHA256=cb8f81df1a275599e4f8ddcfec7e1f65ed1953e6f5673649149fd680ebff4cad
 RUN ok=0; \
     for i in 1 2 3 4 5; do \
-        rm -rf /tmp/pear/download/* /tmp/redis.tgz 2>/dev/null || true; \
-        if curl -fsSL --retry 3 -o /tmp/redis.tgz "https://pecl.php.net/get/redis-${REDIS_EXT_VERSION}.tgz" \
-            && echo "${REDIS_EXT_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
-            && pecl install /tmp/redis.tgz; then ok=1; break; fi; \
-        echo "pecl install redis failed (attempt $i/5)" >&2; \
+        rm -f /tmp/phpredis.tgz; \
+        if curl -fsSL --retry 3 -o /tmp/phpredis.tgz "https://github.com/phpredis/phpredis/archive/refs/tags/${REDIS_EXT_VERSION}.tar.gz" \
+            && echo "${REDIS_EXT_SHA256}  /tmp/phpredis.tgz" | sha256sum -c -; then ok=1; break; fi; \
+        echo "phpredis download failed (attempt $i/5)" >&2; \
         if [ "$i" -lt 5 ]; then sleep "$((i * 10))"; fi; \
     done; \
-    rm -f /tmp/redis.tgz; \
-    if [ "$ok" != 1 ]; then echo "pecl install redis failed after 5 attempts" >&2; exit 1; fi; \
-    docker-php-ext-enable redis
+    if [ "$ok" != 1 ]; then echo "phpredis download failed after 5 attempts" >&2; exit 1; fi; \
+    docker-php-source extract \
+    && mkdir -p /usr/src/php/ext/redis \
+    && tar -xzf /tmp/phpredis.tgz -C /usr/src/php/ext/redis --strip-components=1 \
+    && docker-php-ext-install redis \
+    && docker-php-source delete \
+    && rm -f /tmp/phpredis.tgz
 
 # =============================================================================
 # Apache Configuration
