@@ -11936,6 +11936,21 @@
                 "volunteers_needed": "Volunteers needed: :count",
                 "starts_on": "Proposed start: :date",
                 "unsupported": "Your support has been removed."
+            },
+            "checkin_verify": {
+                "title": "Check in a volunteer",
+                "intro": "Confirm that this volunteer has arrived for their shift. Only the people who run the shift can do this.",
+                "confirm": "Confirm they have arrived",
+                "checked_in": ":name is checked in.",
+                "checked_in_unnamed": "The volunteer is checked in.",
+                "checkout_intro": "When they leave, check them out so their time is recorded.",
+                "checkout": "Check them out",
+                "checked_out": ":name is checked out.",
+                "checked_out_unnamed": "The volunteer is checked out.",
+                "invalid": "This check-in code is not valid or has expired.",
+                "forbidden": "You cannot check in volunteers for this shift.",
+                "error": "Something went wrong. Please try again.",
+                "done": "Back to volunteering"
             }
         },
         "govuk_alpha_wallet": {

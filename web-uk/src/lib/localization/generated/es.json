@@ -11936,6 +11936,21 @@
                 "volunteers_needed": "Voluntarios necesarios: :count",
                 "starts_on": "Inicio propuesto: :date",
                 "unsupported": "Tu apoyo se ha retirado."
+            },
+            "checkin_verify": {
+                "title": "Registrar la llegada de un voluntario",
+                "intro": "Confirma que este voluntario ha llegado a su turno. Solo pueden hacerlo las personas que gestionan el turno.",
+                "confirm": "Confirmar su llegada",
+                "checked_in": "La llegada de :name está registrada.",
+                "checked_in_unnamed": "La llegada del voluntario está registrada.",
+                "checkout_intro": "Cuando se vaya, registra su salida para que su tiempo quede contado.",
+                "checkout": "Registrar su salida",
+                "checked_out": "La salida de :name está registrada.",
+                "checked_out_unnamed": "La salida del voluntario está registrada.",
+                "invalid": "Este código de registro no es válido o ha caducado.",
+                "forbidden": "No puedes registrar la llegada de voluntarios en este turno.",
+                "error": "Algo ha fallado. Inténtalo de nuevo.",
+                "done": "Volver al voluntariado"
             }
         },
         "govuk_alpha_wallet": {

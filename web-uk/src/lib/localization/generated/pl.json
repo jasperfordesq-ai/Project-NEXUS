@@ -11936,6 +11936,21 @@
                 "volunteers_needed": "Potrzebni wolontariusze: :count",
                 "starts_on": "Proponowany początek: :date",
                 "unsupported": "Twoje wsparcie zostało wycofane."
+            },
+            "checkin_verify": {
+                "title": "Potwierdź przybycie wolontariusza",
+                "intro": "Potwierdź, że ten wolontariusz przybył na swoją zmianę. Mogą to zrobić tylko osoby prowadzące zmianę.",
+                "confirm": "Potwierdź przybycie",
+                "checked_in": "Przybycie: :name – potwierdzone.",
+                "checked_in_unnamed": "Przybycie wolontariusza zostało potwierdzone.",
+                "checkout_intro": "Gdy wolontariusz wychodzi, zapisz wyjście, aby jego czas został zarejestrowany.",
+                "checkout": "Zapisz wyjście",
+                "checked_out": "Wyjście: :name – zapisane.",
+                "checked_out_unnamed": "Wyjście wolontariusza zostało zapisane.",
+                "invalid": "Ten kod jest nieprawidłowy lub wygasł.",
+                "forbidden": "Nie możesz potwierdzać przybycia wolontariuszy na tę zmianę.",
+                "error": "Coś poszło nie tak. Spróbuj ponownie.",
+                "done": "Wróć do wolontariatu"
             }
         },
         "govuk_alpha_wallet": {

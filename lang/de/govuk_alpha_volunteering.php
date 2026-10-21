@@ -1469,4 +1469,21 @@ return [
         'starts_on' => 'Geplanter Beginn: :date',
         'unsupported' => 'Ihre Unterstützung wurde zurückgezogen.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'Freiwillige einchecken',
+        'intro' => 'Bestätigen Sie, dass diese Person zu ihrer Schicht gekommen ist. Das können nur die Personen, die die Schicht leiten.',
+        'confirm' => 'Ankunft bestätigen',
+        'checked_in' => ':name ist eingecheckt.',
+        'checked_in_unnamed' => 'Die freiwillige Person ist eingecheckt.',
+        'checkout_intro' => 'Checken Sie sie beim Gehen aus, damit ihre Zeit erfasst wird.',
+        'checkout' => 'Auschecken',
+        'checked_out' => ':name ist ausgecheckt.',
+        'checked_out_unnamed' => 'Die freiwillige Person ist ausgecheckt.',
+        'invalid' => 'Dieser Check-in-Code ist ungültig oder abgelaufen.',
+        'forbidden' => 'Sie können für diese Schicht niemanden einchecken.',
+        'error' => 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+        'done' => 'Zurück zum Ehrenamt',
+    ],
 ];

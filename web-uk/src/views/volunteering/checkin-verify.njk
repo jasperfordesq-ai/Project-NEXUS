@@ -1,0 +1,52 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Check a volunteer in or out from their check-in code
+  (routes/volunteering-checkin-verify.js, parity gap 6). Nothing happens until someone
+  presses a button.
+#}
+{% extends "layouts/base.njk" %}
+
+{% set K = "govuk_alpha_volunteering.checkin_verify." %}
+{% set base = '/volunteering/checkin/' ~ code %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if state == "error" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body" data-testid="checkin-error">{{ errorMessage }}</p></div>
+          </div>
+        </div>
+        <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+      {% elif state == "checked_in" or state == "checked_out" %}
+        <div class="govuk-panel govuk-panel--confirmation" data-testid="checkin-{{ state }}">
+          <h1 class="govuk-panel__title">{{ heading }}</h1>
+        </div>
+      {% else %}
+        <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+        <p class="govuk-body">{{ t(K ~ "intro") }}</p>
+        <form method="post" action="{{ urlFor(base ~ '/verify') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "confirm") }}</button>
+        </form>
+      {% endif %}
+
+      {% if state == "checked_in" %}
+        <p class="govuk-body">{{ t(K ~ "checkout_intro") }}</p>
+        <form method="post" action="{{ urlFor(base ~ '/checkout') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="name" value="{{ name }}">
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "checkout") }}</button>
+        </form>
+      {% endif %}
+
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t(K ~ "done") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

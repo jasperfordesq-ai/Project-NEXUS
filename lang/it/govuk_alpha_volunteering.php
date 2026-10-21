@@ -1470,4 +1470,21 @@ return [
         'starts_on' => 'Inizio proposto: :date',
         'unsupported' => 'Il tuo sostegno è stato ritirato.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'Registra l’arrivo di un volontario',
+        'intro' => 'Conferma che questo volontario è arrivato per il suo turno. Possono farlo solo le persone che gestiscono il turno.',
+        'confirm' => 'Conferma l’arrivo',
+        'checked_in' => 'L’arrivo di :name è registrato.',
+        'checked_in_unnamed' => 'L’arrivo del volontario è registrato.',
+        'checkout_intro' => 'Quando va via, registra l’uscita perché il suo tempo venga conteggiato.',
+        'checkout' => 'Registra l’uscita',
+        'checked_out' => 'L’uscita di :name è registrata.',
+        'checked_out_unnamed' => 'L’uscita del volontario è registrata.',
+        'invalid' => 'Questo codice di registrazione non è valido o è scaduto.',
+        'forbidden' => 'Non puoi registrare l’arrivo dei volontari per questo turno.',
+        'error' => 'Si è verificato un problema. Riprova.',
+        'done' => 'Torna al volontariato',
+    ],
 ];

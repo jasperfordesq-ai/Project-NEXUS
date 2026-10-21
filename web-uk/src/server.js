@@ -65,6 +65,7 @@ const volunteeringOrgOpportunityRoutes = require('./routes/volunteering-org-oppo
 const volunteeringOrgRosterRoutes = require('./routes/volunteering-org-roster');
 const volunteeringOpportunityApplicantRoutes = require('./routes/volunteering-opportunity-applicants');
 const volunteeringCommunityProjectRoutes = require('./routes/volunteering-community-projects');
+const volunteeringCheckinVerifyRoutes = require('./routes/volunteering-checkin-verify');
 const volunteeringMyQualificationRoutes = require('./routes/volunteering-my-qualifications');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
@@ -2542,6 +2543,8 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOpportunityApplicantRoutes);
 // Propose and support community projects (parity gap 5).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringCommunityProjectRoutes);
+// The people who run a shift check a volunteer in and out from their code (parity gap 6).
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringCheckinVerifyRoutes);
 // A volunteer's own qualifications register; no uploads (gap B15).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringMyQualificationRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);

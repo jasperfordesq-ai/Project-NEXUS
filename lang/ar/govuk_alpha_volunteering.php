@@ -1470,4 +1470,21 @@ return [
         'starts_on' => 'البدء المقترح: :date',
         'unsupported' => 'سُحب دعمك.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'تسجيل وصول متطوع',
+        'intro' => 'أكّد أن هذا المتطوع وصل إلى ورديته. لا يمكن ذلك إلا لمن يديرون الوردية.',
+        'confirm' => 'تأكيد الوصول',
+        'checked_in' => 'سُجّل وصول :name.',
+        'checked_in_unnamed' => 'سُجّل وصول المتطوع.',
+        'checkout_intro' => 'عند مغادرته، سجّل خروجه حتى يُحتسب وقته.',
+        'checkout' => 'تسجيل الخروج',
+        'checked_out' => 'سُجّل خروج :name.',
+        'checked_out_unnamed' => 'سُجّل خروج المتطوع.',
+        'invalid' => 'رمز تسجيل الوصول هذا غير صالح أو انتهت صلاحيته.',
+        'forbidden' => 'لا يمكنك تسجيل وصول المتطوعين في هذه الوردية.',
+        'error' => 'حدث خطأ ما. يُرجى المحاولة مرة أخرى.',
+        'done' => 'العودة إلى التطوع',
+    ],
 ];

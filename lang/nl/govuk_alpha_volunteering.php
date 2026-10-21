@@ -1469,4 +1469,21 @@ return [
         'starts_on' => 'Voorgestelde start: :date',
         'unsupported' => 'Je steun is ingetrokken.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'Een vrijwilliger inchecken',
+        'intro' => 'Bevestig dat deze vrijwilliger voor de dienst is aangekomen. Alleen de mensen die de dienst leiden kunnen dit doen.',
+        'confirm' => 'Aankomst bevestigen',
+        'checked_in' => ':name is ingecheckt.',
+        'checked_in_unnamed' => 'De vrijwilliger is ingecheckt.',
+        'checkout_intro' => 'Check de vrijwilliger bij vertrek uit, zodat de tijd wordt vastgelegd.',
+        'checkout' => 'Uitchecken',
+        'checked_out' => ':name is uitgecheckt.',
+        'checked_out_unnamed' => 'De vrijwilliger is uitgecheckt.',
+        'invalid' => 'Deze incheckcode is ongeldig of verlopen.',
+        'forbidden' => 'Je kunt voor deze dienst geen vrijwilligers inchecken.',
+        'error' => 'Er is iets misgegaan. Probeer het opnieuw.',
+        'done' => 'Terug naar vrijwilligerswerk',
+    ],
 ];

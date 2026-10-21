@@ -11936,6 +11936,21 @@
                 "volunteers_needed": "Bénévoles recherchés : :count",
                 "starts_on": "Début prévu : :date",
                 "unsupported": "Votre soutien a été retiré."
+            },
+            "checkin_verify": {
+                "title": "Enregistrer l’arrivée d’un bénévole",
+                "intro": "Confirmez que ce bénévole est arrivé pour son créneau. Seules les personnes qui gèrent le créneau peuvent le faire.",
+                "confirm": "Confirmer son arrivée",
+                "checked_in": "L’arrivée de :name est enregistrée.",
+                "checked_in_unnamed": "L’arrivée du bénévole est enregistrée.",
+                "checkout_intro": "À son départ, enregistrez sa sortie pour que son temps soit compté.",
+                "checkout": "Enregistrer son départ",
+                "checked_out": "Le départ de :name est enregistré.",
+                "checked_out_unnamed": "Le départ du bénévole est enregistré.",
+                "invalid": "Ce code d’enregistrement n’est pas valide ou a expiré.",
+                "forbidden": "Vous ne pouvez pas enregistrer de bénévoles pour ce créneau.",
+                "error": "Un problème est survenu. Veuillez réessayer.",
+                "done": "Retour au bénévolat"
             }
         },
         "govuk_alpha_wallet": {

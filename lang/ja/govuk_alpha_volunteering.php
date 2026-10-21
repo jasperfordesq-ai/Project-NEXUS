@@ -1469,4 +1469,21 @@ return [
         'starts_on' => '開始予定：:date',
         'unsupported' => '応援を取り消しました。',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'ボランティアのチェックイン',
+        'intro' => 'このボランティアがシフトに到着したことを確認します。確認できるのはシフトを運営する人だけです。',
+        'confirm' => '到着を確認する',
+        'checked_in' => ':nameさんのチェックインが完了しました。',
+        'checked_in_unnamed' => 'ボランティアのチェックインが完了しました。',
+        'checkout_intro' => '帰るときにチェックアウトすると、活動時間が記録されます。',
+        'checkout' => 'チェックアウトする',
+        'checked_out' => ':nameさんのチェックアウトが完了しました。',
+        'checked_out_unnamed' => 'ボランティアのチェックアウトが完了しました。',
+        'invalid' => 'このチェックインコードは無効か、有効期限が切れています。',
+        'forbidden' => 'このシフトのボランティアをチェックインする権限がありません。',
+        'error' => '問題が発生しました。もう一度お試しください。',
+        'done' => 'ボランティアに戻る',
+    ],
 ];

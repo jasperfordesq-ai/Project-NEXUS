@@ -1470,4 +1470,21 @@ return [
         'starts_on' => 'Tús molta: :date',
         'unsupported' => 'Baineadh do thacaíocht.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'Seiceáil oibrí deonach isteach',
+        'intro' => 'Deimhnigh go bhfuil an t-oibrí deonach seo tagtha don seal. Ní féidir é seo a dhéanamh ach leis na daoine a ritheann an seal.',
+        'confirm' => 'Deimhnigh gur tháinig siad',
+        'checked_in' => 'Tá :name seiceáilte isteach.',
+        'checked_in_unnamed' => 'Tá an t-oibrí deonach seiceáilte isteach.',
+        'checkout_intro' => 'Nuair a fhágann siad, seiceáil amach iad ionas go dtaifeadtar a gcuid ama.',
+        'checkout' => 'Seiceáil amach iad',
+        'checked_out' => 'Tá :name seiceáilte amach.',
+        'checked_out_unnamed' => 'Tá an t-oibrí deonach seiceáilte amach.',
+        'invalid' => 'Níl an cód seiceála isteach seo bailí nó tá sé imithe as feidhm.',
+        'forbidden' => 'Ní féidir leat oibrithe deonacha a sheiceáil isteach don seal seo.',
+        'error' => 'Chuaigh rud éigin amú. Bain triail eile as.',
+        'done' => 'Ar ais chuig obair dheonach',
+    ],
 ];

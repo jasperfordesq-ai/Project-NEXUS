@@ -1470,4 +1470,21 @@ return [
         'starts_on' => 'Proponowany początek: :date',
         'unsupported' => 'Twoje wsparcie zostało wycofane.',
     ],
+
+    // The people who run a shift check a volunteer in and out from their check-in code (parity gap 6)
+    'checkin_verify' => [
+        'title' => 'Potwierdź przybycie wolontariusza',
+        'intro' => 'Potwierdź, że ten wolontariusz przybył na swoją zmianę. Mogą to zrobić tylko osoby prowadzące zmianę.',
+        'confirm' => 'Potwierdź przybycie',
+        'checked_in' => 'Przybycie: :name – potwierdzone.',
+        'checked_in_unnamed' => 'Przybycie wolontariusza zostało potwierdzone.',
+        'checkout_intro' => 'Gdy wolontariusz wychodzi, zapisz wyjście, aby jego czas został zarejestrowany.',
+        'checkout' => 'Zapisz wyjście',
+        'checked_out' => 'Wyjście: :name – zapisane.',
+        'checked_out_unnamed' => 'Wyjście wolontariusza zostało zapisane.',
+        'invalid' => 'Ten kod jest nieprawidłowy lub wygasł.',
+        'forbidden' => 'Nie możesz potwierdzać przybycia wolontariuszy na tę zmianę.',
+        'error' => 'Coś poszło nie tak. Spróbuj ponownie.',
+        'done' => 'Wróć do wolontariatu',
+    ],
 ];
