@@ -867,6 +867,23 @@ jobs:
       - name: Build Production PHP Container
         run: docker build --no-cache -f Dockerfile.prod -t nexus-php-prod-test:ci .
 
+      # Production blue/green builds Dockerfile.bluegreen and
+      # react-frontend/Dockerfile.bluegreen (compose.bluegreen.yml), not the
+      # files above. On 2026-10-21 a fix to the Redis extension step landed in
+      # Dockerfile and Dockerfile.prod, passed this job, and then failed the
+      # production build because Dockerfile.bluegreen still had the old step.
+      # Build what production builds, and prove the extension it needs loads.
+      - name: Build Blue/Green PHP Container (what production deploys)
+        run: |
+          docker build --no-cache -f Dockerfile.bluegreen --build-arg BUILD_COMMIT="$GITHUB_SHA" -t nexus-php-bluegreen-test:ci .
+          docker run --rm --entrypoint php nexus-php-bluegreen-test:ci -r 'exit(extension_loaded("redis") ? 0 : 1);'
+
+      - name: Build Blue/Green React Container (what production deploys)
+        run: |
+          # bluegreen-deploy.sh stages CHANGELOG.md into this build context first.
+          cp CHANGELOG.md react-frontend/CHANGELOG.md
+          docker build --no-cache -f react-frontend/Dockerfile.bluegreen --build-arg VITE_API_BASE=/api --build-arg BUILD_COMMIT="$GITHUB_SHA" -t nexus-react-bluegreen-test:ci react-frontend
+
       - name: Build React Frontend Container
         working-directory: react-frontend
         run: |
