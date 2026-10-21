@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-20T12:14:34.815Z",
+  "lastRunAt": "2026-10-21T02:08:02.650Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -688,12 +688,12 @@
     },
     "144785932": {
       "title": "Listing image upload failed",
-      "culprit": "http://api.project-nexus.ie/api/v2/listings/504/image",
+      "culprit": "http://hour-timebank.ie/api/v2/listings/554/image",
       "decision": "needs-owner",
-      "note": "Real member harm, but the fix is bigger than a nightly change. A member (user 74, tenant 2) uploaded a 7173x9333 (66.9 megapixel) photo to listing 504. ImageUploader rejects anything over 25 MP as decompression-bomb protection, which is correct, but it throws a bare \\Exception for validation refusals AND for genuine server faults alike. ListingsController::uploadImage catches everything and returns HTTP 500 with the generic 'Failed to upload image', so the member is never told the photo is too big and cannot fix it. Suggested fix: give ImageUploader a distinct validation exception, return 422 with a specific reason, and stop reporting member input refusals to Sentry as server errors. Needs a new translated string in all 11 locales plus a review of the other ~10 ImageUploader callers, so it is past the size a nightly run should attempt.",
+      "note": "Same underlying defect as the 4 Sep entry, new trigger. 20 Oct 17:00 UTC, release 6735049c2, tenant 2 user 16, listing 554: the file passed the controller's MIME check (a real JPG/PNG/GIF/WEBP) but its filename extension was not in ImageUploader's list (e.g. .jfif, .heic-renamed, or no extension). ImageUploader throws a bare Exception; ListingsController::uploadImage catches it and returns HTTP 500 'upload failed', so the member is not told why. Suggested fix unchanged: a distinct validation exception from ImageUploader returned as 422 with a specific translated reason, and consider deriving the stored extension from the verified MIME type. Touches the upload security check and ~10 callers, so not a nightly change.",
       "sha": null,
-      "decidedAt": "2026-09-04T20:11:40.712Z",
-      "decidedAtRelease": "nexus-php@f7a71cc5f7ed"
+      "decidedAt": "2026-10-21T02:09:52.302Z",
+      "decidedAtRelease": "nexus-php@6735049c2464"
     },
     "145144532": {
       "title": "ApplicationNotResponding: Background ANR",
@@ -717,9 +717,9 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "Unchanged (latest 20 Oct 09:00 UTC, release 87ee78250): hourly info-level re-read of the tenant row inside nexus:run-all. No member affected.",
+      "note": "Unchanged (latest event still release 87ee78250, 20 Oct 13:00 UTC): hourly info-level repeated tenant-row read inside the scheduled nexus:run-all command. No member affected.",
       "sha": null,
-      "decidedAt": "2026-10-20T12:17:00.537Z",
+      "decidedAt": "2026-10-21T02:09:53.622Z",
       "decidedAtRelease": "nexus-php@87ee782507c5"
     },
     "145943666": {
@@ -937,6 +937,15 @@
       "sha": null,
       "decidedAt": "2026-10-20T12:16:59.224Z",
       "decidedAtRelease": "nexus-react@4823b51ce36f"
+    },
+    "154975457": {
+      "title": "reportMessage",
+      "culprit": null,
+      "decision": "needs-owner",
+      "note": "Phone app, Android 1.11.0 build 24 (20 Oct). Someone tapped an in-app notification whose link points at the admin website (/admin...). The app deliberately treats /admin as website-only (BROWSER_ONLY_SECTIONS in mobile/app/+native-intent.ts), but navigateToLink() only opens absolute https links in the browser, so a relative /admin link does nothing at all and is reported as unhandled. Likely the new admin-facing alerts (wellbeing, 20 Oct) now reach admins who use the app. Suggested fix: in navigateToLink, when isBrowserOnlyPath(link) is true, open the tenant's web address for that path in the browser, or show a translated 'open this on the website' notice. Owner decision: needs a UX choice, new mobile strings in 11 locales, and an app release/OTA.",
+      "sha": null,
+      "decidedAt": "2026-10-21T02:09:49.916Z",
+      "decidedAtRelease": "ie.project.nexus@1.11.0+24"
     }
   }
 }
