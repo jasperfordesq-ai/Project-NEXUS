@@ -6,6 +6,7 @@
 
 namespace App\Core;
 
+use App\Helpers\HtmlSanitizer;
 use App\Models\EmailSettings;
 use App\Support\OutboundUrlGuard;
 use Illuminate\Support\Facades\Cache;
@@ -292,6 +293,50 @@ class Mailer
         }
 
         return self::CATEGORY_NOTIFICATIONS;
+    }
+
+    /**
+     * Derive the text/plain part from an HTML email when the caller supplies none.
+     *
+     * strip_tags() alone kept the <style> block and the preview-text padding
+     * (U+034F), so every templated email's text part opened with a stylesheet —
+     * a mismatch between the two parts that spam filters score against. Links
+     * keep their address, because a text part without them is useless.
+     */
+    public static function plainTextFromHtml(string $html): string
+    {
+        $text = (string) preg_replace('/<head\b.*?<\/head>/is', '', $html);
+        $text = (string) preg_replace('/<(style|script)\b[^>]*>.*?<\/\1>/is', '', $text);
+
+        $text = (string) preg_replace_callback(
+            '/<a\b[^>]*?\bhref\s*=\s*(["\'])(.*?)\1[^>]*>(.*?)<\/a>/is',
+            static function (array $m): string {
+                $href = trim(html_entity_decode($m[2], ENT_QUOTES, 'UTF-8'));
+                $label = trim(html_entity_decode(HtmlSanitizer::toPlainText($m[3]), ENT_QUOTES, 'UTF-8'));
+                if (!preg_match('#^https?://#i', $href) || $label === $href) {
+                    return $label !== '' ? $label : $href;
+                }
+                return $label === '' ? $href : $label . ' (' . $href . ')';
+            },
+            $text
+        );
+
+        $text = (string) preg_replace('/<br\s*\/?>/i', "\n", $text);
+        $text = (string) preg_replace('/<\/li\s*>/i', "\n", $text);
+        $text = (string) preg_replace('/<\/(p|div|h[1-6]|tr|table|ul|ol|blockquote)\s*>/i', "\n\n", $text);
+
+        $text = HtmlSanitizer::toPlainText($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace(["\u{00A0}", "\t"], ' ', $text);
+        $text = (string) preg_replace('/[\x{034F}\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{00AD}]/u', '', $text);
+
+        $lines = array_map(
+            static fn (string $line): string => trim((string) preg_replace('/ {2,}/', ' ', $line)),
+            explode("\n", str_replace("\r", '', $text))
+        );
+        $text = (string) preg_replace("/\n{3,}/", "\n\n", implode("\n", $lines));
+
+        return trim($text);
     }
 
     /**
@@ -802,9 +847,7 @@ class Mailer
             if ($textBody !== null && trim($textBody) !== '') {
                 $plainText = $textBody;
             } else {
-                $plainText = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $body));
-                $plainText = html_entity_decode($plainText, ENT_QUOTES, 'UTF-8');
-                $plainText = preg_replace('/\n\s+/', "\n", (string) $plainText);
+                $plainText = self::plainTextFromHtml((string) $body);
             }
 
             $stream = $this->resolvePostmarkStream($category);
@@ -1143,10 +1186,7 @@ class Mailer
         if ($textBody !== null && trim($textBody) !== '') {
             $plainText = trim($textBody);
         } else {
-            $plainText = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $body));
-            $plainText = html_entity_decode($plainText, ENT_QUOTES, 'UTF-8');
-            $plainText = preg_replace('/\n\s+/', "\n", $plainText);
-            $plainText = trim($plainText);
+            $plainText = self::plainTextFromHtml((string) $body);
         }
 
         // F-280: every value interpolated into a header line is re-sanitised
