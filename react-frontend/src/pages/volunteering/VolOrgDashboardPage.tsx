@@ -178,6 +178,17 @@ export default function VolOrgDashboardPage() {
     }
   }, [tab, setTab]);
 
+  // A tab this role cannot see (a forwarded ?tab=wellbeing or ?tab=safeguarding
+  // link opened by a plain team member) falls back to the overview instead of
+  // leaving an empty panel with no tab selected (21 Oct 2026).
+  const isRestrictedTab = tab === 'safeguarding' || tab === 'wellbeing';
+  useEffect(() => {
+    if (org && !canSeeSafeguarding && isRestrictedTab) {
+      setTab('overview');
+    }
+  }, [org, canSeeSafeguarding, isRestrictedTab, setTab]);
+  const shownTab: OrgDashTab = !canSeeSafeguarding && isRestrictedTab ? 'overview' : tab;
+
   // `silent` refreshes (triggered by child tabs after a mutation) must NOT flip
   // the full-page loading/error state, otherwise the whole page — including the
   // active tab — unmounts and remounts, losing the tab's local state.
@@ -387,7 +398,7 @@ export default function VolOrgDashboardPage() {
       <div className="flex flex-wrap gap-2">
         {TAB_DEFS.filter((td) => (td.key !== 'safeguarding' && td.key !== 'wellbeing') || canSeeSafeguarding).map((td) => {
           const Icon = td.icon;
-          const isActive = tab === td.key;
+          const isActive = shownTab === td.key;
           return (
             <Button
               key={td.key}
@@ -397,7 +408,9 @@ export default function VolOrgDashboardPage() {
                 ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white'
                 : 'bg-theme-elevated text-theme-muted'
               }
-              startContent={<Icon className="w-4 h-4" />}
+              startContent={<Icon className="w-4 h-4" aria-hidden="true" />}
+              // The selected tab is not shown by colour alone (21 Oct 2026).
+              aria-pressed={isActive}
               onPress={() => setTab(td.key)}
             >
               {tabLabels[td.key]}
@@ -408,16 +421,16 @@ export default function VolOrgDashboardPage() {
 
       {/* Tab Content */}
       <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-16"><Spinner size="lg" /></div>}>
-        {tab === 'overview' && (
+        {shownTab === 'overview' && (
           <OrgOverviewTab orgId={orgId} onTabChange={(t) => setTab(t as OrgDashTab)} />
         )}
-        {tab === 'opportunities' && (
+        {shownTab === 'opportunities' && (
           <OrgOpportunitiesTab orgId={orgId} />
         )}
-        {tab === 'applications' && (
+        {shownTab === 'applications' && (
           <OrgApplicationsTab orgId={orgId} />
         )}
-        {tab === 'hours-review' && (
+        {shownTab === 'hours-review' && (
           <OrgHoursReviewTab
             orgId={orgId}
             balance={org.balance}
@@ -425,30 +438,30 @@ export default function VolOrgDashboardPage() {
             onBalanceChange={refreshOrg}
           />
         )}
-        {tab === 'expenses' && (
+        {shownTab === 'expenses' && (
           <OrgExpensesTab orgId={orgId} />
         )}
-        {tab === 'fundraising' && (
+        {shownTab === 'fundraising' && (
           <OrgFundraisingTab orgId={orgId} />
         )}
-        {tab === 'volunteers' && (
+        {shownTab === 'volunteers' && (
           <OrgVolunteersTab orgId={orgId} />
         )}
-        {tab === 'team' && (
+        {shownTab === 'team' && (
           <OrgTeamTab orgId={orgId} />
         )}
-        {tab === 'qualifications' && (
+        {shownTab === 'qualifications' && (
           <OrgQualificationsTab orgId={orgId} />
         )}
-        {tab === 'safeguarding' && canSeeSafeguarding && (
+        {shownTab === 'safeguarding' && canSeeSafeguarding && (
           <OrgSafeguardingPage embedded orgId={orgId} />
         )}
         {/* Who of our volunteers asked for someone to get in touch (20 Oct 2026); same
             audience as safeguarding — owners and admins, never a plain team member. */}
-        {tab === 'wellbeing' && canSeeSafeguarding && (
+        {shownTab === 'wellbeing' && canSeeSafeguarding && (
           <OrgWellbeingTab orgId={orgId} />
         )}
-        {tab === 'wallet' && (
+        {shownTab === 'wallet' && (
           <OrgWalletTab
             orgId={orgId}
             balance={org.balance}
@@ -456,7 +469,7 @@ export default function VolOrgDashboardPage() {
             onBalanceChange={refreshOrg}
           />
         )}
-        {tab === 'settings' && (
+        {shownTab === 'settings' && (
           <OrgSettingsTab
             orgId={orgId}
             orgData={{

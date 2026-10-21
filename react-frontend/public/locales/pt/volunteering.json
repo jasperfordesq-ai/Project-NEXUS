@@ -1152,14 +1152,20 @@
     "outcome_told_one": "Avisámos {{count}} outra pessoa da sua comunidade. Alguém entrará em contacto consigo.",
     "outcome_told_other": "Avisámos outras {{count}} pessoas da sua comunidade. Alguém entrará em contacto consigo.",
     "outcome_told_self_only": "É a única pessoa da equipa da sua comunidade, por isso mais ninguém foi avisado.",
-    "outcome_already_told": "A sua comunidade já foi avisada hoje ({{time}}). Este registo foi adicionado ao que ela pode ver.",
+    "outcome_already_told_today": "A sua comunidade já foi avisada hoje, mais cedo, às {{time}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcome_already_told_yesterday": "A sua comunidade já foi avisada ontem, às {{time}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcome_already_told_on": "A sua comunidade já foi avisada em {{date}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcome_already_told_recently": "A sua comunidade já foi avisada nas últimas 24 horas. Este registo foi adicionado ao que ela pode ver.",
     "outcome_nobody": "Ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo.",
     "outcome_private": "Só você pode ver este registo.",
     "outcome_what_next": "O que acontece a seguir",
     "outcome_what_next_desc": "Alguém que foi avisado lerá o seu registo e entrará em contacto consigo.",
     "outcome_dismiss": "Fechar",
     "support_heading": "Se precisa de apoio agora",
-    "last_told": "A equipa da sua comunidade foi avisada pela última vez em {{date}}."
+    "last_told": "A equipa da sua comunidade foi avisada pela última vez em {{date}}.",
+    "switched_off_title": "Os registos de bem-estar estão desligados",
+    "switched_off_desc": "A sua comunidade desligou os registos de bem-estar. Se precisar de apoio, contacte a equipa da sua comunidade.",
+    "rate_limited": "Fez isto várias vezes num curto espaço de tempo. Aguarde um momento e tente novamente."
   },
   "check_in": {
     "title": "Check-in de turno",

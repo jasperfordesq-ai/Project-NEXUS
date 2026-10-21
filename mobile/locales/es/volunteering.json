@@ -397,7 +397,8 @@
       "hours": "Revisión de horas",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Bienestar"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -470,7 +471,35 @@
     "notYoursHint": "Las candidaturas, las horas y el monedero solo los ven las personas que la dirigen.",
     "backToVolunteering": "Volver a voluntariado",
     "declinedHeading": "No aprobada",
-    "declinedDescription": "Este registro no se aprobó, así que no puedes publicar oportunidades para él. Habla con la persona que coordina tu comunidad si crees que es un error."
+    "declinedDescription": "Este registro no se aprobó, así que no puedes publicar oportunidades para él. Habla con la persona que coordina tu comunidad si crees que es un error.",
+    "wellbeing": {
+      "intro": "Voluntarios de tu organización que dijeron en un registro de bienestar que se sienten mal o están pasándolo mal y pidieron que alguien se pusiera en contacto. Se te avisó por alerta y correo en su momento; esta es la lista completa. Ves su nombre y cómo se sienten, nunca su nota.",
+      "forbidden": "No tienes acceso a las alertas de bienestar de esta organización.",
+      "switchedOff": "Esta comunidad ha desactivado los registros de bienestar.",
+      "rateLimited": "Demasiadas solicitudes en poco tiempo. Espera un momento y vuelve a intentarlo.",
+      "loadError": "No se pudieron cargar las alertas de bienestar. Inténtalo de nuevo.",
+      "empty": "Nadie ha pedido ayuda",
+      "emptyDesc": "Ninguno de tus voluntarios ha compartido un registro bajo en los últimos 90 días.",
+      "summary": "{{count}} voluntarios esperan que alguien se ponga en contacto",
+      "summary_one": "{{count}} voluntario espera que alguien se ponga en contacto",
+      "summary_other": "{{count}} voluntarios esperan que alguien se ponga en contacto",
+      "moodStruggling": "Dice que lo está pasando mal",
+      "moodLow": "Dice que se siente mal",
+      "status": {
+        "active": "Nadie ha respondido todavía",
+        "acknowledged": "El equipo de la comunidad se está ocupando",
+        "resolved": "Resuelto",
+        "dismissed": "Cerrado"
+      },
+      "checkedIn": "Registro del {{date}}",
+      "toldOn": "Se te avisó el {{date}}",
+      "notTold": "Todavía no se te ha avisado",
+      "whatToDo": "Ponte en contacto con esta persona pronto. Si te preocupa su seguridad ahora mismo, llama a los servicios de emergencia y después avisa al equipo de tu comunidad.",
+      "closedHelp": "El equipo de la comunidad ha cerrado esto. Aún puedes ponerte en contacto.",
+      "message": "Enviar mensaje a {{name}}",
+      "viewProfile": "Ver perfil",
+      "confidentiality": "Trátalo como confidencial. Compártelo solo con quien necesite saberlo y nunca publiques nada al respecto."
+    }
   },
   "swaps": {
     "heading": "Intercambios de turnos",

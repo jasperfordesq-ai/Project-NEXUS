@@ -895,8 +895,8 @@
     "mood_label_2": "Mal",
     "bell_team": "{{name}} indicó en su registro de bienestar: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
     "bell_org": "{{name}}, que hace voluntariado con {{organisation}}, indicó: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
-    "subject": "{{name}}: «Me siento {{mood}}»",
-    "preview": "{{name}} indicó: «Me siento {{mood}}» y quiere que alguien se ponga en contacto.",
+    "subject": "{{name}} quiere que alguien se ponga en contacto",
+    "preview": "{{name}} pidió que alguien se pusiera en contacto tras su registro de bienestar.",
     "team_title": "Una persona voluntaria necesita apoyo",
     "team_body": "<strong>{{name}}</strong> indicó en su registro de bienestar: «Me siento {{mood}}» y pide que alguien se ponga en contacto.",
     "team_note_hint": "Si escribió una nota, puede leerla en la página de alertas de bienestar después de iniciar sesión. No se incluye en este correo para proteger su privacidad.",
@@ -913,6 +913,7 @@
     "bell_self_told": "Pediste que alguien se pusiera en contacto contigo tras decir que estás {{mood}}. Hemos avisado a {{count}} personas.",
     "bell_contact": "{{name}} dijo en su registro de bienestar que está {{mood}} y le gustaría que alguien se pusiera en contacto. Eres una de las personas de contacto de bienestar de esta comunidad.",
     "bell_parent": "{{name}}, que colabora como voluntario con {{community}}, dijo que está {{mood}} y le gustaría que alguien se pusiera en contacto.",
+    "bell_scan": "La revisión nocturna de bienestar ha detectado en el voluntariado reciente de {{name}} una posible señal de agotamiento. No ha pedido que se le contacte. Revisa la alerta.",
     "self_subject": "Tu registro de bienestar: a quién se ha avisado",
     "self_title": "Tu registro de bienestar",
     "self_body_alone": "Dijiste en tu registro de bienestar que estás {{mood}} y pediste que alguien se pusiera en contacto contigo. Todavía no se ha podido avisar a nadie más de tu comunidad: no hay otro personal, personas de contacto de bienestar ni contactos de organizaciones a quienes avisar. Este correo es tu registro de que la solicitud se hizo.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> dijo en su registro de bienestar que está {{mood}} y pidió que alguien se pusiera en contacto. Eres una de las personas de contacto de bienestar de {{community}}.",
     "parent_body": "<strong>{{name}}</strong>, que colabora como voluntario con {{community}}, dijo en su registro de bienestar que está {{mood}} y pidió que alguien se pusiera en contacto. Se te avisa como personal de la comunidad superior a {{community}}.",
     "community_contact_intro": "Esta es la dirección de contacto de {{community}}. No se ha podido avisar a nadie del equipo de la comunidad, por lo que este mensaje se ha enviado aquí.",
+    "community_contact_footer": "Recibes este correo porque esta es la dirección de contacto de la comunidad {{community}}.",
     "info_card_community": "Comunidad"
   }
 }

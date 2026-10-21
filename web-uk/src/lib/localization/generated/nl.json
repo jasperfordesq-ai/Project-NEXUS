@@ -10790,13 +10790,18 @@
                 "recent_shared": "Gedeeld met het team van je gemeenschap",
                 "load_error": "We konden je welzijnsoverzicht niet laden. Probeer het opnieuw.",
                 "checkin_saved_shared_count": "{1} Bedankt dat je het ons hebt verteld. We hebben :count andere persoon uit je gemeenschap geïnformeerd.|[2,*] Bedankt dat je het ons hebt verteld. We hebben :count andere mensen uit je gemeenschap geïnformeerd.",
-                "checkin_saved_already": "Je check-in is opgeslagen. Je gemeenschap is vandaag al geïnformeerd en deze check-in is toegevoegd aan wat zij kunnen zien.",
+                "checkin_saved_already": "Je check-in is opgeslagen. Je gemeenschap is in de afgelopen 24 uur al geïnformeerd en deze check-in is toegevoegd aan wat zij kunnen zien.",
                 "checkin_saved_nobody": "Je check-in is opgeslagen, maar niemand kon nog worden geïnformeerd. We proberen het opnieuw bij je volgende check-in. Heb je nu ondersteuning nodig, gebruik dan de links op deze pagina.",
                 "support_title": "Heb je nu ondersteuning nodig",
                 "last_told": "Het team van je gemeenschap is voor het laatst geïnformeerd op :date.",
                 "checkin_saved_self": "Je check-in is opgeslagen. Je bent de enige in het team van je gemeenschap, dus niemand anders is geïnformeerd. Heb je nu ondersteuning nodig, gebruik dan de links op deze pagina.",
                 "assessment_unavailable": "Je welzijnsbeoordeling is op dit moment niet beschikbaar, dus er wordt geen score of risico op burn-out getoond. Je kunt hieronder nog steeds een check-in opslaan.",
-                "score_no_data": "Nog niet genoeg activiteit om je welzijn een score te geven. Je score en je risico op burn-out verschijnen zodra je vrijwilligerswerk hebt gedaan of een check-in hebt opgeslagen."
+                "score_no_data": "Nog niet genoeg activiteit om je welzijn een score te geven. Je score en je risico op burn-out verschijnen zodra je vrijwilligerswerk hebt gedaan of een check-in hebt opgeslagen.",
+                "checkin_saved_already_at": "Je check-in is opgeslagen. Je gemeenschap is al geïnformeerd op :date en deze check-in is toegevoegd aan wat zij kunnen zien.",
+                "checkin_disabled": "Je check-in is niet opgeslagen, omdat deze gemeenschap welzijnscheck-ins heeft uitgeschakeld.",
+                "checkin_rate_limited": "Je check-in is niet opgeslagen, omdat er in korte tijd meerdere zijn verstuurd. Wacht even en sla hem dan opnieuw op.",
+                "load_rate_limited": "Je welzijnspagina is in korte tijd heel vaak geopend. Wacht even en laad de pagina dan opnieuw.",
+                "switched_off": "Deze gemeenschap heeft welzijnscheck-ins uitgeschakeld. Er is hier dus niets te tonen en er kan geen check-in worden opgeslagen. Heb je steun nodig, neem dan contact op met het team van je gemeenschap."
             },
             "recommended": {
                 "title": "Aanbevolen voor jou",

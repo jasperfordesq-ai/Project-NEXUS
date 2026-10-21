@@ -553,6 +553,40 @@ export function getOrganisationVolunteers(id: number): Promise<OrganisationVolun
   });
 }
 
+/**
+ * One of the organisation's volunteers who said they are low or struggling and asked for
+ * someone to get in touch (organisation dashboard › Wellbeing, 20 Oct 2026). Name and mood
+ * only — the note stays with the community's safeguarding staff. Times are ISO-8601 with
+ * an offset, or the legacy UTC `Y-m-d H:i:s` from an older server: read them through
+ * `lib/utils/wellbeingTime.ts`.
+ */
+export interface OrganisationWellbeingItem {
+  alert_id: number;
+  volunteer: { id: number; name: string; avatar_url?: string | null };
+  mood: number | null;
+  checkin_at: string | null;
+  status: 'active' | 'acknowledged' | 'resolved' | 'dismissed' | string;
+  told_at: string | null;
+  raised_at?: string;
+  updated_at?: string;
+}
+
+export interface OrganisationWellbeingResponse {
+  data: {
+    organisation: { id: number; name: string };
+    items: OrganisationWellbeingItem[];
+  };
+}
+
+/**
+ * GET /v2/volunteering/organisations/{id}/wellbeing — owner, admins and safeguarding leads
+ * only; anyone else gets 403 `NOT_ORGANISATION_CONTACT`, and a community with wellbeing
+ * switched off answers 403 `FEATURE_DISABLED`.
+ */
+export function getOrganisationWellbeing(id: number): Promise<OrganisationWellbeingResponse> {
+  return api.get<OrganisationWellbeingResponse>(`${API_V2}/volunteering/organisations/${id}/wellbeing`);
+}
+
 export function getOrganisationWalletTransactions(id: number): Promise<OrganisationWalletTransactionsResponse> {
   return api.get<OrganisationWalletTransactionsResponse>(`${API_V2}/volunteering/organisations/${id}/wallet/transactions`, {
     per_page: '20',

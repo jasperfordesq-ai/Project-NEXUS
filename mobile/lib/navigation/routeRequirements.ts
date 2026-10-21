@@ -162,6 +162,9 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
   'volunteering-my-waitlists': F('volunteering'),
   'volunteer-shift-code': F('volunteering'),
   'volunteering-my-wellbeing': F('volunteering'),
+  // Staff hand-off for a wellbeing alert push (21 Oct 2026): the alert exists only when
+  // volunteering is on, and the page it points to is the website's.
+  'volunteering-wellbeing-staff-alert': F('volunteering'),
   'volunteering-my-alerts': F('volunteering'),
   'volunteering-my-qualifications': F('volunteering'),
   'volunteer-incident-report': F('volunteering'),

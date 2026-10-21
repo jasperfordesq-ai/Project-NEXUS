@@ -171,11 +171,12 @@ final class WellbeingSettingsService
                 return ['field' => 'support_links', 'reason' => 'too_many'];
             }
             $links = [];
-            foreach ($raw as $row) {
+            foreach (array_values($raw) as $index => $row) {
                 $label = is_array($row) && is_string($row['label'] ?? null) ? trim(strip_tags($row['label'])) : '';
                 $url = is_array($row) && is_string($row['url'] ?? null) ? trim($row['url']) : '';
                 if ($label === '' || mb_strlen($label) > self::MAX_LABEL || !self::isSafeLink($url)) {
-                    return ['field' => 'support_links', 'reason' => 'invalid'];
+                    // Names the row, so the settings card can mark the link that is wrong.
+                    return ['field' => 'support_links.' . $index, 'reason' => 'invalid'];
                 }
                 $links[] = ['label' => $label, 'url' => $url];
             }

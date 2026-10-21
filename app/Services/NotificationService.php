@@ -33,7 +33,8 @@ class NotificationService
         ],
         'listings'     => ['listing', 'listing_interest', 'listing_match', 'listing_expiry', 'listing_saved', 'hot_match', 'mutual_match'],
         'jobs'         => ['job_application', 'job_application_status'],
-        'safeguarding' => ['safeguarding_flag', 'safeguarding_assignment', 'broker_review', 'safeguarding_incident', 'social_report_created'],
+        // volunteer_wellbeing: someone asked for support (21 Oct 2026); it was "other", with a grey bell.
+        'safeguarding' => ['safeguarding_flag', 'safeguarding_assignment', 'broker_review', 'safeguarding_incident', 'social_report_created', 'volunteer_wellbeing'],
         'system'       => [
             'system', 'announcement', 'welcome', 'badge', 'achievement', 'level_up',
             'new_user_registered', 'support_action_pending', 'support_action_confirmed',

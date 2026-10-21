@@ -21,6 +21,7 @@ const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const { readDate, splitDate, dateParts } = require('../lib/date-input');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { formatApiDateTime, parseApiInstant } = require('../lib/api-instant');
 const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
@@ -516,7 +517,10 @@ function hoursStatus(status, t = null) {
   return null;
 }
 
-function wellbeingStatus(status, t = null, told = null, tc = null) {
+// `toldAt` is the API's told_at for an "already told" outcome, carried across the
+// redirect. It is shown as a date and time in UTC (21 Oct 2026): the window is 24
+// hours, so "already told today (16:05)" could mean yesterday afternoon.
+function wellbeingStatus(status, t = null, told = null, tc = null, toldAt = null) {
   // 20 Oct 2026: the member is told what actually happened. 'nobody' is a
   // warning, not an error: the check-in WAS saved; nobody could be reached yet.
   if (status === 'checkin-saved-nobody') {
@@ -539,11 +543,20 @@ function wellbeingStatus(status, t = null, told = null, tc = null) {
     };
   }
   if (status === 'checkin-saved-already') {
+    const toldAtLabel = wellbeingDateTimeLabel(toldAt);
+    if (toldAtLabel) {
+      return {
+        type: 'success',
+        message: t
+          ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_already_at', { date: toldAtLabel })
+          : `Your check-in has been saved. Your community was already told on ${toldAtLabel}.`
+      };
+    }
     return {
       type: 'success',
       message: t
         ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_already')
-        : 'Your check-in has been saved. Your community was already told today.'
+        : 'Your check-in has been saved. Your community was already told in the last 24 hours.'
     };
   }
   if (status === 'checkin-saved') {
@@ -572,7 +585,28 @@ function wellbeingStatus(status, t = null, told = null, tc = null) {
   if (status === 'mood-invalid') {
     return {
       type: 'error',
+      // The error summary links to the first radio, and the radios carry the error
+      // too (GOV.UK error pattern).
+      field: 'mood',
       message: t ? t('govuk_alpha_volunteering.wellbeing.mood_invalid') : 'Choose a mood between 1 and 5.'
+    };
+  }
+  // 21 Oct 2026: two refusals the server will never accept on a retry, each with its
+  // own answer instead of the generic "please try again".
+  if (status === 'checkin-disabled') {
+    return {
+      type: 'error',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_disabled')
+        : 'Your check-in was not saved, because this community has switched wellbeing check-ins off.'
+    };
+  }
+  if (status === 'checkin-rate-limited') {
+    return {
+      type: 'error',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_rate_limited')
+        : 'Your check-in was not saved, because several were sent in a short time. Wait a moment, then save it again.'
     };
   }
   if (status === 'checkin-failed') {
@@ -998,16 +1032,35 @@ function riskPresentation(value, t = null) {
   };
 }
 
+// 🔴 21 Oct 2026 (P1): the API sends each warning as a sentence it has already
+// translated into the member's language ("Your volunteering frequency has decreased
+// compared to last month."). This used to accept only the four tokens below, so
+// every real warning became '' and was dropped, and the page then said "No
+// wellbeing warnings right now. Keep up the good balance." to a member the API had
+// just warned. The sentence is now shown as sent; the token map is only a fallback
+// for an old-style token (a bare string or `{type}`).
+const WARNING_TOKEN_LABELS = Object.freeze({
+  frequency: 'Your shift frequency is declining.',
+  cancellation: 'Your cancellation rate is higher than usual.',
+  hours: 'Your logged hours are dropping significantly.',
+  engagement: 'It has been a while since your last activity.'
+});
+
 function warningLabel(value, t = null) {
-  const text = trimmed(value?.message ?? value?.type ?? value);
-  const labels = {
-    frequency: 'Your shift frequency is declining.',
-    cancellation: 'Your cancellation rate is higher than usual.',
-    hours: 'Your logged hours are dropping significantly.',
-    engagement: 'It has been a while since your last activity.'
-  };
-  if (!Object.hasOwn(labels, text)) return '';
-  return t ? t(`govuk_alpha_volunteering.wellbeing.warning_${text}`) : labels[text];
+  const tokenLabel = (token) => (Object.hasOwn(WARNING_TOKEN_LABELS, token)
+    ? (t ? t(`govuk_alpha_volunteering.wellbeing.warning_${token}`) : WARNING_TOKEN_LABELS[token])
+    : '');
+
+  if (typeof value === 'string') {
+    const text = trimmed(value, 300);
+    return tokenLabel(text) || text;
+  }
+  if (value && typeof value === 'object') {
+    const message = typeof value.message === 'string' ? trimmed(value.message, 300) : '';
+    if (message) return tokenLabel(message) || message;
+    return typeof value.type === 'string' ? tokenLabel(trimmed(value.type)) : '';
+  }
+  return '';
 }
 
 function moodLabel(value, t = null) {
@@ -1045,12 +1098,21 @@ function bladeDateTimeLabel(value) {
   }).format(new Date(Date.UTC(year, monthIndex, day, hours, minutes)));
 }
 
+// Wellbeing times (21 Oct 2026). bladeDateTimeLabel above copies the wall-clock
+// digits out of the string and ignores any offset, so `2026-10-21T15:05:00+01:00`
+// would print 15:05 for a 14:05 UTC moment. Wellbeing times are moments: the bare
+// database form is read as UTC, an ISO time by its offset, and both are shown in
+// UTC with the zone named ("21 October 2026 at 14:05 UTC").
+function wellbeingDateTimeLabel(value) {
+  return formatApiDateTime(value, getRequestIntlLocale());
+}
+
 function normalizeCheckin(row, t = null) {
   const checkin = row && typeof row === 'object' ? row : {};
   const mood = Number(checkin.mood);
   return {
     id: positiveInteger(checkin.id),
-    createdAtLabel: bladeDateTimeLabel(checkin.created_at ?? checkin.createdAt),
+    createdAtLabel: wellbeingDateTimeLabel(checkin.created_at ?? checkin.createdAt),
     moodLabel: moodLabel(mood, t),
     note: trimmed(checkin.note),
     // True only when the check-in was passed on to the community's team.
@@ -1083,7 +1145,10 @@ function normalizeWellbeingDashboard(result, t = null, { loaded = true } = {}) {
   return {
     loaded,
     scoreBasis,
-    // The page shows the score, risk tag, warnings and last-told line only when true.
+    // The page shows the score, risk tag and warnings only when true. The last-told
+    // line is shown whenever the API was read (21 Oct 2026): it is a fact about who
+    // was told, not part of the score, and a volunteer whose team was told fifteen
+    // days ago still needs to see it once there is nothing left to score.
     hasScore,
     score: hasScore ? score : null,
     risk: hasScore ? riskPresentation(data.burnout_risk ?? data.burnoutRisk, t) : null,
@@ -1102,8 +1167,8 @@ function normalizeWellbeingDashboard(result, t = null, { loaded = true } = {}) {
     support: normalizeWellbeingSupport(data.support),
     lastToldLabel: (() => {
       const at = loaded ? trimmed(data.last_team_notified_at ?? data.lastTeamNotifiedAt) : '';
-      if (!at) return null;
-      const date = bladeDateTimeLabel(at);
+      const date = at ? wellbeingDateTimeLabel(at) : '';
+      if (!date) return null;
       return t ? t('govuk_alpha_volunteering.wellbeing.last_told', { date }) : `Your community's team was last told on ${date}.`;
     })()
   };
@@ -3276,11 +3341,23 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
   // failed load must not fall back to the 100/100, Low-risk defaults.
   let wellbeing = normalizeWellbeingDashboard({}, res.locals.t, { loaded: false });
   let loadError = null;
+  // 21 Oct 2026: the community has switched wellbeing check-ins off (403
+  // FEATURE_DISABLED). That is a calm, settled state, not a failure to retry: no
+  // load error, and no form, because the API refuses every check-in.
+  let switchedOff = false;
   try {
     wellbeing = normalizeWellbeingDashboard(await callApi(token, 'GET', '/wellbeing'), res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = res.locals.t('govuk_alpha_volunteering.wellbeing.load_error');
+    if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'FEATURE_DISABLED') {
+      switchedOff = true;
+    } else if (error instanceof ApiError && error.status === 429) {
+      // The rate limit answers in a different envelope ({success, error, code}); the
+      // status alone is enough to say "wait a moment".
+      loadError = res.locals.t('govuk_alpha_volunteering.wellbeing.load_rate_limited');
+    } else {
+      loadError = res.locals.t('govuk_alpha_volunteering.wellbeing.load_error');
+    }
   }
 
   return res.render('volunteering/wellbeing', {
@@ -3288,8 +3365,15 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     wellbeing,
     loadError,
+    switchedOff,
     checkinForm: consumeFormReplay(req, 'volunteering', 'wellbeing'),
-    status: wellbeingStatus(trimmed(req.query.status), res.locals.t, trimmed(req.query.told), res.locals.tc),
+    status: wellbeingStatus(
+      trimmed(req.query.status),
+      res.locals.t,
+      trimmed(req.query.told),
+      res.locals.tc,
+      parseApiInstant(trimmed(req.query.told_at, 40))
+    ),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3924,7 +4008,15 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
       const row = saved && typeof saved === 'object' ? saved : {};
       // The API says what happened (20 Oct 2026); an older API only says team_notified.
       if (row.outcome === 'nobody_available') return '/volunteering/wellbeing?status=checkin-saved-nobody';
-      if (row.outcome === 'already_told_today') return '/volunteering/wellbeing?status=checkin-saved-already';
+      if (row.outcome === 'already_told_today') {
+        // Carry the moment the team was told, so the page can say WHEN (21 Oct
+        // 2026); "today" was wrong for anything up to 24 hours old. Only a time the
+        // page can read is passed on.
+        const toldAt = parseApiInstant(row.told_at);
+        return toldAt
+          ? `/volunteering/wellbeing?status=checkin-saved-already&told_at=${encodeURIComponent(trimmed(row.told_at, 40))}`
+          : '/volunteering/wellbeing?status=checkin-saved-already';
+      }
       // The volunteer is staff and the only person on the team: the only person
       // told was themself (21 Oct 2026). told_count counts OTHER people, so it is 0.
       if (row.outcome === 'told_self_only') return '/volunteering/wellbeing?status=checkin-saved-self';
@@ -3934,7 +4026,18 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
       }
       return '/volunteering/wellbeing?status=checkin-saved';
     },
-    '/volunteering/wellbeing?status=checkin-failed'
+    // 21 Oct 2026: a check-in the server will never accept is not "please try
+    // again". Wellbeing switched off answers 403 FEATURE_DISABLED; the rate limit
+    // answers 429 in its own envelope ({success, error, code}).
+    (error) => {
+      if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'FEATURE_DISABLED') {
+        return '/volunteering/wellbeing?status=checkin-disabled';
+      }
+      if (error instanceof ApiError && error.status === 429) {
+        return '/volunteering/wellbeing?status=checkin-rate-limited';
+      }
+      return '/volunteering/wellbeing?status=checkin-failed';
+    }
   );
 }));
 

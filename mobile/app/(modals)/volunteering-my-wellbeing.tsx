@@ -11,10 +11,19 @@
  *
  * The check-in form is usable even when the summary fails to load: the summary is a
  * courtesy, the check-in is the point.
+ *
+ * Deep audit 21 Oct 2026:
+ *  - finding 5 — what happened after a check-in is a card above the form that stays until
+ *    the member dismisses it. "Nobody could be told" used to live in a four-second toast.
+ *  - findings 6 and 13 — every time is read through `lib/utils/wellbeingTime.ts` (ISO with
+ *    an offset, or the legacy UTC `Y-m-d H:i:s`), rest days as local calendar dates, and
+ *    "already told" names today / yesterday / the date from the member's own calendar.
+ *  - a community that switched wellbeing off answers 403 FEATURE_DISABLED: the screen shows
+ *    its "not available" state; a 429 asks the member to wait a moment.
  */
 
 import { useRef, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, Pressable, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, type Href } from 'expo-router';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
@@ -33,6 +42,7 @@ import { Ionicons } from '@/components/ui/Icon';
 import { ListSkeleton } from '@/components/ui/Skeleton';
 import { useAppToast } from '@/components/ui/AppToast';
 import { withRouteGate } from '@/components/withRouteGate';
+import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { openExternalUrl } from '@/lib/utils/openExternalUrl';
 import { buildWebUrl } from '@/lib/utils/webUrl';
@@ -42,6 +52,7 @@ import {
   submitWellbeingCheckin,
   volunteerSwitchOn,
   WELLBEING_MOODS,
+  type WellbeingCheckinOutcome,
   type WellbeingMood,
   type WellbeingSupport,
 } from '@/lib/api/volunteeringVolunteer';
@@ -51,7 +62,13 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePrimaryColor, useTenant } from '@/lib/hooks/useTenant';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
-import { dateLocale } from '@/lib/utils/dateLocale';
+import {
+  calendarDayRelativeTo,
+  formatCalendarDate,
+  formatWellbeingClock,
+  formatWellbeingDateTime,
+  parseWellbeingTime,
+} from '@/lib/utils/wellbeingTime';
 
 const VOLUNTEERING_HUB = '/(modals)/volunteering' as Href;
 const NOTE_MAX = 500;
@@ -60,13 +77,53 @@ const MOOD_KEYS: Record<WellbeingMood, 'struggling' | 'low' | 'okay' | 'good' | 
 };
 type MoodValue = '1' | '2' | '3' | '4' | '5';
 
-function formatDate(value?: string | null, withTime = false) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat(dateLocale(), {
-    day: 'numeric', month: 'short', ...(withTime ? { hour: '2-digit', minute: '2-digit' } : { year: 'numeric' }),
-  }).format(date);
+/** Outcomes that are not good news: shown in the warning colour, beside the support box. */
+const WARNING_OUTCOMES: ReadonlySet<WellbeingCheckinOutcome> = new Set(['nobody_available', 'told_self_only']);
+
+interface OutcomeNotice {
+  outcome: WellbeingCheckinOutcome;
+  toldCount: number;
+  toldAt: string | null;
+}
+
+/** Codes the API sends that have their own handling here (contract 2-3, 21 Oct 2026). */
+function isFeatureDisabled(code: string | null | undefined): boolean {
+  return code === 'FEATURE_DISABLED';
+}
+
+function isRateLimited(status: number | null | undefined, code: string | null | undefined): boolean {
+  return status === 429 || code === 'RATE_LIMIT_EXCEEDED';
+}
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+/**
+ * What happened, in words. `already_told_today` comes back for a telling up to 24 hours
+ * old, so "today" is only said when it was today on the member's own calendar.
+ */
+function outcomeText(notice: OutcomeNotice, t: Translate): string {
+  switch (notice.outcome) {
+    case 'told':
+      return notice.toldCount > 0
+        ? t('volunteeringVolunteer:wellbeing.outcomeTold', { count: notice.toldCount })
+        : t('volunteeringVolunteer:wellbeing.teamNotified');
+    case 'told_self_only':
+      return t('volunteeringVolunteer:wellbeing.outcomeSelfOnly');
+    case 'already_told_today': {
+      const toldAt = parseWellbeingTime(notice.toldAt);
+      if (!toldAt) return t('volunteeringVolunteer:wellbeing.outcomeAlreadyTold');
+      const day = calendarDayRelativeTo(toldAt);
+      if (day === 'today') return t('volunteeringVolunteer:wellbeing.outcomeAlreadyToldToday', { time: formatWellbeingClock(toldAt) });
+      if (day === 'yesterday') return t('volunteeringVolunteer:wellbeing.outcomeAlreadyToldYesterday', { time: formatWellbeingClock(toldAt) });
+      return t('volunteeringVolunteer:wellbeing.outcomeAlreadyToldOn', { date: formatWellbeingDateTime(notice.toldAt) ?? '' });
+    }
+    case 'nobody_available':
+      return t('volunteeringVolunteer:wellbeing.outcomeNobody');
+    case 'private':
+      return t('volunteeringVolunteer:wellbeing.outcomePrivate');
+    default:
+      return t('volunteeringVolunteer:wellbeing.recorded');
+  }
 }
 
 /** The website's bands: ≥80 excellent, ≥70 good, ≥50 fair, ≥30 needs attention, else critical. */
@@ -149,6 +206,45 @@ function SupportCard({ support, tenantSlug }: { support: WellbeingSupport; tenan
   );
 }
 
+/**
+ * The outcome of the last check-in, kept on screen until the member dismisses it (deep
+ * audit finding 5). Announced once when it appears; the support box follows it for the
+ * outcomes where nobody else was reached.
+ */
+function OutcomeCard({ notice, text, onDismiss }: { notice: OutcomeNotice; text: string; onDismiss: () => void }) {
+  const { t } = useTranslation(['volunteeringVolunteer']);
+  const theme = useTheme();
+  const warning = WARNING_OUTCOMES.has(notice.outcome);
+  const tone = warning ? theme.warning : theme.success;
+  return (
+    <HeroCard
+      className="rounded-panel p-0"
+      style={{ borderWidth: 1, borderColor: withAlpha(tone, 0.4) }}
+      testID="wellbeing-outcome"
+    >
+      <HeroCard.Body className="flex-row items-start gap-3 p-4">
+        <Ionicons name={warning ? 'alert-circle-outline' : 'checkmark-circle-outline'} size={20} color={tone} />
+        <View className="min-w-0 flex-1 gap-1">
+          <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
+            {t('volunteeringVolunteer:wellbeing.recordedTitle')}
+          </Text>
+          <Text className="text-sm leading-5" style={{ color: theme.text }} testID="wellbeing-outcome-text">{text}</Text>
+        </View>
+        <HeroButton
+          isIconOnly
+          size="sm"
+          variant="ghost"
+          onPress={onDismiss}
+          accessibilityLabel={t('volunteeringVolunteer:wellbeing.outcomeDismiss')}
+          testID="wellbeing-outcome-dismiss"
+        >
+          <Ionicons name="close-outline" size={18} color={theme.textSecondary} />
+        </HeroButton>
+      </HeroCard.Body>
+    </HeroCard>
+  );
+}
+
 function MyWellbeingContent() {
   const { t } = useTranslation(['volunteeringVolunteer', 'common']);
   const { tenant } = useTenant();
@@ -156,9 +252,13 @@ function MyWellbeingContent() {
   const primary = usePrimaryColor();
   const { show: showToast } = useAppToast();
   const switchedOn = volunteerSwitchOn(tenant?.volunteering_config, 'tab_wellbeing');
+  // The server said the community switched wellbeing off after this screen opened.
+  const [serverSwitchedOff, setServerSwitchedOff] = useState(false);
 
-  const summaryApi = useApi(() => getWellbeing(), [], { enabled: switchedOn });
+  const summaryApi = useApi(() => getWellbeing(), [], { enabled: switchedOn && !serverSwitchedOff });
   const summary = summaryApi.data?.data ?? null;
+  const [notice, setNotice] = useState<OutcomeNotice | null>(null);
+  const checkinHeadingRef = useRef<Text>(null);
 
   const [mood, setMood] = useState<MoodValue>('3');
   const [note, setNote] = useState('');
@@ -186,31 +286,42 @@ function MyWellbeingContent() {
       // the only member of the team" (21 Oct 2026) are warnings, not successes: the check-in
       // was saved, nobody else was reached. `told_count` counts OTHER people, never the
       // volunteer themself.
+      //
+      // Shown as a card above the form that stays until dismissed, never only as a toast
+      // (deep audit finding 5).
       const saved = result.data;
-      const outcome = saved?.outcome ?? (saved?.team_notified ? 'told' : 'not_low');
-      const description = outcome === 'told'
-        ? (saved?.told_count ? t('volunteeringVolunteer:wellbeing.outcomeTold', { count: saved.told_count }) : t('volunteeringVolunteer:wellbeing.teamNotified'))
-        : outcome === 'told_self_only' ? t('volunteeringVolunteer:wellbeing.outcomeSelfOnly')
-        : outcome === 'already_told_today' ? t('volunteeringVolunteer:wellbeing.outcomeAlreadyTold')
-        : outcome === 'nobody_available' ? t('volunteeringVolunteer:wellbeing.outcomeNobody')
-        : outcome === 'private' ? t('volunteeringVolunteer:wellbeing.outcomePrivate')
-        : t('volunteeringVolunteer:wellbeing.recorded');
-      const nobodyElseReached = outcome === 'nobody_available' || outcome === 'told_self_only';
-      showToast({
-        title: t('volunteeringVolunteer:wellbeing.recordedTitle'),
-        description,
-        variant: nobodyElseReached ? 'warning' : 'success',
-      });
+      const outcome: WellbeingCheckinOutcome = saved?.outcome ?? (saved?.team_notified ? 'told' : 'not_low');
+      const next: OutcomeNotice = { outcome, toldCount: saved?.told_count ?? 0, toldAt: saved?.told_at ?? null };
+      setNotice(next);
+      AccessibilityInfo.announceForAccessibility(outcomeText(next, t));
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      showToast({ title: t('common:errors.alertTitle'), description: describeApiError(err, t('volunteeringVolunteer:wellbeing.submitError')), variant: 'danger' });
+      const code = err instanceof ApiResponseError ? err.code : undefined;
+      const status = err instanceof ApiResponseError ? err.status : undefined;
+      if (isFeatureDisabled(code)) {
+        // Calm, not "try again": the community has switched check-ins off.
+        setServerSwitchedOff(true);
+        return;
+      }
+      const description = isRateLimited(status, code)
+        ? t('volunteeringVolunteer:wellbeing.rateLimited')
+        : describeApiError(err, t('volunteeringVolunteer:wellbeing.submitError'));
+      showToast({ title: t('common:errors.alertTitle'), description, variant: 'danger' });
     } finally {
       pending.current = false;
       setSubmitting(false);
     }
   }
 
-  if (!switchedOn) {
+  function dismissNotice() {
+    setNotice(null);
+    // The dismiss button goes with the card; put a screen reader on the check-in heading
+    // rather than leaving its focus nowhere.
+    const node = checkinHeadingRef.current ? findNodeHandle(checkinHeadingRef.current) : null;
+    if (node) AccessibilityInfo.setAccessibilityFocus(node);
+  }
+
+  if (!switchedOn || serverSwitchedOff || isFeatureDisabled(summaryApi.errorCode)) {
     return (
       <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
         <AppTopBar title={t('volunteeringVolunteer:wellbeing.title')} backLabel={t('common:back')} fallbackHref={VOLUNTEERING_HUB} />
@@ -225,6 +336,8 @@ function MyWellbeingContent() {
       </SafeAreaView>
     );
   }
+
+  const supportNearOutcome = notice !== null && WARNING_OUTCOMES.has(notice.outcome);
 
   // No activity and no check-in: the API's default 100 / "Excellent" is not a result
   // (21 Oct 2026). The number, its label, the bar and the risk chip stay hidden; the
@@ -251,7 +364,18 @@ function MyWellbeingContent() {
       >
         <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{t('volunteeringVolunteer:wellbeing.intro')}</Text>
 
-        <RefreshFailedNotice error={summaryApi.error} onRetry={summaryApi.refresh} isRetrying={summaryApi.isLoading} testID="wellbeing-error" />
+        {summaryApi.error && isRateLimited(summaryApi.errorStatus, summaryApi.errorCode) ? (
+          // A 429 is not a failure to apologise for: the member only needs to wait.
+          <Surface variant="secondary" className="flex-row items-start gap-3 rounded-panel-inner p-3" testID="wellbeing-rate-limited" accessibilityRole="alert">
+            <Ionicons name="time-outline" size={16} color={theme.warning} />
+            <Text className="min-w-0 flex-1 text-sm leading-5" style={{ color: theme.text }}>{t('volunteeringVolunteer:wellbeing.rateLimited')}</Text>
+            <HeroButton size="sm" variant="secondary" isDisabled={summaryApi.isLoading} onPress={summaryApi.refresh}>
+              <HeroButton.Label>{t('common:buttons.retry')}</HeroButton.Label>
+            </HeroButton>
+          </Surface>
+        ) : (
+          <RefreshFailedNotice error={summaryApi.error} onRetry={summaryApi.refresh} isRetrying={summaryApi.isLoading} testID="wellbeing-error" />
+        )}
 
         {summaryApi.isLoading && !summary && !summaryApi.error ? <ListSkeleton rows={2} testID="wellbeing-skeleton" /> : null}
 
@@ -295,13 +419,13 @@ function MyWellbeingContent() {
                 </View>
                 {summary.last_team_notified_at ? (
                   <Text className="text-xs leading-4" style={{ color: theme.textSecondary }} testID="wellbeing-last-told">
-                    {t('volunteeringVolunteer:wellbeing.lastTold', { date: formatDate(summary.last_team_notified_at, true) ?? '' })}
+                    {t('volunteeringVolunteer:wellbeing.lastTold', { date: formatWellbeingDateTime(summary.last_team_notified_at) ?? '' })}
                   </Text>
                 ) : null}
               </HeroCard.Body>
             </HeroCard>
 
-            {summary.support ? (
+            {summary.support && !supportNearOutcome ? (
               <SupportCard support={summary.support} tenantSlug={tenant?.slug ?? null} />
             ) : null}
 
@@ -333,7 +457,7 @@ function MyWellbeingContent() {
                   {summary.suggested_rest_days.map((day) => (
                     <Chip key={day} size="md" variant="secondary" color="default">
                       <Ionicons name="bed-outline" size={12} color={primary} />
-                      <Chip.Label>{formatDate(day) ?? day}</Chip.Label>
+                      <Chip.Label>{formatCalendarDate(day) ?? day}</Chip.Label>
                     </Chip>
                   ))}
                 </View>
@@ -342,9 +466,20 @@ function MyWellbeingContent() {
           </>
         ) : null}
 
+        {notice ? (
+          <>
+            <OutcomeCard notice={notice} text={outcomeText(notice, t)} onDismiss={dismissNotice} />
+            {/* Nobody else was reached: the support box moves right under the outcome, as
+                on the website, instead of sitting further up the screen. */}
+            {supportNearOutcome && summary?.support ? (
+              <SupportCard support={summary.support} tenantSlug={tenant?.slug ?? null} />
+            ) : null}
+          </>
+        ) : null}
+
         <HeroCard className="rounded-panel p-0">
           <HeroCard.Body className="gap-4 p-4">
-            <Text className="text-base font-semibold" style={{ color: theme.text }} accessibilityRole="header">
+            <Text ref={checkinHeadingRef} className="text-base font-semibold" style={{ color: theme.text }} accessibilityRole="header">
               {t('volunteeringVolunteer:wellbeing.checkinHeading')}
             </Text>
             <ChoiceChips<MoodValue>
@@ -396,7 +531,7 @@ function MyWellbeingContent() {
                 <HeroCard.Body className="gap-1 p-4">
                   <View className="flex-row flex-wrap items-center justify-between gap-2">
                     <Text className="text-sm font-semibold" style={{ color: theme.text }}>{t(`volunteeringVolunteer:wellbeing.moods.${moodKey(item.mood)}`)}</Text>
-                    <Text className="text-xs" style={{ color: theme.textMuted }}>{formatDate(item.created_at, true) ?? t('volunteeringVolunteer:common.dateUnknown')}</Text>
+                    <Text className="text-xs" style={{ color: theme.textMuted }}>{formatWellbeingDateTime(item.created_at) ?? t('volunteeringVolunteer:common.dateUnknown')}</Text>
                   </View>
                   {item.note ? <Text className="text-sm leading-5" style={{ color: theme.textSecondary }}>{item.note}</Text> : null}
                   {item.shared ? (

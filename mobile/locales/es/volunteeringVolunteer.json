@@ -158,7 +158,7 @@
     "historyHeading": "Registros recientes",
     "historyEmpty": "Aún no ha hecho ningún registro.",
     "shared": "Compartido con el equipo de su comunidad",
-    "outcomeAlreadyTold": "Tu comunidad ya fue avisada hoy. Este registro se ha añadido a lo que pueden ver.",
+    "outcomeAlreadyTold": "El equipo de tu comunidad fue avisado hace poco. Este registro se ha añadido a lo que pueden ver.",
     "outcomeNobody": "Todavía no se ha podido avisar a nadie. Lo intentaremos de nuevo con tu próximo registro. Mira el apoyo más abajo.",
     "outcomePrivate": "Solo tú puedes ver este registro.",
     "supportHeading": "Si necesitas apoyo ahora",
@@ -166,7 +166,12 @@
     "outcomeTold_one": "Hemos avisado a {{count}} persona más de tu comunidad. Alguien se pondrá en contacto contigo.",
     "outcomeTold_other": "Hemos avisado a {{count}} personas más de tu comunidad. Alguien se pondrá en contacto contigo.",
     "outcomeSelfOnly": "Eres el único miembro del equipo de tu comunidad, así que no se ha avisado a nadie más. Mira el apoyo más abajo.",
-    "noData": "Todavía no hay suficiente actividad para puntuar tu bienestar."
+    "noData": "Todavía no hay suficiente actividad para puntuar tu bienestar.",
+    "outcomeAlreadyToldToday": "El equipo de tu comunidad ya fue avisado hoy a las {{time}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcomeAlreadyToldYesterday": "El equipo de tu comunidad ya fue avisado ayer a las {{time}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcomeAlreadyToldOn": "El equipo de tu comunidad ya fue avisado el {{date}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcomeDismiss": "Cerrar",
+    "rateLimited": "Demasiadas solicitudes en poco tiempo. Espera un momento y vuelve a intentarlo."
   },
   "qualifications": {
     "title": "Cualificaciones",
@@ -416,5 +421,12 @@
     "members_other": "Miembros ({{count}} de {{max}})",
     "membersNoMax_one": "Miembros ({{count}})",
     "membersNoMax_other": "Miembros ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Alerta de bienestar",
+    "heading": "Esta alerta de bienestar está en el sitio web",
+    "body": "Las alertas de bienestar son para el equipo de tu comunidad, y la página de la alerta está en el sitio web. Ábrela allí para leer los registros, ver a quién se avisó y añadir notas. Puede que tengas que iniciar sesión.",
+    "open": "Abrir en el sitio web",
+    "openFailed": "Este teléfono no pudo abrir el sitio web. Abre el sitio web de tu comunidad en un navegador y ve a la página de alertas de bienestar."
   }
 }

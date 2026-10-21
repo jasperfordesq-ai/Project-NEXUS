@@ -14,8 +14,12 @@
 {% block content %}
   {% if status %}
     {% if status.type == "warning" %}
-      {# The check-in was saved; nobody could be told yet. A notice, not an error. #}
-      <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="wellbeing-notice-title">
+      {# The check-in was saved; nobody (else) could be told yet. A notice, not an
+         error, kept in the amber "Important" style. role="alert" (21 Oct 2026): this
+         is the result of the member's own action, so GOV.UK Frontend focuses the
+         banner after the redirect and it is announced. As role="region" it was
+         neither focused nor read. #}
+      <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="alert" aria-labelledby="wellbeing-notice-title">
         <div class="govuk-notification-banner__header">
           <h2 class="govuk-notification-banner__title" id="wellbeing-notice-title">{{ t("govuk_alpha.states.important") }}</h2>
         </div>
@@ -37,7 +41,14 @@
         <div role="alert">
           <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
           <div class="govuk-error-summary__body">
-            <p>{{ status.message }}</p>
+            {% if status.field == "mood" %}
+              {# Linked to the first radio, which carries the error too (GOV.UK error pattern). #}
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#mood-1">{{ status.message }}</a></li>
+              </ul>
+            {% else %}
+              <p>{{ status.message }}</p>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -46,6 +57,13 @@
 
   <span class="govuk-caption-xl">{{ t("govuk_alpha.volunteering.title") }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.wellbeing.title") }}</h1>
+
+  {% if switchedOff %}
+    {# 21 Oct 2026: the community has switched wellbeing check-ins off (403
+       FEATURE_DISABLED). A settled state, not an error to retry, and no form:
+       the API refuses every check-in. #}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.switched_off") }}</div>
+  {% else %}
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.wellbeing.description") }}</p>
 
   {% if loadError %}
@@ -70,9 +88,6 @@
       {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
       {{ govukTag({ text: wellbeing.risk.label, classes: (wellbeing.risk.className) }) }}
     </p>
-    {% if wellbeing.lastToldLabel %}
-      <p class="govuk-body-s">{{ wellbeing.lastToldLabel }}</p>
-    {% endif %}
   {% elif not wellbeing.loaded %}
     {# The API could not be read (21 Oct 2026). No score, no risk tag: nothing is
        made up beside the error. The check-in form below still works. #}
@@ -81,6 +96,12 @@
     {# score_basis is no_data: nothing to score yet. The 100/100 the API still
        sends is not a result, so it is not shown. #}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.score_no_data") }}</div>
+  {% endif %}
+
+  {# Who was told is not part of the score (21 Oct 2026), so it is shown whether or
+     not there is anything to score. It is still withheld when the API was not read. #}
+  {% if wellbeing.lastToldLabel %}
+    <p class="govuk-body-s">{{ wellbeing.lastToldLabel }}</p>
   {% endif %}
 
   {% if wellbeing.support %}
@@ -130,8 +151,15 @@
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.wellbeing.checkin_hint") }}</p>
   <form method="post" action="{{ urlFor('/volunteering/wellbeing/checkin') }}" class="govuk-!-margin-bottom-8">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <fieldset class="govuk-fieldset">
+    {% set moodInError = status and status.field == "mood" %}
+    <div class="govuk-form-group{% if moodInError %} govuk-form-group--error{% endif %}">
+    <fieldset class="govuk-fieldset"{% if moodInError %} aria-describedby="mood-error"{% endif %}>
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.wellbeing.mood_label") }}</legend>
+      {% if moodInError %}
+        <p id="mood-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ status.message }}
+        </p>
+      {% endif %}
       <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
         {% for mood in wellbeing.moodOptions %}
           <div class="govuk-radios__item">
@@ -141,6 +169,7 @@
         {% endfor %}
       </div>
     </fieldset>
+    </div>
     {% call characterCount(500, characterCountMessages, "note") %}
     <div class="govuk-form-group govuk-!-margin-top-4">
       <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.wellbeing.note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
@@ -200,4 +229,5 @@
   {% else %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.recent_empty") }}</div>
   {% endif %}
+  {% endif %}{# switchedOff #}
 {% endblock %}

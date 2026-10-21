@@ -5,9 +5,11 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  calendarDayFromToday,
   daysBetween,
   formatServerDate,
   formatServerDateTime,
+  parseLocalCalendarDate,
   parseServerTimestamp,
 } from './serverTime';
 
@@ -98,5 +100,46 @@ describe('daysBetween', () => {
     expect(daysBetween(null, '2026-04-01')).toBeNull();
     expect(daysBetween('2026-04-01', null)).toBeNull();
     expect(daysBetween('bad', 'also-bad')).toBeNull();
+  });
+});
+
+describe('parseLocalCalendarDate', () => {
+  it('reads a date-only value as that calendar day in the viewer\'s own zone', () => {
+    const d = parseLocalCalendarDate('2026-10-22');
+    expect(d).not.toBeNull();
+    // Local fields, not UTC fields: the day must never slip to the 21st west of Greenwich.
+    expect(d?.getFullYear()).toBe(2026);
+    expect(d?.getMonth()).toBe(9);
+    expect(d?.getDate()).toBe(22);
+    expect(d?.getHours()).toBe(0);
+  });
+
+  it('refuses anything that is not a real Y-m-d date', () => {
+    expect(parseLocalCalendarDate(null)).toBeNull();
+    expect(parseLocalCalendarDate('')).toBeNull();
+    expect(parseLocalCalendarDate('2026-02-30')).toBeNull();
+    expect(parseLocalCalendarDate('2026-10-22 10:00:00')).toBeNull();
+    expect(parseLocalCalendarDate('not a date')).toBeNull();
+  });
+});
+
+describe('calendarDayFromToday', () => {
+  const now = new Date(2026, 9, 21, 9, 30); // 21 Oct 2026, 09:30 local
+
+  it('says today for an earlier time on the same local day', () => {
+    expect(calendarDayFromToday(new Date(2026, 9, 21, 0, 5), now)).toBe('today');
+  });
+
+  it('says yesterday for any time on the previous local day, even under 24 hours ago', () => {
+    expect(calendarDayFromToday(new Date(2026, 9, 20, 16, 5), now)).toBe('yesterday');
+    expect(calendarDayFromToday(new Date(2026, 9, 20, 0, 1), now)).toBe('yesterday');
+  });
+
+  it('says earlier for anything before yesterday', () => {
+    expect(calendarDayFromToday(new Date(2026, 9, 19, 23, 59), now)).toBe('earlier');
+  });
+
+  it('crosses a month boundary correctly', () => {
+    expect(calendarDayFromToday(new Date(2026, 8, 30, 22, 0), new Date(2026, 9, 1, 8, 0))).toBe('yesterday');
   });
 });

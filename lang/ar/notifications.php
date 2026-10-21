@@ -171,7 +171,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor يرغب في أن يتواصل معه أحد',
-            'body' => 'قال في تسجيل حالة الرفاه إنه :subject',
+            'body' => 'من تسجيل حالة الرفاه. يُرجى التعامل مع هذا بسرية.',
         ],
         'exchange_request_received' => [
             'title' => 'طلب جديد لـ :subject',

@@ -158,7 +158,7 @@
     "historyHeading": "Registos recentes",
     "historyEmpty": "Ainda não fez nenhum registo.",
     "shared": "Partilhado com a equipa da sua comunidade",
-    "outcomeAlreadyTold": "A sua comunidade já foi avisada hoje. Este registo foi adicionado ao que ela pode ver.",
+    "outcomeAlreadyTold": "A equipa da sua comunidade foi avisada há pouco. Este registo foi adicionado ao que ela pode ver.",
     "outcomeNobody": "Ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo. Veja o apoio abaixo.",
     "outcomePrivate": "Só você pode ver este registo.",
     "supportHeading": "Se precisa de apoio agora",
@@ -166,7 +166,12 @@
     "outcomeTold_one": "Avisámos {{count}} outra pessoa da sua comunidade. Alguém entrará em contacto consigo.",
     "outcomeTold_other": "Avisámos {{count}} outras pessoas da sua comunidade. Alguém entrará em contacto consigo.",
     "outcomeSelfOnly": "Você é o único membro da equipa da sua comunidade, por isso ninguém mais foi avisado. Veja o apoio abaixo.",
-    "noData": "Ainda não há atividade suficiente para pontuar o seu bem-estar."
+    "noData": "Ainda não há atividade suficiente para pontuar o seu bem-estar.",
+    "outcomeAlreadyToldToday": "A equipa da sua comunidade já foi avisada hoje às {{time}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcomeAlreadyToldYesterday": "A equipa da sua comunidade já foi avisada ontem às {{time}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcomeAlreadyToldOn": "A equipa da sua comunidade já foi avisada em {{date}}. Este registo foi adicionado ao que ela pode ver.",
+    "outcomeDismiss": "Fechar",
+    "rateLimited": "Demasiados pedidos em pouco tempo. Aguarde um momento e tente novamente."
   },
   "qualifications": {
     "title": "Qualificações",
@@ -416,5 +421,12 @@
     "members_other": "Membros ({{count}} de {{max}})",
     "membersNoMax_one": "Membros ({{count}})",
     "membersNoMax_other": "Membros ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Alerta de bem-estar",
+    "heading": "Este alerta de bem-estar está no site",
+    "body": "Os alertas de bem-estar destinam-se à equipa da sua comunidade, e a página do alerta está no site. Abra-a lá para ler os registos, ver quem foi avisado e acrescentar notas. Pode ter de iniciar sessão.",
+    "open": "Abrir no site",
+    "openFailed": "Este telefone não conseguiu abrir o site. Abra o site da sua comunidade num navegador e vá à página de alertas de bem-estar."
   }
 }

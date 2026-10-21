@@ -158,7 +158,7 @@
     "historyHeading": "Controlli recenti",
     "historyEmpty": "Non ha ancora fatto alcun controllo.",
     "shared": "Condiviso con il team della sua comunità",
-    "outcomeAlreadyTold": "La tua comunità è già stata avvisata oggi. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcomeAlreadyTold": "Il team della tua comunità è stato avvisato di recente. Questo check-in è stato aggiunto a ciò che può vedere.",
     "outcomeNobody": "Nessuno ha ancora potuto essere avvisato. Riproveremo con il tuo prossimo check-in. Vedi il supporto qui sotto.",
     "outcomePrivate": "Solo tu puoi vedere questo check-in.",
     "supportHeading": "Se hai bisogno di supporto adesso",
@@ -166,7 +166,12 @@
     "outcomeTold_one": "Abbiamo avvisato {{count}} altra persona della tua comunità. Qualcuno si metterà in contatto con te.",
     "outcomeTold_other": "Abbiamo avvisato {{count}} altre persone della tua comunità. Qualcuno si metterà in contatto con te.",
     "outcomeSelfOnly": "Sei l'unico membro del team della tua comunità, quindi nessun altro è stato avvisato. Vedi il supporto qui sotto.",
-    "noData": "Non c'è ancora abbastanza attività per valutare il tuo benessere."
+    "noData": "Non c'è ancora abbastanza attività per valutare il tuo benessere.",
+    "outcomeAlreadyToldToday": "Il team della tua comunità è già stato avvisato oggi alle {{time}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcomeAlreadyToldYesterday": "Il team della tua comunità è già stato avvisato ieri alle {{time}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcomeAlreadyToldOn": "Il team della tua comunità è già stato avvisato il {{date}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcomeDismiss": "Chiudi",
+    "rateLimited": "Troppe richieste in poco tempo. Attendi un momento e riprova."
   },
   "qualifications": {
     "title": "Qualifiche",
@@ -416,5 +421,12 @@
     "members_other": "Membri ({{count}} su {{max}})",
     "membersNoMax_one": "Membri ({{count}})",
     "membersNoMax_other": "Membri ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Avviso sul benessere",
+    "heading": "Questo avviso sul benessere si trova sul sito web",
+    "body": "Gli avvisi sul benessere sono per il team della tua comunità, e la pagina dell’avviso si trova sul sito web. Aprila lì per leggere i check-in, vedere chi è stato avvisato e aggiungere note. Potrebbe essere necessario accedere.",
+    "open": "Apri sul sito web",
+    "openFailed": "Questo telefono non è riuscito ad aprire il sito web. Apri il sito della tua comunità in un browser e vai alla pagina degli avvisi sul benessere."
   }
 }

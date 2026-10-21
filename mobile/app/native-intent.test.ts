@@ -302,3 +302,47 @@ describe('unmapped deep links are refused rather than handed to the router (F-49
     expect(redirectSystemPath({ path: devLink, initial: false })).toBe(devLink);
   });
 });
+
+/*
+  Deep audit 21 Oct 2026, finding 4. A wellbeing push for staff carries the website's
+  staff link. The member app is not a staff tool, so these used to fail closed to the
+  notification list (push) or do nothing (an in-app notification tap). They now open a
+  small screen that says the alert is on the website and offers to open it there. An App
+  Link for the same path is unchanged: it stays browser-only.
+*/
+describe('wellbeing staff alert links', () => {
+  it('maps the admin and broker wellbeing alert links to the staff hand-off screen', () => {
+    expect(mapSystemPathToNativeRoute('/admin/volunteering/wellbeing?alert=3'))
+      .toBe('/(modals)/volunteering-wellbeing-staff-alert?area=admin&alert=3');
+    expect(mapSystemPathToNativeRoute('/broker/safeguarding/volunteering?alert=12'))
+      .toBe('/(modals)/volunteering-wellbeing-staff-alert?area=broker&alert=12');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/hour-timebank/admin/volunteering/wellbeing?alert=3'))
+      .toBe('/(modals)/volunteering-wellbeing-staff-alert?area=admin&alert=3');
+  });
+
+  it('opens the list when there is no usable alert id, and never carries a forged one', () => {
+    expect(mapSystemPathToNativeRoute('/admin/volunteering/wellbeing'))
+      .toBe('/(modals)/volunteering-wellbeing-staff-alert?area=admin');
+    expect(mapSystemPathToNativeRoute('/admin/volunteering/wellbeing?alert=3%2F..%2Fusers'))
+      .toBe('/(modals)/volunteering-wellbeing-staff-alert?area=admin');
+  });
+
+  it('leaves every other staff page alone, and keeps App Links for them in the browser', () => {
+    // (The mapper's older habit of reading `/admin/volunteering/…` as a volunteering link is
+    // untouched here — push taps refuse browser-only paths before the mapper runs.)
+    expect(mapSystemPathToNativeRoute('/admin/volunteering/wellbeing/settings') ?? '').not.toContain('wellbeing-staff-alert');
+    expect(mapSystemPathToNativeRoute('/admin/gdpr')).toBeNull();
+    expect(mapSystemPathToNativeRoute('https://evil.example.com/admin/volunteering/wellbeing?alert=3')).toBeNull();
+    const appLink = 'https://app.project-nexus.ie/admin/volunteering/wellbeing?alert=3';
+    expect(isBrowserOnlyPath(appLink)).toBe(true);
+    expect(redirectSystemPath({ path: appLink, initial: false })).toBe(appLink);
+    // The email's slug-prefixed form reaches the not-found escape exactly as before.
+    const emailLink = 'https://app.project-nexus.ie/hour-timebank/admin/volunteering/wellbeing?alert=3';
+    expect(redirectSystemPath({ path: emailLink, initial: false })).toBe(emailLink);
+  });
+
+  it('still opens the organisation dashboard on its wellbeing tab', () => {
+    expect(mapSystemPathToNativeRoute('/volunteering/org/5/dashboard?tab=wellbeing'))
+      .toBe('/(modals)/volunteering-org-dashboard?tab=wellbeing&id=5');
+  });
+});

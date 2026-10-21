@@ -132,6 +132,15 @@ describe('push notification links', () => {
     expect(getNotificationLink(data)).toBe('/notifications');
   });
 
+  // Deep audit 21 Oct 2026, finding 4: a staff wellbeing push opens the hand-off screen,
+  // not the notification list, so the member learns where the alert actually is.
+  it.each([
+    ['/admin/volunteering/wellbeing?alert=3'],
+    ['/broker/safeguarding/volunteering?alert=3'],
+  ])('keeps a staff wellbeing alert link (%s) so it opens the website hand-off screen', (link) => {
+    expect(getNotificationLink({ schema_version: '1', type: 'volunteer_wellbeing', link })).toBe(link);
+  });
+
   it('accepts the versioned actionable payload emitted by Laravel', () => {
     expect(getNotificationLink({
       schema_version: '1',

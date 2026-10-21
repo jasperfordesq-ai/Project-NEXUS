@@ -396,7 +396,8 @@
       "hours": "Hours review",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Wellbeing"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -469,7 +470,35 @@
     "notYoursHint": "Applications, hours and the wallet are only visible to the people who run it.",
     "backToVolunteering": "Back to volunteering",
     "declinedHeading": "Not approved",
-    "declinedDescription": "This registration was not approved, so you cannot post opportunities for it. Contact your community organiser if you think this is a mistake."
+    "declinedDescription": "This registration was not approved, so you cannot post opportunities for it. Contact your community organiser if you think this is a mistake.",
+    "wellbeing": {
+      "intro": "Volunteers of your organisation who said they are low or struggling in a wellbeing check-in and asked for someone to get in touch. You were told by alert and email at the time; this is the full list. You see their name and how they feel, never their note.",
+      "forbidden": "You don't have access to this organisation's wellbeing alerts.",
+      "switchedOff": "This community has switched wellbeing check-ins off.",
+      "rateLimited": "Too many requests in a short time. Please wait a moment and try again.",
+      "loadError": "Wellbeing alerts could not be loaded. Please try again.",
+      "empty": "Nobody has asked for help",
+      "emptyDesc": "None of your volunteers has shared a low or struggling check-in in the last 90 days.",
+      "summary": "{{count}} volunteers are waiting for someone to get in touch",
+      "summary_one": "{{count}} volunteer is waiting for someone to get in touch",
+      "summary_other": "{{count}} volunteers are waiting for someone to get in touch",
+      "moodStruggling": "Said they're struggling",
+      "moodLow": "Said they're feeling low",
+      "status": {
+        "active": "Nobody has responded yet",
+        "acknowledged": "The community's team is on it",
+        "resolved": "Resolved",
+        "dismissed": "Closed"
+      },
+      "checkedIn": "Checked in {{date}}",
+      "toldOn": "You were told on {{date}}",
+      "notTold": "You have not been told yet",
+      "whatToDo": "Please check in with them soon. If you are worried for their safety right now, contact the emergency services, then tell your community's team.",
+      "closedHelp": "The community's team has closed this. You can still get in touch.",
+      "message": "Message {{name}}",
+      "viewProfile": "View profile",
+      "confidentiality": "Treat this as confidential. Share it only with people who need to know, and never post about it."
+    }
   },
   "swaps": {
     "heading": "Shift swaps",

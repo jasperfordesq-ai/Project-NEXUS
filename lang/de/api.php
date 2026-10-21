@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'Der Unterstützungstext darf höchstens :max Zeichen lang sein.',
     'vol_wellbeing_too_many_links' => 'Füge höchstens :max Links hinzu.',
     'vol_wellbeing_link_invalid' => 'Jeder Link braucht eine Beschriftung und eine sichere Adresse (https://, mailto:, tel: oder eine Seite dieser Website).',
+    'vol_wellbeing_disabled' => 'Diese Gemeinschaft hat die Wohlbefinden-Check-ins ausgeschaltet.',
+    'vol_wellbeing_checkin_note_invalid' => 'Die Notiz muss ein Text mit höchstens 500 Zeichen sein.',
     'vol_wellbeing_recipient_unknown' => 'Ehemaliges Mitglied',
     'vol_wellbeing_warning_low_mood' => 'Sie haben uns kürzlich mitgeteilt, dass es Ihnen nicht gut geht. Bitte achten Sie auf sich und melden Sie sich, wenn Sie Unterstützung möchten.',
     'vol_wellbeing_recommendation_reach_out' => 'Sprechen Sie mit einer Person Ihres Vertrauens oder wenden Sie sich an das Team Ihrer Gemeinschaft, wenn Sie Unterstützung möchten.',

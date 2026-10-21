@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'O texto de apoio pode ter no máximo :max caracteres.',
     'vol_wellbeing_too_many_links' => 'Adicione no máximo :max ligações.',
     'vol_wellbeing_link_invalid' => 'Cada ligação precisa de uma etiqueta e de um endereço seguro (https://, mailto:, tel: ou uma página deste site).',
+    'vol_wellbeing_disabled' => 'Esta comunidade desativou os registos de bem-estar.',
+    'vol_wellbeing_checkin_note_invalid' => 'A nota deve ser um texto com 500 caracteres no máximo.',
     'vol_wellbeing_recipient_unknown' => 'Antigo membro',
     'vol_wellbeing_warning_low_mood' => 'Você nos disse recentemente que não está se sentindo bem. Cuide-se e peça apoio se precisar.',
     'vol_wellbeing_recommendation_reach_out' => 'Converse com alguém de confiança ou entre em contato com a equipe da sua comunidade se quiser apoio.',

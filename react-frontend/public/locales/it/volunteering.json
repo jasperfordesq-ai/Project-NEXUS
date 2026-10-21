@@ -1152,14 +1152,20 @@
     "outcome_told_one": "Abbiamo avvisato {{count}} altra persona della tua comunità. Qualcuno si metterà in contatto con te.",
     "outcome_told_other": "Abbiamo avvisato altre {{count}} persone della tua comunità. Qualcuno si metterà in contatto con te.",
     "outcome_told_self_only": "Sei l'unica persona del team della tua comunità, quindi nessun altro è stato avvisato.",
-    "outcome_already_told": "La tua comunità è già stata avvisata oggi ({{time}}). Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcome_already_told_today": "La tua comunità è già stata avvisata oggi, alle {{time}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcome_already_told_yesterday": "La tua comunità è già stata avvisata ieri, alle {{time}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcome_already_told_on": "La tua comunità è già stata avvisata il {{date}}. Questo check-in è stato aggiunto a ciò che può vedere.",
+    "outcome_already_told_recently": "La tua comunità è già stata avvisata nelle ultime 24 ore. Questo check-in è stato aggiunto a ciò che può vedere.",
     "outcome_nobody": "Nessuno ha ancora potuto essere avvisato. Riproveremo con il tuo prossimo check-in.",
     "outcome_private": "Solo tu puoi vedere questo check-in.",
     "outcome_what_next": "Cosa succede ora",
     "outcome_what_next_desc": "Una delle persone avvisate leggerà il tuo check-in e si metterà in contatto con te.",
     "outcome_dismiss": "Chiudi",
     "support_heading": "Se hai bisogno di supporto adesso",
-    "last_told": "Il team della tua comunità è stato avvisato l'ultima volta il {{date}}."
+    "last_told": "Il team della tua comunità è stato avvisato l'ultima volta il {{date}}.",
+    "switched_off_title": "I check-in sul benessere sono disattivati",
+    "switched_off_desc": "La tua comunità ha disattivato i check-in sul benessere. Se hai bisogno di supporto, contatta il team della tua comunità.",
+    "rate_limited": "Hai fatto questa operazione più volte in poco tempo. Attendi un momento e riprova."
   },
   "check_in": {
     "title": "Check-in a turni",

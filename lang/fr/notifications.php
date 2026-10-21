@@ -168,7 +168,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor souhaite que quelqu\'un prenne contact',
-            'body' => 'Dans son bilan de bien-être, la personne a indiqué être :subject',
+            'body' => 'Depuis son bilan de bien-être. Merci de traiter cette information de façon confidentielle.',
         ],
         'exchange_request_received' => [
             'title' => 'Nouvelle demande pour :subject',

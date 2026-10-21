@@ -895,8 +895,8 @@
     "mood_label_2": "Giù",
     "bell_team": "{{name}} ha indicato nel check-in sul benessere: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
     "bell_org": "{{name}}, che fa volontariato con {{organisation}}, ha indicato: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
-    "subject": "{{name}}: «Mi sento {{mood}}»",
-    "preview": "{{name}} ha indicato: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
+    "subject": "{{name}} vorrebbe che qualcuno si mettesse in contatto",
+    "preview": "{{name}} ha chiesto che qualcuno si metta in contatto dopo il check-in sul benessere.",
     "team_title": "Una persona volontaria chiede supporto",
     "team_body": "<strong>{{name}}</strong> ha indicato nel check-in sul benessere: «Mi sento {{mood}}» e chiede che qualcuno si metta in contatto.",
     "team_note_hint": "Se è stata scritta una nota, puoi leggerla nella pagina degli avvisi sul benessere dopo aver effettuato l’accesso. Non è inclusa in questa email per tutelare la riservatezza.",
@@ -913,6 +913,7 @@
     "bell_self_told": "Hai chiesto che qualcuno si mettesse in contatto con te dopo aver detto di sentirti {{mood}}. Abbiamo avvisato {{count}} persone.",
     "bell_contact": "{{name}} ha detto nel check-in sul benessere di sentirsi {{mood}} e vorrebbe che qualcuno si mettesse in contatto. Sei uno dei contatti per il benessere di questa comunità.",
     "bell_parent": "{{name}}, volontario con {{community}}, ha detto di sentirsi {{mood}} e vorrebbe che qualcuno si mettesse in contatto.",
+    "bell_scan": "Il controllo notturno sul benessere ha rilevato nel volontariato recente di {{name}} un possibile segnale di affaticamento. Non ha chiesto di essere contattato. Controlla l’avviso.",
     "self_subject": "Il tuo check-in sul benessere: chi è stato avvisato",
     "self_title": "Il tuo check-in sul benessere",
     "self_body_alone": "Nel check-in sul benessere hai detto di sentirti {{mood}} e hai chiesto che qualcuno si mettesse in contatto con te. Nessun altro nella tua comunità ha ancora potuto essere avvisato: non ci sono altri membri dello staff, contatti per il benessere o contatti di organizzazioni da avvisare. Questa email è la traccia che la richiesta è stata fatta.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> ha detto nel check-in sul benessere di sentirsi {{mood}} e ha chiesto che qualcuno si mettesse in contatto. Sei uno dei contatti per il benessere di {{community}}.",
     "parent_body": "<strong>{{name}}</strong>, volontario con {{community}}, ha detto nel check-in sul benessere di sentirsi {{mood}} e ha chiesto che qualcuno si mettesse in contatto. Vieni avvisato come staff della comunità superiore a {{community}}.",
     "community_contact_intro": "Questo è l'indirizzo di contatto di {{community}}. Nessuno del team della comunità ha potuto essere avvisato, quindi questo messaggio è stato inviato qui.",
+    "community_contact_footer": "Hai ricevuto questa email perché questo è l’indirizzo di contatto della comunità {{community}}.",
     "info_card_community": "Comunità"
   }
 }

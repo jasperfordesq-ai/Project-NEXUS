@@ -168,7 +168,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => 'Ba mhaith le :actor go ndéanfadh duine teagmháil',
-            'body' => 'Dúirt an duine ina sheiceáil folláine go bhfuil sé :subject',
+            'body' => 'Óna seiceáil folláine. Coinnigh faoi rún é, le do thoil.',
         ],
         'exchange_request_received' => [
             'title' => 'Iarratas nua ar :subject',

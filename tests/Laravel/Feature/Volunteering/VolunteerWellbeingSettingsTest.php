@@ -150,14 +150,15 @@ class VolunteerWellbeingSettingsTest extends TestCase
         $admin = $this->person(['is_admin' => 1]);
 
         Sanctum::actingAs($admin, ['*']);
+        // A refused link names its row (support_links.N) so the card can mark it.
         $this->apiPut(self::URL, ['support_links' => [['label' => 'x', 'url' => 'javascript:alert(1)']]])
             ->assertStatus(422)
-            ->assertJsonPath('errors.0.field', 'support_links');
+            ->assertJsonPath('errors.0.field', 'support_links.0');
 
         Sanctum::actingAs($admin, ['*']);
         $this->apiPut(self::URL, ['support_links' => [['label' => 'x', 'url' => 'http://insecure.example']]])
             ->assertStatus(422)
-            ->assertJsonPath('errors.0.field', 'support_links');
+            ->assertJsonPath('errors.0.field', 'support_links.0');
 
         Sanctum::actingAs($admin, ['*']);
         $this->apiPut(self::URL, ['contact_email' => 'not-an-address'])

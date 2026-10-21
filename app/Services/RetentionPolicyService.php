@@ -91,20 +91,31 @@ class RetentionPolicyService
         ],
         'vol_wellbeing_alert_notifications' => [
             // Who was told about a wellbeing alert, by which channel, and the
-            // outcome. Never the note or the mood. Kept as long as the alert.
+            // outcome. Never the note or the mood. Kept while the volunteer has
+            // an open case, however old the row: the record exists for exactly
+            // the long-running cases (wellbeing deep audit S4, 21 Oct 2026).
             'table' => 'vol_wellbeing_alert_notifications',
             'column' => 'created_at',
             'default_days' => 730,
             'min_days' => 730,
+            'unless_exists' => [
+                'table' => 'vol_wellbeing_alerts',
+                'local' => 'volunteer_user_id',
+                'foreign' => 'user_id',
+                'where_in' => ['status' => ['active', 'acknowledged']],
+            ],
         ],
         'vol_wellbeing_alerts' => [
             // Burnout-risk alerts about a volunteer. Only concluded alerts
             // are purgeable; active/acknowledged ones stay regardless of age.
+            // Their staff notes go with them (after_purge): a note lives as long
+            // as its alert (DPO-14).
             'table' => 'vol_wellbeing_alerts',
             'column' => 'created_at',
             'default_days' => 730,
             'min_days' => 730,
             'where_in' => ['status' => ['resolved', 'dismissed']],
+            'after_purge' => [\App\Services\VolunteerWellbeingService::class, 'deleteOrphanedNotes'],
         ],
         'vol_safeguarding_incidents' => [
             // Safeguarding case records. Statutory retention is long — the
@@ -325,6 +336,22 @@ class RetentionPolicyService
                     $query->whereIn($col, $values);
                 }
 
+                // Parent guard: a row is kept while a related row in another
+                // table is still open (same tenant), e.g. the "who was told"
+                // record while the volunteer's wellbeing case is open.
+                if (isset($config['unless_exists'])) {
+                    $guard = $config['unless_exists'];
+                    $query->whereNotExists(function ($sub) use ($guard, $config, $tenantId) {
+                        $sub->selectRaw('1')
+                            ->from($guard['table'] . ' as guard')
+                            ->where('guard.tenant_id', $tenantId)
+                            ->whereColumn('guard.' . $guard['foreign'], $config['table'] . '.' . $guard['local']);
+                        foreach (($guard['where_in'] ?? []) as $col => $values) {
+                            $sub->whereIn('guard.' . $col, $values);
+                        }
+                    });
+                }
+
                 $deleted = $query
                     ->limit(self::BATCH_SIZE)
                     ->delete();
@@ -346,6 +373,21 @@ class RetentionPolicyService
                 'data_type' => $dataType,
                 'error' => $e->getMessage(),
             ]);
+        }
+
+        // Rows that only existed for the purged ones (a wellbeing alert's staff
+        // notes) go with them. Run every time, so orphans from any earlier cause
+        // are cleared too.
+        if (isset($config['after_purge']) && $status !== 'failed') {
+            try {
+                call_user_func($config['after_purge'], $tenantId);
+            } catch (\Throwable $e) {
+                Log::error('[Retention] after-purge cleanup failed', [
+                    'tenant_id' => $tenantId,
+                    'data_type' => $dataType,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         self::recordRun($tenantId, $dataType, $action, $retentionDays, $affected, $status, $error);

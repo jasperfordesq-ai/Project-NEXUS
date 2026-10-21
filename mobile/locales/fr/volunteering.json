@@ -397,7 +397,8 @@
       "hours": "Examen des heures",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Bien-être"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -470,7 +471,35 @@
     "notYoursHint": "Les candidatures, les heures et le portefeuille ne sont visibles que par les personnes qui la dirigent.",
     "backToVolunteering": "Retour au bénévolat",
     "declinedHeading": "Non approuvée",
-    "declinedDescription": "Cette inscription n'a pas été approuvée, vous ne pouvez donc pas publier de missions pour elle. Contactez la personne qui anime votre communauté si vous pensez qu'il s'agit d'une erreur."
+    "declinedDescription": "Cette inscription n'a pas été approuvée, vous ne pouvez donc pas publier de missions pour elle. Contactez la personne qui anime votre communauté si vous pensez qu'il s'agit d'une erreur.",
+    "wellbeing": {
+      "intro": "Les bénévoles de votre organisation qui ont dit, lors d'un bilan de bien-être, aller mal ou être en difficulté et demandé que quelqu'un prenne contact. Vous avez été prévenu par alerte et par e-mail à ce moment-là ; voici la liste complète. Vous voyez leur nom et comment ils se sentent, jamais leur note.",
+      "forbidden": "Vous n'avez pas accès aux alertes bien-être de cette organisation.",
+      "switchedOff": "Cette communauté a désactivé les bilans de bien-être.",
+      "rateLimited": "Trop de demandes en peu de temps. Veuillez patienter un instant, puis réessayer.",
+      "loadError": "Les alertes bien-être n'ont pas pu être chargées. Veuillez réessayer.",
+      "empty": "Personne n'a demandé d'aide",
+      "emptyDesc": "Aucun de vos bénévoles n'a partagé de bilan bas au cours des 90 derniers jours.",
+      "summary": "{{count}} bénévoles attendent que quelqu'un prenne contact",
+      "summary_one": "{{count}} bénévole attend que quelqu'un prenne contact",
+      "summary_other": "{{count}} bénévoles attendent que quelqu'un prenne contact",
+      "moodStruggling": "Dit être en difficulté",
+      "moodLow": "Dit aller mal",
+      "status": {
+        "active": "Personne n'a encore répondu",
+        "acknowledged": "L'équipe de la communauté s'en occupe",
+        "resolved": "Résolu",
+        "dismissed": "Clos"
+      },
+      "checkedIn": "Bilan du {{date}}",
+      "toldOn": "Vous avez été prévenu le {{date}}",
+      "notTold": "Vous n'avez pas encore été prévenu",
+      "whatToDo": "Prenez des nouvelles de cette personne rapidement. Si vous craignez pour sa sécurité en ce moment, appelez les services d'urgence, puis prévenez l'équipe de votre communauté.",
+      "closedHelp": "L'équipe de la communauté a clos ce dossier. Vous pouvez toujours prendre contact.",
+      "message": "Écrire à {{name}}",
+      "viewProfile": "Voir le profil",
+      "confidentiality": "Traitez ceci comme confidentiel. Ne le partagez qu'avec les personnes qui ont besoin de savoir, et n'en parlez jamais publiquement."
+    }
   },
   "swaps": {
     "heading": "Échanges de créneaux",

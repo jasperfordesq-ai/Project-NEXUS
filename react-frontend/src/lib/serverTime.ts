@@ -72,6 +72,40 @@ export function formatServerDateTime(value: string | null | undefined): string {
 }
 
 /**
+ * A date-only server value (`YYYY-MM-DD`) as that calendar day in the viewer's
+ * own zone (local midnight). Use it for days a person plans around — a
+ * suggested rest day is "Thursday 22nd" wherever the reader is — where
+ * `new Date('2026-10-22')` would be UTC midnight and print the 21st west of
+ * Greenwich. Returns `null` for anything that is not a real calendar date.
+ */
+export function parseLocalCalendarDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const d = new Date(year, month, day);
+  // Reject roll-overs such as 30 February.
+  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
+  return d;
+}
+
+/**
+ * Which local calendar day `date` falls on, relative to `now`: today,
+ * yesterday, or earlier. Compares calendar days in the viewer's zone, not
+ * 24-hour spans, so 16:05 yesterday is "yesterday" even at 09:30 today.
+ * A future instant counts as today.
+ */
+export function calendarDayFromToday(date: Date, now: Date = new Date()): 'today' | 'yesterday' | 'earlier' {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (date.getTime() >= startOfToday.getTime()) return 'today';
+  const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  if (date.getTime() >= startOfYesterday.getTime()) return 'yesterday';
+  return 'earlier';
+}
+
+/**
  * Whole-day difference between two server timestamps, rounded UP. Used
  * for "days until expiry" UIs where partial days should round to the
  * next bucket (so a record expiring tomorrow morning still reads as

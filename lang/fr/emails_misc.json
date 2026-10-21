@@ -895,8 +895,8 @@
     "mood_label_2": "À plat",
     "bell_team": "{{name}} a indiqué lors de son point bien-être : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
     "bell_org": "{{name}}, bénévole auprès de {{organisation}}, a indiqué : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
-    "subject": "{{name}} : « Je me sens {{mood}} »",
-    "preview": "{{name}} a indiqué : « Je me sens {{mood}} » et souhaite que quelqu’un prenne contact.",
+    "subject": "{{name}} souhaite que quelqu’un prenne contact",
+    "preview": "{{name}} a demandé que quelqu’un prenne contact après son bilan de bien-être.",
     "team_title": "Une personne bénévole souhaite du soutien",
     "team_body": "<strong>{{name}}</strong> a indiqué lors de son point bien-être : « Je me sens {{mood}} » et demande que quelqu’un prenne contact.",
     "team_note_hint": "Si une note a été rédigée, vous pouvez la lire sur la page des alertes bien-être après connexion. Elle n’est pas incluse dans cet e-mail, afin de préserver la confidentialité.",
@@ -913,6 +913,7 @@
     "bell_self_told": "Vous avez demandé que quelqu'un prenne contact après avoir indiqué que vous êtes {{mood}}. Nous avons prévenu {{count}} personnes.",
     "bell_contact": "{{name}} a indiqué dans son bilan de bien-être être {{mood}} et souhaite que quelqu'un prenne contact. Vous êtes l'un des contacts bien-être de cette communauté.",
     "bell_parent": "{{name}}, bénévole auprès de {{community}}, a indiqué être {{mood}} et souhaite que quelqu'un prenne contact.",
+    "bell_scan": "Le contrôle de bien-être de la nuit a repéré dans le bénévolat récent de {{name}} un possible signe d’épuisement. La personne n’a pas demandé à être contactée. Merci de consulter l’alerte.",
     "self_subject": "Votre bilan de bien-être : qui a été prévenu",
     "self_title": "Votre bilan de bien-être",
     "self_body_alone": "Vous avez indiqué dans votre bilan de bien-être être {{mood}} et demandé que quelqu'un prenne contact. Personne d'autre dans votre communauté n'a encore pu être prévenu : il n'y a pas d'autre membre de l'équipe, de contact bien-être ni de contact d'organisation à prévenir. Cet e-mail est la trace de votre demande.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> a indiqué dans son bilan de bien-être être {{mood}} et a demandé que quelqu'un prenne contact. Vous êtes l'un des contacts bien-être de {{community}}.",
     "parent_body": "<strong>{{name}}</strong>, bénévole auprès de {{community}}, a indiqué dans son bilan de bien-être être {{mood}} et a demandé que quelqu'un prenne contact. Vous êtes prévenu en tant que membre de l'équipe de la communauté au-dessus de {{community}}.",
     "community_contact_intro": "Ceci est l'adresse de contact de {{community}}. Personne de l'équipe de la communauté n'a pu être prévenu ; ce message a donc été envoyé ici.",
+    "community_contact_footer": "Vous recevez cet e-mail parce que cette adresse est l’adresse de contact de la communauté {{community}}.",
     "info_card_community": "Communauté"
   }
 }

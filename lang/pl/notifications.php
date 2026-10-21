@@ -171,7 +171,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor prosi, aby ktoś się skontaktował',
-            'body' => 'W zgłoszeniu samopoczucia podano, że czuje się :subject',
+            'body' => 'Ze zgłoszenia samopoczucia. Prosimy zachować poufność.',
         ],
         'exchange_request_received' => [
             'title' => 'Nowe żądanie dla :subject',

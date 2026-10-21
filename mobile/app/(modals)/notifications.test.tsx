@@ -57,6 +57,7 @@ jest.mock('react-i18next', () => ({
         'category.connection': 'Connection',
         'category.mention': 'Mention',
         'category.other': 'Notification',
+        'category.safeguarding': 'Safeguarding',
         'common:errors.alertTitle': 'Error',
         'common:buttons.retry': 'Retry',
         'common:back': 'Back',
@@ -227,6 +228,24 @@ describe('NotificationsScreen', () => {
 
     const { toJSON } = render(<NotificationsScreen />);
     expect(toJSON()).toBeTruthy();
+  });
+
+  // Deep audit 21 Oct 2026: wellbeing alerts were filed under `other` and drawn as the grey
+  // bell. The server now sends `safeguarding`; rows stored before that still say `other`.
+  it.each(['other', 'safeguarding'])('shows a wellbeing alert stored as %s as a safeguarding row with a heart icon', (category) => {
+    mockUsePaginatedApi.mockReturnValueOnce(pageState([{
+      ...mockNotification,
+      id: 77,
+      type: 'volunteer_wellbeing',
+      category,
+      title: 'Wellbeing alert',
+      message: 'A volunteer asked for someone to get in touch.',
+      link: '/admin/volunteering/wellbeing?alert=3',
+      actor: null,
+    }]));
+    const { getByText, getByTestId } = render(<NotificationsScreen />);
+    expect(getByText('Safeguarding')).toBeTruthy();
+    expect(getByTestId('notification-icon-77').props.name).toBe('heart-circle-outline');
   });
 
   it('renders notification items when data is available', () => {

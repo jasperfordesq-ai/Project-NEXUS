@@ -895,8 +895,8 @@
     "mood_label_2": "Low",
     "bell_team": "{{name}} said in their wellbeing check-in that they are {{mood}}, and would like someone to get in touch.",
     "bell_org": "{{name}}, who volunteers with {{organisation}}, said they are {{mood}} and would like someone to get in touch.",
-    "subject": "{{name}} said they are {{mood}}",
-    "preview": "{{name}} said they are {{mood}} and would like someone to get in touch.",
+    "subject": "{{name}} would like someone to get in touch",
+    "preview": "{{name}} asked for someone to get in touch after their wellbeing check-in.",
     "team_title": "A volunteer would like some support",
     "team_body": "<strong>{{name}}</strong> said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them.",
     "team_note_hint": "If they wrote a note, you can read it on the wellbeing alerts page after signing in. It is not included in this email, to keep it private.",
@@ -913,6 +913,7 @@
     "bell_self_told": "You asked for someone to get in touch after saying you are {{mood}}. We have told {{count}} people.",
     "bell_contact": "{{name}} said in their wellbeing check-in that they are {{mood}}, and would like someone to get in touch. You are one of this community's wellbeing contacts.",
     "bell_parent": "{{name}}, who volunteers with {{community}}, said they are {{mood}} and would like someone to get in touch.",
+    "bell_scan": "The nightly wellbeing check flagged {{name}}'s recent volunteering as a possible sign of strain. They did not ask for contact. Please look at the alert.",
     "self_subject": "Your wellbeing check-in: who has been told",
     "self_title": "Your wellbeing check-in",
     "self_body_alone": "You said in your wellbeing check-in that you are {{mood}} and asked for someone to get in touch. Nobody else in your community could be told yet: there are no other staff, wellbeing contacts or organisation contacts to tell. This email is your record that the request was made.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them. You are one of {{community}}'s wellbeing contacts.",
     "parent_body": "<strong>{{name}}</strong>, who volunteers with {{community}}, said in their wellbeing check-in that they are {{mood}}, and asked for someone to get in touch with them. You are being told as staff of the community above {{community}}.",
     "community_contact_intro": "This is {{community}}'s contact address. Nobody on the community's team could be told, so this message has been sent here instead.",
+    "community_contact_footer": "You received this email because this is the contact address of the {{community}} community.",
     "info_card_community": "Community"
   }
 }

@@ -72,7 +72,16 @@ const stableT = (
     "wellbeing.outcome_told_one": "We have told {{count}} other person from your community. Someone will be in touch.",
     "wellbeing.outcome_told_other": "We have told {{count}} other people from your community. Someone will be in touch.",
     "wellbeing.outcome_told_self_only": "You are the only member of your community's team, so nobody else has been told.",
-    "wellbeing.outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
+    "wellbeing.outcome_already_told_today": "Your community was already told earlier today, at {{time}}. This check-in has been added to what they can see.",
+    "wellbeing.outcome_already_told_yesterday": "Your community was already told yesterday, at {{time}}. This check-in has been added to what they can see.",
+    "wellbeing.outcome_already_told_on": "Your community was already told on {{date}}. This check-in has been added to what they can see.",
+    "wellbeing.outcome_already_told_recently": "Your community was already told in the last day. This check-in has been added to what they can see.",
+    "wellbeing.switched_off_title": "Wellbeing check-ins are switched off",
+    "wellbeing.switched_off_desc": "Your community has switched wellbeing check-ins off. If you need support, contact your community's team.",
+    "wellbeing.rate_limited": "You have done this several times in a short while. Please wait a moment and try again.",
+    "wellbeing.load_error": "Unable to load wellbeing data. Please try again.",
+    "wellbeing.checkin_failed": "Failed to submit check-in. Please try again.",
+    "wellbeing.suggested_rest_days": "Suggested Rest Days",
     "wellbeing.outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
     "wellbeing.outcome_private": "Only you can see this check-in.",
     "wellbeing.outcome_what_next": "What happens next",
@@ -162,6 +171,7 @@ vi.mock("@/lib/logger", () => ({
 
 import { WellbeingTab } from "./WellbeingTab";
 import { api } from "@/lib/api";
+import { getFormattingLocale } from "@/lib/helpers";
 
 const mockWellbeingData = {
   score: 75,
@@ -412,8 +422,8 @@ describe("WellbeingTab", () => {
     await openCheckin();
     pickMood("Struggling");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
-    const notice = await screen.findByRole("status", { name: /only member of your community's team, so nobody else has been told/i });
-    expect(notice).toBeInTheDocument();
+    await screen.findByText(/only member of your community's team, so nobody else has been told/i);
+    const notice = screen.getByTestId("wellbeing-outcome");
     expect(notice.className).toContain("border-amber-500/40");
     // The support box is inside the notice, as for nobody_available.
     expect(notice).toHaveTextContent("Ring the office any weekday.");
@@ -465,20 +475,41 @@ describe("WellbeingTab", () => {
     await openCheckin();
     pickMood("Struggling");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
-    const notice = await screen.findByRole("status", { name: /nobody could be told yet/i });
-    expect(notice).toBeInTheDocument();
+    const headline = await screen.findByText(/nobody could be told yet/i);
+    // Inside the page's permanent status region, so it is announced.
+    expect(screen.getByTestId("wellbeing-outcome-region")).toContainElement(headline);
     expect(mockToast.success).not.toHaveBeenCalledWith("Thank you for telling us. Someone from your community's team will be in touch.");
   });
 
-  it("says the team was already told today", async () => {
+  async function submitAlreadyTold(toldAt: string | null) {
     vi.mocked(api.post).mockResolvedValue({
       success: true,
-      data: { id: 9, mood: 2, note: null, shared: true, team_notified: false, told_count: 2, told_at: '2026-10-20T12:05:22Z', outcome: 'already_told_today' },
+      data: { id: 9, mood: 2, note: null, shared: true, team_notified: false, told_count: 2, told_at: toldAt, outcome: 'already_told_today' },
     });
     await openCheckin();
     pickMood("Low");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
-    expect(await screen.findByText(/already told today/i)).toBeInTheDocument();
+  }
+
+  it("says the team was already told earlier today when the stamp is from today", async () => {
+    await submitAlreadyTold(new Date().toISOString());
+    expect(await screen.findByText(/already told earlier today, at/i)).toBeInTheDocument();
+  });
+
+  // Deep audit C6 (21 Oct 2026): the server's window is 24 hours, so a stamp from
+  // yesterday evening was shown as "today (16:05)".
+  it("never says today for an already-told stamp from an earlier day", async () => {
+    // More than a day old, in the server's legacy form (UTC, no zone marker).
+    const old = new Date(Date.now() - 30 * 60 * 60 * 1000);
+    const legacy = old.toISOString().slice(0, 19).replace("T", " ");
+    await submitAlreadyTold(legacy);
+    expect(await screen.findByText(/your community was already told (yesterday|on)/i)).toBeInTheDocument();
+    expect(screen.queryByText(/today/i)).not.toBeInTheDocument();
+  });
+
+  it("still says the team was already told when the server sends no time", async () => {
+    await submitAlreadyTold(null);
+    expect(await screen.findByText(/already told in the last day/i)).toBeInTheDocument();
   });
 
   it("always shows the community's support box with its links", async () => {
@@ -494,5 +525,134 @@ describe("WellbeingTab", () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: { ...mockWellbeingData, last_team_notified_at: '2026-10-20T12:05:22Z', last_told_count: 2 } });
     render(<WellbeingTab />);
     expect(await screen.findByText(/was last told on/i)).toBeInTheDocument();
+  });
+
+  /* ── Deep audit, 21 Oct 2026 ─────────────────────────────────────────── */
+
+  // C6: the API sends UTC. The legacy form has no zone marker and was read as
+  // local time; both forms must name the same moment.
+  it.each([
+    ["legacy UTC form", "2026-10-21 14:05:00"],
+    ["ISO with offset", "2026-10-21T14:05:00+00:00"],
+  ])("reads last-told and check-in times as UTC (%s)", async (_label, stamp) => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: {
+        ...mockWellbeingData,
+        last_team_notified_at: stamp,
+        last_told_count: 1,
+        recent_checkins: [{ id: 1, mood: 2, note: null, created_at: stamp, shared: true }],
+      },
+    });
+    render(<WellbeingTab />);
+    const instant = new Date(Date.UTC(2026, 9, 21, 14, 5, 0));
+    const lastTold = instant.toLocaleString(getFormattingLocale(), { dateStyle: "medium", timeStyle: "short" });
+    const checkinTime = instant.toLocaleString(getFormattingLocale(), { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    expect(await screen.findByText(`Your community's team was last told on ${lastTold}.`)).toBeInTheDocument();
+    expect(screen.getByText(checkinTime)).toBeInTheDocument();
+  });
+
+  // C13: a date-only rest day is a local calendar day, never UTC midnight.
+  it("shows a suggested rest day as the same calendar day in the viewer's zone", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, suggested_rest_days: ["2026-10-22"] },
+    });
+    render(<WellbeingTab />);
+    const expected = new Date(2026, 9, 22).toLocaleDateString(getFormattingLocale(), { weekday: "short", month: "short", day: "numeric" });
+    expect(await screen.findByText(expected)).toBeInTheDocument();
+  });
+
+  // C15: the volunteer's own note is shown in full, not clipped to one line.
+  it("shows the volunteer's own note in full", async () => {
+    const note = "A long note. ".repeat(25).trim();
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, recent_checkins: [{ id: 1, mood: 2, note, created_at: "2026-10-21 14:05:00", shared: false }] },
+    });
+    render(<WellbeingTab />);
+    const shown = await screen.findByText(note);
+    expect(shown.className).not.toContain("truncate");
+    expect(shown.className).toContain("whitespace-pre-wrap");
+  });
+
+  // C10: logical side classes, so the accent sits on the reading side in Arabic.
+  it("puts the warning accent on the logical start side", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, warnings: ["Your volunteering frequency has decreased compared to last month."] },
+    });
+    render(<WellbeingTab />);
+    const warning = await screen.findByText("Your volunteering frequency has decreased compared to last month.");
+    const card = warning.closest(".border-s-4");
+    expect(card).not.toBeNull();
+    expect(warning.closest(".border-l-4")).toBeNull();
+  });
+
+  // C7: the community switched wellbeing off — calm, final, no retry, no form.
+  it("says calmly that wellbeing is switched off when the dashboard answers FEATURE_DISABLED", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: false, code: "FEATURE_DISABLED", error: "Wellbeing is switched off." });
+    render(<WellbeingTab />);
+    expect(await screen.findByText("Wellbeing check-ins are switched off")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /try again/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Unable to load wellbeing data. Please try again.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Log How I.m Feeling/i })).not.toBeInTheDocument();
+  });
+
+  it("asks the volunteer to wait a moment when the dashboard is rate limited", async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: false, code: "RATE_LIMIT_EXCEEDED", error: "Too many requests." });
+    render(<WellbeingTab />);
+    expect(await screen.findByText(/please wait a moment and try again/i)).toBeInTheDocument();
+  });
+
+  it("asks the volunteer to wait a moment when a check-in is rate limited, not to simply try again", async () => {
+    vi.mocked(api.post).mockResolvedValue({ success: false, code: "RATE_LIMIT_EXCEEDED", error: "Too many requests." });
+    await openCheckin();
+    pickMood("Okay");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(expect.stringMatching(/please wait a moment/i)));
+    expect(mockToast.error).not.toHaveBeenCalledWith("Failed to submit check-in. Please try again.");
+  });
+
+  it("shows the switched-off state when a check-in answers FEATURE_DISABLED", async () => {
+    vi.mocked(api.post).mockResolvedValue({ success: false, code: "FEATURE_DISABLED", error: "Wellbeing is switched off." });
+    await openCheckin();
+    pickMood("Okay");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    expect(await screen.findByText("Wellbeing check-ins are switched off")).toBeInTheDocument();
+    expect(mockToast.error).not.toHaveBeenCalledWith("Failed to submit check-in. Please try again.");
+  });
+
+  it("shows the server's own sentence for a refused note", async () => {
+    vi.mocked(api.post).mockResolvedValue({ success: false, code: "VALIDATION_ERROR", error: "The note must be 500 characters or fewer." });
+    await openCheckin();
+    pickMood("Okay");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith("The note must be 500 characters or fewer."));
+  });
+
+  // C8: the status region exists, empty, before anything happens; dismissing the
+  // card moves focus back to the check-in button instead of dropping it.
+  it("announces the outcome through a status region that was already on the page, and keeps focus on dismiss", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'nobody_available' },
+    });
+    await openCheckin();
+    const region = screen.getByTestId("wellbeing-outcome-region");
+    expect(region).toHaveAttribute("role", "status");
+    expect(region).toBeEmptyDOMElement();
+
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    await screen.findByText(/nobody could be told yet/i);
+    // Same element, now filled.
+    expect(screen.getByTestId("wellbeing-outcome-region")).toBe(region);
+
+    const dismiss = screen.getByRole("button", { name: "Dismiss" });
+    dismiss.focus();
+    fireEvent.click(dismiss);
+    await waitFor(() => expect(region).toBeEmptyDOMElement());
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: /Log How I.m Feeling/i }));
   });
 });

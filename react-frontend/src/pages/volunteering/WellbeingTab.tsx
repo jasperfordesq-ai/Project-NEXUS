@@ -11,6 +11,7 @@
  */
 
 import { getFormattingLocale } from '@/lib/helpers';
+import { calendarDayFromToday, parseLocalCalendarDate, parseServerTimestamp } from '@/lib/serverTime';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from '@/lib/motion';
 
@@ -151,9 +152,7 @@ function outcomeHeadline(notice: OutcomeNotice, t: TranslateWithOptions): string
     case 'told_self_only':
       return t('wellbeing.outcome_told_self_only');
     case 'already_told_today':
-      return t('wellbeing.outcome_already_told', {
-        time: notice.toldAt ? new Date(notice.toldAt).toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' }) : '',
-      });
+      return alreadyToldHeadline(notice.toldAt, t);
     case 'nobody_available':
       return t('wellbeing.outcome_nobody');
     case 'private':
@@ -161,6 +160,34 @@ function outcomeHeadline(notice: OutcomeNotice, t: TranslateWithOptions): string
     default:
       return t('wellbeing.checkin_success');
   }
+}
+
+/**
+ * "Already told" says when, honestly (21 Oct 2026). The server's window is 24
+ * hours, so the stamp can be yesterday evening: never call it "today". The
+ * stamp is read as UTC whether it arrives as ISO-8601 or the legacy
+ * `Y-m-d H:i:s`, and the day is worked out in the viewer's own zone.
+ */
+function alreadyToldHeadline(toldAt: string | null, t: TranslateWithOptions, now: Date = new Date()): string {
+  const told = parseServerTimestamp(toldAt);
+  if (!told) return t('wellbeing.outcome_already_told_recently');
+  const time = told.toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' });
+  switch (calendarDayFromToday(told, now)) {
+    case 'today':
+      return t('wellbeing.outcome_already_told_today', { time });
+    case 'yesterday':
+      return t('wellbeing.outcome_already_told_yesterday', { time });
+    default:
+      return t('wellbeing.outcome_already_told_on', {
+        date: told.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }),
+      });
+  }
+}
+
+/** A server time in the viewer's zone, or '' when it cannot be read. */
+function formatWhen(value: string | null | undefined, options: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' }): string {
+  const date = parseServerTimestamp(value);
+  return date ? date.toLocaleString(getFormattingLocale(), options) : '';
 }
 
 function SupportBox({ support, tenantPath, t, compact = false }: {
@@ -245,6 +272,9 @@ export function WellbeingTab() {
   const [data, setData] = useState<WellbeingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // The community has switched wellbeing check-ins off (403 FEATURE_DISABLED):
+  // a calm, final state with nothing to retry.
+  const [isSwitchedOff, setIsSwitchedOff] = useState(false);
   const [showTips, setShowTips] = useState(false);
 
   // Check-in modal state
@@ -262,6 +292,9 @@ export function WellbeingTab() {
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
+  // Where focus goes when the outcome card (which held it) is dismissed.
+  const logButtonRef = useRef<HTMLButtonElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Stable refs for t/toast — avoids re-creating callbacks when i18n namespace loads
   const tRef = useRef(t);
@@ -283,7 +316,13 @@ export function WellbeingTab() {
       if (controller.signal.aborted) return;
 
       if (response.success && response.data) {
+        setIsSwitchedOff(false);
         setData(response.data as WellbeingData);
+      } else if (response.code === 'FEATURE_DISABLED') {
+        setData(null);
+        setIsSwitchedOff(true);
+      } else if (response.code === 'RATE_LIMIT_EXCEEDED') {
+        setError(tRef.current('wellbeing.rate_limited'));
       } else {
         setError(tRef.current('wellbeing.load_error'));
       }
@@ -332,6 +371,16 @@ export function WellbeingTab() {
         setCheckinNote('');
         setShareWithTeam(true);
         load();
+      } else if (response.code === 'FEATURE_DISABLED') {
+        // Switched off since the page loaded: say so calmly, never "try again".
+        onClose();
+        setData(null);
+        setIsSwitchedOff(true);
+      } else if (response.code === 'RATE_LIMIT_EXCEEDED') {
+        toastRef.current.error(tRef.current('wellbeing.rate_limited'));
+      } else if (response.code === 'VALIDATION_ERROR' && response.error) {
+        // The server's own sentence, already translated (for example, the note is too long).
+        toastRef.current.error(response.error);
       } else {
         toastRef.current.error(tRef.current('wellbeing.checkin_failed'));
       }
@@ -343,30 +392,43 @@ export function WellbeingTab() {
     }
   };
 
+  const dismissNotice = () => {
+    setNotice(null);
+    // The Dismiss button goes with the card: put focus somewhere sensible
+    // instead of dropping it on the page body (21 Oct 2026).
+    (logButtonRef.current ?? headingRef.current)?.focus();
+  };
+
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-rose-400" aria-hidden="true" />
-          <h2 className="text-lg font-semibold text-theme-primary">{t('wellbeing.heading')}</h2>
+      <div>
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Heart className="w-5 h-5 text-rose-400" aria-hidden="true" />
+            <h2 ref={headingRef} tabIndex={-1} className="text-lg font-semibold text-theme-primary outline-none">{t('wellbeing.heading')}</h2>
+          </div>
+          {!isSwitchedOff && (
+            <Button
+              ref={logButtonRef}
+              size="sm"
+              startContent={<Smile className="w-4 h-4" aria-hidden="true" />}
+              onPress={onOpen}
+              className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"
+            >
+              {t('wellbeing.log_feeling')}
+            </Button>
+          )}
         </div>
-        <Button
-          size="sm"
-          startContent={<Smile className="w-4 h-4" aria-hidden="true" />}
-          onPress={onOpen}
-          className="bg-gradient-to-r from-rose-500 to-pink-600 text-white sm:shrink-0"
-        >
-          {t('wellbeing.log_feeling')}
-        </Button>
-      </div>
 
-      {/* What happened after the last check-in (20 Oct 2026): honest, on the page. */}
+        {/* What happened after the last check-in (20 Oct 2026): honest, on the page.
+            The status region is always present and starts empty, so a screen
+            reader announces the outcome when it is filled in (21 Oct 2026). */}
+        <div role="status" aria-live="polite" data-testid="wellbeing-outcome-region" className={notice ? 'mt-4' : undefined}>
       {notice && (
         <GlassCard
           className={`p-4 border ${WARNING_OUTCOMES.has(notice.outcome) ? 'border-amber-500/40' : 'border-emerald-500/30'}`}
-          role="status"
-          aria-label={outcomeHeadline(notice, (key, opts) => t(key, opts))}
+          data-testid="wellbeing-outcome"
         >
           <div className="flex items-start gap-3">
             {WARNING_OUTCOMES.has(notice.outcome) ? (
@@ -393,12 +455,23 @@ export function WellbeingTab() {
               variant="secondary"
               isIconOnly
               aria-label={t('wellbeing.outcome_dismiss')}
-              onPress={() => setNotice(null)}
+              onPress={dismissNotice}
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </GlassCard>
+      )}
+        </div>
+      </div>
+
+      {/* Switched off by the community (403 FEATURE_DISABLED): calm, nothing to retry. */}
+      {isSwitchedOff && (
+        <EmptyState
+          icon={<Heart className="w-12 h-12" aria-hidden="true" />}
+          title={t('wellbeing.switched_off_title')}
+          description={t('wellbeing.switched_off_desc')}
+        />
       )}
 
       {/* Error */}
@@ -429,7 +502,7 @@ export function WellbeingTab() {
       )}
 
       {/* Empty State */}
-      {!error && !isLoading && !data && (
+      {!error && !isLoading && !data && !isSwitchedOff && (
         <EmptyState
           icon={<Heart className="w-12 h-12" aria-hidden="true" />}
           title={t('wellbeing.no_data_title')}
@@ -559,10 +632,10 @@ export function WellbeingTab() {
                   aria-label={t('wellbeing.score_aria', { score: data.score })}
                 />
               )}
-              {data.last_team_notified_at && (
+              {formatWhen(data.last_team_notified_at) !== '' && (
                 <p className="text-xs text-theme-subtle mt-3">
                   {t('wellbeing.last_told', {
-                    date: new Date(data.last_team_notified_at).toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' }),
+                    date: formatWhen(data.last_team_notified_at),
                     count: data.last_told_count ?? 0,
                   })}
                 </p>
@@ -583,7 +656,7 @@ export function WellbeingTab() {
           {data.warnings.length > 0 && (
             <motion.div variants={itemVariants} className="space-y-3">
               {data.warnings.map((warning, i) => (
-                <GlassCard key={i} className="p-4 border-l-4 border-amber-500">
+                <GlassCard key={i} className="p-4 border-s-4 border-amber-500">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
                     <div>
@@ -608,9 +681,10 @@ export function WellbeingTab() {
                   {t('wellbeing.rest_days_desc')}
                 </p>
                 <div className="flex flex-wrap gap-2">
+                  {/* Date-only days are local calendar days, never UTC midnight. */}
                   {data.suggested_rest_days
-                    .map((day) => ({ day, parsed: new Date(day) }))
-                    .filter(({ parsed }) => !Number.isNaN(parsed.getTime()))
+                    .map((day) => ({ day, parsed: parseLocalCalendarDate(day) }))
+                    .filter((entry): entry is { day: string; parsed: Date } => entry.parsed !== null)
                     .map(({ day, parsed }) => (
                     <Chip
                       key={day}
@@ -645,7 +719,7 @@ export function WellbeingTab() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-theme-primary">{getMoodLabel(checkin.mood, (key) => t(key))}</span>
                           <span className="text-xs text-theme-subtle">
-                            {new Date(checkin.created_at).toLocaleDateString(getFormattingLocale(), {
+                            {formatWhen(checkin.created_at, {
                               month: 'short',
                               day: 'numeric',
                               hour: '2-digit',
@@ -653,8 +727,9 @@ export function WellbeingTab() {
                             })}
                           </span>
                         </div>
+                        {/* The volunteer's own words in full (21 Oct 2026): wrapped, never clipped. */}
                         {checkin.note && (
-                          <p className="text-xs text-theme-muted truncate">{checkin.note}</p>
+                          <p className="text-xs text-theme-muted whitespace-pre-wrap break-words">{checkin.note}</p>
                         )}
                         {checkin.shared === true && (
                           <p className="text-xs text-theme-subtle mt-0.5">{t('wellbeing.checkin_shared_label')}</p>

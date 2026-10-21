@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => '支援テキストは最大 :max 文字です。',
     'vol_wellbeing_too_many_links' => 'リンクは最大 :max 件まで追加できます。',
     'vol_wellbeing_link_invalid' => '各リンクにはラベルと安全なアドレス（https://、mailto:、tel:、またはこのサイトのページ）が必要です。',
+    'vol_wellbeing_disabled' => 'このコミュニティではウェルビーイング・チェックインが無効になっています。',
+    'vol_wellbeing_checkin_note_invalid' => 'メモは500文字以内のテキストで入力してください。',
     'vol_wellbeing_recipient_unknown' => '元メンバー',
     'vol_wellbeing_warning_low_mood' => '最近、気分がよくないと教えてくれましたね。どうか無理をせず、サポートが必要なときは遠慮なく相談してください。',
     'vol_wellbeing_recommendation_reach_out' => '信頼できる人に話すか、サポートが必要な場合はコミュニティのチームに連絡してください。',

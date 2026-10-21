@@ -561,6 +561,23 @@ class NotificationDispatcher
      *   App\Support\Push\PushCopy). Sanitised once here; FCMPushService renders
      *   the catalogue copy from it in the recipient's locale. Web push is unchanged.
      */
+    /**
+     * The push dedup key: per user, type and link, and per thread when the caller
+     * names one. Two different volunteers' wellbeing pushes to the same person
+     * share a link (or have none) within the same minute; without the thread the
+     * second was swallowed (wellbeing deep audit S12, 21 Oct 2026).
+     *
+     * @param array<string, mixed> $context
+     */
+    private static function pushDedupKey(int $userId, string $activityType, ?string $link, array $context): string
+    {
+        $thread = isset($context['thread_id']) && is_string($context['thread_id']) && $context['thread_id'] !== ''
+            ? ':' . md5($context['thread_id'])
+            : '';
+
+        return 'push_dedup:' . $userId . ':' . $activityType . ':' . md5((string) ($link ?? '')) . $thread;
+    }
+
     public static function fanOutPush(int $userId, string $activityType, string $content, ?string $link, bool $onlyCurated = false, array $context = []): void
     {
         if ($userId <= 0) {
@@ -573,7 +590,7 @@ class NotificationDispatcher
         }
 
         // Dedup so a retry / double-dispatch within the window can't double-push.
-        $dedupKey = 'push_dedup:' . $userId . ':' . $activityType . ':' . md5((string) ($link ?? ''));
+        $dedupKey = self::pushDedupKey($userId, $activityType, $link, $context);
         if (!Cache::add($dedupKey, 1, now()->addSeconds(60))) {
             return;
         }

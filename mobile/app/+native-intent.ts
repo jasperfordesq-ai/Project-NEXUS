@@ -280,6 +280,10 @@ export function redirectSystemPath({ path }: RedirectEvent): string {
     // Declined on purpose — see BROWSER_ONLY_SECTIONS. Returning the path unchanged
     // lets Android carry on to the browser instead of stranding the member here.
     if (isBrowserOnlyPath(path)) return path ?? '/';
+    // A staff wellbeing alert reached as an App Link (an email's `/{slug}/admin/…` form)
+    // keeps its old behaviour too: staff pages are not opened inside the app from outside.
+    // Only push and in-app notification taps use the hand-off screen.
+    if (isWellbeingStaffAlertLink(path)) return mayFallThroughToRouter(path) ? path ?? '/' : '/';
     const mapped = mapSystemPathToNativeRoute(path);
     if (mapped) return mapped;
     // 🔴 F-496 — the mapper's `null` is a refusal as often as it is a miss. See
@@ -290,10 +294,69 @@ export function redirectSystemPath({ path }: RedirectEvent): string {
   }
 }
 
+/**
+ * The two staff pages a wellbeing alert links to (deep audit 21 Oct 2026, finding 4).
+ *
+ * 🔴 The member app is not a staff tool, and that does not change here. But a
+ * `volunteer_wellbeing` push sends staff exactly these links, and both fell through to the
+ * notification list (push) or did nothing (an in-app notification tap) — the member was
+ * never told where the alert actually is. `wellbeingStaffAlertRoute` sends them to a small
+ * screen that says so and offers ONE button that opens the page on the community's
+ * website.
+ *
+ * Deliberately NOT applied in `redirectSystemPath`: an App Link for these paths stays
+ * browser-only like every other staff page (`BROWSER_ONLY_SECTIONS`). Only the mapper —
+ * which push taps and in-app notification taps go through — knows about them.
+ */
+const WELLBEING_STAFF_ALERT_PATHS: Record<string, 'admin' | 'broker'> = {
+  'admin/volunteering/wellbeing': 'admin',
+  'broker/safeguarding/volunteering': 'broker',
+};
+
+/** A real alert id: digits only, so nothing the link author wrote can reach the web URL. */
+const ALERT_ID = /^[1-9][0-9]{0,18}$/;
+
+function wellbeingStaffAlertRoute(rawPath: string | null): string | null {
+  const trimmed = rawPath?.trim();
+  if (!trimmed) return null;
+  let url: URL;
+  try {
+    const normalized = trimmed.includes('://') || trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    url = new URL(normalized, 'https://app.project-nexus.ie');
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:' || url.hostname !== 'app.project-nexus.ie') return null;
+  let segments = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+  // An email's absolute link carries the community slug first (`/hour-timebank/admin/…`).
+  if (segments.length === 4 && segments[0] !== 'admin' && segments[0] !== 'broker') {
+    segments = segments.slice(1);
+  }
+  const area = WELLBEING_STAFF_ALERT_PATHS[segments.join('/')];
+  if (!area) return null;
+  const alert = url.searchParams.get('alert');
+  return appendParams('/(modals)/volunteering-wellbeing-staff-alert', {
+    area,
+    alert: alert && ALERT_ID.test(alert) ? alert : undefined,
+  });
+}
+
+/** Whether a notification link is one of the two staff wellbeing alert pages. */
+export function isWellbeingStaffAlertLink(rawPath: string | null): boolean {
+  if (shouldRejectNativeLinkInput(rawPath)) return false;
+  try {
+    return wellbeingStaffAlertRoute(rawPath) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function mapSystemPathToNativeRoute(rawPath: string | null): string | null {
   // This helper is also called directly for notification payloads, so it must
   // enforce the same boundary as Expo Router's redirect hook.
   if (shouldRejectNativeLinkInput(rawPath)) return null;
+  const staffAlert = wellbeingStaffAlertRoute(rawPath);
+  if (staffAlert) return staffAlert;
   const parsed = parseSystemPath(rawPath);
   if (!parsed) return null;
 

@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'Tekst wsparcia może mieć najwyżej :max znaków.',
     'vol_wellbeing_too_many_links' => 'Dodaj najwyżej :max linków.',
     'vol_wellbeing_link_invalid' => 'Każdy link wymaga etykiety i bezpiecznego adresu (https://, mailto:, tel: lub strony w tej witrynie).',
+    'vol_wellbeing_disabled' => 'Ta społeczność wyłączyła zgłoszenia samopoczucia.',
+    'vol_wellbeing_checkin_note_invalid' => 'Notatka musi być tekstem o długości do 500 znaków.',
     'vol_wellbeing_recipient_unknown' => 'Były członek',
     'vol_wellbeing_warning_low_mood' => 'Z Twojej ostatniej odpowiedzi wynika, że nie czujesz się dobrze. Zadbaj o siebie i poproś o wsparcie, jeśli go potrzebujesz.',
     'vol_wellbeing_recommendation_reach_out' => 'Porozmawiaj z kimś, komu ufasz, lub skontaktuj się z zespołem swojej społeczności, jeśli potrzebujesz wsparcia.',

@@ -169,6 +169,13 @@
         "link": "/broker/safeguarding"
       },
       {
+        "id": "broker_wellbeing_alerts",
+        "link": "/broker/safeguarding/volunteering",
+        "gate": {
+          "feature": "volunteering"
+        }
+      },
+      {
         "id": "broker_worried_about_member"
       }
     ]

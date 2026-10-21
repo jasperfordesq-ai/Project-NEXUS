@@ -917,6 +917,7 @@ function RootNavigator() {
       <Stack.Screen name="(modals)/volunteering-org-campaign-form" options={{ ...modalOptions, headerShown: false, title: t('volunteeringOrganiser:campaignForm.newTitle') }} />
       <Stack.Screen name="(modals)/volunteering-my-waitlists" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:waitlist.title') }} />
       <Stack.Screen name="(modals)/volunteering-my-wellbeing" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:wellbeing.title') }} />
+      <Stack.Screen name="(modals)/volunteering-wellbeing-staff-alert" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:staffAlert.title') }} />
       <Stack.Screen name="(modals)/volunteering-my-alerts" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:alerts.title') }} />
       <Stack.Screen name="(modals)/volunteering-my-qualifications" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:qualifications.title') }} />
       <Stack.Screen name="(modals)/volunteering-my-accessibility" options={{ ...modalOptions, headerShown: false, title: t('volunteeringVolunteer:accessibility.title') }} />

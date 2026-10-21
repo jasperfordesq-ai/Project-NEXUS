@@ -37689,7 +37689,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('3');
     expect(response.text).toContain('Things to be aware of');
     expect(response.text).toContain('Your logged hours are dropping significantly.');
-    expect(response.text).not.toContain('Your cancellation rate is higher than usual. Consider taking on fewer commitments.');
+    // 21 Oct 2026 (P1): this used to assert the sentence was NOT shown — pinning the
+    // bug that dropped every warning the API really sends (translated sentences).
+    // A sentence is shown as sent; a bare token like 'hours' still gets its label.
+    expect(response.text).toContain('Your cancellation rate is higher than usual. Consider taking on fewer commitments.');
     expect(response.text).toContain('How are you feeling?');
     expect(response.text).toContain('method="post" action="/volunteering/wellbeing/checkin"');
     expect(response.text).toContain('id="mood-1" name="mood" type="radio" value="1"');

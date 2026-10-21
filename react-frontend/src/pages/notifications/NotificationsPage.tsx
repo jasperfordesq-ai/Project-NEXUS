@@ -32,6 +32,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import Settings from 'lucide-react/icons/settings';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import Shield from 'lucide-react/icons/shield';
+import HeartPulse from 'lucide-react/icons/heart-pulse';
 import Eye from 'lucide-react/icons/eye';
 import ChevronDown from 'lucide-react/icons/chevron-down';
 import ChevronUp from 'lucide-react/icons/chevron-up';
@@ -479,6 +480,9 @@ const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
   achievement: { icon: <Award className="w-5 h-5" aria-hidden="true" />, color: 'orange' },
   safeguarding_flag: { icon: <ShieldAlert className="w-5 h-5" aria-hidden="true" />, color: 'red' },
   safeguarding_assignment: { icon: <Shield className="w-5 h-5" aria-hidden="true" />, color: 'blue' },
+  // A volunteer asked for someone to get in touch, or the nightly check raised
+  // a high-risk wellbeing alert: a safeguarding matter, not a system notice.
+  volunteer_wellbeing: { icon: <HeartPulse className="w-5 h-5" aria-hidden="true" />, color: 'red' },
   broker_review: { icon: <Eye className="w-5 h-5" aria-hidden="true" />, color: 'amber' },
   group_exchange: { icon: <ArrowLeftRight className="w-5 h-5" aria-hidden="true" />, color: 'indigo' },
 };

@@ -399,7 +399,8 @@
       "hours": "Athbhreithniú uaireanta",
       "volunteers": "Oibrithe deonacha",
       "wallet": "Sparán",
-      "settings": "Socruithe"
+      "settings": "Socruithe",
+      "wellbeing": "Folláine"
     },
     "stats": {
       "volunteers": "Oibrithe deonacha",
@@ -472,7 +473,38 @@
     "notYoursHint": "Ní fheiceann ach na daoine a stiúrann í na hiarratais, na huaireanta agus an sparán.",
     "backToVolunteering": "Ar ais chuig an obair dheonach",
     "declinedHeading": "Gan cheadú",
-    "declinedDescription": "Níor ceadaíodh an clárú seo, mar sin ní féidir leat deiseanna a fhógairt dó. Déan teagmháil le heagraí do phobail má cheapann tú gur botún é seo."
+    "declinedDescription": "Níor ceadaíodh an clárú seo, mar sin ní féidir leat deiseanna a fhógairt dó. Déan teagmháil le heagraí do phobail má cheapann tú gur botún é seo.",
+    "wellbeing": {
+      "intro": "Oibrithe deonacha de chuid d'eagraíochta a dúirt i seiceáil folláine go bhfuil siad íseal nó ag streachailt agus a d'iarr go ndéanfadh duine teagmháil. Cuireadh ar an eolas thú le foláireamh agus ríomhphost ag an am; seo an liosta iomlán. Feiceann tú a n-ainm agus conas atá siad – ní fheiceann tú a nóta riamh.",
+      "forbidden": "Níl rochtain agat ar fholáirimh folláine na heagraíochta seo.",
+      "switchedOff": "Tá seiceálacha folláine múchta ag an bpobal seo.",
+      "rateLimited": "An iomarca iarratas i mbeagán ama. Fan nóiméad agus bain triail eile as.",
+      "loadError": "Níorbh fhéidir na foláirimh folláine a lódáil. Bain triail eile as.",
+      "empty": "Níor iarr aon duine cabhair",
+      "emptyDesc": "Níor roinn aon duine de d'oibrithe deonacha seiceáil íseal le 90 lá anuas.",
+      "summary": "Tá {{count}} oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "summary_one": "Tá {{count}} oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "summary_two": "Tá {{count}} oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "summary_few": "Tá {{count}} oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "summary_many": "Tá {{count}} n-oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "summary_other": "Tá {{count}} oibrí deonach ag fanacht go ndéanfadh duine teagmháil",
+      "moodStruggling": "Dúirt go bhfuil siad ag streachailt",
+      "moodLow": "Dúirt go bhfuil siad íseal",
+      "status": {
+        "active": "Níor fhreagair aon duine fós",
+        "acknowledged": "Tá foireann an phobail ag plé leis",
+        "resolved": "Réitithe",
+        "dismissed": "Dúnta"
+      },
+      "checkedIn": "Seiceáil ar {{date}}",
+      "toldOn": "Cuireadh ar an eolas thú ar {{date}}",
+      "notTold": "Níor cuireadh ar an eolas thú fós",
+      "whatToDo": "Déan teagmháil leo go luath. Má tá imní ort faoina sábháilteacht anois díreach, cuir glao ar na seirbhísí éigeandála, agus ansin inis d'fhoireann do phobail.",
+      "closedHelp": "Tá sé seo dúnta ag foireann an phobail. Is féidir leat teagmháil a dhéanamh fós.",
+      "message": "Seol teachtaireacht chuig {{name}}",
+      "viewProfile": "Féach ar an bpróifíl",
+      "confidentiality": "Caith leis seo faoi rún. Ná roinn é ach leo siúd a bhfuil gá acu lena fhios, agus ná postáil faoi riamh."
+    }
   },
   "swaps": {
     "heading": "Malartuithe sealanna oibre",

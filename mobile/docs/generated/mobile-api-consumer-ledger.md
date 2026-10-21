@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Mobile API Consumer Ledger
 
-Last reviewed: 2026-10-17
+Last reviewed: 2026-10-21
 
 > GENERATED FILE — do not edit by hand.
 > Regenerate with `npm run api:ledger` from `mobile/`.
@@ -14,7 +14,7 @@ Every Laravel endpoint the Expo client calls, and whether the API still exposes 
 The Jest suite mocks the HTTP client, so it cannot detect a renamed or deleted route.
 This ledger is the compensating control.
 
-Verified against: `docs/generated/laravel-api-route-inventory.json (2317 distinct API paths)`
+Verified against: `docs/generated/laravel-api-route-inventory.json (2307 distinct API paths)`
 
 > Not verified against `openapi.json`. That file documents only a subset of the
 > application routes and has produced false drift findings for working endpoints.
@@ -22,9 +22,9 @@ Verified against: `docs/generated/laravel-api-route-inventory.json (2317 distinc
 | Measure | Count |
 | --- | --- |
 | API modules read | 67 |
-| Call sites | 770 |
-| Distinct method + endpoint pairs | 615 |
-| Verified against openapi.json | 615 |
+| Call sites | 771 |
+| Distinct method + endpoint pairs | 616 |
+| Verified against openapi.json | 616 |
 | **Missing from Laravel routes** | **0** |
 | **Method mismatch** | **0** |
 | Dynamic, not verifiable | 103 |
@@ -136,10 +136,10 @@ and the places a contract test earns the most.
 | ideation.ts:230 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:255 | POST | variable "endpoint" is assigned more than one endpoint in this module |
 | ideation.ts:256 | POST | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:605 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:606 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:879 | GET | variable "endpoint" is assigned more than one endpoint in this module |
-| marketplace.ts:880 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:614 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:615 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:888 | GET | variable "endpoint" is assigned more than one endpoint in this module |
+| marketplace.ts:889 | GET | variable "endpoint" is assigned more than one endpoint in this module |
 
 ## Verified endpoints
 
@@ -180,11 +180,11 @@ and the places a contract test earns the most.
 | POST | `/api/v2/connections/request` | connections.ts:64 |
 | GET | `/api/v2/connections/status/{param}` | connections.ts:59 |
 | POST | `/api/v2/contact` | staticPages.ts:134 |
-| GET | `/api/v2/coupons` | marketplace.ts:1208 |
-| GET | `/api/v2/coupons/{param}` | marketplace.ts:1212 |
-| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1216 |
-| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1220 |
-| POST | `/api/v2/coupons/validate` | marketplace.ts:899 |
+| GET | `/api/v2/coupons` | marketplace.ts:1217 |
+| GET | `/api/v2/coupons/{param}` | marketplace.ts:1221 |
+| POST | `/api/v2/coupons/{param}/qr` | marketplace.ts:1225 |
+| POST | `/api/v2/coupons/redeem-qr` | marketplace.ts:1229 |
+| POST | `/api/v2/coupons/validate` | marketplace.ts:908 |
 | GET | `/api/v2/courses` | courses.ts:247 |
 | POST | `/api/v2/courses` | courses.ts:349, courses.ts:350 |
 | GET | `/api/v2/courses/{param}` | courses.ts:259 |
@@ -325,7 +325,7 @@ and the places a contract test earns the most.
 | POST | `/api/v2/group-exchanges/{param}/confirm` | groupExchanges.ts:169 |
 | POST | `/api/v2/group-exchanges/preview` | groupExchanges.ts:182 |
 | GET | `/api/v2/group-templates` | groups.ts:635 |
-| GET | `/api/v2/groups` | groups.ts:530, volunteeringVolunteer.ts:509 |
+| GET | `/api/v2/groups` | groups.ts:530, volunteeringVolunteer.ts:539 |
 | POST | `/api/v2/groups` | groups.ts:622, groups.ts:627 |
 | GET | `/api/v2/groups/{param}` | groups.ts:537 |
 | PUT | `/api/v2/groups/{param}` | groups.ts:631 |
@@ -463,85 +463,85 @@ and the places a contract test earns the most.
 | POST | `/api/v2/listings/{param}/save` | exchanges.ts:221 |
 | PUT | `/api/v2/listings/{param}/tags` | exchanges.ts:202 |
 | POST | `/api/v2/listings/generate-description` | exchanges.ts:259 |
-| GET | `/api/v2/marketplace/categories` | marketplace.ts:592 |
-| GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:596 |
-| GET | `/api/v2/marketplace/collections` | marketplace.ts:1024 |
-| POST | `/api/v2/marketplace/collections` | marketplace.ts:1032 |
-| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:1036 |
-| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1047 |
-| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1051 |
-| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1058 |
-| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:998 |
-| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:1002 |
-| GET | `/api/v2/marketplace/listings` | marketplace.ts:562 |
-| POST | `/api/v2/marketplace/listings` | marketplace.ts:614, marketplace.ts:616 |
-| DELETE | `/api/v2/marketplace/listings/{param}` | marketplace.ts:653 |
-| PUT | `/api/v2/marketplace/listings/{param}` | marketplace.ts:641 |
-| POST | `/api/v2/marketplace/listings/{param}/images` | marketplace.ts:679 |
-| DELETE | `/api/v2/marketplace/listings/{param}/images/{param}` | marketplace.ts:683 |
-| POST | `/api/v2/marketplace/listings/{param}/offers` | marketplace.ts:708 |
-| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1070 |
-| POST | `/api/v2/marketplace/listings/{param}/renew` | marketplace.ts:672 |
-| POST | `/api/v2/marketplace/listings/{param}/report` | marketplace.ts:664 |
-| DELETE | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:668 |
-| POST | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:657 |
-| DELETE | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:693 |
-| POST | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:689 |
-| GET | `/api/v2/marketplace/listings/featured` | marketplace.ts:580 |
-| GET | `/api/v2/marketplace/listings/free` | marketplace.ts:588 |
-| POST | `/api/v2/marketplace/listings/generate-description` | marketplace.ts:649 |
-| GET | `/api/v2/marketplace/listings/nearby` | marketplace.ts:576 |
-| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1151 |
-| GET | `/api/v2/marketplace/my-offers/{param}` | marketplace.ts:718 |
-| DELETE | `/api/v2/marketplace/offers/{param}` | marketplace.ts:741 |
-| PUT | `/api/v2/marketplace/offers/{param}/accept` | marketplace.ts:722 |
-| PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | marketplace.ts:733 |
-| PUT | `/api/v2/marketplace/offers/{param}/counter` | marketplace.ts:729 |
-| PUT | `/api/v2/marketplace/offers/{param}/decline` | marketplace.ts:737 |
-| POST | `/api/v2/marketplace/orders` | marketplace.ts:839 |
-| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:753, marketplace.ts:758 |
-| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:773 |
-| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:769 |
-| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:795 |
-| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:811 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:818 |
-| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:825 |
-| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:787 |
-| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:884 |
-| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:780 |
-| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:791 |
-| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:765 |
-| POST | `/api/v2/marketplace/orders/checkout-outcome` | marketplace.ts:852 |
-| GET | `/api/v2/marketplace/orders/deliveries` | marketplace.ts:804 |
-| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:862 |
-| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:843 |
-| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1066 |
-| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1062 |
-| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:1006 |
-| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:1016 |
-| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:1020 |
-| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:943 |
-| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1159 |
-| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1176 |
-| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1200 |
-| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1196 |
-| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1204 |
-| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:973 |
-| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:954 |
-| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:939 |
-| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:950 |
-| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1155 |
-| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1076 |
-| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1129 |
-| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1147 |
-| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1143 |
-| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1080 |
-| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1099 |
-| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1118 |
-| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1114 |
-| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:958 |
-| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:969 |
-| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1086 |
+| GET | `/api/v2/marketplace/categories` | marketplace.ts:601 |
+| GET | `/api/v2/marketplace/categories/{param}/template` | marketplace.ts:605 |
+| GET | `/api/v2/marketplace/collections` | marketplace.ts:1033 |
+| POST | `/api/v2/marketplace/collections` | marketplace.ts:1041 |
+| DELETE | `/api/v2/marketplace/collections/{param}` | marketplace.ts:1045 |
+| GET | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1056 |
+| POST | `/api/v2/marketplace/collections/{param}/items` | marketplace.ts:1060 |
+| DELETE | `/api/v2/marketplace/collections/{param}/items/{param}` | marketplace.ts:1067 |
+| GET | `/api/v2/marketplace/groups/{param}/listings` | marketplace.ts:1007 |
+| GET | `/api/v2/marketplace/groups/{param}/stats` | marketplace.ts:1011 |
+| GET | `/api/v2/marketplace/listings` | marketplace.ts:571 |
+| POST | `/api/v2/marketplace/listings` | marketplace.ts:623, marketplace.ts:625 |
+| DELETE | `/api/v2/marketplace/listings/{param}` | marketplace.ts:662 |
+| PUT | `/api/v2/marketplace/listings/{param}` | marketplace.ts:650 |
+| POST | `/api/v2/marketplace/listings/{param}/images` | marketplace.ts:688 |
+| DELETE | `/api/v2/marketplace/listings/{param}/images/{param}` | marketplace.ts:692 |
+| POST | `/api/v2/marketplace/listings/{param}/offers` | marketplace.ts:717 |
+| POST | `/api/v2/marketplace/listings/{param}/promote` | marketplace.ts:1079 |
+| POST | `/api/v2/marketplace/listings/{param}/renew` | marketplace.ts:681 |
+| POST | `/api/v2/marketplace/listings/{param}/report` | marketplace.ts:673 |
+| DELETE | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:677 |
+| POST | `/api/v2/marketplace/listings/{param}/save` | marketplace.ts:666 |
+| DELETE | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:702 |
+| POST | `/api/v2/marketplace/listings/{param}/video` | marketplace.ts:698 |
+| GET | `/api/v2/marketplace/listings/featured` | marketplace.ts:589 |
+| GET | `/api/v2/marketplace/listings/free` | marketplace.ts:597 |
+| POST | `/api/v2/marketplace/listings/generate-description` | marketplace.ts:658 |
+| GET | `/api/v2/marketplace/listings/nearby` | marketplace.ts:585 |
+| GET | `/api/v2/marketplace/me/pickups` | marketplace.ts:1160 |
+| GET | `/api/v2/marketplace/my-offers/{param}` | marketplace.ts:727 |
+| DELETE | `/api/v2/marketplace/offers/{param}` | marketplace.ts:750 |
+| PUT | `/api/v2/marketplace/offers/{param}/accept` | marketplace.ts:731 |
+| PUT | `/api/v2/marketplace/offers/{param}/accept-counter` | marketplace.ts:742 |
+| PUT | `/api/v2/marketplace/offers/{param}/counter` | marketplace.ts:738 |
+| PUT | `/api/v2/marketplace/offers/{param}/decline` | marketplace.ts:746 |
+| POST | `/api/v2/marketplace/orders` | marketplace.ts:848 |
+| GET | `/api/v2/marketplace/orders/{param}` | marketplace.ts:762, marketplace.ts:767 |
+| PUT | `/api/v2/marketplace/orders/{param}/cancel` | marketplace.ts:782 |
+| PUT | `/api/v2/marketplace/orders/{param}/confirm-delivery` | marketplace.ts:778 |
+| GET | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:804 |
+| POST | `/api/v2/marketplace/orders/{param}/delivery-offers` | marketplace.ts:820 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/accept` | marketplace.ts:827 |
+| PUT | `/api/v2/marketplace/orders/{param}/delivery-offers/{param}/confirm` | marketplace.ts:834 |
+| POST | `/api/v2/marketplace/orders/{param}/dispute` | marketplace.ts:796 |
+| POST | `/api/v2/marketplace/orders/{param}/pickup-reservation` | marketplace.ts:893 |
+| POST | `/api/v2/marketplace/orders/{param}/rate` | marketplace.ts:789 |
+| GET | `/api/v2/marketplace/orders/{param}/ratings` | marketplace.ts:800 |
+| PUT | `/api/v2/marketplace/orders/{param}/ship` | marketplace.ts:774 |
+| POST | `/api/v2/marketplace/orders/checkout-outcome` | marketplace.ts:861 |
+| GET | `/api/v2/marketplace/orders/deliveries` | marketplace.ts:813 |
+| POST | `/api/v2/marketplace/payments/confirm` | marketplace.ts:871 |
+| POST | `/api/v2/marketplace/payments/create-intent` | marketplace.ts:852 |
+| GET | `/api/v2/marketplace/promotions/mine` | marketplace.ts:1075 |
+| GET | `/api/v2/marketplace/promotions/products` | marketplace.ts:1071 |
+| GET | `/api/v2/marketplace/saved-searches` | marketplace.ts:1015 |
+| POST | `/api/v2/marketplace/saved-searches` | marketplace.ts:1025 |
+| DELETE | `/api/v2/marketplace/saved-searches/{param}` | marketplace.ts:1029 |
+| GET | `/api/v2/marketplace/seller/balance` | marketplace.ts:952 |
+| GET | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1168 |
+| POST | `/api/v2/marketplace/seller/coupons` | marketplace.ts:1185 |
+| DELETE | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1209 |
+| PUT | `/api/v2/marketplace/seller/coupons/{param}` | marketplace.ts:1205 |
+| GET | `/api/v2/marketplace/seller/coupons/{param}/redemptions` | marketplace.ts:1213 |
+| GET | `/api/v2/marketplace/seller/dashboard` | marketplace.ts:982 |
+| POST | `/api/v2/marketplace/seller/onboard` | marketplace.ts:963 |
+| GET | `/api/v2/marketplace/seller/onboard/status` | marketplace.ts:948 |
+| GET | `/api/v2/marketplace/seller/payouts` | marketplace.ts:959 |
+| POST | `/api/v2/marketplace/seller/pickup-scan` | marketplace.ts:1164 |
+| GET | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1085 |
+| POST | `/api/v2/marketplace/seller/pickup-slots` | marketplace.ts:1138 |
+| DELETE | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1156 |
+| PUT | `/api/v2/marketplace/seller/pickup-slots/{param}` | marketplace.ts:1152 |
+| GET | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1089 |
+| POST | `/api/v2/marketplace/seller/shipping-options` | marketplace.ts:1108 |
+| DELETE | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1127 |
+| PUT | `/api/v2/marketplace/seller/shipping-options/{param}` | marketplace.ts:1123 |
+| GET | `/api/v2/marketplace/sellers/{param}` | marketplace.ts:967 |
+| GET | `/api/v2/marketplace/sellers/{param}/listings` | marketplace.ts:978 |
+| GET | `/api/v2/marketplace/sellers/{param}/shipping-options` | marketplace.ts:1095 |
 | POST | `/api/v2/matches/{param}/dismiss` | matches.ts:240 |
 | GET | `/api/v2/matches/all` | matches.ts:222 |
 | GET | `/api/v2/me/collections` | savedCollections.ts:55 |
@@ -553,11 +553,11 @@ and the places a contract test earns the most.
 | DELETE | `/api/v2/members/{param}/endorse` | endorsements.ts:232 |
 | POST | `/api/v2/members/{param}/endorse` | endorsements.ts:214 |
 | GET | `/api/v2/members/{param}/endorsements` | endorsements.ts:169 |
-| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:935 |
-| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:907 |
-| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:917 |
-| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:924 |
-| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:931 |
+| POST | `/api/v2/merchant-onboarding/complete` | marketplace.ts:944 |
+| GET | `/api/v2/merchant-onboarding/status` | marketplace.ts:916 |
+| POST | `/api/v2/merchant-onboarding/step-1` | marketplace.ts:926 |
+| POST | `/api/v2/merchant-onboarding/step-2` | marketplace.ts:933 |
+| POST | `/api/v2/merchant-onboarding/step-3` | marketplace.ts:940 |
 | GET | `/api/v2/messages` | messages.ts:154 |
 | POST | `/api/v2/messages` | messages.ts:242, messages.ts:243 |
 | DELETE | `/api/v2/messages/{param}` | messages.ts:231 |
@@ -669,89 +669,90 @@ and the places a contract test earns the most.
 | GET | `/api/v2/users/me/sub-accounts/{param}/activity` | settings.ts:279 |
 | PUT | `/api/v2/users/me/sub-accounts/{param}/approve` | settings.ts:175 |
 | PUT | `/api/v2/users/me/sub-accounts/{param}/permissions` | settings.ts:182, settings.ts:198 |
-| GET | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:418 |
-| PUT | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:426 |
-| GET | `/api/v2/volunteering/applications` | volunteering.ts:472 |
-| DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:508 |
-| PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:497 |
-| GET | `/api/v2/volunteering/certificates` | volunteering.ts:602 |
-| POST | `/api/v2/volunteering/certificates` | volunteering.ts:606 |
-| POST | `/api/v2/volunteering/checkin/checkout/{param}` | volunteering.ts:739 |
-| POST | `/api/v2/volunteering/checkin/verify/{param}` | volunteering.ts:734 |
-| GET | `/api/v2/volunteering/donations` | volunteering.ts:633 |
-| POST | `/api/v2/volunteering/donations` | volunteering.ts:680 |
-| GET | `/api/v2/volunteering/emergency-alerts` | volunteeringVolunteer.ts:218 |
-| PUT | `/api/v2/volunteering/emergency-alerts/{param}` | volunteeringVolunteer.ts:229 |
-| GET | `/api/v2/volunteering/expenses` | volunteering.ts:614 |
-| POST | `/api/v2/volunteering/expenses` | volunteering.ts:621, volunteeringVolunteer.ts:586 |
-| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:629 |
-| GET | `/api/v2/volunteering/group-reservations` | volunteeringVolunteer.ts:466 |
-| DELETE | `/api/v2/volunteering/group-reservations/{param}` | volunteeringVolunteer.ts:494 |
-| POST | `/api/v2/volunteering/group-reservations/{param}/members` | volunteeringVolunteer.ts:485 |
-| DELETE | `/api/v2/volunteering/group-reservations/{param}/members/{param}` | volunteeringVolunteer.ts:490 |
-| POST | `/api/v2/volunteering/hours` | volunteering.ts:705 |
-| PUT | `/api/v2/volunteering/hours/{param}/verify` | volunteering.ts:504 |
-| GET | `/api/v2/volunteering/hours/summary` | volunteering.ts:512 |
-| GET | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:390 |
-| POST | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:372 |
-| GET | `/api/v2/volunteering/incidents/report-options` | volunteeringVolunteer.ts:343 |
-| GET | `/api/v2/volunteering/my-organisations` | volunteering.ts:516 |
-| GET | `/api/v2/volunteering/my-waitlists` | volunteeringVolunteer.ts:89 |
-| GET | `/api/v2/volunteering/opportunities` | volunteering.ts:455 |
-| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:688 |
+| GET | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:448 |
+| PUT | `/api/v2/volunteering/accessibility-needs` | volunteeringVolunteer.ts:456 |
+| GET | `/api/v2/volunteering/applications` | volunteering.ts:476 |
+| DELETE | `/api/v2/volunteering/applications/{param}` | volunteering.ts:512 |
+| PUT | `/api/v2/volunteering/applications/{param}` | volunteering.ts:501 |
+| GET | `/api/v2/volunteering/certificates` | volunteering.ts:640 |
+| POST | `/api/v2/volunteering/certificates` | volunteering.ts:644 |
+| POST | `/api/v2/volunteering/checkin/checkout/{param}` | volunteering.ts:782 |
+| POST | `/api/v2/volunteering/checkin/verify/{param}` | volunteering.ts:777 |
+| GET | `/api/v2/volunteering/donations` | volunteering.ts:671 |
+| POST | `/api/v2/volunteering/donations` | volunteering.ts:723 |
+| GET | `/api/v2/volunteering/emergency-alerts` | volunteeringVolunteer.ts:248 |
+| PUT | `/api/v2/volunteering/emergency-alerts/{param}` | volunteeringVolunteer.ts:259 |
+| GET | `/api/v2/volunteering/expenses` | volunteering.ts:652 |
+| POST | `/api/v2/volunteering/expenses` | volunteering.ts:659, volunteeringVolunteer.ts:616 |
+| GET | `/api/v2/volunteering/giving-days` | volunteering.ts:667 |
+| GET | `/api/v2/volunteering/group-reservations` | volunteeringVolunteer.ts:496 |
+| DELETE | `/api/v2/volunteering/group-reservations/{param}` | volunteeringVolunteer.ts:524 |
+| POST | `/api/v2/volunteering/group-reservations/{param}/members` | volunteeringVolunteer.ts:515 |
+| DELETE | `/api/v2/volunteering/group-reservations/{param}/members/{param}` | volunteeringVolunteer.ts:520 |
+| POST | `/api/v2/volunteering/hours` | volunteering.ts:748 |
+| PUT | `/api/v2/volunteering/hours/{param}/verify` | volunteering.ts:508 |
+| GET | `/api/v2/volunteering/hours/summary` | volunteering.ts:516 |
+| GET | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:420 |
+| POST | `/api/v2/volunteering/incidents` | volunteeringVolunteer.ts:402 |
+| GET | `/api/v2/volunteering/incidents/report-options` | volunteeringVolunteer.ts:373 |
+| GET | `/api/v2/volunteering/my-organisations` | volunteering.ts:520 |
+| GET | `/api/v2/volunteering/my-waitlists` | volunteeringVolunteer.ts:91 |
+| GET | `/api/v2/volunteering/opportunities` | volunteering.ts:459 |
+| POST | `/api/v2/volunteering/opportunities` | volunteering.ts:731 |
 | DELETE | `/api/v2/volunteering/opportunities/{param}` | volunteeringOrganiser.ts:55 |
-| GET | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:465 |
-| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:696 |
-| GET | `/api/v2/volunteering/opportunities/{param}/applications` | volunteering.ts:483 |
-| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:713 |
+| GET | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:469 |
+| PUT | `/api/v2/volunteering/opportunities/{param}` | volunteering.ts:739 |
+| GET | `/api/v2/volunteering/opportunities/{param}/applications` | volunteering.ts:487 |
+| POST | `/api/v2/volunteering/opportunities/{param}/apply` | volunteering.ts:756 |
 | GET | `/api/v2/volunteering/opportunities/{param}/recurring-patterns` | volunteeringOrganiser.ts:147 |
 | POST | `/api/v2/volunteering/opportunities/{param}/recurring-patterns` | volunteeringOrganiser.ts:152 |
-| GET | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteering.ts:647, volunteeringOrganiser.ts:81 |
+| GET | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteering.ts:690, volunteeringOrganiser.ts:81 |
 | POST | `/api/v2/volunteering/opportunities/{param}/shifts` | volunteeringOrganiser.ts:86 |
 | GET | `/api/v2/volunteering/organisations` | organisations.ts:59 |
 | POST | `/api/v2/volunteering/organisations` | organisations.ts:77, organisations.ts:81 |
-| GET | `/api/v2/volunteering/organisations/{param}` | organisations.ts:69, volunteering.ts:523 |
-| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:591 |
-| GET | `/api/v2/volunteering/organisations/{param}/applications` | volunteering.ts:534 |
-| GET | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:393 |
-| POST | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:398 |
-| PUT | `/api/v2/volunteering/organisations/{param}/campaigns/{param}` | volunteeringOrganiser.ts:403 |
-| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts` | volunteeringOrganiser.ts:408 |
-| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers` | volunteeringOrganiser.ts:418 |
-| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/history` | volunteeringOrganiser.ts:413 |
-| GET | `/api/v2/volunteering/organisations/{param}/expenses` | volunteeringOrganiser.ts:260 |
-| PUT | `/api/v2/volunteering/organisations/{param}/expenses/{param}` | volunteeringOrganiser.ts:279 |
-| POST | `/api/v2/volunteering/organisations/{param}/handovers/{param}/confirm` | volunteeringOrganiser.ts:423 |
-| GET | `/api/v2/volunteering/organisations/{param}/hours/pending` | volunteering.ts:541 |
+| GET | `/api/v2/volunteering/organisations/{param}` | organisations.ts:69, volunteering.ts:527 |
+| PUT | `/api/v2/volunteering/organisations/{param}` | volunteering.ts:629 |
+| GET | `/api/v2/volunteering/organisations/{param}/applications` | volunteering.ts:538 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:394 |
+| POST | `/api/v2/volunteering/organisations/{param}/campaigns` | volunteeringOrganiser.ts:399 |
+| PUT | `/api/v2/volunteering/organisations/{param}/campaigns/{param}` | volunteeringOrganiser.ts:404 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/gifts` | volunteeringOrganiser.ts:409 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/handovers` | volunteeringOrganiser.ts:419 |
+| GET | `/api/v2/volunteering/organisations/{param}/campaigns/{param}/history` | volunteeringOrganiser.ts:414 |
+| GET | `/api/v2/volunteering/organisations/{param}/expenses` | volunteeringOrganiser.ts:261 |
+| PUT | `/api/v2/volunteering/organisations/{param}/expenses/{param}` | volunteeringOrganiser.ts:280 |
+| POST | `/api/v2/volunteering/organisations/{param}/handovers/{param}/confirm` | volunteeringOrganiser.ts:424 |
+| GET | `/api/v2/volunteering/organisations/{param}/hours/pending` | volunteering.ts:545 |
 | GET | `/api/v2/volunteering/organisations/{param}/opportunities` | volunteeringOrganiser.ts:47 |
-| GET | `/api/v2/volunteering/organisations/{param}/stats` | volunteering.ts:527 |
-| GET | `/api/v2/volunteering/organisations/{param}/volunteers` | volunteering.ts:547 |
-| POST | `/api/v2/volunteering/organisations/{param}/wallet/deposit` | volunteering.ts:574 |
-| GET | `/api/v2/volunteering/organisations/{param}/wallet/transactions` | volunteering.ts:553 |
-| GET | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:283 |
-| POST | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:314 |
-| PUT | `/api/v2/volunteering/qualifications/{param}` | volunteeringVolunteer.ts:318 |
-| POST | `/api/v2/volunteering/qualifications/{param}/withdraw` | volunteeringVolunteer.ts:322 |
+| GET | `/api/v2/volunteering/organisations/{param}/stats` | volunteering.ts:531 |
+| GET | `/api/v2/volunteering/organisations/{param}/volunteers` | volunteering.ts:551 |
+| POST | `/api/v2/volunteering/organisations/{param}/wallet/deposit` | volunteering.ts:612 |
+| GET | `/api/v2/volunteering/organisations/{param}/wallet/transactions` | volunteering.ts:591 |
+| GET | `/api/v2/volunteering/organisations/{param}/wellbeing` | volunteering.ts:587 |
+| GET | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:313 |
+| POST | `/api/v2/volunteering/qualifications` | volunteeringVolunteer.ts:344 |
+| PUT | `/api/v2/volunteering/qualifications/{param}` | volunteeringVolunteer.ts:348 |
+| POST | `/api/v2/volunteering/qualifications/{param}/withdraw` | volunteeringVolunteer.ts:352 |
 | DELETE | `/api/v2/volunteering/recurring-patterns/{param}` | volunteeringOrganiser.ts:166 |
 | PUT | `/api/v2/volunteering/recurring-patterns/{param}` | volunteeringOrganiser.ts:161 |
-| GET | `/api/v2/volunteering/shifts` | volunteering.ts:595 |
+| GET | `/api/v2/volunteering/shifts` | volunteering.ts:633 |
 | DELETE | `/api/v2/volunteering/shifts/{param}` | volunteeringOrganiser.ts:99 |
 | PUT | `/api/v2/volunteering/shifts/{param}` | volunteeringOrganiser.ts:91 |
-| GET | `/api/v2/volunteering/shifts/{param}/checkin` | volunteeringVolunteer.ts:134 |
-| GET | `/api/v2/volunteering/shifts/{param}/checkins` | volunteeringOrganiser.ts:202 |
-| POST | `/api/v2/volunteering/shifts/{param}/group-reserve` | volunteeringVolunteer.ts:477 |
-| GET | `/api/v2/volunteering/shifts/{param}/roster` | volunteeringOrganiser.ts:197 |
-| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:724 |
-| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:717 |
-| DELETE | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:103 |
-| POST | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:98 |
-| POST | `/api/v2/volunteering/shifts/{param}/waitlist/promote` | volunteeringVolunteer.ts:108 |
-| GET | `/api/v2/volunteering/swaps` | volunteering.ts:640 |
-| POST | `/api/v2/volunteering/swaps` | volunteering.ts:664 |
-| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:676 |
-| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:672 |
-| GET | `/api/v2/volunteering/wellbeing` | volunteeringVolunteer.ts:166 |
-| POST | `/api/v2/volunteering/wellbeing/checkin` | volunteeringVolunteer.ts:186 |
+| GET | `/api/v2/volunteering/shifts/{param}/checkin` | volunteeringVolunteer.ts:136 |
+| GET | `/api/v2/volunteering/shifts/{param}/checkins` | volunteeringOrganiser.ts:203 |
+| POST | `/api/v2/volunteering/shifts/{param}/group-reserve` | volunteeringVolunteer.ts:507 |
+| GET | `/api/v2/volunteering/shifts/{param}/roster` | volunteeringOrganiser.ts:198 |
+| DELETE | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:767 |
+| POST | `/api/v2/volunteering/shifts/{param}/signup` | volunteering.ts:760 |
+| DELETE | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:105 |
+| POST | `/api/v2/volunteering/shifts/{param}/waitlist` | volunteeringVolunteer.ts:100 |
+| POST | `/api/v2/volunteering/shifts/{param}/waitlist/promote` | volunteeringVolunteer.ts:110 |
+| GET | `/api/v2/volunteering/swaps` | volunteering.ts:681 |
+| POST | `/api/v2/volunteering/swaps` | volunteering.ts:707 |
+| DELETE | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:719 |
+| PUT | `/api/v2/volunteering/swaps/{param}` | volunteering.ts:715 |
+| GET | `/api/v2/volunteering/wellbeing` | volunteeringVolunteer.ts:185 |
+| POST | `/api/v2/volunteering/wellbeing/checkin` | volunteeringVolunteer.ts:216 |
 | GET | `/api/v2/wallet/balance` | wallet.ts:184 |
 | GET | `/api/v2/wallet/community-fund` | wallet.ts:220 |
 | POST | `/api/v2/wallet/donate` | wallet.ts:259 |

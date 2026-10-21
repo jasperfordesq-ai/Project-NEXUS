@@ -37,6 +37,19 @@
     ],
     "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
   },
+  "admins/admin_safeguarding/admin_wellbeing_alerts": {
+    "sources": [
+      "app/Http/Controllers/Api/VolunteerWellbeingController.php",
+      "app/Services/Volunteering/WellbeingSettingsService.php",
+      "app/Services/VolunteerWellbeingService.php",
+      "react-frontend/public/locales/en/admin_volunteering.json",
+      "react-frontend/src/admin/modules/volunteering/VolunteerWellbeing.tsx",
+      "react-frontend/src/admin/modules/volunteering/WellbeingAlertDrawer.tsx",
+      "react-frontend/src/admin/modules/volunteering/WellbeingAlertsPanel.tsx",
+      "react-frontend/src/admin/modules/volunteering/WellbeingSettingsCard.tsx"
+    ],
+    "verified": "c445fefadcc86a547557b86ddc6ff8b8fb6f385c"
+  },
   "brokers/broker_exchanges/broker_approve_exchange": {
     "sources": [
       "app/Http/Controllers/Api/AdminBrokerController.php",
@@ -162,6 +175,16 @@
       "react-frontend/src/broker/pages/MessageReviewPage.tsx"
     ],
     "verified": "3eae1af8da7ba3feb06de9543a408837cfc56cb7"
+  },
+  "brokers/broker_safeguarding/broker_wellbeing_alerts": {
+    "sources": [
+      "app/Services/VolunteerWellbeingService.php",
+      "react-frontend/public/locales/en/admin_volunteering.json",
+      "react-frontend/src/admin/modules/volunteering/WellbeingAlertDrawer.tsx",
+      "react-frontend/src/admin/modules/volunteering/WellbeingAlertsPanel.tsx",
+      "react-frontend/src/broker/pages/SafeguardingVolunteeringPage.tsx"
+    ],
+    "verified": "c445fefadcc86a547557b86ddc6ff8b8fb6f385c"
   },
   "members/account_profile/editing_your_profile": {
     "sources": [

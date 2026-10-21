@@ -87,6 +87,7 @@ class EmailTemplateBuilder
     private string $titleText = '';
     private string $previewText = '';
     private ?string $tenantName = null;
+    private ?string $footerNotice = null;
     private array $blocks = [];
 
     // =========================================================================
@@ -120,6 +121,16 @@ class EmailTemplateBuilder
     public function previewText(string $text): self
     {
         $this->previewText = $text;
+        return $this;
+    }
+
+    /**
+     * Replace the footer's "you are a member of this community" line, for mail
+     * sent to an address rather than a member (an already-escaped string).
+     */
+    public function footerNotice(string $notice): self
+    {
+        $this->footerNotice = $notice;
         return $this;
     }
 
@@ -601,7 +612,7 @@ HTML;
 
         // Translated footer strings
         $allRightsReserved = __('emails.footer.all_rights_reserved');
-        $memberNotice = __('emails.footer.member_notice', ['community' => $tenantName]);
+        $memberNotice = $this->footerNotice ?? __('emails.footer.member_notice', ['community' => $tenantName]);
         $managePreferences = __('emails.footer.manage_preferences');
 
         return <<<HTML

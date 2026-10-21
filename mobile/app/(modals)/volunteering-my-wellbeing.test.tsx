@@ -57,7 +57,12 @@ jest.mock('react-i18next', () => ({
         'volunteeringVolunteer:wellbeing.outcomeTold': `We have told ${String(opts?.count ?? 0)} other people. Someone will be in touch.`,
         'volunteeringVolunteer:wellbeing.outcomeSelfOnly': 'You are the only member of your community team, so nobody else has been told. See the support below.',
         'volunteeringVolunteer:wellbeing.noData': 'Not enough activity yet to score your wellbeing.',
-        'volunteeringVolunteer:wellbeing.outcomeAlreadyTold': 'Your community was already told today.',
+        'volunteeringVolunteer:wellbeing.outcomeAlreadyTold': 'Your community team was told recently.',
+        'volunteeringVolunteer:wellbeing.outcomeAlreadyToldToday': `Your community team was already told earlier today, at ${String(opts?.time ?? '')}.`,
+        'volunteeringVolunteer:wellbeing.outcomeAlreadyToldYesterday': `Your community team was already told yesterday at ${String(opts?.time ?? '')}.`,
+        'volunteeringVolunteer:wellbeing.outcomeAlreadyToldOn': `Your community team was already told on ${String(opts?.date ?? '')}.`,
+        'volunteeringVolunteer:wellbeing.outcomeDismiss': 'Dismiss',
+        'volunteeringVolunteer:wellbeing.rateLimited': 'Please wait a moment and try again.',
         'volunteeringVolunteer:wellbeing.outcomeNobody': 'Nobody could be told yet. We will try again with your next check-in. See the support below.',
         'volunteeringVolunteer:wellbeing.outcomePrivate': 'Only you can see this check-in.',
         'volunteeringVolunteer:wellbeing.supportHeading': 'If you need support now',
@@ -108,6 +113,7 @@ jest.mock('@/lib/api/volunteeringVolunteer', () => ({
 import MyWellbeingScreen from './volunteering-my-wellbeing';
 import { getWellbeing, submitWellbeingCheckin } from '@/lib/api/volunteeringVolunteer';
 import { ApiResponseError } from '@/lib/api/client';
+import { calendarDayRelativeTo, formatCalendarDate, formatWellbeingClock, formatWellbeingDateTime } from '@/lib/utils/wellbeingTime';
 
 const englishCatalogue = require('../../locales/en/volunteeringVolunteer.json') as { wellbeing: Record<string, string> };
 
@@ -119,11 +125,18 @@ const dashboard = {
   burnout_risk: 'low',
   warnings: ['You volunteered six days in a row.'],
   suggested_rest_days: ['2026-10-12'],
-  recent_checkins: [{ id: 9, mood: 4, note: 'Grand', shared: false, created_at: '2026-10-06T10:00:00Z' }],
+  // The legacy shape the API sent until 21 Oct 2026: UTC, no offset. ISO with an offset is
+  // covered below; both must be read as the same instant.
+  recent_checkins: [{ id: 9, mood: 4, note: 'Grand', shared: false, created_at: '2026-10-06 10:00:00' }],
   support: { text: 'Ring the office any weekday.', links: [{ label: 'Our office', url: 'tel:+353100' }, { label: 'Contact the team', url: '/contact' }], is_default: false },
-  last_team_notified_at: '2026-10-20T12:05:22Z',
+  last_team_notified_at: '2026-10-20T12:05:22+00:00',
   last_told_count: 2,
 };
+
+/** A UTC stamp in the legacy `Y-m-d H:i:s` shape, `hoursAgo` hours before now. */
+function legacyUtcStamp(hoursAgo: number): string {
+  return new Date(Date.now() - hoursAgo * 3_600_000).toISOString().slice(0, 19).replace('T', ' ');
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -147,7 +160,8 @@ describe('MyWellbeingScreen', () => {
     fireEvent.changeText(getByTestId('wellbeing-note'), 'Bit tired');
     fireEvent.press(getByTestId('wellbeing-submit'));
     await waitFor(() => expect(submitWellbeingCheckin).toHaveBeenCalledWith({ mood: 3, note: 'Bit tired', share_with_team: false }));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Mood check-in recorded.' })));
+    await waitFor(() => expect(getByTestId('wellbeing-outcome')).toBeTruthy());
+    expect(getByTestId('wellbeing-outcome-text').props.children).toBe('Mood check-in recorded.');
     expect(getWellbeing).toHaveBeenCalledTimes(2);
   });
 
@@ -160,15 +174,51 @@ describe('MyWellbeingScreen', () => {
     await waitFor(() => expect(getByTestId('wellbeing-share')).toBeTruthy());
     fireEvent.press(getByTestId('wellbeing-submit'));
     await waitFor(() => expect(submitWellbeingCheckin).toHaveBeenCalledWith({ mood: 2, note: '', share_with_team: true }));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Thank you for telling us. Someone will be in touch.' })));
+    await waitFor(() => expect(getByText('Thank you for telling us. Someone will be in touch.')).toBeTruthy());
   });
 
-  it('surfaces a refused check-in', async () => {
-    jest.mocked(submitWellbeingCheckin).mockRejectedValueOnce(new ApiResponseError(429, 'Too many check-ins'));
+  it("surfaces a refused check-in with the server's reason", async () => {
+    jest.mocked(submitWellbeingCheckin).mockRejectedValueOnce(new ApiResponseError(422, 'The note may not be longer than 500 characters.', undefined, 'VALIDATION_ERROR', 'note'));
     const { getByTestId } = render(<MyWellbeingScreen />);
     await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
     fireEvent.press(getByTestId('wellbeing-submit'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Too many check-ins', variant: 'danger' })));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'The note may not be longer than 500 characters.', variant: 'danger' })));
+  });
+
+  // Contract 3 (21 Oct 2026): the rate limit arrives in a different envelope,
+  // `{ success: false, error, code: 'RATE_LIMIT_EXCEEDED' }`, with Retry-After.
+  it('asks the member to wait a moment when check-ins are rate limited, and keeps the note', async () => {
+    jest.mocked(submitWellbeingCheckin).mockRejectedValueOnce(new ApiResponseError(429, 'Too many requests', undefined, 'RATE_LIMIT_EXCEEDED'));
+    const { getByTestId } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.changeText(getByTestId('wellbeing-note'), 'Tired');
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Please wait a moment and try again.' })));
+    expect(getByTestId('wellbeing-note').props.value).toBe('Tired');
+  });
+
+  // Contract 2: the community switched wellbeing off after the screen loaded.
+  it('shows the switched-off state when a check-in is refused with FEATURE_DISABLED', async () => {
+    jest.mocked(submitWellbeingCheckin).mockRejectedValueOnce(new ApiResponseError(403, 'Wellbeing check-ins are switched off.', undefined, 'FEATURE_DISABLED'));
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(getByText('Not available in this community')).toBeTruthy());
+  });
+
+  it('shows the switched-off state, not "try again", when the summary is refused with FEATURE_DISABLED', async () => {
+    jest.mocked(getWellbeing).mockRejectedValue(new ApiResponseError(403, 'Wellbeing check-ins are switched off.', undefined, 'FEATURE_DISABLED'));
+    const { getByText, queryByTestId } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByText('Not available in this community')).toBeTruthy());
+    expect(queryByTestId('wellbeing-error')).toBeNull();
+    expect(queryByTestId('wellbeing-submit')).toBeNull();
+  });
+
+  it('asks the member to wait a moment when the summary is rate limited', async () => {
+    jest.mocked(getWellbeing).mockRejectedValue(new ApiResponseError(429, 'Too many requests', undefined, 'RATE_LIMIT_EXCEEDED'));
+    const { getByText, getByTestId } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByText('Please wait a moment and try again.')).toBeTruthy());
+    expect(getByTestId('wellbeing-submit')).toBeTruthy();
   });
 
   it('still lets the member check in when the summary cannot be loaded', async () => {
@@ -192,7 +242,7 @@ describe('MyWellbeingScreen', () => {
     await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
     fireEvent.press(getByText('Struggling'));
     fireEvent.press(getByTestId('wellbeing-submit'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'We have told 2 other people. Someone will be in touch.' })));
+    await waitFor(() => expect(getByText('We have told 2 other people. Someone will be in touch.')).toBeTruthy());
   });
 
   // 21 Oct 2026: a lone staff member checking in is the only person on the team, so the
@@ -203,7 +253,9 @@ describe('MyWellbeingScreen', () => {
     await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
     fireEvent.press(getByText('Struggling'));
     fireEvent.press(getByTestId('wellbeing-submit'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', description: expect.stringMatching(/only member of your community team/i) })));
+    await waitFor(() => expect(getByText(/only member of your community team/i)).toBeTruthy());
+    expect(String(getByTestId('wellbeing-outcome-text').props.children)).toMatch(/only member/i);
+    expect(mockShowToast).not.toHaveBeenCalled();
     expect(getByTestId('wellbeing-support')).toBeTruthy();
   });
 
@@ -258,7 +310,9 @@ describe('MyWellbeingScreen', () => {
     await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
     fireEvent.press(getByText('Struggling'));
     fireEvent.press(getByTestId('wellbeing-submit'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', description: expect.stringMatching(/nobody could be told yet/i) })));
+    await waitFor(() => expect(getByText(/nobody could be told yet/i)).toBeTruthy());
+    // Deep audit finding 5: this used to live only in a four-second toast.
+    expect(mockShowToast).not.toHaveBeenCalled();
     expect(getByTestId('wellbeing-support')).toBeTruthy();
   });
 
@@ -270,5 +324,67 @@ describe('MyWellbeingScreen', () => {
     expect(getByText('Our office')).toBeTruthy();
     expect(getByText('Contact the team')).toBeTruthy();
     expect(getByText(/was last told on/)).toBeTruthy();
+  });
+  // Deep audit finding 5: the outcome stays on screen until the member dismisses it.
+  it('keeps the outcome on screen until it is dismissed', async () => {
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'nobody_available' } });
+    const { getByTestId, getByText, queryByTestId, getByLabelText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByText('Struggling'));
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(getByTestId('wellbeing-outcome')).toBeTruthy());
+    fireEvent.press(getByLabelText('Dismiss'));
+    expect(queryByTestId('wellbeing-outcome')).toBeNull();
+  });
+
+  // Contract 1 / deep audit finding 6: "already told today (16:05)" could mean yesterday.
+  it("says yesterday (or earlier today) from the viewer's own calendar for a legacy UTC told_at", async () => {
+    const toldAt = legacyUtcStamp(20);
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: toldAt, outcome: 'already_told_today' } });
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByText('Struggling'));
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(getByTestId('wellbeing-outcome')).toBeTruthy());
+    const instant = new Date(`${toldAt.replace(' ', 'T')}Z`);
+    const text = String(getByTestId('wellbeing-outcome-text').props.children);
+    expect(text).toBe(calendarDayRelativeTo(instant) === 'today'
+      ? `Your community team was already told earlier today, at ${formatWellbeingClock(instant)}.`
+      : `Your community team was already told yesterday at ${formatWellbeingClock(instant)}.`);
+  });
+
+  it('names the date when the earlier telling was longer ago, and never claims today without a time', async () => {
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: '2026-10-01T08:00:00+00:00', outcome: 'already_told_today' } });
+    const first = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(first.getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(first.getByText('Struggling'));
+    fireEvent.press(first.getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(first.getByText(`Your community team was already told on ${formatWellbeingDateTime('2026-10-01T08:00:00+00:00')}.`)).toBeTruthy());
+    first.unmount();
+
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 12, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'already_told_today' } });
+    const second = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(second.getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(second.getByText('Struggling'));
+    fireEvent.press(second.getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(second.getByText('Your community team was told recently.')).toBeTruthy());
+  });
+
+  it("shows check-in and last-told times in the viewer's zone for both the legacy and the ISO shape", async () => {
+    jest.mocked(getWellbeing).mockResolvedValue({ data: { ...dashboard, last_team_notified_at: '2026-10-20 12:05:22', recent_checkins: [
+      { id: 9, mood: 4, note: 'Grand', shared: false, created_at: '2026-10-06 10:00:00' },
+      { id: 10, mood: 3, note: null, shared: false, created_at: '2026-10-06T10:00:00+00:00' },
+    ] } });
+    const { getByTestId, getAllByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-checkin-9')).toBeTruthy());
+    const expected = formatWellbeingDateTime('2026-10-06T10:00:00Z');
+    expect(expected).not.toBeNull();
+    expect(getAllByText(expected as string)).toHaveLength(2);
+    expect(getByTestId('wellbeing-last-told').props.children).toBe(`Your community team was last told on ${formatWellbeingDateTime('2026-10-20T12:05:22Z')}.`);
+  });
+
+  it('shows a suggested rest day as the calendar day the server named', async () => {
+    const { getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByText(formatCalendarDate('2026-10-12') as string)).toBeTruthy());
   });
 });

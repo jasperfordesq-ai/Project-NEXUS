@@ -32,6 +32,7 @@ vi.mock('../../api/adminApi', () => ({
 }));
 
 import { WellbeingAlertDrawer } from './WellbeingAlertDrawer';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const DETAIL = {
   alert: {
@@ -118,6 +119,60 @@ describe('WellbeingAlertDrawer', () => {
     await waitFor(() => expect(mockApi.updateWellbeingAlert).toHaveBeenCalledWith(71, 'acknowledged'));
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
     expect(mockToast.success).toHaveBeenCalled();
+  });
+
+  // Deep audit C12 (21 Oct 2026).
+  it('announces a load failure', async () => {
+    mockApi.getWellbeingAlert.mockResolvedValue({ success: false });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not be loaded/i);
+  });
+
+  it('does not offer the action that matches the status the alert already has', async () => {
+    mockApi.getWellbeingAlert.mockResolvedValue({ success: true, data: { ...DETAIL, alert: { ...DETAIL.alert, status: 'acknowledged' } } });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+    expect(screen.getByRole('button', { name: 'Acknowledge' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Resolve' })).not.toBeDisabled();
+  });
+
+  it('shows the status the server holds after an action, not just the one asked for', async () => {
+    mockApi.updateWellbeingAlert.mockResolvedValue({ success: true, data: { id: 71, status: 'resolved' } });
+    mockApi.getWellbeingAlert
+      .mockResolvedValueOnce({ success: true, data: DETAIL })
+      .mockResolvedValueOnce({ success: true, data: { ...DETAIL, alert: { ...DETAIL.alert, status: 'resolved' } } });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Resolve' }));
+
+    await waitFor(() => expect(mockApi.getWellbeingAlert).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Resolved')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Resolve' })).toBeDisabled());
+  });
+
+  // Deep audit C6: the legacy stamp is UTC and must not be read as local time.
+  it.each([
+    ['legacy UTC form', '2026-10-21 14:05:00'],
+    ['ISO with offset', '2026-10-21T14:05:00+00:00'],
+  ])('reads check-in and note times as UTC (%s)', async (_label, stamp) => {
+    mockApi.getWellbeingAlert.mockResolvedValue({
+      success: true,
+      data: { ...DETAIL, checkins: [{ ...DETAIL.checkins[1], created_at: stamp }], notes: [{ ...DETAIL.notes[0], created_at: stamp }] },
+    });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+    const expected = new Date(Date.UTC(2026, 9, 21, 14, 5)).toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+    expect(screen.getAllByText(expected).length).toBeGreaterThanOrEqual(2);
+  });
+
+  // Deep audit C10: logical side classes for right-to-left languages.
+  it('uses logical side classes so the layout follows the reading direction', async () => {
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+    expect(document.querySelector('.ms-auto')).not.toBeNull();
+    expect(document.querySelector('.ml-auto')).toBeNull();
+    expect(document.querySelector('.pr-14')).toBeNull();
   });
 
   it('says when nobody could be told', async () => {

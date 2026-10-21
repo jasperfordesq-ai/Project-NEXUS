@@ -1140,14 +1140,20 @@
     "outcome_told_one": "Wir haben {{count}} weitere Person aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
     "outcome_told_other": "Wir haben {{count}} weitere Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
     "outcome_told_self_only": "Du bist das einzige Mitglied im Team deiner Gemeinschaft, daher wurde sonst niemand informiert.",
-    "outcome_already_told": "Deine Gemeinschaft wurde heute bereits informiert ({{time}}). Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcome_already_told_today": "Deine Gemeinschaft wurde bereits heute um {{time}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcome_already_told_yesterday": "Deine Gemeinschaft wurde bereits gestern um {{time}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcome_already_told_on": "Deine Gemeinschaft wurde bereits am {{date}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcome_already_told_recently": "Deine Gemeinschaft wurde innerhalb des letzten Tages bereits informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
     "outcome_nobody": "Niemand konnte bisher informiert werden. Wir versuchen es bei deinem nächsten Check-in erneut.",
     "outcome_private": "Nur du kannst diesen Check-in sehen.",
     "outcome_what_next": "Wie es weitergeht",
     "outcome_what_next_desc": "Jemand, der informiert wurde, liest deinen Check-in und meldet sich bei dir.",
     "outcome_dismiss": "Schließen",
     "support_heading": "Wenn du jetzt Unterstützung brauchst",
-    "last_told": "Das Team deiner Gemeinschaft wurde zuletzt am {{date}} informiert."
+    "last_told": "Das Team deiner Gemeinschaft wurde zuletzt am {{date}} informiert.",
+    "switched_off_title": "Wohlbefindens-Check-ins sind ausgeschaltet",
+    "switched_off_desc": "Deine Gemeinschaft hat die Wohlbefindens-Check-ins ausgeschaltet. Wenn du Unterstützung brauchst, wende dich an das Team deiner Gemeinschaft.",
+    "rate_limited": "Du hast das in kurzer Zeit mehrmals getan. Bitte warte einen Moment und versuche es dann erneut."
   },
   "check_in": {
     "title": "Schicht-Check-in",

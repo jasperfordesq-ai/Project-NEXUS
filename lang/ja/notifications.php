@@ -171,7 +171,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor さんが誰かに連絡してほしいと希望しています',
-            'body' => 'ウェルビーイング・チェックインで「:subject」と回答しました',
+            'body' => 'ウェルビーイング・チェックインからの連絡です。取り扱いにはご配慮ください。',
         ],
         'exchange_request_received' => [
             'title' => ':subject の新しいリクエスト',

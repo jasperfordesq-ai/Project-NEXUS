@@ -21963,6 +21963,8 @@ CREATE TABLE `vol_wellbeing_alert_notifications` (
   KEY `idx_vwan_alert` (`tenant_id`,`alert_id`),
   KEY `idx_vwan_volunteer` (`tenant_id`,`volunteer_user_id`,`created_at`),
   KEY `idx_vwan_checkin` (`tenant_id`,`checkin_id`),
+  UNIQUE KEY `uniq_vwan_checkin_user_channel` (`checkin_id`,`recipient_user_id`,`channel`),
+  UNIQUE KEY `uniq_vwan_checkin_email_channel` (`checkin_id`,`recipient_email`,`channel`),
   KEY `idx_vwan_recipient` (`recipient_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -22713,7 +22715,9 @@ INSERT INTO `laravel_migrations` VALUES
 (493,'2026_10_17_150000_add_lend_price_type_to_marketplace_listings',161),
 (494,'2026_10_18_120000_copy_vol_reminder_settings_into_tenant_settings',162),
 (495,'2026_10_21_100000_create_vol_wellbeing_alert_notifications',162),
-(496,'2026_10_21_100100_create_vol_wellbeing_alert_notes',162);
+(496,'2026_10_21_100100_create_vol_wellbeing_alert_notes',162),
+(497,'2026_10_21_120000_let_orphaned_wellbeing_notes_be_deleted',163),
+(498,'2026_10_21_140000_make_wellbeing_notification_record_unique',164);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

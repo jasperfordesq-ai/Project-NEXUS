@@ -396,7 +396,8 @@
       "hours": "Stundenprüfung",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Wohlbefinden"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -469,7 +470,35 @@
     "notYoursHint": "Bewerbungen, Stunden und das Guthaben sehen nur die Personen, die sie leiten.",
     "backToVolunteering": "Zurück zum Ehrenamt",
     "declinedHeading": "Nicht genehmigt",
-    "declinedDescription": "Diese Registrierung wurde nicht genehmigt, daher kannst du dafür keine Einsätze ausschreiben. Wende dich an die Organisation deiner Gemeinschaft, wenn du das für einen Fehler hältst."
+    "declinedDescription": "Diese Registrierung wurde nicht genehmigt, daher kannst du dafür keine Einsätze ausschreiben. Wende dich an die Organisation deiner Gemeinschaft, wenn du das für einen Fehler hältst.",
+    "wellbeing": {
+      "intro": "Freiwillige deiner Organisation, die bei einem Wohlbefinden-Check-in angegeben haben, dass es ihnen schlecht geht, und darum gebeten haben, dass sich jemand meldet. Du wurdest damals per Hinweis und E-Mail informiert; hier ist die vollständige Liste. Du siehst ihren Namen und wie es ihnen geht – nie ihre Notiz.",
+      "forbidden": "Du hast keinen Zugriff auf die Wohlbefinden-Hinweise dieser Organisation.",
+      "switchedOff": "Diese Gemeinschaft hat die Wohlbefinden-Check-ins ausgeschaltet.",
+      "rateLimited": "Zu viele Anfragen in kurzer Zeit. Bitte warte einen Moment und versuche es dann erneut.",
+      "loadError": "Die Wohlbefinden-Hinweise konnten nicht geladen werden. Bitte versuche es erneut.",
+      "empty": "Niemand hat um Hilfe gebeten",
+      "emptyDesc": "Keine deiner Freiwilligen hat in den letzten 90 Tagen einen Check-in mit schlechtem Befinden geteilt.",
+      "summary": "{{count}} Freiwillige warten darauf, dass sich jemand meldet",
+      "summary_one": "{{count}} freiwillige Person wartet darauf, dass sich jemand meldet",
+      "summary_other": "{{count}} Freiwillige warten darauf, dass sich jemand meldet",
+      "moodStruggling": "Sagt, es geht nicht gut",
+      "moodLow": "Sagt, die Stimmung ist niedrig",
+      "status": {
+        "active": "Noch niemand hat reagiert",
+        "acknowledged": "Das Team der Gemeinschaft kümmert sich",
+        "resolved": "Gelöst",
+        "dismissed": "Geschlossen"
+      },
+      "checkedIn": "Check-in am {{date}}",
+      "toldOn": "Du wurdest am {{date}} informiert",
+      "notTold": "Du wurdest noch nicht informiert",
+      "whatToDo": "Bitte melde dich bald bei der Person. Wenn du dir gerade Sorgen um ihre Sicherheit machst, rufe den Notruf und informiere dann das Team deiner Gemeinschaft.",
+      "closedHelp": "Das Team der Gemeinschaft hat dies abgeschlossen. Du kannst dich trotzdem melden.",
+      "message": "{{name}} schreiben",
+      "viewProfile": "Profil ansehen",
+      "confidentiality": "Behandle dies vertraulich. Teile es nur mit Personen, die es wissen müssen, und veröffentliche nie etwas darüber."
+    }
   },
   "swaps": {
     "heading": "Schichttausch",

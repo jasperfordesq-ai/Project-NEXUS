@@ -345,6 +345,21 @@ Related: `safeguarding_flagged_messages` (message review),
 > exchange.** `reports.target_type` has no `exchange` value. A member who believes
 > a completed exchange was recorded wrongly has no in-product way to say so.
 
+### Volunteer wellbeing requests (not a concern report)
+
+A volunteer who says in a wellbeing check-in that they are Low or Struggling, and
+ticks "Let someone get in touch with me", reaches people through a separate path
+that is neither a concern report nor a case file: named wellbeing contacts,
+safeguarding staff, organisations they volunteer with, the community above, and
+as a last resort the community's contact address. Four tables carry it —
+`vol_mood_checkins` (the check-in, with the share choice), `vol_wellbeing_alerts`
+(one open case per volunteer, also raised by the nightly activity scan),
+`vol_wellbeing_alert_notifications` (who was told, by which channel, and whether it
+worked; never the note or the mood) and `vol_wellbeing_alert_notes` (staff notes,
+made append-only by database triggers while the alert exists). Who is told, the
+once-a-day rule, retention and erasure are documented in
+[the volunteering module](modules/volunteering.md#volunteer-wellbeing).
+
 ---
 
 ## Vetting attestations

@@ -29,6 +29,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 import { WellbeingAlertsPanel, extractWellbeingAlerts } from './WellbeingAlertsPanel';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const STRUGGLING_ALERT = {
   id: 71,
@@ -146,6 +147,50 @@ describe('WellbeingAlertsPanel', () => {
 
     expect(await screen.findByText('Failed to load wellbeing alerts')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
+  });
+
+  // Deep audit O4 (21 Oct 2026): if the nightly activity check stops, nobody notices.
+  it('says when the nightly activity check last finished', async () => {
+    const recent = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+    mockApi.get.mockResolvedValue({ success: true, data: [], meta: { last_scan_at: recent } });
+    render(<WellbeingAlertsPanel />);
+    const line = await screen.findByTestId('wellbeing-last-scan');
+    expect(line).toHaveTextContent(/nightly activity check last finished/i);
+    expect(line).not.toHaveAttribute('role', 'alert');
+  });
+
+  it('warns when the nightly activity check has not finished in more than two days', async () => {
+    const old = new Date(Date.now() - 50 * 60 * 60 * 1000).toISOString();
+    mockApi.get.mockResolvedValue({ success: true, data: [], meta: { last_scan_at: old } });
+    render(<WellbeingAlertsPanel />);
+    const warning = await screen.findByTestId('wellbeing-last-scan');
+    expect(warning).toHaveTextContent(/more than two days ago/i);
+    expect(warning.className).toContain('warning');
+  });
+
+  it('warns when the nightly activity check has never finished', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: [], meta: { last_scan_at: null } });
+    render(<WellbeingAlertsPanel />);
+    expect(await screen.findByTestId('wellbeing-last-scan')).toHaveTextContent(/has not finished yet/i);
+  });
+
+  it('says nothing about the nightly check when an older server does not report it', async () => {
+    mockApi.get.mockResolvedValue({ success: true, data: [STRUGGLING_ALERT] });
+    render(<WellbeingAlertsPanel />);
+    await screen.findByText('Alex Volunteer');
+    expect(screen.queryByTestId('wellbeing-last-scan')).not.toBeInTheDocument();
+  });
+
+  // Deep audit C6: the legacy stamp is UTC and must not be read as local time.
+  it.each([
+    ['legacy UTC form', '2026-10-21 14:05:00'],
+    ['ISO with offset', '2026-10-21T14:05:00+00:00'],
+  ])('reads alert times as UTC (%s)', async (_label, stamp) => {
+    mockApi.get.mockResolvedValue({ success: true, data: [{ ...TOLD_ALERT, last_told_at: stamp, latest_checkin: { mood: 1, note: null, created_at: stamp } }] });
+    render(<WellbeingAlertsPanel />);
+    await screen.findByText('Pat Murphy');
+    const expected = new Date(Date.UTC(2026, 9, 21, 14, 5)).toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+    expect(screen.getByText(new RegExp(`Latest check-in: Struggling, ${expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))).toBeInTheDocument();
   });
 
   it('reloads when refreshKey changes', async () => {

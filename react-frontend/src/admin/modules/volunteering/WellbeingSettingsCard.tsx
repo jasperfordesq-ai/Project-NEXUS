@@ -12,7 +12,7 @@
  * Brokers never see this card; they read the alerts on the broker page.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import HeartHandshake from 'lucide-react/icons/heart-handshake';
 import Plus from 'lucide-react/icons/plus';
@@ -25,6 +25,38 @@ import { MemberSearchPicker, type MemberSearchMember } from '../../components/Me
 const MAX_CONTACTS = 10;
 const MAX_LINKS = 5;
 const MAX_SUPPORT_TEXT = 2000;
+/** The same limits as WellbeingSettingsService (MAX_LABEL, MAX_URL). */
+const MAX_LINK_LABEL = 80;
+const MAX_LINK_URL = 500;
+
+type LinkError = { label?: string; url?: string };
+
+/**
+ * The server's own rule (WellbeingSettingsService::isSafeLink), checked before
+ * anything is sent: https://, mailto:, tel:, or a page on this site (/path,
+ * never //host). No spaces or control characters, never plain http or
+ * javascript:.
+ */
+function isSafeSupportLink(url: string): boolean {
+  const hasControlOrSpace = [...url].some((ch) => {
+    const code = ch.codePointAt(0) ?? 0;
+    return code < 0x20 || code === 0x7f || /\s/.test(ch);
+  });
+  if (url === '' || [...url].length > MAX_LINK_URL || hasControlOrSpace) {
+    return false;
+  }
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    return true;
+  }
+  return /^(https:\/\/\S+|mailto:[^\s@]+@[^\s@]+|tel:\+?[0-9][0-9 ().-]{2,})$/i.test(url);
+}
+
+/** A server field naming one link: support_links.{i}, or support_links.{i}.label|url. */
+function linkFieldIndex(field: string): { index: number; part?: 'label' | 'url' } | null {
+  const match = /^support_links\.(\d+)(?:\.(label|url))?$/.exec(field);
+  if (!match) return null;
+  return { index: Number(match[1]), part: match[2] as 'label' | 'url' | undefined };
+}
 
 export interface WellbeingSettingsLink {
   label: string;
@@ -65,6 +97,13 @@ export function WellbeingSettingsCard() {
   const [links, setLinks] = useState<WellbeingSettingsLink[]>([]);
   const [pickerValue, setPickerValue] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // Per-row problems with a support link, from the check below or the server.
+  const [linkErrors, setLinkErrors] = useState<Record<number, LinkError>>({});
+  const idBase = useId();
+  const contactsErrorId = `${idBase}-contacts-error`;
+  const linksErrorId = `${idBase}-links-error`;
+  const linksSummaryId = `${idBase}-links-summary`;
+  const linksHeadingId = `${idBase}-links-heading`;
 
   const apply = useCallback((data: WellbeingSettings) => {
     setDefaults(data.defaults ?? { support_text: '', support_links: [] });
@@ -112,9 +151,42 @@ export function WellbeingSettingsCard() {
     setLinks((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   }, []);
 
+  const removeLink = useCallback((index: number) => {
+    setLinks((prev) => prev.filter((_, j) => j !== index));
+    // Row errors are keyed by position; after a removal they no longer line up.
+    setLinkErrors({});
+  }, []);
+
+  /** Every row's problems, worked out with the server's own rule. */
+  const checkLinks = useCallback((rows: WellbeingSettingsLink[]): Record<number, LinkError> => {
+    const found: Record<number, LinkError> = {};
+    rows.forEach((row, i) => {
+      const label = row.label.trim();
+      const url = row.url.trim();
+      const problem: LinkError = {};
+      if (label === '') {
+        problem.label = t('volunteering.wellbeing_link_label_required');
+      } else if ([...label].length > MAX_LINK_LABEL) {
+        problem.label = t('volunteering.wellbeing_link_label_too_long', { max: MAX_LINK_LABEL });
+      }
+      if ([...url].length > MAX_LINK_URL) {
+        problem.url = t('volunteering.wellbeing_link_url_too_long', { max: MAX_LINK_URL });
+      } else if (!isSafeSupportLink(url)) {
+        problem.url = t('volunteering.wellbeing_link_url_invalid');
+      }
+      if (problem.label || problem.url) found[i] = problem;
+    });
+    return found;
+  }, [t]);
+
   const save = useCallback(async () => {
-    setSaving(true);
     setFieldErrors({});
+    const rowProblems = checkLinks(links);
+    setLinkErrors(rowProblems);
+    if (Object.keys(rowProblems).length > 0) {
+      return;
+    }
+    setSaving(true);
     try {
       const res = await adminVolunteering.updateWellbeingSettings({
         contact_user_ids: contacts.map((c) => c.id),
@@ -128,7 +200,11 @@ export function WellbeingSettingsCard() {
       } else {
         const errors = (res as { errors?: ApiError[] }).errors ?? [];
         const first = errors[0];
-        if (first?.field && first.message) {
+        const row = first?.field ? linkFieldIndex(first.field) : null;
+        if (row && first?.message) {
+          // The server names the row (21 Oct 2026): mark that link, not the whole list.
+          setLinkErrors({ [row.index]: row.part === 'label' ? { label: first.message } : { url: first.message } });
+        } else if (first?.field && first.message) {
           setFieldErrors({ [first.field]: first.message });
         } else {
           toast.error(first?.message || t('volunteering.wellbeing_settings_failed'));
@@ -138,7 +214,9 @@ export function WellbeingSettingsCard() {
       toast.error(t('volunteering.wellbeing_settings_failed'));
     }
     setSaving(false);
-  }, [contacts, contactEmail, supportText, links, apply, toast, t]);
+  }, [contacts, contactEmail, supportText, links, apply, toast, t, checkLinks]);
+
+  const hasLinkErrors = Object.keys(linkErrors).length > 0;
 
   const usingDefault = supportText.trim() === '' && links.length === 0;
 
@@ -161,7 +239,12 @@ export function WellbeingSettingsCard() {
         ) : (
           <>
             {/* Who is told first */}
-            <section className="space-y-3">
+            <section
+              className="space-y-3"
+              role="group"
+              aria-label={t('volunteering.wellbeing_contacts_label')}
+              aria-describedby={fieldErrors.contact_user_ids ? contactsErrorId : undefined}
+            >
               <div>
                 <h4 className="text-sm font-semibold">{t('volunteering.wellbeing_contacts_label')}</h4>
                 <p className="text-xs text-muted">{t('volunteering.wellbeing_contacts_help', { max: MAX_CONTACTS })}</p>
@@ -204,7 +287,7 @@ export function WellbeingSettingsCard() {
                   size="sm"
                 />
               )}
-              {fieldErrors.contact_user_ids && <p className="text-sm text-danger">{fieldErrors.contact_user_ids}</p>}
+              {fieldErrors.contact_user_ids && <p id={contactsErrorId} role="alert" className="text-sm text-danger">{fieldErrors.contact_user_ids}</p>}
               <Input
                 label={t('volunteering.wellbeing_contact_email_label')}
                 description={t('volunteering.wellbeing_contact_email_help')}
@@ -239,40 +322,55 @@ export function WellbeingSettingsCard() {
                 isInvalid={Boolean(fieldErrors.support_text)}
                 errorMessage={fieldErrors.support_text}
               />
-              <div>
-                <h4 className="text-sm font-semibold">{t('volunteering.wellbeing_support_links_label')}</h4>
-                <p className="text-xs text-muted">{t('volunteering.wellbeing_link_url_help')}</p>
-              </div>
-              {links.map((link, i) => (
-                <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                  <Input
-                    label={t('volunteering.wellbeing_link_label', { n: i + 1 })}
-                    value={link.label}
-                    onValueChange={(v) => updateLink(i, { label: v })}
-                    maxLength={80}
-                    size="sm"
-                    className="sm:w-1/3"
-                  />
-                  <Input
-                    label={t('volunteering.wellbeing_link_url', { n: i + 1 })}
-                    value={link.url}
-                    onValueChange={(v) => updateLink(i, { url: v })}
-                    maxLength={500}
-                    size="sm"
-                    className="flex-1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="tertiary"
-                    isIconOnly
-                    aria-label={t('volunteering.wellbeing_remove_link', { n: i + 1 })}
-                    onPress={() => setLinks((prev) => prev.filter((_, j) => j !== i))}
-                  >
-                    <X size={14} aria-hidden="true" />
-                  </Button>
+              <div
+                role="group"
+                aria-labelledby={linksHeadingId}
+                aria-describedby={[fieldErrors.support_links ? linksErrorId : '', hasLinkErrors ? linksSummaryId : ''].filter(Boolean).join(' ') || undefined}
+                className="space-y-3"
+              >
+                <div>
+                  <h4 id={linksHeadingId} className="text-sm font-semibold">{t('volunteering.wellbeing_support_links_label')}</h4>
+                  <p className="text-xs text-muted">{t('volunteering.wellbeing_link_url_help')}</p>
                 </div>
-              ))}
-              {fieldErrors.support_links && <p className="text-sm text-danger">{fieldErrors.support_links}</p>}
+                {hasLinkErrors && (
+                  <p id={linksSummaryId} role="alert" className="text-sm text-danger">{t('volunteering.wellbeing_links_need_fixing')}</p>
+                )}
+                {links.map((link, i) => (
+                  <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                    <Input
+                      label={t('volunteering.wellbeing_link_label', { n: i + 1 })}
+                      value={link.label}
+                      onValueChange={(v) => updateLink(i, { label: v })}
+                      maxLength={MAX_LINK_LABEL}
+                      isInvalid={Boolean(linkErrors[i]?.label)}
+                      errorMessage={linkErrors[i]?.label}
+                      size="sm"
+                      className="sm:w-1/3"
+                    />
+                    <Input
+                      label={t('volunteering.wellbeing_link_url', { n: i + 1 })}
+                      value={link.url}
+                      onValueChange={(v) => updateLink(i, { url: v })}
+                      maxLength={MAX_LINK_URL}
+                      isInvalid={Boolean(linkErrors[i]?.url)}
+                      errorMessage={linkErrors[i]?.url}
+                      size="sm"
+                      className="flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="tertiary"
+                      isIconOnly
+                      aria-label={t('volunteering.wellbeing_remove_link', { n: i + 1 })}
+                      onPress={() => removeLink(i)}
+                      className="sm:mt-6"
+                    >
+                      <X size={14} aria-hidden="true" />
+                    </Button>
+                  </div>
+                ))}
+                {fieldErrors.support_links && <p id={linksErrorId} role="alert" className="text-sm text-danger">{fieldErrors.support_links}</p>}
+              </div>
               {links.length < MAX_LINKS && (
                 <Button size="sm" variant="tertiary" startContent={<Plus size={14} aria-hidden="true" />} onPress={() => setLinks((prev) => [...prev, { label: '', url: '' }])}>
                   {t('volunteering.wellbeing_add_link')}

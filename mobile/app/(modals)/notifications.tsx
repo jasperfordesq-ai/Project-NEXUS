@@ -340,7 +340,8 @@ function NotificationsScreen() {
 
   function renderItem({ item }: { item: Notification }) {
     const label = item.title ? `${item.title}. ${item.message}` : item.message;
-    const categoryTint = categoryColor(item.category, theme.textMuted, theme);
+    const category = displayCategory(item);
+    const categoryTint = categoryColor(category, theme.textMuted, theme);
     const isGrouped = isGroupedNotification(item);
     const groupKey = item.group_key ?? String(item.id);
     const isExpanded = Boolean(expandedGroups[groupKey]);
@@ -426,7 +427,7 @@ function NotificationsScreen() {
                     className="size-[38px] items-center justify-center rounded-2xl"
                     style={{ backgroundColor: withAlpha(categoryTint, 0.14) }}
                   >
-                    <Ionicons name={categoryIcon(item.category)} size={19} color={categoryTint} />
+                    <Ionicons name={rowIcon(item, category)} size={19} color={categoryTint} testID={`notification-icon-${item.id}`} />
                   </View>
                 )}
 
@@ -458,7 +459,7 @@ function NotificationsScreen() {
                     </Text>
                     <Text className="text-xs" style={{ color: theme.textMuted }}>·</Text>
                     <Text className="text-xs" style={{ color: categoryTint }} numberOfLines={1}>
-                      {categoryLabel(item.category, t)}
+                      {categoryLabel(category, t)}
                     </Text>
                     {isGrouped ? (
                       <>
@@ -665,6 +666,22 @@ function SwipeActionButton({
 
 function isGroupedNotification(item: Notification): boolean {
   return Boolean(item.is_grouped && (item.group_count ?? 0) > 1 && item.group_key);
+}
+
+/**
+ * The category a row is shown under. A wellbeing alert (`volunteer_wellbeing`) is a
+ * safeguarding matter: the server files it there from 21 Oct 2026, and rows stored before
+ * that still say `other`, so the type decides for those.
+ */
+function displayCategory(item: Notification): string | undefined | null {
+  if (item.type === 'volunteer_wellbeing') return 'safeguarding';
+  return item.category;
+}
+
+/** A wellbeing alert gets a heart rather than the generic safeguarding shield. */
+function rowIcon(item: Notification, category: string | undefined | null): React.ComponentProps<typeof Ionicons>['name'] {
+  if (item.type === 'volunteer_wellbeing') return 'heart-circle-outline';
+  return categoryIcon(category);
 }
 
 function categoryLabel(category: string | undefined | null, t: (key: string) => string): string {

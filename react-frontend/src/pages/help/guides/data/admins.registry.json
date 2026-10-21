@@ -275,6 +275,13 @@
       {
         "id": "admin_vetted_contact",
         "link": "/broker/vetting"
+      },
+      {
+        "id": "admin_wellbeing_alerts",
+        "link": "/admin/volunteering/wellbeing",
+        "gate": {
+          "feature": "volunteering"
+        }
       }
     ]
   },

@@ -242,7 +242,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor would like someone to get in touch',
-            'body' => 'They said in their wellbeing check-in that they are :subject',
+            'body' => 'From their wellbeing check-in. Please treat this as confidential.',
         ],
         'exchange_request_received' => [
             'title' => 'New request for :subject',

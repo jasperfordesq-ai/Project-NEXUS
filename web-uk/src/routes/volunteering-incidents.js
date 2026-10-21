@@ -32,6 +32,7 @@ const express = require('express');
 const { ApiError, callVolunteeringApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
+const { parseApiInstant } = require('../lib/api-instant');
 
 const router = express.Router();
 
@@ -263,7 +264,7 @@ function presentOrgWellbeing(row, t, formatDate) {
     volunteerName: typeof volunteer.name === 'string' ? volunteer.name : '',
     moodLabel: t(`${WB_KEY}${Number(item.mood) === 1 ? 'mood_struggling' : 'mood_low'}`),
     checkinLabel: formatDate(item.checkin_at),
-    toldLabel: item.told_at ? formatDate(item.told_at) : t(`${WB_KEY}not_told`),
+    toldLabel: parseApiInstant(item.told_at) ? formatDate(item.told_at) : t(`${WB_KEY}not_told`),
     statusLabel: t(`${WB_KEY}${WB_STATUS_KEYS[status]}`),
     isOpen: status === 'active' || status === 'acknowledged'
   };
@@ -296,7 +297,17 @@ router.get('/organisations/:id(\\d+)/wellbeing', asyncRoute(async (req, res) => 
 
   const data = result && result.data !== undefined ? result.data : result;
   const rows = data && Array.isArray(data.items) ? data.items : [];
-  const formatDate = dateFormatter(res);
+  // Wellbeing times are moments (21 Oct 2026): the bare database form is UTC, an ISO
+  // time carries its offset. Both are read by parseApiInstant and shown in UTC with
+  // the zone named, because a server-rendered page cannot know the reader's zone.
+  // `new Date('2026-10-20 12:05:22')` would have read the bare form as the server's
+  // local time.
+  const formatDate = (value) => {
+    const date = parseApiInstant(value);
+    return date
+      ? String(res.locals.formatLocaleDate(date, { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }) || '')
+      : '';
+  };
   const items = rows.map((row) => presentOrgWellbeing(row, t, formatDate)).filter((row) => row.id > 0);
   return res.render('volunteering/organisation-wellbeing', {
     title: t(`${WB_KEY}title`),

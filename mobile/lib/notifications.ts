@@ -27,7 +27,7 @@ import { api, ApiResponseError } from '@/lib/api/client';
 import { STORAGE_KEYS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
 import i18n from 'i18next';
-import { isBrowserOnlyPath, mapSystemPathToNativeRoute } from '@/app/+native-intent';
+import { isBrowserOnlyPath, isWellbeingStaffAlertLink, mapSystemPathToNativeRoute } from '@/app/+native-intent';
 import { isSafeExternalBrowserLink } from '@/lib/utils/safeExternalLink';
 
 export type PushRegistrationResult = 'registered' | 'permission-denied' | 'unavailable' | 'failed';
@@ -78,6 +78,9 @@ export function getNotificationLink(data: unknown): string | null {
         ? normalized
         : '/notifications';
     }
+    // A staff wellbeing alert: the hand-off screen says it is on the website (deep audit
+    // 21 Oct 2026, finding 4). Checked before the browser-only refusal it is part of.
+    if (isWellbeingStaffAlertLink(normalized)) return normalized;
     if (isBrowserOnlyPath(normalized)) return '/notifications';
     if (mapSystemPathToNativeRoute(normalized) === null) return '/notifications';
     return normalized;

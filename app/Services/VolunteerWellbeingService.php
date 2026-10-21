@@ -144,15 +144,17 @@ class VolunteerWellbeingService
             ->where('user_id', $userId)
             ->where('tenant_id', $tenantId)
             ->where('status', 'approved')
-            ->where('date_logged', '>=', now()->subDays(30))
+            // date_logged is a DATE: compare with dates, or the boundary day lands in
+            // the wrong window (deep audit S10, 21 Oct 2026).
+            ->where('date_logged', '>=', now()->subDays(30)->toDateString())
             ->sum('hours');
 
         $previousHours = (float) DB::table('vol_logs')
             ->where('user_id', $userId)
             ->where('tenant_id', $tenantId)
             ->where('status', 'approved')
-            ->where('date_logged', '>=', now()->subDays(60))
-            ->where('date_logged', '<', now()->subDays(30))
+            ->where('date_logged', '>=', now()->subDays(60)->toDateString())
+            ->where('date_logged', '<', now()->subDays(30)->toDateString())
             ->sum('hours');
 
         $hoursTrend = 'stable';
@@ -183,7 +185,7 @@ class VolunteerWellbeingService
         if ($lastActivity) {
             // Carbon 3 diffInDays() is signed — now()->diffInDays(past) is negative,
             // which made every engagement-gap threshold below unreachable.
-            $daysSinceLastActivity = (int) abs(now()->diffInDays($lastActivity));
+            $daysSinceLastActivity = (int) abs(now()->startOfDay()->diffInDays(\Carbon\Carbon::parse((string) $lastActivity)->startOfDay()));
         } else {
             // No activity ever — check if they have any signups at all
             // (live signups are vol_applications; vol_shift_signups is legacy)
@@ -276,8 +278,9 @@ class VolunteerWellbeingService
         // $persist = false so viewing the wellbeing dashboard never mutates
         // vol_wellbeing_alerts. upsertAlert is idempotent (one active row per
         // user), so the daily job refreshes rather than duplicates.
+        $raisedAlertId = null;
         if ($persist && $riskScore >= 30) {
-            self::upsertAlert($tenantId, $userId, $riskLevel, $riskScore, $indicators);
+            $raisedAlertId = self::upsertAlert($tenantId, $userId, $riskLevel, $riskScore, $indicators);
         }
 
         return [
@@ -285,6 +288,8 @@ class VolunteerWellbeingService
             'risk_level' => $riskLevel,
             'indicators' => $indicators,
             'recommendations' => $recommendations,
+            // A NEW alert this call opened (null when one was refreshed or none written).
+            'raised_alert_id' => $raisedAlertId,
         ];
     }
 
@@ -359,8 +364,28 @@ class VolunteerWellbeingService
         $atRiskUsers = [];
 
         foreach ($volunteerIds as $userId) {
-            $assessment = self::detectBurnoutRisk((int) $userId, true);
+            // One bad record must not abort the whole community's scan.
+            try {
+                $assessment = self::detectBurnoutRisk((int) $userId, true);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: assessment failed for one volunteer', [
+                    'tenant_id' => $tenantId,
+                    'user_id' => (int) $userId,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
             $level = $assessment['risk_level'] ?? 'low';
+
+            // A NEW high or critical alert raised from the volunteering pattern alone
+            // tells the community's safeguarding staff once, by bell (deep audit O3,
+            // 21 Oct 2026). Until then it waited, unseen, for someone to open the page.
+            // A mood alert is not belled here: the check-in already told people.
+            if (($assessment['raised_alert_id'] ?? null) !== null
+                && in_array($level, ['high', 'critical'], true)
+                && !self::isLowMood($assessment['indicators']['mood']['latest_mood'] ?? null)) {
+                self::bellStaffAboutScanAlert($tenantId, (int) $userId, (int) $assessment['raised_alert_id']);
+            }
             $riskBreakdown[$level] = ($riskBreakdown[$level] ?? 0) + 1;
 
             // Recovered below the alert threshold: close any stale system-raised
@@ -411,6 +436,8 @@ class VolunteerWellbeingService
     {
         $tenantId = TenantContext::getId();
 
+        // A query error is logged and thrown, never shown to staff as an empty,
+        // reassuring list (deep audit S15, 21 Oct 2026).
         try {
             $alerts = DB::table('vol_wellbeing_alerts as wa')
                 ->join('users as u', function ($join) {
@@ -456,20 +483,38 @@ class VolunteerWellbeingService
                     'latest_checkin' => $checkin ? [
                         'mood' => (int) $checkin->mood,
                         'note' => $checkin->note,
-                        'created_at' => $checkin->created_at,
+                        'created_at' => self::iso($checkin->created_at),
                     ] : null,
                     'coordinator_notified' => (bool) $row->coordinator_notified,
                     'coordinator_notes' => $row->coordinator_notes,
                     'told_count' => $told[(int) $row->id]['told_count'] ?? 0,
-                    'last_told_at' => $told[(int) $row->id]['last_told_at'] ?? null,
+                    'last_told_at' => self::iso($told[(int) $row->id]['last_told_at'] ?? null),
                     'status' => $row->status,
-                    'created_at' => $row->created_at,
-                    'updated_at' => $row->updated_at,
+                    'created_at' => self::iso($row->created_at),
+                    'updated_at' => self::iso($row->updated_at),
                 ];
             })->all();
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("VolunteerWellbeingService::getActiveAlerts error: " . $e->getMessage());
-            return [];
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService::getActiveAlerts failed', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Every wellbeing time leaves the API as ISO 8601 with its offset. The database
+     * holds UTC wall-clock strings with no zone, which the clients read as local
+     * time ("already told today (16:05)" for a stamp from yesterday; deep audit C6,
+     * 21 Oct 2026).
+     */
+    public static function iso(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        try {
+            return \Carbon\Carbon::parse((string) $value, 'UTC')->toIso8601String();
+        } catch (\Throwable) {
+            return null;
         }
     }
 
@@ -579,8 +624,8 @@ class VolunteerWellbeingService
                 'id' => (int) $c->id,
                 'mood' => (int) $c->mood,
                 'note' => $c->note,
-                'created_at' => $c->created_at,
-                'team_notified_at' => $c->team_notified_at,
+                'created_at' => self::iso($c->created_at),
+                'team_notified_at' => self::iso($c->team_notified_at),
             ])
             ->all();
 
@@ -603,7 +648,7 @@ class VolunteerWellbeingService
             ])
             ->map(fn ($n) => [
                 'id' => (int) $n->id,
-                'checkin_id' => (int) $n->checkin_id,
+                'checkin_id' => $n->checkin_id !== null ? (int) $n->checkin_id : null,
                 'recipient' => $n->recipient_user_id !== null ? [
                     'id' => (int) $n->recipient_user_id,
                     'name' => UserDisplayName::person([
@@ -618,8 +663,8 @@ class VolunteerWellbeingService
                 'channel' => $n->channel,
                 'status' => $n->status,
                 'error_code' => $n->error_code,
-                'created_at' => $n->created_at,
-                'updated_at' => $n->updated_at,
+                'created_at' => self::iso($n->created_at),
+                'updated_at' => self::iso($n->updated_at),
             ])
             ->all();
 
@@ -644,9 +689,9 @@ class VolunteerWellbeingService
                 'status' => $row->status,
                 'coordinator_notified' => (bool) $row->coordinator_notified,
                 'legacy_notes' => $legacy !== '' ? $legacy : null,
-                'resolved_at' => $row->resolved_at,
-                'created_at' => $row->created_at,
-                'updated_at' => $row->updated_at,
+                'resolved_at' => self::iso($row->resolved_at),
+                'created_at' => self::iso($row->created_at),
+                'updated_at' => self::iso($row->updated_at),
             ],
             'indicators' => $indicators,
             'checkins' => $checkins,
@@ -697,7 +742,7 @@ class VolunteerWellbeingService
                 'name' => UserDisplayName::person($n, (string) __('api.vol_wellbeing_recipient_unknown')),
             ],
             'body' => (string) $n->body,
-            'created_at' => (string) $n->created_at,
+            'created_at' => (string) self::iso($n->created_at),
         ];
     }
 
@@ -719,10 +764,17 @@ class VolunteerWellbeingService
         }
 
         return [
-            'last_team_notified_at' => (string) $checkin->team_notified_at,
+            'last_team_notified_at' => self::iso($checkin->team_notified_at),
             'last_told_count' => self::peopleToldFor($tenantId, (int) $checkin->id),
         ];
     }
+
+    /**
+     * One person or address per row of the notification record. A row whose
+     * recipient was erased has neither id nor address (deep audit S6), so it stands
+     * for "a person on that tier for that check-in": their bell and email count once.
+     */
+    private const RECIPIENT_KEY_SQL = "COALESCE(CAST(recipient_user_id AS CHAR), recipient_email, CONCAT('erased:', checkin_id, ':', tier))";
 
     /** "s***@community.example": enough to recognise, not enough to copy. */
     public static function maskEmail(string $email): string
@@ -753,7 +805,7 @@ class VolunteerWellbeingService
                 ->whereIn('alert_id', $alertIds)
                 ->where('status', '!=', 'failed')
                 ->groupBy('alert_id')
-                ->selectRaw('alert_id, COUNT(DISTINCT COALESCE(recipient_user_id, recipient_email)) as told, MAX(created_at) as last_at')
+                ->selectRaw('alert_id, COUNT(DISTINCT ' . self::RECIPIENT_KEY_SQL . ') as told, MAX(created_at) as last_at')
                 ->get()
                 ->mapWithKeys(fn ($r) => [(int) $r->alert_id => ['told_count' => (int) $r->told, 'last_told_at' => $r->last_at]])
                 ->all();
@@ -776,6 +828,16 @@ class VolunteerWellbeingService
      */
     public static function getOrganisationWellbeing(int $tenantId, int $orgId): array
     {
+        // A pending or suspended organisation is never told, so it sees nothing either.
+        $approved = DB::table('vol_organizations')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $orgId)
+            ->whereIn('status', VolunteerService::PUBLIC_ORGANIZATION_STATUSES)
+            ->exists();
+        if (!$approved) {
+            return [];
+        }
+
         $since = now()->subDays(180);
         $fromApplications = DB::table('vol_applications as a')
             ->join('vol_opportunities as o', function ($join) {
@@ -822,6 +884,12 @@ class VolunteerWellbeingService
 
         $items = [];
         foreach ($alerts as $row) {
+            // Only what this organisation was actually told: an alert raised before
+            // the volunteer had anything to do with it stays with the community's
+            // staff (deep audit S2, 21 Oct 2026).
+            if (!isset($told[(int) $row->id])) {
+                continue;
+            }
             $indicators = json_decode((string) $row->indicators, true) ?: [];
             $mood = isset($indicators['mood']['latest_mood']) ? (int) $indicators['mood']['latest_mood'] : null;
             if (!self::isLowMood($mood)) {
@@ -835,11 +903,11 @@ class VolunteerWellbeingService
                     'avatar_url' => $row->avatar_url,
                 ],
                 'mood' => $mood,
-                'checkin_at' => $indicators['mood']['latest_at'] ?? null,
+                'checkin_at' => self::iso($indicators['mood']['latest_at'] ?? null),
                 'status' => $row->status,
-                'told_at' => $told[(int) $row->id] ?? null,
-                'raised_at' => $row->created_at,
-                'updated_at' => $row->updated_at,
+                'told_at' => self::iso($told[(int) $row->id]),
+                'raised_at' => self::iso($row->created_at),
+                'updated_at' => self::iso($row->updated_at),
             ];
         }
 
@@ -853,46 +921,53 @@ class VolunteerWellbeingService
      * place, so acknowledging it does not spawn a twin on the next scan with the
      * notes and the "who was told" record left behind on the old one (audit
      * finding 4, 21 Oct 2026). A resolved or dismissed alert is reopened only by a
-     * genuinely new signal: a shared check-in made after it was concluded. The same
-     * still-current signal does not reopen a case staff have closed.
+     * genuinely new signal: for a mood alert, a shared check-in made at or after the
+     * moment it was concluded; for risk from the volunteering pattern alone (there is
+     * no check-in to date it), the same risk still present more than
+     * REOPEN_ACTIVITY_AFTER_DAYS days later. Until the deep audit (S1, 21 Oct 2026)
+     * an activity-only risk could never reopen at all once any alert had been
+     * concluded, so the first recovery switched that volunteer's scan off for good.
+     *
+     * Runs under the volunteer's lock, so a check-in racing the nightly scan cannot
+     * open two cases (S7).
+     *
+     * @return int|null the id of a NEW alert, null when one was refreshed or none written
      */
-    private static function upsertAlert(int $tenantId, int $userId, string $riskLevel, int $riskScore, array $indicators): void
+    private static function upsertAlert(int $tenantId, int $userId, string $riskLevel, int $riskScore, array $indicators): ?int
     {
         try {
-            $existing = DB::table('vol_wellbeing_alerts')
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $userId)
-                ->whereIn('status', ['active', 'acknowledged'])
-                ->orderByDesc('id')
-                ->first();
+            return self::withVolunteerLock($tenantId, $userId, function () use ($tenantId, $userId, $riskLevel, $riskScore, $indicators): ?int {
+                $existing = DB::table('vol_wellbeing_alerts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['active', 'acknowledged'])
+                    ->orderByDesc('id')
+                    ->first();
 
-            if (!$existing) {
+                if ($existing) {
+                    DB::table('vol_wellbeing_alerts')
+                        ->where('id', $existing->id)
+                        ->update([
+                            'risk_level' => $riskLevel,
+                            'risk_score' => $riskScore,
+                            'indicators' => json_encode($indicators),
+                            'updated_at' => now(),
+                        ]);
+
+                    return null;
+                }
+
                 $concluded = DB::table('vol_wellbeing_alerts')
                     ->where('tenant_id', $tenantId)
                     ->where('user_id', $userId)
                     ->whereIn('status', ['resolved', 'dismissed'])
                     ->orderByDesc('id')
                     ->first(['id', 'resolved_at', 'updated_at']);
-                if ($concluded) {
-                    $concludedAt = (string) ($concluded->resolved_at ?? $concluded->updated_at);
-                    $latestAt = (string) ($indicators['mood']['latest_at'] ?? '');
-                    if ($latestAt === '' || $latestAt <= $concludedAt) {
-                        return;
-                    }
+                if ($concluded && !self::isNewSignalSince((string) ($concluded->resolved_at ?? $concluded->updated_at), $indicators)) {
+                    return null;
                 }
-            }
 
-            if ($existing) {
-                DB::table('vol_wellbeing_alerts')
-                    ->where('id', $existing->id)
-                    ->update([
-                        'risk_level' => $riskLevel,
-                        'risk_score' => $riskScore,
-                        'indicators' => json_encode($indicators),
-                        'updated_at' => now(),
-                    ]);
-            } else {
-                DB::table('vol_wellbeing_alerts')->insert([
+                return (int) DB::table('vol_wellbeing_alerts')->insertGetId([
                     'tenant_id' => $tenantId,
                     'user_id' => $userId,
                     'risk_level' => $riskLevel,
@@ -903,10 +978,68 @@ class VolunteerWellbeingService
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-            }
+            });
         } catch (\Throwable $e) {
             // Non-critical — log but don't fail the assessment
             \Illuminate\Support\Facades\Log::warning("VolunteerWellbeingService::upsertAlert error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /** How long a concluded case stays closed against a risk from the volunteering pattern alone. */
+    public const REOPEN_ACTIVITY_AFTER_DAYS = 14;
+
+    /**
+     * Is the risk in $indicators new since a case was concluded at $concludedAt?
+     *
+     * @param array<string, mixed> $indicators
+     */
+    private static function isNewSignalSince(string $concludedAt, array $indicators): bool
+    {
+        $concluded = \Carbon\Carbon::parse($concludedAt, 'UTC');
+        $latestAt = (string) ($indicators['mood']['latest_at'] ?? '');
+        if ($latestAt === '') {
+            return $concluded->lt(now()->subDays(self::REOPEN_ACTIVITY_AFTER_DAYS));
+        }
+
+        // A check-in in the very second staff concluded the case still counts (S8).
+        return !\Carbon\Carbon::parse($latestAt, 'UTC')->lt($concluded);
+    }
+
+    /**
+     * Run $fn while holding a short per-volunteer lock, so two submits a second apart
+     * (or a submit racing the nightly scan) cannot both decide "nobody was told yet"
+     * or "there is no open case" (deep audit S7, 21 Oct 2026). MariaDB GET_LOCK, held
+     * on this connection only; elsewhere (SQLite in tests) it is a no-op. If the lock
+     * cannot be had within five seconds the work still runs: telling people twice is
+     * better than not at all, and the unique indexes catch a duplicate record.
+     *
+     * @template T
+     * @param callable(): T $fn
+     * @return T
+     */
+    private static function withVolunteerLock(int $tenantId, int $userId, callable $fn): mixed
+    {
+        if (DB::getDriverName() !== 'mysql') {
+            return $fn();
+        }
+        $key = 'wellbeing:' . $tenantId . ':' . $userId;
+        $got = false;
+        try {
+            $got = (int) (DB::selectOne('SELECT GET_LOCK(?, 5) AS l', [$key])->l ?? 0) === 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: volunteer lock unavailable', ['error' => $e->getMessage()]);
+        }
+        try {
+            return $fn();
+        } finally {
+            if ($got) {
+                try {
+                    DB::selectOne('SELECT RELEASE_LOCK(?) AS r', [$key]);
+                } catch (\Throwable) {
+                    // the lock dies with the connection anyway
+                }
+            }
         }
     }
 
@@ -1026,56 +1159,10 @@ class VolunteerWellbeingService
         $outcome = !$low ? 'not_low' : (!$shared ? 'private' : 'nobody_available');
 
         if ($shared) {
-            // Refresh the staff-visible alert from shared check-ins only.
-            self::detectBurnoutRisk($userId, true);
-            $alertId = DB::table('vol_wellbeing_alerts')
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $userId)
-                ->whereIn('status', ['active', 'acknowledged'])
-                ->orderByDesc('id')
-                ->value('id');
-            $alertId = $alertId === null ? null : (int) $alertId;
-
-            $toldToday = DB::table('vol_mood_checkins')
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $userId)
-                ->whereNotNull('team_notified_at')
-                ->where('team_notified_at', '>=', now()->subDay())
-                ->orderByDesc('team_notified_at')
-                ->first(['id', 'team_notified_at']);
-
-            // A stamp under which nobody was actually reached (every email failed
-            // later) does not count: it is cleared and the chain runs again (audit
-            // finding 1, 21 Oct 2026).
-            if ($toldToday && self::peopleToldFor($tenantId, (int) $toldToday->id) === 0) {
-                self::clearToldStamp($tenantId, (int) $toldToday->id);
-                $toldToday = null;
-            }
-
-            if ($toldToday) {
-                $outcome = 'already_told_today';
-                $toldAt = (string) $toldToday->team_notified_at;
-                $toldCount = self::peopleToldFor($tenantId, (int) $toldToday->id);
-            } else {
-                $result = self::notifyOfLowMood($tenantId, $userId, $mood, $id, $alertId);
-                if ($result['told'] > 0 || $result['self_told']) {
-                    $teamNotified = true;
-                    $toldCount = $result['told'];
-                    $toldAt = now()->toDateTimeString();
-                    // told_count is OTHER people: a lone staff volunteer is told plainly
-                    // that nobody else knows, not that "1 person" will be in touch.
-                    $outcome = $result['told'] > 0 ? 'told' : 'told_self_only';
-                    DB::table('vol_mood_checkins')
-                        ->where('id', $id)
-                        ->where('tenant_id', $tenantId)
-                        ->update(['team_notified_at' => now()]);
-                    DB::table('vol_wellbeing_alerts')
-                        ->where('tenant_id', $tenantId)
-                        ->where('user_id', $userId)
-                        ->whereIn('status', ['active', 'acknowledged'])
-                        ->update(['coordinator_notified' => true, 'updated_at' => now()]);
-                }
-            }
+            // "Told in the last day?" → tell → stamp is one step under the volunteer's
+            // lock: a double tap or a phone and a browser a second apart told everyone
+            // twice (deep audit S7, 21 Oct 2026).
+            [$teamNotified, $toldCount, $toldAt, $outcome] = self::withVolunteerLock($tenantId, $userId, fn (): array => self::tellAboutSharedCheckin($tenantId, $userId, $mood, $id));
         }
 
         return [
@@ -1085,9 +1172,74 @@ class VolunteerWellbeingService
             'shared' => $shared,
             'team_notified' => $teamNotified,
             'told_count' => $toldCount,
-            'told_at' => $toldAt,
+            'told_at' => self::iso($toldAt),
             'outcome' => $outcome,
         ];
+    }
+
+    /**
+     * The shared half of recordCheckin, run under the volunteer's lock.
+     *
+     * @return array{0: bool, 1: int, 2: ?string, 3: string} team notified, told count, told at, outcome
+     */
+    private static function tellAboutSharedCheckin(int $tenantId, int $userId, int $mood, int $id): array
+    {
+        $teamNotified = false;
+        $toldCount = 0;
+        $toldAt = null;
+        $outcome = 'nobody_available';
+        // Refresh the staff-visible alert from shared check-ins only.
+        self::detectBurnoutRisk($userId, true);
+        $alertId = DB::table('vol_wellbeing_alerts')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereIn('status', ['active', 'acknowledged'])
+            ->orderByDesc('id')
+            ->value('id');
+        $alertId = $alertId === null ? null : (int) $alertId;
+
+        $toldToday = DB::table('vol_mood_checkins')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereNotNull('team_notified_at')
+            ->where('team_notified_at', '>=', now()->subDay())
+            ->orderByDesc('team_notified_at')
+            ->first(['id', 'team_notified_at']);
+
+        // A stamp under which nobody was actually reached (every email failed
+        // later) does not count: it is cleared and the chain runs again (audit
+        // finding 1, 21 Oct 2026).
+        if ($toldToday && self::peopleToldFor($tenantId, (int) $toldToday->id) === 0) {
+            self::clearToldStamp($tenantId, (int) $toldToday->id);
+            $toldToday = null;
+        }
+
+        if ($toldToday) {
+            $outcome = 'already_told_today';
+            $toldAt = (string) $toldToday->team_notified_at;
+            $toldCount = self::peopleToldFor($tenantId, (int) $toldToday->id);
+        } else {
+            $result = self::notifyOfLowMood($tenantId, $userId, $mood, $id, $alertId);
+            if ($result['told'] > 0 || $result['self_told']) {
+                $teamNotified = true;
+                $toldCount = $result['told'];
+                $toldAt = now()->toDateTimeString();
+                // told_count is OTHER people: a lone staff volunteer is told plainly
+                // that nobody else knows, not that "1 person" will be in touch.
+                $outcome = $result['told'] > 0 ? 'told' : 'told_self_only';
+                DB::table('vol_mood_checkins')
+                    ->where('id', $id)
+                    ->where('tenant_id', $tenantId)
+                    ->update(['team_notified_at' => now()]);
+                DB::table('vol_wellbeing_alerts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['active', 'acknowledged'])
+                    ->update(['coordinator_notified' => true, 'updated_at' => now()]);
+            }
+        }
+
+        return [$teamNotified, $toldCount, $toldAt, $outcome];
     }
 
     /**
@@ -1102,7 +1254,9 @@ class VolunteerWellbeingService
                 ->where('checkin_id', $checkinId)
                 ->where('status', '!=', 'failed')
                 ->where('tier', '!=', 'self')
-                ->selectRaw("COUNT(DISTINCT COALESCE(recipient_user_id, recipient_email)) as c")
+                // An erased recipient's row keeps its tier but loses who they were (S6);
+                // it still counts as someone reached.
+                ->selectRaw("COUNT(DISTINCT " . self::RECIPIENT_KEY_SQL . ") as c")
                 ->value('c');
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: told count failed', ['checkin_id' => $checkinId, 'error' => $e->getMessage()]);
@@ -1308,6 +1462,21 @@ class VolunteerWellbeingService
     {
         try {
             return (int) DB::table('vol_wellbeing_alert_notifications')->insertGetId($row);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Already recorded for this check-in, recipient and channel (deep audit
+            // S7): the earlier row stands.
+            $existing = DB::table('vol_wellbeing_alert_notifications')
+                ->where('tenant_id', $row['tenant_id'])
+                ->where('checkin_id', $row['checkin_id'])
+                ->where('channel', $row['channel'])
+                ->when(
+                    ($row['recipient_user_id'] ?? null) !== null,
+                    fn ($q) => $q->where('recipient_user_id', $row['recipient_user_id']),
+                    fn ($q) => $q->where('recipient_email', $row['recipient_email'] ?? null)
+                )
+                ->value('id');
+
+            return $existing !== null ? (int) $existing : null;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: notification record failed', [
                 'tier' => $row['tier'] ?? null,
@@ -1428,9 +1597,10 @@ class VolunteerWellbeingService
                 $message,
                 $context['link'],
                 true,
+                // No mood word: the lock screen says only that they would like
+                // someone to get in touch (deep audit S13, 21 Oct 2026).
                 [
                     'actor' => $params['name'],
-                    'subject' => $params['mood'],
                     'thread_id' => 'wellbeing:' . $checkinId,
                 ]
             );
@@ -1502,12 +1672,23 @@ class VolunteerWellbeingService
                 ->paragraph($t($hint))
                 ->button($t($cta), $context['absolute_link']);
 
+            // An address is not a member: the footer says why it was sent there,
+            // and a reply goes to the community rather than to noreply (deep audit,
+            // 21 Oct 2026). Address-only mail renders in the platform default
+            // language: a community has no language of its own to use (S14).
+            $replyTo = null;
+            if ($variant === 'address') {
+                $builder->footerNotice($t('community_contact_footer'));
+                $contact = trim((string) DB::table('tenants')->where('id', $tenantId)->value('contact_email'));
+                $replyTo = filter_var($contact, FILTER_VALIDATE_EMAIL) ? $contact : null;
+            }
+
             $sent = EmailDispatchService::sendRaw(
                 (string) $recipient->email,
                 (string) __('emails_misc.volunteer_wellbeing.' . ($variant === 'self' ? 'self_subject' : 'subject'), $params),
                 $builder->render(),
                 null,
-                null,
+                $replyTo,
                 null,
                 'safeguarding',
                 ['tenant_id' => $tenantId]
@@ -1566,12 +1747,69 @@ class VolunteerWellbeingService
             return [];
         }
 
+        // A pending or suspended organisation is not told (deep audit S9).
         return DB::table('vol_organizations')
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $ids)
+            ->whereIn('status', VolunteerService::PUBLIC_ORGANIZATION_STATUSES)
             ->pluck('name', 'id')
             ->mapWithKeys(fn ($name, $id) => [(int) $id => (string) $name])
             ->all();
+    }
+
+    /**
+     * The nightly scan opened a NEW high or critical alert from the volunteering
+     * pattern alone: bell the community's safeguarding staff once, in their own
+     * language, pointing at the alert (deep audit O3, owner default 21 Oct 2026).
+     * No email and no device push: the volunteer did not ask for contact, and the
+     * only push wording for this type says they did. Not recorded in
+     * vol_wellbeing_alert_notifications (that record is per check-in); the bell's
+     * idempotency key is the record, and coordinator_notified is set.
+     */
+    private static function bellStaffAboutScanAlert(int $tenantId, int $volunteerId, int $alertId): void
+    {
+        try {
+            $volunteer = \App\Models\User::where('tenant_id', $tenantId)->where('id', $volunteerId)
+                ->first(['id', 'first_name', 'last_name', 'profile_type', 'organization_name', 'name']);
+            if (!$volunteer) {
+                return;
+            }
+            $name = UserDisplayName::person($volunteer);
+            $staff = \App\Models\User::where('tenant_id', $tenantId)
+                ->where('status', 'active')
+                ->where('id', '!=', $volunteerId)
+                ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
+                ->get(['id', 'tenant_id', 'preferred_language', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god']);
+
+            $told = 0;
+            foreach ($staff as $recipient) {
+                $link = (self::isAdminTier($recipient) ? '/admin/volunteering/wellbeing' : '/broker/safeguarding/volunteering') . '?alert=' . $alertId;
+                $ok = (bool) \App\I18n\LocaleContext::withLocale($recipient, function () use ($recipient, $name, $link, $alertId): bool {
+                    \App\Models\Notification::createNotificationOnce(
+                        (int) $recipient->id,
+                        (string) __('emails_misc.volunteer_wellbeing.bell_scan', ['name' => $name]),
+                        $link,
+                        'volunteer_wellbeing',
+                        (int) $recipient->tenant_id,
+                        'wellbeing-scan:' . $alertId . ':' . (int) $recipient->id
+                    );
+
+                    return true;
+                });
+                if ($ok) {
+                    $told++;
+                }
+            }
+            if ($told > 0) {
+                DB::table('vol_wellbeing_alerts')->where('tenant_id', $tenantId)->where('id', $alertId)->update(['coordinator_notified' => true]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: scan alert bell failed', [
+                'tenant_id' => $tenantId,
+                'alert_id' => $alertId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

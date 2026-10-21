@@ -327,4 +327,27 @@ describe('NotificationsPage', () => {
     // Still unread → the per-item "Mark as read" affordance remains.
     expect(screen.getByLabelText('Mark as read')).toBeInTheDocument();
   });
+
+  // Deep audit O-P3 #11 (21 Oct 2026): a volunteer asking for someone to get in touch
+  // looked like any system notice (a grey bell). It is a safeguarding matter.
+  it('marks a volunteer wellbeing request with the safeguarding colour and a heart icon', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: 7,
+          type: 'volunteer_wellbeing',
+          title: 'Wellbeing',
+          body: 'Pat would like someone to get in touch',
+          message: 'Pat would like someone to get in touch',
+          read_at: null,
+          created_at: '2026-02-19T10:00:00Z',
+        },
+      ],
+    });
+    const { container } = render(<NotificationsPage />);
+    await waitFor(() => expect(screen.getByText('Pat would like someone to get in touch')).toBeInTheDocument());
+    expect(container.querySelector('.lucide-heart-pulse')).not.toBeNull();
+    expect(container.querySelector('.bg-red-500\\/20')).not.toBeNull();
+  });
 });

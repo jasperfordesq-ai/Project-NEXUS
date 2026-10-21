@@ -25,6 +25,7 @@ import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale } from '@/lib/helpers';
+import { parseServerTimestamp } from '@/lib/serverTime';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
@@ -46,10 +47,10 @@ interface OrgWellbeingResponse {
   items: OrgWellbeingItem[];
 }
 
+/** A server time (ISO-8601, or the legacy `Y-m-d H:i:s`, which is UTC) in the viewer's zone. */
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return '';
-  const date = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
-  if (Number.isNaN(date.getTime())) return value;
+  const date = parseServerTimestamp(value);
+  if (!date) return value ?? '';
   return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }
 
@@ -90,7 +91,19 @@ export function OrgWellbeingTab({ orgId }: { orgId: number }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-theme-muted">{t('org_wellbeing.intro')}</p>
+      <div>
+        <p className="text-sm text-theme-muted">{t('org_wellbeing.intro')}</p>
+        {/* Always in the page, empty until the list arrives, so the summary is
+            announced when it is filled in (21 Oct 2026). */}
+        <p
+          role="status"
+          aria-live="polite"
+          data-testid="org-wellbeing-summary"
+          className={state === 'ready' && items.length > 0 ? 'mt-4 text-sm font-medium text-theme-primary' : undefined}
+        >
+          {state === 'ready' && items.length > 0 ? t('org_wellbeing.summary', { count: open }) : null}
+        </p>
+      </div>
 
       {state === 'loading' && <div role="status" aria-busy="true" className="space-y-3"><CardRowsSkeleton /><CardRowsSkeleton /></div>}
       {state === 'forbidden' && <EmptyState icon={<HeartPulse className="w-12 h-12" aria-hidden="true" />} title={t('org_wellbeing.forbidden')} />}
@@ -100,9 +113,6 @@ export function OrgWellbeingTab({ orgId }: { orgId: number }) {
       )}
       {state === 'ready' && items.length > 0 && (
         <>
-          <p className="text-sm font-medium text-theme-primary" aria-live="polite">
-            {t('org_wellbeing.summary', { count: open })}
-          </p>
           <ul className="space-y-3">
             {items.map((item) => {
               const moodKey = item.mood === 1 ? 'org_wellbeing.mood_struggling' : 'org_wellbeing.mood_low';

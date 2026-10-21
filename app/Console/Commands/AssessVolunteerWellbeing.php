@@ -9,6 +9,7 @@ namespace App\Console\Commands;
 use App\Core\TenantContext;
 use App\Services\VolunteerWellbeingService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,9 @@ use Illuminate\Support\Facades\Log;
  */
 class AssessVolunteerWellbeing extends Command
 {
+    /** When the scan last finished with no community failing (ISO string, UTC); shown on the admin alerts page. */
+    public const LAST_OK_CACHE_KEY = 'wellbeing:assess:last_ok_at';
+
     protected $signature = 'volunteering:assess-wellbeing {--tenant= : Specific tenant ID (default: all active)}';
     protected $description = 'Assess volunteer burnout risk and refresh wellbeing alerts per tenant';
 
@@ -55,7 +59,9 @@ class AssessVolunteerWellbeing extends Command
                 );
             } catch (\Throwable $e) {
                 $failures++;
-                Log::warning('[WellbeingAssessment] tenant assessment crashed', [
+                // error, not warning: the sentry channel only hears error and above,
+                // and a scan that stops raising alerts must be noticed (deep audit O4).
+                Log::error('[WellbeingAssessment] tenant assessment crashed', [
                     'tenant_id' => $tenantId,
                     'error' => $e->getMessage(),
                 ]);
@@ -72,6 +78,11 @@ class AssessVolunteerWellbeing extends Command
 
         $this->info("Wellbeing assessment done: {$totalAtRisk} at-risk volunteer(s) across " . count($tenantIds) . ' tenant(s).');
 
-        return $failures > 0 ? self::FAILURE : self::SUCCESS;
+        if ($failures > 0) {
+            return self::FAILURE;
+        }
+        Cache::forever(self::LAST_OK_CACHE_KEY, now()->toIso8601String());
+
+        return self::SUCCESS;
     }
 }

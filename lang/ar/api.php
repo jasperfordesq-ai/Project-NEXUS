@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'يمكن أن يكون نص الدعم :max حرفًا على الأكثر.',
     'vol_wellbeing_too_many_links' => 'أضف :max روابط على الأكثر.',
     'vol_wellbeing_link_invalid' => 'يحتاج كل رابط إلى تسمية وعنوان آمن (https:// أو mailto: أو tel: أو صفحة على هذا الموقع).',
+    'vol_wellbeing_disabled' => 'أوقف هذا المجتمع تسجيلات حالة الرفاه.',
+    'vol_wellbeing_checkin_note_invalid' => 'يجب أن تكون الملاحظة نصًا لا يتجاوز 500 حرف.',
     'vol_wellbeing_recipient_unknown' => 'عضو سابق',
     'vol_wellbeing_warning_low_mood' => 'أخبرتنا مؤخرًا أنك لست بخير. اعتنِ بنفسك، واطلب الدعم إذا احتجت إليه.',
     'vol_wellbeing_recommendation_reach_out' => 'تحدث إلى شخص تثق به، أو تواصل مع فريق مجتمعك إذا كنت ترغب في الدعم.',

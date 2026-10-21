@@ -895,8 +895,8 @@
     "mood_label_2": "Go dona",
     "bell_team": "Seiceáil folláine ó {{name}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
     "bell_org": "Seiceáil folláine ó {{name}}, a dhéanann obair dheonach le {{organisation}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
-    "subject": "{{name}}: “Mothaím {{mood}}”",
-    "preview": "{{name}}: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
+    "subject": "Ba mhaith le {{name}} go ndéanfadh duine teagmháil",
+    "preview": "D’iarr {{name}} go ndéanfadh duine teagmháil tar éis a seiceála folláine.",
     "team_title": "Tá tacaíocht ag teastáil ó oibrí deonach",
     "team_body": "Seiceáil folláine ó <strong>{{name}}</strong>: “Mothaím {{mood}}”. Iarrann siad go ndéanfadh duine teagmháil leo.",
     "team_note_hint": "Má scríobhadh nóta, is féidir leat é a léamh ar leathanach na bhfógraí folláine tar éis duit síniú isteach. Níl sé sa ríomhphost seo, ar mhaithe le príobháideacht.",
@@ -913,6 +913,7 @@
     "bell_self_told": "D'iarr tú go ndéanfadh duine teagmháil leat tar éis duit a rá go bhfuil tú {{mood}}. Chuireamar {{count}} duine ar an eolas.",
     "bell_contact": "Dúirt {{name}} ina sheiceáil folláine go bhfuil sé {{mood}}, agus ba mhaith leis go ndéanfadh duine teagmháil. Is tú duine de theagmhálaithe folláine an phobail seo.",
     "bell_parent": "Dúirt {{name}}, atá ag obair go deonach le {{community}}, go bhfuil sé {{mood}} agus ba mhaith leis go ndéanfadh duine teagmháil.",
+    "bell_scan": "Léirigh seiceáil folláine na hoíche go bhféadfadh brú a bheith ar {{name}} de réir a gcuid oibre deonaí le déanaí. Níor iarr siad teagmháil. Féach ar an bhfógra, le do thoil.",
     "self_subject": "Do sheiceáil folláine: cé a cuireadh ar an eolas",
     "self_title": "Do sheiceáil folláine",
     "self_body_alone": "Dúirt tú i do sheiceáil folláine go bhfuil tú {{mood}} agus d'iarr tú go ndéanfadh duine teagmháil leat. Níorbh fhéidir aon duine eile i do phobal a chur ar an eolas go fóill: níl aon fhoireann eile, teagmhálaithe folláine ná teagmhálaithe eagraíochta ann le cur ar an eolas. Is é an ríomhphost seo do thaifead go ndearnadh an iarraidh.",
@@ -920,6 +921,7 @@
     "contact_body": "Dúirt <strong>{{name}}</strong> ina sheiceáil folláine go bhfuil sé {{mood}}, agus d'iarr sé go ndéanfadh duine teagmháil leis. Is tú duine de theagmhálaithe folláine {{community}}.",
     "parent_body": "Dúirt <strong>{{name}}</strong>, atá ag obair go deonach le {{community}}, ina sheiceáil folláine go bhfuil sé {{mood}}, agus d'iarr sé go ndéanfadh duine teagmháil leis. Tá tú á chur ar an eolas mar fhoireann an phobail os cionn {{community}}.",
     "community_contact_intro": "Is é seo seoladh teagmhála {{community}}. Níorbh fhéidir aon duine ar fhoireann an phobail a chur ar an eolas, mar sin seoladh an teachtaireacht seo anseo ina ionad.",
+    "community_contact_footer": "Fuair tú an ríomhphost seo mar gurb é seo seoladh teagmhála phobal {{community}}.",
     "info_card_community": "Pobal"
   }
 }

@@ -158,7 +158,7 @@
     "historyHeading": "Points récents",
     "historyEmpty": "Vous n'avez pas encore fait de point.",
     "shared": "Partagé avec l'équipe de votre communauté",
-    "outcomeAlreadyTold": "Votre communauté a déjà été prévenue aujourd'hui. Ce bilan a été ajouté à ce qu'elle peut voir.",
+    "outcomeAlreadyTold": "L'équipe de votre communauté a été prévenue récemment. Ce bilan a été ajouté à ce qu'elle peut voir.",
     "outcomeNobody": "Personne n'a encore pu être prévenu. Nous réessaierons lors de votre prochain bilan. Voyez le soutien ci-dessous.",
     "outcomePrivate": "Vous seul pouvez voir ce bilan.",
     "supportHeading": "Si vous avez besoin de soutien maintenant",
@@ -166,7 +166,12 @@
     "outcomeTold_one": "Nous avons prévenu {{count}} autre personne de votre communauté. Quelqu'un prendra contact avec vous.",
     "outcomeTold_other": "Nous avons prévenu {{count}} autres personnes de votre communauté. Quelqu'un prendra contact avec vous.",
     "outcomeSelfOnly": "Vous êtes le seul membre de l'équipe de votre communauté, donc personne d'autre n'a été prévenu. Voyez le soutien ci-dessous.",
-    "noData": "Pas encore assez d'activité pour évaluer votre bien-être."
+    "noData": "Pas encore assez d'activité pour évaluer votre bien-être.",
+    "outcomeAlreadyToldToday": "L'équipe de votre communauté a déjà été prévenue aujourd'hui à {{time}}. Ce bilan a été ajouté à ce qu'elle peut voir.",
+    "outcomeAlreadyToldYesterday": "L'équipe de votre communauté a déjà été prévenue hier à {{time}}. Ce bilan a été ajouté à ce qu'elle peut voir.",
+    "outcomeAlreadyToldOn": "L'équipe de votre communauté a déjà été prévenue le {{date}}. Ce bilan a été ajouté à ce qu'elle peut voir.",
+    "outcomeDismiss": "Masquer",
+    "rateLimited": "Trop de demandes en peu de temps. Veuillez patienter un instant, puis réessayer."
   },
   "qualifications": {
     "title": "Qualifications",
@@ -416,5 +421,12 @@
     "members_other": "Membres ({{count}} sur {{max}})",
     "membersNoMax_one": "Membres ({{count}})",
     "membersNoMax_other": "Membres ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Alerte bien-être",
+    "heading": "Cette alerte bien-être se trouve sur le site web",
+    "body": "Les alertes bien-être sont destinées à l'équipe de votre communauté, et la page de l'alerte se trouve sur le site web. Ouvrez-la là-bas pour lire les bilans, voir qui a été prévenu et ajouter des notes. Il vous faudra peut-être vous connecter.",
+    "open": "Ouvrir sur le site web",
+    "openFailed": "Ce téléphone n'a pas pu ouvrir le site web. Ouvrez le site de votre communauté dans un navigateur et allez à la page des alertes bien-être."
   }
 }

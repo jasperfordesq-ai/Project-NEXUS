@@ -73,12 +73,13 @@ class VolunteerWellbeingServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function test_getActiveAlerts_returns_empty_on_error(): void
+    // A query error is thrown, never shown to staff as an empty list (deep audit S15, 21 Oct 2026).
+    public function test_getActiveAlerts_rethrows_a_query_error(): void
     {
         DB::shouldReceive('table')->andThrow(new \Exception('DB error'));
 
-        $result = VolunteerWellbeingService::getActiveAlerts();
-        $this->assertEmpty($result);
+        $this->expectExceptionMessage('DB error');
+        VolunteerWellbeingService::getActiveAlerts();
     }
 
     public function test_getErrors_returns_array(): void

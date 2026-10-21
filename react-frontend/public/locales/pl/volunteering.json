@@ -1166,14 +1166,20 @@
     "outcome_told_many": "Powiadomiliśmy {{count}} innych osób z Twojej społeczności. Ktoś się z Tobą skontaktuje.",
     "outcome_told_other": "Powiadomiliśmy {{count}} innych osób z Twojej społeczności. Ktoś się z Tobą skontaktuje.",
     "outcome_told_self_only": "Jesteś jedyną osobą w zespole swojej społeczności, więc nikt inny nie został powiadomiony.",
-    "outcome_already_told": "Twoja społeczność została już dziś powiadomiona ({{time}}). To zgłoszenie dodano do tego, co może zobaczyć.",
+    "outcome_already_told_today": "Twoja społeczność została już dziś powiadomiona, o {{time}}. To zgłoszenie dodano do tego, co może zobaczyć.",
+    "outcome_already_told_yesterday": "Twoja społeczność została już powiadomiona wczoraj, o {{time}}. To zgłoszenie dodano do tego, co może zobaczyć.",
+    "outcome_already_told_on": "Twoja społeczność została już powiadomiona {{date}}. To zgłoszenie dodano do tego, co może zobaczyć.",
+    "outcome_already_told_recently": "Twoja społeczność została już powiadomiona w ciągu ostatniej doby. To zgłoszenie dodano do tego, co może zobaczyć.",
     "outcome_nobody": "Nikogo nie udało się jeszcze powiadomić. Spróbujemy ponownie przy Twoim następnym zgłoszeniu.",
     "outcome_private": "Tylko Ty widzisz to zgłoszenie.",
     "outcome_what_next": "Co dalej",
     "outcome_what_next_desc": "Jedna z powiadomionych osób przeczyta Twoje zgłoszenie i skontaktuje się z Tobą.",
     "outcome_dismiss": "Zamknij",
     "support_heading": "Jeśli potrzebujesz wsparcia teraz",
-    "last_told": "Zespół Twojej społeczności został ostatnio powiadomiony {{date}}."
+    "last_told": "Zespół Twojej społeczności został ostatnio powiadomiony {{date}}.",
+    "switched_off_title": "Zgłoszenia samopoczucia są wyłączone",
+    "switched_off_desc": "Twoja społeczność wyłączyła zgłoszenia samopoczucia. Jeśli potrzebujesz wsparcia, skontaktuj się z zespołem swojej społeczności.",
+    "rate_limited": "Zrobiono to kilka razy w krótkim czasie. Poczekaj chwilę i spróbuj ponownie."
   },
   "check_in": {
     "title": "Odprawa zmianowa",

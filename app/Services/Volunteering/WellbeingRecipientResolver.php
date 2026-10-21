@@ -105,7 +105,9 @@ final class WellbeingRecipientResolver
         // 4. The staff of the community directly above.
         $parentId = DB::table('tenants')->where('id', $tenantId)->value('parent_id');
         $parentId = $parentId === null ? null : (int) $parentId;
-        if ($parentId !== null && $parentId !== self::PLATFORM_MASTER_TENANT_ID && $parentId !== $tenantId) {
+        // A switched-off community above is nobody's team (deep audit S9, 21 Oct 2026).
+        $parentActive = $parentId !== null && (bool) DB::table('tenants')->where('id', $parentId)->value('is_active');
+        if ($parentId !== null && $parentActive && $parentId !== self::PLATFORM_MASTER_TENANT_ID && $parentId !== $tenantId) {
             $parentStaff = DB::table('users')
                 ->where('tenant_id', $parentId)
                 ->where('status', 'active')

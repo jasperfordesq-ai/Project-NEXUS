@@ -895,8 +895,8 @@
     "mood_label_2": "Mal",
     "bell_team": "{{name}} informou no check-in de bem-estar: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
     "bell_org": "{{name}}, que faz voluntariado com {{organisation}}, informou: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
-    "subject": "{{name}}: “Estou me sentindo {{mood}}”",
-    "preview": "{{name}} informou: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
+    "subject": "{{name}} gostaria que alguém entrasse em contacto",
+    "preview": "{{name}} pediu que alguém entrasse em contacto após o registo de bem-estar.",
     "team_title": "Uma pessoa voluntária precisa de apoio",
     "team_body": "<strong>{{name}}</strong> informou no check-in de bem-estar: “Estou me sentindo {{mood}}” e pede que alguém entre em contato.",
     "team_note_hint": "Se houver uma nota, você pode lê-la na página de alertas de bem-estar depois de entrar. Ela não está neste e-mail, para proteger a privacidade.",
@@ -913,6 +913,7 @@
     "bell_self_told": "Pediu que alguém entrasse em contacto consigo depois de dizer que está {{mood}}. Avisámos {{count}} pessoas.",
     "bell_contact": "{{name}} disse no registo de bem-estar que está {{mood}} e gostaria que alguém entrasse em contacto. É um dos contactos de bem-estar desta comunidade.",
     "bell_parent": "{{name}}, voluntário em {{community}}, disse que está {{mood}} e gostaria que alguém entrasse em contacto.",
+    "bell_scan": "A verificação noturna de bem-estar detetou no voluntariado recente de {{name}} um possível sinal de sobrecarga. A pessoa não pediu contacto. Consulte o alerta.",
     "self_subject": "O seu registo de bem-estar: quem foi avisado",
     "self_title": "O seu registo de bem-estar",
     "self_body_alone": "Disse no seu registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto consigo. Ainda não foi possível avisar mais ninguém na sua comunidade: não há outros membros da equipa, contactos de bem-estar nem contactos de organizações para avisar. Este e-mail é o seu registo de que o pedido foi feito.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> disse no registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto. É um dos contactos de bem-estar de {{community}}.",
     "parent_body": "<strong>{{name}}</strong>, voluntário em {{community}}, disse no registo de bem-estar que está {{mood}} e pediu que alguém entrasse em contacto. Está a ser avisado como membro da equipa da comunidade acima de {{community}}.",
     "community_contact_intro": "Este é o endereço de contacto de {{community}}. Não foi possível avisar ninguém da equipa da comunidade, por isso esta mensagem foi enviada para aqui.",
+    "community_contact_footer": "Recebeu este email porque este é o endereço de contacto da comunidade {{community}}.",
     "info_card_community": "Comunidade"
   }
 }

@@ -85,9 +85,7 @@
     "members/security_signin/someone_got_into_account: Schalten Sie die Bestätigung in zwei Schritten ein",
     "members/troubleshooting/cant_sign_in: Diese Plattform ist für Erwachsene ab 18 Jahren",
     "members/troubleshooting/something_not_working: Aktualisieren Sie Ihren Browser",
-    "members/troubleshooting/something_not_working: Probieren Sie einen anderen Browser oder ein anderes Gerät",
-    "members/volunteering/volunteer_wellbeing: Es fällt mir schwer",
-    "members/volunteering/volunteer_wellbeing: Großartig"
+    "members/troubleshooting/something_not_working: Probieren Sie einen anderen Browser oder ein anderes Gerät"
   ],
   "en": [
     "admins/admin_safeguarding/admin_safeguarding_setup: Custom jurisdiction",

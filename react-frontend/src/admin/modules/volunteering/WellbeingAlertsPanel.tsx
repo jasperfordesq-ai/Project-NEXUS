@@ -26,6 +26,7 @@ import { Card, CardBody, CardHeader, Button, Chip, Skeleton, Select, SelectItem 
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
+import { parseServerTimestamp } from '@/lib/serverTime';
 
 export type WellbeingStatus = 'active' | 'acknowledged' | 'resolved' | 'dismissed';
 
@@ -57,6 +58,8 @@ export interface WellbeingAlert {
   /** How many people or addresses were told about this alert, and when last (20 Oct 2026). */
   told_count?: number;
   last_told_at?: string | null;
+  /** When the alert was raised; older servers send only created_at. */
+  raised_at?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -132,11 +135,43 @@ function riskLabel(level: RiskLevel, t: TFunction): string {
   }
 }
 
-function formatDateTime(value: string | undefined): string | null {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+/** A server time (ISO-8601, or the legacy `Y-m-d H:i:s`, which is UTC) in the viewer's zone. */
+function formatDateTime(value: string | null | undefined): string | null {
+  const date = parseServerTimestamp(value);
+  if (!date) return null;
   return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+/** How old the last nightly scan may be before staff are warned (two missed nights). */
+const SCAN_STALE_MS = 48 * 60 * 60 * 1000;
+
+/**
+ * When the nightly activity check last finished (21 Oct 2026): `undefined`
+ * when the server does not report it (say nothing), `null` when it never has.
+ */
+function readLastScan(meta: unknown): string | null | undefined {
+  if (!meta || typeof meta !== 'object' || !('last_scan_at' in meta)) return undefined;
+  const value = (meta as { last_scan_at?: unknown }).last_scan_at;
+  return typeof value === 'string' && value !== '' ? value : null;
+}
+
+function LastScanLine({ lastScan, t }: { lastScan: string | null; t: TFunction }) {
+  const scannedAt = parseServerTimestamp(lastScan);
+  const date = formatDateTime(lastScan) ?? '';
+  const stale = !scannedAt || Date.now() - scannedAt.getTime() > SCAN_STALE_MS;
+  if (!stale) {
+    return (
+      <p data-testid="wellbeing-last-scan" className="text-xs text-muted">
+        {t('volunteering.wellbeing_last_scan', { date })}
+      </p>
+    );
+  }
+  return (
+    <p data-testid="wellbeing-last-scan" className="flex items-start gap-2 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning-foreground">
+      <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+      <span>{scannedAt ? t('volunteering.wellbeing_last_scan_stale', { date }) : t('volunteering.wellbeing_last_scan_never')}</span>
+    </p>
+  );
 }
 
 export interface WellbeingAlertsPanelProps {
@@ -154,6 +189,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
   const [status, setStatus] = useState<WellbeingStatus>('active');
   const [actionId, setActionId] = useState<number | string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastScan, setLastScan] = useState<string | null | undefined>(undefined);
 
   const loadAlerts = useCallback(async (filter: WellbeingStatus) => {
     setLoading(true);
@@ -161,6 +197,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
       const res = await api.get(`/v2/admin/volunteering/wellbeing/alerts?status=${filter}`);
       if (res.success) {
         setAlerts(extractWellbeingAlerts(res.data));
+        setLastScan(readLastScan(res.meta));
         setError(null);
       } else {
         setAlerts([]);
@@ -215,7 +252,10 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
           <SelectItem key="dismissed" id="dismissed">{t('volunteering.wellbeing_status_dismissed')}</SelectItem>
         </Select>
       </CardHeader>
-      <CardBody>
+      <CardBody className="space-y-3">
+        {/* Alerts from activity patterns come from the nightly check; say when it
+            last finished, and warn when it seems to have stopped (21 Oct 2026). */}
+        {lastScan !== undefined && <LastScanLine lastScan={lastScan} t={t} />}
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
@@ -245,7 +285,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
               const checkin = latestCheckin(alert);
               const checkinMood = moodLabel(checkin?.mood, t);
               const checkinWhen = formatDateTime(checkin?.created_at);
-              const raisedOn = alert.created_at ? new Date(alert.created_at) : null;
+              const raisedOn = parseServerTimestamp(alert.raised_at ?? alert.created_at);
               const note = typeof checkin?.note === 'string' ? checkin.note.trim() : '';
               return (
                 <div
@@ -264,7 +304,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
                         </Chip>
                       )}
                     </div>
-                    {raisedOn && !Number.isNaN(raisedOn.getTime()) && (
+                    {raisedOn && (
                       <p className="text-xs text-muted mt-1">
                         {t('volunteering.wellbeing_raised_on', { date: raisedOn.toLocaleDateString(getFormattingLocale()) })}
                       </p>
@@ -272,7 +312,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
                     {typeof alert.told_count === 'number' && (
                       <p className={`text-xs mt-1 ${alert.told_count > 0 ? 'text-muted' : 'text-warning-foreground'}`}>
                         {alert.told_count > 0
-                          ? t('volunteering.wellbeing_told_count', { count: alert.told_count, date: formatDateTime(alert.last_told_at ?? undefined) ?? '' })
+                          ? t('volunteering.wellbeing_told_count', { count: alert.told_count, date: formatDateTime(alert.last_told_at) ?? '' })
                           : t('volunteering.wellbeing_nobody_told')}
                       </p>
                     )}
@@ -309,7 +349,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
                       variant="tertiary"
                       startContent={<Check size={14} aria-hidden="true" />}
                       isLoading={busy}
-                      isDisabled={otherBusy}
+                      isDisabled={otherBusy || alert.status === 'acknowledged'}
                       onPress={() => handleAction(alert, 'acknowledged')}
                     >
                       {t('volunteering.wellbeing_acknowledge')}
@@ -320,7 +360,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
                       color="success"
                       startContent={<CheckCircle size={14} aria-hidden="true" />}
                       isLoading={busy}
-                      isDisabled={otherBusy}
+                      isDisabled={otherBusy || alert.status === 'resolved'}
                       onPress={() => handleAction(alert, 'resolved')}
                     >
                       {t('volunteering.wellbeing_resolve')}
@@ -330,7 +370,7 @@ export function WellbeingAlertsPanel({ refreshKey = 0, onOpen }: WellbeingAlerts
                       variant="tertiary"
                       startContent={<X size={14} aria-hidden="true" />}
                       isLoading={busy}
-                      isDisabled={otherBusy}
+                      isDisabled={otherBusy || alert.status === 'dismissed'}
                       onPress={() => handleAction(alert, 'dismissed')}
                     >
                       {t('volunteering.wellbeing_dismiss')}

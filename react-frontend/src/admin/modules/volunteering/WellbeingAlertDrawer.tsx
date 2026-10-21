@@ -26,6 +26,7 @@ import { Avatar, Button, Chip, Skeleton, Textarea } from '@/components/ui';
 import { Drawer, DrawerContent, DrawerHeader, DrawerHeading, DrawerBody, DrawerFooter } from '@/components/ui/Drawer';
 import { useTenant, useToast } from '@/contexts';
 import { getFormattingLocale } from '@/lib/helpers';
+import { parseServerTimestamp } from '@/lib/serverTime';
 import { adminVolunteering } from '../../api/adminApi';
 import type { WellbeingStatus } from './WellbeingAlertsPanel';
 
@@ -90,10 +91,10 @@ export interface WellbeingAlertDrawerProps {
   onChanged: () => void;
 }
 
+/** A server time (ISO-8601, or the legacy `Y-m-d H:i:s`, which is UTC) in the viewer's zone. */
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
+  const date = parseServerTimestamp(value);
+  if (!date) return '';
   return date.toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 }
 
@@ -272,8 +273,13 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
       const res = await adminVolunteering.updateWellbeingAlert(alertId, next);
       if (res.success) {
         toast.success(t('volunteering.wellbeing_alert_updated'));
-        setDetail((prev) => (prev ? { ...prev, alert: { ...prev.alert, status: next } } : prev));
+        // Show the status the server reports, then re-read the alert (21 Oct
+        // 2026): another member of staff may have acted on it meanwhile.
+        const saved = res.data && typeof res.data === 'object' ? (res.data as { status?: unknown }).status : undefined;
+        const status = typeof saved === 'string' ? saved : next;
+        setDetail((prev) => (prev ? { ...prev, alert: { ...prev.alert, status } } : prev));
         onChanged();
+        void load(alertId);
       } else {
         toast.error(t('volunteering.wellbeing_alert_update_failed'));
       }
@@ -281,7 +287,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
       toast.error(t('volunteering.wellbeing_alert_update_failed'));
     }
     setActing(null);
-  }, [alertId, detail, toast, t, onChanged]);
+  }, [alertId, detail, toast, t, onChanged, load]);
 
   const alert = current?.alert;
   const name = alert?.user_name ?? '';
@@ -291,7 +297,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
   return (
     <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
       <DrawerContent aria-label={t('volunteering.wellbeing_drawer_aria', { name })}>
-        <DrawerHeader className="shrink-0 border-b border-divider px-5 py-4 pr-14">
+        <DrawerHeader className="shrink-0 border-b border-divider px-5 py-4 pe-14">
           <div className="flex items-center gap-3">
             <HeartPulse size={18} className="text-danger shrink-0" aria-hidden="true" />
             <DrawerHeading className="text-base font-bold leading-snug text-foreground">
@@ -306,7 +312,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
               {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
             </div>
           ) : error ? (
-            <p className="text-sm text-danger">{error}</p>
+            <p role="alert" className="text-sm text-danger">{error}</p>
           ) : alert && current ? (
             <>
               {/* The volunteer */}
@@ -405,7 +411,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
                             : n.status === 'failed' ? t('volunteering.wellbeing_delivery_failed')
                             : t('volunteering.wellbeing_delivery_queued')}
                         </Chip>
-                        <span className="ml-auto text-xs text-muted">{formatDateTime(n.created_at)}</span>
+                        <span className="ms-auto text-xs text-muted">{formatDateTime(n.created_at)}</span>
                       </li>
                     ))}
                   </ul>
@@ -457,14 +463,17 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
 
         {alert && (
           <DrawerFooter className="shrink-0 border-t border-divider px-5 py-3">
+            {/* The action matching the alert's current status is not offered
+                again (21 Oct 2026): "resolve" on a resolved alert did nothing
+                but still said it worked. */}
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="tertiary" startContent={<Check size={14} aria-hidden="true" />} isLoading={acting === 'acknowledged'} isDisabled={!canAct || acting !== null} onPress={() => void act('acknowledged')}>
+              <Button size="sm" variant="tertiary" startContent={<Check size={14} aria-hidden="true" />} isLoading={acting === 'acknowledged'} isDisabled={!canAct || acting !== null || alert.status === 'acknowledged'} onPress={() => void act('acknowledged')}>
                 {t('volunteering.wellbeing_acknowledge')}
               </Button>
-              <Button size="sm" variant="tertiary" color="success" startContent={<CheckCircle size={14} aria-hidden="true" />} isLoading={acting === 'resolved'} isDisabled={!canAct || acting !== null} onPress={() => void act('resolved')}>
+              <Button size="sm" variant="tertiary" color="success" startContent={<CheckCircle size={14} aria-hidden="true" />} isLoading={acting === 'resolved'} isDisabled={!canAct || acting !== null || alert.status === 'resolved'} onPress={() => void act('resolved')}>
                 {t('volunteering.wellbeing_resolve')}
               </Button>
-              <Button size="sm" variant="tertiary" startContent={<X size={14} aria-hidden="true" />} isLoading={acting === 'dismissed'} isDisabled={!canAct || acting !== null} onPress={() => void act('dismissed')}>
+              <Button size="sm" variant="tertiary" startContent={<X size={14} aria-hidden="true" />} isLoading={acting === 'dismissed'} isDisabled={!canAct || acting !== null || alert.status === 'dismissed'} onPress={() => void act('dismissed')}>
                 {t('volunteering.wellbeing_dismiss')}
               </Button>
             </div>

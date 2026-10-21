@@ -1152,14 +1152,20 @@
     "outcome_told_one": "Hemos avisado a {{count}} persona más de tu comunidad. Alguien se pondrá en contacto contigo.",
     "outcome_told_other": "Hemos avisado a {{count}} personas más de tu comunidad. Alguien se pondrá en contacto contigo.",
     "outcome_told_self_only": "Eres la única persona del equipo de tu comunidad, así que no se ha avisado a nadie más.",
-    "outcome_already_told": "Tu comunidad ya fue avisada hoy ({{time}}). Este registro se ha añadido a lo que pueden ver.",
+    "outcome_already_told_today": "Tu comunidad ya fue avisada hoy más temprano, a las {{time}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcome_already_told_yesterday": "Tu comunidad ya fue avisada ayer, a las {{time}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcome_already_told_on": "Tu comunidad ya fue avisada el {{date}}. Este registro se ha añadido a lo que pueden ver.",
+    "outcome_already_told_recently": "Tu comunidad ya fue avisada en el último día. Este registro se ha añadido a lo que pueden ver.",
     "outcome_nobody": "Todavía no se ha podido avisar a nadie. Lo intentaremos de nuevo con tu próximo registro.",
     "outcome_private": "Solo tú puedes ver este registro.",
     "outcome_what_next": "Qué pasa ahora",
     "outcome_what_next_desc": "Alguien de las personas avisadas leerá tu registro y se pondrá en contacto contigo.",
     "outcome_dismiss": "Cerrar",
     "support_heading": "Si necesitas apoyo ahora",
-    "last_told": "El equipo de tu comunidad fue avisado por última vez el {{date}}."
+    "last_told": "El equipo de tu comunidad fue avisado por última vez el {{date}}.",
+    "switched_off_title": "Los registros de bienestar están desactivados",
+    "switched_off_desc": "Tu comunidad ha desactivado los registros de bienestar. Si necesitas apoyo, ponte en contacto con el equipo de tu comunidad.",
+    "rate_limited": "Has hecho esto varias veces en poco tiempo. Espera un momento y vuelve a intentarlo."
   },
   "check_in": {
     "title": "Registro de turno",

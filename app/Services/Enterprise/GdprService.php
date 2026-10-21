@@ -563,7 +563,7 @@ class GdprService
 
         // vol_mood_checkins
         $moodCheckins = $this->query(
-            "SELECT id, mood, note, created_at
+            "SELECT id, mood, note, share_with_team, team_notified_at, created_at
              FROM vol_mood_checkins
              WHERE user_id = ? AND tenant_id = ?
              ORDER BY created_at DESC",
@@ -844,6 +844,16 @@ class GdprService
                  ORDER BY created_at DESC",
                 [$userId, $t]
             )->fetchAll();
+            // A wellbeing contact's or the community's address is a third party's:
+            // masked here as on the staff screen (deep audit S17, 21 Oct 2026).
+            $wellbeingNotifications = array_map(function ($row) {
+                $row = (array) $row;
+                if (!empty($row['recipient_email'])) {
+                    $row['recipient_email'] = \App\Services\VolunteerWellbeingService::maskEmail((string) $row['recipient_email']);
+                }
+
+                return $row;
+            }, $wellbeingNotifications);
             $wellbeingNotes = $this->query(
                 "SELECT n.id, n.alert_id, n.author_user_id, n.body, n.created_at
                  FROM vol_wellbeing_alert_notes n
@@ -1823,12 +1833,52 @@ class GdprService
                         'delete_status' => $deleteStatus,
                     ]);
                 }
+                // The bells other people received about this member's shared
+                // check-ins ("<name> said they are struggling") go too, in this
+                // community and in the one above it, where its staff were told:
+                // their key is wellbeing:{checkin}:{recipient}. Device pushes already
+                // delivered cannot be recalled (wellbeing deep audit S5, 21 Oct 2026;
+                // DPO-14).
+                $checkinIds = array_map(
+                    'intval',
+                    array_column($this->query("SELECT id FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId])->fetchAll(\PDO::FETCH_ASSOC), 'id')
+                );
+                $parentTenantId = (int) (\Illuminate\Support\Facades\DB::table('tenants')->where('id', $this->tenantId)->value('parent_id') ?? 0);
+                $bellTenants = array_values(array_unique(array_filter([$this->tenantId, $parentTenantId])));
+                $bellTenantMarks = implode(',', array_fill(0, count($bellTenants), '?'));
+                foreach ($checkinIds as $checkinId) {
+                    $this->query(
+                        "DELETE FROM notifications WHERE tenant_id IN ({$bellTenantMarks}) AND type = 'volunteer_wellbeing' AND idempotency_key LIKE ?",
+                        array_merge($bellTenants, ['wellbeing:' . $checkinId . ':%'])
+                    );
+                }
+                // Bells about an alert the nightly scan raised for this member.
+                $alertIds = array_map(
+                    'intval',
+                    array_column($this->query("SELECT id FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId])->fetchAll(\PDO::FETCH_ASSOC), 'id')
+                );
+                foreach ($alertIds as $alertId) {
+                    $this->query(
+                        "DELETE FROM notifications WHERE tenant_id = ? AND type = 'volunteer_wellbeing' AND idempotency_key LIKE ?",
+                        [$this->tenantId, 'wellbeing-scan:' . $alertId . ':%']
+                    );
+                }
                 $this->query("DELETE FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
-                // The notification record names the member as the volunteer told about,
-                // and as a recipient when staff. Both go. Staff notes are append-only
-                // while their alert exists; once the member's alerts are deleted the
-                // notes are orphans and go with them (21 Oct 2026; DPO-14).
-                $this->query("DELETE FROM vol_wellbeing_alert_notifications WHERE (volunteer_user_id = ? OR recipient_user_id = ?) AND tenant_id = ?", [$userId, $userId, $this->tenantId]);
+                // The notification record names the member as the volunteer told about:
+                // those rows go. Where the member was a RECIPIENT (staff), the row is
+                // another volunteer's record that someone was told, so it is kept and
+                // anonymised rather than deleted (deep audit S6). Staff notes are
+                // append-only while their alert exists; once the member's alerts are
+                // deleted the notes are orphans and go with them (21 Oct 2026; DPO-14).
+                $this->query("DELETE FROM vol_wellbeing_alert_notifications WHERE volunteer_user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+                // The row is this community's, or a community below's when the member
+                // was told as staff of the community above (recipient_tenant_id). It
+                // keeps its tier, channel and outcome.
+                $this->query(
+                    "UPDATE vol_wellbeing_alert_notifications SET recipient_user_id = NULL, recipient_email = NULL, updated_at = NOW()
+                     WHERE recipient_user_id = ? AND (tenant_id = ? OR recipient_tenant_id = ?)",
+                    [$userId, $this->tenantId, $this->tenantId]
+                );
                 $this->query("DELETE FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 \App\Services\VolunteerWellbeingService::deleteOrphanedNotes($this->tenantId);
                 $this->query("DELETE FROM vol_accessibility_needs WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);

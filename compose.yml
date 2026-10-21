@@ -233,7 +233,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: nexus-queue-worker
-    command: php artisan queue:work --queue=federation-high,federation,default --sleep=3 --tries=3 --timeout=60
+    # emails/search/webhooks as production's Horizon does: without them a local
+    # wellbeing (or any queued) email was never sent (wellbeing deep audit O5).
+    command: php artisan queue:work --queue=federation-high,federation,default,emails,search,webhooks --sleep=3 --tries=3 --timeout=60
     restart: unless-stopped
     env_file:
       - .env.docker

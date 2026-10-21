@@ -48,7 +48,13 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
 
     /** @var array<int, int> seconds before each retry */
     public array $backoff = [60, 600];
-    public int $timeout = 120;
+    /**
+     * Below the Redis queue's retry_after (90 s), or a slow mail server gets the
+     * job handed to a second worker while the first is still sending, and people
+     * are emailed twice (deep audit O1, 21 Oct 2026). 55 s is the Horizon
+     * supervisor's own value.
+     */
+    public int $timeout = 55;
 
     /**
      * @param list<int> $logRowIds vol_wellbeing_alert_notifications ids, channel 'email'
@@ -79,8 +85,10 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
                     'preferred_language', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
                 ->keyBy('id');
 
-            // The volunteer's own copy says how many OTHER people were told.
-            $othersTold = (int) $rows->count() + (int) $this->rows()->where('status', '!=', 'queued')->count();
+            // The volunteer's own copy says how many OTHER people were told: counted
+            // from the record, without the ones that failed (deep audit S11).
+            $checkinId = (int) ($rows->first()->checkin_id ?? 0);
+            $othersTold = VolunteerWellbeingService::peopleToldFor($this->tenantId, $checkinId);
             /** @var list<array{0: int, 1: string}> $transient */
             $transient = [];
 
@@ -109,7 +117,7 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
                         (string) $row->tier,
                         $row->organization_name !== null ? (string) $row->organization_name : null,
                         $row->alert_id !== null ? (int) $row->alert_id : null,
-                        max(0, $othersTold - 1),
+                        $othersTold,
                         $row->organization_id !== null ? (int) $row->organization_id : null
                     ));
                     if ($sent) {
@@ -183,6 +191,13 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
             'marked_failed' => $count,
             'error' => $e->getMessage(),
         ]);
+
+        // A check-in nobody was reached under no longer reads "told" (deep audit O6).
+        try {
+            $this->reconcileToldStamps();
+        } catch (\Throwable $inner) {
+            Log::error('SendVolunteerLowMoodEmails: told stamp reconcile failed', ['error' => $inner->getMessage()]);
+        }
     }
 
     private function rows(): \Illuminate\Database\Query\Builder

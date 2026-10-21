@@ -67,7 +67,11 @@ function categoryFromType(value) {
   if (type.includes('group')) return 'groups';
   if (type.includes('listing') || type.includes('match')) return 'listings';
   if (type.includes('job')) return 'jobs';
-  if (type.includes('safeguard') || type.includes('broker')) return 'safeguarding';
+  // `volunteer_wellbeing` (21 Oct 2026): a volunteer asked for someone to get in
+  // touch, or the nightly scan raised a new high/critical alert. That is
+  // safeguarding work; it used to fall through to "other". The server files it
+  // under safeguarding too.
+  if (type.includes('safeguard') || type.includes('broker') || type.includes('wellbeing')) return 'safeguarding';
   if (type.includes('security') || type.includes('password') || type.includes('2fa') || type.includes('passkey')) return 'security';
   if (type.includes('like') || type.includes('comment') || type.includes('reaction') || type.includes('mention') || type.includes('post')) return 'social';
   if (type.includes('idea')) return 'ideation';
@@ -272,3 +276,6 @@ router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+
+// Exposed for tests: which notification-centre category a type falls into.
+module.exports.categoryFromType = categoryFromType;

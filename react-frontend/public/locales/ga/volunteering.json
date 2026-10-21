@@ -1179,14 +1179,20 @@
     "outcome_told_many": "Chuireamar {{count}} nduine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
     "outcome_told_other": "Chuireamar {{count}} duine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
     "outcome_told_self_only": "Is tú an t-aon bhall d'fhoireann do phobail, mar sin níor cuireadh aon duine eile ar an eolas.",
-    "outcome_already_told": "Cuireadh do phobal ar an eolas inniu cheana ({{time}}). Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcome_already_told_today": "Cuireadh do phobal ar an eolas cheana níos luaithe inniu, ag {{time}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcome_already_told_yesterday": "Cuireadh do phobal ar an eolas cheana inné, ag {{time}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcome_already_told_on": "Cuireadh do phobal ar an eolas cheana ar {{date}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcome_already_told_recently": "Cuireadh do phobal ar an eolas cheana le lá anuas. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
     "outcome_nobody": "Níorbh fhéidir aon duine a chur ar an eolas go fóill. Bainfimid triail eile as le do chéad seiceáil eile.",
     "outcome_private": "Ní fheiceann ach tusa an tseiceáil seo.",
     "outcome_what_next": "Cad a tharlóidh anois",
     "outcome_what_next_desc": "Léifidh duine a cuireadh ar an eolas do sheiceáil agus déanfaidh sé teagmháil leat.",
     "outcome_dismiss": "Dún",
     "support_heading": "Má tá tacaíocht uait anois",
-    "last_told": "Cuireadh foireann do phobail ar an eolas go deireanach ar {{date}}."
+    "last_told": "Cuireadh foireann do phobail ar an eolas go deireanach ar {{date}}.",
+    "switched_off_title": "Tá seiceálacha folláine múchta",
+    "switched_off_desc": "Tá seiceálacha folláine múchta ag do phobal. Má theastaíonn tacaíocht uait, déan teagmháil le foireann do phobail.",
+    "rate_limited": "Rinne tú é seo roinnt uaireanta i mbeagán ama. Fan nóiméad agus bain triail eile as."
   },
   "check_in": {
     "title": "Seiceáil Isteach don Seal",

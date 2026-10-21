@@ -1140,14 +1140,20 @@
     "outcome_told_one": "We hebben {{count}} andere persoon uit je gemeenschap geïnformeerd. Iemand neemt contact met je op.",
     "outcome_told_other": "We hebben {{count}} andere mensen uit je gemeenschap geïnformeerd. Iemand neemt contact met je op.",
     "outcome_told_self_only": "Je bent het enige lid van het team van je gemeenschap, dus niemand anders is geïnformeerd.",
-    "outcome_already_told": "Je gemeenschap is vandaag al geïnformeerd ({{time}}). Deze check-in is toegevoegd aan wat zij kunnen zien.",
+    "outcome_already_told_today": "Je gemeenschap is eerder vandaag al geïnformeerd, om {{time}}. Deze check-in is toegevoegd aan wat zij kunnen zien.",
+    "outcome_already_told_yesterday": "Je gemeenschap is gisteren al geïnformeerd, om {{time}}. Deze check-in is toegevoegd aan wat zij kunnen zien.",
+    "outcome_already_told_on": "Je gemeenschap is al geïnformeerd op {{date}}. Deze check-in is toegevoegd aan wat zij kunnen zien.",
+    "outcome_already_told_recently": "Je gemeenschap is in de afgelopen dag al geïnformeerd. Deze check-in is toegevoegd aan wat zij kunnen zien.",
     "outcome_nobody": "Niemand kon nog worden geïnformeerd. We proberen het opnieuw bij je volgende check-in.",
     "outcome_private": "Alleen jij kunt deze check-in zien.",
     "outcome_what_next": "Wat er nu gebeurt",
     "outcome_what_next_desc": "Iemand die is geïnformeerd leest je check-in en neemt contact met je op.",
     "outcome_dismiss": "Sluiten",
     "support_heading": "Heb je nu ondersteuning nodig",
-    "last_told": "Het team van je gemeenschap is voor het laatst geïnformeerd op {{date}}."
+    "last_told": "Het team van je gemeenschap is voor het laatst geïnformeerd op {{date}}.",
+    "switched_off_title": "Welzijnscheck-ins staan uit",
+    "switched_off_desc": "Je gemeenschap heeft welzijnscheck-ins uitgezet. Heb je steun nodig, neem dan contact op met het team van je gemeenschap.",
+    "rate_limited": "Je hebt dit in korte tijd een paar keer gedaan. Wacht even en probeer het dan opnieuw."
   },
   "check_in": {
     "title": "Inchecken in ploegendienst",

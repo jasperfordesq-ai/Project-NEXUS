@@ -13,6 +13,7 @@ jest.mock('@/lib/observability/report', () => ({ reportException: jest.fn() }));
 const mockPush = jest.fn();
 let mockRouteParams: Record<string, string> = { id: '5' };
 let mockDeclineNoteRequired = false;
+let mockWellbeingTab: boolean | undefined;
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
@@ -60,6 +61,7 @@ jest.mock('react-i18next', () => ({
         'org.tabs.hours': 'Hours review',
         'org.tabs.volunteers': 'Volunteers',
         'org.tabs.wallet': 'Wallet',
+        'org.tabs.wellbeing': 'Wellbeing',
         'org.tabs.settings': 'Settings',
         'org.stats.volunteers': 'Volunteers',
         'org.stats.pendingApplications': 'Applications',
@@ -148,7 +150,13 @@ jest.mock('@/lib/haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
 }));
 jest.mock('@/lib/hooks/useTenant', () => ({
-  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired } }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+  useTenant: () => ({ tenant: { id: 2, slug: 'hour-timebank', volunteering_config: { 'volunteering.require_org_note_on_decline': mockDeclineNoteRequired, ...(mockWellbeingTab === undefined ? {} : { 'volunteering.tab_wellbeing': mockWellbeingTab }) } }, hasFeature: () => true, hasModule: () => true }), usePrimaryColor: () => '#6366f1' }));
+// The panel has its own suite (components/volunteering/OrgWellbeingPanel.test.tsx); here it
+// only has to be mounted for the right tab.
+jest.mock('@/components/volunteering/OrgWellbeingPanel', () => {
+  const { Text } = require('react-native');
+  return ({ orgId }: { orgId: number }) => <Text testID="org-wellbeing-panel">{`wellbeing for ${orgId}`}</Text>;
+});
 jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 7 } }),
 }));
@@ -297,7 +305,25 @@ describe('VolunteeringOrgDashboard', () => {
     jest.clearAllMocks();
     mockRouteParams = { id: '5' };
     mockDeclineNoteRequired = false;
+    mockWellbeingTab = undefined;
     mockDashboardApis();
+  });
+
+  // Deep audit 21 Oct 2026, finding 4: the organisation's wellbeing push opens this tab.
+  it('opens the wellbeing tab named by the organisation wellbeing push', () => {
+    mockRouteParams = { id: '5', tab: 'wellbeing' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    expect(screen.getByTestId('org-wellbeing-panel').props.children).toBe('wellbeing for 5');
+    expect(screen.getByTestId('org-dashboard-tab-wellbeing').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+  });
+
+  it('hides the wellbeing tab and falls back to the overview when the community has it switched off', () => {
+    mockWellbeingTab = false;
+    mockRouteParams = { id: '5', tab: 'wellbeing' };
+    const screen = render(<VolunteeringOrgDashboard />);
+    expect(screen.queryByTestId('org-wellbeing-panel')).toBeNull();
+    expect(screen.queryByTestId('org-dashboard-tab-wellbeing')).toBeNull();
+    expect(screen.getByText('Review applications')).toBeTruthy();
   });
 
   it('renders the native organisation overview', () => {

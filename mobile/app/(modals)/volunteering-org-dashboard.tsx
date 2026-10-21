@@ -63,8 +63,10 @@ import { withRouteGate } from '@/components/withRouteGate';
 import RefreshFailedNotice from '@/components/ui/RefreshFailedNotice';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { volunteerSwitchOn } from '@/lib/api/volunteeringVolunteer';
+import OrgWellbeingPanel from '@/components/volunteering/OrgWellbeingPanel';
 
-type OrgTab = 'overview' | 'opportunities' | 'applications' | 'hours' | 'volunteers' | 'wallet' | 'settings';
+type OrgTab = 'overview' | 'opportunities' | 'applications' | 'hours' | 'volunteers' | 'wellbeing' | 'wallet' | 'settings';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const ORG_TABS: { key: OrgTab; icon: IoniconName }[] = [
@@ -73,6 +75,9 @@ const ORG_TABS: { key: OrgTab; icon: IoniconName }[] = [
   { key: 'applications', icon: 'clipboard-outline' },
   { key: 'hours', icon: 'time-outline' },
   { key: 'volunteers', icon: 'people-outline' },
+  // Deep audit 21 Oct 2026, finding 4: the organisation's wellbeing push links here
+  // (`?tab=wellbeing`). Hidden when the community has the wellbeing tab switched off.
+  { key: 'wellbeing', icon: 'heart-circle-outline' },
   { key: 'wallet', icon: 'wallet-outline' },
   { key: 'settings', icon: 'settings-outline' },
 ];
@@ -873,7 +878,17 @@ function VolunteeringOrgDashboardInner() {
   const orgId = parseId(params.id);
   const primary = usePrimaryColor();
   const theme = useTheme();
-  const [tab, setTab] = useParamTab<OrgTab>(params.tab, resolveOrgTab, 'overview');
+  const { tenant } = useTenant();
+  const wellbeingOn = volunteerSwitchOn(tenant?.volunteering_config, 'tab_wellbeing');
+  const resolveVisibleTab = useCallback(
+    (raw: string | undefined) => {
+      const resolved = resolveOrgTab(raw);
+      return resolved === 'wellbeing' && !wellbeingOn ? null : resolved;
+    },
+    [wellbeingOn],
+  );
+  const visibleTabs = useMemo(() => ORG_TABS.filter((item) => item.key !== 'wellbeing' || wellbeingOn), [wellbeingOn]);
+  const [tab, setTab] = useParamTab<OrgTab>(params.tab, resolveVisibleTab, 'overview');
   const [settingsDraft, setSettingsDraft] = useState<SettingsDraftState>({ isDirty: false, isSaving: false });
   const [settingsDraftVersion, setSettingsDraftVersion] = useState(0);
   const { confirm: confirmSettingsLeave, confirmDialog: settingsLeaveDialog } = useConfirm();
@@ -1002,7 +1017,7 @@ function VolunteeringOrgDashboardInner() {
       >
         <Surface variant="secondary" className="rounded-panel p-1">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-1">
-            {ORG_TABS.map((item) => {
+            {visibleTabs.map((item) => {
               const selected = tab === item.key;
               return (
                 <HeroButton
@@ -1011,6 +1026,8 @@ function VolunteeringOrgDashboardInner() {
                   variant={selected ? 'primary' : 'ghost'}
                   className="h-11 min-w-[126px] rounded-panel-inner"
                   style={{ backgroundColor: selected ? withAlpha(primary, 0.18) : 'transparent' }}
+                  accessibilityState={{ selected }}
+                  testID={`org-dashboard-tab-${item.key}`}
                   onPress={() => {
                     selectTab(item.key);
                   }}
@@ -1045,6 +1062,7 @@ function VolunteeringOrgDashboardInner() {
         {tab === 'applications' ? <ApplicationsPanel applications={applications} loading={applicationsApi.isLoading} error={applicationsApi.error} onRefresh={refreshAll} /> : null}
         {tab === 'hours' ? <HoursPanel entries={pendingHours} loading={hoursApi.isLoading} error={hoursApi.error} onRefresh={refreshAll} /> : null}
         {tab === 'volunteers' ? <VolunteersPanel volunteers={volunteers} loading={volunteersApi.isLoading} error={volunteersApi.error} onRefresh={refreshAll} /> : null}
+        {tab === 'wellbeing' && wellbeingOn ? <OrgWellbeingPanel orgId={orgId} /> : null}
         {tab === 'wallet' ? <WalletPanel orgId={orgId} orgName={org?.name ?? stats?.org_name ?? ''} stats={stats} transactions={transactions} loading={walletApi.isLoading} error={walletApi.error} onRefresh={refreshAll} /> : null}
         <View
           style={{ display: tab === 'settings' ? 'flex' : 'none' }}

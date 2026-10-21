@@ -171,7 +171,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor wil graag dat iemand contact opneemt',
-            'body' => 'Gaf bij de welzijnscheck-in aan zich :subject te voelen',
+            'body' => 'Vanuit de welzijnscheck-in. Behandel dit vertrouwelijk.',
         ],
         'exchange_request_received' => [
             'title' => 'Nieuw verzoek voor :subject',

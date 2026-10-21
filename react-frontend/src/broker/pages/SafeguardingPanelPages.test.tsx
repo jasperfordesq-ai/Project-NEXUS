@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { act, render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
 const { titles, openMember, panelProps } = vi.hoisted(() => ({
@@ -61,11 +61,20 @@ vi.mock('@/admin/modules/volunteering/VolunteerSafeguarding', stub('VolunteerSaf
 // The wellbeing alerts panel has no header actions of its own, so a plain stand-in.
 vi.mock('@/admin/modules/volunteering/WellbeingAlertsPanel', async () => {
   const { useAdminEmbed } = await import('@/admin/components/AdminEmbedContext');
-  const Panel = () => {
+  const Panel = (props: Record<string, unknown>) => {
+    panelProps.WellbeingAlertsPanel = props;
     const { embedded } = useAdminEmbed();
     return <div data-testid="WellbeingAlertsPanel" data-embedded={String(embedded)} />;
   };
   return { WellbeingAlertsPanel: Panel, default: Panel };
+});
+// The alert drawer reports which alert it was asked to open.
+vi.mock('@/admin/modules/volunteering/WellbeingAlertDrawer', () => {
+  const Drawer = (props: Record<string, unknown>) => {
+    panelProps.WellbeingAlertDrawer = props;
+    return <div data-testid="WellbeingAlertDrawer" data-open={String(props.isOpen)} data-alert={String(props.alertId)} />;
+  };
+  return { WellbeingAlertDrawer: Drawer, default: Drawer };
 });
 vi.mock('@/admin/modules/safeguarding/SafeguardingHelp', () => ({
   SafeguardingHelp: () => <div data-testid="safeguarding-help" />,
@@ -162,5 +171,32 @@ describe('SafeguardingVolunteeringPage', () => {
     expect(alerts).toHaveAttribute('data-embedded', 'true');
     // Rendered after the incidents panel in document order.
     expect(incidents.compareDocumentPosition(alerts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  // Deep audit C2 (21 Oct 2026): a broker's bell and email link here with ?alert={id};
+  // the page had no drawer and never read the address, so the alert never opened.
+  it("opens the alert named in the address, as a broker's bell or email link does", async () => {
+    window.history.pushState({}, '', '/test/broker/safeguarding/volunteering?alert=71');
+    const Page = (await import('./SafeguardingVolunteeringPage')).default;
+    render(<Page />);
+
+    const drawer = await screen.findByTestId('WellbeingAlertDrawer');
+    await waitFor(() => expect(drawer).toHaveAttribute('data-open', 'true'));
+    expect(drawer).toHaveAttribute('data-alert', '71');
+    window.history.pushState({}, '', '/');
+  });
+
+  it('lets a broker open any alert from the list', async () => {
+    window.history.pushState({}, '', '/test/broker/safeguarding/volunteering');
+    const Page = (await import('./SafeguardingVolunteeringPage')).default;
+    render(<Page />);
+
+    expect(screen.getByTestId('WellbeingAlertDrawer')).toHaveAttribute('data-open', 'false');
+    const onOpen = panelProps.WellbeingAlertsPanel?.onOpen as ((alert: { id: number }) => void) | undefined;
+    expect(typeof onOpen).toBe('function');
+    act(() => onOpen?.({ id: 72 }));
+    expect(screen.getByTestId('WellbeingAlertDrawer')).toHaveAttribute('data-alert', '72');
+    expect(screen.getByTestId('WellbeingAlertDrawer')).toHaveAttribute('data-open', 'true');
+    window.history.pushState({}, '', '/');
   });
 });

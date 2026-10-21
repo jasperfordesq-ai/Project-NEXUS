@@ -24,6 +24,7 @@ vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 import { OrgWellbeingTab } from './OrgWellbeingTab';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 
 const ITEM = {
   alert_id: 22,
@@ -61,5 +62,31 @@ describe('OrgWellbeingTab', () => {
     vi.mocked(api.get).mockResolvedValueOnce({ success: false, code: 'NOT_ORGANISATION_CONTACT' });
     render(<OrgWellbeingTab orgId={3} />);
     expect(await screen.findByText('org_wellbeing.forbidden')).toBeInTheDocument();
+  });
+
+  // Deep audit C6 (21 Oct 2026): the legacy stamp is UTC; it was read as local time.
+  it.each([
+    ['legacy UTC form', '2026-10-21 14:05:00'],
+    ['ISO with offset', '2026-10-21T14:05:00+00:00'],
+  ])('reads the check-in time as UTC (%s)', async (_label, stamp) => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: { organisation: { id: 3, name: 'Riverbank Trust' }, items: [{ ...ITEM, checkin_at: stamp, told_at: stamp }] } });
+    render(<OrgWellbeingTab orgId={3} />);
+    await screen.findByText('Pat Murphy');
+    const expected = new Date(Date.UTC(2026, 9, 21, 14, 5)).toLocaleString(getFormattingLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+    expect(screen.getAllByText(expected).length).toBeGreaterThanOrEqual(1);
+  });
+
+  // Deep audit C8: the summary is announced through a region that was on the page before it was filled.
+  it('fills a status region that exists before the list arrives', async () => {
+    let resolve: (value: unknown) => void = () => {};
+    vi.mocked(api.get).mockReturnValue(new Promise((r) => { resolve = r; }) as never);
+    render(<OrgWellbeingTab orgId={3} />);
+    const region = screen.getByTestId('org-wellbeing-summary');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toBeEmptyDOMElement();
+    resolve({ success: true, data: { organisation: { id: 3, name: 'Riverbank Trust' }, items: [ITEM] } });
+    await screen.findByText('Pat Murphy');
+    expect(screen.getByTestId('org-wellbeing-summary')).toBe(region);
+    expect(region).toHaveTextContent('org_wellbeing.summary:1');
   });
 });

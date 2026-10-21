@@ -397,7 +397,8 @@
       "hours": "Controllo delle ore",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Benessere"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -470,7 +471,35 @@
     "notYoursHint": "Le candidature, le ore e il portafoglio sono visibili solo a chi la gestisce.",
     "backToVolunteering": "Torna al volontariato",
     "declinedHeading": "Non approvata",
-    "declinedDescription": "Questa registrazione non è stata approvata, quindi non puoi pubblicare opportunità per essa. Contatta chi coordina la tua comunità se pensi che sia un errore."
+    "declinedDescription": "Questa registrazione non è stata approvata, quindi non puoi pubblicare opportunità per essa. Contatta chi coordina la tua comunità se pensi che sia un errore.",
+    "wellbeing": {
+      "intro": "I volontari della tua organizzazione che in un check-in sul benessere hanno detto di sentirsi giù o in difficoltà e hanno chiesto che qualcuno si mettesse in contatto. Sei stato avvisato con un avviso e un'email al momento; questo è l'elenco completo. Vedi il loro nome e come si sentono, mai la loro nota.",
+      "forbidden": "Non hai accesso agli avvisi sul benessere di questa organizzazione.",
+      "switchedOff": "Questa comunità ha disattivato i check-in sul benessere.",
+      "rateLimited": "Troppe richieste in poco tempo. Attendi un momento e riprova.",
+      "loadError": "Gli avvisi sul benessere non sono stati caricati. Riprova.",
+      "empty": "Nessuno ha chiesto aiuto",
+      "emptyDesc": "Nessuno dei tuoi volontari ha condiviso un check-in basso negli ultimi 90 giorni.",
+      "summary": "{{count}} volontari aspettano che qualcuno si metta in contatto",
+      "summary_one": "{{count}} volontario aspetta che qualcuno si metta in contatto",
+      "summary_other": "{{count}} volontari aspettano che qualcuno si metta in contatto",
+      "moodStruggling": "Dice di essere in difficoltà",
+      "moodLow": "Dice di sentirsi giù",
+      "status": {
+        "active": "Nessuno ha ancora risposto",
+        "acknowledged": "Il team della comunità se ne sta occupando",
+        "resolved": "Risolto",
+        "dismissed": "Chiuso"
+      },
+      "checkedIn": "Check-in del {{date}}",
+      "toldOn": "Sei stato avvisato il {{date}}",
+      "notTold": "Non sei ancora stato avvisato",
+      "whatToDo": "Contatta presto questa persona. Se temi per la sua sicurezza in questo momento, chiama i servizi di emergenza e poi avvisa il team della tua comunità.",
+      "closedHelp": "Il team della comunità ha chiuso questo caso. Puoi comunque metterti in contatto.",
+      "message": "Scrivi a {{name}}",
+      "viewProfile": "Vedi profilo",
+      "confidentiality": "Trattalo come riservato. Condividilo solo con chi deve saperlo e non pubblicare mai nulla al riguardo."
+    }
   },
   "swaps": {
     "heading": "Scambi di turno",

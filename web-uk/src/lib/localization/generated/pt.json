@@ -10790,13 +10790,18 @@
                 "recent_shared": "Compartilhado com a equipe da sua comunidade",
                 "load_error": "Não foi possível carregar o seu painel de bem-estar. Tente novamente.",
                 "checkin_saved_shared_count": "{1} Obrigado por nos dizer. Avisámos :count outra pessoa da sua comunidade.|[2,*] Obrigado por nos dizer. Avisámos :count outras pessoas da sua comunidade.",
-                "checkin_saved_already": "O seu registo foi guardado. A sua comunidade já foi avisada hoje e este registo foi adicionado ao que ela pode ver.",
+                "checkin_saved_already": "O seu registo foi guardado. A sua comunidade já foi avisada nas últimas 24 horas e este registo foi adicionado ao que ela pode ver.",
                 "checkin_saved_nobody": "O seu registo foi guardado, mas ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo. Se precisa de apoio agora, use as ligações nesta página.",
                 "support_title": "Se precisa de apoio agora",
                 "last_told": "A equipa da sua comunidade foi avisada pela última vez em :date.",
                 "checkin_saved_self": "O seu registo foi guardado. Você é a única pessoa na equipa da sua comunidade, por isso mais ninguém foi avisado. Se precisa de apoio agora, use as ligações nesta página.",
                 "assessment_unavailable": "A sua avaliação de bem-estar não está disponível neste momento, por isso não é mostrada nenhuma pontuação nem risco de esgotamento. Pode, mesmo assim, guardar um registo abaixo.",
-                "score_no_data": "Ainda não há atividade suficiente para pontuar o seu bem-estar. A sua pontuação e o seu risco de esgotamento aparecerão quando tiver feito voluntariado ou guardado um registo."
+                "score_no_data": "Ainda não há atividade suficiente para pontuar o seu bem-estar. A sua pontuação e o seu risco de esgotamento aparecerão quando tiver feito voluntariado ou guardado um registo.",
+                "checkin_saved_already_at": "O seu registo foi guardado. A sua comunidade já foi avisada em :date e este registo foi adicionado ao que ela pode ver.",
+                "checkin_disabled": "O seu registo não foi guardado, porque esta comunidade desativou os registos de bem-estar.",
+                "checkin_rate_limited": "O seu registo não foi guardado, porque foram enviados vários em pouco tempo. Aguarde um momento e depois guarde-o novamente.",
+                "load_rate_limited": "A sua página de bem-estar foi aberta muitas vezes em pouco tempo. Aguarde um momento e depois recarregue a página.",
+                "switched_off": "Esta comunidade desativou os registos de bem-estar, por isso não há nada para mostrar aqui e não é possível guardar um registo. Se precisar de apoio, contacte a equipa da sua comunidade."
             },
             "recommended": {
                 "title": "Recomendado para você",

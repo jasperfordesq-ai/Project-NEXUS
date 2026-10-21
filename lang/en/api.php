@@ -2911,6 +2911,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'The support text can be at most :max characters.',
     'vol_wellbeing_too_many_links' => 'Add at most :max links.',
     'vol_wellbeing_link_invalid' => 'Each link needs a label and a secure address (https://, mailto:, tel: or a page on this site).',
+    'vol_wellbeing_disabled' => 'This community has switched wellbeing check-ins off.',
+    'vol_wellbeing_checkin_note_invalid' => 'The note must be text of 500 characters or fewer.',
     'vol_wellbeing_recipient_unknown' => 'Former member',
     'vol_wellbeing_warning_low_mood' => 'You told us recently that you are not feeling great. Please look after yourself, and reach out if you would like support.',
     'vol_wellbeing_recommendation_reach_out' => 'Talk to someone you trust, or contact your community’s team if you would like support.',

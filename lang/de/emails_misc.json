@@ -895,8 +895,8 @@
     "mood_label_2": "Nicht gut",
     "bell_team": "{{name}} hat beim Check-in zum Wohlbefinden angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
     "bell_org": "{{name}}, ehrenamtlich bei {{organisation}} tätig, hat angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
-    "subject": "{{name}}: „Mir geht es {{mood}}“",
-    "preview": "{{name}} hat angegeben: „Mir geht es {{mood}}“, und möchte, dass sich jemand meldet.",
+    "subject": "{{name}} möchte, dass sich jemand meldet",
+    "preview": "{{name}} hat nach dem Wohlbefinden-Check-in darum gebeten, dass sich jemand meldet.",
     "team_title": "Eine ehrenamtliche Person wünscht sich Unterstützung",
     "team_body": "<strong>{{name}}</strong> hat beim Check-in zum Wohlbefinden angegeben: „Mir geht es {{mood}}“, und bittet darum, dass sich jemand meldet.",
     "team_note_hint": "Falls eine Notiz geschrieben wurde, können Sie sie nach der Anmeldung auf der Seite mit den Hinweisen zum Wohlbefinden lesen. Zum Schutz der Privatsphäre ist sie nicht in dieser E-Mail enthalten.",
@@ -913,6 +913,7 @@
     "bell_self_told": "Du hast darum gebeten, dass sich jemand meldet, nachdem du angegeben hast, dass du {{mood}} bist. Wir haben {{count}} Personen informiert.",
     "bell_contact": "{{name}} hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und möchte, dass sich jemand meldet. Du bist eine der Wohlbefinden-Kontaktpersonen dieser Gemeinschaft.",
     "bell_parent": "{{name}}, ehrenamtlich tätig bei {{community}}, hat angegeben, {{mood}} zu sein, und möchte, dass sich jemand meldet.",
+    "bell_scan": "Die nächtliche Wohlbefinden-Prüfung hat bei {{name}} Anzeichen möglicher Überlastung im Ehrenamt festgestellt. Die Person hat nicht um Kontakt gebeten. Bitte sehen Sie sich die Meldung an.",
     "self_subject": "Dein Wohlbefinden-Check-in: wer informiert wurde",
     "self_title": "Dein Wohlbefinden-Check-in",
     "self_body_alone": "Du hast beim Wohlbefinden-Check-in angegeben, dass du {{mood}} bist, und darum gebeten, dass sich jemand meldet. Niemand sonst in deiner Gemeinschaft konnte bisher informiert werden: Es gibt keine weiteren Mitarbeitenden, Wohlbefinden-Kontaktpersonen oder Organisationskontakte. Diese E-Mail ist dein Nachweis, dass die Anfrage gestellt wurde.",
@@ -920,6 +921,7 @@
     "contact_body": "<strong>{{name}}</strong> hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und darum gebeten, dass sich jemand meldet. Du bist eine der Wohlbefinden-Kontaktpersonen von {{community}}.",
     "parent_body": "<strong>{{name}}</strong>, ehrenamtlich tätig bei {{community}}, hat beim Wohlbefinden-Check-in angegeben, {{mood}} zu sein, und darum gebeten, dass sich jemand meldet. Du wirst als Mitarbeitende der übergeordneten Gemeinschaft von {{community}} informiert.",
     "community_contact_intro": "Dies ist die Kontaktadresse von {{community}}. Niemand aus dem Team der Gemeinschaft konnte informiert werden, daher wurde diese Nachricht stattdessen hierher gesendet.",
+    "community_contact_footer": "Sie erhalten diese E-Mail, weil dies die Kontaktadresse der Gemeinschaft {{community}} ist.",
     "info_card_community": "Gemeinschaft"
   }
 }

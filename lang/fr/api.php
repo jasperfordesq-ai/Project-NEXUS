@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'Le texte de soutien ne peut pas dépasser :max caractères.',
     'vol_wellbeing_too_many_links' => 'Ajoutez au plus :max liens.',
     'vol_wellbeing_link_invalid' => 'Chaque lien doit avoir un libellé et une adresse sécurisée (https://, mailto:, tel: ou une page de ce site).',
+    'vol_wellbeing_disabled' => 'Cette communauté a désactivé les bilans de bien-être.',
+    'vol_wellbeing_checkin_note_invalid' => 'La note doit être un texte de 500 caractères au maximum.',
     'vol_wellbeing_recipient_unknown' => 'Ancien membre',
     'vol_wellbeing_warning_low_mood' => 'Vous nous avez récemment indiqué que vous ne vous sentiez pas bien. Prenez soin de vous et n’hésitez pas à demander du soutien.',
     'vol_wellbeing_recommendation_reach_out' => 'Parlez à une personne de confiance ou contactez l’équipe de votre communauté si vous souhaitez du soutien.',

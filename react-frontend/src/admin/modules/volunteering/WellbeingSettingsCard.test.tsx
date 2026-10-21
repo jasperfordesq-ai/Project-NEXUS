@@ -90,21 +90,80 @@ describe('WellbeingSettingsCard', () => {
     expect(mockToast.success).toHaveBeenCalled();
   });
 
-  it('shows the server refusal beside the field it names', async () => {
+  it('shows a whole-list server refusal as an announced message tied to the links', async () => {
     mockApi.updateWellbeingSettings.mockResolvedValue({
       success: false,
-      errors: [{ code: 'VALIDATION_ERROR', message: 'Each link needs a label and a secure address.', field: 'support_links' }],
+      errors: [{ code: 'VALIDATION_ERROR', message: 'You can add up to five links.', field: 'support_links' }],
     });
     render(<WellbeingSettingsCard />);
     await screen.findByText(/contact your community's team/i);
 
     fireEvent.click(screen.getByRole('button', { name: /add a link/i }));
-    fireEvent.change(screen.getByLabelText(/link 1 label/i), { target: { value: 'Bad' } });
-    fireEvent.change(screen.getByLabelText(/link 1 address/i), { target: { value: 'javascript:alert(1)' } });
+    fireEvent.change(screen.getByLabelText(/link 1 label/i), { target: { value: 'Our office' } });
+    fireEvent.change(screen.getByLabelText(/link 1 address/i), { target: { value: 'https://example.org/help' } });
+    fireEvent.click(screen.getByRole('button', { name: /save wellbeing settings/i }));
+
+    const message = await screen.findByText('You can add up to five links.');
+    expect(message).toHaveAttribute('role', 'alert');
+    const group = screen.getByRole('group', { name: /support links/i });
+    expect(group.getAttribute('aria-describedby')).toContain(message.id);
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
+  // Deep audit C11 (21 Oct 2026): the server now names the row (support_links.{i}).
+  it('marks the link row the server refused', async () => {
+    mockApi.updateWellbeingSettings.mockResolvedValue({
+      success: false,
+      errors: [{ code: 'VALIDATION_ERROR', message: 'Each link needs a label and a secure address.', field: 'support_links.1' }],
+    });
+    mockApi.getWellbeingSettings.mockResolvedValue({
+      success: true,
+      data: { ...SETTINGS, support_links: [{ label: 'One', url: '/contact' }, { label: 'Two', url: 'https://example.org/two' }] },
+    });
+    render(<WellbeingSettingsCard />);
+    await screen.findByDisplayValue('Two');
     fireEvent.click(screen.getByRole('button', { name: /save wellbeing settings/i }));
 
     expect(await screen.findByText('Each link needs a label and a secure address.')).toBeInTheDocument();
-    expect(mockToast.success).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/link 2 address/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(/link 1 address/i)).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it.each([
+    ['plain http', 'Our office', 'http://example.org', /starts with https:\/\//i],
+    ['javascript', 'Our office', 'javascript:alert(1)', /starts with https:\/\//i],
+    ['protocol-relative', 'Our office', '//evil.example', /starts with https:\/\//i],
+    ['no label', '   ', 'https://example.org', /give this link a label/i],
+    ['label too long', 'x'.repeat(81), 'https://example.org', /80 characters or fewer/i],
+  ])('refuses a %s link before sending anything, and says which row', async (_name, label, url, message) => {
+    render(<WellbeingSettingsCard />);
+    await screen.findByText(/contact your community's team/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /add a link/i }));
+    fireEvent.change(screen.getByLabelText(/link 1 label/i), { target: { value: label } });
+    fireEvent.change(screen.getByLabelText(/link 1 address/i), { target: { value: url } });
+    fireEvent.click(screen.getByRole('button', { name: /save wellbeing settings/i }));
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(screen.getByText(/some support links need fixing/i)).toHaveAttribute('role', 'alert');
+    expect(mockApi.updateWellbeingSettings).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['https', 'https://example.org/help'],
+    ['mailto', 'mailto:help@example.org'],
+    ['tel', 'tel:+353100'],
+    ['a page on this site', '/contact'],
+  ])('accepts a %s link', async (_name, url) => {
+    render(<WellbeingSettingsCard />);
+    await screen.findByText(/contact your community's team/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /add a link/i }));
+    fireEvent.change(screen.getByLabelText(/link 1 label/i), { target: { value: 'Help' } });
+    fireEvent.change(screen.getByLabelText(/link 1 address/i), { target: { value: url } });
+    fireEvent.click(screen.getByRole('button', { name: /save wellbeing settings/i }));
+
+    await waitFor(() => expect(mockApi.updateWellbeingSettings).toHaveBeenCalled());
   });
 
   it('removes a contact', async () => {

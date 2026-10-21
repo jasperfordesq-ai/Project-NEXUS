@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'De ondersteuningstekst mag maximaal :max tekens lang zijn.',
     'vol_wellbeing_too_many_links' => 'Voeg maximaal :max links toe.',
     'vol_wellbeing_link_invalid' => 'Elke link heeft een label en een veilig adres nodig (https://, mailto:, tel: of een pagina op deze site).',
+    'vol_wellbeing_disabled' => 'Deze gemeenschap heeft de welzijnscheck-ins uitgeschakeld.',
+    'vol_wellbeing_checkin_note_invalid' => 'De notitie moet tekst zijn van maximaal 500 tekens.',
     'vol_wellbeing_recipient_unknown' => 'Voormalig lid',
     'vol_wellbeing_warning_low_mood' => 'Je liet ons onlangs weten dat je je niet zo goed voelt. Zorg goed voor jezelf en vraag om steun als je dat wilt.',
     'vol_wellbeing_recommendation_reach_out' => 'Praat met iemand die je vertrouwt, of neem contact op met het team van je gemeenschap als je steun wilt.',

@@ -171,7 +171,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('04:00')
             ->withoutOverlapping()
             ->onOneServer()
-            ->name('volunteering-assess-wellbeing');
+            ->name('volunteering-assess-wellbeing')
+            // The command stamps its own last clean run (shown on the admin alerts
+            // page); a failed run is logged at error so it reaches Sentry (deep
+            // audit O4, 21 Oct 2026).
+            ->onFailure(function (): void {
+                \Illuminate\Support\Facades\Log::error('[WellbeingAssessment] scheduled scan failed: at least one community was not assessed');
+            });
 
         $schedule->command('safeguarding:sla-escalate')
             ->everyFifteenMinutes()

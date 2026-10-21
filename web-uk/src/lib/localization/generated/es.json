@@ -10790,13 +10790,18 @@
                 "recent_shared": "Compartido con el equipo de tu comunidad",
                 "load_error": "No hemos podido cargar tu panel de bienestar. Inténtalo de nuevo.",
                 "checkin_saved_shared_count": "{1} Gracias por decírnoslo. Hemos avisado a :count persona más de tu comunidad.|[2,*] Gracias por decírnoslo. Hemos avisado a :count personas más de tu comunidad.",
-                "checkin_saved_already": "Tu registro se ha guardado. Tu comunidad ya fue avisada hoy y este registro se ha añadido a lo que pueden ver.",
+                "checkin_saved_already": "Tu registro se ha guardado. Tu comunidad ya fue avisada en las últimas 24 horas y este registro se ha añadido a lo que pueden ver.",
                 "checkin_saved_nobody": "Tu registro se ha guardado, pero todavía no se ha podido avisar a nadie. Lo intentaremos de nuevo con tu próximo registro. Si necesitas apoyo ahora, usa los enlaces de esta página.",
                 "support_title": "Si necesitas apoyo ahora",
                 "last_told": "El equipo de tu comunidad fue avisado por última vez el :date.",
                 "checkin_saved_self": "Tu registro se ha guardado. Eres la única persona del equipo de tu comunidad, así que no se ha avisado a nadie más. Si necesitas apoyo ahora, usa los enlaces de esta página.",
                 "assessment_unavailable": "Tu evaluación de bienestar no está disponible ahora mismo, por lo que no se muestra ninguna puntuación ni riesgo de agotamiento. Aun así puedes guardar un registro más abajo.",
-                "score_no_data": "Todavía no hay suficiente actividad para puntuar tu bienestar. Tu puntuación y tu riesgo de agotamiento aparecerán cuando hayas hecho voluntariado o guardado un registro."
+                "score_no_data": "Todavía no hay suficiente actividad para puntuar tu bienestar. Tu puntuación y tu riesgo de agotamiento aparecerán cuando hayas hecho voluntariado o guardado un registro.",
+                "checkin_saved_already_at": "Tu registro se ha guardado. Tu comunidad ya fue avisada el :date y este registro se ha añadido a lo que pueden ver.",
+                "checkin_disabled": "Tu registro no se ha guardado porque esta comunidad ha desactivado los registros de bienestar.",
+                "checkin_rate_limited": "Tu registro no se ha guardado porque se enviaron varios en poco tiempo. Espera un momento y vuelve a guardarlo.",
+                "load_rate_limited": "Tu página de bienestar se ha abierto muchas veces en poco tiempo. Espera un momento y vuelve a cargar la página.",
+                "switched_off": "Esta comunidad ha desactivado los registros de bienestar, así que aquí no hay nada que mostrar y no se puede guardar ningún registro. Si necesitas apoyo, ponte en contacto con el equipo de tu comunidad."
             },
             "recommended": {
                 "title": "Recomendado para ti",

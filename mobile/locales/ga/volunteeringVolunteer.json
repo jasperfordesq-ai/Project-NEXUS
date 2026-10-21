@@ -158,7 +158,7 @@
     "historyHeading": "Clárúcháin le déanaí",
     "historyEmpty": "Níor chláraigh tú go fóill.",
     "shared": "Roinnte le foireann do phobail",
-    "outcomeAlreadyTold": "Cuireadh do phobal ar an eolas inniu cheana. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcomeAlreadyTold": "Cuireadh foireann do phobail ar an eolas le déanaí. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
     "outcomeNobody": "Níorbh fhéidir aon duine a chur ar an eolas go fóill. Bainfimid triail eile as le do chéad seiceáil eile. Féach an tacaíocht thíos.",
     "outcomePrivate": "Ní fheiceann ach tusa an tseiceáil seo.",
     "supportHeading": "Má tá tacaíocht uait anois",
@@ -169,7 +169,12 @@
     "outcomeTold_few": "Chuireamar {{count}} dhuine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
     "outcomeTold_many": "Chuireamar {{count}} nduine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
     "outcomeSelfOnly": "Is tusa an t-aon bhall d'fhoireann do phobail, mar sin níor cuireadh aon duine eile ar an eolas. Féach an tacaíocht thíos.",
-    "noData": "Níl go leor gníomhaíochta ann fós chun scór a thabhairt do do fholláine."
+    "noData": "Níl go leor gníomhaíochta ann fós chun scór a thabhairt do do fholláine.",
+    "outcomeAlreadyToldToday": "Cuireadh foireann do phobail ar an eolas níos luaithe inniu, ag {{time}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcomeAlreadyToldYesterday": "Cuireadh foireann do phobail ar an eolas inné ag {{time}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcomeAlreadyToldOn": "Cuireadh foireann do phobail ar an eolas cheana ar {{date}}. Cuireadh an tseiceáil seo leis an méid a fheiceann siad.",
+    "outcomeDismiss": "Dún",
+    "rateLimited": "An iomarca iarratas i mbeagán ama. Fan nóiméad agus bain triail eile as."
   },
   "qualifications": {
     "title": "Cáilíochtaí",
@@ -419,5 +424,12 @@
     "members_other": "Baill ({{count}} as {{max}})",
     "membersNoMax_one": "Baill ({{count}})",
     "membersNoMax_other": "Baill ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Foláireamh folláine",
+    "heading": "Tá an foláireamh folláine seo ar an suíomh gréasáin",
+    "body": "Is d’fhoireann do phobail na foláirimh folláine, agus tá leathanach an fholáirimh ar an suíomh gréasáin. Oscail ansin é chun na seiceálacha a léamh, chun a fheiceáil cé a cuireadh ar an eolas agus chun nótaí a chur leis. B’fhéidir go mbeidh ort síniú isteach.",
+    "open": "Oscail ar an suíomh gréasáin",
+    "openFailed": "Níorbh fhéidir leis an bhfón seo an suíomh gréasáin a oscailt. Oscail suíomh gréasáin do phobail i mbrabhsálaí agus téigh go dtí leathanach na bhfoláireamh folláine."
   }
 }

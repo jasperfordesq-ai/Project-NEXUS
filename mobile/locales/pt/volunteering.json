@@ -397,7 +397,8 @@
       "hours": "Revisão de horas",
       "volunteers": "Volunteers",
       "wallet": "Wallet",
-      "settings": "Settings"
+      "settings": "Settings",
+      "wellbeing": "Bem-estar"
     },
     "stats": {
       "volunteers": "Volunteers",
@@ -470,7 +471,35 @@
     "notYoursHint": "As candidaturas, as horas e a carteira só são visíveis para quem a dirige.",
     "backToVolunteering": "Voltar ao voluntariado",
     "declinedHeading": "Não aprovada",
-    "declinedDescription": "Este registo não foi aprovado, por isso não pode publicar oportunidades em nome dele. Fale com quem coordena a sua comunidade se achar que se trata de um erro."
+    "declinedDescription": "Este registo não foi aprovado, por isso não pode publicar oportunidades em nome dele. Fale com quem coordena a sua comunidade se achar que se trata de um erro.",
+    "wellbeing": {
+      "intro": "Voluntários da sua organização que, num registo de bem-estar, disseram sentir-se em baixo ou com dificuldades e pediram que alguém entrasse em contacto. Foi avisado por alerta e e-mail na altura; esta é a lista completa. Vê o nome e como se sentem, nunca a nota.",
+      "forbidden": "Não tem acesso aos alertas de bem-estar desta organização.",
+      "switchedOff": "Esta comunidade desativou os registos de bem-estar.",
+      "rateLimited": "Demasiados pedidos em pouco tempo. Aguarde um momento e tente novamente.",
+      "loadError": "Não foi possível carregar os alertas de bem-estar. Tente novamente.",
+      "empty": "Ninguém pediu ajuda",
+      "emptyDesc": "Nenhum dos seus voluntários partilhou um registo em baixo nos últimos 90 dias.",
+      "summary": "{{count}} voluntários estão à espera de que alguém entre em contacto",
+      "summary_one": "{{count}} voluntário está à espera de que alguém entre em contacto",
+      "summary_other": "{{count}} voluntários estão à espera de que alguém entre em contacto",
+      "moodStruggling": "Diz que está com dificuldades",
+      "moodLow": "Diz que se sente em baixo",
+      "status": {
+        "active": "Ninguém respondeu ainda",
+        "acknowledged": "A equipa da comunidade está a tratar disto",
+        "resolved": "Resolvido",
+        "dismissed": "Fechado"
+      },
+      "checkedIn": "Registo de {{date}}",
+      "toldOn": "Foi avisado em {{date}}",
+      "notTold": "Ainda não foi avisado",
+      "whatToDo": "Entre em contacto com esta pessoa em breve. Se receia pela sua segurança neste momento, contacte os serviços de emergência e depois avise a equipa da sua comunidade.",
+      "closedHelp": "A equipa da comunidade fechou este caso. Ainda pode entrar em contacto.",
+      "message": "Enviar mensagem a {{name}}",
+      "viewProfile": "Ver perfil",
+      "confidentiality": "Trate isto como confidencial. Partilhe apenas com quem precisa de saber e nunca publique nada sobre isto."
+    }
   },
   "swaps": {
     "heading": "Trocas de turnos",

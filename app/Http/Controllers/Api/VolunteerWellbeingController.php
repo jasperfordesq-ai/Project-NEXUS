@@ -59,6 +59,23 @@ class VolunteerWellbeingController extends BaseApiController
     }
 
     /**
+     * The member's wellbeing endpoints need wellbeing ON: the volunteering feature
+     * and the community's Wellbeing tab. Until the deep audit (S3, 21 Oct 2026) the
+     * tab switch hid the page and stopped the scan, while a shared check-in sent
+     * from the phone, the accessible site or the API still raised an alert and told
+     * staff, organisations and the community above.
+     */
+    private function ensureWellbeing(): void
+    {
+        $this->ensureFeature();
+        if (!VolunteerWellbeingService::isEnabledForCurrentTenant()) {
+            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                $this->respondWithError('FEATURE_DISABLED', __('api.vol_wellbeing_disabled'), null, 403)
+            );
+        }
+    }
+
+    /**
      * A community administrator, decided by AdminTier: the four boolean admin
      * flags as well as the role string, with brokers and coordinators refused.
      * Until 6 Oct 2026 this read only the role string, so an administrator
@@ -106,7 +123,7 @@ class VolunteerWellbeingController extends BaseApiController
 
     public function wellbeingDashboard(): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureWellbeing();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_wellbeing_dashboard', 30, 60);
 
@@ -216,7 +233,7 @@ class VolunteerWellbeingController extends BaseApiController
                 'mood' => (int) $row->mood,
                 'note' => $row->note,
                 'shared' => (bool) $row->share_with_team,
-                'created_at' => $row->created_at,
+                'created_at' => VolunteerWellbeingService::iso($row->created_at),
             ], $rows);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Wellbeing dashboard: recent check-ins failed: ' . $e->getMessage());
@@ -243,18 +260,27 @@ class VolunteerWellbeingController extends BaseApiController
 
     public function wellbeingCheckin(): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureWellbeing();
         $userId = $this->getUserId();
         $this->rateLimit('volunteering_wellbeing_checkin', 10, 60);
 
-        $mood = (int) $this->input('mood');
-        if ($mood < 1 || $mood > 5) {
-            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_mood_range'), 'mood', 400);
+        // A whole number 1-5, nothing coerced: "1.9" was read as Struggling and
+        // "2abc" as Low (deep audit S16, 21 Oct 2026).
+        $rawMood = $this->input('mood');
+        $mood = filter_var($rawMood, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]);
+        if ($mood === false || is_bool($rawMood)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_mood_range'), 'mood', 422);
         }
 
         $note = $this->input('note');
-        if ($note) {
-            $note = trim(mb_substr($note, 0, 500));
+        if ($note !== null && !is_string($note)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.vol_wellbeing_checkin_note_invalid'), 'note', 422);
+        }
+        if (is_string($note)) {
+            $note = trim($note);
+            if (mb_strlen($note) > 500) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.vol_wellbeing_checkin_note_invalid'), 'note', 422);
+            }
         }
 
         // The volunteer's own choice, shown to them beside the mood. Absent means
@@ -264,7 +290,7 @@ class VolunteerWellbeingController extends BaseApiController
 
         try {
             return $this->respondWithData(
-                $this->volunteerWellbeingService->recordCheckin($userId, $mood, $note ?: null, $shareWithTeam)
+                $this->volunteerWellbeingService->recordCheckin($userId, $mood, $note === '' ? null : $note, $shareWithTeam)
             );
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Wellbeing checkin failed: " . $e->getMessage());
@@ -298,7 +324,12 @@ class VolunteerWellbeingController extends BaseApiController
 
         $alerts = $this->volunteerWellbeingService->getActiveAlerts($status);
 
-        return $this->respondWithCollection($alerts, null, count($alerts), false);
+        // When the nightly scan last finished cleanly, so staff can see it is running (O4).
+        $lastScan = \Illuminate\Support\Facades\Cache::get(\App\Console\Commands\AssessVolunteerWellbeing::LAST_OK_CACHE_KEY);
+
+        return $this->respondWithCollection($alerts, null, count($alerts), false, [
+            'last_scan_at' => VolunteerWellbeingService::iso(is_string($lastScan) ? $lastScan : null),
+        ]);
     }
 
     /**
@@ -438,7 +469,7 @@ class VolunteerWellbeingController extends BaseApiController
      */
     public function organisationWellbeing($orgId): JsonResponse
     {
-        $this->ensureFeature();
+        $this->ensureWellbeing();
         $userId = $this->getUserId();
         $this->rateLimit('vol_org_wellbeing', 60, 60);
         $tenantId = TenantContext::getId();

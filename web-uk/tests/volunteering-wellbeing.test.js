@@ -281,3 +281,179 @@ describe('accessible wellbeing page', () => {
     expect(res.text).toContain('wellbeing contact address');
   });
 });
+
+// Wellbeing deep audit, second pass (21 Oct 2026). Each block names the finding in
+// .local-docs-archive/wellbeing-audit-2026-10-21/DEEP-AUDIT-CLIENTS.md it pins.
+describe('accessible wellbeing page — deep audit fixes', () => {
+  const REAL_WARNINGS = [
+    'Your volunteering frequency has decreased compared to last month.',
+    'You told us recently that you are not feeling great. Please look after yourself, and reach out if you would like support.'
+  ];
+
+  // C1 (P1): the API sends translated sentences, not tokens. The page used to drop
+  // every one of them and print "No wellbeing warnings right now".
+  it('shows the warnings exactly as the API sends them, and never the "no warnings" line beside them', async () => {
+    api.callVolunteeringApi.mockResolvedValue({ data: { ...DASHBOARD.data, score_basis: 'activity', warnings: REAL_WARNINGS } });
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Your volunteering frequency has decreased compared to last month.');
+    expect(res.text).toContain('You told us recently that you are not feeling great.');
+    expect(res.text).not.toContain(t('govuk_alpha_volunteering.wellbeing.no_warnings'));
+  });
+
+  it('still labels an old-style warning token, and reads a warning object by its message', async () => {
+    api.callVolunteeringApi.mockResolvedValue({
+      data: { ...DASHBOARD.data, warnings: ['frequency', { message: 'Your cancellation rate has gone up.' }, { type: 'hours' }, '', null, 42] }
+    });
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing`);
+
+    expect(res.text).toContain(t('govuk_alpha_volunteering.wellbeing.warning_frequency'));
+    expect(res.text).toContain('Your cancellation rate has gone up.');
+    expect(res.text).toContain(t('govuk_alpha_volunteering.wellbeing.warning_hours'));
+    expect(res.text).not.toContain('<li>frequency</li>');
+    expect(res.text).not.toContain('<li>42</li>');
+    expect(res.text).not.toContain(t('govuk_alpha_volunteering.wellbeing.no_warnings'));
+  });
+
+  // C6: times are UTC. The bare database form and ISO-8601 with an offset must give
+  // the same moment, shown in UTC and saying so.
+  it.each([
+    ['the bare database form, read as UTC', '2026-10-21 14:05:00'],
+    ['ISO-8601 in UTC', '2026-10-21T14:05:00+00:00'],
+    ['ISO-8601 with a +01:00 offset', '2026-10-21T15:05:00+01:00'],
+    ['ISO-8601 with Z', '2026-10-21T14:05:00Z']
+  ])('shows the last-told time and check-in times from %s as 14:05 UTC', async (_label, stamp) => {
+    api.callVolunteeringApi.mockResolvedValue({
+      data: { ...DASHBOARD.data, last_team_notified_at: stamp, recent_checkins: [{ id: 4, mood: 2, note: 'tired', created_at: stamp, shared: true }] }
+    });
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing`);
+
+    const expected = '21 October 2026 at 14:05 UTC';
+    expect(res.text).toContain(`team was last told on ${expected}`);
+    expect(res.text).toContain(`<td class="govuk-table__cell">${expected}</td>`);
+  });
+
+  // C14: the last-told line is not part of the score.
+  it('still says when the team was last told once there is nothing left to score', async () => {
+    api.callVolunteeringApi.mockResolvedValue({
+      data: { score: 100, burnout_risk: 'low', score_basis: 'no_data', warnings: [], recent_checkins: [], hours_this_week: 0, hours_this_month: 0, streak_days: 0, last_team_notified_at: '2026-10-05T09:30:00+00:00' }
+    });
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing`);
+
+    expect(res.text).toContain(t('govuk_alpha_volunteering.wellbeing.score_no_data'));
+    expect(res.text).toContain('team was last told on 5 October 2026 at 09:30 UTC');
+    expect(res.text).not.toContain('100 out of 100');
+  });
+
+  // C6: "already told today (16:05)" could mean yesterday. The API's told_at is carried
+  // across the redirect and shown as a date and time.
+  it('carries told_at across the redirect when the team was already told, and shows it as a date and time', async () => {
+    api.callVolunteeringApi.mockResolvedValueOnce({
+      data: { id: 9, mood: 1, team_notified: false, told_count: 2, outcome: 'already_told_today', told_at: '2026-10-20T16:05:00+00:00' }
+    });
+    const app = createApp();
+    const post = await request(app).post(`${MOUNT}/wellbeing/checkin`).type('form').send({ mood: '1', note: '', share_with_team: '1' });
+    expect(post.status).toBe(302);
+    expect(post.headers.location).toBe(`${PREFIX}/volunteering/wellbeing?status=checkin-saved-already&told_at=${encodeURIComponent('2026-10-20T16:05:00+00:00')}`);
+
+    api.callVolunteeringApi.mockResolvedValue(DASHBOARD);
+    const page = await request(app).get(post.headers.location);
+    expect(page.text).toContain(t('govuk_alpha_volunteering.wellbeing.checkin_saved_already_at', { date: '20 October 2026 at 16:05 UTC' }));
+    expect(page.text).not.toMatch(/already told today/i);
+  });
+
+  it('reads a bare told_at as UTC, and says "in the last 24 hours" — never "today" — when there is no usable time', async () => {
+    api.callVolunteeringApi.mockResolvedValueOnce({
+      data: { id: 9, mood: 1, team_notified: false, told_count: 2, outcome: 'already_told_today', told_at: '2026-10-20 16:05:00' }
+    });
+    const app = createApp();
+    const post = await request(app).post(`${MOUNT}/wellbeing/checkin`).type('form').send({ mood: '1', share_with_team: '1' });
+    api.callVolunteeringApi.mockResolvedValue(DASHBOARD);
+    const bare = await request(app).get(post.headers.location);
+    expect(bare.text).toContain('20 October 2026 at 16:05 UTC');
+
+    const none = await request(app).get(`${MOUNT}/wellbeing?status=checkin-saved-already&told_at=not-a-time`);
+    const fallback = t('govuk_alpha_volunteering.wellbeing.checkin_saved_already');
+    expect(fallback).not.toMatch(/today/i);
+    expect(none.text).toContain(fallback);
+    expect(none.text).not.toContain('not-a-time');
+  });
+
+  // C7: refusals the server will never accept must not say "please try again".
+  it('shows a calm "switched off" page, with no form and no load error, when the community has switched wellbeing off', async () => {
+    api.callVolunteeringApi.mockRejectedValue(new api.ApiError('Forbidden', 403, { errors: [{ code: 'FEATURE_DISABLED', message: 'Wellbeing check-ins are switched off in this community.' }] }));
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing`);
+
+    expect(res.status).toBe(200);
+    const key = 'govuk_alpha_volunteering.wellbeing.switched_off';
+    expect(t(key)).not.toBe(key);
+    expect(res.text).toContain(t(key).replace(/'/g, '&#39;'));
+    expect(res.text).not.toContain(t('govuk_alpha_volunteering.wellbeing.load_error'));
+    expect(res.text).not.toContain('name="mood"');
+    expect(res.text).not.toContain('/wellbeing/checkin');
+    expectNoAssessment(res.text);
+  });
+
+  it('keeps the ordinary load error for a 403 that is not the feature switch, and says "wait a moment" for a 429', async () => {
+    api.callVolunteeringApi.mockRejectedValueOnce(new api.ApiError('Forbidden', 403, { errors: [{ code: 'FORBIDDEN' }] }));
+    const forbidden = await request(createApp()).get(`${MOUNT}/wellbeing`);
+    expect(forbidden.text).toContain(t('govuk_alpha_volunteering.wellbeing.load_error'));
+
+    api.callVolunteeringApi.mockRejectedValueOnce(new api.ApiError('Too many', 429, { success: false, error: 'Too many requests.', code: 'RATE_LIMIT_EXCEEDED' }));
+    const limited = await request(createApp()).get(`${MOUNT}/wellbeing`);
+    const key = 'govuk_alpha_volunteering.wellbeing.load_rate_limited';
+    expect(t(key)).not.toBe(key);
+    expect(limited.text).toContain(t(key));
+    expect(limited.text).not.toContain(t('govuk_alpha_volunteering.wellbeing.load_error'));
+    expectCheckinFormUsable(limited.text);
+  });
+
+  it.each([
+    ['403 FEATURE_DISABLED', new api.ApiError('Forbidden', 403, { errors: [{ code: 'FEATURE_DISABLED', message: 'off' }] }), 'checkin-disabled', 'checkin_disabled'],
+    ['429 RATE_LIMIT_EXCEEDED', new api.ApiError('Too many', 429, { success: false, error: 'Too many requests.', code: 'RATE_LIMIT_EXCEEDED' }), 'checkin-rate-limited', 'checkin_rate_limited'],
+    ['a 500', new api.ApiError('boom', 500, {}), 'checkin-failed', 'checkin_failed']
+  ])('answers a check-in refused with %s with its own message', async (_label, error, status, key) => {
+    api.callVolunteeringApi.mockRejectedValueOnce(error);
+    const app = createApp();
+    const post = await request(app).post(`${MOUNT}/wellbeing/checkin`).type('form').send({ mood: '2', note: 'n', share_with_team: '1' });
+    expect(post.headers.location).toBe(`${PREFIX}/volunteering/wellbeing?status=${status}`);
+
+    api.callVolunteeringApi.mockResolvedValue(DASHBOARD);
+    const page = await request(app).get(post.headers.location);
+    const fullKey = `govuk_alpha_volunteering.wellbeing.${key}`;
+    expect(t(fullKey)).not.toBe(fullKey);
+    expect(page.text).toContain(t(fullKey).replace(/'/g, '&#39;'));
+    if (key !== 'checkin_failed') {
+      expect(t(fullKey)).not.toMatch(/please try again\.?$/i);
+      expect(page.text).not.toContain(t('govuk_alpha_volunteering.wellbeing.checkin_failed'));
+    }
+  });
+
+  // C9: the GOV.UK error pattern needs the summary to link to the field, and the
+  // field itself to carry the error.
+  it('links the mood error summary to the first radio and marks the radios in error', async () => {
+    api.callVolunteeringApi.mockResolvedValue(DASHBOARD);
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing?status=mood-invalid`);
+
+    const message = t('govuk_alpha_volunteering.wellbeing.mood_invalid');
+    expect(res.text).toContain(`<a href="#mood-1">${message}</a>`);
+    expect(res.text).toContain('govuk-form-group govuk-form-group--error');
+    expect(res.text).toMatch(/<p id="mood-error" class="govuk-error-message">\s*<span class="govuk-visually-hidden">[^<]+<\/span>\s*Choose a mood between 1 and 5\.\s*<\/p>/);
+    expect(res.text).toMatch(/<fieldset class="govuk-fieldset" aria-describedby="mood-error">/);
+
+    const clean = await request(createApp()).get(`${MOUNT}/wellbeing`);
+    expect(clean.text).not.toContain('govuk-form-group--error');
+    expect(clean.text).not.toContain('id="mood-error"');
+  });
+
+  it.each(['checkin-saved-nobody', 'checkin-saved-self'])('announces the %s notice as an alert, so the banner takes focus after the redirect', async (status) => {
+    api.callVolunteeringApi.mockResolvedValue(DASHBOARD);
+    const res = await request(createApp()).get(`${MOUNT}/wellbeing?status=${status}`);
+    const banner = res.text.match(/<div class="govuk-notification-banner"[^>]*>/);
+    expect(banner).not.toBeNull();
+    expect(banner[0]).toContain('role="alert"');
+    expect(banner[0]).not.toContain('data-disable-auto-focus');
+    expect(res.text).toContain(t('govuk_alpha.states.important'));
+  });
+});

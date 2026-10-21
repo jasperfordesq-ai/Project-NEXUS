@@ -210,6 +210,31 @@ describe('VolOrgDashboardPage', () => {
     expect(screen.getByRole('button', { name: /wellbeing/i })).toBeInTheDocument();
   });
 
+  // Deep audit C3 (21 Oct 2026): a forwarded ?tab=wellbeing link left a plain team
+  // member on the dashboard with no tab selected and an empty panel.
+  it.each(['wellbeing', 'safeguarding'])('falls back to the overview when a plain team member follows a ?tab=%s link', async (tab) => {
+    const { useSearchParams } = await import('react-router-dom');
+    const setSearchParams = vi.fn();
+    vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(`tab=${tab}`), setSearchParams]);
+    try {
+      mockManagedOrgs([{ ...ORG, member_role: 'member' }]);
+      render(<VolOrgDashboardPage />);
+      expect(await screen.findByTestId('overview-tab')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /overview/i })).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      vi.mocked(useSearchParams).mockReturnValue([new URLSearchParams(), vi.fn()]);
+    }
+  });
+
+  // Deep audit C16: the selected tab was shown by colour alone.
+  it('tells assistive technology which tab is selected', async () => {
+    mockManagedOrgs([{ ...ORG, member_role: 'admin' }]);
+    render(<VolOrgDashboardPage />);
+    await screen.findByTestId('overview-tab');
+    expect(screen.getByRole('button', { name: /overview/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /wellbeing/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows the Safeguarding tab to an organisation admin', async () => {
     mockManagedOrgs([{ ...ORG, member_role: 'admin' }]);
     render(<VolOrgDashboardPage />);

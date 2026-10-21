@@ -168,7 +168,7 @@ return [
         ],
         'volunteer_wellbeing' => [
             'title' => ':actor gostaria que alguém entrasse em contacto',
-            'body' => 'No registo de bem-estar disse que está :subject',
+            'body' => 'A partir do registo de bem-estar. Trate esta informação como confidencial.',
         ],
         'exchange_request_received' => [
             'title' => 'Nova solicitação para :subject',

@@ -158,7 +158,7 @@
     "historyHeading": "Letzte Rückmeldungen",
     "historyEmpty": "Sie haben noch keine Rückmeldung gegeben.",
     "shared": "Mit Ihrem Gemeinschaftsteam geteilt",
-    "outcomeAlreadyTold": "Deine Gemeinschaft wurde heute bereits informiert. Dieser Check-in wurde zu dem hinzugefügt, was sie sehen kann.",
+    "outcomeAlreadyTold": "Das Team deiner Gemeinschaft wurde vor Kurzem informiert. Dieser Check-in wurde zu dem hinzugefügt, was es sehen kann.",
     "outcomeNobody": "Niemand konnte bisher informiert werden. Wir versuchen es bei deinem nächsten Check-in erneut. Siehe die Unterstützung unten.",
     "outcomePrivate": "Nur du kannst diesen Check-in sehen.",
     "supportHeading": "Wenn du jetzt Unterstützung brauchst",
@@ -166,7 +166,12 @@
     "outcomeTold_one": "Wir haben {{count}} weitere Person aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
     "outcomeTold_other": "Wir haben {{count}} weitere Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
     "outcomeSelfOnly": "Du bist das einzige Mitglied des Teams deiner Gemeinschaft, daher wurde niemand sonst informiert. Siehe die Unterstützung unten.",
-    "noData": "Noch nicht genug Aktivität, um dein Wohlbefinden zu bewerten."
+    "noData": "Noch nicht genug Aktivität, um dein Wohlbefinden zu bewerten.",
+    "outcomeAlreadyToldToday": "Das Team deiner Gemeinschaft wurde heute bereits um {{time}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was es sehen kann.",
+    "outcomeAlreadyToldYesterday": "Das Team deiner Gemeinschaft wurde gestern um {{time}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was es sehen kann.",
+    "outcomeAlreadyToldOn": "Das Team deiner Gemeinschaft wurde bereits am {{date}} informiert. Dieser Check-in wurde zu dem hinzugefügt, was es sehen kann.",
+    "outcomeDismiss": "Ausblenden",
+    "rateLimited": "Zu viele Anfragen in kurzer Zeit. Bitte warte einen Moment und versuche es dann erneut."
   },
   "qualifications": {
     "title": "Qualifikationen",
@@ -416,5 +421,12 @@
     "members_other": "Mitglieder ({{count}} von {{max}})",
     "membersNoMax_one": "Mitglieder ({{count}})",
     "membersNoMax_other": "Mitglieder ({{count}})"
+  },
+  "staffAlert": {
+    "title": "Wohlbefinden-Hinweis",
+    "heading": "Dieser Wohlbefinden-Hinweis ist auf der Website",
+    "body": "Wohlbefinden-Hinweise sind für das Team deiner Gemeinschaft bestimmt, und die Seite dazu ist auf der Website. Öffne sie dort, um die Check-ins zu lesen, zu sehen, wer informiert wurde, und Notizen hinzuzufügen. Eventuell musst du dich anmelden.",
+    "open": "Auf der Website öffnen",
+    "openFailed": "Dieses Telefon konnte die Website nicht öffnen. Öffne die Website deiner Gemeinschaft in einem Browser und gehe zur Seite mit den Wohlbefinden-Hinweisen."
   }
 }

@@ -2289,6 +2289,8 @@ return [
     'vol_wellbeing_support_text_too_long' => 'Ní féidir leis an téacs tacaíochta a bheith níos faide ná :max carachtar.',
     'vol_wellbeing_too_many_links' => 'Cuir :max nasc leis ar a mhéad.',
     'vol_wellbeing_link_invalid' => 'Teastaíonn lipéad agus seoladh slán ó gach nasc (https://, mailto:, tel: nó leathanach ar an suíomh seo).',
+    'vol_wellbeing_disabled' => 'Tá seiceálacha folláine múchta ag an bpobal seo.',
+    'vol_wellbeing_checkin_note_invalid' => 'Caithfidh an nóta a bheith ina théacs nach faide ná 500 carachtar.',
     'vol_wellbeing_recipient_unknown' => 'Iarbhall',
     'vol_wellbeing_warning_low_mood' => 'D’inis tú dúinn le déanaí nach bhfuil tú ag mothú go maith. Tabhair aire duit féin, agus iarr tacaíocht más mian leat.',
     'vol_wellbeing_recommendation_reach_out' => 'Labhair le duine a bhfuil muinín agat as, nó déan teagmháil le foireann do phobail más mian leat tacaíocht.',

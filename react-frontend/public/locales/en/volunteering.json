@@ -1140,14 +1140,20 @@
     "outcome_told_one": "We have told {{count}} other person from your community. Someone will be in touch.",
     "outcome_told_other": "We have told {{count}} other people from your community. Someone will be in touch.",
     "outcome_told_self_only": "You are the only member of your community's team, so nobody else has been told.",
-    "outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
+    "outcome_already_told_today": "Your community was already told earlier today, at {{time}}. This check-in has been added to what they can see.",
+    "outcome_already_told_yesterday": "Your community was already told yesterday, at {{time}}. This check-in has been added to what they can see.",
+    "outcome_already_told_on": "Your community was already told on {{date}}. This check-in has been added to what they can see.",
+    "outcome_already_told_recently": "Your community was already told in the last day. This check-in has been added to what they can see.",
     "outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
     "outcome_private": "Only you can see this check-in.",
     "outcome_what_next": "What happens next",
     "outcome_what_next_desc": "Someone who was told will read your check-in and get in touch.",
     "outcome_dismiss": "Dismiss",
     "support_heading": "If you need support now",
-    "last_told": "Your community's team was last told on {{date}}."
+    "last_told": "Your community's team was last told on {{date}}.",
+    "switched_off_title": "Wellbeing check-ins are switched off",
+    "switched_off_desc": "Your community has switched wellbeing check-ins off. If you need support, contact your community's team.",
+    "rate_limited": "You have done this several times in a short while. Please wait a moment and try again."
   },
   "check_in": {
     "title": "Shift Check-in",
