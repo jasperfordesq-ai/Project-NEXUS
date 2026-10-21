@@ -1719,12 +1719,12 @@
       "swaps": "Trocas de turno",
       "group-signups": "Inscrições de grupo",
       "community-projects": "Projetos comunitários",
-      "donations": "Donativos",
+      "donations": "Doações",
       "expenses": "Despesas",
       "credentials": "Qualificações",
       "certificates": "Certificados",
       "wellbeing": "Bem-estar",
-      "safeguarding": "Proteção",
+      "safeguarding": "Salvaguarda",
       "accessibility": "Acessibilidade"
     },
     "back_home": "Início do voluntariado",
@@ -1743,7 +1743,7 @@
       "credentials": "A sua formação e qualificações, para que as organizações vejam o que tem e quando expira.",
       "certificates": "Descarregue um certificado com todas as suas horas de voluntariado aprovadas.",
       "wellbeing": "Diga como se sente. Se estiver a ser difícil, pode pedir que alguém entre em contacto consigo.",
-      "safeguarding": "A sua formação em proteção e onde comunicar uma preocupação com a segurança de alguém.",
+      "safeguarding": "A sua formação em salvaguarda e onde comunicar uma preocupação com a segurança de alguém.",
       "accessibility": "Diga às organizações que apoio ou adaptações precisa para fazer voluntariado."
     }
   }
