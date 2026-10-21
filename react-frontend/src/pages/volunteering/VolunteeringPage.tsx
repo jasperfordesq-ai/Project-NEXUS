@@ -43,6 +43,8 @@ import {
   type VolunteeringFormat,
 } from '@/components/volunteering/VolunteeringFilterSheet';
 import { VolunteeringSectionsSheet } from '@/components/volunteering/VolunteeringSectionsSheet';
+import { VolunteeringHub, VolunteeringPreviewHeader, VolunteeringUrgentBanner } from '@/components/volunteering/VolunteeringHub';
+import { useVolunteeringHubSummary } from '@/components/volunteering/useVolunteeringHubSummary';
 
 import Heart from 'lucide-react/icons/heart';
 import Plus from 'lucide-react/icons/plus';
@@ -241,6 +243,14 @@ export function VolunteeringPage() {
   const { tenantPath, hasFeature, volunteeringConfig } = useTenant();
   const hasOrganisations = hasFeature('organisations');
   const [searchParams, setSearchParams] = useSearchParams();
+  // URL-only opt-in: no tenant setting or persistent preference is changed.
+  const isHubPreview = searchParams.get('layout') === 'hub-preview';
+  const focusPreviewContent = useRef(false);
+  const focusHubContent = useCallback(() => {
+    const heading = document.getElementById('volunteering-content');
+    heading?.focus();
+    heading?.scrollIntoView?.({ block: 'start' });
+  }, []);
   // Check if a volunteering tab is enabled via config
   // Config keys use underscores (tab_group_signups), frontend tab keys use hyphens (group-signups)
   const isTabEnabled = useCallback((tabKey: VolunteerTab): boolean => {
@@ -255,6 +265,8 @@ export function VolunteeringPage() {
   const [tab, setTabState] = useState<VolunteerTab>(initialTab);
 
   const setTab = useCallback((newTab: VolunteerTab) => {
+    focusPreviewContent.current = true;
+    if (isHubPreview && newTab === tab) focusHubContent();
     setTabState(newTab);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -265,7 +277,17 @@ export function VolunteeringPage() {
       }
       return next;
     }, { replace: true });
-  }, [setSearchParams]);
+  }, [setSearchParams, isHubPreview, tab, focusHubContent]);
+  useEffect(() => {
+    if (isHubPreview && focusPreviewContent.current) {
+      // Wait for the URL-driven section and its keyed boundary to settle.
+      const frame = requestAnimationFrame(() => {
+        focusHubContent();
+        focusPreviewContent.current = false;
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [tab, isHubPreview, focusHubContent]);
   type MyOrg = { id: number; name: string; status: string; role: string };
   const [myOrgs, setMyOrgs] = useState<MyOrg[]>([]);
   const [showMoreTabs, setShowMoreTabs] = useState(false);
@@ -324,6 +346,19 @@ export function VolunteeringPage() {
     return () => { cancelled = true; };
   }, [isAuthenticated, hasFeature, hasOrganisations]);
 
+  // Hub preview only: the live numbers beside its links, fetched solely for
+  // sections this member can actually open.
+  const allowedSections = useMemo(() => new Set<string>(VOLUNTEER_TABS.filter(isTabAllowed)), [isTabAllowed]);
+  const hubSummary = useVolunteeringHubSummary({ enabled: isHubPreview && isAuthenticated, sections: allowedSections });
+  // Same rule as the Hours tab: an approved application, or membership of a live
+  // organisation. `null` until known, so the wrong button never flashes up.
+  const isLiveOrgMember = myOrgs.some((o) => ['approved', 'active'].includes(o.status));
+  const previewCanLogHours: boolean | null = !isTabAllowed('hours')
+    ? null
+    : (isLiveOrgMember || hubSummary.hasApprovedApplication === true)
+      ? true
+      : hubSummary.hasApprovedApplication === false ? false : null;
+
   // Feature gate
   if (!hasFeature('volunteering')) {
     return (
@@ -350,7 +385,27 @@ export function VolunteeringPage() {
       {/* The hero owns this page's only <h1> and is hidden on phones, where the
           title moves into the app bar as plain text — leaving a phone with no
           heading to orient by. Keep one for screen readers. Mirrors BlogPage. */}
-      {isPhone && <h1 className="sr-only">{t('heading')}</h1>}
+      {isPhone && !isHubPreview && <h1 className="sr-only">{t('heading')}</h1>}
+
+      {isHubPreview && <VolunteeringPreviewHeader
+        canLogHours={previewCanLogHours}
+        onLogHours={() => setTab('hours')}
+        onFindOpportunities={() => setTab('opportunities')}
+        hasOrganisations={hasOrganisations}
+        manageHref={isAuthenticated && hasApprovedOrg ? manageHref : firstPendingOrg ? pendingOrgs.length === 1 ? tenantPath(`/volunteering/org/${firstPendingOrg.id}/dashboard`) : tenantPath('/volunteering/my-organisations') : undefined}
+        canRegisterOrganisation={isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0}
+        canPostOpportunity={isAuthenticated && hasApprovedOrg}
+        pendingOrganisationName={isAuthenticated && !hasApprovedOrg ? firstPendingOrg?.name : undefined}
+        onExit={() => setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('layout');
+          return next;
+        })}
+      />}
+
+      {isHubPreview && <VolunteeringUrgentBanner count={hubSummary.urgentRequests} onOpen={() => setTab('alerts')} />}
+
+      {!isHubPreview && <>
 
       {/* One-time welcome for signed-in members (dismissible, localStorage). */}
       {isAuthenticated && (
@@ -617,6 +672,8 @@ export function VolunteeringPage() {
         </div>
       )}
 
+      </>}
+
       {/* Tabs */}
       {/* Tabs — data-driven with config-based visibility */}
       {(() => {
@@ -656,6 +713,19 @@ export function VolunteeringPage() {
         // Phone section picker: the trigger shows where you are, the sheet moves you.
         const activeTabDef = visibleTabs.find(({ key }) => key === activeTab);
         const ActiveTabIcon = activeTabDef?.icon;
+        // No hub when the opportunities list is the only section (a signed-out
+        // visitor, or a community that switched everything else off).
+        const hub = isHubPreview && visibleTabs.some(({ key }) => key !== 'opportunities') ? <VolunteeringHub
+          sections={visibleTabs}
+          activeSection={activeTab}
+          onSelect={(key) => setTab(key as VolunteerTab)}
+          summary={hubSummary}
+        /> : null;
+        const previewHeading = isHubPreview && activeTab ? <h2
+          id="volunteering-content"
+          tabIndex={-1}
+          className="mb-5 scroll-mt-24 rounded-lg text-xl font-semibold text-theme-primary focus-visible:outline-2 focus-visible:outline-offset-4"
+        >{activeTab === 'opportunities' ? t('hub.explore') : t(`hub.links.${activeTab}`)}</h2> : null;
 
         const renderToggle = (tabsToRender: TabDef[]) => (
           <ToggleButtonGroup
@@ -696,7 +766,7 @@ export function VolunteeringPage() {
               />
             )}
             {/* Desktop / tablet: the original pill wall, untouched. */}
-            {visibleTabs.length > 0 && !isPhone && (
+            {visibleTabs.length > 0 && !isPhone && !isHubPreview && (
               <div className="space-y-2">
                 {renderToggle(primaryTabs)}
                 {moreTabs.length > 0 && (
@@ -724,7 +794,7 @@ export function VolunteeringPage() {
             {/* Phone: one 44px control in place of up to 16 wrapping pills (plus
                 the "More (11)" disclosure that unfurled six further rows). It
                 names the section you are in and opens the picker sheet. */}
-            {visibleTabs.length > 0 && isPhone && (
+            {visibleTabs.length > 0 && isPhone && !isHubPreview && (
               <>
                 <Button
                   variant="flat"
@@ -754,8 +824,10 @@ export function VolunteeringPage() {
                 any single tab (eager OR lazy) is contained to the tab instead of
                 blanking the whole page; the key resets the boundary when the user
                 switches tabs. */}
+            {activeTab !== 'opportunities' && hub && <div className="mb-8">{hub}</div>}
+            {activeTab !== 'opportunities' && previewHeading}
             {activeTab && <ErrorBoundary key={activeTab}><div>
-              {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} />}
+              {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} isHubPreview={isHubPreview} previewHub={hub} previewHeading={previewHeading} />}
               {activeTab === 'applications' && isTabEnabled('applications') && <ApplicationsTab />}
               {activeTab === 'hours' && isTabEnabled('hours') && <HoursTab onNavigateTab={setTab} canOpenApplications={isTabAllowed('applications')} />}
               <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>}>
@@ -808,13 +880,22 @@ function buildOpportunityQueryParams(f: OpportunityFilterValues): URLSearchParam
 }
 
 interface OpportunitiesTabProps {
+  /** `?layout=hub-preview` — the hub sits inside the list instead of above the page. */
+  isHubPreview?: boolean;
+  /** The hub, shown after the first few opportunities while nothing is filtered. */
+  previewHub?: React.ReactNode;
+  /** The focus target heading the hub's links move to. */
+  previewHeading?: React.ReactNode;
   /** Phone viewport — owns the sticky bar / sheet branch. Resolved by the page. */
   isPhone: boolean;
   /** `useHeaderScroll(64).isUtilityBarVisible`, lifted so there is one listener. */
   showMobileControls: boolean;
 }
 
-function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps) {
+/** Hub preview: how many opportunities lead the page before the hub's cards. */
+const HUB_LEAD_OPPORTUNITIES = 3;
+
+function OpportunitiesTab({ isPhone, showMobileControls, isHubPreview = false, previewHub, previewHeading }: OpportunitiesTabProps) {
   // 'volunteering' stays the default namespace (bare keys are unchanged); 'common'
   // is declared so the shared radius labels resolve explicitly.
   const { t } = useTranslation(['volunteering', 'common']);
@@ -1005,6 +1086,30 @@ function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps
     onOpen();
   };
 
+  const hubInList = Boolean(previewHub) && !debouncedQuery && !proximityParams && format === 'any';
+
+  const renderOpportunity = (opp: Opportunity) => (
+    <motion.div key={opp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <OpportunityCard
+        opportunity={opp}
+        onApply={isAuthenticated && !opp.has_applied ? () => openApplyModal(opp) : undefined}
+      />
+    </motion.div>
+  );
+
+  const loadMoreButton = hasMore && (
+    <div className="pt-4 text-center">
+      <Button
+        variant="secondary"
+        className="bg-theme-elevated text-theme-muted"
+        isLoading={isLoadingMore}
+        onPress={() => loadOpportunities(true)}
+      >
+        {t('load_more')}
+      </Button>
+    </div>
+  );
+
   return (
     <>
       {/* Search + Proximity (desktop and tablet — phones use the sticky bar + sheet) */}
@@ -1033,7 +1138,7 @@ function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps
           shared common:filter_bar.* vocabulary. */}
       {isPhone && (
         <MobileFilterBar
-          isVisible={showMobileControls}
+          isVisible={isHubPreview ? true : showMobileControls}
           accent="rose"
           onSearchPress={() => setIsSearchOverlayOpen(true)}
           searchValue={searchQuery}
@@ -1069,6 +1174,8 @@ function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps
         />
       )}
 
+      {previewHeading}
+
       {/* Error */}
       {error && !isLoading && (
         <GlassCard className="p-8 text-center" role="alert">
@@ -1102,30 +1209,23 @@ function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps
             />
           ) : (
             <div className="space-y-4">
-              {opportunities.map((opp) => (
-                <motion.div key={opp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                  <OpportunityCard
-                    opportunity={opp}
-                    onApply={isAuthenticated && !opp.has_applied ? () => openApplyModal(opp) : undefined}
-                  />
-                </motion.div>
-              ))}
-
-              {hasMore && (
-                <div className="pt-4 text-center">
-                  <Button
-                    variant="secondary"
-                    className="bg-theme-elevated text-theme-muted"
-                    isLoading={isLoadingMore}
-                    onPress={() => loadOpportunities(true)}
-                  >
-                    {t('load_more')}
-                  </Button>
-                </div>
-              )}
+              {(hubInList ? opportunities.slice(0, HUB_LEAD_OPPORTUNITIES) : opportunities).map(renderOpportunity)}
+              {!hubInList && loadMoreButton}
             </div>
           )}
         </>
+      )}
+
+      {/* Hub preview: a few opportunities lead, then the hub's cards, then the
+          rest — so the list is never pushed below the fold. Searching or
+          filtering hides the cards and shows the results alone. */}
+      {hubInList && <div className="mt-8">{previewHub}</div>}
+      {hubInList && !error && !isLoading && (opportunities.length > HUB_LEAD_OPPORTUNITIES || hasMore) && (
+        <section className="mt-8 space-y-4" aria-labelledby="volunteering-more-opportunities">
+          <h2 id="volunteering-more-opportunities" className="text-xl font-semibold text-theme-primary">{t('hub.more_opportunities')}</h2>
+          {opportunities.slice(HUB_LEAD_OPPORTUNITIES).map(renderOpportunity)}
+          {loadMoreButton}
+        </section>
       )}
 
       {/* Apply Modal */}

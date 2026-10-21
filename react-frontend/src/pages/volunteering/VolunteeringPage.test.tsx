@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
-import { useTenant } from '@/contexts';
+import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils';
+import { useTenant, useAuth } from '@/contexts';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -195,6 +195,154 @@ import { VolunteeringPage } from './VolunteeringPage';
 import { api } from '@/lib/api';
 
 describe('VolunteeringPage', () => {
+  describe('reversible hub preview', () => {
+    const originalTenant = vi.mocked(useTenant).getMockImplementation();
+    const originalAuth = vi.mocked(useAuth).getMockImplementation();
+    afterEach(() => {
+      if (originalTenant) vi.mocked(useTenant).mockImplementation(originalTenant);
+      if (originalAuth) vi.mocked(useAuth).mockImplementation(originalAuth);
+      // Put the API back to "everything empty" so later tests start clean.
+      vi.mocked(api.get).mockImplementation((async () => ({ success: true, data: [], meta: {} })) as unknown as typeof api.get);
+      window.history.replaceState({}, '', '/');
+    });
+
+    const list = (items: unknown[]) => ({ success: true, data: items, meta: { cursor: null, has_more: false } });
+    const opportunity = (id: number) => ({
+      id,
+      title: `Opportunity ${id}`,
+      description: 'Test',
+      location: 'Town',
+      skills_needed: '',
+      start_date: null,
+      end_date: null,
+      is_active: true,
+      is_remote: false,
+      category: null,
+      organization: { id: 1, name: 'Test Org', logo_url: null },
+      created_at: '2026-02-01',
+      has_applied: false,
+    });
+    /** Answer each endpoint by URL prefix; anything else is an empty list. */
+    const mockHubApi = (routes: Record<string, unknown>) => {
+      vi.mocked(api.get).mockImplementation((async (endpoint: string) => {
+        const hit = Object.entries(routes).find(([prefix]) => endpoint.startsWith(prefix));
+        return hit ? hit[1] : list([]);
+      }) as unknown as typeof api.get);
+    };
+
+    it('keeps the current layout as the default', () => {
+      render(<VolunteeringPage />);
+      expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument();
+      expect(screen.getByRole('radiogroup', { name: 'Volunteering sections' })).toBeInTheDocument();
+    });
+
+    it.each([false, true])('exposes all allowed sections without a picker (phone: %s)', async (phone) => {
+      isPhoneViewport = phone;
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      const hub = within(screen.getByTestId('volunteering-hub'));
+      expect(hub.getAllByRole('button')).toHaveLength(16);
+      expect(hub.getByRole('button', { name: 'hub.links.group-signups' })).toBeInTheDocument();
+      expect(hub.getByRole('button', { name: 'hub.links.safeguarding' })).toBeInTheDocument();
+      expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+      fireEvent.click(hub.getByRole('button', { name: 'hub.links.applications' }));
+      await waitFor(() => expect(window.location.search).toContain('tab=applications'));
+      expect(window.location.search).toContain('layout=hub-preview');
+      await waitFor(() => expect(screen.getByRole('heading', { name: 'hub.links.applications' })).toHaveFocus());
+      fireEvent.click(screen.getByRole('button', { name: 'hub.back_to_current' }));
+      await waitFor(() => expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument());
+      expect(window.location.search).toBe('?tab=applications');
+    });
+
+    it('honours tenant gates even for a disabled deep link', async () => {
+      vi.mocked(useTenant).mockImplementation(() => ({
+        ...originalTenant!(),
+        volunteeringConfig: { 'volunteering.tab_group_signups': false, 'volunteering.expenses_enabled': false, 'volunteering.enable_matching': false },
+      }) as ReturnType<typeof useTenant>);
+      window.history.replaceState({}, '', '/?layout=hub-preview&tab=group-signups');
+      render(<VolunteeringPage />);
+      const hub = within(screen.getByTestId('volunteering-hub'));
+      expect(hub.queryByRole('button', { name: 'hub.links.group-signups' })).not.toBeInTheDocument();
+      expect(hub.queryByRole('button', { name: 'hub.links.expenses' })).not.toBeInTheDocument();
+      expect(hub.queryByRole('button', { name: 'hub.links.recommended' })).not.toBeInTheDocument();
+      await waitFor(() => expect(window.location.search).toBe('?layout=hub-preview'));
+    });
+
+    it('shows signed-out visitors the list alone, with no hub and no member buttons', async () => {
+      vi.mocked(useAuth).mockReturnValue({ ...originalAuth!(), isAuthenticated: false } as ReturnType<typeof useAuth>);
+      mockHubApi({ '/v2/volunteering/opportunities': list([opportunity(1), opportunity(2), opportunity(3), opportunity(4)]) });
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      expect(await screen.findByText('Opportunity 4')).toBeInTheDocument();
+      expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument();
+      expect(screen.queryByText('hub.more_opportunities')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Log Hours' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'hub.find_opportunities' })).not.toBeInTheDocument();
+      // Nothing member-only is even asked for.
+      expect(vi.mocked(api.get).mock.calls.map(([url]) => url).filter((url) => !String(url).startsWith('/v2/volunteering/opportunities'))).toEqual([]);
+    });
+
+    it('leads with the first three opportunities, then the hub, then the rest', async () => {
+      mockHubApi({ '/v2/volunteering/opportunities': list([1, 2, 3, 4, 5].map(opportunity)) });
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      const third = await screen.findByText('Opportunity 3');
+      const hub = screen.getByTestId('volunteering-hub');
+      const fourth = screen.getByText('Opportunity 4');
+      const follows = (a: Node, b: Node) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      expect(follows(third, hub)).toBe(true);
+      expect(follows(hub, fourth)).toBe(true);
+      expect(follows(screen.getByRole('heading', { name: 'hub.more_opportunities' }), fourth)).toBe(true);
+    });
+
+    it('hides the hub while a search is applied, and brings it back when cleared', async () => {
+      mockHubApi({ '/v2/volunteering/opportunities': list([1, 2, 3, 4].map(opportunity)) });
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      const search = screen.getByPlaceholderText('Search opportunities...');
+      fireEvent.change(search, { target: { value: 'garden' } });
+      await waitFor(() => expect(screen.queryByTestId('volunteering-hub')).not.toBeInTheDocument());
+      expect(await screen.findByText('Opportunity 4')).toBeInTheDocument();
+      fireEvent.change(search, { target: { value: '' } });
+      await waitFor(() => expect(screen.getByTestId('volunteering-hub')).toBeInTheDocument());
+    });
+
+    it('offers Log Hours only to a member who can log hours', async () => {
+      mockHubApi({ '/v2/volunteering/applications?status=approved': list([{ id: 9, status: 'approved' }]) });
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      expect(await screen.findByRole('button', { name: 'Log Hours' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'hub.find_opportunities' })).not.toBeInTheDocument();
+    });
+
+    it('offers Find opportunities instead to a member who cannot log hours yet', async () => {
+      mockHubApi({});
+      window.history.replaceState({}, '', '/?layout=hub-preview&tab=hours');
+      render(<VolunteeringPage />);
+      fireEvent.click(await screen.findByRole('button', { name: 'hub.find_opportunities' }));
+      expect(screen.queryByRole('button', { name: 'Log Hours' })).not.toBeInTheDocument();
+      await waitFor(() => expect(window.location.search).toBe('?layout=hub-preview'));
+    });
+
+    it('raises a banner for an unanswered urgent request and shows live numbers', async () => {
+      mockHubApi({
+        '/v2/volunteering/emergency-alerts': { success: true, data: { alerts: [{ id: 1, my_response: 'pending' }] } },
+        '/v2/volunteering/applications?status=pending': list([{ id: 1, status: 'pending' }, { id: 2, status: 'pending' }]),
+        '/v2/volunteering/shifts': { success: true, data: { items: [{ id: 3, start_time: '2099-01-01T10:00:00Z', opportunity_title: 'Garden day' }], cursor: null, has_more: false } },
+        '/v2/volunteering/hours/summary': { success: true, data: { total_verified: 12 } },
+      });
+      window.history.replaceState({}, '', '/?layout=hub-preview');
+      render(<VolunteeringPage />);
+      expect(await screen.findByTestId('volunteering-urgent-banner')).toBeInTheDocument();
+      expect(await screen.findByText('hub.hint_waiting')).toBeInTheDocument();
+      expect(screen.getByText('hub.hint_to_answer')).toBeInTheDocument();
+      expect(await screen.findByText('hub.next_shift')).toBeInTheDocument();
+      expect(await screen.findByText('hub.hours_approved')).toBeInTheDocument();
+      fireEvent.click(screen.getAllByRole('button', { name: 'hub.urgent_action' })[0]!);
+      await waitFor(() => expect(window.location.search).toContain('tab=alerts'));
+    });
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     isPhoneViewport = false;
