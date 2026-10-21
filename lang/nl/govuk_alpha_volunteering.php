@@ -1431,4 +1431,13 @@ return [
         'removed' => ':name is verwijderd.',
         'remove_failed' => 'Kan deze vrijwilliger niet verwijderen. Probeer het opnieuw.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Aanmeldingen voor deze vacature',
+        'intro' => 'Iedereen die zich voor deze vacature heeft aangemeld. Keur aanmeldingen die op een besluit wachten goed of wijs ze af.',
+        'manage_link' => 'Aanmeldingen bekijken',
+        'none_yet' => 'Nog niemand heeft zich voor deze vacature aangemeld.',
+        'none_filtered' => 'Geen aanmeldingen met deze status.',
+    ],
 ];

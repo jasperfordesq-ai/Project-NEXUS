@@ -1431,4 +1431,13 @@ return [
         'removed' => ':name wurde entfernt.',
         'remove_failed' => 'Die Person konnte nicht entfernt werden. Bitte versuchen Sie es erneut.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Bewerbungen für dieses Angebot',
+        'intro' => 'Alle, die sich auf dieses Angebot beworben haben. Nehmen Sie Bewerbungen, die auf eine Entscheidung warten, an oder lehnen Sie sie ab.',
+        'manage_link' => 'Bewerbungen prüfen',
+        'none_yet' => 'Bisher hat sich niemand auf dieses Angebot beworben.',
+        'none_filtered' => 'Keine Bewerbungen mit diesem Status.',
+    ],
 ];

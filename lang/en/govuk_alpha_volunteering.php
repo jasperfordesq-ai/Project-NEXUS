@@ -1475,4 +1475,13 @@ return [
         'removed' => ':name has been removed.',
         'remove_failed' => 'Could not remove this volunteer. Please try again.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Applications for this opportunity',
+        'intro' => 'Everyone who has applied to this opportunity. Approve or decline anyone waiting for a decision.',
+        'manage_link' => 'Review applications',
+        'none_yet' => 'No one has applied to this opportunity yet.',
+        'none_filtered' => 'No applications with this status.',
+    ],
 ];

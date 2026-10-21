@@ -197,6 +197,8 @@ describe('the opportunity page', () => {
     expect(res.text).toContain(`action="${MOUNT}/opportunities/131/close"`);
     expect(res.text).not.toContain(`action="${MOUNT}/opportunities/131/reopen"`);
     expect(res.text).toContain(`href="${MOUNT}/opportunities/131/cancel"`);
+    // Parity gap 4: who applied to this opportunity.
+    expect(res.text).toContain(`href="${MOUNT}/opportunities/131/applications"`);
   });
 
   it('marks a closed opportunity and offers Reopen instead of Close', async () => {

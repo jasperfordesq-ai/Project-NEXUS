@@ -1432,4 +1432,13 @@ return [
         'removed' => 'تمت إزالة :name.',
         'remove_failed' => 'تعذرت إزالة هذا المتطوع. يرجى المحاولة مرة أخرى.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'الطلبات المقدّمة لهذه الفرصة',
+        'intro' => 'كل من تقدّم إلى هذه الفرصة. اقبل أو ارفض كل من ينتظر قرارًا.',
+        'manage_link' => 'مراجعة الطلبات',
+        'none_yet' => 'لم يتقدّم أحد إلى هذه الفرصة بعد.',
+        'none_filtered' => 'لا توجد طلبات بهذه الحالة.',
+    ],
 ];

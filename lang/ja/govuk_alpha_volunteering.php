@@ -1431,4 +1431,13 @@ return [
         'removed' => ':name を削除しました。',
         'remove_failed' => 'このボランティアを削除できませんでした。もう一度お試しください。',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'この募集への申請',
+        'intro' => 'この募集に申請したすべての人です。決定待ちの申請を承認または却下してください。',
+        'manage_link' => '申請を確認する',
+        'none_yet' => 'この募集にはまだ申請がありません。',
+        'none_filtered' => 'このステータスの申請はありません。',
+    ],
 ];

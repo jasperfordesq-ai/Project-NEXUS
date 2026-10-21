@@ -1432,4 +1432,13 @@ return [
         'removed' => 'Baineadh :name.',
         'remove_failed' => 'Níorbh fhéidir an t-oibrí deonach seo a bhaint. Bain triail eile as.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Iarratais ar an deis seo',
+        'intro' => 'Gach duine a rinne iarratas ar an deis seo. Ceadaigh nó diúltaigh d’aon duine atá ag fanacht le cinneadh.',
+        'manage_link' => 'Athbhreithnigh iarratais',
+        'none_yet' => 'Níl iarratas déanta ag aon duine ar an deis seo fós.',
+        'none_filtered' => 'Níl aon iarratas leis an stádas seo.',
+    ],
 ];

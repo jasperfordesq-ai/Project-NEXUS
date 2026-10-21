@@ -11902,6 +11902,13 @@
                 "remove_confirm": ":name verrà rimosso/a da tutte le tue opportunità e dai turni in arrivo. Le ore registrate restano. Riceverà un avviso e potrà candidarsi di nuovo in seguito.",
                 "removed": ":name è stato/a rimosso/a.",
                 "remove_failed": "Impossibile rimuovere questo volontario. Riprova."
+            },
+            "opp_applicants": {
+                "title": "Candidature per questa opportunità",
+                "intro": "Tutte le persone che si sono candidate per questa opportunità. Approva o rifiuta chi è in attesa di una decisione.",
+                "manage_link": "Esamina le candidature",
+                "none_yet": "Nessuno si è ancora candidato per questa opportunità.",
+                "none_filtered": "Nessuna candidatura con questo stato."
             }
         },
         "govuk_alpha_wallet": {

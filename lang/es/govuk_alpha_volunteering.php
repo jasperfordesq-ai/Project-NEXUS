@@ -1432,4 +1432,13 @@ return [
         'removed' => ':name ha sido eliminado.',
         'remove_failed' => 'No se pudo eliminar a este voluntario. Inténtelo de nuevo.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Solicitudes para esta oportunidad',
+        'intro' => 'Todas las personas que se han inscrito en esta oportunidad. Aprueba o rechaza a quienes esperan una decisión.',
+        'manage_link' => 'Revisar solicitudes',
+        'none_yet' => 'Todavía nadie se ha inscrito en esta oportunidad.',
+        'none_filtered' => 'No hay solicitudes con este estado.',
+    ],
 ];

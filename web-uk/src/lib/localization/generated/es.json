@@ -11902,6 +11902,13 @@
                 "remove_confirm": ":name dejará de participar en todas sus oportunidades y próximos turnos. Las horas que ha registrado se conservan. Se le avisará y podrá volver a solicitarlo más adelante.",
                 "removed": ":name ha sido eliminado.",
                 "remove_failed": "No se pudo eliminar a este voluntario. Inténtelo de nuevo."
+            },
+            "opp_applicants": {
+                "title": "Solicitudes para esta oportunidad",
+                "intro": "Todas las personas que se han inscrito en esta oportunidad. Aprueba o rechaza a quienes esperan una decisión.",
+                "manage_link": "Revisar solicitudes",
+                "none_yet": "Todavía nadie se ha inscrito en esta oportunidad.",
+                "none_filtered": "No hay solicitudes con este estado."
             }
         },
         "govuk_alpha_wallet": {

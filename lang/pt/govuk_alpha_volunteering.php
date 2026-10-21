@@ -1432,4 +1432,13 @@ return [
         'removed' => ':name foi removido(a).',
         'remove_failed' => 'Não foi possível remover este voluntário. Tente novamente.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Candidaturas a esta oportunidade',
+        'intro' => 'Todas as pessoas que se candidataram a esta oportunidade. Aprove ou recuse quem está à espera de uma decisão.',
+        'manage_link' => 'Rever candidaturas',
+        'none_yet' => 'Ainda ninguém se candidatou a esta oportunidade.',
+        'none_filtered' => 'Não há candidaturas com este estado.',
+    ],
 ];

@@ -66,6 +66,8 @@
     {% set oppBase = '/volunteering/opportunities/' ~ opportunityId %}
     <section class="govuk-!-margin-bottom-8" aria-labelledby="opportunity-manage-heading" data-testid="opportunity-manage">
       <h2 class="govuk-heading-m" id="opportunity-manage-heading">{{ t(M ~ "heading") }}</h2>
+      {# Parity gap 4: who applied to this opportunity, cancelled ones included. #}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(oppBase ~ '/applications') }}" data-testid="opportunity-applicants-link">{{ t("govuk_alpha_volunteering.opp_applicants.manage_link") }}</a></p>
       {% if opportunity.isCancelled %}
         <div class="govuk-inset-text">{{ t(M ~ "cancelled_hint") }}</div>
       {% else %}

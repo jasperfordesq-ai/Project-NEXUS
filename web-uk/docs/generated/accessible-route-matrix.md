@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-21T19:21:30.342Z
-Laravel commit SHA: `d455ee9f0d2623a0600575c13c66585d13751be6`
-Web UK repository commit SHA: `d455ee9f0d2623a0600575c13c66585d13751be6`
+Generated: 2026-10-21T19:25:56.796Z
+Laravel commit SHA: `05cc49a28c5bfff77dc42fc039c438dc852748c9`
+Web UK repository commit SHA: `05cc49a28c5bfff77dc42fc039c438dc852748c9`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 826 |
+| web-uk routes | 828 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 116 |
+| Extra web-uk routes | 118 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 74 | 0 |
+| volunteering | 52 | 0 | 76 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -162,6 +162,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/group-signups/new` | volunteering | volunteering/group-signup-new | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/group-signups/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
+| GET | `/volunteering/opportunities/{param}/applications` | volunteering | volunteering/opportunity-applicants | web-uk/src/routes/volunteering-opportunity-applicants.js |
 | GET | `/volunteering/opportunities/{param}/cancel` | volunteering | volunteering/opportunity-cancel | web-uk/src/routes/volunteering-opportunity-manage.js |
 | GET | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | GET | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering | volunteering/shift-pattern-stop | web-uk/src/routes/volunteering-shifts.js |
@@ -196,6 +197,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/group-signups/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/incidents/{param}/additions` | volunteering |  | web-uk/src/routes/volunteering-incidents.js |
+| POST | `/volunteering/opportunities/{param}/applications/{param}` | volunteering |  | web-uk/src/routes/volunteering-opportunity-applicants.js |
 | POST | `/volunteering/opportunities/{param}/cancel` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | POST | `/volunteering/opportunities/{param}/close` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | POST | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |

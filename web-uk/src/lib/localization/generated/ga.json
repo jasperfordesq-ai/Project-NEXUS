@@ -11902,6 +11902,13 @@
                 "remove_confirm": "Bainfear :name de do dheiseanna go léir agus d’aon seachanna atá le teacht. Coinneofar na huaireanta a logáil siad. Cuirfear in iúl dóibh é, agus is féidir leo iarratas a dhéanamh arís níos déanaí.",
                 "removed": "Baineadh :name.",
                 "remove_failed": "Níorbh fhéidir an t-oibrí deonach seo a bhaint. Bain triail eile as."
+            },
+            "opp_applicants": {
+                "title": "Iarratais ar an deis seo",
+                "intro": "Gach duine a rinne iarratas ar an deis seo. Ceadaigh nó diúltaigh d’aon duine atá ag fanacht le cinneadh.",
+                "manage_link": "Athbhreithnigh iarratais",
+                "none_yet": "Níl iarratas déanta ag aon duine ar an deis seo fós.",
+                "none_filtered": "Níl aon iarratas leis an stádas seo."
             }
         },
         "govuk_alpha_wallet": {

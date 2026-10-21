@@ -1431,4 +1431,13 @@ return [
         'removed' => ':name a été retiré(e).',
         'remove_failed' => 'Impossible de retirer ce bénévole. Veuillez réessayer.',
     ],
+
+    // Who applied to one opportunity, for the people who run it (parity gap 4)
+    'opp_applicants' => [
+        'title' => 'Candidatures pour cette mission',
+        'intro' => 'Toutes les personnes qui ont postulé à cette mission. Acceptez ou refusez celles qui attendent une décision.',
+        'manage_link' => 'Examiner les candidatures',
+        'none_yet' => 'Personne n’a encore postulé à cette mission.',
+        'none_filtered' => 'Aucune candidature avec ce statut.',
+    ],
 ];

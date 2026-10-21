@@ -63,6 +63,7 @@ const volunteeringOrgFundraisingRoutes = require('./routes/volunteering-org-fund
 const volunteeringOrgQualificationRoutes = require('./routes/volunteering-org-qualifications');
 const volunteeringOrgOpportunityRoutes = require('./routes/volunteering-org-opportunities');
 const volunteeringOrgRosterRoutes = require('./routes/volunteering-org-roster');
+const volunteeringOpportunityApplicantRoutes = require('./routes/volunteering-opportunity-applicants');
 const volunteeringMyQualificationRoutes = require('./routes/volunteering-my-qualifications');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
@@ -2523,6 +2524,8 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgOpportunityRoutes);
 // Retire, reinstate and remove volunteers on an organisation's roster (parity gap 3).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgRosterRoutes);
+// Who applied to one opportunity, for the people who run it (parity gap 4).
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOpportunityApplicantRoutes);
 // A volunteer's own qualifications register; no uploads (gap B15).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringMyQualificationRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
