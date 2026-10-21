@@ -202,18 +202,48 @@
       </div>
     {% else %}<div class="govuk-inset-text">{{ t("volunteering.empty_recommended") }}</div>{% endif %}
   {% elseif not authRequired and selectedTab == 'community_projects' %}
+    {% set CP = "govuk_alpha_volunteering.community_projects." %}
+    {# Parity gap 5: propose a project, and support one. Outcomes come back as ?status=. #}
+    {% if status == 'project-proposed' or status == 'project-supported' or status == 'project-unsupported' %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="project-status-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="project-status-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t(CP ~ ("proposed" if status == 'project-proposed' else ("supported_note" if status == 'project-supported' else "unsupported"))) }}</p></div>
+      </div>
+    {% elif status == 'project-support-failed' or status == 'project-support-restricted' %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t("safeguarding.errors.interaction_not_allowed") if status == 'project-support-restricted' else t(CP ~ "support_failed") }}</p></div>
+        </div>
+      </div>
+    {% endif %}
     <h2 class="govuk-heading-l">{{ t("volunteering.community_projects_title") }}</h2>
     <p class="govuk-body">{{ t("volunteering.community_projects_intro") }}</p>
+    <p class="govuk-body"><a class="govuk-button govuk-button--secondary" href="{{ urlFor('/volunteering/community-projects/propose') }}" role="button" draggable="false" data-module="govuk-button" data-testid="community-project-propose-link">{{ t(CP ~ "propose_link") }}</a></p>
     {% if communityProjects.length %}
       <div class="nexus-alpha-card-list">
         {% for project in communityProjects %}
           {% set projectState = project.status or '' %}
-          {% set proposer = project.proposer_name or ((project.proposer_first_name or '') ~ ' ' ~ (project.proposer_last_name or '')) | trim %}
-          <article class="nexus-alpha-card">
+          {% set proposer = project.proposerName %}
+          <article class="nexus-alpha-card" id="project-{{ project.id }}" data-testid="community-project-{{ project.id }}">
             <div class="nexus-alpha-module-row"><h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ project.title or t("volunteering.community_project_untitled") }}</h3>{% if projectState %}<strong class="govuk-tag{% if projectState == 'completed' %} govuk-tag--green{% elseif projectState == 'active' %} govuk-tag--turquoise{% else %} govuk-tag--blue{% endif %}">{% if projectState == 'approved' %}{{ t("ux.project_status_approved") }}{% elseif projectState == 'active' %}{{ t("ux.project_status_active") }}{% elseif projectState == 'completed' %}{{ t("ux.project_status_completed") }}{% else %}{{ projectState }}{% endif %}</strong>{% endif %}</div>
             {% if proposer %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("volunteering.community_project_proposed_by", { name: proposer }) }}</p>{% endif %}
             {% if project.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ project.description }}</p>{% endif %}
-            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ tc("volunteering.community_project_supporters", project.supporter_count or 0, { count: project.supporter_count or 0 }) }}</p>
+            {% if project.targetVolunteers or project.proposedDateLabel or project.location %}
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+                {%- if project.location %}{{ project.location }}{% endif %}
+                {%- if project.proposedDateLabel %}{% if project.location %} · {% endif %}{{ t(CP ~ "starts_on", { date: project.proposedDateLabel }) }}{% endif %}
+                {%- if project.targetVolunteers %}{% if project.location or project.proposedDateLabel %} · {% endif %}{{ t(CP ~ "volunteers_needed", { count: project.targetVolunteers }) }}{% endif %}
+              </p>
+            {% endif %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("volunteering.community_project_supporters", project.supporter_count or 0, { count: project.supporter_count or 0 }) }}</p>
+            {% if project.id %}
+              {% if project.hasSupported %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ t(CP ~ "supported_note") }}</p>{% endif %}
+              <form method="post" action="{{ urlFor('/volunteering/community-projects/' ~ project.id ~ ('/unsupport' if project.hasSupported else '/support')) }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(CP ~ ("unsupport" if project.hasSupported else "support")) }}<span class="govuk-visually-hidden">: {{ project.title }}</span></button>
+              </form>
+            {% endif %}
           </article>
         {% endfor %}
       </div>

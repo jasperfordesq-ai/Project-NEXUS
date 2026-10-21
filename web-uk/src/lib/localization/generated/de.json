@@ -11909,6 +11909,33 @@
                 "manage_link": "Bewerbungen prüfen",
                 "none_yet": "Bisher hat sich niemand auf dieses Angebot beworben.",
                 "none_filtered": "Keine Bewerbungen mit diesem Status."
+            },
+            "community_projects": {
+                "propose_link": "Projekt vorschlagen",
+                "propose_title": "Ein Gemeinschaftsprojekt vorschlagen",
+                "propose_intro": "Erzählen Sie der Gemeinschaft von einem Projekt, bei dem Freiwillige helfen sollen. Jeder Vorschlag wird von einer Administratorin oder einem Administrator geprüft, bevor er für alle sichtbar wird.",
+                "title_label": "Projekttitel",
+                "description_label": "Beschreiben Sie das Projekt",
+                "description_hint": "Was ist es, wem würde es helfen und was würden Freiwillige tun?",
+                "category_label": "Kategorie (optional)",
+                "category_hint": "Zum Beispiel Umwelt oder Bildung",
+                "location_label": "Wo würde es stattfinden? (optional)",
+                "target_label": "Wie viele Freiwillige werden gebraucht? (optional)",
+                "date_label": "Wann würde es beginnen? (optional)",
+                "submit": "Vorschlag senden",
+                "title_required": "Geben Sie einen Projekttitel ein",
+                "title_too_long": "Der Projekttitel darf höchstens 255 Zeichen lang sein",
+                "description_required": "Beschreiben Sie das Projekt",
+                "target_invalid": "Geben Sie die Zahl der Freiwilligen als ganze Zahl ein, zum Beispiel 6",
+                "proposed": "Ihr Vorschlag wurde gesendet. Er erscheint hier, sobald eine Administratorin oder ein Administrator ihn freigibt.",
+                "propose_failed": "Ihr Vorschlag konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+                "support": "Dieses Projekt unterstützen",
+                "unsupport": "Unterstützung zurückziehen",
+                "supported_note": "Sie unterstützen dieses Projekt.",
+                "support_failed": "Ihre Unterstützung konnte nicht geändert werden. Bitte versuchen Sie es erneut.",
+                "volunteers_needed": "Benötigte Freiwillige: :count",
+                "starts_on": "Geplanter Beginn: :date",
+                "unsupported": "Ihre Unterstützung wurde zurückgezogen."
             }
         },
         "govuk_alpha_wallet": {

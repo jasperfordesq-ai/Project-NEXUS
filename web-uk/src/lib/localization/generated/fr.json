@@ -11909,6 +11909,33 @@
                 "manage_link": "Examiner les candidatures",
                 "none_yet": "Personne n’a encore postulé à cette mission.",
                 "none_filtered": "Aucune candidature avec ce statut."
+            },
+            "community_projects": {
+                "propose_link": "Proposer un projet",
+                "propose_title": "Proposer un projet collectif",
+                "propose_intro": "Parlez à la communauté d’un projet pour lequel vous aimeriez l’aide de bénévoles. Un administrateur examine chaque proposition avant qu’elle ne soit visible par tous.",
+                "title_label": "Titre du projet",
+                "description_label": "Décrivez le projet",
+                "description_hint": "Dites ce que c’est, à qui il servirait et ce que feraient les bénévoles.",
+                "category_label": "Catégorie (facultatif)",
+                "category_hint": "Par exemple, environnement ou éducation",
+                "location_label": "Où se déroulerait-il ? (facultatif)",
+                "target_label": "Combien de bénévoles faut-il ? (facultatif)",
+                "date_label": "Quand commencerait-il ? (facultatif)",
+                "submit": "Envoyer la proposition",
+                "title_required": "Saisissez un titre de projet",
+                "title_too_long": "Le titre du projet ne doit pas dépasser 255 caractères",
+                "description_required": "Décrivez le projet",
+                "target_invalid": "Saisissez le nombre de bénévoles sous forme de nombre entier, par exemple 6",
+                "proposed": "Votre proposition a été envoyée. Elle apparaîtra ici dès qu’un administrateur l’aura approuvée.",
+                "propose_failed": "Votre proposition n’a pas pu être envoyée. Veuillez réessayer.",
+                "support": "Soutenir ce projet",
+                "unsupport": "Retirer votre soutien",
+                "supported_note": "Vous soutenez ce projet.",
+                "support_failed": "Votre soutien n’a pas pu être mis à jour. Veuillez réessayer.",
+                "volunteers_needed": "Bénévoles recherchés : :count",
+                "starts_on": "Début prévu : :date",
+                "unsupported": "Votre soutien a été retiré."
             }
         },
         "govuk_alpha_wallet": {

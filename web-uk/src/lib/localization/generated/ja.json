@@ -11909,6 +11909,32 @@
                 "manage_link": "申請を確認する",
                 "none_yet": "この募集にはまだ申請がありません。",
                 "none_filtered": "このステータスの申請はありません。"
+            },
+            "community_projects": {
+                "propose_link": "プロジェクトを提案する",
+                "propose_title": "地域プロジェクトを提案する",
+                "propose_intro": "ボランティアに手伝ってほしいプロジェクトを地域に伝えましょう。提案はすべて、公開される前に管理者が確認します。",
+                "title_label": "プロジェクト名",
+                "description_label": "プロジェクトの説明",
+                "description_hint": "どんなプロジェクトか、誰の役に立つか、ボランティアが何をするかを書いてください。",
+                "category_label": "カテゴリー（任意）",
+                "category_hint": "例：環境、教育",
+                "location_label": "実施場所（任意）",
+                "target_label": "必要なボランティアの人数（任意）",
+                "date_label": "開始予定日（任意）",
+                "submit": "提案を送信する",
+                "title_required": "プロジェクト名を入力してください",
+                "title_too_long": "プロジェクト名は255文字以内で入力してください",
+                "description_required": "プロジェクトの説明を入力してください",
+                "target_invalid": "ボランティアの人数は6のような整数で入力してください",
+                "proposed": "提案を送信しました。管理者が承認すると、ここに表示されます。",
+                "propose_failed": "提案を送信できませんでした。もう一度お試しください。",
+                "support": "このプロジェクトを応援する",
+                "unsupport": "応援を取り消す",
+                "supported_note": "このプロジェクトを応援しています。",
+                "support_failed": "応援を更新できませんでした。もう一度お試しください。",
+                "volunteers_needed": "必要なボランティア：:count人",
+                "starts_on": "開始予定：:date"
             }
         },
         "govuk_alpha_wallet": {

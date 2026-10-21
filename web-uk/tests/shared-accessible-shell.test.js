@@ -37473,15 +37473,18 @@ describe('shared accessible frontend shell', () => {
           spots_remaining: 3
         }] };
       }
-      if (path === '/community-projects?public=true&limit=12') {
-        return { data: [{
+      // The API's real shape: { data: { items, cursor, has_more } }. This mock used a bare
+      // array until 21 Oct 2026, which is why it never noticed the live tab was always empty.
+      if (path === '/community-projects?per_page=20') {
+        return { data: { items: [{
           id: 12,
           title: 'Neighbourhood garden',
           status: 'active',
           description: 'Create a shared growing space.',
           proposer_name: 'Avery Stone',
-          supporter_count: 4
-        }] };
+          supporter_count: 4,
+          has_supported: false
+        }], cursor: null, has_more: false } };
       }
       if (path === '/hours/summary') return { data: {} };
       if (path === '/my-organisations?per_page=5') return { data: [] };
@@ -37512,6 +37515,10 @@ describe('shared accessible frontend shell', () => {
     expect(projects.text).toContain('Create a shared growing space.');
     expect(projects.text).toContain('Proposed by Avery Stone');
     expect(projects.text).toContain('4 supporters');
+    // Parity gap 5: propose a project, and support one.
+    expect(projects.text).toContain('href="/volunteering/community-projects/propose"');
+    expect(projects.text).toContain('action="/volunteering/community-projects/12/support"');
+    expect(projects.text).not.toContain('/12/unsupport');
   });
 
   it('no longer serves the old credential download address', async () => {

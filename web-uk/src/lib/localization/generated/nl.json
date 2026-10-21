@@ -11909,6 +11909,33 @@
                 "manage_link": "Aanmeldingen bekijken",
                 "none_yet": "Nog niemand heeft zich voor deze vacature aangemeld.",
                 "none_filtered": "Geen aanmeldingen met deze status."
+            },
+            "community_projects": {
+                "propose_link": "Een project voorstellen",
+                "propose_title": "Een gemeenschapsproject voorstellen",
+                "propose_intro": "Vertel de gemeenschap over een project waarbij je graag hulp van vrijwilligers wilt. Een beheerder bekijkt elk voorstel voordat iedereen het ziet.",
+                "title_label": "Projecttitel",
+                "description_label": "Beschrijf het project",
+                "description_hint": "Vertel wat het is, wie het zou helpen en wat vrijwilligers zouden doen.",
+                "category_label": "Categorie (optioneel)",
+                "category_hint": "Bijvoorbeeld milieu of onderwijs",
+                "location_label": "Waar zou het plaatsvinden? (optioneel)",
+                "target_label": "Hoeveel vrijwilligers zijn er nodig? (optioneel)",
+                "date_label": "Wanneer zou het beginnen? (optioneel)",
+                "submit": "Voorstel versturen",
+                "title_required": "Vul een projecttitel in",
+                "title_too_long": "De projecttitel mag maximaal 255 tekens lang zijn",
+                "description_required": "Beschrijf het project",
+                "target_invalid": "Vul het aantal vrijwilligers in als heel getal, zoals 6",
+                "proposed": "Je voorstel is verstuurd. Het verschijnt hier zodra een beheerder het goedkeurt.",
+                "propose_failed": "Je voorstel kon niet worden verstuurd. Probeer het opnieuw.",
+                "support": "Dit project steunen",
+                "unsupport": "Je steun intrekken",
+                "supported_note": "Je steunt dit project.",
+                "support_failed": "Je steun kon niet worden bijgewerkt. Probeer het opnieuw.",
+                "volunteers_needed": "Benodigde vrijwilligers: :count",
+                "starts_on": "Voorgestelde start: :date",
+                "unsupported": "Je steun is ingetrokken."
             }
         },
         "govuk_alpha_wallet": {

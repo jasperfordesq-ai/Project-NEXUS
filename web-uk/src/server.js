@@ -64,6 +64,7 @@ const volunteeringOrgQualificationRoutes = require('./routes/volunteering-org-qu
 const volunteeringOrgOpportunityRoutes = require('./routes/volunteering-org-opportunities');
 const volunteeringOrgRosterRoutes = require('./routes/volunteering-org-roster');
 const volunteeringOpportunityApplicantRoutes = require('./routes/volunteering-opportunity-applicants');
+const volunteeringCommunityProjectRoutes = require('./routes/volunteering-community-projects');
 const volunteeringMyQualificationRoutes = require('./routes/volunteering-my-qualifications');
 const ideationRoutes = require('./routes/ideation');
 const ideationActionRoutes = require('./routes/ideation-actions');
@@ -1219,7 +1220,7 @@ app.get('/volunteering', requireAuth, (req, res) => {
     ? callVolunteeringApi(token, 'GET', '/recommended-shifts?limit=10').catch(() => ({ data: [] }))
     : Promise.resolve({ data: [] });
   const communityProjectsPromise = selectedTab === 'community_projects'
-    ? callVolunteeringApi(token, 'GET', '/community-projects?public=true&limit=12').catch(() => ({ data: [] }))
+    ? callVolunteeringApi(token, 'GET', '/community-projects?per_page=20').catch(() => ({ data: [] }))
     : Promise.resolve({ data: [] });
 
   Promise.all([getVolunteeringOpportunities(filters, token), applicationsPromise, hoursSummaryPromise, organisationsPromise, categoriesPromise, recommendedPromise, communityProjectsPromise])
@@ -1285,7 +1286,20 @@ app.get('/volunteering', requireAuth, (req, res) => {
           startTimeLabel
         };
       });
-      const communityProjects = Array.isArray(communityProjectsResult?.data) ? communityProjectsResult.data : [];
+      // The API answers { items, cursor, has_more }. Until 21 Oct 2026 this read `data` as a
+      // bare array, which it never is, so the tab always said there were no projects.
+      const projectData = communityProjectsResult?.data;
+      const projectRows = Array.isArray(projectData) ? projectData : (Array.isArray(projectData?.items) ? projectData.items : []);
+      const communityProjects = projectRows.map((project) => ({
+        ...project,
+        proposerName: String(project?.proposer_name || [project?.proposer?.first_name, project?.proposer?.last_name].filter(Boolean).join(' ')).trim(),
+        hasSupported: project?.has_supported === true,
+        targetVolunteers: Number.isInteger(Number(project?.target_volunteers)) && Number(project?.target_volunteers) > 0 ? Number(project.target_volunteers) : 0,
+        proposedDateLabel: /^\d{4}-\d{2}-\d{2}/.test(String(project?.proposed_date || ''))
+          ? new Intl.DateTimeFormat(getRequestIntlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+            .format(new Date(`${String(project.proposed_date).slice(0, 10)}T00:00:00Z`))
+          : ''
+      }));
       const manageableOrganisations = organisations.filter((organisation) => (
         ['owner', 'admin'].includes(String(organisation?.member_role || 'member'))
         && ['approved', 'active'].includes(String(organisation?.status || 'pending'))
@@ -2526,6 +2540,8 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOrgRosterRoutes);
 // Who applied to one opportunity, for the people who run it (parity gap 4).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringOpportunityApplicantRoutes);
+// Propose and support community projects (parity gap 5).
+app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringCommunityProjectRoutes);
 // A volunteer's own qualifications register; no uploads (gap B15).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringMyQualificationRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);

@@ -26,7 +26,7 @@ const VIEWS = path.join(__dirname, '..', '..', 'src', 'views');
 const GOVUK = path.join(__dirname, '..', '..', 'node_modules', 'govuk-frontend', 'dist');
 const t = createTranslator('en');
 
-function createVolunteeringApp(router, { mount = MOUNT, signedIn = true } = {}) {
+function createVolunteeringApp(router, { mount = MOUNT, signedIn = true, tenant = null } = {}) {
   const app = express();
   const env = nunjucks.configure([VIEWS, GOVUK], { autoescape: true, express: app, watch: false });
   registerTemplateFilters(env);
@@ -36,6 +36,7 @@ function createVolunteeringApp(router, { mount = MOUNT, signedIn = true } = {}) 
   app.use(session({ secret: 'volunteering-route-test-secret', resave: false, saveUninitialized: false }));
   app.use(mount, (req, res, next) => {
     req.signedCookies = signedIn ? { token: 'test-token' } : {};
+    if (tenant) req.accessibleRouting = { tenant };
     res.locals.urlFor = (value) => {
       const target = String(value || '/');
       return target.startsWith(PREFIX) ? target : `${PREFIX}${target.startsWith('/') ? target : `/${target}`}`;

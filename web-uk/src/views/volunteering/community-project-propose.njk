@@ -1,0 +1,105 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Propose a community project (routes/volunteering-community-projects.js, parity gap 5).
+  The website's "Propose a project" window, as one GOV.UK page.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% set CP = "govuk_alpha_volunteering.community_projects." %}
+{% set hiddenErrorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=community_projects') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha_volunteering.shared.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t(CP ~ "propose_title") }}</h1>
+      <p class="govuk-body">{{ t(CP ~ "propose_intro") }}</p>
+
+      <form method="post" action="{{ urlFor('/volunteering/community-projects/propose') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          id: "title",
+          name: "title",
+          label: { text: t(CP ~ "title_label"), classes: "govuk-label--m" },
+          value: values.title,
+          attributes: { maxlength: "255" },
+          errorMessage: { text: fieldErrors.title.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.title else undefined
+        }) }}
+
+        {{ govukTextarea({
+          id: "description",
+          name: "description",
+          rows: 6,
+          label: { text: t(CP ~ "description_label"), classes: "govuk-label--m" },
+          hint: { text: t(CP ~ "description_hint") },
+          value: values.description,
+          errorMessage: { text: fieldErrors.description.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.description else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "category",
+          name: "category",
+          label: { text: t(CP ~ "category_label"), classes: "govuk-label--s" },
+          hint: { text: t(CP ~ "category_hint") },
+          value: values.category,
+          classes: "govuk-!-width-one-half",
+          attributes: { maxlength: "100" }
+        }) }}
+
+        {{ govukInput({
+          id: "location",
+          name: "location",
+          label: { text: t(CP ~ "location_label"), classes: "govuk-label--s" },
+          value: values.location,
+          attributes: { maxlength: "255" }
+        }) }}
+
+        {{ govukInput({
+          id: "target_volunteers",
+          name: "target_volunteers",
+          label: { text: t(CP ~ "target_label"), classes: "govuk-label--s" },
+          value: values.target,
+          classes: "govuk-input--width-4",
+          inputmode: "numeric",
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.target_volunteers.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.target_volunteers else undefined
+        }) }}
+
+        {{ nexusDateInput({
+          name: "proposed_date",
+          legend: t(CP ~ "date_label"),
+          legendClasses: "govuk-fieldset__legend--s",
+          hint: t("web_uk.date_input.hint"),
+          value: values.date,
+          errorMessage: fieldErrors.proposed_date.text if fieldErrors.proposed_date else undefined,
+          errorFields: (fieldErrors.proposed_date.parts if (fieldErrors.proposed_date and fieldErrors.proposed_date.parts.length) else (["day", "month", "year"] if fieldErrors.proposed_date else []))
+        }, t) }}
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(CP ~ "submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/volunteering?tab=community_projects') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

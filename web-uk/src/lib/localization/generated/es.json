@@ -11909,6 +11909,33 @@
                 "manage_link": "Revisar solicitudes",
                 "none_yet": "Todavía nadie se ha inscrito en esta oportunidad.",
                 "none_filtered": "No hay solicitudes con este estado."
+            },
+            "community_projects": {
+                "propose_link": "Proponer un proyecto",
+                "propose_title": "Proponer un proyecto comunitario",
+                "propose_intro": "Cuéntale a la comunidad un proyecto en el que te gustaría que ayudaran voluntarios. Un administrador revisa cada propuesta antes de que sea visible para todos.",
+                "title_label": "Título del proyecto",
+                "description_label": "Describe el proyecto",
+                "description_hint": "Explica en qué consiste, a quién ayudaría y qué harían los voluntarios.",
+                "category_label": "Categoría (opcional)",
+                "category_hint": "Por ejemplo, medio ambiente o educación",
+                "location_label": "¿Dónde se haría? (opcional)",
+                "target_label": "¿Cuántos voluntarios hacen falta? (opcional)",
+                "date_label": "¿Cuándo empezaría? (opcional)",
+                "submit": "Enviar propuesta",
+                "title_required": "Escribe un título para el proyecto",
+                "title_too_long": "El título del proyecto no puede superar los 255 caracteres",
+                "description_required": "Describe el proyecto",
+                "target_invalid": "Escribe el número de voluntarios como número entero, por ejemplo 6",
+                "proposed": "Tu propuesta se ha enviado. Aparecerá aquí cuando un administrador la apruebe.",
+                "propose_failed": "No se ha podido enviar tu propuesta. Inténtalo de nuevo.",
+                "support": "Apoyar este proyecto",
+                "unsupport": "Retirar tu apoyo",
+                "supported_note": "Apoyas este proyecto.",
+                "support_failed": "No se ha podido actualizar tu apoyo. Inténtalo de nuevo.",
+                "volunteers_needed": "Voluntarios necesarios: :count",
+                "starts_on": "Inicio propuesto: :date",
+                "unsupported": "Tu apoyo se ha retirado."
             }
         },
         "govuk_alpha_wallet": {
