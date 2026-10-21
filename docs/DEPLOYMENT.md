@@ -208,6 +208,31 @@ scheduler locks, and Web UK sessions.
   the local development file, and its `redis` service would recreate
   `nexus-php-redis` on the wrong network, which cuts both colours off from it.
 
+## Shared virus scanner
+
+Hosted podcast audio is virus-scanned before it can be published, streamed or
+put in an RSS feed. The scanner is one ClamAV container, `nexus-php-clamav`,
+defined in [`compose.clamav.yml`](../compose.clamav.yml) and shared by both
+colours. `compose.bluegreen.yml` points the app, queue and scheduler at it as
+`CLAMAV_ADDRESS=tcp://nexus-php-clamav:3310`.
+
+- Every deploy runs `docker compose -f compose.clamav.yml up -d clamav` from the
+  release being deployed (`ensure_clamav_scanner` in
+  `scripts/deploy/phases/validate-env.sh`). That starts the scanner if it is
+  missing and recreates it only when the file changed. It never stops a deploy;
+  `NEXUS_SKIP_CLAMAV=1` skips it.
+- It holds its signature database in memory: about 1.1 GB measured locally, and
+  briefly about double while it installs a signature update. Its limit is 3 GB.
+  On first start it takes a minute or two to load the signatures.
+- A scan that cannot run (scanner down or still starting) records
+  `scan_unavailable`. That media is never treated as clean, so it cannot be
+  published. `podcasts:rescan-unavailable-media` runs every 15 minutes and
+  re-queues it once the scanner answers.
+- Until 2026-10-21 production had no scanner, so no hosted podcast upload could
+  be published.
+- Never add `--remove-orphans`: the `nexus-php` project also owns `nexus-php-db`
+  and `nexus-php-redis`.
+
 ## Monitoring and backups
 
 | What | Where it runs | Schedule | Alerts via |

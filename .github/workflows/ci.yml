@@ -1079,6 +1079,13 @@ jobs:
       - name: "BLOCKING: Redis never silently evicts (noeviction)"
         run: bash scripts/test/test-redis-eviction-policy.sh
 
+      # Added 2026-10-21. Production had no virus scanner, so every hosted
+      # podcast upload stayed `scan_unavailable` and could never be published.
+      # Pins compose.clamav.yml, CLAMAV_ADDRESS on every colour service, and the
+      # deploy step that starts the scanner. Stubbed docker; no container.
+      - name: "BLOCKING: Podcast virus scanner is defined and started on deploy"
+        run: bash scripts/test/test-clamav-scanner-wiring.sh
+
       # Added 2026-10-07. The pre-commit hook ran the staged PHPUnit files as
       # root in the bind-mounted container, leaving root-owned test scratch
       # that broke every later www-data run. Stubbed docker; no container.

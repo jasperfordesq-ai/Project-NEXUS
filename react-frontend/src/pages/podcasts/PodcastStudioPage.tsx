@@ -315,7 +315,7 @@ export default function PodcastStudioPage() {
       toast.success(t('studio.show_published'));
       await loadShows();
     } else {
-      toast.error(t('studio.save_failed'));
+      toast.error(res.error || t('studio.save_failed'));
     }
   }
 
@@ -325,7 +325,9 @@ export default function PodcastStudioPage() {
       toast.success(t('studio.episode_published'));
       await loadShows();
     } else {
-      toast.error(t('studio.save_failed'));
+      // The server says why (e.g. the audio has not passed its virus scan yet);
+      // "Could not save changes" told the creator nothing.
+      toast.error(res.error || t('studio.save_failed'));
     }
   }
 

@@ -1,0 +1,79 @@
+# Copyright © 2024–2026 Jasper Ford
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Author: Jasper Ford
+# See NOTICE file for attribution and acknowledgements.
+#
+# =============================================================================
+# PRODUCTION ClamAV (`nexus-php-clamav`) — the virus scanner both colours share
+# =============================================================================
+#
+# Hosted podcast audio is scanned before it can be published, streamed or put in
+# an RSS feed (`podcasts.enable_media_scanning`, on by default). The scan is done
+# by ProcessPodcastEpisodeMedia through PodcastMediaScanner, which speaks clamd's
+# INSTREAM protocol to CLAMAV_ADDRESS. compose.bluegreen.yml points every colour
+# at tcp://nexus-php-clamav:3310.
+#
+# Until 2026-10-21 no scanner existed in production at all, so every hosted
+# upload was recorded `scan_unavailable` and could never be published — the
+# check fails closed by design. `podcasts:rescan-unavailable-media` (every
+# 15 minutes) now re-queues such episodes once this scanner answers.
+#
+# Like Redis it lives outside compose.bluegreen.yml because it must outlive both
+# colours. Each deploy runs `up -d clamav` on this file
+# (ensure_clamav_scanner in scripts/deploy/phases/validate-env.sh), which starts
+# it if missing and recreates it only when this file changed. That is harmless:
+# a scan attempted while clamd is down or still loading signatures is recorded
+# `scan_unavailable` and retried by the command above, never marked clean.
+#
+# Memory: clamd holds the signature database in RAM (~1.2 GB) and, while
+# freshclam installs an update, briefly a second copy. 3G covers both.
+#
+# Size limits: clamd's defaults skip files over MaxFileSize (100M) and report
+# them OK without scanning them. The limits below are raised above the largest
+# upload the platform accepts (podcasts.max_audio_size_mb defaults to 250), so
+# nothing is passed as clean unscanned.
+#
+# 🔴 Never add --remove-orphans: the `nexus-php` project also owns nexus-php-db
+# and nexus-php-redis. Never run a bare `docker compose up` in /opt/nexus-php.
+#
+# Regression test: scripts/test/test-clamav-scanner-wiring.sh
+# =============================================================================
+
+name: nexus-php
+
+services:
+  clamav:
+    image: clamav/clamav:1.4.3
+    container_name: nexus-php-clamav
+    restart: unless-stopped
+    environment:
+      - CLAMD_CONF_MaxFileSize=300M
+      - CLAMD_CONF_MaxScanSize=300M
+      - CLAMD_CONF_StreamMaxLength=300M
+    volumes:
+      # Signature updates downloaded by freshclam survive a container restart.
+      - nexus-php-clamav-db:/var/lib/clamav
+    networks:
+      - nexus-php-internal
+    # Not published to the host: only the containers on nexus-php-internal use it.
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      # Loading the signature database takes a minute or two on first start.
+      start_period: 300s
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 1G
+
+networks:
+  nexus-php-internal:
+    external: true
+
+volumes:
+  nexus-php-clamav-db:
+    name: nexus-php-clamav-db

@@ -265,6 +265,27 @@ describe('PodcastStudioPage', () => {
     }
   });
 
+  it('shows the server reason when an episode cannot be published', async () => {
+    mockPodcastsApi.authored.mockResolvedValue({
+      success: true,
+      data: [makeShow({ episodes: [makeEpisode({ status: 'draft' })] })],
+    });
+    const reason = "This episode's hosted audio is still being checked or failed media validation.";
+    mockPodcastsApi.publishEpisode.mockResolvedValue({ success: false, code: 'MEDIA_NOT_READY', error: reason });
+
+    const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+    render(<PodcastStudioPage />);
+
+    await waitFor(() => expect(screen.getByText('Episode One')).toBeInTheDocument());
+    const publishBtn = screen.getAllByRole('button').find(
+      (b) => b.textContent?.toLowerCase().includes('publish') && b.textContent?.toLowerCase().includes('episode')
+    );
+    expect(publishBtn).toBeDefined();
+    fireEvent.click(publishBtn!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(reason));
+  });
+
   it('calls deleteShow after confirmation', async () => {
     mockPodcastsApi.authored.mockResolvedValue({
       success: true,

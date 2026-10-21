@@ -22,10 +22,40 @@ class PodcastMediaScanner
 {
     private const CHUNK_BYTES = 1024 * 1024;
     private const TIMEOUT_SECONDS = 10;
+    /** Reading the verdict waits for clamd to scan the whole stream; hosted audio runs to hundreds of MB. */
+    private const SCAN_TIMEOUT_SECONDS = 120;
 
     public static function isConfigured(): bool
     {
         return trim((string) config('services.clamav.address', '')) !== '';
+    }
+
+    /**
+     * Is the daemon answering right now? clamd replies PONG to PING only once its
+     * signature database is loaded, so a scanner still starting reports false.
+     */
+    public static function isReachable(): bool
+    {
+        $address = trim((string) config('services.clamav.address', ''));
+        if ($address === '') {
+            return false;
+        }
+
+        $socket = @stream_socket_client($address, $errorCode, $errorMessage, self::TIMEOUT_SECONDS);
+        if (!is_resource($socket)) {
+            return false;
+        }
+
+        try {
+            stream_set_timeout($socket, self::TIMEOUT_SECONDS);
+            fwrite($socket, "zPING\0");
+
+            return trim((string) stream_get_contents($socket), "\0\r\n ") === 'PONG';
+        } catch (\Throwable) {
+            return false;
+        } finally {
+            fclose($socket);
+        }
     }
 
     /**
@@ -51,7 +81,7 @@ class PodcastMediaScanner
 
                 return 'unavailable';
             }
-            stream_set_timeout($socket, self::TIMEOUT_SECONDS);
+            stream_set_timeout($socket, self::SCAN_TIMEOUT_SECONDS);
 
             fwrite($socket, "zINSTREAM\0");
 

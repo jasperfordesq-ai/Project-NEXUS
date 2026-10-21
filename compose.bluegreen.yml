@@ -44,6 +44,8 @@ services:
       - DB_PORT=3306
       - REDIS_HOST=nexus-php-redis
       - REDIS_PORT=6379
+      # Shared virus scanner for uploaded podcast audio (compose.clamav.yml).
+      - CLAMAV_ADDRESS=${CLAMAV_ADDRESS:-tcp://nexus-php-clamav:3310}
       - MEILISEARCH_HOST=http://nexus-meilisearch:7700
       - MEILISEARCH_KEY=${MEILISEARCH_KEY}
       # Prerender admin module reads these paths inside the container.
@@ -157,6 +159,8 @@ services:
       - REDIS_HOST=nexus-php-redis
       - REDIS_PORT=6379
       - QUEUE_CONNECTION=redis
+      # Horizon runs the podcast media scan (compose.clamav.yml).
+      - CLAMAV_ADDRESS=${CLAMAV_ADDRESS:-tcp://nexus-php-clamav:3310}
     networks:
       - nexus-php-internal
     healthcheck:
@@ -228,6 +232,8 @@ services:
       - REDIS_HOST=nexus-php-redis
       - REDIS_PORT=6379
       - QUEUE_CONNECTION=redis
+      # podcasts:rescan-unavailable-media checks the scanner before re-queueing.
+      - CLAMAV_ADDRESS=${CLAMAV_ADDRESS:-tcp://nexus-php-clamav:3310}
       # Point backup:verify at the read-only host-backups mount above.
       - BACKUP_VERIFY_DIR=/var/www/html/storage/backups
     networks:

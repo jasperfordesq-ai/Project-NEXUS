@@ -1642,6 +1642,8 @@ cmd_deploy() {
     release_dir="$PREPARED_RELEASE_DIR"
     CURRENT_COMMIT="$commit"
 
+    ensure_clamav_scanner "$release_dir"
+
     deploy_candidate "$target" "$release_dir" "$commit"
     smoke_color "$target"
 

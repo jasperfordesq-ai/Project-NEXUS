@@ -270,6 +270,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onOneServer()
             ->name('podcasts-dispatch-media-cleanup');
 
+        // Hosted podcast audio that could not be virus-scanned (scanner missing,
+        // still loading signatures, or briefly down) is unpublishable until it is
+        // scanned. Re-queue it once the scanner answers; a no-op otherwise.
+        $schedule->command('podcasts:rescan-unavailable-media --limit=50')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping(30)
+            ->onOneServer()
+            ->name('podcasts-rescan-unavailable-media');
+
         // Welcome invitations queued by the member import and the admin "send
         // invitation" action go out about one a second from a durable outbox.
         // Claim tokens make an overlapping run harmless; these are a second line.

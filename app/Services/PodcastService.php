@@ -641,6 +641,48 @@ class PodcastService
         return $released;
     }
 
+    /**
+     * Send hosted audio recorded `scan_unavailable` back through the scan once the
+     * scanner answers. Without this an upload made while the scanner was missing,
+     * starting or briefly down could never be published: the media job only scans
+     * `pending` media. Uploads whose processing already failed (missing source,
+     * not audio, quarantined) are left alone — a scan cannot rescue them.
+     *
+     * @return int number of episodes re-queued
+     */
+    public static function requeueUnavailableMediaScans(int $limit = 50): int
+    {
+        if (!PodcastMediaScanner::isReachable()) {
+            return 0;
+        }
+
+        $candidates = PodcastEpisode::withoutGlobalScopes()
+            ->where('media_scan_status', 'scan_unavailable')
+            ->whereNotNull('audio_storage_path')
+            ->where('media_processing_status', '!=', 'failed')
+            ->orderBy('id')
+            ->limit(max(1, $limit))
+            ->get(['id', 'tenant_id']);
+
+        $requeued = 0;
+        foreach ($candidates as $episode) {
+            // Conditional claim: a concurrent run or a fresh upload that already
+            // moved this row on is never overwritten.
+            $claimed = PodcastEpisode::withoutGlobalScopes()
+                ->whereKey($episode->id)
+                ->where('media_scan_status', 'scan_unavailable')
+                ->update(['media_scan_status' => 'pending']);
+            if ($claimed !== 1) {
+                continue;
+            }
+
+            ProcessPodcastEpisodeMedia::dispatch((int) $episode->tenant_id, (int) $episode->id);
+            $requeued++;
+        }
+
+        return $requeued;
+    }
+
     public static function storeHostedAudio(PodcastEpisode $episode, UploadedFile $file, bool $dispatchProcessing = true): PodcastEpisode
     {
         if (!$file->isValid()) {

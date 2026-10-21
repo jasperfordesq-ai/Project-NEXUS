@@ -162,6 +162,39 @@ secure_redis_eviction_policy() {
     fi
 }
 
+# The shared ClamAV daemon (nexus-php-clamav, compose.clamav.yml) scans hosted
+# podcast audio before it can be published. Until 2026-10-21 production had no
+# scanner, so every hosted upload was recorded `scan_unavailable` and could never
+# be published. Every deploy now runs `up -d clamav` from the release being
+# deployed: it starts the scanner if missing and recreates it only when the file
+# changed. Never fatal — a missing scanner makes uploads wait (they are retried by
+# podcasts:rescan-unavailable-media), it never lets unscanned media through.
+# Skip with NEXUS_SKIP_CLAMAV=1.
+# Regression test: scripts/test/test-clamav-scanner-wiring.sh
+ensure_clamav_scanner() {
+    log_step "=== Podcast Virus Scanner ==="
+
+    local release_dir="${1:-$DEPLOY_DIR}"
+    local file="$release_dir/compose.clamav.yml"
+
+    if [ "${NEXUS_SKIP_CLAMAV:-0}" = "1" ]; then
+        log_warn "NEXUS_SKIP_CLAMAV=1 — virus scanner not checked; hosted podcast uploads cannot be published without it"
+        return 0
+    fi
+    if [ ! -f "$file" ]; then
+        log_warn "compose.clamav.yml not found in $release_dir — virus scanner not started"
+        return 0
+    fi
+
+    # Only the clamav service, and never --remove-orphans: the nexus-php project
+    # also owns nexus-php-db and nexus-php-redis.
+    if docker compose -f "$file" up -d clamav; then
+        log_ok "Virus scanner nexus-php-clamav is up (signatures take a minute or two to load on first start)"
+    else
+        log_warn "Could not start nexus-php-clamav — hosted podcast uploads will wait for a scanner"
+    fi
+}
+
 validate_environment() {
     log_step "=== Pre-Deploy Validation ==="
 
