@@ -594,6 +594,9 @@ class CommunityProjectService
             'user_has_supported' => $hasSupported,
             'created_at'        => $row->created_at,
             'updated_at'        => $row->updated_at ?? null,
+            // The name both clients show ("Proposed by …"). Both read proposer_name, which
+            // was never sent until 21 Oct 2026, so neither showed who proposed a project.
+            'proposer_name'     => self::proposerName($row),
             'proposer'          => [
                 'first_name' => $row->proposer_first_name ?? null,
                 'last_name'  => $row->proposer_last_name ?? null,
@@ -608,5 +611,16 @@ class CommunityProjectService
         }
 
         return $project;
+    }
+
+    /** An organisation account by its organisation's name, anyone else by their own. */
+    private static function proposerName(object $row): ?string
+    {
+        if (($row->proposer_profile_type ?? null) === 'organisation' && trim((string) ($row->proposer_organization_name ?? '')) !== '') {
+            return trim((string) $row->proposer_organization_name);
+        }
+        $name = trim(trim((string) ($row->proposer_first_name ?? '')) . ' ' . trim((string) ($row->proposer_last_name ?? '')));
+
+        return $name !== '' ? $name : null;
     }
 }

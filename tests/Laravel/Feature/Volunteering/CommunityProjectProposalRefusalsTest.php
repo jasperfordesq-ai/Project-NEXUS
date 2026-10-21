@@ -100,6 +100,26 @@ class CommunityProjectProposalRefusalsTest extends TestCase
         ]);
     }
 
+    public function test_the_list_names_who_proposed_each_project(): void
+    {
+        $viewer = $this->signIn();
+        $proposer = User::factory()->forTenant($this->testTenantId)->create([
+            'first_name' => 'Avery', 'last_name' => 'Stone', 'status' => 'active', 'is_approved' => true,
+        ]);
+        $id = DB::table('vol_community_projects')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'proposed_by' => $proposer->id, 'title' => 'Neighbourhood garden',
+            'description' => 'Grow food together', 'status' => 'approved', 'supporter_count' => 0,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        Sanctum::actingAs($viewer, ['*']);
+
+        $items = collect($this->apiGet('/v2/volunteering/community-projects?per_page=50')->assertOk()->json('data.items'));
+        $project = $items->firstWhere('id', $id);
+
+        $this->assertNotNull($project);
+        $this->assertSame('Avery Stone', $project['proposer_name']);
+    }
+
     public function test_supporting_a_project_that_does_not_exist_is_not_found(): void
     {
         $this->signIn();
