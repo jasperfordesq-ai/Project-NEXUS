@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-21T19:06:19.543Z",
+  "generatedAt": "2026-10-21T19:13:17.359Z",
   "provenance": {
-    "generatedAt": "2026-10-21T19:06:19.543Z",
+    "generatedAt": "2026-10-21T19:13:17.359Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "46b02d06c6e554936532ab7301c7ac7a03465946",
+    "laravelCommitSha": "fa87757bfca60e3997aaae9e94285bf5087b8ba1",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "46b02d06c6e554936532ab7301c7ac7a03465946",
+    "webUkRepositoryCommitSha": "fa87757bfca60e3997aaae9e94285bf5087b8ba1",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -26,13 +26,13 @@
     "laravelApiRoutesSha256": "a24e4773bb7218c33cfc1fd384155820edf561a2c4ed6c2a9689135377e02dd9"
   },
   "summary": {
-    "contracts": 756,
-    "matchedOpenApi": 479,
-    "missingOpenApi": 277,
-    "routeDeclaredOpenApiOmissions": 277,
+    "contracts": 759,
+    "matchedOpenApi": 481,
+    "missingOpenApi": 278,
+    "routeDeclaredOpenApiOmissions": 278,
     "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
-    "stateChanging": 416,
+    "stateChanging": 418,
     "withoutTests": 0,
     "withoutDirectApiHelperAssertions": 0,
     "uniqueHelpersWithoutDirectApiAssertions": 0,
@@ -25435,6 +25435,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25487,6 +25488,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25544,6 +25546,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25600,6 +25603,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25656,6 +25660,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25708,6 +25713,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25765,6 +25771,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25822,6 +25829,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25878,6 +25886,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -25962,6 +25971,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26017,6 +26027,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26072,6 +26083,67 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
+        "tests/volunteering-wellbeing.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "POST /api/v2/volunteering/emergency-alerts [callVolunteeringApi]",
+      "method": "POST",
+      "path": "/api/v2/volunteering/emergency-alerts",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-shifts.js:878",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "JSON object: shift_id",
+      "responseShape": "successful Laravel response envelope",
+      "statusCodes": [
+        "200"
+      ],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-shifts.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "matched-openapi",
+        "path": "/api/v2/volunteering/emergency-alerts",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": [
+          "Volunteering"
+        ]
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-shifts.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/empty-state-heading-contract.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/laravel-runtime-smoke.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-group-signups.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-my-qualifications.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-org-opportunities.test.js",
+        "tests/volunteering-org-qualifications.test.js",
+        "tests/volunteering-org-wellbeing.test.js",
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-sections.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26131,6 +26203,67 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
+        "tests/volunteering-wellbeing.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "DELETE /api/v2/volunteering/emergency-alerts/{param} [callVolunteeringApi]",
+      "method": "DELETE",
+      "path": "/api/v2/volunteering/emergency-alerts/{param}",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-shifts.js:896",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "path:id",
+      "responseShape": "successful Laravel response envelope",
+      "statusCodes": [
+        "200"
+      ],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-shifts.js",
+      "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
+      "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
+      "laravel": {
+        "status": "matched-openapi",
+        "path": "/api/v2/volunteering/emergency-alerts/{id}",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": [
+          "Volunteering"
+        ]
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-shifts.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/empty-state-heading-contract.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/laravel-runtime-smoke.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-group-signups.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-my-qualifications.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-org-opportunities.test.js",
+        "tests/volunteering-org-qualifications.test.js",
+        "tests/volunteering-org-wellbeing.test.js",
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-sections.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26190,6 +26323,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26243,6 +26377,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26330,6 +26465,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26382,6 +26518,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26438,6 +26575,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26494,6 +26632,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26550,6 +26689,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26606,6 +26746,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26664,6 +26805,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26722,6 +26864,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26778,6 +26921,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26835,6 +26979,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26888,6 +27033,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26941,6 +27087,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -26994,6 +27141,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27046,6 +27194,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27098,6 +27247,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27158,6 +27308,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27254,6 +27405,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27312,6 +27464,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27352,7 +27505,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-org-opportunities.test.js",
-        "tests/volunteering-runs-organisation.test.js"
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-urgent-requests.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27392,7 +27546,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-org-opportunities.test.js",
-        "tests/volunteering-runs-organisation.test.js"
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-urgent-requests.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27450,6 +27605,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27508,6 +27664,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27568,6 +27725,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27608,7 +27766,8 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/volunteering-org-opportunities.test.js",
-        "tests/volunteering-runs-organisation.test.js"
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-urgent-requests.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -27666,6 +27825,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27722,6 +27882,60 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
+        "tests/volunteering-wellbeing.test.js"
+      ],
+      "directApiHelperAssertion": true,
+      "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
+    },
+    {
+      "id": "GET /api/v2/volunteering/opportunities/{param}/emergency-alerts [callVolunteeringApi]",
+      "method": "GET",
+      "path": "/api/v2/volunteering/opportunities/{param}/emergency-alerts",
+      "apiHelper": "callVolunteeringApi",
+      "source": "src/routes/volunteering-shifts.js:595",
+      "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
+      "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
+      "requestShape": "query/path parameters; no request body expected",
+      "responseShape": "JSON/text response via ApiError-aware request",
+      "statusCodes": [],
+      "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
+      "redirects": "consumer-controlled: src/routes/volunteering-shifts.js",
+      "sideEffects": "read-only by HTTP method",
+      "cleanup": "not applicable",
+      "laravel": {
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/volunteering/opportunities/{id}/emergency-alerts",
+        "operationId": "",
+        "controllerAction": "",
+        "tags": []
+      },
+      "frontendConsumers": [
+        "src/routes/volunteering-shifts.js"
+      ],
+      "tests": [
+        "tests/api-locale-context.test.js",
+        "tests/api.test.js",
+        "tests/form-input-preserved-volunteering.test.js",
+        "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-expense-form.test.js",
+        "tests/volunteering-group-signups.test.js",
+        "tests/volunteering-hours-approval-refusals.test.js",
+        "tests/volunteering-incident-pages.test.js",
+        "tests/volunteering-incident-report-fields.test.js",
+        "tests/volunteering-my-qualifications.test.js",
+        "tests/volunteering-opportunity-manage.test.js",
+        "tests/volunteering-org-expenses.test.js",
+        "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-org-opportunities.test.js",
+        "tests/volunteering-org-qualifications.test.js",
+        "tests/volunteering-org-wellbeing.test.js",
+        "tests/volunteering-runs-organisation.test.js",
+        "tests/volunteering-shift-management.test.js",
+        "tests/volunteering-shift-swap-request.test.js",
+        "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27732,7 +27946,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/opportunities/{param}/recurring-patterns",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:541",
+      "source": "src/routes/volunteering-shifts.js:594",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -27778,6 +27992,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27788,7 +28003,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/opportunities/{param}/recurring-patterns",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:897",
+      "source": "src/routes/volunteering-shifts.js:1055",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -27834,6 +28049,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27844,7 +28060,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/opportunities/{param}/shifts",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:533",
+      "source": "src/routes/volunteering-shifts.js:586",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -27890,6 +28106,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -27900,7 +28117,7 @@
       "method": "POST",
       "path": "/api/v2/volunteering/opportunities/{param}/shifts",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:617",
+      "source": "src/routes/volunteering-shifts.js:678",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -27942,6 +28159,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28081,6 +28299,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28135,6 +28354,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28227,6 +28447,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28279,6 +28500,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28331,6 +28553,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28383,6 +28606,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28435,6 +28659,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28487,6 +28712,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28539,6 +28765,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28591,6 +28818,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28675,6 +28903,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28727,6 +28956,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28779,6 +29009,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28831,6 +29062,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28883,6 +29115,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28935,6 +29168,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -28987,6 +29221,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29039,6 +29274,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29091,6 +29327,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29144,6 +29381,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29200,6 +29438,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29252,6 +29491,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29304,6 +29544,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29356,6 +29597,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29409,6 +29651,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29461,6 +29704,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29513,6 +29757,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29567,6 +29812,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29621,6 +29867,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29675,6 +29922,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29727,6 +29975,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29780,6 +30029,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29838,6 +30088,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29848,7 +30099,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/recurring-patterns/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:938",
+      "source": "src/routes/volunteering-shifts.js:1096",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -29894,6 +30145,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29982,6 +30234,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -29992,7 +30245,7 @@
       "method": "DELETE",
       "path": "/api/v2/volunteering/shifts/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:703",
+      "source": "src/routes/volunteering-shifts.js:764",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -30034,6 +30287,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30044,7 +30298,7 @@
       "method": "PUT",
       "path": "/api/v2/volunteering/shifts/{param}",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:665",
+      "source": "src/routes/volunteering-shifts.js:726",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -30086,6 +30340,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30142,6 +30397,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30198,6 +30454,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30208,7 +30465,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts/{param}/roster",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/routes/volunteering-shifts.js:728",
+      "source": "src/routes/volunteering-shifts.js:789",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -30250,6 +30507,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30306,6 +30564,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30362,6 +30621,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30418,6 +30678,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30474,6 +30735,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30530,6 +30792,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30588,6 +30851,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30646,6 +30910,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30704,6 +30969,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30762,6 +31028,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30816,6 +31083,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30870,6 +31138,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30928,6 +31197,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -30984,6 +31254,7 @@
         "tests/volunteering-shift-management.test.js",
         "tests/volunteering-shift-swap-request.test.js",
         "tests/volunteering-shift-waitlist-join.test.js",
+        "tests/volunteering-urgent-requests.test.js",
         "tests/volunteering-wellbeing.test.js"
       ],
       "directApiHelperAssertion": true,

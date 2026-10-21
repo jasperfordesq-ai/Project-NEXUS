@@ -1,0 +1,105 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An organiser asks volunteers to cover one shift at short notice
+  (routes/volunteering-shifts.js, parity gap 2). The website's UrgentRequestModal,
+  as one GOV.UK page.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set K = "govuk_alpha_volunteering.shift_manager." %}
+{% set U = "govuk_alpha_volunteering.urgent_requests." %}
+{% set base = '/volunteering/opportunities/' ~ opportunityId %}
+{% set hiddenErrorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t(K ~ "back_to_shifts") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha_volunteering.shared.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if opportunityTitle %}<span class="govuk-caption-xl">{{ opportunityTitle }}</span>{% endif %}
+      <h1 class="govuk-heading-xl">{{ t(U ~ "title") }}</h1>
+
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(K ~ "col_date") }}</dt>
+          <dd class="govuk-summary-list__value">{{ shift.dayLabel }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(K ~ "col_time") }}</dt>
+          <dd class="govuk-summary-list__value">{{ shift.timeLabel }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(K ~ "col_places") }}</dt>
+          <dd class="govuk-summary-list__value">{{ shift.placesLabel }}</dd>
+        </div>
+      </dl>
+
+      <p class="govuk-body">{{ t(U ~ "intro") }}</p>
+
+      <form method="post" action="{{ urlFor(base ~ '/shifts/' ~ shift.id ~ '/ask-for-help') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% call characterCount(1000, characterCountMessages, "message") %}
+          <div class="govuk-form-group{% if fieldErrors.message %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--m" for="message">{{ t(U ~ "message_label") }}</label>
+            <div id="message-hint" class="govuk-hint">{{ t(U ~ "message_hint") }}</div>
+            {% if fieldErrors.message %}
+              <p id="message-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ hiddenErrorPrefix }}:</span> {{ fieldErrors.message.text }}</p>
+            {% endif %}
+            <textarea class="govuk-textarea govuk-js-character-count{% if fieldErrors.message %} govuk-textarea--error{% endif %}" id="message" name="message" rows="5" maxlength="1000" aria-describedby="message-hint message-info{% if fieldErrors.message %} message-error{% endif %}">{{ values.message }}</textarea>
+          </div>
+        {% endcall %}
+
+        {{ govukRadios({
+          name: "priority",
+          idPrefix: "priority",
+          classes: "govuk-radios--small",
+          fieldset: { legend: { text: t(U ~ "priority_label"), classes: "govuk-fieldset__legend--m" } },
+          items: priorities,
+          errorMessage: { text: fieldErrors.priority.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.priority else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "required_skills",
+          name: "required_skills",
+          label: { text: t(U ~ "skills_label"), classes: "govuk-label--m" },
+          hint: { text: t(U ~ "skills_hint") },
+          value: values.skills,
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.required_skills.text, visuallyHiddenText: hiddenErrorPrefix } if fieldErrors.required_skills else undefined
+        }) }}
+
+        {{ govukRadios({
+          name: "expires_hours",
+          idPrefix: "expires_hours",
+          classes: "govuk-radios--small",
+          fieldset: { legend: { text: t(U ~ "expires_label"), classes: "govuk-fieldset__legend--m" } },
+          items: expiries
+        }) }}
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(U ~ "send") }}</button>
+          <a class="govuk-link" href="{{ urlFor(base ~ '/shifts') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

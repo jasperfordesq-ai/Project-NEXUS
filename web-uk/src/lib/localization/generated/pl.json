@@ -11846,6 +11846,40 @@
                 "untitled": "Oferta bez tytułu",
                 "date_range": "od :start do :end",
                 "needs_shifts": "Dla tej oferty nie zaplanowano żadnych nadchodzących zmian."
+            },
+            "urgent_requests": {
+                "ask": "Poproś o pomoc",
+                "title": "Poproś wolontariuszy o pomoc przy tej zmianie",
+                "intro": "Powiadomimy wolontariuszy już zaakceptowanych w tej ofercie, którzy nie są na tej zmianie (do 50 osób). Jeśli podasz umiejętności, poprosimy tylko osoby, które mają którąś z nich.",
+                "message_label": "Wiadomość",
+                "message_hint": "Na przykład: dwie osoby zrezygnowały. Czy ktoś może je zastąpić?",
+                "priority_label": "Jak pilne to jest?",
+                "priority": {
+                    "normal": "Zwykłe",
+                    "urgent": "Pilne",
+                    "critical": "Bardzo pilne"
+                },
+                "skills_label": "Proś tylko wolontariuszy z tymi umiejętnościami (opcjonalnie)",
+                "skills_hint": "Oddziel umiejętności przecinkami.",
+                "expires_label": "Przestań prosić po",
+                "expires": {
+                    "h6": "6 godzinach",
+                    "h12": "12 godzinach",
+                    "h24": "1 dniu",
+                    "h48": "2 dniach",
+                    "h72": "3 dniach"
+                },
+                "send": "Wyślij prośbę",
+                "message_required": "Napisz wiadomość do wolontariuszy.",
+                "message_too_long": "Wiadomość może mieć najwyżej 1000 znaków.",
+                "sent": "Prośba wysłana. Poproszeni wolontariusze: :count.",
+                "sent_none": "Prośba zapisana, ale nikogo nie można było poprosić: w tej ofercie nie ma jeszcze innych zaakceptowanych wolontariuszy albo nikt nie ma podanych umiejętności.",
+                "failed": "Nie udało się wysłać prośby.",
+                "list_heading": "Pilne prośby",
+                "list_counts": "Poproszono: :asked · Przyjęło: :accepted · Odmówiło: :declined",
+                "withdraw": "Wycofaj",
+                "withdrawn": "Prośba wycofana.",
+                "withdraw_failed": "Nie udało się wycofać prośby."
             }
         },
         "govuk_alpha_wallet": {

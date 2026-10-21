@@ -9,6 +9,7 @@
   what there is and links to them.
 #}
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set K = "govuk_alpha_volunteering.shift_manager." %}
 {% set base = '/volunteering/opportunities/' ~ opportunityId %}
@@ -47,6 +48,7 @@
               {% if withActions %}
                 <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/edit') }}">{{ t(K ~ "change") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
                 <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/remove') }}">{{ t(K ~ "remove") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
+                <li><a class="govuk-link" href="{{ urlFor(opportunityBase ~ '/shifts/' ~ shift.id ~ '/ask-for-help') }}" data-testid="shift-ask-for-help-{{ shift.id }}">{{ t("govuk_alpha_volunteering.urgent_requests.ask") }}<span class="govuk-visually-hidden">: {{ shift.dayLabel }}, {{ shift.timeLabel }}</span></a></li>
               {% endif %}
             </ul>
           </td>
@@ -63,6 +65,15 @@
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="shift-status-title">
         <div class="govuk-notification-banner__header">
           <h2 class="govuk-notification-banner__title" id="shift-status-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% elif status.type == "warning" %}
+      <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="shift-status-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="shift-status-title">{{ t("states.important") }}</h2>
         </div>
         <div class="govuk-notification-banner__content">
           <p class="govuk-notification-banner__heading">{{ status.message }}</p>
@@ -91,6 +102,33 @@
       </div>
     </div>
   </div>
+
+  {% if urgentRequests.length %}
+    {% set U = "govuk_alpha_volunteering.urgent_requests." %}
+    <h2 class="govuk-heading-l" id="urgent-requests">{{ t(U ~ "list_heading") }}</h2>
+    <div data-testid="urgent-request-list">
+      {% for request in urgentRequests %}
+        <div class="govuk-summary-card" data-testid="urgent-request-{{ request.id }}">
+          <div class="govuk-summary-card__title-wrapper">
+            <h3 class="govuk-summary-card__title">{{ request.shiftLabel }}</h3>
+            <ul class="govuk-summary-card__actions">
+              <li class="govuk-summary-card__action">
+                <form method="post" action="{{ urlFor(base ~ '/urgent-requests/' ~ request.id ~ '/withdraw') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(U ~ "withdraw") }}<span class="govuk-visually-hidden">: {{ request.shiftLabel }}</span></button>
+                </form>
+              </li>
+            </ul>
+          </div>
+          <div class="govuk-summary-card__content">
+            {{ govukTag({ text: request.priorityLabel, classes: request.priorityClass }) }}
+            <p class="govuk-body govuk-!-margin-top-3">{{ request.message }}</p>
+            <p class="govuk-body-s govuk-!-margin-bottom-0">{{ request.countsLabel }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 
   {% if loadError %}
     <div class="govuk-inset-text">{{ t(K ~ "load_error") }}</div>

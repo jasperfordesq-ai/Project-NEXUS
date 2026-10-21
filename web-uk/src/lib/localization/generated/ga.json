@@ -11846,6 +11846,40 @@
                 "untitled": "Deis gan teideal",
                 "date_range": ":start go :end",
                 "needs_shifts": "Níl aon sealanna sceidealaithe don deis seo."
+            },
+            "urgent_requests": {
+                "ask": "Iarr cabhair",
+                "title": "Iarr ar oibrithe deonacha cabhrú leis an seal seo",
+                "intro": "Cuirfimid in iúl d’oibrithe deonacha a glacadh cheana don deis seo nach bhfuil ar an seal seo (suas le 50). Má luann tú scileanna, ní iarrfar ach ar dhaoine a bhfuil ceann acu.",
+                "message_label": "Teachtaireacht",
+                "message_hint": "Mar shampla: tharraing beirt siar. An féidir le duine éigin clúdach a thabhairt?",
+                "priority_label": "Cé chomh práinneach is atá sé?",
+                "priority": {
+                    "normal": "Gnáth",
+                    "urgent": "Práinneach",
+                    "critical": "An-phráinneach"
+                },
+                "skills_label": "Ná hiarr ach ar oibrithe deonacha a bhfuil na scileanna seo acu (roghnach)",
+                "skills_hint": "Scar scileanna le camóga.",
+                "expires_label": "Stop ag iarraidh tar éis",
+                "expires": {
+                    "h6": "6 uair an chloig",
+                    "h12": "12 uair an chloig",
+                    "h24": "1 lá",
+                    "h48": "2 lá",
+                    "h72": "3 lá"
+                },
+                "send": "Seol an t-iarratas",
+                "message_required": "Scríobh teachtaireacht do na hoibrithe deonacha.",
+                "message_too_long": "Ní mór do theachtaireacht a bheith 1,000 carachtar nó níos lú.",
+                "sent": "Seoladh an t-iarratas. Oibrithe deonacha ar iarradh orthu: :count.",
+                "sent_none": "Sábháladh an t-iarratas, ach níorbh fhéidir iarraidh ar aon duine: níl aon oibrí deonach eile glactha don deis seo fós, nó níl na scileanna a luaigh tú ag aon duine.",
+                "failed": "Níorbh fhéidir an t-iarratas a sheoladh.",
+                "list_heading": "Iarratais phráinneacha",
+                "list_counts": "Iarrtha: :asked · Glactha: :accepted · Diúltaithe: :declined",
+                "withdraw": "Tarraing siar",
+                "withdrawn": "Tarraingíodh siar an t-iarratas.",
+                "withdraw_failed": "Níorbh fhéidir an t-iarratas a tharraingt siar."
             }
         },
         "govuk_alpha_wallet": {

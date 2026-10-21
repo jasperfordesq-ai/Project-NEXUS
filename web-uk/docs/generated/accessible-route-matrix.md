@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-21T19:06:18.880Z
-Laravel commit SHA: `46b02d06c6e554936532ab7301c7ac7a03465946`
-Web UK repository commit SHA: `46b02d06c6e554936532ab7301c7ac7a03465946`
+Generated: 2026-10-21T19:13:16.682Z
+Laravel commit SHA: `fa87757bfca60e3997aaae9e94285bf5087b8ba1`
+Web UK repository commit SHA: `fa87757bfca60e3997aaae9e94285bf5087b8ba1`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 818 |
+| web-uk routes | 821 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 108 |
+| Extra web-uk routes | 111 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -100,7 +100,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 66 | 0 |
+| volunteering | 52 | 0 | 69 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
@@ -167,6 +167,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering | volunteering/shift-pattern-stop | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/repeating/new` | volunteering | volunteering/shift-pattern-form | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/shifts` | volunteering | volunteering/shift-manage | web-uk/src/routes/volunteering-shifts.js |
+| GET | `/volunteering/opportunities/{param}/shifts/{param}/ask-for-help` | volunteering | volunteering/urgent-request-form | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/shifts/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/shifts/{param}/remove` | volunteering | volunteering/shift-remove | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/shifts/{param}/roster` | volunteering | volunteering/shift-roster | web-uk/src/routes/volunteering-shifts.js |
@@ -199,10 +200,12 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/volunteering/opportunities/{param}/reopen` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | POST | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/repeating/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/shifts/{param}/ask-for-help` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/shifts/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/shifts/{param}/remove` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/opportunities/{param}/shifts/{param}/waitlist` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/opportunities/{param}/shifts/new` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
+| POST | `/volunteering/opportunities/{param}/urgent-requests/{param}/withdraw` | volunteering |  | web-uk/src/routes/volunteering-shifts.js |
 | POST | `/volunteering/organisations/{param}/applications/{param}/remove` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/organisations/{param}/expenses/{param}/review` | volunteering |  | web-uk/src/routes/volunteering-org-expenses.js |
 | POST | `/volunteering/organisations/{param}/fundraising/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-org-fundraising.js |

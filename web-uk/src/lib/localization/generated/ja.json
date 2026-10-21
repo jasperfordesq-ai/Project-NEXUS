@@ -11846,6 +11846,40 @@
                 "untitled": "無題の募集",
                 "date_range": ":start～:end",
                 "needs_shifts": "この募集には今後のシフトが予定されていません。"
+            },
+            "urgent_requests": {
+                "ask": "応援を依頼",
+                "title": "このシフトの応援をボランティアに依頼",
+                "intro": "この募集ですでに承認済みで、このシフトに入っていないボランティアに通知します（最大50人）。スキルを指定すると、いずれかのスキルを持つ人だけに依頼します。",
+                "message_label": "メッセージ",
+                "message_hint": "例：2人が来られなくなりました。代わりに入れる方はいますか？",
+                "priority_label": "緊急度",
+                "priority": {
+                    "normal": "通常",
+                    "urgent": "緊急",
+                    "critical": "至急"
+                },
+                "skills_label": "このスキルを持つボランティアだけに依頼（任意）",
+                "skills_hint": "スキルはカンマで区切ってください。",
+                "expires_label": "依頼を終了するまで",
+                "expires": {
+                    "h6": "6時間",
+                    "h12": "12時間",
+                    "h24": "1日",
+                    "h48": "2日",
+                    "h72": "3日"
+                },
+                "send": "依頼を送信",
+                "message_required": "ボランティアへのメッセージを入力してください。",
+                "message_too_long": "メッセージは1,000文字以内で入力してください。",
+                "sent": "依頼を送信しました。依頼したボランティア：:count人。",
+                "sent_none": "依頼は保存されましたが、誰にも送れませんでした。この募集で承認済みの他のボランティアがまだいないか、指定したスキルを持つ人がいません。",
+                "failed": "依頼を送信できませんでした。",
+                "list_heading": "緊急の依頼",
+                "list_counts": "依頼：:asked · 承諾：:accepted · 辞退：:declined",
+                "withdraw": "取り下げる",
+                "withdrawn": "依頼を取り下げました。",
+                "withdraw_failed": "依頼を取り下げられませんでした。"
             }
         },
         "govuk_alpha_wallet": {

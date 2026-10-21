@@ -11846,6 +11846,40 @@
                 "untitled": "Untitled opportunity",
                 "date_range": ":start to :end",
                 "needs_shifts": "No upcoming shifts are scheduled for this opportunity."
+            },
+            "urgent_requests": {
+                "ask": "Ask for help",
+                "title": "Ask volunteers to help with this shift",
+                "intro": "We'll notify volunteers already approved for this opportunity who are not on this shift (up to 50). If you name skills, only volunteers who list one of them are asked.",
+                "message_label": "Message",
+                "message_hint": "For example: two people dropped out. Can anyone cover?",
+                "priority_label": "How urgent is it?",
+                "priority": {
+                    "normal": "Normal",
+                    "urgent": "Urgent",
+                    "critical": "Critical"
+                },
+                "skills_label": "Only ask volunteers with these skills (optional)",
+                "skills_hint": "Separate skills with commas.",
+                "expires_label": "Stop asking after",
+                "expires": {
+                    "h6": "6 hours",
+                    "h12": "12 hours",
+                    "h24": "1 day",
+                    "h48": "2 days",
+                    "h72": "3 days"
+                },
+                "send": "Send request",
+                "message_required": "Write a message for the volunteers.",
+                "message_too_long": "Your message must be 1,000 characters or fewer.",
+                "sent": "Request sent. Volunteers asked: :count.",
+                "sent_none": "Request saved, but nobody could be asked: no other volunteer is approved for this opportunity yet, or none has the skills you named.",
+                "failed": "Could not send the request.",
+                "list_heading": "Urgent requests",
+                "list_counts": "Asked: :asked · Accepted: :accepted · Declined: :declined",
+                "withdraw": "Withdraw",
+                "withdrawn": "Request withdrawn.",
+                "withdraw_failed": "Could not withdraw the request."
             }
         },
         "govuk_alpha_wallet": {

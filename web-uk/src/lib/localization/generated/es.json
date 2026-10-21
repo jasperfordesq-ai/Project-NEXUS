@@ -11846,6 +11846,40 @@
                 "untitled": "Oportunidad sin título",
                 "date_range": "del :start al :end",
                 "needs_shifts": "No hay turnos programados para esta oportunidad."
+            },
+            "urgent_requests": {
+                "ask": "Pedir ayuda",
+                "title": "Pedir a los voluntarios que ayuden en este turno",
+                "intro": "Avisaremos a los voluntarios ya aprobados para esta oportunidad que no están en este turno (hasta 50). Si indicas habilidades, solo se preguntará a quienes tengan alguna de ellas.",
+                "message_label": "Mensaje",
+                "message_hint": "Por ejemplo: dos personas se han dado de baja. ¿Alguien puede cubrirlas?",
+                "priority_label": "¿Qué tan urgente es?",
+                "priority": {
+                    "normal": "Normal",
+                    "urgent": "Urgente",
+                    "critical": "Muy urgente"
+                },
+                "skills_label": "Preguntar solo a voluntarios con estas habilidades (opcional)",
+                "skills_hint": "Separa las habilidades con comas.",
+                "expires_label": "Dejar de preguntar tras",
+                "expires": {
+                    "h6": "6 horas",
+                    "h12": "12 horas",
+                    "h24": "1 día",
+                    "h48": "2 días",
+                    "h72": "3 días"
+                },
+                "send": "Enviar solicitud",
+                "message_required": "Escribe un mensaje para los voluntarios.",
+                "message_too_long": "Tu mensaje no puede superar los 1000 caracteres.",
+                "sent": "Solicitud enviada. Voluntarios avisados: :count.",
+                "sent_none": "Solicitud guardada, pero no se pudo avisar a nadie: aún no hay otros voluntarios aprobados para esta oportunidad o ninguno tiene las habilidades indicadas.",
+                "failed": "No se pudo enviar la solicitud.",
+                "list_heading": "Solicitudes urgentes",
+                "list_counts": "Avisados: :asked · Aceptaron: :accepted · Rechazaron: :declined",
+                "withdraw": "Retirar",
+                "withdrawn": "Solicitud retirada.",
+                "withdraw_failed": "No se pudo retirar la solicitud."
             }
         },
         "govuk_alpha_wallet": {

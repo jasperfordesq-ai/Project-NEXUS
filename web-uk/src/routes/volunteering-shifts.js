@@ -23,6 +23,16 @@
  *   GET       /volunteering/opportunities/:id/shifts/:shiftId/roster          who's coming
  *   GET|POST  /volunteering/opportunities/:id/repeating/new                   set up a pattern
  *   GET|POST  /volunteering/opportunities/:id/repeating/:patternId/stop       stop a pattern
+ *   GET|POST  /volunteering/opportunities/:id/shifts/:shiftId/ask-for-help    ask volunteers to cover it
+ *   POST      /volunteering/opportunities/:id/urgent-requests/:alertId/withdraw   withdraw that request
+ *
+ * Urgent requests (parity gap 2, 21 Oct 2026) follow the website's UrgentRequestModal
+ * and its list in ShiftManager.tsx: POST /v2/volunteering/emergency-alerts
+ * { shift_id, message, priority, required_skills?, expires_hours } -> { id, notified },
+ * GET /v2/volunteering/opportunities/{id}/emergency-alerts for the list, and
+ * DELETE /v2/volunteering/emergency-alerts/{id} to withdraw one. Before this an
+ * organiser on the accessible site could not send one at all, so its volunteers'
+ * urgent-requests page could only ever fill from the website.
  *
  * Who may see these pages is decided by the API: the opportunity's `can_manage` (its
  * creator, the organisation's owner or administrators, a community admin) or `is_owner`.
@@ -48,6 +58,11 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const router = express.Router();
 
 const KEY = 'govuk_alpha_volunteering.shift_manager.';
+const URGENT = 'govuk_alpha_volunteering.urgent_requests.';
+const URGENT_PRIORITIES = ['normal', 'urgent', 'critical'];
+/** How long a request keeps asking, as on the website; the API clamps to 1-336 hours. */
+const URGENT_EXPIRY_HOURS = [6, 12, 24, 48, 72];
+const URGENT_MESSAGE_MAX = 1000;
 const LOGIN = '/login?status=auth-required';
 const REPLAY = 'volunteeringShifts';
 const FREQUENCIES = ['daily', 'weekly', 'biweekly', 'monthly'];
@@ -266,6 +281,29 @@ function presentPattern(raw, t) {
   };
 }
 
+/** An active urgent request on the shift list: which shift, how urgent, and who answered. */
+function presentUrgentRequest(raw, t) {
+  const row = raw && typeof raw === 'object' ? raw : {};
+  const shift = row.shift && typeof row.shift === 'object' ? row.shift : {};
+  const stats = row.stats && typeof row.stats === 'object' ? row.stats : {};
+  const start = parseShiftTime(shift.start_time);
+  const end = parseShiftTime(shift.end_time);
+  const priority = URGENT_PRIORITIES.includes(row.priority) ? row.priority : 'urgent';
+  return {
+    id: positiveInteger(row.id) || 0,
+    isActive: row.status === 'active',
+    priorityLabel: t(`${URGENT}priority.${priority}`),
+    priorityClass: priority === 'normal' ? 'govuk-tag--grey' : 'govuk-tag--red',
+    shiftLabel: [dayLabel(start), t(`${KEY}time_range`, { start: clockLabel(start), end: clockLabel(end) })].filter(Boolean).join(', '),
+    message: trimmed(row.message, URGENT_MESSAGE_MAX),
+    countsLabel: t(`${URGENT}list_counts`, {
+      asked: wholeNumber(stats.total_notified),
+      accepted: wholeNumber(stats.total_accepted),
+      declined: wholeNumber(stats.total_declined)
+    })
+  };
+}
+
 function presentRoster(raw, hasStarted, t) {
   const data = raw && typeof raw === 'object' ? raw : {};
   const summary = data.summary && typeof data.summary === 'object' ? data.summary : {};
@@ -386,6 +424,21 @@ async function loadPatterns(token, opportunityId) {
       return { available: false, failed: false, rows: [] };
     }
     return { available: true, failed: true, rows: [] };
+  }
+}
+
+/**
+ * The opportunity's active urgent requests. Best effort, as on the website: if the list
+ * cannot be read the shift page still works, it just shows none.
+ */
+async function loadUrgentRequests(token, opportunityId, t) {
+  try {
+    const data = dataOf(await callVolunteeringApi(token, 'GET', `/opportunities/${encodeURIComponent(opportunityId)}/emergency-alerts`));
+    const rows = Array.isArray(data) ? data : (data && Array.isArray(data.alerts) ? data.alerts : []);
+    return rows.map((row) => presentUrgentRequest(row, t)).filter((request) => request.id && request.isActive);
+  } catch (error) {
+    if (isApiStatus(error, 401)) throw error;
+    return [];
   }
 }
 
@@ -539,6 +592,7 @@ router.get('/opportunities/:id(\\d+)/shifts', asyncRoute(async (req, res) => {
   }
 
   const patterns = await loadPatterns(context.token, context.id);
+  const urgentRequests = await loadUrgentRequests(context.token, context.id, t);
   const upcoming = shifts.filter((shift) => !shift.hasStarted).sort((a, b) => a.start - b.start);
   const past = shifts.filter((shift) => shift.hasStarted).sort((a, b) => (b.start || 0) - (a.start || 0));
 
@@ -553,7 +607,12 @@ router.get('/opportunities/:id(\\d+)/shifts', asyncRoute(async (req, res) => {
     'shift-started': ['error', 'shift_started'],
     'shift-missing': ['error', 'shift_missing'],
     'pattern-missing': ['error', 'pattern_missing'],
-    'repeating-off': ['error', 'repeating_off']
+    'repeating-off': ['error', 'repeating_off'],
+    // Urgent requests' messages live in their own section.
+    'urgent-sent': ['success', `${URGENT}sent`],
+    'urgent-sent-none': ['warning', `${URGENT}sent_none`],
+    'urgent-withdrawn': ['success', `${URGENT}withdrawn`],
+    'urgent-withdraw-failed': ['error', `${URGENT}withdraw_failed`]
   };
   const statusKey = typeof req.query.status === 'string' ? req.query.status : '';
   const known = Object.hasOwn(statuses, statusKey) ? statuses[statusKey] : null;
@@ -569,7 +628,7 @@ router.get('/opportunities/:id(\\d+)/shifts', asyncRoute(async (req, res) => {
       // in its own words than in a generic "could not".
       message: known[0] === 'error' && typeof flash.message === 'string' && flash.message
         ? flash.message
-        : t(KEY + messageKey, { count })
+        : t(messageKey.startsWith(URGENT) ? messageKey : KEY + messageKey, { count })
     };
   }
 
@@ -584,7 +643,9 @@ router.get('/opportunities/:id(\\d+)/shifts', asyncRoute(async (req, res) => {
     repeatingAvailable: patterns.available,
     patternsFailed: patterns.failed,
     patterns: patterns.rows.map((row) => presentPattern(row, t)).filter((pattern) => pattern.id && pattern.isActive),
-    status
+    urgentRequests,
+    status,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: LOGIN }));
 
@@ -743,6 +804,103 @@ router.get('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/roster', asyncRoute(a
     roster,
     loadError
   });
+}, { redirectOn401: LOGIN }));
+
+// ── Urgent requests ──────────────────────────────────────────────────────────
+
+/** Check an "ask for help" form locally, before anything reaches the API. */
+function readUrgentForm(body) {
+  const source = body && typeof body === 'object' ? body : {};
+  const message = String(source.message ?? '').trim();
+  const priority = URGENT_PRIORITIES.includes(source.priority) ? source.priority : 'urgent';
+  const skills = trimmed(source.required_skills, 500);
+  const hours = URGENT_EXPIRY_HOURS.includes(Number(source.expires_hours)) ? Number(source.expires_hours) : 24;
+  // Keep what was typed (within reason) so a too-long message comes back to be cut.
+  const values = { message: message.slice(0, URGENT_MESSAGE_MAX * 2), priority, skills, hours };
+  const errors = [];
+  if (message === '') errors.push({ field: 'message', key: `${URGENT}message_required` });
+  else if ([...message].length > URGENT_MESSAGE_MAX) errors.push({ field: 'message', key: `${URGENT}message_too_long` });
+  const payload = errors.length ? null : {
+    message,
+    priority,
+    expires_hours: hours,
+    ...(skills ? { required_skills: skills } : {})
+  };
+  return { values, errors, payload };
+}
+
+const URGENT_FIELDS = { message: 'message', priority: 'priority', required_skills: 'required_skills' };
+
+router.get('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/ask-for-help', asyncRoute(async (req, res) => {
+  const context = await managedOpportunity(req, res);
+  if (!context) return undefined;
+  const t = res.locals.t;
+  const shiftId = Number(req.params.shiftId);
+  const raw = await findShift(context.token, context.id, shiftId);
+  if (!raw) return redirectTo(res, manageRedirect(context.id, 'shift-missing'));
+  const shift = presentShift(raw, t, Date.now());
+  // Asking for cover only makes sense before the shift starts; the API refuses it too.
+  if (shift.hasStarted) return redirectTo(res, manageRedirect(context.id, 'shift-started'));
+
+  const replay = consumeFormReplay(req, REPLAY, `urgent-${shiftId}`) || {};
+  let errors = replay.errors || [];
+  if (errors.length === 0 && req.query.status === 'invalid') errors = [{ field: '', key: `${URGENT}failed` }];
+  const presented = presentErrors(errors, t);
+  const values = replay.values || { message: '', priority: 'urgent', skills: '', hours: 24 };
+  return res.render('volunteering/urgent-request-form', {
+    title: t(`${URGENT}title`),
+    activeNav: 'volunteering',
+    opportunityId: context.id,
+    opportunityTitle: context.title,
+    shift,
+    values,
+    priorities: URGENT_PRIORITIES.map((value) => ({ value, text: t(`${URGENT}priority.${value}`), checked: value === values.priority })),
+    expiries: URGENT_EXPIRY_HOURS.map((hours) => ({ value: String(hours), text: t(`${URGENT}expires.h${hours}`), checked: hours === Number(values.hours) })),
+    errors: presented,
+    fieldErrors: errorsByField(presented)
+  });
+}, { redirectOn401: LOGIN }));
+
+router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/ask-for-help', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, LOGIN);
+  const id = Number(req.params.id);
+  const shiftId = Number(req.params.shiftId);
+  const form = readUrgentForm(req.body);
+  const failed = (errors) => {
+    rememberFormReplay(req, REPLAY, `urgent-${shiftId}`, { values: form.values, errors });
+    return redirectTo(res, `${shiftsPath(id)}/${shiftId}/ask-for-help?status=invalid`);
+  };
+  if (form.errors.length) return failed(form.errors);
+
+  let result;
+  try {
+    result = dataOf(await callVolunteeringApi(token, 'POST', '/emergency-alerts', { shift_id: shiftId, ...form.payload }));
+  } catch (error) {
+    if (answerRefusal(error, res)) return undefined;
+    // The shift started while the form was open: say so on the shift list.
+    if (isApiStatus(error, 400) && trimmed(apiFirstError(error).field) === 'shift_id') {
+      return redirectTo(res, manageRedirect(id, 'shift-started'));
+    }
+    return failed([serverError(error, URGENT_FIELDS, `${URGENT}failed`)]);
+  }
+  const notified = result && typeof result === 'object' ? wholeNumber(result.notified) : 0;
+  return redirectTo(res, notified > 0 ? manageRedirect(id, 'urgent-sent', notified) : manageRedirect(id, 'urgent-sent-none'));
+}, { redirectOn401: LOGIN }));
+
+router.post('/opportunities/:id(\\d+)/urgent-requests/:alertId(\\d+)/withdraw', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, LOGIN);
+  const id = Number(req.params.id);
+  try {
+    await callVolunteeringApi(token, 'DELETE', `/emergency-alerts/${encodeURIComponent(Number(req.params.alertId))}`);
+  } catch (error) {
+    if (isApiStatus(error, 401)) return redirectTo(res, LOGIN);
+    const problem = serverError(error, {}, `${URGENT}withdraw_failed`);
+    if (problem.message) rememberFormReplay(req, REPLAY, `manage-${id}`, { message: problem.message });
+    return redirectTo(res, manageRedirect(id, 'urgent-withdraw-failed'));
+  }
+  return redirectTo(res, manageRedirect(id, 'urgent-withdrawn'));
 }, { redirectOn401: LOGIN }));
 
 // ── Repeating shifts ─────────────────────────────────────────────────────────
@@ -954,3 +1112,4 @@ module.exports = router;
 // Exposed for unit tests of the pure form readers.
 module.exports.readShiftForm = readShiftForm;
 module.exports.readPatternForm = readPatternForm;
+module.exports.readUrgentForm = readUrgentForm;

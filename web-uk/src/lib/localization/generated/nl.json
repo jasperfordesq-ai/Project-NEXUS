@@ -11846,6 +11846,40 @@
                 "untitled": "Vacature zonder titel",
                 "date_range": ":start tot :end",
                 "needs_shifts": "Er zijn geen komende diensten gepland voor deze vacature."
+            },
+            "urgent_requests": {
+                "ask": "Om hulp vragen",
+                "title": "Vrijwilligers vragen te helpen bij deze dienst",
+                "intro": "We laten het vrijwilligers weten die al zijn goedgekeurd voor deze vacature en niet op deze dienst staan (maximaal 50). Noem je vaardigheden, dan vragen we alleen wie er één van heeft.",
+                "message_label": "Bericht",
+                "message_hint": "Bijvoorbeeld: twee mensen hebben afgezegd. Kan iemand invallen?",
+                "priority_label": "Hoe dringend is het?",
+                "priority": {
+                    "normal": "Normaal",
+                    "urgent": "Dringend",
+                    "critical": "Zeer dringend"
+                },
+                "skills_label": "Alleen vrijwilligers met deze vaardigheden vragen (optioneel)",
+                "skills_hint": "Scheid vaardigheden met komma’s.",
+                "expires_label": "Stoppen met vragen na",
+                "expires": {
+                    "h6": "6 uur",
+                    "h12": "12 uur",
+                    "h24": "1 dag",
+                    "h48": "2 dagen",
+                    "h72": "3 dagen"
+                },
+                "send": "Verzoek versturen",
+                "message_required": "Schrijf een bericht voor de vrijwilligers.",
+                "message_too_long": "Je bericht mag maximaal 1.000 tekens lang zijn.",
+                "sent": "Verzoek verstuurd. Gevraagde vrijwilligers: :count.",
+                "sent_none": "Verzoek opgeslagen, maar niemand kon worden gevraagd: er zijn nog geen andere vrijwilligers goedgekeurd voor deze vacature, of niemand heeft de genoemde vaardigheden.",
+                "failed": "Kon het verzoek niet versturen.",
+                "list_heading": "Dringende verzoeken",
+                "list_counts": "Gevraagd: :asked · Geaccepteerd: :accepted · Afgewezen: :declined",
+                "withdraw": "Intrekken",
+                "withdrawn": "Verzoek ingetrokken.",
+                "withdraw_failed": "Kon het verzoek niet intrekken."
             }
         },
         "govuk_alpha_wallet": {
