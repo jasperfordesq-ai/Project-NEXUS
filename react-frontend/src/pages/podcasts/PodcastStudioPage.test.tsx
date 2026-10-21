@@ -109,6 +109,11 @@ const makeEpisode = (overrides = {}) => ({
   ...overrides,
 });
 
+// The publishing guide's step headings are buttons too ("2. Add an episode…"),
+// so word-matching finds below skip accordion triggers.
+const pageButtons = () =>
+  screen.getAllByRole('button').filter((b) => b.getAttribute('data-slot') !== 'accordion-trigger');
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 describe('PodcastStudioPage', () => {
   beforeEach(() => {
@@ -173,7 +178,7 @@ describe('PodcastStudioPage', () => {
     fireEvent.change(titleInput, { target: { value: 'My New Show' } });
 
     // Click Create Show button
-    const createBtn = screen.getAllByRole('button').find(
+    const createBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('create') && b.textContent?.toLowerCase().includes('show')
     );
     expect(createBtn).toBeDefined();
@@ -197,7 +202,7 @@ describe('PodcastStudioPage', () => {
     const inputs = screen.getAllByRole('textbox');
     fireEvent.change(inputs[0], { target: { value: 'My Show' } });
 
-    const createBtn = screen.getAllByRole('button').find(
+    const createBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('create') && b.textContent?.toLowerCase().includes('show')
     );
     fireEvent.click(createBtn!);
@@ -218,7 +223,7 @@ describe('PodcastStudioPage', () => {
     const inputs = screen.getAllByRole('textbox');
     fireEvent.change(inputs[0], { target: { value: 'Bad Show' } });
 
-    const createBtn = screen.getAllByRole('button').find(
+    const createBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('create') && b.textContent?.toLowerCase().includes('show')
     );
     fireEvent.click(createBtn!);
@@ -254,7 +259,7 @@ describe('PodcastStudioPage', () => {
 
     await waitFor(() => expect(screen.getAllByText('Test Podcast Show').length).toBeGreaterThan(0));
 
-    const publishBtn = screen.getAllByRole('button').find(
+    const publishBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('publish') && b.textContent?.toLowerCase().includes('show')
     );
     if (publishBtn) {
@@ -277,7 +282,7 @@ describe('PodcastStudioPage', () => {
     render(<PodcastStudioPage />);
 
     await waitFor(() => expect(screen.getByText('Episode One')).toBeInTheDocument());
-    const publishBtn = screen.getAllByRole('button').find(
+    const publishBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('publish') && b.textContent?.toLowerCase().includes('episode')
     );
     expect(publishBtn).toBeDefined();
@@ -298,7 +303,7 @@ describe('PodcastStudioPage', () => {
 
     await waitFor(() => expect(screen.getAllByText('Test Podcast Show').length).toBeGreaterThan(0));
 
-    const deleteBtn = screen.getAllByRole('button').find(
+    const deleteBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('delete') && b.textContent?.toLowerCase().includes('show')
     );
     if (deleteBtn) {
@@ -336,7 +341,7 @@ describe('PodcastStudioPage', () => {
 
     await waitFor(() => expect(screen.getAllByText('Test Podcast Show').length).toBeGreaterThan(0));
 
-    const addEpisodeBtn = screen.getAllByRole('button').find(
+    const addEpisodeBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('add') && b.textContent?.toLowerCase().includes('episode')
     );
     expect(addEpisodeBtn).toBeDefined();
@@ -380,7 +385,7 @@ describe('PodcastStudioPage', () => {
     const urlInput = screen.getByLabelText(/audio url/i);
     fireEvent.change(urlInput, { target: { value: 'https://cdn.example.test/a.mp3' } });
 
-    const addEpisodeBtn = screen.getAllByRole('button').find(
+    const addEpisodeBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('add') && b.textContent?.toLowerCase().includes('episode')
     );
     expect(addEpisodeBtn).toBeDefined();
@@ -403,7 +408,7 @@ describe('PodcastStudioPage', () => {
     fireEvent.change(screen.getByLabelText(/episode title/i), { target: { value: 'Retry Episode' } });
     fireEvent.change(screen.getByLabelText(/audio url/i), { target: { value: 'https://cdn.example.test/a.mp3' } });
 
-    const addEpisodeBtn = screen.getAllByRole('button').find(
+    const addEpisodeBtn = pageButtons().find(
       (b) => b.textContent?.toLowerCase().includes('add') && b.textContent?.toLowerCase().includes('episode')
     );
     fireEvent.click(addEpisodeBtn!);
@@ -649,5 +654,80 @@ describe('PodcastStudioPage', () => {
     await waitFor(() => expect(screen.getByText('Listener stats')).toBeInTheDocument());
     expect(screen.getByText('Unique listeners')).toBeInTheDocument();
     expect(screen.getByText('12 listens')).toBeInTheDocument();
+  });
+
+  describe('publishing guide and share links', () => {
+    it('opens the guide for a first-time creator and warns that page links will not play', async () => {
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      expect(await screen.findByText('How to publish and share your podcast')).toBeInTheDocument();
+      expect(screen.getByText(/Links to web pages will not play here/)).toBeVisible();
+      // Labels the guide quotes come from their own keys, so they match the screen.
+      expect(screen.getByText(/once it shows "Scan: Clean"/)).toBeInTheDocument();
+    });
+
+    it('gives a published, approved public show a members link and a podcast-app (RSS) link', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ status: 'published', moderation_status: 'approved', visibility: 'public' })],
+      });
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      await waitFor(() => expect(screen.getByText('Share links')).toBeInTheDocument());
+      const showUrl = `${window.location.origin}/test/podcasts/test-podcast-show`;
+      const feedUrl = `${window.location.origin}/api/v2/podcasts/feed/2/test-podcast-show.xml`;
+      expect(screen.getByText(showUrl)).toBeInTheDocument();
+      expect(screen.getByText(feedUrl)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: /Copy link: Podcast app link/ }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith(feedUrl));
+      expect(mockToast.success).toHaveBeenCalledWith('Link copied.');
+    });
+
+    it('offers no podcast-app link for a members-only show, and says why', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ status: 'published', moderation_status: 'approved', visibility: 'members' })],
+      });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      await waitFor(() => expect(screen.getByText('Share links')).toBeInTheDocument());
+      expect(screen.queryByText(/\/v2\/podcasts\/feed\//)).not.toBeInTheDocument();
+      expect(screen.getByText(/Only members can listen to this show/)).toBeInTheDocument();
+    });
+
+    it('offers no podcast-app link when the community has RSS feeds switched off', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ status: 'published', moderation_status: 'approved', visibility: 'public' })],
+        meta: { enable_rss_feed: false },
+      });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      await waitFor(() => expect(screen.getByText('Share links')).toBeInTheDocument());
+      expect(screen.queryByText(/\/v2\/podcasts\/feed\//)).not.toBeInTheDocument();
+    });
+
+    it('shows no share links until the show is published and approved', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ status: 'published', moderation_status: 'pending' })],
+      });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      expect(await screen.findByText('Share links appear here once this show is published and approved.')).toBeInTheDocument();
+      expect(screen.queryByText('Share links')).not.toBeInTheDocument();
+    });
   });
 });

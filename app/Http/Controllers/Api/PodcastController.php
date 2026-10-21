@@ -165,6 +165,8 @@ class PodcastController extends BaseApiController
             'enable_transcripts' => (bool) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_TRANSCRIPTS),
             'enable_chapters' => (bool) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_CHAPTERS),
             'enable_episode_reactions' => (bool) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_EPISODE_REACTIONS),
+            // The studio's share box offers the podcast-app (RSS) link only when it will work.
+            'enable_rss_feed' => (bool) PodcastConfigurationService::get(PodcastConfigurationService::CONFIG_ENABLE_RSS_FEED),
             'max_shows_per_user' => $maxShowsPerUser,
         ]);
     }

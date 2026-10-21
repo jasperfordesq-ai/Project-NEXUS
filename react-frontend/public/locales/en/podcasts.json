@@ -212,6 +212,39 @@
       "last_days": "Listen activity covers the last {{days}} days.",
       "listen_count_one": "{{count}} listens",
       "listen_count_other": "{{count}} listens"
+    },
+    "guide": {
+      "title": "How to publish and share your podcast",
+      "intro": "Four steps. Open any of them for the details.",
+      "create_title": "1. Create your show",
+      "create_body": "A show is the home for your episodes. Give it a title, a square picture and a short description. Choose \"{{public}}\" if people outside this community should be able to listen in podcast apps.",
+      "upload_title": "2. Add an episode: upload your recording here (easiest)",
+      "upload_body": "Under \"{{add_episode}}\", choose your recording in \"{{file_field}}\". MP3 works best; M4A, WAV and OGG also work, up to {{max}} MB. We store the file for you and check it for viruses. That usually takes a few minutes. You can publish the episode once it shows \"{{clean}}\".",
+      "link_title": "Or: link to audio stored somewhere else",
+      "link_body": "Paste the link to the audio file itself into \"{{url_field}}\". It starts with https:// and usually ends in .mp3.",
+      "link_test": "To check a link, open it in a new browser tab. If the recording starts playing in a plain audio player, the link will work here. If you see a web page instead, it will not.",
+      "link_wont_work": "Links to web pages will not play here. That includes Spotify, Apple Podcasts, SoundCloud and YouTube pages, and Google Drive or Dropbox \"share\" links.",
+      "where_title": "Where can I store my audio?",
+      "where_hosts": "Podcast hosting services such as Spotify for Creators, Buzzsprout, Podbean and Acast store your episodes and send them to podcast apps. Many have a free plan with limits, for example on hours of audio, number of episodes or how long episodes stay online. Limits change, so check each service's current terms. To use one of their episodes here, copy its audio-file link, often labelled \"direct link\", \"download\" or \"MP3\".",
+      "where_archive": "The Internet Archive (archive.org) stores recordings free of charge, for audio you are happy to make public. After uploading, open your item's page, find \"VBR MP3\" under \"Download Options\", right-click it and copy the link.",
+      "publish_title": "3. Publish",
+      "publish_body": "Publish the show, then each episode. Your community team may need to approve them first; until then you will see \"{{pending}}\". Press \"{{validate}}\" to check what podcast apps will need.",
+      "share_title": "4. Share it",
+      "share_where": "Once your show is published and approved, its card under \"{{my_shows}}\" shows links you can copy:",
+      "share_members": "Show page link: for members of this community. They sign in and listen here.",
+      "share_public": "Podcast app link (RSS): for \"{{public}}\" shows only, and anyone can use it without signing in. Paste it into a podcast app that can add a show by link, or submit it to directories such as Apple Podcasts or Spotify, which check a show before listing it."
+    },
+    "share": {
+      "title": "Share links",
+      "show_link": "Show page (members)",
+      "show_link_hint": "Members sign in, then listen here.",
+      "feed_link": "Podcast app link (RSS, anyone)",
+      "feed_link_hint": "Paste it into a podcast app, or submit it to directories such as Apple Podcasts and Spotify.",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copy_failed": "Could not copy. Select the link above and copy it yourself.",
+      "not_ready": "Share links appear here once this show is published and approved.",
+      "feed_needs_public": "Only members can listen to this show. Set it to \"{{public}}\" to get a podcast app link anyone can use."
     }
   },
   "fields": {
@@ -229,7 +262,7 @@
     "artwork_file": "Show artwork",
     "audio_url": "Audio URL",
     "audio_file": "Hosted audio file",
-    "audio_file_hint": "Upload audio for private NEXUS hosting, or use an external audio URL.",
+    "audio_file_hint": "Upload your recording and we store it for you. This is the easiest way.",
     "audio_url_disabled_file_selected": "Using the selected hosted file. Clear it to use an external audio URL.",
     "clear_audio_file": "Clear selected file",
     "visibility": "Visibility",
@@ -246,7 +279,8 @@
     "transcript_language": "Transcript language",
     "explicit_episode": "Mark this episode as explicit",
     "chapters": "Chapters",
-    "chapters_hint": "One chapter per line, for example: 00:30 Introductions"
+    "chapters_hint": "One chapter per line, for example: 00:30 Introductions",
+    "audio_url_hint": "Or paste a direct link to an audio file (https://…/episode.mp3), not a link to a web page."
   },
   "visibility": {
     "public": "Public",

@@ -128,6 +128,8 @@ export interface PodcastStudioCapabilities {
   enable_transcripts?: boolean;
   enable_chapters?: boolean;
   enable_episode_reactions?: boolean;
+  /** Whether public shows get a podcast-app (RSS) feed in this community. */
+  enable_rss_feed?: boolean;
 }
 
 export interface PodcastFeedValidation {

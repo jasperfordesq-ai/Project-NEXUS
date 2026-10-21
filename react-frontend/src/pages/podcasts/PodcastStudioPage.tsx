@@ -23,6 +23,8 @@ import {
 } from '@/lib/api/podcasts';
 import { feedIssueKey } from '@/lib/podcasts/feedIssues';
 import { PodcastShowStatsPanel } from '@/components/podcasts/PodcastShowStatsPanel';
+import { PodcastStudioGuide } from '@/components/podcasts/PodcastStudioGuide';
+import { PodcastShareLinks } from '@/components/podcasts/PodcastShareLinks';
 import Archive from 'lucide-react/icons/archive';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
@@ -665,6 +667,12 @@ export default function PodcastStudioPage() {
               </div>
             )}
 
+            <PodcastStudioGuide
+              maxAudioMb={uploadLimits.maxMb}
+              expandAll={shows.length === 0}
+              rssEnabled={capabilities.enable_rss_feed !== false}
+            />
+
             {canCreateShow ? (
               <Card>
                 <CardBody className="space-y-4">
@@ -744,7 +752,7 @@ export default function PodcastStudioPage() {
                     value={episodeForm.audio_url}
                     onValueChange={(audio_url) => setEpisodeForm((prev) => ({ ...prev, audio_url }))}
                     isDisabled={Boolean(audioFile) || savingEpisode}
-                    description={audioFile ? t('fields.audio_url_disabled_file_selected') : undefined}
+                    description={audioFile ? t('fields.audio_url_disabled_file_selected') : t('fields.audio_url_hint')}
                   />
                   <Input
                     label={t('fields.episode_number')}
@@ -985,6 +993,7 @@ export default function PodcastStudioPage() {
                         {t('studio.delete_show')}
                       </Button>
                     </div>
+                    <PodcastShareLinks show={show} rssEnabled={capabilities.enable_rss_feed !== false} />
                     {show.episodes && show.episodes.length > 0 && (
                       <div className="space-y-2 border-t border-border pt-3">
                         <h3 className="text-sm font-semibold">{t('show.episodes')}</h3>
@@ -1104,7 +1113,7 @@ export default function PodcastStudioPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Input label={t('fields.episode_title')} maxLength={200} value={editingEpisodeForm.title ?? ''} onValueChange={(title) => setEditingEpisodeForm((prev) => ({ ...prev, title }))} />
               {!editingEpisode?.episode.hosted_audio && (
-                <Input label={t('fields.audio_url')} type="url" value={editingEpisodeForm.audio_url ?? ''} onValueChange={(audio_url) => setEditingEpisodeForm((prev) => ({ ...prev, audio_url }))} />
+                <Input label={t('fields.audio_url')} type="url" description={t('fields.audio_url_hint')} value={editingEpisodeForm.audio_url ?? ''} onValueChange={(audio_url) => setEditingEpisodeForm((prev) => ({ ...prev, audio_url }))} />
               )}
               <Input label={t('fields.duration_seconds')} type="number" min="0" value={editingEpisodeForm.duration_seconds != null ? String(editingEpisodeForm.duration_seconds) : ''} onValueChange={(value) => setEditingEpisodeForm((prev) => ({ ...prev, duration_seconds: value ? Math.max(0, Number(value)) : undefined }))} />
               <Input label={t('fields.episode_number')} type="number" min="0" value={editingEpisodeForm.episode_number != null ? String(editingEpisodeForm.episode_number) : ''} onValueChange={(value) => setEditingEpisodeForm((prev) => ({ ...prev, episode_number: value ? Math.max(0, Number(value)) : undefined }))} />

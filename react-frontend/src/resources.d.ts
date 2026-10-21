@@ -33288,12 +33288,20 @@ export default interface Resources {
       "wellbeing_indicator_not_measured": "Not measured",
       "wellbeing_indicator_overcommitment": "Upcoming shifts",
       "wellbeing_indicator_shift_frequency": "Shift frequency",
+      "wellbeing_last_scan": "Nightly activity check last finished: {{date}}",
+      "wellbeing_last_scan_never": "The nightly activity check has not finished yet. Alerts based on activity may be missing.",
+      "wellbeing_last_scan_stale": "The nightly activity check last finished on {{date}}, more than two days ago. Alerts based on activity may be missing.",
       "wellbeing_latest_checkin": "Latest check-in: {{mood}}, {{date}}",
       "wellbeing_latest_checkin_mood": "Latest check-in: {{mood}}",
       "wellbeing_legacy_notes": "Earlier notes",
       "wellbeing_link_label": "Link {{n}} label",
+      "wellbeing_link_label_required": "Give this link a label.",
+      "wellbeing_link_label_too_long": "Keep the label to {{max}} characters or fewer.",
       "wellbeing_link_url": "Link {{n}} address",
       "wellbeing_link_url_help": "Up to five links: https://, mailto:, tel: or a page on this site such as /contact.",
+      "wellbeing_link_url_invalid": "Use an address that starts with https://, mailto: or tel:, or a page on this site such as /contact.",
+      "wellbeing_link_url_too_long": "Keep the address to {{max}} characters or fewer.",
+      "wellbeing_links_need_fixing": "Some support links need fixing before the settings can be saved.",
       "wellbeing_message_volunteer": "Message {{name}}",
       "wellbeing_mood_good": "Good",
       "wellbeing_mood_great": "Great",
@@ -49668,6 +49676,11 @@ export default interface Resources {
             "body": "Some members choose to be contacted only by vetted members. The platform protects them strictly. If your setup is incomplete, nobody can contact them at all, and they stop appearing in matches.\n\nThe member is not told. So it is important to check your setup.\n\n## What must be in place\n\n1. **A jurisdiction is chosen.** In the Broker Panel, open **Vetting confirmations**. The **Jurisdiction** must show a place, not \"Safeguarding jurisdiction not configured\". Until one is chosen, every page of the Broker Panel and the admin panel shows a notice saying so.\n2. **The jurisdiction supports vetted contact.** If the page says \"This jurisdiction does not yet have a supported contact-vetting policy\", vetted-only contact cannot work. Deactivate any option that uses **Vetted members only**.\n3. **The options match the jurisdiction.** Each **Vetted members only** option must require the same vetting type as your jurisdiction. Applying the matching **Country Preset** does this for you.\n4. **Vetting is recorded.** Brokers record vetting for members who may contact vetted-only members. They do this in **Vetting confirmations** with **Confirm safeguarding certification**.\n\n## Warning signs\n\nIf the **Vetting confirmations** page says \"An administrator must select the safeguarding jurisdiction before confirmations can be recorded\", step 1 is missing. Fix it straight away.\n\n> Never upload certificates, certificate numbers or criminal record details. Record only your community's decision.",
             "summary": "Check your setup so members who asked for vetted-only contact do not become impossible to reach.",
             "title": "Making sure vetted-only contact works"
+          },
+          "admin_wellbeing_alerts": {
+            "body": "When a volunteer says they are low or struggling and lets someone get in touch, your community's team is told. Every such request, and every alert raised from a pattern in someone's volunteering, is on the **Wellbeing** page.\n\nOpen the [Wellbeing page](/admin/volunteering/wellbeing) from the Volunteering part of the admin menu. A bell or email about a volunteer opens their alert straight away.\n\n## Working through an alert\n\n1. Press **Open** on an alert.\n2. Read why it was raised, and the check-ins the volunteer chose to share, with their notes.\n3. Check who was told, and whether each message was delivered.\n4. Get in touch with the volunteer, for example with the message link in the alert.\n5. Write what you did under **Add a note**, then press **Save note**.\n6. Press **Acknowledge** while you deal with it and **Resolve** when it is done. Press **Dismiss** if nothing needs doing.\n\nNotes are permanent. They cannot be edited or deleted once saved, so write them as a record of what happened.\n\n## Who is told\n\nWhen a volunteer ticks the box to let someone get in touch, these are told, in this order:\n\n- the wellbeing contacts you name, and any extra email address you add\n- your community's safeguarding staff\n- the organisations the volunteer gives time to: they are told how the volunteer feels, never the note\n- the staff of the community above yours, if there is one\n- your community's contact address, if nobody else could be told\n\nEach volunteer's team is told at most once a day. Later check-ins within that day are added to the same alert.\n\n## The nightly activity check\n\nEvery night the platform looks at volunteering activity, such as a sharp rise in hours, many shifts close together or a long gap, and raises an alert when the pattern may mean burnout. Staff get one bell when a new high or critical alert is raised. The **Wellbeing** page shows when the check last finished, and warns you if it has not finished for more than two days.\n\n## Choosing who is told first\n\nOnly community administrators can change these settings.\n\n1. On the **Wellbeing** page, go to **Who is told first, and the support box**.\n2. Under **Wellbeing contacts**, add up to ten members.\n3. If you like, fill in **Extra email address** with a shared safeguarding inbox.\n4. Write your own **Support text** and **Support links**. Volunteers see them in the \"If you need support now\" box.\n5. Press **Save wellbeing settings**.\n\n> Switching the Wellbeing tab off in your community's volunteering settings stops check-ins, the nightly check and all wellbeing alerts.",
+            "summary": "Follow up volunteers who ask for someone to get in touch, and choose who is told first.",
+            "title": "Wellbeing alerts and contacts"
           }
         },
         "summary": "Set up safeguarding for your community in the right order, so vulnerable members are protected and still reachable.",
@@ -50032,6 +50045,11 @@ export default interface Resources {
             "body": "## Revoking a confirmation\n\nRevoke a confirmation when it should no longer count, for example after a concern.\n\n1. Open [Vetting confirmations](/broker/vetting) and find the member.\n2. Press **Revoke attestation**.\n3. Choose a **Revocation reason**: **Community decision withdrawn**, **Member requested a correction**, **Safeguarding policy changed** or **Recorded in error**.\n4. Press **Revoke confirmation**.\n\nThe change applies straight away. The member can no longer contact protected members who only accept vetted contact.\n\n## Review requests\n\nA member can ask for a vetting review from the **Safeguarding & support** tab in their **Settings**. This often happens when they are blocked from contacting someone.\n\n1. Press the **Re-checks requested** counter, or choose **Review requested** in the **Confirmation status** filter.\n2. If your community has completed its checks, press **Confirm attestation** and record the decision.\n3. If not, press **Resolve request**. Choose a **Review outcome**: **No change**, **Duplicate request** or **Member contacted**. Then press **Resolve request** again to confirm.\n\n## Viewing details\n\nPress **View details** to see the schemes, scope, private notes and dates for a member's current decision.\n\n> Every decision is recorded with your name and the reason. Take care, because these decisions control who can contact protected members.",
             "summary": "Withdraw a vetting confirmation, or close a member's request for a vetting review.",
             "title": "Revoking a vetting decision or answering a review request"
+          },
+          "broker_wellbeing_alerts": {
+            "body": "When a volunteer says they are low or struggling and lets someone get in touch, brokers and coordinators can be told too. Your bell or email opens the alert on the **Volunteering incidents** page, below the incidents.\n\n1. Open the [volunteering safeguarding page](/broker/safeguarding/volunteering), or follow the link in your bell or email.\n2. Press **Open** on the alert.\n3. Read why it was raised, the check-ins the volunteer chose to share, and who was told.\n4. Get in touch with the volunteer.\n5. Write what you did under **Add a note**, then press **Save note**.\n6. Press **Acknowledge** while you deal with it and **Resolve** when it is done.\n\nNotes are permanent. They cannot be edited or deleted once saved.\n\n> Who is told first, and the support box volunteers see, are chosen by your community's administrators.",
+            "summary": "Open a wellbeing alert, get in touch with the volunteer and record what you did.",
+            "title": "Following up a volunteer's wellbeing alert"
           },
           "broker_worried_about_member": {
             "body": "If you are worried that a member is being harmed, or may harm someone, act promptly and calmly.\n\n## If someone is in immediate danger\n\nContact the emergency services straight away. Then tell your safeguarding lead.\n\n## Otherwise\n\n1. **Write down what you know.** Stick to facts: what you saw or were told, when, and by whom. Add a note with the category **Concern** on the member's record.\n2. **Tell your safeguarding lead.** They decide what happens next, including whether to involve outside agencies.\n3. **Do not investigate alone.** Do not question the people involved in detail unless your lead asks you to.\n4. **Do not warn the person you are worried about.** It could put someone at risk.\n5. **Do not delete anything.** Messages, notes and records may be needed as evidence.\n\n## Tools that can help while your lead decides\n\n- Place the member under monitoring, and turn off their messaging if needed, in [User Monitoring](/broker/monitoring).\n- Reject exchanges that are waiting for approval, with a neutral reason.\n- Tag a listing that worries you in [Risk Tags](/broker/risk-tags).\n- Revoke a vetting confirmation in [Vetting confirmations](/broker/vetting).\n- Suspend the member in [Members](/broker/members) if your lead agrees.\n\n## Look after yourself\n\nSafeguarding concerns can be upsetting. Talk to your safeguarding lead or another broker about how you feel.",
@@ -50900,7 +50918,7 @@ export default interface Resources {
             "title": "Approving volunteers and their hours"
           },
           "browsing_organisations": {
-            "body": "You find organisations on the **Organisations** page. Open the **Community** menu and choose **Organisations**, or go to [Organisations](/organisations).\n\n1. Browse the list, or type in **Search organisations...**.\n2. Press an organisation to open its page.\n\nOnly organisations your community has approved appear here.\n\n## On an organisation's page\n\n- A description of the organisation.\n- How many **Opportunities**, **Volunteers** and **Hours Logged** it has.\n- Its star rating and **Reviews**, if your community uses reviews.\n- **Active Opportunities**, the volunteering you can apply for now.\n\nPress **Website** to visit the organisation's website. Press **Contact** to send it an email from your own email program.\n\n## Volunteering with an organisation\n\nThere is no button to join an organisation directly. You volunteer by applying to one of its opportunities.\n\n1. Find the opportunity under **Active Opportunities**.\n2. Press **Apply**.\n3. Add a message if you like, and press **Submit Application**.\n\nFollow your application on the **My Applications** tab of the [Volunteering](/volunteering) page.",
+            "body": "You find organisations on the **Organisations** page. Open the **Community** menu and choose **Organisations**, or go to [Organisations](/organisations).\n\n1. Browse the list, or type in **Search organisations...**.\n2. Press an organisation to open its page.\n\nOnly organisations your community has approved appear here.\n\n## On an organisation's page\n\n- A description of the organisation.\n- How many **Opportunities**, **Volunteers** and **Hours Logged** it has.\n- Its star rating and **Reviews**, if your community uses reviews.\n- **Active Opportunities**, the volunteering you can apply for now.\n\nPress **Website** to visit the organisation's website. Press **Contact** to send it an email from your own email program.\n\n## Volunteering with an organisation\n\nThere is no button to join an organisation directly. You volunteer by applying to one of its opportunities.\n\n1. Find the opportunity under **Active Opportunities**.\n2. Press **Apply**.\n3. Add a message if you like, and press **Submit Application**.\n\nFollow your application in **My applications** on the [Volunteering](/volunteering) page.",
             "summary": "Browse the charities, groups and partners that offer volunteering in your community.",
             "title": "How do I find an organisation?"
           },
@@ -51210,47 +51228,47 @@ export default interface Resources {
       "volunteering": {
         "articles": {
           "applying_to_volunteer": {
-            "body": "You apply with the **Apply** button on an opportunity card, or **Apply Now** on the opportunity's own page.\n\n1. Press **Apply** or **Apply Now**.\n2. Add a short message if you like. Tell the organisation why you would like to help.\n3. Press **Submit Application**.\n\nThe card then shows **Applied**. The organisation is told about your application.\n\n## Following your application\n\nOpen the **My Applications** tab on the [Volunteering](/volunteering) page. Each application shows one of these:\n\n- **Pending**: the organisation has not decided yet.\n- **Approved**: you have been accepted. You can now log hours for this organisation.\n- **Declined**: the organisation did not accept this application.\n\nThe organisation may add a note. It appears as **Organiser's note:**. You get a notification when they decide.\n\n## Withdrawing an application\n\nYou can withdraw an application while it is **Pending**. Press **Withdraw** on the application. There is no second question, so check first. You cannot withdraw an application once it is approved. Contact the organisation instead.\n\nIf your application was declined or withdrawn, you can apply again later.\n\n> Some communities have safeguarding rules about who can contact whom. If one of these applies, you see a message when you try to apply.",
+            "body": "You apply with the **Apply** button on an opportunity card, or **Apply Now** on the opportunity's own page.\n\n1. Press **Apply** or **Apply Now**.\n2. Add a short message if you like. Tell the organisation why you would like to help.\n3. Press **Submit Application**.\n\nThe card then shows **Applied**. The organisation is told about your application.\n\n## Following your application\n\nOpen [Volunteering](/volunteering) and press **My applications**. Each application shows one of these:\n\n- **Pending**: the organisation has not decided yet.\n- **Approved**: you have been accepted. You can now log hours for this organisation.\n- **Declined**: the organisation did not accept this application.\n\nThe organisation may add a note. It appears as **Organiser's note:**. You get a notification when they decide.\n\n## Withdrawing an application\n\nYou can withdraw an application while it is **Pending**. Press **Withdraw** on the application. There is no second question, so check first. You cannot withdraw an application once it is approved. Contact the organisation instead.\n\nIf your application was declined or withdrawn, you can apply again later.\n\n> Some communities have safeguarding rules about who can contact whom. If one of these applies, you see a message when you try to apply.",
             "summary": "Send an application, follow its progress and withdraw it if your plans change.",
             "title": "How do I apply to volunteer?"
           },
           "community_projects": {
-            "body": "If your community uses it, the **Projects** section lets members suggest volunteer projects.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Projects**.\n\n## Proposing a project\n\n1. Press **Propose a Project**.\n2. Fill in the **Title** and **Description**.\n3. Add a **Category**, a **Location**, the **Target Volunteers** and a **Proposed Date** if you know them.\n4. Press **Propose**.\n\nYou see **Project proposed successfully!** Community administrators review each proposal. Its status then changes, for example to **Under Review**, **Approved** or **Rejected**.\n\n## Supporting a project\n\nEach project card has a support button and shows how many supporters it has. Press it to add your support. Press it again to remove your support.\n\nEach card also shows how many volunteers the project still needs.",
+            "body": "If your community uses it, the **Community projects** section lets members suggest volunteer projects.\n\nOpen [Volunteering](/volunteering) and press **Community projects**, in the **Make a difference together** card.\n\n## Proposing a project\n\n1. Press **Propose a Project**.\n2. Fill in the **Title** and **Description**.\n3. Add a **Category**, a **Location**, the **Target Volunteers** and a **Proposed Date** if you know them.\n4. Press **Propose**.\n\nYou see **Project proposed successfully!** Community administrators review each proposal. Its status then changes, for example to **Under Review**, **Approved** or **Rejected**.\n\n## Supporting a project\n\nEach project card has a support button and shows how many supporters it has. Press it to add your support. Press it again to remove your support.\n\nEach card also shows how many volunteers the project still needs.",
             "summary": "Suggest a volunteer project for your community, or show support for one.",
             "title": "Proposing or supporting a community project"
           },
           "finding_volunteer_opportunities": {
-            "body": "You find opportunities on the **Opportunities** tab of the [Volunteering](/volunteering) page.\n\n1. Open [Volunteering](/volunteering).\n2. Type in the **Search opportunities...** box. It looks at titles, descriptions, places, skills and organisation names.\n3. Use the filters to look for opportunities near you or ones you can do **Remote**, which means online or by phone.\n4. Press **Load more** to see more results.\n\nEach card shows the organisation, the title, where it takes place, the dates and the skills needed.\n\n## Looking at an opportunity\n\nPress **View Details** to open the full opportunity. It shows the description, the organisation, the dates and the skills needed.\n\nIf you see **No opportunities found**, try a different search word or check back later.\n\n> The organisation name on a card may link to the organisation's own page. There you can see its other opportunities and read reviews.",
+            "body": "You find opportunities on the [Volunteering](/volunteering) page. A few are at the top, and the rest are under **More opportunities**, below the cards.\n\n1. Open [Volunteering](/volunteering).\n2. Type in the **Search opportunities...** box. It looks at titles, descriptions, places, skills and organisation names.\n3. Use the filters to look for opportunities near you or ones you can do **Remote**, which means online or by phone.\n4. Press **Load more** to see more results.\n\nEach card shows the organisation, the title, where it takes place, the dates and the skills needed.\n\n## Looking at an opportunity\n\nPress **View Details** to open the full opportunity. It shows the description, the organisation, the dates and the skills needed.\n\nIf you see **No opportunities found**, try a different search word or check back later.\n\n> The organisation name on a card may link to the organisation's own page. There you can see its other opportunities and read reviews.",
             "summary": "Search and filter the opportunities posted by local organisations.",
             "title": "How do I find a volunteering opportunity?"
           },
           "how_volunteering_works": {
-            "body": "Volunteering lets you give your time to local organisations and earn time credits for it. A time credit is one hour of time, the same currency you use in your wallet.\n\nIt works in four steps:\n\n1. Find an opportunity and apply.\n2. The organisation approves your application.\n3. You log the hours you give.\n4. The organisation approves your hours, and time credits are added to your wallet.\n\n## Finding the volunteering page\n\nOpen the **Community** menu and choose **Volunteering**, or go to [Volunteering](/volunteering).\n\nThe page has tabs:\n\n- **Opportunities** lists everything you can apply for.\n- **My Applications** shows the applications you have sent.\n- **My Hours** shows the hours you have logged.\n- **Certificates** lets you create a record of your approved hours.\n\nYour community may have extra sections too, such as **Wellbeing**, **Projects** or **Donations**. Press **More** to see them, and **Show fewer** to hide them again. On a phone, the sections appear in a drop-down list instead of tabs.\n\n> Your community chooses which sections to show. If you cannot see one described in this guide, your community has not switched it on.",
+            "body": "Volunteering lets you give your time to local organisations and earn time credits for it. A time credit is one hour of time, the same currency you use in your wallet.\n\nIt works in four steps:\n\n1. Find an opportunity and apply.\n2. The organisation approves your application.\n3. You log the hours you give.\n4. The organisation approves your hours, and time credits are added to your wallet.\n\n## Finding the volunteering page\n\nOpen the **Community** menu and choose **Volunteering**, or go to [Volunteering](/volunteering).\n\nThe page opens on its home. A few opportunities come first, then cards that group everything else:\n\n- **Find your next role**: all opportunities, ones recommended for you, and urgent requests.\n- **My volunteering**: **My applications**, **My hours and shifts**, waiting lists and shift swaps.\n- **Make a difference together**: group sign-ups, **Community projects** and **Donations**.\n- **Support & recognition**: expenses, qualifications, **Certificates** and **Wellbeing**.\n\nPress a link to open that section on a page of its own, and press **Volunteering home**, or your phone's Back button, to return. **Safeguarding** and **Accessibility** are just below the cards.\n\n> Your community chooses which sections to show. If you cannot see one described in this guide, your community has not switched it on.",
             "summary": "Apply to an opportunity, log the hours you give, and get time credits once they are approved.",
             "title": "How does volunteering work?"
           },
           "logging_volunteer_hours": {
-            "body": "You log hours on the **My Hours** tab of the [Volunteering](/volunteering) page.\n\n1. Open [Volunteering](/volunteering) and choose the **My Hours** tab.\n2. Press **Log Hours**.\n3. Choose the **Organisation** you volunteered for.\n4. Enter the **Date**.\n5. Enter the **Hours**, for example 3.5.\n6. Add a note about what you did, if you like.\n7. Press **Log Hours**.\n\nYou see **Hours logged successfully!**\n\n## Rules for logging hours\n\n- Each entry must be between a quarter of an hour and 24 hours. Your community may set a lower limit for one entry.\n- You can log at most 24 hours in total for one day, across all organisations.\n- You cannot log a date in the future, or more than 90 days ago.\n- You can make one entry per organisation per day. If an entry is declined, you can log that day again.\n- You can only choose organisations that have approved your application, or that you belong to.\n\nSome communities do not let members log their own hours. If so, you see a message when you try, and a coordinator records the hours instead.\n\n## Getting your time credits\n\nNew hours show as **Awaiting approval**. The organisation then approves or declines them. In some communities, hours are approved straight away.\n\nWhen hours are approved, time credits go into your wallet automatically. You get a notification.\n\n> Credits are paid for whole hours only. For example, 3.5 approved hours gives you 3 time credits. An entry of less than one hour gives no credits. If you can, log a longer session as one entry.\n\nIf hours are declined, you get a notification. Talk to the organisation if you think there is a mistake.",
+            "body": "You log hours in **My hours and shifts** on the [Volunteering](/volunteering) page.\n\n1. Open [Volunteering](/volunteering) and press **My hours and shifts**.\n2. Press **Log Hours**.\n3. Choose the **Organisation** you volunteered for.\n4. Enter the **Date**.\n5. Enter the **Hours**, for example 3.5.\n6. Add a note about what you did, if you like.\n7. Press **Log Hours**.\n\nYou see **Hours logged successfully!**\n\n## Rules for logging hours\n\n- Each entry must be between a quarter of an hour and 24 hours. Your community may set a lower limit for one entry.\n- You can log at most 24 hours in total for one day, across all organisations.\n- You cannot log a date in the future, or more than 90 days ago.\n- You can make one entry per organisation per day. If an entry is declined, you can log that day again.\n- You can only choose organisations that have approved your application, or that you belong to.\n\nSome communities do not let members log their own hours. If so, you see a message when you try, and a coordinator records the hours instead.\n\n## Getting your time credits\n\nNew hours show as **Awaiting approval**. The organisation then approves or declines them. In some communities, hours are approved straight away.\n\nWhen hours are approved, time credits go into your wallet automatically. You get a notification.\n\n> Credits are paid for whole hours only. For example, 3.5 approved hours gives you 3 time credits. An entry of less than one hour gives no credits. If you can, log a longer session as one entry.\n\nIf hours are declined, you get a notification. Talk to the organisation if you think there is a mistake.",
             "summary": "Record the time you gave so the organisation can approve it and pay you time credits.",
             "title": "How do I log my volunteering hours?"
           },
           "volunteer_hours_and_certificates": {
-            "body": "Your **My Hours** tab shows a summary of the time you have given.\n\n- **Approved & credited**: hours the organisation has approved.\n- **Awaiting approval**: hours still waiting for a decision.\n- **Total Hours**: both added together.\n\nBelow the figures you can see **Hours by Organisation** and **Hours by Month**. These count approved hours only.\n\n## Creating a certificate\n\nA certificate is a record of all your approved volunteering hours, across every organisation. You might use it for a job application or a course.\n\n1. Open [Volunteering](/volunteering).\n2. Choose the **Certificates** tab.\n3. Press **Generate Certificate**.\n4. You see **Certificate generated!**\n\nEach certificate shows your verified hours, the dates they cover and the hours for each organisation.\n\n> Only approved hours count. If none of your hours are approved yet, you see a message saying so. Ask the organisation to review your hours first.\n\nA new certificate includes any hours approved since your last one, so you can create a fresh one whenever you need it.",
+            "body": "**My hours and shifts** shows a summary of the time you have given.\n\n- **Approved & credited**: hours the organisation has approved.\n- **Awaiting approval**: hours still waiting for a decision.\n- **Total Hours**: both added together.\n\nBelow the figures you can see **Hours by Organisation** and **Hours by Month**. These count approved hours only.\n\n## Creating a certificate\n\nA certificate is a record of all your approved volunteering hours, across every organisation. You might use it for a job application or a course.\n\n1. Open [Volunteering](/volunteering).\n2. Press **Certificates**, in the **Support & recognition** card.\n3. Press **Generate Certificate**.\n4. You see **Certificate generated!**\n\nEach certificate shows your verified hours, the dates they cover and the hours for each organisation.\n\n> Only approved hours count. If none of your hours are approved yet, you see a message saying so. Ask the organisation to review your hours first.\n\nA new certificate includes any hours approved since your last one, so you can create a fresh one whenever you need it.",
             "summary": "Check your approved hours and create a certificate that lists them.",
             "title": "Seeing your hours and getting a certificate"
           },
           "volunteer_training_and_incidents": {
-            "body": "If your community uses it, the **Safeguarding** section lets you keep a record of your training. You can also report an incident that happened while you were volunteering.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Safeguarding**.\n\n## Adding a training record\n\n1. Choose **Training Records** and press **Add Training**.\n2. Choose the **Training Type**.\n3. Fill in the **Training Name** and the **Provider**.\n4. Enter the **Date Completed** and any **Expiry Date**.\n5. Press **Save Record**.\n\nThe record starts as **Pending**. A community administrator checks it and marks it **Verified** or **Rejected**.\n\n## Reporting an incident\n\n1. Choose **Incident Reports** and press **Report Incident**.\n2. Give it a **Title**.\n3. Describe what happened in **Description**. Use at least 20 characters.\n4. Choose the **Severity**.\n5. If you like, type a short **Category** that describes the kind of incident.\n6. Press **Report Incident**.\n\nYou see **Incident reported.** Community administrators handle incident reports. The status changes as they work on it, for example **Investigating** or **Resolved**.\n\n> If someone is in immediate danger, contact your local emergency services first. Do not wait for a reply here.",
+            "body": "If your community uses it, the **Safeguarding** section lets you keep a record of your training. You can also report an incident that happened while you were volunteering.\n\nOpen [Volunteering](/volunteering) and press **Safeguarding**, just below the cards.\n\n## Adding a training record\n\n1. Choose **Training Records** and press **Add Training**.\n2. Choose the **Training Type**.\n3. Fill in the **Training Name** and the **Provider**.\n4. Enter the **Date Completed** and any **Expiry Date**.\n5. Press **Save Record**.\n\nThe record starts as **Pending**. A community administrator checks it and marks it **Verified** or **Rejected**.\n\n## Reporting an incident\n\n1. Choose **Incident Reports** and press **Report Incident**.\n2. Give it a **Title**.\n3. Describe what happened in **Description**. Use at least 20 characters.\n4. Choose the **Severity**.\n5. If you like, type a short **Category** that describes the kind of incident.\n6. Press **Report Incident**.\n\nYou see **Incident reported.** Community administrators handle incident reports. The status changes as they work on it, for example **Investigating** or **Resolved**.\n\n> If someone is in immediate danger, contact your local emergency services first. Do not wait for a reply here.",
             "summary": "Add your safeguarding training and report a safeguarding incident while volunteering.",
             "title": "Recording training and reporting an incident"
           },
           "volunteer_wellbeing": {
-            "body": "If your community uses it, the **Wellbeing** section helps you notice when you might be doing too much.\n\n1. Open [Volunteering](/volunteering).\n2. Press **More**, then choose **Wellbeing**.\n3. Press **Log How I'm Feeling**.\n4. Choose a mood: **Struggling**, **Low**, **Okay**, **Good** or **Great**.\n5. Add a note if you like.\n6. Press **Submit Check-in**.\n\nYou see **Mood check-in recorded.**\n\n## What the page shows you\n\n- A **Wellbeing Score** out of 100.\n- How much you have volunteered this week and this month.\n- Your recent check-ins.\n- Suggested rest days, and self-care tips.\n\nIf the page shows a burnout warning, please take it seriously. Rest is part of volunteering well.\n\n> Community administrators can see when the system thinks a volunteer may be at risk of burnout. This is so they can offer support. If you are struggling, you can also talk to the organisation or your community coordinator directly.",
-            "summary": "Record how you feel and get suggestions about when to take a break.",
+            "body": "If your community uses it, the **Wellbeing** section helps you notice when you might be doing too much. It also lets you ask for someone to get in touch when you are not feeling well.\n\n1. Open [Volunteering](/volunteering).\n2. Press **Wellbeing**, in the **Support & recognition** card.\n3. Press **Log How I'm Feeling**.\n4. Choose a mood: **Struggling**, **Low**, **Okay**, **Good** or **Great**.\n5. Add a note if you like.\n6. Press **Submit Check-in**.\n\n## Asking for someone to get in touch\n\nIf you choose **Struggling** or **Low**, you also see **Let someone get in touch with me**. It is ticked to start with. Untick it to keep the check-in to yourself. Nothing is shared unless the box is ticked.\n\nWhen the box is ticked, these people are told, in this order:\n\n- the wellbeing contacts your community has named, and any extra wellbeing email address it has set\n- your community's safeguarding staff\n- the organisations you volunteer with\n- the staff of the community above yours, if your community is part of a larger network\n- your community's contact address, if nobody else could be told\n\nPeople are told at most once a day. If you check in again within a day, your new check-in is added to what they can already see, and nobody is told twice.\n\nYour note is shared only when the box is ticked. Your community's staff can then read it on the alert page. Organisations are told how you feel, but never your note.\n\n## After you check in\n\nThe page tells you what happened: how many people were told, that they were already told in the last day, or that nobody could be told yet. If nobody could be told, the **If you need support now** box is shown beside the message.\n\n## What the page shows you\n\n- A **Wellbeing Score** out of 100, once there is enough activity to work it out.\n- How much you have volunteered this week and this month.\n- Your recent check-ins, and whether each one was shared.\n- Suggested rest days, and self-care tips.\n- The **If you need support now** box, with your community's own advice and links.\n\n> If you are in danger or need help urgently, contact your local emergency services first. Do not wait for someone to get in touch.",
+            "summary": "Record how you feel, choose whether someone should get in touch, and see what happens next.",
             "title": "Checking in on your wellbeing"
           },
           "volunteering_donations": {
-            "body": "If your community uses it, the **Donations** section lets you give money to support the community. Money donations are not the same as time credits. You earn time credits by giving time.\n\nOpen [Volunteering](/volunteering), press **More**, then choose **Donations**. The page says which currency your community takes donations in.\n\n## Donating by card\n\n1. Press **Donate by card**, at the top of the page or on a live campaign.\n2. Enter the **Amount**.\n3. Choose a **Fund** if you want your money used for something in particular.\n4. Add a message, or choose **Donate anonymously**, if you like.\n5. Press **Continue to Payment**.\n6. Enter your card details and pay.\n\nWhen the payment works, you see **Thank You!** Press **View Receipt** to see your receipt. You can also open it later from **My donations**.\n\n## Recording a pledge\n\nIf you plan to pay another way, such as by bank transfer, PayPal or cash:\n\n1. Press **Record a pledge**.\n2. Choose the campaign, or leave **General community support**.\n3. Enter the **Amount** and the **Payment method**. Add the payment reference you used, if you have one, so your community can match it.\n4. Press **Record pledge**.\n\nYour pledge shows as **Pending** until a community administrator confirms the money has arrived.\n\n## Campaigns and your history\n\n**Live campaigns** shows the fundraising campaigns running now, how much has been raised towards each goal, and when each one ends. **Coming up** and **Past campaigns** show the others. **My donations** lists what you have given.",
+            "body": "If your community uses it, the **Donations** section lets you give money to support the community. Money donations are not the same as time credits. You earn time credits by giving time.\n\nOpen [Volunteering](/volunteering) and press **Donations**, in the **Make a difference together** card. The page says which currency your community takes donations in.\n\n## Donating by card\n\n1. Press **Donate by card**, at the top of the page or on a live campaign.\n2. Enter the **Amount**.\n3. Choose a **Fund** if you want your money used for something in particular.\n4. Add a message, or choose **Donate anonymously**, if you like.\n5. Press **Continue to Payment**.\n6. Enter your card details and pay.\n\nWhen the payment works, you see **Thank You!** Press **View Receipt** to see your receipt. You can also open it later from **My donations**.\n\n## Recording a pledge\n\nIf you plan to pay another way, such as by bank transfer, PayPal or cash:\n\n1. Press **Record a pledge**.\n2. Choose the campaign, or leave **General community support**.\n3. Enter the **Amount** and the **Payment method**. Add the payment reference you used, if you have one, so your community can match it.\n4. Press **Record pledge**.\n\nYour pledge shows as **Pending** until a community administrator confirms the money has arrived.\n\n## Campaigns and your history\n\n**Live campaigns** shows the fundraising campaigns running now, how much has been raised towards each goal, and when each one ends. **Coming up** and **Past campaigns** show the others. **My donations** lists what you have given.",
             "summary": "Give money by card or record a pledge. This is separate from time credits.",
             "title": "Donating money to your community"
           }
@@ -56444,9 +56462,10 @@ export default interface Resources {
       "artwork_file": "Show artwork",
       "artwork_url": "Artwork URL",
       "audio_file": "Hosted audio file",
-      "audio_file_hint": "Upload audio for private NEXUS hosting, or use an external audio URL.",
+      "audio_file_hint": "Upload your recording and we store it for you. This is the easiest way.",
       "audio_url": "Audio URL",
       "audio_url_disabled_file_selected": "Using the selected hosted file. Clear it to use an external audio URL.",
+      "audio_url_hint": "Or paste a direct link to an audio file (https://…/episode.mp3), not a link to a web page.",
       "author_name": "Directory author name",
       "category": "Category",
       "chapters": "Chapters",
@@ -56577,6 +56596,27 @@ export default interface Resources {
         "warnings": "Recommended fixes"
       },
       "file_too_large": "That file is larger than the {{max}} MB limit for this community.",
+      "guide": {
+        "create_body": "A show is the home for your episodes. Give it a title, a square picture and a short description. Choose \"{{public}}\" if people outside this community should be able to listen in podcast apps.",
+        "create_title": "1. Create your show",
+        "intro": "Four steps. Open any of them for the details.",
+        "link_body": "Paste the link to the audio file itself into \"{{url_field}}\". It starts with https:// and usually ends in .mp3.",
+        "link_test": "To check a link, open it in a new browser tab. If the recording starts playing in a plain audio player, the link will work here. If you see a web page instead, it will not.",
+        "link_title": "Or: link to audio stored somewhere else",
+        "link_wont_work": "Links to web pages will not play here. That includes Spotify, Apple Podcasts, SoundCloud and YouTube pages, and Google Drive or Dropbox \"share\" links.",
+        "publish_body": "Publish the show, then each episode. Your community team may need to approve them first; until then you will see \"{{pending}}\". Press \"{{validate}}\" to check what podcast apps will need.",
+        "publish_title": "3. Publish",
+        "share_members": "Show page link: for members of this community. They sign in and listen here.",
+        "share_public": "Podcast app link (RSS): for \"{{public}}\" shows only, and anyone can use it without signing in. Paste it into a podcast app that can add a show by link, or submit it to directories such as Apple Podcasts or Spotify, which check a show before listing it.",
+        "share_title": "4. Share it",
+        "share_where": "Once your show is published and approved, its card under \"{{my_shows}}\" shows links you can copy:",
+        "title": "How to publish and share your podcast",
+        "upload_body": "Under \"{{add_episode}}\", choose your recording in \"{{file_field}}\". MP3 works best; M4A, WAV and OGG also work, up to {{max}} MB. We store the file for you and check it for viruses. That usually takes a few minutes. You can publish the episode once it shows \"{{clean}}\".",
+        "upload_title": "2. Add an episode: upload your recording here (easiest)",
+        "where_archive": "The Internet Archive (archive.org) stores recordings free of charge, for audio you are happy to make public. After uploading, open your item's page, find \"VBR MP3\" under \"Download Options\", right-click it and copy the link.",
+        "where_hosts": "Podcast hosting services such as Spotify for Creators, Buzzsprout, Podbean and Acast store your episodes and send them to podcast apps. Many have a free plan with limits, for example on hours of audio, number of episodes or how long episodes stay online. Limits change, so check each service's current terms. To use one of their episodes here, copy its audio-file link, often labelled \"direct link\", \"download\" or \"MP3\".",
+        "where_title": "Where can I store my audio?"
+      },
       "load_failed": "Your podcast studio could not be loaded.",
       "manage_show": "Manage show",
       "max_file_size": "Max {{max}} MB.",
@@ -56613,6 +56653,18 @@ export default interface Resources {
       "save_failed": "Could not save changes.",
       "scheduled_for_chip": "Scheduled for {{date}}",
       "select_show": "Select show",
+      "share": {
+        "copied": "Link copied.",
+        "copy": "Copy link",
+        "copy_failed": "Could not copy. Select the link above and copy it yourself.",
+        "feed_link": "Podcast app link (RSS, anyone)",
+        "feed_link_hint": "Paste it into a podcast app, or submit it to directories such as Apple Podcasts and Spotify.",
+        "feed_needs_public": "Only members can listen to this show. Set it to \"{{public}}\" to get a podcast app link anyone can use.",
+        "not_ready": "Share links appear here once this show is published and approved.",
+        "show_link": "Show page (members)",
+        "show_link_hint": "Members sign in, then listen here.",
+        "title": "Share links"
+      },
       "show_archived": "Show archived.",
       "show_created": "Show created.",
       "show_deleted": "Show deleted.",
@@ -61689,6 +61741,68 @@ export default interface Resources {
     },
     "how_it_works": "Find an opportunity and apply. Once you're accepted, log the hours you give. When the organisation approves your hours, you receive 1 time credit for every hour — added straight to your wallet.",
     "how_it_works_title": "How volunteering works",
+    "hub": {
+      "activity_description": "Keep track of your applications, hours and upcoming shifts.",
+      "activity_title": "My volunteering",
+      "back_home": "Volunteering home",
+      "explore": "Explore opportunities",
+      "find_description": "Browse opportunities that match your interests, skills and availability.",
+      "find_opportunities": "Find opportunities",
+      "find_title": "Find your next role",
+      "here_to_support": "Here to support you",
+      "here_to_support_description": "A safe, inclusive and welcoming volunteering community.",
+      "hint_to_answer": "To answer: {{number}}",
+      "hint_waiting": "Waiting: {{number}}",
+      "hours_approved": "Hours approved: {{number}}",
+      "intro": {
+        "accessibility": "Tell organisations about any support or adjustments you need to volunteer.",
+        "alerts": "Organisations that need volunteers at short notice. Tell them whether you can help.",
+        "applications": "The roles you've applied for, and whether each organisation has said yes.",
+        "certificates": "Download a certificate showing all your approved volunteering hours.",
+        "community-projects": "Ideas for volunteering projects from people in the community. Suggest your own.",
+        "credentials": "Your training and qualifications, so organisations can see what you hold and when it runs out.",
+        "donations": "Give money to support this community's fundraising. This is separate from time credits.",
+        "expenses": "Claim back money you spent while volunteering, such as travel.",
+        "group-signups": "Volunteer together with friends or team members by signing up as a group.",
+        "hours": "Record the hours you've given, see your shifts, and check which hours are approved.",
+        "recommended": "Shifts picked for you, based on your skills and when you're free.",
+        "safeguarding": "Your safeguarding training, and where to report a concern about someone's safety.",
+        "swaps": "Swap a shift with another volunteer, or answer swap requests sent to you.",
+        "waitlist": "Full shifts you're waiting to get a place on.",
+        "wellbeing": "Check in on how you're feeling. If things are hard, you can ask for someone to get in touch."
+      },
+      "links": {
+        "accessibility": "Accessibility",
+        "alerts": "Urgent requests",
+        "applications": "My applications",
+        "certificates": "Certificates",
+        "community-projects": "Community projects",
+        "credentials": "Qualifications",
+        "donations": "Donations",
+        "expenses": "Expenses",
+        "group-signups": "Group sign-ups",
+        "hours": "My hours and shifts",
+        "opportunities": "All opportunities",
+        "recommended": "Recommended for you",
+        "safeguarding": "Safeguarding",
+        "swaps": "Shift swaps",
+        "waitlist": "Waiting lists",
+        "wellbeing": "Wellbeing"
+      },
+      "more_opportunities": "More opportunities",
+      "navigation": "Explore volunteering",
+      "next_shift": "Next shift: {{when}} · {{title}}",
+      "search_results": "Search results",
+      "subtitle": "Find a role. Join a team. See the difference you make.",
+      "support_description": "Claim expenses, keep your qualifications and certificates, and look after your wellbeing.",
+      "support_title": "Support & recognition",
+      "title": "Make a difference, your way.",
+      "together_description": "Volunteer with others and support community-led projects.",
+      "together_title": "Make a difference together",
+      "urgent_action": "See urgent requests",
+      "urgent_description": "An organisation needs volunteers at short notice. Please let them know whether you can help.",
+      "urgent_title": "Urgent requests for help: {{number}}"
+    },
     "load_failed": "Failed to load applications. Please try again.",
     "load_more": "Load more",
     "loading": "Loading...",
@@ -62714,7 +62828,10 @@ export default interface Resources {
       "no_data_title": "No wellbeing data yet",
       "note_label": "Add a note (optional)",
       "note_placeholder": "How's your energy level? Anything on your mind?",
-      "outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
+      "outcome_already_told_on": "Your community was already told on {{date}}. This check-in has been added to what they can see.",
+      "outcome_already_told_recently": "Your community was already told in the last day. This check-in has been added to what they can see.",
+      "outcome_already_told_today": "Your community was already told earlier today, at {{time}}. This check-in has been added to what they can see.",
+      "outcome_already_told_yesterday": "Your community was already told yesterday, at {{time}}. This check-in has been added to what they can see.",
       "outcome_dismiss": "Dismiss",
       "outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
       "outcome_private": "Only you can see this check-in.",
@@ -62723,6 +62840,7 @@ export default interface Resources {
       "outcome_told_self_only": "You are the only member of your community's team, so nobody else has been told.",
       "outcome_what_next": "What happens next",
       "outcome_what_next_desc": "Someone who was told will read your check-in and get in touch.",
+      "rate_limited": "You have done this several times in a short while. Please wait a moment and try again.",
       "recent_checkins": "Recent Mood Check-ins",
       "rest_days_desc": "Based on your recent activity, we recommend taking a break on these days:",
       "risk_high": "High Risk",
@@ -62744,6 +62862,8 @@ export default interface Resources {
       "submit_checkin": "Submit Check-in",
       "suggested_rest_days": "Suggested Rest Days",
       "support_heading": "If you need support now",
+      "switched_off_desc": "Your community has switched wellbeing check-ins off. If you need support, contact your community's team.",
+      "switched_off_title": "Wellbeing check-ins are switched off",
       "this_month": "This Month",
       "this_week": "This Week",
       "tip_boundaries": "Set boundaries on your availability",

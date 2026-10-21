@@ -218,7 +218,40 @@
       "listen_count_one": "{{count}} écoutes",
       "listen_count_other": "{{count}} écoutes"
     },
-    "chapter_format_warning_many": "Les lignes de chapitre {{count}} n'ont pas d'horodatage et commenceront à 0h00."
+    "chapter_format_warning_many": "Les lignes de chapitre {{count}} n'ont pas d'horodatage et commenceront à 0h00.",
+    "guide": {
+      "title": "Comment publier et partager votre podcast",
+      "intro": "Quatre étapes. Ouvrez-en une pour voir les détails.",
+      "create_title": "1. Créez votre émission",
+      "create_body": "Une émission regroupe vos épisodes. Donnez-lui un titre, une image carrée et une courte description. Choisissez « {{public}} » si des personnes extérieures à cette communauté doivent pouvoir l’écouter dans des applications de podcast.",
+      "upload_title": "2. Ajoutez un épisode : téléversez votre enregistrement ici (le plus simple)",
+      "upload_body": "Dans « {{add_episode}} », choisissez votre enregistrement dans « {{file_field}} ». Le MP3 fonctionne le mieux ; M4A, WAV et OGG fonctionnent aussi, jusqu’à {{max}} Mo. Nous stockons le fichier pour vous et vérifions qu’il ne contient pas de virus. Cela prend généralement quelques minutes. Vous pouvez publier l’épisode dès qu’il affiche « {{clean}} ».",
+      "link_title": "Ou : un lien vers un fichier audio stocké ailleurs",
+      "link_body": "Collez dans « {{url_field}} » le lien vers le fichier audio lui-même. Il commence par https:// et se termine généralement par .mp3.",
+      "link_test": "Pour vérifier un lien, ouvrez-le dans un nouvel onglet. Si l’enregistrement démarre dans un simple lecteur audio, le lien fonctionnera ici. Si vous voyez une page web, il ne fonctionnera pas.",
+      "link_wont_work": "Les liens vers des pages web ne peuvent pas être lus ici. Cela comprend les pages Spotify, Apple Podcasts, SoundCloud et YouTube, ainsi que les liens de « partage » Google Drive ou Dropbox.",
+      "where_title": "Où stocker mes fichiers audio ?",
+      "where_hosts": "Les services d’hébergement de podcasts comme Spotify for Creators, Buzzsprout, Podbean et Acast stockent vos épisodes et les diffusent dans les applications de podcast. Beaucoup proposent une offre gratuite avec des limites, par exemple sur les heures d’audio, le nombre d’épisodes ou la durée pendant laquelle ils restent en ligne. Ces limites évoluent : vérifiez les conditions actuelles de chaque service. Pour utiliser ici l’un de leurs épisodes, copiez le lien du fichier audio, souvent appelé « lien direct », « télécharger » ou « MP3 ».",
+      "where_archive": "Internet Archive (archive.org) stocke gratuitement des enregistrements, pour un audio que vous acceptez de rendre public. Après le téléversement, ouvrez la page de votre élément, repérez « VBR MP3 » sous « Download Options », faites un clic droit dessus et copiez le lien.",
+      "publish_title": "3. Publiez",
+      "publish_body": "Publiez l’émission, puis chaque épisode. L’équipe de votre communauté devra peut-être les approuver d’abord ; d’ici là, vous verrez « {{pending}} ». Utilisez « {{validate}} » pour voir ce dont les applications de podcast auront besoin.",
+      "share_title": "4. Partagez",
+      "share_where": "Une fois votre émission publiée et approuvée, sa fiche sous « {{my_shows}} » affiche des liens à copier :",
+      "share_members": "Lien de la page de l’émission : pour les membres de cette communauté. Ils se connectent et écoutent ici.",
+      "share_public": "Lien pour applications de podcast (RSS) : uniquement pour les émissions « {{public}} », utilisable par tous sans se connecter. Collez-le dans une application de podcast qui permet d’ajouter une émission par lien, ou proposez-le à des annuaires comme Apple Podcasts ou Spotify, qui vérifient une émission avant de la référencer."
+    },
+    "share": {
+      "title": "Liens de partage",
+      "show_link": "Page de l’émission (membres)",
+      "show_link_hint": "Les membres se connectent, puis écoutent ici.",
+      "feed_link": "Lien pour applications de podcast (RSS, tout le monde)",
+      "feed_link_hint": "Collez-le dans une application de podcast, ou proposez-le à des annuaires comme Apple Podcasts et Spotify.",
+      "copy": "Copier le lien",
+      "copied": "Lien copié.",
+      "copy_failed": "Copie impossible. Sélectionnez le lien ci-dessus et copiez-le vous-même.",
+      "not_ready": "Les liens de partage apparaîtront ici une fois l’émission publiée et approuvée.",
+      "feed_needs_public": "Seuls les membres peuvent écouter cette émission. Passez-la en « {{public}} » pour obtenir un lien pour applications de podcast utilisable par tous."
+    }
   },
   "fields": {
     "artwork_file": "Image du podcast",
@@ -241,7 +274,7 @@
     "artwork_url": "URL de l’illustration",
     "audio_url": "URL du fichier audio",
     "audio_file": "Fichier audio hébergé",
-    "audio_file_hint": "Téléchargez de l'audio pour un hébergement NEXUS privé ou utilisez une URL audio externe.",
+    "audio_file_hint": "Téléversez votre enregistrement et nous le stockons pour vous. C’est le plus simple.",
     "audio_url_disabled_file_selected": "Le fichier hébergé sélectionné est utilisé. Effacez-le pour utiliser une URL audio externe.",
     "clear_audio_file": "Effacer le fichier sélectionné",
     "visibility": "Visibilité",
@@ -252,7 +285,8 @@
     "episode_type": "Type d'épisode",
     "transcript": "Transcription",
     "chapters": "Chapitres",
-    "chapters_hint": "Un chapitre par ligne, par exemple : 00:30 Introductions"
+    "chapters_hint": "Un chapitre par ligne, par exemple : 00:30 Introductions",
+    "audio_url_hint": "Ou collez un lien direct vers un fichier audio (https://…/episode.mp3), pas un lien vers une page web."
   },
   "visibility": {
     "public": "Public",

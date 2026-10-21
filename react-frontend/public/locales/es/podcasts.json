@@ -218,7 +218,40 @@
       "listen_count_one": "{{count}} escucha",
       "listen_count_other": "{{count}} escuchas"
     },
-    "chapter_format_warning_many": "{{count}} líneas de capítulo no tienen marca de tiempo y comenzarán en 0:00."
+    "chapter_format_warning_many": "{{count}} líneas de capítulo no tienen marca de tiempo y comenzarán en 0:00.",
+    "guide": {
+      "title": "Cómo publicar y compartir tu pódcast",
+      "intro": "Cuatro pasos. Abre cualquiera para ver los detalles.",
+      "create_title": "1. Crea tu programa",
+      "create_body": "Un programa reúne tus episodios. Ponle un título, una imagen cuadrada y una descripción breve. Elige \"{{public}}\" si quieres que personas de fuera de esta comunidad puedan escucharlo en aplicaciones de pódcast.",
+      "upload_title": "2. Añade un episodio: sube aquí tu grabación (lo más fácil)",
+      "upload_body": "En \"{{add_episode}}\", elige tu grabación en \"{{file_field}}\". MP3 es lo que mejor funciona; también sirven M4A, WAV y OGG, hasta {{max}} MB. Guardamos el archivo por ti y comprobamos que no tenga virus. Suele tardar unos minutos. Podrás publicar el episodio cuando muestre \"{{clean}}\".",
+      "link_title": "O bien: enlaza un audio guardado en otro sitio",
+      "link_body": "Pega en \"{{url_field}}\" el enlace al propio archivo de audio. Empieza por https:// y normalmente termina en .mp3.",
+      "link_test": "Para comprobar un enlace, ábrelo en una pestaña nueva. Si la grabación empieza a sonar en un reproductor de audio sencillo, el enlace funcionará aquí. Si ves una página web, no funcionará.",
+      "link_wont_work": "Los enlaces a páginas web no se reproducen aquí. Eso incluye las páginas de Spotify, Apple Podcasts, SoundCloud y YouTube, y los enlaces para \"compartir\" de Google Drive o Dropbox.",
+      "where_title": "¿Dónde puedo guardar mi audio?",
+      "where_hosts": "Los servicios de alojamiento de pódcast como Spotify for Creators, Buzzsprout, Podbean y Acast guardan tus episodios y los envían a las aplicaciones de pódcast. Muchos tienen un plan gratuito con límites, por ejemplo de horas de audio, número de episodios o tiempo que los episodios siguen en línea. Los límites cambian, así que consulta las condiciones actuales de cada servicio. Para usar aquí uno de sus episodios, copia el enlace al archivo de audio, que suele llamarse \"enlace directo\", \"descargar\" o \"MP3\".",
+      "where_archive": "Internet Archive (archive.org) guarda grabaciones gratis, para audio que no te importe hacer público. Después de subirlo, abre la página de tu elemento, busca \"VBR MP3\" en \"Download Options\", haz clic derecho y copia el enlace.",
+      "publish_title": "3. Publica",
+      "publish_body": "Publica el programa y luego cada episodio. Puede que el equipo de tu comunidad tenga que aprobarlos primero; mientras tanto verás \"{{pending}}\". Pulsa \"{{validate}}\" para ver qué necesitarán las aplicaciones de pódcast.",
+      "share_title": "4. Compártelo",
+      "share_where": "Cuando tu programa esté publicado y aprobado, su tarjeta en \"{{my_shows}}\" mostrará enlaces para copiar:",
+      "share_members": "Enlace a la página del programa: para miembros de esta comunidad. Inician sesión y lo escuchan aquí.",
+      "share_public": "Enlace para aplicaciones de pódcast (RSS): solo para programas \"{{public}}\", y cualquiera puede usarlo sin iniciar sesión. Pégalo en una aplicación de pódcast que permita añadir un programa por enlace, o envíalo a directorios como Apple Podcasts o Spotify, que revisan un programa antes de incluirlo."
+    },
+    "share": {
+      "title": "Enlaces para compartir",
+      "show_link": "Página del programa (miembros)",
+      "show_link_hint": "Los miembros inician sesión y lo escuchan aquí.",
+      "feed_link": "Enlace para aplicaciones de pódcast (RSS, cualquiera)",
+      "feed_link_hint": "Pégalo en una aplicación de pódcast o envíalo a directorios como Apple Podcasts y Spotify.",
+      "copy": "Copiar enlace",
+      "copied": "Enlace copiado.",
+      "copy_failed": "No se pudo copiar. Selecciona el enlace de arriba y cópialo tú.",
+      "not_ready": "Los enlaces para compartir aparecerán aquí cuando este programa esté publicado y aprobado.",
+      "feed_needs_public": "Solo los miembros pueden escuchar este programa. Ponlo en \"{{public}}\" para obtener un enlace para aplicaciones de pódcast que pueda usar cualquiera."
+    }
   },
   "fields": {
     "artwork_file": "Imagen del programa",
@@ -241,7 +274,7 @@
     "artwork_url": "URL de la carátula",
     "audio_url": "URL del audio",
     "audio_file": "Archivo de audio alojado",
-    "audio_file_hint": "Sube el audio para alojarlo de forma privada en NEXUS o usa una URL de audio externa.",
+    "audio_file_hint": "Sube tu grabación y la guardamos por ti. Es la forma más fácil.",
     "audio_url_disabled_file_selected": "Se está usando el archivo alojado seleccionado. Bórralo para usar una URL de audio externa.",
     "clear_audio_file": "Borrar archivo seleccionado",
     "visibility": "Visibilidad",
@@ -252,7 +285,8 @@
     "episode_type": "Tipo de episodio",
     "transcript": "Transcripción",
     "chapters": "Capítulos",
-    "chapters_hint": "Un capítulo por línea, por ejemplo: 00:30 Introducciones"
+    "chapters_hint": "Un capítulo por línea, por ejemplo: 00:30 Introducciones",
+    "audio_url_hint": "O pega un enlace directo a un archivo de audio (https://…/episodio.mp3), no un enlace a una página web."
   },
   "visibility": {
     "public": "Público",

@@ -2500,6 +2500,8 @@ class PodcastControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertSame(250, $response->json('meta.max_audio_size_mb'));
         $this->assertContains('audio/mpeg', $response->json('meta.allowed_audio_mimes'));
+        // The studio's share box offers the podcast-app (RSS) link only when feeds are on.
+        $this->assertTrue($response->json('meta.enable_rss_feed'));
     }
 
     public function test_admin_index_supports_independent_pagination(): void

@@ -230,7 +230,40 @@
     },
     "chapter_format_warning_few": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
     "chapter_format_warning_many": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
-    "chapter_format_warning_two": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00."
+    "chapter_format_warning_two": "Níl stampa ama ar línte caibidle {{count}} agus tosóidh siad ag 0:00.",
+    "guide": {
+      "title": "Conas do phodchraoladh a fhoilsiú agus a roinnt",
+      "intro": "Ceithre chéim. Oscail aon cheann acu chun na sonraí a fheiceáil.",
+      "create_title": "1. Cruthaigh do chlár",
+      "create_body": "Is é an clár baile do chuid eipeasóidí. Tabhair teideal, pictiúr cearnógach agus cur síos gearr dó. Roghnaigh \"{{public}}\" más mian leat go mbeadh daoine lasmuigh den phobal seo in ann éisteacht leis in aipeanna podchraolta.",
+      "upload_title": "2. Cuir eipeasóid leis: uaslódáil do thaifeadadh anseo (an bealach is éasca)",
+      "upload_body": "Faoi \"{{add_episode}}\", roghnaigh do thaifeadadh in \"{{file_field}}\". Is fearr a oibríonn MP3; oibríonn M4A, WAV agus OGG freisin, suas le {{max}} MB. Stórálaimid an comhad duit agus seiceálaimid é le haghaidh víreas. Tógann sé sin cúpla nóiméad de ghnáth. Is féidir leat an eipeasóid a fhoilsiú nuair a thaispeánann sí \"{{clean}}\".",
+      "link_title": "Nó: nasc le fuaim atá stóráilte áit éigin eile",
+      "link_body": "Greamaigh nasc chuig an gcomhad fuaime féin in \"{{url_field}}\". Tosaíonn sé le https:// agus críochnaíonn sé le .mp3 de ghnáth.",
+      "link_test": "Chun nasc a sheiceáil, oscail é i gcluaisín nua brabhsálaí. Má thosaíonn an taifeadadh ag seinm i seinnteoir fuaime simplí, oibreoidh an nasc anseo. Má fheiceann tú leathanach gréasáin ina ionad, ní oibreoidh sé.",
+      "link_wont_work": "Ní sheinnfear naisc chuig leathanaigh ghréasáin anseo. Áirítear leis sin leathanaigh Spotify, Apple Podcasts, SoundCloud agus YouTube, agus naisc \"roinnte\" Google Drive nó Dropbox.",
+      "where_title": "Cá háit ar féidir liom mo chuid fuaime a stóráil?",
+      "where_hosts": "Stórálann seirbhísí óstála podchraoltaí ar nós Spotify for Creators, Buzzsprout, Podbean agus Acast do chuid eipeasóidí agus seolann siad chuig aipeanna podchraolta iad. Tá plean saor in aisce ag go leor acu, ach le teorainneacha, mar shampla ar uaireanta fuaime, ar líon na n-eipeasóidí nó ar an bhfad a fhanann eipeasóidí ar líne. Athraíonn na teorainneacha, mar sin seiceáil téarmaí reatha gach seirbhíse. Chun ceann dá n-eipeasóidí a úsáid anseo, cóipeáil nasc an chomhaid fuaime, a dtugtar \"nasc díreach\", \"íoslódáil\" nó \"MP3\" air go minic.",
+      "where_archive": "Stórálann an Internet Archive (archive.org) taifeadtaí saor in aisce, le haghaidh fuaime ar mhaith leat a chur ar fáil go poiblí. Tar éis duit é a uaslódáil, oscail leathanach do mhíre, aimsigh \"VBR MP3\" faoi \"Download Options\", deaschliceáil air agus cóipeáil an nasc.",
+      "publish_title": "3. Foilsigh",
+      "publish_body": "Foilsigh an clár, agus ansin gach eipeasóid. B’fhéidir go mbeidh ar fhoireann do phobail iad a cheadú ar dtús; go dtí sin feicfidh tú \"{{pending}}\". Brúigh \"{{validate}}\" chun a fheiceáil cad a bheidh ag teastáil ó aipeanna podchraolta.",
+      "share_title": "4. Roinn é",
+      "share_where": "Nuair a bheidh do chlár foilsithe agus ceadaithe, taispeánfaidh a chárta faoi \"{{my_shows}}\" naisc is féidir leat a chóipeáil:",
+      "share_members": "Nasc chuig leathanach an chláir: do bhaill an phobail seo. Síníonn siad isteach agus éisteann siad anseo.",
+      "share_public": "Nasc d’aipeanna podchraolta (RSS): do chláir \"{{public}}\" amháin, agus is féidir le duine ar bith é a úsáid gan síniú isteach. Greamaigh é in aip podchraolta ar féidir léi clár a chur leis trí nasc, nó cuir isteach chuig eolairí ar nós Apple Podcasts nó Spotify é, a sheiceálann clár sula liostaíonn siad é."
+    },
+    "share": {
+      "title": "Naisc le roinnt",
+      "show_link": "Leathanach an chláir (baill)",
+      "show_link_hint": "Síníonn baill isteach, agus ansin éisteann siad anseo.",
+      "feed_link": "Nasc d’aipeanna podchraolta (RSS, do chách)",
+      "feed_link_hint": "Greamaigh é in aip podchraolta, nó cuir isteach chuig eolairí ar nós Apple Podcasts agus Spotify é.",
+      "copy": "Cóipeáil an nasc",
+      "copied": "Cóipeáladh an nasc.",
+      "copy_failed": "Níorbh fhéidir é a chóipeáil. Roghnaigh an nasc thuas agus cóipeáil tú féin é.",
+      "not_ready": "Beidh naisc le roinnt le feiceáil anseo nuair a bheidh an clár seo foilsithe agus ceadaithe.",
+      "feed_needs_public": "Ní féidir ach le baill éisteacht leis an gclár seo. Socraigh é go \"{{public}}\" chun nasc d’aipeanna podchraolta a fháil ar féidir le duine ar bith a úsáid."
+    }
   },
   "fields": {
     "artwork_file": "Íomhá an phodchraolta",
@@ -253,7 +286,7 @@
     "artwork_url": "URL na híomhá clúdaigh",
     "audio_url": "URL fuaime",
     "audio_file": "Comhad fuaime arna óstáil",
-    "audio_file_hint": "Uaslódáil fuaime le haghaidh óstáil phríobháideach NEXUS, nó úsáid URL fuaime seachtrach.",
+    "audio_file_hint": "Uaslódáil do thaifeadadh agus stórálfaimid duit é. Is é seo an bealach is éasca.",
     "audio_url_disabled_file_selected": "Tá an comhad óstáilte roghnaithe in úsáid. Glan é chun URL fuaime seachtrach a úsáid.",
     "clear_audio_file": "Glan an comhad roghnaithe",
     "visibility": "Infheictheacht",
@@ -264,7 +297,8 @@
     "episode_type": "Cineál eipeasóid",
     "transcript": "Tras-scríbhinn",
     "chapters": "Caibidlí",
-    "chapters_hint": "Caibidil amháin in aghaidh an líne, mar shampla: 00:30 Réamhrá"
+    "chapters_hint": "Caibidil amháin in aghaidh an líne, mar shampla: 00:30 Réamhrá",
+    "audio_url_hint": "Nó greamaigh nasc díreach chuig comhad fuaime (https://…/eipeasoid.mp3), seachas nasc chuig leathanach gréasáin."
   },
   "visibility": {
     "public": "Poiblí",

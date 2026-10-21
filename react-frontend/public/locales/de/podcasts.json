@@ -212,6 +212,39 @@
       "last_days": "Die Höraktivität umfasst die letzten {{days}} Tage.",
       "listen_count_one": "{{count}} Wiedergaben",
       "listen_count_other": "{{count}} Wiedergaben"
+    },
+    "guide": {
+      "title": "So veröffentlichen und teilen Sie Ihren Podcast",
+      "intro": "Vier Schritte. Öffnen Sie einen Schritt, um die Einzelheiten zu sehen.",
+      "create_title": "1. Sendung anlegen",
+      "create_body": "Eine Sendung ist das Zuhause Ihrer Folgen. Geben Sie ihr einen Titel, ein quadratisches Bild und eine kurze Beschreibung. Wählen Sie „{{public}}“, wenn auch Menschen außerhalb dieser Gemeinschaft sie in Podcast-Apps hören sollen.",
+      "upload_title": "2. Folge hinzufügen: Aufnahme hier hochladen (am einfachsten)",
+      "upload_body": "Wählen Sie unter „{{add_episode}}“ Ihre Aufnahme im Feld „{{file_field}}“. MP3 eignet sich am besten; M4A, WAV und OGG funktionieren auch, bis {{max}} MB. Wir speichern die Datei für Sie und prüfen sie auf Viren. Das dauert meist ein paar Minuten. Sobald „{{clean}}“ angezeigt wird, können Sie die Folge veröffentlichen.",
+      "link_title": "Oder: auf Audio verlinken, das woanders gespeichert ist",
+      "link_body": "Fügen Sie in „{{url_field}}“ den Link zur Audiodatei selbst ein. Er beginnt mit https:// und endet meist auf .mp3.",
+      "link_test": "So prüfen Sie einen Link: Öffnen Sie ihn in einem neuen Browser-Tab. Startet die Aufnahme in einem einfachen Audioplayer, funktioniert der Link hier. Sehen Sie stattdessen eine Webseite, funktioniert er nicht.",
+      "link_wont_work": "Links zu Webseiten werden hier nicht abgespielt. Dazu gehören Seiten von Spotify, Apple Podcasts, SoundCloud und YouTube sowie „Teilen“-Links von Google Drive oder Dropbox.",
+      "where_title": "Wo kann ich meine Audiodateien speichern?",
+      "where_hosts": "Podcast-Hosting-Dienste wie Spotify for Creators, Buzzsprout, Podbean und Acast speichern Ihre Folgen und liefern sie an Podcast-Apps aus. Viele haben einen kostenlosen Tarif mit Grenzen, zum Beispiel bei den Audiostunden, der Zahl der Folgen oder wie lange Folgen online bleiben. Diese Grenzen ändern sich; prüfen Sie daher die aktuellen Bedingungen des jeweiligen Dienstes. Um eine Folge von dort hier zu nutzen, kopieren Sie den Link zur Audiodatei, oft „Direktlink“, „Download“ oder „MP3“ genannt.",
+      "where_archive": "Das Internet Archive (archive.org) speichert Aufnahmen kostenlos, für Audio, das Sie öffentlich machen möchten. Öffnen Sie nach dem Hochladen die Seite Ihres Eintrags, suchen Sie unter „Download Options“ den Eintrag „VBR MP3“, klicken Sie mit der rechten Maustaste darauf und kopieren Sie den Link.",
+      "publish_title": "3. Veröffentlichen",
+      "publish_body": "Veröffentlichen Sie die Sendung und danach jede Folge. Möglicherweise muss das Team Ihrer Gemeinschaft sie zuerst freigeben; bis dahin sehen Sie „{{pending}}“. Mit „{{validate}}“ prüfen Sie, was Podcast-Apps benötigen.",
+      "share_title": "4. Teilen",
+      "share_where": "Sobald Ihre Sendung veröffentlicht und freigegeben ist, zeigt ihre Karte unter „{{my_shows}}“ Links zum Kopieren:",
+      "share_members": "Link zur Sendungsseite: für Mitglieder dieser Gemeinschaft. Sie melden sich an und hören hier.",
+      "share_public": "Podcast-App-Link (RSS): nur für Sendungen mit „{{public}}“, und jeder kann ihn ohne Anmeldung nutzen. Fügen Sie ihn in eine Podcast-App ein, die Sendungen per Link hinzufügen kann, oder reichen Sie ihn bei Verzeichnissen wie Apple Podcasts oder Spotify ein, die eine Sendung vor der Aufnahme prüfen."
+    },
+    "share": {
+      "title": "Links zum Teilen",
+      "show_link": "Sendungsseite (Mitglieder)",
+      "show_link_hint": "Mitglieder melden sich an und hören dann hier.",
+      "feed_link": "Podcast-App-Link (RSS, für alle)",
+      "feed_link_hint": "In eine Podcast-App einfügen oder bei Verzeichnissen wie Apple Podcasts und Spotify einreichen.",
+      "copy": "Link kopieren",
+      "copied": "Link kopiert.",
+      "copy_failed": "Kopieren nicht möglich. Markieren Sie den Link oben und kopieren Sie ihn selbst.",
+      "not_ready": "Links zum Teilen erscheinen hier, sobald diese Sendung veröffentlicht und freigegeben ist.",
+      "feed_needs_public": "Nur Mitglieder können diese Sendung hören. Stellen Sie sie auf „{{public}}“, um einen Podcast-App-Link für alle zu erhalten."
     }
   },
   "fields": {
@@ -235,7 +268,7 @@
     "artwork_url": "URL des Titelbilds",
     "audio_url": "Audio-URL",
     "audio_file": "Gehostete Audiodatei",
-    "audio_file_hint": "Laden Sie Audio für privates NEXUS-Hosting hoch oder verwenden Sie eine externe Audio-URL.",
+    "audio_file_hint": "Laden Sie Ihre Aufnahme hoch, und wir speichern sie für Sie. Das ist der einfachste Weg.",
     "audio_url_disabled_file_selected": "Die ausgewählte gehostete Datei wird verwendet. Entfernen Sie sie, um eine externe Audio-URL zu nutzen.",
     "clear_audio_file": "Ausgewählte Datei entfernen",
     "visibility": "Sichtbarkeit",
@@ -246,7 +279,8 @@
     "episode_type": "Episodentyp",
     "transcript": "Transkript",
     "chapters": "Kapitel",
-    "chapters_hint": "Ein Kapitel pro Zeile, zum Beispiel: 00:30 Einführungen"
+    "chapters_hint": "Ein Kapitel pro Zeile, zum Beispiel: 00:30 Einführungen",
+    "audio_url_hint": "Oder fügen Sie einen Direktlink zu einer Audiodatei ein (https://…/folge.mp3), keinen Link zu einer Webseite."
   },
   "visibility": {
     "public": "Öffentlich",

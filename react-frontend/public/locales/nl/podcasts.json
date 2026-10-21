@@ -212,6 +212,39 @@
       "last_days": "De luisteractiviteit beslaat de laatste {{days}} dagen.",
       "listen_count_one": "{{count}} weergaven",
       "listen_count_other": "{{count}} weergaven"
+    },
+    "guide": {
+      "title": "Zo publiceer en deel je je podcast",
+      "intro": "Vier stappen. Open een stap voor de details.",
+      "create_title": "1. Maak je programma aan",
+      "create_body": "Een programma is de plek voor je afleveringen. Geef het een titel, een vierkante afbeelding en een korte beschrijving. Kies \"{{public}}\" als mensen buiten deze gemeenschap het in podcastapps moeten kunnen beluisteren.",
+      "upload_title": "2. Voeg een aflevering toe: upload hier je opname (het makkelijkst)",
+      "upload_body": "Kies onder \"{{add_episode}}\" je opname bij \"{{file_field}}\". MP3 werkt het best; M4A, WAV en OGG werken ook, tot {{max}} MB. Wij bewaren het bestand voor je en controleren het op virussen. Dat duurt meestal een paar minuten. Je kunt de aflevering publiceren zodra \"{{clean}}\" verschijnt.",
+      "link_title": "Of: link naar audio die ergens anders staat",
+      "link_body": "Plak bij \"{{url_field}}\" de link naar het audiobestand zelf. Die begint met https:// en eindigt meestal op .mp3.",
+      "link_test": "Controleer een link door hem in een nieuw browsertabblad te openen. Begint de opname te spelen in een eenvoudige audiospeler, dan werkt de link hier. Zie je een webpagina, dan werkt hij niet.",
+      "link_wont_work": "Links naar webpagina's worden hier niet afgespeeld. Dat geldt ook voor pagina's van Spotify, Apple Podcasts, SoundCloud en YouTube, en voor \"delen\"-links van Google Drive of Dropbox.",
+      "where_title": "Waar kan ik mijn audio bewaren?",
+      "where_hosts": "Podcasthostingdiensten zoals Spotify for Creators, Buzzsprout, Podbean en Acast bewaren je afleveringen en sturen ze naar podcastapps. Veel hebben een gratis abonnement met beperkingen, bijvoorbeeld op het aantal uren audio, het aantal afleveringen of hoe lang afleveringen online blijven. Die beperkingen veranderen, dus kijk naar de actuele voorwaarden van elke dienst. Wil je hier een aflevering van zo'n dienst gebruiken, kopieer dan de link naar het audiobestand, vaak \"directe link\", \"downloaden\" of \"MP3\" genoemd.",
+      "where_archive": "Het Internet Archive (archive.org) bewaart opnames gratis, voor audio die je openbaar wilt maken. Open na het uploaden de pagina van je item, zoek \"VBR MP3\" onder \"Download Options\", klik er met de rechtermuisknop op en kopieer de link.",
+      "publish_title": "3. Publiceer",
+      "publish_body": "Publiceer het programma en daarna elke aflevering. Het team van je gemeenschap moet ze misschien eerst goedkeuren; tot dan zie je \"{{pending}}\". Druk op \"{{validate}}\" om te zien wat podcastapps nodig hebben.",
+      "share_title": "4. Deel het",
+      "share_where": "Zodra je programma gepubliceerd en goedgekeurd is, staan op de kaart onder \"{{my_shows}}\" links die je kunt kopiëren:",
+      "share_members": "Link naar de programmapagina: voor leden van deze gemeenschap. Zij loggen in en luisteren hier.",
+      "share_public": "Link voor podcastapps (RSS): alleen voor programma's die op \"{{public}}\" staan, en iedereen kan hem zonder inloggen gebruiken. Plak hem in een podcastapp waarmee je een programma via een link kunt toevoegen, of meld hem aan bij overzichten zoals Apple Podcasts of Spotify, die een programma controleren voordat ze het opnemen."
+    },
+    "share": {
+      "title": "Links om te delen",
+      "show_link": "Programmapagina (leden)",
+      "show_link_hint": "Leden loggen in en luisteren dan hier.",
+      "feed_link": "Link voor podcastapps (RSS, iedereen)",
+      "feed_link_hint": "Plak hem in een podcastapp of meld hem aan bij overzichten zoals Apple Podcasts en Spotify.",
+      "copy": "Link kopiëren",
+      "copied": "Link gekopieerd.",
+      "copy_failed": "Kopiëren lukte niet. Selecteer de link hierboven en kopieer hem zelf.",
+      "not_ready": "Links om te delen verschijnen hier zodra dit programma gepubliceerd en goedgekeurd is.",
+      "feed_needs_public": "Alleen leden kunnen dit programma beluisteren. Zet het op \"{{public}}\" voor een link voor podcastapps die iedereen kan gebruiken."
     }
   },
   "fields": {
@@ -235,7 +268,7 @@
     "artwork_url": "URL van de coverafbeelding",
     "audio_url": "Audio-URL",
     "audio_file": "Gehost audiobestand",
-    "audio_file_hint": "Upload audio voor privé NEXUS-hosting of gebruik een externe audio-URL.",
+    "audio_file_hint": "Upload je opname en wij bewaren hem voor je. Dat is het makkelijkst.",
     "audio_url_disabled_file_selected": "Het geselecteerde gehoste bestand wordt gebruikt. Wis het om een externe audio-URL te gebruiken.",
     "clear_audio_file": "Geselecteerd bestand wissen",
     "visibility": "Zichtbaarheid",
@@ -246,7 +279,8 @@
     "episode_type": "Afleveringstype",
     "transcript": "Transcriptie",
     "chapters": "Hoofdstukken",
-    "chapters_hint": "Eén hoofdstuk per regel, bijvoorbeeld: 00:30 Introducties"
+    "chapters_hint": "Eén hoofdstuk per regel, bijvoorbeeld: 00:30 Introducties",
+    "audio_url_hint": "Of plak een directe link naar een audiobestand (https://…/aflevering.mp3), geen link naar een webpagina."
   },
   "visibility": {
     "public": "Openbaar",
