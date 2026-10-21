@@ -1,0 +1,79 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  An organisation's own opportunities, open, closed and cancelled
+  (routes/volunteering-org-opportunities.js). Each one links to its page, where the
+  organiser manages shifts, closes, reopens or cancels it.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set K = "govuk_alpha_volunteering.org_opportunities." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if orgName %}<span class="govuk-caption-xl">{{ orgName }}</span>{% endif %}
+  <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+  <p class="govuk-body-l">{{ t(K ~ "intro") }}</p>
+  <p class="govuk-body">
+    <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/create') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_create") }}</a>
+  </p>
+
+  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t(K ~ 'filter_label') }}">
+    <h2 class="govuk-tabs__title">{{ t(K ~ "filter_label") }}</h2>
+    <ul class="govuk-tabs__list">
+      {% for filter in filters %}
+        <li class="govuk-tabs__list-item{% if filter.current %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor(filter.href) }}"{% if filter.current %} aria-current="page"{% endif %} data-testid="org-opps-filter-{{ filter.value }}">{{ filter.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% if not opportunities.length %}
+    <div class="govuk-inset-text" data-testid="org-opps-empty">{{ emptyMessage }}</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for opp in opportunities %}
+        <article class="nexus-alpha-card" id="opportunity-{{ opp.id }}" data-testid="org-opp-{{ opp.id }}">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+            <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ opp.id) }}">{{ opp.title }}</a>
+          </h2>
+          <p class="govuk-!-margin-bottom-3">{{ govukTag({ text: opp.stateLabel, classes: opp.stateClass }) }}</p>
+          {% if opp.meta %}<p class="govuk-body-s govuk-!-margin-bottom-3">{{ opp.meta }}</p>{% endif %}
+          {% if opp.state != "cancelled" %}
+            <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-3">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "pending") }}</dt>
+                <dd class="govuk-summary-list__value">{{ opp.pending }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "approved") }}</dt>
+                <dd class="govuk-summary-list__value">{{ opp.approved }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(K ~ "upcoming_shifts") }}</dt>
+                <dd class="govuk-summary-list__value">{{ opp.upcomingShifts }}</dd>
+              </div>
+            </dl>
+            {% if opp.needsShifts %}
+              <div class="govuk-inset-text govuk-!-margin-top-0" data-testid="org-opp-needs-shifts-{{ opp.id }}">{{ t(K ~ "needs_shifts") }}</div>
+            {% endif %}
+          {% endif %}
+          <ul class="govuk-list">
+            <li><a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ opp.id) }}">{{ t(K ~ "manage") }}<span class="govuk-visually-hidden">: {{ opp.title }}</span></a></li>
+            {% if opp.canEdit %}
+              <li><a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ opp.id ~ '/edit') }}">{{ t(K ~ "edit") }}<span class="govuk-visually-hidden">: {{ opp.title }}</span></a></li>
+            {% endif %}
+          </ul>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

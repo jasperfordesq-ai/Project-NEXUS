@@ -1342,4 +1342,33 @@ return [
             'withdrawn' => 'Ingetrokken',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Jouw vacatures',
+        'intro' => 'Alles wat deze organisatie heeft geplaatst, ook vacatures die gesloten zijn voor nieuwe vrijwilligers en geannuleerde.',
+        'filter_label' => 'Vacatures tonen',
+        'filters' => [
+            'open' => 'Lopend (:count)',
+            'closed' => 'Gesloten (:count)',
+            'cancelled' => 'Geannuleerd (:count)',
+            'all' => 'Alle (:count)',
+        ],
+        'state' => [
+            'open' => 'Open',
+            'closed' => 'Gesloten voor nieuwe vrijwilligers',
+            'cancelled' => 'Geannuleerd',
+        ],
+        'remote' => 'Op afstand',
+        'pending' => 'Wachten op besluit',
+        'approved' => 'Goedgekeurd',
+        'upcoming_shifts' => 'Komende diensten',
+        'manage' => 'Beheren',
+        'edit' => 'Bewerken',
+        'empty_open' => 'Geen open vacatures. Plaats er een om vrijwilligers te vinden.',
+        'empty_other' => 'Hier staat niets.',
+        'untitled' => 'Vacature zonder titel',
+        'date_range' => ':start tot :end',
+        'needs_shifts' => 'Er zijn geen komende diensten gepland voor deze vacature.',
+    ],
 ];

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-21T08:15:36.022Z",
+  "generatedAt": "2026-10-21T19:06:18.880Z",
   "provenance": {
-    "generatedAt": "2026-10-21T08:15:36.022Z",
+    "generatedAt": "2026-10-21T19:06:18.880Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "4ba0020145c173be19792a8ef08725a4b67f4440",
+    "laravelCommitSha": "46b02d06c6e554936532ab7301c7ac7a03465946",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "4ba0020145c173be19792a8ef08725a4b67f4440",
+    "webUkRepositoryCommitSha": "46b02d06c6e554936532ab7301c7ac7a03465946",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-21T08:15:36.022Z",
+    "generatedAt": "2026-10-21T19:06:18.880Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 817,
+    "webUkRoutes": 818,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 107,
+    "extraWebUkRoutes": 108,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -151,7 +151,7 @@
       "volunteering": {
         "matched": 52,
         "missing": 0,
-        "extraWebUk": 65,
+        "extraWebUk": 66,
         "ignoredInfrastructure": 0
       },
       "health": {
@@ -1874,6 +1874,27 @@
       "webUkPath": "/volunteering/organisations/{param}/fundraising/new",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/volunteering-org-fundraising.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/volunteering/organisations/{param}/opportunities",
+      "family": "volunteering",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/volunteering/organisations/{param}/opportunities",
+      "webUkView": "volunteering/org-opportunities",
+      "webUkFile": "web-uk/src/routes/volunteering-org-opportunities.js",
       "webUkRouteKind": ""
     },
     {

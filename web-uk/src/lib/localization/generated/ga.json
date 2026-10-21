@@ -11819,6 +11819,33 @@
                     "confirmed": "Deimhnithe",
                     "withdrawn": "Tarraingthe siar"
                 }
+            },
+            "org_opportunities": {
+                "title": "Do dheiseanna",
+                "intro": "Gach rud a d’fhoilsigh an eagraíocht seo, lena n-áirítear deiseanna atá dúnta d’oibrithe deonacha nua agus deiseanna atá curtha ar ceal.",
+                "filter_label": "Taispeáin deiseanna",
+                "filters": {
+                    "open": "Oscailte (:count)",
+                    "closed": "Dúnta (:count)",
+                    "cancelled": "Curtha ar ceal (:count)",
+                    "all": "Gach ceann (:count)"
+                },
+                "state": {
+                    "open": "Oscailte",
+                    "closed": "Dúnta d’oibrithe deonacha nua",
+                    "cancelled": "Curtha ar ceal"
+                },
+                "remote": "Cianda",
+                "pending": "Ag fanacht le cinneadh",
+                "approved": "Glactha",
+                "upcoming_shifts": "Sealanna atá le teacht",
+                "manage": "Bainistigh",
+                "edit": "Cuir in eagar",
+                "empty_open": "Níl aon deis oscailte. Foilsigh ceann chun oibrithe deonacha a aimsiú.",
+                "empty_other": "Níl aon rud anseo.",
+                "untitled": "Deis gan teideal",
+                "date_range": ":start go :end",
+                "needs_shifts": "Níl aon sealanna sceidealaithe don deis seo."
             }
         },
         "govuk_alpha_wallet": {

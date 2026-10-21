@@ -1343,4 +1343,33 @@ return [
             'withdrawn' => 'Ritirata',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Le tue opportunità',
+        'intro' => 'Tutto ciò che questa organizzazione ha pubblicato, comprese le opportunità chiuse a nuovi volontari e quelle annullate.',
+        'filter_label' => 'Mostra opportunità',
+        'filters' => [
+            'open' => 'Aperte (:count)',
+            'closed' => 'Chiuse (:count)',
+            'cancelled' => 'Annullate (:count)',
+            'all' => 'Tutte (:count)',
+        ],
+        'state' => [
+            'open' => 'Aperta',
+            'closed' => 'Chiusa a nuovi volontari',
+            'cancelled' => 'Annullata',
+        ],
+        'remote' => 'Da remoto',
+        'pending' => 'In attesa di decisione',
+        'approved' => 'Approvati',
+        'upcoming_shifts' => 'Turni in arrivo',
+        'manage' => 'Gestisci',
+        'edit' => 'Modifica',
+        'empty_open' => 'Nessuna opportunità aperta. Pubblicane una per trovare volontari.',
+        'empty_other' => 'Qui non c’è niente.',
+        'untitled' => 'Opportunità senza titolo',
+        'date_range' => 'dal :start al :end',
+        'needs_shifts' => 'Non ci sono turni in programma per questa opportunità.',
+    ],
 ];

@@ -1342,4 +1342,33 @@ return [
             'withdrawn' => '取り下げ済み',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'あなたの団体の募集',
+        'intro' => 'この団体が掲載したすべての募集です。新規募集を終了したものや中止したものも含みます。',
+        'filter_label' => '募集を表示',
+        'filters' => [
+            'open' => '募集中（:count）',
+            'closed' => '終了（:count）',
+            'cancelled' => '中止（:count）',
+            'all' => 'すべて（:count）',
+        ],
+        'state' => [
+            'open' => '募集中',
+            'closed' => '新規募集を終了',
+            'cancelled' => '中止',
+        ],
+        'remote' => 'リモート',
+        'pending' => '判断待ち',
+        'approved' => '承認済み',
+        'upcoming_shifts' => '今後のシフト',
+        'manage' => '管理',
+        'edit' => '編集',
+        'empty_open' => '募集中のものはありません。ボランティアを探すには募集を掲載してください。',
+        'empty_other' => '該当するものはありません。',
+        'untitled' => '無題の募集',
+        'date_range' => ':start～:end',
+        'needs_shifts' => 'この募集には今後のシフトが予定されていません。',
+    ],
 ];

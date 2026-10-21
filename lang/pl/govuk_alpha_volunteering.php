@@ -1343,4 +1343,33 @@ return [
             'withdrawn' => 'Wycofana',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Twoje oferty',
+        'intro' => 'Wszystko, co opublikowała ta organizacja, w tym oferty zamknięte dla nowych wolontariuszy i odwołane.',
+        'filter_label' => 'Pokaż oferty',
+        'filters' => [
+            'open' => 'Otwarte (:count)',
+            'closed' => 'Zamknięte (:count)',
+            'cancelled' => 'Odwołane (:count)',
+            'all' => 'Wszystkie (:count)',
+        ],
+        'state' => [
+            'open' => 'Otwarta',
+            'closed' => 'Zamknięta dla nowych wolontariuszy',
+            'cancelled' => 'Odwołana',
+        ],
+        'remote' => 'Zdalnie',
+        'pending' => 'Czekają na decyzję',
+        'approved' => 'Zaakceptowani',
+        'upcoming_shifts' => 'Nadchodzące zmiany',
+        'manage' => 'Zarządzaj',
+        'edit' => 'Edytuj',
+        'empty_open' => 'Brak otwartych ofert. Opublikuj ofertę, aby znaleźć wolontariuszy.',
+        'empty_other' => 'Nic tu nie ma.',
+        'untitled' => 'Oferta bez tytułu',
+        'date_range' => 'od :start do :end',
+        'needs_shifts' => 'Dla tej oferty nie zaplanowano żadnych nadchodzących zmian.',
+    ],
 ];

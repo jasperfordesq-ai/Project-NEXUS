@@ -1343,4 +1343,33 @@ return [
             'withdrawn' => 'مسحوب',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'فرصك',
+        'intro' => 'كل ما نشرته هذه المنظمة، بما في ذلك الفرص المغلقة أمام متطوعين جدد والفرص الملغاة.',
+        'filter_label' => 'عرض الفرص',
+        'filters' => [
+            'open' => 'مفتوحة (:count)',
+            'closed' => 'مغلقة (:count)',
+            'cancelled' => 'ملغاة (:count)',
+            'all' => 'الكل (:count)',
+        ],
+        'state' => [
+            'open' => 'مفتوحة',
+            'closed' => 'مغلقة أمام متطوعين جدد',
+            'cancelled' => 'ملغاة',
+        ],
+        'remote' => 'عن بُعد',
+        'pending' => 'بانتظار قرار',
+        'approved' => 'مقبولون',
+        'upcoming_shifts' => 'الورديات القادمة',
+        'manage' => 'إدارة',
+        'edit' => 'تعديل',
+        'empty_open' => 'لا توجد فرص مفتوحة. انشر فرصة لتبدأ في إيجاد متطوعين.',
+        'empty_other' => 'لا يوجد شيء هنا.',
+        'untitled' => 'فرصة بلا عنوان',
+        'date_range' => 'من :start إلى :end',
+        'needs_shifts' => 'لا توجد ورديات قادمة مجدولة لهذه الفرصة.',
+    ],
 ];

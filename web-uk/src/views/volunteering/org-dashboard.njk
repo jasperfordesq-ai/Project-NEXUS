@@ -68,6 +68,7 @@
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_dashboard.quick_actions_title") }}</h2>
   <ul class="govuk-list">
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/opportunities') }}" data-testid="org-dashboard-opportunities">{{ t("govuk_alpha_volunteering.org_opportunities.title") }}</a></li>
     <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/manage') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_applications") }}</a></li>
     <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/volunteers') }}">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</a></li>
     <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/expenses') }}">{{ t("govuk_alpha_volunteering.org_expenses.title") }}</a></li>

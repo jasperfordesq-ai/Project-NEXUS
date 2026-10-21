@@ -1342,4 +1342,33 @@ return [
             'withdrawn' => 'Retirée',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Vos missions',
+        'intro' => 'Tout ce que cette organisation a publié, y compris les missions fermées aux nouveaux bénévoles et celles annulées.',
+        'filter_label' => 'Afficher les missions',
+        'filters' => [
+            'open' => 'Ouvertes (:count)',
+            'closed' => 'Fermées (:count)',
+            'cancelled' => 'Annulées (:count)',
+            'all' => 'Toutes (:count)',
+        ],
+        'state' => [
+            'open' => 'Ouverte',
+            'closed' => 'Fermée aux nouveaux bénévoles',
+            'cancelled' => 'Annulée',
+        ],
+        'remote' => 'À distance',
+        'pending' => 'En attente de décision',
+        'approved' => 'Acceptés',
+        'upcoming_shifts' => 'Créneaux à venir',
+        'manage' => 'Gérer',
+        'edit' => 'Modifier',
+        'empty_open' => 'Aucune mission ouverte. Publiez-en une pour trouver des bénévoles.',
+        'empty_other' => 'Rien ici.',
+        'untitled' => 'Mission sans titre',
+        'date_range' => 'du :start au :end',
+        'needs_shifts' => 'Aucun créneau à venir n’est prévu pour cette mission.',
+    ],
 ];

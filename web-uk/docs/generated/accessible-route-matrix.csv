@@ -64,6 +64,7 @@ extra-web-uk,GET,/volunteering/organisations/{param}/fundraising/{param},volunte
 extra-web-uk,GET,/volunteering/organisations/{param}/fundraising/{param}/edit,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-org-fundraising.js,
 extra-web-uk,GET,/volunteering/organisations/{param}/fundraising/{param}/end,volunteering,,,,,,,,,volunteering/org-fundraising-end,,,,web-uk/src/routes/volunteering-org-fundraising.js,
 extra-web-uk,GET,/volunteering/organisations/{param}/fundraising/new,volunteering,,,,,,,,,,,,,web-uk/src/routes/volunteering-org-fundraising.js,
+extra-web-uk,GET,/volunteering/organisations/{param}/opportunities,volunteering,,,,,,,,,volunteering/org-opportunities,,,,web-uk/src/routes/volunteering-org-opportunities.js,
 extra-web-uk,GET,/volunteering/organisations/{param}/qualifications,volunteering,,,,,,,,,volunteering/org-qualifications,,,,web-uk/src/routes/volunteering-org-qualifications.js,
 extra-web-uk,GET,/volunteering/organisations/{param}/safeguarding,volunteering,,,,,,,,,volunteering/organisation-safeguarding,,,,web-uk/src/routes/volunteering-incidents.js,
 extra-web-uk,GET,/volunteering/organisations/{param}/safeguarding/{param},volunteering,,,,,,,,,volunteering/organisation-safeguarding-incident,,,,web-uk/src/routes/volunteering-incidents.js,

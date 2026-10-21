@@ -1386,4 +1386,33 @@ return [
             'withdrawn' => 'Withdrawn',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Your opportunities',
+        'intro' => 'Everything this organisation has posted, including those closed to new volunteers and those cancelled.',
+        'filter_label' => 'Show opportunities',
+        'filters' => [
+            'open' => 'Open (:count)',
+            'closed' => 'Closed (:count)',
+            'cancelled' => 'Cancelled (:count)',
+            'all' => 'All (:count)',
+        ],
+        'state' => [
+            'open' => 'Open',
+            'closed' => 'Closed to new volunteers',
+            'cancelled' => 'Cancelled',
+        ],
+        'remote' => 'Remote',
+        'pending' => 'Waiting for a decision',
+        'approved' => 'Approved',
+        'upcoming_shifts' => 'Upcoming shifts',
+        'manage' => 'Manage',
+        'edit' => 'Edit',
+        'empty_open' => 'No open opportunities. Post one to start finding volunteers.',
+        'empty_other' => 'Nothing here.',
+        'untitled' => 'Untitled opportunity',
+        'date_range' => ':start to :end',
+        'needs_shifts' => 'No upcoming shifts are scheduled for this opportunity.',
+    ],
 ];

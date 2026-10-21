@@ -1342,4 +1342,33 @@ return [
             'withdrawn' => 'Zurückgezogen',
         ],
     ],
+
+    // An organisation's own opportunities: open, closed and cancelled (same wording as the website's dashboard tab)
+    'org_opportunities' => [
+        'title' => 'Ihre Angebote',
+        'intro' => 'Alles, was diese Organisation veröffentlicht hat, auch Angebote ohne neue Freiwillige und abgesagte.',
+        'filter_label' => 'Angebote anzeigen',
+        'filters' => [
+            'open' => 'Offen (:count)',
+            'closed' => 'Geschlossen (:count)',
+            'cancelled' => 'Abgesagt (:count)',
+            'all' => 'Alle (:count)',
+        ],
+        'state' => [
+            'open' => 'Offen',
+            'closed' => 'Keine neuen Freiwilligen',
+            'cancelled' => 'Abgesagt',
+        ],
+        'remote' => 'Ortsunabhängig',
+        'pending' => 'Warten auf Entscheidung',
+        'approved' => 'Angenommen',
+        'upcoming_shifts' => 'Kommende Schichten',
+        'manage' => 'Verwalten',
+        'edit' => 'Bearbeiten',
+        'empty_open' => 'Keine offenen Angebote. Veröffentlichen Sie eins, um Freiwillige zu finden.',
+        'empty_other' => 'Hier ist nichts.',
+        'untitled' => 'Angebot ohne Titel',
+        'date_range' => ':start bis :end',
+        'needs_shifts' => 'Für dieses Angebot sind keine kommenden Schichten geplant.',
+    ],
 ];
