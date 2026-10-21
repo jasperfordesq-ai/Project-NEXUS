@@ -66,7 +66,8 @@ RUN docker-php-ext-configure gd \
 # its direct URL (which never touches the catalogue), pinned to the version
 # production already ran, and checked against a SHA-256 before installing.
 # Retry with backoff; fail hard only after 5 genuine failures.
-# To upgrade: change both values here AND in Dockerfile.
+# To upgrade: change both values here AND in Dockerfile and
+# Dockerfile.bluegreen (the file production blue/green actually builds).
 ARG REDIS_EXT_VERSION=6.3.0
 ARG REDIS_EXT_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
 RUN ok=0; \
