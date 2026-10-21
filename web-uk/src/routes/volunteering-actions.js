@@ -516,7 +516,7 @@ function hoursStatus(status, t = null) {
   return null;
 }
 
-function wellbeingStatus(status, t = null, told = null) {
+function wellbeingStatus(status, t = null, told = null, tc = null) {
   // 20 Oct 2026: the member is told what actually happened. 'nobody' is a
   // warning, not an error: the check-in WAS saved; nobody could be reached yet.
   if (status === 'checkin-saved-nobody') {
@@ -525,6 +525,17 @@ function wellbeingStatus(status, t = null, told = null) {
       message: t
         ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_nobody')
         : 'Your check-in has been saved, but nobody could be told yet. We will try again with your next check-in.'
+    };
+  }
+  // 21 Oct 2026: the volunteer is staff and the only person on the community's
+  // team, so the only person "told" was themself. An Important notice, not an
+  // error: the check-in was saved, but nobody else knows.
+  if (status === 'checkin-saved-self') {
+    return {
+      type: 'warning',
+      message: t
+        ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_self')
+        : 'Your check-in has been saved. You are the only member of your community\'s team, so nobody else has been told. If you need support now, use the links on this page.'
     };
   }
   if (status === 'checkin-saved-already') {
@@ -544,12 +555,18 @@ function wellbeingStatus(status, t = null, told = null) {
   // Only ever reached when the API answered team_notified: true, i.e. the member
   // chose Low or Struggling, ticked the box, and someone was actually told.
   if (status === 'checkin-saved-shared') {
+    // `told` is the number of OTHER people told (the API's told_count excludes
+    // the volunteer). The message is a Laravel-style plural ("1 other person" /
+    // ":count other people"), so it needs the choice translator; plain t() would
+    // print the whole "{1} ...|[2,*] ..." string.
     const count = positiveInteger(told);
+    const counted = count && typeof tc === 'function'
+      ? tc('govuk_alpha_volunteering.wellbeing.checkin_saved_shared_count', count)
+      : null;
     return {
       type: 'success',
-      message: t
-        ? (count ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared_count', { count }) : t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared'))
-        : "Thank you for telling us. Someone from your community's team will be in touch."
+      message: counted
+        || (t ? t('govuk_alpha_volunteering.wellbeing.checkin_saved_shared') : "Thank you for telling us. Your community's team has been told.")
     };
   }
   if (status === 'mood-invalid') {
@@ -1041,11 +1058,21 @@ function normalizeCheckin(row, t = null) {
   };
 }
 
-function normalizeWellbeingDashboard(result, t = null) {
+// `loaded: false` is the "the API could not be read" shape (21 Oct 2026). It used
+// to be normalizeWellbeingDashboard({}), which defaults the score to 100 and the
+// risk to Low, so a failed load rendered a perfect score beside the error. Now
+// nothing is scored: no score, no risk tag, no warnings, no last-told line; only
+// the check-in form (its mood options) survives.
+function normalizeWellbeingDashboard(result, t = null, { loaded = true } = {}) {
   const dashboard = dataFrom(result);
   const data = dashboard && typeof dashboard === 'object' ? dashboard : {};
   const rawScore = Number(data.score);
   const score = Number.isFinite(rawScore) ? Math.max(0, Math.min(100, Math.round(rawScore))) : 100;
+  // 'no_data' = nothing to score yet (no volunteering activity, no check-in); the
+  // 100/100 the API still sends must not be shown as a good result. An older API
+  // sends no score_basis at all, which means it scored from activity as before.
+  const scoreBasis = trimmed(data.score_basis ?? data.scoreBasis) === 'no_data' ? 'no_data' : 'activity';
+  const hasScore = loaded && scoreBasis === 'activity';
   const warnings = Array.isArray(data.warnings)
     ? data.warnings.map((warning) => warningLabel(warning, t)).filter(Boolean)
     : [];
@@ -1054,14 +1081,18 @@ function normalizeWellbeingDashboard(result, t = null) {
     : (Array.isArray(data.recentCheckins) ? data.recentCheckins : []);
 
   return {
-    score,
-    risk: riskPresentation(data.burnout_risk ?? data.burnoutRisk, t),
+    loaded,
+    scoreBasis,
+    // The page shows the score, risk tag, warnings and last-told line only when true.
+    hasScore,
+    score: hasScore ? score : null,
+    risk: hasScore ? riskPresentation(data.burnout_risk ?? data.burnoutRisk, t) : null,
     hoursThisWeekLabel: hoursLabel(data.hours_this_week ?? data.hoursThisWeek),
     hoursThisMonthLabel: hoursLabel(data.hours_this_month ?? data.hoursThisMonth),
     streakDays: Number.isFinite(Number(data.streak_days ?? data.streakDays))
       ? Number(data.streak_days ?? data.streakDays)
       : 0,
-    warnings,
+    warnings: hasScore ? warnings : [],
     moodOptions: [1, 2, 3, 4, 5].map((value) => ({
       value,
       label: moodLabel(value, t),
@@ -1070,7 +1101,7 @@ function normalizeWellbeingDashboard(result, t = null) {
     recentCheckins: checkins.map((checkin) => normalizeCheckin(checkin, t)),
     support: normalizeWellbeingSupport(data.support),
     lastToldLabel: (() => {
-      const at = trimmed(data.last_team_notified_at ?? data.lastTeamNotifiedAt);
+      const at = loaded ? trimmed(data.last_team_notified_at ?? data.lastTeamNotifiedAt) : '';
       if (!at) return null;
       const date = bladeDateTimeLabel(at);
       return t ? t('govuk_alpha_volunteering.wellbeing.last_told', { date }) : `Your community's team was last told on ${date}.`;
@@ -3241,7 +3272,9 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     return redirectTo(res, loginRedirect());
   }
 
-  let wellbeing = normalizeWellbeingDashboard({}, res.locals.t);
+  // Until the API answers there is no assessment to show (loaded: false): a
+  // failed load must not fall back to the 100/100, Low-risk defaults.
+  let wellbeing = normalizeWellbeingDashboard({}, res.locals.t, { loaded: false });
   let loadError = null;
   try {
     wellbeing = normalizeWellbeingDashboard(await callApi(token, 'GET', '/wellbeing'), res.locals.t);
@@ -3256,7 +3289,7 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
     wellbeing,
     loadError,
     checkinForm: consumeFormReplay(req, 'volunteering', 'wellbeing'),
-    status: wellbeingStatus(trimmed(req.query.status), res.locals.t, trimmed(req.query.told)),
+    status: wellbeingStatus(trimmed(req.query.status), res.locals.t, trimmed(req.query.told), res.locals.tc),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -3892,6 +3925,9 @@ router.post('/wellbeing/checkin', asyncRoute(async (req, res) => {
       // The API says what happened (20 Oct 2026); an older API only says team_notified.
       if (row.outcome === 'nobody_available') return '/volunteering/wellbeing?status=checkin-saved-nobody';
       if (row.outcome === 'already_told_today') return '/volunteering/wellbeing?status=checkin-saved-already';
+      // The volunteer is staff and the only person on the team: the only person
+      // told was themself (21 Oct 2026). told_count counts OTHER people, so it is 0.
+      if (row.outcome === 'told_self_only') return '/volunteering/wellbeing?status=checkin-saved-self';
       if (row.team_notified === true) {
         const told = positiveInteger(row.told_count);
         return told ? `/volunteering/wellbeing?status=checkin-saved-shared&told=${told}` : '/volunteering/wellbeing?status=checkin-saved-shared';

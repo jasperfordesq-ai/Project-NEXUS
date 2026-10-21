@@ -874,6 +874,8 @@
     "wellbeing_indicator_shift_frequency": "Shift frequency",
     "wellbeing_indicator_cancellation_rate": "Cancellation rate",
     "wellbeing_indicator_overcommitment": "Upcoming shifts",
+
+    "wellbeing_indicator_not_measured": "Not measured",
     "wellbeing_settings_title": "Who is told first, and the support box",
     "wellbeing_settings_desc": "When a volunteer says they are low or struggling and asks for someone to get in touch, these people are told first, then the community's staff, the organisations they volunteer with, and the community above. The support box is shown to every volunteer on their wellbeing page.",
     "wellbeing_contacts_label": "Wellbeing contacts",

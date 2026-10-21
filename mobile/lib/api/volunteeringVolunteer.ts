@@ -167,6 +167,12 @@ export interface WellbeingDashboard {
   /** When the community's team was last told about this member, and how many people that reached. */
   last_team_notified_at?: string | null;
   last_told_count?: number;
+  /**
+   * What the score rests on (21 Oct 2026). `no_data` means there is no volunteering activity
+   * and no check-in to score, so the default 100 is not a result and must not be shown as
+   * one. An older API omits it, which reads as `activity`.
+   */
+  score_basis?: 'activity' | 'no_data';
 }
 
 export interface WellbeingSupport {
@@ -191,15 +197,20 @@ export interface WellbeingCheckinResult {
   mood: number;
   note: string | null;
   shared: boolean;
-  /** True only when at least one person or address was actually reached. */
+  /** True only when at least one OTHER person or address was actually reached. */
   team_notified: boolean;
+  /** How many OTHER people or addresses were told — the volunteer themself is never counted (21 Oct 2026). */
   told_count?: number;
   told_at?: string | null;
   /** What happened (20 Oct 2026); an older API omits it and `team_notified` decides. */
   outcome?: WellbeingCheckinOutcome;
 }
 
-export type WellbeingCheckinOutcome = 'told' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
+/**
+ * `told_self_only` (21 Oct 2026): the only person on the team was the volunteer themself,
+ * who is staff, so nobody else was told. Shown as a warning, like `nobody_available`.
+ */
+export type WellbeingCheckinOutcome = 'told' | 'told_self_only' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
 
 export function submitWellbeingCheckin(payload: WellbeingCheckinPayload): Promise<{ data: WellbeingCheckinResult }> {
   return api.post<{ data: WellbeingCheckinResult }>(`${API_V2}/volunteering/wellbeing/checkin`, {

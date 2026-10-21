@@ -244,14 +244,14 @@ describe('wellbeing check-in: letting the community team get in touch', () => {
     expect(checkinPost(posted).body.share_with_team).toBe(false);
   });
 
-  it('shows the "someone will be in touch" banner only when the team was told', async () => {
+  it('shows the "your team has been told" banner only when the team was told', async () => {
     succeedWith({ data: { id: 1, mood: 1, note: null, shared: true, team_notified: true } });
     const post = await request(createApp()).post(`${MOUNT}/wellbeing/checkin`).type('form')
       .send({ _csrf: 'test-csrf-token', mood: '1', share_with_team: '1' });
     expect(post.headers.location).toContain('status=checkin-saved-shared');
 
     const page = await request(createApp()).get(`${MOUNT}/wellbeing?status=checkin-saved-shared`);
-    expect(page.text).toContain('Thank you for telling us. Someone from your community&#39;s team will be in touch.');
+    expect(page.text).toContain('Thank you for telling us. Your community&#39;s team has been told.');
     expect(page.text).not.toContain('Your check-in has been saved.');
   });
 

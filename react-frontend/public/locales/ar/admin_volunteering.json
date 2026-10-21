@@ -962,6 +962,8 @@
     "wellbeing_indicator_shift_frequency": "تكرار المناوبات",
     "wellbeing_indicator_cancellation_rate": "معدل الإلغاء",
     "wellbeing_indicator_overcommitment": "المناوبات القادمة",
+
+    "wellbeing_indicator_not_measured": "غير مُقاس",
     "wellbeing_settings_title": "من يتم إبلاغه أولاً، وصندوق الدعم",
     "wellbeing_settings_desc": "عندما يقول متطوع إنه يشعر بالإحباط أو يعاني ويطلب أن يتواصل معه أحد، يتم إبلاغ هؤلاء الأشخاص أولاً، ثم موظفي المجتمع، ثم المنظمات التي يتطوع معها، ثم المجتمع الأعلى. يُعرض صندوق الدعم لكل متطوع في صفحة الرفاه الخاصة به.",
     "wellbeing_contacts_label": "جهات اتصال الرفاه",

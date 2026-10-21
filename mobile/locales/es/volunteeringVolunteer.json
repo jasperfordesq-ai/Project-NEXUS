@@ -148,7 +148,7 @@
     "noteLabel": "Añadir una nota (opcional)",
     "notePlaceholder": "Cualquier cosa que quiera contar sobre cómo se siente",
     "shareLabel": "Hacer saber al equipo de mi comunidad cómo me siento",
-    "shareOn": "El personal puede leer su nota tras iniciar sesión. Las organizaciones con las que colabora conocen su nombre y cómo se siente, pero nunca su nota.",
+    "shareOn": "El equipo de su comunidad sabe cómo se siente y puede leer su nota tras iniciar sesión. Si su comunidad forma parte de una red más amplia, también se avisa al equipo de esa red, así como a cualquier dirección de contacto de bienestar adicional que haya configurado su comunidad. Las organizaciones con las que colabora saben cómo se siente, pero nunca su nota.",
     "shareOff": "No se avisa a nadie más. Solo usted puede ver este registro.",
     "submit": "Registrar",
     "submitError": "No se pudo registrar su valoración. Inténtelo de nuevo.",
@@ -163,8 +163,10 @@
     "outcomePrivate": "Solo tú puedes ver este registro.",
     "supportHeading": "Si necesitas apoyo ahora",
     "lastTold": "El equipo de tu comunidad fue avisado por última vez el {{date}}.",
-    "outcomeTold_one": "Hemos avisado a {{count}} persona de tu comunidad. Alguien se pondrá en contacto contigo.",
-    "outcomeTold_other": "Hemos avisado a {{count}} personas de tu comunidad. Alguien se pondrá en contacto contigo."
+    "outcomeTold_one": "Hemos avisado a {{count}} persona más de tu comunidad. Alguien se pondrá en contacto contigo.",
+    "outcomeTold_other": "Hemos avisado a {{count}} personas más de tu comunidad. Alguien se pondrá en contacto contigo.",
+    "outcomeSelfOnly": "Eres el único miembro del equipo de tu comunidad, así que no se ha avisado a nadie más. Mira el apoyo más abajo.",
+    "noData": "Todavía no hay suficiente actividad para puntuar tu bienestar."
   },
   "qualifications": {
     "title": "Cualificaciones",

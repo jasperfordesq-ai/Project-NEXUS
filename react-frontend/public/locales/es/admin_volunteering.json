@@ -890,6 +890,8 @@
     "wellbeing_indicator_shift_frequency": "Frecuencia de turnos",
     "wellbeing_indicator_cancellation_rate": "Tasa de cancelación",
     "wellbeing_indicator_overcommitment": "Próximos turnos",
+
+    "wellbeing_indicator_not_measured": "No medido",
     "wellbeing_settings_title": "A quién se avisa primero y el cuadro de apoyo",
     "wellbeing_settings_desc": "Cuando un voluntario dice que se siente mal o está pasándolo mal y pide que alguien se ponga en contacto, se avisa primero a estas personas, luego al personal de la comunidad, a las organizaciones con las que colabora y a la comunidad superior. El cuadro de apoyo se muestra a todos los voluntarios en su página de bienestar.",
     "wellbeing_contacts_label": "Contactos de bienestar",

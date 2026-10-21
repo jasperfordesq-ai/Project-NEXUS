@@ -148,7 +148,7 @@
     "noteLabel": "Notiz hinzufügen (optional)",
     "notePlaceholder": "Alles, was Sie zu Ihrem Befinden sagen möchten",
     "shareLabel": "Mein Gemeinschaftsteam wissen lassen, wie es mir geht",
-    "shareOn": "Mitarbeitende können Ihre Notiz nach der Anmeldung lesen. Die Organisationen, bei denen Sie sich engagieren, erfahren Ihren Namen und wie es Ihnen geht, aber nie Ihre Notiz.",
+    "shareOn": "Das Team Ihrer Gemeinschaft erfährt, wie es Ihnen geht, und kann Ihre Notiz nach der Anmeldung lesen. Gehört Ihre Gemeinschaft zu einem größeren Netzwerk, wird auch dessen Team informiert, ebenso jede zusätzliche Wohlbefinden-Kontaktadresse, die Ihre Gemeinschaft eingerichtet hat. Die Organisationen, bei denen Sie sich engagieren, erfahren, wie es Ihnen geht, aber nie Ihre Notiz.",
     "shareOff": "Niemand sonst wird informiert. Nur Sie können diese Rückmeldung sehen.",
     "submit": "Rückmeldung speichern",
     "submitError": "Ihre Rückmeldung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
@@ -163,8 +163,10 @@
     "outcomePrivate": "Nur du kannst diesen Check-in sehen.",
     "supportHeading": "Wenn du jetzt Unterstützung brauchst",
     "lastTold": "Das Team deiner Gemeinschaft wurde zuletzt am {{date}} informiert.",
-    "outcomeTold_one": "Wir haben {{count}} Person aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
-    "outcomeTold_other": "Wir haben {{count}} Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden."
+    "outcomeTold_one": "Wir haben {{count}} weitere Person aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
+    "outcomeTold_other": "Wir haben {{count}} weitere Personen aus deiner Gemeinschaft informiert. Jemand wird sich melden.",
+    "outcomeSelfOnly": "Du bist das einzige Mitglied des Teams deiner Gemeinschaft, daher wurde niemand sonst informiert. Siehe die Unterstützung unten.",
+    "noData": "Noch nicht genug Aktivität, um dein Wohlbefinden zu bewerten."
   },
   "qualifications": {
     "title": "Qualifikationen",

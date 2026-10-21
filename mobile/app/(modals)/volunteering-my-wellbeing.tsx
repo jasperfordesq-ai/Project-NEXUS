@@ -182,20 +182,24 @@ function MyWellbeingContent() {
       setShareWithTeam(true);
       summaryApi.refresh();
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // The API says what happened (20 Oct 2026). "Nobody could be told yet" is a
-      // warning, not a success: the check-in was saved, the people were not reached.
+      // The API says what happened (20 Oct 2026). "Nobody could be told yet" and "you are
+      // the only member of the team" (21 Oct 2026) are warnings, not successes: the check-in
+      // was saved, nobody else was reached. `told_count` counts OTHER people, never the
+      // volunteer themself.
       const saved = result.data;
       const outcome = saved?.outcome ?? (saved?.team_notified ? 'told' : 'not_low');
       const description = outcome === 'told'
         ? (saved?.told_count ? t('volunteeringVolunteer:wellbeing.outcomeTold', { count: saved.told_count }) : t('volunteeringVolunteer:wellbeing.teamNotified'))
+        : outcome === 'told_self_only' ? t('volunteeringVolunteer:wellbeing.outcomeSelfOnly')
         : outcome === 'already_told_today' ? t('volunteeringVolunteer:wellbeing.outcomeAlreadyTold')
         : outcome === 'nobody_available' ? t('volunteeringVolunteer:wellbeing.outcomeNobody')
         : outcome === 'private' ? t('volunteeringVolunteer:wellbeing.outcomePrivate')
         : t('volunteeringVolunteer:wellbeing.recorded');
+      const nobodyElseReached = outcome === 'nobody_available' || outcome === 'told_self_only';
       showToast({
         title: t('volunteeringVolunteer:wellbeing.recordedTitle'),
         description,
-        variant: outcome === 'nobody_available' ? 'warning' : 'success',
+        variant: nobodyElseReached ? 'warning' : 'success',
       });
     } catch (err) {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -222,6 +226,10 @@ function MyWellbeingContent() {
     );
   }
 
+  // No activity and no check-in: the API's default 100 / "Excellent" is not a result
+  // (21 Oct 2026). The number, its label, the bar and the risk chip stay hidden; the
+  // check-in form below is unaffected.
+  const noData = summary?.score_basis === 'no_data';
   const riskKey = summary?.burnout_risk === 'moderate' || summary?.burnout_risk === 'high' ? summary.burnout_risk : 'low';
   const riskTone = riskKey === 'high' ? theme.error : riskKey === 'moderate' ? theme.warning : theme.success;
   const moodOptions = WELLBEING_MOODS.map((value) => ({
@@ -254,22 +262,32 @@ function MyWellbeingContent() {
               <HeroCard.Body className="gap-3 p-4">
                 <View className="flex-row flex-wrap items-center justify-between gap-2">
                   <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>{t('volunteeringVolunteer:wellbeing.score')}</Text>
-                  <Chip size="sm" variant="secondary" color="default" testID="wellbeing-risk">
-                    <Ionicons name="pulse-outline" size={12} color={riskTone} />
-                    <Chip.Label>{t(`volunteeringVolunteer:wellbeing.risk.${riskKey}`)}</Chip.Label>
-                  </Chip>
+                  {noData ? null : (
+                    <Chip size="sm" variant="secondary" color="default" testID="wellbeing-risk">
+                      <Ionicons name="pulse-outline" size={12} color={riskTone} />
+                      <Chip.Label>{t(`volunteeringVolunteer:wellbeing.risk.${riskKey}`)}</Chip.Label>
+                    </Chip>
+                  )}
                 </View>
-                <Text className="text-2xl font-bold" style={{ color: theme.text }} testID="wellbeing-score">
-                  {t('volunteeringVolunteer:wellbeing.scoreOutOf', { score: summary.score, label: t(`volunteeringVolunteer:wellbeing.scoreLabels.${scoreLabelKey(summary.score)}`) })}
-                </Text>
-                <View
-                  className="h-2 overflow-hidden rounded-full"
-                  style={{ backgroundColor: withAlpha(primary, 0.12) }}
-                  accessibilityRole="progressbar"
-                  accessibilityValue={{ min: 0, max: 100, now: Math.max(0, Math.min(100, summary.score)) }}
-                >
-                  <View className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, summary.score))}%`, backgroundColor: riskTone }} />
-                </View>
+                {noData ? (
+                  <Text className="text-sm leading-5" style={{ color: theme.textSecondary }} testID="wellbeing-no-data">
+                    {t('volunteeringVolunteer:wellbeing.noData')}
+                  </Text>
+                ) : (
+                  <>
+                    <Text className="text-2xl font-bold" style={{ color: theme.text }} testID="wellbeing-score">
+                      {t('volunteeringVolunteer:wellbeing.scoreOutOf', { score: summary.score, label: t(`volunteeringVolunteer:wellbeing.scoreLabels.${scoreLabelKey(summary.score)}`) })}
+                    </Text>
+                    <View
+                      className="h-2 overflow-hidden rounded-full"
+                      style={{ backgroundColor: withAlpha(primary, 0.12) }}
+                      accessibilityRole="progressbar"
+                      accessibilityValue={{ min: 0, max: 100, now: Math.max(0, Math.min(100, summary.score)) }}
+                    >
+                      <View className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, summary.score))}%`, backgroundColor: riskTone }} />
+                    </View>
+                  </>
+                )}
                 <View className="flex-row flex-wrap gap-3">
                   <StatTile label={t('volunteeringVolunteer:wellbeing.thisWeek')} value={t('volunteeringVolunteer:wellbeing.hours', { count: summary.hours_this_week })} tone={primary} />
                   <StatTile label={t('volunteeringVolunteer:wellbeing.thisMonth')} value={t('volunteeringVolunteer:wellbeing.hours', { count: summary.hours_this_month })} tone={primary} />
@@ -287,7 +305,7 @@ function MyWellbeingContent() {
               <SupportCard support={summary.support} tenantSlug={tenant?.slug ?? null} />
             ) : null}
 
-            {summary.score < 40 ? (
+            {!noData && summary.score < 40 ? (
               <HeroCard className="rounded-panel p-0" style={{ borderWidth: 1, borderColor: withAlpha(theme.warning, 0.3) }} testID="wellbeing-low-score">
                 <HeroCard.Body className="gap-2 p-4">
                   <Text className="text-base font-semibold" style={{ color: theme.text }}>{t('volunteeringVolunteer:wellbeing.lowScoreTitle')}</Text>

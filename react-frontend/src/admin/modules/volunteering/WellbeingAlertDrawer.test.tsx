@@ -127,4 +127,112 @@ describe('WellbeingAlertDrawer', () => {
 
     expect(screen.getByText(/nobody could be told/i)).toBeInTheDocument();
   });
+
+  // Audit (21 Oct 2026): loads had no cancellation or identity check, so a slow
+  // request for alert A could overwrite alert B after staff had moved on, and the
+  // note/status buttons then acted on B's id while showing A.
+  it('ignores a stale response for a closed alert and posts a note to the alert actually shown', async () => {
+    let resolveA: (value: unknown) => void = () => {};
+    let resolveB: (value: unknown) => void = () => {};
+    mockApi.getWellbeingAlert
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveA = resolve; }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveB = resolve; }));
+    mockApi.addWellbeingAlertNote.mockResolvedValue({
+      success: true,
+      data: { note: { id: 9, author: { id: 1, name: 'Ann Admin' }, body: 'Checked in with Sam.', created_at: '2026-10-21T09:00:00Z' } },
+    });
+
+    const { rerender } = render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await waitFor(() => expect(mockApi.getWellbeingAlert).toHaveBeenCalledWith(71));
+
+    // Close A while its request is still pending, then open B.
+    rerender(<WellbeingAlertDrawer alertId={71} isOpen={false} onClose={() => {}} onChanged={() => {}} />);
+    rerender(<WellbeingAlertDrawer alertId={72} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await waitFor(() => expect(mockApi.getWellbeingAlert).toHaveBeenCalledWith(72));
+
+    const detailB = { ...DETAIL, alert: { ...DETAIL.alert, id: 72, user_id: 13, user_name: 'Sam Byrne' }, notes: [] };
+    resolveB({ success: true, data: detailB });
+    expect(await screen.findByText('Sam Byrne')).toBeInTheDocument();
+
+    // A resolves last. It must not replace B.
+    resolveA({ success: true, data: DETAIL });
+    await waitFor(() => expect(mockApi.getWellbeingAlert).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('Sam Byrne')).toBeInTheDocument();
+    expect(screen.queryByText('Pat Murphy')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/add a note/i), { target: { value: 'Checked in with Sam.' } });
+    fireEvent.click(screen.getByRole('button', { name: /save note/i }));
+    await waitFor(() => expect(mockApi.addWellbeingAlertNote).toHaveBeenCalledTimes(1));
+    expect(mockApi.addWellbeingAlertNote).toHaveBeenCalledWith(72, 'Checked in with Sam.');
+  });
+
+  it('clears the previous alert the moment a different one is opened', async () => {
+    let resolveB: (value: unknown) => void = () => {};
+    mockApi.getWellbeingAlert
+      .mockResolvedValueOnce({ success: true, data: DETAIL })
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveB = resolve; }));
+    const { rerender } = render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+
+    rerender(<WellbeingAlertDrawer alertId={72} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await waitFor(() => expect(screen.queryByText('Pat Murphy')).not.toBeInTheDocument());
+    // Nothing from A is actionable while B loads.
+    expect(screen.queryByRole('button', { name: 'Acknowledge' })).not.toBeInTheDocument();
+
+    resolveB({ success: true, data: { ...DETAIL, alert: { ...DETAIL.alert, id: 72, user_name: 'Sam Byrne' } } });
+    expect(await screen.findByText('Sam Byrne')).toBeInTheDocument();
+  });
+
+  // The cancellation rate was never measured; the old payload carried rate_percent 0,
+  // which the drawer printed as a confident "0%".
+  it('says the cancellation rate is not measured instead of showing 0%', async () => {
+    mockApi.getWellbeingAlert.mockResolvedValue({
+      success: true,
+      data: {
+        ...DETAIL,
+        indicators: {
+          ...DETAIL.indicators,
+          cancellation_rate: { total_signups: 5, cancelled: null, rate_percent: null, measured: false },
+        },
+      },
+    });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+
+    expect(screen.getByText('Cancellation rate')).toBeInTheDocument();
+    expect(screen.getByText('Not measured')).toBeInTheDocument();
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+  });
+
+  it('still shows a measured cancellation rate as a percentage', async () => {
+    mockApi.getWellbeingAlert.mockResolvedValue({
+      success: true,
+      data: {
+        ...DETAIL,
+        indicators: { ...DETAIL.indicators, cancellation_rate: { total_signups: 8, cancelled: 2, rate_percent: 25, measured: true } },
+      },
+    });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+    expect(screen.getByText('25%')).toBeInTheDocument();
+  });
+
+  // The stored indicator is upcoming_shifts_7_days; the drawer read upcoming_shifts, which never exists.
+  it('reads the overcommitment count from the key the server actually writes', async () => {
+    mockApi.getWellbeingAlert.mockResolvedValue({
+      success: true,
+      data: {
+        ...DETAIL,
+        indicators: {
+          ...DETAIL.indicators,
+          overcommitment: { upcoming_shifts_7_days: 4, max_recommended_7_days: 3, overcommitted: true },
+        },
+      },
+    });
+    render(<WellbeingAlertDrawer alertId={71} isOpen onClose={() => {}} onChanged={() => {}} />);
+    await screen.findByText('Pat Murphy');
+
+    expect(screen.getByText('Upcoming shifts')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
+  });
 });

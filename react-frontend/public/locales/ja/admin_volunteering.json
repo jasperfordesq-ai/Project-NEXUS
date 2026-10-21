@@ -873,6 +873,8 @@
     "wellbeing_indicator_shift_frequency": "シフトの頻度",
     "wellbeing_indicator_cancellation_rate": "キャンセル率",
     "wellbeing_indicator_overcommitment": "今後のシフト",
+
+    "wellbeing_indicator_not_measured": "未計測",
     "wellbeing_settings_title": "最初に通知する相手と支援ボックス",
     "wellbeing_settings_desc": "ボランティアが気分が落ち込んでいる、つらいと回答し、誰かに連絡してほしいと希望した場合、まずここで指定した人に通知し、次にコミュニティのスタッフ、ボランティア先の団体、上位コミュニティに通知します。支援ボックスは、すべてのボランティアのウェルビーイングページに表示されます。",
     "wellbeing_contacts_label": "ウェルビーイング連絡担当者",

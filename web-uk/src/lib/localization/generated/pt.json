@@ -10785,15 +10785,18 @@
                 "checkin_saved": "Seu check-in foi salvo.",
                 "checkin_failed": "Não foi possível salvar seu check-in. Por favor, tente novamente.",
                 "share_label": "Quero que alguém entre em contato comigo se eu escolher \"Baixo\" ou \"Lutando\"",
-                "share_hint": "A equipe da sua comunidade verá como você está se sentindo e a sua observação. As organizações com as quais você faz voluntariado saberão como você está se sentindo, mas não verão a sua observação. Se você escolher \"Ok\", \"Bom\" ou \"Ótimo\", só você verá o seu check-in.",
-                "checkin_saved_shared": "Obrigado por nos contar. Alguém da equipe da sua comunidade entrará em contato com você.",
+                "share_hint": "Se escolher \"Baixo\" ou \"Lutando\", a equipa da sua comunidade verá como se sente e a sua observação. Se a sua comunidade fizer parte de uma rede maior, a equipa dessa rede também as verá. Se a sua comunidade tiver definido um endereço de contacto adicional para o bem-estar, esse endereço também receberá um e-mail. As organizações com as quais faz voluntariado saberão como se sente, mas não verão a sua observação. Se escolher \"Ok\", \"Bom\" ou \"Ótimo\", só você verá o seu check-in.",
+                "checkin_saved_shared": "Obrigado por nos contar. A equipa da sua comunidade foi avisada.",
                 "recent_shared": "Compartilhado com a equipe da sua comunidade",
                 "load_error": "Não foi possível carregar o seu painel de bem-estar. Tente novamente.",
-                "checkin_saved_shared_count": "Obrigado por nos dizer. Avisámos :count pessoas da sua comunidade e alguém entrará em contacto consigo.",
+                "checkin_saved_shared_count": "{1} Obrigado por nos dizer. Avisámos :count outra pessoa da sua comunidade.|[2,*] Obrigado por nos dizer. Avisámos :count outras pessoas da sua comunidade.",
                 "checkin_saved_already": "O seu registo foi guardado. A sua comunidade já foi avisada hoje e este registo foi adicionado ao que ela pode ver.",
                 "checkin_saved_nobody": "O seu registo foi guardado, mas ainda não foi possível avisar ninguém. Tentaremos de novo no seu próximo registo. Se precisa de apoio agora, use as ligações nesta página.",
                 "support_title": "Se precisa de apoio agora",
-                "last_told": "A equipa da sua comunidade foi avisada pela última vez em :date."
+                "last_told": "A equipa da sua comunidade foi avisada pela última vez em :date.",
+                "checkin_saved_self": "O seu registo foi guardado. Você é a única pessoa na equipa da sua comunidade, por isso mais ninguém foi avisado. Se precisa de apoio agora, use as ligações nesta página.",
+                "assessment_unavailable": "A sua avaliação de bem-estar não está disponível neste momento, por isso não é mostrada nenhuma pontuação nem risco de esgotamento. Pode, mesmo assim, guardar um registo abaixo.",
+                "score_no_data": "Ainda não há atividade suficiente para pontuar o seu bem-estar. A sua pontuação e o seu risco de esgotamento aparecerão quando tiver feito voluntariado ou guardado um registo."
             },
             "recommended": {
                 "title": "Recomendado para você",

@@ -75,6 +75,8 @@ class VolunteerWellbeingService
             ->whereNotNull('a.shift_id')
             ->where('a.status', 'approved')
             ->where('s.start_time', '>=', now()->subDays(30))
+            // A booking next month is not activity in the last 30 days (audit, 21 Oct 2026).
+            ->where('s.start_time', '<', now())
             ->count();
 
         $previousShifts = (int) DB::table('vol_applications as a')
@@ -118,9 +120,9 @@ class VolunteerWellbeingService
             ->whereNotNull('shift_id')
             ->count();
 
-        $cancelledSignups = 0;
-
-        $cancellationRate = $totalSignups > 0 ? round(($cancelledSignups / $totalSignups) * 100, 1) : 0;
+        // Not measured: reported as such, never as a reassuring 0% (audit, 21 Oct 2026).
+        $cancelledSignups = null;
+        $cancellationRate = 0;
 
         if ($cancellationRate > 50) {
             $riskPoints += 25;
@@ -132,8 +134,9 @@ class VolunteerWellbeingService
 
         $indicators['cancellation_rate'] = [
             'total_signups' => $totalSignups,
-            'cancelled' => $cancelledSignups,
-            'rate_percent' => $cancellationRate,
+            'cancelled' => null,
+            'rate_percent' => null,
+            'measured' => false,
         ];
 
         // ── 3. Hours trend ──
@@ -297,6 +300,19 @@ class VolunteerWellbeingService
     {
         $tenantId = TenantContext::getId();
 
+        // A community with volunteering off, or with the Wellbeing tab switched off,
+        // has wellbeing off: no scan, no alerts (audit, 21 Oct 2026 — until then the
+        // tab switch hid the page while the nightly scan carried on raising alerts).
+        if (!self::isEnabledForCurrentTenant()) {
+            return [
+                'total_assessed' => 0,
+                'at_risk' => 0,
+                'risk_breakdown' => ['low' => 0, 'moderate' => 0, 'high' => 0, 'critical' => 0],
+                'at_risk_users' => [],
+                'skipped' => true,
+            ];
+        }
+
         // Get users who have volunteered (have approved logs or live shift
         // signups). Live signups are vol_applications rows carrying a shift_id —
         // the legacy vol_shift_signups table is no longer written to, so reading
@@ -322,6 +338,16 @@ class VolunteerWellbeingService
                     ->where('share_with_team', 1)
                     ->where('mood', '<=', self::LOW_MOOD_MAX)
                     ->where('created_at', '>=', now()->subDays(14))
+                    ->distinct()
+                    ->pluck('user_id')
+            )
+            // Anyone with an open alert is visited whatever became of the records
+            // that raised it, so an alert whose signal has aged out is closed rather
+            // than left active for ever (audit finding 5, 21 Oct 2026).
+            ->merge(
+                DB::table('vol_wellbeing_alerts')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('status', ['active', 'acknowledged'])
                     ->distinct()
                     ->pluck('user_id')
             )
@@ -821,7 +847,14 @@ class VolunteerWellbeingService
     }
 
     /**
-     * Upsert a wellbeing alert — creates or updates an active alert for a user.
+     * Upsert a wellbeing alert.
+     *
+     * One open case per volunteer: an active OR acknowledged alert is refreshed in
+     * place, so acknowledging it does not spawn a twin on the next scan with the
+     * notes and the "who was told" record left behind on the old one (audit
+     * finding 4, 21 Oct 2026). A resolved or dismissed alert is reopened only by a
+     * genuinely new signal: a shared check-in made after it was concluded. The same
+     * still-current signal does not reopen a case staff have closed.
      */
     private static function upsertAlert(int $tenantId, int $userId, string $riskLevel, int $riskScore, array $indicators): void
     {
@@ -829,8 +862,25 @@ class VolunteerWellbeingService
             $existing = DB::table('vol_wellbeing_alerts')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'acknowledged'])
+                ->orderByDesc('id')
                 ->first();
+
+            if (!$existing) {
+                $concluded = DB::table('vol_wellbeing_alerts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('status', ['resolved', 'dismissed'])
+                    ->orderByDesc('id')
+                    ->first(['id', 'resolved_at', 'updated_at']);
+                if ($concluded) {
+                    $concludedAt = (string) ($concluded->resolved_at ?? $concluded->updated_at);
+                    $latestAt = (string) ($indicators['mood']['latest_at'] ?? '');
+                    if ($latestAt === '' || $latestAt <= $concludedAt) {
+                        return;
+                    }
+                }
+            }
 
             if ($existing) {
                 DB::table('vol_wellbeing_alerts')
@@ -952,7 +1002,8 @@ class VolunteerWellbeingService
      * touch" while nobody had been told.
      *
      * @return array{id: int, mood: int, note: ?string, shared: bool, team_notified: bool, told_count: int, told_at: ?string, outcome: string}
-     *   outcome: told | already_told_today | nobody_available | private | not_low
+     *   outcome: told | told_self_only | already_told_today | nobody_available | private | not_low
+     *   told_count: OTHER people or addresses reached, never the volunteer themself
      */
     public static function recordCheckin(int $userId, int $mood, ?string $note, bool $shareWithTeam): array
     {
@@ -980,7 +1031,8 @@ class VolunteerWellbeingService
             $alertId = DB::table('vol_wellbeing_alerts')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'acknowledged'])
+                ->orderByDesc('id')
                 ->value('id');
             $alertId = $alertId === null ? null : (int) $alertId;
 
@@ -992,17 +1044,27 @@ class VolunteerWellbeingService
                 ->orderByDesc('team_notified_at')
                 ->first(['id', 'team_notified_at']);
 
+            // A stamp under which nobody was actually reached (every email failed
+            // later) does not count: it is cleared and the chain runs again (audit
+            // finding 1, 21 Oct 2026).
+            if ($toldToday && self::peopleToldFor($tenantId, (int) $toldToday->id) === 0) {
+                self::clearToldStamp($tenantId, (int) $toldToday->id);
+                $toldToday = null;
+            }
+
             if ($toldToday) {
                 $outcome = 'already_told_today';
                 $toldAt = (string) $toldToday->team_notified_at;
                 $toldCount = self::peopleToldFor($tenantId, (int) $toldToday->id);
             } else {
                 $result = self::notifyOfLowMood($tenantId, $userId, $mood, $id, $alertId);
-                if ($result['told'] > 0) {
+                if ($result['told'] > 0 || $result['self_told']) {
                     $teamNotified = true;
                     $toldCount = $result['told'];
                     $toldAt = now()->toDateTimeString();
-                    $outcome = 'told';
+                    // told_count is OTHER people: a lone staff volunteer is told plainly
+                    // that nobody else knows, not that "1 person" will be in touch.
+                    $outcome = $result['told'] > 0 ? 'told' : 'told_self_only';
                     DB::table('vol_mood_checkins')
                         ->where('id', $id)
                         ->where('tenant_id', $tenantId)
@@ -1010,7 +1072,7 @@ class VolunteerWellbeingService
                     DB::table('vol_wellbeing_alerts')
                         ->where('tenant_id', $tenantId)
                         ->where('user_id', $userId)
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'acknowledged'])
                         ->update(['coordinator_notified' => true, 'updated_at' => now()]);
                 }
             }
@@ -1028,7 +1090,10 @@ class VolunteerWellbeingService
         ];
     }
 
-    /** How many distinct people or addresses a check-in reached (anything not failed). */
+    /**
+     * How many distinct OTHER people or addresses a check-in reached (anything not
+     * failed; the volunteer's own confirmation bell is not someone else).
+     */
     public static function peopleToldFor(int $tenantId, int $checkinId): int
     {
         try {
@@ -1036,10 +1101,64 @@ class VolunteerWellbeingService
                 ->where('tenant_id', $tenantId)
                 ->where('checkin_id', $checkinId)
                 ->where('status', '!=', 'failed')
+                ->where('tier', '!=', 'self')
                 ->selectRaw("COUNT(DISTINCT COALESCE(recipient_user_id, recipient_email)) as c")
                 ->value('c');
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: told count failed', ['checkin_id' => $checkinId, 'error' => $e->getMessage()]);
+            return 0;
+        }
+    }
+
+    /**
+     * Nobody was reached under this check-in after all (every email failed): it no
+     * longer counts as "told", so the next check-in tries the whole chain again.
+     * Called by the email job on its last attempt and by recordCheckin.
+     */
+    public static function clearToldStamp(int $tenantId, int $checkinId): void
+    {
+        try {
+            DB::table('vol_mood_checkins')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $checkinId)
+                ->update(['team_notified_at' => null]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: clearing told stamp failed', ['checkin_id' => $checkinId, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Wellbeing is on for a community only when the volunteering feature is on AND
+     * the Wellbeing tab is not switched off: the tab switch is the member's whole
+     * wellbeing experience, so it switches the scan and the alerts off with it.
+     */
+    public static function isEnabledForCurrentTenant(): bool
+    {
+        if (!TenantContext::hasFeature('volunteering')) {
+            return false;
+        }
+
+        return (bool) \App\Services\VolunteeringConfigurationService::get(
+            \App\Services\VolunteeringConfigurationService::CONFIG_TAB_WELLBEING,
+            true
+        );
+    }
+
+    /**
+     * Staff notes are append-only (database triggers) while their alert exists.
+     * Once the alert is gone — erasure, or retention disposing of a concluded
+     * alert — its notes are orphans and the trigger lets them go. Returns the
+     * number removed.
+     */
+    public static function deleteOrphanedNotes(int $tenantId): int
+    {
+        try {
+            return (int) DB::table('vol_wellbeing_alert_notes')
+                ->where('tenant_id', $tenantId)
+                ->whereNotIn('alert_id', DB::table('vol_wellbeing_alerts')->select('id'))
+                ->delete();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingService: orphan note cleanup failed', ['tenant_id' => $tenantId, 'error' => $e->getMessage()]);
             return 0;
         }
     }
@@ -1051,11 +1170,12 @@ class VolunteerWellbeingService
      * outcome — never the note, never the mood. Each recipient renders in their
      * own language.
      *
-     * @return array{told: int, bells: int, emails_queued: int} told = distinct people or addresses reached
+     * @return array{told: int, self_told: bool, bells: int, emails_queued: int}
+     *   told = distinct OTHER people or addresses reached; self_told = the volunteer's own staff account was
      */
     private static function notifyOfLowMood(int $tenantId, int $volunteerId, int $mood, int $checkinId, ?int $alertId): array
     {
-        $none = ['told' => 0, 'bells' => 0, 'emails_queued' => 0];
+        $none = ['told' => 0, 'self_told' => false, 'bells' => 0, 'emails_queued' => 0];
 
         $volunteer = \App\Models\User::where('tenant_id', $tenantId)
             ->where('id', $volunteerId)
@@ -1096,13 +1216,13 @@ class VolunteerWellbeingService
         ];
 
         $told = 0;
+        $selfTold = false;
         $bells = 0;
         $emailRowIds = [];
 
         foreach ($recipients as $recipient) {
             $m = $meta[(int) $recipient->id];
             $tier = $m['tier'];
-            $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $m['organization_name'], $recipient, $alertId, $tier === 'self' ? $othersCount - 1 : $othersCount, $communityName, $m['organization_id'], (bool) ($m['org_admin'] ?? false));
             $row = $base + [
                 'recipient_user_id' => (int) $recipient->id,
                 'recipient_tenant_id' => (int) $recipient->tenant_id === $tenantId ? null : (int) $recipient->tenant_id,
@@ -1112,7 +1232,12 @@ class VolunteerWellbeingService
                 'tier' => $tier,
             ];
 
-            $bellOk = (bool) \App\I18n\LocaleContext::withLocale($recipient, function () use ($recipient, $context, $checkinId) {
+            // The words (the mood word included) are built INSIDE the recipient's
+            // locale, or a German recipient read "Mir geht es struggling" (audit
+            // finding 12, 21 Oct 2026).
+            $bellOk = (bool) \App\I18n\LocaleContext::withLocale($recipient, function () use ($recipient, $checkinId, $volunteerId, $volunteerName, $mood, $tier, $m, $alertId, $othersCount, $communityName) {
+                $context = self::lowMoodContext($volunteerId, $volunteerName, $mood, $tier, $m['organization_name'], $recipient, $alertId, $tier === 'self' ? $othersCount - 1 : $othersCount, $communityName, $m['organization_id'], (bool) ($m['org_admin'] ?? false));
+
                 return self::sendLowMoodBell($recipient, $context, $checkinId);
             });
             self::recordNotification($row + ['channel' => 'bell', 'status' => $bellOk ? 'sent' : 'failed', 'error_code' => $bellOk ? null : 'bell_failed']);
@@ -1123,7 +1248,11 @@ class VolunteerWellbeingService
             if ($emailRowId !== null) {
                 $emailRowIds[] = $emailRowId;
             }
-            $told++;
+            if ($tier === 'self') {
+                $selfTold = true;
+            } elseif ($bellOk || $emailRowId !== null) {
+                $told++;
+            }
         }
 
         foreach ($resolved['emails'] as $address) {
@@ -1157,11 +1286,16 @@ class VolunteerWellbeingService
                     'volunteer_id' => $volunteerId,
                     'error' => $e->getMessage(),
                 ]);
-                $job->handle();
+                try {
+                    $job->handle();
+                } catch (\Throwable $inline) {
+                    // Inline there is no queue to retry: record what was not reached.
+                    $job->failed($inline);
+                }
             }
         }
 
-        return ['told' => $told, 'bells' => $bells, 'emails_queued' => count($emailRowIds)];
+        return ['told' => $told, 'self_told' => $selfTold, 'bells' => $bells, 'emails_queued' => count($emailRowIds)];
     }
 
     /**
@@ -1454,7 +1588,7 @@ class VolunteerWellbeingService
             DB::table('vol_wellbeing_alerts')
                 ->where('tenant_id', $tenantId)
                 ->where('user_id', $userId)
-                ->where('status', 'active')
+                ->whereIn('status', ['active', 'acknowledged'])
                 ->update([
                     'status' => 'resolved',
                     'resolved_at' => now(),

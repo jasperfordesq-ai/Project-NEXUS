@@ -12,7 +12,7 @@
  * Brokers, coordinators and admins all use this; nothing here is admin-only.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import HeartPulse from 'lucide-react/icons/heart-pulse';
@@ -166,13 +166,25 @@ function indicatorRows(indicators: Record<string, Record<string, unknown>>, t: T
   if (shifts && typeof shifts.trend === 'string') {
     rows.push({ label: t('volunteering.wellbeing_indicator_shift_frequency'), value: trendLabel(shifts.trend, t) });
   }
+  // The cancellation rate was never measured (21 Oct 2026): the server now sends
+  // measured:false with a null rate. Older rows carried rate_percent 0, which
+  // read as a confident "0%"; only a real number is shown as a percentage.
   const cancel = indicators.cancellation_rate;
-  if (cancel && typeof cancel.rate_percent === 'number') {
-    rows.push({ label: t('volunteering.wellbeing_indicator_cancellation_rate'), value: `${cancel.rate_percent}%` });
+  if (cancel) {
+    const measured = cancel.measured !== false && typeof cancel.rate_percent === 'number';
+    rows.push({
+      label: t('volunteering.wellbeing_indicator_cancellation_rate'),
+      value: measured ? `${cancel.rate_percent as number}%` : t('volunteering.wellbeing_indicator_not_measured'),
+    });
   }
+  // The stored key is upcoming_shifts_7_days; upcoming_shifts is kept only as a fallback.
   const over = indicators.overcommitment;
-  if (over && typeof over.upcoming_shifts === 'number') {
-    rows.push({ label: t('volunteering.wellbeing_indicator_overcommitment'), value: String(over.upcoming_shifts) });
+  const upcoming = over
+    ? (typeof over.upcoming_shifts_7_days === 'number' ? over.upcoming_shifts_7_days
+      : typeof over.upcoming_shifts === 'number' ? over.upcoming_shifts : null)
+    : null;
+  if (upcoming !== null) {
+    rows.push({ label: t('volunteering.wellbeing_indicator_overcommitment'), value: String(upcoming) });
   }
   return rows;
 }
@@ -187,12 +199,18 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
   const [note, setNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [acting, setActing] = useState<WellbeingStatus | null>(null);
+  // Each load gets a sequence number; a response for anything but the latest
+  // load is dropped (21 Oct 2026). Without this, closing alert A while its
+  // request was pending and opening B let A's reply overwrite B's detail.
+  const requestSeq = useRef(0);
 
   const load = useCallback(async (id: number) => {
+    const seq = ++requestSeq.current;
     setLoading(true);
     setError(null);
     try {
       const res = await adminVolunteering.getWellbeingAlert(id);
+      if (seq !== requestSeq.current) return;
       if (res.success && res.data && typeof res.data === 'object' && 'alert' in (res.data as object)) {
         setDetail(res.data as WellbeingAlertDetail);
       } else {
@@ -200,6 +218,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
         setError(t('volunteering.wellbeing_detail_failed'));
       }
     } catch {
+      if (seq !== requestSeq.current) return;
       setDetail(null);
       setError(t('volunteering.wellbeing_detail_failed'));
     }
@@ -207,17 +226,25 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
   }, [t]);
 
   useEffect(() => {
+    // Whatever was shown belongs to another alert (or to nothing): clear it at once.
+    setDetail(null);
+    setError(null);
+    setNote('');
     if (isOpen && alertId != null) {
-      setNote('');
       void load(alertId);
-    }
-    if (!isOpen) {
-      setDetail(null);
+    } else {
+      // Invalidate any in-flight load so it cannot land after closing.
+      requestSeq.current += 1;
+      setLoading(false);
     }
   }, [isOpen, alertId, load]);
 
+  // Only a detail that belongs to the alert this drawer is open for may be
+  // shown or acted on; a stale one is treated as absent.
+  const current = detail && alertId != null && detail.alert.id === alertId ? detail : null;
+
   const saveNote = useCallback(async () => {
-    if (alertId == null) return;
+    if (alertId == null || detail?.alert.id !== alertId) return;
     const body = note.trim();
     if (!body) return;
     setSavingNote(true);
@@ -236,10 +263,10 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
       toast.error(t('volunteering.wellbeing_note_failed'));
     }
     setSavingNote(false);
-  }, [alertId, note, toast, t, onChanged]);
+  }, [alertId, detail, note, toast, t, onChanged]);
 
   const act = useCallback(async (next: Exclude<WellbeingStatus, 'active'>) => {
-    if (alertId == null) return;
+    if (alertId == null || detail?.alert.id !== alertId) return;
     setActing(next);
     try {
       const res = await adminVolunteering.updateWellbeingAlert(alertId, next);
@@ -254,11 +281,12 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
       toast.error(t('volunteering.wellbeing_alert_update_failed'));
     }
     setActing(null);
-  }, [alertId, toast, t, onChanged]);
+  }, [alertId, detail, toast, t, onChanged]);
 
-  const alert = detail?.alert;
+  const alert = current?.alert;
   const name = alert?.user_name ?? '';
-  const told = detail?.notifications ?? [];
+  const told = current?.notifications ?? [];
+  const canAct = current !== null;
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
@@ -273,13 +301,13 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
         </DrawerHeader>
 
         <DrawerBody className="!m-0 space-y-6 px-5 py-4">
-          {loading && !detail ? (
+          {loading && !current ? (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
             </div>
           ) : error ? (
             <p className="text-sm text-danger">{error}</p>
-          ) : alert && detail ? (
+          ) : alert && current ? (
             <>
               {/* The volunteer */}
               <section className="flex items-start gap-3">
@@ -320,7 +348,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
               <section>
                 <h4 className="text-sm font-semibold mb-2">{t('volunteering.wellbeing_section_why')}</h4>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                  {indicatorRows(detail.indicators ?? {}, t).map((row) => (
+                  {indicatorRows(current.indicators ?? {}, t).map((row) => (
                     <div key={row.label} className="contents">
                       <dt className="text-muted">{row.label}</dt>
                       <dd className="font-medium">{row.value}</dd>
@@ -332,11 +360,11 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
               {/* What they shared */}
               <section>
                 <h4 className="text-sm font-semibold mb-2">{t('volunteering.wellbeing_section_checkins')}</h4>
-                {detail.checkins.length === 0 ? (
+                {current.checkins.length === 0 ? (
                   <p className="text-sm text-muted">{t('volunteering.wellbeing_no_shared_checkins')}</p>
                 ) : (
                   <ul className="space-y-2">
-                    {detail.checkins.map((c) => (
+                    {current.checkins.map((c) => (
                       <li key={c.id} className="rounded-lg border border-divider/70 bg-surface-secondary/30 px-3 py-2">
                         <div className="flex flex-wrap items-center gap-2 text-sm">
                           <span className="font-medium">{moodLabel(c.mood, t)}</span>
@@ -394,11 +422,11 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
                     <p className="text-sm whitespace-pre-wrap break-words">{alert.legacy_notes}</p>
                   </div>
                 )}
-                {detail.notes.length === 0 ? (
+                {current.notes.length === 0 ? (
                   <p className="text-sm text-muted">{t('volunteering.wellbeing_notes_empty')}</p>
                 ) : (
                   <ul className="space-y-2">
-                    {detail.notes.map((n) => (
+                    {current.notes.map((n) => (
                       <li key={n.id} className="rounded-lg border border-divider/70 px-3 py-2">
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                           <span className="font-medium text-foreground">{n.author.name}</span>
@@ -418,7 +446,7 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
                     maxLength={5000}
                     minRows={2}
                   />
-                  <Button size="sm" variant="primary" isLoading={savingNote} isDisabled={note.trim() === ''} onPress={() => void saveNote()}>
+                  <Button size="sm" variant="primary" isLoading={savingNote} isDisabled={!canAct || note.trim() === ''} onPress={() => void saveNote()}>
                     {t('volunteering.wellbeing_save_note')}
                   </Button>
                 </div>
@@ -430,13 +458,13 @@ export function WellbeingAlertDrawer({ alertId, isOpen, onClose, onChanged }: We
         {alert && (
           <DrawerFooter className="shrink-0 border-t border-divider px-5 py-3">
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="tertiary" startContent={<Check size={14} aria-hidden="true" />} isLoading={acting === 'acknowledged'} isDisabled={acting !== null} onPress={() => void act('acknowledged')}>
+              <Button size="sm" variant="tertiary" startContent={<Check size={14} aria-hidden="true" />} isLoading={acting === 'acknowledged'} isDisabled={!canAct || acting !== null} onPress={() => void act('acknowledged')}>
                 {t('volunteering.wellbeing_acknowledge')}
               </Button>
-              <Button size="sm" variant="tertiary" color="success" startContent={<CheckCircle size={14} aria-hidden="true" />} isLoading={acting === 'resolved'} isDisabled={acting !== null} onPress={() => void act('resolved')}>
+              <Button size="sm" variant="tertiary" color="success" startContent={<CheckCircle size={14} aria-hidden="true" />} isLoading={acting === 'resolved'} isDisabled={!canAct || acting !== null} onPress={() => void act('resolved')}>
                 {t('volunteering.wellbeing_resolve')}
               </Button>
-              <Button size="sm" variant="tertiary" startContent={<X size={14} aria-hidden="true" />} isLoading={acting === 'dismissed'} isDisabled={acting !== null} onPress={() => void act('dismissed')}>
+              <Button size="sm" variant="tertiary" startContent={<X size={14} aria-hidden="true" />} isLoading={acting === 'dismissed'} isDisabled={!canAct || acting !== null} onPress={() => void act('dismissed')}>
                 {t('volunteering.wellbeing_dismiss')}
               </Button>
             </div>

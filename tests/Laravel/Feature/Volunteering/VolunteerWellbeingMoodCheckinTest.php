@@ -337,8 +337,9 @@ class VolunteerWellbeingMoodCheckinTest extends TestCase
         $response = $this->checkin($volunteerAdmin, 1, true)->assertOk();
 
         $this->assertTrue($response->json('data.team_notified'));
-        $this->assertSame('told', $response->json('data.outcome'));
-        $this->assertSame(1, $response->json('data.told_count'));
+        // Told, but nobody ELSE: the count is of other people (audit, 21 Oct 2026).
+        $this->assertSame('told_self_only', $response->json('data.outcome'));
+        $this->assertSame(0, $response->json('data.told_count'));
         $this->assertCount(1, $this->bellsFor($volunteerAdmin));
         $this->assertDatabaseHas('vol_wellbeing_alert_notifications', [
             'tenant_id' => $this->testTenantId,

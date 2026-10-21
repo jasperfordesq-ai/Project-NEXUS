@@ -890,6 +890,8 @@
     "wellbeing_indicator_shift_frequency": "Fréquence des créneaux",
     "wellbeing_indicator_cancellation_rate": "Taux d'annulation",
     "wellbeing_indicator_overcommitment": "Créneaux à venir",
+
+    "wellbeing_indicator_not_measured": "Non mesuré",
     "wellbeing_settings_title": "Qui est prévenu en premier, et l'encadré de soutien",
     "wellbeing_settings_desc": "Quand un bénévole dit aller mal ou être en difficulté et demande que quelqu'un prenne contact, ces personnes sont prévenues en premier, puis l'équipe de la communauté, les organisations auprès desquelles il est bénévole, et la communauté au-dessus. L'encadré de soutien est affiché à chaque bénévole sur sa page bien-être.",
     "wellbeing_contacts_label": "Contacts bien-être",

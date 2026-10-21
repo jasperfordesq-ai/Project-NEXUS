@@ -148,7 +148,7 @@
     "noteLabel": "Add a note (optional)",
     "notePlaceholder": "Anything you would like to say about how you are feeling",
     "shareLabel": "Let my community team know how I am feeling",
-    "shareOn": "Staff can read your note after signing in. The organisations you volunteer with are told your name and how you feel, but never your note.",
+    "shareOn": "Your community's team is told how you feel and can read your note after signing in. If your community is part of a larger network, that network's team is told too, and so is any extra wellbeing contact address your community has set. The organisations you volunteer with are told how you feel, but never your note.",
     "shareOff": "Nobody else is told. Only you can see this check-in.",
     "submit": "Record check-in",
     "submitError": "Could not record your check-in. Please try again.",
@@ -163,8 +163,10 @@
     "outcomePrivate": "Only you can see this check-in.",
     "supportHeading": "If you need support now",
     "lastTold": "Your community's team was last told on {{date}}.",
-    "outcomeTold_one": "We have told {{count}} person from your community. Someone will be in touch.",
-    "outcomeTold_other": "We have told {{count}} people from your community. Someone will be in touch."
+    "outcomeTold_one": "We have told {{count}} other person from your community. Someone will be in touch.",
+    "outcomeTold_other": "We have told {{count}} other people from your community. Someone will be in touch.",
+    "outcomeSelfOnly": "You are the only member of your community's team, so nobody else has been told. See the support below.",
+    "noData": "Not enough activity yet to score your wellbeing."
   },
   "qualifications": {
     "title": "Qualifications",

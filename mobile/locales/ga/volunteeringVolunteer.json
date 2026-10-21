@@ -148,7 +148,7 @@
     "noteLabel": "Cuir nóta leis (roghnach)",
     "notePlaceholder": "Aon rud ba mhaith leat a rá faoin gcaoi a bhfuil tú ag mothú",
     "shareLabel": "Cuir foireann mo phobail ar an eolas faoin gcaoi a bhfuil mé ag mothú",
-    "shareOn": "Is féidir le foireann do nóta a léamh tar éis dóibh síniú isteach. Cuirtear ainm agus mothúcháin na n-eagraíochtaí a ndéanann tú obair dheonach leo in iúl dóibh, ach ní do nóta riamh.",
+    "shareOn": "Cuirtear foireann do phobail ar an eolas faoin gcaoi a bhfuil tú ag mothú agus is féidir leo do nóta a léamh tar éis dóibh síniú isteach. Má tá do phobal mar chuid de líonra níos mó, cuirtear foireann an líonra sin ar an eolas freisin, chomh maith le haon seoladh teagmhála folláine breise atá socraithe ag do phobal. Cuirtear na heagraíochtaí a ndéanann tú obair dheonach leo ar an eolas faoin gcaoi a bhfuil tú ag mothú, ach ní do nóta riamh.",
     "shareOff": "Ní chuirtear aon duine eile ar an eolas. Is tusa amháin a fheiceann an clárú seo.",
     "submit": "Taifead an clárú",
     "submitError": "Níorbh fhéidir do chlárú a thaifeadadh. Bain triail eile as.",
@@ -163,11 +163,13 @@
     "outcomePrivate": "Ní fheiceann ach tusa an tseiceáil seo.",
     "supportHeading": "Má tá tacaíocht uait anois",
     "lastTold": "Cuireadh foireann do phobail ar an eolas go deireanach ar {{date}}.",
-    "outcomeTold_one": "Chuireamar {{count}} duine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
-    "outcomeTold_other": "Chuireamar {{count}} duine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
-    "outcomeTold_two": "Chuireamar {{count}} dhuine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
-    "outcomeTold_few": "Chuireamar {{count}} dhuine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
-    "outcomeTold_many": "Chuireamar {{count}} nduine ó do phobal ar an eolas. Déanfaidh duine teagmháil leat."
+    "outcomeTold_one": "Chuireamar {{count}} duine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_other": "Chuireamar {{count}} duine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_two": "Chuireamar {{count}} dhuine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_few": "Chuireamar {{count}} dhuine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeTold_many": "Chuireamar {{count}} nduine eile ó do phobal ar an eolas. Déanfaidh duine teagmháil leat.",
+    "outcomeSelfOnly": "Is tusa an t-aon bhall d'fhoireann do phobail, mar sin níor cuireadh aon duine eile ar an eolas. Féach an tacaíocht thíos.",
+    "noData": "Níl go leor gníomhaíochta ann fós chun scór a thabhairt do do fholláine."
   },
   "qualifications": {
     "title": "Cáilíochtaí",

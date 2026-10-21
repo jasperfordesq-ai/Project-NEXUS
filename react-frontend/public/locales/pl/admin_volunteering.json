@@ -918,6 +918,8 @@
     "wellbeing_indicator_shift_frequency": "Częstotliwość zmian",
     "wellbeing_indicator_cancellation_rate": "Wskaźnik anulowań",
     "wellbeing_indicator_overcommitment": "Nadchodzące zmiany",
+
+    "wellbeing_indicator_not_measured": "Nie zmierzono",
     "wellbeing_settings_title": "Kto jest powiadamiany najpierw i ramka wsparcia",
     "wellbeing_settings_desc": "Gdy wolontariusz podaje, że czuje się źle lub ma trudności, i prosi, aby ktoś się skontaktował, najpierw powiadamiane są te osoby, potem pracownicy społeczności, organizacje, w których działa, oraz społeczność nadrzędna. Ramka wsparcia jest pokazywana każdemu wolontariuszowi na stronie samopoczucia.",
     "wellbeing_contacts_label": "Osoby kontaktowe ds. samopoczucia",

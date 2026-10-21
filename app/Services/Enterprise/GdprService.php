@@ -1825,10 +1825,12 @@ class GdprService
                 }
                 $this->query("DELETE FROM vol_mood_checkins WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 // The notification record names the member as the volunteer told about,
-                // and as a recipient when staff. Both go. Notes cannot be deleted (trigger):
-                // they stay attached to the alert id and are a DPO question (DPO-14).
+                // and as a recipient when staff. Both go. Staff notes are append-only
+                // while their alert exists; once the member's alerts are deleted the
+                // notes are orphans and go with them (21 Oct 2026; DPO-14).
                 $this->query("DELETE FROM vol_wellbeing_alert_notifications WHERE (volunteer_user_id = ? OR recipient_user_id = ?) AND tenant_id = ?", [$userId, $userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+                \App\Services\VolunteerWellbeingService::deleteOrphanedNotes($this->tenantId);
                 $this->query("DELETE FROM vol_accessibility_needs WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_guardian_consents WHERE minor_user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 // F-489 — a safeguarding-training row that records a STAFF

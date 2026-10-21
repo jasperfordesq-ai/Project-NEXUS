@@ -45,6 +45,9 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
     use SerializesModels;
 
     public int $tries = 3;
+
+    /** @var array<int, int> seconds before each retry */
+    public array $backoff = [60, 600];
     public int $timeout = 120;
 
     /**
@@ -78,6 +81,8 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
 
             // The volunteer's own copy says how many OTHER people were told.
             $othersTold = (int) $rows->count() + (int) $this->rows()->where('status', '!=', 'queued')->count();
+            /** @var list<array{0: int, 1: string}> $transient */
+            $transient = [];
 
             foreach ($rows as $row) {
                 $recipient = null;
@@ -107,21 +112,60 @@ final class SendVolunteerLowMoodEmails implements ShouldQueue
                         max(0, $othersTold - 1),
                         $row->organization_id !== null ? (int) $row->organization_id : null
                     ));
-                    $this->mark((int) $row->id, $sent ? 'sent' : 'failed', $sent ? null : 'send_false');
+                    if ($sent) {
+                        $this->mark((int) $row->id, 'sent', null);
+                    } else {
+                        $transient[] = [(int) $row->id, 'send_false'];
+                    }
                 } catch (\Throwable $e) {
                     Log::error('SendVolunteerLowMoodEmails: one recipient failed', [
                         'row_id' => $row->id,
                         'volunteer_id' => $this->volunteerId,
                         'error' => $e->getMessage(),
                     ]);
-                    $this->mark((int) $row->id, 'failed', 'exception');
+                    $transient[] = [(int) $row->id, 'exception'];
                 }
             }
+
+            if ($transient === []) {
+                return;
+            }
+
+            // A send that did not work is retried, up to $tries, with backoff: a
+            // mail server having a bad minute must not become "failed for ever"
+            // (audit finding 2, 21 Oct 2026). On the last attempt the rows are
+            // recorded as failed, and a check-in nobody was reached under stops
+            // counting as told.
+            $final = $this->attempts() >= $this->tries;
+            foreach ($transient as [$rowId, $code]) {
+                $this->mark($rowId, $final ? 'failed' : 'queued', $code);
+            }
+            if ($final) {
+                $this->reconcileToldStamps();
+                return;
+            }
+            throw new \RuntimeException(count($transient) . ' wellbeing email(s) not sent; retrying');
         });
+    }
+
+    /** Check-ins among these rows that reached nobody at all no longer count as told. */
+    private function reconcileToldStamps(): void
+    {
+        $checkinIds = $this->rows()->whereNotNull('checkin_id')->distinct()->pluck('checkin_id');
+        foreach ($checkinIds as $checkinId) {
+            if (VolunteerWellbeingService::peopleToldFor($this->tenantId, (int) $checkinId) === 0) {
+                VolunteerWellbeingService::clearToldStamp($this->tenantId, (int) $checkinId);
+            }
+        }
     }
 
     /** The job itself died (timeout, lost worker): every address not yet reached is recorded as failed. */
     public function failed(\Throwable $e): void
+    {
+        $this->reconcileAfterFailure($e);
+    }
+
+    private function reconcileAfterFailure(\Throwable $e): void
     {
         try {
             $count = $this->rows()->where('status', 'queued')->update([

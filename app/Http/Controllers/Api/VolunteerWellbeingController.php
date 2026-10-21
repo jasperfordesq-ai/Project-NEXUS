@@ -36,6 +36,19 @@ class VolunteerWellbeingController extends BaseApiController
         private readonly WellbeingSettingsService $wellbeingSettings,
     ) {}
 
+    /** Approved hours, a shift signup, or a check-in in the last 14 days: something the score is made of. */
+    private function hasAnythingToScore(int $userId, int $tenantId): bool
+    {
+        try {
+            return DB::table('vol_logs')->where('tenant_id', $tenantId)->where('user_id', $userId)->where('status', 'approved')->exists()
+                || DB::table('vol_applications')->where('tenant_id', $tenantId)->where('user_id', $userId)->whereNotNull('shift_id')->exists()
+                || DB::table('vol_mood_checkins')->where('tenant_id', $tenantId)->where('user_id', $userId)->where('created_at', '>=', now()->subDays(14))->exists();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('VolunteerWellbeingController: score basis check failed', ['error' => $e->getMessage()]);
+            return true;
+        }
+    }
+
     private function ensureFeature(): void
     {
         if (!TenantContext::hasFeature('volunteering')) {
@@ -102,6 +115,9 @@ class VolunteerWellbeingController extends BaseApiController
         // Burnout risk assessment
         $assessment = $this->volunteerWellbeingService->detectBurnoutRisk($userId);
         $score = max(0, min(100, 100 - (int) $assessment['risk_score']));
+        // With nothing to score, 100/100 "Excellent" is an absence of data, not a
+        // result; the clients show "not enough activity yet" instead (audit, 21 Oct 2026).
+        $scoreBasis = $this->hasAnythingToScore($userId, $tenantId) ? 'activity' : 'no_data';
 
         // Hours this week
         try {
@@ -210,6 +226,7 @@ class VolunteerWellbeingController extends BaseApiController
 
         return $this->respondWithData([
             'score' => $score,
+            'score_basis' => $scoreBasis,
             'hours_this_week' => $hoursThisWeek,
             'hours_this_month' => $hoursThisMonth,
             'streak_days' => $streak,

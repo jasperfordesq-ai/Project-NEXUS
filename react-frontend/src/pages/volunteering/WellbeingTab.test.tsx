@@ -66,18 +66,32 @@ const stableT = (
     "wellbeing.checkin_success_team_notified": "Thank you for telling us. Someone from your community's team will be in touch.",
     "wellbeing.checkin_shared_label": "Shared with your community's team",
     "wellbeing.share_with_team_label": "Let someone get in touch with me",
-    "wellbeing.share_with_team_desc": "Your community's team will see how you're feeling and your note. The organisations you volunteer with will be told how you're feeling, but not your note.",
+    "wellbeing.share_with_team_desc": "Your community's team will see how you're feeling and your note. If your community is part of a larger network, that network's team is told as well. Any extra wellbeing contact address your community has set is also told. The organisations you volunteer with are told how you're feeling, but never your note.",
     "wellbeing.share_with_team_private": "Only you will see this check-in.",
     "wellbeing.recent_checkins": "Recent Check-ins",
-    "wellbeing.outcome_told": "We have told {{count}} people from your community. Someone will be in touch.",
+    "wellbeing.outcome_told_one": "We have told {{count}} other person from your community. Someone will be in touch.",
+    "wellbeing.outcome_told_other": "We have told {{count}} other people from your community. Someone will be in touch.",
+    "wellbeing.outcome_told_self_only": "You are the only member of your community's team, so nobody else has been told.",
     "wellbeing.outcome_already_told": "Your community was already told today ({{time}}). This check-in has been added to what they can see.",
     "wellbeing.outcome_nobody": "Nobody could be told yet. We will try again with your next check-in.",
     "wellbeing.outcome_private": "Only you can see this check-in.",
     "wellbeing.outcome_what_next": "What happens next",
-    "wellbeing.outcome_what_next_desc": "Someone from your community's team will read your check-in and get in touch, usually within a day or two.",
+    "wellbeing.outcome_what_next_desc": "Someone who was told will read your check-in and get in touch.",
     "wellbeing.outcome_dismiss": "Dismiss",
     "wellbeing.support_heading": "If you need support now",
     "wellbeing.last_told": "Your community's team was last told on {{date}}.",
+    "wellbeing.score_label": "Wellbeing Score",
+    "wellbeing.score_excellent": "Excellent",
+    "wellbeing.score_no_data": "Not enough activity yet to score your wellbeing.",
+  };
+
+  // Mirror i18next's English plural resolution: `count` picks `_one` / `_other`.
+  const resolve = (k: string, o?: Record<string, unknown>) => {
+    if (o && typeof o.count === "number") {
+      const plural = translations[`${k}_${o.count === 1 ? "one" : "other"}`];
+      if (plural !== undefined) return plural;
+    }
+    return translations[k];
   };
 
   if (typeof fallbackOrOptions === "string") {
@@ -86,7 +100,7 @@ const stableT = (
 
   if (fallbackOrOptions && typeof fallbackOrOptions === "object") {
     return interpolate(
-      translations[key] ?? String(fallbackOrOptions.fallbackValue ?? key),
+      resolve(key, fallbackOrOptions) ?? String(fallbackOrOptions.fallbackValue ?? key),
       fallbackOrOptions,
     );
   }
@@ -369,8 +383,78 @@ describe("WellbeingTab", () => {
     await openCheckin();
     pickMood("Struggling");
     fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
-    expect(await screen.findByText(/we have told 2 people/i)).toBeInTheDocument();
+    expect(await screen.findByText(/we have told 2 other people/i)).toBeInTheDocument();
     expect(screen.getByText(/what happens next/i)).toBeInTheDocument();
+    // Audit (21 Oct 2026): no promised timeframe.
+    expect(screen.queryByText(/within a day or two/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/someone who was told will read your check-in/i)).toBeInTheDocument();
+  });
+
+  // told_count now counts OTHER people: one other person reads in the singular.
+  it("uses the singular when exactly one other person was told", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: true, told_count: 1, told_at: '2026-10-20T12:05:22Z', outcome: 'told' },
+    });
+    await openCheckin();
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    expect(await screen.findByText(/we have told 1 other person from your community/i)).toBeInTheDocument();
+  });
+
+  // The volunteer is staff and the only member of the team: the server says
+  // told_self_only. That is not good news, so it reads amber with support beside it.
+  it("says nobody else was told when the volunteer is the only team member, with the support box", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      success: true,
+      data: { id: 9, mood: 1, note: null, shared: true, team_notified: true, told_count: 0, told_at: '2026-10-20T12:05:22Z', outcome: 'told_self_only' },
+    });
+    await openCheckin();
+    pickMood("Struggling");
+    fireEvent.click(screen.getByRole("button", { name: "Submit Check-in" }));
+    const notice = await screen.findByRole("status", { name: /only member of your community's team, so nobody else has been told/i });
+    expect(notice).toBeInTheDocument();
+    expect(notice.className).toContain("border-amber-500/40");
+    // The support box is inside the notice, as for nobody_available.
+    expect(notice).toHaveTextContent("Ring the office any weekday.");
+    expect(screen.queryByText(/what happens next/i)).not.toBeInTheDocument();
+  });
+
+  it("tells the volunteer everyone a shared check-in reaches", async () => {
+    await openCheckin();
+    pickMood("Struggling");
+    await screen.findByRole("checkbox", { name: /Let someone get in touch with me/ });
+    const desc = screen.getByText(/Your community's team will see how you're feeling and your note/);
+    expect(desc).toHaveTextContent(/larger network, that network's team is told as well/);
+    expect(desc).toHaveTextContent(/extra wellbeing contact address/);
+    expect(desc).toHaveTextContent(/organisations you volunteer with are told how you're feeling, but never your note/);
+  });
+
+  // A 100/100 "Excellent" with no activity and no check-in is not a result.
+  it("shows a neutral not-enough-activity card instead of a score when there is nothing to score", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, score: 100, hours_this_week: 0, hours_this_month: 0, streak_days: 0, score_basis: 'no_data' },
+    });
+    render(<WellbeingTab />);
+    expect(await screen.findAllByText("Not enough activity yet to score your wellbeing.")).not.toHaveLength(0);
+    expect(screen.queryByText("100")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Excellent/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    // The check-in form stays usable.
+    fireEvent.click(screen.getByRole("button", { name: /Log How I.m Feeling/i }));
+    expect(await screen.findByRole("button", { name: "Submit Check-in" })).toBeInTheDocument();
+  });
+
+  it("still shows the score when it is based on real activity", async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { ...mockWellbeingData, score: 85, score_basis: 'activity' },
+    });
+    render(<WellbeingTab />);
+    expect(await screen.findByText("85")).toBeInTheDocument();
+    expect(screen.getByText(/Excellent/)).toBeInTheDocument();
+    expect(screen.queryByText("Not enough activity yet to score your wellbeing.")).not.toBeInTheDocument();
   });
 
   it("says when nobody could be told, and shows the support box beside it", async () => {

@@ -874,6 +874,8 @@
     "wellbeing_indicator_shift_frequency": "Dienstfrequentie",
     "wellbeing_indicator_cancellation_rate": "Annuleringspercentage",
     "wellbeing_indicator_overcommitment": "Komende diensten",
+
+    "wellbeing_indicator_not_measured": "Niet gemeten",
     "wellbeing_settings_title": "Wie als eerste wordt geïnformeerd, en het ondersteuningsvak",
     "wellbeing_settings_desc": "Wanneer een vrijwilliger aangeeft zich somber te voelen of het moeilijk te hebben en vraagt of iemand contact wil opnemen, worden eerst deze mensen geïnformeerd, daarna de medewerkers van de gemeenschap, de organisaties waarvoor hij of zij vrijwilligt, en de bovenliggende gemeenschap. Het ondersteuningsvak wordt aan elke vrijwilliger getoond op de welzijnspagina.",
     "wellbeing_contacts_label": "Welzijnscontactpersonen",

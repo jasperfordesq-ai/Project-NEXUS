@@ -940,6 +940,8 @@
     "wellbeing_indicator_shift_frequency": "Minicíocht seala",
     "wellbeing_indicator_cancellation_rate": "Ráta cealaithe",
     "wellbeing_indicator_overcommitment": "Sealanna atá le teacht",
+
+    "wellbeing_indicator_not_measured": "Gan tomhas",
     "wellbeing_settings_title": "Cé a chuirtear ar an eolas ar dtús, agus an bosca tacaíochta",
     "wellbeing_settings_desc": "Nuair a deir oibrí deonach go bhfuil sé íseal nó ag streachailt agus go n-iarrann sé go ndéanfadh duine teagmháil, cuirtear na daoine seo ar an eolas ar dtús, ansin foireann an phobail, na heagraíochtaí a n-oibríonn sé go deonach leo, agus an pobal thuas. Taispeántar an bosca tacaíochta do gach oibrí deonach ar a leathanach folláine.",
     "wellbeing_contacts_label": "Teagmhálaithe folláine",

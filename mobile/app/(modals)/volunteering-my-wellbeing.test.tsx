@@ -54,7 +54,9 @@ jest.mock('react-i18next', () => ({
         'volunteeringVolunteer:wellbeing.recordedTitle': 'Check-in recorded',
         'volunteeringVolunteer:wellbeing.recorded': 'Mood check-in recorded.',
         'volunteeringVolunteer:wellbeing.teamNotified': 'Thank you for telling us. Someone will be in touch.',
-        'volunteeringVolunteer:wellbeing.outcomeTold': `We have told ${String(opts?.count ?? 0)} people. Someone will be in touch.`,
+        'volunteeringVolunteer:wellbeing.outcomeTold': `We have told ${String(opts?.count ?? 0)} other people. Someone will be in touch.`,
+        'volunteeringVolunteer:wellbeing.outcomeSelfOnly': 'You are the only member of your community team, so nobody else has been told. See the support below.',
+        'volunteeringVolunteer:wellbeing.noData': 'Not enough activity yet to score your wellbeing.',
         'volunteeringVolunteer:wellbeing.outcomeAlreadyTold': 'Your community was already told today.',
         'volunteeringVolunteer:wellbeing.outcomeNobody': 'Nobody could be told yet. We will try again with your next check-in. See the support below.',
         'volunteeringVolunteer:wellbeing.outcomePrivate': 'Only you can see this check-in.',
@@ -106,6 +108,8 @@ jest.mock('@/lib/api/volunteeringVolunteer', () => ({
 import MyWellbeingScreen from './volunteering-my-wellbeing';
 import { getWellbeing, submitWellbeingCheckin } from '@/lib/api/volunteeringVolunteer';
 import { ApiResponseError } from '@/lib/api/client';
+
+const englishCatalogue = require('../../locales/en/volunteeringVolunteer.json') as { wellbeing: Record<string, string> };
 
 const dashboard = {
   score: 72,
@@ -188,7 +192,64 @@ describe('MyWellbeingScreen', () => {
     await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
     fireEvent.press(getByText('Struggling'));
     fireEvent.press(getByTestId('wellbeing-submit'));
-    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'We have told 2 people. Someone will be in touch.' })));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'We have told 2 other people. Someone will be in touch.' })));
+  });
+
+  // 21 Oct 2026: a lone staff member checking in is the only person on the team, so the
+  // only person "told" was themself. That is a warning, not a thank-you.
+  it('warns when the volunteer is the only member of the team, and keeps the support card on screen', async () => {
+    jest.mocked(submitWellbeingCheckin).mockResolvedValue({ data: { id: 11, mood: 1, note: null, shared: true, team_notified: false, told_count: 0, told_at: null, outcome: 'told_self_only' } });
+    const { getByTestId, getByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-submit')).toBeTruthy());
+    fireEvent.press(getByText('Struggling'));
+    fireEvent.press(getByTestId('wellbeing-submit'));
+    await waitFor(() => expect(mockShowToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'warning', description: expect.stringMatching(/only member of your community team/i) })));
+    expect(getByTestId('wellbeing-support')).toBeTruthy();
+  });
+
+  // 21 Oct 2026: with no activity and no check-in the API scores 100 by default. That is
+  // not a result, so the number and "Excellent" are not shown; the form still works.
+  it('does not show a score when there is nothing to score, and still lets the member check in', async () => {
+    jest.mocked(getWellbeing).mockResolvedValue({ data: { ...dashboard, score: 100, score_basis: 'no_data', warnings: [], recent_checkins: [] } });
+    const { getByTestId, getByText, queryByTestId, queryByText } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByTestId('wellbeing-no-data')).toBeTruthy());
+    expect(getByText('Not enough activity yet to score your wellbeing.')).toBeTruthy();
+    expect(queryByTestId('wellbeing-score')).toBeNull();
+    expect(queryByText(/Excellent/)).toBeNull();
+    expect(getByTestId('wellbeing-submit')).toBeTruthy();
+  });
+
+  it('shows the score as usual when the API says it is based on activity', async () => {
+    jest.mocked(getWellbeing).mockResolvedValue({ data: { ...dashboard, score: 85, score_basis: 'activity' } });
+    const { getByText, queryByTestId } = render(<MyWellbeingScreen />);
+    await waitFor(() => expect(getByText('85/100 · Excellent')).toBeTruthy());
+    expect(queryByTestId('wellbeing-no-data')).toBeNull();
+  });
+
+  // The member reads the real English catalogue, not this file's mock, so pin the wording
+  // the audit asked for there too.
+  describe('English wording', () => {
+    const w = englishCatalogue.wellbeing;
+    it('counts the OTHER people told, in both plural forms', () => {
+      expect(w.outcomeTold_one).toMatch(/{{count}} other person/);
+      expect(w.outcomeTold_other).toMatch(/{{count}} other people/);
+    });
+    it('promises no timeframe', () => {
+      for (const key of ['teamNotified', 'outcomeTold_one', 'outcomeTold_other', 'outcomeSelfOnly', 'outcomeAlreadyTold']) {
+        expect(w[key]).not.toMatch(/day or two|within (a|one|d+) (day|hour)|24 hours/i);
+      }
+    });
+    it('names every recipient of a shared check-in', () => {
+      expect(w.shareOn).toMatch(/community'?s team/i);
+      expect(w.shareOn).toMatch(/network/i);
+      expect(w.shareOn).toMatch(/contact address/i);
+      expect(w.shareOn).toMatch(/organisations you volunteer with/i);
+      expect(w.shareOn).toMatch(/never your note/i);
+    });
+    it('has the lone-team-member and no-data messages', () => {
+      expect(w.outcomeSelfOnly).toMatch(/only member/i);
+      expect(w.noData).toMatch(/not enough activity/i);
+    });
   });
 
   it('says when nobody could be told, as a warning, and keeps the support card on screen', async () => {

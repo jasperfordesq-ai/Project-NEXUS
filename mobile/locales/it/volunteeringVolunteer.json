@@ -148,7 +148,7 @@
     "noteLabel": "Aggiungi una nota (facoltativo)",
     "notePlaceholder": "Qualsiasi cosa desideri dire su come si sente",
     "shareLabel": "Fai sapere al team della mia comunità come mi sento",
-    "shareOn": "Il personale può leggere la sua nota dopo aver effettuato l'accesso. Le organizzazioni con cui fa volontariato conoscono il suo nome e come si sente, ma mai la sua nota.",
+    "shareOn": "Il team della sua comunità viene informato di come si sente e può leggere la sua nota dopo aver effettuato l’accesso. Se la sua comunità fa parte di una rete più ampia, viene avvisato anche il team di quella rete, così come qualsiasi indirizzo di contatto aggiuntivo per il benessere impostato dalla sua comunità. Le organizzazioni con cui fa volontariato sanno come si sente, ma mai la sua nota.",
     "shareOff": "Nessun altro viene avvisato. Solo lei può vedere questo controllo.",
     "submit": "Registra il controllo",
     "submitError": "Impossibile registrare il suo controllo. Riprovi.",
@@ -163,8 +163,10 @@
     "outcomePrivate": "Solo tu puoi vedere questo check-in.",
     "supportHeading": "Se hai bisogno di supporto adesso",
     "lastTold": "Il team della tua comunità è stato avvisato l'ultima volta il {{date}}.",
-    "outcomeTold_one": "Abbiamo avvisato {{count}} persona della tua comunità. Qualcuno si metterà in contatto con te.",
-    "outcomeTold_other": "Abbiamo avvisato {{count}} persone della tua comunità. Qualcuno si metterà in contatto con te."
+    "outcomeTold_one": "Abbiamo avvisato {{count}} altra persona della tua comunità. Qualcuno si metterà in contatto con te.",
+    "outcomeTold_other": "Abbiamo avvisato {{count}} altre persone della tua comunità. Qualcuno si metterà in contatto con te.",
+    "outcomeSelfOnly": "Sei l'unico membro del team della tua comunità, quindi nessun altro è stato avvisato. Vedi il supporto qui sotto.",
+    "noData": "Non c'è ancora abbastanza attività per valutare il tuo benessere."
   },
   "qualifications": {
     "title": "Qualifiche",

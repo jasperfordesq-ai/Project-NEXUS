@@ -890,6 +890,8 @@
     "wellbeing_indicator_shift_frequency": "Frequência de turnos",
     "wellbeing_indicator_cancellation_rate": "Taxa de cancelamento",
     "wellbeing_indicator_overcommitment": "Próximos turnos",
+
+    "wellbeing_indicator_not_measured": "Não medido",
     "wellbeing_settings_title": "Quem é avisado primeiro e a caixa de apoio",
     "wellbeing_settings_desc": "Quando um voluntário diz sentir-se em baixo ou com dificuldades e pede que alguém entre em contacto, estas pessoas são avisadas primeiro, depois a equipa da comunidade, as organizações com que colabora e a comunidade acima. A caixa de apoio é mostrada a todos os voluntários na sua página de bem-estar.",
     "wellbeing_contacts_label": "Contactos de bem-estar",

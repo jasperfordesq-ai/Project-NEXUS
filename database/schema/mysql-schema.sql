@@ -21932,7 +21932,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `vol_wellbeing_alert_notes_no_delete` BEFORE DELETE ON `vol_wellbeing_alert_notes` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_wellbeing_alert_notes_immutable' 
+/*!50003 CREATE*/ /*!50003 TRIGGER `vol_wellbeing_alert_notes_no_delete` BEFORE DELETE ON `vol_wellbeing_alert_notes` FOR EACH ROW BEGIN IF EXISTS (SELECT 1 FROM `vol_wellbeing_alerts` WHERE `id` = OLD.`alert_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'vol_wellbeing_alert_notes_immutable'; END IF; END 
 */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;

@@ -148,7 +148,7 @@
     "noteLabel": "Adicionar uma nota (opcional)",
     "notePlaceholder": "Tudo o que quiser dizer sobre como se sente",
     "shareLabel": "Dar a conhecer à equipa da minha comunidade como me sinto",
-    "shareOn": "O pessoal pode ler a sua nota depois de iniciar sessão. As organizações com que colabora ficam a saber o seu nome e como se sente, mas nunca a sua nota.",
+    "shareOn": "A equipa da sua comunidade fica a saber como se sente e pode ler a sua nota depois de iniciar sessão. Se a sua comunidade fizer parte de uma rede maior, a equipa dessa rede também é avisada, bem como qualquer endereço de contacto de bem-estar adicional que a sua comunidade tenha definido. As organizações com que colabora ficam a saber como se sente, mas nunca a sua nota.",
     "shareOff": "Ninguém mais é avisado. Só você pode ver este registo.",
     "submit": "Guardar registo",
     "submitError": "Não foi possível guardar o seu registo. Tente novamente.",
@@ -163,8 +163,10 @@
     "outcomePrivate": "Só você pode ver este registo.",
     "supportHeading": "Se precisa de apoio agora",
     "lastTold": "A equipa da sua comunidade foi avisada pela última vez em {{date}}.",
-    "outcomeTold_one": "Avisámos {{count}} pessoa da sua comunidade. Alguém entrará em contacto consigo.",
-    "outcomeTold_other": "Avisámos {{count}} pessoas da sua comunidade. Alguém entrará em contacto consigo."
+    "outcomeTold_one": "Avisámos {{count}} outra pessoa da sua comunidade. Alguém entrará em contacto consigo.",
+    "outcomeTold_other": "Avisámos {{count}} outras pessoas da sua comunidade. Alguém entrará em contacto consigo.",
+    "outcomeSelfOnly": "Você é o único membro da equipa da sua comunidade, por isso ninguém mais foi avisado. Veja o apoio abaixo.",
+    "noData": "Ainda não há atividade suficiente para pontuar o seu bem-estar."
   },
   "qualifications": {
     "title": "Qualificações",

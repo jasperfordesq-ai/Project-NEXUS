@@ -59,18 +59,28 @@
     </div>
   {% endif %}
 
-  <div class="govuk-form-group">
-    <label class="govuk-label govuk-label--m" for="wellbeing-score">{{ t("govuk_alpha_volunteering.wellbeing.score_label") }}</label>
-    <p class="govuk-body govuk-!-margin-bottom-1">{{ wellbeing.score }} {{ t("govuk_alpha_volunteering.wellbeing.score_out_of") }}</p>
-    <progress id="wellbeing-score" max="100" value="{{ wellbeing.score }}" aria-label="{{ t('govuk_alpha_volunteering.wellbeing.score_label') }}">{{ wellbeing.score }}%</progress>
-  </div>
+  {% if wellbeing.hasScore %}
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--m" for="wellbeing-score">{{ t("govuk_alpha_volunteering.wellbeing.score_label") }}</label>
+      <p class="govuk-body govuk-!-margin-bottom-1">{{ wellbeing.score }} {{ t("govuk_alpha_volunteering.wellbeing.score_out_of") }}</p>
+      <progress id="wellbeing-score" max="100" value="{{ wellbeing.score }}" aria-label="{{ t('govuk_alpha_volunteering.wellbeing.score_label') }}">{{ wellbeing.score }}%</progress>
+    </div>
 
-  <p class="govuk-body">
-    {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
-    {{ govukTag({ text: wellbeing.risk.label, classes: (wellbeing.risk.className) }) }}
-  </p>
-  {% if wellbeing.lastToldLabel %}
-    <p class="govuk-body-s">{{ wellbeing.lastToldLabel }}</p>
+    <p class="govuk-body">
+      {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
+      {{ govukTag({ text: wellbeing.risk.label, classes: (wellbeing.risk.className) }) }}
+    </p>
+    {% if wellbeing.lastToldLabel %}
+      <p class="govuk-body-s">{{ wellbeing.lastToldLabel }}</p>
+    {% endif %}
+  {% elif not wellbeing.loaded %}
+    {# The API could not be read (21 Oct 2026). No score, no risk tag: nothing is
+       made up beside the error. The check-in form below still works. #}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.assessment_unavailable") }}</div>
+  {% else %}
+    {# score_basis is no_data: nothing to score yet. The 100/100 the API still
+       sends is not a result, so it is not shown. #}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.score_no_data") }}</div>
   {% endif %}
 
   {% if wellbeing.support %}
@@ -103,15 +113,17 @@
     </div>
   </dl>
 
-  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.warnings_title") }}</h2>
-  {% if wellbeing.warnings.length %}
-    <ul class="govuk-list govuk-list--bullet">
-      {% for warning in wellbeing.warnings %}
-        <li>{{ warning }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.no_warnings") }}</div>
+  {% if wellbeing.hasScore %}
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.warnings_title") }}</h2>
+    {% if wellbeing.warnings.length %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for warning in wellbeing.warnings %}
+          <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.no_warnings") }}</div>
+    {% endif %}
   {% endif %}
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.checkin_title") }}</h2>

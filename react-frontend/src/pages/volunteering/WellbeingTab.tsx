@@ -49,6 +49,13 @@ import { logError } from '@/lib/logger';
 
 interface WellbeingData {
   score: number;
+  /**
+   * What the score rests on (21 Oct 2026). `no_data` means there is no
+   * volunteering activity and no check-in to score, so the default 100/100
+   * "Excellent" is not a result and must not be shown as one. Absent on older
+   * payloads, which is treated as `activity`.
+   */
+  score_basis?: 'activity' | 'no_data';
   hours_this_week: number;
   hours_this_month: number;
   streak_days: number;
@@ -86,13 +93,21 @@ interface WellbeingCheckinResult {
   shared: boolean;
   /** True only when at least one person or address was actually reached about this check-in. */
   team_notified: boolean;
+  /** How many OTHER people or addresses were told (21 Oct 2026): the volunteer themself is never counted. */
   told_count?: number;
   told_at?: string | null;
-  /** What happened (20 Oct 2026): told | already_told_today | nobody_available | private | not_low. */
+  /**
+   * What happened (20 Oct 2026): told | already_told_today | nobody_available |
+   * private | not_low; plus told_self_only (21 Oct 2026) when the only person
+   * told was the volunteer, because they are the whole of their community's team.
+   */
   outcome?: CheckinOutcome;
 }
 
-type CheckinOutcome = 'told' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
+type CheckinOutcome = 'told' | 'told_self_only' | 'already_told_today' | 'nobody_available' | 'private' | 'not_low';
+
+/** Outcomes that are not good news: amber, with the support box beside them. */
+const WARNING_OUTCOMES: ReadonlySet<CheckinOutcome> = new Set(['nobody_available', 'told_self_only']);
 
 interface OutcomeNotice {
   outcome: CheckinOutcome;
@@ -130,7 +145,11 @@ type TranslateWithOptions = (key: string, opts?: Record<string, unknown>) => str
 function outcomeHeadline(notice: OutcomeNotice, t: TranslateWithOptions): string {
   switch (notice.outcome) {
     case 'told':
+      // Plural key: i18next picks outcome_told_one / _other (and the locale's
+      // own forms) from `count`, which is the number of OTHER people told.
       return t('wellbeing.outcome_told', { count: notice.toldCount });
+    case 'told_self_only':
+      return t('wellbeing.outcome_told_self_only');
     case 'already_told_today':
       return t('wellbeing.outcome_already_told', {
         time: notice.toldAt ? new Date(notice.toldAt).toLocaleTimeString(getFormattingLocale(), { hour: '2-digit', minute: '2-digit' }) : '',
@@ -345,12 +364,12 @@ export function WellbeingTab() {
       {/* What happened after the last check-in (20 Oct 2026): honest, on the page. */}
       {notice && (
         <GlassCard
-          className={`p-4 border ${notice.outcome === 'nobody_available' ? 'border-amber-500/40' : 'border-emerald-500/30'}`}
+          className={`p-4 border ${WARNING_OUTCOMES.has(notice.outcome) ? 'border-amber-500/40' : 'border-emerald-500/30'}`}
           role="status"
           aria-label={outcomeHeadline(notice, (key, opts) => t(key, opts))}
         >
           <div className="flex items-start gap-3">
-            {notice.outcome === 'nobody_available' ? (
+            {WARNING_OUTCOMES.has(notice.outcome) ? (
               <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
             ) : (
               <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
@@ -363,7 +382,7 @@ export function WellbeingTab() {
                   {t('wellbeing.outcome_what_next_desc')}
                 </p>
               )}
-              {notice.outcome === 'nobody_available' && data?.support && (
+              {WARNING_OUTCOMES.has(notice.outcome) && data?.support && (
                 <div className="mt-2">
                   <SupportBox support={data.support} tenantPath={tenantPath} t={(key) => t(key)} compact />
                 </div>
@@ -436,18 +455,33 @@ export function WellbeingTab() {
         >
           {/* Stat Cards Row */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Wellbeing Score */}
-            <GlassCard className="p-5">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl ${getScoreColor(data.score).bg} flex items-center justify-center`}>
-                  <Activity className={`w-5 h-5 ${getScoreColor(data.score).text}`} aria-hidden="true" />
+            {/* Wellbeing Score. With nothing to score (21 Oct 2026) the number is
+                withheld: a default 100 would read as a clean bill of health. */}
+            {data.score_basis === 'no_data' ? (
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-theme-hover flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-theme-muted" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-theme-muted">{t('wellbeing.score_no_data')}</p>
+                    <p className="text-xs text-theme-muted">{t('wellbeing.score_label')}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={`text-2xl font-bold ${getScoreColor(data.score).text}`}>{data.score}</p>
-                  <p className="text-xs text-theme-muted">{t('wellbeing.score_label')}</p>
+              </GlassCard>
+            ) : (
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${getScoreColor(data.score).bg} flex items-center justify-center`}>
+                    <Activity className={`w-5 h-5 ${getScoreColor(data.score).text}`} aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className={`text-2xl font-bold ${getScoreColor(data.score).text}`}>{data.score}</p>
+                    <p className="text-xs text-theme-muted">{t('wellbeing.score_label')}</p>
+                  </div>
                 </div>
-              </div>
-            </GlassCard>
+              </GlassCard>
+            )}
 
             {/* Hours This Week */}
             <GlassCard className="p-5">
@@ -489,7 +523,7 @@ export function WellbeingTab() {
             </GlassCard>
           </motion.div>
 
-          {/* Wellbeing Score Bar */}
+          {/* Wellbeing Score Bar — or, with nothing to score, a neutral card in its place. */}
           <motion.div variants={itemVariants}>
             <GlassCard className="p-5">
               <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
@@ -497,28 +531,34 @@ export function WellbeingTab() {
                   <Heart className="w-4 h-4 text-rose-400" aria-hidden="true" />
                   <span className="text-sm font-medium text-theme-primary">{t('wellbeing.score_label')}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Chip size="sm" color={getRiskColor(data.burnout_risk)} variant="soft">
-                    {data.burnout_risk === 'low' ? t('wellbeing.risk_low') : data.burnout_risk === 'moderate' ? t('wellbeing.risk_moderate') : t('wellbeing.risk_high')}
-                  </Chip>
-                  <span className={`text-sm font-semibold ${getScoreColor(data.score).text}`}>
-                    {t('wellbeing.score_out_of_100', {
-                      score: data.score,
-                      label: getScoreLabel(data.score, (key) => t(key)),
-                    })}
-                  </span>
-                </div>
+                {data.score_basis !== 'no_data' && (
+                  <div className="flex items-center gap-2">
+                    <Chip size="sm" color={getRiskColor(data.burnout_risk)} variant="soft">
+                      {data.burnout_risk === 'low' ? t('wellbeing.risk_low') : data.burnout_risk === 'moderate' ? t('wellbeing.risk_moderate') : t('wellbeing.risk_high')}
+                    </Chip>
+                    <span className={`text-sm font-semibold ${getScoreColor(data.score).text}`}>
+                      {t('wellbeing.score_out_of_100', {
+                        score: data.score,
+                        label: getScoreLabel(data.score, (key) => t(key)),
+                      })}
+                    </span>
+                  </div>
+                )}
               </div>
-              <Progress
-                value={data.score}
-                maxValue={100}
-                classNames={{
-                  indicator: getScoreColor(data.score).indicator,
-                  track: 'bg-theme-hover',
-                }}
-                size="lg"
-                aria-label={t('wellbeing.score_aria', { score: data.score })}
-              />
+              {data.score_basis === 'no_data' ? (
+                <p className="text-sm text-theme-muted">{t('wellbeing.score_no_data')}</p>
+              ) : (
+                <Progress
+                  value={data.score}
+                  maxValue={100}
+                  classNames={{
+                    indicator: getScoreColor(data.score).indicator,
+                    track: 'bg-theme-hover',
+                  }}
+                  size="lg"
+                  aria-label={t('wellbeing.score_aria', { score: data.score })}
+                />
+              )}
               {data.last_team_notified_at && (
                 <p className="text-xs text-theme-subtle mt-3">
                   {t('wellbeing.last_told', {
@@ -628,7 +668,7 @@ export function WellbeingTab() {
           )}
 
           {/* Low Score Call-to-Action */}
-          {data.score < 40 && (
+          {data.score_basis !== 'no_data' && data.score < 40 && (
             <motion.div variants={itemVariants}>
               <GlassCard className="p-5 border border-rose-500/30">
                 <div className="flex items-start gap-3">

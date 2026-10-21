@@ -874,6 +874,8 @@
     "wellbeing_indicator_shift_frequency": "Schichthäufigkeit",
     "wellbeing_indicator_cancellation_rate": "Absagequote",
     "wellbeing_indicator_overcommitment": "Anstehende Schichten",
+
+    "wellbeing_indicator_not_measured": "Nicht gemessen",
     "wellbeing_settings_title": "Wer zuerst informiert wird, und der Unterstützungskasten",
     "wellbeing_settings_desc": "Wenn eine freiwillige Person angibt, dass es ihr schlecht geht, und darum bittet, dass sich jemand meldet, werden zuerst diese Personen informiert, dann die Mitarbeitenden der Gemeinschaft, die Organisationen, bei denen sie tätig ist, und die übergeordnete Gemeinschaft. Der Unterstützungskasten wird jeder freiwilligen Person auf ihrer Wohlbefinden-Seite angezeigt.",
     "wellbeing_contacts_label": "Wohlbefinden-Kontaktpersonen",
