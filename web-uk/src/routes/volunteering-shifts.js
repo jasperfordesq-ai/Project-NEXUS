@@ -294,7 +294,12 @@ function presentUrgentRequest(raw, t) {
     isActive: row.status === 'active',
     priorityLabel: t(`${URGENT}priority.${priority}`),
     priorityClass: priority === 'normal' ? 'govuk-tag--grey' : 'govuk-tag--red',
-    shiftLabel: [dayLabel(start), t(`${KEY}time_range`, { start: clockLabel(start), end: clockLabel(end) })].filter(Boolean).join(', '),
+    // Day and times as one phrase in the member's language, not a hard-coded comma.
+    shiftLabel: start === null ? '' : (end === null || end < start
+      ? dayLabel(start)
+      : new Intl.DateTimeFormat(getRequestIntlLocale(), {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+      }).formatRange(new Date(start), new Date(end))),
     message: trimmed(row.message, URGENT_MESSAGE_MAX),
     countsLabel: t(`${URGENT}list_counts`, {
       asked: wholeNumber(stats.total_notified),

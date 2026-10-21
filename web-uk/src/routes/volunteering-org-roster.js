@@ -136,7 +136,7 @@ function change(action, send) {
 
     let outcome;
     try {
-      await send(token, encodeURIComponent(orgId), encodeURIComponent(Number(req.params.userId)));
+      await send(token, orgId, Number(req.params.userId));
       const done = { retire: 'retired', reinstate: 'reinstated', remove: 'removed' }[action];
       outcome = { type: 'success', message: t(`${KEY}${done}`, { name }) };
     } catch (error) {
@@ -154,10 +154,10 @@ function change(action, send) {
 router.get('/organisations/:orgId(\\d+)/volunteers/:userId(\\d+)/retire', confirmPage('retire'));
 router.get('/organisations/:orgId(\\d+)/volunteers/:userId(\\d+)/remove', confirmPage('remove'));
 router.post('/organisations/:orgId(\\d+)/volunteers/:userId(\\d+)/retire', change('retire',
-  (token, org, user) => callVolunteeringApi(token, 'POST', `/organisations/${org}/volunteers/${user}/retire`)));
+  (token, org, user) => callVolunteeringApi(token, 'POST', `/organisations/${encodeURIComponent(org)}/volunteers/${encodeURIComponent(user)}/retire`)));
 router.post('/organisations/:orgId(\\d+)/volunteers/:userId(\\d+)/reinstate', change('reinstate',
-  (token, org, user) => callVolunteeringApi(token, 'POST', `/organisations/${org}/volunteers/${user}/reinstate`)));
+  (token, org, user) => callVolunteeringApi(token, 'POST', `/organisations/${encodeURIComponent(org)}/volunteers/${encodeURIComponent(user)}/reinstate`)));
 router.post('/organisations/:orgId(\\d+)/volunteers/:userId(\\d+)/remove', change('remove',
-  (token, org, user) => callVolunteeringApi(token, 'DELETE', `/organisations/${org}/volunteers/${user}`)));
+  (token, org, user) => callVolunteeringApi(token, 'DELETE', `/organisations/${encodeURIComponent(org)}/volunteers/${encodeURIComponent(user)}`)));
 
 module.exports = router;

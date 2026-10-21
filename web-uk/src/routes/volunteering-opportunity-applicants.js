@@ -96,10 +96,13 @@ function dateLabel(epoch) {
   }).format(new Date(epoch));
 }
 
-function clockLabel(epoch) {
-  return epoch === null ? '' : new Intl.DateTimeFormat(getRequestIntlLocale(), {
-    hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-  }).format(new Date(epoch));
+/** A shift's day and times in the member's language, e.g. "Saturday 14 March 2099, 09:00–12:00". */
+function shiftWhen(start, end) {
+  if (start === null) return '';
+  const format = new Intl.DateTimeFormat(getRequestIntlLocale(), {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+  });
+  return end === null || end < start ? dayLabel(start) : format.formatRange(new Date(start), new Date(end));
 }
 
 function listPath(id, show, outcome) {
@@ -125,7 +128,7 @@ function presentApplication(raw, t) {
     applicant: { id: positiveInteger(user.id), name: trimmed(user.name) || t('members.unknown_member') },
     message: trimmed(row.message, 2000),
     orgNote: trimmed(row.org_note, NOTE_MAX),
-    shiftLabel: start === null ? '' : `${dayLabel(start)}, ${t('govuk_alpha_volunteering.shift_manager.time_range', { start: clockLabel(start), end: clockLabel(end) })}`,
+    shiftLabel: shiftWhen(start, end),
     appliedLabel: dateLabel(wallClock(row.created_at))
   };
 }
