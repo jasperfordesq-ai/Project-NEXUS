@@ -60,17 +60,27 @@ RUN docker-php-ext-configure gd \
         fileinfo
 
 # Redis extension (for sessions/cache).
-# pecl.php.net intermittently 504s / serves truncated tarballs, which repeatedly
-# broke CI ("Docker Build Verify") and production image builds on an unchanged
-# line. Retry with backoff and a clean download dir each attempt so a transient
-# blip doesn't fail the build; fail hard only after 5 genuine failures.
+# pecl.php.net intermittently 504s / serves truncated tarballs, and on
+# 2026-10-21 its REST catalogue came back malformed to the production host
+# ("Package redis Version 6.3.0 does not have REST xml available", even after
+# `pecl channel-update`) while GitHub's runners were served normally: two
+# production builds failed on an unchanged line. So the tarball is fetched by
+# its direct URL (which never touches the catalogue), pinned to the version
+# production already ran, and checked against a SHA-256 before installing.
+# Retry with backoff; fail hard only after 5 genuine failures.
+# To upgrade: change both values here AND in Dockerfile.prod.
+ARG REDIS_EXT_VERSION=6.3.0
+ARG REDIS_EXT_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
 RUN ok=0; \
     for i in 1 2 3 4 5; do \
-        rm -rf /tmp/pear/download/* 2>/dev/null || true; \
-        if pecl install redis; then ok=1; break; fi; \
+        rm -rf /tmp/pear/download/* /tmp/redis.tgz 2>/dev/null || true; \
+        if curl -fsSL --retry 3 -o /tmp/redis.tgz "https://pecl.php.net/get/redis-${REDIS_EXT_VERSION}.tgz" \
+            && echo "${REDIS_EXT_SHA256}  /tmp/redis.tgz" | sha256sum -c - \
+            && pecl install /tmp/redis.tgz; then ok=1; break; fi; \
         echo "pecl install redis failed (attempt $i/5)" >&2; \
         if [ "$i" -lt 5 ]; then sleep "$((i * 10))"; fi; \
     done; \
+    rm -f /tmp/redis.tgz; \
     if [ "$ok" != 1 ]; then echo "pecl install redis failed after 5 attempts" >&2; exit 1; fi; \
     docker-php-ext-enable redis
 
