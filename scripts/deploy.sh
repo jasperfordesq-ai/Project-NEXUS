@@ -289,7 +289,24 @@ echo "===> Error watch started in the background (pid $WATCH_PID); its checkpoin
 # Deliberately NON-BLOCKING. SEO delivery is not a reason to fail a deploy that
 # is otherwise healthy for members — but it must be loud, because silence is
 # exactly how this went unnoticed for two months.
-if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
+#
+# 🔴 The addresses come from the prerender engine's own plan on the server
+# (`prerender:plan-routes`, which reads the tenants table): every active
+# community, at the host and path the engine renders it under. Until 2026-10-22
+# they came only from the hand-kept NEXUS_DELIVERY_ORIGINS in deploy.env. When
+# the owner removed Minehead's custom domain, that list still named it, so every
+# deploy reported it BLANK; and it had never listed bridgwater.timebank.global.
+# The hand-kept list is now only the fallback when the server cannot answer.
+DELIVERY_PLAN_FILE="$(mktemp -t nexus-delivery-plan-XXXXXX 2>/dev/null || echo "/tmp/nexus-delivery-plan-$$")"
+PROBE_ARGS=()
+if ssh -i "$SSH_KEY" -o RequestTTY=force -o ConnectTimeout=20 "$SSH_HOST" \
+    'APP=$(sudo docker ps --format "{{.Names}}" | grep -E "^nexus-(blue|green)-php-app$" | head -1); [ -n "$APP" ] && sudo docker exec "$APP" php artisan prerender:plan-routes --include-static=0 --include-sitemap=0' \
+    > "$DELIVERY_PLAN_FILE" 2>/dev/null && grep -q '"tenants"' "$DELIVERY_PLAN_FILE"; then
+    PROBE_ARGS=("--from-plan=$DELIVERY_PLAN_FILE")
+elif [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
+    echo "===> Could not read the prerender plan from the server; probing the hand-kept NEXUS_DELIVERY_ORIGINS instead."
+fi
+if [ "${#PROBE_ARGS[@]}" -gt 0 ] || [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
     # The pinned commit from step 3 (E-035 F-202) — what the server built.
     DEPLOY_SHA="${DEPLOY_SHA:-$(git rev-parse origin/main 2>/dev/null || true)}"
     PROBE_NOTE=""
@@ -313,7 +330,7 @@ if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
     # 🔴 Pass the commit being deployed. Without it the probe can only ask "is
     # this a real page", which is what let app.project-nexus.ie serve a snapshot
     # frozen at one commit through three deploys while this check passed 16/16.
-    if NEXUS_DELIVERY_EXPECT_COMMIT="$DEPLOY_SHA" node scripts/check-prerender-delivery.mjs; then
+    if NEXUS_DELIVERY_EXPECT_COMMIT="$DEPLOY_SHA" node scripts/check-prerender-delivery.mjs ${PROBE_ARGS[@]+"${PROBE_ARGS[@]}"}; then
         echo "===> ✓ Crawlers are being served real, current content.${PROBE_NOTE}"
     else
         echo "===> ⚠⚠⚠ CRAWLER DELIVERY CHECK FAILED — see above for which fault and its remedy.${PROBE_NOTE}"
@@ -321,8 +338,9 @@ if [ -n "${NEXUS_DELIVERY_ORIGINS:-}" ]; then
         echo "===>     The deploy itself is fine; SEO is not. Do not ignore this."
     fi
 else
-    echo "===> SEO delivery check skipped (set NEXUS_DELIVERY_ORIGINS to enable)."
+    echo "===> SEO delivery check skipped: the server did not return its prerender plan and NEXUS_DELIVERY_ORIGINS is unset."
 fi
+rm -f "$DELIVERY_PLAN_FILE"
 
 # --- collect the error watch ------------------------------------------------
 echo "===> Waiting for the 30-minute error watch to finish..."

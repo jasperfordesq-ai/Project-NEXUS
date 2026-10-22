@@ -1146,6 +1146,12 @@ jobs:
       - name: "BLOCKING: Crawler delivery probe detects a frozen snapshot"
         run: node --test scripts/test/check-prerender-delivery-freshness.test.mjs
 
+      # Added 2026-10-22. The probe's addresses were a hand-kept list that still
+      # named a custom domain the owner had removed (Minehead) and never named
+      # a live one (Bridgwater). It now reads the prerender engine's own plan.
+      - name: "BLOCKING: Crawler delivery probe follows the tenants table"
+        run: node --test scripts/test/check-prerender-delivery-origins.test.mjs
+
       - name: "BLOCKING: DB column references resolve against the schema dump"
         run: node scripts/check-db-column-references.mjs
 

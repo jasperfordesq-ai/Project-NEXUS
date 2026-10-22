@@ -184,6 +184,22 @@ fi
 assert "the commit deploy.sh passes is DEPLOY_SHA" \
     "$(echo "$probe_call" | grep -q 'NEXUS_DELIVERY_EXPECT_COMMIT="\?\$DEPLOY_SHA"\?' && echo 1 || echo 0)"
 
+# ---------------------------------------------------------------------------
+echo "Scenario 9: the probe's addresses come from the server's prerender plan"
+# Added 2026-10-22. The hand-kept NEXUS_DELIVERY_ORIGINS still named
+# minehead-and-coast.timebank.global after the owner removed that domain, and
+# had never named bridgwater.timebank.global. The engine's plan reads the
+# tenants table, so deploy.sh must ask it and hand the answer to the probe.
+assert "deploy.sh asks the server for prerender:plan-routes" \
+    "$(grep -v '^\s*#' "$DEPLOY" | grep -q 'prerender:plan-routes' && echo 1 || echo 0)"
+assert "the probe is given --from-plan" \
+    "$(grep -v '^\s*#' "$DEPLOY" | grep -q -- '--from-plan=' && echo 1 || echo 0)"
+assert "the probe call passes PROBE_ARGS" \
+    "$(echo "$probe_call" | grep -q 'PROBE_ARGS' && echo 1 || echo 0)"
+plan_line=$(grep -nE 'prerender:plan-routes' "$DEPLOY" | grep -v ':[[:space:]]*#' | head -1 | cut -d: -f1)
+assert "the plan is fetched before the probe runs" \
+    "$([ -n "$plan_line" ] && [ -n "$probe_line" ] && [ "$plan_line" -lt "$probe_line" ] && echo 1 || echo 0)"
+
 echo ""
 echo "Result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

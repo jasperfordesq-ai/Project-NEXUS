@@ -31,6 +31,8 @@
  * Usage:
  *   node scripts/check-prerender-delivery.mjs                 # hosts from config
  *   node scripts/check-prerender-delivery.mjs https://a.tld   # explicit origins
+ *   node scripts/check-prerender-delivery.mjs --from-plan=plan.json
+ *        # origins from `php artisan prerender:plan-routes` output — what deploy.sh uses
  *   NEXUS_DELIVERY_PATHS=/,/about node scripts/...            # override paths
  *   NEXUS_DELIVERY_EXPECT_COMMIT=<sha> node scripts/...       # commit being deployed
  *
@@ -41,6 +43,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import path from 'node:path';
 
 const BOT_UA =
@@ -169,13 +172,75 @@ function buildCommitOf(body) {
   return m ? m[2].toLowerCase() : null;
 }
 
-function originsFromArgs() {
-  const args = process.argv.slice(2).filter((a) => !a.startsWith('-'));
-  if (args.length) return args.map((a) => (a.startsWith('http') ? a : `https://${a}`));
+function handKeptOrigins() {
   const env = process.env.NEXUS_DELIVERY_ORIGINS;
-  if (env) return env.split(',').map((s) => s.trim()).filter(Boolean)
+  if (!env) return null;
+  return env.split(',').map((s) => s.trim()).filter(Boolean)
     .map((a) => (a.startsWith('http') ? a : `https://${a}`));
-  return null;
+}
+
+/**
+ * The origins to probe, read from the prerender engine's own plan
+ * (`php artisan prerender:plan-routes` JSON): every active community, at the
+ * host AND path the engine renders it under — `https://hour-timebank.ie`, but
+ * also `https://uk.timebank.global/west-somerset` for a community with no
+ * domain of its own.
+ *
+ * 🔴 Why this exists: until 2026-10-22 deploy.sh probed only a hand-kept list
+ * (NEXUS_DELIVERY_ORIGINS in deploy.env). When the owner removed Minehead's
+ * custom domain the community moved to a path under Timebanking UK, but the
+ * list still named minehead-and-coast.timebank.global, so every deploy reported
+ * it BLANK — and the same list had never contained bridgwater.timebank.global,
+ * a live domain nobody checked. The engine reads the tenants table; now the
+ * probe reads the engine, so a domain change needs no second edit.
+ *
+ * Tolerant of noise around the JSON (an artisan warning, a TTY's carriage
+ * returns) and strict about what it accepts as a host or path, because the
+ * result becomes request URLs.
+ */
+function originsFromPlan(plan) {
+  const tenants = Array.isArray(plan?.tenants) ? plan.tenants : [];
+  const origins = [];
+  for (const tenant of tenants) {
+    const host = String(tenant?.host || '').trim().toLowerCase();
+    if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(host)) continue;
+    const prefix = String(tenant?.prefix || '').trim().replace(/\/+$/, '');
+    if (prefix && (!/^(?:\/[A-Za-z0-9._~-]+)+$/.test(prefix) || prefix.split('/').some((s) => s === '.' || s === '..'))) continue;
+    const origin = `https://${host}${prefix}`;
+    if (!origins.includes(origin)) origins.push(origin);
+  }
+  return origins;
+}
+
+function readPlanFile(file) {
+  const raw = fs.readFileSync(file, 'utf8');
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error(`no JSON object in ${file}`);
+  return JSON.parse(raw.slice(start, end + 1));
+}
+
+/**
+ * What the hand-kept list gets wrong against the live plan, so a stale
+ * deploy.env says so instead of quietly lingering as the fallback.
+ */
+function compareOriginLists(handKept, live) {
+  const norm = (o) => o.replace(/\/+$/, '').toLowerCase();
+  const liveSet = new Set(live.map(norm));
+  const handSet = new Set(handKept.map(norm));
+  return {
+    noLongerLive: handKept.filter((o) => !liveSet.has(norm(o))),
+    missingFromList: live.filter((o) => !handSet.has(norm(o))),
+  };
+}
+
+function originsFromArgs(argv = process.argv.slice(2)) {
+  const planArg = argv.find((a) => a.startsWith('--from-plan='));
+  if (planArg) return { origins: originsFromPlan(readPlanFile(planArg.slice('--from-plan='.length))), source: 'plan' };
+  const args = argv.filter((a) => !a.startsWith('-'));
+  if (args.length) return { origins: args.map((a) => (a.startsWith('http') ? a : `https://${a}`)), source: 'args' };
+  const hand = handKeptOrigins();
+  return hand ? { origins: hand, source: 'deploy.env' } : null;
 }
 
 /**
@@ -308,12 +373,31 @@ async function probe(origin, path) {
 }
 
 async function main() {
-  const origins = originsFromArgs();
-  if (!origins || !origins.length) {
-    console.error('check-prerender-delivery: no origins given.');
-    console.error('  Pass them as arguments, or set NEXUS_DELIVERY_ORIGINS=host1,host2');
+  let chosen;
+  try {
+    chosen = originsFromArgs();
+  } catch (err) {
+    console.error(`check-prerender-delivery: could not read the prerender plan (${err && err.message || err}).`);
     console.error('  UNAVAILABLE is not a pass — exiting 2.');
     process.exit(2);
+  }
+  const origins = chosen ? chosen.origins : null;
+  if (!origins || !origins.length) {
+    console.error('check-prerender-delivery: no origins given.');
+    console.error('  Pass --from-plan=<prerender:plan-routes JSON>, origins as arguments, or set NEXUS_DELIVERY_ORIGINS=host1,host2');
+    console.error('  UNAVAILABLE is not a pass — exiting 2.');
+    process.exit(2);
+  }
+  if (chosen.source === 'plan') {
+    console.log("check-prerender-delivery: addresses taken from the prerender engine's plan (the tenants table).");
+    const hand = handKeptOrigins();
+    if (hand) {
+      const { noLongerLive, missingFromList } = compareOriginLists(hand, origins);
+      if (noLongerLive.length) console.log(`  note: deploy.env NEXUS_DELIVERY_ORIGINS still lists address(es) no community uses: ${noLongerLive.join(', ')}`);
+      if (missingFromList.length) console.log(`  note: deploy.env NEXUS_DELIVERY_ORIGINS does not list: ${missingFromList.join(', ')} (it is only the fallback now)`);
+    }
+  } else if (chosen.source === 'deploy.env') {
+    console.log('check-prerender-delivery: ⚠ using the hand-kept NEXUS_DELIVERY_ORIGINS list — it does not follow domain changes.');
   }
 
   const expected = expectedCommit();
@@ -427,7 +511,10 @@ async function main() {
 // Exported so the freshness decision can be tested without a network or a
 // particular git history: judgeFreshness takes the age cache as an argument,
 // so a test seeds it and drives every branch directly.
-export { judgeFreshness, sameCommit, buildCommitOf, expectedCommit, renderAgeHoursFrom };
+export {
+  judgeFreshness, sameCommit, buildCommitOf, expectedCommit, renderAgeHoursFrom,
+  originsFromPlan, compareOriginLists, originsFromArgs,
+};
 
 // Only probe when run as a command. Importing this file for its helpers must
 // not fire sixteen HTTP requests and call process.exit().
