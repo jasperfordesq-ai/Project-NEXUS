@@ -202,8 +202,15 @@ test.describe('Smoke Tests @smoke', () => {
       const body = page.locator('body');
       await expect(body).toBeVisible();
 
-      await expect(page.getByRole('heading', { name: /Exchange Skills|Future of Time Banking/i }).first())
-        .toBeVisible({ timeout: 20000 });
+      // The landing page rendered its hero: a non-empty level-1 heading. Do NOT
+      // match the wording. Every community can rewrite its hero in the landing
+      // page builder, and the deploy gate runs this test against LIVE
+      // hour-timebank data — on 2026-10-22 its hero became "Give an hour. Get
+      // an hour back." and a check for the default "Exchange Skills" wording
+      // refused a deploy whose code was fine.
+      const hero = page.getByRole('heading', { level: 1 }).first();
+      await expect(hero).toBeVisible({ timeout: 20000 });
+      await expect(hero).not.toHaveText(/^\s*$/);
 
       // No uncaught JS errors
       expect(consoleErrors).toHaveLength(0);
