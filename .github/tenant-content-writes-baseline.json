@@ -1,3 +1,13 @@
 [
-  "migrations/2026_05_13_normalize_hour_timebank_branding.sql"
+  "database/migrations/2026_04_15_000002_fix_terms_insurance_section.php",
+  "database/migrations/2026_10_17_120000_retire_footer_page_placement.php",
+  "migrations/20260227_120000_create_help_faqs.sql",
+  "migrations/2026_01_19_update_reengagement_gold_standard.sql",
+  "migrations/2026_01_19_update_reengagement_polished.sql",
+  "migrations/2026_01_19_update_reengagement_template.sql",
+  "migrations/2026_01_25_create_legal_documents_system.sql",
+  "migrations/2026_03_06_backfill_tenant_pages.sql",
+  "migrations/2026_05_13_normalize_hour_timebank_branding.sql",
+  "migrations/HELP_CENTER_COMPLETE_JAN_2026.sql",
+  "migrations/update_help_center_content.sql"
 ]
