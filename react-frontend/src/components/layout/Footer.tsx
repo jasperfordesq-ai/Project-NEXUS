@@ -55,9 +55,11 @@ export function Footer({ children, copyright }: FooterProps) {
   // God-uploaded images take priority; otherwise the built-in assets ship with every fork/clone.
   // 🔴 A new artwork needs a NEW file name. /images/* is served `immutable` for
   // a year, so replacing the bytes under the old name (powered-by-nexus-*.png,
-  // 2026-10-06) left every returning browser showing the old badge.
-  const DEFAULT_PB_IMAGE_LIGHT = '/images/powered-by-project-nexus-light.png';
-  const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-project-nexus-dark.png';
+  // 2026-10-06) left every returning browser showing the old badge. The
+  // 2026-10-22 artwork therefore lives under its own -2026-10- names; the older
+  // names carry the same bytes for any cached page that still points at them.
+  const DEFAULT_PB_IMAGE_LIGHT = '/images/powered-by-project-nexus-2026-10-light.png';
+  const DEFAULT_PB_IMAGE_DARK  = '/images/powered-by-project-nexus-2026-10-dark.png';
   const DEFAULT_PB_URL         = 'https://project-nexus.net';
 
   // The API resolves which badge applies — the community's own, or the network

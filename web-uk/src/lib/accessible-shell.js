@@ -30,7 +30,7 @@ const sourceCodeUrl = 'https://github.com/jasperfordesq-ai/Project-NEXUS';
 // 🔴 New artwork = new file name. Browsers keep this image for a day here
 // (staticOptions in server.js) and for a year, `immutable`, on the React site;
 // new bytes under an old name do not reach returning visitors.
-const DEFAULT_POWERED_BY_IMAGE = '/images/powered-by-project-nexus-light.png';
+const DEFAULT_POWERED_BY_IMAGE = '/images/powered-by-project-nexus-2026-10-light.png';
 const DEFAULT_POWERED_BY_URL = 'https://project-nexus.net';
 
 // The platform's own name, as a code constant rather than a translation key —
@@ -631,7 +631,7 @@ function resolveBackendMediaUrl(value) {
  *
  * 🔴 Why this is NOT `resolveBackendAssetUrl`, which is otherwise the correct helper
  * for tenant branding: the powered-by badge has a BUILT-IN DEFAULT
- * (`/images/powered-by-project-nexus-light.png`) that this frontend serves from its own
+ * (`/images/powered-by-project-nexus-2026-10-light.png`) that this frontend serves from its own
  * `public/` directory. `resolveBackendAssetUrl` resolves every relative path against
  * the API origin, which would send the browser to the API host for a file that only
  * exists here, and render a broken image on every page for every community that has
