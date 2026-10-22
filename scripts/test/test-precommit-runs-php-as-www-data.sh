@@ -109,6 +109,14 @@ elif [ -n "$PHPUNIT_LINE" ] && [ "$CHOWN_LINE" -gt "$PHPUNIT_LINE" ]; then
     fail "root-owned: hand-back ran after phpunit"
 fi
 
+# Preflight runs the same changed PHPUnit files and must not run them as root
+# either: on 2026-10-21 it left root-owned scratch in storage/framework/testing
+# and the next www-data run of the podcast suite failed 12 tests.
+PREFLIGHT="$REPO_ROOT/scripts/preflight.mjs"
+if ! grep -E 'docker exec[^`]*nexus-php-app php vendor/bin/phpunit' "$PREFLIGHT" | grep -q -- '-u www-data'; then
+    fail "preflight: PHPUnit is not run as www-data"
+fi
+
 if [ "$FAILURES" -ne 0 ]; then
     echo "pre-commit www-data contract: $FAILURES failure(s)"
     exit 1

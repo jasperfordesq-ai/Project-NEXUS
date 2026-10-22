@@ -274,8 +274,12 @@ if (areas.php.length) {
       // Host PHPUnit is deliberately never attempted: incomplete host vendor/
       // produces false failures. APP_KEY must be passed explicitly — the
       // container .env ships a placeholder that breaks Crypt-touching tests.
+      // 🔴 `-u www-data`, as the pre-commit hook does since 2026-10-07: run as
+      // root, the tests left root-owned scratch under the bind-mounted
+      // storage/framework/testing (2026-10-21), and every later www-data run of
+      // the podcast suite failed with "Permission denied" (12 errors).
       sh(`PHPUnit (${phpTests.length} changed test file${phpTests.length === 1 ? '' : 's'})`,
-        `docker exec -e MAIL_MAILER=array -e APP_KEY="base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=" nexus-php-app php vendor/bin/phpunit ${phpTests.join(' ')} --no-coverage`,
+        `docker exec -u www-data -e MAIL_MAILER=array -e APP_KEY="base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=" nexus-php-app php vendor/bin/phpunit ${phpTests.join(' ')} --no-coverage`,
         { timeout: 420_000 });
     } else {
       record('PHPUnit (changed test files)', 'UNAVAILABLE', 'nexus-php-app container not running — these tests have NOT been run');
