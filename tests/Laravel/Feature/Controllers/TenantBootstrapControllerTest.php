@@ -697,4 +697,36 @@ class TenantBootstrapControllerTest extends TestCase
         $this->assertSame('bing-verify-456', $settings['seo_bing_verification']);
         $this->assertArrayNotHasKey('seo_robots_txt', $settings);
     }
+
+    /**
+     * Two screens set the default social sharing image: the community's own
+     * admin on /admin/seo (seo_og_image_url setting) and the super-admin tenant
+     * form (tenants.og_image_url). The community's choice wins; until
+     * 2026-10-22 the super-admin column won and the tenant admin's change had
+     * no effect.
+     */
+    public function test_bootstrap_prefers_the_communitys_own_sharing_image_over_the_super_admin_one(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['og_image_url' => '/uploads/super-admin-share.png']);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_og_image_url'],
+            ['setting_value' => '/uploads/tenant-admin-share.png', 'setting_type' => 'string', 'updated_at' => now()]
+        );
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+        $response->assertStatus(200);
+        $this->assertStringEndsWith('/uploads/tenant-admin-share.png', (string) $response->json('data.branding.og_image_url'));
+
+        // Without the community's own setting, the super-admin value is the fallback.
+        DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'seo_og_image_url')
+            ->delete();
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+        $response->assertStatus(200);
+        $this->assertStringEndsWith('/uploads/super-admin-share.png', (string) $response->json('data.branding.og_image_url'));
+    }
 }

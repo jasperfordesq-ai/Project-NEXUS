@@ -859,23 +859,26 @@ class TenantBootstrapController extends BaseApiController
             $branding['primary_color'] = $config['primary_color'];
         }
 
-        if (!empty($tenant['og_image_url'])) {
-            $branding['og_image_url'] = UrlHelper::absolute($tenant['og_image_url']);
+        // Default social sharing image. Two screens set one: the community's
+        // own admin on /admin/seo ("Social sharing image", the seo_og_image_url
+        // setting) and the super-admin tenant form (tenants.og_image_url). The
+        // community's own choice wins; the super-admin value is the fallback.
+        // Until 2026-10-22 it was the other way round, so a tenant admin could
+        // change theirs and see no effect while a super-admin value existed.
+        try {
+            $seoOg = DB::table('tenant_settings')
+                ->where('tenant_id', $tenant['id'])
+                ->where('setting_key', 'seo_og_image_url')
+                ->value('setting_value');
+            if (!empty($seoOg)) {
+                $branding['og_image_url'] = UrlHelper::absolute($seoOg);
+            }
+        } catch (\Throwable) {
+            // tenant_settings table may not exist
         }
 
-        // Fall back to the seo_og_image_url tenant setting if no column value
-        if (empty($branding['og_image_url'])) {
-            try {
-                $seoOg = DB::table('tenant_settings')
-                    ->where('tenant_id', $tenant['id'])
-                    ->where('setting_key', 'seo_og_image_url')
-                    ->value('setting_value');
-                if (!empty($seoOg)) {
-                    $branding['og_image_url'] = UrlHelper::absolute($seoOg);
-                }
-            } catch (\Throwable) {
-                // tenant_settings table may not exist
-            }
+        if (empty($branding['og_image_url']) && !empty($tenant['og_image_url'])) {
+            $branding['og_image_url'] = UrlHelper::absolute($tenant['og_image_url']);
         }
 
         return $branding;

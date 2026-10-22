@@ -607,3 +607,47 @@ describe('TenantForm — live web addresses', () => {
     expect(screen.queryByText(/my-test-timebank\.project-nexus\.ie/)).not.toBeInTheDocument();
   });
 });
+
+// The SEO tab's search preview and character counters (2026-10-22). Until then
+// the preview always showed the platform address even when the community had
+// its own domain, and the counters read "Characters Count" with no number.
+describe('TenantForm — SEO tab preview and counters', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockRouteParams.current = {};
+    mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [] });
+    mockAdminSuper.createTenant.mockResolvedValue({ success: true, data: { tenant_id: 7 } });
+  });
+
+  it('previews the platform address until a custom domain is entered, then that domain', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'Hour Timebank');
+    await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
+    expect(screen.getByText('https://app.project-nexus.ie/hour-timebank')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('tab', { name: /details/i }));
+    await userEvent.type(screen.getByRole('textbox', { name: /^domain$/i }), 'hour-timebank.ie');
+    await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
+    expect(screen.getByText('https://hour-timebank.ie')).toBeInTheDocument();
+    expect(screen.queryByText('https://app.project-nexus.ie/hour-timebank')).not.toBeInTheDocument();
+  });
+
+  it('counts the meta title and meta description characters against their limits', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
+    expect(screen.getByText('0/70 characters')).toBeInTheDocument();
+    expect(screen.getByText('0/180 characters')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByRole('textbox', { name: /meta title/i }), 'TimeBank Ireland');
+    expect(screen.getByText('16/70 characters')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByRole('textbox', { name: /meta description/i }), 'Give an hour.');
+    expect(screen.getByText('13/180 characters')).toBeInTheDocument();
+  });
+});

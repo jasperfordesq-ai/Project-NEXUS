@@ -270,6 +270,12 @@ export function TenantForm() {
     : undefined;
   const hubDomain = chosenHub?.domain?.trim() || '';
   const mainAddress = buildPlatformTenantUrl(form.slug, hubDomain);
+  // The search preview shows the address Google would list: the community's
+  // own domain once one is entered, otherwise the platform address under the
+  // slug. Until 2026-10-22 it always showed the platform address, so a
+  // community on its own domain previewed the wrong site.
+  const customDomain = form.domain.trim();
+  const previewAddress = customDomain ? `https://${customDomain}` : mainAddress;
   const accessibleAddress = buildAccessibleFrontendUrl(form.slug);
   const customDomainEntered = Boolean(form.domain.trim() || form.accessible_domain.trim());
 
@@ -599,7 +605,7 @@ export function TenantForm() {
                   {form.meta_title || form.name || t('tenant_form.page_title_fallback')}
                 </p>
                 <p className="text-sm text-green-700 dark:text-success truncate">
-                  {mainAddress ?? t('tenant_form.web_address_placeholder')}
+                  {previewAddress ?? t('tenant_form.web_address_placeholder')}
                 </p>
                 <p className="text-sm text-muted line-clamp-2">
                   {form.meta_description || t('tenant_form.no_description_set')}
@@ -610,7 +616,7 @@ export function TenantForm() {
                 placeholder={t('tenant_form.meta_title_placeholder')}
                 value={form.meta_title}
                 onValueChange={(v) => updateField('meta_title', v)}
-                description={t('tenant_form.characters_count')}
+                description={t('tenant_form.characters_count', { count: form.meta_title.length, max: 70 })}
                 maxLength={70}
               />
               <Textarea
@@ -618,7 +624,7 @@ export function TenantForm() {
                 placeholder={t('tenant_form.meta_description_placeholder')}
                 value={form.meta_description}
                 onValueChange={(v) => updateField('meta_description', v)}
-                description={t('tenant_form.characters_count')}
+                description={t('tenant_form.characters_count', { count: form.meta_description.length, max: 180 })}
                 maxLength={180}
                 minRows={2}
               />
