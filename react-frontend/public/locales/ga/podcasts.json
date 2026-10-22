@@ -263,7 +263,9 @@
       "copy_failed": "Níorbh fhéidir é a chóipeáil. Roghnaigh an nasc thuas agus cóipeáil tú féin é.",
       "not_ready": "Beidh naisc le roinnt le feiceáil anseo nuair a bheidh an clár seo foilsithe agus ceadaithe.",
       "feed_needs_public": "Ní féidir ach le baill éisteacht leis an gclár seo. Socraigh é go \"{{public}}\" chun nasc d’aipeanna podchraolta a fháil ar féidir le duine ar bith a úsáid."
-    }
+    },
+    "audio_url_web_page": "Is nasc é seo chuig leathanach {{service}}, ní chuig comhad fuaime, mar sin ní féidir é a sheinm anseo. Uaslódáil an taifeadadh ina ionad, nó greamaigh nasc díreach chuig an gcomhad fuaime (críochnaíonn sé le .mp3 de ghnáth).",
+    "audio_link_is_page": "Is leathanach {{service}} é an nasc fuaime, mar sin ní féidir an eipeasóid seo a sheinm. Cuir an eipeasóid in eagar chun an taifeadadh a uaslódáil nó nasc díreach chuig comhad fuaime a úsáid."
   },
   "fields": {
     "artwork_file": "Íomhá an phodchraolta",

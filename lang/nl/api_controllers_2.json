@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "Een audio-URL is verplicht.",
   "podcasts.invalid_scheduled_for": "Gebruik een geldige datum en tijd voor de geplande publicatie.",
   "podcasts.invalid_media_url": "Gebruik een geldige HTTPS-media-URL.",
+  "podcasts.audio_url_is_web_page": "Deze audiolink opent een webpagina, geen audiobestand, en kan daarom niet worden afgespeeld. Upload de opname of plak een directe link naar het audiobestand (meestal eindigend op .mp3).",
   "podcasts.invalid_media_type": "Dit bestandstype wordt niet ondersteund. Upload een MP3-, M4A-, AAC-, WAV-, OGG- of WebM-audiobestand.",
   "podcasts.media_upload_failed": "De audio-upload kon niet worden opgeslagen. Probeer het opnieuw.",
   "podcasts.audio_too_large": "Het audiobestand van de podcast is groter dan deze community toestaat.",

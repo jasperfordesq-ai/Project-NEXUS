@@ -251,7 +251,9 @@
       "copy_failed": "Não foi possível copiar. Selecione o link acima e copie-o você mesmo.",
       "not_ready": "Os links para compartilhar aparecem aqui quando este programa estiver publicado e aprovado.",
       "feed_needs_public": "Só membros podem ouvir este programa. Defina-o como \"{{public}}\" para ter um link para aplicativos de podcast que qualquer pessoa pode usar."
-    }
+    },
+    "audio_url_web_page": "Este é um link para uma página do {{service}}, não para um arquivo de áudio, por isso não pode tocar aqui. Carregue a gravação ou cole um link direto para o arquivo de áudio (normalmente termina em .mp3).",
+    "audio_link_is_page": "O link de áudio é uma página do {{service}}, por isso este episódio não pode tocar. Edite o episódio para carregar a gravação ou usar um link direto para o arquivo de áudio."
   },
   "fields": {
     "artwork_file": "Imagem do podcast",

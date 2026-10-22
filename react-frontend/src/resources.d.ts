@@ -56554,6 +56554,8 @@ export default interface Resources {
       "archive_show": "Archive show",
       "artwork_upload_failed": "The show was saved, but its artwork could not be uploaded.",
       "audio_https_required": "Use an HTTPS audio URL. Plain HTTP is supported only on localhost during development.",
+      "audio_link_is_page": "The audio link is a {{service}} page, so this episode cannot play. Edit the episode to upload the recording or use a direct audio-file link.",
+      "audio_url_web_page": "This is a link to a {{service}} page, not to an audio file, so it cannot play here. Upload the recording instead, or paste a direct link to the audio file (it usually ends in .mp3).",
       "cancel_upload": "Cancel upload",
       "chapter_format_warning_one": "{{count}} chapter line has no timestamp and will start at 0:00.",
       "chapter_format_warning_other": "{{count}} chapter lines have no timestamp and will start at 0:00.",

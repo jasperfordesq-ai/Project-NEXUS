@@ -656,6 +656,51 @@ describe('PodcastStudioPage', () => {
     expect(screen.getByText('12 listens')).toBeInTheDocument();
   });
 
+  describe('audio links that open a web page', () => {
+    it('refuses a Spotify episode link before saving and says why', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({ success: true, data: [makeShow()] });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+      await waitFor(() => expect(screen.getAllByText('Test Podcast Show').length).toBeGreaterThan(0));
+
+      fireEvent.change(screen.getByLabelText(/episode title/i), { target: { value: 'The Blind Boy podcast' } });
+      fireEvent.change(screen.getByLabelText(/audio url/i), { target: { value: 'https://open.spotify.com/episode/2RYoWagC' } });
+      const addEpisodeBtn = pageButtons().find(
+        (b) => b.textContent?.toLowerCase().includes('add') && b.textContent?.toLowerCase().includes('episode')
+      );
+      fireEvent.click(addEpisodeBtn!);
+
+      expect(await screen.findByText(/This is a link to a Spotify page, not to an audio file/)).toBeInTheDocument();
+      expect(mockPodcastsApi.createEpisode).not.toHaveBeenCalled();
+    });
+
+    it('warns on an existing episode whose audio link is a page', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ episodes: [makeEpisode({ audio_url: 'https://open.spotify.com/episode/2RYoWagC' })] })],
+      });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      expect(await screen.findByText(/The audio link is a Spotify page, so this episode cannot play/)).toBeInTheDocument();
+    });
+
+    it('does not warn on a direct audio-file link', async () => {
+      mockPodcastsApi.authored.mockResolvedValue({
+        success: true,
+        data: [makeShow({ episodes: [makeEpisode()] })],
+      });
+
+      const { default: PodcastStudioPage } = await import('./PodcastStudioPage');
+      render(<PodcastStudioPage />);
+
+      await waitFor(() => expect(screen.getByText('Episode One')).toBeInTheDocument());
+      expect(screen.queryByText(/so this episode cannot play/)).not.toBeInTheDocument();
+    });
+  });
+
   describe('publishing guide and share links', () => {
     it('opens the guide for a first-time creator and warns that page links will not play', async () => {
       const { default: PodcastStudioPage } = await import('./PodcastStudioPage');

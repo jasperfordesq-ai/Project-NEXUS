@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "Adres URL audio jest wymagany.",
   "podcasts.invalid_scheduled_for": "Użyj prawidłowej daty i godziny zaplanowanej publikacji.",
   "podcasts.invalid_media_url": "Użyj prawidłowego adresu URL multimediów HTTPS.",
+  "podcasts.audio_url_is_web_page": "Ten link do nagrania otwiera stronę internetową, a nie plik audio, więc nie da się go odtworzyć. Prześlij nagranie albo wklej bezpośredni link do pliku audio (zwykle kończy się na .mp3).",
   "podcasts.invalid_media_type": "Ten typ pliku nie jest obsługiwany. Prześlij plik audio MP3, M4A, AAC, WAV, OGG lub WebM.",
   "podcasts.media_upload_failed": "Nie udało się zapisać przesłanego audio. Spróbuj ponownie.",
   "podcasts.audio_too_large": "Plik audio podcastu jest większy, niż pozwala ta społeczność.",

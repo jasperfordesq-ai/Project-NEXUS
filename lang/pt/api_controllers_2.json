@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "É necessário um URL de áudio.",
   "podcasts.invalid_scheduled_for": "Utilize uma data e hora válidas para a publicação agendada.",
   "podcasts.invalid_media_url": "Utilize um URL de multimédia HTTPS válido.",
+  "podcasts.audio_url_is_web_page": "Este link de áudio abre uma página da web, não um arquivo de áudio, por isso não pode tocar. Carregue a gravação ou cole um link direto para o arquivo de áudio (normalmente termina em .mp3).",
   "podcasts.invalid_media_type": "Esse tipo de ficheiro não é suportado. Carregue um ficheiro de áudio MP3, M4A, AAC, WAV, OGG ou WebM.",
   "podcasts.media_upload_failed": "Não foi possível guardar o carregamento de áudio. Tente novamente.",
   "podcasts.audio_too_large": "O ficheiro de áudio do podcast excede o tamanho permitido por esta comunidade.",

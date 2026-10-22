@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "رابط الصوت مطلوب.",
   "podcasts.invalid_scheduled_for": "استخدم تاريخًا ووقتًا صالحين للنشر المجدول.",
   "podcasts.invalid_media_url": "استخدم عنوان URL صالحًا لوسائط HTTPS.",
+  "podcasts.audio_url_is_web_page": "يفتح رابط الصوت هذا صفحة ويب وليس ملفًا صوتيًا، لذا لا يمكن تشغيله. ارفع التسجيل، أو الصق رابطًا مباشرًا للملف الصوتي (ينتهي عادةً بـ ‎.mp3).",
   "podcasts.invalid_media_type": "نوع الملف هذا غير مدعوم. حمّل ملفًا صوتيًا بصيغة MP3 أو M4A أو AAC أو WAV أو OGG أو WebM.",
   "podcasts.media_upload_failed": "تعذّر حفظ الملف الصوتي المرفوع. يرجى المحاولة مرة أخرى.",
   "podcasts.audio_too_large": "حجم الملف الصوتي للبودكاست أكبر مما يسمح به هذا المجتمع.",

@@ -245,7 +245,9 @@
       "copy_failed": "Could not copy. Select the link above and copy it yourself.",
       "not_ready": "Share links appear here once this show is published and approved.",
       "feed_needs_public": "Only members can listen to this show. Set it to \"{{public}}\" to get a podcast app link anyone can use."
-    }
+    },
+    "audio_url_web_page": "This is a link to a {{service}} page, not to an audio file, so it cannot play here. Upload the recording instead, or paste a direct link to the audio file (it usually ends in .mp3).",
+    "audio_link_is_page": "The audio link is a {{service}} page, so this episode cannot play. Edit the episode to upload the recording or use a direct audio-file link."
   },
   "fields": {
     "show": "Show",

@@ -245,7 +245,9 @@
       "copy_failed": "Kopiëren lukte niet. Selecteer de link hierboven en kopieer hem zelf.",
       "not_ready": "Links om te delen verschijnen hier zodra dit programma gepubliceerd en goedgekeurd is.",
       "feed_needs_public": "Alleen leden kunnen dit programma beluisteren. Zet het op \"{{public}}\" voor een link voor podcastapps die iedereen kan gebruiken."
-    }
+    },
+    "audio_url_web_page": "Dit is een link naar een {{service}}-pagina, niet naar een audiobestand, en kan hier dus niet worden afgespeeld. Upload in plaats daarvan de opname, of plak een directe link naar het audiobestand (meestal eindigend op .mp3).",
+    "audio_link_is_page": "De audiolink is een {{service}}-pagina, dus deze aflevering kan niet worden afgespeeld. Bewerk de aflevering om de opname te uploaden of een directe link naar het audiobestand te gebruiken."
   },
   "fields": {
     "artwork_file": "Podcastafbeelding",

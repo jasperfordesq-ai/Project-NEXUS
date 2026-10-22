@@ -604,6 +604,47 @@ class PodcastControllerTest extends TestCase
         ])->assertStatus(422);
     }
 
+    /**
+     * 21 Oct 2026: an `open.spotify.com/episode/…` link was saved as an
+     * episode's audio and the episode would not play — the link opens
+     * Spotify's web page, not an audio file. Page-only links are refused with
+     * a reason; a direct file link, and a Dropbox link asking for the raw file,
+     * still save.
+     */
+    public function test_audio_links_that_open_a_web_page_are_refused_with_a_reason(): void
+    {
+        $this->enablePodcasts(true);
+        $this->actingAsMember();
+        $showId = $this->apiPost('/v2/podcasts', ['title' => 'Page Links', 'visibility' => 'public'])
+            ->assertStatus(201)->json('data.id');
+
+        foreach ([
+            'https://open.spotify.com/episode/2RYoWagC',
+            'https://www.youtube.com/watch?v=abc',
+            'https://drive.google.com/file/d/abc/view?usp=sharing',
+            'https://www.dropbox.com/s/abc/episode.mp3?dl=0',
+            'https://archive.org/details/my-show-ep1',
+        ] as $pageLink) {
+            $response = $this->apiPost("/v2/podcasts/{$showId}/episodes", ['title' => 'Page link', 'audio_url' => $pageLink]);
+            $response->assertStatus(422);
+            $this->assertStringContainsString('web page', (string) $response->json('errors.0.message'), $pageLink);
+        }
+
+        $episodeId = $this->apiPost("/v2/podcasts/{$showId}/episodes", [
+            'title' => 'Direct file',
+            'audio_url' => 'https://cdn.example.test/episode.mp3',
+        ])->assertStatus(201)->json('data.id');
+        $this->apiPost("/v2/podcasts/{$showId}/episodes", [
+            'title' => 'Dropbox raw file',
+            'audio_url' => 'https://www.dropbox.com/s/abc/episode.mp3?raw=1',
+        ])->assertStatus(201);
+
+        // Editing an episode to a page link is refused too.
+        $this->apiPut("/v2/podcasts/{$showId}/episodes/{$episodeId}", [
+            'audio_url' => 'https://open.spotify.com/episode/2RYoWagC',
+        ])->assertStatus(422);
+    }
+
     public function test_transcripts_can_be_disabled_in_configuration(): void
     {
         $this->enablePodcasts(true);

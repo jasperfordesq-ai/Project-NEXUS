@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "音声URLは必須です。",
   "podcasts.invalid_scheduled_for": "予約公開には有効な日時を指定してください。",
   "podcasts.invalid_media_url": "有効なHTTPSメディアURLを指定してください。",
+  "podcasts.audio_url_is_web_page": "この音声リンクは音声ファイルではなくウェブページを開くため、再生できません。録音をアップロードするか、音声ファイルへの直接リンク（多くは .mp3 で終わります）を貼り付けてください。",
   "podcasts.invalid_media_type": "このファイル形式はサポートされていません。MP3、M4A、AAC、WAV、OGG、またはWebM形式の音声ファイルをアップロードしてください。",
   "podcasts.media_upload_failed": "音声のアップロードを保存できませんでした。もう一度お試しください。",
   "podcasts.audio_too_large": "ポッドキャストの音声ファイルがこのコミュニティで許可されているサイズを超えています。",

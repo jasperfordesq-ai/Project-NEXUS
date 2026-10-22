@@ -30,6 +30,7 @@
   "podcasts.audio_url_required": "An audio URL is required.",
   "podcasts.invalid_scheduled_for": "Use a valid date and time for the scheduled release.",
   "podcasts.invalid_media_url": "Use a valid HTTPS media URL.",
+  "podcasts.audio_url_is_web_page": "This audio link opens a web page, not an audio file, so it cannot play. Upload the recording, or paste a direct link to the audio file (usually ending in .mp3).",
   "podcasts.invalid_media_type": "That file type is not supported. Upload an MP3, M4A, AAC, WAV, OGG, or WebM audio file.",
   "podcasts.media_upload_failed": "The audio upload could not be saved. Please try again.",
   "podcasts.audio_too_large": "The podcast audio file is larger than this community allows.",

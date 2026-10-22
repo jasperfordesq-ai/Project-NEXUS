@@ -747,6 +747,7 @@ class PodcastController extends BaseApiController
             str_contains($message, 'Unsupported') => ['VALIDATION_FAILED', 'invalid_media_type', 422],
             str_contains($message, 'storage failed') => ['MEDIA_UPLOAD_FAILED', 'media_upload_failed', 500],
             str_contains($message, 'not ready for publishing') => ['MEDIA_NOT_READY', 'media_not_ready', 409],
+            str_contains($message, 'is a web page') => ['VALIDATION_FAILED', 'audio_url_is_web_page', 422],
             str_contains($message, 'External podcast artwork') => ['VALIDATION_FAILED', 'external_artwork_not_allowed', 422],
             str_contains($message, 'Private podcast shows') => ['VALIDATION_FAILED', 'private_shows_disabled', 422],
             str_contains($message, 'Too many podcast chapters') => ['VALIDATION_FAILED', 'too_many_chapters', 422],

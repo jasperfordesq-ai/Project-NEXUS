@@ -2534,8 +2534,66 @@ class PodcastService
         if ($url === null || !self::isPodcastMediaUrl($url)) {
             throw new \InvalidArgumentException('Invalid podcast media URL');
         }
+        if (self::webPageAudioService($url) !== null) {
+            throw new \InvalidArgumentException('Podcast audio URL is a web page, not an audio file');
+        }
 
         return $url;
+    }
+
+    /**
+     * Hosts whose links only ever open a web page, never an audio file. A
+     * service's "Share" button gives exactly these links, and on 21 Oct 2026 an
+     * `open.spotify.com/episode/…` link was saved as an episode's audio and
+     * would not play. Hosts that serve both pages and files (a podcast host's
+     * episode page and its `.mp3`) are deliberately absent: refusing a working
+     * link is worse than a player that says it could not load one.
+     * Mirrored for the studio in react-frontend/src/lib/podcasts/audioLinks.ts.
+     */
+    private const PAGE_ONLY_AUDIO_HOSTS = [
+        'open.spotify.com' => 'Spotify',
+        'spotify.link' => 'Spotify',
+        'creators.spotify.com' => 'Spotify',
+        'podcasters.spotify.com' => 'Spotify',
+        'podcasts.apple.com' => 'Apple Podcasts',
+        'soundcloud.com' => 'SoundCloud',
+        'on.soundcloud.com' => 'SoundCloud',
+        'm.soundcloud.com' => 'SoundCloud',
+        'youtube.com' => 'YouTube',
+        'm.youtube.com' => 'YouTube',
+        'music.youtube.com' => 'YouTube',
+        'youtu.be' => 'YouTube',
+        'drive.google.com' => 'Google Drive',
+        'docs.google.com' => 'Google Drive',
+        'onedrive.live.com' => 'OneDrive',
+        '1drv.ms' => 'OneDrive',
+    ];
+
+    /**
+     * The service whose web page this link opens, or null when it may be an
+     * audio file. Dropbox share links are pages unless they ask for the raw
+     * file (`raw=1` / `dl=1`); Internet Archive `/details/` links are pages.
+     */
+    public static function webPageAudioService(string $url): ?string
+    {
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        if (str_starts_with($host, 'www.')) {
+            $host = substr($host, 4);
+        }
+        if (isset(self::PAGE_ONLY_AUDIO_HOSTS[$host])) {
+            return self::PAGE_ONLY_AUDIO_HOSTS[$host];
+        }
+        if ($host === 'dropbox.com') {
+            parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+            $raw = ($query['raw'] ?? null) === '1' || ($query['dl'] ?? null) === '1';
+
+            return $raw ? null : 'Dropbox';
+        }
+        if ($host === 'archive.org' && str_starts_with((string) parse_url($url, PHP_URL_PATH), '/details/')) {
+            return 'Internet Archive';
+        }
+
+        return null;
     }
 
     private static function isHttpUrl(string $value): bool

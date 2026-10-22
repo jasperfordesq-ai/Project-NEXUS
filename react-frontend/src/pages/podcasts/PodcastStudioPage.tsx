@@ -25,6 +25,8 @@ import { feedIssueKey } from '@/lib/podcasts/feedIssues';
 import { PodcastShowStatsPanel } from '@/components/podcasts/PodcastShowStatsPanel';
 import { PodcastStudioGuide } from '@/components/podcasts/PodcastStudioGuide';
 import { PodcastShareLinks } from '@/components/podcasts/PodcastShareLinks';
+import { webPageAudioService } from '@/lib/podcasts/audioLinks';
+import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import Archive from 'lucide-react/icons/archive';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import CalendarClock from 'lucide-react/icons/calendar-clock';
@@ -408,6 +410,11 @@ export default function PodcastStudioPage() {
       setEpisodeError(t('studio.audio_https_required'));
       return;
     }
+    const newLinkPage = audioFile ? null : webPageAudioService(episodeForm.audio_url);
+    if (newLinkPage) {
+      setEpisodeError(t('studio.audio_url_web_page', { service: newLinkPage }));
+      return;
+    }
     setSavingEpisode(true);
     setEpisodeError(null);
     const abortController = audioFile ? new AbortController() : null;
@@ -566,6 +573,11 @@ export default function PodcastStudioPage() {
     if (!editingEpisode || !editingEpisodeForm.title?.trim()) return;
     if (editingEpisodeForm.audio_url && !isAllowedExternalAudioUrl(editingEpisodeForm.audio_url.trim())) {
       toast.error(t('studio.audio_https_required'));
+      return;
+    }
+    const editLinkPage = editingEpisodeForm.audio_url ? webPageAudioService(editingEpisodeForm.audio_url) : null;
+    if (editLinkPage) {
+      toast.error(t('studio.audio_url_web_page', { service: editLinkPage }));
       return;
     }
     setSavingEdit(true);
@@ -1041,6 +1053,12 @@ export default function PodcastStudioPage() {
                                 {t('studio.delete_episode')}
                               </Button>
                             </div>
+                            {!episode.hosted_audio && episode.audio_url && webPageAudioService(episode.audio_url) && (
+                              <p className="flex gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground sm:basis-full" role="note">
+                                <TriangleAlert size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                                <span>{t('studio.audio_link_is_page', { service: webPageAudioService(episode.audio_url) })}</span>
+                              </p>
+                            )}
                             {episode.moderation_feedback && (
                               <p className="text-sm text-warning sm:basis-full">
                                 {t('studio.moderation_feedback', { feedback: episode.moderation_feedback })}

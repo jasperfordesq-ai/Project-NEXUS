@@ -245,7 +245,9 @@
       "copy_failed": "Kopieren nicht möglich. Markieren Sie den Link oben und kopieren Sie ihn selbst.",
       "not_ready": "Links zum Teilen erscheinen hier, sobald diese Sendung veröffentlicht und freigegeben ist.",
       "feed_needs_public": "Nur Mitglieder können diese Sendung hören. Stellen Sie sie auf „{{public}}“, um einen Podcast-App-Link für alle zu erhalten."
-    }
+    },
+    "audio_url_web_page": "Das ist ein Link zu einer {{service}}-Seite, nicht zu einer Audiodatei, und kann hier nicht abgespielt werden. Laden Sie stattdessen die Aufnahme hoch oder fügen Sie einen Direktlink zur Audiodatei ein (meist mit der Endung .mp3).",
+    "audio_link_is_page": "Der Audiolink führt zu einer {{service}}-Seite, daher kann diese Folge nicht abgespielt werden. Bearbeiten Sie die Folge und laden Sie die Aufnahme hoch oder verwenden Sie einen Direktlink zur Audiodatei."
   },
   "fields": {
     "artwork_file": "Podcastbild",

@@ -222,6 +222,7 @@
   "podcasts.audio_url_required": "Tá URL fuaime ag teastáil.",
   "podcasts.invalid_scheduled_for": "Úsáid dáta agus am bailí don fhoilsiú sceidealta.",
   "podcasts.invalid_media_url": "Úsáid URL meán HTTPS bailí.",
+  "podcasts.audio_url_is_web_page": "Osclaíonn an nasc fuaime seo leathanach gréasáin, ní comhad fuaime, mar sin ní féidir é a sheinm. Uaslódáil an taifeadadh, nó greamaigh nasc díreach chuig an gcomhad fuaime (a chríochnaíonn le .mp3 de ghnáth).",
   "podcasts.invalid_media_type": "Ní thacaítear leis an gcineál comhaid sin. Uaslódáil comhad fuaime MP3, M4A, AAC, WAV, OGG nó WebM.",
   "podcasts.media_upload_failed": "Níorbh fhéidir an uaslódáil fuaime a shábháil. Bain triail eile as.",
   "podcasts.audio_too_large": "Tá comhad fuaime an phodchraolta níos mó ná mar a cheadaíonn an pobal seo.",
