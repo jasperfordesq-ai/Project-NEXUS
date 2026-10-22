@@ -446,7 +446,7 @@
     "desc_hero_intro": "Only used by a hub community. The paragraph under that heading on the accessible site. The main website uses the landing page builder instead.",
     "desc_meta_description_chars": "Meta Description Chars.",
     "desc_meta_keywords": "Meta Keywords.",
-    "desc_meta_title": "Meta Title.",
+    "desc_meta_title": "The home page’s title in search results and the browser tab, used exactly as written. Every other page ends with the community name instead.",
     "desc_og_image_url": "OG Image URL.",
     "desc_ollama_host": "Ollama Host.",
     "desc_select_ai_provider": "Select AI Provider.",

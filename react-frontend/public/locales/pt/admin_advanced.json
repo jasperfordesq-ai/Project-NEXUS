@@ -362,7 +362,7 @@
     "desc_hero_intro": "Usada apenas por uma comunidade hub. O parágrafo sob esse título no site acessível. O site principal usa o editor da página de destino em vez disso.",
     "desc_meta_description_chars": "Caracteres de meta descrição.",
     "desc_meta_keywords": "Meta palavras-chave.",
-    "desc_meta_title": "Metatítulo.",
+    "desc_meta_title": "O título da página inicial nos resultados de pesquisa e na aba do navegador, usado exatamente como escrito. Todas as outras páginas terminam com o nome da comunidade.",
     "desc_og_image_url": "URL da imagem OG.",
     "desc_ollama_host": "Anfitrião Ollama.",
     "desc_select_ai_provider": "Selecione Provedor de IA.",

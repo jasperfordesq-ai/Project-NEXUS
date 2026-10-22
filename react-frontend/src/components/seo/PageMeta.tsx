@@ -63,6 +63,15 @@ interface PageMetaProps {
   publishedTime?: string;
   /** Modified date for article type (ISO 8601). */
   modifiedTime?: string;
+  /**
+   * The community's home page. When the admin has filled in the tenant
+   * "Meta title" / "Meta description" on /admin/seo, those are the page's
+   * title (exactly, no " | site name" suffix) and description, replacing the
+   * translated defaults passed in `title` / `description`. Only the browser
+   * tab title and the search-result snippet are affected: the page body comes
+   * from the landing page builder and is untouched.
+   */
+  tenantHome?: boolean;
 }
 
 /**
@@ -113,6 +122,7 @@ export function PageMeta({
   noIndex = false,
   publishedTime,
   modifiedTime,
+  tenantHome = false,
 }: PageMetaProps) {
   const { branding: tenantBranding, tenant } = useTenant();
   const branding = tenantBranding ?? { name: 'NEXUS', tagline: '', og_image_url: '', logo: '' };
@@ -139,19 +149,30 @@ export function PageMeta({
   const enableOpenGraph = getBoolSetting(settings, 'seo_open_graph');
   const enableTwitterCards = getBoolSetting(settings, 'seo_twitter_cards');
 
-  // Site name: admin title suffix > tenant meta title > branding name > NEXUS
+  // Tenant "Meta title" / "Meta description" from /admin/seo (tenants table).
   const seoTitle = (tenant?.seo?.meta_title || '').trim();
+  const seoDescription = (tenant?.seo?.meta_description || '').trim();
+
+  // Site name (the " | …" suffix on every page): admin title suffix > branding
+  // name > tenant meta title > NEXUS. Until 2026-10-22 the tenant meta title
+  // came before the branding name, so a descriptive meta title such as
+  // "TimeBank Ireland | Swap Skills, Earn Time Credits" was appended to EVERY
+  // page ("About TimeBank Ireland | TimeBank Ireland | Swap Skills, …").
   const siteName = adminTitleSuffix
     ? adminTitleSuffix.replace(/^\s*\|\s*/, '') // Strip leading " | " if present
-    : seoTitle || branding.name || 'NEXUS';
+    : branding.name || seoTitle || 'NEXUS';
   const titleSuffix = adminTitleSuffix || ` | ${siteName}`;
-  const fullTitle = title ? `${title}${titleSuffix}` : siteName;
+  const suffixedTitle = title ? `${title}${titleSuffix}` : siteName;
+  // The home page is the one page whose title IS the tenant meta title.
+  const fullTitle = tenantHome && seoTitle ? seoTitle : suffixedTitle;
 
-  // Description: explicit > admin global > tenant seo description > branding tagline > platform default
+  // Description: home page → tenant seo description first; otherwise
+  // explicit > admin global > tenant seo description > branding tagline > platform default
   const metaDescription =
+    (tenantHome ? seoDescription : '') ||
     description ||
     adminDescription ||
-    (tenant?.seo?.meta_description || '').trim() ||
+    seoDescription ||
     branding.tagline ||
     'Community timebanking platform — exchange skills, build connections, strengthen your community.';
 

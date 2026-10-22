@@ -362,7 +362,7 @@
     "desc_hero_intro": "Usata solo da una comunità hub. Il paragrafo sotto quel titolo sul sito accessibile. Il sito principale usa invece l’editor della pagina di destinazione.",
     "desc_meta_description_chars": "Caratteri della meta descrizione.",
     "desc_meta_keywords": "Meta-parole chiave.",
-    "desc_meta_title": "Meta titolo.",
+    "desc_meta_title": "Il titolo della home page nei risultati di ricerca e nella scheda del browser, usato esattamente come scritto. Tutte le altre pagine terminano invece con il nome della comunità.",
     "desc_og_image_url": "URL dell'immagine originale.",
     "desc_select_ai_provider": "Seleziona Fornitore di intelligenza artificiale.",
     "desc_select_model": "Seleziona modello.",

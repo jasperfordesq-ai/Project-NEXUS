@@ -142,4 +142,71 @@ describe('PageMeta', () => {
       window.history.pushState({}, '', `${originalPath}${originalSearch}`);
     }
   });
+
+  // The tenant "Meta title" / "Meta description" on /admin/seo (tenants.meta_title,
+  // tenants.meta_description) arrive on tenant.seo. Until 2026-10-22 the meta
+  // title was used as the " | site name" suffix on EVERY page, and the home page
+  // ignored the meta description, so the one page an admin was writing them for
+  // got "Community Timebanking Platform | TimeBank Ireland | Swap Skills, …".
+  describe('tenant meta title and description from /admin/seo', () => {
+    const withTenantSeo = async () => {
+      const mod = await import('@/contexts/TenantContext');
+      vi.mocked(mod.useTenant).mockReturnValue({
+        branding: { name: 'TimeBank Ireland', tagline: 'A test tagline' },
+        tenant: {
+          seo: {
+            meta_title: 'TimeBank Ireland | Swap Skills, Earn Time Credits',
+            meta_description: "Ireland's community timebank. Give an hour, earn an hour back.",
+          },
+        },
+        hasFeature: vi.fn(() => true),
+        hasModule: vi.fn(() => true),
+        isLoading: false,
+        tenantPath: vi.fn((p: string) => `/test${p}`),
+      } as unknown as ReturnType<typeof mod.useTenant>);
+    };
+
+    it('home page: the meta title is the whole title and the meta description wins', async () => {
+      await withTenantSeo();
+      renderWithHelmet(
+        <PageMeta tenantHome title="Community Timebanking Platform" description="Translated default" />,
+      );
+      await waitFor(() => {
+        expect(document.title).toBe('TimeBank Ireland | Swap Skills, Earn Time Credits');
+        expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(
+          "Ireland's community timebank. Give an hour, earn an hour back.",
+        );
+      });
+    });
+
+    it('other pages: the suffix is the community name, not the meta title', async () => {
+      await withTenantSeo();
+      renderWithHelmet(<PageMeta title="About TimeBank Ireland" description="About us" />);
+      await waitFor(() => {
+        expect(document.title).toBe('About TimeBank Ireland | TimeBank Ireland');
+        expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('About us');
+      });
+    });
+
+    it('home page without a tenant meta title keeps the translated default and suffix', async () => {
+      const mod = await import('@/contexts/TenantContext');
+      vi.mocked(mod.useTenant).mockReturnValue({
+        branding: { name: 'TimeBank Ireland', tagline: 'A test tagline' },
+        tenant: { seo: { meta_title: '', meta_description: '' } },
+        hasFeature: vi.fn(() => true),
+        hasModule: vi.fn(() => true),
+        isLoading: false,
+        tenantPath: vi.fn((p: string) => `/test${p}`),
+      } as unknown as ReturnType<typeof mod.useTenant>);
+      renderWithHelmet(
+        <PageMeta tenantHome title="Community Timebanking Platform" description="Translated default" />,
+      );
+      await waitFor(() => {
+        expect(document.title).toBe('Community Timebanking Platform | TimeBank Ireland');
+        expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(
+          'Translated default',
+        );
+      });
+    });
+  });
 });

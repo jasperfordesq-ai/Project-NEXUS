@@ -360,7 +360,7 @@
     "desc_hero_intro": "Utilisée uniquement par une communauté hub. Le paragraphe sous ce titre sur le site accessible. Le site principal utilise l’éditeur de page d’accueil à la place.",
     "desc_meta_description_chars": "Caractères de méta-description.",
     "desc_meta_keywords": "Méta-mots-clés.",
-    "desc_meta_title": "Méta-titre.",
+    "desc_meta_title": "Le titre de la page d’accueil dans les résultats de recherche et l’onglet du navigateur, utilisé tel quel. Toutes les autres pages se terminent par le nom de la communauté.",
     "desc_og_image_url": "URL de l’image OG.",
     "desc_ollama_host": "Hôte Ollama.",
     "desc_select_ai_provider": "Sélectionnez Fournisseur IA.",
