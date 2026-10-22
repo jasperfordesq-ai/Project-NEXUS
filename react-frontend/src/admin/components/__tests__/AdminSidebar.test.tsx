@@ -559,18 +559,21 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('link', { name: 'Impact Report' })).toHaveAttribute('href', '/test/admin/impact-report');
   });
 
-  it('hides the whole Growth & Discovery section from non-god super admins', () => {
+  it('shows non-god super admins only the SEO Overview under Growth & Discovery', () => {
     // Owner decision 2026-10-02: the Prerender Engine went god-only first, then
-    // the whole section did. The default mock user is a platform super admin.
+    // the whole section did. Owner decision 2026-10-22: the SEO Overview alone
+    // is open to every tenant admin again (its settings are per community).
+    // The default mock user is a platform super admin.
     render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
     );
 
     // Control: the growth zone still renders its other sections.
     expect(screen.getByRole('button', { name: 'Analytics & Reporting' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Growth & Discovery' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'SEO Overview', hidden: true })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
+    expect(screen.getByRole('link', { name: 'SEO Overview' })).toHaveAttribute('href', '/test/admin/seo');
     expect(screen.queryByRole('link', { name: 'Prerender Engine', hidden: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'URL Redirects', hidden: true })).not.toBeInTheDocument();
   });
 
   it('shows the Prerender Engine link to god users', () => {
