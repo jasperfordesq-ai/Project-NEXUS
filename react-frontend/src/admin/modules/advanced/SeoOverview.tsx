@@ -376,6 +376,7 @@ export function SeoOverview() {
               variant="secondary"
               value={String(formData.tenant_hero_intro || '')}
               onValueChange={(v) => updateField('tenant_hero_intro', v)}
+              description={t('desc_hero_intro')}
             />
           </CardBody>
         </Card>
