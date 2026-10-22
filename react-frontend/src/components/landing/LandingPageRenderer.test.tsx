@@ -149,7 +149,7 @@ describe('LandingPageRenderer — section rendering', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
-  it('renders nothing when all sections are disabled', () => {
+  it('renders no sections when all are disabled, keeping only the hidden main heading', () => {
     mockUseTenant.mockReturnValue({
       ...BASE_TENANT,
       landingPageConfig: {
@@ -159,7 +159,8 @@ describe('LandingPageRenderer — section rendering', () => {
       },
     });
     const { container } = render(<LandingPageRenderer />);
-    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    // No hero, so the only main heading is the hidden community name (2026-10-22).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Test Community');
     // The PublicDiscoveryLinks nav may still render if features are enabled;
     // we just verify no crash and no hero h1.
     expect(container).toBeInTheDocument();
@@ -211,7 +212,7 @@ describe('LandingPageRenderer — section rendering', () => {
     });
   });
 
-  it('silently ignores an unknown section type (no crash, no output)', () => {
+  it('silently ignores an unknown section type (no crash, no section output)', () => {
     mockUseTenant.mockReturnValue({
       ...BASE_TENANT,
       landingPageConfig: {
@@ -223,7 +224,8 @@ describe('LandingPageRenderer — section rendering', () => {
     // Should not throw
     expect(() => render(<LandingPageRenderer />)).not.toThrow();
     // Nothing from the unknown section should appear in the DOM
-    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    // No hero, so the only main heading is the hidden community name (2026-10-22).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Test Community');
   });
 
   it('renders an empty sections array without crashing', () => {
@@ -232,5 +234,73 @@ describe('LandingPageRenderer — section rendering', () => {
       landingPageConfig: { sections: [] },
     });
     expect(() => render(<LandingPageRenderer />)).not.toThrow();
+  });
+});
+
+// Fault tolerance for community-written landing pages (2026-10-22). Every
+// community edits its landing page, so the renderer must survive what is
+// stored, and the home page must keep exactly one main heading.
+describe('LandingPageRenderer — fault tolerance for custom landing pages', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('keeps one main heading, the community name, when the hero is switched off', () => {
+    mockUseTenant.mockReturnValue({
+      ...BASE_TENANT,
+      landingPageConfig: {
+        sections: [
+          { id: 'hero', type: 'hero', enabled: false, order: 0 },
+          { id: 'cta', type: 'cta', enabled: true, order: 1 },
+        ],
+      },
+    });
+    render(<LandingPageRenderer />);
+    const h1s = screen.getAllByRole('heading', { level: 1 });
+    expect(h1s).toHaveLength(1);
+    expect(h1s[0]).toHaveTextContent('Test Community');
+  });
+
+  it('does not add a second main heading when the hero is on', () => {
+    mockUseTenant.mockReturnValue({
+      ...BASE_TENANT,
+      landingPageConfig: { sections: [{ id: 'hero', type: 'hero', enabled: true, order: 0 }] },
+    });
+    render(<LandingPageRenderer />);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+
+  it('falls back to the default page when the stored config has no sections list', () => {
+    mockUseTenant.mockReturnValue({ ...BASE_TENANT, landingPageConfig: { sections: 'broken' } });
+    render(<LandingPageRenderer />);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+  });
+
+  it('skips entries that are not sections instead of crashing', () => {
+    mockUseTenant.mockReturnValue({
+      ...BASE_TENANT,
+      landingPageConfig: {
+        sections: [null, 'x', { id: 'no-type', enabled: true, order: 0 }, { id: 'hero', type: 'hero', enabled: true, order: 1 }],
+      },
+    });
+    render(<LandingPageRenderer />);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  it('a section whose stored content crashes it disappears; the rest of the page still renders', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockUseTenant.mockReturnValue({
+      ...BASE_TENANT,
+      landingPageConfig: {
+        sections: [
+          { id: 'hero', type: 'hero', enabled: true, order: 0 },
+          // cards must be a list; a string makes the section throw while rendering
+          { id: 'cards', type: 'audience_cards', enabled: true, order: 1, content: { cards: 'not-a-list' } },
+        ],
+      },
+    });
+    render(<LandingPageRenderer />);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    spy.mockRestore();
   });
 });

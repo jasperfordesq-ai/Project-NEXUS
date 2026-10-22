@@ -20,6 +20,8 @@ import { MotionConfig } from '@/lib/motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts';
+import { FeatureErrorBoundary } from '@/components/feedback/FeatureErrorBoundary';
+import { DEFAULT_LANDING_PAGE_CONFIG } from '@/types';
 import type {
   LandingSection,
   HeroContent,
@@ -121,19 +123,53 @@ function PublicDiscoveryLinks() {
   );
 }
 
+/**
+ * Fault tolerance for community-written landing pages (2026-10-22).
+ *
+ * Every community edits its landing page in the builder, so the renderer must
+ * survive whatever is stored, not only what the builder writes today:
+ *  - a config without a `sections` list falls back to the default page;
+ *  - entries that are not objects, or have no type, are skipped;
+ *  - each section renders inside its own error boundary, so one malformed
+ *    section disappears (and is reported) instead of taking the page down;
+ *  - when the hero is switched off there is still exactly one main heading
+ *    (visually hidden, the community's name), which screen readers, search
+ *    engines and the deploy gate's home-page check all rely on.
+ */
+function usableSections(config: unknown): LandingSection[] {
+  const raw = (config as { sections?: unknown } | null | undefined)?.sections;
+  const list = Array.isArray(raw) ? raw : DEFAULT_LANDING_PAGE_CONFIG.sections;
+  return list.filter(
+    (s): s is LandingSection =>
+      !!s && typeof s === 'object' && typeof (s as { type?: unknown }).type === 'string',
+  );
+}
+
 export function LandingPageRenderer() {
-  const { landingPageConfig } = useTenant();
+  const { landingPageConfig, branding } = useTenant();
+  const { t } = useTranslation('public');
 
   const sortedSections = useMemo(() => {
-    return [...landingPageConfig.sections]
+    return usableSections(landingPageConfig)
       .filter((s) => s.enabled)
-      .sort((a, b) => a.order - b.order);
-  }, [landingPageConfig.sections]);
+      .map((s, index) => ({ section: s, order: Number.isFinite(s.order) ? s.order : index }))
+      .sort((a, b) => a.order - b.order)
+      .map(({ section }) => section);
+  }, [landingPageConfig]);
+
+  const hasHero = sortedSections.some((s) => s.type === 'hero');
 
   return (
     <MotionConfig reducedMotion="user">
-      {sortedSections.map((section) => (
-        <RenderSection key={section.id} section={section} />
+      {!hasHero && <h1 className="sr-only">{branding?.name || t('home.meta_title')}</h1>}
+      {sortedSections.map((section, index) => (
+        <FeatureErrorBoundary
+          key={section.id || `${section.type}-${index}`}
+          featureName={`landing:${section.type}`}
+          fallback={null}
+        >
+          <RenderSection section={section} />
+        </FeatureErrorBoundary>
       ))}
       <PublicDiscoveryLinks />
     </MotionConfig>

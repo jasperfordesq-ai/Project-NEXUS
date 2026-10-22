@@ -159,6 +159,28 @@ async function primeApiAuth(page: Page, kind: 'user' | 'admin'): Promise<void> {
   throw new Error(`E2E ${kind} API login failed (${lastStatus}): ${lastBody}`);
 }
 
+/**
+ * The page rendered its own content: a main heading that is present and not
+ * blank, and that is not the app's error, not-found or coming-soon screen.
+ *
+ * Deliberately wording-blind. The deploy gate runs these tests against LIVE
+ * hour-timebank data, and a community may rewrite any of this in the admin:
+ * its landing page hero (landing page builder), its legal documents' titles
+ * (custom Terms/Privacy), its SEO title and description. On 2026-10-22 a check
+ * for the default hero wording refused a deploy whose code was fine. Assert
+ * structure, never community-editable copy. The main heading may be visually
+ * hidden (a home page with its hero switched off), so presence is checked, not
+ * on-screen visibility.
+ */
+const BROKEN_PAGE_HEADING = /^\s*(Something went wrong|Page Not Found|Coming Soon|Community not found)\s*$/i;
+
+async function expectOwnPageHeading(page: Page): Promise<void> {
+  const h1 = page.getByRole('heading', { level: 1 }).first();
+  await expect(h1).toBeAttached({ timeout: 20000 });
+  await expect(h1).not.toHaveText(/^\s*$/);
+  await expect(h1).not.toHaveText(BROKEN_PAGE_HEADING);
+}
+
 async function waitForTenantHydration(page: Page): Promise<void> {
   const loadingShell = page
     .locator('[aria-label="Loading community"], [aria-label="Loading"], text=/Loading community|Loading\\.\\.\\./')
@@ -202,15 +224,8 @@ test.describe('Smoke Tests @smoke', () => {
       const body = page.locator('body');
       await expect(body).toBeVisible();
 
-      // The landing page rendered its hero: a non-empty level-1 heading. Do NOT
-      // match the wording. Every community can rewrite its hero in the landing
-      // page builder, and the deploy gate runs this test against LIVE
-      // hour-timebank data — on 2026-10-22 its hero became "Give an hour. Get
-      // an hour back." and a check for the default "Exchange Skills" wording
-      // refused a deploy whose code was fine.
-      const hero = page.getByRole('heading', { level: 1 }).first();
-      await expect(hero).toBeVisible({ timeout: 20000 });
-      await expect(hero).not.toHaveText(/^\s*$/);
+      // Wording-blind: the hero is community-editable (see expectOwnPageHeading).
+      await expectOwnPageHeading(page);
 
       // No uncaught JS errors
       expect(consoleErrors).toHaveLength(0);
@@ -221,8 +236,7 @@ test.describe('Smoke Tests @smoke', () => {
       await dismissBlockingModals(page);
       await waitForTenantHydration(page);
 
-      await expect(page.getByRole('heading', { name: /About|Project NEXUS|hOUR Timebank/i, level: 1 }).first())
-        .toBeVisible({ timeout: 20000 });
+      await expectOwnPageHeading(page);
 
       expect(consoleErrors).toHaveLength(0);
     });
@@ -232,8 +246,8 @@ test.describe('Smoke Tests @smoke', () => {
       await dismissBlockingModals(page);
       await waitForTenantHydration(page);
 
-      await expect(page.getByRole('heading', { name: /Terms/i, level: 1 }))
-        .toBeVisible({ timeout: 20000 });
+      // A community may publish its own terms under any title.
+      await expectOwnPageHeading(page);
 
       expect(consoleErrors).toHaveLength(0);
     });
@@ -244,9 +258,8 @@ test.describe('Smoke Tests @smoke', () => {
       await dismissBlockingModals(page);
       await waitForTenantHydration(page);
 
-      // The Help Centre landing page (heading "How can we help?") with its guide search.
-      await expect(page.getByRole('heading', { name: /How can we help|Help Cent(er|re)|FAQ/i, level: 1 }))
-        .toBeVisible({ timeout: 20000 });
+      // The Help Centre landing page with its guide search.
+      await expectOwnPageHeading(page);
       await expect(page.getByRole('searchbox')).toBeVisible();
 
       expect(consoleErrors).toHaveLength(0);
