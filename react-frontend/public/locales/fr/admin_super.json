@@ -960,7 +960,7 @@
     "name_required": "Nom requis",
     "no_description_set": "Aucun ensemble de descriptions trouvé",
     "og_image_url_description": "URL de l’image OG.",
-    "og_image_url_label": "URL de l'image originale",
+    "og_image_url_label": "Image de partage sur les réseaux",
     "page_title_create": "Titre Créer",
     "page_title_edit": "Titre Modifier",
     "page_title_fallback": "Titre de secours",

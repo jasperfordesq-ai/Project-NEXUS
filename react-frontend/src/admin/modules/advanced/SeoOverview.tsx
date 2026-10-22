@@ -1,5 +1,6 @@
 import { getFormattingLocale } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Switch } from '@/components/ui';
+import { SharingImageField } from '@/admin/components/SharingImageField';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Separator } from '@/components/ui';
@@ -389,25 +390,10 @@ export function SeoOverview() {
             </h3>
           </CardHeader>
           <CardBody className="gap-4">
-            <Input
-              label={t('label_og_image_url')}
-              placeholder="https://your-domain.com/images/og-default.png"
-              variant="secondary"
+            <SharingImageField
               value={String(formData.seo_og_image_url || '')}
-              onValueChange={(v) => updateField('seo_og_image_url', v)}
-              description={t('desc_og_image_url')}
+              onChange={(v) => updateField('seo_og_image_url', v)}
             />
-            {String(formData.seo_og_image_url || '') && (
-              <div className="rounded-lg border border-border p-3">
-                <p className="mb-2 text-xs text-muted">{t('og_image_preview')}:</p>
-                <img
-                  src={String(formData.seo_og_image_url)}
-                  alt={t('og_image_preview')}
-                  className="max-w-xs rounded-md"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-              </div>
-            )}
           </CardBody>
         </Card>
 

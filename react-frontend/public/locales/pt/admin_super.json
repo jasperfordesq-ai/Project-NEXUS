@@ -960,7 +960,7 @@
     "name_required": "Nome obrigatório",
     "no_description_set": "Nenhum conjunto de descrição encontrado",
     "og_image_url_description": "URL da imagem OG.",
-    "og_image_url_label": "URL da imagem OG",
+    "og_image_url_label": "Imagem de partilha social",
     "page_title_create": "Criar título",
     "page_title_edit": "Edição de título",
     "page_title_fallback": "Substituição de título",

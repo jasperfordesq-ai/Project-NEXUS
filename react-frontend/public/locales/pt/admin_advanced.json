@@ -364,7 +364,7 @@
     "desc_meta_description_chars": "Caracteres de meta descrição.",
     "desc_meta_keywords": "Meta palavras-chave.",
     "desc_meta_title": "O título da página inicial nos resultados de pesquisa e na aba do navegador, usado exatamente como escrito. Todas as outras páginas terminam com o nome da comunidade.",
-    "desc_og_image_url": "URL da imagem OG.",
+    "desc_og_image_url": "O carregamento preenche isto por si. Também pode colar o endereço de uma imagem que já esteja online.",
     "desc_ollama_host": "Anfitrião Ollama.",
     "desc_select_ai_provider": "Selecione Provedor de IA.",
     "desc_select_model": "Selecione Modelo.",
@@ -407,7 +407,7 @@
     "label_api_key": "Chave de API",
     "label_default_daily_limit": "Limite diário padrão",
     "label_default_monthly_limit": "Limite mensal padrão",
-    "label_og_image_url": "URL da imagem OG",
+    "label_og_image_url": "Endereço da imagem",
     "label_ollama_host_url": "URL do host Ollama",
     "last_run_label": "Última execução",
     "meta_description_count": "{{count}}/160 caracteres de meta descrição",
@@ -1859,7 +1859,19 @@
       "value": "{{category}}"
     },
     "loading": "Carregando",
-    "no_audit_results_prompt": "Ainda não há resultados de auditoria"
+    "no_audit_results_prompt": "Ainda não há resultados de auditoria",
+    "og_image_explainer": "Esta imagem aparece quando um link para a sua comunidade é partilhado no Facebook, WhatsApp, LinkedIn, X e na maioria das apps de mensagens. As páginas sem imagem própria usam esta.",
+    "og_image_size_hint": "Tamanho ideal: 1200 × 630 píxeis (retângulo largo), JPG ou PNG, com menos de 1 MB. Mantenha o logótipo e o texto afastados das margens, porque algumas apps os cortam.",
+    "og_image_upload": "Carregar imagem",
+    "og_image_replace": "Substituir imagem",
+    "og_image_uploading": "A carregar…",
+    "og_image_uploaded": "Imagem carregada. Prima Guardar para a manter.",
+    "og_image_upload_failed": "Não foi possível carregar a imagem. Tente um JPG ou PNG com menos de 10 MB.",
+    "og_image_remove": "Remover imagem",
+    "og_image_address_label": "Endereço da imagem",
+    "og_image_address_desc": "O carregamento preenche isto por si. Também pode colar o endereço de uma imagem que já esteja online.",
+    "og_image_failed_to_load": "Este endereço não mostra nenhuma imagem.",
+    "og_image_save_reminder": "A imagem é mantida quando prime Guardar no topo da página."
   },
   "email_deliverability": {
     "title": "Capacidade de entrega de e-mail",

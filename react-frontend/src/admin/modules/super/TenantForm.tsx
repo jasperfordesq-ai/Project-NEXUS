@@ -23,6 +23,7 @@ import { usePageTitle } from '@/hooks';
 import { useTenant, useToast } from '@/contexts';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { buildPlatformTenantUrl } from '@/lib/tenant-routing';
+import { SharingImageField } from '@/admin/components/SharingImageField';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { adminSuper } from '../../api/adminApi';
@@ -642,13 +643,13 @@ export function TenantForm() {
                 onValueChange={(v) => updateField('hero_intro', v)}
                 minRows={2}
               />
-              <Input
-                label={t('tenant_form.og_image_url_label')}
-                placeholder="https://example.com/image.jpg"
-                value={form.og_image_url}
-                onValueChange={(v) => updateField('og_image_url', v)}
-                description={t('tenant_form.og_image_url_description')}
-              />
+              <div className="rounded-lg border border-border p-4">
+                <p className="mb-3 text-sm font-medium text-foreground">{t('tenant_form.og_image_url_label')}</p>
+                <SharingImageField
+                  value={form.og_image_url}
+                  onChange={(v) => updateField('og_image_url', v)}
+                />
+              </div>
               <Select
                 label={t('tenant_form.robots_directive_label')}
                 placeholder={t('tenant_form.robots_directive_placeholder')}

@@ -951,7 +951,7 @@
     "name_required": "Name erforderlich",
     "no_description_set": "Kein Beschreibungssatz gefunden",
     "og_image_url_description": "OG-Bild-URL.",
-    "og_image_url_label": "OG-Bild-URL",
+    "og_image_url_label": "Bild für soziale Netzwerke",
     "page_title_create": "Titel erstellen",
     "page_title_edit": "Titel bearbeiten",
     "page_title_fallback": "Titel-Fallback",

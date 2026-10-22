@@ -960,7 +960,7 @@
     "name_required": "Nome Obbligatorio",
     "no_description_set": "Nessun set di descrizioni trovato",
     "og_image_url_description": "URL dell'immagine originale.",
-    "og_image_url_label": "URL dell'immagine originale",
+    "og_image_url_label": "Immagine per la condivisione social",
     "page_title_create": "Titolo Crea",
     "page_title_edit": "Modifica titolo",
     "page_title_fallback": "Titolo di riserva",

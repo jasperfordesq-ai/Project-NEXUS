@@ -951,7 +951,7 @@
     "name_required": "Name Required",
     "no_description_set": "No description set found",
     "og_image_url_description": "OG Image URL.",
-    "og_image_url_label": "OG Image URL",
+    "og_image_url_label": "Social sharing image",
     "page_title_create": "Title Create",
     "page_title_edit": "Title Edit",
     "page_title_fallback": "Title Fallback",

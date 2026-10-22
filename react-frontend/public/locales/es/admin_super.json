@@ -960,7 +960,7 @@
     "name_required": "Nombre requerido",
     "no_description_set": "No se encontró ningún conjunto de descripción",
     "og_image_url_description": "URL de la imagen original.",
-    "og_image_url_label": "URL de la imagen original",
+    "og_image_url_label": "Imagen para compartir en redes",
     "page_title_create": "Título Crear",
     "page_title_edit": "Título Editar",
     "page_title_fallback": "Título alternativo",

@@ -951,7 +951,7 @@
     "name_required": "名前は必須です",
     "no_description_set": "説明セットが見つかりませんでした",
     "og_image_url_description": "OG 画像の URL。",
-    "og_image_url_label": "OG 画像の URL",
+    "og_image_url_label": "SNS共有画像",
     "page_title_create": "タイトルの作成",
     "page_title_edit": "タイトル編集",
     "page_title_fallback": "タイトルフォールバック",

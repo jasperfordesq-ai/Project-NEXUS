@@ -987,7 +987,7 @@
     "name_required": "الاسم مطلوب",
     "no_description_set": "لم يتم العثور على مجموعة الوصف",
     "og_image_url_description": "عنوان URL لصورة OG.",
-    "og_image_url_label": "عنوان URL لصورة OG",
+    "og_image_url_label": "صورة المشاركة الاجتماعية",
     "page_title_create": "إنشاء عنوان",
     "page_title_edit": "تحرير العنوان",
     "page_title_fallback": "العنوان الاحتياطي",

@@ -969,7 +969,7 @@
     "name_required": "Imię wymagane",
     "no_description_set": "Nie znaleziono zestawu opisów",
     "og_image_url_description": "Adres URL obrazu OG.",
-    "og_image_url_label": "Adres URL obrazu OG",
+    "og_image_url_label": "Obraz do udostępniania w mediach społecznościowych",
     "page_title_create": "Tytuł Utwórz",
     "page_title_edit": "Edycja tytułu",
     "page_title_fallback": "Tytuł zastępczy",

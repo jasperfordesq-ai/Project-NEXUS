@@ -365,7 +365,7 @@
     "desc_meta_description_chars": "Meta Opis Znaki.",
     "desc_meta_keywords": "Meta-słowa kluczowe.",
     "desc_meta_title": "Tytuł strony głównej w wynikach wyszukiwania i na karcie przeglądarki, używany dokładnie tak, jak go wpisano. Każda inna strona kończy się zamiast tego nazwą społeczności.",
-    "desc_og_image_url": "Adres URL obrazu OG.",
+    "desc_og_image_url": "Przesłanie wypełnia to pole automatycznie. Możesz też wkleić adres obrazu, który jest już w internecie.",
     "desc_ollama_host": "Gospodarz Ollama.",
     "desc_select_ai_provider": "Wybierz dostawcę AI.",
     "desc_select_model": "Wybierz Model.",
@@ -408,7 +408,7 @@
     "label_api_key": "Klucz API",
     "label_default_daily_limit": "Domyślny limit dzienny",
     "label_default_monthly_limit": "Domyślny limit miesięczny",
-    "label_og_image_url": "Adres URL obrazu OG",
+    "label_og_image_url": "Adres obrazu",
     "label_ollama_host_url": "Adres URL hosta Ollama",
     "last_run_label": "Ostatni bieg",
     "meta_description_count": "{{count}}/160 znaków metaopisu",
@@ -1909,7 +1909,19 @@
     "seo_audit_issue_untitled_published_pages_other": "{{count}} opublikowane strony nie mają tytułu.",
     "match_category": {
       "value": "{{category}}"
-    }
+    },
+    "og_image_explainer": "Ten obraz pojawia się, gdy link do Twojej społeczności zostanie udostępniony na Facebooku, WhatsAppie, LinkedInie, X i w większości komunikatorów. Strony bez własnego obrazu używają tego.",
+    "og_image_size_hint": "Najlepszy rozmiar: 1200 × 630 pikseli (szeroki prostokąt), JPG lub PNG, poniżej 1 MB. Trzymaj logo i tekst z dala od krawędzi, bo niektóre aplikacje je przycinają.",
+    "og_image_upload": "Prześlij obraz",
+    "og_image_replace": "Zamień obraz",
+    "og_image_uploading": "Przesyłanie…",
+    "og_image_uploaded": "Obraz przesłany. Naciśnij Zapisz, aby go zachować.",
+    "og_image_upload_failed": "Nie udało się przesłać obrazu. Spróbuj JPG lub PNG poniżej 10 MB.",
+    "og_image_remove": "Usuń obraz",
+    "og_image_address_label": "Adres obrazu",
+    "og_image_address_desc": "Przesłanie wypełnia to pole automatycznie. Możesz też wkleić adres obrazu, który jest już w internecie.",
+    "og_image_failed_to_load": "Pod tym adresem nie ma obrazu.",
+    "og_image_save_reminder": "Obraz zostanie zachowany po naciśnięciu Zapisz u góry strony."
   },
   "email_deliverability": {
     "title": "Dostarczalność e-maili",
