@@ -96,6 +96,7 @@ CLAUDE.md
 !/scripts/cloudflare-strip-x-powered-by.mjs
 !/scripts/check-status-color-tokens.mjs
 !/scripts/check-db-column-references.mjs
+!/scripts/check-tenant-content-writes.mjs
 !/scripts/check-argument-types.mjs
 !/scripts/check-display-name.mjs
 !/scripts/check-american-date-formats.mjs

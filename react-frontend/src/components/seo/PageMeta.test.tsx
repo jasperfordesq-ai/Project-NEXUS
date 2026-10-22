@@ -209,4 +209,39 @@ describe('PageMeta', () => {
       });
     });
   });
+
+  // The admin title suffix (seo_title_suffix on /admin/seo) is stored both with
+  // a separator (" | My Timebank") and without ("Timebank Ireland", written by
+  // the 2026-05-13 hour-timebank migration). It reached the site for the first
+  // time on 2026-10-22; both forms must produce "Page | Name".
+  describe('admin title suffix', () => {
+    const withSuffix = async (suffix: string) => {
+      const mod = await import('@/contexts/TenantContext');
+      vi.mocked(mod.useTenant).mockReturnValue({
+        branding: { name: 'TimeBank Ireland', tagline: 'A test tagline' },
+        tenant: { settings: { seo_title_suffix: suffix }, seo: { meta_title: 'TimeBank Ireland | Swap Skills' } },
+        hasFeature: vi.fn(() => true),
+        hasModule: vi.fn(() => true),
+        isLoading: false,
+        tenantPath: vi.fn((p: string) => `/test${p}`),
+      } as unknown as ReturnType<typeof mod.useTenant>);
+    };
+
+    it.each([
+      ['Timebank Ireland', 'About | Timebank Ireland'],
+      [' | Timebank Ireland', 'About | Timebank Ireland'],
+      ['- Timebank Ireland', 'About | Timebank Ireland'],
+      ['   ', 'About | TimeBank Ireland'],
+    ])('suffix %j gives %j', async (suffix, expected) => {
+      await withSuffix(suffix);
+      renderWithHelmet(<PageMeta title="About" />);
+      await waitFor(() => expect(document.title).toBe(expected));
+    });
+
+    it('does not change the home page, which uses the meta title as written', async () => {
+      await withSuffix('Timebank Ireland');
+      renderWithHelmet(<PageMeta tenantHome title="Community Timebanking Platform" />);
+      await waitFor(() => expect(document.title).toBe('TimeBank Ireland | Swap Skills'));
+    });
+  });
 });

@@ -287,6 +287,7 @@ if (areas.php.length) {
   }
   if (files.some((f) => f.startsWith('app/') || f.startsWith('database/') || f.startsWith('migrations/'))) {
     sh('DB column references', 'node scripts/check-db-column-references.mjs');
+    sh('No migration overwrites community content', 'node scripts/check-tenant-content-writes.mjs');
   }
   // Argument types (PHPStan level 5, two identifiers only — see
   // scripts/check-argument-types.mjs). It boots the Laravel app, so on Windows

@@ -1022,6 +1022,11 @@ jobs:
       - name: "BLOCKING: Block new legacy SQL migrations (use Laravel instead)"
         run: bash scripts/check-no-new-legacy-sql.sh origin/${{ github.base_ref || 'main' }}
 
+      - name: "BLOCKING: No migration overwrites a community's landing page or SEO settings"
+        run: |
+          bash scripts/test/test-tenant-content-writes.sh
+          node scripts/check-tenant-content-writes.mjs
+
       - name: "BLOCKING: Prerender cron installer runtime test"
         run: bash tests/scripts/install-prerender-cron-test.sh
 

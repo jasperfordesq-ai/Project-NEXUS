@@ -158,10 +158,16 @@ export function PageMeta({
   // came before the branding name, so a descriptive meta title such as
   // "TimeBank Ireland | Swap Skills, Earn Time Credits" was appended to EVERY
   // page ("About TimeBank Ireland | TimeBank Ireland | Swap Skills, …").
-  const siteName = adminTitleSuffix
-    ? adminTitleSuffix.replace(/^\s*\|\s*/, '') // Strip leading " | " if present
-    : branding.name || seoTitle || 'NEXUS';
-  const titleSuffix = adminTitleSuffix || ` | ${siteName}`;
+  //
+  // The admin title suffix is free text, and it is stored both ways: with a
+  // separator (" | My Timebank") and without ("Timebank Ireland", which the
+  // 2026-05-13 hour-timebank migration wrote). It was never published to the
+  // site until 2026-10-22, so the "without" form had never been rendered;
+  // used raw it would glue onto the page name ("AboutTimebank Ireland").
+  // Strip any leading separator and always join with " | ".
+  const cleanSuffix = adminTitleSuffix.replace(/^[\s|·•:\-–—]+/, '').trim();
+  const siteName = cleanSuffix || branding.name || seoTitle || 'NEXUS';
+  const titleSuffix = ` | ${siteName}`;
   const suffixedTitle = title ? `${title}${titleSuffix}` : siteName;
   // The home page is the one page whose title IS the tenant meta title.
   const fullTitle = tenantHome && seoTitle ? seoTitle : suffixedTitle;
