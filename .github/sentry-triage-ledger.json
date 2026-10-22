@@ -1,15 +1,15 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-21T02:08:02.650Z",
+  "lastRunAt": "2026-10-22T12:15:32.892Z",
   "issues": {
     "120262618": {
-      "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
-      "culprit": "/vendor/laravel/framework/src/Illuminate/Redis/Connectors/PhpRedisConnector.php in Redis::connect",
+      "title": "ErrorException: rename(/var/www/html/storage/framework/views/ac692e8d2d5961840d76d15b38ece34c.phpppa7jY,/var/www/html/storage/framework/views/ac692e8d2d5961840d76d15b38ece34c.php): No such file or directory",
+      "culprit": "/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php in Illuminate\\Foundation\\Bootstrap\\HandleExceptions::handleError",
       "decision": "needs-owner",
-      "note": "Fourth occurrence of the same host event (6 Sep, 16 Sep, 1 Oct, now 17 Oct 06:33 UTC), all CLI/Horizon, 0 members: Redis name resolution vanishes for a few minutes during a Docker engine restart. Not a code bug. OWNER ACTION still outstanding: stop unattended Docker engine upgrades on production (hold docker-ce/containerd.io or move them into a maintenance window).",
+      "note": "Fifth occurrence of the same host event (6 Sep, 16 Sep, 1 Oct, 17 Oct, now 21 Oct 06:33 UTC): ~100 events in four minutes, all CLI, 0 members, Redis name lookup failing on two colours at once (releases 6735049c2 and 17610ed79). Matches the earlier Docker-engine-restart pattern; the server itself was not inspected this run. Not a code bug. OWNER ACTION still outstanding: stop unattended Docker engine upgrades on production.",
       "sha": null,
-      "decidedAt": "2026-10-17T15:01:29.755Z",
-      "decidedAtRelease": "nexus-php@18369a16c20e"
+      "decidedAt": "2026-10-22T12:17:32.152Z",
+      "decidedAtRelease": "nexus-php@6735049c2464"
     },
     "123575422": {
       "title": "Support report submitted",
@@ -69,10 +69,10 @@
       "title": "RedisException: Connection refused",
       "culprit": "/vendor/laravel/framework/src/Illuminate/Redis/Connectors/PhpRedisConnector.php in Redis::connect",
       "decision": "needs-owner",
-      "note": "Collateral of the 1 Oct 06:33 UTC engine restart (see NEXUS-PHP-10): one 'Connection refused' to Redis while it restarted. No code change. Fix is the NEXUS-PHP-10 owner action.",
+      "note": "One 'Connection refused' to Redis at 21 Oct 06:29 UTC, four minutes before the NEXUS-PHP-10 burst (earlier copies 31 Jul and 1 Oct, same 06:3x time). Same host event. No code change. Fix is the NEXUS-PHP-10 owner action.",
       "sha": null,
-      "decidedAt": "2026-10-01T18:47:41.937Z",
-      "decidedAtRelease": "nexus-php@d137f9989171"
+      "decidedAt": "2026-10-22T12:17:33.650Z",
+      "decidedAtRelease": "nexus-php@17610ed7937a"
     },
     "138843429": {
       "title": "Sentry\\Exception\\FatalErrorException: Error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legal_document_id' in 'SELECT' in /var/www/html/vendor/laravel/framework/src/Illuminate/Database/Connection.php:420",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "Same daily 08:05 UTC alarm (latest 20 Oct, release 87ee78250). Not a failed fix. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Policy fails safe until then.",
+      "note": "Same daily 08:05 UTC alarm (latest 22 Oct, 14 events since 9 Oct). Not a failed fix. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Policy fails safe until then.",
       "sha": null,
-      "decidedAt": "2026-10-20T12:17:01.625Z",
-      "decidedAtRelease": "nexus-php@87ee782507c5"
+      "decidedAt": "2026-10-22T12:17:35.754Z",
+      "decidedAtRelease": "nexus-php@ad145cecef3e"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -717,10 +717,10 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "Unchanged (latest event still release 87ee78250, 20 Oct 13:00 UTC): hourly info-level repeated tenant-row read inside the scheduled nexus:run-all command. No member affected.",
+      "note": "Still present in live release ad145cece (22 Oct 12:00 UTC): the every-minute nexus:run-all cron fan-out reads the tenants row 5 times per tenant (75 reads, 15 repetitions), next to the transaction abuse-detection queries. Info level, no member affected. Not auto-fixed: the fix would mean caching inside TenantContext or CronJobRunner, which is tenant-isolation and money-adjacent code.",
       "sha": null,
-      "decidedAt": "2026-10-21T02:09:53.622Z",
-      "decidedAtRelease": "nexus-php@87ee782507c5"
+      "decidedAt": "2026-10-22T12:17:34.728Z",
+      "decidedAtRelease": "nexus-php@ad145cecef3e"
     },
     "145943666": {
       "title": "ApiResponseError: Your session has expired. Please log in again.",
