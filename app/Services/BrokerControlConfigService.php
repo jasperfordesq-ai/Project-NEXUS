@@ -47,7 +47,6 @@ class BrokerControlConfigService
             'default_risk_level' => 'low',
         ],
         'exchange_workflow' => [
-            'enabled' => false,
             'require_broker_approval' => false,
             'auto_approve_low_risk' => true,
             'max_hours_without_approval' => 4,
@@ -276,10 +275,19 @@ class BrokerControlConfigService
     // EXCHANGE WORKFLOW FEATURE CHECKS
     // =========================================================================
 
+    /**
+     * Whether exchanges are switched on for the current community.
+     *
+     * There is exactly one switch: the `exchange_workflow` feature, toggled in
+     * Module Configuration. Until 2026-10-22 a second, hidden flag in the
+     * broker settings (`exchange_workflow.enabled` / `exchange_workflow_enabled`)
+     * also had to be on, defaulted to off, and had no screen — so a community
+     * with the feature on still saw "Exchange Workflow Not Enabled". Any stored
+     * copy of that flag is now ignored.
+     */
     public static function isExchangeWorkflowEnabled(): bool
     {
-        $config = self::getConfig('exchange_workflow');
-        return (bool) ($config['enabled'] ?? false);
+        return TenantContext::hasFeature('exchange_workflow');
     }
 
     // =========================================================================
@@ -370,9 +378,6 @@ class BrokerControlConfigService
         }
 
         if (isset($data['exchange_workflow']) && is_array($data['exchange_workflow'])) {
-            if (array_key_exists('enabled', $data['exchange_workflow'])) {
-                $sanitized['exchange_workflow']['enabled'] = (bool) $data['exchange_workflow']['enabled'];
-            }
             if (array_key_exists('require_broker_approval', $data['exchange_workflow'])) {
                 $sanitized['exchange_workflow']['require_broker_approval'] = (bool) $data['exchange_workflow']['require_broker_approval'];
             }
@@ -444,45 +449,29 @@ class BrokerControlConfigService
             $nested['risk_tagging']['notify_on_high_risk_match'] = (bool) $data['notify_on_high_risk_match'];
         }
 
-        $hasExchangeWorkflowInput = false;
-        if (array_key_exists('exchange_workflow_enabled', $data)) {
-            $nested['exchange_workflow']['enabled'] = (bool) $data['exchange_workflow_enabled'];
-            $hasExchangeWorkflowInput = true;
-        }
         if (array_key_exists('broker_approval_required', $data)) {
             $nested['exchange_workflow']['require_broker_approval'] = (bool) $data['broker_approval_required'];
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('require_broker_approval', $data)) {
             $nested['exchange_workflow']['require_broker_approval'] = (bool) $data['require_broker_approval'];
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('auto_approve_low_risk', $data)) {
             $nested['exchange_workflow']['auto_approve_low_risk'] = (bool) $data['auto_approve_low_risk'];
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('max_hours_without_approval', $data)) {
             $nested['exchange_workflow']['max_hours_without_approval'] = max(0, min(24, (float) $data['max_hours_without_approval']));
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('confirmation_deadline_hours', $data)) {
             $nested['exchange_workflow']['confirmation_deadline_hours'] = max(1, min(720, (int) $data['confirmation_deadline_hours']));
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('allow_hour_adjustment', $data)) {
             $nested['exchange_workflow']['allow_hour_adjustment'] = (bool) $data['allow_hour_adjustment'];
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('max_hour_variance_percent', $data)) {
             $nested['exchange_workflow']['max_hour_variance_percent'] = max(0, min(100, (int) $data['max_hour_variance_percent']));
-            $hasExchangeWorkflowInput = true;
         }
         if (array_key_exists('expiry_hours', $data)) {
             $nested['exchange_workflow']['expiry_hours'] = max(1, min(720, (int) $data['expiry_hours']));
-            $hasExchangeWorkflowInput = true;
-        }
-        if ($hasExchangeWorkflowInput && !array_key_exists('enabled', $nested['exchange_workflow'] ?? [])) {
-            $nested['exchange_workflow']['enabled'] = true;
         }
 
         if (array_key_exists('copy_first_contact', $data)) {

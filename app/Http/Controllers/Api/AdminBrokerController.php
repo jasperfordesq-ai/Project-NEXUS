@@ -33,11 +33,22 @@ class AdminBrokerController extends BaseApiController
 {
     protected bool $isV2Api = true;
 
-    /** @var list<string> */
-    private const RETIRED_VETTING_CONFIG_KEYS = [
+    /**
+     * Keys that may still sit in a community's stored broker_config but no
+     * longer control anything. They are stripped from every read and dropped
+     * from the stored JSON on the next save.
+     *
+     * `exchange_workflow_enabled` was a second, hidden on/off switch for
+     * exchanges. Exchanges are now switched on and off only by the
+     * `exchange_workflow` feature in Module Configuration.
+     *
+     * @var list<string>
+     */
+    private const RETIRED_CONFIG_KEYS = [
         'vetting_enabled',
         'enforce_vetting_on_exchanges',
         'vetting_expiry_warning_days',
+        'exchange_workflow_enabled',
     ];
 
     public function __construct(
@@ -49,9 +60,9 @@ class AdminBrokerController extends BaseApiController
     ) {}
 
     /** @param array<string, mixed> $config @return array<string, mixed> */
-    private function withoutRetiredVettingConfig(array $config): array
+    private function withoutRetiredConfig(array $config): array
     {
-        return array_diff_key($config, array_flip(self::RETIRED_VETTING_CONFIG_KEYS));
+        return array_diff_key($config, array_flip(self::RETIRED_CONFIG_KEYS));
     }
 
     // ============================================
@@ -2568,7 +2579,7 @@ class AdminBrokerController extends BaseApiController
                     $allConfigs[] = [
                         'tenant_id' => (int) $r->tenant_id,
                         'tenant_name' => $r->tenant_name ?? 'Unknown',
-                        'config' => $this->withoutRetiredVettingConfig(
+                        'config' => $this->withoutRetiredConfig(
                             array_merge($defaults, $runtimeConfig, $saved),
                         ),
                     ];
@@ -2592,7 +2603,7 @@ class AdminBrokerController extends BaseApiController
                 $config = array_merge($config, $saved);
             }
 
-            $config = $this->withoutRetiredVettingConfig($config);
+            $config = $this->withoutRetiredConfig($config);
 
             return $this->respondWithData($config);
         } catch (\Exception $e) {
@@ -2623,7 +2634,7 @@ class AdminBrokerController extends BaseApiController
             'new_member_monitoring_days', 'require_exchange_for_listings',
             'risk_tagging_enabled', 'auto_flag_high_risk', 'require_approval_high_risk',
             'notify_on_high_risk_match', 'broker_approval_required', 'require_broker_approval',
-            'exchange_workflow_enabled', 'require_broker_approval_new_members',
+            'require_broker_approval_new_members',
             'require_broker_approval_high_risk', 'require_broker_approval_over_hours',
             'auto_approve_low_risk',
             'exchange_timeout_days', 'max_hours_without_approval', 'confirmation_deadline_hours',
@@ -2645,7 +2656,7 @@ class AdminBrokerController extends BaseApiController
             'broker_messaging_enabled', 'broker_copy_all_messages',
             'risk_tagging_enabled', 'auto_flag_high_risk', 'require_approval_high_risk',
             'notify_on_high_risk_match', 'broker_approval_required', 'require_broker_approval',
-            'exchange_workflow_enabled', 'require_broker_approval_new_members',
+            'require_broker_approval_new_members',
             'require_broker_approval_high_risk', 'require_broker_approval_over_hours',
             'auto_approve_low_risk', 'max_hours_without_approval',
             'insurance_enabled', 'enforce_insurance_on_exchanges',
@@ -2704,7 +2715,7 @@ class AdminBrokerController extends BaseApiController
             // Partial updates must preserve previously saved policy keys.
             // Otherwise a broker saving an allowed threshold can wipe
             // admin-owned controls from tenant_settings.broker_config.
-            $mergedConfig = $this->withoutRetiredVettingConfig(array_merge($savedConfig, $config));
+            $mergedConfig = $this->withoutRetiredConfig(array_merge($savedConfig, $config));
             $json = json_encode($mergedConfig);
             if ($existing) {
                 DB::update(
@@ -2725,14 +2736,14 @@ class AdminBrokerController extends BaseApiController
             // toggles is an admin decision.
             $workflowKeys = [
                 'require_broker_approval', 'auto_approve_low_risk', 'max_hours_without_approval',
-                'exchange_workflow_enabled', 'require_broker_approval_new_members',
+                'require_broker_approval_new_members',
                 'require_broker_approval_high_risk', 'require_broker_approval_over_hours',
             ];
             // Boolean workflow flags — cast explicitly so string 'false' / '0' / ''
             // values from JSON-decoded request bodies are never treated as truthy.
             $booleanWorkflowKeys = [
                 'require_broker_approval', 'auto_approve_low_risk',
-                'exchange_workflow_enabled', 'require_broker_approval_new_members',
+                'require_broker_approval_new_members',
                 'require_broker_approval_high_risk', 'require_broker_approval_over_hours',
             ];
             $workflowConfig = [];

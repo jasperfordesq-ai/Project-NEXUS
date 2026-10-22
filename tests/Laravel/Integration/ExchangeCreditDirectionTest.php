@@ -8,7 +8,6 @@ namespace Tests\Laravel\Integration;
 
 use App\Core\TenantContext;
 use App\Models\Transaction;
-use App\Services\BrokerControlConfigService;
 use App\Services\ExchangeWorkflowService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -34,12 +33,6 @@ class ExchangeCreditDirectionTest extends TestCase
 {
     use DatabaseTransactions;
     use CreatesExchangeData;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        BrokerControlConfigService::updateConfig(['exchange_workflow_enabled' => true]);
-    }
 
     /**
      * @return array{0: \App\Models\User, 1: \App\Models\User, 2: \App\Models\ExchangeRequest}

@@ -506,7 +506,7 @@ describe('BrokerConfigurationPage', () => {
   // F-547: a broker's save sends only the settings the broker changed. The
   // server refuses the WHOLE save (403) when a non-admin sends any admin-only
   // key, even with its value unchanged — and the GET returns keys the page
-  // never shows (exchange_workflow_enabled), so echoing the loaded config back
+  // never shows (require_broker_approval_new_members), so echoing the loaded config back
   // meant no broker could ever save this page.
   async function brokerSaveAfter(loaded: Record<string, unknown>, edit?: () => void) {
     mockRole = 'broker';
@@ -538,13 +538,13 @@ describe('BrokerConfigurationPage', () => {
 
   it('never sends a broker an admin-only key the page does not show (F-547)', async () => {
     const payload = await brokerSaveAfter(
-      { ...defaultConfig, exchange_workflow_enabled: true, require_broker_approval: true },
+      { ...defaultConfig, require_broker_approval_new_members: true, require_broker_approval: true },
       () => {
         fireEvent.click(screen.getByRole('switch', { name: FIRST_CONTACT }));
       },
     );
 
-    expect(payload).not.toHaveProperty('exchange_workflow_enabled');
+    expect(payload).not.toHaveProperty('require_broker_approval_new_members');
     expect(payload).not.toHaveProperty('require_broker_approval');
     expect(payload).not.toHaveProperty('broker_messaging_enabled');
   });
@@ -562,7 +562,7 @@ describe('BrokerConfigurationPage', () => {
   it('still sends an admin the whole configuration, including keys the page does not show', async () => {
     mockAdminBroker.getConfiguration.mockResolvedValue({
       success: true,
-      data: { ...defaultConfig, exchange_workflow_enabled: true },
+      data: { ...defaultConfig, require_broker_approval_new_members: true },
     });
     await renderLoaded();
 
@@ -574,7 +574,7 @@ describe('BrokerConfigurationPage', () => {
       expect(mockAdminBroker.saveConfiguration).toHaveBeenCalledWith({
         ...defaultConfig,
         copy_first_contact: false,
-        exchange_workflow_enabled: true,
+        require_broker_approval_new_members: true,
       });
     });
   });

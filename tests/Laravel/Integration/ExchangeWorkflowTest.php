@@ -46,16 +46,8 @@ class ExchangeWorkflowTest extends TestCase
         // made the dispute tests run for minutes and look hung.
         $this->mock(EmailDispatchService::class, fn ($mock) => $mock->shouldReceive('send')->andReturn(true));
 
-        // Ensure exchange workflow is enabled for the test tenant.
-        //
-        // The gate (ExchangesController -> BrokerControlConfigService::isExchangeWorkflowEnabled)
-        // reads exchange_workflow.enabled from the nested broker config (stored in
-        // tenants.configuration / tenant_settings.broker_config), NOT a flat
-        // exchange_workflow_enabled setting. Use the service's own writer, which maps
-        // the flat key to exchange_workflow.enabled and clears the config cache.
-        \App\Services\BrokerControlConfigService::updateConfig([
-            'exchange_workflow_enabled' => true,
-        ]);
+        // Exchanges are on whenever the tenant's exchange_workflow feature is on,
+        // which is the default; nothing else needs switching on.
 
         // Listing creation requires a valid listing category for the tenant
         // (ListingService enforces a required, tenant-scoped, type=listing category).

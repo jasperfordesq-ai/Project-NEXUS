@@ -82,6 +82,58 @@ class ExchangesControllerTest extends TestCase
     }
 
     // ================================================================
+    // ONE SWITCH — the exchange_workflow feature (Module Configuration)
+    // ================================================================
+
+    private function setExchangeFeature(bool $on): void
+    {
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('features');
+        $features = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $features['exchange_workflow'] = $on;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode($features)]);
+        \App\Core\TenantContext::setById($this->testTenantId);
+    }
+
+    /** Stores the retired hidden switch, as communities saved before 2026-10-22 may have it. */
+    private function storeRetiredHiddenSwitch(bool $value): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'broker_config'],
+            ['setting_value' => json_encode(['exchange_workflow_enabled' => $value])]
+        );
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $configuration = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $configuration['broker_controls']['exchange_workflow']['enabled'] = $value;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($configuration)]);
+    }
+
+    public function test_feature_on_turns_exchanges_on_even_when_the_retired_hidden_switch_says_off(): void
+    {
+        // The reported bug: feature on in Module Configuration, yet members saw
+        // "Exchange Workflow Not Enabled" because a hidden second switch was off.
+        $this->setExchangeFeature(true);
+        $this->storeRetiredHiddenSwitch(false);
+        $this->authenticatedUser();
+
+        $this->apiGet('/v2/exchanges/config')
+            ->assertStatus(200)
+            ->assertJsonPath('data.exchange_workflow_enabled', true);
+        $this->apiGet('/v2/exchanges')->assertStatus(200);
+    }
+
+    public function test_feature_off_turns_exchanges_off_even_when_the_retired_hidden_switch_says_on(): void
+    {
+        $this->setExchangeFeature(false);
+        $this->storeRetiredHiddenSwitch(true);
+        $this->authenticatedUser();
+
+        $this->apiGet('/v2/exchanges/config')
+            ->assertStatus(200)
+            ->assertJsonPath('data.exchange_workflow_enabled', false);
+        $this->apiGet('/v2/exchanges')->assertStatus(400);
+    }
+
+    // ================================================================
     // CONFIG — Authentication required
     // ================================================================
 

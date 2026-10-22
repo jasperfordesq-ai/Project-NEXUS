@@ -48,13 +48,6 @@ class GamificationFlowTest extends TestCase
                 'setting_value' => '1',
                 'setting_type'  => 'boolean',
             ],
-            [
-                'tenant_id'     => $this->testTenantId,
-                'category'      => 'general',
-                'setting_key'   => 'exchange_workflow_enabled',
-                'setting_value' => '1',
-                'setting_type'  => 'boolean',
-            ],
         ]);
 
         // Listing creation requires a valid tenant-scoped listing category.

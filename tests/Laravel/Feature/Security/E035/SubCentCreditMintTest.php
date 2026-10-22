@@ -8,7 +8,6 @@ namespace Tests\Laravel\Feature\Security\E035;
 
 use App\Core\TenantContext;
 use App\Models\User;
-use App\Services\BrokerControlConfigService;
 use App\Services\CommunityFundService;
 use App\Services\ExchangeWorkflowService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -147,8 +146,6 @@ class SubCentCreditMintTest extends TestCase
 
     public function test_exchange_with_averaged_sub_cent_hours_moves_identical_amounts(): void
     {
-        BrokerControlConfigService::updateConfig(['exchange_workflow_enabled' => true]);
-
         $s = $this->createExchangeScenario([
             'provider'  => ['balance' => 10, 'status' => 'active', 'is_approved' => true],
             'requester' => ['balance' => 10, 'status' => 'active', 'is_approved' => true],

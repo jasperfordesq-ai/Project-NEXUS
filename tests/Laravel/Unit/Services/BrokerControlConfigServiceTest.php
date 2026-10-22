@@ -30,7 +30,9 @@ class BrokerControlConfigServiceTest extends TestCase
         $this->assertArrayHasKey('exchange_workflow', $config);
         $this->assertArrayHasKey('broker_visibility', $config);
         $this->assertTrue($config['messaging']['direct_messaging_enabled']);
-        $this->assertFalse($config['exchange_workflow']['enabled']);
+        // There is no hidden on/off switch in the broker config any more;
+        // exchanges follow the exchange_workflow feature alone.
+        $this->assertArrayNotHasKey('enabled', $config['exchange_workflow']);
     }
 
     public function test_getConfig_returns_specific_section(): void
@@ -55,15 +57,6 @@ class BrokerControlConfigServiceTest extends TestCase
         DB::shouldReceive('first')->andReturn((object) ['configuration' => null]);
 
         $this->assertTrue(BrokerControlConfigService::isDirectMessagingEnabled());
-    }
-
-    public function test_isExchangeWorkflowEnabled_returns_false_by_default(): void
-    {
-        DB::shouldReceive('table')->andReturnSelf();
-        DB::shouldReceive('where')->andReturnSelf();
-        DB::shouldReceive('first')->andReturn((object) ['configuration' => null]);
-
-        $this->assertFalse(BrokerControlConfigService::isExchangeWorkflowEnabled());
     }
 
     public function test_isBrokerVisibilityEnabled_returns_true_by_default(): void

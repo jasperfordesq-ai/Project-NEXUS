@@ -73,7 +73,7 @@ export default function BrokerConfiguration() {
   const [form, setForm] = useState<ConfigFormValues>(() => toFormValues(DEFAULT_BROKER_CONFIG));
 
   // The raw server object, which carries admin-only keys this page never
-  // shows (e.g. exchange_workflow_enabled). An admin's save echoes them back
+  // shows (e.g. require_broker_approval_new_members). An admin's save echoes them back
   // unchanged; a broker's save must never include them (F-547).
   const savedRawRef = useRef<Partial<BrokerConfig>>({});
 

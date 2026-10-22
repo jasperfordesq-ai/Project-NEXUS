@@ -2840,11 +2840,41 @@ class AdminBrokerControllerTest extends TestCase
         $tenantConfig = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
         $brokerControls = (json_decode((string) $tenantConfig, true) ?: [])['broker_controls'] ?? [];
 
-        $this->assertTrue($brokerControls['exchange_workflow']['enabled']);
+        // Exchanges are switched on only by the exchange_workflow feature;
+        // saving a workflow setting must not write a second, hidden switch.
+        $this->assertArrayNotHasKey('enabled', $brokerControls['exchange_workflow']);
         $this->assertTrue($brokerControls['exchange_workflow']['require_broker_approval']);
         $this->assertTrue($brokerControls['exchange_workflow']['auto_approve_low_risk']);
         $this->assertSame(6.0, (float) $brokerControls['exchange_workflow']['max_hours_without_approval']);
         $this->assertFalse($brokerControls['broker_visibility']['copy_high_risk_listing_messages']);
+    }
+
+    public function test_retired_exchange_workflow_enabled_key_is_neither_returned_nor_stored(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        // A community saved before 2026-10-22 may still hold the hidden switch.
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'broker_config'],
+            ['setting_value' => json_encode(['exchange_workflow_enabled' => false, 'retention_days' => 60])]
+        );
+
+        $this->apiGet('/v2/admin/broker/configuration')
+            ->assertStatus(200)
+            ->assertJsonMissingPath('data.exchange_workflow_enabled');
+
+        $this->apiPost('/v2/admin/broker/configuration', [
+            'exchange_workflow_enabled' => true,
+            'retention_days' => 61,
+        ])->assertStatus(200)->assertJsonMissingPath('data.exchange_workflow_enabled');
+
+        $saved = json_decode((string) DB::table('tenant_settings')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('setting_key', 'broker_config')
+            ->value('setting_value'), true);
+        $this->assertArrayNotHasKey('exchange_workflow_enabled', $saved);
+        $this->assertSame(61, $saved['retention_days']);
     }
 
     public function test_save_configuration_returns_403_for_regular_member(): void

@@ -357,13 +357,6 @@ class MemberListSurnameResidueTest extends TestCase
             'status' => 'accepted',
             'created_at' => now(),
         ]);
-        // Exchange workflow is off by default; switch it on for this community.
-        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
-        $configuration = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
-        $configuration['broker_controls']['exchange_workflow']['enabled'] = true;
-        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($configuration)]);
-        Cache::flush();
-
         Sanctum::actingAs($viewer, ['*']);
 
         $list = $this->apiGet('/v2/exchanges')->assertStatus(200);
