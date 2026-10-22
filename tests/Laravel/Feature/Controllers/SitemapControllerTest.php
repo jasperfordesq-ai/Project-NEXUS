@@ -209,4 +209,49 @@ class SitemapControllerTest extends TestCase
         $response = $this->get('/sitemap-../etc/passwd.xml');
         $response->assertStatus(404);
     }
+
+    // =========================================================================
+    // "Auto Sitemap" switch on /admin/seo (seo_auto_sitemap, 2026-10-22)
+    // =========================================================================
+
+    private function seedSingleTenantDomain(): string
+    {
+        $domain = 'sitemap-single-' . uniqid() . '.test';
+        DB::table('tenants')->updateOrInsert(
+            ['id' => $this->testTenantId],
+            ['domain' => $domain, 'is_active' => true, 'updated_at' => now()]
+        );
+        return $domain;
+    }
+
+    public function test_sitemap_is_served_while_the_auto_sitemap_switch_is_on(): void
+    {
+        $host = $this->seedSingleTenantDomain();
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_auto_sitemap'],
+            ['setting_value' => '1', 'setting_type' => 'boolean', 'updated_at' => now()]
+        );
+
+        $response = $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap.xml');
+        $response->assertStatus(200);
+        $this->assertStringContainsString('<urlset', $response->getContent());
+    }
+
+    /** Until 2026-10-22 the switch saved and nothing read it. */
+    public function test_sitemap_answers_404_when_the_auto_sitemap_switch_is_off(): void
+    {
+        $host = $this->seedSingleTenantDomain();
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_auto_sitemap'],
+            ['setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now()]
+        );
+
+        $response = $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap.xml');
+        $response->assertStatus(404);
+        $this->assertStringNotContainsString('<loc>', $response->getContent());
+
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+        $perTenant = $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-' . $slug . '.xml');
+        $perTenant->assertStatus(404);
+    }
 }

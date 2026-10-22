@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Textarea, Switch } from '@/components/ui';
+import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Switch } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Separator } from '@/components/ui';
@@ -49,7 +49,7 @@ const SEO_KEYS = [
   'seo_title_suffix', 'seo_meta_description', 'seo_meta_keywords',
   'seo_og_image_url',
   'seo_auto_sitemap', 'seo_canonical_urls', 'seo_open_graph',
-  'seo_twitter_cards', 'seo_robots_txt', 'seo_google_verification', 'seo_bing_verification',
+  'seo_twitter_cards', 'seo_google_verification', 'seo_bing_verification',
 ] as const;
 
 // Keys stored directly on the tenants table
@@ -91,7 +91,6 @@ export function SeoOverview() {
     seo_canonical_urls: true,
     seo_open_graph: true,
     seo_twitter_cards: true,
-    seo_robots_txt: '',
     seo_google_verification: '',
     seo_bing_verification: '',
     tenant_meta_title: '',
@@ -514,15 +513,10 @@ export function SeoOverview() {
               value={String(formData.seo_bing_verification || '')}
               onValueChange={(v) => updateField('seo_bing_verification', v)}
             />
-              <Textarea
-                label={t('custom_robots_txt')}
-              placeholder={t('placeholder_robots_txt')}
-                variant="secondary"
-              minRows={4}
-              value={String(formData.seo_robots_txt || '')}
-              onValueChange={(v) => updateField('seo_robots_txt', v)}
-              description={t('desc_custom_robots_txt')}
-            />
+            {/* The "Custom robots.txt" box lived here until 2026-10-22. It saved
+                `seo_robots_txt` and nothing read it: robots.txt is a static file
+                served by the frontend container's nginx (see nginx.bluegreen.conf),
+                so the box promised a per-community robots.txt that never existed. */}
           </CardBody>
         </Card>
 

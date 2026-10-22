@@ -42,6 +42,10 @@ class SitemapController
         );
 
         if ($tenant) {
+            if ($this->sitemapDisabled((int) $tenant->id)) {
+                return $this->xmlResponse($this->emptyUrlset(), 404);
+            }
+
             // Check if this tenant has direct sub-tenants that inherit its domain
             // (sub-tenants with no own domain). If so, return a sitemap index so
             // Google discovers both the parent's and sub-tenants' content.
@@ -129,7 +133,7 @@ class SitemapController
             );
         }
 
-        if (!$row) {
+        if (!$row || $this->sitemapDisabled((int) $row->id)) {
             return $this->xmlResponse($this->emptyUrlset(), 404);
         }
 
@@ -143,6 +147,27 @@ class SitemapController
 
         $xml = $service->generateForTenant((int) $row->id, $baseUrl);
         return $this->xmlResponse($xml);
+    }
+
+    /**
+     * The "Automatic sitemap" switch on /admin/seo (`seo_auto_sitemap`, stored
+     * as a bare key in tenant_settings, default on). Until 2026-10-22 nothing
+     * read it: the switch saved and the sitemap was served regardless. Off
+     * means the tenant's sitemap answers 404 with an empty urlset, which is
+     * what a crawler expects of a sitemap that does not exist.
+     */
+    private function sitemapDisabled(int $tenantId): bool
+    {
+        try {
+            $value = DB::table('tenant_settings')
+                ->where('tenant_id', $tenantId)
+                ->where('setting_key', 'seo_auto_sitemap')
+                ->value('setting_value');
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $value !== null && in_array(strtolower(trim((string) $value)), ['0', 'false', 'off', 'no'], true);
     }
 
     private function xmlResponse(string $xml, int $status = 200): Response

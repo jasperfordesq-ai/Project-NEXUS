@@ -646,4 +646,55 @@ class TenantBootstrapControllerTest extends TestCase
             app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
         }
     }
+
+    // ================================================================
+    // /admin/seo settings reach the public site (2026-10-22)
+    // ================================================================
+
+    /**
+     * AdminConfigController stores the /admin/seo settings as BARE keys
+     * (`seo_title_suffix`, not `general.seo_title_suffix`), while the
+     * bootstrap's general-settings reader only queried `general.%`. So every
+     * one of them (title suffix, global description, keywords, the four
+     * sharing/canonical/sitemap switches, both verification tags) was saved
+     * and never served, and PageMeta / SeoHead fell back to their defaults.
+     */
+    public function test_bootstrap_exposes_the_admin_seo_settings_under_their_bare_keys(): void
+    {
+        $rows = [
+            ['seo_title_suffix', ' | Test Suffix', 'string'],
+            ['seo_meta_description', 'A global description for every page.', 'string'],
+            ['seo_meta_keywords', 'timebank, skills', 'string'],
+            ['seo_canonical_urls', '0', 'boolean'],
+            ['seo_open_graph', '1', 'boolean'],
+            ['seo_twitter_cards', 'false', 'boolean'],
+            ['seo_auto_sitemap', '1', 'boolean'],
+            ['seo_google_verification', 'google-verify-123', 'string'],
+            ['seo_bing_verification', 'bing-verify-456', 'string'],
+            // Never public: nothing serves a per-tenant robots.txt.
+            ['seo_robots_txt', 'User-agent: *', 'string'],
+        ];
+        foreach ($rows as [$key, $value, $type]) {
+            DB::table('tenant_settings')->updateOrInsert(
+                ['tenant_id' => $this->testTenantId, 'setting_key' => $key],
+                ['setting_value' => $value, 'setting_type' => $type, 'updated_at' => now()]
+            );
+        }
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+        $response->assertStatus(200);
+        $settings = $response->json('data.settings');
+
+        $this->assertSame(' | Test Suffix', $settings['seo_title_suffix']);
+        $this->assertSame('A global description for every page.', $settings['seo_meta_description']);
+        $this->assertSame('timebank, skills', $settings['seo_meta_keywords']);
+        $this->assertFalse($settings['seo_canonical_urls']);
+        $this->assertTrue($settings['seo_open_graph']);
+        $this->assertFalse($settings['seo_twitter_cards']);
+        $this->assertTrue($settings['seo_auto_sitemap']);
+        $this->assertSame('google-verify-123', $settings['seo_google_verification']);
+        $this->assertSame('bing-verify-456', $settings['seo_bing_verification']);
+        $this->assertArrayNotHasKey('seo_robots_txt', $settings);
+    }
 }

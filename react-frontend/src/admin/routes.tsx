@@ -461,10 +461,14 @@ export function AdminRoutes() {
       </Route>
       <Route path="feed-algorithm" element={<TenantRedirect to="/admin/algorithm-settings" />} />
       <Route path="algorithm-settings" element={<Lazy><AlgorithmSettings /></Lazy>} />
-      {/* Growth & Discovery — every page god accounts only (owner decision
-          2026-10-02). Search Analytics, in the same section, is guarded below. */}
+      {/* SEO overview — open to every tenant admin again (owner decision
+          2026-10-22): its settings are per community (meta title and
+          description, title suffix, verification tags, sharing toggles) and
+          the backend scopes them by tenant. The rest of Growth & Discovery
+          stays god-only (owner decision 2026-10-02); Search Analytics, in the
+          same section, is guarded below. */}
+      <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
       <Route element={<GodOnlyRoute />}>
-        <Route path="seo" element={<Lazy><SeoOverview /></Lazy>} />
         <Route path="seo/audit" element={<Lazy><SeoAudit /></Lazy>} />
         <Route path="seo/redirects" element={<Lazy><Redirects /></Lazy>} />
         <Route path="seo/prerender" element={<Lazy><PrerenderAdmin /></Lazy>} />

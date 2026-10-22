@@ -458,6 +458,7 @@ class TenantBootstrapController extends BaseApiController
         }
 
         $data['settings'] = $this->buildGeneralSettings((int) $tenant['id']);
+        $data['settings'] = array_merge($data['settings'], $this->buildSeoSettings((int) $tenant['id']));
 
         // Tenant-level SEO overrides (set by super admin, safe for public payload)
         if (!empty($tenant['seo_organization_type'])) {
@@ -627,6 +628,49 @@ class TenantBootstrapController extends BaseApiController
                     $settings[$key] = false;
                 } else {
                     $settings[$key] = $value;
+                }
+            }
+        } catch (\Exception $e) {
+            // tenant_settings table may not exist yet
+        }
+
+        return $settings;
+    }
+
+    /**
+     * The /admin/seo settings the public site reads. `AdminConfigController`
+     * stores these as BARE keys (`seo_title_suffix`, not `general.seo_…`), so
+     * `buildGeneralSettings()`'s `general.%` query never saw them: until
+     * 2026-10-22 every one of them was saved and never served, and PageMeta /
+     * SeoHead silently fell back to their defaults. `seo_robots_txt` and
+     * `seo_og_image_url` are deliberately absent — robots.txt is static in the
+     * frontend container, and the OG image is published on `branding`.
+     */
+    private const PUBLIC_SEO_SETTINGS = [
+        'seo_title_suffix', 'seo_meta_description', 'seo_meta_keywords',
+        'seo_canonical_urls', 'seo_open_graph', 'seo_twitter_cards',
+        'seo_auto_sitemap', 'seo_google_verification', 'seo_bing_verification',
+    ];
+
+    private function buildSeoSettings(int $tenantId): array
+    {
+        $settings = [];
+
+        try {
+            $rows = DB::table('tenant_settings')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('setting_key', self::PUBLIC_SEO_SETTINGS)
+                ->select('setting_key', 'setting_value')
+                ->get();
+
+            foreach ($rows as $row) {
+                $value = $row->setting_value;
+                if ($value === 'true' || $value === '1') {
+                    $settings[$row->setting_key] = true;
+                } elseif ($value === 'false' || $value === '0') {
+                    $settings[$row->setting_key] = false;
+                } else {
+                    $settings[$row->setting_key] = $value;
                 }
             }
         } catch (\Exception $e) {

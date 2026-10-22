@@ -645,28 +645,31 @@ describe('AdminSidebar', () => {
     for (const href of GOD_ONLY) expect(hrefs).toContain(href);
   });
 
-  // The whole Growth & Discovery section is god-only (owner decision
-  // 2026-10-02), platform super admins included.
-  const GROWTH_DISCOVERY_HREFS = [
-    '/test/admin/seo',
+  // Growth & Discovery is god-only (owner decision 2026-10-02), platform
+  // super admins included — EXCEPT the SEO overview, open to every tenant
+  // admin again since 2026-10-22 (its settings are per community).
+  const SEO_OVERVIEW_HREF = '/test/admin/seo';
+  const GOD_ONLY_DISCOVERY_HREFS = [
     '/test/admin/seo/audit',
     '/test/admin/seo/redirects',
     '/test/admin/search-analytics',
     '/test/admin/seo/prerender',
     '/test/admin/404-errors',
   ];
+  const GROWTH_DISCOVERY_HREFS = [SEO_OVERVIEW_HREF, ...GOD_ONLY_DISCOVERY_HREFS];
 
   it.each([
     ['a plain admin', { id: 1, name: 'Admin User', role: 'admin' }],
     ['a platform super admin who is not god', { id: 1, name: 'Super Admin', role: 'admin', is_super_admin: true }],
-  ])('hides the whole Growth & Discovery section from %s', async (_who, user) => {
+  ])('shows only the SEO overview under Growth & Discovery to %s', async (_who, user) => {
     authState.user = user as User;
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
 
-    expect(screen.queryByRole('button', { name: 'Growth & Discovery' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Growth & Discovery' }));
     const hrefs = screen.getAllByRole('link', { hidden: true }).map((l) => l.getAttribute('href'));
-    for (const href of GROWTH_DISCOVERY_HREFS) expect(hrefs).not.toContain(href);
+    expect(hrefs).toContain(SEO_OVERVIEW_HREF);
+    for (const href of GOD_ONLY_DISCOVERY_HREFS) expect(hrefs).not.toContain(href);
     // Control: the same query does reach links inside collapsed panels.
     expect(hrefs).toContain('/test/admin/settings');
   });
