@@ -211,11 +211,12 @@ export function SeoHead() {
   const geoLng = hasCoords ? lng : null;
 
   return (
-    // defaultTitle: the one title a page gets when it sets none itself. It
-    // replaced the hard-coded <title> in index.html, which Helmet never removed,
-    // so every crawler copy carried two titles (2026-10-23). The prerender
-    // worker refuses a page without a title, so this must stay.
-    <Helmet defaultTitle={siteName}>
+    // No title here, not even Helmet's defaultTitle: under React 19 each
+    // Helmet writes its own <title> element, so a default here became a second
+    // title on every page. PageMeta sets the title and removes index.html's
+    // placeholder (shellTitle.ts); a page without PageMeta keeps the
+    // placeholder, which is still exactly one title.
+    <Helmet>
       {/* Robots directive — only emitted when admin has set a non-default value.
           Default (index, follow) is omitted to keep the HTML clean. */}
       {seo?.robots_directive && (

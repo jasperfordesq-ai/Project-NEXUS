@@ -313,5 +313,22 @@ describe('PageMeta', () => {
     await waitFor(() => expect(document.querySelector('meta[name="keywords"]')?.getAttribute('content'))
       .toBe('timebank ireland, skill swap'));
   });
+
+  // 2026-10-23: index.html keeps a placeholder <title> for the offline screen
+  // (WCAG document-title). Under React 19 Helmet adds its own <title> rather
+  // than reusing it, so PageMeta removes the placeholder.
+  it('removes the index.html placeholder title, leaving exactly one title', async () => {
+    const placeholder = document.createElement('title');
+    placeholder.id = 'nexus-shell-title';
+    placeholder.textContent = 'Project NEXUS';
+    document.head.prepend(placeholder);
+
+    renderWithHelmet(<PageMeta title="About" />);
+
+    await waitFor(() => {
+      expect(document.getElementById('nexus-shell-title')).toBeNull();
+      expect(document.querySelectorAll('title')).toHaveLength(1);
+    });
+  });
 });
 

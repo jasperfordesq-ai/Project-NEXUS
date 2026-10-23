@@ -23,6 +23,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts/TenantContext';
+import { useRemoveShellTitle } from './shellTitle';
 
 // Map our short language codes to OG locale codes (BCP 47 with region).
 // Google and Facebook expect e.g. en_GB / fr_FR, not the bare lang code.
@@ -124,6 +125,7 @@ export function PageMeta({
   tenantHome = false,
 }: PageMetaProps) {
   const { branding: tenantBranding, tenant } = useTenant();
+  useRemoveShellTitle();
   const branding = tenantBranding ?? { name: 'NEXUS', tagline: '', og_image_url: '', logo: '' };
   const location = useLocation();
   const { i18n } = useTranslation();
