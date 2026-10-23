@@ -156,25 +156,10 @@ class SitemapController
         return $this->xmlResponse($xml);
     }
 
-    /**
-     * The "Automatic sitemap" switch on /admin/seo (`seo_auto_sitemap`, stored
-     * as a bare key in tenant_settings, default on). Until 2026-10-22 nothing
-     * read it: the switch saved and the sitemap was served regardless. Off
-     * means the tenant's sitemap answers 404 with an empty urlset, which is
-     * what a crawler expects of a sitemap that does not exist.
-     */
+    /** The "Automatic sitemap" switch (SitemapService::isSitemapSwitchedOff). */
     private function sitemapDisabled(int $tenantId): bool
     {
-        try {
-            $value = DB::table('tenant_settings')
-                ->where('tenant_id', $tenantId)
-                ->where('setting_key', 'seo_auto_sitemap')
-                ->value('setting_value');
-        } catch (\Throwable) {
-            return false;
-        }
-
-        return $value !== null && in_array(strtolower(trim((string) $value)), ['0', 'false', 'off', 'no'], true);
+        return SitemapService::isSitemapSwitchedOff($tenantId);
     }
 
     private function xmlResponse(string $xml, int $status = 200): Response

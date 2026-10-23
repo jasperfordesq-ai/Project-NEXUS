@@ -1119,7 +1119,8 @@
     "members": {
       "title": "Członkowie",
       "description": "Przeglądaj członków społeczności, łącz się i wymieniaj kredyty czasowe."
-    }
+    },
+    "default_description": "Społecznościowa platforma banku czasu — wymieniaj się umiejętnościami, nawiązuj kontakty, wzmacniaj swoją społeczność."
   },
   "checking_authentication": "Sprawdzanie uwierzytelnienia...",
   "verification_status": "Status weryfikacji",

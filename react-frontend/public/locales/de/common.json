@@ -1105,7 +1105,8 @@
     "members": {
       "title": "Mitglieder",
       "description": "Durchsuchen Sie die Mitglieder der Gemeinschaft, verbinden Sie sich und tauschen Sie Zeitguthaben aus."
-    }
+    },
+    "default_description": "Community-Zeitbank-Plattform — Fähigkeiten tauschen, Verbindungen knüpfen, die Gemeinschaft stärken."
   },
   "checking_authentication": "Authentifizierung wird geprüft...",
   "verification_status": "Verifizierungsstatus",

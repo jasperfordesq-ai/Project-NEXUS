@@ -300,4 +300,44 @@ class SitemapControllerTest extends TestCase
         Cache::flush();
         $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-' . $slug . '.xml')->assertOk();
     }
+
+    public function test_the_app_host_sitemap_honours_the_switch_and_lists_the_platform_master(): void
+    {
+        $appHost = (string) parse_url((string) env('FRONTEND_URL', 'https://app.project-nexus.ie'), PHP_URL_HOST);
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => null, 'parent_id' => null, 'robots_directive' => 'index, follow']);
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+        DB::table('tenants')->where('id', 1)->update(['domain' => 'sales-site.example', 'is_active' => 1, 'robots_directive' => 'index, follow']);
+        DB::table('tenant_settings')->whereIn('tenant_id', [1, $this->testTenantId])->where('setting_key', 'seo_auto_sitemap')->delete();
+        Cache::flush();
+
+        $xml = (string) $this->withHeaders(['X-Sitemap-Host' => $appHost])->get('/sitemap.xml')->getContent();
+        $this->assertStringContainsString('/' . $slug . '/about</loc>', $xml);
+        $this->assertMatchesRegularExpression('#<loc>https?://' . preg_quote($appHost, '#') . '(:\d+)?/about</loc>#', $xml, 'the master is listed at the app root');
+        $this->assertStringNotContainsString('sales-site.example', $xml);
+
+        DB::table('tenant_settings')->insert([
+            'tenant_id' => $this->testTenantId, 'setting_key' => 'seo_auto_sitemap',
+            'setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now(),
+        ]);
+        Cache::flush();
+        $xml = (string) $this->withHeaders(['X-Sitemap-Host' => $appHost])->get('/sitemap.xml')->getContent();
+        $this->assertStringNotContainsString('/' . $slug . '/about</loc>', $xml);
+    }
+
+    public function test_the_admin_sitemap_link_is_the_real_address_and_says_when_none_is_published(): void
+    {
+        $host = 'stats-' . uniqid() . '.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => $host, 'robots_directive' => 'index, follow']);
+        DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)->where('setting_key', 'seo_auto_sitemap')->delete();
+        \Laravel\Sanctum\Sanctum::actingAs(\App\Models\User::factory()->forTenant($this->testTenantId)->admin()->create());
+
+        $stats = $this->apiGet('/v2/admin/config/sitemap-stats')->assertOk();
+        $stats->assertJsonPath('data.sitemap_url', 'https://' . $host . '/sitemap.xml');
+        $stats->assertJsonPath('data.listed', true);
+
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'noindex, nofollow']);
+        $stats = $this->apiGet('/v2/admin/config/sitemap-stats')->assertOk();
+        $stats->assertJsonPath('data.listed', false);
+        $stats->assertJsonPath('data.not_listed_reason', 'noindex');
+    }
 }

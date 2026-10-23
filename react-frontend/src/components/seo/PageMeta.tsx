@@ -180,7 +180,8 @@ export function PageMeta({
     adminDescription ||
     seoDescription ||
     branding.tagline ||
-    'Community timebanking platform — exchange skills, build connections, strengthen your community.';
+    // Translated: this reaches crawlers, so it must be in the page's language.
+    t('page_meta.default_description');
 
   // Keywords: explicit > admin global keywords
   // On the home page the community's own keywords (/admin/seo) win over the

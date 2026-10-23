@@ -112,6 +112,11 @@
     {% if pageDescription %}<meta name="description" content="{{ pageDescription }}">{% endif %}
     {% if pageRobots %}<meta name="robots" content="{{ pageRobots }}">{% endif %}
     {% if seoEnableCanonical !== false and pageCanonicalUrl %}<link rel="canonical" href="{{ pageCanonicalUrl }}">{% endif %}
+    {# Webmaster verification and keywords, as on the main site (SeoHead). #}
+    {% if seoGoogleVerification %}<meta name="google-site-verification" content="{{ seoGoogleVerification }}">{% endif %}
+    {% if seoBingVerification %}<meta name="msvalidate.01" content="{{ seoBingVerification }}">{% endif %}
+    {% if seoKeywords %}<meta name="keywords" content="{{ seoKeywords }}">{% endif %}
+    {% if seoOrganizationJsonLd %}<script type="application/ld+json">{{ seoOrganizationJsonLd | safe }}</script>{% endif %}
     {% if seoEnableOpenGraph !== false %}
       <meta property="og:type" content="{{ ogType or 'website' }}">
       <meta property="og:site_name" content="{{ pageSiteName }}">

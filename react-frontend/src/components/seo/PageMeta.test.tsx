@@ -69,6 +69,26 @@ describe('PageMeta', () => {
     });
   });
 
+  // The last-resort description reaches crawlers; it was hardcoded English in
+  // every language until 2026-10-23.
+  it('falls back to the translated platform description when nothing else is set', async () => {
+    const mod = await import('@/contexts/TenantContext');
+    vi.mocked(mod.useTenant).mockReturnValue({
+      branding: { name: 'Test Community', tagline: '' },
+      hasFeature: vi.fn(() => true),
+      hasModule: vi.fn(() => true),
+      isLoading: false,
+      tenantPath: vi.fn((p: string) => `/test${p}`),
+    } as unknown as ReturnType<typeof mod.useTenant>);
+    const i18n = (await import('i18next')).default;
+    const expected = i18n.t('page_meta.default_description', { ns: 'common' });
+    expect(expected).not.toBe('page_meta.default_description');
+    renderWithHelmet(<PageMeta title="Test" />);
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(expected);
+    });
+  });
+
   it('sets keywords meta tag when provided', async () => {
     renderWithHelmet(<PageMeta keywords="timebanking, community" />);
     await waitFor(() => {

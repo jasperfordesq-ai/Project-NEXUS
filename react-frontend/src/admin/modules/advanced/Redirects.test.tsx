@@ -167,6 +167,39 @@ describe('Redirects', () => {
     }
   });
 
+  // The server answers 422 with what is wrong (invalid source, source equal to
+  // destination, duplicate source); the page used to show only a generic toast.
+  it('shows the server\'s reason when a redirect is refused', async () => {
+    mockGetRedirects.mockResolvedValue({ success: true, data: MOCK_REDIRECTS });
+    mockCreateRedirect.mockResolvedValue({
+      success: false,
+      error: 'A redirect from this address already exists.',
+      code: 'VALIDATION_ERROR',
+    });
+    const user = userEvent.setup();
+    render(<Redirects />);
+    await waitFor(() => screen.getByText('/old-blog'));
+
+    const addBtn = screen.getAllByRole('button').find((b) => {
+      const text = (b.textContent ?? '').toLowerCase();
+      return text.includes('add') && text.includes('redirect');
+    });
+    expect(addBtn).toBeDefined();
+    await user.click(addBtn!);
+    await waitFor(() => screen.getByPlaceholderText('/old-page'));
+    await user.type(screen.getByPlaceholderText('/old-page'), '/old-blog');
+    await user.type(screen.getByPlaceholderText('/new-page'), '/blog');
+
+    const createBtn = screen.getAllByRole('button').find((b) => (b.textContent ?? '').toLowerCase().includes('create'));
+    expect(createBtn).toBeDefined();
+    await user.click(createBtn!);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('A redirect from this address already exists.');
+    });
+    expect(mockToast.success).not.toHaveBeenCalled();
+  });
+
   it('calls toast.warning when both URL fields are empty on submit', async () => {
     const user = userEvent.setup();
     render(<Redirects />);

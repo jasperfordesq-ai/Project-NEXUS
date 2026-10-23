@@ -205,8 +205,11 @@ class SeoAuditService
                  LEFT JOIN seo_metadata sm ON sm.tenant_id = bp.tenant_id
                     AND sm.entity_type = 'post' AND sm.entity_id = bp.id
                  WHERE bp.tenant_id = ? AND bp.status = 'published'
-                    AND (sm.meta_title IS NULL OR sm.meta_title = ''
-                         OR sm.meta_description IS NULL OR sm.meta_description = '')
+                    -- The page falls back to the post title and its excerpt,
+                    -- so only a post with neither a description nor an
+                    -- excerpt has nothing to show (2026-10-23).
+                    AND (sm.meta_description IS NULL OR sm.meta_description = '')
+                    AND (bp.excerpt IS NULL OR TRIM(bp.excerpt) = '')
                  LIMIT 20",
                 [$tenantId]
             );
@@ -241,13 +244,18 @@ class SeoAuditService
                  LEFT JOIN seo_metadata sm ON sm.tenant_id = p.tenant_id
                     AND sm.entity_type = 'page' AND sm.entity_id = p.id
                  WHERE p.tenant_id = ? AND p.is_published = 1
-                    AND (sm.meta_title IS NULL OR sm.meta_title = '')
+                    -- The page's own title is always used; a description can
+                    -- come from the page (pages.meta_description) or its SEO
+                    -- row. Until 2026-10-23 this flagged every page without an
+                    -- SEO-row title and ignored pages.meta_description.
+                    AND (p.meta_description IS NULL OR TRIM(p.meta_description) = '')
+                    AND (sm.meta_description IS NULL OR sm.meta_description = '')
                  LIMIT 20",
                 [$tenantId]
             );
 
             foreach ($missingMeta as $page) {
-                $issues[] = $this->issue('cms_page_meta_title_missing', [
+                $issues[] = $this->issue('cms_page_meta_description_missing', [
                     'title' => (string) $page->title,
                     'path' => '/' . (string) $page->slug,
                 ]);
@@ -290,8 +298,12 @@ class SeoAuditService
         $issues = [];
         $destinationMap = [];
 
+        // Compare normalised paths, as SeoRedirectPublisher matches them:
+        // "/old/" and "/old" are one address (2026-10-23).
         foreach ($redirects as $redirect) {
-            $destinationMap[(string) $redirect->source_url] = (string) $redirect->destination_url;
+            $from = SeoRedirectPublisher::normaliseSource((string) $redirect->source_url) ?? (string) $redirect->source_url;
+            $to = SeoRedirectPublisher::normaliseSource((string) $redirect->destination_url) ?? (string) $redirect->destination_url;
+            $destinationMap[$from] = $to;
         }
 
         foreach ($destinationMap as $from => $to) {
@@ -348,6 +360,14 @@ class SeoAuditService
         $totalUrls = (int) $stats['total_urls'];
         $issues = [];
 
+        // Hidden from search or switched off: the sitemap answers 404, so the
+        // URL count below would describe a sitemap nobody receives.
+        $notListed = SitemapService::notListedReason($tenantId);
+        if ($notListed !== null) {
+            $issues[] = $this->issue('sitemap_not_published', ['reason' => $notListed]);
+            return $this->buildCheck('sitemap_coverage', ['count' => 0], $issues, 10);
+        }
+
         if ($totalUrls === 0) {
             $issues[] = $this->issue('sitemap_empty');
         } elseif ($totalUrls < 5) {
@@ -361,8 +381,6 @@ class SeoAuditService
 
             if ($type === 'static_pages') {
                 $issues[] = $this->issue('sitemap_static_pages_missing');
-            } elseif ($type === 'profiles') {
-                $issues[] = $this->issue('sitemap_profiles_missing');
             }
         }
 
@@ -374,7 +392,7 @@ class SeoAuditService
         $settings = $this->getTenantSettings($tenantId, ['seo_canonical_urls']);
         $issues = [];
 
-        if (!filter_var($settings['seo_canonical_urls'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_canonical_urls'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('canonical_generation_disabled');
         }
 
@@ -397,15 +415,16 @@ class SeoAuditService
         $tenant = DB::selectOne('SELECT og_image_url FROM tenants WHERE id = ?', [$tenantId]);
         $issues = [];
 
-        if (!filter_var($settings['seo_open_graph'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_open_graph'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('open_graph_sharing_disabled');
         }
 
-        if (!filter_var($settings['seo_twitter_cards'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_twitter_cards'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('twitter_cards_disabled');
         }
 
-        if ($tenant && empty($tenant->og_image_url)) {
+        // The image may be held in either place (TenantSharingImage).
+        if ($tenant && \App\Support\TenantSharingImage::read($tenantId, (string) ($tenant->og_image_url ?? '')) === '') {
             $issues[] = $this->issue('open_graph_default_image_missing');
         }
 

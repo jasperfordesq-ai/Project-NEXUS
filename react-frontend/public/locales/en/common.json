@@ -1105,7 +1105,8 @@
     "members": {
       "title": "Members",
       "description": "Browse community members, connect and exchange time credits."
-    }
+    },
+    "default_description": "Community timebanking platform — exchange skills, build connections, strengthen your community."
   },
   "checking_authentication": "Checking authentication...",
   "verification_status": "Verification Status",

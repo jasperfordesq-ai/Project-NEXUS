@@ -650,4 +650,33 @@ describe('TenantForm — SEO tab preview and counters', () => {
     await userEvent.type(screen.getByRole('textbox', { name: /meta description/i }), 'Give an hour.');
     expect(screen.getByText('13/180 characters')).toBeInTheDocument();
   });
+
+  // The home page's description falls back to the tagline (PageMeta), so the
+  // preview said "no description" for a page that had one (audit, 2026-10-23).
+  it('previews the tagline as the description when no meta description is set', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+
+    await userEvent.type(screen.getByRole('textbox', { name: /tagline/i }), 'Neighbours sharing skills');
+    await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
+    expect(screen.getByText('Neighbours sharing skills')).toBeInTheDocument();
+    expect(screen.queryByText('No description set found')).not.toBeInTheDocument();
+
+    await userEvent.type(screen.getByRole('textbox', { name: /meta description/i }), 'Give an hour.');
+    expect(screen.getAllByText('Give an hour.').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Neighbours sharing skills')).not.toBeInTheDocument();
+  });
+
+  it('describes the hub heading and intro with the same wording as /admin/seo', async () => {
+    const { TenantForm } = await import('./TenantForm');
+    render(<TenantForm />);
+    await waitFor(() => screen.getByTestId('page-header'));
+    await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
+
+    expect(screen.getByRole('textbox', { name: 'Accessible site hub heading' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Accessible site hub intro' })).toBeInTheDocument();
+    expect(screen.getByText(/Only used by a hub community\. Shown as the home page heading/)).toBeInTheDocument();
+    expect(screen.getByText(/Only used by a hub community\. The paragraph under that heading/)).toBeInTheDocument();
+  });
 });

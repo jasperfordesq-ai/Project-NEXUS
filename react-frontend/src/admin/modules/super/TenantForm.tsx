@@ -24,6 +24,7 @@ import { useTenant, useToast } from '@/contexts';
 import { languageDisplayName } from '@/lib/languageDisplayName';
 import { buildPlatformTenantUrl } from '@/lib/tenant-routing';
 import { SharingImageField } from '@/admin/components/SharingImageField';
+import { SeoChoiceFields, TAGLINE_MAX } from '@/admin/components/SeoChoiceFields';
 import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import { adminSuper } from '../../api/adminApi';
@@ -98,6 +99,9 @@ function TenantAddressField({ label, value, placeholder, copyLabel, onCopy }: {
 
 export function TenantForm() {
   const { t, i18n } = useTranslation('admin_super');
+  // The hub heading/intro use the community admin's /admin/seo wording, so
+  // both screens describe these fields the same way.
+  const { t: tSeo } = useTranslation('admin_advanced', { keyPrefix: 'advanced' });
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const isEdit = !!id;
@@ -492,6 +496,7 @@ export function TenantForm() {
                 placeholder={t('tenant_form.tagline_placeholder')}
                 value={form.tagline}
                 onValueChange={(v) => updateField('tagline', v)}
+                maxLength={TAGLINE_MAX}
               />
               <Textarea
                 label={t('tenant_form.description_label')}
@@ -609,7 +614,8 @@ export function TenantForm() {
                   {previewAddress ?? t('tenant_form.web_address_placeholder')}
                 </p>
                 <p className="text-sm text-muted line-clamp-2">
-                  {form.meta_description || t('tenant_form.no_description_set')}
+                  {/* The home page falls back to the tagline (PageMeta). */}
+                  {form.meta_description || form.tagline || t('tenant_form.no_description_set')}
                 </p>
               </div>
               <Input
@@ -630,17 +636,19 @@ export function TenantForm() {
                 minRows={2}
               />
               <Input
-                label={t('tenant_form.h1_headline_label')}
+                label={tSeo('label_h1_headline')}
                 placeholder={t('tenant_form.h1_headline_placeholder')}
                 value={form.h1_headline}
                 onValueChange={(v) => updateField('h1_headline', v)}
+                description={tSeo('desc_h1_headline')}
                 maxLength={100}
               />
               <Textarea
-                label={t('tenant_form.hero_intro_label')}
+                label={tSeo('label_hero_intro_text')}
                 placeholder={t('tenant_form.hero_intro_placeholder')}
                 value={form.hero_intro}
                 onValueChange={(v) => updateField('hero_intro', v)}
+                description={tSeo('desc_hero_intro')}
                 minRows={2}
               />
               <div className="rounded-lg border border-border p-4">
@@ -650,39 +658,17 @@ export function TenantForm() {
                   onChange={(v) => updateField('og_image_url', v)}
                 />
               </div>
-              <Select
-                label={t('tenant_form.robots_directive_label')}
-                placeholder={t('tenant_form.robots_directive_placeholder')}
-                selectedKeys={form.robots_directive ? [form.robots_directive] : []}
-                onSelectionChange={(keys) => {
-                  const arr = Array.from(keys);
-                  updateField('robots_directive', arr.length > 0 ? String(arr[0]) : '');
-                }}
-                className="max-w-xs"
-                description={t('tenant_form.robots_description')}
-              >
-                <SelectItem key="index, follow" id="index, follow">{t('tenant_form.robots_index_follow')}</SelectItem>
-                <SelectItem key="noindex, follow" id="noindex, follow">{t('tenant_form.robots.noindex_follow')}</SelectItem>
-                <SelectItem key="index, nofollow" id="index, nofollow">{t('tenant_form.robots.index_nofollow')}</SelectItem>
-                <SelectItem key="noindex, nofollow" id="noindex, nofollow">{t('tenant_form.robots.noindex_nofollow')}</SelectItem>
-              </Select>
-              <Select
-                label={t('tenant_form.organisation_type_label')}
-                placeholder={t('tenant_form.organisation_type_placeholder')}
-                selectedKeys={form.seo_organization_type ? [form.seo_organization_type] : []}
-                onSelectionChange={(keys) => {
-                  const arr = Array.from(keys);
-                  updateField('seo_organization_type', arr.length > 0 ? String(arr[0]) : '');
-                }}
-                className="max-w-xs"
-                description={t('tenant_form.organisation_type_description')}
-              >
-                <SelectItem key="NonprofitOrganization" id="NonprofitOrganization">{t('tenant_form.schema_nonprofit')}</SelectItem>
-                <SelectItem key="LocalBusiness" id="LocalBusiness">{t('tenant_form.schema_local_business')}</SelectItem>
-                <SelectItem key="CommunityOrganization" id="CommunityOrganization">{t('tenant_form.schema_community')}</SelectItem>
-                <SelectItem key="VolunteerOrganization" id="VolunteerOrganization">{t('tenant_form.schema_volunteer')}</SelectItem>
-                <SelectItem key="GovernmentOrganization" id="GovernmentOrganization">{t('tenant_form.schema_government')}</SelectItem>
-              </Select>
+              {/* Same component, wording and limits as the community admin's
+                  /admin/seo (tagline is on this form's Details tab). */}
+              <SeoChoiceFields
+                showTagline={false}
+                tagline={form.tagline}
+                robots={form.robots_directive}
+                organisationType={form.seo_organization_type}
+                onTaglineChange={(v) => updateField('tagline', v)}
+                onRobotsChange={(v) => updateField('robots_directive', v)}
+                onOrganisationTypeChange={(v) => updateField('seo_organization_type', v)}
+              />
             </CardBody>
           </Card>
         </Tab>

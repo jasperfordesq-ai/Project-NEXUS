@@ -132,4 +132,26 @@ class UrlRedirectsTest extends TestCase
         $this->assertNull(SeoRedirectPublisher::normaliseSource('/a?b=1'));
         $this->assertNull(SeoRedirectPublisher::normaliseSource('old'));
     }
+
+    public function test_redirects_that_could_never_fire_are_refused_with_a_reason(): void
+    {
+        foreach ([
+            ['/old?x=1', '/about', 'source_url'],
+            ['/', '/about', 'source_url'],
+            ['https://another-site.example/old', '/about', 'source_url'],
+            ['/about/', '/about', 'destination_url'],
+        ] as [$from, $to, $field]) {
+            $this->apiPost('/v2/admin/tools/redirects', ['source_url' => $from, 'destination_url' => $to])
+                ->assertStatus(422)->assertJsonPath('errors.0.field', $field);
+        }
+
+        $this->apiPost('/v2/admin/tools/redirects', ['source_url' => '/old-page', 'destination_url' => '/about'])->assertStatus(201);
+        $this->apiPost('/v2/admin/tools/redirects', ['source_url' => '/old-page/', 'destination_url' => '/contact'])
+            ->assertStatus(422)->assertJsonPath('errors.0.field', 'source_url');
+
+        // The community's own full address is fine.
+        $this->apiPost('/v2/admin/tools/redirects', [
+            'source_url' => 'https://' . $this->host . '/older-page', 'destination_url' => '/about',
+        ])->assertStatus(201);
+    }
 }

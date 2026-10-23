@@ -1105,7 +1105,8 @@
     "members": {
       "title": "メンバー",
       "description": "コミュニティメンバーをブラウズし、つながり、時間クレジットを交換しましょう。"
-    }
+    },
+    "default_description": "コミュニティのタイムバンキングプラットフォーム — スキルを交換し、つながりを築き、コミュニティを強くしましょう。"
   },
   "checking_authentication": "認証を確認しています...",
   "verification_status": "認証ステータス",

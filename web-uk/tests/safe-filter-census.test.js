@@ -28,6 +28,10 @@ const VIEWS = path.join(WEB_UK, 'src', 'views');
 const CMS = 'sanitizeCmsHtml() allow-list sanitiser (tests/html-sanitizer.test.js)';
 
 const REVIEWED_RAW_SITES = {
+  'layouts/base.njk {{ seoOrganizationJsonLd | safe }}': {
+    why: 'Organization JSON-LD inside <script>; toJsonLd escapes < > & so a tagline or name cannot close the tag (tests/seo-meta.test.js)',
+    guard: ['src/lib/seo-meta.js', ".replace(/</g, '\\\\u003c')"],
+  },
   'blog/detail.njk {{ articleStructuredData | safe }}': {
     why: 'JSON-LD inside <script>; scriptSafeJson escapes < > & so a title cannot close the tag',
     guard: ['src/routes/blog-posts.js', 'return scriptSafeJson(data);'],

@@ -291,5 +291,48 @@ class SeoAuditServiceTest extends TestCase
         $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
         $this->assertNotContains('homepage_meta_title_too_long', $codes);
     }
-}
 
+    // =========================================================================
+    // Second audit pass (2026-10-23): more false alarms removed
+    // =========================================================================
+
+    public function test_canonical_and_open_graph_checks_treat_never_set_switches_as_on(): void
+    {
+        $this->clearSeoSettings();
+        $results = $this->service->runAudit($this->testTenantId);
+        $this->assertNotContains('canonical_generation_disabled', $this->issueCodes($results, 'canonical_urls'));
+        $og = $this->issueCodes($results, 'open_graph');
+        $this->assertNotContains('open_graph_sharing_disabled', $og);
+        $this->assertNotContains('twitter_cards_disabled', $og);
+    }
+
+    public function test_a_sharing_image_held_only_as_the_setting_counts(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['og_image_url' => '']);
+        DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)->where('setting_key', 'seo_og_image_url')->delete();
+        $this->assertContains('open_graph_default_image_missing', $this->issueCodes($this->service->runAudit($this->testTenantId), 'open_graph'));
+
+        DB::table('tenant_settings')->insert([
+            'tenant_id' => $this->testTenantId, 'setting_key' => 'seo_og_image_url',
+            'setting_value' => 'https://cdn.example.test/share.png', 'setting_type' => 'string', 'updated_at' => now(),
+        ]);
+        $this->assertNotContains('open_graph_default_image_missing', $this->issueCodes($this->service->runAudit($this->testTenantId), 'open_graph'));
+    }
+
+    public function test_a_community_hidden_from_search_is_told_it_has_no_sitemap(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'noindex, nofollow']);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'sitemap_coverage');
+        $this->assertSame(['sitemap_not_published'], $codes);
+    }
+
+    public function test_redirect_chains_compare_the_addresses_redirects_match(): void
+    {
+        DB::table('seo_redirects')->where('tenant_id', $this->testTenantId)->delete();
+        DB::table('seo_redirects')->insert([
+            ['tenant_id' => $this->testTenantId, 'source_url' => '/old/', 'destination_url' => '/middle'],
+            ['tenant_id' => $this->testTenantId, 'source_url' => '/middle', 'destination_url' => '/new'],
+        ]);
+        $this->assertContains('redirect_chain', $this->issueCodes($this->service->runAudit($this->testTenantId), 'redirect_health'));
+    }
+}

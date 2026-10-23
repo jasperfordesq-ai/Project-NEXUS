@@ -182,7 +182,7 @@ export function SeoAudit() {
                       <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
                         {check.issues.map((issue, index) => (
                           <li key={`${issue.code}-${index}`}>
-                            {t(getSeoAuditIssueKey(issue.code), issue.params)}
+                            {t(getSeoAuditIssueKey(issue.code, issue.params), issue.params)}
                           </li>
                         ))}
                       </ul>

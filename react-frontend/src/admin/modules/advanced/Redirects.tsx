@@ -88,8 +88,11 @@ export function Redirects() {
         onAddClose();
         await fetchRedirects();
       } else {
-        const error = t('failed_to_create_redirect');
-        toast.error(error);
+        // The server says what is wrong (an invalid source address, a source
+        // equal to its destination, a source that already redirects): show
+        // that, and keep the form open so it can be corrected.
+        // admin-i18n-ignore: localized server message — AdminToolsController redirect validation (lang/*/api.php)
+        toast.error(res.error || t('failed_to_create_redirect'));
       }
     } catch {
       toast.error(t('failed_to_create_redirect'));

@@ -234,6 +234,38 @@ describe('seo-meta home title and language tag', () => {
   });
 });
 
+describe('seo-meta verification, keywords and organisation data', () => {
+  const t = (key) => key;
+
+  it('emits only the verification token, as the main site does', () => {
+    const tenant = baseTenant({ settings: {
+      seo_google_verification: '<meta name="google-site-verification" content="abc123" />',
+      seo_bing_verification: 'msvalidate.01=XYZ789',
+      seo_meta_keywords: 'timebank, skills'
+    } });
+    const locals = buildSeoLocals({ tenant, t, routePath: '/about' });
+    expect(locals.seoGoogleVerification).toBe('abc123');
+    expect(locals.seoBingVerification).toBe('XYZ789');
+    expect(locals.seoKeywords).toBe('timebank, skills');
+  });
+
+  it('describes the community as the main site does, on the home page only', () => {
+    const tenant = baseTenant({
+      domain: 'acme.example',
+      settings: { seo_organization_type: 'LocalBusiness' },
+      branding: { tagline: 'Neighbours </script> helping', logo_url: 'https://api.example.test/logo.png' },
+      social: { facebook: 'https://facebook.com/acme', twitter: 'javascript:alert(1)' }
+    });
+    const home = buildSeoLocals({ tenant, t, routePath: '/' });
+    expect(home.seoOrganizationJsonLd).not.toContain('</script>');
+    const org = JSON.parse(home.seoOrganizationJsonLd);
+    expect(org['@type']).toBe('LocalBusiness');
+    expect(org['@id']).toBe('https://acme.example/#org');
+    expect(org.sameAs).toEqual(['https://facebook.com/acme']);
+    expect(buildSeoLocals({ tenant, t, routePath: '/about' }).seoOrganizationJsonLd).toBe('');
+  });
+});
+
 describe('seo metadata on rendered accessible pages', () => {
   let app;
   let api;

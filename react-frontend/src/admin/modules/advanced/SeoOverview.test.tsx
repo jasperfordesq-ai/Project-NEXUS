@@ -104,14 +104,23 @@ const makeSeoData = (overrides: Record<string, unknown> = {}) => ({
   success: true,
 });
 
-const makeSitemapStats = () => ({
+// The keys SitemapService::getStats() really returns (2026-10-23).
+const makeSitemapStats = (overrides: Record<string, unknown> = {}) => ({
   data: {
     sitemap_url: 'https://example.com/sitemap.xml',
     total_urls: 42,
-    content_types: { listings: 20, events: 10, members: 12 },
+    content_types: { static_pages: 8, cms_pages: 4, blog_posts: 20, public_events: 10 },
+    ...overrides,
   },
   success: true,
 });
+
+const waitForLoad = async () => {
+  await waitFor(() => {
+    const busy = screen.queryAllByRole('status').find((el) => el.getAttribute('aria-busy') === 'true');
+    expect(busy).toBeUndefined();
+  });
+};
 
 const makeAuditResult = () => ({
   data: {
@@ -211,6 +220,32 @@ describe('SeoOverview', () => {
     });
   });
 
+  it('shows and saves tagline, search engine visibility and organisation type, as the super-admin form does', async () => {
+    mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({
+      tenant_tagline: 'Neighbours sharing skills',
+      tenant_robots_directive: 'noindex, follow',
+      tenant_seo_organization_type: 'CommunityOrganization',
+    }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+
+    const tagline = await screen.findByLabelText('Tagline');
+    expect(tagline).toHaveValue('Neighbours sharing skills');
+    expect(tagline).toHaveAttribute('maxLength', '255');
+    expect(screen.getAllByText('Hide from search results, but follow links').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Community organisation').length).toBeGreaterThan(0);
+
+    fireEvent.change(tagline, { target: { value: 'One hour at a time' } });
+    const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save'));
+    if (saveBtn) fireEvent.click(saveBtn);
+
+    await waitFor(() => expect(mockAdminSettings.updateSeoSettings).toHaveBeenCalledWith(expect.objectContaining({
+      tenant_tagline: 'One hour at a time',
+      tenant_robots_directive: 'noindex, follow',
+      tenant_seo_organization_type: 'CommunityOrganization',
+    })));
+  });
+
   it('shows success toast after save', async () => {
     const { SeoOverview } = await import('./SeoOverview');
     render(<SeoOverview />);
@@ -285,15 +320,103 @@ describe('SeoOverview', () => {
     expect(screen.getByText('Redirect chain: /old → /middle → /new')).toBeInTheDocument();
   });
 
-  it('renders sitemap content_types as Chips', async () => {
+  it('labels every content type the sitemap really reports', async () => {
     const { SeoOverview } = await import('./SeoOverview');
     render(<SeoOverview />);
 
     await waitFor(() => {
-      expect(screen.getByText('Listings')).toBeInTheDocument();
-      expect(screen.getByText('Events')).toBeInTheDocument();
-      expect(screen.getByText('Members')).toBeInTheDocument();
+      expect(screen.getByText('Standard pages')).toBeInTheDocument();
+      expect(screen.getByText('Custom pages')).toBeInTheDocument();
+      expect(screen.getByText('Blog posts')).toBeInTheDocument();
+      expect(screen.getByText('Public events')).toBeInTheDocument();
     });
+    expect(screen.queryByText('Other content')).not.toBeInTheDocument();
+  });
+
+  it('says the sitemap URLs are listed, not indexed', async () => {
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitFor(() => expect(screen.getByText('Active — 42 URLs listed')).toBeInTheDocument());
+    expect(screen.queryByText(/indexed/)).not.toBeInTheDocument();
+  });
+
+  it('treats a response without the listed flag (older server) as listed', async () => {
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitFor(() => screen.getByText('https://example.com/sitemap.xml'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('warns that search engines get no sitemap when the community is hidden from search', async () => {
+    mockAdminSettings.getSitemapStats.mockResolvedValue(makeSitemapStats({ listed: false, not_listed_reason: 'noindex' }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+
+    const text = 'Search engines get no sitemap for this community: it is set to be hidden from search results.';
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(text);
+    // And the health check reports it instead of "Active".
+    const checks = screen.getAllByText(text);
+    expect(checks.length).toBe(2);
+    expect(checks.some((el) => el.closest('[data-testid="health-check-warning"]'))).toBe(true);
+    expect(screen.queryByText(/URLs listed/)).not.toBeInTheDocument();
+  });
+
+  it('fails the sitemap health check when the automatic sitemap switch is off on the server', async () => {
+    mockAdminSettings.getSitemapStats.mockResolvedValue(makeSitemapStats({ listed: false, not_listed_reason: 'switched_off' }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+
+    const text = 'Search engines get no sitemap for this community: the automatic sitemap switch is off.';
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(text);
+    expect(screen.getAllByText(text).some((el) => el.closest('[data-testid="health-check-fail"]'))).toBe(true);
+  });
+
+  it('counts meta title and description against the real limits and what results show', async () => {
+    mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({
+      tenant_meta_title: 'My Timebank',
+      tenant_meta_description: 'A community platform',
+    }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitForLoad();
+
+    expect(screen.getByText(/11\/70 characters — search results usually show about 60$/)).toBeInTheDocument();
+    expect(screen.getByText('20/180 characters — search results usually show about 160')).toBeInTheDocument();
+  });
+
+  it('says a community without a meta title uses a standard home page title, not "NEXUS"', async () => {
+    mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ tenant_meta_title: '' }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitForLoad();
+
+    expect(screen.getByText('Not set — the home page uses a standard title ending with the community name')).toBeInTheDocument();
+    expect(screen.queryByText(/NEXUS/)).not.toBeInTheDocument();
+  });
+
+  it('does not warn about a missing hub heading: only hub communities use it', async () => {
+    mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ tenant_h1_headline: '' }));
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitForLoad();
+
+    const detail = screen.getByText('Not set — only needed for hub communities (communities with sub-communities)');
+    expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
+    expect(detail.closest('[data-testid="health-check-warning"]')).toBeNull();
+  });
+
+  it('explains what the canonical and sitemap switches really do', async () => {
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    await waitForLoad();
+
+    expect(screen.getByText(/Turning this off removes that link from every page\./)).toBeInTheDocument();
+    expect(screen.getByText(/answer “not found” \(404\), so search engines get no sitemap\./)).toBeInTheDocument();
+    expect(screen.getByText(/fallback description for pages that don't have their own/)).toBeInTheDocument();
+    expect(screen.queryByText('Title Suffix.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Meta Keywords.')).not.toBeInTheDocument();
   });
 
   it('renders switch toggles for SEO features', async () => {

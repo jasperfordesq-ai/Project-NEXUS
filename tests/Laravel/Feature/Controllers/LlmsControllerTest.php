@@ -113,4 +113,35 @@ class LlmsControllerTest extends TestCase
         $this->assertStringContainsString('https://' . $this->host . '/about)', $body);
         $this->assertStringNotContainsString('no-such-community', $body);
     }
+
+    public function test_a_community_hidden_from_search_publishes_no_ai_summary(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'noindex, nofollow']);
+        $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->assertStatus(404);
+        $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms-full.txt')->assertStatus(404);
+    }
+
+    public function test_a_settings_change_refreshes_the_cached_file(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['meta_description' => 'First description']);
+        $this->assertStringContainsString('First description',
+            (string) $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->getContent());
+
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['meta_description' => 'Second description']);
+        app(\App\Services\SitemapService::class)->clearCache($this->testTenantId); // what every save does
+        $this->assertStringContainsString('Second description',
+            (string) $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->getContent());
+    }
+
+    public function test_an_empty_meta_description_falls_back_and_a_switched_off_sitemap_is_not_named(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['meta_description' => '', 'description' => 'About this community']);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_auto_sitemap'],
+            ['setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now()]
+        );
+        $body = (string) $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->getContent();
+        $this->assertStringContainsString('About this community', $body);
+        $this->assertStringNotContainsString('Sitemap:', $body);
+    }
 }

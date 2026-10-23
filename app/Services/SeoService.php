@@ -76,6 +76,10 @@ class SeoService
         if (! in_array($statusCode, [301, 302], true)) {
             $statusCode = 301;
         }
+        if (!\App\Http\Middleware\SeoRedirectMiddleware::isSafeDestination($to)
+            || app(SeoRedirectPublisher::class)->validateNew($tenantId, $from, $to) !== null) {
+            return null;
+        }
 
         $id = DB::table('seo_redirects')->insertGetId([
             'tenant_id'       => $tenantId,

@@ -528,6 +528,11 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.name_is_required'), 'name', 422);
         }
 
+        // Same SEO field rules as an update and as /admin/seo (TenantSeoFields).
+        if ($problem = \App\Support\TenantSeoFields::firstError($input)) {
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $problem['message'], $problem['field'], 422);
+        }
+
         // Validate slug format (alphanumeric + hyphens only, no leading/trailing hyphens)
         $slug = trim($input['slug'] ?? '');
         if ($slug !== '' && !preg_match('/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/', $slug)) {
@@ -657,6 +662,11 @@ class AdminSuperController extends BaseApiController
             }
         }
 
+        // SEO fields: the same rules as the community admin's /admin/seo.
+        if ($problem = \App\Support\TenantSeoFields::firstError($input)) {
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, $problem['message'], $problem['field'], 422);
+        }
+
         // Validate contact email if being updated
         if (isset($input['contact_email']) && trim($input['contact_email']) !== '') {
             if (!filter_var(trim($input['contact_email']), FILTER_VALIDATE_EMAIL)) {
@@ -741,6 +751,11 @@ class AdminSuperController extends BaseApiController
         $result = $this->tenantHierarchyService->updateTenant($id, $input);
 
         if ($result['success']) {
+            // A new address moves URL-redirect markers for this community and
+            // for any child that inherits its domain (SeoRedirectPublisher).
+            if (array_intersect(array_keys($input), ['slug', 'domain', 'parent_id']) !== []) {
+                app(\App\Services\SeoRedirectPublisher::class)->publishAll();
+            }
             return $this->respondWithData(['updated' => true, 'tenant_id' => $id]);
         }
 

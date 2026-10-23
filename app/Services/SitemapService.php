@@ -52,7 +52,7 @@ class SitemapService
             $sitemaps = [];
 
             foreach ($tenants as $tenant) {
-                if (self::isNoindexTenant((int) $tenant->id)) {
+                if (self::notListedReason((int) $tenant->id) !== null) {
                     continue;
                 }
                 $slug = (int) $tenant->id === 1 || empty($tenant->slug) ? 'main' : $tenant->slug;
@@ -134,28 +134,24 @@ class SitemapService
                  WHERE t.is_active = 1 ORDER BY t.id"
             );
 
-            $frontendBase = rtrim(env('FRONTEND_URL', 'https://app.project-nexus.ie'), '/');
+            $frontendBase = rtrim((string) (config('app.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
             $allUrls = [];
 
+            // Every community served on the app host, at the address the render
+            // engine uses (targetFor): the platform master at the root, the
+            // rest under /{slug}. Until 2026-10-23 this skipped any tenant with
+            // a domain, which dropped the master (its domain is the sales
+            // site), and it ignored the "Automatic sitemap" switch.
+            $appHost = strtolower((string) (parse_url($frontendBase, PHP_URL_HOST) ?? ''));
             foreach ($tenants as $tenant) {
-                if (self::isNoindexTenant((int) $tenant->id)) {
+                $target = self::targetFor((int) $tenant->id);
+                if ($target === null || $target['host'] !== $appHost) {
                     continue;
                 }
-                // Skip tenants with their own custom domain — they have their own sitemap
-                if (!empty($tenant->domain)) {
+                if (self::notListedReason((int) $tenant->id) !== null) {
                     continue;
                 }
-                // Skip sub-tenants whose parent has a custom domain — canonical URL is
-                // parentdomain.com/slug, not app.project-nexus.ie/slug
-                if (!empty($tenant->parent_domain)) {
-                    continue;
-                }
-
-                $baseUrl = empty($tenant->slug)
-                    ? $frontendBase
-                    : $frontendBase . '/' . $tenant->slug;
-
-                $urls = $this->collectTenantUrls($tenant, $baseUrl);
+                $urls = $this->collectTenantUrls($tenant, self::targetOrigin($target) . $target['prefix']);
                 $allUrls = array_merge($allUrls, $urls);
             }
 
@@ -910,6 +906,42 @@ class SitemapService
         );
 
         return ($modules[$module] ?? false) === true;
+    }
+
+    /**
+     * Bumped on every clearCache() for the community (content saves, settings
+     * saves, the observers). Other per-community caches built from the same
+     * data (llms.txt) put it in their key so a save refreshes them too.
+     */
+    public static function cacheVersion(int $tenantId): int
+    {
+        return max(1, (int) Cache::get(self::CACHE_PREFIX . "tenant:{$tenantId}:version", 1));
+    }
+
+    /**
+     * The "Automatic sitemap" switch on /admin/seo (`seo_auto_sitemap`, bare
+     * key in tenant_settings, default on). Off means no public sitemap.
+     */
+    public static function isSitemapSwitchedOff(int $tenantId): bool
+    {
+        try {
+            $value = DB::table('tenant_settings')
+                ->where('tenant_id', $tenantId)
+                ->where('setting_key', 'seo_auto_sitemap')
+                ->value('setting_value');
+        } catch (\Throwable) {
+            return false;
+        }
+        return $value !== null && in_array(strtolower(trim((string) $value)), ['0', 'false', 'off', 'no'], true);
+    }
+
+    /** Why a community publishes no sitemap: 'noindex', 'switched_off', or null when it does. */
+    public static function notListedReason(int $tenantId): ?string
+    {
+        if (self::isNoindexTenant($tenantId)) {
+            return 'noindex';
+        }
+        return self::isSitemapSwitchedOff($tenantId) ? 'switched_off' : null;
     }
 
     private function tenantVersionKey(int $tenantId): string

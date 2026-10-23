@@ -235,6 +235,33 @@ function absoluteFromRequestUrl({ protocol, host, visiblePath }) {
  * @param {boolean} options.isAuthenticated
  * @param {Function} [options.resolveAssetUrl] resolves a relative logo path
  */
+// Same as React SeoHead's verificationToken(): only the token survives, so a
+// pasted whole tag or "google-site-verification=TOKEN" still verifies.
+function verificationToken(raw) {
+  let v = text(raw);
+  if (!v) return '';
+  const fromTag = v.match(/content\s*=\s*["']([^"']+)["']/i);
+  if (fromTag && fromTag[1]) v = fromTag[1];
+  const eq = v.lastIndexOf('=');
+  if (eq !== -1 && /^(google-site-verification|msvalidate\.01)\s*=/i.test(v)) v = v.slice(eq + 1);
+  return v.replace(/[<>"'\s]/g, '');
+}
+
+// Same map as React SeoHead's SCHEMA_ORG_TYPE.
+const SCHEMA_ORG_TYPE = {
+  NonprofitOrganization: 'NGO', CommunityOrganization: 'NGO', VolunteerOrganization: 'NGO', NGO: 'NGO',
+  LocalBusiness: 'LocalBusiness', GovernmentOrganization: 'GovernmentOrganization', Organization: 'Organization'
+};
+
+// JSON for a <script type="application/ld+json"> block, escaped as React's
+// toJsonLd() does so no value can close the script element.
+function toJsonLd(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
+}
+
 // Same map as React PageMeta's OG_LOCALES.
 const OG_LOCALES = {
   en: 'en_GB', ga: 'ga_IE', de: 'de_DE', fr: 'fr_FR', it: 'it_IT', pt: 'pt_PT',
@@ -304,9 +331,35 @@ function buildSeoLocals({
   // own /admin/seo "Meta title" as the whole title when one is set.
   const homeTitle = isHome && hasCommunity ? text(seo.meta_title) : '';
 
+  // The community's Organization data, on its accessible home page only. Its
+  // @id and url are the main site's, so search engines see one organisation,
+  // not a second one for the accessible copy.
+  let organizationJsonLd = '';
+  if (isHome && hasCommunity && tenantName && mainBase) {
+    const social = asObject(data.social);
+    const sameAs = ['facebook', 'twitter', 'instagram', 'linkedin', 'youtube']
+      .map((key) => httpUrl(social[key]))
+      .filter(Boolean);
+    const org = {
+      '@context': 'https://schema.org',
+      '@type': SCHEMA_ORG_TYPE[text(settings.seo_organization_type)] || 'NGO',
+      '@id': `${mainBase}/#org`,
+      name: siteName || tenantName,
+      url: cleanHost(data.domain) ? `${mainBase}/` : mainBase
+    };
+    if (logoImage) org.logo = logoImage;
+    if (text(branding.tagline)) org.description = text(branding.tagline);
+    if (sameAs.length > 0) org.sameAs = sameAs;
+    organizationJsonLd = toJsonLd(org);
+  }
+
   return {
     seoSiteName: siteName,
     seoHomeTitle: homeTitle,
+    seoGoogleVerification: verificationToken(settings.seo_google_verification),
+    seoBingVerification: verificationToken(settings.seo_bing_verification),
+    seoKeywords: text(settings.seo_meta_keywords),
+    seoOrganizationJsonLd: organizationJsonLd,
     seoOgLocale: OG_LOCALES[String(locale || '').toLowerCase()] || OG_LOCALES.en,
     seoDescription: description,
     seoCanonicalUrl: canonicalUrl,
@@ -343,6 +396,8 @@ function buildRobotsTxt() {
 }
 
 module.exports = {
+  verificationToken,
+  toJsonLd,
   MAIN_SITE_PATHS,
   NOINDEX,
   PRIVATE_PREFIXES,

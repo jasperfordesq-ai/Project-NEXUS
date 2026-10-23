@@ -1126,7 +1126,8 @@
     "members": {
       "title": "Baill",
       "description": "Féach baill an phobail, déan ceangal agus malartaigh creidmheasanna ama."
-    }
+    },
+    "default_description": "Ardán pobail bainc ama — malartaigh scileanna, cruthaigh naisc, neartaigh do phobal."
   },
   "checking_authentication": "Á sheiceáil go bhfuil tú fíordheimhnithe...",
   "verification_status": "Stádas Fíoraithe",

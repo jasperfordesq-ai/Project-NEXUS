@@ -1112,7 +1112,8 @@
     "members": {
       "title": "Membros",
       "description": "Explore os membros da comunidade, conecte-se e troque créditos de tempo."
-    }
+    },
+    "default_description": "Plataforma comunitária de banco de tempo — troque competências, crie ligações, fortaleça a sua comunidade."
   },
   "checking_authentication": "A verificar a autenticação...",
   "verification_status": "Estado de verificação",

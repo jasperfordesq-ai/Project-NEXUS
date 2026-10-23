@@ -80,6 +80,9 @@ class AdminToolsController extends BaseApiController
         if (!SeoRedirectMiddleware::isSafeDestination($destinationUrl)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.redirect_destination_invalid'), 'destination_url', 422);
         }
+        if ($problem = app(\App\Services\SeoRedirectPublisher::class)->validateNew($tenantId, $sourceUrl, $destinationUrl)) {
+            return $this->respondWithError('VALIDATION_ERROR', $problem['message'], $problem['field'], 422);
+        }
 
         try {
             DB::insert(

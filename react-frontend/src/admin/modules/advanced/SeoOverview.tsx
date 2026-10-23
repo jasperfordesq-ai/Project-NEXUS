@@ -1,6 +1,7 @@
 import { getFormattingLocale } from '@/lib/helpers';
 import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Switch } from '@/components/ui';
 import { SharingImageField } from '@/admin/components/SharingImageField';
+import { SeoChoiceFields } from '@/admin/components/SeoChoiceFields';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Separator } from '@/components/ui';
@@ -15,6 +16,7 @@ import Share2 from 'lucide-react/icons/share-2';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import XCircle from 'lucide-react/icons/circle-x';
+import Info from 'lucide-react/icons/info';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/contexts';
@@ -56,17 +58,47 @@ const SEO_KEYS = [
 // Keys stored directly on the tenants table
 const TENANT_KEYS = [
   'tenant_meta_title', 'tenant_meta_description', 'tenant_h1_headline', 'tenant_hero_intro',
+  // Also on the super-admin tenant form (owner, 23 Oct 2026).
+  'tenant_tagline', 'tenant_robots_directive', 'tenant_seo_organization_type',
 ] as const;
 
 interface SitemapStats {
   sitemap_url: string;
   total_urls: number;
   content_types: Record<string, number>;
+  /**
+   * Whether search engines actually get this community's sitemap. Its address
+   * answers 404 when the community is hidden from search (noindex) or the
+   * automatic sitemap switch is off. Missing on an older backend: treated as
+   * listed.
+   */
+  listed?: boolean;
+  not_listed_reason?: 'noindex' | 'switched_off' | null;
 }
+
+/** False only when the server says so; an older backend sends no flag. */
+function sitemapIsListed(stats: SitemapStats | null): boolean {
+  return stats?.listed !== false;
+}
+
+/** Translation key (keyPrefix "advanced") explaining why no sitemap is published. */
+function sitemapNotListedKey(stats: SitemapStats): string {
+  if (stats.not_listed_reason === 'noindex') return 'sitemap_not_listed_noindex';
+  if (stats.not_listed_reason === 'switched_off') return 'sitemap_not_listed_switched_off';
+  return 'sitemap_not_listed_other';
+}
+
+// The real limits (the inputs' maxLength, enforced by the server too) and
+// roughly what search results show.
+const META_TITLE_MAX = 70;
+const META_TITLE_SHOWN = 60;
+const META_DESCRIPTION_MAX = 180;
+const META_DESCRIPTION_SHOWN = 160;
 
 interface SeoCheckResult {
   name: string;
-  status: 'pass' | 'warning' | 'fail';
+  // 'info' is shown but not counted: it is neither a pass nor a problem.
+  status: 'pass' | 'warning' | 'fail' | 'info';
   detail: string;
 }
 
@@ -98,6 +130,9 @@ export function SeoOverview() {
     tenant_meta_description: '',
     tenant_h1_headline: '',
     tenant_hero_intro: '',
+    tenant_tagline: '',
+    tenant_robots_directive: '',
+    tenant_seo_organization_type: '',
   });
 
   useEffect(() => {
@@ -254,14 +289,23 @@ export function SeoOverview() {
         : t('health_canonical_disabled'),
     });
 
-    // Sitemap
-    checks.push({
-      name: t('label_auto_sitemap'),
-      status: formData.seo_auto_sitemap ? 'pass' : 'fail',
-      detail: formData.seo_auto_sitemap
-        ? sitemapStats ? t('health_auto_sitemap_active_count', { count: sitemapStats.total_urls }) : t('chip_active')
-        : t('health_auto_sitemap_disabled'),
-    });
+    // Sitemap. The server's word wins over the (possibly unsaved) switch: a
+    // noindex community, or one whose switch is saved off, publishes none.
+    if (sitemapStats && !sitemapIsListed(sitemapStats)) {
+      checks.push({
+        name: t('label_auto_sitemap'),
+        status: sitemapStats.not_listed_reason === 'noindex' ? 'warning' : 'fail',
+        detail: t(sitemapNotListedKey(sitemapStats)),
+      });
+    } else {
+      checks.push({
+        name: t('label_auto_sitemap'),
+        status: formData.seo_auto_sitemap ? 'pass' : 'fail',
+        detail: formData.seo_auto_sitemap
+          ? sitemapStats ? t('health_auto_sitemap_active_count', { count: sitemapStats.total_urls }) : t('chip_active')
+          : t('health_auto_sitemap_disabled'),
+      });
+    }
 
     // Google verification
     const gv = String(formData.seo_google_verification || '');
@@ -279,11 +323,13 @@ export function SeoOverview() {
       detail: mt.length > 0 ? t('health_tenant_title_set', { title: mt }) : t('health_tenant_title_missing'),
     });
 
-    // H1 headline
+    // H1 headline. Only a hub community (one with sub-communities) uses it,
+    // and whether this community is a hub is not known here, so a missing
+    // heading is information, not a warning.
     const h1 = String(formData.tenant_h1_headline || '');
     checks.push({
       name: t('health_homepage_h1'),
-      status: h1.length > 0 ? 'pass' : 'warning',
+      status: h1.length > 0 ? 'pass' : 'info',
       detail: h1.length > 0 ? t('health_homepage_h1_set', { headline: h1 }) : t('health_homepage_h1_missing'),
     });
 
@@ -328,7 +374,8 @@ export function SeoOverview() {
                   {check.status === 'pass' && <CheckCircle size={18} className="text-success mt-0.5 shrink-0" />}
                   {check.status === 'warning' && <AlertTriangle size={18} className="text-warning mt-0.5 shrink-0" />}
                   {check.status === 'fail' && <XCircle size={18} className="text-danger mt-0.5 shrink-0" />}
-                  <div className="min-w-0">
+                  {check.status === 'info' && <Info size={18} className="text-muted mt-0.5 shrink-0" />}
+                  <div className="min-w-0" data-testid={`health-check-${check.status}`}>
                     <p className="font-medium text-sm">{check.name}</p>
                     <p className="text-xs text-muted">{check.detail}</p>
                   </div>
@@ -352,22 +399,33 @@ export function SeoOverview() {
               placeholder={t('placeholder_your_timebank_name')}
               variant="secondary"
               value={String(formData.tenant_meta_title || '')}
+              maxLength={META_TITLE_MAX}
               onValueChange={(v) => updateField('tenant_meta_title', v)}
-              description={t('desc_meta_title')}
+              description={`${t('desc_meta_title')} ${t('seo_length_counter', {
+                length: String(formData.tenant_meta_title || '').length,
+                max: META_TITLE_MAX,
+                shown: META_TITLE_SHOWN,
+              })}`}
             />
             <Input
               label={t('label_meta_description')}
               placeholder={t('placeholder_a_short_description_of_your_timebank')}
               variant="secondary"
               value={String(formData.tenant_meta_description || '')}
+              maxLength={META_DESCRIPTION_MAX}
               onValueChange={(v) => updateField('tenant_meta_description', v)}
-              description={t('meta_description_count', { count: String(formData.tenant_meta_description || '').length })}
+              description={t('seo_length_counter', {
+                length: String(formData.tenant_meta_description || '').length,
+                max: META_DESCRIPTION_MAX,
+                shown: META_DESCRIPTION_SHOWN,
+              })}
             />
             <Input
               label={t('label_h1_headline')}
               placeholder={t('placeholder_welcome_to_our_community')}
               variant="secondary"
               value={String(formData.tenant_h1_headline || '')}
+              maxLength={100}
               onValueChange={(v) => updateField('tenant_h1_headline', v)}
               description={t('desc_h1_headline')}
             />
@@ -378,6 +436,14 @@ export function SeoOverview() {
               value={String(formData.tenant_hero_intro || '')}
               onValueChange={(v) => updateField('tenant_hero_intro', v)}
               description={t('desc_hero_intro')}
+            />
+            <SeoChoiceFields
+              tagline={String(formData.tenant_tagline || '')}
+              robots={String(formData.tenant_robots_directive || '')}
+              organisationType={String(formData.tenant_seo_organization_type || '')}
+              onTaglineChange={(v) => updateField('tenant_tagline', v)}
+              onRobotsChange={(v) => updateField('tenant_robots_directive', v)}
+              onOrganisationTypeChange={(v) => updateField('tenant_seo_organization_type', v)}
             />
           </CardBody>
         </Card>
@@ -432,7 +498,7 @@ export function SeoOverview() {
               variant="secondary"
               value={String(formData.seo_meta_description || '')}
               onValueChange={(v) => updateField('seo_meta_description', v)}
-              description={t('global_meta_description_count', { count: String(formData.seo_meta_description || '').length })}
+              description={`${t('desc_global_meta_description')} ${t('global_meta_description_count', { count: String(formData.seo_meta_description || '').length })}`}
             />
             <Input
               label={t('label_meta_keywords')}
@@ -550,6 +616,15 @@ export function SeoOverview() {
               <div role="status" aria-busy="true" aria-label={tAdmin('common.loading')} className="flex justify-center py-4"><Spinner size="sm" /></div>
             ) : sitemapStats ? (
               <div className="space-y-3">
+                {!sitemapIsListed(sitemapStats) && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm"
+                  >
+                    <AlertTriangle size={16} className="text-warning mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>{t(sitemapNotListedKey(sitemapStats))}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{t('sitemap_url_label')}</span>
                   <a
@@ -626,7 +701,7 @@ export function SeoOverview() {
                         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-muted">
                           {check.issues.map((issue, index) => (
                             <li key={`${issue.code}-${index}`}>
-                              {t(getSeoAuditIssueKey(issue.code), issue.params)}
+                              {t(getSeoAuditIssueKey(issue.code, issue.params), issue.params)}
                             </li>
                           ))}
                         </ul>

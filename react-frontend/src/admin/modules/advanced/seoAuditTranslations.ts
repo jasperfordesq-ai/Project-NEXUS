@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import type { SeoAuditCheckCode, SeoAuditIssueCode } from '../../api/types';
+import type { SeoAuditCheckCode, SeoAuditIssueCode, SeoAuditParams } from '../../api/types';
 
 const CHECK_TRANSLATION_KEYS = {
   tenant_metadata: {
@@ -70,7 +70,9 @@ const ISSUE_TRANSLATION_KEYS = {
   title_suffix_missing: 'seo_audit_issue_title_suffix_missing',
   blog_post_meta_missing: 'seo_audit_issue_blog_post_meta_missing',
   additional_results_truncated: 'seo_audit_issue_additional_results_truncated',
+  // Older stored audits only: the server now reports a missing description.
   cms_page_meta_title_missing: 'seo_audit_issue_cms_page_meta_title_missing',
+  cms_page_meta_description_missing: 'seo_audit_issue_cms_page_meta_description_missing',
   kb_article_titles_missing: 'seo_audit_issue_kb_article_titles_missing',
   redirect_chain: 'seo_audit_issue_redirect_chain',
   redirect_loop: 'seo_audit_issue_redirect_loop',
@@ -79,7 +81,8 @@ const ISSUE_TRANSLATION_KEYS = {
   sitemap_empty: 'seo_audit_issue_sitemap_empty',
   sitemap_low_coverage: 'seo_audit_issue_sitemap_low_coverage',
   sitemap_static_pages_missing: 'seo_audit_issue_sitemap_static_pages_missing',
-  sitemap_profiles_missing: 'seo_audit_issue_sitemap_profiles_missing',
+  // Text chosen by its `reason` param (see getSeoAuditIssueKey).
+  sitemap_not_published: 'seo_audit_issue_sitemap_not_published',
   canonical_generation_disabled: 'seo_audit_issue_canonical_generation_disabled',
   custom_canonical_urls_high: 'seo_audit_issue_custom_canonical_urls_high',
   open_graph_sharing_disabled: 'seo_audit_issue_open_graph_sharing_disabled',
@@ -107,8 +110,28 @@ export function getSeoAuditCheckDescriptionKey(code: string): string {
     : CHECK_TRANSLATION_KEYS.unknown.description;
 }
 
-export function getSeoAuditIssueKey(code: string): string {
-  return hasOwnKey(ISSUE_TRANSLATION_KEYS, code)
-    ? ISSUE_TRANSLATION_KEYS[code]
-    : ISSUE_TRANSLATION_KEYS.unknown;
+// Issues whose message depends on a `reason` param: one text per reason, and
+// the base text for a reason this admin panel does not know.
+const ISSUE_REASON_KEYS: Partial<Record<SeoAuditIssueCode, Record<string, string>>> = {
+  sitemap_not_published: {
+    noindex: 'seo_audit_issue_sitemap_not_published_noindex',
+    switched_off: 'seo_audit_issue_sitemap_not_published_switched_off',
+  },
+};
+
+/**
+ * Codes the server no longer sends (e.g. `sitemap_profiles_missing`, removed
+ * 2026-10-23 when member profiles left the sitemap) fall back to the generic
+ * "not supported" text, so an old stored audit still renders.
+ */
+export function getSeoAuditIssueKey(code: string, params?: SeoAuditParams | null): string {
+  if (!hasOwnKey(ISSUE_TRANSLATION_KEYS, code)) {
+    return ISSUE_TRANSLATION_KEYS.unknown;
+  }
+  const reasons = ISSUE_REASON_KEYS[code];
+  const reason = params?.reason;
+  if (reasons && typeof reason === 'string' && Object.prototype.hasOwnProperty.call(reasons, reason)) {
+    return reasons[reason] as string;
+  }
+  return ISSUE_TRANSLATION_KEYS[code];
 }

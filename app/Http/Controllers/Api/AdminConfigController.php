@@ -189,7 +189,8 @@ class AdminConfigController extends BaseApiController
         'seo_canonical_urls' => '1',
         'seo_open_graph' => '1',
         'seo_twitter_cards' => '1',
-        'seo_robots_txt' => '',
+        // seo_robots_txt removed 2026-10-23: nothing read it (robots.txt is a
+        // static file); the admin box went earlier, the API kept accepting it.
         'seo_google_verification' => '',
         'seo_bing_verification' => '',
     ];
@@ -1636,6 +1637,12 @@ class AdminConfigController extends BaseApiController
             $kvUpdates['region'] = $region;
         }
 
+        // The SEO columns this endpoint also accepts follow the same rules as
+        // /admin/seo and the super-admin form (TenantSeoFields, 2026-10-23).
+        if ($problem = \App\Support\TenantSeoFields::firstError($directUpdates)) {
+            return $this->respondWithError('VALIDATION_ERROR', $problem['message'], $problem['field'], 422);
+        }
+
         // Validate the complete request before its first write. Previously a
         // direct slug/domain update happened above the KV validators, so a
         // later 422 could leave routing changed with caches and snapshots live
@@ -1678,6 +1685,12 @@ class AdminConfigController extends BaseApiController
                     $params[] = $tenantId;
                     DB::update("UPDATE tenants SET " . implode(', ', $setClauses) . " WHERE id = ?", $params);
 
+                    // One sharing image across every screen (TenantSharingImage):
+                    // this endpoint wrote only the column, which the setting
+                    // row then hid.
+                    if (array_key_exists('og_image_url', $nonRoutingDirectUpdates)) {
+                        \App\Support\TenantSharingImage::writeSetting($tenantId, trim((string) ($nonRoutingDirectUpdates['og_image_url'] ?? '')));
+                    }
                 }
                 if (array_key_exists('domain', $routingFields)) {
                     $childIdsToBust = DB::table('tenants')
@@ -1763,6 +1776,12 @@ class AdminConfigController extends BaseApiController
 
         $this->redisCache->delete('tenant_bootstrap', $tenantId);
         $this->tenantSettingsService->clearCacheForTenant($tenantId);
+
+        // A new address moves this community's URL-redirect markers (and its
+        // children's, which inherit a domain): republish them all.
+        if ($routingIdentityChanged) {
+            app(\App\Services\SeoRedirectPublisher::class)->publishAll();
+        }
 
         return $this->respondWithData([
             'updated' => true,
@@ -2025,7 +2044,7 @@ class AdminConfigController extends BaseApiController
 
         $stored = $this->readSettingsByPrefix($tenantId, 'seo_');
 
-        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, h1_headline, hero_intro, og_image_url FROM tenants WHERE id = ?", [$tenantId]);
+        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, h1_headline, hero_intro, og_image_url, tagline, robots_directive, seo_organization_type FROM tenants WHERE id = ?", [$tenantId]);
 
         $config = [];
         foreach (self::SEO_DEFAULTS as $key => $defaultValue) {
@@ -2045,6 +2064,11 @@ class AdminConfigController extends BaseApiController
         $config['tenant_meta_description'] = $tenantRow->meta_description ?? '';
         $config['tenant_h1_headline'] = $tenantRow->h1_headline ?? '';
         $config['tenant_hero_intro'] = $tenantRow->hero_intro ?? '';
+        // Also on the super-admin tenant form; community admins edit them here
+        // too (owner, 23 Oct 2026). Same columns, same rules (TenantSeoFields).
+        $config['tenant_tagline'] = $tenantRow->tagline ?? '';
+        $config['tenant_robots_directive'] = $tenantRow->robots_directive ?? '';
+        $config['tenant_seo_organization_type'] = $tenantRow->seo_organization_type ?? '';
 
         return $this->respondWithData(['tenant_id' => $tenantId, 'seo' => $config]);
     }
@@ -2078,14 +2102,26 @@ class AdminConfigController extends BaseApiController
             'tenant_meta_description' => 'meta_description',
             'tenant_h1_headline' => 'h1_headline',
             'tenant_hero_intro' => 'hero_intro',
+            'tenant_tagline' => 'tagline',
+            'tenant_robots_directive' => 'robots_directive',
+            'tenant_seo_organization_type' => 'seo_organization_type',
         ];
 
         $directUpdates = [];
         foreach ($tenantColumnMap as $inputKey => $column) {
             if (array_key_exists($inputKey, $input)) {
-                $directUpdates[$column] = $input[$inputKey];
+                $directUpdates[$column] = is_string($input[$inputKey]) ? trim($input[$inputKey]) : $input[$inputKey];
                 $updated[] = $inputKey;
             }
+        }
+        // An empty choice (null once Laravel converts empty strings) means "not
+        // set": the column default for robots, NULL for the organisation type
+        // (SeoHead then uses its own default).
+        if (array_key_exists('robots_directive', $directUpdates) && in_array($directUpdates['robots_directive'], ['', null], true)) {
+            $directUpdates['robots_directive'] = 'index, follow';
+        }
+        if (array_key_exists('seo_organization_type', $directUpdates) && in_array($directUpdates['seo_organization_type'], ['', null], true)) {
+            $directUpdates['seo_organization_type'] = null;
         }
 
         // Keep the super-admin form's copy of the sharing image identical
@@ -2096,6 +2132,11 @@ class AdminConfigController extends BaseApiController
 
         if (empty($updated)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.no_recognized_seo_settings'), null, 422);
+        }
+
+        if ($problem = \App\Support\TenantSeoFields::firstError($directUpdates)) {
+            $inputKey = array_search($problem['field'], $tenantColumnMap, true) ?: ($problem['field'] === 'og_image_url' ? 'seo_og_image_url' : $problem['field']);
+            return $this->respondWithError('VALIDATION_ERROR', $problem['message'], (string) $inputKey, 422);
         }
 
         try {
@@ -2115,6 +2156,11 @@ class AdminConfigController extends BaseApiController
                 }
                 app(PrerenderContentInvalidator::class)->refreshTenantOrFail($tenantId, true);
             });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Nothing was saved (the transaction rolled back); say so, rather
+            // than blaming the crawler-copy refresh.
+            report($e);
+            return $this->respondWithError('SAVE_FAILED', __('api.seo_save_failed'), null, 500);
         } catch (\Throwable $e) {
             report($e);
             return $this->respondWithError('PRERENDER_REFRESH_FAILED', __('api.prerender_reset_failed'), null, 503);
@@ -2138,24 +2184,28 @@ class AdminConfigController extends BaseApiController
         $sitemapService = app(\App\Services\SitemapService::class);
         $stats = $sitemapService->getStats($tenantId);
 
-        $tenant = DB::selectOne("SELECT slug, domain, parent_id FROM tenants WHERE id = ?", [$tenantId]);
-        $frontendBase = rtrim(env('FRONTEND_URL', 'https://app.project-nexus.ie'), '/');
-        if (!empty($tenant->domain)) {
-            $sitemapUrl = 'https://' . rtrim($tenant->domain, '/') . '/sitemap.xml';
-        } elseif (!empty($tenant->parent_id)) {
-            $parentDomain = DB::table('tenants')
-                ->where('id', (int) $tenant->parent_id)
-                ->where('is_active', 1)
-                ->value('domain');
-            $sitemapUrl = !empty($parentDomain)
-                ? 'https://' . rtrim((string) $parentDomain, '/') . '/sitemap-' . $tenant->slug . '.xml'
-                : $frontendBase . '/sitemap-' . $tenant->slug . '.xml';
+        // The address the community's sitemap is really served at (2026-10-23):
+        // the same community address list as the sitemap routes and the render
+        // engine. The old copy of this logic linked the master and every
+        // community under it to the sales site.
+        $target = \App\Services\SitemapService::targetFor($tenantId);
+        $slug = (string) (DB::table('tenants')->where('id', $tenantId)->value('slug') ?? '');
+        if ($target === null) {
+            $sitemapUrl = '';
+        } elseif ($target['prefix'] === '' && $tenantId !== 1) {
+            $sitemapUrl = \App\Services\SitemapService::targetOrigin($target) . '/sitemap.xml';
         } else {
-            $sitemapUrl = $frontendBase . '/sitemap.xml';
+            $sitemapUrl = \App\Services\SitemapService::targetOrigin($target)
+                . '/sitemap-' . ($tenantId === 1 || $slug === '' ? 'main' : $slug) . '.xml';
         }
+        $notListed = \App\Services\SitemapService::notListedReason($tenantId);
 
         return $this->respondWithData([
             'sitemap_url' => $sitemapUrl,
+            // false when the community is set to noindex or its "Automatic
+            // sitemap" switch is off: the sitemap then answers 404.
+            'listed' => $notListed === null,
+            'not_listed_reason' => $notListed,
             'total_urls' => $stats['total_urls'],
             'content_types' => $stats['content_types'],
         ]);

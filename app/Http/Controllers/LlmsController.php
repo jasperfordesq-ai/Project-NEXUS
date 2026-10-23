@@ -37,7 +37,10 @@ class LlmsController
     public function index(Request $request): Response
     {
         [$tenant, $baseUrl] = $this->resolveTenant($request);
-        $key = 'llms:short:v2:' . md5($baseUrl) . ':' . ($tenant->id ?? 0);
+        if ($hidden = $this->hiddenResponse($tenant)) {
+            return $hidden;
+        }
+        $key = 'llms:short:v3:' . md5($baseUrl) . ':' . ($tenant->id ?? 0) . ':' . SitemapService::cacheVersion((int) ($tenant->id ?? 0));
 
         $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderShort($tenant, $baseUrl));
 
@@ -47,7 +50,10 @@ class LlmsController
     public function full(Request $request): Response
     {
         [$tenant, $baseUrl] = $this->resolveTenant($request);
-        $key = 'llms:full:v3:' . md5($baseUrl) . ':' . ($tenant->id ?? 0);
+        if ($hidden = $this->hiddenResponse($tenant)) {
+            return $hidden;
+        }
+        $key = 'llms:full:v4:' . md5($baseUrl) . ':' . ($tenant->id ?? 0) . ':' . SitemapService::cacheVersion((int) ($tenant->id ?? 0));
 
         $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderFull($tenant, $baseUrl));
 
@@ -99,6 +105,41 @@ class LlmsController
         return [$tenant, $master !== null ? SitemapService::targetOrigin($master) : 'https://' . $host];
     }
 
+    /**
+     * A community that asked search engines not to index it publishes no AI
+     * summary either (2026-10-23): 404, as its sitemap does. The cache key
+     * carries SitemapService::cacheVersion, so a settings or content save
+     * refreshes the file at once instead of after the hour's cache.
+     */
+    private function hiddenResponse(?object $tenant): ?Response
+    {
+        if ($tenant !== null && SitemapService::isNoindexTenant((int) $tenant->id)) {
+            return $this->textResponse("# Not available\n", 404);
+        }
+        return null;
+    }
+
+    /** First non-empty: meta description, the /admin/seo default description, the tenant description. */
+    private function description(?object $tenant): string
+    {
+        if ($tenant === null) {
+            return '';
+        }
+        $setting = '';
+        try {
+            $setting = (string) (DB::table('tenant_settings')->where('tenant_id', (int) $tenant->id)
+                ->where('setting_key', 'seo_meta_description')->value('setting_value') ?? '');
+        } catch (\Throwable) {
+        }
+        foreach ([$tenant->meta_description ?? '', $setting, $tenant->description ?? ''] as $candidate) {
+            $candidate = trim(strip_tags((string) $candidate));
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+        return '';
+    }
+
     private function hasFeature(?object $tenant, string $feature): bool
     {
         $features = json_decode($tenant->features ?? '{}', true) ?: [];
@@ -109,7 +150,8 @@ class LlmsController
     {
         $name = $tenant->name ?? 'NEXUS';
         $tagline = trim((string) ($tenant->tagline ?? ''));
-        $description = trim((string) ($tenant->meta_description ?? $tenant->description ?? ''));
+        // `??` let an empty meta description hide the others (2026-10-23).
+        $description = $this->description($tenant);
 
         $lines = [];
         $lines[] = "# {$name}";
@@ -156,7 +198,9 @@ class LlmsController
 
         $lines[] = '## Discovery';
         $lines[] = '';
-        $lines[] = '- Sitemap: ' . $this->sitemapUrl($tenant, $baseUrl);
+        if ($tenant === null || !SitemapService::isSitemapSwitchedOff((int) $tenant->id)) {
+            $lines[] = '- Sitemap: ' . $this->sitemapUrl($tenant, $baseUrl);
+        }
         $lines[] = "- Full LLM context: {$baseUrl}/llms-full.txt";
         $lines[] = '';
 

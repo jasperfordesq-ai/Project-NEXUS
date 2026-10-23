@@ -60,6 +60,38 @@ class SeoRedirectPublisher
         return $s === '/' ? null : $s; // never redirect a community's home page
     }
 
+    /**
+     * Why a new redirect could never fire, or null when it can (2026-10-23).
+     * Until then the admin got "saved" for a source the publisher silently
+     * drops (query strings, "#", "..", "/" itself, another site's URL), for a
+     * redirect to itself, and a 500 for a duplicate.
+     *
+     * @return array{field:string, message:string}|null
+     */
+    public function validateNew(int $tenantId, string $source, string $destination): ?array
+    {
+        $path = self::normaliseSource($source);
+        if ($path !== null && preg_match('#^https?://#i', trim($source))) {
+            $host = strtolower((string) parse_url(trim($source), PHP_URL_HOST));
+            $hosts = array_map(static fn (array $t) => $t['host'], $this->targetsFor($tenantId));
+            if (!in_array($host, $hosts, true)) {
+                $path = null; // another site's address can never reach this one
+            }
+        }
+        if ($path === null) {
+            return ['field' => 'source_url', 'message' => __('api.redirect_source_invalid')];
+        }
+        if ($path === self::normaliseSource($destination)) {
+            return ['field' => 'destination_url', 'message' => __('api.redirect_same_as_destination')];
+        }
+        foreach (DB::table('seo_redirects')->where('tenant_id', $tenantId)->pluck('source_url') as $existing) {
+            if (self::normaliseSource((string) $existing) === $path) {
+                return ['field' => 'source_url', 'message' => __('api.redirect_duplicate_source')];
+            }
+        }
+        return null;
+    }
+
     /** @return list<array{tenant_id:int, host:string, prefix:string}> */
     private function targetsFor(int $tenantId): array
     {
