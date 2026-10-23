@@ -51,7 +51,7 @@ class LlmsController
         // proxy). Without this fallback, link URLs in the body resolve to
         // api.project-nexus.ie instead of the tenant domain.
         $host = $request->header('X-Sitemap-Host', $request->getHost());
-        $key = "llms:full:{$host}:" . ($tenant->id ?? 0);
+        $key = "llms:full:v2:{$host}:" . ($tenant->id ?? 0);
 
         $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderFull($tenant, $host));
 
@@ -181,37 +181,12 @@ class LlmsController
             }
         }
 
-        $lines[] = '';
-        $lines[] = '## Recent listings';
-        $lines[] = '';
-
-        if ($tenantId !== null) {
-            try {
-                $listings = DB::select(
-                    "SELECT id, title, COALESCE(description, '') AS description, type
-                     FROM listings
-                     WHERE tenant_id = ? AND status = 'active'
-                       AND (expires_at IS NULL OR expires_at > NOW())
-                     ORDER BY created_at DESC
-                     LIMIT 30",
-                    [$tenantId]
-                );
-
-                foreach ($listings as $l) {
-                    $excerpt = trim(strip_tags($l->description));
-                    if ($excerpt !== '') {
-                        $excerpt = ': ' . mb_substr($excerpt, 0, 160);
-                    }
-                    $type = $l->type ? " [{$l->type}]" : '';
-                    $lines[] = "- [{$l->title}]({$baseUrl}/listings/{$l->id}){$type}{$excerpt}";
-                }
-                if (empty($listings)) {
-                    $lines[] = '_(no active listings)_';
-                }
-            } catch (\Throwable $e) {
-                $lines[] = '_(listings unavailable)_';
-            }
-        }
+        // No member listings (F-601, 23 Oct 2026). From 12 May 2026 this file
+        // listed the 30 newest active listings — title, type, link and the
+        // first 160 characters of the member's description — although listings
+        // are member-only everywhere else and the sitemap deliberately omits
+        // member-authored content. This file needs no sign-in and nginx routes
+        // AI crawlers to it. Only public content belongs here.
 
         $lines[] = '';
 
