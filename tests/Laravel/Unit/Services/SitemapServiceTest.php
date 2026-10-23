@@ -9,6 +9,7 @@ namespace Tests\Laravel\Unit\Services;
 
 use App\Models\User;
 use App\Services\SitemapService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -22,6 +23,8 @@ use Tests\Laravel\TestCase;
  */
 class SitemapServiceTest extends TestCase
 {
+    use DatabaseTransactions;
+
     private SitemapService $service;
     private int $userId;
 
@@ -31,9 +34,14 @@ class SitemapServiceTest extends TestCase
         $this->service = new SitemapService();
         Cache::flush();
 
-        // Get a valid user ID for FK-constrained inserts
+        // A real member for FK-constrained inserts. The fallback used to be
+        // user id 1, which does not exist in every test database: the inserts
+        // then failed (or insertOrIgnore skipped them silently) and the tests
+        // stopped testing anything.
         $user = DB::selectOne("SELECT id FROM users WHERE tenant_id = ? LIMIT 1", [$this->testTenantId]);
-        $this->userId = $user ? (int) $user->id : 1;
+        $this->userId = $user
+            ? (int) $user->id
+            : (int) User::factory()->forTenant($this->testTenantId)->create()->id;
     }
 
     // =========================================================================
@@ -641,11 +649,34 @@ class SitemapServiceTest extends TestCase
         }
     }
 
+    public function test_fixed_pages_carry_no_invented_lastmod(): void
+    {
+        // Until 2026-10-23 every fixed page claimed it changed today.
+        $xml = $this->service->generateForTenant($this->testTenantId);
+        preg_match_all('#<url>\s*<loc>[^<]*/(?:about|terms|contact)</loc>\s*(<lastmod>)?#', $xml, $m);
+        $this->assertNotEmpty($m[0], 'fixed pages are listed');
+        foreach ($m[1] as $lastmodTag) {
+            $this->assertSame('', $lastmodTag, 'a fixed page has no <lastmod>');
+        }
+    }
+
     public function test_urls_have_valid_lastmod_dates(): void
     {
+        DB::table('posts')->insert([
+            'tenant_id' => $this->testTenantId,
+            'author_id' => $this->userId,
+            'title' => 'Dated post',
+            'slug' => 'dated-post-' . uniqid(),
+            'content' => 'Dated content',
+            'status' => 'published',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        Cache::flush();
         $xml = $this->service->generateForTenant($this->testTenantId);
 
         preg_match_all('/<lastmod>([^<]+)<\/lastmod>/', $xml, $matches);
+        $this->assertNotEmpty($matches[1], 'a real content date is published');
         foreach ($matches[1] as $date) {
             // Full W3C/ISO-8601 timestamps preserve same-day edit precision for
             // the prerender drift detector.
@@ -974,5 +1005,69 @@ class SitemapServiceTest extends TestCase
             . 'MODULE_GATED_ROUTES, so prerender:detect-drift will reject them. '
             . 'Add them to the prerender route plan (or remove them from the sitemap).'
         );
+    }
+
+    // =========================================================================
+    // 2026-10-23 audit: noindex content left out, What's On listed
+    // =========================================================================
+
+    private function setFeatures(array $on): void
+    {
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('features');
+        $features = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['features' => json_encode(array_merge($features, $on))]);
+        Cache::flush();
+    }
+
+    public function test_a_post_marked_noindex_is_left_out(): void
+    {
+        $this->setFeatures(['blog' => true]);
+        $shown = 'shown-post-' . uniqid();
+        $hidden = 'hidden-post-' . uniqid();
+        foreach ([$shown, $hidden] as $slug) {
+            DB::table('posts')->insert([
+                'tenant_id' => $this->testTenantId, 'author_id' => $this->userId,
+                'title' => $slug, 'slug' => $slug, 'content' => 'Body', 'status' => 'published',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+        $hiddenId = (int) DB::table('posts')->where('slug', $hidden)->value('id');
+        DB::table('seo_metadata')->insert([
+            'tenant_id' => $this->testTenantId, 'entity_type' => 'post', 'entity_id' => $hiddenId, 'noindex' => 1,
+        ]);
+        Cache::flush();
+
+        $xml = $this->service->generateForTenant($this->testTenantId);
+        $this->assertStringContainsString('/blog/' . $shown . '<', $xml);
+        $this->assertStringNotContainsString('/blog/' . $hidden . '<', $xml);
+    }
+
+    public function test_whats_on_and_public_events_are_listed_only_when_opted_in(): void
+    {
+        $event = new \App\Models\Event([
+            'user_id' => $this->userId, 'title' => 'Orchard wassail', 'description' => 'Celebration',
+            'start_time' => now()->addDays(7), 'end_time' => now()->addDays(7)->addHours(2),
+            'is_public_listing' => true,
+        ]);
+        $event->tenant_id = $this->testTenantId;
+        $event->status = 'active';
+        $event->save();
+        $private = new \App\Models\Event([
+            'user_id' => $this->userId, 'title' => 'Members only', 'description' => 'Members',
+            'start_time' => now()->addDays(8), 'is_public_listing' => false,
+        ]);
+        $private->tenant_id = $this->testTenantId;
+        $private->status = 'active';
+        $private->save();
+
+        $this->setFeatures(['events' => true, 'public_events' => false]);
+        $off = $this->service->generateForTenant($this->testTenantId);
+        $this->assertStringNotContainsString('/whats-on', $off);
+
+        $this->setFeatures(['events' => true, 'public_events' => true]);
+        $on = $this->service->generateForTenant($this->testTenantId);
+        $this->assertStringContainsString('/whats-on</loc>', $on);
+        $this->assertStringContainsString('/whats-on/' . $event->id . '</loc>', $on);
+        $this->assertStringNotContainsString('/whats-on/' . $private->id . '</loc>', $on);
     }
 }

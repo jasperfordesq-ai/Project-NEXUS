@@ -21,4 +21,13 @@ class PostPrerenderObserver extends PrerenderInvalidationObserver
         }
         return $routes;
     }
+
+    protected function retiredRoutesFor(Model $model): array
+    {
+        if (!$model->wasChanged('slug')) {
+            return [];
+        }
+        $old = $model->getPrevious()['slug'] ?? null;
+        return is_string($old) && $old !== '' && $old !== $model->slug ? ['/blog/' . $old] : [];
+    }
 }

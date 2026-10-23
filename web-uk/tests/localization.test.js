@@ -223,7 +223,9 @@ describe('localized accessible document shell', () => {
       expect(response.status).toBe(200);
       expect(response.headers['content-language']).toBe(locale);
       expect(response.text).toContain(`<html lang="${locale}" dir="${direction}" class="govuk-template">`);
-      expect(response.text).toContain(`<title>${expectedTitle} - `);
+      // The home page title is the community name alone; it is not repeated
+      // as "Acme Timebank - Acme Timebank" (2026-10-23).
+      expect(response.text).toContain(page.title ? `<title>${expectedTitle}</title>` : `<title>${expectedTitle} - `);
       expect(response.text).toContain(`<h1 class="govuk-heading-xl">${expectedIdentity}</h1>`);
     }
   });

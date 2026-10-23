@@ -5,7 +5,6 @@
 
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts/TenantContext';
 import { toJsonLd } from '@/lib/json-ld';
 
@@ -15,7 +14,10 @@ import { toJsonLd } from '@/lib/json-ld';
  * Renders:
  *  - Webmaster verification meta tags (Google, Bing)
  *  - Organization JSON-LD structured data
- *  - BreadcrumbList JSON-LD (non-homepage)
+ *  - WebSite JSON-LD (name and address only)
+ *
+ * BreadcrumbList moved to PageMeta on 2026-10-23: it needs the page's own
+ * title, which only the page knows (see breadcrumbs.ts).
  *  - x-default hreflang (clean URL, no language query params)
  *
  * NOTE: This is a client-side SPA with i18next for localisation.
@@ -81,7 +83,6 @@ const areaServedTypeMap: Record<string, string> = {
 };
 
 export function SeoHead() {
-  const { t } = useTranslation('common');
   const { branding, tenant, tenantPath } = useTenant();
   const location = useLocation();
 
@@ -98,29 +99,6 @@ export function SeoHead() {
   const browserPath = typeof window !== 'undefined' ? window.location.pathname : location.pathname;
   const cleanPath = browserPath === '/' ? '/' : browserPath.replace(/\/+$/, '');
   const canonicalPath = `${origin}${cleanPath}`;
-
-  // Breadcrumb segments below the community's own base.
-  const relativePath = basePath && cleanPath.startsWith(basePath) ? cleanPath.slice(basePath.length) : cleanPath;
-  const pathSegments = relativePath.split('/').filter(Boolean);
-
-  const breadcrumbItems = [
-    { '@type': 'ListItem' as const, position: 1, name: t('nav.home'), item: siteUrl || '/' },
-    ...pathSegments.map((segment, index) => ({
-      '@type': 'ListItem' as const,
-      position: index + 2,
-      // URL-derived identifiers (tenant slugs, record IDs, and routes) are not
-      // authored prose. Preserve them verbatim instead of applying an English
-      // title-casing heuristic.
-      name: decodeURIComponent(segment),
-      item: `${siteUrl}/${pathSegments.slice(0, index + 1).join('/')}`,
-    })),
-  ];
-
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: breadcrumbItems,
-  };
 
   const seo = tenant?.seo;
   const settings = tenant?.settings as Record<string, unknown> | undefined;
@@ -176,21 +154,15 @@ export function SeoHead() {
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 
-  // WebSite JSON-LD with SearchAction — lets search engines wire up a
-  // sitelinks searchbox to /listings (the primary public search surface).
+  // WebSite JSON-LD. No SearchAction (removed 2026-10-23): it pointed search
+  // engines at /listings?q=, and both /listings and /search need a sign-in, so
+  // a searcher using it landed on the login page. There is no public site-wide
+  // search to point it at instead.
   const webSiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: siteName,
     url: siteUrl,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${siteUrl}/listings?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 
   const googleVerification = verificationToken(settings?.seo_google_verification);
@@ -240,8 +212,7 @@ export function SeoHead() {
         {toJsonLd(orgSchema)}
       </script>
 
-      {/* WebSite JSON-LD with SearchAction — enables sitelinks searchbox
-          in Google results. */}
+      {/* WebSite JSON-LD — the site's name and address. */}
       <script type="application/ld+json">
         {toJsonLd(webSiteSchema)}
       </script>
@@ -259,12 +230,6 @@ export function SeoHead() {
           This is the only hreflang needed for a client-side i18n SPA. */}
       <link rel="alternate" hrefLang="x-default" href={canonicalPath} />
 
-      {/* BreadcrumbList JSON-LD (only on non-homepage routes) */}
-      {pathSegments.length > 0 && (
-        <script type="application/ld+json">
-          {toJsonLd(breadcrumbSchema)}
-        </script>
-      )}
     </Helmet>
   );
 }

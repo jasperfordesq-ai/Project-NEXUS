@@ -109,6 +109,13 @@ const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./l
 const { applyTrustedProxies } = require('./lib/trusted-proxies');
 const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
+const { NOINDEX, buildRobotsTxt } = require('./lib/seo-meta');
+
+function applyRobotsHeader(res, directive) {
+  if (directive && !res.headersSent) {
+    res.set('X-Robots-Tag', directive);
+  }
+}
 const { formatLocaleDate, localeForIntl, translate, translateChoice } = require('./lib/localization');
 const { getRequestLocale } = require('./lib/request-locale-context');
 const { qrSvg } = require('./lib/qr-svg');
@@ -519,6 +526,14 @@ app.get('/version', (req, res) => {
   });
 });
 
+// robots.txt for every accessible host (the shared host and each community's
+// own accessible domain). Static, tenant-free and above the limiter, like the
+// two endpoints above. See buildRobotsTxt in src/lib/seo-meta.js.
+app.get('/robots.txt', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=3600');
+  res.type('text/plain').send(buildRobotsTxt());
+});
+
 // General rate limiting (see lib/rateLimiter.js for route-specific limits)
 app.use(generalLimiter);
 
@@ -603,6 +618,22 @@ app.use(async (req, res, next) => {
   const token = req.signedCookies.token;
   res.locals.isAuthenticated = !!token;
   Object.assign(res.locals, buildShellLocals(req, res.locals.isAuthenticated));
+
+  // Search-engine directive. The same value the layout writes into
+  // <meta name="robots"> is also sent as X-Robots-Tag, so it holds for crawlers
+  // that read headers only. Any page answered with an error status is noindex,
+  // whatever template renders it. See src/lib/seo-meta.js.
+  applyRobotsHeader(res, res.locals.seoRobots);
+  const renderPage = res.render.bind(res);
+  res.render = (view, options, callback) => {
+    if (res.statusCode >= 400) {
+      res.locals.seoRobots = NOINDEX;
+      applyRobotsHeader(res, NOINDEX);
+    } else if (options && options.noIndex) {
+      applyRobotsHeader(res, NOINDEX);
+    }
+    return renderPage(view, options, callback);
+  };
 
   // Defense in depth: any response rendered for a signed-in member is
   // personal (wallet, messages, profile, notifications, settings, CSV

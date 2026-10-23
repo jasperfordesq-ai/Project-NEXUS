@@ -78,11 +78,26 @@
 {% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) or (fieldErrors and (fieldErrors | length)) %}
 {% set titleErrorPrefix = ((t('states.error_prefix') if t else 'Error:') ~ ' ') if pageValidationFailed else '' %}
 
+{#
+  Search and sharing metadata. Shell-wide values come from src/lib/seo-meta.js
+  (via buildShellLocals), which mirrors the React site's PageMeta/SeoHead. A route
+  may override any of them with a render local: metaDescription, canonicalUrl,
+  ogType, ogTitle, opengraphImageUrl, noIndex.
+  The title suffix is the COMMUNITY's name (or its /admin/seo title suffix), and
+  only falls back to the platform service name where there is no community.
+#}
+{% set pageSiteName = seoSiteName or serviceName %}
+{% set pageFullTitle = resolvedPageTitle ~ ' - ' ~ pageSiteName if resolvedPageTitle else pageSiteName %}
+{% set pageDescription = metaDescription or seoDescription %}
+{% set pageCanonicalUrl = canonicalUrl or seoCanonicalUrl %}
+{% set pageImageUrl = opengraphImageUrl or seoImageUrl %}
+{% set pageRobots = 'noindex, nofollow' if noIndex else seoRobots %}
+
 <!DOCTYPE html>
 <html lang="{{ htmlLang or 'en' }}" dir="{{ htmlDirection or 'ltr' }}" class="govuk-template{% if htmlClasses %} {{ htmlClasses }}{% endif %}">
   <head>
     <meta charset="utf-8">
-    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ titleErrorPrefix }}{{ resolvedPageTitle }} - {{ serviceName }}{% endblock %}</title>
+    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ titleErrorPrefix }}{{ resolvedPageTitle }}{% if resolvedPageTitle != pageSiteName %} - {{ pageSiteName }}{% endif %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="{{ themeColor }}">
 
@@ -94,8 +109,22 @@
       <link rel="icon" href="/assets/favicon.ico">
     {% endblock %}
 
-    {% if opengraphImageUrl or assetUrl %}
-      <meta property="og:image" content="{{ opengraphImageUrl | default(assetUrl + '/images/govuk-opengraph-image.png', true) }}">
+    {% if pageDescription %}<meta name="description" content="{{ pageDescription }}">{% endif %}
+    {% if pageRobots %}<meta name="robots" content="{{ pageRobots }}">{% endif %}
+    {% if seoEnableCanonical !== false and pageCanonicalUrl %}<link rel="canonical" href="{{ pageCanonicalUrl }}">{% endif %}
+    {% if seoEnableOpenGraph !== false %}
+      <meta property="og:type" content="{{ ogType or 'website' }}">
+      <meta property="og:site_name" content="{{ pageSiteName }}">
+      <meta property="og:title" content="{{ ogTitle or pageFullTitle }}">
+      {% if pageDescription %}<meta property="og:description" content="{{ pageDescription }}">{% endif %}
+      {% if pageCanonicalUrl %}<meta property="og:url" content="{{ pageCanonicalUrl }}">{% endif %}
+      {% if pageImageUrl %}<meta property="og:image" content="{{ pageImageUrl }}">{% endif %}
+    {% endif %}
+    {% if seoEnableTwitterCards !== false %}
+      <meta name="twitter:card" content="{{ 'summary_large_image' if opengraphImageUrl else (seoTwitterCard or 'summary') }}">
+      <meta name="twitter:title" content="{{ ogTitle or pageFullTitle }}">
+      {% if pageDescription %}<meta name="twitter:description" content="{{ pageDescription }}">{% endif %}
+      {% if pageImageUrl %}<meta name="twitter:image" content="{{ pageImageUrl }}">{% endif %}
     {% endif %}
   </head>
   <body class="govuk-template__body{% if bodyClasses %} {{ bodyClasses }}{% endif %}"{{ govukAttributes(bodyAttributes) }}>

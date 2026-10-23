@@ -725,7 +725,9 @@
     },
     "legal_version_history": {
       "title": "Historique des versions légales",
-      "description": "Historique des versions de nos documents et politiques légales."
+      "description": "Historique des versions de nos documents et politiques légales.",
+      "title_with_document": "{{title}} – historique des versions",
+      "description_with_document": "Toutes les versions publiées de {{title}}, avec la date d'entrée en vigueur de chacune."
     },
     "trust_safety": {
       "title": "Confiance et sécurité",

@@ -189,4 +189,34 @@ class PostPrerenderObserverTest extends TestCase
         $this->assertContains('/blog', $captured);
         $this->assertContains('/blog/timebanking-101', $captured);
     }
+
+    // -------------------------------------------------------------------------
+    // saved() — renamed slug: the old address's copy is deleted, not re-rendered
+    // -------------------------------------------------------------------------
+
+    public function test_saved_after_a_rename_deletes_the_old_address_without_rerendering_it(): void
+    {
+        $model = new Post();
+        $model->id        = 14;
+        $model->tenant_id = 2;
+        $model->slug      = 'old-title';
+        $model->syncOriginal();
+        // What Eloquent does during an update: record changes, then sync.
+        $model->slug = 'new-title';
+        $model->syncChanges();
+        $model->syncOriginal();
+
+        $this->prerenderMock
+            ->shouldReceive('invalidateRoutes')
+            ->once()
+            ->with(2, Mockery::on(fn (array $r): bool => in_array('/blog/new-title', $r, true)), true);
+        $this->prerenderMock
+            ->shouldReceive('invalidateRoutes')
+            ->once()
+            ->with(2, ['/blog/old-title'], false);
+
+        (new PostPrerenderObserver())->saved($model);
+
+        $this->assertTrue(true);
+    }
 }

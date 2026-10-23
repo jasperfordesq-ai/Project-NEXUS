@@ -8,11 +8,8 @@
 
 {% block head %}
   {{ super() }}
-  {% if post.metaDescription %}<meta name="description" content="{{ post.metaDescription }}">{% endif %}
-  {% if post.canonicalUrl %}<link rel="canonical" href="{{ post.canonicalUrl }}">{% endif %}
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="{{ post.metaTitle or post.title }}">
-  {% if post.metaDescription %}<meta property="og:description" content="{{ post.metaDescription }}">{% endif %}
+  {# description, canonical, og:type and og:title come from the base layout,
+     fed by render locals in routes/blog-posts.js (one tag of each, not two). #}
   {% if post.publishedIso %}<meta property="article:published_time" content="{{ post.publishedIso }}">{% endif %}
   {% if post.updatedIso %}<meta property="article:modified_time" content="{{ post.updatedIso }}">{% endif %}
   <script type="application/ld+json">{{ articleStructuredData | safe }}</script>

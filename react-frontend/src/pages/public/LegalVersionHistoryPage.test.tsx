@@ -50,7 +50,8 @@ vi.mock('@/contexts', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
+const pageMetaSpy = vi.hoisted(() => vi.fn((_props: { title?: string; description?: string }) => null));
+vi.mock('@/components/seo', () => ({ PageMeta: pageMetaSpy }));
 
 // 🔴 The page imports every UI primitive by its DIRECT path
 // ('@/components/ui/GlassCard', '/Button', '/Chip', '/Spinner') — it never touches
@@ -148,5 +149,16 @@ describe('LegalVersionHistoryPage', () => {
     mockApiGet.mockResolvedValue({ success: true, data: { title: 'Terms', type: 'terms', versions: [] } });
     const { container } = render(<LegalVersionHistoryPage />);
     expect(container.querySelector('div')).toBeTruthy();
+  });
+
+  // 2026-10-23 SEO audit: every document's history page had the same title.
+  it("titles the page after the document whose history it shows", async () => {
+    mockApiGet.mockResolvedValue({ success: true, data: { title: 'Terms of Service', type: 'terms', versions: [] } });
+    render(<LegalVersionHistoryPage />);
+    await waitFor(() => {
+      const props = pageMetaSpy.mock.calls[pageMetaSpy.mock.calls.length - 1]?.[0];
+      expect(props?.title).toBe('Terms of Service – version history');
+      expect(props?.description).toContain('Terms of Service');
+    });
   });
 });

@@ -82,6 +82,16 @@ const TYPE_TO_ROUTE: Record<string, string> = {
   acceptable_use: '/acceptable-use',
 };
 
+/** Map type → `common` key of the document's translated name */
+const TYPE_TO_NAME_KEY: Record<string, string> = {
+  terms: 'legal.terms_of_service',
+  privacy: 'legal.privacy_policy',
+  cookies: 'legal.cookie_policy',
+  accessibility: 'legal.accessibility',
+  community_guidelines: 'legal.type_community_guidelines',
+  acceptable_use: 'legal.type_acceptable_use',
+};
+
 interface VersionComparison {
   version1: { version_number: string; effective_date: string };
   version2: { version_number: string; effective_date: string };
@@ -226,6 +236,8 @@ export function LegalVersionHistoryPage() {
   }
 
   const backRoute = TYPE_TO_ROUTE[docType] ?? '/terms';
+  // The document's own heading, or its translated type name if it has none.
+  const documentName = title || t(TYPE_TO_NAME_KEY[docType] ?? 'legal.legal_hub', { ns: 'common' });
 
   return (
     <motion.div
@@ -234,7 +246,12 @@ export function LegalVersionHistoryPage() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-6"
     >
-      <PageMeta title={t('page_meta.legal_version_history.title')} description={t('page_meta.legal_version_history.description')} />
+      {/* Each document's history has its own title (2026-10-23: all six
+          shared "Legal Version History"). */}
+      <PageMeta
+        title={t('page_meta.legal_version_history.title_with_document', { title: documentName })}
+        description={t('page_meta.legal_version_history.description_with_document', { title: documentName })}
+      />
       {/* Back link */}
       <motion.div variants={itemVariants}>
         <Link

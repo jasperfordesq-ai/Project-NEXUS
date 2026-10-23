@@ -783,6 +783,7 @@ function tenantRouting(req, res, next) {
 module.exports = {
   prefixLocalPath,
   reservedChildSegments: Array.from(RESERVED_CHILD_SEGMENTS),
+  requestHost,
   rewriteHtmlLinks,
   tenantRouting
 };

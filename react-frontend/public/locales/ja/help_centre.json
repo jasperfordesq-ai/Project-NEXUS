@@ -1,5 +1,6 @@
 {
   "page_title": "ヘルプセンター",
+  "audience_page_title": "{{audience}} – ヘルプセンター",
   "meta_description": "{{name}} のすべてをわかりやすく説明するガイドです。はじめ方、時間の交換、安全に使うためのヒント、コミュニティの運営について。",
   "hero_eyebrow": "ヘルプセンター",
   "heading": "どのようなことでお困りですか?",

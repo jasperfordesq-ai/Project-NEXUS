@@ -234,4 +234,30 @@ describe('VerifyEmailPage', () => {
       expect(links.length).toBeGreaterThan(0);
     });
   });
+
+  // 2026-10-23 SEO audit: only the loading state said noindex, so the
+  // finished page (success or error) could be indexed.
+  describe('kept out of search results', () => {
+    const robots = () => document.querySelector('meta[name="robots"]')?.getAttribute('content');
+
+    it('says noindex on the error state', async () => {
+      render(<VerifyEmailPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      await waitFor(() => expect(robots()).toBe('noindex, nofollow'));
+    });
+
+    it('says noindex on the success state', async () => {
+      vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true });
+      const { useSearchParams } = await import('react-router-dom');
+      vi.mocked(useSearchParams).mockReturnValue([
+        new URLSearchParams('token=valid-token'),
+        vi.fn(),
+      ] as ReturnType<typeof useSearchParams>);
+
+      render(<VerifyEmailPage />);
+      await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
+      await waitFor(() => expect(screen.queryByRole('status', { busy: true })).not.toBeInTheDocument());
+      await waitFor(() => expect(robots()).toBe('noindex, nofollow'));
+    });
+  });
 });

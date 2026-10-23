@@ -23,7 +23,9 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/contexts/TenantContext';
+import { toJsonLd } from '@/lib/json-ld';
 import { useRemoveShellTitle } from './shellTitle';
+import { buildBreadcrumbList } from './breadcrumbs';
 
 // Map our short language codes to OG locale codes (BCP 47 with region).
 // Google and Facebook expect e.g. en_GB / fr_FR, not the bare lang code.
@@ -124,11 +126,11 @@ export function PageMeta({
   modifiedTime,
   tenantHome = false,
 }: PageMetaProps) {
-  const { branding: tenantBranding, tenant } = useTenant();
+  const { branding: tenantBranding, tenant, tenantPath } = useTenant();
   useRemoveShellTitle();
   const branding = tenantBranding ?? { name: 'NEXUS', tagline: '', og_image_url: '', logo: '' };
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
 
   // Active language → OG locale (BCP 47). Falls back to en_GB if unknown.
   const activeLang = (i18n?.language || 'en').split('-')[0] ?? 'en';
@@ -206,6 +208,30 @@ export function PageMeta({
     || '/images/project-nexus-logo.png';
   const twitterCard = sharingImage ? 'summary_large_image' : 'summary';
 
+  // BreadcrumbList for the page (moved here from SeoHead on 2026-10-23, because
+  // only the page knows its own title). Not for pages kept out of search, and
+  // not for the home page. Built from the canonical address so it never lists
+  // a duplicate the canonical points away from.
+  const basePath = (typeof tenantPath === 'function' ? tenantPath('/') : '/').replace(/\/+$/, '');
+  let breadcrumbSchema: Record<string, unknown> | null = null;
+  if (!noIndex && !tenantHome && title) {
+    let pagePath = browserPathname;
+    try {
+      const parsed = new URL(canonicalUrl, origin || undefined);
+      if (!origin || parsed.origin === origin) pagePath = parsed.pathname;
+    } catch {
+      // Keep the browser path.
+    }
+    breadcrumbSchema = buildBreadcrumbList({
+      siteUrl: `${origin}${basePath}`,
+      basePath,
+      pagePath,
+      pageTitle: title,
+      homeName: t('nav.home'),
+      sectionName: (key) => t(key),
+    });
+  }
+
   return (
     <Helmet>
       {/* Primary Meta Tags */}
@@ -245,6 +271,10 @@ export function PageMeta({
       {enableTwitterCards && <meta name="twitter:title" content={fullTitle} />}
       {enableTwitterCards && <meta name="twitter:description" content={metaDescription} />}
       {enableTwitterCards && <meta name="twitter:image" content={ogImage} />}
+
+      {breadcrumbSchema && (
+        <script type="application/ld+json">{toJsonLd(breadcrumbSchema)}</script>
+      )}
     </Helmet>
   );
 }

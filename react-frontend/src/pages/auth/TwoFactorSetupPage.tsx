@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { api, tokenManager } from '@/lib/api';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { PageMeta } from '@/components/seo/PageMeta';
 import { getFormattingLocale } from '@/lib/helpers';
 import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCodes';
 
@@ -144,6 +145,7 @@ export default function TwoFactorSetupPage() {
 
   return (
     <section className="mx-auto max-w-lg space-y-5 px-6 py-20">
+      <PageMeta title={t('mandatory_setup.title')} noIndex />
       <h1 className="text-2xl font-semibold">{t('mandatory_setup.title')}</h1>
       <p>{t('mandatory_setup.reason')}</p>
       {error && <p role="alert" className="text-danger">{error}</p>}

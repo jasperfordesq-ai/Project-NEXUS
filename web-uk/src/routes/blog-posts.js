@@ -438,6 +438,10 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
     likeCount: post.likeCount,
     hasLiked: post.hasLiked,
     opengraphImageUrl: post.ogImage,
+    metaDescription: post.metaDescription,
+    canonicalUrl: post.canonicalUrl,
+    ogType: 'article',
+    ogTitle: post.metaTitle || post.title,
     articleStructuredData: articleStructuredData(post, res.locals.tenantName || res.locals.serviceName),
     commentForm: consumeFormReplay(req, BLOG_COMMENT_REPLAY, req.params.slug),
     statusBanner: statusBanner(req.query && req.query.status, res.locals.t)

@@ -76,6 +76,36 @@ function renderAt(path: string) {
   );
 }
 
+// 2026-10-23 SEO audit: /help and /help/members had the same title.
+describe('Help Centre titles', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    enabled.all = true;
+    mockApiGet.mockResolvedValue({ success: true, data: [] });
+  });
+
+  it('gives /help/members its own title and description, and /help as its canonical', async () => {
+    renderAt('/help/members');
+    await waitFor(() => expect(document.title).toBe('Using the platform – Help Centre | Test Community'));
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content'))
+      .toBe('Joining, offering help, exchanging time and staying safe.');
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href'))
+      .toBe(`${window.location.origin}/test/help`);
+  });
+
+  it('keeps the Help Centre title on /help itself', async () => {
+    renderAt('/help');
+    await waitFor(() => expect(document.title).toBe('Help Centre | Test Community'));
+  });
+
+  it('gives another audience its own title and its own canonical', async () => {
+    renderAt('/help/brokers');
+    await waitFor(() => expect(document.title).toBe('For brokers and coordinators – Help Centre | Test Community'));
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href'))
+      .toBe(`${window.location.origin}/help/brokers`);
+  });
+});
+
 describe('Help Centre home', () => {
   beforeEach(() => {
     vi.clearAllMocks();

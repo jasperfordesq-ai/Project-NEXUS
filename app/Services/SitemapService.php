@@ -52,7 +52,17 @@ class SitemapService
             $sitemaps = [];
 
             foreach ($tenants as $tenant) {
-                $slug = !empty($tenant->slug) ? $tenant->slug : 'main';
+                $slug = (int) $tenant->id === 1 || empty($tenant->slug) ? 'main' : $tenant->slug;
+                $target = self::targetFor((int) $tenant->id);
+                if ($target !== null) {
+                    // The sitemap file sits on the community's own host; the
+                    // folder prefix belongs to its page addresses, not the file.
+                    $sitemaps[] = [
+                        'loc'     => self::targetOrigin($target) . "/sitemap-{$slug}.xml",
+                        'lastmod' => $this->formatDate($tenant->updated_at),
+                    ];
+                    continue;
+                }
                 if (!empty($tenant->domain)) {
                     $base = 'https://' . rtrim($tenant->domain, '/');
                 } elseif (!empty($tenant->parent_domain)) {
@@ -290,6 +300,10 @@ class SitemapService
         // their separate content/consent review.
         $methods['cms_pages'] = fn (int $tid, string $base) => $this->getCmsPageUrls($tid, $base);
 
+        if ($this->publicEventsOn($tenant)) {
+            $methods['public_events'] = fn (int $tid, string $base) => $this->getPublicEventUrls($tid, $base);
+        }
+
         return $methods;
     }
 
@@ -299,7 +313,12 @@ class SitemapService
 
     private function getStaticPageUrls(object $tenant, string $baseUrl): array
     {
-        $now = $this->formatDate(date('Y-m-d'));
+        // No <lastmod> for fixed pages (2026-10-23). They used to claim they
+        // changed today, every day: Google learns to ignore a sitemap's dates
+        // when they are always "now", which also cost the real dates on blog
+        // posts their value. The drift detector treats a missing date as "no
+        // change" and leaves these to the TTL refresh (config/prerender.php).
+        $now = null;
         $urls = [];
 
         // Homepage (highest priority — refreshes daily)
@@ -372,20 +391,54 @@ class SitemapService
             $urls[] = $this->url($baseUrl, '/coupons', $now, 'daily', '0.6');
         }
 
+        // Public events advertising ("What's On"), on only when the community
+        // opted in with both switches — the same gate as the route and the API.
+        if ($this->publicEventsOn($tenant)) {
+            $urls[] = $this->url($baseUrl, '/whats-on', $now, 'daily', '0.7');
+        }
+
         return $urls;
     }
 
+    private function publicEventsOn(object $tenant): bool
+    {
+        return $this->hasFeature($tenant, 'events') && $this->hasFeature($tenant, 'public_events');
+    }
+
+    /**
+     * Each event a community advertises publicly (/whats-on/{id}), using the
+     * same rule as GET /v2/public/events/{id}: listed publicly, published,
+     * and not in a private group (EventService::publicSitemapEntries).
+     */
+    private function getPublicEventUrls(int $tenantId, string $baseUrl): array
+    {
+        return array_map(
+            fn (array $r) => $this->url($baseUrl, "/whats-on/{$r['id']}", $this->formatDate($r['lastmod']), 'weekly', '0.6'),
+            EventService::publicSitemapEntries($tenantId)
+        );
+    }
+
+    /**
+     * Posts the admin marked "noindex" (seo_metadata) are left out (2026-10-23):
+     * the page itself tells crawlers not to index it, so listing it here sent
+     * search engines two contradicting signals.
+     */
     private function getBlogUrls(int $tenantId, string $baseUrl): array
     {
         // Blog data lives in the `posts` table (not `blog_posts` which is empty).
         // The `posts` table has no `published_at` column — use updated_at/created_at.
         $rows = DB::select(
-            "SELECT slug, COALESCE(updated_at, created_at) AS lastmod
-             FROM posts
-             WHERE tenant_id = ? AND status = 'published'
-               AND slug NOT IN ('aenean-sed-pulvinar-et-diam')
-               AND LOWER(CONCAT_WS(' ', title, excerpt, content, html_render)) NOT LIKE ?
-             ORDER BY created_at DESC",
+            "SELECT p.slug, COALESCE(p.updated_at, p.created_at) AS lastmod
+             FROM posts p
+             WHERE p.tenant_id = ? AND p.status = 'published'
+               AND p.slug NOT IN ('aenean-sed-pulvinar-et-diam')
+               AND LOWER(CONCAT_WS(' ', p.title, p.excerpt, p.content, p.html_render)) NOT LIKE ?
+               AND NOT EXISTS (
+                   SELECT 1 FROM seo_metadata sm
+                    WHERE sm.tenant_id = p.tenant_id AND sm.entity_type = 'post'
+                      AND sm.entity_id = p.id AND sm.noindex = 1
+               )
+             ORDER BY p.created_at DESC",
             [$tenantId, '%lorem ipsum%']
         );
 
@@ -577,10 +630,15 @@ class SitemapService
     private function getCmsPageUrls(int $tenantId, string $baseUrl): array
     {
         $rows = DB::select(
-            "SELECT slug, COALESCE(updated_at, created_at) AS lastmod
-             FROM pages
-             WHERE tenant_id = ? AND is_published = 1
-             ORDER BY created_at DESC",
+            "SELECT p.slug, COALESCE(p.updated_at, p.created_at) AS lastmod
+             FROM pages p
+             WHERE p.tenant_id = ? AND p.is_published = 1
+               AND NOT EXISTS (
+                   SELECT 1 FROM seo_metadata sm
+                    WHERE sm.tenant_id = p.tenant_id AND sm.entity_type = 'page'
+                      AND sm.entity_id = p.id AND sm.noindex = 1
+               )
+             ORDER BY p.created_at DESC",
             [$tenantId]
         );
 
@@ -728,6 +786,15 @@ class SitemapService
      */
     private function resolveBaseUrl(object $tenant): string
     {
+        // One answer for "where does this community live", shared with the
+        // render engine, redirects and the sitemap routes (2026-10-23). The
+        // fallback below differed for the master community (its own domain is
+        // the sales site, not the app).
+        $target = self::targetFor((int) $tenant->id);
+        if ($target !== null) {
+            return self::targetOrigin($target) . $target['prefix'];
+        }
+
         // Custom domain takes priority
         if (!empty($tenant->domain)) {
             return 'https://' . rtrim($tenant->domain, '/');
@@ -755,6 +822,38 @@ class SitemapService
         }
 
         return $frontendBase . '/' . $tenant->slug;
+    }
+
+    /**
+     * The community's public address (host + folder prefix), as the render
+     * engine sees it: PrerenderService::loadTenantTargets().
+     *
+     * @return array{tenant_id:int, slug:string, host:string, prefix:string}|null
+     */
+    public static function targetFor(int $tenantId): ?array
+    {
+        foreach (app(PrerenderService::class)->loadTenantTargets() as $t) {
+            if ((int) $t['tenant_id'] === $tenantId) {
+                return $t;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Scheme + host for a target. The app host keeps FRONTEND_URL's own scheme
+     * and port (http://localhost:5173 locally); every community domain is https.
+     *
+     * @param array{host:string} $target
+     */
+    public static function targetOrigin(array $target): string
+    {
+        $frontend = rtrim((string) (config('app.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
+        $frontendHost = strtolower((string) (parse_url($frontend, PHP_URL_HOST) ?? ''));
+        if ($frontendHost !== '' && $frontendHost === $target['host']) {
+            return (string) preg_replace('#^(https?://[^/]+).*$#i', '$1', $frontend);
+        }
+        return 'https://' . $target['host'];
     }
 
     /**

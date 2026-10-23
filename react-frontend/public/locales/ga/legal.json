@@ -729,7 +729,9 @@
     },
     "legal_version_history": {
       "title": "Stair Leaganacha na nDoiciméad Dlíthiúil",
-      "description": "Stair leaganacha ár ndoiciméad dlíthiúil agus ár mbeartas."
+      "description": "Stair leaganacha ár ndoiciméad dlíthiúil agus ár mbeartas.",
+      "title_with_document": "{{title}} – stair na leaganacha",
+      "description_with_document": "Gach leagan foilsithe de {{title}}, leis an dáta a tháinig gach ceann acu i bhfeidhm."
     },
     "trust_safety": {
       "title": "Iontaobhas agus Sábháilteacht",

@@ -110,7 +110,18 @@ export function HelpCenterPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-1 sm:px-0">
-      <PageMeta title={t('page_title')} description={t('meta_description', { name: branding.name })} />
+      {/* /help/:audience has its own title and description (2026-10-23: all
+          four addresses shared one). /help/members shows exactly what /help
+          shows, so it names /help as its canonical. */}
+      {params.audience ? (
+        <PageMeta
+          title={t('audience_page_title', { audience: t(`audience.${audience}.title`) })}
+          description={t(`audience.${audience}.description`)}
+          url={audience === 'members' ? tenantPath('/help') : undefined}
+        />
+      ) : (
+        <PageMeta title={t('page_title')} description={t('meta_description', { name: branding.name })} />
+      )}
       <PublicPageHero
         eyebrow={t('hero_eyebrow')}
         title={t('heading')}

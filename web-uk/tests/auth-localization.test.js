@@ -132,7 +132,7 @@ describe('Laravel-first auth localization', () => {
       // that overrides the block without re-emitting the prefix silently loses it on
       // exactly the pages that need it. Keep it in this assertion so a future override
       // cannot drop it unnoticed.
-      expect(source).toContain('{% block pageTitle %}{{ titleErrorPrefix }}{{ title }} - {{ serviceName }}{% endblock %}');
+      expect(source).toContain('{% block pageTitle %}{{ titleErrorPrefix }}{{ title }} - {{ seoSiteName or serviceName }}{% endblock %}');
       expect(source).toContain('<h1 class="govuk-heading-xl">{{ title }}</h1>');
     }
   });

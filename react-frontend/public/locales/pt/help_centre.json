@@ -1,5 +1,6 @@
 {
   "page_title": "Central de Ajuda",
+  "audience_page_title": "{{audience}} – Central de Ajuda",
   "meta_description": "Guias em linguagem simples sobre tudo em {{name}}: primeiros passos, troca de tempo, segurança e gestão da sua comunidade.",
   "hero_eyebrow": "Central de Ajuda",
   "heading": "Como podemos ajudar?",

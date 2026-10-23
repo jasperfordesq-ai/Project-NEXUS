@@ -56,6 +56,19 @@ abstract class PrerenderInvalidationObserver implements ShouldHandleEventsAfterC
      */
     abstract protected function routesFor(Model $model): array;
 
+    /**
+     * Addresses this save made obsolete (a renamed slug's old address). Their
+     * copies are deleted and NOT re-rendered: the old address now shows "not
+     * found", and until 2026-10-23 its copy stayed on the crawler side until a
+     * cleanup sweep happened to reach it.
+     *
+     * @return array<int,string>
+     */
+    protected function retiredRoutesFor(Model $model): array
+    {
+        return [];
+    }
+
     protected function tenantId(Model $model): ?int
     {
         $tid = $model->tenant_id ?? null;
@@ -72,6 +85,10 @@ abstract class PrerenderInvalidationObserver implements ShouldHandleEventsAfterC
             app(SitemapService::class)->clearCache($tenantId);
             Cache::forget('prerender:summary:inventory');
             app(PrerenderService::class)->invalidateRoutes($tenantId, $routes, true);
+            $retired = array_values(array_diff($this->retiredRoutesFor($model), $routes));
+            if ($retired !== []) {
+                app(PrerenderService::class)->invalidateRoutes($tenantId, $retired, false);
+            }
         } catch (\Throwable $e) {
             // Observer failures must NEVER block model writes. Log and move on.
             Log::warning('Prerender invalidation failed', [

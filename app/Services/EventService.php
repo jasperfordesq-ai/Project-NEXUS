@@ -952,6 +952,35 @@ class EventService
         return $event?->toArray();
     }
 
+    /**
+     * Every event getPublicById() would show, for the community's sitemap
+     * (/whats-on/{id}). Built from the same three predicates so the sitemap
+     * can never list an event the public page refuses. Runs outside a request
+     * (cron, render planning), so the tenant is explicit rather than read
+     * from TenantContext.
+     *
+     * @return list<array{id:int, lastmod:?string}>
+     */
+    public static function publicSitemapEntries(int $tenantId, int $limit = 1000): array
+    {
+        $query = Event::query()
+            ->withoutGlobalScopes()
+            ->where('events.tenant_id', $tenantId)
+            ->where('events.is_public_listing', 1);
+        self::wherePublishedPublication($query, 'events');
+        self::applyDiscoveryVisibility($query, null, $tenantId, false);
+
+        return $query
+            ->orderByDesc('events.start_time')
+            ->limit($limit)
+            ->get(['events.id', 'events.updated_at', 'events.created_at'])
+            ->map(static fn (Event $e): array => [
+                'id' => (int) $e->id,
+                'lastmod' => ($e->updated_at ?? $e->created_at)?->toDateTimeString(),
+            ])
+            ->all();
+    }
+
     public static function getById(int $id, ?int $currentUserId = null): ?array
     {
         /** @var Event|null $event */

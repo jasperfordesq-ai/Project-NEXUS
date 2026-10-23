@@ -731,7 +731,9 @@
     },
     "legal_version_history": {
       "title": "تاريخ الإصدارات القانونية",
-      "description": "تاريخ إصدارات وثائقنا القانونية وسياساتنا."
+      "description": "تاريخ إصدارات وثائقنا القانونية وسياساتنا.",
+      "title_with_document": "{{title}} – سجل الإصدارات",
+      "description_with_document": "جميع الإصدارات المنشورة من {{title}}، مع تاريخ سريان كل إصدار."
     },
     "trust_safety": {
       "title": "الثقة والسلامة",

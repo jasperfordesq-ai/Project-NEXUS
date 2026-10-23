@@ -79,4 +79,38 @@ class LlmsControllerTest extends TestCase
         $response->assertOk();
         $this->assertStringNotContainsString($listing->title, $response->getContent());
     }
+
+    public function test_the_files_link_only_to_pages_a_signed_out_reader_can_open(): void
+    {
+        $body = (string) $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->getContent();
+
+        $this->assertStringContainsString('https://' . $this->host . '/about', $body);
+        foreach (['/listings', '/explore', '/events', '/groups', '/volunteering', '/jobs', '/organisations'] as $private) {
+            $this->assertStringNotContainsString('https://' . $this->host . $private . ')', $body, "links to sign-in-only {$private}");
+        }
+    }
+
+    public function test_a_community_in_a_folder_gets_its_own_file(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => null, 'parent_id' => null]);
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+        $name = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('name');
+        $appHost = (string) parse_url((string) env('FRONTEND_URL', 'https://app.project-nexus.ie'), PHP_URL_HOST);
+
+        $body = (string) $this->withHeaders(['X-Sitemap-Host' => $appHost, 'X-Llms-Prefix' => $slug])
+            ->get('/llms.txt')->assertOk()->getContent();
+
+        $this->assertStringStartsWith('# ' . $name, $body);
+        $this->assertStringContainsString('/' . $slug . '/about)', $body);
+        $this->assertStringContainsString('/sitemap-' . $slug . '.xml', $body);
+    }
+
+    public function test_an_unknown_folder_falls_back_to_the_hosts_own_community(): void
+    {
+        $body = (string) $this->withHeaders(['X-Sitemap-Host' => $this->host, 'X-Llms-Prefix' => 'no-such-community'])
+            ->get('/llms.txt')->assertOk()->getContent();
+
+        $this->assertStringContainsString('https://' . $this->host . '/about)', $body);
+        $this->assertStringNotContainsString('no-such-community', $body);
+    }
 }

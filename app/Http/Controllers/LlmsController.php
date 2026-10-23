@@ -7,6 +7,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SitemapService;
+use App\Services\TenantFeatureConfig;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +21,11 @@ use Illuminate\Support\Facades\DB;
  * of the site. Crawlers (ChatGPT, Claude, Perplexity, Gemini) increasingly
  * fetch these instead of (or alongside) rendering JS.
  *
- * Tenant detection follows the same rules as SitemapController:
+ * Tenant detection (2026-10-23) uses the same community address list as the
+ * sitemap and the render engine (SitemapService::targetFor): the request host
+ * plus, for a community in a folder (app.project-nexus.ie/slug/llms.txt,
+ * parent-domain/slug/llms.txt), the folder nginx passes in X-Llms-Prefix.
+ * Until then a folder community got the hub's or the platform's file.
  *   1. Custom domain (hour-timebank.ie)        → that tenant
  *   2. Frontend host (app.project-nexus.ie)    → marketing/master
  *   3. Anything else                            → master tenant
@@ -30,63 +36,80 @@ class LlmsController
 
     public function index(Request $request): Response
     {
-        $tenant = $this->resolveTenant($request);
-        // nginx proxies /llms.txt to api.project-nexus.ie with the original
-        // tenant host carried in X-Sitemap-Host (same pattern as the sitemap
-        // proxy). Without this fallback, link URLs in the body resolve to
-        // api.project-nexus.ie instead of the tenant domain.
-        $host = $request->header('X-Sitemap-Host', $request->getHost());
-        $key = "llms:short:{$host}:" . ($tenant->id ?? 0);
+        [$tenant, $baseUrl] = $this->resolveTenant($request);
+        $key = 'llms:short:v2:' . md5($baseUrl) . ':' . ($tenant->id ?? 0);
 
-        $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderShort($tenant, $host));
+        $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderShort($tenant, $baseUrl));
 
         return $this->textResponse($body);
     }
 
     public function full(Request $request): Response
     {
-        $tenant = $this->resolveTenant($request);
-        // nginx proxies /llms.txt to api.project-nexus.ie with the original
-        // tenant host carried in X-Sitemap-Host (same pattern as the sitemap
-        // proxy). Without this fallback, link URLs in the body resolve to
-        // api.project-nexus.ie instead of the tenant domain.
-        $host = $request->header('X-Sitemap-Host', $request->getHost());
-        $key = "llms:full:v2:{$host}:" . ($tenant->id ?? 0);
+        [$tenant, $baseUrl] = $this->resolveTenant($request);
+        $key = 'llms:full:v3:' . md5($baseUrl) . ':' . ($tenant->id ?? 0);
 
-        $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderFull($tenant, $host));
+        $body = Cache::remember($key, self::CACHE_TTL, fn () => $this->renderFull($tenant, $baseUrl));
 
         return $this->textResponse($body);
     }
 
     // -----------------------------------------------------------------
 
-    private function resolveTenant(Request $request): ?object
+    /**
+     * The community this request is for, and its public base address.
+     *
+     * nginx proxies /llms.txt to the API with the original host in
+     * X-Sitemap-Host and, for /{slug}/llms.txt, the folder in X-Llms-Prefix.
+     * A folder only counts when it is a real community on that host; anything
+     * else falls back to the community at the host's root (the master on the
+     * app host), so the file can never name another host.
+     *
+     * @return array{0: ?object, 1: string}
+     */
+    private function resolveTenant(Request $request): array
     {
-        $host = $request->header('X-Sitemap-Host', $request->getHost());
+        $host = strtolower((string) $request->header('X-Sitemap-Host', $request->getHost()));
+        $prefix = '/' . trim((string) $request->header('X-Llms-Prefix', ''), '/');
+        $prefix = $prefix === '/' ? '' : $prefix;
 
-        $byDomain = DB::selectOne(
-            "SELECT id, name, slug, domain, tagline, description, meta_title, meta_description, h1_headline, hero_intro, features, configuration
-             FROM tenants WHERE domain = ? AND is_active = 1",
-            [$host]
-        );
+        $root = null;
+        $folder = null;
+        foreach (app(\App\Services\PrerenderService::class)->loadTenantTargets() as $t) {
+            if ($t['host'] !== $host) {
+                continue;
+            }
+            if ($t['prefix'] === '') {
+                $root = $t;
+            } elseif ($prefix !== '' && strcasecmp($t['prefix'], $prefix) === 0) {
+                $folder = $t;
+            }
+        }
+        $target = $folder ?? $root;
 
-        if ($byDomain) {
-            return $byDomain;
+        $columns = 'id, name, slug, domain, tagline, description, meta_title, meta_description, h1_headline, hero_intro, features, configuration';
+        if ($target !== null) {
+            $tenant = DB::selectOne("SELECT {$columns} FROM tenants WHERE id = ? AND is_active = 1", [$target['tenant_id']]);
+            return [$tenant, SitemapService::targetOrigin($target) . $target['prefix']];
         }
 
-        // Frontend host or unknown → master tenant
-        return DB::selectOne(
-            "SELECT id, name, slug, domain, tagline, description, meta_title, meta_description, h1_headline, hero_intro, features, configuration
-             FROM tenants WHERE (slug IS NULL OR slug = '') AND is_active = 1 ORDER BY id LIMIT 1"
-        );
+        // Unknown host (the API host itself, say) → master, at the app address.
+        $master = SitemapService::targetFor(1);
+        $tenant = DB::selectOne("SELECT {$columns} FROM tenants WHERE id = 1 AND is_active = 1");
+        return [$tenant, $master !== null ? SitemapService::targetOrigin($master) : 'https://' . $host];
     }
 
-    private function renderShort(?object $tenant, string $host): string
+    private function hasFeature(?object $tenant, string $feature): bool
+    {
+        $features = json_decode($tenant->features ?? '{}', true) ?: [];
+        return (TenantFeatureConfig::mergeFeatures($features)[$feature] ?? false) === true;
+    }
+
+    private function renderShort(?object $tenant, string $baseUrl): string
     {
         $name = $tenant->name ?? 'NEXUS';
         $tagline = trim((string) ($tenant->tagline ?? ''));
         $description = trim((string) ($tenant->meta_description ?? $tenant->description ?? ''));
-        $baseUrl = 'https://' . $host;
 
         $lines = [];
         $lines[] = "# {$name}";
@@ -100,35 +123,29 @@ class LlmsController
             $lines[] = '';
         }
 
-        // Key public links
+        // Only pages a signed-out reader can open (2026-10-23). The list used
+        // to send AI crawlers to listings, events, groups, volunteering, jobs
+        // and organisations, all of which are behind sign-in.
         $lines[] = '## Key pages';
         $lines[] = '';
         $lines[] = "- [Home]({$baseUrl}/): overview and how it works";
         $lines[] = "- [About]({$baseUrl}/about): mission and team";
         $lines[] = "- [How it works]({$baseUrl}/timebanking-guide): timebanking explained";
-        $lines[] = "- [Browse listings]({$baseUrl}/listings): current skill exchanges";
-        $lines[] = "- [Explore community]({$baseUrl}/explore): discover the network";
-        $lines[] = "- [Blog]({$baseUrl}/blog): stories, updates, social impact";
-        $lines[] = "- [Help]({$baseUrl}/help): support and FAQ";
+        $lines[] = "- [Questions and answers]({$baseUrl}/faq): common questions";
+        $lines[] = "- [Help]({$baseUrl}/help): guides for members";
+        $lines[] = "- [Trust and safety]({$baseUrl}/trust-and-safety): how members are kept safe";
         $lines[] = "- [Contact]({$baseUrl}/contact): get in touch";
         $lines[] = '';
 
-        $features = json_decode($tenant->features ?? '{}', true) ?: [];
         $optional = [];
-        if (($features['events'] ?? true)) {
-            $optional[] = "- [Events]({$baseUrl}/events): upcoming community events";
+        if ($this->hasFeature($tenant, 'blog')) {
+            $optional[] = "- [Blog]({$baseUrl}/blog): stories, updates, social impact";
         }
-        if (($features['groups'] ?? true)) {
-            $optional[] = "- [Groups]({$baseUrl}/groups): topic-based communities";
+        if ($this->hasFeature($tenant, 'events') && $this->hasFeature($tenant, 'public_events')) {
+            $optional[] = "- [What's on]({$baseUrl}/whats-on): events open to the public";
         }
-        if (($features['volunteering'] ?? true)) {
-            $optional[] = "- [Volunteering]({$baseUrl}/volunteering): opportunities to help";
-        }
-        if (($features['job_vacancies'] ?? true)) {
-            $optional[] = "- [Jobs]({$baseUrl}/jobs): paid roles in the community";
-        }
-        if (($features['volunteering'] ?? true)) {
-            $optional[] = "- [Organisations]({$baseUrl}/organisations): partner groups and charities";
+        if ($this->hasFeature($tenant, 'merchant_coupons')) {
+            $optional[] = "- [Coupons]({$baseUrl}/coupons): offers from local organisations";
         }
         if (!empty($optional)) {
             $lines[] = '## Optional';
@@ -139,29 +156,33 @@ class LlmsController
 
         $lines[] = '## Discovery';
         $lines[] = '';
-        $lines[] = "- Sitemap: {$baseUrl}/sitemap.xml";
+        $lines[] = '- Sitemap: ' . $this->sitemapUrl($tenant, $baseUrl);
         $lines[] = "- Full LLM context: {$baseUrl}/llms-full.txt";
         $lines[] = '';
 
         return implode("\n", $lines);
     }
 
-    private function renderFull(?object $tenant, string $host): string
+    private function renderFull(?object $tenant, string $baseUrl): string
     {
-        $short = $this->renderShort($tenant, $host);
+        $short = $this->renderShort($tenant, $baseUrl);
         $tenantId = $tenant->id ?? null;
-        $baseUrl = 'https://' . $host;
 
         $lines = [$short, '## Recent blog posts', ''];
 
         if ($tenantId !== null) {
             try {
                 $posts = DB::select(
-                    "SELECT title, slug, COALESCE(excerpt, '') AS excerpt
-                     FROM posts
-                     WHERE tenant_id = ? AND status = 'published'
-                       AND LOWER(CONCAT_WS(' ', title, excerpt, content)) NOT LIKE ?
-                     ORDER BY COALESCE(updated_at, created_at) DESC
+                    "SELECT p.title, p.slug, COALESCE(p.excerpt, '') AS excerpt
+                     FROM posts p
+                     WHERE p.tenant_id = ? AND p.status = 'published'
+                       AND LOWER(CONCAT_WS(' ', p.title, p.excerpt, p.content)) NOT LIKE ?
+                       AND NOT EXISTS (
+                           SELECT 1 FROM seo_metadata sm
+                            WHERE sm.tenant_id = p.tenant_id AND sm.entity_type = 'post'
+                              AND sm.entity_id = p.id AND sm.noindex = 1
+                       )
+                     ORDER BY COALESCE(p.updated_at, p.created_at) DESC
                      LIMIT 30",
                     [$tenantId, '%lorem ipsum%']
                 );
@@ -191,6 +212,16 @@ class LlmsController
         $lines[] = '';
 
         return implode("\n", $lines);
+    }
+
+    /** A folder community's sitemap is sitemap-{slug}.xml on its host, not {folder}/sitemap.xml. */
+    private function sitemapUrl(?object $tenant, string $baseUrl): string
+    {
+        $origin = (string) preg_replace('#^(https?://[^/]+).*$#i', '$1', $baseUrl);
+        if ($origin !== $baseUrl && !empty($tenant->slug)) {
+            return $origin . '/sitemap-' . $tenant->slug . '.xml';
+        }
+        return $baseUrl . '/sitemap.xml';
     }
 
     private function textResponse(string $body, int $status = 200): Response

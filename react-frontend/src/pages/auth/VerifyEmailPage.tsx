@@ -125,11 +125,15 @@ export function VerifyEmailPage() {
     }
   }
 
+  // Every state is kept out of search results: the address carries a one-time
+  // token, and until 2026-10-23 only the loading state said noindex.
+  const pageMeta = <PageMeta title={t('page_meta.verify_email.title')} noIndex />;
+
   // Loading state
   if (state === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <PageMeta title={t('page_meta.verify_email.title')} noIndex />
+        {pageMeta}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -158,6 +162,7 @@ export function VerifyEmailPage() {
   if (state === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
+        {pageMeta}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -210,6 +215,7 @@ export function VerifyEmailPage() {
   // Error state
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      {pageMeta}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

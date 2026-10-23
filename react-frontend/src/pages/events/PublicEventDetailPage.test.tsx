@@ -20,6 +20,12 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/contexts', () => createMockContexts());
 
+// PageMeta is a global no-op in tests; spy on it to see the sharing image.
+vi.mock('@/components/seo', () => ({
+  PageMeta: vi.fn(() => null),
+  default: () => null,
+}));
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
@@ -30,6 +36,7 @@ vi.mock('react-router-dom', async () => {
 
 import { api } from '@/lib/api';
 import { useParams } from 'react-router-dom';
+import { PageMeta } from '@/components/seo';
 import PublicEventDetailPage from './PublicEventDetailPage';
 
 const DETAIL = {
@@ -58,6 +65,16 @@ const DETAIL = {
   },
 };
 
+/** The Event JSON-LD block (PageMeta also writes a BreadcrumbList block). */
+function eventScript(): HTMLScriptElement | undefined {
+  return Array.from(document.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]'))
+    .find((s) => (s.textContent ?? '').includes('"@type":"Event"'));
+}
+
+function eventSchema(): ReturnType<typeof JSON.parse> {
+  return JSON.parse(eventScript()?.textContent ?? '{}');
+}
+
 describe('PublicEventDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -76,8 +93,8 @@ describe('PublicEventDetailPage', () => {
     await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
 
     await waitFor(() => {
-      const script = document.querySelector('script[type="application/ld+json"]');
-      expect(script).not.toBeNull();
+      const script = eventScript();
+      expect(script).toBeDefined();
       expect(script?.textContent ?? '').not.toContain('</script>');
       expect(script?.textContent ?? '').toContain('\\u003c/script');
     });
@@ -139,11 +156,86 @@ describe('PublicEventDetailPage', () => {
     await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
 
     await waitFor(() => {
-      const script = document.querySelector('script[type="application/ld+json"]');
-      expect(script).not.toBeNull();
-      const parsed = JSON.parse(script?.textContent ?? '{}');
+      const parsed = eventSchema();
       expect(parsed['@type']).toBe('Event');
       expect(parsed.name).toBe('Wassail in the Orchard');
+    });
+  });
+
+  // 2026-10-23 SEO audit: the Event block must pass Google's rich-result rules.
+  describe('valid Event structured data', () => {
+    it('gives dates with an offset, a status, an attendance mode, a Place and the community as organiser', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { ...DETAIL, attendance_mode: 'in_person', operational_status: 'scheduled', timezone: 'Europe/Paris' },
+      });
+      render(<PublicEventDetailPage />);
+      await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+      await waitFor(() => expect(eventScript()).toBeDefined());
+      const e = eventSchema();
+      // 18:00 UTC is 19:00 in Paris in December.
+      expect(e.startDate).toBe('2026-12-14T19:00:00+01:00');
+      expect(e.endDate).toBe('2026-12-14T22:00:00+01:00');
+      expect(e.eventStatus).toBe('https://schema.org/EventScheduled');
+      expect(e.eventAttendanceMode).toBe('https://schema.org/OfflineEventAttendanceMode');
+      expect(e.location).toEqual({ '@type': 'Place', name: 'Coventry Community Orchard', address: 'Coventry Community Orchard' });
+      expect(e.organizer['@type']).toBe('Organization');
+      expect(e.organizer.url).toMatch(/^https?:\/\/[^/]+\/test$/);
+      expect(e.organizer.name).not.toBe('Marie');
+      expect(e.url).toMatch(/^https?:\/\//);
+      expect(e).not.toHaveProperty('image');
+    });
+
+    it('describes an online event with a VirtualLocation that has a url', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { ...DETAIL, attendance_mode: 'online', location: null },
+      });
+      render(<PublicEventDetailPage />);
+      await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+      await waitFor(() => expect(eventScript()).toBeDefined());
+      const e = eventSchema();
+      expect(e.eventAttendanceMode).toBe('https://schema.org/OnlineEventAttendanceMode');
+      expect(e.location['@type']).toBe('VirtualLocation');
+      expect(e.location.url).toMatch(/^https?:\/\//);
+      expect(e.location).not.toHaveProperty('name');
+    });
+
+    it('lists both places for a hybrid event', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...DETAIL, attendance_mode: 'hybrid' } });
+      render(<PublicEventDetailPage />);
+      await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+      await waitFor(() => expect(eventScript()).toBeDefined());
+      const e = eventSchema();
+      expect(e.eventAttendanceMode).toBe('https://schema.org/MixedEventAttendanceMode');
+      expect(e.location.map((l: { '@type': string }) => l['@type'])).toEqual(['Place', 'VirtualLocation']);
+    });
+
+    it('leaves out an unknown end date instead of emitting an empty one', async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...DETAIL, end_time: null } });
+      render(<PublicEventDetailPage />);
+      await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+      await waitFor(() => expect(eventScript()).toBeDefined());
+      expect(eventSchema()).not.toHaveProperty('endDate');
+    });
+
+    it("uses the event's own picture, as a full address, for the block and the sharing card", async () => {
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { ...DETAIL, image_url: '/uploads/tenants/test/events/wassail.jpg' },
+      });
+      render(<PublicEventDetailPage />);
+      await screen.findByRole('heading', { name: 'Wassail in the Orchard' });
+
+      await waitFor(() => expect(eventScript()).toBeDefined());
+      const [image] = eventSchema().image as string[];
+      expect(image).toMatch(/^https?:\/\/.+wassail\.jpg/);
+      const lastProps = vi.mocked(PageMeta).mock.calls.slice(-1)[0]?.[0] as { image?: string } | undefined;
+      expect(lastProps?.image).toBe(image);
     });
   });
 

@@ -6,7 +6,7 @@
 {% extends "layouts/base.njk" %}
 
 {# titleErrorPrefix comes from layouts/base.njk — keep it on any pageTitle override. #}
-{% block pageTitle %}{{ titleErrorPrefix }}{{ title }} - {{ serviceName }}{% endblock %}
+{% block pageTitle %}{{ titleErrorPrefix }}{{ title }} - {{ seoSiteName or serviceName }}{% endblock %}
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}

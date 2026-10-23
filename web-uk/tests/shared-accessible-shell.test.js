@@ -10933,7 +10933,9 @@ describe('shared accessible frontend shell', () => {
       per_page: 30
     });
     expect(response.text).toContain(t('search.title'));
-    expect(response.text).toContain(t('search.caption', { community: 'Project NEXUS Accessible' }));
+    // This used to assert the platform name and only passed because the page
+    // <title> ended with it; the caption has always named the community.
+    expect(response.text).toContain(t('search.caption', { community: 'acme Timebank' }));
     expect(response.text).toContain(t('search.label'));
     expect(response.text).toContain(createChoiceTranslator('ar')('search.results_count', 9, { count: 9 }));
     expect(response.text).not.toContain('{0}');

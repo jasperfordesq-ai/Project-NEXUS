@@ -47,6 +47,8 @@ const docsUrl = 'https://docs.project-nexus.ie/';
 const { URL } = require('node:url');
 const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');
+const { buildSeoLocals } = require('./seo-meta');
+const { requestHost } = require('../middleware/tenant-routing');
 
 const localeOptions = [
   ['en', 'English'],
@@ -821,7 +823,21 @@ function buildShellLocals(req, isAuthenticated) {
   // built from the community name and the AGPL notice.
   const tenantFooterText = String(tenantConfig.footer_text || '').trim();
 
+  // Search and sharing metadata (canonical, description, Open Graph, robots).
+  const seoLocals = buildSeoLocals({
+    tenant: routedTenant,
+    t,
+    serviceName: t('service_name'),
+    routePath: req.path || '/',
+    visiblePath: currentPath,
+    protocol: process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || 'https'),
+    host: req.headers ? requestHost(req) : '',
+    isAuthenticated,
+    resolveAssetUrl: resolveBackendAssetUrl
+  });
+
   return {
+    ...seoLocals,
     serviceName: t('service_name'),
     phaseText: t('phase'),
     tenantName,

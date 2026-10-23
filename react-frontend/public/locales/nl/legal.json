@@ -723,7 +723,9 @@
     },
     "legal_version_history": {
       "title": "Juridische Versiegeschiedenis",
-      "description": "Versiegeschiedenis van onze juridische documenten en beleidslijnen."
+      "description": "Versiegeschiedenis van onze juridische documenten en beleidslijnen.",
+      "title_with_document": "{{title}} – versiegeschiedenis",
+      "description_with_document": "Alle gepubliceerde versies van {{title}}, met de datum waarop elke versie van kracht werd."
     },
     "trust_safety": {
       "title": "Vertrouwen en veiligheid",

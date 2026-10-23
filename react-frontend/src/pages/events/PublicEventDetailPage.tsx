@@ -31,13 +31,24 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEventDetail } from '@/lib/public-events-api';
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
+import { buildEventStructuredData } from '@/lib/event-structured-data';
+
+/** An address made absolute against this page's origin. */
+function absolute(value: string | undefined, origin: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    return new URL(value, origin || undefined).href;
+  } catch {
+    return undefined;
+  }
+}
 
 export default function PublicEventDetailPage() {
   const { t } = useTranslation('events');
   const { id } = useParams<{ id: string }>();
-  const { tenantPath, tenant } = useTenant();
+  const { tenantPath, tenant, branding } = useTenant();
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -121,46 +132,36 @@ export default function PublicEventDetailPage() {
       ] as const).filter(([, value]) => value === true)
     : [];
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: event.title ?? '',
-    startDate: event.start_time ?? undefined,
-    endDate: event.end_time ?? undefined,
-    eventAttendanceMode: event.attendance_mode === 'hybrid'
-      ? 'https://schema.org/MixedEventAttendanceMode'
-      : event.attendance_mode === 'online'
-        ? 'https://schema.org/OnlineEventAttendanceMode'
-        : 'https://schema.org/OfflineEventAttendanceMode',
-    eventStatus: event.operational_status === 'cancelled'
-      ? 'https://schema.org/EventCancelled'
-      : event.operational_status === 'postponed'
-        ? 'https://schema.org/EventPostponed'
-        : 'https://schema.org/EventScheduled',
-    description: event.description ?? undefined,
-    image: event.image_url ?? undefined,
-    location: event.attendance_mode === 'online'
-      ? { '@type': 'VirtualLocation', name: tenant?.name ?? '' }
-      : event.location
-        ? { '@type': 'Place', name: event.location, address: event.location }
-        : undefined,
-    organizer: event.organizer_name
-      ? { '@type': 'Organization', name: event.organizer_name }
-      : undefined,
-  };
+  // Structured data and the sharing card (2026-10-23 SEO audit): the event's
+  // own picture, as a full address, is what a shared link shows; without one
+  // PageMeta falls back to the community's sharing image.
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const pageUrl = `${origin}${typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : tenantPath(`/whats-on/${event.id}`)}`;
+  const shareImage = event.image_url
+    ? absolute(resolveThumbnailUrl(event.image_url, { width: 1200, height: 630 }), origin)
+    : undefined;
+  const communityUrl = `${origin}${tenantPath('/').replace(/\/+$/, '')}`;
+  const jsonLd = buildEventStructuredData(event, {
+    pageUrl,
+    imageUrl: shareImage,
+    organizer: { name: branding?.name || tenant?.name || '', url: communityUrl },
+  });
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
       <PageMeta
         title={event.title ?? t('public.title')}
         description={event.description?.slice(0, 160) ?? undefined}
+        image={shareImage}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {/* Escaped so organiser text can never close the script (F-595, E-104). */}
-          {toJsonLd(jsonLd)}
-        </script>
-      </Helmet>
+      {jsonLd && (
+        <Helmet>
+          <script type="application/ld+json">
+            {/* Escaped so organiser text can never close the script (F-595, E-104). */}
+            {toJsonLd(jsonLd)}
+          </script>
+        </Helmet>
+      )}
 
       {event.image_url && (
         <img

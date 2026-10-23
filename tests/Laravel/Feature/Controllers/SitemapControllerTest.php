@@ -254,4 +254,34 @@ class SitemapControllerTest extends TestCase
         $perTenant = $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-' . $slug . '.xml');
         $perTenant->assertStatus(404);
     }
+
+    // =========================================================================
+    // A community's sitemap only on its own address (2026-10-23)
+    // =========================================================================
+
+    public function test_tenant_sitemap_on_the_app_host_keeps_the_community_folder(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => null, 'parent_id' => null]);
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+        $appHost = (string) parse_url((string) env('FRONTEND_URL', 'https://app.project-nexus.ie'), PHP_URL_HOST);
+
+        $content = (string) $this->withHeaders(['X-Sitemap-Host' => $appHost])
+            ->get('/sitemap-' . $slug . '.xml')->assertOk()->getContent();
+
+        preg_match_all('#<loc>([^<]+)</loc>#', $content, $m);
+        $this->assertNotEmpty($m[1]);
+        foreach ($m[1] as $loc) {
+            $this->assertStringContainsString('/' . $slug . '/', $loc . '/', "address keeps the folder: {$loc}");
+        }
+    }
+
+    public function test_tenant_sitemap_is_refused_on_another_communitys_domain(): void
+    {
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => 'own-' . uniqid() . '.test']);
+
+        $this->withHeaders(['X-Sitemap-Host' => 'someone-else.test'])
+            ->get('/sitemap-' . $slug . '.xml')
+            ->assertStatus(404);
+    }
 }

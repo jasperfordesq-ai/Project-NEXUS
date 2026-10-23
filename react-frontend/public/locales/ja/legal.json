@@ -723,7 +723,9 @@
     },
     "legal_version_history": {
       "title": "法的バージョン履歴",
-      "description": "私たちの法的文書とポリシーのバージョン履歴。"
+      "description": "私たちの法的文書とポリシーのバージョン履歴。",
+      "title_with_document": "{{title}} – バージョン履歴",
+      "description_with_document": "{{title}}の公開済みの全バージョンと、それぞれの発効日。"
     },
     "trust_safety": {
       "title": "信頼と安全",

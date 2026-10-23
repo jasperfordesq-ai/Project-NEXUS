@@ -137,13 +137,16 @@ class SitemapController
             return $this->xmlResponse($this->emptyUrlset(), 404);
         }
 
-        // Use host/slug as the base URL when the request host IS the parent's domain,
-        // so entries read timebanking.uk/cardiff/... rather than timebanking.uk/...
-        $baseUrl = 'https://' . $host;
-        if (empty($row->domain) && !empty($row->parent_domain)
-            && rtrim((string) $row->parent_domain, '/') === $host) {
-            $baseUrl = 'https://' . $host . '/' . $slug;
+        // Served only on the community's own host, with its own folder prefix
+        // (2026-10-23). Until then any domain answered any community's sitemap
+        // with addresses on the requesting host, so app.project-nexus.ie/sitemap-x.xml
+        // listed platform-root pages (missing /x) and hour-timebank.ie/sitemap-x.xml
+        // claimed another community's pages as its own.
+        $target = SitemapService::targetFor((int) $row->id);
+        if ($target === null || $target['host'] !== strtolower($host)) {
+            return $this->xmlResponse($this->emptyUrlset(), 404);
         }
+        $baseUrl = SitemapService::targetOrigin($target) . $target['prefix'];
 
         $xml = $service->generateForTenant((int) $row->id, $baseUrl);
         return $this->xmlResponse($xml);

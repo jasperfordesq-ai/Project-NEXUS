@@ -7,6 +7,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TwoFactorSetupPage from './TwoFactorSetupPage';
+import { PageMeta } from '@/components/seo/PageMeta';
 
 const mocks = vi.hoisted(() => ({ post: vi.fn(), adopt: vi.fn(() => 'test-session'), generation: vi.fn(() => 'test-session'), access: vi.fn(), refresh: vi.fn(), user: vi.fn(), cancel: vi.fn() }));
 // The page imports the context hooks from their direct modules (bundle-budget rule
@@ -20,7 +21,18 @@ vi.mock('@/contexts/TenantContext', () => ({
 }));
 vi.mock('@/lib/api', () => ({ api: { post: mocks.post }, tokenManager: { adoptSession: mocks.adopt, adoptSessionIfCurrent: mocks.adopt, getSessionGeneration: mocks.generation, setAccessToken: mocks.access, setRefreshToken: mocks.refresh } }));
 
+vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: vi.fn(() => null) }));
+
 beforeEach(() => { vi.clearAllMocks(); });
+
+// 2026-10-23 SEO audit: the setup page had no robots directive at all.
+it('keeps the two-factor setup page out of search results', async () => {
+  mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'manual-key' } });
+  render(<MemoryRouter><TwoFactorSetupPage /></MemoryRouter>);
+  await screen.findByRole('textbox', { name: 'Six-digit verification code' });
+  expect(vi.mocked(PageMeta)).toHaveBeenCalled();
+  expect(vi.mocked(PageMeta).mock.calls.every(([props]) => (props as { noIndex?: boolean }).noIndex === true)).toBe(true);
+});
 
 it('keeps credentials out of storage until the recovery codes are acknowledged', async () => {
   mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'manual-key' } });

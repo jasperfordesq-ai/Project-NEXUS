@@ -1,5 +1,6 @@
 {
   "page_title": "Help Centre",
+  "audience_page_title": "{{audience}} – Help Centre",
   "meta_description": "Plain-English guides to everything on {{name}}: getting started, exchanging time, staying safe and running your community.",
   "hero_eyebrow": "Help Centre",
   "heading": "How can we help?",

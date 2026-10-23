@@ -101,7 +101,9 @@ describe('SeoHead', () => {
     expect(orgSchema.name).toBe('hOUR Timebank');
   });
 
-  it('embeds a WebSite JSON-LD block with a SearchAction', () => {
+  // 2026-10-23: the SearchAction sent searchers to /listings?q=, which needs a
+  // sign-in. There is no public site-wide search, so none is advertised.
+  it('embeds a WebSite JSON-LD block without a search action', () => {
     render(<SeoHead />);
     const scripts = document.querySelectorAll('script[type="application/ld+json"]');
     const parsed = Array.from(scripts).map((s) => {
@@ -110,7 +112,8 @@ describe('SeoHead', () => {
 
     const webSiteSchema = parsed.find((o) => o['@type'] === 'WebSite');
     expect(webSiteSchema).toBeDefined();
-    expect(webSiteSchema?.potentialAction?.['@type']).toBe('SearchAction');
+    expect(webSiteSchema).not.toHaveProperty('potentialAction');
+    expect(JSON.stringify(parsed)).not.toContain('SearchAction');
   });
 
   // ── Verification meta tags ─────────────────────────────────────────────────
@@ -267,11 +270,12 @@ describe('SeoHead', () => {
         expect(document.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute('href'))
           .toBe(`${origin}/test/about`);
         expect(orgOf().url).toBe(`${origin}/test`);
+        // Breadcrumbs moved to PageMeta (they need the page title); see
+        // PageMeta.test.tsx, which also covers the community folder.
         const crumbs = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
           .map((s) => { try { return JSON.parse(s.textContent ?? ''); } catch { return null; } })
           .find((o) => o && o['@type'] === 'BreadcrumbList');
-        expect(crumbs.itemListElement.map((i: { item: string }) => i.item))
-          .toEqual([`${origin}/test`, `${origin}/test/about`]);
+        expect(crumbs).toBeUndefined();
       } finally {
         window.history.pushState({}, '', '/');
       }

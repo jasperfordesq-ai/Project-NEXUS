@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
@@ -330,5 +330,57 @@ describe('PageMeta', () => {
       expect(document.querySelectorAll('title')).toHaveLength(1);
     });
   });
-});
 
+  // 2026-10-23 SEO audit: breadcrumbs showed raw address parts ("42") and
+  // linked to addresses that are not pages.
+  describe('breadcrumb structured data', () => {
+    const crumbs = () => {
+      const block = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+        .map((s) => { try { return JSON.parse(s.textContent ?? ''); } catch { return null; } })
+        .find((o) => o && o['@type'] === 'BreadcrumbList');
+      return block?.itemListElement as Array<{ position: number; name: string; item: string }> | undefined;
+    };
+    const at = async (path: string, ui: React.ReactElement) => {
+      window.history.pushState({}, '', path);
+      renderWithHelmet(ui);
+    };
+    afterEach(() => { window.history.pushState({}, '', '/'); });
+
+    it('names the page by its title and its section by the translated section name, keeping the community folder', async () => {
+      await at('/test/whats-on/42', <PageMeta title="Wassail in the Orchard" />);
+      const origin = window.location.origin;
+      await waitFor(() => expect(crumbs()).toBeDefined());
+      expect(crumbs()).toEqual([
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/test` },
+        { '@type': 'ListItem', position: 2, name: "What's on", item: `${origin}/test/whats-on` },
+        { '@type': 'ListItem', position: 3, name: 'Wassail in the Orchard', item: `${origin}/test/whats-on/42` },
+      ]);
+      expect(crumbs()!.map((c) => c.name)).not.toContain('42');
+    });
+
+    it('drops a deeper address part that is not a page of its own', async () => {
+      await at('/test/help/members/getting-started', <PageMeta title="Getting started" />);
+      await waitFor(() => expect(crumbs()).toBeDefined());
+      expect(crumbs()!.map((c) => c.name)).toEqual(['Home', 'Help Center', 'Getting started']);
+      expect(crumbs()!.map((c) => c.item)).not.toContain(`${window.location.origin}/test/help/members`);
+    });
+
+    it('does not invent a section for an unknown first address part', async () => {
+      await at('/test/somewhere/7', <PageMeta title="A page" />);
+      await waitFor(() => expect(crumbs()).toBeDefined());
+      expect(crumbs()!.map((c) => c.name)).toEqual(['Home', 'A page']);
+    });
+
+    it('follows the canonical address when the page names one', async () => {
+      await at('/test/help/members', <PageMeta title="Using the platform" url="/test/help" />);
+      await waitFor(() => expect(crumbs()).toBeDefined());
+      expect(crumbs()!.slice(-1)[0]?.item).toBe(`${window.location.origin}/test/help`);
+    });
+
+    it('emits none for a page kept out of search', async () => {
+      await at('/test/verify-email', <PageMeta title="Verify email" noIndex />);
+      await waitFor(() => expect(document.querySelector('meta[name="robots"]')).not.toBeNull());
+      expect(crumbs()).toBeUndefined();
+    });
+  });
+});
