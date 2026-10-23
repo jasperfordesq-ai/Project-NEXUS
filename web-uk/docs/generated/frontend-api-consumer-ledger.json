@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-23T15:41:45.193Z",
+  "generatedAt": "2026-10-23T18:40:24.236Z",
   "provenance": {
-    "generatedAt": "2026-10-23T15:41:45.193Z",
+    "generatedAt": "2026-10-23T18:40:24.236Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "4f00ca49cb044aa2ed74c0915ce7eb726702c01c",
+    "laravelCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "4f00ca49cb044aa2ed74c0915ce7eb726702c01c",
+    "webUkRepositoryCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -322,6 +322,7 @@
         "tests/runtime/tenant-module-gates.spec.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/shell-partials-localization.test.js",
@@ -382,6 +383,7 @@
         "tests/routes.test.js",
         "tests/runtime/resources-mutation.spec.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/shell-partials-localization.test.js",
@@ -1462,6 +1464,7 @@
         "tests/routes.test.js",
         "tests/safe-filter-census.test.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/template-source.test.js",
@@ -1508,7 +1511,8 @@
         "tests/auth-tenant-authority.test.js",
         "tests/localization.test.js",
         "tests/registration-contract.test.js",
-        "tests/seo-meta.test.js"
+        "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js"
       ],
       "directApiHelperAssertion": true,
       "evidence": "static/mock test reference detected; inspect assertions before claiming contract certification"
@@ -1546,6 +1550,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -1585,6 +1590,7 @@
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
         "tests/runtime/blog-mutation.spec.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -12992,6 +12998,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -15904,6 +15911,7 @@
         "tests/api.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -15942,6 +15950,7 @@
         "tests/api.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -16093,6 +16102,7 @@
         "tests/legal-acceptance-gate.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -19513,6 +19523,7 @@
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -19567,7 +19578,7 @@
       "method": "GET",
       "path": "/api/v2/newsletter/unsubscribe?{query}",
       "apiHelper": "callNewsletterApi",
-      "source": "src/routes/public-info.js:239",
+      "source": "src/routes/public-info.js:259",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "guest-capable; request tenant context still applies",
       "requestShape": "query/path parameters; no request body expected",
@@ -19830,6 +19841,7 @@
         "tests/notifications-announce-outcome.test.js",
         "tests/notifications-category.test.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -20525,6 +20537,7 @@
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -21470,6 +21483,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/whats-on-parity.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -21510,6 +21524,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/whats-on-parity.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -22862,6 +22877,7 @@
         "tests/routes.test.js",
         "tests/runtime/tenant-module-gates.spec.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js",
         "tests/tenant-bootstrap-cache.test.js",
@@ -22910,6 +22926,7 @@
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -23576,6 +23593,7 @@
         "tests/runtime/group-management-mutation.spec.js",
         "tests/runtime/member-block-mutation.spec.js",
         "tests/seo-meta.test.js",
+        "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
         "tests/settings-contract-parity.test.js",
         "tests/shared-accessible-shell.test.js",
@@ -26158,7 +26176,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1255",
+      "source": "src/server.js:1271",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -31226,7 +31244,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts/{param}/checkin",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1486",
+      "source": "src/server.js:1502",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",

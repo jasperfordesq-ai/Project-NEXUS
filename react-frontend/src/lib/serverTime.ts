@@ -120,3 +120,23 @@ export function daysBetween(
   if (!from || !to) return null;
   return Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }
+
+
+/** "YYYY-MM-DD HH:MM:SS" (optionally with fractional seconds), no zone. */
+const MYSQL_DATETIME = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}(?:\.\d+)?)$/;
+
+/**
+ * Turn a server date-time into ISO 8601 for structured data and Open Graph.
+ *
+ * Some endpoints send the database form "2026-10-23 14:00:00", which is not
+ * ISO 8601 (no "T", no zone) and which Google's Article rich result rejects.
+ * The database stores UTC, so that form is read as UTC ("2026-10-23T14:00:00Z").
+ * Anything else — already ISO, a date only, or empty — is returned unchanged.
+ */
+export function toIsoDateTime(value: string | null | undefined): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const match = MYSQL_DATETIME.exec(trimmed);
+  return match ? `${match[1]}T${match[2]}Z` : trimmed;
+}

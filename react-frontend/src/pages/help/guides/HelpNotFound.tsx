@@ -9,6 +9,8 @@ import SearchX from 'lucide-react/icons/search-x';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTenant } from '@/contexts';
+import { PageMeta } from '@/components/seo/PageMeta';
+import { PrerenderStatusCode } from '@/components/seo/PrerenderStatusCode';
 
 /** Shown for a guide that does not exist, or whose feature this community has switched off. */
 export function HelpNotFound() {
@@ -16,6 +18,10 @@ export function HelpNotFound() {
   const { tenantPath } = useTenant();
   return (
     <div className="mx-auto max-w-2xl px-1 py-8 sm:px-0">
+      {/* Not a page: keep it out of search, and tell the crawler-copy renderer
+          to answer 404 rather than a soft-404 200 (2026-10-23). */}
+      <PageMeta title={t('not_found_title')} noIndex />
+      <PrerenderStatusCode code={404} />
       <GlassCard className="p-8 text-center">
         <SearchX className="mx-auto h-10 w-10 text-theme-subtle" aria-hidden="true" />
         <h1 className="mt-4 text-xl font-semibold text-theme-primary">{t('not_found_title')}</h1>

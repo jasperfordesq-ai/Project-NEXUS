@@ -365,6 +365,24 @@ describe('MobileDrawer', () => {
       expect(screen.getByText('WCAG 2.2 AA Version')).toBeInTheDocument();
     });
 
+    // 2026-10-23: the link always opened the accessible home page.
+    it('points the accessible link at the same page when the accessible site has it', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: { id: 11, name: 'Timebanking UK', slug: 'timebanking-org', accessible_domain: 'accessible-uk.timebank.global' },
+        },
+      });
+      const previous = mockLocation.pathname;
+      try {
+        mockLocation.pathname = '/whats-on/42';
+        render(<MobileDrawer {...defaultProps} />);
+        const link = screen.getByRole('link', { name: 'Open WCAG 2.2 AA accessible version in a new tab' });
+        expect(link).toHaveAttribute('href', 'https://accessible-uk.timebank.global/whats-on/42');
+      } finally {
+        mockLocation.pathname = previous;
+      }
+    });
+
     it('renders Legal section', () => {
       render(<MobileDrawer {...defaultProps} />);
       // Legal section is collapsed by default — expand the trigger first.

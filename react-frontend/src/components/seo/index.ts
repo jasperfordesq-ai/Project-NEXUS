@@ -5,3 +5,5 @@
 
 export { PageMeta } from './PageMeta';
 export { SeoHead } from './SeoHead';
+export { joinTitle } from './joinTitle';
+export { PrerenderStatusCode } from './PrerenderStatusCode';

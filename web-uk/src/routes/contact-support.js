@@ -7,6 +7,7 @@ const express = require('express');
 const { submitContact, submitSupportReport, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { validateReturnUrl } = require('../lib/urlValidator');
+const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 const { isValidEmail } = require('../lib/inputValidator');
 const {
   prepareScreenshots,
@@ -115,6 +116,9 @@ router.get('/contact', (req, res) => {
   res.render('contact', {
     title: res.locals.t('contact.title'),
     titleKey: 'contact.title',
+    // contact.njk shows the same sentence, interpolated with tenantName.
+    metaDescription: pageDescription(res.locals.t('contact.subtitle', { name: res.locals.tenantName })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('contact.title'), path: '/contact' }]),
     activeNav: 'contact',
     status,
     values,

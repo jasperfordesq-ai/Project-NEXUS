@@ -646,6 +646,12 @@ app.use(async (req, res, next) => {
   if (token) {
     res.set('Cache-Control', 'private, no-store, max-age=0');
     res.set('Pragma', 'no-cache');
+  } else {
+    // A signed-out page's language follows Accept-Language when there is no
+    // ?locale= and no session choice (middleware/localization.js), so the same
+    // address answers in eleven languages. Say so, or a shared cache or crawler
+    // keeps whichever language it saw first. (Signed-in pages are no-store.)
+    res.vary('Accept-Language');
   }
 
   const alphaCookieChoice = req.session ? req.session.alphaCookieChoice : '';
@@ -917,8 +923,17 @@ async function loadTenantHomeData(req, res) {
   const networkCommunities = normalizeNetworkCommunities(tenant, req);
   const usesNetworkLanding = networkCommunities.length > 0 || Number(tenant.id) === 1;
   const configuredHomeHeading = usesNetworkLanding ? tenant.seo?.h1_headline : '';
-  const homeHeading = configuredHomeHeading || 'Accessible';
-  const homeHeadingKey = configuredHomeHeading ? '' : 'home.title';
+  // 🔴 An ordinary community's home H1 is the community's NAME. It used to be the
+  // literal "Accessible" (home.title) on every community, so the most important
+  // heading on the busiest page said nothing about whose site it was. The
+  // translated "Accessible" label is kept, as the caption above the heading
+  // (home.njk), so the page still says which version of the site this is.
+  // Network landings (a hub, or the master tenant) keep their configured
+  // headline or the "Accessible" label, with the community name as caption.
+  const ordinaryCommunityHeading = !usesNetworkLanding ? String(communityName || '').trim() : '';
+  const homeHeading = configuredHomeHeading || ordinaryCommunityHeading || 'Accessible';
+  const homeHeadingKey = configuredHomeHeading || ordinaryCommunityHeading ? '' : 'home.title';
+  const homeCaptionKey = ordinaryCommunityHeading ? 'home.title' : 'home.caption';
   const configuredHomeDescription = usesNetworkLanding ? tenant.seo?.hero_intro : '';
   const homeDescription = configuredHomeDescription || '';
   const homeDescriptionKey = configuredHomeDescription ? '' : 'home.description';
@@ -928,6 +943,7 @@ async function loadTenantHomeData(req, res) {
     communityName,
     homeHeading,
     homeHeadingKey,
+    homeCaptionKey,
     homeDescription,
     homeDescriptionKey,
     tagline: tenant.tagline || '',

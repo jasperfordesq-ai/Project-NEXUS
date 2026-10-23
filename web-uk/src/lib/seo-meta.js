@@ -45,13 +45,28 @@ const NOINDEX = 'noindex, nofollow';
  */
 const MAIN_SITE_PATHS = [
   [/^\/$/, null],
-  [/^\/(about|accessibility|faq|features|changelog|child-safety|account-deletion|terms|privacy|contact|help|trust-and-safety|timebanking-guide|community-guidelines|acceptable-use)$/, null],
+  // 'timebanking-guide' used to be listed here too. The accessible frontend has
+  // no route at that path (its guide is /guide, mapped below), so it could never
+  // match anything.
+  [/^\/(about|accessibility|faq|features|changelog|child-safety|account-deletion|terms|privacy|contact|help|trust-and-safety|community-guidelines|acceptable-use)$/, null],
+  // The same timebanking guide (give an hour, earn a credit, get help), which
+  // React serves as TimebankingGuidePage at /timebanking-guide.
+  [/^\/guide$/, () => '/timebanking-guide'],
   [/^\/legal$/, null],
   // The accessible frontend files the policies under /legal/*; the main site
   // serves them at the top level.
   [/^\/legal\/(terms|privacy|cookies|acceptable-use|community-guidelines)$/, (match) => `/${match[1]}`],
+  // Each policy's version list. React's LegalVersionHistoryPage at
+  // /{type}/versions reads the same GET /api/v2/legal/{type}/versions list.
+  // Single versions and comparisons stay self-canonical: React shows those
+  // inside that one page, not at addresses of their own.
+  [/^\/legal\/(terms|privacy|cookies|acceptable-use|community-guidelines)\/versions$/, (match) => `/${match[1]}/versions`],
   [/^\/page\/[A-Za-z0-9][A-Za-z0-9_-]{0,119}$/, null],
-  [/^\/blog(\/[A-Za-z0-9_-]+)?$/, null]
+  [/^\/blog(\/[A-Za-z0-9_-]+)?$/, null],
+  // Public events advertising. React serves both publicly at the same paths
+  // (PublicEventsListPage / PublicEventDetailPage, behind the same events +
+  // public_events features routes/whats-on.js checks).
+  [/^\/whats-on(\/\d+)?$/, null]
   // Only pages a signed-out visitor can open on the main site
   // (react-frontend/src/routes/PublicAppRoutes.tsx). Listings, events,
   // groups, members, courses and the rest need sign-in there; pointing a
@@ -259,7 +274,42 @@ function toJsonLd(value) {
   return JSON.stringify(value)
     .replace(/</g, '\\u003c')
     .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
+    .replace(/&/g, '\\u0026')
+    // Line and paragraph separators are legal in JSON but end a line in older
+    // JavaScript parsers; escaped as the blog's own encoder always did.
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+const NAMED_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+
+/**
+ * A page's own text, made fit for <meta name="description">: tags removed,
+ * entities decoded (the layout escapes it again), whitespace collapsed, and cut
+ * at a word boundary to about `maxLength` characters with an ellipsis. Text with
+ * no space to cut at (Japanese) is cut at the limit. '' when nothing is left.
+ */
+function pageDescription(value, maxLength = 160) {
+  if (typeof value !== 'string') return '';
+  const plain = value
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, body) => {
+      if (body[0] === '#') {
+        const code = /^#x/i.test(body) ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+        return Number.isFinite(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : ' ';
+      }
+      return NAMED_ENTITIES[body.toLowerCase()] ?? entity;
+    })
+    .replace(/\s+/g, ' ')
+    .trim();
+  const characters = Array.from(plain);
+  if (characters.length <= maxLength) return plain;
+
+  const room = characters.slice(0, maxLength - 1).join('');
+  const lastSpace = room.lastIndexOf(' ');
+  const cut = lastSpace >= Math.floor(room.length * 0.6) ? room.slice(0, lastSpace) : room;
+  return `${cut.replace(/[\s,;:.\-–—]+$/, '')}…`;
 }
 
 // Same map as React PageMeta's OG_LOCALES.
@@ -267,6 +317,206 @@ const OG_LOCALES = {
   en: 'en_GB', ga: 'ga_IE', de: 'de_DE', fr: 'fr_FR', it: 'it_IT', pt: 'pt_PT',
   es: 'es_ES', nl: 'nl_NL', pl: 'pl_PL', ja: 'ja_JP', ar: 'ar_001'
 };
+
+function hasCommunityTenant(data) {
+  return Boolean(text(data.slug)) && Number(data.id) !== 1;
+}
+
+function mainSiteHomeUrl(data, mainBase) {
+  return cleanHost(data.domain) ? `${mainBase}/` : mainBase;
+}
+
+/**
+ * The canonical address of one accessible route: the main site's equal page
+ * when MAIN_SITE_PATHS names one, otherwise the accessible address itself
+ * (`visiblePath` on this host, query string removed).
+ */
+function canonicalUrlFor({ tenant, routePath, visiblePath, protocol = 'https', host = '', mainFrontendUrl } = {}) {
+  const data = asObject(tenant);
+  const mainBase = hasCommunityTenant(data) ? mainSiteBaseUrl(data, mainFrontendUrl) : '';
+  const mainPath = mainBase ? mainSitePathFor(routePath) : null;
+  if (mainBase && mainPath !== null) {
+    return mainPath === '/' ? mainSiteHomeUrl(data, mainBase) : `${mainBase}${mainPath}`;
+  }
+  return absoluteFromRequestUrl({ protocol, host, visiblePath });
+}
+
+/**
+ * schema.org BreadcrumbList for `crumbs` ([{ name, url }], home first, this page
+ * last). '' unless there are at least two crumbs and every one has a name and an
+ * absolute address: a trail with a hole in it is worse than none.
+ */
+function breadcrumbJsonLd(crumbs) {
+  const list = Array.isArray(crumbs) ? crumbs : [];
+  if (list.length < 2) return '';
+  const items = list.map((crumb, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: plainText(crumb && crumb.name),
+    item: httpUrl(crumb && crumb.url)
+  }));
+  if (items.some((item) => !item.name || !item.item)) return '';
+  return toJsonLd({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items });
+}
+
+/**
+ * Breadcrumbs for a public page, built inside a route: Home, then `trail`
+ * ([{ name, path }] of accessible route paths; the last one is this page). Each
+ * address is that route's canonical (res.locals.seoUrlFor, set by
+ * buildShellLocals), so the trail names the same pages the canonical links do
+ * and keeps the community's prefix. The last crumb may carry its own `url`, for a
+ * page whose canonical the route overrides.
+ */
+function breadcrumbJsonLdFor(res, trail) {
+  const locals = (res && res.locals) || {};
+  if (typeof locals.seoUrlFor !== 'function') return '';
+  const t = typeof locals.t === 'function' ? locals.t : (key) => key;
+  const crumbs = [{ name: t('nav.home'), path: '/' }, ...(Array.isArray(trail) ? trail : [])];
+  return breadcrumbJsonLd(crumbs.map((crumb) => ({
+    name: crumb.name,
+    url: crumb.url || locals.seoUrlFor(crumb.path)
+  })));
+}
+
+/** Whole-minute UTC offset of `timeZone` at `instant`, as "+01:00"; null if unknown. */
+function zoneOffset(instant, timeZone) {
+  try {
+    // Machine format, never displayed: read back by part type.
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).formatToParts(instant);
+    const get = (type) => Number(parts.find((part) => part.type === type)?.value);
+    const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
+    const minutes = Math.round((asUtc - Math.floor(instant.getTime() / 1000) * 1000) / 60000);
+    if (!Number.isFinite(minutes)) return null;
+    const sign = minutes < 0 ? '-' : '+';
+    const abs = Math.abs(minutes);
+    return `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Event times are stored in UTC; a value with no zone designator is UTC. */
+function parseUtc(value) {
+  const raw = text(value);
+  if (!raw) return null;
+  let iso = raw.includes('T') ? raw : raw.replace(' ', 'T');
+  if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(iso)) iso = `${iso}Z`;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/**
+ * ISO 8601 in the event's own zone with its offset ("2026-12-14T18:00:00+00:00"),
+ * or the calendar date there for an all-day event. UTC ("…Z") when the zone is
+ * unknown. The same rules as react-frontend/src/lib/event-structured-data.ts.
+ */
+function eventDateTime(value, timeZone, allDay = false) {
+  const instant = parseUtc(value);
+  if (!instant) return undefined;
+  const offset = zoneOffset(instant, text(timeZone) || 'UTC');
+  if (offset === null) {
+    return allDay ? instant.toISOString().slice(0, 10) : instant.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  }
+  const sign = offset.startsWith('-') ? -1 : 1;
+  const [hours, minutes] = offset.slice(1).split(':').map(Number);
+  const local = new Date(instant.getTime() + sign * (hours * 60 + minutes) * 60000).toISOString();
+  return allDay ? local.slice(0, 10) : `${local.slice(0, 19)}${offset}`;
+}
+
+const EVENT_ATTENDANCE_MODE = {
+  in_person: 'https://schema.org/OfflineEventAttendanceMode',
+  online: 'https://schema.org/OnlineEventAttendanceMode',
+  hybrid: 'https://schema.org/MixedEventAttendanceMode'
+};
+
+const EVENT_STATUS = {
+  cancelled: 'https://schema.org/EventCancelled',
+  postponed: 'https://schema.org/EventPostponed'
+};
+
+/** Plain text (titles, venues): only the spacing is tidied. */
+function plainText(value) {
+  return typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+}
+
+function isCoordinate(value) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+}
+
+/**
+ * schema.org Event JSON-LD for a public what's-on page, ported from
+ * react-frontend/src/lib/event-structured-data.ts so both frontends describe an
+ * event the same way. Every field is valid or left out.
+ *
+ * '' (no block at all) when the event has no name or start, or is held in person
+ * with no venue. Google requires a location and reports an Event without one as
+ * an error; a missing block is only a missed enhancement. (React still emits a
+ * location-less block in that case.)
+ *
+ * @param {object} event   the GET /api/v2/public/events/{id} payload
+ * @param {object} context { pageUrl, imageUrl, organizer: { name, url } }
+ */
+function eventJsonLd(event, context = {}) {
+  const data = asObject(event);
+  const pageUrl = httpUrl(context.pageUrl);
+  const name = plainText(data.title);
+  const startDate = eventDateTime(data.start_time, data.timezone, Boolean(data.all_day));
+  if (!name || !startDate || !pageUrl) return '';
+
+  const mode = EVENT_ATTENDANCE_MODE[data.attendance_mode] ? data.attendance_mode : 'in_person';
+  const venue = plainText(data.location);
+  if (mode === 'in_person' && !venue) return '';
+
+  const latitude = Number(data.latitude);
+  const longitude = Number(data.longitude);
+  const hasGeo = isCoordinate(data.latitude) && isCoordinate(data.longitude) && !(latitude === 0 && longitude === 0);
+  const place = venue
+    ? {
+      '@type': 'Place',
+      name: venue,
+      address: venue,
+      ...(hasGeo ? { geo: { '@type': 'GeoCoordinates', latitude, longitude } } : {})
+    }
+    : null;
+  // The joining link is members-only, so the online location is this public
+  // page, which is where a visitor learns how to take part.
+  const virtual = { '@type': 'VirtualLocation', url: pageUrl };
+  const locations = (mode === 'online' ? [virtual] : (mode === 'hybrid' ? [place, virtual] : [place])).filter(Boolean);
+
+  const endDate = eventDateTime(data.end_time, data.timezone, Boolean(data.all_day));
+  // Plain text, as the page shows it and as React emits it.
+  const description = plainText(data.description);
+  const imageUrl = httpUrl(context.imageUrl);
+  const organizer = asObject(context.organizer);
+  const organizerName = text(organizer.name);
+  const organizerUrl = httpUrl(organizer.url);
+
+  return toJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name,
+    url: pageUrl,
+    startDate,
+    ...(endDate ? { endDate } : {}),
+    eventStatus: EVENT_STATUS[data.operational_status] || 'https://schema.org/EventScheduled',
+    eventAttendanceMode: EVENT_ATTENDANCE_MODE[mode],
+    location: locations.length === 1 ? locations[0] : locations,
+    ...(imageUrl ? { image: [imageUrl] } : {}),
+    ...(description ? { description } : {}),
+    ...(organizerName && organizerUrl
+      ? { organizer: { '@type': 'Organization', name: organizerName, url: organizerUrl } }
+      : {})
+  });
+}
 
 function buildSeoLocals({
   tenant,
@@ -287,7 +537,7 @@ function buildSeoLocals({
   const branding = asObject(data.branding);
   const translate = typeof t === 'function' ? t : (key) => key;
   const tenantName = text(data.name);
-  const hasCommunity = Boolean(text(data.slug)) && Number(data.id) !== 1;
+  const hasCommunity = hasCommunityTenant(data);
 
   // Site name: admin title suffix (any leading separator stripped, as React
   // does) > community name > the platform's accessible service name.
@@ -309,15 +559,7 @@ function buildSeoLocals({
     || translate('seo.description');
 
   const mainBase = hasCommunity ? mainSiteBaseUrl(data, mainFrontendUrl) : '';
-  const mainPath = mainBase ? mainSitePathFor(routePath) : null;
-  let canonicalUrl = '';
-  if (mainBase && mainPath !== null) {
-    canonicalUrl = mainPath === '/'
-      ? (cleanHost(data.domain) ? `${mainBase}/` : mainBase)
-      : `${mainBase}${mainPath}`;
-  } else {
-    canonicalUrl = absoluteFromRequestUrl({ protocol, host, visiblePath });
-  }
+  const canonicalUrl = canonicalUrlFor({ tenant: data, routePath, visiblePath, protocol, host, mainFrontendUrl });
 
   const sharingImage = httpUrl(branding.og_image_url);
   const logoImage = resolveAssetUrl(text(branding.logo_url));
@@ -345,12 +587,28 @@ function buildSeoLocals({
       '@type': SCHEMA_ORG_TYPE[text(settings.seo_organization_type)] || 'NGO',
       '@id': `${mainBase}/#org`,
       name: siteName || tenantName,
-      url: cleanHost(data.domain) ? `${mainBase}/` : mainBase
+      url: mainSiteHomeUrl(data, mainBase)
     };
     if (logoImage) org.logo = logoImage;
     if (text(branding.tagline)) org.description = text(branding.tagline);
     if (sameAs.length > 0) org.sameAs = sameAs;
     organizationJsonLd = toJsonLd(org);
+  }
+
+  // The community's WebSite, on its home page only, named and addressed as the
+  // main site so search engines see one site. No SearchAction: the main site's
+  // search needs sign-in, so a search box pointing there would only lead
+  // visitors to a sign-in page.
+  let websiteJsonLd = '';
+  if (isHome && hasCommunity && tenantName && mainBase) {
+    websiteJsonLd = toJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': `${mainBase}/#website`,
+      name: siteName || tenantName,
+      url: mainSiteHomeUrl(data, mainBase),
+      publisher: { '@id': `${mainBase}/#org` }
+    });
   }
 
   return {
@@ -360,6 +618,9 @@ function buildSeoLocals({
     seoBingVerification: verificationToken(settings.seo_bing_verification),
     seoKeywords: text(settings.seo_meta_keywords),
     seoOrganizationJsonLd: organizationJsonLd,
+    seoWebsiteJsonLd: websiteJsonLd,
+    // The community's (light-background) logo, absolute: Article publisher logo.
+    seoLogoUrl: logoImage || '',
     seoOgLocale: OG_LOCALES[String(locale || '').toLowerCase()] || OG_LOCALES.en,
     seoDescription: description,
     seoCanonicalUrl: canonicalUrl,
@@ -398,6 +659,12 @@ function buildRobotsTxt() {
 module.exports = {
   verificationToken,
   toJsonLd,
+  breadcrumbJsonLd,
+  breadcrumbJsonLdFor,
+  canonicalUrlFor,
+  eventDateTime,
+  eventJsonLd,
+  pageDescription,
   MAIN_SITE_PATHS,
   NOINDEX,
   PRIVATE_PREFIXES,

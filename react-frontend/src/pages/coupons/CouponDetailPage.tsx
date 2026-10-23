@@ -18,9 +18,10 @@ import QrCode from 'lucide-react/icons/qr-code';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
+import { isNotFoundResponse } from '@/lib/not-found';
 import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
-import { PageMeta } from '@/components/seo';
+import { PageMeta, PrerenderStatusCode } from '@/components/seo';
 import { QrCodeImage } from '@/components/volunteering/QrCodeImage';
 import { logError } from '@/lib/logger';
 
@@ -51,6 +52,8 @@ export default function CouponDetailPage() {
 
   const [coupon, setCoupon] = useState<CouponDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  // The server said the coupon does not exist (not merely that loading failed).
+  const [missing, setMissing] = useState(false);
   const [qr, setQr] = useState<QrPayload | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
@@ -61,7 +64,9 @@ export default function CouponDetailPage() {
     (async () => {
       try {
         const res = await api.get<CouponDetail>(`/v2/coupons/${id}`);
-        if (!cancelled && res.data) setCoupon(res.data);
+        if (cancelled) return;
+        if (res.data) setCoupon(res.data);
+        else setMissing(isNotFoundResponse(res));
       } catch (err) {
         logError('CouponDetailPage.load', err);
       } finally {
@@ -110,6 +115,8 @@ export default function CouponDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <PageMeta title={t('coupon.details')} noIndex />
+        {/* Only a confirmed missing coupon answers crawlers 404; a failed load does not. */}
+        {missing && <PrerenderStatusCode code={404} />}
         <Button as={Link} to={tenantPath('/coupons')} variant="light" startContent={<ArrowLeft className="w-4 h-4" aria-hidden="true" />}>
           {t('coupon.back_to_coupons')}
         </Button>

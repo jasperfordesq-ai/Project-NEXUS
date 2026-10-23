@@ -146,7 +146,9 @@ describe('Public Routes', () => {
       const response = await request(app).get('/acme/accessible');
 
       expect(response.status).toBe(200);
-      expect(response.text).toContain('<h1 class="govuk-heading-xl">Accessible</h1>');
+      // No bootstrap is mocked here, so the community's name falls back to its slug.
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">acme</h1>');
+      expect(response.text).toContain('<span class="govuk-caption-xl">Accessible</span>');
       expect(response.text).toContain('href="/acme/accessible"');
       expect(response.text).toContain('href="/acme/accessible/login"');
       expect(response.text).toContain('href="/acme/accessible/register"');
@@ -191,7 +193,9 @@ describe('Public Routes', () => {
       const response = await request(app).get('/acme/accessible');
 
       expect(response.status).toBe(200);
-      expect(response.text).toContain('<h1 class="govuk-heading-xl">Accessible</h1>');
+      // The community's name is the H1; "Accessible" is the caption above it (2026-10-23).
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Acme Timebank</h1>');
+      expect(response.text).toContain('<span class="govuk-caption-xl">Accessible</span>');
       expect(response.text).toContain('Use a simpler, accessible version of Acme Timebank for core community tasks.');
       expect(response.text).toContain('Neighbours helping neighbours');
       expect(response.text).toContain('class="nexus-alpha-header__logo nexus-alpha-header__logo--wide"');
@@ -684,7 +688,9 @@ describe('Public Routes', () => {
         .set('Host', 'acme-accessible.test');
 
       expect(response.status).toBe(200);
-      expect(response.text).toContain('<h1 class="govuk-heading-xl">Accessible</h1>');
+      // The community's name is the H1; "Accessible" is the caption above it (2026-10-23).
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Acme Timebank</h1>');
+      expect(response.text).toContain('<span class="govuk-caption-xl">Accessible</span>');
       expect(response.text).toContain('Use a simpler, accessible version of Acme Timebank for core community tasks.');
       expect(response.text).toContain('href="/"');
       expect(response.text).toContain('href="/login"');

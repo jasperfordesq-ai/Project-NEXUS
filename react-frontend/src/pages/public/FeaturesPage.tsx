@@ -68,8 +68,10 @@ import { useTenant } from '@/contexts';
  * promise about their own site, so the availability notice under the hero is
  * load-bearing: do not remove it or demote it to a footnote.
  *
- * 🔴 Version-bearing copy lives in `features_page.meta_title`,
- * `meta_description` and `subheading` in `locales/en/public.json`. It said
+ * 🔴 Version-bearing copy lives in `features_page.meta_description` and
+ * `subheading` in `locales/en/public.json` (`meta_title` is just "Features"
+ * since 2026-10-23: it is every community's tab title, so it no longer names
+ * the platform or its version). It said
  * "v1.5" for three minor releases while the release chip beside the heading —
  * which reads `RELEASE_STATUS.stageLabel` from `src/config/releaseStatus.ts` —
  * said v1.6.0. Bump both together, and add the version files listed in

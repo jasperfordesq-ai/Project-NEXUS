@@ -15,6 +15,7 @@ const {
   filterCatalogue
 } = require('../lib/features-catalogue');
 const { findRelease, listReleases } = require('../lib/changelog');
+const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 
 const router = express.Router();
 
@@ -99,6 +100,11 @@ router.get('/about', async (req, res) => {
     title: res.locals.t('about.title', { name }),
     titleKey: 'about.title',
     titleReplacements: { name },
+    // Each public page describes ITSELF to search engines, from the same text
+    // its own lead paragraph shows, rather than every page repeating the
+    // community-wide description.
+    metaDescription: pageDescription(res.locals.t('about.description', { name })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('about.title', { name }), path: '/about' }]),
     activeNav: 'about',
     communityName: name,
     steps: catalogArray(res, 'about.how_it_works.steps'),
@@ -118,6 +124,8 @@ router.get('/guide', (req, res) => {
   res.render('public-info/guide', {
     title: res.locals.t('guide.title'),
     titleKey: 'guide.title',
+    metaDescription: pageDescription(res.locals.t('guide.intro')),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('guide.title'), path: '/guide' }]),
     activeNav: 'guide',
     communityName: communityName(res),
     isAuthenticated: res.locals.isAuthenticated,
@@ -148,6 +156,10 @@ router.get('/features', (req, res) => {
 
   res.render('public-info/features', {
     title: chrome.title || res.locals.t('features.title'),
+    // The lead paragraph this page actually shows (the shared catalogue's
+    // subheading); features.intro is the older one-line fallback.
+    metaDescription: pageDescription(chrome.subheading || res.locals.t('features.intro')),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: chrome.heading || chrome.title || res.locals.t('features.title'), path: '/features' }]),
     activeNav: 'features',
     communityName: communityName(res),
     features: chrome,
@@ -175,6 +187,8 @@ router.get('/changelog', (req, res) => {
   res.render('public-info/changelog', {
     title: res.locals.t('changelog.title'),
     titleKey: 'changelog.title',
+    metaDescription: pageDescription(res.locals.t('changelog.intro')),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('changelog.heading'), path: '/changelog' }]),
     activeNav: 'features',
     communityName: communityName(res),
     releases: listReleases(),
@@ -190,6 +204,10 @@ router.get('/changelog/:slug', (req, res, next) => {
 
   return res.render('public-info/changelog-release', {
     title: res.locals.t('changelog.release_title', { version: release.version }),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [
+      { name: res.locals.t('changelog.heading'), path: '/changelog' },
+      { name: res.locals.t('changelog.release_title', { version: release.version }), path: `/changelog/${req.params.slug}` }
+    ]),
     activeNav: 'features',
     communityName: communityName(res),
     release,
@@ -202,6 +220,8 @@ router.get('/faq', (req, res) => {
   res.render('public-info/faq', {
     title: res.locals.t('faq.title'),
     titleKey: 'faq.title',
+    metaDescription: pageDescription(res.locals.t('faq.intro')),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('faq.title'), path: '/faq' }]),
     activeNav: 'faq',
     communityName: communityName(res),
     faqs: ['1', '2', '3', '4', '5'].map((key) => ({

@@ -16,6 +16,16 @@ const fadeInUp = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+/**
+ * The headline is the home page's largest paint (LCP). It must be visible in
+ * the first frame, so it moves but never fades: an element that starts at
+ * opacity 0 does not count as painted until the fade ends (2026-10-23).
+ */
+const slideUp = {
+  initial: { y: 30 },
+  animate: { y: 0, transition: { duration: 0.5 } },
+};
+
 const staggerContainer = {
   animate: {
     transition: {
@@ -82,7 +92,7 @@ export function HeroSection({ content }: HeroSectionProps) {
           {/* Headline */}
           <motion.h1
             id="hero-heading"
-            variants={fadeInUp}
+            variants={slideUp}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold"
           >
             <span className="text-theme-primary">{headline1}</span>

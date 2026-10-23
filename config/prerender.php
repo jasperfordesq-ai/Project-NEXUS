@@ -44,6 +44,9 @@ return [
         // Legal / static pages — rarely change, refresh monthly.
         '/about'        => 30 * 24 * 3600,
         '/help'         => 30 * 24 * 3600,
+        // ~360 guide pages per community, identical text release to release:
+        // refreshed monthly, not weekly, so they do not crowd the render queue.
+        '/help/**'      => 30 * 24 * 3600,
         '/contact'      => 30 * 24 * 3600,
         '/faq'          => 30 * 24 * 3600,
         '/terms'        => 30 * 24 * 3600,

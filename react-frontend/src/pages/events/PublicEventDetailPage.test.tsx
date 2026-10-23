@@ -21,8 +21,9 @@ vi.mock('@/lib/api', () => ({
 vi.mock('@/contexts', () => createMockContexts());
 
 // PageMeta is a global no-op in tests; spy on it to see the sharing image.
-vi.mock('@/components/seo', () => ({
+vi.mock('@/components/seo', async () => ({
   PageMeta: vi.fn(() => null),
+  PrerenderStatusCode: (await import('@/components/seo/PrerenderStatusCode')).PrerenderStatusCode,
   default: () => null,
 }));
 
@@ -256,5 +257,29 @@ describe('PublicEventDetailPage', () => {
     // Deliberately does not distinguish "deleted" from "members only" — the
     // API returns the same 404 for both so the page cannot leak existence.
     expect(await screen.findByText(/Event not available/i)).toBeInTheDocument();
+    // …and tells crawlers it is a 404, not a soft-404 200 (2026-10-23).
+    await waitFor(() =>
+      expect(document.querySelector('meta[name="prerender-status-code"]')?.getAttribute('content')).toBe('404'),
+    );
+  });
+
+  it('does not claim 404 when the server fails', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: false, code: 'SERVER_ERROR' });
+
+    render(<PublicEventDetailPage />);
+
+    expect(await screen.findByText(/Event not available/i)).toBeInTheDocument();
+    expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
+  });
+
+  it("reserves the event picture's space before it loads", async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ success: true, data: { ...DETAIL, image_url: '/uploads/e.jpg' } });
+
+    render(<PublicEventDetailPage />);
+
+    await screen.findByRole('heading', { level: 1 });
+    const img = document.querySelector('img[src="/uploads/e.jpg"]');
+    expect(img).toHaveAttribute('width', '1200');
+    expect(img).toHaveAttribute('height', '630');
   });
 });

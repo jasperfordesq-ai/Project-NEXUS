@@ -47,7 +47,7 @@ const docsUrl = 'https://docs.project-nexus.ie/';
 const { URL } = require('node:url');
 const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');
-const { buildSeoLocals } = require('./seo-meta');
+const { buildSeoLocals, canonicalUrlFor } = require('./seo-meta');
 const { requestHost } = require('../middleware/tenant-routing');
 
 const localeOptions = [
@@ -824,6 +824,8 @@ function buildShellLocals(req, isAuthenticated) {
   const tenantFooterText = String(tenantConfig.footer_text || '').trim();
 
   // Search and sharing metadata (canonical, description, Open Graph, robots).
+  const seoProtocol = process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || 'https');
+  const seoHost = req.headers ? requestHost(req) : '';
   const seoLocals = buildSeoLocals({
     tenant: routedTenant,
     t,
@@ -831,14 +833,25 @@ function buildShellLocals(req, isAuthenticated) {
     serviceName: t('service_name'),
     routePath: req.path || '/',
     visiblePath: currentPath,
-    protocol: process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || 'https'),
-    host: req.headers ? requestHost(req) : '',
+    protocol: seoProtocol,
+    host: seoHost,
     isAuthenticated,
     resolveAssetUrl: resolveBackendAssetUrl
+  });
+  // The canonical address of ANY route on this community's accessible site, by
+  // the same rule as this page's own <link rel="canonical">. Used for
+  // breadcrumb and structured-data addresses (seo-meta breadcrumbJsonLdFor).
+  const seoUrlFor = (routePath) => canonicalUrlFor({
+    tenant: routedTenant,
+    routePath,
+    visiblePath: urlFor(routePath),
+    protocol: seoProtocol,
+    host: seoHost
   });
 
   return {
     ...seoLocals,
+    seoUrlFor,
     serviceName: t('service_name'),
     phaseText: t('phase'),
     tenantName,

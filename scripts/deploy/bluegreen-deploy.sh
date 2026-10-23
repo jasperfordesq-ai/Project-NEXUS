@@ -1710,6 +1710,7 @@ cmd_deploy() {
 
     # Purge once after traffic switch so the prerender worker and users do not
     # keep seeing old edge responses while the new color is active.
+    refresh_seo_caches "$target"
     purge_cloudflare_cache "Cloudflare Cache Purge"
     write_color_release "$target" "$commit" "$release_dir"
 
@@ -1901,8 +1902,29 @@ cmd_rollback() {
 
     # Purge Cloudflare cache after rollback traffic switch — prevents CF from
     # continuing to serve cached responses from the broken new deployment
+    refresh_seo_caches "$target"
     purge_cloudflare_cache "Cloudflare Cache Purge"
     state_set DEPLOY_SUCCESS 1
+}
+
+# Refresh the SEO output that lives in the shared Redis cache (2026-10-23).
+# The sitemaps and llms.txt are cached for an hour and Redis is shared by both
+# colours, so after a switch the new colour served the old release's output
+# until the cache expired. Clearing after the switch (not before, or the still-
+# active colour would refill it with old output) and before the Cloudflare purge
+# means the edge and seo-ping.sh fetch fresh copies. The redirect markers are
+# republished too: the release may change which community addresses exist.
+# Never fails the deploy: stale SEO output for an hour is not worth a rollback.
+refresh_seo_caches() {
+    local color="$1" app_container
+    app_container="$(container_name "$color" app)"
+    if docker_exec_app_user "$app_container" php /var/www/html/artisan sitemap:generate --clear >/dev/null 2>&1; then
+        log_info "SEO caches cleared (sitemaps, llms.txt) on $app_container"
+    else
+        log_warn "Could not clear the sitemap/llms caches on $app_container; they refresh within the hour"
+    fi
+    docker_exec_app_user "$app_container" php /var/www/html/artisan seo:publish-redirects >/dev/null 2>&1 \
+        || log_warn "Could not republish URL-redirect markers on $app_container; the hourly schedule will"
 }
 
 case "${1:-}" in

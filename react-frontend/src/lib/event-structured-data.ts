@@ -106,7 +106,9 @@ const EVENT_STATUS: Record<string, string> = {
 
 /**
  * The Event JSON-LD object, or null when the event lacks what Google requires
- * (a name and a start date) — no block is better than an invalid one.
+ * (a name, a start date and a location) — no block is better than an invalid
+ * one. An in-person event with no venue has no location to give, so it gets no
+ * block (2026-10-23); online and hybrid events always have the event page.
  */
 export function buildEventStructuredData(
   event: PublicEventDetail,
@@ -119,6 +121,7 @@ export function buildEventStructuredData(
   const endDate = eventDateTime(event.end_time, event.timezone, event.all_day);
   const mode = ATTENDANCE_MODE[event.attendance_mode] ? event.attendance_mode : 'in_person';
   const venue = plainText(event.location);
+  if (mode === 'in_person' && !venue) return null;
 
   const place = venue
     ? {

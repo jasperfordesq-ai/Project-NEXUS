@@ -82,6 +82,16 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // runInBackground() bypasses that throw (vendor guard is `&& ! $event->
         // runInBackground`) while preserving both the real alert and the manual-run
         // exit code. Guarded by PagerCommandsRunInBackgroundTest — keep it.
+        // What search engines receive (2026-10-23): each community's home and
+        // About page, sitemap, robots.txt and llms.txt fetched as Googlebot.
+        // Same alert path and exit-code rule as slo:check below.
+        $schedule->command('seo:probe')
+            ->dailyAt('06:15')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground()
+            ->name('seo-probe');
+
         $schedule->command('slo:check')
             ->dailyAt('07:30')
             ->withoutOverlapping()

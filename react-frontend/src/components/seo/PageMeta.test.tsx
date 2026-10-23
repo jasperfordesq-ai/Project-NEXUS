@@ -201,9 +201,25 @@ describe('PageMeta', () => {
 
     it('other pages: the suffix is the community name, not the meta title', async () => {
       await withTenantSeo();
-      renderWithHelmet(<PageMeta title="About TimeBank Ireland" description="About us" />);
+      renderWithHelmet(<PageMeta title="About" description="About us" />);
       await waitFor(() => {
-        expect(document.title).toBe('About TimeBank Ireland | TimeBank Ireland');
+        expect(document.title).toBe('About | TimeBank Ireland');
+        expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('About us');
+      });
+    });
+
+    // 2026-10-23: crawler copies read "About TimeBank Ireland | TimeBank Ireland".
+    it('does not repeat the community name when the page title already contains it', async () => {
+      await withTenantSeo();
+      renderWithHelmet(<PageMeta title="About Timebank ireland" description="About us" />);
+      await waitFor(() => {
+        expect(document.title).toBe('About Timebank ireland');
+        expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe(
+          'About Timebank ireland',
+        );
+        expect(document.querySelector('meta[name="twitter:title"]')?.getAttribute('content')).toBe(
+          'About Timebank ireland',
+        );
         expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('About us');
       });
     });

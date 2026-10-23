@@ -59,6 +59,11 @@ php:
   # Read by MobileVersionGateRegistrationTest, which asserts the version gate agrees with
   # the shipped app manifest.
   - 'mobile/app.json'
+  # The Help Centre registry: resources/help/ is the server's copy (sitemap help
+  # guides) and HelpRegistryCopyTest fails when it differs from the React source,
+  # so a guide changed on either side must wake the PHP suite (2026-10-23).
+  - 'resources/help/**'
+  - 'react-frontend/src/pages/help/guides/data/*.registry.json'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 

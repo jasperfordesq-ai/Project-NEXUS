@@ -41,6 +41,7 @@ class PagerCommandsRunInBackgroundTest extends TestCase
 
         $monitors = [
             'slo:check',
+            'seo:probe',
             'stripe:check-stuck-webhooks',
             'gdpr:check-overdue-requests',
             'backup:verify',

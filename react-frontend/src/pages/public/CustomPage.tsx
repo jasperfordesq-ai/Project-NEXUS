@@ -22,9 +22,10 @@ import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { Breadcrumbs } from '@/components/navigation';
-import { PageMeta } from '@/components/seo';
+import { PageMeta, PrerenderStatusCode } from '@/components/seo';
 import { useTenant } from '@/contexts';
 import { api } from '@/lib/api';
+import { isNotFoundResponse } from '@/lib/not-found';
 import { logError } from '@/lib/logger';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
 
@@ -63,6 +64,8 @@ export function CustomPage() {
   const [page, setPage] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // The server said the page does not exist (not merely that loading failed).
+  const [missing, setMissing] = useState(false);
   usePrerenderReady(!tenantLoading && !loading && !notFound && page !== null);
 
   // tenantId captured as primitive to avoid object reference churn in deps
@@ -76,6 +79,7 @@ export function CustomPage() {
     const reqId = ++reqIdRef.current;
     setLoading(true);
     setNotFound(false);
+    setMissing(false);
 
     try {
       // Include context_tenant so the PHP API can resolve the correct tenant for
@@ -87,6 +91,7 @@ export function CustomPage() {
         setPage(res.data);
       } else {
         setNotFound(true);
+        setMissing(isNotFoundResponse(res));
       }
     } catch (err) {
       if (reqId !== reqIdRef.current) return;
@@ -113,6 +118,8 @@ export function CustomPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <PageMeta title={t('not_found.page_title')} noIndex />
+        {/* Only a confirmed missing page answers crawlers 404; a failed load does not. */}
+        {missing && <PrerenderStatusCode code={404} />}
         <GlassCard className="p-8">
           <AlertTriangle className="w-12 h-12 text-warning mx-auto mb-4" aria-hidden="true" />
           <h1 className="text-2xl font-bold text-theme-primary mb-2">{t('not_found.heading')}</h1>

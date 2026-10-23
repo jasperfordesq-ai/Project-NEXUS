@@ -53165,7 +53165,7 @@ export default interface Resources {
       "operator_body": "Timebank Global is operated by hOUR Timebank Company Limited by Guarantee, registered business name Timebank Ireland, charity number RCN 20162023, at 21 Páirc Goodman, Skibbereen, Co. Cork, P81 AK26, Ireland.",
       "operator_title": "App and data controller",
       "package_id": "This page applies to the Timebank Global Android app, package ie.project.nexus.",
-      "page_title": "Delete your Timebank Global account",
+      "page_title": "Delete your account",
       "retained_items": {
         "0": "Anonymised time-credit, exchange, donation, and organisation accounting records may be retained for up to seven years where needed for audit, charity, tax, fraud-prevention, or legal obligations.",
         "1": "Shared records needed by another member, such as an exchange or conversation history, may remain with your identity and authored personal content removed.",
@@ -57249,7 +57249,7 @@ export default interface Resources {
       "heading": "Changelog",
       "loading": "Loading changelog...",
       "meta_description": "Every notable change shipped in Project NEXUS, in Keep-a-Changelog format, following Semantic Versioning. Sourced from CHANGELOG.md in the public source repository.",
-      "meta_title": "Changelog - Project NEXUS",
+      "meta_title": "Changelog",
       "subheading": "Every notable change to Project NEXUS, in Keep-a-Changelog format. The platform follows Semantic Versioning.",
       "title": "Changelog",
       "view_on_github": "View on GitHub"
@@ -58051,7 +58051,7 @@ export default interface Resources {
       "maturity_key_title": "How we label maturity",
       "maturity_preview": "Recently shipped and available to opt in. Expect rapid iteration - the API and UX may change.",
       "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
-      "meta_title": "Features - Project NEXUS v1.6",
+      "meta_title": "Features",
       "no_results_body": "Try a shorter word, or choose Everything to bring the whole list back.",
       "no_results_title": "Nothing matches that search",
       "open_source_body": "Project NEXUS is fully open source under AGPL-3.0. Every line of code is auditable, forkable, and self-hostable. Federation protocols are documented as open standards so no single platform controls the global timebanking network.",

@@ -61,8 +61,11 @@ RUN npm ci --no-audit --no-fund
 # Copy source files
 COPY . .
 
-# Build CSS
-RUN npm run build:css
+# Build CSS: compressed and without a source map for the image that is served.
+# (The development stage above keeps the readable build and its map.) The map
+# is removed explicitly because public/ is copied whole from the build context,
+# so a local build's main.css.map would otherwise ride along.
+RUN rm -f public/css/main.css.map && npm run build:css:production
 
 # -----------------------------------------------------------------------------
 # Production stage - minimal image

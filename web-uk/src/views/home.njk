@@ -22,7 +22,7 @@
         </div>
       {% endif %}
 
-      <span class="govuk-caption-xl">{{ t("home.caption", { community: communityName }) }}</span>
+      <span class="govuk-caption-xl">{{ t(homeCaptionKey or "home.caption", { community: communityName }) }}</span>
       <h1 class="govuk-heading-xl">{{ t(homeHeadingKey) if homeHeadingKey and t else (homeHeading or "Accessible") }}</h1>
       <p class="govuk-body-l">{{ t(homeDescriptionKey, { community: communityName }) if homeDescriptionKey else homeDescription }}</p>
       {% if tagline %}

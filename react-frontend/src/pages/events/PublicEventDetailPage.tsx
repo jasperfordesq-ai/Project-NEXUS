@@ -28,11 +28,12 @@ import Video from 'lucide-react/icons/video';
 import Accessibility from 'lucide-react/icons/accessibility';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
-import { PageMeta } from '@/components/seo';
+import { PageMeta, PrerenderStatusCode } from '@/components/seo';
 import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEventDetail } from '@/lib/public-events-api';
 import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
+import { isNotFoundResponse } from '@/lib/not-found';
 import { buildEventStructuredData } from '@/lib/event-structured-data';
 
 /** An address made absolute against this page's origin. */
@@ -56,6 +57,8 @@ export default function PublicEventDetailPage() {
   const [event, setEvent] = useState<PublicEventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  // The server said the event does not exist (not merely that loading failed).
+  const [missing, setMissing] = useState(false);
 
   usePageTitle(event?.title ?? t('public.title'));
 
@@ -71,6 +74,7 @@ export default function PublicEventDetailPage() {
         setEvent(res.data);
       } else {
         setNotFound(true);
+        setMissing(isNotFoundResponse(res));
       }
       setLoading(false);
     })();
@@ -92,6 +96,8 @@ export default function PublicEventDetailPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
         <PageMeta title={t('public.not_found_title')} noIndex />
+        {/* Only a confirmed missing event answers crawlers 404; a failed load does not. */}
+        {missing && <PrerenderStatusCode code={404} />}
         <h1 className="text-2xl font-semibold">{t('public.not_found_title')}</h1>
         <p className="text-theme-muted">{t('public.not_found_body')}</p>
         <Button as={Link} to={tenantPath('/whats-on')} variant="secondary">
@@ -167,7 +173,10 @@ export default function PublicEventDetailPage() {
         <img
           src={event.image_url}
           alt=""
-          className="w-full max-h-80 object-cover rounded-xl"
+          // Reserves the picture's space before it loads (no layout shift).
+          width={1200}
+          height={630}
+          className="w-full h-auto max-h-80 object-cover rounded-xl"
         />
       )}
 

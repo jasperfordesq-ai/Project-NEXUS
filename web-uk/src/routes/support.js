@@ -9,6 +9,7 @@ const { getHelpFaqs } = require('../lib/api');
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { sanitizeCmsHtml } = require('../lib/html-sanitizer');
+const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 
 const router = express.Router();
 
@@ -32,9 +33,13 @@ function rowsFrom(result) {
   return [];
 }
 
+// 🔴 `res.locals.tenantName` first, as legal.js does. The shell never sets
+// `res.locals.tenant`, so /help and /trust-and-safety named every community
+// "Project NEXUS Accessible" in their lead paragraph (and, since 23 Oct 2026, in
+// their meta description).
 function communityName(res) {
   const tenant = res.locals.tenant || {};
-  return trimmed(tenant.name) || trimmed(tenant.slug) || 'Project NEXUS Accessible';
+  return trimmed(res.locals.tenantName) || trimmed(tenant.name) || trimmed(tenant.slug) || 'Project NEXUS Accessible';
 }
 
 function normalizeFaqGroups(result, t) {
@@ -78,6 +83,8 @@ router.get('/help', asyncRoute(async (req, res) => {
 
   return res.render('support/help', {
     title: res.locals.t('help.title'),
+    metaDescription: pageDescription(res.locals.t('help.subtitle', { name: community })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('help.title'), path: '/help' }]),
     activeNav: 'help',
     communityName: community,
     searchQuery,
@@ -90,6 +97,8 @@ router.get('/trust-and-safety', (req, res) => {
 
   return res.render('support/trust-safety', {
     title: res.locals.t('trust_safety.title'),
+    metaDescription: pageDescription(res.locals.t('trust_safety.subtitle', { name: community })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('trust_safety.title'), path: '/trust-and-safety' }]),
     activeNav: 'trust-safety',
     communityName: community,
     sections: trustSafetySections(res)

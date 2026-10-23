@@ -117,6 +117,9 @@
     {% if seoBingVerification %}<meta name="msvalidate.01" content="{{ seoBingVerification }}">{% endif %}
     {% if seoKeywords %}<meta name="keywords" content="{{ seoKeywords }}">{% endif %}
     {% if seoOrganizationJsonLd %}<script type="application/ld+json">{{ seoOrganizationJsonLd | safe }}</script>{% endif %}
+    {% if seoWebsiteJsonLd %}<script type="application/ld+json">{{ seoWebsiteJsonLd | safe }}</script>{% endif %}
+    {# A route passes breadcrumbJsonLd (seo-meta breadcrumbJsonLdFor) on public pages. #}
+    {% if breadcrumbJsonLd %}<script type="application/ld+json">{{ breadcrumbJsonLd | safe }}</script>{% endif %}
     {% if seoEnableOpenGraph !== false %}
       <meta property="og:type" content="{{ ogType or 'website' }}">
       <meta property="og:site_name" content="{{ pageSiteName }}">
@@ -357,7 +360,13 @@
       <script type="module" src="/js/init.js"></script>
       <script src="/js/validation.js"></script>
       <script src="/js/loading-states.js"></script>
-      <script src="/js/timeout-warning.js"></script>
+      {#
+        Signed-in pages only. The script's init() returns at once unless the
+        data-authenticated marker above is present, and that marker is rendered
+        only under the same isAuthenticated check, so on a signed-out page it
+        was a download that did nothing.
+      #}
+      {% if isAuthenticated %}<script src="/js/timeout-warning.js"></script>{% endif %}
     {% endblock %}
   </body>
 </html>

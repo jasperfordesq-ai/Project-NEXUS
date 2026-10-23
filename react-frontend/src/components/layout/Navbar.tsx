@@ -44,7 +44,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useMenuContext } from '@/contexts/MenuContextCore';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { canCreateEvents, hasAdminPanelAccess, hasBrokerPanelAccess } from '@/lib/access';
-import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
+import { accessibleFrontendPathFor, buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopMenuItems } from '@/components/navigation';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
@@ -430,9 +430,16 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const timebankingPaths = useMemo(() => timebankingItems.map(i => i.href), [timebankingItems]);
   const communityPaths = useMemo(() => communityGroups.flatMap(g => g.items.map(i => i.href)), [communityGroups]);
   const morePaths = useMemo(() => moreGroups.flatMap(g => g.items.map(i => i.href)), [moreGroups]);
+  // Opens the same page on the accessible site when it has one at the same
+  // address, otherwise its home page (2026-10-23).
   const accessibleFrontendUrl = useMemo(
-    () => buildAccessibleFrontendUrl(tenant?.slug, '/', undefined, tenant?.accessible_domain),
-    [tenant?.slug, tenant?.accessible_domain],
+    () => buildAccessibleFrontendUrl(
+      tenant?.slug,
+      accessibleFrontendPathFor(pathname, tenantPath('/')),
+      undefined,
+      tenant?.accessible_domain,
+    ),
+    [tenant?.slug, tenant?.accessible_domain, pathname, tenantPath],
   );
   const tenantSwitcherItems = tenant?.tenant_switcher?.items ?? [];
   const hasTenantSwitcherItems = tenantSwitcherItems.length > 0;

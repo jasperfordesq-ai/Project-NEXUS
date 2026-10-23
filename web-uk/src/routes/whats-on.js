@@ -6,7 +6,8 @@
 const express = require('express');
 const { ApiError, getPublicEvents, getPublicEvent } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { flagEnabled } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendThumbnailUrl } = require('../lib/accessible-shell');
+const { breadcrumbJsonLdFor, eventJsonLd, pageDescription } = require('../lib/seo-meta');
 const { formatLocaleDate, localeForIntl } = require('../lib/localization');
 
 const router = express.Router();
@@ -123,6 +124,8 @@ router.get('/', asyncRoute(async (req, res) => {
 
   return res.render('whats-on/index', {
     title: res.locals.t('govuk_alpha_whats_on.index.title'),
+    metaDescription: pageDescription(res.locals.t('govuk_alpha_whats_on.index.intro')),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('govuk_alpha_whats_on.index.title'), path: '/whats-on' }]),
     activeNav: 'whats_on',
     events,
     when,
@@ -156,9 +159,28 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   const locale = res.locals.locale || 'en';
   const allDay = Boolean(event.all_day);
+  const eventTitle = typeof event.title === 'string' ? event.title.trim() : '';
+  const pagePath = `/whats-on/${req.params.id}`;
+  const pageUrl = typeof res.locals.seoUrlFor === 'function' ? res.locals.seoUrlFor(pagePath) : '';
+  // A wide sharing image when the event has a picture, as on the main site.
+  const imageUrl = resolveBackendThumbnailUrl(event.image_url, { width: 1200, height: 630 });
+  const description = pageDescription(typeof event.description === 'string' ? event.description : '');
 
   return res.render('whats-on/detail', {
-    title: res.locals.t('govuk_alpha_whats_on.show.title'),
+    // The event's own name, as the H1 shows: every event page used to be
+    // titled "Event details".
+    title: eventTitle || res.locals.t('govuk_alpha_whats_on.show.title'),
+    ...(description ? { metaDescription: description } : {}),
+    ...(imageUrl ? { opengraphImageUrl: imageUrl } : {}),
+    eventJsonLd: eventJsonLd(event, {
+      pageUrl,
+      imageUrl,
+      organizer: { name: res.locals.seoSiteName || res.locals.tenantName || '', url: res.locals.seoUrlFor ? res.locals.seoUrlFor('/') : '' }
+    }),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [
+      { name: res.locals.t('govuk_alpha_whats_on.index.title'), path: '/whats-on' },
+      { name: eventTitle || res.locals.t('govuk_alpha_whats_on.show.title'), path: pagePath }
+    ]),
     activeNav: 'whats_on',
     event,
     startsAt: formatEventMoment(event.start_time, locale, event.timezone, allDay),

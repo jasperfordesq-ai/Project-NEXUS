@@ -28,12 +28,14 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Breadcrumbs } from '@/components/navigation';
 import { Helmet } from 'react-helmet-async';
-import { PageMeta } from '@/components/seo';
+import { PageMeta, PrerenderStatusCode } from '@/components/seo';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
 import { api } from '@/lib/api';
+import { isNotFoundResponse } from '@/lib/not-found';
+import { toIsoDateTime } from '@/lib/serverTime';
 import { logError } from '@/lib/logger';
 import { resolveAssetUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
@@ -95,8 +97,10 @@ function buildArticleStructuredData(post: BlogPostDetail, options: ArticleStruct
     name: post.title,
     description: post.meta_description || post.excerpt || undefined,
     ...(imageUrl ? { image: [imageUrl] } : {}),
-    datePublished: post.published_at || post.created_at,
-    dateModified: post.updated_at || post.published_at || post.created_at,
+    // ISO 8601: the API has sent the database form "2026-10-23 14:00:00",
+    // which the Article rich result rejects (2026-10-23 SEO audit).
+    datePublished: toIsoDateTime(post.published_at || post.created_at),
+    dateModified: toIsoDateTime(post.updated_at || post.published_at || post.created_at),
     ...(post.category?.name ? { articleSection: post.category.name } : {}),
     ...(post.reading_time ? { timeRequired: `PT${post.reading_time}M` } : {}),
     author: organization,
@@ -105,6 +109,10 @@ function buildArticleStructuredData(post: BlogPostDetail, options: ArticleStruct
 }
 
 /* ───────────────────────── Main Component ───────────────────────── */
+
+/** Size of the hero thumbnail requested from the image service. */
+const BLOG_HERO_WIDTH = 1200;
+const BLOG_HERO_HEIGHT = 675;
 
 const categoryColorMap: Record<string, string> = {
   blue: 'bg-blue-500/10 text-[var(--color-info)]',
@@ -124,6 +132,8 @@ export function BlogPostPage() {
   usePageTitle(post?.title || t('page_title'));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // The server said the post does not exist (not merely that loading failed).
+  const [missing, setMissing] = useState(false);
   usePrerenderReady(!isLoading && error === null && post !== null);
 
   // AbortController refs to cancel stale requests
@@ -143,6 +153,7 @@ export function BlogPostPage() {
     try {
       setIsLoading(true);
       setError(null);
+      setMissing(false);
 
       const response = await api.get<BlogPostDetail>(`/v2/blog/${slug}`);
 
@@ -152,6 +163,7 @@ export function BlogPostPage() {
         setPost(response.data);
       } else {
         setError(tRef.current('post.not_found'));
+        setMissing(isNotFoundResponse(response));
       }
     } catch (err) {
       if (controller.signal.aborted) return;
@@ -193,6 +205,8 @@ export function BlogPostPage() {
     return (
       <div className="max-w-3xl mx-auto">
         <PageMeta title={error || t('post.not_found')} noIndex />
+        {/* Only a confirmed missing post answers crawlers 404; a failed load does not. */}
+        {missing && <PrerenderStatusCode code={404} />}
         <GlassCard className="p-8 text-center">
           <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
           <h2 className="text-lg font-semibold text-theme-primary mb-2">
@@ -226,8 +240,8 @@ export function BlogPostPage() {
 
   const imageProps = post.featured_image
     ? responsiveThumbnailProps(post.featured_image, {
-        width: 1200,
-        height: 675,
+        width: BLOG_HERO_WIDTH,
+        height: BLOG_HERO_HEIGHT,
         sizes: '(min-width: 768px) 768px, 100vw',
       })
     : null;
@@ -252,8 +266,8 @@ export function BlogPostPage() {
         url={post.canonical_url || undefined}
         type="article"
         noIndex={post.noindex === true}
-        publishedTime={post.published_at || post.created_at}
-        modifiedTime={post.updated_at || undefined}
+        publishedTime={toIsoDateTime(post.published_at || post.created_at)}
+        modifiedTime={toIsoDateTime(post.updated_at)}
       />
 
       {/* Article JSON-LD structured data */}
@@ -270,20 +284,21 @@ export function BlogPostPage() {
           { label: post.title },
         ]} />
 
-        {/* Featured Image */}
+        {/* Featured Image — the page's largest paint (LCP): loaded eagerly at
+            high priority, its space reserved by the requested thumbnail size,
+            and visible from the first frame rather than faded in. */}
         {imageProps && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl overflow-hidden"
-          >
+          <div className="rounded-2xl overflow-hidden">
             <img
               {...imageProps}
               alt={post.title}
-              className="w-full max-h-48 sm:max-h-96 object-cover"
-              loading="lazy"
+              width={BLOG_HERO_WIDTH}
+              height={BLOG_HERO_HEIGHT}
+              className="w-full h-auto max-h-48 sm:max-h-96 object-cover"
+              loading="eager"
+              fetchPriority="high"
             />
-          </motion.div>
+          </div>
         )}
 
         {/* Post Header */}

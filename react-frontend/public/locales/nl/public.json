@@ -6,7 +6,7 @@
       "dormant": "Gebouwd, niet ingeschakeld"
     },
     "title": "Functies",
-    "meta_title": "Functies - Project NEXUS v1.6",
+    "meta_title": "Functies",
     "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
     "heading": "Wat Project NEXUS doet",
     "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v3.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
@@ -591,7 +591,7 @@
   },
   "changelog_page": {
     "title": "Wijzigingslog",
-    "meta_title": "Wijzigingenlogboek - Project NEXUS",
+    "meta_title": "Wijzigingenlogboek",
     "meta_description": "Elke opmerkelijke wijziging wordt verzonden in Project NEXUS, in Keep-a-Changelog-indeling, volgens Semantic Versioning. Afkomstig van CHANGELOG.md in de openbare bronrepository.",
     "heading": "Wijzigingslog",
     "subheading": "Elke opmerkelijke wijziging in Project NEXUS, in Keep-a-Changelog-indeling. Het platform volgt Semantic Versioning.",

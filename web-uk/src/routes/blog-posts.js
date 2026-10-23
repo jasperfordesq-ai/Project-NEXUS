@@ -19,6 +19,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { breadcrumbJsonLdFor, pageDescription, toJsonLd } = require('../lib/seo-meta');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
@@ -72,15 +73,6 @@ function isoDateTime(value) {
   return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
 }
 
-function scriptSafeJson(value) {
-  return JSON.stringify(value)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026')
-    .replace(/\u2028/g, '\\u2028')
-    .replace(/\u2029/g, '\\u2029');
-}
-
 function xmlEscape(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -103,7 +95,15 @@ function rssDate(value) {
   return `${days[date.getUTCDay()]}, ${String(date.getUTCDate()).padStart(2, '0')} ${months[date.getUTCMonth()]} ${String(date.getUTCFullYear()).slice(-2)} ${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')} +0000`;
 }
 
-function articleStructuredData(post, publisherName) {
+/**
+ * Article JSON-LD. `pageUrl` is the page's canonical (the post's own canonical
+ * when it sets one, otherwise the shell's), so `url` and `mainEntityOfPage`
+ * name the same address as <link rel="canonical">. `logoUrl` is the
+ * community's logo, as the main site's publisher logo is.
+ */
+function articleStructuredData(post, { publisherName, pageUrl, logoUrl }) {
+  const publisher = { '@type': 'Organization', name: publisherName };
+  if (logoUrl) publisher.logo = { '@type': 'ImageObject', url: logoUrl };
   const data = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -112,10 +112,12 @@ function articleStructuredData(post, publisherName) {
     image: post.ogImage || undefined,
     datePublished: post.publishedIso || undefined,
     dateModified: post.updatedIso || undefined,
+    url: pageUrl || undefined,
+    mainEntityOfPage: pageUrl ? { '@type': 'WebPage', '@id': pageUrl } : undefined,
     author: { '@type': 'Organization', name: publisherName },
-    publisher: { '@type': 'Organization', name: publisherName }
+    publisher
   };
-  return scriptSafeJson(data);
+  return toJsonLd(data);
 }
 
 function redirectTo(res, pathname) {
@@ -317,6 +319,8 @@ router.get('/', asyncRoute(async (req, res) => {
 
   return res.render('blog/index', {
     title: res.locals.t('blog.title'),
+    metaDescription: pageDescription(res.locals.t('blog.subtitle', { name: res.locals.tenantName })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('blog.title'), path: '/blog' }]),
     activeNav: 'blog',
     posts,
     categories,
@@ -402,7 +406,10 @@ router.get('/:slug([a-zA-Z0-9_-]+)/likers/:reaction([a-zA-Z0-9_]+)', asyncRoute(
   });
 
   return res.render('blog/likers', {
-    title: res.locals.t('govuk_alpha_blogreviews.likers.title'),
+    // The post's title too, so every post's reactions page is not called the same.
+    title: post.title
+      ? `${res.locals.t('govuk_alpha_blogreviews.likers.title')} - ${post.title}`
+      : res.locals.t('govuk_alpha_blogreviews.likers.title'),
     activeNav: 'blog',
     post,
     reaction,
@@ -428,6 +435,9 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
     commentsTotal = positiveInteger(commentsData.count) || commentCount(comments);
   }
 
+  const pageUrl = post.canonicalUrl || res.locals.seoCanonicalUrl || '';
+  const postTitle = post.title || post.metaTitle || res.locals.t('blog.title');
+
   return res.render('blog/detail', {
     title: post.metaTitle || post.title || res.locals.t('blog.title'),
     activeNav: 'blog',
@@ -442,7 +452,15 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
     canonicalUrl: post.canonicalUrl,
     ogType: 'article',
     ogTitle: post.metaTitle || post.title,
-    articleStructuredData: articleStructuredData(post, res.locals.tenantName || res.locals.serviceName),
+    articleStructuredData: articleStructuredData(post, {
+      publisherName: res.locals.tenantName || res.locals.serviceName,
+      pageUrl,
+      logoUrl: res.locals.seoLogoUrl || ''
+    }),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [
+      { name: res.locals.t('blog.title'), path: '/blog' },
+      { name: postTitle, path: `/blog/${req.params.slug}`, url: pageUrl }
+    ]),
     commentForm: consumeFormReplay(req, BLOG_COMMENT_REPLAY, req.params.slug),
     statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
   });

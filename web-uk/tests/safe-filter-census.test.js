@@ -32,9 +32,21 @@ const REVIEWED_RAW_SITES = {
     why: 'Organization JSON-LD inside <script>; toJsonLd escapes < > & so a tagline or name cannot close the tag (tests/seo-meta.test.js)',
     guard: ['src/lib/seo-meta.js', ".replace(/</g, '\\\\u003c')"],
   },
+  'layouts/base.njk {{ seoWebsiteJsonLd | safe }}': {
+    why: 'WebSite JSON-LD inside <script>; built by toJsonLd, which escapes < > & so a community name cannot close the tag (tests/seo-meta.test.js)',
+    guard: ['src/lib/seo-meta.js', 'websiteJsonLd = toJsonLd({'],
+  },
+  'layouts/base.njk {{ breadcrumbJsonLd | safe }}': {
+    why: 'BreadcrumbList JSON-LD inside <script>; breadcrumbJsonLd returns only toJsonLd output, which escapes < > & so a page or post title cannot close the tag (tests/seo-meta.test.js)',
+    guard: ['src/lib/seo-meta.js', "return toJsonLd({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items });"],
+  },
+  'whats-on/detail.njk {{ eventJsonLd | safe }}': {
+    why: 'Event JSON-LD inside <script>; eventJsonLd returns only toJsonLd output, which escapes < > & so an event title or description cannot close the tag (tests/seo-meta.test.js)',
+    guard: ['src/routes/whats-on.js', 'eventJsonLd: eventJsonLd(event, {'],
+  },
   'blog/detail.njk {{ articleStructuredData | safe }}': {
-    why: 'JSON-LD inside <script>; scriptSafeJson escapes < > & so a title cannot close the tag',
-    guard: ['src/routes/blog-posts.js', 'return scriptSafeJson(data);'],
+    why: 'JSON-LD inside <script>; toJsonLd escapes < > & (and U+2028/2029) so a title cannot close the tag',
+    guard: ['src/routes/blog-posts.js', 'return toJsonLd(data);'],
   },
   'blog/detail.njk {{ post.content | safe }}': {
     why: CMS,

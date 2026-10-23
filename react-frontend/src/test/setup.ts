@@ -69,6 +69,7 @@ if (typeof window !== 'undefined') {
 // is never present in test mocks. Make it a no-op for all tests globally.
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,
+  PrerenderStatusCode: () => null,
   default: () => null,
 }));
 

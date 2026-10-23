@@ -101,6 +101,21 @@ class BlogPublicControllerTest extends TestCase
         $this->assertMemberAuthorIsAbsent($projection, (string) $response->getContent());
     }
 
+    public function test_blog_dates_are_iso_8601_with_a_timezone(): void
+    {
+        // "2026-10-23 14:00:00" is not a valid schema.org / Open Graph date
+        // (2026-10-23 SEO audit), and React Native may not parse it.
+        [, $post] = $this->createPublishedPostWithDistinctiveMemberAuthor('public-projection-iso-dates');
+        $iso = '#^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$#';
+
+        $detail = $this->apiGet('/v2/blog/' . $post->slug)->assertStatus(200)->json('data');
+        $this->assertMatchesRegularExpression($iso, (string) $detail['published_at']);
+        $this->assertMatchesRegularExpression($iso, (string) $detail['created_at']);
+
+        $index = $this->apiGet('/v2/blog?search=Public%20projection%20regression')->assertStatus(200)->json('data.0');
+        $this->assertMatchesRegularExpression($iso, (string) $index['published_at']);
+    }
+
     public function test_anonymous_blog_show_nonexistent_returns_404(): void
     {
         $response = $this->apiGet('/v2/blog/nonexistent-slug-xyz');

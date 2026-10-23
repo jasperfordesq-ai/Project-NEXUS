@@ -137,6 +137,26 @@ grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'other host los
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/index.html"
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/_tenant.json"
 
+# Browser caching (2026-10-23): only the content-hashed /assets/ output is
+# immutable for a year; files that keep their name across deploys are cached
+# for a day and revalidated. Text responses are gzip-compressed.
+mkdir -p "$HTML/assets" "$HTML/images" "$HTML/icons"
+head -c 4096 /dev/zero | tr '\0' 'a' | sed 's/^/var a="/;s/$/";/' > "$HTML/assets/app-Ab12Cd34.js"
+printf '%s\n' '<svg xmlns="http://www.w3.org/2000/svg"/>' > "$HTML/favicon.svg"
+printf '%s\n' 'self.addEventListener("push",function(){});' > "$HTML/sw-push-handler.js"
+printf '%s\n' 'PNG' > "$HTML/images/logo.png"
+printf '%s\n' 'PNG' > "$HTML/icons/icon-192.png"
+request 200 '' -H 'Host: example.test' "$BASE/assets/app-Ab12Cd34.js"
+grep -Fqi 'cache-control: public, immutable' "$TEST_ROOT/headers" || { echo 'hashed asset is not immutable' >&2; exit 1; }
+for path in /favicon.svg /sw-push-handler.js /images/logo.png /icons/icon-192.png; do
+    request 200 '' -H 'Host: example.test' "$BASE$path"
+    ! grep -Fqi 'immutable' "$TEST_ROOT/headers" || { echo "$path is cached as immutable" >&2; exit 1; }
+    grep -Fqi 'cache-control: public, max-age=86400, must-revalidate' "$TEST_ROOT/headers" \
+        || { echo "$path lacks the short cache" >&2; exit 1; }
+done
+request 200 '' -H 'Host: example.test' -H 'Accept-Encoding: gzip' "$BASE/assets/app-Ab12Cd34.js"
+grep -Fqi 'content-encoding: gzip' "$TEST_ROOT/headers" || { echo 'JavaScript is not gzip-compressed' >&2; exit 1; }
+
 # Before the first identity-bearing authoritative generation, crawlers receive
 # the live SPA rather than legacy snapshots with unverifiable ownership.
 rm -f "$PRERENDERED/.tenant-identity-v1"

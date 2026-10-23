@@ -39,7 +39,7 @@ import { useNotificationsOptional } from '@/contexts/NotificationsContext';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import { resolveAvatarUrl, resolveUserDisplayName } from '@/lib/helpers';
 import { hasAdminPanelAccess, hasBrokerPanelAccess } from '@/lib/access';
-import { buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
+import { accessibleFrontendPathFor, buildAccessibleFrontendUrl } from '@/lib/accessible-frontend';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemePicker } from '@/components/layout/ThemePicker';
 import { useMenuContext } from '@/contexts/MenuContextCore';
@@ -125,7 +125,14 @@ export function MobileDrawer({ isOpen, onClose, onSearchOpen }: MobileDrawerProp
   const { resetConsent } = useCookieConsent();
   const { mobileMenus, headerMenus, hasCustomMenus } = useMenuContext();
   const year = new Date().getFullYear();
-  const accessibleFrontendUrl = buildAccessibleFrontendUrl(tenant?.slug, '/', undefined, tenant?.accessible_domain);
+  // Opens the same page on the accessible site when it has one at the same
+  // address, otherwise its home page (2026-10-23).
+  const accessibleFrontendUrl = buildAccessibleFrontendUrl(
+    tenant?.slug,
+    accessibleFrontendPathFor(pathname, tenantPath('/')),
+    undefined,
+    tenant?.accessible_domain,
+  );
 
   const isAdmin = hasAdminPanelAccess(user);
   const isBroker = !isAdmin && hasBrokerPanelAccess(user);

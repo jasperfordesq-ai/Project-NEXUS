@@ -192,9 +192,12 @@ class BlogService
             'excerpt'          => $post->excerpt ?? '',
             'content'          => $content,
             'featured_image'   => $this->resolveImageUrl($post->featured_image, $baseUrl),
-            'published_at'     => (string) $post->created_at,
-            'created_at'       => (string) $post->created_at,
-            'updated_at'       => $post->updated_at ? (string) $post->updated_at : null,
+            // ISO 8601 with offset (2026-10-23): "2026-10-23 14:00:00" is not a
+            // valid schema.org / Open Graph date, and new Date() in React Native
+            // may not parse it. posts has no publish column; created_at stands in.
+            'published_at'     => self::isoDate($post->created_at),
+            'created_at'       => self::isoDate($post->created_at),
+            'updated_at'       => $post->updated_at ? self::isoDate($post->updated_at) : null,
             'views'            => 0,
             'reading_time'     => $readingTime,
             'meta_title'       => $seo?->meta_title ?: ($post->title ?? null),
@@ -254,8 +257,8 @@ class BlogService
             'slug'           => $post->slug ?? '',
             'excerpt'        => $post->excerpt ?? '',
             'featured_image' => $this->resolveImageUrl($post->featured_image, $baseUrl),
-            'published_at'   => (string) $post->created_at,
-            'created_at'     => (string) $post->created_at,
+            'published_at'   => self::isoDate($post->created_at),
+            'created_at'     => self::isoDate($post->created_at),
             'views'          => 0,
             'reading_time'   => 3,
             'meta_title'     => $seo?->meta_title ?: null,
@@ -289,5 +292,18 @@ class BlogService
             return $url;
         }
         return $baseUrl . '/' . ltrim($url, '/');
+    }
+
+    /** A stored datetime (app timezone) as ISO 8601 with offset, or '' when empty. */
+    private static function isoDate(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        try {
+            return \Illuminate\Support\Carbon::parse((string) $value, (string) config('app.timezone', 'UTC'))->toIso8601String();
+        } catch (\Throwable) {
+            return (string) $value;
+        }
     }
 }

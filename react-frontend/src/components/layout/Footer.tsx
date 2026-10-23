@@ -24,6 +24,16 @@ import { resolveBrandingImageUrl } from '@/lib/helpers';
 import { safeHref } from '@/lib/safeHref';
 
 
+/**
+ * Size of the built-in powered-by artwork (powered-by-project-nexus-2026-10-*.png).
+ * The footer's raster logos carry width/height so the browser reserves their
+ * space before they load (no layout shift, 2026-10-23). With `h-auto w-auto`
+ * the attributes only set the placeholder's shape: once a community's own
+ * upload loads, its real proportions are used.
+ */
+const PB_IMAGE_WIDTH = 480;
+const PB_IMAGE_HEIGHT = 205;
+
 export interface FooterProps {
   /** Footer content/links */
   children?: ReactNode;
@@ -53,8 +63,9 @@ export function Footer({ children, copyright }: FooterProps) {
   // Communities that set their own general.powered_by_url are unaffected by it;
   // everyone else — including communities with only a custom badge image — uses this.
   // God-uploaded images take priority; otherwise the built-in assets ship with every fork/clone.
-  // 🔴 A new artwork needs a NEW file name. /images/* is served `immutable` for
-  // a year, so replacing the bytes under the old name (powered-by-nexus-*.png,
+  // 🔴 A new artwork needs a NEW file name. /images/* was served `immutable` for
+  // a year until 2026-10-23 (now one day, revalidated — nginx.bluegreen.conf),
+  // and browsers that cached it then keep it. Replacing the bytes under the old name (powered-by-nexus-*.png,
   // 2026-10-06) left every returning browser showing the old badge. The
   // 2026-10-22 artwork therefore lives under its own -2026-10- names; the older
   // names carry the same bytes for any cached page that still points at them.
@@ -105,17 +116,17 @@ export function Footer({ children, copyright }: FooterProps) {
             title={pbHeading}
             className="max-w-full transition-opacity hover:opacity-80"
           >
-            <img src={pbImage} alt={pbHeading} className="h-auto max-h-24 w-auto max-w-[15rem] object-contain" />
+            <img src={pbImage} alt={pbHeading} width={PB_IMAGE_WIDTH} height={PB_IMAGE_HEIGHT} className="h-auto max-h-24 w-auto max-w-[15rem] object-contain" />
           </a>
           <SourceRepositoryLink compact className="w-full max-w-[18rem] justify-center" />
           {/* Tenant partner logo — real or placeholder */}
           {partnerLogoUrl ? (
             partnerLinkUrl ? (
               <a href={safeHref(partnerLinkUrl)} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80">
-                <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-44 object-contain" />
+                <img src={partnerLogoUrl} alt={partnerLabel} width={176} height={64} className="h-auto max-h-16 w-auto max-w-44 object-contain" />
               </a>
             ) : (
-              <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-44 object-contain" />
+              <img src={partnerLogoUrl} alt={partnerLabel} width={176} height={64} className="h-auto max-h-16 w-auto max-w-44 object-contain" />
             )
           ) : (
             <div className="w-full max-w-[22rem] border-2 border-dashed border-theme-default/40 rounded-xl h-16 flex items-center justify-center">
@@ -289,10 +300,10 @@ export function Footer({ children, copyright }: FooterProps) {
                   {partnerLogoUrl ? (
                     partnerLinkUrl ? (
                       <a href={safeHref(partnerLinkUrl)} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg">
-                        <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-48 object-contain" />
+                        <img src={partnerLogoUrl} alt={partnerLabel} width={192} height={80} className="h-auto max-h-20 w-auto max-w-48 object-contain" />
                       </a>
                     ) : (
-                      <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-48 object-contain" />
+                      <img src={partnerLogoUrl} alt={partnerLabel} width={192} height={80} className="h-auto max-h-20 w-auto max-w-48 object-contain" />
                     )
                   ) : (
                     <div className="h-20 w-48 border-2 border-dashed border-theme-default/40 rounded-xl flex items-center justify-center">
@@ -332,6 +343,8 @@ export function Footer({ children, copyright }: FooterProps) {
                     <img
                       src={pbImage}
                       alt={pbHeading}
+                      width={PB_IMAGE_WIDTH}
+                      height={PB_IMAGE_HEIGHT}
                       className="h-auto max-h-28 w-auto max-w-[15rem] object-contain sm:max-w-[17rem]"
                     />
                   </a>

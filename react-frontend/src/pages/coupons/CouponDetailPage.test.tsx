@@ -24,6 +24,12 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+// The real crawler-status tag, so a test can see it (setup.ts makes the barrel a no-op).
+vi.mock('@/components/seo', async () => ({
+  PageMeta: () => null,
+  PrerenderStatusCode: (await import('@/components/seo/PrerenderStatusCode')).PrerenderStatusCode,
+}));
+
 vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
 }));
@@ -254,6 +260,21 @@ describe('CouponDetailPage', () => {
         '/test/coupons',
       );
     });
+  });
+
+  // 2026-10-23 SEO audit: a missing coupon answered crawlers 200 (a soft 404).
+  it('tells crawlers 404 only when the server says the coupon does not exist', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: false, code: 'NOT_FOUND' });
+    const { unmount } = render(<CouponDetailPage />);
+    await waitFor(() =>
+      expect(document.querySelector('meta[name="prerender-status-code"]')?.getAttribute('content')).toBe('404'),
+    );
+    unmount();
+
+    vi.mocked(api.get).mockResolvedValue({ success: false, code: 'SERVER_ERROR' });
+    render(<CouponDetailPage />);
+    await waitFor(() => expect(screen.getByRole('link', { name: /back|coupons/i })).toBeInTheDocument());
+    expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
   });
 
   it('calls the correct API endpoint for the coupon id from params', async () => {

@@ -302,6 +302,9 @@ class SitemapService
         // their separate content/consent review.
         $methods['cms_pages'] = fn (int $tid, string $base) => $this->getCmsPageUrls($tid, $base);
 
+        // The Help Centre guides, on every community (owner, 23 Oct 2026).
+        $methods['help_guides'] = fn (int $tid, string $base) => $this->getHelpGuideUrls($tenant, $base);
+
         if ($this->publicEventsOn($tenant)) {
             $methods['public_events'] = fn (int $tid, string $base) => $this->getPublicEventUrls($tid, $base);
         }
@@ -698,13 +701,88 @@ class SitemapService
         );
     }
 
-    private function getHelpArticleUrls(int $tenantId, string $baseUrl): array
+    /** Help audiences, in the order the Help Centre shows them. */
+    private const HELP_AUDIENCES = ['members', 'brokers', 'admins'];
+
+    /**
+     * The Help Centre's guides (/help/{audience}/{section}/{article}) that this
+     * community actually has. Until 2026-10-23 none were listed (this returned
+     * [] on the belief that articles render inline; they are real pages), so
+     * crawlers only ever saw the bare shell with noindex.
+     *
+     * The guide list is the React registry, copied to resources/help/ because
+     * the API image does not ship react-frontend/; HelpRegistryCopyTest fails
+     * if the copy drifts. Gates follow registry.ts isGateOpen(): a feature or
+     * module gate needs that switch on, a setting gate counts as open (as it
+     * does for a signed-out visitor). /help/members is the same page as /help
+     * (its canonical), so the members audience page itself is not listed.
+     *
+     * @return list<array{loc:string, lastmod:?string, changefreq:string, priority:string}>
+     */
+    private function getHelpGuideUrls(object $tenant, string $baseUrl): array
     {
-        // React help center is at /help (list view only) — individual articles
-        // are rendered inline within the help center, not as separate routes.
-        // We include the help center listing page in static URLs instead.
-        // No individual article URLs to generate.
-        return [];
+        $urls = [];
+        foreach (self::HELP_AUDIENCES as $audience) {
+            $file = resource_path("help/{$audience}.registry.json");
+            $sections = is_file($file) ? json_decode((string) file_get_contents($file), true) : null;
+            if (!is_array($sections)) {
+                continue;
+            }
+            $audienceUrls = [];
+            foreach ($sections as $section) {
+                if (!is_array($section) || !$this->helpGateOpen($tenant, $section['gate'] ?? null)) {
+                    continue;
+                }
+                $sectionId = (string) ($section['id'] ?? '');
+                $articles = array_values(array_filter(
+                    is_array($section['articles'] ?? null) ? $section['articles'] : [],
+                    fn ($a) => is_array($a) && ($a['id'] ?? '') !== '' && $this->helpGateOpen($tenant, $a['gate'] ?? null)
+                ));
+                if ($sectionId === '' || $articles === []) {
+                    continue; // a section with nothing visible is not shown
+                }
+                $audienceUrls[] = $this->url($baseUrl, "/help/{$audience}/{$sectionId}", null, 'monthly', '0.4');
+                foreach ($articles as $article) {
+                    $audienceUrls[] = $this->url($baseUrl, "/help/{$audience}/{$sectionId}/{$article['id']}", null, 'monthly', '0.4');
+                }
+            }
+            if ($audienceUrls !== [] && $audience !== 'members') {
+                $urls[] = $this->url($baseUrl, "/help/{$audience}", null, 'monthly', '0.4');
+            }
+            $urls = array_merge($urls, $audienceUrls);
+        }
+        return $urls;
+    }
+
+    /** registry.ts isGateOpen(), server side. */
+    private function helpGateOpen(object $tenant, mixed $gate): bool
+    {
+        if (!is_array($gate) || $gate === []) {
+            return true;
+        }
+        if (isset($gate['any']) && is_array($gate['any'])) {
+            foreach ($gate['any'] as $part) {
+                if ($this->helpGateOpen($tenant, $part)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (isset($gate['all']) && is_array($gate['all'])) {
+            foreach ($gate['all'] as $part) {
+                if (!$this->helpGateOpen($tenant, $part)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (isset($gate['feature'])) {
+            return $this->hasFeature($tenant, (string) $gate['feature']);
+        }
+        if (isset($gate['module'])) {
+            return $this->hasModule($tenant, (string) $gate['module']);
+        }
+        return true; // setting gates: open, as for a signed-out visitor
     }
 
     // =========================================================================

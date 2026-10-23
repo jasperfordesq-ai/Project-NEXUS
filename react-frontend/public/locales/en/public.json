@@ -6,7 +6,7 @@
       "dormant": "Built, not enabled"
     },
     "title": "Features",
-    "meta_title": "Features - Project NEXUS v1.6",
+    "meta_title": "Features",
     "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
     "heading": "What Project NEXUS does",
     "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
@@ -591,7 +591,7 @@
   },
   "changelog_page": {
     "title": "Changelog",
-    "meta_title": "Changelog - Project NEXUS",
+    "meta_title": "Changelog",
     "meta_description": "Every notable change shipped in Project NEXUS, in Keep-a-Changelog format, following Semantic Versioning. Sourced from CHANGELOG.md in the public source repository.",
     "heading": "Changelog",
     "subheading": "Every notable change to Project NEXUS, in Keep-a-Changelog format. The platform follows Semantic Versioning.",

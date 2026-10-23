@@ -6,6 +6,12 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
+{% block head %}
+  {{ super() }}
+  {# schema.org Event, built by seo-meta eventJsonLd() in routes/whats-on.js. #}
+  {% if eventJsonLd %}<script type="application/ld+json">{{ eventJsonLd | safe }}</script>{% endif %}
+{% endblock %}
+
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/whats-on') }}">
         {{ t("govuk_alpha_whats_on.show.back") }}

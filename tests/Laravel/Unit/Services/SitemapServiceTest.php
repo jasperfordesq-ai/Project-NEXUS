@@ -211,7 +211,7 @@ class SitemapServiceTest extends TestCase
                 ]),
             ]);
             Cache::flush();
-            $xml = $this->service->generateForTenant($this->testTenantId, 'https://tenant.example');
+            $xml = $this->withoutHelpGuides($this->service->generateForTenant($this->testTenantId, 'https://tenant.example'));
 
             $this->assertStringNotContainsString('/marketplace/free', $xml);
             $this->assertStringNotContainsString('/marketplace/map', $xml);
@@ -455,7 +455,7 @@ class SitemapServiceTest extends TestCase
     public function test_generateForTenant_excludes_events_listing(): void
     {
         Cache::flush();
-        $xml = $this->service->generateForTenant($this->testTenantId);
+        $xml = $this->withoutHelpGuides($this->service->generateForTenant($this->testTenantId));
         $this->assertStringNotContainsString('/events', $xml);
     }
 
@@ -989,7 +989,7 @@ class SitemapServiceTest extends TestCase
             // (/blog/{slug}, /listings/{id}, ...) are admitted to the plan from
             // the sitemap itself, so they cannot drift the way a hand-written
             // static route can.
-            if (preg_match('#^/(?:blog|listings|events|groups|jobs|volunteering|organisations|ideation|kb|coupons|page)/#', $route)) {
+            if (preg_match('#^/(?:blog|listings|events|groups|jobs|volunteering|organisations|ideation|kb|coupons|page|help|whats-on)/#', $route)) {
                 continue;
             }
             if (!in_array($route, $plan, true)) {
@@ -1010,6 +1010,16 @@ class SitemapServiceTest extends TestCase
     // =========================================================================
     // 2026-10-23 audit: noindex content left out, What's On listed
     // =========================================================================
+
+    /**
+     * The sitemap without its Help Centre entries. Guide addresses such as
+     * /help/members/events legitimately contain words like "/events", which
+     * older substring checks ("no /events listing") would otherwise trip on.
+     */
+    private function withoutHelpGuides(string $xml): string
+    {
+        return (string) preg_replace('#<url>\s*<loc>[^<]*/help/[^<]*</loc>.*?</url>#s', '', $xml);
+    }
 
     private function setFeatures(array $on): void
     {
@@ -1069,5 +1079,31 @@ class SitemapServiceTest extends TestCase
         $this->assertStringContainsString('/whats-on</loc>', $on);
         $this->assertStringContainsString('/whats-on/' . $event->id . '</loc>', $on);
         $this->assertStringNotContainsString('/whats-on/' . $private->id . '</loc>', $on);
+    }
+
+    public function test_help_guides_are_listed_with_the_same_gates_as_the_help_centre(): void
+    {
+        $this->setFeatures(['events' => false]);
+        $xml = $this->service->generateForTenant($this->testTenantId);
+
+        $this->assertStringContainsString('/help/members/getting_started</loc>', $xml);
+        $this->assertStringContainsString('/help/members/getting_started/what_is_timebanking</loc>', $xml);
+        $this->assertStringContainsString('/help/brokers</loc>', $xml);
+        $this->assertStringNotContainsString('/help/members</loc>', $xml, '/help/members is the same page as /help');
+
+        // A guide gated on a switched-off feature is not listed.
+        $sections = json_decode((string) file_get_contents(resource_path('help/members.registry.json')), true);
+        $gated = null;
+        foreach ($sections as $section) {
+            if (($section['gate']['feature'] ?? null) === 'events') {
+                $gated = $section['id'];
+                break;
+            }
+        }
+        if ($gated !== null) {
+            $this->assertStringNotContainsString('/help/members/' . $gated . '</loc>', $xml);
+            $this->setFeatures(['events' => true]);
+            $this->assertStringContainsString('/help/members/' . $gated . '</loc>', $this->service->generateForTenant($this->testTenantId));
+        }
     }
 }

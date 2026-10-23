@@ -291,6 +291,16 @@ describe('Help Centre topic and article pages', () => {
     expect(screen.getByRole('link', { name: 'Back to the Help Centre' })).toHaveAttribute('href', '/test/help');
   });
 
+  // 2026-10-23 SEO audit: the not-found guide answered crawlers 200 with no title.
+  it('tells crawlers a missing guide is a 404 and keeps it out of search', async () => {
+    renderAt('/help/members/group_exchanges/no_such_guide');
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="prerender-status-code"]')?.getAttribute('content')).toBe('404');
+      expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex, nofollow');
+      expect(document.title).toBe("We couldn't find that guide | Test Community");
+    });
+  });
+
   it('treats a switched-off feature as not found', () => {
     enabled.all = false;
     renderAt('/help/members/group_exchanges/workshop_community_pot');

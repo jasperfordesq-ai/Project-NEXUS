@@ -26,6 +26,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { toJsonLd } from '@/lib/json-ld';
 import { useRemoveShellTitle } from './shellTitle';
 import { buildBreadcrumbList } from './breadcrumbs';
+import { joinTitle } from './joinTitle';
 
 // Map our short language codes to OG locale codes (BCP 47 with region).
 // Google and Facebook expect e.g. en_GB / fr_FR, not the bare lang code.
@@ -167,8 +168,9 @@ export function PageMeta({
   // Strip any leading separator and always join with " | ".
   const cleanSuffix = adminTitleSuffix.replace(/^[\s|·•:\-–—]+/, '').trim();
   const siteName = cleanSuffix || branding.name || seoTitle || 'NEXUS';
-  const titleSuffix = ` | ${siteName}`;
-  const suffixedTitle = title ? `${title}${titleSuffix}` : siteName;
+  // No suffix when the page title already names the community (2026-10-23:
+  // crawler copies read "About TimeBank Ireland | TimeBank Ireland").
+  const suffixedTitle = joinTitle(title, siteName, branding.name);
   // The home page is the one page whose title IS the tenant meta title.
   const fullTitle = tenantHome && seoTitle ? seoTitle : suffixedTitle;
 

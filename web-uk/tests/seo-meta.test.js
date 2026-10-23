@@ -295,12 +295,14 @@ describe('seo metadata on rendered accessible pages', () => {
 
     expect(head).toMatch(/<title>[^<]+ - Acme Timebank<\/title>/);
     expect(head).not.toContain('Project NEXUS Accessible</title>');
-    expect(head).toContain('<meta name="description" content="Neighbours helping neighbours">');
+    // /about describes itself (about.description) rather than repeating the
+    // community-wide tagline (second SEO pass, tests/seo-page-meta.test.js).
+    expect(head).toMatch(/<meta name="description" content="Acme Timebank is [^"]+">/);
     expect(head).toContain('<link rel="canonical" href="https://app.project-nexus.ie/acme/about">');
     expect(head).toContain('<meta property="og:type" content="website">');
     expect(head).toContain('<meta property="og:site_name" content="Acme Timebank">');
     expect(head).toMatch(/<meta property="og:title" content="[^"]+ - Acme Timebank">/);
-    expect(head).toContain('<meta property="og:description" content="Neighbours helping neighbours">');
+    expect(head).toMatch(/<meta property="og:description" content="Acme Timebank is [^"]+">/);
     expect(head).toContain('<meta property="og:url" content="https://app.project-nexus.ie/acme/about">');
     expect(head).toContain('<meta property="og:image" content="https://api.example.test/uploads/acme/share.png">');
     expect(head).toContain('<meta name="twitter:card" content="summary_large_image">');

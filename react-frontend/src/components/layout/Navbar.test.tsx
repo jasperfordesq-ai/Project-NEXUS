@@ -1421,5 +1421,38 @@ describe('Navbar', () => {
       // Without noopener the opened page can reach back through window.opener.
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     });
+
+    // 2026-10-23: the link always opened the accessible home page.
+    it('opens the same page on the accessible site when it has one', () => {
+      setupDefaultMocks({
+        tenant: { tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' } },
+      });
+      const previous = mockLocation.pathname;
+      try {
+        mockLocation.pathname = '/blog/spring-fair';
+        const { unmount } = render(<Navbar />);
+        expect(accessibleLink().getAttribute('href')).toBe(
+          'https://accessible.project-nexus.ie/hour-timebank/accessible/blog/spring-fair',
+        );
+        unmount();
+
+        mockLocation.pathname = '/timebanking-guide';
+        render(<Navbar />);
+        expect(accessibleLink().getAttribute('href')).toBe(
+          'https://accessible.project-nexus.ie/hour-timebank/accessible/guide',
+        );
+      } finally {
+        mockLocation.pathname = previous;
+      }
+    });
+
+    it('opens the accessible home page for a page it does not have', () => {
+      setupDefaultMocks({
+        tenant: { tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' } },
+      });
+      // mockLocation is /dashboard, which the accessible site has no twin for.
+      render(<Navbar />);
+      expect(accessibleLink().getAttribute('href')).toBe('https://accessible.project-nexus.ie/hour-timebank/accessible');
+    });
   });
 });

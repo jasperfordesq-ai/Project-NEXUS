@@ -16,6 +16,7 @@ const { sanitizeCmsHtml, sanitizeDiffHtml, withHeadingAnchors } = require('../li
 const { catalogFor, valueInCatalog } = require('../lib/localization');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { legalPageText } = require('../lib/legal-text');
+const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 
 const router = express.Router();
 
@@ -172,13 +173,19 @@ function documentConfig(res, type, community) {
  */
 router.get('/accessibility', asyncRoute(async (req, res) => {
   const community = communityName(res);
+  const document = await fetchLegalDocument('accessibility', res.locals.t);
+  // The tab title names what the H1 names: the community's own statement title
+  // when it has published one, the translated default otherwise.
+  const pageTitle = document ? document.title : res.locals.t('accessibility.title');
 
   return res.render('legal/accessibility', {
-    title: res.locals.t('accessibility.title'),
-    titleKey: 'accessibility.title',
+    title: pageTitle,
+    ...(document ? {} : { titleKey: 'accessibility.title' }),
+    metaDescription: pageDescription(res.locals.t('accessibility.intro', { name: community })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: pageTitle, path: '/accessibility' }]),
     activeNav: 'accessibility',
     communityName: community,
-    document: await fetchLegalDocument('accessibility', res.locals.t)
+    document
   });
 }, { notFoundTitle: 'Page not found' }));
 
@@ -188,6 +195,8 @@ router.get('/legal', (req, res) => {
   return res.render('legal/hub', {
     title: res.locals.t('legal.hub_title'),
     titleKey: 'legal.hub_title',
+    metaDescription: pageDescription(res.locals.t('legal.hub_intro', { name: community })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, [{ name: res.locals.t('legal.hub_title'), path: '/legal' }]),
     activeNav: 'legal',
     communityName: community,
     documents: [
@@ -201,19 +210,30 @@ router.get('/legal', (req, res) => {
   });
 });
 
+/** Home > Legal > … for a page inside the legal section. */
+function legalTrail(res, rest) {
+  return [{ name: res.locals.t('legal.hub_title'), path: '/legal' }, ...rest];
+}
+
 function legalDocument(type) {
   return asyncRoute(async (req, res) => {
     const community = communityName(res);
     const config = documentConfig(res, type, community);
+    const document = await fetchLegalDocument(type, res.locals.t);
+    // Matches the H1, which shows the community's own document title when it
+    // has published one.
+    const pageTitle = (document && document.title) || config.title;
 
     return res.render('legal/document', {
-      title: config.title,
+      title: pageTitle,
+      metaDescription: pageDescription(config.summary),
+      breadcrumbJsonLd: breadcrumbJsonLdFor(res, legalTrail(res, [{ name: pageTitle, path: DOCUMENT_PATHS[type] }])),
       activeNav: 'legal',
       communityName: community,
       docType: type,
       docSlug: DOCUMENT_PATHS[type].replace('/legal/', ''),
       config,
-      document: await fetchLegalDocument(type, res.locals.t)
+      document
     });
   }, { notFoundTitle: 'Legal document not found' });
 }
@@ -293,14 +313,23 @@ router.get('/legal/:type/versions', asyncRoute(async (req, res) => {
   const config = documentConfig(res, type, communityName(res));
   const payload = dataFrom(await getLegalVersions(type)) || {};
   const versions = versionRows({ data: payload });
+  const documentTitle = trimmed(payload.title) || config.title;
+  const versionsTitle = res.locals.t('legal.versions_title');
 
   return res.render('legal/versions', {
-    title: res.locals.t('legal.versions_title'),
+    // "Previous versions - Terms of Service - <community>": the document's name
+    // is in the title, so eleven history pages are not all called the same.
+    title: `${versionsTitle} - ${documentTitle}`,
+    metaDescription: pageDescription(res.locals.t('legal.versions_intro', { title: documentTitle })),
+    breadcrumbJsonLd: breadcrumbJsonLdFor(res, legalTrail(res, [
+      { name: documentTitle, path: DOCUMENT_PATHS[type] },
+      { name: versionsTitle, path: `${DOCUMENT_PATHS[type]}/versions` }
+    ])),
     activeNav: 'legal',
     communityName: communityName(res),
     docType: type,
     docSlug: String(req.params.type),
-    documentTitle: trimmed(payload.title) || config.title,
+    documentTitle,
     versions
   });
 }, { notFoundTitle: 'Legal document not found' }));
@@ -316,7 +345,7 @@ router.get('/legal/:type/versions/compare', asyncRoute(async (req, res) => {
   const to = trimmed(req.query.v2);
 
   const base = {
-    title: res.locals.t('legal.compare_title'),
+    title: `${res.locals.t('legal.compare_title')} - ${config.title}`,
     activeNav: 'legal',
     communityName: communityName(res),
     docType: type,

@@ -6,7 +6,7 @@
       "dormant": "Zbudowany, nie włączony"
     },
     "title": "Funkcje",
-    "meta_title": "Funkcje - Project NEXUS v1.6",
+    "meta_title": "Funkcje",
     "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.6, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
     "heading": "Co robi Project NEXUS",
     "subheading": "Project NEXUS to platforma społecznościowa klasy korporacyjnej, obsługująca wielu dzierżawców. Każdy poniższy moduł jest już dostępny w wersji 1.5. Uczciwie etykietujemy moduły: nieoznaczone elementy są ogólnie dostępne; nowsze lub aktywnie utwardzające się powierzchnie mają chip Beta lub Preview; a wbudowany, niewłączony chip oznacza, że ​​praca została zakończona i wyłączona i oczekuje na żądanie.",
@@ -591,7 +591,7 @@
   },
   "changelog_page": {
     "title": "Dziennik zmian",
-    "meta_title": "Dziennik zmian - Projekt NEXUS",
+    "meta_title": "Dziennik zmian",
     "meta_description": "Każda zauważalna zmiana dostarczona w Projekcie NEXUS, w formacie Keep-a-Changelog, zgodnie z wersjonowaniem semantycznym. Pochodzi z CHANGELOG.md w publicznym repozytorium źródeł.",
     "heading": "Dziennik zmian",
     "subheading": "Każda zauważalna zmiana w Projekcie NEXUS, w formacie Keep-a-Changelog. Platforma obsługuje wersjonowanie semantyczne.",

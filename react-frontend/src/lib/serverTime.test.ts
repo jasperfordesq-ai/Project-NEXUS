@@ -10,6 +10,7 @@ import {
   formatServerDate,
   formatServerDateTime,
   parseLocalCalendarDate,
+  toIsoDateTime,
   parseServerTimestamp,
 } from './serverTime';
 
@@ -141,5 +142,25 @@ describe('calendarDayFromToday', () => {
 
   it('crosses a month boundary correctly', () => {
     expect(calendarDayFromToday(new Date(2026, 8, 30, 22, 0), new Date(2026, 9, 1, 8, 0))).toBe('yesterday');
+  });
+});
+
+describe('toIsoDateTime', () => {
+  it('reads the database form as UTC', () => {
+    expect(toIsoDateTime('2026-10-23 14:00:00')).toBe('2026-10-23T14:00:00Z');
+    expect(toIsoDateTime('2026-10-23 14:00:00.123')).toBe('2026-10-23T14:00:00.123Z');
+  });
+
+  it('leaves an ISO 8601 value alone', () => {
+    expect(toIsoDateTime('2026-10-23T14:00:00+01:00')).toBe('2026-10-23T14:00:00+01:00');
+    expect(toIsoDateTime('2026-10-23T14:00:00Z')).toBe('2026-10-23T14:00:00Z');
+    expect(toIsoDateTime('2026-10-23T14:00:00.000000Z')).toBe('2026-10-23T14:00:00.000000Z');
+    expect(toIsoDateTime('2026-10-23')).toBe('2026-10-23');
+  });
+
+  it('returns undefined for nothing', () => {
+    expect(toIsoDateTime(null)).toBeUndefined();
+    expect(toIsoDateTime(undefined)).toBeUndefined();
+    expect(toIsoDateTime('  ')).toBeUndefined();
   });
 });

@@ -50,7 +50,10 @@ vi.mock('@/contexts', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
+vi.mock('@/components/seo', async () => ({
+  PageMeta: () => null,
+  PrerenderStatusCode: (await import('@/components/seo/PrerenderStatusCode')).PrerenderStatusCode,
+}));
 vi.mock('@/components/navigation', () => ({
   Breadcrumbs: () => <nav aria-label="breadcrumb" />,
 }));
@@ -139,6 +142,24 @@ describe('CustomPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Page Not Found')).toBeInTheDocument();
     });
+    // A failed load is not a missing page: crawlers must not be told 404.
+    expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
+  });
+
+  // 2026-10-23 SEO audit: a missing custom page answered crawlers 200.
+  it('tells crawlers 404 when the server says the page does not exist', async () => {
+    mockApiGet.mockResolvedValue({ success: false, code: 'RESOURCE_NOT_FOUND' });
+    render(<CustomPage />);
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="prerender-status-code"]')?.getAttribute('content')).toBe('404');
+    });
+  });
+
+  it('does not claim 404 for a server error', async () => {
+    mockApiGet.mockResolvedValue({ success: false, code: 'SERVER_ERROR' });
+    render(<CustomPage />);
+    await waitFor(() => expect(screen.getByText('Page Not Found')).toBeInTheDocument());
+    expect(document.querySelector('meta[name="prerender-status-code"]')).toBeNull();
   });
 
   it.each(['html', 'builder'])('gives a %s page a heading named after the page for screen readers', async (format) => {

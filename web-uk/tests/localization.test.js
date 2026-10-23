@@ -200,11 +200,11 @@ describe('localized accessible document shell', () => {
   ])('renders $locale document titles and primary headings for the public browser gate', async ({ locale, direction }) => {
     const mountPath = '/acme/accessible';
     const pages = [
-      // 🔴 The community home tab title is the community's OWN name (a proper noun, not
-      // localised), while its H1 stays the localised "Accessible" service label. This
-      // replaced "Accessible - <service>" — where the community name was absent and
-      // "Accessible" appeared twice. So home asserts a different title vs h1.
-      { path: '', key: 'home.title', title: 'Acme Timebank' },
+      // 🔴 The community home tab title AND its H1 are the community's OWN name (a
+      // proper noun, not localised). The localised "Accessible" service label is now
+      // the caption above the H1 (2026-10-23); until then it was the H1 itself, so
+      // the busiest page's main heading never named the community.
+      { path: '', key: 'home.title', title: 'Acme Timebank', h1: 'Acme Timebank', caption: true },
       { path: '/about', key: 'about.title', replacements: { name: 'Acme Timebank' } },
       { path: '/guide', key: 'guide.title' },
       { path: '/faq', key: 'faq.title' },
@@ -226,7 +226,10 @@ describe('localized accessible document shell', () => {
       // The home page title is the community name alone; it is not repeated
       // as "Acme Timebank - Acme Timebank" (2026-10-23).
       expect(response.text).toContain(page.title ? `<title>${expectedTitle}</title>` : `<title>${expectedTitle} - `);
-      expect(response.text).toContain(`<h1 class="govuk-heading-xl">${expectedIdentity}</h1>`);
+      expect(response.text).toContain(`<h1 class="govuk-heading-xl">${page.h1 || expectedIdentity}</h1>`);
+      if (page.caption) {
+        expect(response.text).toContain(`<span class="govuk-caption-xl">${expectedIdentity}</span>`);
+      }
     }
   });
 

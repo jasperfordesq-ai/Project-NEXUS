@@ -57,7 +57,10 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   cn: (...classes: unknown[]) => classes.filter(Boolean).join(' '),
 }));
 
-vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
+vi.mock('@/components/seo', async () => ({
+  PageMeta: () => null,
+  PrerenderStatusCode: (await import('@/components/seo/PrerenderStatusCode')).PrerenderStatusCode,
+}));
 vi.mock('@/components/navigation', () => ({
   Breadcrumbs: () => <nav aria-label="breadcrumb" />,
 }));
@@ -237,4 +240,69 @@ describe('BlogPostPage', () => {
     });
   });
 
+
+  // 2026-10-23 SEO audit: a missing post answered crawlers 200 (a soft 404).
+  describe('crawler status for a missing post', () => {
+    const statusMeta = () => document.querySelector('meta[name="prerender-status-code"]');
+
+    it('tells crawlers 404 when the server says the post does not exist', async () => {
+      mockApiGet.mockResolvedValue({ success: false, code: 'NOT_FOUND' });
+      render(<BlogPostPage />);
+      await waitFor(() => expect(statusMeta()?.getAttribute('content')).toBe('404'));
+    });
+
+    it('does not claim 404 for a server error', async () => {
+      mockApiGet.mockResolvedValue({ success: false, code: 'SERVER_ERROR' });
+      render(<BlogPostPage />);
+      await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+      expect(statusMeta()).toBeNull();
+    });
+
+    it('does not claim 404 when the request fails', async () => {
+      mockApiGet.mockRejectedValue(new Error('Network error'));
+      render(<BlogPostPage />);
+      await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+      expect(statusMeta()).toBeNull();
+    });
+  });
+
+  describe('Article dates', () => {
+    const articleDates = async () => {
+      await waitFor(() => expect(document.querySelector('script[type="application/ld+json"]')).not.toBeNull());
+      const data = JSON.parse(document.querySelector('script[type="application/ld+json"]')?.textContent ?? '{}');
+      return { published: data.datePublished, modified: data.dateModified };
+    };
+
+    it('turns the database date form into ISO 8601 (UTC)', async () => {
+      mockApiGet.mockResolvedValue({
+        success: true,
+        data: { ...mockPost, published_at: '2026-10-23 14:00:00', updated_at: '2026-10-24 09:30:00' },
+      });
+      render(<BlogPostPage />);
+      expect(await articleDates()).toEqual({ published: '2026-10-23T14:00:00Z', modified: '2026-10-24T09:30:00Z' });
+    });
+
+    it('leaves ISO 8601 dates alone', async () => {
+      mockApiGet.mockResolvedValue({
+        success: true,
+        data: { ...mockPost, published_at: '2026-10-23T14:00:00+01:00', updated_at: null },
+      });
+      render(<BlogPostPage />);
+      expect(await articleDates()).toEqual({
+        published: '2026-10-23T14:00:00+01:00',
+        modified: '2026-10-23T14:00:00+01:00',
+      });
+    });
+  });
+
+  // Real-user speed: the hero picture is the largest paint.
+  it('loads the hero image eagerly, at high priority, with its size reserved', async () => {
+    mockApiGet.mockResolvedValue({ success: true, data: { ...mockPost, featured_image: '/uploads/hero.jpg' } });
+    render(<BlogPostPage />);
+    const img = await screen.findByRole('img', { name: 'How Timebanking Works' });
+    expect(img).not.toHaveAttribute('loading', 'lazy');
+    expect(img).toHaveAttribute('fetchpriority', 'high');
+    expect(img).toHaveAttribute('width', '1200');
+    expect(img).toHaveAttribute('height', '675');
+  });
 });
