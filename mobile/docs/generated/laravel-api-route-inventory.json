@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2801,
-  "api_route_rows": 2766,
-  "distinct_api_paths": 2307,
+  "total_registered_routes": 2803,
+  "api_route_rows": 2768,
+  "distinct_api_paths": 2309,
   "route_source_fingerprint": {
-    "digest": "072890005c7a9d36e48e5ad7bfe29de8a58e0f8c7c9dbbd627df8ee85be1f01f",
+    "digest": "6fb8145fe67b5a2c00ee3f5733902b2dfee25d194768889347458764888d37c0",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "be1e12f52297161efeb1697f537d7f4e8fb5c4757ff0ae93d6f3a041fc745678"
+        "sha256": "ccdcb0909ed80b07333b91dad3b779eeca25d48d56177bb1e6b42945a9fe01ee"
       },
       {
         "file": "routes/channels.php",
@@ -26,7 +26,7 @@
       },
       {
         "file": "bootstrap/app.php",
-        "sha256": "d852c38db196e00be5c1570a16f13b4709b70c83c8c3780c1f1f1207d198624b"
+        "sha256": "5f1ac6f64287a2c5f1f82e1ad72a9a4aefc781a1e27fd1ccee3f4d07fcdb8599"
       }
     ]
   },
@@ -6607,7 +6607,13 @@
     "/api/v2/seo/metadata/{slug}": [
       "GET"
     ],
+    "/api/v2/seo/not-found": [
+      "POST"
+    ],
     "/api/v2/seo/redirects": [
+      "GET"
+    ],
+    "/api/v2/seo/resolve-redirect": [
       "GET"
     ],
     "/api/v2/shares": [

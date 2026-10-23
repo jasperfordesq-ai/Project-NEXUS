@@ -30,6 +30,9 @@ export interface EventStructuredDataContext {
 /** Whole-hour/minute UTC offset of a zone at an instant, as "+01:00". */
 function zoneOffset(instant: Date, timeZone: string): string | null {
   try {
+    // locale-exempt: machine format, never displayed. 'en-US' with numeric
+    // parts and h23 is read back by part type to compute the zone's UTC
+    // offset for schema.org dates; no member sees this output.
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone,
       hourCycle: 'h23',

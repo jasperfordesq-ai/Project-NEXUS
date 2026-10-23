@@ -29,6 +29,18 @@ class SitemapControllerTest extends TestCase
         Cache::flush();
     }
 
+    /**
+     * hour-timebank's sitemap, asked for on that community's own host. Since
+     * 2026-10-23 a community's sitemap answers only there; these tests used to
+     * rely on any host being accepted.
+     */
+    private function communitySitemap()
+    {
+        $id = (int) DB::table('tenants')->where('slug', 'hour-timebank')->value('id');
+        $host = \App\Services\SitemapService::targetFor($id)['host'] ?? 'localhost';
+        return $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-hour-timebank.xml');
+    }
+
     // =========================================================================
     // GET /sitemap.xml
     // =========================================================================
@@ -121,19 +133,19 @@ class SitemapControllerTest extends TestCase
 
     public function test_tenant_sitemap_returns_200_for_valid_slug(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $response->assertStatus(200);
     }
 
     public function test_tenant_sitemap_returns_xml_content_type(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
     }
 
     public function test_tenant_sitemap_contains_urlset_root(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $content = $response->getContent();
 
         $this->assertStringContainsString('<urlset', $content);
@@ -142,7 +154,7 @@ class SitemapControllerTest extends TestCase
 
     public function test_tenant_sitemap_contains_urls(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $content = $response->getContent();
 
         $this->assertStringContainsString('<url>', $content);
@@ -166,7 +178,7 @@ class SitemapControllerTest extends TestCase
 
     public function test_tenant_sitemap_is_valid_xml(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $content = $response->getContent();
 
         $doc = new \DOMDocument();
@@ -175,7 +187,7 @@ class SitemapControllerTest extends TestCase
 
     public function test_tenant_sitemap_includes_homepage(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $content = $response->getContent();
 
         $this->assertStringContainsString('<priority>1.0</priority>', $content);
@@ -183,7 +195,7 @@ class SitemapControllerTest extends TestCase
 
     public function test_tenant_sitemap_urls_are_frontend_urls(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $content = $response->getContent();
 
         // URLs should point to the frontend, not the API backend
@@ -199,7 +211,7 @@ class SitemapControllerTest extends TestCase
 
     public function test_sitemap_slug_allows_hyphens(): void
     {
-        $response = $this->get('/sitemap-hour-timebank.xml');
+        $response = $this->communitySitemap();
         $response->assertStatus(200);
     }
 

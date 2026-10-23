@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-21T19:56:11.949Z
-Laravel commit SHA: `22200f0aa746189c51c0f79166f53fc0cff1ff4e`
-Web UK repository commit SHA: `22200f0aa746189c51c0f79166f53fc0cff1ff4e`
+Generated: 2026-10-23T15:41:44.435Z
+Laravel commit SHA: `4f00ca49cb044aa2ed74c0915ce7eb726702c01c`
+Web UK repository commit SHA: `4f00ca49cb044aa2ed74c0915ce7eb726702c01c`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 835 |
+| web-uk routes | 836 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 125 |
+| Extra web-uk routes | 126 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -87,6 +87,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | report-a-problem | 2 | 0 | 0 | 0 |
 | resources | 12 | 0 | 0 | 0 |
 | reviews | 7 | 0 | 0 | 0 |
+| robots.txt | 0 | 0 | 1 | 0 |
 | saved | 2 | 0 | 0 | 0 |
 | search | 6 | 0 | 0 | 0 |
 | service-unavailable | 0 | 0 | 0 | 1 |
@@ -152,6 +153,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
+| GET | `/robots.txt` | robots.txt |  | web-uk/src/server.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |

@@ -74,8 +74,23 @@ class SeoServiceTest extends TestCase
 
     // ── createRedirect ──
 
+    /**
+     * The database is mocked here, so the publisher (which checks the new
+     * redirect against existing ones and writes markers) is stubbed: these
+     * tests are about the status code only. Its own rules are pinned in
+     * tests/Laravel/Feature/Seo/UrlRedirectsTest.php.
+     */
+    private function stubPublisher(?array $problem = null): void
+    {
+        $publisher = \Mockery::mock(\App\Services\SeoRedirectPublisher::class);
+        $publisher->shouldReceive('validateNew')->andReturn($problem);
+        $publisher->shouldReceive('publishTenant')->andReturnNull();
+        $this->app->instance(\App\Services\SeoRedirectPublisher::class, $publisher);
+    }
+
     public function test_createRedirect_defaults_invalid_status_to_301(): void
     {
+        $this->stubPublisher();
         DB::shouldReceive('table->insertGetId')->once()->andReturn(1);
 
         $result = $this->service->createRedirect($this->testTenantId, '/old', '/new', 999);
@@ -84,9 +99,18 @@ class SeoServiceTest extends TestCase
 
     public function test_createRedirect_accepts_301_and_302(): void
     {
+        $this->stubPublisher();
         DB::shouldReceive('table->insertGetId')->twice()->andReturn(1, 2);
 
         $this->assertEquals(1, $this->service->createRedirect($this->testTenantId, '/a', '/b', 301));
         $this->assertEquals(2, $this->service->createRedirect($this->testTenantId, '/c', '/d', 302));
+    }
+
+    public function test_createRedirect_refuses_a_redirect_that_could_never_fire(): void
+    {
+        $this->stubPublisher(['field' => 'source_url', 'message' => 'x']);
+        DB::shouldReceive('table->insertGetId')->never();
+
+        $this->assertNull($this->service->createRedirect($this->testTenantId, '/a?b=1', '/c'));
     }
 }

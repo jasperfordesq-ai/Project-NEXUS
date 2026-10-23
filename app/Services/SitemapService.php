@@ -134,7 +134,7 @@ class SitemapService
                  WHERE t.is_active = 1 ORDER BY t.id"
             );
 
-            $frontendBase = rtrim((string) (config('app.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
+            $frontendBase = rtrim((string) (config('prerender.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
             $allUrls = [];
 
             // Every community served on the app host, at the address the render
@@ -866,7 +866,7 @@ class SitemapService
      */
     public static function targetOrigin(array $target): string
     {
-        $frontend = rtrim((string) (config('app.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
+        $frontend = rtrim((string) (config('prerender.frontend_url') ?: 'https://app.project-nexus.ie'), '/');
         $frontendHost = strtolower((string) (parse_url($frontend, PHP_URL_HOST) ?? ''));
         if ($frontendHost !== '' && $frontendHost === $target['host']) {
             return (string) preg_replace('#^(https?://[^/]+).*$#i', '$1', $frontend);

@@ -22,6 +22,11 @@ return [
     // PHP containers. PrerenderService still reads the env directly; new code
     // (SeoRedirectPublisher) reads it here so a cached config keeps working.
     'cache_path' => env('PRERENDER_CACHE_PATH', '/var/www/html/storage/prerendered'),
+    // The app host's address, read exactly as PrerenderService::frontendHost()
+    // reads it (FRONTEND_URL, default the production app host). Sitemap and
+    // llms.txt addresses use this so they always agree with the render engine;
+    // config('app.frontend_url') falls back to APP_URL and can differ.
+    'frontend_url' => env('FRONTEND_URL', 'https://app.project-nexus.ie'),
 
     'ttl' => [
         // Homepage refreshes often — anything below it can change.

@@ -82,12 +82,14 @@ for (const file of ['react-frontend/nginx.conf', 'react-frontend/nginx.bluegreen
   );
 
   // A try_files chain that ends at the SPA shell must prefer the clean
-  // /_spa.html. Chains that hand off to @spa_shell are prerender snapshot
-  // lookups — they delegate rather than serve the shell themselves.
+  // /_spa.html. Chains that hand off to @spa_shell, or to @bot_spa_shell (the
+  // crawler fallback that adds X-Robots-Tag: noindex, 2026-10-23), are
+  // prerender snapshot lookups — they delegate rather than serve the shell
+  // themselves. Both named locations are checked below for /_spa.html.
   for (const line of text.split('\n')) {
     const trimmed = line.trim();
     if (!trimmed.startsWith('try_files') || !trimmed.includes('/index.html')) continue;
-    if (trimmed.includes('@spa_shell')) continue;
+    if (/@(bot_)?spa_shell\b/.test(trimmed)) continue;
     assert(
       trimmed.includes('/_spa.html'),
       `${file} try_files line must prefer /_spa.html before /index.html: ${trimmed}`,
@@ -99,6 +101,14 @@ for (const file of ['react-frontend/nginx.conf', 'react-frontend/nginx.bluegreen
   // not inherit into a block that declares any of its own, and an internal
   // redirect (error_page -> @named) is served by the target block, so a marker
   // declared anywhere else is dead.
+  // The crawler fallback (bluegreen only) serves the same shell with noindex.
+  const botShellBlock = extractBlock(text, 'location @bot_spa_shell');
+  if (botShellBlock !== null) {
+    assert(botShellBlock.includes('/_spa.html'), `${file} location @bot_spa_shell must serve /_spa.html first`);
+    assert(botShellBlock.includes(SHELL_MARKER), `${file} location @bot_spa_shell must set the SPA-shell marker itself`);
+    assert(botShellBlock.includes('X-Robots-Tag "noindex"'), `${file} location @bot_spa_shell must tell crawlers noindex`);
+  }
+
   const shellBlock = extractBlock(text, 'location @spa_shell');
   if (shellBlock !== null) {
     assert(
