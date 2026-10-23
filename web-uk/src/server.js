@@ -109,7 +109,8 @@ const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./l
 const { applyTrustedProxies } = require('./lib/trusted-proxies');
 const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
-const { NOINDEX, buildRobotsTxt } = require('./lib/seo-meta');
+const { NOINDEX } = require('./lib/seo-meta');
+const { robotsRoute, sitemapRoute } = require('./lib/accessible-sitemap');
 
 function applyRobotsHeader(res, directive) {
   if (directive && !res.headersSent) {
@@ -527,15 +528,19 @@ app.get('/version', (req, res) => {
 });
 
 // robots.txt for every accessible host (the shared host and each community's
-// own accessible domain). Static, tenant-free and above the limiter, like the
-// two endpoints above. See buildRobotsTxt in src/lib/seo-meta.js.
-app.get('/robots.txt', (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600');
-  res.type('text/plain').send(buildRobotsTxt());
-});
+// own accessible domain). Above the limiter, like the two endpoints above. It
+// names the community's accessible sitemap when the request resolves one
+// community that publishes it (the shared host's root robots.txt names none).
+// See src/lib/accessible-sitemap.js and buildRobotsTxt in src/lib/seo-meta.js.
+app.get('/robots.txt', robotsRoute);
 
 // General rate limiting (see lib/rateLimiter.js for route-specific limits)
 app.use(generalLimiter);
+
+// The accessible site's own sitemap: /sitemap.xml on a community's accessible
+// domain, /{slug}/accessible/sitemap.xml on the shared host. Below the limiter
+// because a cold build reads the API. See src/lib/accessible-sitemap.js.
+app.get('/sitemap.xml', sitemapRoute);
 
 // Body parsing
 //

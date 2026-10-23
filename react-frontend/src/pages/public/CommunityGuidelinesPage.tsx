@@ -122,7 +122,7 @@ export function CommunityGuidelinesPage() {
       <>
         <PageMeta
           title={t('page_meta.community_guidelines.title')}
-          description={t('page_meta.community_guidelines.description')}
+          description={t('page_meta.community_guidelines.description', { name: branding.name })}
         />
         <CustomLegalDocument document={customDoc} />
       </>
@@ -135,7 +135,7 @@ export function CommunityGuidelinesPage() {
     <>
       <PageMeta
         title={t('page_meta.community_guidelines.title')}
-        description={t('page_meta.community_guidelines.description')}
+        description={t('page_meta.community_guidelines.description', { name: branding.name })}
       />
       <motion.div
         variants={containerVariants}

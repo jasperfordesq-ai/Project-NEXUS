@@ -3,7 +3,7 @@
     "introduction": "Réamhrá"
   },
   "terms": {
-    "meta_description": "Téarmaí agus coinníollacha a rialaíonn úsáid ár n-ardán bainc ama pobail.",
+    "meta_description": "Téarmaí agus coinníollacha a rialaíonn úsáid {{name}}, ardán bainc ama pobail.",
     "page_title": "Téarmaí Seirbhíse",
     "heading": "Téarmaí Seirbhíse",
     "subtitle": "Na rialacha agus na treoirlínte maidir lenár n-ardán a úsáid",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "Tá rochtain teoranta do bhróicéirí agus riarthóirí údaraithe i bpobal an chomhalta, agus ní thaispeántar na sonraí ar phróifílí poiblí, ar shuaitheantais, i dtorthaí cuardaigh ná i ngnáthanailísíocht.",
     "safeguarding_data_retention": "Ní mór d’Oibreoir an Phobail sceideal coinneála doiciméadaithe a fhoilsiú agus a chur i bhfeidhm, agus na meiteashonraí a bhaint nuair nach bhfuil gá leo a thuilleadh, faoi réir aon oibleagáide dlíthiúla a bhfuil doiciméadú cuí déanta uirthi.",
     "safeguarding_data_correction": "Is féidir le comhaltaí a stádas príobháideach a fheiceáil, athbhreithniú bróicéara a iarraidh gan fianaise a sheoladh, agus iarraidh ar Oibreoir an Phobail cinneadh míchruinn a cheartú nó a cheistiú.",
-    "meta_description": "Conas a bhailímid, a úsáidimid agus a chosnaímid do shonraí pearsanta ar ár n-ardán pobail.",
+    "meta_description": "Conas a bhailíonn, a úsáideann agus a chosnaíonn {{name}} do shonraí pearsanta.",
     "page_title": "Beartas Príobháideachais",
     "heading": "Beartas Príobháideachais",
     "subtitle": "Conas a bhailímid, a úsáidimid agus a chosnaímid do chuid faisnéise pearsanta",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Déan Teagmháil lenár bhFoireann Príobháideachais"
   },
   "cookies": {
-    "meta_description": "Eolas faoin gcaoi a n-úsáidimid fianáin chun d’eispéireas ar ár n-ardán a fheabhsú.",
+    "meta_description": "Eolas faoin gcaoi a n-úsáideann {{name}} fianáin chun d’eispéireas a fheabhsú.",
     "page_title": "Beartas Fianán",
     "heading": "Beartas Fianán",
     "subtitle": "Conas a úsáidimid fianáin agus teicneolaíochtaí comhchosúla ar ár n-ardán",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Beartas Príobháideachais"
   },
   "accessibility": {
-    "meta_description": "Ár dtiomantas an t-ardán a dhéanamh inrochtana do chách, ag cloí le caighdeáin WCAG 2.1 AA.",
+    "meta_description": "Ár dtiomantas {{name}} a dhéanamh inrochtana do chách, ag cloí le caighdeáin WCAG 2.1 AA.",
     "page_title": "Inrochtaineacht",
     "heading": "Ráiteas Inrochtaineachta",
     "subtitle": "Tá {{name}} tiomanta d'inrochtaineacht dhigiteach a chinntiú do dhaoine de gach cumas.",
@@ -717,15 +717,15 @@
     },
     "community_guidelines": {
       "title": "Treoirlínte Pobail",
-      "description": "Treoirlínte pobail le haghaidh baincéireacht ama mheasúil agus chuiditheach."
+      "description": "Treoirlínte pobail le haghaidh baincéireacht ama mheasúil agus chuiditheach ar {{name}}."
     },
     "acceptable_use": {
       "title": "Beartas um Úsáid Inghlactha",
-      "description": "Beartas úsáide inghlactha dár n-ardán bainc ama pobail."
+      "description": "Beartas úsáide inghlactha do {{name}}, ardán bainc ama pobail."
     },
     "legal_hub": {
       "title": "Faisnéis Dhlíthiúil",
-      "description": "Doiciméid dhlíthiúla, beartais agus faisnéis faoi chomhlíonadh."
+      "description": "Doiciméid dhlíthiúla, beartais agus faisnéis faoi chomhlíonadh do {{name}}."
     },
     "legal_version_history": {
       "title": "Stair Leaganacha na nDoiciméad Dlíthiúil",

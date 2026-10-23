@@ -189,7 +189,7 @@ export function PrivacyPage() {
   if (customDoc) {
     return (
       <>
-        <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description')} />
+        <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description', { name: branding.name })} />
         <CustomLegalDocument document={customDoc} accentColor="indigo" />
       </>
     );
@@ -202,7 +202,7 @@ export function PrivacyPage() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-8"
     >
-      <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description')} />
+      <PageMeta title={t('privacy.page_title')} description={t('privacy.meta_description', { name: branding.name })} />
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
         <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-accent/20 to-accent-gradient-end/20 mb-4">

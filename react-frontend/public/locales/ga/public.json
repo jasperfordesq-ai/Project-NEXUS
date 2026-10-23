@@ -7,7 +7,7 @@
     },
     "title": "Gnéithe",
     "meta_title": "Gnéithe",
-    "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don líonra comhpháirtíochta, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
+    "meta_description": "Gach modúl atá ar fáil in Project NEXUS, na bogearraí ar a bhfuil {{name}} bunaithe, le lipéid mhacánta aibíochta don bhaincéireacht ama, don mhargadh, don chúram pobail agus don tsábháilteacht.",
     "heading": "Cad a dhéanann Project NEXUS",
     "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v3.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
     "maturity_key_title": "Conas a lipéadaímid aibíocht",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Téigh i dteagmháil leis an bhfoireann má tá ceist agat faoi chlárú, comhpháirtíocht, oideasacht shóisialta, inrochtaineacht nó conas a oibríonn baincéireacht ama. Táimid sásta cabhrú leat.",
+    "meta_description": "Téigh i dteagmháil le {{name}} má tá ceist agat faoi chlárú, comhpháirtíocht, oideasacht shóisialta, inrochtaineacht nó conas a oibríonn baincéireacht ama. Táimid sásta cabhrú leat.",
     "title": "Déan Teagmháil Linn",
     "subtitle": "An bhfuil ceist agat faoi {{name}}? Ba bhreá linn cloisteáil uait.",
     "success_title": "Teachtaireacht Seolta!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Ceisteanna Coitianta",
-    "meta_description": "Ceisteanna coitianta faoi bhaincéireacht ama, creidmheasanna ama, liostálacha, malartuithe, muinín agus sábháilteacht, agus ballraíocht pobail — gach a bhfuil uait chun tosú.",
+    "meta_description": "Ceisteanna coitianta faoi {{name}}: baincéireacht ama, creidmheasanna ama, liostálacha, malartuithe, muinín agus sábháilteacht, agus ballraíocht — gach a bhfuil uait chun tosú.",
     "title": "Ceisteanna Coitianta",
     "subtitle_before_link": "Ní féidir leat a bhfuil uait a aimsiú? Tabhair cuairt ar ár",
     "help_center_link": "nIonad Cabhrach",

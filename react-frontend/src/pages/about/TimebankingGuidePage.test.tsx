@@ -12,6 +12,7 @@ import { render, screen } from '@/test/test-utils';
 
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
+    branding: { name: 'Test Timebank' },
     tenantPath: (p: string) => `/test${p}`,
     hasModule: vi.fn(() => true),
   })),
@@ -87,6 +88,7 @@ describe('TimebankingGuidePage', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
     mockUseTenant.mockReturnValue({
+      branding: { name: 'Test Timebank' },
       tenantPath: (p: string) => `/test${p}`,
       hasModule: vi.fn(() => true),
     });
@@ -151,6 +153,7 @@ describe('TimebankingGuidePage', () => {
   it('does not show the listings CTA to a signed-in member when listings are disabled', () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
     mockUseTenant.mockReturnValue({
+      branding: { name: 'Test Timebank' },
       tenantPath: (p: string) => `/test${p}`,
       hasModule: vi.fn(() => false),
     });

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-23T18:40:24.236Z",
+  "generatedAt": "2026-10-23T21:24:13.065Z",
   "provenance": {
-    "generatedAt": "2026-10-23T18:40:24.236Z",
+    "generatedAt": "2026-10-23T21:24:13.065Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
+    "laravelCommitSha": "37f469a9aa10a26f46a44730d0748e189d8e528c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
+    "webUkRepositoryCommitSha": "37f469a9aa10a26f46a44730d0748e189d8e528c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -23,7 +23,7 @@
       "routes/api-volunteering-qualifications.php",
       "routes/api-marketplace-admin.php"
     ],
-    "laravelApiRoutesSha256": "e4b1c80468e11e32bb132be1014b63f460b9652d7a47ec550ed36169fd2304ce"
+    "laravelApiRoutesSha256": "91c08520f30500147ff835f10eb4ed6e366c16d16650919fbcf8093ffd2fff2f"
   },
   "summary": {
     "contracts": 768,
@@ -321,6 +321,7 @@
         "tests/runtime/saved-collections-mutation.spec.js",
         "tests/runtime/tenant-module-gates.spec.js",
         "tests/runtime/volunteering-accessibility-mutation.spec.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -382,6 +383,7 @@
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
         "tests/runtime/resources-mutation.spec.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -1463,6 +1465,7 @@
         "tests/registration-contract.test.js",
         "tests/routes.test.js",
         "tests/safe-filter-census.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -1511,6 +1514,7 @@
         "tests/auth-tenant-authority.test.js",
         "tests/localization.test.js",
         "tests/registration-contract.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js"
       ],
@@ -1550,6 +1554,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/form-input-preserved-on-error.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -12998,6 +13003,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -15911,6 +15917,7 @@
         "tests/api.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -15950,6 +15957,7 @@
         "tests/api.test.js",
         "tests/legal-fidelity.test.js",
         "tests/localization.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -19522,6 +19530,7 @@
         "tests/messages-unread-freshness-and-group-self-add.test.js",
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -19840,6 +19849,7 @@
         "tests/localization.test.js",
         "tests/notifications-announce-outcome.test.js",
         "tests/notifications-category.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -20536,6 +20546,7 @@
         "tests/localization.test.js",
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -21483,6 +21494,7 @@
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-page-meta.test.js",
         "tests/whats-on-parity.test.js"
       ],
@@ -22876,6 +22888,7 @@
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
         "tests/runtime/tenant-module-gates.spec.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -22925,6 +22938,7 @@
         "tests/csrf-session-binding.test.js",
         "tests/relative-date-future-values.test.js",
         "tests/routes.test.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -23592,6 +23606,7 @@
         "tests/routes.test.js",
         "tests/runtime/group-management-mutation.spec.js",
         "tests/runtime/member-block-mutation.spec.js",
+        "tests/seo-accessible-primary-sitemap.test.js",
         "tests/seo-meta.test.js",
         "tests/seo-page-meta.test.js",
         "tests/session-touch.test.js",
@@ -26176,7 +26191,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1271",
+      "source": "src/server.js:1276",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -31244,7 +31259,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts/{param}/checkin",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1502",
+      "source": "src/server.js:1507",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",

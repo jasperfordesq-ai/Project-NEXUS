@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'لا يمكن أن تشير إعادة التوجيه إلى عنوانها نفسه.',
     'redirect_duplicate_source' => 'توجد بالفعل إعادة توجيه من هذا العنوان.',
     'seo_save_failed' => 'تعذّر حفظ إعدادات تحسين محركات البحث. لم يتغيّر شيء؛ يُرجى المحاولة مرة أخرى.',
+    'seo_primary_site_invalid' => 'اختر الموقع العادي أو الموقع الميسّر.',
     'invalid_integer_field' => 'يجب أن يكون :field عددًا صحيحًا غير سالب',
     'tenant_and_plan_required' => 'مطلوبة Tenant_id وpay_plan_id.',
     'turnstile_failed' => 'لم نتمكن من التحقق من أنك إنسان. يرجى إعادة محاولة التحدي والإرسال مرة أخرى.',

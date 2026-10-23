@@ -80,7 +80,7 @@
     "comment_count_many": "{{count}} nótaí tráchta",
     "comment_count_two": "{{count}} nótaí tráchta"
   },
-  "page_description": "Scéalta, treoracha agus nuashonruithe ó phobal bainc ama — malartuithe a d'éirigh leo, ceachtanna foghlama, agus an nuacht is déanaí ó ghrúpaí áitiúla agus comhpháirtithe.",
+  "page_description": "Scéalta, treoracha agus nuashonruithe ó {{name}} — malartuithe a d'éirigh leo, ceachtanna foghlama, agus an nuacht is déanaí ó ghrúpaí áitiúla agus comhpháirtithe.",
   "min_read_one": "{{count}} nóim le léamh",
   "min_read_other": "{{count}} nóim le léamh",
   "min_read_short_one": "{{count}}n",

@@ -3,7 +3,7 @@
     "introduction": "Introducción"
   },
   "terms": {
-    "meta_description": "Términos y condiciones que rigen el uso de nuestra plataforma comunitaria de banco de tiempo.",
+    "meta_description": "Términos y condiciones que rigen el uso de {{name}}, una plataforma comunitaria de banco de tiempo.",
     "page_title": "Términos de Servicio",
     "heading": "Términos de Servicio",
     "subtitle": "Las reglas y directrices para usar nuestra plataforma",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "El acceso se limita a intermediarios autorizados y administradores de la comunidad del miembro, y estos datos no aparecen en perfiles públicos, insignias, resultados de búsqueda ni análisis generales.",
     "safeguarding_data_retention": "El Operador de la Comunidad debe publicar y aplicar un calendario de conservación documentado y eliminar los metadatos cuando dejen de ser necesarios, sujeto a cualquier obligación jurídica debidamente documentada.",
     "safeguarding_data_correction": "Los miembros pueden consultar su estado privado, solicitar una revisión por parte de un intermediario sin enviar pruebas y pedir al Operador de la Comunidad que corrija o revise una decisión inexacta.",
-    "meta_description": "Cómo recopilamos, utilizamos y protegemos sus datos personales en nuestra plataforma comunitaria.",
+    "meta_description": "Cómo {{name}} recopila, utiliza y protege sus datos personales.",
     "page_title": "Política de Privacidad",
     "heading": "Política de Privacidad",
     "subtitle": "Cómo recopilamos, usamos y protegemos tu información personal",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Contactar a Nuestro Equipo de Privacidad"
   },
   "cookies": {
-    "meta_description": "Información sobre cómo utilizamos las cookies para mejorar su experiencia en nuestra plataforma.",
+    "meta_description": "Información sobre cómo {{name}} utiliza las cookies para mejorar su experiencia.",
     "page_title": "Política de Cookies",
     "heading": "Política de Cookies",
     "subtitle": "Cómo usamos cookies y tecnologías similares en nuestra plataforma",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Política de Privacidad"
   },
   "accessibility": {
-    "meta_description": "Nuestro compromiso de hacer la plataforma accesible para todos, siguiendo los estándares WCAG 2.1 AA.",
+    "meta_description": "Nuestro compromiso de hacer {{name}} accesible para todos, siguiendo los estándares WCAG 2.1 AA.",
     "page_title": "Accesibilidad",
     "heading": "Declaración de Accesibilidad",
     "subtitle": "{{name}} está comprometido a asegurar la accesibilidad digital para personas de todas las capacidades.",
@@ -713,15 +713,15 @@
     },
     "community_guidelines": {
       "title": "Directrices de la Comunidad",
-      "description": "Directrices comunitarias para un intercambio de tiempo respetuoso y productivo."
+      "description": "Directrices comunitarias para un intercambio de tiempo respetuoso y productivo en {{name}}."
     },
     "acceptable_use": {
       "title": "Política de Uso Aceptable",
-      "description": "Política de uso aceptable para nuestra plataforma comunitaria de intercambio de tiempo."
+      "description": "Política de uso aceptable de {{name}}, una plataforma comunitaria de intercambio de tiempo."
     },
     "legal_hub": {
       "title": "Información Legal",
-      "description": "Documentos legales, políticas e información de cumplimiento."
+      "description": "Documentos legales, políticas e información de cumplimiento de {{name}}."
     },
     "legal_version_history": {
       "title": "Historial de Versiones Legales",

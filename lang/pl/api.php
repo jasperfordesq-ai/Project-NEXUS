@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'Przekierowanie nie może wskazywać na własny adres.',
     'redirect_duplicate_source' => 'Przekierowanie z tego adresu już istnieje.',
     'seo_save_failed' => 'Nie udało się zapisać ustawień SEO. Nic nie zostało zmienione; spróbuj ponownie.',
+    'seo_primary_site_invalid' => 'Wybierz stronę standardową albo stronę dostępną.',
     'invalid_integer_field' => ':field musi być nieujemną liczbą całkowitą',
     'tenant_and_plan_required' => 'id_dzierżawy i id_planu płatności są wymagane.',
     'turnstile_failed' => 'Nie mogliśmy zweryfikować, czy jesteś człowiekiem. Spróbuj ponownie podjąć wyzwanie i przesłać je ponownie.',

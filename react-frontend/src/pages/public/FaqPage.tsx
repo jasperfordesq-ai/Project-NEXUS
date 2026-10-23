@@ -51,7 +51,7 @@ const itemVariants = {
 
 export function FaqPage() {
   const { t } = useTranslation('public');
-  const { tenantPath, hasModule } = useTenant();
+  const { tenantPath, hasModule, branding } = useTenant();
   usePageTitle(t('faq.title'));
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -380,7 +380,7 @@ export function FaqPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <PageMeta title={t('faq.page_title')} description={t('faq.meta_description')} />
+      <PageMeta title={t('faq.page_title')} description={t('faq.meta_description', { name: branding.name })} />
       <Helmet>
         <script type="application/ld+json">{toJsonLd(faqSchema)}</script>
       </Helmet>

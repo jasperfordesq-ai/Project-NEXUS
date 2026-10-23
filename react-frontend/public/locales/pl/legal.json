@@ -3,7 +3,7 @@
     "introduction": "Wprowadzenie"
   },
   "terms": {
-    "meta_description": "Warunki i zasady regulujące korzystanie z naszej platformy czasowej społeczności.",
+    "meta_description": "Warunki i zasady regulujące korzystanie z platformy {{name}}, społecznościowego banku czasu.",
     "page_title": "Warunki korzystania z usługi",
     "heading": "Warunki korzystania z usługi",
     "subtitle": "Zasady i wytyczne dotyczące korzystania z naszej platformy",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "Dostęp jest ograniczony do upoważnionych pośredników i administratorów w społeczności członka. Dane nie są widoczne w profilach publicznych, odznakach, wynikach wyszukiwania ani zwykłych danych analitycznych.",
     "safeguarding_data_retention": "Operator Społeczności musi opublikować i stosować udokumentowany harmonogram przechowywania oraz usuwać metadane, gdy nie są już potrzebne, z zastrzeżeniem wszelkich należycie udokumentowanych obowiązków prawnych.",
     "safeguarding_data_correction": "Członkowie mogą wyświetlić swój prywatny status, poprosić pośrednika o weryfikację bez przesyłania dowodów oraz zwrócić się do Operatora Społeczności o poprawienie lub zakwestionowanie nieprawidłowej decyzji.",
-    "meta_description": "Jak zbieramy, używamy i chronimy Twoje dane osobowe na naszej platformie społecznościowej.",
+    "meta_description": "Jak platforma {{name}} zbiera, wykorzystuje i chroni Twoje dane osobowe.",
     "page_title": "Polityka Prywatności",
     "heading": "Polityka Prywatności",
     "subtitle": "Jak zbieramy, używamy i chronimy Twoje dane osobowe",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Skontaktuj się z naszym zespołem ds. prywatności"
   },
   "cookies": {
-    "meta_description": "Informacje o tym, jak używamy plików cookie, aby poprawić Twoje doświadczenia na naszej platformie.",
+    "meta_description": "Informacje o tym, jak platforma {{name}} używa plików cookie, aby poprawić Twoje doświadczenia.",
     "page_title": "Polityka plików cookie",
     "heading": "Polityka plików cookie",
     "subtitle": "Jak używamy plików cookie i podobnych technologii na naszej platformie",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Polityka prywatności"
   },
   "accessibility": {
-    "meta_description": "Nasze zobowiązanie do uczynienia platformy dostępną dla wszystkich, zgodnie z normami WCAG 2.1 AA.",
+    "meta_description": "Nasze zobowiązanie do uczynienia platformy {{name}} dostępną dla wszystkich, zgodnie z normami WCAG 2.1 AA.",
     "page_title": "Dostępność",
     "heading": "Oświadczenie o dostępności",
     "subtitle": "{{name}} zobowiązuje się do zapewnienia dostępności cyfrowej dla osób o różnych umiejętnościach.",
@@ -715,15 +715,15 @@
     },
     "community_guidelines": {
       "title": "Zasady społeczności",
-      "description": "Zasady społeczności dotyczące szacunku i produktywnego korzystania z czasowego bankowania."
+      "description": "Zasady społeczności platformy {{name}} dotyczące szacunku i produktywnego korzystania z banku czasu."
     },
     "acceptable_use": {
       "title": "Polityka akceptowalnego użytkowania",
-      "description": "Polityka akceptowalnego użytkowania naszej platformy czasowego bankowania społeczności."
+      "description": "Polityka akceptowalnego użytkowania platformy {{name}}, społecznościowego banku czasu."
     },
     "legal_hub": {
       "title": "Informacje prawne",
-      "description": "Dokumenty prawne, polityki i informacje o zgodności."
+      "description": "Dokumenty prawne, polityki i informacje o zgodności platformy {{name}}."
     },
     "legal_version_history": {
       "title": "Historia wersji prawnych",

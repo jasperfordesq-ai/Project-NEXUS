@@ -7,7 +7,7 @@
     },
     "title": "Funktionen",
     "meta_title": "Funktionen",
-    "meta_description": "Alle Module von Project NEXUS v1.6 mit ehrlichen Reifegrad-Kennzeichnungen für Föderation, Zeitbanking, Marktplatz, Community-Tools, Sicherheit, Analytik und Open-Source-Infrastruktur.",
+    "meta_description": "Alle Module von Project NEXUS, der Software hinter {{name}}, mit ehrlichen Reifegrad-Kennzeichnungen für Zeitbanking, Föderation, Marktplatz, Community-Tools und Sicherheit.",
     "heading": "Was Project NEXUS leistet",
     "subheading": "Project NEXUS ist eine mandantenfähige Community-Plattform der Unternehmensklasse. Jedes der folgenden Module wird heute in Version 1.5 ausgeliefert. Wir kennzeichnen Module ehrlich: Nicht gekennzeichnete Artikel sind allgemein verfügbar; neuere oder aktiv härtende Oberflächen tragen einen Beta- oder Preview-Chip; und ein eingebauter, nicht aktivierter Chip bedeutet, dass die Arbeit beendet und ausgeschaltet ist und auf Nachfrage gewartet wird.",
     "maturity_key_title": "So kennzeichnen wir den Reifegrad",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Nehmen Sie Kontakt mit dem Team auf – Fragen zum Beitritt, zur Partnerschaft, zur sozialen Verschreibung, zur Zugänglichkeit oder zur Funktionsweise von Timebanking. Wir helfen Ihnen gerne weiter.",
+    "meta_description": "Nehmen Sie Kontakt mit {{name}} auf – Fragen zum Beitritt, zur Partnerschaft, zur sozialen Verschreibung, zur Zugänglichkeit oder zur Funktionsweise von Timebanking. Wir helfen gerne.",
     "title": "Kontaktieren Sie uns",
     "subtitle": "Haben Sie eine Frage zu {{name}}? Wir freuen uns, von Ihnen zu hören.",
     "success_title": "Nachricht gesendet!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Häufig gestellte Fragen",
-    "meta_description": "Häufige Fragen zu Timebanking, Zeitguthaben, Listings, Börsen, Vertrauen und Sicherheit sowie Community-Mitgliedschaft – alles, was Sie für den Einstieg benötigen.",
+    "meta_description": "Häufige Fragen zu {{name}}: Timebanking, Zeitguthaben, Listings, Börsen, Vertrauen und Sicherheit sowie Mitgliedschaft – alles, was Sie für den Einstieg benötigen.",
     "title": "Häufig gestellte Fragen",
     "subtitle_before_link": "Finden Sie nicht, was Sie suchen? Besuchen Sie unser",
     "help_center_link": "Hilfezentrum",

@@ -27,7 +27,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, waitFor } from '@/test/test-utils';
 import React from 'react';
 
 vi.mock('@/lib/api', () => ({
@@ -129,5 +129,15 @@ describe('FaqPage', () => {
 
     expect(screen.queryByRole('link', { name: 'Wallet' })).not.toBeInTheDocument();
     expect(screen.queryByText('Go to your')).not.toBeInTheDocument();
+  });
+
+  // 2026-10-23: the description was identical on every community.
+  it("names the community in the page's search-result description", async () => {
+    render(<FaqPage />);
+    await waitFor(() => {
+      expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toMatch(
+        /^Common questions about Test Community:/,
+      );
+    });
   });
 });

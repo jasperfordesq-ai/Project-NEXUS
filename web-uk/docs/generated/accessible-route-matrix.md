@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-23T18:40:23.501Z
-Laravel commit SHA: `37be592d6fe02e754ec20dfa2132a3751a8db9ce`
-Web UK repository commit SHA: `37be592d6fe02e754ec20dfa2132a3751a8db9ce`
+Generated: 2026-10-23T21:24:12.354Z
+Laravel commit SHA: `37f469a9aa10a26f46a44730d0748e189d8e528c`
+Web UK repository commit SHA: `37f469a9aa10a26f46a44730d0748e189d8e528c`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 836 |
+| web-uk routes | 837 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 126 |
+| Extra web-uk routes | 127 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -93,6 +93,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | service-unavailable | 0 | 0 | 0 | 1 |
 | session | 0 | 0 | 0 | 1 |
 | settings | 24 | 0 | 0 | 0 |
+| sitemap.xml | 0 | 0 | 1 | 0 |
 | skills | 1 | 0 | 0 | 0 |
 | terms | 0 | 0 | 1 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
@@ -154,6 +155,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/robots.txt` | robots.txt |  | web-uk/src/server.js |
+| GET | `/sitemap.xml` | sitemap.xml |  | web-uk/src/server.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |

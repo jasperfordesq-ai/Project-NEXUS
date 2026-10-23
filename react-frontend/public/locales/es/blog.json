@@ -74,7 +74,7 @@
     "views_count_many": "{{count}} vistas",
     "comment_count_many": "{{count}} comentarios"
   },
-  "page_description": "Historias, guías y actualizaciones de la comunidad de banco de tiempo — intercambios que funcionaron, lecciones aprendidas y las últimas noticias de grupos locales y socios.",
+  "page_description": "Historias, guías y actualizaciones de {{name}} — intercambios que funcionaron, lecciones aprendidas y las últimas noticias de grupos locales y socios.",
   "min_read_one": "{{count}} min de lectura",
   "min_read_other": "{{count}} min de lectura",
   "min_read_short_one": "{{count}}m",

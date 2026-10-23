@@ -7,7 +7,7 @@
     },
     "title": "Funkcje",
     "meta_title": "Funkcje",
-    "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.6, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
+    "meta_description": "Każdy moduł Project NEXUS, oprogramowania, na którym działa {{name}}, z uczciwymi etykietami dojrzałości dla bankowania czasu, federacji, marketplace'u i bezpieczeństwa.",
     "heading": "Co robi Project NEXUS",
     "subheading": "Project NEXUS to platforma społecznościowa klasy korporacyjnej, obsługująca wielu dzierżawców. Każdy poniższy moduł jest już dostępny w wersji 1.5. Uczciwie etykietujemy moduły: nieoznaczone elementy są ogólnie dostępne; nowsze lub aktywnie utwardzające się powierzchnie mają chip Beta lub Preview; a wbudowany, niewłączony chip oznacza, że ​​praca została zakończona i wyłączona i oczekuje na żądanie.",
     "maturity_key_title": "Jak oznaczamy dojrzałość",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Skontaktuj się z zespołem — zapytaj o dołączenie, partnerstwo, przepisywanie w mediach społecznościowych, dostępność lub działanie banku czasu. Chętnie pomożemy.",
+    "meta_description": "Skontaktuj się z zespołem {{name}} — zapytaj o dołączenie, partnerstwo, preskrypcję społeczną, dostępność lub działanie banku czasu. Chętnie pomożemy.",
     "title": "Skontaktuj się z nami",
     "subtitle": "Masz pytanie dotyczące {{name}}? Chętnie usłyszymy od Ciebie.",
     "success_title": "Wiadomość wysłana!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Często zadawane pytania",
-    "meta_description": "Często zadawane pytania dotyczące banków czasu, kredytów czasowych, ofert, giełd, zaufania i bezpieczeństwa oraz członkostwa w społeczności — wszystko, czego potrzebujesz, aby zacząć.",
+    "meta_description": "Często zadawane pytania o platformę {{name}}: banki czasu, kredyty czasowe, oferty, giełdy, zaufanie i bezpieczeństwo oraz członkostwo — wszystko, czego potrzebujesz na start.",
     "title": "Najczęściej Zadawane Pytania",
     "subtitle_before_link": "Nie możesz znaleźć tego, czego szukasz? Odwiedź nasze",
     "help_center_link": "Centrum Pomocy",

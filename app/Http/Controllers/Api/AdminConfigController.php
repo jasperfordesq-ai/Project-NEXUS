@@ -193,6 +193,10 @@ class AdminConfigController extends BaseApiController
         // static file); the admin box went earlier, the API kept accepting it.
         'seo_google_verification' => '',
         'seo_bing_verification' => '',
+        // Which of the community's two sites search engines index:
+        // 'standard' (the main site, default) or 'accessible' (web-uk), for
+        // communities that use only the accessible site (2026-10-23).
+        'seo_primary_site' => 'standard',
     ];
 
     private const NATIVE_APP_DEFAULTS = [
@@ -2089,8 +2093,16 @@ class AdminConfigController extends BaseApiController
         $updated = [];
         $settingUpdates = [];
 
+        if (array_key_exists('seo_primary_site', $input)
+            && !in_array((string) ($input['seo_primary_site'] ?? 'standard'), ['standard', 'accessible'], true)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.seo_primary_site_invalid'), 'seo_primary_site', 422);
+        }
+
         foreach ($input as $key => $value) {
             if (array_key_exists($key, self::SEO_DEFAULTS)) {
+                if ($key === 'seo_primary_site' && ($value === null || $value === '')) {
+                    $value = 'standard';
+                }
                 $storeValue = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
                 $settingUpdates[$key] = [$storeValue, is_bool($value) ? 'boolean' : 'string'];
                 $updated[] = $key;

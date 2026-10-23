@@ -63,11 +63,20 @@ class SeoProbe extends Command
             $label = $target['slug'] !== '' ? $target['slug'] : "tenant {$tenantId}";
             $hidden = SitemapService::isNoindexTenant($tenantId);
             $notListed = SitemapService::notListedReason($tenantId);
+            // A community that chose its accessible site for search engines:
+            // its main pages must point there, and the accessible site must
+            // publish the sitemap instead.
+            $accessible = !$hidden && SitemapService::isAccessiblePrimary($tenantId)
+                ? SitemapService::accessibleBase($tenantId)
+                : null;
 
             foreach (['/', '/about'] as $path) {
-                $this->checkPage($label, $base, $path, $hidden);
+                $this->checkPage($label, $base, $path, $hidden, $accessible !== null ? $accessible . $path : null);
             }
             $this->checkSitemap($label, $origin, $target, $tenantId, $notListed);
+            if ($accessible !== null) {
+                $this->checkAccessibleSitemap($label, $accessible . '/sitemap.xml');
+            }
             $this->checkLlms($label, $base, $hidden);
             if (!isset($checkedHosts[$target['host']])) {
                 $checkedHosts[$target['host']] = true;
@@ -106,7 +115,7 @@ class SeoProbe extends Command
         }
     }
 
-    private function checkPage(string $label, string $base, string $path, bool $hidden): void
+    private function checkPage(string $label, string $base, string $path, bool $hidden, ?string $expectedCanonical = null): void
     {
         $url = $base . $path;
         $response = $this->fetch($url);
@@ -136,9 +145,9 @@ class SeoProbe extends Command
 
         if (!$hidden) {
             $canonical = preg_match('#<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']+)#i', $html, $c) ? $c[1] : '';
-            $expected = rtrim($url, '/');
-            if ($canonical === '' || rtrim(html_entity_decode($canonical), '/') !== $expected) {
-                $this->problems[] = "{$label} {$url}: canonical is " . ($canonical === '' ? 'missing' : $canonical) . ", expected {$url}";
+            $want = $expectedCanonical ?? $url;
+            if ($canonical === '' || rtrim(html_entity_decode($canonical), '/') !== rtrim($want, '/')) {
+                $this->problems[] = "{$label} {$url}: canonical is " . ($canonical === '' ? 'missing' : $canonical) . ", expected {$want}";
             }
         }
     }
@@ -168,6 +177,17 @@ class SeoProbe extends Command
             $this->problems[] = "{$label} {$url}: not a sitemap";
         } elseif (preg_match_all('#<loc>#', $body) < 1) {
             $this->problems[] = "{$label} {$url}: lists no addresses";
+        }
+    }
+
+    private function checkAccessibleSitemap(string $label, string $url): void
+    {
+        $response = $this->fetch($url);
+        if ($response === null) {
+            return;
+        }
+        if ($response->status() !== 200 || preg_match_all('#<loc>#', $response->body()) < 1) {
+            $this->problems[] = "{$label} {$url}: the accessible site is the community's site for search engines but its sitemap is missing or empty (HTTP {$response->status()})";
         }
     }
 

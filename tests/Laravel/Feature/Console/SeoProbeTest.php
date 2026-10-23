@@ -89,4 +89,46 @@ class SeoProbeTest extends TestCase
         ]);
         $this->artisan('seo:probe')->assertExitCode(0);
     }
+
+    public function test_an_accessible_first_community_must_point_at_and_publish_its_accessible_site(): void
+    {
+        $acc = 'access-probe.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['accessible_domain' => $acc]);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_primary_site'],
+            ['setting_value' => 'accessible', 'setting_type' => 'string', 'updated_at' => now()]
+        );
+        $h = $this->host;
+        $page = fn (string $path) => '<html><head><title>Probe</title><link rel="canonical" href="https://' . $acc . $path . '"></head></html>';
+        Http::fake([
+            "https://{$h}/about" => Http::response($page('/about')),
+            "https://{$h}/sitemap.xml" => Http::response('', 404),
+            "https://{$acc}/sitemap.xml" => Http::response('<urlset><url><loc>https://' . $acc . '/</loc></url></urlset>'),
+            "https://{$h}/llms.txt" => Http::response('# Probe'),
+            "https://{$h}/robots.txt" => Http::response("Sitemap: https://{$h}/sitemap.xml\n"),
+            "https://{$h}/" => Http::response($page('/')),
+        ]);
+        $this->artisan('seo:probe')->assertExitCode(0);
+    }
+
+    public function test_an_accessible_first_community_without_an_accessible_sitemap_fails(): void
+    {
+        $acc = 'access-probe.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['accessible_domain' => $acc]);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_primary_site'],
+            ['setting_value' => 'accessible', 'setting_type' => 'string', 'updated_at' => now()]
+        );
+        $h = $this->host;
+        $page = fn (string $path) => '<html><head><title>Probe</title><link rel="canonical" href="https://' . $acc . $path . '"></head></html>';
+        Http::fake([
+            "https://{$h}/about" => Http::response($page('/about')),
+            "https://{$h}/sitemap.xml" => Http::response('', 404),
+            "https://{$acc}/sitemap.xml" => Http::response('', 404),
+            "https://{$h}/llms.txt" => Http::response('# Probe'),
+            "https://{$h}/robots.txt" => Http::response("Sitemap: https://{$h}/sitemap.xml\n"),
+            "https://{$h}/" => Http::response($page('/')),
+        ]);
+        $this->artisan('seo:probe')->expectsOutputToContain('its sitemap is missing or empty')->assertExitCode(1);
+    }
 }

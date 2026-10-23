@@ -1851,7 +1851,14 @@
     "seo_audit_issue_sitemap_not_published": "The sitemap answers “not found” (404), so search engines get no sitemap.",
     "seo_audit_issue_sitemap_not_published_noindex": "The sitemap answers “not found” (404): this community is set to be hidden from search results, so search engines get no sitemap.",
     "seo_audit_issue_sitemap_not_published_switched_off": "The sitemap answers “not found” (404): the Automatic sitemap switch is off, so search engines get no sitemap.",
-    "seo_audit_issue_cms_page_meta_description_missing": "Page “{{title}}” ({{path}}) has no meta description."
+    "seo_audit_issue_cms_page_meta_description_missing": "Page “{{title}}” ({{path}}) has no meta description.",
+    "label_primary_site": "Site for search engines",
+    "primary_site_standard": "Standard site (recommended)",
+    "primary_site_accessible": "Accessible site",
+    "desc_primary_site": "Your community has a standard site and an accessible site. Choose the one search engines such as Google should list.",
+    "primary_site_standard_desc": "Standard site: search engines list the standard site, as they do now.",
+    "primary_site_accessible_desc": "Accessible site: search engines list the accessible site instead, and each standard-site page points them to the matching accessible page. Pages the accessible site does not have are left out of search results.",
+    "primary_site_note": "Only choose the accessible site if your community promotes it as its main site."
   },
   "email_deliverability": {
     "title": "Email Deliverability",

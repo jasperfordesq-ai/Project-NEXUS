@@ -7,7 +7,7 @@
     },
     "title": "Funzionalità",
     "meta_title": "Funzionalità",
-    "meta_description": "Ogni modulo rilasciato in Project NEXUS v1.6, con indicazioni oneste di maturità per federazione, banca del tempo, marketplace, strumenti di comunità, sicurezza, analytics e infrastruttura open source.",
+    "meta_description": "Ogni modulo di Project NEXUS, il software di {{name}}, con indicazioni oneste di maturità per banca del tempo, federazione, marketplace, strumenti di comunità e sicurezza.",
     "heading": "Cosa fa Project NEXUS",
     "subheading": "Project NEXUS è una piattaforma comunitaria multi-tenant di livello aziendale. Ogni modulo riportato di seguito viene fornito oggi con la versione 1.5. Etichettiamo i moduli in modo onesto: gli elementi non contrassegnati sono generalmente disponibili; le superfici più nuove o che si stanno indurendo attivamente portano un chip Beta o Anteprima; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "Come indichiamo la maturità",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Mettiti in contatto con il team: domande su adesione, partnership, prescrizione sociale, accessibilità o come funziona la banca del tempo. Siamo felici di aiutarti.",
+    "meta_description": "Mettiti in contatto con {{name}}: domande su adesione, partnership, prescrizione sociale, accessibilità o come funziona la banca del tempo. Siamo felici di aiutarti.",
     "title": "Ci contatti",
     "subtitle": "Ha una domanda su {{name}}? Ci piacerebbe sentirLa.",
     "success_title": "Messaggio inviato!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Domande frequenti",
-    "meta_description": "Domande comuni su timebanking, crediti temporali, elenchi, scambi, fiducia e sicurezza e appartenenza alla comunità: tutto ciò di cui hai bisogno per iniziare.",
+    "meta_description": "Domande comuni su {{name}}: timebanking, crediti temporali, elenchi, scambi, fiducia e sicurezza e appartenenza: tutto ciò di cui hai bisogno per iniziare.",
     "title": "Domande frequenti",
     "subtitle_before_link": "Non trova quello che cerca? Visiti il nostro",
     "help_center_link": "Centro assistenza",

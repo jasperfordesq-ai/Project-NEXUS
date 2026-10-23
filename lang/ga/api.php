@@ -1486,6 +1486,7 @@ return [
     'redirect_same_as_destination' => 'Ní féidir le hatreorú pointeáil ar a sheoladh féin.',
     'redirect_duplicate_source' => 'Tá atreorú ón seoladh seo ann cheana.',
     'seo_save_failed' => 'Níorbh fhéidir na socruithe SEO a shábháil. Níor athraíodh aon rud; bain triail eile as.',
+    'seo_primary_site_invalid' => 'Roghnaigh an suíomh caighdeánach nó an suíomh inrochtana.',
     'invalid_integer_field' => 'Ní mór gur slánuimhir neamhdhiúltach é :field',
     'tenant_and_plan_required' => 'tá tenant_id agus pay_plan_id ag teastáil.',
     'turnstile_failed' => 'Níorbh fhéidir linn a fhíorú gur duine daonna tú. Bain triail eile as an dúshlán agus cuir isteach arís.',

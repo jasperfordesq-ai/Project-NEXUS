@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import userEvent from '@testing-library/user-event';
 
 // The sharing-image field uploads through the API client directly.
 const { mockApiUpload } = vi.hoisted(() => ({ mockApiUpload: vi.fn() }));
@@ -244,6 +245,55 @@ describe('SeoOverview', () => {
       tenant_robots_directive: 'noindex, follow',
       tenant_seo_organization_type: 'CommunityOrganization',
     })));
+  });
+
+  // seo_primary_site (2026-10-23): which of the two sites search engines list.
+  describe('site for search engines', () => {
+    const save = () => {
+      const saveBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('save'));
+      fireEvent.click(saveBtn!);
+    };
+
+    it('defaults to the standard site, explains both choices, and saves "standard"', async () => {
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+      expect(screen.getAllByText('Site for search engines').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Standard site (recommended)').length).toBeGreaterThan(0);
+      expect(screen.getByText(/search engines list the accessible site instead/)).toBeInTheDocument();
+      expect(screen.getByText(/Only choose the accessible site if your community promotes it as its main site/))
+        .toBeInTheDocument();
+      save();
+      await waitFor(() => expect(mockAdminSettings.updateSeoSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ seo_primary_site: 'standard' }),
+      ));
+    });
+
+    it('shows a saved "accessible" choice and keeps it on save', async () => {
+      mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ seo_primary_site: 'accessible' }));
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+      const trigger = await screen.findByRole('button', { name: /Site for search engines/ });
+      expect(trigger).toHaveTextContent('Accessible site');
+      save();
+      await waitFor(() => expect(mockAdminSettings.updateSeoSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ seo_primary_site: 'accessible' }),
+      ));
+    });
+
+    it('lets the admin switch to the accessible site', async () => {
+      const user = userEvent.setup();
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+      await user.click(await screen.findByRole('button', { name: /Site for search engines/ }));
+      await user.click(await screen.findByRole('option', { name: 'Accessible site' }));
+      save();
+      await waitFor(() => expect(mockAdminSettings.updateSeoSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ seo_primary_site: 'accessible' }),
+      ));
+    });
   });
 
   it('shows success toast after save', async () => {

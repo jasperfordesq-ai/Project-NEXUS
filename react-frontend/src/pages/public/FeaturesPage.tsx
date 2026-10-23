@@ -68,8 +68,7 @@ import { useTenant } from '@/contexts';
  * promise about their own site, so the availability notice under the hero is
  * load-bearing: do not remove it or demote it to a footnote.
  *
- * 🔴 Version-bearing copy lives in `features_page.meta_description` and
- * `subheading` in `locales/en/public.json` (`meta_title` is just "Features"
+ * 🔴 Version-bearing copy lives in `subheading` in `locales/en/public.json` (`meta_title` is just "Features"
  * since 2026-10-23: it is every community's tab title, so it no longer names
  * the platform or its version). It said
  * "v1.5" for three minor releases while the release chip beside the heading —
@@ -268,7 +267,7 @@ const GROUP_ICONS: Record<string, ReactNode> = {
 
 export function FeaturesPage() {
   const { t } = useTranslation('public');
-  const { tenantPath } = useTenant();
+  const { tenantPath, branding } = useTenant();
   usePageTitle(t('features_page.title'));
 
   const { query, setQuery, category, setCategory, visible, total, shown, isFiltered, reset } =
@@ -289,7 +288,7 @@ export function FeaturesPage() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-4 sm:px-6 lg:px-8">
       <PageMeta
         title={t('features_page.meta_title')}
-        description={t('features_page.meta_description')}
+        description={t('features_page.meta_description', { name: branding.name })}
       />
 
       {/* Hero */}

@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'Een doorverwijzing kan niet naar haar eigen adres wijzen.',
     'redirect_duplicate_source' => 'Er is al een doorverwijzing vanaf dit adres.',
     'seo_save_failed' => 'De SEO-instellingen konden niet worden opgeslagen. Er is niets gewijzigd; probeer het opnieuw.',
+    'seo_primary_site_invalid' => 'Kies de standaardsite of de toegankelijke site.',
     'invalid_integer_field' => ':field moet een niet-negatief geheel getal zijn',
     'tenant_and_plan_required' => 'tenant_id en pay_plan_id zijn vereist.',
     'turnstile_failed' => 'We konden niet verifiëren dat u een mens bent. Probeer de uitdaging opnieuw en dien deze opnieuw in.',

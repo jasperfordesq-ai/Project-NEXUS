@@ -21,6 +21,7 @@ vi.mock('@/lib/api', () => ({
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    branding: { name: 'Test Timebank' },
     tenantPath: (p: string) => `/test${p}`,
     hasFeature: vi.fn(() => true),
     hasModule: vi.fn(() => true),

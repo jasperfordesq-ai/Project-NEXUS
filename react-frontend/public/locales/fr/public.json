@@ -7,7 +7,7 @@
     },
     "title": "Fonctionnalités",
     "meta_title": "Fonctionnalités",
-    "meta_description": "Tous les modules livrés dans Project NEXUS v1.6, avec des indications honnêtes sur leur maturité pour la fédération, la banque de temps, la place de marché, les outils communautaires, la sécurité, l'analyse et l'infrastructure open source.",
+    "meta_description": "Tous les modules de Project NEXUS, le logiciel de {{name}}, avec des indications honnêtes sur leur maturité : banque de temps, fédération, place de marché, outils communautaires et sécurité.",
     "heading": "Ce que Project NEXUS fait",
     "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v3.1.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
     "maturity_key_title": "Comment nous indiquons la maturité",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Entrez en contact avec l'équipe – questions sur l'adhésion, le partenariat, la prescription sociale, l'accessibilité ou le fonctionnement de la banque de temps. Nous sommes heureux de vous aider.",
+    "meta_description": "Contactez {{name}} – questions sur l'adhésion, le partenariat, la prescription sociale, l'accessibilité ou le fonctionnement de la banque de temps. Nous sommes heureux de vous aider.",
     "title": "Contactez-nous",
     "subtitle": "Vous avez une question sur {{name}} ? Nous serions ravis de vous entendre.",
     "success_title": "Message envoyé !",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Foire aux questions",
-    "meta_description": "Questions courantes sur la banque de temps, les crédits de temps, les annonces, les échanges, la confiance et la sécurité, ainsi que l'adhésion à la communauté : tout ce dont vous avez besoin pour commencer.",
+    "meta_description": "Questions courantes sur {{name}} : banque de temps, crédits de temps, annonces, échanges, confiance et sécurité, adhésion — tout ce dont vous avez besoin pour commencer.",
     "title": "Questions fréquemment posées",
     "subtitle_before_link": "Vous ne trouvez pas ce que vous cherchez ? Visitez notre",
     "help_center_link": "Centre d'aide",

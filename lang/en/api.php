@@ -87,6 +87,7 @@ return [
     'redirect_same_as_destination' => 'A redirect can\'t point to its own address.',
     'redirect_duplicate_source' => 'There is already a redirect from this address.',
     'seo_save_failed' => 'The SEO settings could not be saved. Nothing was changed; please try again.',
+    'seo_primary_site_invalid' => 'Choose the standard site or the accessible site.',
     'no_fields_to_update'          => 'No fields to update',
     'no_fields_provided'           => 'No fields provided to update',
     'request_body_empty'           => 'Request body is empty',

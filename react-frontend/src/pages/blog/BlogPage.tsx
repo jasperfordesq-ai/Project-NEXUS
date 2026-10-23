@@ -117,6 +117,7 @@ const categoryColorMap: Record<string, string> = {
 
 export function BlogPage() {
   const { t } = useTranslation('blog');
+  const { branding } = useTenant();
   usePageTitle(t('page_title'));
   // Phones hide the hero, so the page title lives in the fixed app bar instead.
   useSetAppBarTitle(t('title'));
@@ -267,7 +268,7 @@ export function BlogPage() {
 
   return (
     <div className="space-y-6">
-      <PageMeta title={t('page_title')} description={t('page_description')} />
+      <PageMeta title={t('page_title')} description={t('page_description', { name: branding.name })} />
       {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
       {!isPhone && (
       <PublicPageHero

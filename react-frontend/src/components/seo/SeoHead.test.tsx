@@ -63,6 +63,7 @@ vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
 }));
 
 import { SeoHead } from './SeoHead';
+import { getAccessibleFrontendBaseUrl } from '@/lib/accessible-frontend';
 
 // react-helmet-async writes tags into document.head via HelmetProvider
 // (already provided by test-utils AllProviders wrapper).
@@ -279,6 +280,56 @@ describe('SeoHead', () => {
       } finally {
         window.history.pushState({}, '', '/');
       }
+    });
+
+    // seo_primary_site (2026-10-23): a community that promotes only its
+    // accessible site names that site to search engines.
+    describe('when the accessible site is the primary site', () => {
+      const xDefault = () => document.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute('href');
+      const withPrimary = (fn: () => void) => {
+        (baseTenant.settings as Record<string, unknown>).seo_primary_site = 'accessible';
+        try { fn(); } finally {
+          delete (baseTenant.settings as Record<string, unknown>).seo_primary_site;
+          window.history.pushState({}, '', '/');
+        }
+      };
+
+      it('uses the accessible home page as the organisation and website address', () => {
+        withPrimary(() => {
+          render(<SeoHead />);
+          expect(orgOf().url).toBe(`${getAccessibleFrontendBaseUrl()}/test/accessible`);
+          const site = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+            .map((s) => { try { return JSON.parse(s.textContent ?? ''); } catch { return null; } })
+            .find((o) => o && o['@type'] === 'WebSite');
+          expect(site.url).toBe(`${getAccessibleFrontendBaseUrl()}/test/accessible`);
+        });
+      });
+
+      it("points x-default at the page's accessible twin", () => {
+        withPrimary(() => {
+          window.history.pushState({}, '', '/test/faq');
+          render(<SeoHead />);
+          expect(xDefault()).toBe(`${getAccessibleFrontendBaseUrl()}/test/accessible/faq`);
+        });
+      });
+
+      it('leaves x-default out for a page with no accessible twin', () => {
+        withPrimary(() => {
+          window.history.pushState({}, '', '/test/listings');
+          render(<SeoHead />);
+          expect(xDefault()).toBeUndefined();
+        });
+      });
+
+      it('standard (the default) keeps this site', () => {
+        window.history.pushState({}, '', '/test/faq');
+        try {
+          render(<SeoHead />);
+          expect(xDefault()).toBe(`${window.location.origin}/test/faq`);
+        } finally {
+          window.history.pushState({}, '', '/');
+        }
+      });
     });
   });
 });

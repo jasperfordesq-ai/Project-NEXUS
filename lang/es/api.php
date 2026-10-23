@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'Una redirección no puede apuntar a su propia dirección.',
     'redirect_duplicate_source' => 'Ya existe una redirección desde esta dirección.',
     'seo_save_failed' => 'No se pudieron guardar los ajustes de SEO. No se ha cambiado nada; inténtalo de nuevo.',
+    'seo_primary_site_invalid' => 'Elige el sitio estándar o el sitio accesible.',
     'invalid_integer_field' => ':field debe ser un número entero no negativo',
     'tenant_and_plan_required' => 'Tenant_id y pay_plan_id son obligatorios.',
     'turnstile_failed' => 'No pudimos verificar que eres humano. Vuelva a intentar el desafío y envíelo nuevamente.',

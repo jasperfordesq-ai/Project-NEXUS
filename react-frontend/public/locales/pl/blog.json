@@ -77,7 +77,7 @@
     "comment_count_few": "{{count}} komentarzy",
     "comment_count_many": "{{count}} komentarzy"
   },
-  "page_description": "Historie, przewodniki i aktualizacje ze społeczności banku czasu — udane wymiany, zdobyte doświadczenia i najnowsze wiadomości z lokalnych grup i od partnerów.",
+  "page_description": "Historie, przewodniki i aktualizacje z platformy {{name}} — udane wymiany, zdobyte doświadczenia i najnowsze wiadomości z lokalnych grup i od partnerów.",
   "min_read_one": "{{count}} min czytania",
   "min_read_other": "{{count}} min czytania",
   "min_read_short_one": "{{count}}m",

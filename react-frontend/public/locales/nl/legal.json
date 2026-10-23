@@ -3,7 +3,7 @@
     "introduction": "Introductie"
   },
   "terms": {
-    "meta_description": "Voorwaarden en condities die het gebruik van ons community timebanking platform regelen.",
+    "meta_description": "Voorwaarden en condities die het gebruik van {{name}}, een community timebanking platform, regelen.",
     "page_title": "Servicevoorwaarden",
     "heading": "Servicevoorwaarden",
     "subtitle": "De regels en richtlijnen voor het gebruik van ons platform",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "De toegang is beperkt tot bevoegde bemiddelaars en beheerders binnen de gemeenschap van het lid. De gegevens worden niet getoond op openbare profielen, badges, zoekresultaten of in algemene analyses.",
     "safeguarding_data_retention": "De Gemeenschapsbeheerder moet een gedocumenteerd bewaarschema publiceren en toepassen en de metagegevens verwijderen zodra die niet meer nodig zijn, behoudens een naar behoren gedocumenteerde wettelijke verplichting.",
     "safeguarding_data_correction": "Leden kunnen hun afgeschermde status bekijken, zonder bewijsstukken een herbeoordeling door een bemiddelaar aanvragen en de Gemeenschapsbeheerder vragen een onjuist besluit te corrigeren of opnieuw te beoordelen.",
-    "meta_description": "Hoe we uw persoonlijke gegevens op ons communityplatform verzamelen, gebruiken en beschermen.",
+    "meta_description": "Hoe {{name}} uw persoonlijke gegevens verzamelt, gebruikt en beschermt.",
     "page_title": "Privacybeleid",
     "heading": "Privacybeleid",
     "subtitle": "Hoe we uw persoonlijke informatie verzamelen, gebruiken en beschermen",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Neem contact op met ons privacyteam"
   },
   "cookies": {
-    "meta_description": "Informatie over hoe we cookies gebruiken om uw ervaring op ons platform te verbeteren.",
+    "meta_description": "Informatie over hoe {{name}} cookies gebruikt om uw ervaring te verbeteren.",
     "page_title": "Cookiebeleid",
     "heading": "Cookiebeleid",
     "subtitle": "Hoe we cookies en vergelijkbare technologieën op ons platform gebruiken",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Privacybeleid"
   },
   "accessibility": {
-    "meta_description": "Onze inzet om het platform toegankelijk te maken voor iedereen, volgens de WCAG 2.1 AA-normen.",
+    "meta_description": "Onze inzet om {{name}} toegankelijk te maken voor iedereen, volgens de WCAG 2.1 AA-normen.",
     "page_title": "Toegankelijkheid",
     "heading": "Toegankelijkheidsverklaring",
     "subtitle": "{{name}} zet zich in voor digitale toegankelijkheid voor mensen van alle vaardigheden.",
@@ -711,15 +711,15 @@
     },
     "community_guidelines": {
       "title": "Gemeenschapsrichtlijnen",
-      "description": "Gemeenschapsrichtlijnen voor respectvol en productief timebanking."
+      "description": "Gemeenschapsrichtlijnen voor respectvol en productief timebanking bij {{name}}."
     },
     "acceptable_use": {
       "title": "Beleid voor Acceptabel Gebruik",
-      "description": "Beleid voor acceptabel gebruik van ons gemeenschaps timebanking platform."
+      "description": "Beleid voor acceptabel gebruik van {{name}}, een gemeenschaps timebanking platform."
     },
     "legal_hub": {
       "title": "Juridische Informatie",
-      "description": "Juridische documenten, beleidslijnen en informatie over naleving."
+      "description": "Juridische documenten, beleidslijnen en informatie over naleving van {{name}}."
     },
     "legal_version_history": {
       "title": "Juridische Versiegeschiedenis",

@@ -71,7 +71,7 @@
     "views_count_one": "{{count}} 回閲覧",
     "views_count_other": "{{count}}回表示"
   },
-  "page_description": "タイムバンクコミュニティからのストーリー、ガイド、最新情報 — 成功した交流、学んだ教訓、地域グループやパートナーからの最新ニュース。",
+  "page_description": "{{name}} からのストーリー、ガイド、最新情報 — 成功した交流、学んだ教訓、地域グループやパートナーからの最新ニュース。",
   "min_read_one": "{{count}} 分読",
   "min_read_other": "{{count}}分で読めます",
   "min_read_short_one": "{{count}}分",

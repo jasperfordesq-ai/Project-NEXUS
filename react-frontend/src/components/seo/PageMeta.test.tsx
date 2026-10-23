@@ -8,6 +8,7 @@ import { render, waitFor } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter } from 'react-router-dom';
 import { PageMeta } from './PageMeta';
+import { getAccessibleFrontendBaseUrl } from '@/lib/accessible-frontend';
 
 // PageMeta imports useTenant from '@/contexts/TenantContext' by its DIRECT path
 // (PageMeta.tsx:26), so the override must target that specifier — a '@/contexts'
@@ -417,6 +418,111 @@ describe('PageMeta', () => {
       await at('/test/verify-email', <PageMeta title="Verify email" noIndex />);
       await waitFor(() => expect(document.querySelector('meta[name="robots"]')).not.toBeNull());
       expect(crumbs()).toBeUndefined();
+    });
+  });
+
+  // seo_primary_site (2026-10-23): which of the community's two sites search
+  // engines should index. 'accessible' is for communities (e.g. councils) that
+  // promote only the accessible site.
+  describe('primary site for search engines', () => {
+    const withPrimary = async (primary?: string, extra: Record<string, unknown> = {}) => {
+      const mod = await import('@/contexts/TenantContext');
+      vi.mocked(mod.useTenant).mockReturnValue({
+        branding: { name: 'Test Community', tagline: 't' },
+        tenant: {
+          slug: 'test',
+          settings: primary === undefined ? {} : { seo_primary_site: primary },
+          seo: {},
+          ...extra,
+        },
+        hasFeature: vi.fn(() => true),
+        hasModule: vi.fn(() => true),
+        isLoading: false,
+        tenantPath: vi.fn((p: string) => `/test${p}`),
+      } as unknown as ReturnType<typeof mod.useTenant>);
+    };
+    const canonical = () => document.querySelector('link[rel="canonical"]')?.getAttribute('href');
+    const ogUrl = () => document.querySelector('meta[property="og:url"]')?.getAttribute('content');
+    const robots = () => Array.from(document.querySelectorAll('meta[name="robots"]')).map((m) => m.getAttribute('content'));
+    const A = () => `${getAccessibleFrontendBaseUrl()}/test/accessible`;
+    const at = (path: string) => window.history.pushState({}, '', path);
+    afterEach(() => { window.history.pushState({}, '', '/'); });
+
+    it.each([undefined, 'standard', 'nonsense'])('%j behaves exactly as before: canonical is this page', async (primary) => {
+      await withPrimary(primary);
+      at('/test/faq');
+      renderWithHelmet(<PageMeta title="FAQ" />);
+      await waitFor(() => expect(canonical()).toBe(`${window.location.origin}/test/faq`));
+      expect(ogUrl()).toBe(`${window.location.origin}/test/faq`);
+      expect(robots()).toEqual([]);
+    });
+
+    it('standard: an unmapped page is still indexed with its own canonical', async () => {
+      await withPrimary('standard');
+      at('/test/listings');
+      renderWithHelmet(<PageMeta title="Listings" />);
+      await waitFor(() => expect(canonical()).toBe(`${window.location.origin}/test/listings`));
+      expect(robots()).toEqual([]);
+    });
+
+    it('accessible: the home page points at the accessible home page', async () => {
+      await withPrimary('accessible');
+      at('/test');
+      renderWithHelmet(<PageMeta tenantHome title="Home" />);
+      await waitFor(() => expect(canonical()).toBe(A()));
+      expect(ogUrl()).toBe(A());
+      expect(robots()).toEqual([]);
+    });
+
+    it('accessible: a page with a twin points its canonical and og:url at the twin', async () => {
+      await withPrimary('accessible');
+      at('/test/timebanking-guide');
+      renderWithHelmet(<PageMeta title="Guide" />);
+      await waitFor(() => expect(canonical()).toBe(`${A()}/guide`));
+      expect(ogUrl()).toBe(`${A()}/guide`);
+      expect(robots()).toEqual([]);
+    });
+
+    it("accessible: uses the community's own accessible domain when it has one", async () => {
+      await withPrimary('accessible', { accessible_domain: 'accessible.council.example' });
+      at('/test/blog/spring-fair');
+      renderWithHelmet(<PageMeta title="Spring fair" type="article" />);
+      await waitFor(() => expect(canonical()).toBe('https://accessible.council.example/blog/spring-fair'));
+    });
+
+    it('accessible: a page with no twin is kept out of search and names no canonical', async () => {
+      await withPrimary('accessible');
+      at('/test/listings');
+      renderWithHelmet(<PageMeta title="Listings" />);
+      await waitFor(() => expect(robots()).toEqual(['noindex, follow']));
+      expect(canonical()).toBeUndefined();
+      // Never the accessible home page for an unrelated page.
+      expect(ogUrl()).toBe(`${window.location.origin}/test/listings`);
+    });
+
+    it('accessible: a page already kept out of search stays noindex, nofollow', async () => {
+      await withPrimary('accessible');
+      at('/test/faq');
+      renderWithHelmet(<PageMeta title="FAQ" noIndex />);
+      await waitFor(() => expect(robots()).toEqual(['noindex, nofollow']));
+    });
+
+    it('accessible: emits no breadcrumbs listing this site addresses', async () => {
+      await withPrimary('accessible');
+      at('/test/whats-on/42');
+      renderWithHelmet(<PageMeta title="Wassail" />);
+      await waitFor(() => expect(canonical()).toBe(`${A()}/whats-on/42`));
+      const types = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+        .map((s) => { try { return JSON.parse(s.textContent ?? '')['@type']; } catch { return null; } });
+      expect(types).not.toContain('BreadcrumbList');
+    });
+
+    it('accessible but the community has no accessible address: behaves as standard', async () => {
+      await withPrimary('accessible', { slug: '' });
+      at('/test/listings');
+      renderWithHelmet(<PageMeta title="Listings" />);
+      await waitFor(() => expect(canonical()).toBe(`${window.location.origin}/test/listings`));
+      expect(robots()).toEqual([]);
     });
   });
 });

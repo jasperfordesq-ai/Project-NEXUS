@@ -138,4 +138,15 @@ class SeoFieldParityTest extends TestCase
         $this->apiPut("/v2/admin/super/tenants/{$this->testTenantId}", ['social_twitter' => 'javascript:alert(1)'])
             ->assertStatus(422)->assertJsonPath('errors.0.field', 'social_twitter');
     }
+
+    public function test_the_site_for_search_engines_is_saved_and_published_to_the_bootstrap(): void
+    {
+        $this->actAsCommunityAdmin();
+        $this->apiPut('/v2/admin/config/seo', ['seo_primary_site' => 'elsewhere'])
+            ->assertStatus(422)->assertJsonPath('errors.0.field', 'seo_primary_site');
+        $this->apiPut('/v2/admin/config/seo', ['seo_primary_site' => 'accessible'])->assertOk();
+        $this->assertSame('accessible', $this->apiGet('/v2/admin/config/seo')->json('data.seo.seo_primary_site'));
+        $this->apiPut('/v2/admin/config/seo', ['seo_primary_site' => ''])->assertOk();
+        $this->assertSame('standard', $this->apiGet('/v2/admin/config/seo')->json('data.seo.seo_primary_site'));
+    }
 }

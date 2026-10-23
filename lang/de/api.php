@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'Eine Weiterleitung kann nicht auf ihre eigene Adresse zeigen.',
     'redirect_duplicate_source' => 'Für diese Adresse gibt es bereits eine Weiterleitung.',
     'seo_save_failed' => 'Die SEO-Einstellungen konnten nicht gespeichert werden. Es wurde nichts geändert; bitte versuchen Sie es erneut.',
+    'seo_primary_site_invalid' => 'Wählen Sie die Standardseite oder die barrierefreie Seite.',
     'invalid_integer_field' => ':field muss eine nicht negative Ganzzahl sein',
     'tenant_and_plan_required' => 'mieter_id und pay_plan_id sind erforderlich.',
     'turnstile_failed' => 'Wir konnten nicht bestätigen, dass Sie ein Mensch sind. Bitte versuchen Sie die Herausforderung erneut und reichen Sie sie erneut ein.',

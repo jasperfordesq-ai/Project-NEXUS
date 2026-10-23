@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'リダイレクト先を自分自身のアドレスにすることはできません。',
     'redirect_duplicate_source' => 'このアドレスからのリダイレクトはすでにあります。',
     'seo_save_failed' => 'SEO設定を保存できませんでした。何も変更されていません。もう一度お試しください。',
+    'seo_primary_site_invalid' => '標準サイトかアクセシブルサイトのどちらかを選んでください。',
     'invalid_integer_field' => ':field は負でない整数でなければなりません',
     'tenant_and_plan_required' => 'tenant_id と pay_plan_id は必須です。',
     'turnstile_failed' => 'あなたが人間であることを確認できませんでした。チャレンジを再試行し、再度送信してください。',

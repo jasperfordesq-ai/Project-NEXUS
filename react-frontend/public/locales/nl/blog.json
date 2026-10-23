@@ -71,7 +71,7 @@
     "views_count_one": "{{count}} weergaven",
     "views_count_other": "{{count}} weergaven"
   },
-  "page_description": "Verhalen, gidsen en updates van de tijdbank-gemeenschap — uitwisselingen die werkten, geleerde lessen en het laatste nieuws van lokale groepen en partners.",
+  "page_description": "Verhalen, gidsen en updates van {{name}} — uitwisselingen die werkten, geleerde lessen en het laatste nieuws van lokale groepen en partners.",
   "min_read_one": "{{count}} min lezen",
   "min_read_other": "{{count}} min lezen",
   "min_read_short_one": "{{count}}m",

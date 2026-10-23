@@ -21,6 +21,11 @@
  *                                    → per-community on/off switches (default on)
  *   - seo.robots_directive           → community-wide robots meta (e.g. the
  *                                      community switched indexing off)
+ *   - settings.seo_primary_site      → which of the community's two sites search
+ *                                      engines should index: 'standard' (the main
+ *                                      site; default, also when absent) or
+ *                                      'accessible' (this site, e.g. a council
+ *                                      that uses only the accessible site)
  *
  * 🔴 CANONICAL RULE. Every accessible page is an alternative presentation of a
  * main-site (React) page, so where the SAME content exists on the main site at a
@@ -31,6 +36,11 @@
  * removed. A wrong cross-site canonical tells search engines to drop a page in
  * favour of one that does not exist; a self-canonical can only fail to
  * de-duplicate, so the list errs on the side of leaving a path off.
+ *
+ * 🔴 PRIMARY-SITE EXCEPTION. When the community chose its accessible site for
+ * search engines (settings.seo_primary_site = 'accessible'), the rule inverts:
+ * EVERY accessible page is self-canonical, because the main site is the copy.
+ * Robots are unaffected — private and signed-in pages stay noindex either way.
  */
 
 const { URL } = require('node:url');
@@ -318,6 +328,17 @@ const OG_LOCALES = {
   es: 'es_ES', nl: 'nl_NL', pl: 'pl_PL', ja: 'ja_JP', ar: 'ar_001'
 };
 
+/**
+ * Which of the community's two sites search engines should index: 'accessible'
+ * only when the community chose it, otherwise 'standard' (absent, empty or any
+ * unrecognised value). Same reading as the server's
+ * SitemapService::isAccessiblePrimary().
+ */
+function seoPrimarySite(tenant) {
+  const settings = asObject(asObject(tenant).settings);
+  return text(settings.seo_primary_site).toLowerCase() === 'accessible' ? 'accessible' : 'standard';
+}
+
 function hasCommunityTenant(data) {
   return Boolean(text(data.slug)) && Number(data.id) !== 1;
 }
@@ -329,10 +350,14 @@ function mainSiteHomeUrl(data, mainBase) {
 /**
  * The canonical address of one accessible route: the main site's equal page
  * when MAIN_SITE_PATHS names one, otherwise the accessible address itself
- * (`visiblePath` on this host, query string removed).
+ * (`visiblePath` on this host, query string removed). Always the accessible
+ * address when the community made this its primary site (seoPrimarySite).
  */
 function canonicalUrlFor({ tenant, routePath, visiblePath, protocol = 'https', host = '', mainFrontendUrl } = {}) {
   const data = asObject(tenant);
+  if (seoPrimarySite(data) === 'accessible') {
+    return absoluteFromRequestUrl({ protocol, host, visiblePath });
+  }
   const mainBase = hasCommunityTenant(data) ? mainSiteBaseUrl(data, mainFrontendUrl) : '';
   const mainPath = mainBase ? mainSitePathFor(routePath) : null;
   if (mainBase && mainPath !== null) {
@@ -637,10 +662,14 @@ function buildSeoLocals({
 /**
  * robots.txt for an accessible host. Paths are listed twice: bare, for a
  * community's own accessible domain (`/dashboard`), and under the shared-host
- * mount (`/{slug}/accessible/dashboard`). No Sitemap line: these pages
- * canonicalise to the main site, whose own robots.txt names its sitemaps.
+ * mount (`/{slug}/accessible/dashboard`).
+ *
+ * `sitemapUrl` (absolute) adds a Sitemap line. The caller passes it only when
+ * the request resolved one community whose accessible sitemap is published
+ * (src/lib/accessible-sitemap.js); the shared host's own robots.txt serves many
+ * communities and names none.
  */
-function buildRobotsTxt() {
+function buildRobotsTxt({ sitemapUrl = '' } = {}) {
   const lines = ['User-agent: *'];
   // Each path as itself ($), its sub-pages (/) and with a query string (?).
   // A bare prefix would also block every address that merely starts with the
@@ -653,6 +682,10 @@ function buildRobotsTxt() {
     for (const rule of forms(`/*/accessible${prefix}`)) lines.push(`Disallow: ${rule}`);
   }
   lines.push('Allow: /');
+  const sitemap = httpUrl(sitemapUrl);
+  if (sitemap) {
+    lines.push('', `Sitemap: ${sitemap}`);
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -671,8 +704,10 @@ module.exports = {
   ROBOTS_DISALLOWED,
   buildRobotsTxt,
   buildSeoLocals,
+  hasCommunityTenant,
   isPrivatePath,
   mainSiteBaseUrl,
   mainSitePathFor,
-  sanitizeRobotsDirective
+  sanitizeRobotsDirective,
+  seoPrimarySite
 };

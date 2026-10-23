@@ -1489,6 +1489,7 @@ return [
     'redirect_same_as_destination' => 'Un reindirizzamento non può puntare al proprio indirizzo.',
     'redirect_duplicate_source' => 'Esiste già un reindirizzamento da questo indirizzo.',
     'seo_save_failed' => 'Non è stato possibile salvare le impostazioni SEO. Non è stato modificato nulla; riprova.',
+    'seo_primary_site_invalid' => 'Scegli il sito standard o il sito accessibile.',
     'invalid_integer_field' => ':field deve essere un numero intero non negativo',
     'tenant_and_plan_required' => 'tenant_id e pay_plan_id sono obbligatori.',
     'turnstile_failed' => 'Non abbiamo potuto verificare che tu sia umano. Riprova la sfida e inviala nuovamente.',

@@ -7,7 +7,7 @@
     },
     "title": "Funcionalidades",
     "meta_title": "Funcionalidades",
-    "meta_description": "Todos os módulos disponibilizados no Project NEXUS v1.6, com indicações honestas de maturidade para federação, banco de tempo, marketplace, ferramentas comunitárias, segurança, análise e infraestrutura open source.",
+    "meta_description": "Todos os módulos do Project NEXUS, o software de {{name}}, com indicações honestas de maturidade para banco de tempo, federação, marketplace, ferramentas comunitárias e segurança.",
     "heading": "O que o Project NEXUS faz",
     "subheading": "O Projeto NEXUS é uma plataforma comunitária multilocatária de nível empresarial. Cada módulo abaixo é enviado na versão 1.5 hoje. Rotulamos os módulos honestamente: os itens não marcados estão geralmente disponíveis; superfícies mais novas ou de endurecimento ativo carregam um chip Beta ou Preview; e um chip Construído e não habilitado significa que a obra está finalizada e desligada, aguardando demanda.",
     "maturity_key_title": "Como indicamos a maturidade",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Entre em contato com a equipe - dúvidas sobre adesão, parceria, prescrição social, acessibilidade ou como funciona o timebanking. Estamos felizes em ajudar.",
+    "meta_description": "Entre em contato com {{name}} - dúvidas sobre adesão, parceria, prescrição social, acessibilidade ou como funciona o timebanking. Estamos felizes em ajudar.",
     "title": "Contacte-nos",
     "subtitle": "Tem uma pergunta sobre {{name}}? Adoraríamos ouvir de si.",
     "success_title": "Mensagem Enviada!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Perguntas frequentes",
-    "meta_description": "Perguntas comuns sobre banco de tempo, créditos de tempo, listagens, trocas, confiança e segurança e associação à comunidade – tudo que você precisa para começar.",
+    "meta_description": "Perguntas comuns sobre {{name}}: banco de tempo, créditos de tempo, listagens, trocas, confiança e segurança e associação – tudo que você precisa para começar.",
     "title": "Perguntas Frequentes",
     "subtitle_before_link": "Não encontra o que procura? Visite o nosso",
     "help_center_link": "Centro de Ajuda",

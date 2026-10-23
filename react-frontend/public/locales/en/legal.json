@@ -3,7 +3,7 @@
     "introduction": "Introduction"
   },
   "terms": {
-    "meta_description": "Terms and conditions governing the use of our community timebanking platform.",
+    "meta_description": "Terms and conditions governing the use of {{name}}, a community timebanking platform.",
     "page_title": "Terms of Service",
     "heading": "Terms of Service",
     "subtitle": "The rules and guidelines for using our platform",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "Access is limited to authorised brokers and administrators in the member's community and is not shown on public profiles, badges, search results or ordinary analytics.",
     "safeguarding_data_retention": "The Community Operator must publish and apply a documented retention schedule and remove metadata when it is no longer necessary, subject to any properly documented legal obligation.",
     "safeguarding_data_correction": "Members can view their private status, request a broker review without sending evidence, and ask the Community Operator to correct or challenge an inaccurate decision.",
-    "meta_description": "How we collect, use, and protect your personal data on our community platform.",
+    "meta_description": "How {{name}} collects, uses, and protects your personal data.",
     "page_title": "Privacy Policy",
     "heading": "Privacy Policy",
     "subtitle": "How we collect, use, and protect your personal information",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Contact Our Privacy Team"
   },
   "cookies": {
-    "meta_description": "Information about how we use cookies to improve your experience on our platform.",
+    "meta_description": "Information about how {{name}} uses cookies to improve your experience.",
     "page_title": "Cookie Policy",
     "heading": "Cookie Policy",
     "subtitle": "How we use cookies and similar technologies on our platform",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Privacy Policy"
   },
   "accessibility": {
-    "meta_description": "Our commitment to making the platform accessible to everyone, following WCAG 2.1 AA standards.",
+    "meta_description": "Our commitment to making {{name}} accessible to everyone, following WCAG 2.1 AA standards.",
     "page_title": "Accessibility",
     "heading": "Accessibility Statement",
     "subtitle": "{{name}} is committed to ensuring digital accessibility for people of all abilities.",
@@ -711,15 +711,15 @@
     },
     "community_guidelines": {
       "title": "Community Guidelines",
-      "description": "Community guidelines for respectful and productive timebanking."
+      "description": "Community guidelines for respectful and productive timebanking on {{name}}."
     },
     "acceptable_use": {
       "title": "Acceptable Use Policy",
-      "description": "Acceptable use policy for our community timebanking platform."
+      "description": "Acceptable use policy for {{name}}, a community timebanking platform."
     },
     "legal_hub": {
       "title": "Legal Information",
-      "description": "Legal documents, policies, and compliance information."
+      "description": "Legal documents, policies, and compliance information for {{name}}."
     },
     "legal_version_history": {
       "title": "Legal Version History",

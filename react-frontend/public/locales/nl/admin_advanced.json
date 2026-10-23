@@ -1851,7 +1851,14 @@
     "seo_audit_issue_sitemap_not_published": "De sitemap antwoordt ‘niet gevonden’ (404), dus zoekmachines krijgen geen sitemap.",
     "seo_audit_issue_sitemap_not_published_noindex": "De sitemap antwoordt ‘niet gevonden’ (404): deze community is ingesteld om verborgen te blijven in zoekresultaten, dus zoekmachines krijgen geen sitemap.",
     "seo_audit_issue_sitemap_not_published_switched_off": "De sitemap antwoordt ‘niet gevonden’ (404): de schakelaar voor de automatische sitemap staat uit, dus zoekmachines krijgen geen sitemap.",
-    "seo_audit_issue_cms_page_meta_description_missing": "Pagina ‘{{title}}’ ({{path}}) heeft geen metabeschrijving."
+    "seo_audit_issue_cms_page_meta_description_missing": "Pagina ‘{{title}}’ ({{path}}) heeft geen metabeschrijving.",
+    "label_primary_site": "Website voor zoekmachines",
+    "primary_site_standard": "Standaardwebsite (aanbevolen)",
+    "primary_site_accessible": "Toegankelijke website",
+    "desc_primary_site": "Je gemeenschap heeft een standaardwebsite en een toegankelijke website. Kies welke zoekmachines zoals Google moeten tonen.",
+    "primary_site_standard_desc": "Standaardwebsite: zoekmachines tonen de standaardwebsite, zoals nu.",
+    "primary_site_accessible_desc": "Toegankelijke website: zoekmachines tonen in plaats daarvan de toegankelijke website, en elke pagina van de standaardwebsite verwijst ze naar de bijbehorende toegankelijke pagina. Pagina’s die de toegankelijke website niet heeft, blijven buiten de zoekresultaten.",
+    "primary_site_note": "Kies de toegankelijke website alleen als je gemeenschap die als haar hoofdwebsite promoot."
   },
   "email_deliverability": {
     "title": "E-mailbezorgbaarheid",

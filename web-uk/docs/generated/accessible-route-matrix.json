@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-23T18:40:23.501Z",
+  "generatedAt": "2026-10-23T21:24:12.354Z",
   "provenance": {
-    "generatedAt": "2026-10-23T18:40:23.501Z",
+    "generatedAt": "2026-10-23T21:24:12.354Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
+    "laravelCommitSha": "37f469a9aa10a26f46a44730d0748e189d8e528c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "37be592d6fe02e754ec20dfa2132a3751a8db9ce",
+    "webUkRepositoryCommitSha": "37f469a9aa10a26f46a44730d0748e189d8e528c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-23T18:40:23.501Z",
+    "generatedAt": "2026-10-23T21:24:12.354Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 836,
+    "webUkRoutes": 837,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 126,
+    "extraWebUkRoutes": 127,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -137,6 +137,12 @@
         "ignoredInfrastructure": 0
       },
       "robots.txt": {
+        "matched": 0,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "sitemap.xml": {
         "matched": 0,
         "missing": 0,
         "extraWebUk": 1,
@@ -1332,6 +1338,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/robots.txt",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/sitemap.xml",
+      "family": "sitemap.xml",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/sitemap.xml",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
       "webUkRouteKind": ""

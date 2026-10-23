@@ -3,7 +3,7 @@
     "introduction": "Einführung"
   },
   "terms": {
-    "meta_description": "Allgemeine Geschäftsbedingungen für die Nutzung unserer Community-Timebanking-Plattform.",
+    "meta_description": "Allgemeine Geschäftsbedingungen für die Nutzung von {{name}}, einer Community-Timebanking-Plattform.",
     "page_title": "Nutzungsbedingungen",
     "heading": "Nutzungsbedingungen",
     "subtitle": "Die Regeln und Richtlinien fuer die Nutzung unserer Plattform",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "Der Zugriff ist auf befugte Vermittlungspersonen und Administratoren in der Gemeinschaft des Mitglieds beschränkt. Die Daten erscheinen weder in öffentlichen Profilen, Abzeichen oder Suchergebnissen noch in allgemeinen Analysen.",
     "safeguarding_data_retention": "Der Gemeinschaftsbetreiber muss einen dokumentierten Aufbewahrungsplan veröffentlichen und anwenden und die Metadaten löschen, sobald sie nicht mehr erforderlich sind, vorbehaltlich ordnungsgemäß dokumentierter rechtlicher Verpflichtungen.",
     "safeguarding_data_correction": "Mitglieder können ihren privaten Status einsehen, ohne die Übermittlung von Nachweisen eine Überprüfung durch eine Vermittlungsperson beantragen und den Gemeinschaftsbetreiber auffordern, eine fehlerhafte Entscheidung zu berichtigen oder zu überprüfen.",
-    "meta_description": "Wie wir Ihre personenbezogenen Daten auf unserer Community-Plattform erfassen, verwenden und schützen.",
+    "meta_description": "Wie {{name}} Ihre personenbezogenen Daten erfasst, verwendet und schützt.",
     "page_title": "Datenschutzrichtlinie",
     "heading": "Datenschutzrichtlinie",
     "subtitle": "Wie wir Ihre persoenlichen Daten erheben, verwenden und schuetzen",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Unser Datenschutzteam kontaktieren"
   },
   "cookies": {
-    "meta_description": "Informationen darüber, wie wir Cookies verwenden, um Ihr Erlebnis auf unserer Plattform zu verbessern.",
+    "meta_description": "Informationen darüber, wie {{name}} Cookies verwendet, um Ihr Erlebnis zu verbessern.",
     "page_title": "Cookie-Richtlinie",
     "heading": "Cookie-Richtlinie",
     "subtitle": "Wie wir Cookies und aehnliche Technologien auf unserer Plattform verwenden",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Datenschutzrichtlinie"
   },
   "accessibility": {
-    "meta_description": "Unser Engagement ist es, die Plattform gemäß den WCAG 2.1 AA-Standards für jedermann zugänglich zu machen.",
+    "meta_description": "Unser Engagement, {{name}} gemäß den WCAG 2.1 AA-Standards für jedermann zugänglich zu machen.",
     "page_title": "Barrierefreiheit",
     "heading": "Erklaerung zur Barrierefreiheit",
     "subtitle": "{{name}} verpflichtet sich, digitale Barrierefreiheit fuer Menschen aller Faehigkeiten sicherzustellen.",
@@ -711,15 +711,15 @@
     },
     "community_guidelines": {
       "title": "Gemeinschaftsrichtlinien",
-      "description": "Gemeinschaftsrichtlinien für respektvolles und produktives Zeitbanking."
+      "description": "Gemeinschaftsrichtlinien für respektvolles und produktives Zeitbanking bei {{name}}."
     },
     "acceptable_use": {
       "title": "Richtlinie für akzeptable Nutzung",
-      "description": "Richtlinie für akzeptable Nutzung unserer Community-Zeitbanking-Plattform."
+      "description": "Richtlinie für akzeptable Nutzung von {{name}}, einer Community-Zeitbanking-Plattform."
     },
     "legal_hub": {
       "title": "Rechtliche Informationen",
-      "description": "Rechtliche Dokumente, Richtlinien und Informationen zur Einhaltung."
+      "description": "Rechtliche Dokumente, Richtlinien und Informationen zur Einhaltung für {{name}}."
     },
     "legal_version_history": {
       "title": "Rechtliche Versionshistorie",

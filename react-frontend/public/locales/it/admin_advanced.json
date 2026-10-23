@@ -1900,7 +1900,14 @@
     "seo_audit_issue_sitemap_not_published": "La sitemap risponde «non trovato» (404), quindi i motori di ricerca non ricevono alcuna sitemap.",
     "seo_audit_issue_sitemap_not_published_noindex": "La sitemap risponde «non trovato» (404): questa comunità è impostata per essere nascosta dai risultati di ricerca, quindi i motori di ricerca non ricevono alcuna sitemap.",
     "seo_audit_issue_sitemap_not_published_switched_off": "La sitemap risponde «non trovato» (404): l'interruttore della sitemap automatica è disattivato, quindi i motori di ricerca non ricevono alcuna sitemap.",
-    "seo_audit_issue_cms_page_meta_description_missing": "La pagina «{{title}}» ({{path}}) non ha una meta descrizione."
+    "seo_audit_issue_cms_page_meta_description_missing": "La pagina «{{title}}» ({{path}}) non ha una meta descrizione.",
+    "label_primary_site": "Sito per i motori di ricerca",
+    "primary_site_standard": "Sito standard (consigliato)",
+    "primary_site_accessible": "Sito accessibile",
+    "desc_primary_site": "La tua comunità ha un sito standard e un sito accessibile. Scegli quale devono mostrare i motori di ricerca come Google.",
+    "primary_site_standard_desc": "Sito standard: i motori di ricerca mostrano il sito standard, come avviene ora.",
+    "primary_site_accessible_desc": "Sito accessibile: i motori di ricerca mostrano invece il sito accessibile, e ogni pagina del sito standard li indirizza alla pagina accessibile corrispondente. Le pagine che il sito accessibile non ha restano fuori dai risultati di ricerca.",
+    "primary_site_note": "Scegli il sito accessibile solo se la tua comunità lo promuove come sito principale."
   },
   "email_deliverability": {
     "title": "Consegnabilità della posta elettronica",

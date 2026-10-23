@@ -7,7 +7,7 @@
     },
     "title": "Funcionalidades",
     "meta_title": "Funcionalidades",
-    "meta_description": "Todos los módulos incluidos en Project NEXUS v1.6, con etiquetas honestas de madurez para federación, banco de tiempo, marketplace, herramientas comunitarias, seguridad, analítica e infraestructura open source.",
+    "meta_description": "Todos los módulos de Project NEXUS, el software de {{name}}, con etiquetas honestas de madurez para banco de tiempo, federación, marketplace, herramientas comunitarias y seguridad.",
     "heading": "Qué hace Project NEXUS",
     "subheading": "Project NEXUS es una plataforma comunitaria multiinquilino de nivel empresarial. Todos los módulos siguientes se envían hoy en la versión 1.5. Etiquetamos los módulos con honestidad: los artículos sin marcar están disponibles con carácter general; las superficies más nuevas o que se endurecen activamente llevan un chip Beta o Preview; y un chip integrado, no habilitado significa que el trabajo está terminado y apagado, a la espera de la demanda.",
     "maturity_key_title": "Cómo etiquetamos la madurez",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Póngase en contacto con el equipo: preguntas sobre cómo unirse, asociarse, prescripción social, accesibilidad o cómo funciona el banco de tiempo. Estamos felices de poder ayudar.",
+    "meta_description": "Póngase en contacto con {{name}}: preguntas sobre cómo unirse, asociarse, prescripción social, accesibilidad o cómo funciona el banco de tiempo. Estamos felices de poder ayudar.",
     "title": "Contáctanos",
     "subtitle": "¿Tienes una pregunta sobre {{name}}? Nos encantaría saber de ti.",
     "success_title": "¡Mensaje Enviado!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Preguntas frecuentes",
-    "meta_description": "Preguntas comunes sobre bancos de tiempo, créditos de tiempo, listados, intercambios, confianza y seguridad y membresía en la comunidad: todo lo que necesita para comenzar.",
+    "meta_description": "Preguntas comunes sobre {{name}}: bancos de tiempo, créditos de tiempo, listados, intercambios, confianza y seguridad y membresía: todo lo que necesita para comenzar.",
     "title": "Preguntas Frecuentes",
     "subtitle_before_link": "¿No encuentras lo que buscas? Visita nuestro",
     "help_center_link": "Centro de Ayuda",

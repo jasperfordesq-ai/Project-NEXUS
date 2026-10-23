@@ -3,7 +3,7 @@
     "introduction": "Introduction"
   },
   "terms": {
-    "meta_description": "Conditions générales d'utilisation de notre plateforme communautaire de banque de temps.",
+    "meta_description": "Conditions générales d'utilisation de {{name}}, plateforme communautaire de banque de temps.",
     "page_title": "Conditions d'utilisation",
     "heading": "Conditions d'utilisation",
     "subtitle": "Les regles et directives pour l'utilisation de notre plateforme",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "L’accès est limité aux intermédiaires habilités et aux administrateurs de la communauté du membre. Ces données ne figurent ni sur les profils publics, les badges ou les résultats de recherche, ni dans les analyses générales.",
     "safeguarding_data_retention": "L’Opérateur de la Communauté doit publier et appliquer un calendrier de conservation documenté, puis supprimer les métadonnées lorsqu’elles ne sont plus nécessaires, sous réserve de toute obligation légale dûment documentée.",
     "safeguarding_data_correction": "Les membres peuvent consulter leur statut privé, demander le réexamen d’un intermédiaire sans envoyer de justificatif et demander à l’Opérateur de la Communauté de rectifier ou de contester une décision inexacte.",
-    "meta_description": "Comment nous collectons, utilisons et protégeons vos données personnelles sur notre plateforme communautaire.",
+    "meta_description": "Comment {{name}} collecte, utilise et protège vos données personnelles.",
     "page_title": "Politique de confidentialite",
     "heading": "Politique de confidentialite",
     "subtitle": "Comment nous collectons, utilisons et protegeons vos informations personnelles",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Contacter notre equipe vie privee"
   },
   "cookies": {
-    "meta_description": "Informations sur la manière dont nous utilisons les cookies pour améliorer votre expérience sur notre plateforme.",
+    "meta_description": "Informations sur la manière dont {{name}} utilise les cookies pour améliorer votre expérience.",
     "page_title": "Politique de cookies",
     "heading": "Politique de cookies",
     "subtitle": "Comment nous utilisons les cookies et technologies similaires sur notre plateforme",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Politique de confidentialite"
   },
   "accessibility": {
-    "meta_description": "Notre engagement à rendre la plateforme accessible à tous, conformément aux normes WCAG 2.1 AA.",
+    "meta_description": "Notre engagement à rendre {{name}} accessible à tous, conformément aux normes WCAG 2.1 AA.",
     "page_title": "Accessibilite",
     "heading": "Declaration d'accessibilite",
     "subtitle": "{{name}} s'engage a garantir l'accessibilite numerique pour les personnes de toutes capacites.",
@@ -713,15 +713,15 @@
     },
     "community_guidelines": {
       "title": "Directives communautaires",
-      "description": "Directives communautaires pour un timebanking respectueux et productif."
+      "description": "Directives communautaires pour un timebanking respectueux et productif sur {{name}}."
     },
     "acceptable_use": {
       "title": "Politique d'utilisation acceptable",
-      "description": "Politique d'utilisation acceptable pour notre plateforme communautaire de timebanking."
+      "description": "Politique d'utilisation acceptable de {{name}}, plateforme communautaire de timebanking."
     },
     "legal_hub": {
       "title": "Informations légales",
-      "description": "Documents légaux, politiques et informations de conformité."
+      "description": "Documents légaux, politiques et informations de conformité de {{name}}."
     },
     "legal_version_history": {
       "title": "Historique des versions légales",

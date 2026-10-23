@@ -42,7 +42,7 @@ class SitemapController
         );
 
         if ($tenant) {
-            if ($this->sitemapDisabled((int) $tenant->id) || SitemapService::isNoindexTenant((int) $tenant->id)) {
+            if (SitemapService::notListedReason((int) $tenant->id) !== null) {
                 return $this->xmlResponse($this->emptyUrlset(), 404);
             }
 
@@ -60,7 +60,7 @@ class SitemapController
             // Filter to sub-tenants with a non-empty slug — a null slug would
             // generate an invalid '/sitemap-.xml' entry.
             $subTenants = array_filter($subTenants, fn ($s) => !empty($s->slug)
-                && !$this->sitemapDisabled((int) $s->id) && !SitemapService::isNoindexTenant((int) $s->id));
+                && SitemapService::notListedReason((int) $s->id) === null);
 
             if (!empty($subTenants) && !empty($tenant->slug)) {
                 $sitemaps = [
@@ -137,7 +137,7 @@ class SitemapController
         // A community whose robots setting says noindex publishes no sitemap
         // (2026-10-23): listing pages that each say "do not index" sends
         // search engines two contradicting signals.
-        if (!$row || $this->sitemapDisabled((int) $row->id) || SitemapService::isNoindexTenant((int) $row->id)) {
+        if (!$row || SitemapService::notListedReason((int) $row->id) !== null) {
             return $this->xmlResponse($this->emptyUrlset(), 404);
         }
 
@@ -154,12 +154,6 @@ class SitemapController
 
         $xml = $service->generateForTenant((int) $row->id, $baseUrl);
         return $this->xmlResponse($xml);
-    }
-
-    /** The "Automatic sitemap" switch (SitemapService::isSitemapSwitchedOff). */
-    private function sitemapDisabled(int $tenantId): bool
-    {
-        return SitemapService::isSitemapSwitchedOff($tenantId);
     }
 
     private function xmlResponse(string $xml, int $status = 200): Response

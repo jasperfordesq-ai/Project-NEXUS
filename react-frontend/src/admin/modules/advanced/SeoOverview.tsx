@@ -1,5 +1,5 @@
 import { getFormattingLocale } from '@/lib/helpers';
-import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Switch } from '@/components/ui';
+import { Card, CardBody, CardHeader, Input, Button, Spinner, Chip, Switch, Select, SelectItem } from '@/components/ui';
 import { SharingImageField } from '@/admin/components/SharingImageField';
 import { SeoChoiceFields } from '@/admin/components/SeoChoiceFields';
 import { useState, useEffect, useCallback } from 'react';
@@ -53,6 +53,14 @@ const SEO_KEYS = [
   'seo_og_image_url',
   'seo_auto_sitemap', 'seo_canonical_urls', 'seo_open_graph',
   'seo_twitter_cards', 'seo_google_verification', 'seo_bing_verification',
+  // Which of the community's two sites search engines index (2026-10-23).
+  'seo_primary_site',
+] as const;
+
+// seo_primary_site values; the server refuses anything else (422).
+const PRIMARY_SITE_CHOICES = [
+  ['standard', 'primary_site_standard'],
+  ['accessible', 'primary_site_accessible'],
 ] as const;
 
 // Keys stored directly on the tenants table
@@ -126,6 +134,7 @@ export function SeoOverview() {
     seo_twitter_cards: true,
     seo_google_verification: '',
     seo_bing_verification: '',
+    seo_primary_site: 'standard',
     tenant_meta_title: '',
     tenant_meta_description: '',
     tenant_h1_headline: '',
@@ -550,6 +559,29 @@ export function SeoOverview() {
                 <p className="text-sm text-muted">{t('twitter_cards_desc')}</p>
               </div>
               <Switch isSelected={!!formData.seo_twitter_cards} onValueChange={(v) => updateField('seo_twitter_cards', v)} aria-label={t('twitter_cards')} />
+            </div>
+            <Separator />
+            {/* Which of the community's two sites search engines index
+                (seo_primary_site, 2026-10-23). Read by PageMeta / SeoHead. */}
+            <div className="space-y-2">
+              <Select
+                label={t('label_primary_site')}
+                selectedKeys={[formData.seo_primary_site === 'accessible' ? 'accessible' : 'standard']}
+                onSelectionChange={(keys) => {
+                  const first = Array.from(keys as Iterable<unknown>)[0];
+                  if (first !== undefined) updateField('seo_primary_site', String(first));
+                }}
+                description={t('desc_primary_site')}
+              >
+                {PRIMARY_SITE_CHOICES.map(([value, key]) => (
+                  <SelectItem key={value} id={value}>{t(key)}</SelectItem>
+                ))}
+              </Select>
+              <ul className="list-disc space-y-1 ps-5 text-sm text-muted">
+                <li>{t('primary_site_standard_desc')}</li>
+                <li>{t('primary_site_accessible_desc')}</li>
+              </ul>
+              <p className="text-sm font-medium">{t('primary_site_note')}</p>
             </div>
           </CardBody>
         </Card>

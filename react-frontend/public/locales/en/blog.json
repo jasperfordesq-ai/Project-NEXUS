@@ -71,7 +71,7 @@
     "views_count_one": "{{count}} views",
     "views_count_other": "{{count}} views"
   },
-  "page_description": "Stories, guides, and updates from the timebanking community — exchanges that worked, lessons learned, and the latest from local groups and partners.",
+  "page_description": "Stories, guides, and updates from {{name}} — exchanges that worked, lessons learned, and the latest from local groups and partners.",
   "min_read_one": "{{count}} min read",
   "min_read_other": "{{count}} min read",
   "min_read_short_one": "{{count}}m",

@@ -144,4 +144,21 @@ class LlmsControllerTest extends TestCase
         $this->assertStringContainsString('About this community', $body);
         $this->assertStringNotContainsString('Sitemap:', $body);
     }
+
+    public function test_a_community_that_chose_its_accessible_site_is_described_with_accessible_addresses(): void
+    {
+        $accessible = 'access-' . uniqid() . '.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['accessible_domain' => $accessible]);
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'seo_primary_site'],
+            ['setting_value' => 'accessible', 'setting_type' => 'string', 'updated_at' => now()]
+        );
+
+        $body = (string) $this->withHeaders(['X-Sitemap-Host' => $this->host])->get('/llms.txt')->assertOk()->getContent();
+
+        $this->assertStringContainsString('(https://' . $accessible . '/about)', $body);
+        $this->assertStringContainsString('(https://' . $accessible . '/guide)', $body, 'the guide lives at /guide on the accessible site');
+        $this->assertStringContainsString('Sitemap: https://' . $accessible . '/sitemap.xml', $body);
+        $this->assertStringNotContainsString('https://' . $this->host . '/about', $body);
+    }
 }

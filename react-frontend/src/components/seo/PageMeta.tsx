@@ -17,6 +17,9 @@
  *  - seo_canonical_urls → whether to emit canonical link tags
  *  - seo_open_graph → whether to emit OG tags
  *  - seo_twitter_cards → whether to emit Twitter Card tags
+ *  - seo_primary_site → which of the community's two sites search engines
+ *    index; 'accessible' points this page's canonical at its accessible-site
+ *    twin, or keeps the page out of search when it has none (primarySite.ts)
  */
 
 import { Helmet } from 'react-helmet-async';
@@ -27,6 +30,7 @@ import { toJsonLd } from '@/lib/json-ld';
 import { useRemoveShellTitle } from './shellTitle';
 import { buildBreadcrumbList } from './breadcrumbs';
 import { joinTitle } from './joinTitle';
+import { accessibleEquivalentUrl, accessibleHomeUrl, seoPrimarySite } from './primarySite';
 
 // Map our short language codes to OG locale codes (BCP 47 with region).
 // Google and Facebook expect e.g. en_GB / fr_FR, not the bare lang code.
@@ -193,7 +197,32 @@ export function PageMeta({
   // Canonical: always clean pathname, never include query params or hash
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const browserPathname = typeof window !== 'undefined' ? window.location.pathname : location.pathname;
-  const canonicalUrl = toAbsoluteUrl(url, origin) || buildCanonicalUrl(origin, browserPathname);
+  const ownCanonicalUrl = toAbsoluteUrl(url, origin) || buildCanonicalUrl(origin, browserPathname);
+  const basePath = (typeof tenantPath === 'function' ? tenantPath('/') : '/').replace(/\/+$/, '');
+
+  // Accessible site is the community's primary site (seo_primary_site,
+  // 2026-10-23). The page's own address (canonical override included) decides
+  // its accessible twin. With a twin, the canonical and og:url name the twin;
+  // without one, the page is kept out of search ("noindex, follow": crawlers
+  // may still follow its links to pages that do have a twin), so the two
+  // sites never compete and no canonical points at an unrelated page. A
+  // community with no accessible address at all keeps today's behaviour.
+  const accessiblePrimary = seoPrimarySite(tenant) === 'accessible'
+    && accessibleHomeUrl(tenant) !== null;
+  let accessibleTwinUrl: string | null = null;
+  if (accessiblePrimary && !noIndex) {
+    let ownPath = browserPathname;
+    try {
+      const parsed = new URL(ownCanonicalUrl, origin || undefined);
+      if (!origin || parsed.origin === origin) ownPath = parsed.pathname;
+    } catch {
+      // Keep the browser path.
+    }
+    accessibleTwinUrl = accessibleEquivalentUrl(tenant, tenantHome ? basePath || '/' : ownPath, basePath);
+  }
+  const noAccessibleTwin = accessiblePrimary && !noIndex && accessibleTwinUrl === null;
+  const canonicalUrl = accessibleTwinUrl ?? ownCanonicalUrl;
+  const emitCanonical = enableCanonical && !noAccessibleTwin;
 
   // Sharing image (og:image / twitter:image). Fallback chain: explicit prop ->
   // the community's sharing image (/admin/seo) -> its logo -> platform logo.
@@ -215,9 +244,10 @@ export function PageMeta({
   // only the page knows its own title). Not for pages kept out of search, and
   // not for the home page. Built from the canonical address so it never lists
   // a duplicate the canonical points away from.
-  const basePath = (typeof tenantPath === 'function' ? tenantPath('/') : '/').replace(/\/+$/, '');
+  // Not when the accessible site is primary: these would list this site's
+  // addresses, which its canonicals point away from.
   let breadcrumbSchema: Record<string, unknown> | null = null;
-  if (!noIndex && !tenantHome && title) {
+  if (!noIndex && !accessiblePrimary && !tenantHome && title) {
     let pagePath = browserPathname;
     try {
       const parsed = new URL(canonicalUrl, origin || undefined);
@@ -243,11 +273,13 @@ export function PageMeta({
       {metaKeywords && <meta name="keywords" content={metaKeywords} />}
 
       {/* Canonical URL — always clean, no query params */}
-      {enableCanonical && canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+      {emitCanonical && canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 
       {/* Robots */}
       {/* admin-i18n-ignore: standards-defined robots directive, not rendered copy */}
       {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      {/* admin-i18n-ignore: standards-defined robots directive, not rendered copy */}
+      {noAccessibleTwin && <meta name="robots" content="noindex, follow" />}
 
       {/* Open Graph / Facebook (respects admin toggle) */}
       {enableOpenGraph && <meta property="og:type" content={type} />}

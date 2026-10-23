@@ -122,7 +122,7 @@ export function ContactPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <PageMeta title={t('contact.title')} description={t('contact.meta_description')} />
+      <PageMeta title={t('contact.title')} description={t('contact.meta_description', { name: branding.name })} />
       {contactPointSchema && (
         <Helmet>
           <script type="application/ld+json">

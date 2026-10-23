@@ -71,7 +71,7 @@
     "views_count_one": "{{count}} Aufrufe",
     "views_count_other": "{{count}} Aufrufe"
   },
-  "page_description": "Geschichten, Leitfäden und Updates aus der Zeitbank-Community — erfolgreiche Tauschgeschäfte, gewonnene Erkenntnisse und Neuigkeiten aus lokalen Gruppen und von Partnern.",
+  "page_description": "Geschichten, Leitfäden und Updates von {{name}} — erfolgreiche Tauschgeschäfte, gewonnene Erkenntnisse und Neuigkeiten aus lokalen Gruppen und von Partnern.",
   "min_read_one": "{{count}} Min. Lesezeit",
   "min_read_other": "{{count}} Min. Lesezeit",
   "min_read_short_one": "{{count}}Min",

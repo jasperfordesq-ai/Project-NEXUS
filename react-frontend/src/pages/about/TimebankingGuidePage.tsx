@@ -123,14 +123,14 @@ const stagger = {
 export function TimebankingGuidePage() {
   const { t } = useTranslation('about');
   usePageTitle(t('timebanking_guide.page_title'));
-  const { tenantPath, hasModule } = useTenant();
+  const { tenantPath, hasModule, branding } = useTenant();
   const { isAuthenticated } = useAuth();
 
   return (
     <>
     <PageMeta
       title={t('timebanking_guide.page_title')}
-      description={t('timebanking_guide.meta_description')}
+      description={t('timebanking_guide.meta_description', { name: branding.name })}
     />
     <div className="-mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -my-4 sm:-my-6 md:-my-8 overflow-x-hidden">
       {/* ─── Breadcrumbs ─── */}

@@ -1998,7 +1998,14 @@
     "seo_audit_issue_sitemap_not_published": "Freagraíonn an léarscáil suímh “gan aimsiú” (404), mar sin ní fhaigheann innill chuardaigh léarscáil suímh ar bith.",
     "seo_audit_issue_sitemap_not_published_noindex": "Freagraíonn an léarscáil suímh “gan aimsiú” (404): tá an pobal seo socraithe a bheith i bhfolach ó thorthaí cuardaigh, mar sin ní fhaigheann innill chuardaigh léarscáil suímh ar bith.",
     "seo_audit_issue_sitemap_not_published_switched_off": "Freagraíonn an léarscáil suímh “gan aimsiú” (404): tá an lasc don léarscáil suímh uathoibríoch múchta, mar sin ní fhaigheann innill chuardaigh léarscáil suímh ar bith.",
-    "seo_audit_issue_cms_page_meta_description_missing": "Níl meitethuairisc ag an leathanach “{{title}}” ({{path}})."
+    "seo_audit_issue_cms_page_meta_description_missing": "Níl meitethuairisc ag an leathanach “{{title}}” ({{path}}).",
+    "label_primary_site": "Suíomh d’innill chuardaigh",
+    "primary_site_standard": "Suíomh caighdeánach (molta)",
+    "primary_site_accessible": "Suíomh inrochtana",
+    "desc_primary_site": "Tá suíomh caighdeánach agus suíomh inrochtana ag do phobal. Roghnaigh an ceann ar cheart d’innill chuardaigh ar nós Google a liostú.",
+    "primary_site_standard_desc": "Suíomh caighdeánach: liostaíonn innill chuardaigh an suíomh caighdeánach, mar a dhéanann siad anois.",
+    "primary_site_accessible_desc": "Suíomh inrochtana: liostaíonn innill chuardaigh an suíomh inrochtana ina ionad, agus díríonn gach leathanach den suíomh caighdeánach iad chuig an leathanach inrochtana comhfhreagrach. Fágtar leathanaigh nach bhfuil ar an suíomh inrochtana as torthaí cuardaigh.",
+    "primary_site_note": "Ná roghnaigh an suíomh inrochtana ach amháin má chuireann do phobal chun cinn é mar a phríomhshuíomh."
   },
   "email_deliverability": {
     "title": "Inseachadacht Ríomhphoist",

@@ -1013,13 +1013,61 @@ class SitemapService
         return $value !== null && in_array(strtolower(trim((string) $value)), ['0', 'false', 'off', 'no'], true);
     }
 
-    /** Why a community publishes no sitemap: 'noindex', 'switched_off', or null when it does. */
+    /**
+     * Why a community's MAIN-site sitemap is not published: 'noindex',
+     * 'switched_off', 'accessible_primary' (search engines index its
+     * accessible site instead, which serves its own sitemap), or null.
+     */
     public static function notListedReason(int $tenantId): ?string
     {
         if (self::isNoindexTenant($tenantId)) {
             return 'noindex';
         }
-        return self::isSitemapSwitchedOff($tenantId) ? 'switched_off' : null;
+        if (self::isSitemapSwitchedOff($tenantId)) {
+            return 'switched_off';
+        }
+        return self::isAccessiblePrimary($tenantId) ? 'accessible_primary' : null;
+    }
+
+    /**
+     * The community chose its accessible site for search engines
+     * (`seo_primary_site` = 'accessible' on /admin/seo, 2026-10-23): for
+     * communities, such as councils, that use only the accessible site.
+     */
+    public static function isAccessiblePrimary(int $tenantId): bool
+    {
+        try {
+            $value = DB::table('tenant_settings')
+                ->where('tenant_id', $tenantId)
+                ->where('setting_key', 'seo_primary_site')
+                ->value('setting_value');
+        } catch (\Throwable) {
+            return false;
+        }
+        return strtolower(trim((string) $value)) === 'accessible';
+    }
+
+    /**
+     * The community's accessible-site base address, built exactly as React's
+     * buildAccessibleFrontendUrl(): its own accessible domain, else the shared
+     * accessible host with /{slug}/accessible. Null when neither is known.
+     */
+    public static function accessibleBase(int $tenantId): ?string
+    {
+        $row = DB::table('tenants')->where('id', $tenantId)->first(['slug', 'accessible_domain']);
+        if ($row === null) {
+            return null;
+        }
+        $domain = preg_replace('#^https?://#i', '', rtrim(trim((string) ($row->accessible_domain ?? '')), '/'));
+        if ($domain !== '' && $domain !== null) {
+            return 'https://' . $domain;
+        }
+        $slug = trim((string) ($row->slug ?? ''));
+        if ($slug === '') {
+            return null;
+        }
+        $shared = rtrim((string) (config('app.accessible_frontend_url') ?: 'https://accessible.project-nexus.ie'), '/');
+        return $shared . '/' . rawurlencode($slug) . '/accessible';
     }
 
     private function tenantVersionKey(int $tenantId): string

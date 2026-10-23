@@ -125,7 +125,7 @@ export function AcceptableUsePage() {
       <>
         <PageMeta
           title={t('page_meta.acceptable_use.title')}
-          description={t('page_meta.acceptable_use.description')}
+          description={t('page_meta.acceptable_use.description', { name: branding.name })}
         />
         <CustomLegalDocument document={customDoc} />
       </>
@@ -138,7 +138,7 @@ export function AcceptableUsePage() {
     <>
       <PageMeta
         title={t('page_meta.acceptable_use.title')}
-        description={t('page_meta.acceptable_use.description')}
+        description={t('page_meta.acceptable_use.description', { name: branding.name })}
       />
       <motion.div
         variants={containerVariants}

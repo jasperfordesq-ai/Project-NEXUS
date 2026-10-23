@@ -76,7 +76,7 @@ export function TermsPage() {
   if (customDoc) {
     return (
       <>
-        <PageMeta title={t('terms.page_title')} description={t('terms.meta_description')} />
+        <PageMeta title={t('terms.page_title')} description={t('terms.meta_description', { name: branding.name })} />
         <CustomLegalDocument document={customDoc} accentColor="blue" />
       </>
     );
@@ -85,7 +85,7 @@ export function TermsPage() {
   // Default fallback — generic terms content
   return (
     <>
-      <PageMeta title={t('terms.page_title')} description={t('terms.meta_description')} />
+      <PageMeta title={t('terms.page_title')} description={t('terms.meta_description', { name: branding.name })} />
       <DefaultTermsContent branding={branding} tenantPath={tenantPath} />
     </>
   );

@@ -352,4 +352,20 @@ class SitemapControllerTest extends TestCase
         $stats->assertJsonPath('data.listed', false);
         $stats->assertJsonPath('data.not_listed_reason', 'noindex');
     }
+
+    public function test_a_community_that_chose_its_accessible_site_publishes_no_main_sitemap(): void
+    {
+        $host = 'primary-' . uniqid() . '.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['domain' => $host, 'robots_directive' => 'index, follow']);
+        DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)->where('setting_key', 'seo_auto_sitemap')->delete();
+        $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap.xml')->assertOk();
+
+        DB::table('tenant_settings')->insert([
+            'tenant_id' => $this->testTenantId, 'setting_key' => 'seo_primary_site',
+            'setting_value' => 'accessible', 'setting_type' => 'string', 'updated_at' => now(),
+        ]);
+        Cache::flush();
+        $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap.xml')->assertStatus(404);
+        $this->assertSame('accessible_primary', \App\Services\SitemapService::notListedReason($this->testTenantId));
+    }
 }

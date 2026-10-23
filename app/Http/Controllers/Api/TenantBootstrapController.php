@@ -650,6 +650,10 @@ class TenantBootstrapController extends BaseApiController
         'seo_title_suffix', 'seo_meta_description', 'seo_meta_keywords',
         'seo_canonical_urls', 'seo_open_graph', 'seo_twitter_cards',
         'seo_auto_sitemap', 'seo_google_verification', 'seo_bing_verification',
+        // 'standard' (default) or 'accessible': which of the community's two
+        // sites search engines should index (2026-10-23). Read by PageMeta,
+        // web-uk seo-meta.js, the sitemaps and llms.txt.
+        'seo_primary_site',
     ];
 
     private function buildSeoSettings(int $tenantId): array

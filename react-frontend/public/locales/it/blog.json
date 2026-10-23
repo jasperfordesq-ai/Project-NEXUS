@@ -74,7 +74,7 @@
     "views_count_many": "{{count}} visualizzazioni",
     "comment_count_many": "{{count}} commenti"
   },
-  "page_description": "Storie, guide e aggiornamenti dalla comunità di banca del tempo — scambi riusciti, lezioni apprese e le ultime notizie dai gruppi locali e dai partner.",
+  "page_description": "Storie, guide e aggiornamenti da {{name}} — scambi riusciti, lezioni apprese e le ultime notizie dai gruppi locali e dai partner.",
   "min_read_one": "{{count}} min di lettura",
   "min_read_other": "{{count}} min di lettura",
   "min_read_short_one": "{{count}}m",

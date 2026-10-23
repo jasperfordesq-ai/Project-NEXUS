@@ -1900,7 +1900,14 @@
     "seo_audit_issue_sitemap_not_published": "El sitemap responde «no encontrado» (404), así que los buscadores no reciben ningún sitemap.",
     "seo_audit_issue_sitemap_not_published_noindex": "El sitemap responde «no encontrado» (404): esta comunidad está configurada para ocultarse de los resultados de búsqueda, así que los buscadores no reciben ningún sitemap.",
     "seo_audit_issue_sitemap_not_published_switched_off": "El sitemap responde «no encontrado» (404): el interruptor del sitemap automático está desactivado, así que los buscadores no reciben ningún sitemap.",
-    "seo_audit_issue_cms_page_meta_description_missing": "La página «{{title}}» ({{path}}) no tiene metadescripción."
+    "seo_audit_issue_cms_page_meta_description_missing": "La página «{{title}}» ({{path}}) no tiene metadescripción.",
+    "label_primary_site": "Sitio para los buscadores",
+    "primary_site_standard": "Sitio estándar (recomendado)",
+    "primary_site_accessible": "Sitio accesible",
+    "desc_primary_site": "Tu comunidad tiene un sitio estándar y un sitio accesible. Elige cuál deben mostrar buscadores como Google.",
+    "primary_site_standard_desc": "Sitio estándar: los buscadores muestran el sitio estándar, como hasta ahora.",
+    "primary_site_accessible_desc": "Sitio accesible: los buscadores muestran el sitio accesible en su lugar, y cada página del sitio estándar los dirige a la página accesible correspondiente. Las páginas que no existen en el sitio accesible quedan fuera de los resultados de búsqueda.",
+    "primary_site_note": "Elige el sitio accesible solo si tu comunidad lo promociona como su sitio principal."
   },
   "email_deliverability": {
     "title": "Capacidad de entrega del correo electrónico",

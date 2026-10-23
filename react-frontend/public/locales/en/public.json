@@ -7,7 +7,7 @@
     },
     "title": "Features",
     "meta_title": "Features",
-    "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
+    "meta_description": "Every module in Project NEXUS, the software behind {{name}}, with honest maturity labels for timebanking, marketplace, community care and safety.",
     "heading": "What Project NEXUS does",
     "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "How we label maturity",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Get in touch with the team — questions about joining, partnering, social prescribing, accessibility, or how timebanking works. We're happy to help.",
+    "meta_description": "Get in touch with {{name}} — questions about joining, partnering, social prescribing, accessibility, or how timebanking works. We're happy to help.",
     "title": "Contact Us",
     "subtitle": "Have a question about {{name}}? We'd love to hear from you.",
     "success_title": "Message Sent!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Frequently Asked Questions",
-    "meta_description": "Common questions about timebanking, time credits, listings, exchanges, trust and safety, and community membership — everything you need to get started.",
+    "meta_description": "Common questions about {{name}}: timebanking, time credits, listings, exchanges, trust and safety, and membership — everything you need to get started.",
     "title": "Frequently Asked Questions",
     "subtitle_before_link": "Can't find what you're looking for? Visit our",
     "help_center_link": "Help Center",

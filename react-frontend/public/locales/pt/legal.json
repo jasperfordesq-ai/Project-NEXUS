@@ -3,7 +3,7 @@
     "introduction": "Introdução"
   },
   "terms": {
-    "meta_description": "Termos e condições que regem o uso da nossa plataforma comunitária de timebanking.",
+    "meta_description": "Termos e condições que regem o uso de {{name}}, uma plataforma comunitária de timebanking.",
     "page_title": "Termos de Serviço",
     "heading": "Termos de Serviço",
     "subtitle": "As regras e diretrizes para utilizar a nossa plataforma",
@@ -110,7 +110,7 @@
     "safeguarding_data_access": "O acesso está limitado a intermediários autorizados e administradores da comunidade do membro. Os dados não são apresentados em perfis públicos, emblemas, resultados de pesquisa ou análises gerais.",
     "safeguarding_data_retention": "O Operador da Comunidade deve publicar e aplicar um calendário de conservação documentado e eliminar os metadados quando deixarem de ser necessários, sem prejuízo de qualquer obrigação jurídica devidamente documentada.",
     "safeguarding_data_correction": "Os membros podem consultar o seu estado privado, pedir a revisão de um intermediário sem enviar provas e solicitar ao Operador da Comunidade que corrija ou conteste uma decisão inexata.",
-    "meta_description": "Como coletamos, usamos e protegemos seus dados pessoais em nossa plataforma comunitária.",
+    "meta_description": "Como {{name}} coleta, usa e protege seus dados pessoais.",
     "page_title": "Política de Privacidade",
     "heading": "Política de Privacidade",
     "subtitle": "Como recolhemos, utilizamos e protegemos as suas informações pessoais",
@@ -221,7 +221,7 @@
     "contact_privacy_team": "Contactar a Nossa Equipe de Privacidade"
   },
   "cookies": {
-    "meta_description": "Informações sobre como utilizamos cookies para melhorar a sua experiência na nossa plataforma.",
+    "meta_description": "Informações sobre como {{name}} utiliza cookies para melhorar a sua experiência.",
     "page_title": "Política de Cookies",
     "heading": "Política de Cookies",
     "subtitle": "Como utilizamos cookies e tecnologias semelhantes na nossa plataforma",
@@ -303,7 +303,7 @@
     "privacy_policy_link": "Política de Privacidade"
   },
   "accessibility": {
-    "meta_description": "Nosso compromisso em tornar a plataforma acessível a todos, seguindo os padrões WCAG 2.1 AA.",
+    "meta_description": "Nosso compromisso em tornar {{name}} acessível a todos, seguindo os padrões WCAG 2.1 AA.",
     "page_title": "Acessibilidade",
     "heading": "Declaração de Acessibilidade",
     "subtitle": "{{name}} está comprometido em garantir acessibilidade digital para pessoas de todas as capacidades.",
@@ -713,15 +713,15 @@
     },
     "community_guidelines": {
       "title": "Diretrizes da Comunidade",
-      "description": "Diretrizes da comunidade para um timebanking respeitoso e produtivo."
+      "description": "Diretrizes da comunidade para um timebanking respeitoso e produtivo em {{name}}."
     },
     "acceptable_use": {
       "title": "Política de Uso Aceitável",
-      "description": "Política de uso aceitável para nossa plataforma comunitária de timebanking."
+      "description": "Política de uso aceitável de {{name}}, uma plataforma comunitária de timebanking."
     },
     "legal_hub": {
       "title": "Informações Legais",
-      "description": "Documentos legais, políticas e informações de conformidade."
+      "description": "Documentos legais, políticas e informações de conformidade de {{name}}."
     },
     "legal_version_history": {
       "title": "Histórico de Versões Legais",

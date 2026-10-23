@@ -170,7 +170,7 @@ export function CookiesPage() {
   if (customDoc) {
     return (
       <>
-        <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description')} />
+        <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description', { name: branding.name })} />
         <CustomLegalDocument document={customDoc} accentColor="amber" />
       </>
     );
@@ -183,7 +183,7 @@ export function CookiesPage() {
       animate="visible"
       className="max-w-4xl mx-auto space-y-8"
     >
-      <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description')} />
+      <PageMeta title={t('cookies.page_title')} description={t('cookies.meta_description', { name: branding.name })} />
       {/* Hero Header */}
       <motion.div variants={itemVariants} className="text-center">
         <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 mb-4">

@@ -1900,7 +1900,14 @@
     "seo_audit_issue_sitemap_not_published": "Le plan du site répond « introuvable » (404) : les moteurs de recherche ne reçoivent donc aucun plan du site.",
     "seo_audit_issue_sitemap_not_published_noindex": "Le plan du site répond « introuvable » (404) : cette communauté est configurée pour être masquée des résultats de recherche, les moteurs de recherche ne reçoivent donc aucun plan du site.",
     "seo_audit_issue_sitemap_not_published_switched_off": "Le plan du site répond « introuvable » (404) : l’interrupteur du plan du site automatique est désactivé, les moteurs de recherche ne reçoivent donc aucun plan du site.",
-    "seo_audit_issue_cms_page_meta_description_missing": "La page « {{title}} » ({{path}}) n’a pas de méta-description."
+    "seo_audit_issue_cms_page_meta_description_missing": "La page « {{title}} » ({{path}}) n’a pas de méta-description.",
+    "label_primary_site": "Site pour les moteurs de recherche",
+    "primary_site_standard": "Site standard (recommandé)",
+    "primary_site_accessible": "Site accessible",
+    "desc_primary_site": "Votre communauté dispose d’un site standard et d’un site accessible. Choisissez celui que les moteurs de recherche comme Google doivent référencer.",
+    "primary_site_standard_desc": "Site standard : les moteurs de recherche référencent le site standard, comme aujourd’hui.",
+    "primary_site_accessible_desc": "Site accessible : les moteurs de recherche référencent plutôt le site accessible, et chaque page du site standard les renvoie vers la page accessible correspondante. Les pages absentes du site accessible ne figurent pas dans les résultats de recherche.",
+    "primary_site_note": "Ne choisissez le site accessible que si votre communauté le présente comme son site principal."
   },
   "email_deliverability": {
     "title": "Délivrabilité des e-mails",

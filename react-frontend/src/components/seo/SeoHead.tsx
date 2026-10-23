@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTenant } from '@/contexts/TenantContext';
 import { toJsonLd } from '@/lib/json-ld';
+import { accessibleEquivalentUrl, accessibleHomeUrl, seoPrimarySite } from './primarySite';
 
 /**
  * SeoHead — Global SEO tags rendered on every page via Layout.
@@ -94,11 +95,21 @@ export function SeoHead() {
   // the community folder), so a sub-community's hreflang, organisation URL and
   // breadcrumbs all pointed at the hub's home page.
   const basePath = (typeof tenantPath === 'function' ? tenantPath('/') : '/').replace(/\/+$/, '');
-  const siteUrl = `${origin}${basePath}`;
+  const ownSiteUrl = `${origin}${basePath}`;
   // Browser pathname (keeps the community folder), as PageMeta's canonical does.
   const browserPath = typeof window !== 'undefined' ? window.location.pathname : location.pathname;
   const cleanPath = browserPath === '/' ? '/' : browserPath.replace(/\/+$/, '');
-  const canonicalPath = `${origin}${cleanPath}`;
+  const ownCanonicalPath = `${origin}${cleanPath}`;
+
+  // Accessible site is the community's primary site (seo_primary_site,
+  // 2026-10-23): the organisation and website address is the accessible home
+  // page, and x-default names this page's accessible twin, or is left out
+  // when it has none (PageMeta then keeps the page out of search).
+  const accessibleHome = seoPrimarySite(tenant) === 'accessible' ? accessibleHomeUrl(tenant) : null;
+  const siteUrl = (accessibleHome ?? ownSiteUrl).replace(/\/+$/, '');
+  const canonicalPath = accessibleHome
+    ? accessibleEquivalentUrl(tenant, cleanPath, basePath)
+    : ownCanonicalPath;
 
   const seo = tenant?.seo;
   const settings = tenant?.settings as Record<string, unknown> | undefined;
@@ -228,7 +239,7 @@ export function SeoHead() {
 
       {/* x-default hreflang — clean canonical URL, no ?lng= variants.
           This is the only hreflang needed for a client-side i18n SPA. */}
-      <link rel="alternate" hrefLang="x-default" href={canonicalPath} />
+      {canonicalPath && <link rel="alternate" hrefLang="x-default" href={canonicalPath} />}
 
     </Helmet>
   );

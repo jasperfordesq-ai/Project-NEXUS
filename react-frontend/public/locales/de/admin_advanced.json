@@ -1851,7 +1851,14 @@
     "seo_audit_issue_sitemap_not_published": "Die Sitemap antwortet mit „nicht gefunden“ (404), daher erhalten Suchmaschinen keine Sitemap.",
     "seo_audit_issue_sitemap_not_published_noindex": "Die Sitemap antwortet mit „nicht gefunden“ (404): Diese Community ist so eingestellt, dass sie in Suchergebnissen verborgen wird, daher erhalten Suchmaschinen keine Sitemap.",
     "seo_audit_issue_sitemap_not_published_switched_off": "Die Sitemap antwortet mit „nicht gefunden“ (404): Der Schalter für die automatische Sitemap ist aus, daher erhalten Suchmaschinen keine Sitemap.",
-    "seo_audit_issue_cms_page_meta_description_missing": "Die Seite „{{title}}“ ({{path}}) hat keine Meta-Beschreibung."
+    "seo_audit_issue_cms_page_meta_description_missing": "Die Seite „{{title}}“ ({{path}}) hat keine Meta-Beschreibung.",
+    "label_primary_site": "Website für Suchmaschinen",
+    "primary_site_standard": "Standard-Website (empfohlen)",
+    "primary_site_accessible": "Barrierefreie Website",
+    "desc_primary_site": "Ihre Gemeinschaft hat eine Standard-Website und eine barrierefreie Website. Wählen Sie die Website, die Suchmaschinen wie Google anzeigen sollen.",
+    "primary_site_standard_desc": "Standard-Website: Suchmaschinen zeigen die Standard-Website an, wie bisher.",
+    "primary_site_accessible_desc": "Barrierefreie Website: Suchmaschinen zeigen stattdessen die barrierefreie Website an, und jede Seite der Standard-Website verweist sie auf die passende barrierefreie Seite. Seiten, die es auf der barrierefreien Website nicht gibt, erscheinen nicht in den Suchergebnissen.",
+    "primary_site_note": "Wählen Sie die barrierefreie Website nur, wenn Ihre Gemeinschaft sie als ihre Hauptwebsite bewirbt."
   },
   "email_deliverability": {
     "title": "E-Mail-Zustellbarkeit",

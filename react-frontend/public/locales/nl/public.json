@@ -7,7 +7,7 @@
     },
     "title": "Functies",
     "meta_title": "Functies",
-    "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
+    "meta_description": "Alle modules van Project NEXUS, de software achter {{name}}, met eerlijke volwassenheidslabels voor timebanking, federatie, marktplaats, community-tools en beveiliging.",
     "heading": "Wat Project NEXUS doet",
     "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v3.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
     "maturity_key_title": "Hoe we volwassenheid labelen",
@@ -777,7 +777,7 @@
     }
   },
   "contact": {
-    "meta_description": "Neem contact op met het team – als u vragen heeft over lidmaatschap, partnerschappen, sociaal voorschrijven, toegankelijkheid of hoe tijdbankieren werkt. Wij helpen u graag.",
+    "meta_description": "Neem contact op met {{name}} – als u vragen heeft over lidmaatschap, partnerschappen, sociaal voorschrijven, toegankelijkheid of hoe tijdbankieren werkt. Wij helpen u graag.",
     "title": "Neem Contact met Ons Op",
     "subtitle": "Heb je een vraag over {{name}}? We horen graag van je.",
     "success_title": "Bericht Verzonden!",
@@ -815,7 +815,7 @@
   },
   "faq": {
     "page_title": "Veelgestelde vragen",
-    "meta_description": "Veelgestelde vragen over timebanking, tijdskredieten, vermeldingen, uitwisselingen, vertrouwen en veiligheid, en lidmaatschap van de community: alles wat u nodig heeft om aan de slag te gaan.",
+    "meta_description": "Veelgestelde vragen over {{name}}: timebanking, tijdskredieten, vermeldingen, uitwisselingen, vertrouwen en veiligheid, en lidmaatschap: alles om aan de slag te gaan.",
     "title": "Veelgestelde Vragen",
     "subtitle_before_link": "Kun je niet vinden wat je zoekt? Bezoek ons",
     "help_center_link": "Helpcentrum",

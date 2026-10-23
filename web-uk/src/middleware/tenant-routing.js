@@ -448,6 +448,36 @@ async function resolveCustomAccessibleDomain(req, pathname) {
   }
 }
 
+/**
+ * The community whose OWN accessible domain this request was addressed to, or
+ * null. For system paths (`/robots.txt`, `/sitemap.xml`) that
+ * resolveCustomAccessibleDomain deliberately skips, so they stay tenant-free and
+ * cheap for every other caller; only the robots and sitemap handlers ask.
+ *
+ * Never asks on a local host or the shared platform host: the shared host serves
+ * many communities, and an unknown host is a 404 the bootstrap cache never
+ * stores, so asking there would cost an API call on every request.
+ */
+async function resolveAccessibleDomainTenant(req) {
+  const host = requestHost(req);
+  if (!shouldResolveCustomAccessibleDomain(host) || platformAccessibleHosts().includes(host)) {
+    return null;
+  }
+
+  const { ApiError, ApiOfflineError, getTenantBootstrap } = require('../lib/api');
+
+  try {
+    const result = await getTenantBootstrap({ host });
+    const tenant = result?.data || result?.tenant || result;
+    return tenantDataMatchesAccessibleHost(tenant, host) ? tenant : null;
+  } catch (error) {
+    if (error instanceof ApiOfflineError || isUnknownCommunityError(error, ApiError)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
 function isLocalUrl(location) {
   if (
     typeof location !== 'string' ||
@@ -784,6 +814,7 @@ module.exports = {
   prefixLocalPath,
   reservedChildSegments: Array.from(RESERVED_CHILD_SEGMENTS),
   requestHost,
+  resolveAccessibleDomainTenant,
   rewriteHtmlLinks,
   tenantRouting
 };

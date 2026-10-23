@@ -34,6 +34,23 @@ class LlmsController
 {
     private const CACHE_TTL = 3600;
 
+    /** The file describes the community's accessible site (see resolveTenant). */
+    private bool $accessiblePrimary = false;
+
+    /**
+     * Main-site page → its accessible-site address, where they differ
+     * (react-frontend/src/lib/accessible-frontend.ts ACCESSIBLE_PAGE_MAP).
+     */
+    private const ACCESSIBLE_PATHS = ['/timebanking-guide' => '/guide'];
+
+    private function link(string $baseUrl, string $path): string
+    {
+        if ($this->accessiblePrimary) {
+            $path = self::ACCESSIBLE_PATHS[$path] ?? $path;
+        }
+        return $baseUrl . $path;
+    }
+
     public function index(Request $request): Response
     {
         [$tenant, $baseUrl] = $this->resolveTenant($request);
@@ -96,7 +113,13 @@ class LlmsController
         $columns = 'id, name, slug, domain, tagline, description, meta_title, meta_description, h1_headline, hero_intro, features, configuration';
         if ($target !== null) {
             $tenant = DB::selectOne("SELECT {$columns} FROM tenants WHERE id = ? AND is_active = 1", [$target['tenant_id']]);
-            return [$tenant, SitemapService::targetOrigin($target) . $target['prefix']];
+            // A community that chose its accessible site for search engines
+            // (seo_primary_site) is described with its accessible addresses.
+            $accessible = $tenant !== null && SitemapService::isAccessiblePrimary((int) $tenant->id)
+                ? SitemapService::accessibleBase((int) $tenant->id)
+                : null;
+            $this->accessiblePrimary = $accessible !== null;
+            return [$tenant, $accessible ?? (SitemapService::targetOrigin($target) . $target['prefix'])];
         }
 
         // Unknown host (the API host itself, say) → master, at the app address.
@@ -170,24 +193,24 @@ class LlmsController
         // and organisations, all of which are behind sign-in.
         $lines[] = '## Key pages';
         $lines[] = '';
-        $lines[] = "- [Home]({$baseUrl}/): overview and how it works";
-        $lines[] = "- [About]({$baseUrl}/about): mission and team";
-        $lines[] = "- [How it works]({$baseUrl}/timebanking-guide): timebanking explained";
-        $lines[] = "- [Questions and answers]({$baseUrl}/faq): common questions";
-        $lines[] = "- [Help]({$baseUrl}/help): guides for members";
-        $lines[] = "- [Trust and safety]({$baseUrl}/trust-and-safety): how members are kept safe";
-        $lines[] = "- [Contact]({$baseUrl}/contact): get in touch";
+        $lines[] = "- [Home](" . $this->link($baseUrl, '/') . "): overview and how it works";
+        $lines[] = "- [About](" . $this->link($baseUrl, '/about') . "): mission and team";
+        $lines[] = "- [How it works](" . $this->link($baseUrl, '/timebanking-guide') . "): timebanking explained";
+        $lines[] = "- [Questions and answers](" . $this->link($baseUrl, '/faq') . "): common questions";
+        $lines[] = "- [Help](" . $this->link($baseUrl, '/help') . "): guides for members";
+        $lines[] = "- [Trust and safety](" . $this->link($baseUrl, '/trust-and-safety') . "): how members are kept safe";
+        $lines[] = "- [Contact](" . $this->link($baseUrl, '/contact') . "): get in touch";
         $lines[] = '';
 
         $optional = [];
         if ($this->hasFeature($tenant, 'blog')) {
-            $optional[] = "- [Blog]({$baseUrl}/blog): stories, updates, social impact";
+            $optional[] = "- [Blog](" . $this->link($baseUrl, '/blog') . "): stories, updates, social impact";
         }
         if ($this->hasFeature($tenant, 'events') && $this->hasFeature($tenant, 'public_events')) {
-            $optional[] = "- [What's on]({$baseUrl}/whats-on): events open to the public";
+            $optional[] = "- [What's on](" . $this->link($baseUrl, '/whats-on') . "): events open to the public";
         }
-        if ($this->hasFeature($tenant, 'merchant_coupons')) {
-            $optional[] = "- [Coupons]({$baseUrl}/coupons): offers from local organisations";
+        if ($this->hasFeature($tenant, 'merchant_coupons') && !$this->accessiblePrimary) {
+            $optional[] = "- [Coupons](" . $this->link($baseUrl, '/coupons') . "): offers from local organisations";
         }
         if (!empty($optional)) {
             $lines[] = '## Optional';
@@ -261,6 +284,9 @@ class LlmsController
     /** A folder community's sitemap is sitemap-{slug}.xml on its host, not {folder}/sitemap.xml. */
     private function sitemapUrl(?object $tenant, string $baseUrl): string
     {
+        if ($this->accessiblePrimary) {
+            return $baseUrl . '/sitemap.xml'; // web-uk serves the accessible sitemap
+        }
         $origin = (string) preg_replace('#^(https?://[^/]+).*$#i', '$1', $baseUrl);
         if ($origin !== $baseUrl && !empty($tenant->slug)) {
             return $origin . '/sitemap-' . $tenant->slug . '.xml';

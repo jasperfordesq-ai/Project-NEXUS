@@ -74,15 +74,20 @@ const ACCESSIBLE_PAGE_MAP: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 /**
- * The accessible-site path for the main-site page the visitor is on, so the
- * "accessible version" link opens the same page there. A page the accessible
- * site does not have at the same address opens its home page instead.
+ * The accessible-site path of the main-site page the visitor is on, or null
+ * when the accessible site has no page with the same meaning. Unlike
+ * accessibleFrontendPathFor, this does not fall back to the accessible home
+ * page, so a caller can tell "this is the home page" from "no equivalent"
+ * (search-engine canonicals must never point at an unrelated page).
  *
  * @param pathname  the browser path, e.g. "/hour-timebank/blog/spring-fair"
  * @param basePath  the community's path prefix ("/hour-timebank"), or "" when
  *                  the community is served from its own domain
  */
-export function accessibleFrontendPathFor(pathname: string | null | undefined, basePath = ''): string {
+export function accessibleFrontendEquivalentFor(
+  pathname: string | null | undefined,
+  basePath = '',
+): string | null {
   let path = (pathname ?? '/').split(/[?#]/)[0] || '/';
   const base = basePath.replace(/\/+$/, '');
   if (base) {
@@ -97,5 +102,18 @@ export function accessibleFrontendPathFor(pathname: string | null | undefined, b
     const match = pattern.exec(path);
     if (match) return target.replace('$1', match[1] ?? '');
   }
-  return '/';
+  return null;
+}
+
+/**
+ * The accessible-site path for the main-site page the visitor is on, so the
+ * "accessible version" link opens the same page there. A page the accessible
+ * site does not have at the same address opens its home page instead.
+ *
+ * @param pathname  the browser path, e.g. "/hour-timebank/blog/spring-fair"
+ * @param basePath  the community's path prefix ("/hour-timebank"), or "" when
+ *                  the community is served from its own domain
+ */
+export function accessibleFrontendPathFor(pathname: string | null | undefined, basePath = ''): string {
+  return accessibleFrontendEquivalentFor(pathname, basePath) ?? '/';
 }
