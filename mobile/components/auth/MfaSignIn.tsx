@@ -12,6 +12,7 @@ import { ApiResponseError } from '@/lib/api/client';
 import { describeApiError } from '@/lib/api/describeApiError';
 import { useAuth } from '@/lib/hooks/useAuth';
 import Button from '@/components/ui/Button';
+import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 
 /** Challenge, setup secret and recovery codes never leave this screen's memory. */
@@ -33,6 +34,8 @@ function MfaChallenge({ challenge, onCancel }: MfaSignInProps) {
   const [secret, setSecret] = useState('');
   const [code, setCode] = useState('');
   const [backup, setBackup] = useState(challenge.methods?.includes('totp') === false && challenge.methods.includes('backup_code'));
+  const [trustDevice, setTrustDevice] = useState(false);
+  const canTrustDevice = challenge.allow_trusted_device === true && !!challenge.account_key;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [expired, setExpired] = useState(false);
@@ -101,7 +104,7 @@ function MfaChallenge({ challenge, onCancel }: MfaSignInProps) {
     setError('');
     let completingSession = false;
     try {
-      const session = issued ?? await verifyMfa(challenge, code.trim(), backup);
+      const session = issued ?? await verifyMfa(challenge, code.trim(), backup, canTrustDevice && trustDevice);
       if (!ownsSession()) return;
       setIssued(session);
       setCode('');
@@ -153,6 +156,11 @@ function MfaChallenge({ challenge, onCancel }: MfaSignInProps) {
                 value={code} onChangeText={setCode} editable={!busy} autoCapitalize="none" autoCorrect={false}
                 keyboardType={backup ? 'default' : 'number-pad'} autoComplete="one-time-code" textContentType="oneTimeCode"
                 maxLength={backup ? 32 : 6} onSubmitEditing={() => void submit()} />
+              {!setup && canTrustDevice ? (
+                <Checkbox testID="mfa-trust-device" checked={trustDevice} disabled={busy}
+                  onPress={() => setTrustDevice(!trustDevice)}
+                  label={t('mfa.login.twofa_trust_device', { days: challenge.trusted_device_days ?? 30 })} />
+              ) : null}
               <Button isLoading={busy} accessibilityLabel={t('mfa.login.twofa_verify')} disabled={backup ? !code.trim() : !/^\d{6}$/.test(code)} onPress={() => void submit()}>{t('mfa.login.twofa_verify')}</Button>
               {!setup && (challenge.methods ?? ['totp', 'backup_code']).includes('backup_code') && (challenge.methods ?? ['totp']).includes('totp') ? <Button variant="outline" disabled={busy}
                 onPress={() => { setBackup(!backup); setCode(''); setError(''); }}>

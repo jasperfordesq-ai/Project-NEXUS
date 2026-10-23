@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { api } from '@/lib/api/client';
-import { API_V2, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
+import { API_V2, DEFAULT_TENANT, STORAGE_KEYS, TIMEOUTS } from '@/lib/constants';
 import { storage } from '@/lib/storage';
+import { rememberTrustedDevice, trustedDeviceAccountKey, trustedDeviceTokenFor } from '@/lib/trustedDevices';
 import i18n from 'i18next';
 
 /**
@@ -120,24 +121,46 @@ export interface LoginChallenge {
   requires_2fa?: boolean;
   requires_2fa_setup?: boolean;
   methods?: ('totp' | 'backup_code')[];
+  /** Whether this account may tick "Trust this device", and for how many days. */
+  allow_trusted_device?: boolean;
+  trusted_device_days?: number;
+  /** Client-side only: which account the challenge belongs to (see lib/trustedDevices). */
+  account_key?: string;
 }
 
-export type MfaSession = Omit<AuthResponse, 'user'> & { user?: LoginUser; backup_codes?: string[] };
+export type MfaSession = Omit<AuthResponse, 'user'> & {
+  user?: LoginUser;
+  backup_codes?: string[];
+  /** Issued only when "Trust this device" was ticked and the account may use it. */
+  trusted_device_token?: string;
+};
 
 export function beginMfaSetup(challenge: string): Promise<{ data: { secret: string } }> {
   return api.post(`${API_V2}/auth/2fa/setup`, { two_factor_token: challenge }, { anonymous: true });
 }
 
-export async function verifyMfa(challenge: LoginChallenge, code: string, backup: boolean): Promise<MfaSession> {
+export async function verifyMfa(
+  challenge: LoginChallenge, code: string, backup: boolean, trustDevice = false,
+): Promise<MfaSession> {
   if (challenge.requires_2fa_setup) {
     const response = await api.post<{ data: MfaSession }>(`${API_V2}/auth/2fa/verify`, {
       two_factor_token: challenge.two_factor_token, code,
     }, { anonymous: true });
     return response.data;
   }
-  return api.post('/api/totp/verify', {
-    two_factor_token: challenge.two_factor_token, code, use_backup_code: backup,
+  const trust = trustDevice && challenge.allow_trusted_device === true;
+  const session = await api.post<MfaSession>('/api/totp/verify', {
+    two_factor_token: challenge.two_factor_token, code, use_backup_code: backup, trust_device: trust,
   }, { anonymous: true });
+  if (trust && challenge.account_key) {
+    await rememberTrustedDevice(challenge.account_key, session.trusted_device_token);
+  }
+  // The token is a credential: it lives in secure storage, never in app state.
+  if (session && typeof session === 'object' && 'trusted_device_token' in session) {
+    const { trusted_device_token: _stored, ...rest } = session;
+    return rest;
+  }
+  return session;
 }
 
 export interface RegisterPayload {
@@ -213,12 +236,22 @@ export interface VerifyEmailResponse {
 }
 
 /** POST /api/auth/login — token-based auth (Bearer, mobile-safe, 1-year token) */
-export function login(payload: LoginPayload): Promise<AuthResponse | LoginChallenge> {
-  return api.post<AuthResponse | LoginChallenge>('/api/auth/login', {
+export async function login(payload: LoginPayload): Promise<AuthResponse | LoginChallenge> {
+  // A device this account trusted skips the code. The tenant is read the same
+  // way the client resolves X-Tenant-Slug for this request.
+  const accountKey = trustedDeviceAccountKey(
+    (await storage.get(STORAGE_KEYS.TENANT_SLUG)) || DEFAULT_TENANT,
+    payload.email,
+  );
+  const trusted = await trustedDeviceTokenFor(accountKey);
+  const response = await api.post<AuthResponse | LoginChallenge>('/api/auth/login', {
     ...payload,
     // Tell the server this is a mobile client so it issues a long-lived token
     platform: 'mobile',
-  });
+  }, trusted ? { headers: { 'X-Trusted-Device': trusted } } : undefined);
+  return response.success === false && 'two_factor_token' in response
+    ? { ...response, account_key: accountKey }
+    : response;
 }
 
 /** POST /api/v2/auth/register — V2 registration (usually returns verification/approval state) */

@@ -43,6 +43,7 @@ import {
   verifyEmail,
   beginMfaSetup,
   verifyMfa,
+  login,
 } from './auth';
 import type { AuthResponse, LoginUser, RegisterPayload, RegisterResponse } from './auth';
 
@@ -81,7 +82,46 @@ it('uses anonymous challenge-bound setup and preserves its issued session payloa
 
 it('verifies recovery codes through the existing TOTP login endpoint', async () => {
   await verifyMfa({ success: false, requires_2fa: true, two_factor_token: 'challenge' }, 'BACKUP', true);
-  expect(api.post).toHaveBeenLastCalledWith('/api/totp/verify', { two_factor_token: 'challenge', code: 'BACKUP', use_backup_code: true }, { anonymous: true });
+  expect(api.post).toHaveBeenLastCalledWith('/api/totp/verify', { two_factor_token: 'challenge', code: 'BACKUP', use_backup_code: true, trust_device: false }, { anonymous: true });
+});
+
+describe('Trust this device', () => {
+  const TOKEN = 'f'.repeat(64);
+  const KEY = 'test-tenant|jane@example.com';
+
+  it('stores the issued token for this account and keeps it out of the session', async () => {
+    jest.mocked(api.post).mockResolvedValueOnce({ access_token: 'issued', refresh_token: 'r', trusted_device_token: TOKEN });
+    const challenge = { success: false as const, requires_2fa: true, two_factor_token: 'c', allow_trusted_device: true, account_key: KEY };
+    const session = await verifyMfa(challenge, '123456', false, true);
+    expect(api.post).toHaveBeenLastCalledWith('/api/totp/verify', expect.objectContaining({ trust_device: true }), { anonymous: true });
+    expect(session).not.toHaveProperty('trusted_device_token');
+    expect(storage.set).toHaveBeenCalledWith('nexus_trusted_devices', expect.stringContaining(TOKEN));
+    expect(JSON.parse(jest.mocked(storage.set).mock.calls.at(-1)![1])[KEY].token).toBe(TOKEN);
+  });
+
+  it('never asks the server to trust a device the account may not remember', async () => {
+    jest.mocked(api.post).mockResolvedValueOnce({ access_token: 'issued' });
+    await verifyMfa({ success: false, requires_2fa: true, two_factor_token: 'c', allow_trusted_device: false, account_key: KEY }, '123456', false, true);
+    expect(api.post).toHaveBeenLastCalledWith('/api/totp/verify', expect.objectContaining({ trust_device: false }), { anonymous: true });
+    expect(storage.set).not.toHaveBeenCalled();
+  });
+
+  it('sends this account’s remembered token at sign-in and tags the challenge with the account', async () => {
+    jest.mocked(storage.get).mockImplementation(async (key: string) => (key === 'tenant_slug'
+      ? null
+      : key === 'nexus_trusted_devices' ? JSON.stringify({ [KEY]: { token: TOKEN, savedAt: 1 } }) : null));
+    jest.mocked(api.post).mockResolvedValueOnce({ success: false, requires_2fa: true, two_factor_token: 'c' });
+    const result = await login({ email: 'Jane@Example.com', password: 'pw' });
+    expect(api.post).toHaveBeenLastCalledWith('/api/auth/login', expect.objectContaining({ email: 'Jane@Example.com' }), { headers: { 'X-Trusted-Device': TOKEN } });
+    expect(result).toMatchObject({ two_factor_token: 'c', account_key: KEY });
+  });
+
+  it('sends no trusted-device header for an account this phone never trusted', async () => {
+    jest.mocked(storage.get).mockResolvedValue(null);
+    jest.mocked(api.post).mockResolvedValueOnce(baseResponse);
+    await expect(login({ email: 'new@example.com', password: 'pw' })).resolves.toEqual(baseResponse);
+    expect(api.post).toHaveBeenLastCalledWith('/api/auth/login', expect.anything(), undefined);
+  });
 });
 
 describe('extractToken', () => {

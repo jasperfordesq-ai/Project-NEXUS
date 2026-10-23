@@ -114,7 +114,7 @@ it('offers backup-code verification and stops accepting an expired challenge', a
   fireEvent.press(view.getByText('Use backup code instead'));
   fireEvent.changeText(view.getByDisplayValue(''), 'ABCD-EFGH');
   await act(async () => fireEvent.press(view.getByText('Verify')));
-  expect(verifyMfa).toHaveBeenCalledWith(challenge, 'ABCD-EFGH', true);
+  expect(verifyMfa).toHaveBeenCalledWith(challenge, 'ABCD-EFGH', true, false);
   expect(view.queryByDisplayValue('ABCD-EFGH')).toBeNull();
   fireEvent.press(view.getByText('Return to sign in'));
   expect(cancel).toHaveBeenCalled();
@@ -191,6 +191,32 @@ it('allows a valid keyboard submission after rejecting an empty backup code', as
   expect(verifyMfa).not.toHaveBeenCalled();
   fireEvent.changeText(view.getByTestId('mfa-code'), 'RECOVERY-CODE');
   await act(async () => { fireEvent(view.getByTestId('mfa-code'), 'submitEditing'); });
-  expect(verifyMfa).toHaveBeenCalledWith(challenge, 'RECOVERY-CODE', true);
+  expect(verifyMfa).toHaveBeenCalledWith(challenge, 'RECOVERY-CODE', true, false);
   expect(mockComplete).toHaveBeenCalledTimes(1);
+});
+
+describe('Trust this device', () => {
+  const trustable = { ...challenge, allow_trusted_device: true, trusted_device_days: 14, account_key: 'acme|member@example.test' };
+
+  it('offers the option with the community’s day limit and sends it when ticked', async () => {
+    jest.mocked(verifyMfa).mockResolvedValueOnce({ access_token: 'issued', refresh_token: 'refresh' } as never);
+    const view = render(<MfaSignIn challenge={trustable} onCancel={jest.fn()} />);
+    fireEvent.press(view.getByText('Trust this device for 14 days'));
+    fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+    await act(async () => fireEvent.press(view.getByText('Verify')));
+    expect(verifyMfa).toHaveBeenCalledWith(trustable, '123456', false, true);
+  });
+
+  it('does not trust the device unless the member ticks the box', async () => {
+    jest.mocked(verifyMfa).mockResolvedValueOnce({ access_token: 'issued', refresh_token: 'refresh' } as never);
+    const view = render(<MfaSignIn challenge={trustable} onCancel={jest.fn()} />);
+    fireEvent.changeText(view.getByTestId('mfa-code'), '123456');
+    await act(async () => fireEvent.press(view.getByText('Verify')));
+    expect(verifyMfa).toHaveBeenCalledWith(trustable, '123456', false, false);
+  });
+
+  it('hides the option when the account may not remember devices', () => {
+    const view = render(<MfaSignIn challenge={{ ...trustable, allow_trusted_device: false }} onCancel={jest.fn()} />);
+    expect(view.queryByTestId('mfa-trust-device')).toBeNull();
+  });
 });
