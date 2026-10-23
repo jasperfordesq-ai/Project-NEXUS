@@ -235,9 +235,16 @@ function absoluteFromRequestUrl({ protocol, host, visiblePath }) {
  * @param {boolean} options.isAuthenticated
  * @param {Function} [options.resolveAssetUrl] resolves a relative logo path
  */
+// Same map as React PageMeta's OG_LOCALES.
+const OG_LOCALES = {
+  en: 'en_GB', ga: 'ga_IE', de: 'de_DE', fr: 'fr_FR', it: 'it_IT', pt: 'pt_PT',
+  es: 'es_ES', nl: 'nl_NL', pl: 'pl_PL', ja: 'ja_JP', ar: 'ar_001'
+};
+
 function buildSeoLocals({
   tenant,
   t,
+  locale = 'en',
   serviceName,
   routePath,
   visiblePath,
@@ -293,8 +300,14 @@ function buildSeoLocals({
   // own directive (e.g. it switched indexing off) applies, as in SeoHead.
   const robots = (isAuthenticated || isPrivatePath(routePath)) ? NOINDEX : communityRobots;
 
+  // As PageMeta's `tenantHome`: the community home page uses the community's
+  // own /admin/seo "Meta title" as the whole title when one is set.
+  const homeTitle = isHome && hasCommunity ? text(seo.meta_title) : '';
+
   return {
     seoSiteName: siteName,
+    seoHomeTitle: homeTitle,
+    seoOgLocale: OG_LOCALES[String(locale || '').toLowerCase()] || OG_LOCALES.en,
     seoDescription: description,
     seoCanonicalUrl: canonicalUrl,
     seoEnableCanonical: boolSetting(settings, 'seo_canonical_urls'),

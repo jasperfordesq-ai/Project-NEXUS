@@ -21,4 +21,21 @@ class PagePrerenderObserver extends PrerenderInvalidationObserver
         }
         return $routes;
     }
+
+    protected function liveRoutesFor(Model $model, string $event): array
+    {
+        return $event === 'saved' && (bool) ($model->is_published ?? false) ? $this->routesFor($model) : [];
+    }
+
+    protected function goneRoutesFor(Model $model, string $event): array
+    {
+        $gone = $event === 'deleted' || !(bool) ($model->is_published ?? false) ? $this->routesFor($model) : [];
+        if ($model->wasChanged('slug')) {
+            $old = $model->getPrevious()['slug'] ?? null;
+            if (is_string($old) && $old !== '' && $old !== $model->slug) {
+                $gone[] = '/page/' . $old;
+            }
+        }
+        return $gone;
+    }
 }

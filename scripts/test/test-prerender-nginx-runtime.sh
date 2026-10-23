@@ -122,6 +122,17 @@ request 200 SPA-SHELL -H 'Host: example.test' "$BASE/old-page?nexus_rc=1"
 request 200 SPA-SHELL -H 'Host: other.test' "$BASE/old-page"
 request 200 SPA-SHELL -H 'Host: example.test' "$BASE/old-page-2"
 
+# A "gone" marker (SeoGoneMarkers) answers crawlers 410 and leaves visitors
+# and the render worker on the ordinary page.
+mkdir -p "$PRERENDERED/.seo-gone/example.test/blog/removed"
+: > "$PRERENDERED/.seo-gone/example.test/blog/removed/_g"
+request 410 '' -A "$BOT" -H 'Host: example.test' "$BASE/blog/removed"
+request 410 '' -A "$AI_BOT" -H 'Host: example.test' "$BASE/blog/removed"
+request 200 SPA-SHELL -H 'Host: example.test' "$BASE/blog/removed"
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/blog/removed?nexus_prerender_bypass=1"
+request 200 SPA-SHELL -A "$BOT" -H 'Host: other.test' "$BASE/blog/removed"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'other host lost its crawler noindex' >&2; exit 1; }
+
 # The storage namespace and every operational sidecar are internal-only.
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/index.html"
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/_tenant.json"

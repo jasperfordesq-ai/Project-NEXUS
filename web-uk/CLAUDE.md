@@ -625,12 +625,12 @@ configured `ACCESSIBLE_TENANT_SLUG`, then legacy `TENANT_ID`.
 | Profile | `/api/v2/users/me/avatar` | POST | Upload the current member's avatar as multipart data |
 | Members | `/api/v2/users` | GET | Directory using `q`, `sort`, `order`, `limit`, and `offset` |
 | Members | `/api/v2/users/{id}` | GET | Read a member profile |
-| Listings | `/api/v2/listings` | GET / POST | Public list read and authenticated core create |
-| Listings | `/api/v2/listings/{id}` | GET / PUT / DELETE | Public detail read and authenticated owner update/delete |
+| Listings | `/api/v2/listings` | GET / POST | Signed-in list read (the API answers 401 signed out) and authenticated core create |
+| Listings | `/api/v2/listings/{id}` | GET / PUT / DELETE | Signed-in detail read and authenticated owner update/delete |
 | Listings | `/api/v2/listings/{id}/tags` | PUT | Save enabled skill tags after core persistence |
 | Listings | `/api/v2/listings/{id}/image` | POST | Upload a listing cover as multipart data |
-| Events | `/api/v2/events` | GET / POST | Public list read and authenticated create |
-| Events | `/api/v2/events/{id}` | GET / PUT / DELETE | Public detail read and authenticated organiser update/delete |
+| Events | `/api/v2/events` | GET / POST | Signed-in list read and authenticated create (signed-out advertising is `/api/v2/public/events`) |
+| Events | `/api/v2/events/{id}` | GET / PUT / DELETE | Signed-in detail read and authenticated organiser update/delete |
 | Events | `/api/v2/events/{id}/cancel` | POST | Cancel an event with a reason payload |
 | Wallet | `/api/v2/wallet/balance` | GET | Read the current balance |
 | Wallet | `/api/v2/wallet/transactions` | GET | Cursor-paginated transaction history |

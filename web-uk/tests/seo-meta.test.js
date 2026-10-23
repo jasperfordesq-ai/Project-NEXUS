@@ -217,6 +217,23 @@ describe('seo-meta library', () => {
   });
 });
 
+describe('seo-meta home title and language tag', () => {
+  const t = (key) => key;
+
+  it('uses the community meta title as the whole home title, and only on home', () => {
+    const tenant = baseTenant({ seo: { meta_title: 'Acme Timebank | Swap skills locally' } });
+    expect(buildSeoLocals({ tenant, t, routePath: '/' }).seoHomeTitle).toBe('Acme Timebank | Swap skills locally');
+    expect(buildSeoLocals({ tenant, t, routePath: '/about' }).seoHomeTitle).toBe('');
+    expect(buildSeoLocals({ tenant: baseTenant({ seo: {} }), t, routePath: '/' }).seoHomeTitle).toBe('');
+  });
+
+  it('maps the page language to an Open Graph locale as the main site does', () => {
+    expect(buildSeoLocals({ tenant: baseTenant(), t, locale: 'ga' }).seoOgLocale).toBe('ga_IE');
+    expect(buildSeoLocals({ tenant: baseTenant(), t, locale: 'ar' }).seoOgLocale).toBe('ar_001');
+    expect(buildSeoLocals({ tenant: baseTenant(), t, locale: 'xx' }).seoOgLocale).toBe('en_GB');
+  });
+});
+
 describe('seo metadata on rendered accessible pages', () => {
   let app;
   let api;

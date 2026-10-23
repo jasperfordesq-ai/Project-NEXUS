@@ -52,6 +52,9 @@ class SitemapService
             $sitemaps = [];
 
             foreach ($tenants as $tenant) {
+                if (self::isNoindexTenant((int) $tenant->id)) {
+                    continue;
+                }
                 $slug = (int) $tenant->id === 1 || empty($tenant->slug) ? 'main' : $tenant->slug;
                 $target = self::targetFor((int) $tenant->id);
                 if ($target !== null) {
@@ -135,6 +138,9 @@ class SitemapService
             $allUrls = [];
 
             foreach ($tenants as $tenant) {
+                if (self::isNoindexTenant((int) $tenant->id)) {
+                    continue;
+                }
                 // Skip tenants with their own custom domain — they have their own sitemap
                 if (!empty($tenant->domain)) {
                     continue;
@@ -838,6 +844,22 @@ class SitemapService
             }
         }
         return null;
+    }
+
+    /**
+     * Whether the community told search engines not to index it
+     * (tenants.robots_directive contains "noindex", set on /admin/seo or the
+     * super-admin tenant form). Public sitemaps leave such a community out;
+     * the render planners do not consult this.
+     */
+    public static function isNoindexTenant(int $tenantId): bool
+    {
+        try {
+            $directive = (string) (DB::table('tenants')->where('id', $tenantId)->value('robots_directive') ?? '');
+        } catch (\Throwable) {
+            return false;
+        }
+        return stripos($directive, 'noindex') !== false;
     }
 
     /**

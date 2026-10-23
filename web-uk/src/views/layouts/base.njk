@@ -87,7 +87,7 @@
   only falls back to the platform service name where there is no community.
 #}
 {% set pageSiteName = seoSiteName or serviceName %}
-{% set pageFullTitle = resolvedPageTitle ~ ' - ' ~ pageSiteName if resolvedPageTitle else pageSiteName %}
+{% set pageFullTitle = seoHomeTitle if seoHomeTitle else (resolvedPageTitle ~ ' - ' ~ pageSiteName if resolvedPageTitle and resolvedPageTitle != pageSiteName else pageSiteName) %}
 {% set pageDescription = metaDescription or seoDescription %}
 {% set pageCanonicalUrl = canonicalUrl or seoCanonicalUrl %}
 {% set pageImageUrl = opengraphImageUrl or seoImageUrl %}
@@ -97,7 +97,7 @@
 <html lang="{{ htmlLang or 'en' }}" dir="{{ htmlDirection or 'ltr' }}" class="govuk-template{% if htmlClasses %} {{ htmlClasses }}{% endif %}">
   <head>
     <meta charset="utf-8">
-    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ titleErrorPrefix }}{{ resolvedPageTitle }}{% if resolvedPageTitle != pageSiteName %} - {{ pageSiteName }}{% endif %}{% endblock %}</title>
+    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{% if seoHomeTitle %}{{ titleErrorPrefix }}{{ seoHomeTitle }}{% else %}{{ titleErrorPrefix }}{{ resolvedPageTitle }}{% if resolvedPageTitle != pageSiteName %} - {{ pageSiteName }}{% endif %}{% endif %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="{{ themeColor }}">
 
@@ -115,6 +115,7 @@
     {% if seoEnableOpenGraph !== false %}
       <meta property="og:type" content="{{ ogType or 'website' }}">
       <meta property="og:site_name" content="{{ pageSiteName }}">
+      {% if seoOgLocale %}<meta property="og:locale" content="{{ seoOgLocale }}">{% endif %}
       <meta property="og:title" content="{{ ogTitle or pageFullTitle }}">
       {% if pageDescription %}<meta property="og:description" content="{{ pageDescription }}">{% endif %}
       {% if pageCanonicalUrl %}<meta property="og:url" content="{{ pageCanonicalUrl }}">{% endif %}

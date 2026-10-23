@@ -22,6 +22,28 @@ class PostPrerenderObserver extends PrerenderInvalidationObserver
         return $routes;
     }
 
+    private function isPublished(Model $model): bool
+    {
+        return ($model->status ?? null) === 'published';
+    }
+
+    protected function liveRoutesFor(Model $model, string $event): array
+    {
+        $slug = $model->slug ?? null;
+        return $event === 'saved' && $this->isPublished($model) && is_string($slug) && $slug !== ''
+            ? ['/blog/' . $slug] : [];
+    }
+
+    protected function goneRoutesFor(Model $model, string $event): array
+    {
+        $gone = $this->retiredRoutesFor($model);
+        $slug = $model->slug ?? null;
+        if (is_string($slug) && $slug !== '' && ($event === 'deleted' || !$this->isPublished($model))) {
+            $gone[] = '/blog/' . $slug;
+        }
+        return $gone;
+    }
+
     protected function retiredRoutesFor(Model $model): array
     {
         if (!$model->wasChanged('slug')) {

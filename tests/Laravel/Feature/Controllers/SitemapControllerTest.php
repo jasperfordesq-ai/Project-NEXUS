@@ -284,4 +284,20 @@ class SitemapControllerTest extends TestCase
             ->get('/sitemap-' . $slug . '.xml')
             ->assertStatus(404);
     }
+
+    public function test_a_community_set_to_noindex_publishes_no_sitemap(): void
+    {
+        $host = 'noindex-' . uniqid() . '.test';
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'domain' => $host, 'robots_directive' => 'noindex, nofollow',
+        ]);
+        $slug = (string) DB::table('tenants')->where('id', $this->testTenantId)->value('slug');
+
+        $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap.xml')->assertStatus(404);
+        $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-' . $slug . '.xml')->assertStatus(404);
+
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'index, follow']);
+        Cache::flush();
+        $this->withHeaders(['X-Sitemap-Host' => $host])->get('/sitemap-' . $slug . '.xml')->assertOk();
+    }
 }

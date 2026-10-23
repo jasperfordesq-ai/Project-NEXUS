@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Services\PrerenderService;
+use App\Services\SeoGoneMarkers;
 use App\Services\SitemapService;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Database\Eloquent\Model;
@@ -69,10 +70,49 @@ abstract class PrerenderInvalidationObserver implements ShouldHandleEventsAfterC
         return [];
     }
 
+    /**
+     * Public addresses this change removed (deleted, unpublished, renamed).
+     * Crawlers are told they are gone (410) via SeoGoneMarkers.
+     *
+     * @return array<int,string>
+     */
+    protected function goneRoutesFor(Model $model, string $event): array
+    {
+        return [];
+    }
+
+    /**
+     * Public addresses this change (re)published; any gone marker on them is
+     * removed.
+     *
+     * @return array<int,string>
+     */
+    protected function liveRoutesFor(Model $model, string $event): array
+    {
+        return [];
+    }
+
     protected function tenantId(Model $model): ?int
     {
         $tid = $model->tenant_id ?? null;
         return $tid !== null ? (int) $tid : null;
+    }
+
+    private function updateGoneMarkers(Model $model, string $event, int $tenantId): void
+    {
+        try {
+            $markers = app(SeoGoneMarkers::class);
+            $live = $this->liveRoutesFor($model, $event);
+            $gone = array_values(array_diff($this->goneRoutesFor($model, $event), $live));
+            if ($live !== []) {
+                $markers->clear($tenantId, $live);
+            }
+            if ($gone !== []) {
+                $markers->mark($tenantId, $gone);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('SEO gone markers failed', ['model' => $model::class, 'error' => $e->getMessage()]);
+        }
     }
 
     private function dispatch(Model $model, string $event): void
@@ -89,6 +129,7 @@ abstract class PrerenderInvalidationObserver implements ShouldHandleEventsAfterC
             if ($retired !== []) {
                 app(PrerenderService::class)->invalidateRoutes($tenantId, $retired, false);
             }
+            $this->updateGoneMarkers($model, $event, $tenantId);
         } catch (\Throwable $e) {
             // Observer failures must NEVER block model writes. Log and move on.
             Log::warning('Prerender invalidation failed', [

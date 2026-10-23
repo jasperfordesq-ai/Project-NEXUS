@@ -827,6 +827,7 @@ function buildShellLocals(req, isAuthenticated) {
   const seoLocals = buildSeoLocals({
     tenant: routedTenant,
     t,
+    locale: currentLocale,
     serviceName: t('service_name'),
     routePath: req.path || '/',
     visiblePath: currentPath,
