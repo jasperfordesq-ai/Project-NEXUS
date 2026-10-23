@@ -1871,7 +1871,11 @@
     "og_image_address_label": "Adresse de l’image",
     "og_image_address_desc": "Le téléversement remplit ce champ pour vous. Vous pouvez aussi coller l’adresse d’une image déjà en ligne.",
     "og_image_failed_to_load": "Cette adresse n’affiche aucune image.",
-    "og_image_save_reminder": "L’image est conservée lorsque vous cliquez sur Enregistrer en haut de la page."
+    "og_image_save_reminder": "Cliquez sur Enregistrer pour conserver cette image.",
+    "og_image_saves_itself": "L’image est enregistrée dès que vous la téléversez ou la retirez.",
+    "og_image_saved": "Image téléversée et enregistrée.",
+    "og_image_removed": "Image retirée.",
+    "og_image_save_failed": "L’image n’a pas pu être enregistrée. Réessayez ou cliquez sur Enregistrer en bas de la page."
   },
   "email_deliverability": {
     "title": "Délivrabilité des e-mails",

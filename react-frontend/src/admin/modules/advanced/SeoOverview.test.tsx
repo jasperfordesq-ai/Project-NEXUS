@@ -8,6 +8,13 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
+// The sharing-image field uploads through the API client directly.
+const { mockApiUpload } = vi.hoisted(() => ({ mockApiUpload: vi.fn() }));
+vi.mock('@/lib/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api')>()),
+  api: { upload: mockApiUpload },
+}));
+
 // ─── Mock adminApi ────────────────────────────────────────────────────────────
 const { mockAdminSettings, mockAdminTools } = vi.hoisted(() => ({
   mockAdminSettings: {
@@ -298,4 +305,20 @@ describe('SeoOverview', () => {
       expect(switches.length).toBeGreaterThanOrEqual(4);
     });
   });
+
+  // 2026-10-22: the owner uploaded a sharing image, refreshed, and lost it,
+  // because only the page's Save button (at the bottom) stored it. The page now
+  // stores the image by itself, and only that setting.
+  it('stores an uploaded sharing image at once, sending only that setting', async () => {
+    mockApiUpload.mockResolvedValue({ success: true, data: { url: 'https://cdn.example/share.png', path: 'p' } });
+    const { SeoOverview } = await import('./SeoOverview');
+    render(<SeoOverview />);
+    const input = await screen.findByTestId('sharing-image-input');
+    fireEvent.change(input, { target: { files: [new File(['png'], 'share.png', { type: 'image/png' })] } });
+
+    await waitFor(() => expect(mockAdminSettings.updateSeoSettings).toHaveBeenCalledWith({
+      seo_og_image_url: 'https://cdn.example/share.png',
+    }));
+  });
 });
+

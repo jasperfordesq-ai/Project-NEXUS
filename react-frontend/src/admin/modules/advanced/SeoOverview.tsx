@@ -393,6 +393,17 @@ export function SeoOverview() {
             <SharingImageField
               value={String(formData.seo_og_image_url || '')}
               onChange={(v) => updateField('seo_og_image_url', v)}
+              onPersist={async (url) => {
+                // Store the image on its own, at once: the page's Save button is
+                // at the bottom, below the audit, and an uploaded image that was
+                // never saved vanished on refresh (owner, 2026-10-22).
+                try {
+                  const res = await adminSettings.updateSeoSettings({ seo_og_image_url: url });
+                  return Boolean(res.success);
+                } catch {
+                  return false;
+                }
+              }}
             />
           </CardBody>
         </Card>

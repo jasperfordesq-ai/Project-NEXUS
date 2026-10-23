@@ -75,4 +75,52 @@ describe('SharingImageField', () => {
     await userEvent.type(screen.getByRole('textbox', { name: 'Image address' }), 'h');
     expect(onChange).toHaveBeenCalledWith('h');
   });
+
+  // 2026-10-22: an owner uploaded an image on /admin/seo, refreshed, and lost
+  // it. With onPersist the field stores the image itself, at once.
+  describe('saving straight away (onPersist)', () => {
+    it('stores the uploaded address at once and says so', async () => {
+      mockUpload.mockResolvedValue({ success: true, data: { url: 'https://cdn.example/s.png', path: 'p' } });
+      const onChange = vi.fn();
+      const onPersist = vi.fn().mockResolvedValue(true);
+      render(<SharingImageField value="" onChange={onChange} onPersist={onPersist} />);
+      expect(screen.getByText('The image is saved as soon as you upload or remove it.')).toBeInTheDocument();
+
+      fireEvent.change(screen.getByTestId('sharing-image-input'), {
+        target: { files: [new File(['png'], 's.png', { type: 'image/png' })] },
+      });
+
+      await waitFor(() => expect(onPersist).toHaveBeenCalledWith('https://cdn.example/s.png'));
+      expect(onChange).toHaveBeenCalledWith('https://cdn.example/s.png');
+      expect(mockToast.success).toHaveBeenCalledWith('Image uploaded and saved.');
+    });
+
+    it('says when the image uploaded but could not be stored', async () => {
+      mockUpload.mockResolvedValue({ success: true, data: { url: 'https://cdn.example/s.png', path: 'p' } });
+      const onPersist = vi.fn().mockResolvedValue(false);
+      render(<SharingImageField value="" onChange={vi.fn()} onPersist={onPersist} />);
+
+      fireEvent.change(screen.getByTestId('sharing-image-input'), {
+        target: { files: [new File(['png'], 's.png', { type: 'image/png' })] },
+      });
+
+      await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith(
+        'The image could not be saved. Try again, or press Save at the bottom of the page.',
+      ));
+    });
+
+    it('stores the removal at once', async () => {
+      const onPersist = vi.fn().mockResolvedValue(true);
+      render(<SharingImageField value="https://cdn.example/s.png" onChange={vi.fn()} onPersist={onPersist} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Remove image' }));
+      await waitFor(() => expect(onPersist).toHaveBeenCalledWith(''));
+      expect(mockToast.success).toHaveBeenCalledWith('Image removed.');
+    });
+
+    it('without onPersist it only asks the user to press Save', () => {
+      render(<SharingImageField value="" onChange={vi.fn()} />);
+      expect(screen.getByText('Press Save to keep this image.')).toBeInTheDocument();
+    });
+  });
 });
+

@@ -2021,7 +2021,11 @@
     "og_image_address_label": "عنوان الصورة",
     "og_image_address_desc": "يملأ الرفع هذا الحقل تلقائياً. يمكنك أيضاً لصق عنوان صورة موجودة على الإنترنت.",
     "og_image_failed_to_load": "هذا العنوان لا يعرض صورة.",
-    "og_image_save_reminder": "تُحفظ الصورة عند الضغط على حفظ أعلى الصفحة."
+    "og_image_save_reminder": "اضغط حفظ للاحتفاظ بهذه الصورة.",
+    "og_image_saves_itself": "تُحفظ الصورة بمجرد رفعها أو إزالتها.",
+    "og_image_saved": "تم رفع الصورة وحفظها.",
+    "og_image_removed": "تمت إزالة الصورة.",
+    "og_image_save_failed": "تعذّر حفظ الصورة. حاول مرة أخرى أو اضغط حفظ أسفل الصفحة."
   },
   "email_deliverability": {
     "title": "إمكانية تسليم البريد الإلكتروني",

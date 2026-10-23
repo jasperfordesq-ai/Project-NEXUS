@@ -1921,7 +1921,11 @@
     "og_image_address_label": "Adres obrazu",
     "og_image_address_desc": "Przesłanie wypełnia to pole automatycznie. Możesz też wkleić adres obrazu, który jest już w internecie.",
     "og_image_failed_to_load": "Pod tym adresem nie ma obrazu.",
-    "og_image_save_reminder": "Obraz zostanie zachowany po naciśnięciu Zapisz u góry strony."
+    "og_image_save_reminder": "Naciśnij Zapisz, aby zachować ten obraz.",
+    "og_image_saves_itself": "Obraz zapisuje się, gdy tylko go prześlesz lub usuniesz.",
+    "og_image_saved": "Obraz przesłany i zapisany.",
+    "og_image_removed": "Obraz usunięty.",
+    "og_image_save_failed": "Nie udało się zapisać obrazu. Spróbuj ponownie albo naciśnij Zapisz na dole strony."
   },
   "email_deliverability": {
     "title": "Dostarczalność e-maili",

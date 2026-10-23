@@ -1821,7 +1821,11 @@
     "og_image_address_label": "画像のアドレス",
     "og_image_address_desc": "アップロードすると自動的に入力されます。すでにオンラインにある画像のアドレスを貼り付けることもできます。",
     "og_image_failed_to_load": "このアドレスでは画像が表示されません。",
-    "og_image_save_reminder": "ページ上部の保存を押すと画像が保持されます。"
+    "og_image_save_reminder": "この画像を残すには保存を押してください。",
+    "og_image_saves_itself": "画像はアップロードまたは削除した時点で保存されます。",
+    "og_image_saved": "画像をアップロードして保存しました。",
+    "og_image_removed": "画像を削除しました。",
+    "og_image_save_failed": "画像を保存できませんでした。もう一度お試しいただくか、ページ下部の保存を押してください。"
   },
   "email_deliverability": {
     "title": "電子メールの到達性",

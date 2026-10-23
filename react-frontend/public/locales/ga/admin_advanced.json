@@ -1971,7 +1971,11 @@
     "og_image_address_label": "Seoladh na híomhá",
     "og_image_address_desc": "Líonann an uaslódáil é seo isteach duit. Is féidir leat seoladh íomhá atá ar líne cheana a ghreamú freisin.",
     "og_image_failed_to_load": "Ní thaispeánann an seoladh seo íomhá.",
-    "og_image_save_reminder": "Coinnítear an íomhá nuair a bhrúnn tú Sábháil ag barr an leathanaigh."
+    "og_image_save_reminder": "Brúigh Sábháil chun an íomhá seo a choinneáil.",
+    "og_image_saves_itself": "Sábháiltear an íomhá a luaithe a uaslódálann tú nó a bhaineann tú í.",
+    "og_image_saved": "Íomhá uaslódáilte agus sábháilte.",
+    "og_image_removed": "Baineadh an íomhá.",
+    "og_image_save_failed": "Níorbh fhéidir an íomhá a shábháil. Bain triail eile as, nó brúigh Sábháil ag bun an leathanaigh."
   },
   "email_deliverability": {
     "title": "Inseachadacht Ríomhphoist",

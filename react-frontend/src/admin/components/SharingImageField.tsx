@@ -32,9 +32,19 @@ export interface SharingImageFieldProps {
   value: string;
   /** Called with the new address: a pasted URL, the uploaded file's URL, or '' on remove. */
   onChange: (url: string) => void;
+  /**
+   * Store the address straight away after an upload or a remove, instead of
+   * waiting for the page's own Save button. Resolve true when stored. Without
+   * it the field only changes the page's form value and says to press Save.
+   *
+   * Added 2026-10-22 after an owner uploaded an image on /admin/seo, refreshed,
+   * and lost it: the upload had only filled the box, the page's Save button sat
+   * below the audit card, and this field's note wrongly said "at the top".
+   */
+  onPersist?: (url: string) => Promise<boolean>;
 }
 
-export function SharingImageField({ value, onChange }: SharingImageFieldProps) {
+export function SharingImageField({ value, onChange, onPersist }: SharingImageFieldProps) {
   const { t } = useTranslation('admin_advanced', { keyPrefix: 'advanced' });
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +59,13 @@ export function SharingImageField({ value, onChange }: SharingImageFieldProps) {
       if (!url) throw new Error('upload returned no url');
       setBroken(false);
       onChange(url);
-      toast.success(t('og_image_uploaded'));
+      if (onPersist) {
+        const stored = await onPersist(url);
+        if (stored) toast.success(t('og_image_saved'));
+        else toast.error(t('og_image_save_failed'));
+      } else {
+        toast.success(t('og_image_uploaded'));
+      }
     } catch {
       toast.error(t('og_image_upload_failed'));
     } finally {
@@ -94,7 +110,16 @@ export function SharingImageField({ value, onChange }: SharingImageFieldProps) {
             className="text-danger"
             startContent={<Trash2 size={14} aria-hidden="true" />}
             isDisabled={uploading}
-            onPress={() => { setBroken(false); onChange(''); }}
+            onPress={() => {
+              setBroken(false);
+              onChange('');
+              if (onPersist) {
+                void onPersist('').then((stored) => {
+                  if (stored) toast.success(t('og_image_removed'));
+                  else toast.error(t('og_image_save_failed'));
+                });
+              }
+            }}
           >
             {t('og_image_remove')}
           </Button>
@@ -129,7 +154,9 @@ export function SharingImageField({ value, onChange }: SharingImageFieldProps) {
         </figure>
       )}
 
-      <p className="text-xs text-muted">{t('og_image_save_reminder')}</p>
+      <p className="text-xs text-muted">
+        {onPersist ? t('og_image_saves_itself') : t('og_image_save_reminder')}
+      </p>
     </div>
   );
 }

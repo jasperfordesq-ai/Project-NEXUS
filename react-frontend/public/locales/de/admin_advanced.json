@@ -1821,7 +1821,11 @@
     "og_image_address_label": "Bildadresse",
     "og_image_address_desc": "Beim Hochladen wird dies automatisch ausgefüllt. Sie können auch die Adresse eines bereits online verfügbaren Bildes einfügen.",
     "og_image_failed_to_load": "Unter dieser Adresse wird kein Bild angezeigt.",
-    "og_image_save_reminder": "Das Bild wird übernommen, wenn Sie oben auf der Seite auf Speichern klicken."
+    "og_image_save_reminder": "Klicken Sie auf Speichern, um dieses Bild zu behalten.",
+    "og_image_saves_itself": "Das Bild wird gespeichert, sobald Sie es hochladen oder entfernen.",
+    "og_image_saved": "Bild hochgeladen und gespeichert.",
+    "og_image_removed": "Bild entfernt.",
+    "og_image_save_failed": "Das Bild konnte nicht gespeichert werden. Versuchen Sie es erneut oder klicken Sie unten auf der Seite auf Speichern."
   },
   "email_deliverability": {
     "title": "E-Mail-Zustellbarkeit",

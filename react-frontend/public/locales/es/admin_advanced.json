@@ -1871,7 +1871,11 @@
     "og_image_address_label": "Dirección de la imagen",
     "og_image_address_desc": "Al subir una imagen, esto se rellena solo. También puedes pegar la dirección de una imagen que ya esté en línea.",
     "og_image_failed_to_load": "Esta dirección no muestra ninguna imagen.",
-    "og_image_save_reminder": "La imagen se conserva al pulsar Guardar en la parte superior de la página."
+    "og_image_save_reminder": "Pulsa Guardar para conservar esta imagen.",
+    "og_image_saves_itself": "La imagen se guarda en cuanto la subes o la quitas.",
+    "og_image_saved": "Imagen subida y guardada.",
+    "og_image_removed": "Imagen eliminada.",
+    "og_image_save_failed": "No se pudo guardar la imagen. Inténtalo de nuevo o pulsa Guardar al final de la página."
   },
   "email_deliverability": {
     "title": "Capacidad de entrega del correo electrónico",

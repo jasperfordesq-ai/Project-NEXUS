@@ -1821,7 +1821,11 @@
     "og_image_address_label": "Image address",
     "og_image_address_desc": "Uploading fills this in for you. You can also paste the address of an image that is already online.",
     "og_image_failed_to_load": "This address does not show an image.",
-    "og_image_save_reminder": "The image is kept when you press Save at the top of the page."
+    "og_image_save_reminder": "Press Save to keep this image.",
+    "og_image_saves_itself": "The image is saved as soon as you upload or remove it.",
+    "og_image_saved": "Image uploaded and saved.",
+    "og_image_removed": "Image removed.",
+    "og_image_save_failed": "The image could not be saved. Try again, or press Save at the bottom of the page."
   },
   "email_deliverability": {
     "title": "Email Deliverability",

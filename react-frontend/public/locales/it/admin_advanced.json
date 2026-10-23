@@ -1871,7 +1871,11 @@
     "og_image_address_label": "Indirizzo dell’immagine",
     "og_image_address_desc": "Il caricamento compila questo campo per te. Puoi anche incollare l’indirizzo di un’immagine già online.",
     "og_image_failed_to_load": "Questo indirizzo non mostra alcuna immagine.",
-    "og_image_save_reminder": "L’immagine viene conservata quando premi Salva in cima alla pagina."
+    "og_image_save_reminder": "Premi Salva per conservare questa immagine.",
+    "og_image_saves_itself": "L’immagine viene salvata appena la carichi o la rimuovi.",
+    "og_image_saved": "Immagine caricata e salvata.",
+    "og_image_removed": "Immagine rimossa.",
+    "og_image_save_failed": "Impossibile salvare l’immagine. Riprova oppure premi Salva in fondo alla pagina."
   },
   "email_deliverability": {
     "title": "Consegnabilità della posta elettronica",

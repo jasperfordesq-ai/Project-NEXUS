@@ -1821,7 +1821,11 @@
     "og_image_address_label": "Adres van de afbeelding",
     "og_image_address_desc": "Uploaden vult dit voor u in. U kunt ook het adres plakken van een afbeelding die al online staat.",
     "og_image_failed_to_load": "Op dit adres wordt geen afbeelding getoond.",
-    "og_image_save_reminder": "De afbeelding wordt bewaard wanneer u bovenaan de pagina op Opslaan klikt."
+    "og_image_save_reminder": "Klik op Opslaan om deze afbeelding te bewaren.",
+    "og_image_saves_itself": "De afbeelding wordt opgeslagen zodra u deze uploadt of verwijdert.",
+    "og_image_saved": "Afbeelding geüpload en opgeslagen.",
+    "og_image_removed": "Afbeelding verwijderd.",
+    "og_image_save_failed": "De afbeelding kon niet worden opgeslagen. Probeer het opnieuw of klik onderaan de pagina op Opslaan."
   },
   "email_deliverability": {
     "title": "E-mailbezorgbaarheid",
