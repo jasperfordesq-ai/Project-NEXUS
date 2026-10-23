@@ -462,6 +462,10 @@ class AdminSuperController extends BaseApiController
         }
 
         $children = Tenant::getChildren($id);
+        // One sharing image shared with the community's own SEO page (see
+        // TenantSharingImage): show whichever place holds it.
+        $tenant['og_image_url'] = \App\Support\TenantSharingImage::read($id, (string) ($tenant['og_image_url'] ?? ''));
+
         $admins = $this->tenantVisibilityService->getTenantAdmins($id);
         $breadcrumb = Tenant::getBreadcrumb($id);
 

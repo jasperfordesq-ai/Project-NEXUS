@@ -762,6 +762,12 @@ class TenantHierarchyService
 
                 DB::table('tenants')->where('id', $tenantId)->update($update);
 
+                // Keep the community SEO page's copy of the sharing image
+                // identical (TenantSharingImage, 2026-10-23).
+                if (array_key_exists('og_image_url', $update)) {
+                    \App\Support\TenantSharingImage::writeSetting($tenantId, (string) ($update['og_image_url'] ?? ''));
+                }
+
                 $invalidator = app(PrerenderContentInvalidator::class);
                 if ($routingChanged) {
                     // Old hosts/prefixes can only be removed by a complete

@@ -2025,7 +2025,7 @@ class AdminConfigController extends BaseApiController
 
         $stored = $this->readSettingsByPrefix($tenantId, 'seo_');
 
-        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, h1_headline, hero_intro FROM tenants WHERE id = ?", [$tenantId]);
+        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, h1_headline, hero_intro, og_image_url FROM tenants WHERE id = ?", [$tenantId]);
 
         $config = [];
         foreach (self::SEO_DEFAULTS as $key => $defaultValue) {
@@ -2036,6 +2036,10 @@ class AdminConfigController extends BaseApiController
                 $config[$key] = $rawValue;
             }
         }
+
+        // One sharing image shared with the super-admin tenant form (see
+        // TenantSharingImage): show whichever place holds it.
+        $config['seo_og_image_url'] = \App\Support\TenantSharingImage::read($tenantId, $tenantRow->og_image_url ?? '');
 
         $config['tenant_meta_title'] = $tenantRow->meta_title ?? '';
         $config['tenant_meta_description'] = $tenantRow->meta_description ?? '';
@@ -2082,6 +2086,12 @@ class AdminConfigController extends BaseApiController
                 $directUpdates[$column] = $input[$inputKey];
                 $updated[] = $inputKey;
             }
+        }
+
+        // Keep the super-admin form's copy of the sharing image identical
+        // (TenantSharingImage, 2026-10-23).
+        if (array_key_exists('seo_og_image_url', $input)) {
+            $directUpdates['og_image_url'] = trim((string) $input['seo_og_image_url']);
         }
 
         if (empty($updated)) {
