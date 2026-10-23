@@ -99,7 +99,7 @@ class SeoAuditService
     private function checkTenantMetadata(int $tenantId): array
     {
         $tenant = DB::selectOne(
-            'SELECT meta_title, meta_description, h1_headline FROM tenants WHERE id = ?',
+            'SELECT meta_title, meta_description, h1_headline, robots_directive FROM tenants WHERE id = ?',
             [$tenantId]
         );
 
@@ -107,60 +107,85 @@ class SeoAuditService
         $metaTitle = $tenant?->meta_title;
         $metaDescription = $tenant?->meta_description;
 
+        // The super-admin "Robots directive" can take a whole community out of
+        // search engines with one dropdown choice (2026-10-23).
+        if (stripos((string) ($tenant?->robots_directive ?? ''), 'noindex') !== false) {
+            $issues[] = $this->issue('search_engines_blocked');
+        }
+
+        // Characters, not bytes: Irish, Arabic and Japanese titles were
+        // counted long by strlen().
         if (empty($metaTitle)) {
             $issues[] = $this->issue('missing_homepage_meta_title');
-        } elseif (strlen($metaTitle) > self::TITLE_MAX_LENGTH) {
+        } elseif (mb_strlen($metaTitle) > self::TITLE_MAX_LENGTH) {
             $issues[] = $this->issue('homepage_meta_title_too_long', [
-                'length' => strlen($metaTitle),
+                'length' => mb_strlen($metaTitle),
                 'max' => self::TITLE_MAX_LENGTH,
             ]);
         }
 
         if (empty($metaDescription)) {
             $issues[] = $this->issue('missing_meta_description');
-        } elseif (strlen($metaDescription) > self::DESC_MAX_LENGTH) {
+        } elseif (mb_strlen($metaDescription) > self::DESC_MAX_LENGTH) {
             $issues[] = $this->issue('meta_description_too_long', [
-                'length' => strlen($metaDescription),
+                'length' => mb_strlen($metaDescription),
                 'max' => self::DESC_MAX_LENGTH,
             ]);
-        } elseif (strlen($metaDescription) < self::DESC_MIN_LENGTH) {
+        } elseif (mb_strlen($metaDescription) < self::DESC_MIN_LENGTH) {
             $issues[] = $this->issue('meta_description_too_short', [
-                'length' => strlen($metaDescription),
+                'length' => mb_strlen($metaDescription),
                 'min' => self::DESC_MIN_LENGTH,
             ]);
         }
 
-        if (empty($tenant?->h1_headline)) {
+        // h1_headline is the accessible site's hub heading: only a hub (the
+        // master tenant, or a community with communities beneath it) uses it.
+        // The main website's heading comes from the landing page builder.
+        if (empty($tenant?->h1_headline) && $this->isHub($tenantId)) {
             $issues[] = $this->issue('missing_homepage_h1');
         }
 
         return $this->buildCheck('tenant_metadata', [], $issues, 10);
     }
 
+    private function isHub(int $tenantId): bool
+    {
+        if ($tenantId === 1) {
+            return true;
+        }
+        try {
+            return DB::table('tenants')->where('parent_id', $tenantId)->where('is_active', 1)->exists();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     private function checkSeoSettings(int $tenantId): array
     {
         $settings = $this->getTenantSettings($tenantId, [
             'seo_auto_sitemap', 'seo_canonical_urls', 'seo_open_graph',
-            'seo_twitter_cards', 'seo_robots_txt', 'seo_title_suffix',
+            'seo_twitter_cards',
         ]);
 
+        // These switches are ON unless a community turned them off: a missing
+        // row means "never changed", not "disabled" (wrongly reported as
+        // disabled until 2026-10-23).
         $issues = [];
 
-        if (!filter_var($settings['seo_canonical_urls'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_canonical_urls'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('canonical_urls_not_enabled');
         }
 
-        if (!filter_var($settings['seo_open_graph'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_open_graph'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('open_graph_not_enabled');
         }
 
-        if (!filter_var($settings['seo_twitter_cards'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        if (!filter_var($settings['seo_twitter_cards'] ?? true, FILTER_VALIDATE_BOOLEAN)) {
             $issues[] = $this->issue('twitter_cards_not_enabled');
         }
 
-        if (empty($settings['seo_title_suffix'])) {
-            $issues[] = $this->issue('title_suffix_missing');
-        }
+        // No title_suffix_missing issue any more: with no suffix, every page
+        // title ends with the community's name (PageMeta), which is correct.
 
         return $this->buildCheck('seo_settings', [], $issues, 10);
     }

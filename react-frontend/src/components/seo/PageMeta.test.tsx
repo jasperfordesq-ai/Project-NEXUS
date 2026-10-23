@@ -292,5 +292,26 @@ describe('PageMeta', () => {
       });
     });
   });
+
+  it('advertises no language alternates: crawlers get one language per address', async () => {
+    renderWithHelmet(<PageMeta title="About" />);
+    await waitFor(() => expect(document.querySelector('meta[property="og:locale"]')).not.toBeNull());
+    expect(document.querySelectorAll('meta[property="og:locale:alternate"]')).toHaveLength(0);
+  });
+
+  it("home page: the community's own keywords win over the translated defaults", async () => {
+    const mod = await import('@/contexts/TenantContext');
+    vi.mocked(mod.useTenant).mockReturnValue({
+      branding: { name: 'TimeBank Ireland', tagline: 't' },
+      tenant: { settings: { seo_meta_keywords: 'timebank ireland, skill swap' }, seo: {} },
+      hasFeature: vi.fn(() => true),
+      hasModule: vi.fn(() => true),
+      isLoading: false,
+      tenantPath: vi.fn((p: string) => `/test${p}`),
+    } as unknown as ReturnType<typeof mod.useTenant>);
+    renderWithHelmet(<PageMeta tenantHome title="Home" keywords="time banking, default" />);
+    await waitFor(() => expect(document.querySelector('meta[name="keywords"]')?.getAttribute('content'))
+      .toBe('timebank ireland, skill swap'));
+  });
 });
 

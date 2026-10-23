@@ -204,7 +204,8 @@ export function SeoOverview() {
     const suffix = String(formData.seo_title_suffix || '');
     checks.push({
       name: t('health_title_suffix'),
-      status: suffix.length > 0 ? 'pass' : 'warning',
+      // No suffix is fine: titles end with the community name (PageMeta).
+      status: 'pass',
       detail: suffix.length > 0
         ? t('health_title_suffix_configured', { suffix })
         : t('health_title_suffix_missing'),

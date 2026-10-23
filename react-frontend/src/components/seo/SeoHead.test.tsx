@@ -94,7 +94,8 @@ describe('SeoHead', () => {
       .filter(Boolean);
 
     const orgSchema = parsed.find(
-      (o) => o['@type'] === 'NonprofitOrganization' || o['@type'] === 'Organization',
+      // NGO: schema.org has no NonprofitOrganization type (2026-10-23).
+      (o) => o['@type'] === 'NGO' || o['@type'] === 'Organization',
     );
     expect(orgSchema).toBeDefined();
     expect(orgSchema.name).toBe('hOUR Timebank');
@@ -210,4 +211,71 @@ describe('SeoHead', () => {
     const scripts = document.querySelectorAll('script[type="application/ld+json"]');
     expect(scripts.length).toBeGreaterThan(0);
   });
+
+  // 2026-10-23 audit of the SEO pages against what crawlers receive.
+  describe('what search engines are told', () => {
+    const orgOf = () => Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+      .map((s) => { try { return JSON.parse(s.textContent ?? ''); } catch { return null; } })
+      .find((o) => o && o['@id']);
+
+    it('gives the organisation a full logo address and a real schema.org type', () => {
+      baseBranding.logo = '/uploads/tenants/test/logo.png';
+      render(<SeoHead />);
+      const org = orgOf();
+      expect(org['@type']).toBe('NGO');
+      expect(org.logo).toMatch(/^https?:\/\/[^/]+\/uploads\/tenants\/test\/logo\.png$/);
+      baseBranding.logo = 'https://cdn.example.com/logo.png';
+    });
+
+    it.each([
+      ['NonprofitOrganization', 'NGO'],
+      ['CommunityOrganization', 'NGO'],
+      ['VolunteerOrganization', 'NGO'],
+      ['LocalBusiness', 'LocalBusiness'],
+      ['GovernmentOrganization', 'GovernmentOrganization'],
+    ])('maps the stored organisation type %s to %s', (stored, expected) => {
+      (baseTenant.settings as Record<string, unknown>).seo_organization_type = stored;
+      render(<SeoHead />);
+      expect(orgOf()['@type']).toBe(expected);
+      delete (baseTenant.settings as Record<string, unknown>).seo_organization_type;
+    });
+
+    it.each([
+      ['abc123', 'abc123'],
+      ['google-site-verification=abc123', 'abc123'],
+      ['<meta name="google-site-verification" content="abc123" />', 'abc123'],
+    ])('sends Google only the verification code when %j is pasted', (pasted, expected) => {
+      baseTenant.settings.seo_google_verification = pasted;
+      render(<SeoHead />);
+      expect(document.querySelector('meta[name="google-site-verification"]')?.getAttribute('content')).toBe(expected);
+      baseTenant.settings.seo_google_verification = 'GOOGLE_TOKEN_123';
+    });
+
+    it('does not claim coordinates 0,0 for a community with no map position', () => {
+      const c = baseTenant.contact as Record<string, unknown>;
+      c.latitude = 0; c.longitude = 0;
+      render(<SeoHead />);
+      expect(document.querySelector('meta[name="ICBM"]')).toBeNull();
+      c.latitude = 53.3498; c.longitude = -6.2603;
+    });
+
+    it("keeps a sub-community's own folder in its addresses", () => {
+      window.history.pushState({}, '', '/test/about');
+      try {
+        render(<SeoHead />);
+        const origin = window.location.origin;
+        expect(document.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute('href'))
+          .toBe(`${origin}/test/about`);
+        expect(orgOf().url).toBe(`${origin}/test`);
+        const crumbs = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+          .map((s) => { try { return JSON.parse(s.textContent ?? ''); } catch { return null; } })
+          .find((o) => o && o['@type'] === 'BreadcrumbList');
+        expect(crumbs.itemListElement.map((i: { item: string }) => i.item))
+          .toEqual([`${origin}/test`, `${origin}/test/about`]);
+      } finally {
+        window.history.pushState({}, '', '/');
+      }
+    });
+  });
 });
+

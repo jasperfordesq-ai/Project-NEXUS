@@ -211,4 +211,85 @@ class SeoAuditServiceTest extends TestCase
         );
         $this->assertTrue($hasChainIssue);
     }
+
+    // =========================================================================
+    // False alarms and the noindex check (2026-10-23 audit of the SEO pages)
+    // =========================================================================
+
+    /** @return list<string> issue codes of one check */
+    private function issueCodes(array $results, string $check): array
+    {
+        foreach ($results['checks'] as $c) {
+            if ($c['code'] === $check) {
+                return array_column($c['issues'] ?? [], 'code');
+            }
+        }
+        $this->fail("check {$check} missing");
+    }
+
+    private function clearSeoSettings(): void
+    {
+        DB::table('tenant_settings')->where('tenant_id', $this->testTenantId)
+            ->whereIn('setting_key', ['seo_canonical_urls', 'seo_open_graph', 'seo_twitter_cards', 'seo_title_suffix'])
+            ->delete();
+    }
+
+    public function test_switches_never_changed_are_on_not_reported_disabled(): void
+    {
+        $this->clearSeoSettings();
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'seo_settings');
+        $this->assertNotContains('canonical_urls_not_enabled', $codes);
+        $this->assertNotContains('open_graph_not_enabled', $codes);
+        $this->assertNotContains('twitter_cards_not_enabled', $codes);
+        $this->assertNotContains('title_suffix_missing', $codes);
+    }
+
+    public function test_a_switch_turned_off_is_still_reported(): void
+    {
+        $this->clearSeoSettings();
+        DB::table('tenant_settings')->insert([
+            'tenant_id' => $this->testTenantId, 'setting_key' => 'seo_open_graph',
+            'setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now(),
+        ]);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'seo_settings');
+        $this->assertContains('open_graph_not_enabled', $codes);
+    }
+
+    public function test_the_hub_heading_is_only_asked_for_on_a_hub(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['h1_headline' => '']);
+        DB::table('tenants')->where('parent_id', $this->testTenantId)->update(['is_active' => 0]);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
+        $this->assertNotContains('missing_homepage_h1', $codes, 'not a hub: the heading is unused');
+
+        DB::table('tenants')->insert([
+            'name' => 'Audit Child', 'slug' => 'audit-child-' . uniqid(), 'parent_id' => $this->testTenantId,
+            'is_active' => 1, 'depth' => 1, 'allows_subtenants' => 0,
+        ]);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
+        $this->assertContains('missing_homepage_h1', $codes, 'a hub uses the heading on its accessible site');
+    }
+
+    public function test_a_noindex_robots_directive_is_reported(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'noindex, follow']);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
+        $this->assertContains('search_engines_blocked', $codes);
+
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['robots_directive' => 'index, follow']);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
+        $this->assertNotContains('search_engines_blocked', $codes);
+    }
+
+    public function test_title_length_counts_characters_not_bytes(): void
+    {
+        // 50 characters, 100 bytes: every letter carries a fada.
+        $title = str_repeat('Ó', 50);
+        $this->assertLessThanOrEqual(60, mb_strlen($title));
+        $this->assertGreaterThan(60, strlen($title));
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['meta_title' => $title]);
+        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
+        $this->assertNotContains('homepage_meta_title_too_long', $codes);
+    }
 }
+

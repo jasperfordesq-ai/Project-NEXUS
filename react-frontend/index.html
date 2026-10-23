@@ -22,7 +22,9 @@
          Helmet does not replace tags it did not create, so a default here was
          served BEFORE the real one: crawler snapshots carried two og:image tags
          and Facebook took the first, an SVG it cannot show (2026-10-22). -->
-    <title>NEXUS — Community Timebanking Platform</title>
+    <!-- No <title> here either: Helmet adds its own and leaves this one in
+         place, so every crawler copy carried two titles (2026-10-23). The
+         tab shows the address for the moment before the app starts. -->
   </head>
   <body>
     <div id="root"></div>

@@ -29,6 +29,48 @@ import { toJsonLd } from '@/lib/json-ld';
  * `i18n.on('languageChanged')` — no Helmet intervention needed.
  */
 
+/**
+ * schema.org has no NonprofitOrganization, CommunityOrganization or
+ * VolunteerOrganization type; Google drops structured data whose @type it does
+ * not recognise. The super-admin "Organisation type" choices are stored as
+ * chosen and mapped to a real type here (2026-10-23). NGO is schema.org's type
+ * for a non-governmental, non-profit body.
+ */
+const SCHEMA_ORG_TYPE: Record<string, string> = {
+  NonprofitOrganization: 'NGO',
+  CommunityOrganization: 'NGO',
+  VolunteerOrganization: 'NGO',
+  NGO: 'NGO',
+  LocalBusiness: 'LocalBusiness',
+  GovernmentOrganization: 'GovernmentOrganization',
+  Organization: 'Organization',
+};
+
+/**
+ * A webmaster verification value as the tool expects it: only the token.
+ * Admins paste the whole tag, or "google-site-verification=TOKEN" (which the
+ * SEO page's own example text suggested); either would fail verification.
+ */
+export function verificationToken(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  let v = raw.trim();
+  const fromTag = v.match(/content\s*=\s*["']([^"']+)["']/i);
+  if (fromTag?.[1]) v = fromTag[1];
+  const eq = v.lastIndexOf('=');
+  if (eq !== -1 && /^(google-site-verification|msvalidate\.01)\s*=/i.test(v)) v = v.slice(eq + 1);
+  return v.replace(/[<>"'\s]/g, '');
+}
+
+function absoluteUrl(value: string | undefined, origin: string): string | undefined {
+  const v = value?.trim();
+  if (!v) return undefined;
+  try {
+    return new URL(v, origin || undefined).href;
+  } catch {
+    return origin && v.startsWith('/') ? `${origin}${v}` : v;
+  }
+}
+
 // areaServed — only emitted for LocalBusiness; maps service_area scope to Schema @type.
 // Combines location_name (e.g. "Cork") with country_code (e.g. "IE") for Google disambiguation.
 const areaServedTypeMap: Record<string, string> = {
@@ -40,17 +82,26 @@ const areaServedTypeMap: Record<string, string> = {
 
 export function SeoHead() {
   const { t } = useTranslation('common');
-  const { branding, tenant } = useTenant();
+  const { branding, tenant, tenantPath } = useTenant();
   const location = useLocation();
 
   const siteName = branding.name || 'NEXUS';
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  // Clean canonical: pathname only, no query params or hash
-  const cleanPath = location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '');
-  const canonicalPath = `${siteUrl}${cleanPath}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  // The community's own base: the origin, plus its folder when it lives under
+  // a hub's domain (uk.timebank.global/west-somerset). Until 2026-10-23 this
+  // was the bare origin, and the route path came from the router (which strips
+  // the community folder), so a sub-community's hreflang, organisation URL and
+  // breadcrumbs all pointed at the hub's home page.
+  const basePath = (typeof tenantPath === 'function' ? tenantPath('/') : '/').replace(/\/+$/, '');
+  const siteUrl = `${origin}${basePath}`;
+  // Browser pathname (keeps the community folder), as PageMeta's canonical does.
+  const browserPath = typeof window !== 'undefined' ? window.location.pathname : location.pathname;
+  const cleanPath = browserPath === '/' ? '/' : browserPath.replace(/\/+$/, '');
+  const canonicalPath = `${origin}${cleanPath}`;
 
-  // Build path segments for BreadcrumbList JSON-LD
-  const pathSegments = location.pathname.split('/').filter(Boolean);
+  // Breadcrumb segments below the community's own base.
+  const relativePath = basePath && cleanPath.startsWith(basePath) ? cleanPath.slice(basePath.length) : cleanPath;
+  const pathSegments = relativePath.split('/').filter(Boolean);
 
   const breadcrumbItems = [
     { '@type': 'ListItem' as const, position: 1, name: t('nav.home'), item: siteUrl || '/' },
@@ -77,9 +128,8 @@ export function SeoHead() {
   // Build Organization JSON-LD. Type defaults to NonprofitOrganization for
   // community timebanks (most tenants); admins can override via the
   // `seo_organization_type` setting if their tenant is a different entity.
-  const orgType = (typeof settings?.seo_organization_type === 'string' && settings.seo_organization_type)
-    ? (settings.seo_organization_type as string)
-    : 'NonprofitOrganization';
+  const chosenType = typeof settings?.seo_organization_type === 'string' ? settings.seo_organization_type : '';
+  const orgType = SCHEMA_ORG_TYPE[chosenType] ?? 'NGO';
 
   const contact = tenant?.contact;
   const social = tenant?.social;
@@ -116,7 +166,8 @@ export function SeoHead() {
     '@id': `${siteUrl}/#org`,
     name: siteName,
     url: siteUrl,
-    ...(branding.logo ? { logo: branding.logo } : {}),
+    // Google expects a full address for the logo; the stored one is relative.
+    ...(absoluteUrl(branding.logo, origin) ? { logo: absoluteUrl(branding.logo, origin) } : {}),
     ...(branding.tagline ? { description: branding.tagline } : {}),
     ...(contact?.email ? { email: contact.email } : {}),
     ...(contact?.phone ? { telephone: contact.phone } : {}),
@@ -142,23 +193,29 @@ export function SeoHead() {
     },
   };
 
-  const googleVerification = typeof settings?.seo_google_verification === 'string'
-    ? settings.seo_google_verification
-    : '';
-  const bingVerification = typeof settings?.seo_bing_verification === 'string'
-    ? settings.seo_bing_verification
-    : '';
+  const googleVerification = verificationToken(settings?.seo_google_verification);
+  const bingVerification = verificationToken(settings?.seo_bing_verification);
 
   // Geo meta tags — emit when we have at least a country code.
   // geo.region uses ISO 3166-1 alpha-2; geo.placename is the human-readable locality.
   // ICBM is the legacy lat/long format still read by some crawlers.
   const geoCountry = contact?.country_code ?? '';
   const geoPlacename = contact?.location ?? '';
-  const geoLat = contact?.latitude ?? null;
-  const geoLng = contact?.longitude ?? null;
+  // Coordinates only when real: a community with no map position stored 0,0,
+  // which is a point in the Atlantic off West Africa.
+  const lat = Number(contact?.latitude);
+  const lng = Number(contact?.longitude);
+  const hasCoords = Number.isFinite(lat) && Number.isFinite(lng)
+    && contact?.latitude != null && contact?.longitude != null && !(lat === 0 && lng === 0);
+  const geoLat = hasCoords ? lat : null;
+  const geoLng = hasCoords ? lng : null;
 
   return (
-    <Helmet>
+    // defaultTitle: the one title a page gets when it sets none itself. It
+    // replaced the hard-coded <title> in index.html, which Helmet never removed,
+    // so every crawler copy carried two titles (2026-10-23). The prerender
+    // worker refuses a page without a title, so this must stay.
+    <Helmet defaultTitle={siteName}>
       {/* Robots directive — only emitted when admin has set a non-default value.
           Default (index, follow) is omitted to keep the HTML clean. */}
       {seo?.robots_directive && (

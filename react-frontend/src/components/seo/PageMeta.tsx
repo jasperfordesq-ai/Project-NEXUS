@@ -19,7 +19,6 @@
  *  - seo_twitter_cards → whether to emit Twitter Card tags
  */
 
-import { useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -132,12 +131,9 @@ export function PageMeta({
   // Active language → OG locale (BCP 47). Falls back to en_GB if unknown.
   const activeLang = (i18n?.language || 'en').split('-')[0] ?? 'en';
   const ogLocale = OG_LOCALES[activeLang] || OG_LOCALES.en;
-  const ogLocaleAlternates = useMemo(
-    () => Object.entries(OG_LOCALES)
-      .filter(([code]) => code !== activeLang)
-      .map(([, locale]) => locale),
-    [activeLang]
-  );
+  // No og:locale:alternate. Every URL is served to crawlers in one language
+  // (the saved crawler copy), so advertising ten alternates was untrue, and
+  // Facebook re-fetches a page once per advertised locale (2026-10-23).
 
   const settings = tenant?.settings as Record<string, unknown> | undefined;
 
@@ -183,7 +179,9 @@ export function PageMeta({
     'Community timebanking platform — exchange skills, build connections, strengthen your community.';
 
   // Keywords: explicit > admin global keywords
-  const metaKeywords = keywords || adminKeywords || undefined;
+  // On the home page the community's own keywords (/admin/seo) win over the
+  // translated defaults, as its title and description do.
+  const metaKeywords = (tenantHome ? adminKeywords : '') || keywords || adminKeywords || undefined;
 
   // Canonical: always clean pathname, never include query params or hash
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -231,9 +229,6 @@ export function PageMeta({
       {enableOpenGraph && sharingImage && <meta property="og:image:width" content="1200" />}
       {enableOpenGraph && sharingImage && <meta property="og:image:height" content="630" />}
       {enableOpenGraph && <meta property="og:locale" content={ogLocale} />}
-      {enableOpenGraph && ogLocaleAlternates.map((locale) => (
-        <meta key={locale} property="og:locale:alternate" content={locale} />
-      ))}
 
       {/* Article-specific OG tags */}
       {enableOpenGraph && type === 'article' && publishedTime && (
