@@ -453,8 +453,11 @@ class TwoFactorController extends BaseApiController
             return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
         }
         $count = $this->totpService->revokeAllDevices($userId);
-        return $this->respondWithData(['revoked_count' => $count])
-            ->withCookie(cookie()->forget(TotpService::trustedDeviceCookieName()));
+        $response = $this->respondWithData(['revoked_count' => $count]);
+        foreach (TotpService::forgetTrustedDeviceCookies((int) TenantContext::getId(), $userId) as $cookie) {
+            $response->headers->setCookie($cookie);
+        }
+        return $response;
     }
 
     /** POST auth/2fa/disable */
@@ -545,7 +548,9 @@ class TwoFactorController extends BaseApiController
         $response = $this->respondWithData([
             'message' => __('api_controllers_2.two_factor.disabled'),
         ]);
-        $response->withCookie(cookie()->forget(TotpService::trustedDeviceCookieName()));
+        foreach (TotpService::forgetTrustedDeviceCookies((int) TenantContext::getId(), $userId) as $cookie) {
+            $response->headers->setCookie($cookie);
+        }
 
         return $response;
     }

@@ -413,17 +413,12 @@ class TotpController extends BaseApiController
         $jsonResponse->headers->set('Cache-Control', 'private, no-store');
         $jsonResponse->headers->set('Pragma', 'no-cache');
         if ($trustedDeviceToken && ! $isMobile) {
-            $secure = request()->secure() || app()->environment('production');
-            $jsonResponse->withCookie(cookie(
-                TotpService::trustedDeviceCookieName(),
+            // One cookie per account, host-only, lasting as long as the row.
+            $jsonResponse->headers->setCookie(TotpService::trustedDeviceCookie(
+                $tenantId,
+                $userId,
                 $trustedDeviceToken,
-                TotpService::trustedDeviceLifetimeMinutes($tenantId, $userId),
-                '/',
-                null,
-                $secure,
-                true,
-                false,
-                $secure ? 'none' : 'lax',
+                TotpService::rememberDeviceDays($userId, $tenantId) ?? 1
             ));
         }
 

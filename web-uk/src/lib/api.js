@@ -10,6 +10,7 @@ const { getApiBaseUrl } = require('./backend-contract');
 const { getRequestLocale } = require('./request-locale-context');
 const { getRequestClientIp } = require('./request-client-context');
 const { getRequestTenantSlug, normalizeTenantSlug } = require('./request-tenant-context');
+const { captureTrustedDeviceCookie, trustedDeviceCookieHeader } = require('./trusted-device-cookies');
 
 const API_BASE_URL = getApiBaseUrl();
 const DEFAULT_API_REQUEST_TIMEOUT_MS = 15000;
@@ -199,9 +200,8 @@ async function request(endpoint, options = {}, captureTrustedDevice = false) {
     // device cookie, and only for successful two-factor completion. Keep it
     // non-enumerable so a JSON response cannot accidentally expose it.
     if (captureTrustedDevice && data?.success === true) {
-      const cookie = response.headers.get('set-cookie') || '';
-      const match = cookie.match(/(?:^|,\s*)nexus_trusted_device=([A-Za-z0-9%._~+/=-]{1,4096})(?:;|$)/);
-      if (match) Object.defineProperty(data, 'trusted_device_cookie', { value: match[1] });
+      const captured = captureTrustedDeviceCookie(response.headers);
+      if (captured) Object.defineProperty(data, 'trusted_device_cookie', { value: captured });
     }
     return data;
   } catch (error) {
@@ -280,11 +280,12 @@ async function setupRequiredTwoFactor(twoFactorToken, tenantSlug, code) {
 }
 
 // Auth
-async function login(email, password, tenantSlug, trustedDeviceCookie) {
+// trustedDeviceCookies: [{ name, value }] under Laravel's cookie names, from
+// trustedDeviceCookiesFrom(req). Laravel uses the one for this account.
+async function login(email, password, tenantSlug, trustedDeviceCookies) {
   const headers = tenantSlugHeaders(tenantSlug);
-  if (typeof trustedDeviceCookie === 'string' && /^[A-Za-z0-9%._~+/=-]{1,4096}$/.test(trustedDeviceCookie)) {
-    headers.Cookie = `nexus_trusted_device=${trustedDeviceCookie}`;
-  }
+  const cookieHeader = trustedDeviceCookieHeader(trustedDeviceCookies);
+  if (cookieHeader) headers.Cookie = cookieHeader;
   return request('/api/auth/login', {
     method: 'POST',
     headers,

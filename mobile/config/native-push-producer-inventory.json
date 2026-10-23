@@ -927,9 +927,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/TwoFactorController.php:512:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/TwoFactorController.php:515:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/TwoFactorController.php",
-            "line": 512,
+            "line": 515,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

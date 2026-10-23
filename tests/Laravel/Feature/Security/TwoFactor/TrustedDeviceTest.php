@@ -7,6 +7,7 @@
 namespace Tests\Laravel\Feature\Security\TwoFactor;
 
 use App\Services\AuthenticationConfigurationService as Settings;
+use App\Services\TotpService;
 use Illuminate\Support\Facades\DB;
 
 /** P5 — a remembered device is a convenience for optional MFA only, and it is revocable everywhere. */
@@ -46,7 +47,7 @@ class TrustedDeviceTest extends TwoFactorAuditTestCase
             'two_factor_token' => $this->challenge($member), 'code' => $this->code($secret), 'trust_device' => true,
         ])->assertOk();
         $browser->assertJsonMissingPath('trusted_device_token');
-        $cookie = collect($browser->headers->getCookies())->first(fn ($c) => $c->getName() === 'nexus_trusted_device');
+        $cookie = collect($browser->headers->getCookies())->first(fn ($c) => $c->getName() === TotpService::trustedDeviceCookieName($this->testTenantId, $member->id));
         $this->assertNotNull($cookie, 'browser clients must get the remembered-device cookie');
         $this->assertTrue($cookie->isHttpOnly());
         $this->assertTrue($cookie->isSecure() || strtolower((string) $cookie->getSameSite()) !== 'none', 'SameSite=None requires Secure');
@@ -56,7 +57,7 @@ class TrustedDeviceTest extends TwoFactorAuditTestCase
             'two_factor_token' => $this->challenge($member, self::NATIVE), 'code' => $this->code($secret, +1), 'trust_device' => true,
         ], self::NATIVE)->assertOk();
         $this->assertSame(64, strlen((string) $native->json('trusted_device_token')));
-        $this->assertEmpty(array_filter($native->headers->getCookies(), fn ($c) => $c->getName() === 'nexus_trusted_device'));
+        $this->assertEmpty(array_filter($native->headers->getCookies(), fn ($c) => str_contains($c->getName(), 'nexus_t')));
 
         // Stored hashed, never plain.
         $plain = [$cookie->getValue(), $native->json('trusted_device_token')];

@@ -9,6 +9,7 @@ const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { createTranslator } = require('../lib/localization');
 const { isValidEmail } = require('../lib/inputValidator');
+const { rememberTrustedDevice, trustedDeviceCookiesFrom } = require('../lib/trusted-device-cookies');
 const {
   ACCOUNT_UNDER_MINIMUM_AGE_LOGIN_PATH,
   ACCOUNT_UNDER_MINIMUM_AGE_STATUS,
@@ -290,9 +291,9 @@ router.post('/login', asyncRoute(async (req, res) => {
   clearPendingTwoFactor(req);
 
   try {
-    const trustedCookie = req.signedCookies?.nexus_trusted_device;
-    const result = trustedCookie
-      ? await login(email.toLowerCase(), password, tenantSlug, trustedCookie)
+    const trustedCookies = trustedDeviceCookiesFrom(req);
+    const result = trustedCookies.length
+      ? await login(email.toLowerCase(), password, tenantSlug, trustedCookies)
       : await login(email.toLowerCase(), password, tenantSlug);
 
     // Password acceptance changes the session's authority, even before MFA.
@@ -411,10 +412,7 @@ async function handleTwoFactorPost(req, res) {
     const session = rotatingSessionFrom(result);
     clearPendingTwoFactor(req);
     if (allowTrustedDevice && checkboxValue(req.body.trust_device) && result.trusted_device_cookie) {
-      res.cookie('nexus_trusted_device', result.trusted_device_cookie, {
-        path: '/', httpOnly: true, signed: true, secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax', maxAge: Math.min(365, Math.max(1, trustedDeviceDays)) * 86400000
-      });
+      rememberTrustedDevice(res, result.trusted_device_cookie, trustedDeviceDays);
     }
     setAuthCookies(res, session.accessToken, session.refreshToken, {
       expiresIn: session.expiresIn,

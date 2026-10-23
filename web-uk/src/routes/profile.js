@@ -22,6 +22,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { clearTrustedDeviceCookies } = require('../lib/trusted-device-cookies');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 const { isValidEmail } = require('../lib/inputValidator');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
@@ -2005,17 +2006,9 @@ router.post('/two-factor/revoke-devices', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, twoFactorRedirect('2fa-devices-revoke-failed'));
   }
-  clearTrustedDeviceCookie(res);
+  clearTrustedDeviceCookies(req, res);
   return redirectTo(res, '/profile/two-factor?devices_revoked=1');
 }));
-
-// Clear with the same attributes the login flow sets (auth.js), or a production
-// browser keeps the Secure cookie and the device stays remembered.
-function clearTrustedDeviceCookie(res) {
-  res.clearCookie('nexus_trusted_device', {
-    path: '/', httpOnly: true, signed: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production'
-  });
-}
 
 router.post('/two-factor/disable', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
@@ -2033,7 +2026,7 @@ router.post('/two-factor/disable', asyncRoute(async (req, res) => {
 
   try {
     await callProfile(token, 'POST', '/auth/2fa/disable', { password, code });
-    clearTrustedDeviceCookie(res);
+    clearTrustedDeviceCookies(req, res);
     invalidateUserCache(token);
     await destroyRequestSession(req);
     clearAuthCookies(res);

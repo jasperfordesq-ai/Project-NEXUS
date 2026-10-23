@@ -15,6 +15,7 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\Writer\SvgWriter;
+use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 
 /**
  * TotpService — Laravel DI-based TOTP two-factor authentication service.
@@ -28,7 +29,11 @@ class TotpService
     private const MAX_ATTEMPTS = 5;
     private const LOCKOUT_SECONDS = 900; // 15 minutes
     private const ISSUER = 'Project NEXUS';
-    private const TRUSTED_DEVICE_COOKIE = 'nexus_trusted_device';
+    /** One cookie per account: `__Host-` makes it Secure, Path=/ and host-only. */
+    private const TRUSTED_DEVICE_COOKIE_PREFIX = '__Host-nexus_td_';
+
+    /** The single cookie every account shared until 23 Oct 2026; still read, never written. */
+    private const LEGACY_TRUSTED_DEVICE_COOKIE = 'nexus_trusted_device';
 
     /**
      * Generate a new TOTP secret.
@@ -191,25 +196,36 @@ class TotpService
             return null;
         }
 
-        // Browsers use the HttpOnly cookie. Stateless native clients cannot
-        // rely on a shared cookie jar, so only they may use the explicit header.
-        $token = request()->cookie(self::TRUSTED_DEVICE_COOKIE);
-        if (! $token && (request()->hasHeader('X-Nexus-Mobile') || request()->hasHeader('X-Stateless-Auth'))) {
-            $token = request()->header('X-Trusted-Device');
+        // Browsers use this account's own HttpOnly cookie, or the single cookie
+        // every account shared before 23 Oct 2026. Stateless native clients
+        // cannot rely on a shared cookie jar, so only they may use the header.
+        $tokens = [
+            request()->cookie(self::trustedDeviceCookieName($tenantId, $userId)),
+            request()->cookie(self::LEGACY_TRUSTED_DEVICE_COOKIE),
+        ];
+        if (request()->hasHeader('X-Nexus-Mobile') || request()->hasHeader('X-Stateless-Auth')) {
+            $tokens[] = request()->header('X-Trusted-Device');
         }
-        if (!is_string($token) || $token === '') {
+        $hashes = array_values(array_unique(array_map(
+            fn (string $token): string => hash('sha256', $token),
+            array_filter($tokens, fn ($token): bool => is_string($token) && $token !== '' && strlen($token) <= 256)
+        )));
+        if ($hashes === []) {
             return null;
         }
 
         // The current day limit applies to devices remembered under a longer
         // one, so shortening the setting takes effect at once.
+        $placeholders = implode(',', array_fill(0, count($hashes), '?'));
         $device = DB::selectOne(
             "SELECT id, role_fingerprint, UNIX_TIMESTAMP(trusted_at) AS trusted_ts
              FROM user_trusted_devices
-             WHERE user_id = ? AND tenant_id = ? AND device_token_hash = ?
+             WHERE user_id = ? AND tenant_id = ? AND device_token_hash IN ($placeholders)
              AND is_revoked = 0 AND expires_at > NOW()
-             AND trusted_at > NOW() - INTERVAL ? DAY",
-            [$userId, $tenantId, hash('sha256', $token), $days]
+             AND trusted_at > NOW() - INTERVAL ? DAY
+             ORDER BY trusted_at DESC
+             LIMIT 1",
+            [$userId, $tenantId, ...$hashes, $days]
         );
         if (!$device) {
             return null;
@@ -283,14 +299,15 @@ class TotpService
         $ip = request()->ip();
         $userAgent = request()->userAgent();
         $deviceName = self::parseDeviceName($userAgent);
-        $expiresAt = date('Y-m-d H:i:s', time() + ($days * 24 * 60 * 60));
 
         try {
+            // Expiry is computed by the same clock that checks it (the
+            // database's NOW()). PHP's clock differed by the timezone offset.
             DB::insert(
                 "INSERT INTO user_trusted_devices
-                 (user_id, tenant_id, device_token_hash, device_name, ip_address, user_agent, expires_at, role_fingerprint)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                [$userId, $tenantId, $tokenHash, $deviceName, $ip, $userAgent, $expiresAt, $policy->roleFingerprint($authority)]
+                 (user_id, tenant_id, device_token_hash, device_name, ip_address, user_agent, trusted_at, expires_at, role_fingerprint)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW() + INTERVAL ? DAY, ?)",
+                [$userId, $tenantId, $tokenHash, $deviceName, $ip, $userAgent, $days, $policy->roleFingerprint($authority)]
             );
 
             return $token;
@@ -713,18 +730,43 @@ class TotpService
         return ['success' => true];
     }
 
-    public static function trustedDeviceCookieName(): string
+    /**
+     * This account's remembered-device cookie name.
+     *
+     * Each account gets its own, so trusting a second account in the same
+     * browser (another community on the same address) cannot overwrite the
+     * first. Derived from no secret, so rotating APP_KEY never renames it.
+     */
+    public static function trustedDeviceCookieName(int $tenantId, int $userId): string
     {
-        return self::TRUSTED_DEVICE_COOKIE;
+        return self::TRUSTED_DEVICE_COOKIE_PREFIX
+            . substr(hash('sha256', "nexus-trusted-device|{$tenantId}|{$userId}"), 0, 24);
     }
 
-    public static function trustedDeviceLifetimeMinutes(int $tenantId, ?int $userId = null): int
+    /**
+     * The cookie that remembers this device, built explicitly rather than via
+     * the cookie() helper: that helper fills in config('session.domain') and
+     * session SameSite, and a Domain the browser is not on is silently refused.
+     */
+    public static function trustedDeviceCookie(int $tenantId, int $userId, string $token, int $days): SymfonyCookie
     {
-        if ($userId !== null) {
-            return max(1, self::rememberDeviceDays($userId, $tenantId) ?? 1) * 1440;
-        }
-        $config = app(AuthenticationConfigurationService::class)->getAll($tenantId);
-        return max(1, (int) ($config['two_factor.trusted_device_days'] ?? 30)) * 1440;
+        return SymfonyCookie::create(self::trustedDeviceCookieName($tenantId, $userId), $token)
+            ->withExpires(time() + $days * 86400)
+            ->withPath('/')
+            ->withSecure(true)
+            ->withHttpOnly(true)
+            ->withSameSite(SymfonyCookie::SAMESITE_LAX);
+    }
+
+    /** @return list<SymfonyCookie> Expired cookies clearing this account's and the legacy cookie. */
+    public static function forgetTrustedDeviceCookies(int $tenantId, int $userId): array
+    {
+        return [
+            self::trustedDeviceCookie($tenantId, $userId, '', -1)->withExpires(1),
+            SymfonyCookie::create(self::LEGACY_TRUSTED_DEVICE_COOKIE, '')
+                ->withExpires(1)->withPath('/')->withSecure(true)->withHttpOnly(true)
+                ->withSameSite(SymfonyCookie::SAMESITE_LAX),
+        ];
     }
 
     /**
@@ -831,8 +873,8 @@ class TotpService
             [$reason, $userId, $tenantId]
         );
 
-        setcookie(self::TRUSTED_DEVICE_COOKIE, '', time() - 3600, '/');
-
+        // The caller's response clears the browser cookies
+        // (forgetTrustedDeviceCookies); revocation itself is the row above.
         return $affected;
     }
 

@@ -491,7 +491,7 @@ class TotpControllerTest extends TestCase
 
         $response->assertOk()->assertJsonMissingPath('trusted_device_token');
         $cookie = collect($response->headers->getCookies())
-            ->first(fn ($candidate) => $candidate->getName() === TotpService::trustedDeviceCookieName());
+            ->first(fn ($candidate) => $candidate->getName() === TotpService::trustedDeviceCookieName($this->testTenantId, (int) $user->id));
         $this->assertNotNull($cookie);
         $this->assertTrue($cookie->isHttpOnly());
     }

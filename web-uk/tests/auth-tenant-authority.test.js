@@ -318,7 +318,7 @@ describe('auth tenant authority', () => {
       success: true,
       access_token: 'verified-access-token',
       refresh_token: 'verified-refresh-token',
-      trusted_device_cookie: 'opaque-laravel-cookie%3D',
+      trusted_device_cookie: { name: `__Host-nexus_td_${'c'.repeat(24)}`, value: 'opaque-laravel-cookie%3D' },
       expires_in: 900,
       refresh_expires_in: 604800
     });
@@ -358,7 +358,7 @@ describe('auth tenant authority', () => {
 
     expect(verifyResponse.status).toBe(302);
     expect(verifyResponse.headers.location).toBe('/acme/accessible/dashboard');
-    expect(verifyResponse.headers['set-cookie'].some((value) => value.startsWith('nexus_trusted_device=') && value.includes('HttpOnly'))).toBe(true);
+    expect(verifyResponse.headers['set-cookie'].some((value) => value.startsWith(`nexus_trusted_${'c'.repeat(24)}=`) && value.includes('HttpOnly'))).toBe(true);
     expect(api.verify2fa).toHaveBeenCalledWith('pending-two-factor-token', 'ABCD1234', 'acme', {
       useBackupCode: true,
       trustDevice: true
@@ -379,7 +379,9 @@ describe('auth tenant authority', () => {
     });
     api.login.mockResolvedValueOnce({ access_token: 'next-access', refresh_token: 'next-refresh', expires_in: 900, refresh_expires_in: 604800 });
     await agent.post('/acme/accessible/login').type('form').send({ email: 'member@example.test', password: 'Test123!' });
-    expect(api.login).toHaveBeenLastCalledWith('member@example.test', 'Test123!', 'acme', 'opaque-laravel-cookie%3D');
+    expect(api.login).toHaveBeenLastCalledWith('member@example.test', 'Test123!', 'acme', [
+      { name: `__Host-nexus_td_${'c'.repeat(24)}`, value: 'opaque-laravel-cookie%3D' }
+    ]);
   });
 
   it('keeps a retryable 2FA challenge but clears expired challenge state', async () => {
