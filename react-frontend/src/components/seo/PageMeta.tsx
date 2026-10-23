@@ -190,10 +190,21 @@ export function PageMeta({
   const browserPathname = typeof window !== 'undefined' ? window.location.pathname : location.pathname;
   const canonicalUrl = toAbsoluteUrl(url, origin) || buildCanonicalUrl(origin, browserPathname);
 
-  // OG image fallback chain: explicit prop -> tenant og_image_url -> tenant logo -> platform default
-  const richCardImage = toAbsoluteUrl(image || branding.og_image_url || branding.logo, origin);
-  const ogImage = richCardImage || toAbsoluteUrl('/og-default.svg', origin) || '/og-default.svg';
-  const twitterCard = richCardImage ? 'summary_large_image' : 'summary';
+  // Sharing image (og:image / twitter:image). Fallback chain: explicit prop ->
+  // the community's sharing image (/admin/seo) -> its logo -> platform logo.
+  //
+  // Only a real sharing image (explicit prop or og_image_url) is declared as a
+  // wide 1200x630 card. Until 2026-10-22 every fallback was declared 1200x630
+  // too, so Facebook received hour-timebank's square logo labelled as a wide
+  // image, and the final fallback was /og-default.svg, which Facebook, LinkedIn
+  // and X do not accept at all — the shared link showed a badly cropped
+  // platform picture. The final fallback is now the platform's PNG logo.
+  const sharingImage = toAbsoluteUrl(image || branding.og_image_url, origin);
+  const ogImage = sharingImage
+    || toAbsoluteUrl(branding.logo, origin)
+    || toAbsoluteUrl('/images/project-nexus-logo.png', origin)
+    || '/images/project-nexus-logo.png';
+  const twitterCard = sharingImage ? 'summary_large_image' : 'summary';
 
   return (
     <Helmet>
@@ -216,8 +227,9 @@ export function PageMeta({
       {enableOpenGraph && <meta property="og:description" content={metaDescription} />}
       {enableOpenGraph && canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
       {enableOpenGraph && <meta property="og:image" content={ogImage} />}
-      {enableOpenGraph && <meta property="og:image:width" content="1200" />}
-      {enableOpenGraph && <meta property="og:image:height" content="630" />}
+      {/* Dimensions only for a real sharing image: a logo is not 1200x630. */}
+      {enableOpenGraph && sharingImage && <meta property="og:image:width" content="1200" />}
+      {enableOpenGraph && sharingImage && <meta property="og:image:height" content="630" />}
       {enableOpenGraph && <meta property="og:locale" content={ogLocale} />}
       {enableOpenGraph && ogLocaleAlternates.map((locale) => (
         <meta key={locale} property="og:locale:alternate" content={locale} />

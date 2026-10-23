@@ -18,10 +18,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="NEXUS" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
-    <!-- Default OG image — overridden per-page by PageMeta via react-helmet-async -->
-    <meta property="og:image" content="/og-default.svg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <!-- No og:image here. PageMeta (react-helmet-async) writes it per page and
+         Helmet does not replace tags it did not create, so a default here was
+         served BEFORE the real one: crawler snapshots carried two og:image tags
+         and Facebook took the first, an SVG it cannot show (2026-10-22). -->
     <title>NEXUS — Community Timebanking Platform</title>
   </head>
   <body>

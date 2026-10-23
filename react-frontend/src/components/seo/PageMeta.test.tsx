@@ -244,4 +244,53 @@ describe('PageMeta', () => {
       await waitFor(() => expect(document.title).toBe('TimeBank Ireland | Swap Skills'));
     });
   });
+
+  // 2026-10-22: a link to hour-timebank.ie shared on Facebook showed a badly
+  // cropped platform picture. Every fallback was declared 1200x630, and the
+  // last fallback was an SVG that Facebook, LinkedIn and X cannot show.
+  describe('social sharing image', () => {
+    const withBranding = async (branding: Record<string, unknown>) => {
+      const mod = await import('@/contexts/TenantContext');
+      vi.mocked(mod.useTenant).mockReturnValue({
+        branding: { name: 'TimeBank Ireland', tagline: 't', ...branding },
+        tenant: { settings: {}, seo: {} },
+        hasFeature: vi.fn(() => true),
+        hasModule: vi.fn(() => true),
+        isLoading: false,
+        tenantPath: vi.fn((p: string) => `/test${p}`),
+      } as unknown as ReturnType<typeof mod.useTenant>);
+    };
+    const tags = (sel: string) => Array.from(document.querySelectorAll(sel)).map((m) => m.getAttribute('content'));
+
+    it('uses the community sharing image as a wide card with its dimensions', async () => {
+      await withBranding({ og_image_url: 'https://cdn.example/share.png', logo: 'https://cdn.example/logo.png' });
+      renderWithHelmet(<PageMeta title="Home" />);
+      await waitFor(() => {
+        expect(tags('meta[property="og:image"]')).toEqual(['https://cdn.example/share.png']);
+        expect(tags('meta[property="og:image:width"]')).toEqual(['1200']);
+        expect(tags('meta[name="twitter:card"]')).toEqual(['summary_large_image']);
+      });
+    });
+
+    it('falls back to the logo without claiming it is 1200x630', async () => {
+      await withBranding({ og_image_url: '', logo: 'https://cdn.example/logo.png' });
+      renderWithHelmet(<PageMeta title="Home" />);
+      await waitFor(() => {
+        expect(tags('meta[property="og:image"]')).toEqual(['https://cdn.example/logo.png']);
+        expect(tags('meta[property="og:image:width"]')).toEqual([]);
+        expect(tags('meta[name="twitter:card"]')).toEqual(['summary']);
+      });
+    });
+
+    it('never offers an SVG: with no image or logo it uses the platform PNG', async () => {
+      await withBranding({ og_image_url: '', logo: '' });
+      renderWithHelmet(<PageMeta title="Home" />);
+      await waitFor(() => {
+        const [img] = tags('meta[property="og:image"]');
+        expect(img).toMatch(/\/images\/project-nexus-logo\.png$/);
+        expect(img).not.toMatch(/\.svg$/);
+      });
+    });
+  });
 });
+
