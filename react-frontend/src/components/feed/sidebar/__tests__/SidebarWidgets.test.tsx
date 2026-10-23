@@ -442,9 +442,9 @@ describe('TopCategoriesWidget', () => {
   });
 
   const sampleCategories = [
-    { id: 1, name: 'Gardening', count: 30 },
-    { id: 2, name: 'Tech', count: 15 },
-    { id: 3, name: 'Music', count: 8 },
+    { id: 1, name: 'Gardening', slug: 'gardening', count: 30 },
+    { id: 2, name: 'Tech', slug: 'tech', count: 15 },
+    { id: 3, name: 'Music', slug: 'music', count: 8 },
   ];
 
   it('renders nothing when categories array is empty', () => {
@@ -470,8 +470,8 @@ describe('TopCategoriesWidget', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
     const links = screen.getAllByRole('link');
     const hrefs = links.map((l) => l.getAttribute('href'));
-    expect(hrefs).toContain('/test/listings?category=1');
-    expect(hrefs).toContain('/test/listings?category=2');
+    expect(hrefs).toContain('/test/listings?category=gardening');
+    expect(hrefs).toContain('/test/listings?category=tech');
   });
 
   it('renders All Listings link', () => {

@@ -16,6 +16,8 @@ import { useTenant } from '@/contexts';
 export interface Category {
   id: number;
   name: string;
+  /** The listings page and `GET /v2/listings` filter `?category=` by slug, never by id. */
+  slug: string;
   count: number;
 }
 
@@ -61,7 +63,7 @@ export function TopCategoriesWidget({ categories }: TopCategoriesWidgetProps) {
         {categories.map((category, idx) => (
           <Link
             key={category.id}
-            to={tenantPath(`/listings?category=${category.id}`)}
+            to={tenantPath(`/listings?category=${encodeURIComponent(category.slug)}`)}
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors duration-200 ${
               COLOR_CLASSES[idx % COLOR_CLASSES.length]
             }`}

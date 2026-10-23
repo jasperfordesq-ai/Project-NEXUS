@@ -66,9 +66,9 @@ const CARD = '.glass-card';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeCategories = () => [
-  { id: 1, name: 'Gardening', count: 12 },
-  { id: 2, name: 'Cooking', count: 8 },
-  { id: 3, name: 'Childcare', count: 5 },
+  { id: 1, name: 'Gardening', slug: 'gardening', count: 12 },
+  { id: 2, name: 'Cooking', slug: 'cooking', count: 8 },
+  { id: 3, name: 'Childcare', slug: 'childcare', count: 5 },
 ];
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -107,17 +107,28 @@ describe('TopCategoriesWidget', () => {
 
   it('renders category count in parentheses', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
-    render(<TopCategoriesWidget categories={[{ id: 1, name: 'Gardening', count: 12 }]} />);
+    render(<TopCategoriesWidget categories={[{ id: 1, name: 'Gardening', slug: 'gardening', count: 12 }]} />);
     expect(screen.getByText('(12)')).toBeInTheDocument();
   });
 
   it('each category is a link to the filtered listings page', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
-    render(<TopCategoriesWidget categories={[{ id: 7, name: 'Tutoring', count: 3 }]} />);
+    render(<TopCategoriesWidget categories={[{ id: 7, name: 'Tutoring', slug: 'tutoring', count: 3 }]} />);
     const links = screen.getAllByRole('link');
     const categoryLink = links.find((l) => l.textContent?.includes('Tutoring'));
     expect(categoryLink).toBeInTheDocument();
-    expect(categoryLink).toHaveAttribute('href', '/test/listings?category=7');
+    expect(categoryLink).toHaveAttribute('href', '/test/listings?category=tutoring');
+  });
+
+  // Regression: the chips linked with ?category=<id>. The listings page and
+  // GET /v2/listings read ?category= as a SLUG, so "12" matched no category and
+  // every chip opened an empty listings page with no filter selected.
+  it('links by category slug, never by numeric id', async () => {
+    const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
+    render(<TopCategoriesWidget categories={[{ id: 12, name: 'DIY & Home', slug: 'diy-home', count: 10 }]} />);
+    const categoryLink = screen.getAllByRole('link').find((l) => l.textContent?.includes('DIY & Home'));
+    expect(categoryLink).toHaveAttribute('href', '/test/listings?category=diy-home');
+    expect(categoryLink?.getAttribute('href')).not.toContain('category=12');
   });
 
   it('includes an "all listings" link', async () => {
@@ -139,21 +150,21 @@ describe('TopCategoriesWidget', () => {
   it('renders all category links using tenantPath', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
     const cats = [
-      { id: 10, name: 'Music', count: 2 },
-      { id: 11, name: 'Sports', count: 7 },
+      { id: 10, name: 'Music', slug: 'music', count: 2 },
+      { id: 11, name: 'Sports', slug: 'sports', count: 7 },
     ];
     render(<TopCategoriesWidget categories={cats} />);
     const links = screen.getAllByRole('link');
     const hrefs = links.map((l) => l.getAttribute('href')).filter(Boolean);
-    expect(hrefs).toContain('/test/listings?category=10');
-    expect(hrefs).toContain('/test/listings?category=11');
+    expect(hrefs).toContain('/test/listings?category=music');
+    expect(hrefs).toContain('/test/listings?category=sports');
   });
 
   it('renders correct count for each category', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
     render(<TopCategoriesWidget categories={[
-      { id: 1, name: 'Cat A', count: 99 },
-      { id: 2, name: 'Cat B', count: 1 },
+      { id: 1, name: 'Cat A', slug: 'cat-a', count: 99 },
+      { id: 2, name: 'Cat B', slug: 'cat-b', count: 1 },
     ]} />);
     expect(screen.getByText('(99)')).toBeInTheDocument();
     expect(screen.getByText('(1)')).toBeInTheDocument();
@@ -161,7 +172,7 @@ describe('TopCategoriesWidget', () => {
 
   it('renders a single category correctly', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
-    render(<TopCategoriesWidget categories={[{ id: 99, name: 'Elderly Care', count: 0 }]} />);
+    render(<TopCategoriesWidget categories={[{ id: 99, name: 'Elderly Care', slug: 'elderly-care', count: 0 }]} />);
     expect(screen.getByText('Elderly Care')).toBeInTheDocument();
     expect(screen.getByText('(0)')).toBeInTheDocument();
   });

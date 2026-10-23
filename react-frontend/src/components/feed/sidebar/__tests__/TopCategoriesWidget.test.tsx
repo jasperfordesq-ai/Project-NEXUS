@@ -60,9 +60,9 @@ import { TopCategoriesWidget } from '../TopCategoriesWidget';
 import type { Category } from '../TopCategoriesWidget';
 
 const sampleCategories: Category[] = [
-  { id: 1, name: 'Gardening', count: 30 },
-  { id: 2, name: 'Tech', count: 15 },
-  { id: 3, name: 'Music', count: 8 },
+  { id: 1, name: 'Gardening', slug: 'gardening', count: 30 },
+  { id: 2, name: 'Tech', slug: 'tech', count: 15 },
+  { id: 3, name: 'Music', slug: 'music', count: 8 },
 ];
 
 describe('TopCategoriesWidget', () => {
@@ -103,9 +103,9 @@ describe('TopCategoriesWidget', () => {
     render(<TopCategoriesWidget categories={sampleCategories} />);
     const links = screen.getAllByRole('link');
     const hrefs = links.map((l) => l.getAttribute('href'));
-    expect(hrefs).toContain('/test/listings?category=1');
-    expect(hrefs).toContain('/test/listings?category=2');
-    expect(hrefs).toContain('/test/listings?category=3');
+    expect(hrefs).toContain('/test/listings?category=gardening');
+    expect(hrefs).toContain('/test/listings?category=tech');
+    expect(hrefs).toContain('/test/listings?category=music');
   });
 
   it('renders All Listings link pointing to /listings', () => {
@@ -122,7 +122,7 @@ describe('TopCategoriesWidget', () => {
   });
 
   it('handles a single category', () => {
-    render(<TopCategoriesWidget categories={[{ id: 99, name: 'Cooking', count: 5 }]} />);
+    render(<TopCategoriesWidget categories={[{ id: 99, name: 'Cooking', slug: 'cooking', count: 5 }]} />);
     expect(screen.getByText('Top Categories')).toBeInTheDocument();
     expect(screen.getByText(/Cooking/)).toBeInTheDocument();
     expect(screen.getByText(/\(5\)/)).toBeInTheDocument();

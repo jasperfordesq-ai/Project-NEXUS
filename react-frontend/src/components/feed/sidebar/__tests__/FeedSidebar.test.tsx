@@ -144,7 +144,7 @@ const fullSidebarData = {
   friends: [{ id: 5, name: 'Dave', avatar_url: '/dave.png', is_online: true }],
   community_stats: { members: 100, listings: 50, events: 10, groups: 5 },
   suggested_listings: [{ id: 10, title: 'Help', type: 'offer', owner_name: 'Bob' }],
-  top_categories: [{ id: 1, name: 'Gardening', count: 30 }],
+  top_categories: [{ id: 1, name: 'Gardening', slug: 'gardening', count: 30 }],
   suggested_members: [{ id: 7, name: 'Frank', avatar_url: '/frank.png', is_online: true }],
   upcoming_events: [{ id: 1, title: 'Meetup', start_date: '2026-04-15' }],
   popular_groups: [{ id: 1, name: 'Gardeners', member_count: 42 }],
