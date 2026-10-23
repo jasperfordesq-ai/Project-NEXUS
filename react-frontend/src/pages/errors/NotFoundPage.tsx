@@ -9,8 +9,10 @@ import { GlassCard } from '@/components/ui/GlassCard';
  * 404 Not Found Page
  */
 
-import { Link } from 'react-router-dom';
-import { motion } from '@/lib/motion';import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from '@/lib/motion';
+import { Helmet } from 'react-helmet-async';
 import Home from 'lucide-react/icons/house';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Search from 'lucide-react/icons/search';
@@ -18,11 +20,29 @@ import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { api } from '@/lib/api';
+
+/**
+ * Tell the super-admin "404 Tracking" page about this address (2026-10-23).
+ * Anonymous: sent without the session, and the server stores no IP address or
+ * account. The crawler-copy renderer (?nexus_prerender_bypass) is skipped so
+ * a render run does not count as a visit. Failures are ignored.
+ */
+function useReportNotFound(pathname: string, search: string) {
+  useEffect(() => {
+    if (new URLSearchParams(search).has('nexus_prerender_bypass')) return;
+    api
+      .post('/v2/seo/not-found', { path: pathname, referrer: document.referrer || undefined }, { skipAuth: true })
+      .catch(() => undefined);
+  }, [pathname, search]);
+}
 
 export function NotFoundPage() {
   const { t } = useTranslation('utility');
   const { tenantPath, hasFeature } = useTenant();
+  const location = useLocation();
   usePageTitle(t('not_found.page_title'));
+  useReportNotFound(location.pathname, location.search);
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <PageMeta title={t('not_found.page_title')} noIndex />

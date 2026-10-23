@@ -77,11 +77,14 @@ class SeoService
             $statusCode = 301;
         }
 
-        return DB::table('seo_redirects')->insertGetId([
+        $id = DB::table('seo_redirects')->insertGetId([
             'tenant_id'       => $tenantId,
             'source_url'      => $from,
             'destination_url' => $to,
             'created_at'      => now(),
         ]);
+        app(SeoRedirectPublisher::class)->publishTenant($tenantId);
+
+        return $id;
     }
 }

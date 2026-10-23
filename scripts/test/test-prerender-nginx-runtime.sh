@@ -38,14 +38,20 @@ printf '%s\n' '"Basic cHJlcmVuZGVyOnNlY3JldA==" 1;' \
     > "$PRERENDERED/.maintenance-render-auth.list"
 : > "$TEST_ROOT/nginx/trusted-bots.list"
 
+# Docker Desktop on Windows needs Windows paths for bind mounts: Git Bash
+# paths such as /tmp/... mount as empty directories, nginx serves its default
+# page and /health is 404. cygpath only exists there; Linux is unchanged.
+dpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi; }
+
 docker run -d --rm \
     --name "$CONTAINER" \
     --add-host api:127.0.0.1 \
     -e NEXUS_API_UPSTREAM=api \
+    -e NEXUS_CSP_EXTRA_ORIGINS= \
     -p 127.0.0.1::80 \
-    -v "$CONF:/etc/nginx/templates/default.conf.template:ro" \
-    -v "$HTML:/usr/share/nginx/html" \
-    -v "$TEST_ROOT/nginx/trusted-bots.list:/etc/nginx/prerender-trusted-bot-ips.list:ro" \
+    -v "$(dpath "$CONF"):/etc/nginx/templates/default.conf.template:ro" \
+    -v "$(dpath "$HTML"):/usr/share/nginx/html" \
+    -v "$(dpath "$TEST_ROOT/nginx/trusted-bots.list"):/etc/nginx/prerender-trusted-bot-ips.list:ro" \
     nginx:1.30-alpine >/dev/null
 
 PORT="$(docker inspect --format '{{(index (index .NetworkSettings.Ports "80/tcp") 0).HostPort}}' "$CONTAINER")"
@@ -88,6 +94,33 @@ request 404 GONE-SNAPSHOT -A "$BOT" -H 'Host: example.test' "$BASE/gone"
 grep -Fqi 'strict-transport-security:' "$TEST_ROOT/headers"
 request 503 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/missing"
 request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/gone?nexus_prerender_bypass=1"
+
+# A crawler asking for a page with no saved copy gets the bare shell with
+# "noindex" (no more soft 404s, 2026-10-23). Visitors, the render worker and
+# the home page fallback never carry it.
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/no-such-page"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'crawler fallback lacks noindex' >&2; exit 1; }
+request 200 SPA-SHELL -A "$AI_BOT" -H 'Host: example.test' "$BASE/no-such-page"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'AI crawler fallback lacks noindex' >&2; exit 1; }
+request 200 SPA-SHELL -H 'Host: example.test' "$BASE/no-such-page"
+! grep -Fqi 'x-robots-tag' "$TEST_ROOT/headers" || { echo 'a visitor got noindex' >&2; exit 1; }
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/no-such-page?nexus_prerender_bypass=1"
+! grep -Fqi 'x-robots-tag' "$TEST_ROOT/headers" || { echo 'the render worker got noindex' >&2; exit 1; }
+request 200 ABOUT-SNAPSHOT -A "$BOT" -H 'Host: example.test' "$BASE/about"
+! grep -Fqi 'x-robots-tag' "$TEST_ROOT/headers" || { echo 'a saved copy got noindex' >&2; exit 1; }
+request 200 SPA-SHELL -A "$BOT" -H 'Host: other.test' "$BASE/"
+! grep -Fqi 'x-robots-tag' "$TEST_ROOT/headers" || { echo 'a home page without a copy got noindex' >&2; exit 1; }
+
+# A URL-redirect marker hands the request to Laravel (absent here, so the
+# proxy answers 502 — proof the redirect path was taken), for visitors and
+# crawlers alike; without a marker, or with nexus_rc=1, the page is served.
+mkdir -p "$PRERENDERED/.seo-redirects/example.test/old-page"
+: > "$PRERENDERED/.seo-redirects/example.test/old-page/_r"
+request 502 '' -H 'Host: example.test' "$BASE/old-page"
+request 502 '' -A "$BOT" -H 'Host: example.test' "$BASE/old-page"
+request 200 SPA-SHELL -H 'Host: example.test' "$BASE/old-page?nexus_rc=1"
+request 200 SPA-SHELL -H 'Host: other.test' "$BASE/old-page"
+request 200 SPA-SHELL -H 'Host: example.test' "$BASE/old-page-2"
 
 # The storage namespace and every operational sidecar are internal-only.
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/index.html"

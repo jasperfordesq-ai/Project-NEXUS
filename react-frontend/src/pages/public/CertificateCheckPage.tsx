@@ -76,7 +76,13 @@ export function CertificateCheckPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-12">
-      <PageMeta title={t('certificate_check.title')} description={t('certificate_check.meta_description')} />
+      {/* A code in the address shows one person's certificate: never index
+          that (2026-10-23). The empty checker page stays findable. */}
+      <PageMeta
+        title={t('certificate_check.title')}
+        description={t('certificate_check.meta_description')}
+        noIndex={Boolean(codeFromAddress)}
+      />
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <GlassCard className="p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-3">

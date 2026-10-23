@@ -18,6 +18,11 @@
  *   `default`   — fallback for routes not matched by anything else
  */
 return [
+    // The shared crawler-copy volume (nexus-php-prerendered) as mounted in the
+    // PHP containers. PrerenderService still reads the env directly; new code
+    // (SeoRedirectPublisher) reads it here so a cached config keeps working.
+    'cache_path' => env('PRERENDER_CACHE_PATH', '/var/www/html/storage/prerendered'),
+
     'ttl' => [
         // Homepage refreshes often — anything below it can change.
         '/'             => 6 * 3600,

@@ -119,3 +119,20 @@ describe('CertificateCheckPage', () => {
     });
   });
 });
+
+// 2026-10-23: an address carrying a certificate code is about one person;
+// search engines must not index it. The empty checker page stays findable.
+describe('CertificateCheckPage — search engines', () => {
+  const robots = () => document.querySelector('meta[name="robots"]')?.getAttribute('content') ?? null;
+
+  it('is not indexed when a certificate code is in the address', async () => {
+    renderAt('/verify-certificate/ABC123');
+    await waitFor(() => expect(robots()).toBe('noindex, nofollow'));
+  });
+
+  it('stays indexable as the empty checker page', async () => {
+    renderAt('/verify-certificate');
+    await screen.findByRole('button', { name: 'Check certificate' });
+    expect(robots()).toBeNull();
+  });
+});

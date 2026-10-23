@@ -46,12 +46,35 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+const apiPost = vi.hoisted(() => vi.fn(() => Promise.resolve({ success: true })));
+vi.mock('@/lib/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api')>();
+  return { ...actual, api: { ...actual.api, post: apiPost } };
+});
+
 import { NotFoundPage } from './NotFoundPage';
 
 describe('NotFoundPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     hasFeature.mockReturnValue(true);
+  });
+
+  it('reports the missing address anonymously for 404 tracking', () => {
+    window.history.pushState({}, '', '/no-such-page?x=1');
+    render(<NotFoundPage />);
+    expect(apiPost).toHaveBeenCalledTimes(1);
+    expect(apiPost).toHaveBeenCalledWith(
+      '/v2/seo/not-found',
+      expect.objectContaining({ path: '/no-such-page' }),
+      { skipAuth: true },
+    );
+  });
+
+  it('does not report when the crawler-copy renderer visits', () => {
+    window.history.pushState({}, '', '/no-such-page?nexus_prerender_bypass=1');
+    render(<NotFoundPage />);
+    expect(apiPost).not.toHaveBeenCalled();
   });
 
   it('renders the 404 text', () => {

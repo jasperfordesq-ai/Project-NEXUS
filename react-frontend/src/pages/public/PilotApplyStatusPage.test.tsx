@@ -291,3 +291,14 @@ describe('PilotApplyStatusPage — status variations', () => {
     });
   }
 });
+
+// 2026-10-23: the status page opens from a private link; never indexed.
+describe('PilotApplyStatusPage — search engines', () => {
+  it('tells search engines not to index it', async () => {
+    vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
+    render(<PilotApplyStatusPage />);
+    await waitFor(() => expect(
+      document.querySelector('meta[name="robots"]')?.getAttribute('content'),
+    ).toBe('noindex, nofollow'));
+  });
+});

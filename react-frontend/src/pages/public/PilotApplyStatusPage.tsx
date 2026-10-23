@@ -80,7 +80,8 @@ export function PilotApplyStatusPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-12">
-      <PageMeta title={t('provisioning.status_title')} description={t('provisioning.meta.description')} />
+      {/* Opened from a private link: never index (2026-10-23). */}
+      <PageMeta title={t('provisioning.status_title')} description={t('provisioning.meta.description')} noIndex />
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <GlassCard className="p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-5">

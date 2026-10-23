@@ -710,6 +710,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->onSuccess($stampOk('prerender-auto-recache'))
             ->name('prerender-auto-recache');
 
+        // URL-redirect markers nginx reads (SeoRedirectPublisher). Saving a
+        // redirect republishes its community at once; this keeps the markers
+        // right if a write failed or the shared volume was recreated.
+        $schedule->command('seo:publish-redirects')
+            ->hourly()
+            ->withoutOverlapping(30)
+            ->runInBackground()
+            ->name('seo-publish-redirects');
+
     })
     ->withRouting(
         // Routes loaded by RouteServiceProvider (no /api prefix).

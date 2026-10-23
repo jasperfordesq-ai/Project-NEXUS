@@ -86,9 +86,11 @@ class AdminToolsController extends BaseApiController
                 "INSERT INTO seo_redirects (tenant_id, source_url, destination_url) VALUES (?, ?, ?)",
                 [$tenantId, $sourceUrl, $destinationUrl]
             );
+            $newId = (int) DB::getPdo()->lastInsertId();
+            app(\App\Services\SeoRedirectPublisher::class)->publishTenant($tenantId);
 
             return $this->respondWithData([
-                'id' => (int) DB::getPdo()->lastInsertId(),
+                'id' => $newId,
                 'source_url' => $sourceUrl,
                 'destination_url' => $destinationUrl,
             ], null, 201);
@@ -110,6 +112,7 @@ class AdminToolsController extends BaseApiController
             }
 
             DB::delete("DELETE FROM seo_redirects WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            app(\App\Services\SeoRedirectPublisher::class)->publishTenant($tenantId);
             return $this->respondWithData(['deleted' => true, 'id' => $id]);
         } catch (\Throwable $e) {
             return $this->respondWithError('NOT_FOUND', __('api.redirect_not_found_or_missing_table'), 'id', 404);

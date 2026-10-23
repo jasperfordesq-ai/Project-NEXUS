@@ -92,6 +92,14 @@ Route::middleware(['feature:events', 'feature:public_events'])->group(function (
 Route::get('/v2/seo/metadata/{slug}', [\App\Http\Controllers\Api\SeoController::class, 'metadata'])
     ->where('slug', '.*');
 Route::get('/v2/seo/redirects', [\App\Http\Controllers\Api\SeoController::class, 'redirects']);
+// nginx hands a page request here only when a redirect marker exists for it
+// (SeoRedirectPublisher). Answers the 301 the admin "URL redirects" promise.
+Route::middleware(['throttle:nexus-route-60-per-1m'])
+    ->get('/v2/seo/resolve-redirect', [\App\Http\Controllers\Api\SeoController::class, 'resolveRedirect']);
+// The "Page not found" screen reports the address it could not show, for the
+// super-admin 404 Tracking page. Anonymous; no IP or account stored.
+Route::middleware(['throttle:nexus-route-30-per-1m'])
+    ->post('/v2/seo/not-found', [\App\Http\Controllers\Api\SeoController::class, 'recordNotFound']);
 
 // ============================================
 // Explore / Discover — AUTHENTICATED ONLY
