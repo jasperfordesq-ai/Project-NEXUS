@@ -100,6 +100,10 @@ Route::middleware(['throttle:nexus-route-60-per-1m'])
 // super-admin 404 Tracking page. Anonymous; no IP or account stored.
 Route::middleware(['throttle:nexus-route-30-per-1m'])
     ->post('/v2/seo/not-found', [\App\Http\Controllers\Api\SeoController::class, 'recordNotFound']);
+// nginx asks this (auth_request) when a crawler wants a page with no saved
+// copy: 204 = a real app address, 403 = one that never existed (crawler gets
+// 404). Any failure, a 429 included, makes nginx fall back to the noindex shell.
+Route::get('/v2/seo/route-check', [\App\Http\Controllers\Api\SeoController::class, 'routeCheck']);
 
 // ============================================
 // Explore / Discover — AUTHENTICATED ONLY

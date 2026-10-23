@@ -10,7 +10,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONF="$ROOT_DIR/react-frontend/nginx.bluegreen.conf"
 TEST_ROOT="$(mktemp -d -t nexus-prerender-nginx-XXXXXX)"
 CONTAINER="nexus-prerender-nginx-test-$$"
-trap 'docker rm -f "$CONTAINER" >/dev/null 2>&1 || true; rm -rf "$TEST_ROOT"' EXIT
+STUB="nexus-prerender-nginx-api-stub-$$"
+NETWORK="nexus-prerender-nginx-net-$$"
+trap 'docker rm -f "$CONTAINER" "$STUB" >/dev/null 2>&1 || true; docker network rm "$NETWORK" >/dev/null 2>&1 || true; rm -rf "$TEST_ROOT"' EXIT
 
 HTML="$TEST_ROOT/html"
 PRERENDERED="$HTML/prerendered"
@@ -43,9 +45,28 @@ printf '%s\n' '"Basic cHJlcmVuZGVyOnNlY3JldA==" 1;' \
 # page and /health is 404. cygpath only exists there; Linux is unchanged.
 dpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi; }
 
+# A stand-in for Laravel named "api": the route check (SeoController::routeCheck)
+# answers 403 for /never-existed, 500 for /stub-error and 204 otherwise; every
+# other API path answers 502, which the redirect checks below rely on.
+cat > "$TEST_ROOT/stub.conf" <<'STUBCONF'
+server {
+    listen 80;
+    location = /api/v2/seo/route-check {
+        if ($http_x_nexus_route_path ~ "^/never-existed") { return 403; }
+        if ($http_x_nexus_route_path = "/stub-error") { return 500; }
+        return 204;
+    }
+    location / { return 502; }
+}
+STUBCONF
+docker network create "$NETWORK" >/dev/null
+docker run -d --rm --name "$STUB" --network "$NETWORK" --network-alias api \
+    -v "$(dpath "$TEST_ROOT/stub.conf"):/etc/nginx/conf.d/default.conf:ro" \
+    nginx:1.30-alpine >/dev/null
+
 docker run -d --rm \
     --name "$CONTAINER" \
-    --add-host api:127.0.0.1 \
+    --network "$NETWORK" \
     -e NEXUS_API_UPSTREAM=api \
     -e NEXUS_CSP_EXTRA_ORIGINS= \
     -p 127.0.0.1::80 \
@@ -111,6 +132,18 @@ request 200 ABOUT-SNAPSHOT -A "$BOT" -H 'Host: example.test' "$BASE/about"
 request 200 SPA-SHELL -A "$BOT" -H 'Host: other.test' "$BASE/"
 ! grep -Fqi 'x-robots-tag' "$TEST_ROOT/headers" || { echo 'a home page without a copy got noindex' >&2; exit 1; }
 
+# True 404s (2026-10-23): before the noindex shell, nginx asks the route check.
+# An address the app never routes answers crawlers 404; a failing check keeps
+# the noindex shell (fail-open); visitors and the render worker never ask.
+request 404 '' -A "$BOT" -H 'Host: example.test' "$BASE/never-existed"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'the crawler 404 lacks noindex' >&2; exit 1; }
+request 404 '' -A "$AI_BOT" -H 'Host: example.test' "$BASE/never-existed/deeper"
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/stub-error"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'fail-open shell lacks noindex' >&2; exit 1; }
+request 200 SPA-SHELL -H 'Host: example.test' "$BASE/never-existed"
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/never-existed?nexus_prerender_bypass=1"
+request 200 ABOUT-SNAPSHOT -A "$BOT" -H 'Host: example.test' "$BASE/about"
+
 # A URL-redirect marker hands the request to Laravel (absent here, so the
 # proxy answers 502 — proof the redirect path was taken), for visitors and
 # crawlers alike; without a marker, or with nexus_rc=1, the page is served.
@@ -132,6 +165,11 @@ request 200 SPA-SHELL -H 'Host: example.test' "$BASE/blog/removed"
 request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/blog/removed?nexus_prerender_bypass=1"
 request 200 SPA-SHELL -A "$BOT" -H 'Host: other.test' "$BASE/blog/removed"
 grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'other host lost its crawler noindex' >&2; exit 1; }
+
+# With Laravel unreachable the route check fails open to the noindex shell.
+docker stop "$STUB" >/dev/null
+request 200 SPA-SHELL -A "$BOT" -H 'Host: example.test' "$BASE/never-existed"
+grep -Fqi 'x-robots-tag: noindex' "$TEST_ROOT/headers" || { echo 'unreachable-API shell lacks noindex' >&2; exit 1; }
 
 # The storage namespace and every operational sidecar are internal-only.
 request 404 '' -H 'Host: example.test' "$BASE/prerendered/example.test/about/index.html"

@@ -118,6 +118,56 @@ class SeoController extends BaseApiController
     }
 
     /**
+     * GET /v2/seo/route-check — nginx's auth_request sub-request for a crawler
+     * asking for a page that has no saved copy (2026-10-23). 204 when the
+     * address belongs to the app (a known community and a first path segment
+     * the React app routes), 403 when it never existed, so nginx answers the
+     * crawler 404 instead of the noindex shell. Host and path come from
+     * X-Nexus-Route-Host / X-Nexus-Route-Path. Deliberately lenient and
+     * fail-open: an unknown host or any error answers 204, because wrongly
+     * telling Google a real page is missing is worse than a soft 404.
+     */
+    public function routeCheck(Request $request): Response
+    {
+        $known = response('', 204)->header('Cache-Control', 'no-store');
+        try {
+            $host = strtolower(trim((string) $request->header('X-Nexus-Route-Host', '')));
+            $path = (string) strtok((string) $request->header('X-Nexus-Route-Path', ''), '?#');
+            if ($host === '' || $path === '' || $path[0] !== '/') {
+                return $known;
+            }
+
+            $best = null;
+            foreach (app(\App\Services\PrerenderService::class)->loadTenantTargets() as $t) {
+                $prefix = (string) $t['prefix'];
+                if ($t['host'] !== $host
+                    || ($prefix !== '' && $path !== $prefix && !str_starts_with($path, $prefix . '/'))) {
+                    continue;
+                }
+                if ($best === null || strlen($prefix) > strlen((string) $best['prefix'])) {
+                    $best = $t;
+                }
+            }
+            if ($best === null) {
+                return $known;
+            }
+
+            $relative = trim(substr($path, strlen((string) $best['prefix'])), '/');
+            if ($relative === '') {
+                return $known;
+            }
+            $first = strtolower(rawurldecode(explode('/', $relative)[0]));
+            if (\App\Support\SpaRouteSegments::isKnown($first)) {
+                return $known;
+            }
+            return response('', 403)->header('Cache-Control', 'no-store');
+        } catch (\Throwable $e) {
+            report($e);
+            return $known;
+        }
+    }
+
+    /**
      * POST /v2/seo/not-found — the app's "Page not found" screen reports the
      * address it could not show (2026-10-23). Until then nothing wrote to
      * error_404_log, so the super-admin 404 Tracking page was always empty.
