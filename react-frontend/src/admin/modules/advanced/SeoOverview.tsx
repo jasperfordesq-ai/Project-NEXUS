@@ -84,6 +84,17 @@ interface SitemapStats {
   not_listed_reason?: 'noindex' | 'switched_off' | null;
 }
 
+/**
+ * Whether the community's own domain carries a Google Search Console
+ * verification record (2026-10-24). `applicable` is false for a community on a
+ * shared address (<app host>/<slug>), whose DNS is the platform's.
+ */
+interface VerificationDns {
+  applicable: boolean;
+  google_found: boolean;
+  google_found_on: string | null;
+}
+
 /** False only when the server says so; an older backend sends no flag. */
 function sitemapIsListed(stats: SitemapStats | null): boolean {
   return stats?.listed !== false;
@@ -120,6 +131,7 @@ export function SeoOverview() {
   const [saving, setSaving] = useState(false);
   const [sitemapStats, setSitemapStats] = useState<SitemapStats | null>(null);
   const [sitemapLoading, setSitemapLoading] = useState(false);
+  const [verificationDns, setVerificationDns] = useState<VerificationDns | null>(null);
   const [clearingCache, setClearingCache] = useState(false);
   const [serverAudit, setServerAudit] = useState<SeoAuditResult | null>(null);
   const [auditRunning, setAuditRunning] = useState(false);
@@ -173,6 +185,17 @@ export function SeoOverview() {
   useEffect(() => {
     loadSitemapStats();
   }, [loadSitemapStats]);
+
+  // DNS verification lookup: optional, the check stays neutral without it.
+  useEffect(() => {
+    adminSettings.getSeoVerificationDns()
+      .then(res => {
+        if (res.data) {
+          setVerificationDns(res.data);
+        }
+      })
+      .catch(() => { /* neutral note is shown instead */ });
+  }, []);
 
   // Load last server-side SEO audit on mount
   useEffect(() => {
@@ -316,13 +339,32 @@ export function SeoOverview() {
       });
     }
 
-    // Google verification
+    // Google verification. An empty box is not a problem: most communities
+    // verify through a DNS record (the server looks for one) or another of
+    // Google's methods, which this page cannot see. Until 2026-10-24 an empty
+    // box was a warning, which read as a fault on DNS-verified sites.
     const gv = String(formData.seo_google_verification || '');
-    checks.push({
-      name: t('label_google_search_console_verification'),
-      status: gv.length > 0 ? 'pass' : 'warning',
-      detail: gv.length > 0 ? t('health_google_verification_configured') : t('health_google_verification_missing'),
-    });
+    if (gv.length > 0) {
+      checks.push({
+        name: t('label_google_search_console_verification'),
+        status: 'pass',
+        detail: t('health_google_verification_configured'),
+      });
+    } else if (verificationDns?.google_found) {
+      checks.push({
+        name: t('label_google_search_console_verification'),
+        status: 'pass',
+        detail: t('health_google_verification_dns', { domain: verificationDns.google_found_on ?? '' }),
+      });
+    } else {
+      checks.push({
+        name: t('label_google_search_console_verification'),
+        status: 'info',
+        detail: verificationDns?.applicable === false
+          ? t('health_google_verification_optional_shared')
+          : t('health_google_verification_optional'),
+      });
+    }
 
     // Tenant meta title
     const mt = String(formData.tenant_meta_title || '');
@@ -595,6 +637,7 @@ export function SeoOverview() {
             </h3>
           </CardHeader>
           <CardBody className="gap-4">
+            <p className="text-sm text-muted">{t('verification_optional_note')}</p>
             <Input
               label={t('label_google_search_console_verification')}
               placeholder="google-site-verification=..."

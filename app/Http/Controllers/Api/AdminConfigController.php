@@ -2223,6 +2223,22 @@ class AdminConfigController extends BaseApiController
         ]);
     }
 
+    /**
+     * GET /api/v2/admin/config/seo-verification-dns
+     *
+     * Whether the community's own domain carries a Google Search Console
+     * verification record, so the SEO page stops calling a DNS-verified site
+     * "not configured" (2026-10-24).
+     */
+    public function getSeoVerificationDns(): JsonResponse
+    {
+        $this->requireAdmin();
+
+        return $this->respondWithData(
+            app(\App\Services\SearchVerificationDns::class)->forTenant(TenantContext::getId())
+        );
+    }
+
     /** POST /api/v2/admin/config/sitemap-clear-cache */
     public function clearSitemapCache(): JsonResponse
     {

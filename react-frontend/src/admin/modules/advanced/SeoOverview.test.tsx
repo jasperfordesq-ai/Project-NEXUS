@@ -23,6 +23,7 @@ const { mockAdminSettings, mockAdminTools } = vi.hoisted(() => ({
     updateSeoSettings: vi.fn(),
     getSitemapStats: vi.fn(),
     clearSitemapCache: vi.fn(),
+    getSeoVerificationDns: vi.fn(),
   },
   mockAdminTools: {
     getSeoAudit: vi.fn(),
@@ -153,6 +154,10 @@ describe('SeoOverview', () => {
     mockAdminSettings.updateSeoSettings.mockResolvedValue({ success: true });
     mockAdminSettings.getSitemapStats.mockResolvedValue(makeSitemapStats());
     mockAdminSettings.clearSitemapCache.mockResolvedValue({ success: true });
+    mockAdminSettings.getSeoVerificationDns.mockResolvedValue({
+      data: { applicable: true, google_found: false, google_found_on: null },
+      success: true,
+    });
     mockAdminTools.getSeoAudit.mockResolvedValue({ data: null, success: false });
     mockAdminTools.runSeoAudit.mockResolvedValue(makeAuditResult());
   });
@@ -455,6 +460,80 @@ describe('SeoOverview', () => {
     const detail = screen.getByText('Not set — only needed for hub communities (communities with sub-communities)');
     expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
     expect(detail.closest('[data-testid="health-check-warning"]')).toBeNull();
+  });
+
+  // Google verification (2026-10-24): an empty box is not a problem. Most
+  // communities verify through a DNS record, which the server now looks for.
+  describe('Google verification check', () => {
+    it('passes when the server finds a Google record in the domain DNS', async () => {
+      mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ seo_google_verification: '' }));
+      mockAdminSettings.getSeoVerificationDns.mockResolvedValue({
+        data: { applicable: true, google_found: true, google_found_on: 'hour-timebank.ie' },
+        success: true,
+      });
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      const detail = await screen.findByText(/Google verification record was found in the DNS settings for hour-timebank\.ie/);
+      expect(detail.closest('[data-testid="health-check-pass"]')).not.toBeNull();
+    });
+
+    it('does not warn when the box is empty and no record is found: it says nothing is broken', async () => {
+      mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ seo_google_verification: '' }));
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      const detail = await screen.findByText(/You can ignore this if you verified with Google another way/);
+      expect(detail).toHaveTextContent('Nothing is broken.');
+      expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
+      expect(screen.queryByText(/recommended for search insights/)).not.toBeInTheDocument();
+    });
+
+    it('points a community without its own domain at the box', async () => {
+      mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ seo_google_verification: '' }));
+      mockAdminSettings.getSeoVerificationDns.mockResolvedValue({
+        data: { applicable: false, google_found: false, google_found_on: null },
+        success: true,
+      });
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      const detail = await screen.findByText(/paste Google's verification code in the box below/);
+      expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
+    });
+
+    it('stays neutral when the DNS check cannot be reached', async () => {
+      mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ seo_google_verification: '' }));
+      mockAdminSettings.getSeoVerificationDns.mockRejectedValue(new Error('offline'));
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      const detail = await screen.findByText(/You can ignore this if you verified with Google another way/);
+      expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
+      expect(mockToast.error).not.toHaveBeenCalled();
+    });
+
+    it('still passes when a code is pasted in the box', async () => {
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      const detail = screen.getByText('Verification tag configured');
+      expect(detail.closest('[data-testid="health-check-pass"]')).not.toBeNull();
+    });
+
+    it('says both verification boxes are optional', async () => {
+      const { SeoOverview } = await import('./SeoOverview');
+      render(<SeoOverview />);
+      await waitForLoad();
+
+      expect(screen.getByText(/Both boxes are optional\./)).toBeInTheDocument();
+      expect(screen.getByText(/Bing can also copy your verification from Google Search Console/)).toBeInTheDocument();
+    });
   });
 
   it('explains what the canonical and sitemap switches really do', async () => {

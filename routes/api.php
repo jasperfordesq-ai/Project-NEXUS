@@ -1963,6 +1963,7 @@ Route::put('/v2/admin/config/images', [\App\Http\Controllers\Api\AdminConfigCont
 Route::get('/v2/admin/config/seo', [\App\Http\Controllers\Api\AdminConfigController::class, 'getSeoConfig']);
 Route::put('/v2/admin/config/seo', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateSeoConfig']);
 Route::get('/v2/admin/config/sitemap-stats', [\App\Http\Controllers\Api\AdminConfigController::class, 'getSitemapStats']);
+Route::get('/v2/admin/config/seo-verification-dns', [\App\Http\Controllers\Api\AdminConfigController::class, 'getSeoVerificationDns']);
 Route::post('/v2/admin/config/sitemap-clear-cache', [\App\Http\Controllers\Api\AdminConfigController::class, 'clearSitemapCache']);
 Route::get('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'getLanguageConfig']);
 Route::put('/v2/admin/config/languages', [\App\Http\Controllers\Api\AdminConfigController::class, 'updateLanguageConfig']);
