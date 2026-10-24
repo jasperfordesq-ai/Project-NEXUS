@@ -172,7 +172,7 @@
             <article id="feed-item-{{ post.type }}-{{ post.id }}" class="nexus-alpha-card">
               <div class="nexus-alpha-feed-row">
                 <div>
-              {% set postTypeLabel = t("feed.item_types." + post.type) if post.type in ["post", "listing", "event", "goal", "poll", "review", "job", "challenge", "volunteer", "blog", "discussion", "badge_earned", "level_up", "transaction", "connection", "group", "achievement", "resource"] else t("feed.item_types.activity") %}
+              {% set postTypeLabel = t("feed.item_types." + post.type) if post.type in ["post", "listing", "event", "goal", "poll", "review", "job", "challenge", "volunteer", "blog", "discussion", "badge_earned", "level_up", "transaction", "connection", "group", "achievement", "resource", "podcast_show", "podcast_episode"] else t("feed.item_types.activity") %}
               {# An untitled item's heading previously fell back to the bare type
                  name — always in ENGLISH (route-built), and duplicating the tag
                  directly above it, so a plain post read "Post / Post". The

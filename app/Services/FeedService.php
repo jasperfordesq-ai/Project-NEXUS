@@ -570,6 +570,9 @@ class FeedService
                 // Podcast routing metadata
                 'slug' => $meta['slug'] ?? null,
                 'show_slug' => $meta['show_slug'] ?? null,
+                // The accessible frontend routes podcasts by numeric id, so an
+                // episode card needs its show's id as well as its slug.
+                'show_id' => isset($meta['show_id']) ? (int) $meta['show_id'] : null,
                 'detail_path' => $meta['detail_path'] ?? null,
                 // Volunteer-hours metadata (approved hour logs)
                 'hours' => isset($meta['hours']) ? (float) $meta['hours'] : null,

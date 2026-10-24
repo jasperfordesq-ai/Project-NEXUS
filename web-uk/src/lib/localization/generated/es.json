@@ -1718,7 +1718,9 @@
                     "group": "grupo",
                     "achievement": "Logro",
                     "resource": "Recurso",
-                    "activity": "Actividad"
+                    "activity": "Actividad",
+                    "podcast_show": "Programa de pódcast",
+                    "podcast_episode": "Episodio de pódcast"
                 },
                 "results_title": "Artículos de alimentación",
                 "result_count": "{0} No se muestran elementos del feed|{1} Se muestra 1 elemento del feed|[2,*] Se muestran elementos del feed :count",
@@ -1738,7 +1740,9 @@
                     "job": "Ver este empleo",
                     "challenge": "Ver este reto",
                     "volunteer": "Ver esta oportunidad",
-                    "course": "Ver este curso"
+                    "course": "Ver este curso",
+                    "podcast_show": "Ver programa de pódcast",
+                    "podcast_episode": "Escuchar episodio"
                 },
                 "compose_listing_notice": "Este cuadro comparte una actualización con el tablón de su comunidad. Para ofrecer una habilidad o pedir ayuda a cambio de créditos de tiempo, publique una oferta o solicitud en su lugar — eso es un anuncio separado.",
                 "post_offer_request": "Publicar una oferta o solicitud",

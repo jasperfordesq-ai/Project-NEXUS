@@ -134,7 +134,7 @@ function normalizeFeedPost(row) {
   const rawMedia = Array.isArray(row && row.media)
     ? row.media
     : (row && row.image_url ? [{ file_url: row.image_url }] : []);
-  const deepLink = feedItemDeepLink(type, id);
+  const deepLink = feedItemDeepLink(type, id, row);
   const reactions = row && row.reactions && typeof row.reactions === 'object' ? row.reactions : {};
   const reactionCounts = reactions.counts && typeof reactions.counts === 'object' ? reactions.counts : {};
   const reactionTotal = Object.values(reactionCounts).reduce(
@@ -217,7 +217,9 @@ function feedItemTypeLabel(type) {
     resource: 'Resource',
     blog: 'Blog post',
     discussion: 'Discussion',
-    job: 'Job'
+    job: 'Job',
+    podcast_show: 'Podcast show',
+    podcast_episode: 'Podcast episode'
   };
   return labels[type] || 'Activity';
 }
@@ -228,11 +230,25 @@ function feedItemTypeLabel(type) {
 function translatedFeedTypeLabel(type, t) {
   const known = ['post', 'listing', 'event', 'goal', 'poll', 'review', 'job', 'challenge',
     'volunteer', 'blog', 'discussion', 'badge_earned', 'level_up', 'transaction',
-    'connection', 'group', 'achievement', 'resource'];
+    'connection', 'group', 'achievement', 'resource', 'podcast_show', 'podcast_episode'];
   return t(`feed.item_types.${known.includes(type) ? type : 'activity'}`);
 }
 
-function feedItemDeepLink(type, id) {
+function feedItemDeepLink(type, id, row) {
+  // Podcast cards link to the show (or to the episode inside its show), as the
+  // React feed's "View podcast show" / "Listen to episode" button does. This
+  // frontend routes podcasts by numeric id, so an episode needs its show_id;
+  // an older API response without one falls back to the podcast directory.
+  if (type === 'podcast_show') {
+    return { href: `/podcasts/${id}`, labelKey: 'feed.view_typed.podcast_show' };
+  }
+  if (type === 'podcast_episode') {
+    const showId = positiveInteger(row && row.show_id, 0, 0, Number.MAX_SAFE_INTEGER);
+    return {
+      href: showId > 0 ? `/podcasts/${showId}/episodes/${id}` : '/podcasts',
+      labelKey: 'feed.view_typed.podcast_episode'
+    };
+  }
   const links = {
     listing: { href: `/listings/${id}`, labelKey: 'feed.view_typed.listing' },
     event: { href: `/events/${id}`, labelKey: 'feed.view_typed.event' },
