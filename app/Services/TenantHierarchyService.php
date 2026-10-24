@@ -497,8 +497,6 @@ class TenantHierarchyService
                     // SEO fields
                     'meta_title'         => $data['meta_title'] ?? null,
                     'meta_description'   => $data['meta_description'] ?? null,
-                    'h1_headline'        => $data['h1_headline'] ?? null,
-                    'hero_intro'         => $data['hero_intro'] ?? null,
                     'og_image_url'          => $data['og_image_url'] ?? null,
                     'robots_directive'      => $data['robots_directive'] ?? 'index, follow',
                     'seo_organization_type' => $data['seo_organization_type'] ?? null,
@@ -609,7 +607,7 @@ class TenantHierarchyService
                 'name', 'slug', 'domain', 'accessible_domain', 'tagline', 'description',
                 'allows_subtenants', 'max_depth', 'is_active', 'features', 'configuration',
                 'contact_email', 'contact_phone', 'address',
-                'meta_title', 'meta_description', 'h1_headline', 'hero_intro',
+                'meta_title', 'meta_description',
                 'og_image_url', 'robots_directive', 'seo_organization_type',
                 'location_name', 'country_code', 'service_area', 'latitude', 'longitude',
                 'social_facebook', 'social_twitter', 'social_instagram', 'social_linkedin', 'social_youtube',

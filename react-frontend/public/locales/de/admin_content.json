@@ -1330,6 +1330,7 @@
     "landing_intro_blank": "Jedes Feld, das Sie leer lassen, behält den Standardtext. Sie müssen also nur ausfüllen, was Sie ändern möchten.",
     "landing_intro_save": "Für Besucher ändert sich nichts, bis Sie auf Speichern klicken.",
     "landing_intro_live_link": "„Live-Seite öffnen“ zeigt, was gerade gespeichert ist, nicht Ihre ungespeicherten Änderungen.",
+    "landing_intro_accessible": "Die Startseite der barrierearmen Website verwendet dieselbe Hauptüberschrift, den Text darunter, Ihre Schritte unter „So funktioniert es“ und Ihre Schlussbotschaft. Ihre Schaltflächen und ihr Layout bleiben unverändert.",
     "landing_open_live_page": "Live-Seite öffnen",
     "landing_outline_title": "Seitenaufbau",
     "landing_outline_hint": "Von oben nach unten, so wie Besucher es sehen. Ziehen Sie am Griff oder nutzen Sie die Pfeile, um die Reihenfolge zu ändern.",

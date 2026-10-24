@@ -66,7 +66,7 @@ class AdminConfigController extends BaseApiController
         'name', 'slug', 'domain', 'tagline', 'description',
         'contact_email', 'contact_phone', 'default_layout',
         'logo_url', 'favicon_url', 'primary_color', 'og_image_url',
-        'meta_title', 'meta_description', 'h1_headline', 'hero_intro',
+        'meta_title', 'meta_description',
     ];
 
     /**
@@ -2048,7 +2048,7 @@ class AdminConfigController extends BaseApiController
 
         $stored = $this->readSettingsByPrefix($tenantId, 'seo_');
 
-        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, h1_headline, hero_intro, og_image_url, tagline, robots_directive, seo_organization_type FROM tenants WHERE id = ?", [$tenantId]);
+        $tenantRow = DB::selectOne("SELECT meta_title, meta_description, og_image_url, tagline, robots_directive, seo_organization_type FROM tenants WHERE id = ?", [$tenantId]);
 
         $config = [];
         foreach (self::SEO_DEFAULTS as $key => $defaultValue) {
@@ -2066,8 +2066,6 @@ class AdminConfigController extends BaseApiController
 
         $config['tenant_meta_title'] = $tenantRow->meta_title ?? '';
         $config['tenant_meta_description'] = $tenantRow->meta_description ?? '';
-        $config['tenant_h1_headline'] = $tenantRow->h1_headline ?? '';
-        $config['tenant_hero_intro'] = $tenantRow->hero_intro ?? '';
         // Also on the super-admin tenant form; community admins edit them here
         // too (owner, 23 Oct 2026). Same columns, same rules (TenantSeoFields).
         $config['tenant_tagline'] = $tenantRow->tagline ?? '';
@@ -2112,8 +2110,6 @@ class AdminConfigController extends BaseApiController
         $tenantColumnMap = [
             'tenant_meta_title' => 'meta_title',
             'tenant_meta_description' => 'meta_description',
-            'tenant_h1_headline' => 'h1_headline',
-            'tenant_hero_intro' => 'hero_intro',
             'tenant_tagline' => 'tagline',
             'tenant_robots_directive' => 'robots_directive',
             'tenant_seo_organization_type' => 'seo_organization_type',

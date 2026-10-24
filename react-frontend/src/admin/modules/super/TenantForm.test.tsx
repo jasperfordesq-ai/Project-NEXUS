@@ -668,15 +668,13 @@ describe('TenantForm — SEO tab preview and counters', () => {
     expect(screen.queryByText('Neighbours sharing skills')).not.toBeInTheDocument();
   });
 
-  it('describes the hub heading and intro with the same wording as /admin/seo', async () => {
+  it('no longer offers the retired hub heading and intro (2026-10-24)', async () => {
     const { TenantForm } = await import('./TenantForm');
     render(<TenantForm />);
     await waitFor(() => screen.getByTestId('page-header'));
     await userEvent.click(screen.getByRole('tab', { name: /^seo$/i }));
 
-    expect(screen.getByRole('textbox', { name: 'Accessible site hub heading' })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: 'Accessible site hub intro' })).toBeInTheDocument();
-    expect(screen.getByText(/Only used by a hub community\. Shown as the home page heading/)).toBeInTheDocument();
-    expect(screen.getByText(/Only used by a hub community\. The paragraph under that heading/)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Accessible site hub heading' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Accessible site hub intro' })).not.toBeInTheDocument();
   });
 });

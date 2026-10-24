@@ -140,6 +140,8 @@ describe('LandingPageBuilder', () => {
     }
     expect(screen.getByRole('heading', { name: 'Wording for Welcome banner' })).toBeInTheDocument();
     expect(screen.getByText('How this page works')).toBeInTheDocument();
+    // The accessible site's home page uses this wording too (2026-10-24).
+    expect(screen.getByText(/The accessible site's home page uses the same main heading/)).toBeInTheDocument();
     expect(screen.getByText('7 of 7 blocks shown')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /open the live page/i })).toHaveAttribute('target', '_blank');
     expect(saveButton()).toHaveAttribute('data-disabled');

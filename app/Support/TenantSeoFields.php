@@ -21,7 +21,6 @@ final class TenantSeoFields
         'tagline' => 255,
         'meta_title' => 70,
         'meta_description' => 180,
-        'h1_headline' => 100,
         'og_image_url' => 500,
         'social_facebook' => 255,
         'social_twitter' => 255,

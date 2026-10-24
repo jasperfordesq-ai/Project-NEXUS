@@ -1332,6 +1332,7 @@
     "landing_intro_blank": "Tout champ laissé vide conserve le texte standard : vous n’avez donc à remplir que ce que vous souhaitez changer.",
     "landing_intro_save": "Rien ne change pour les visiteurs tant que vous n’avez pas cliqué sur Enregistrer.",
     "landing_intro_live_link": "« Ouvrir la page en ligne » montre ce qui est enregistré à cet instant, pas vos modifications non enregistrées.",
+    "landing_intro_accessible": "La page d'accueil du site accessible reprend le même titre principal, le texte en dessous, vos étapes « Comment ça marche » et votre message de conclusion. Ses boutons et sa mise en page restent les mêmes.",
     "landing_open_live_page": "Ouvrir la page en ligne",
     "landing_outline_title": "Ordre de la page",
     "landing_outline_hint": "De haut en bas, comme les visiteurs la voient. Faites glisser la poignée ou utilisez les flèches pour changer l’ordre.",

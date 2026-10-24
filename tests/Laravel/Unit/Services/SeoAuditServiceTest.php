@@ -255,19 +255,15 @@ class SeoAuditServiceTest extends TestCase
         $this->assertContains('open_graph_not_enabled', $codes);
     }
 
-    public function test_the_hub_heading_is_only_asked_for_on_a_hub(): void
+    public function test_no_heading_is_asked_for_any_more(): void
     {
-        DB::table('tenants')->where('id', $this->testTenantId)->update(['h1_headline' => '']);
-        DB::table('tenants')->where('parent_id', $this->testTenantId)->update(['is_active' => 0]);
-        $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
-        $this->assertNotContains('missing_homepage_h1', $codes, 'not a hub: the heading is unused');
-
+        // The hub heading was retired on 2026-10-24; a hub without one is fine.
         DB::table('tenants')->insert([
             'name' => 'Audit Child', 'slug' => 'audit-child-' . uniqid(), 'parent_id' => $this->testTenantId,
             'is_active' => 1, 'depth' => 1, 'allows_subtenants' => 0,
         ]);
         $codes = $this->issueCodes($this->service->runAudit($this->testTenantId), 'tenant_metadata');
-        $this->assertContains('missing_homepage_h1', $codes, 'a hub uses the heading on its accessible site');
+        $this->assertNotContains('missing_homepage_h1', $codes);
     }
 
     public function test_a_noindex_robots_directive_is_reported(): void

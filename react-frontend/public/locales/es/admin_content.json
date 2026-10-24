@@ -1332,6 +1332,7 @@
     "landing_intro_blank": "Cualquier casilla que dejes vacía conserva el texto estándar, así que solo tienes que rellenar lo que quieras cambiar.",
     "landing_intro_save": "Nada cambia para los visitantes hasta que pulses Guardar.",
     "landing_intro_live_link": "«Abrir la página publicada» muestra lo que está guardado ahora mismo, no tus cambios sin guardar.",
+    "landing_intro_accessible": "La página de inicio del sitio accesible usa el mismo título principal, el texto que lo acompaña, tus pasos de «Cómo funciona» y tu mensaje final. Sus botones y su diseño no cambian.",
     "landing_open_live_page": "Abrir la página publicada",
     "landing_outline_title": "Orden de la página",
     "landing_outline_hint": "De arriba abajo, tal como la ven los visitantes. Arrastra el asa o usa las flechas para cambiar el orden.",

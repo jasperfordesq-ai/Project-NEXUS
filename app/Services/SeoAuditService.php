@@ -99,7 +99,7 @@ class SeoAuditService
     private function checkTenantMetadata(int $tenantId): array
     {
         $tenant = DB::selectOne(
-            'SELECT meta_title, meta_description, h1_headline, robots_directive FROM tenants WHERE id = ?',
+            'SELECT meta_title, meta_description, robots_directive FROM tenants WHERE id = ?',
             [$tenantId]
         );
 
@@ -138,26 +138,11 @@ class SeoAuditService
             ]);
         }
 
-        // h1_headline is the accessible site's hub heading: only a hub (the
-        // master tenant, or a community with communities beneath it) uses it.
-        // The main website's heading comes from the landing page builder.
-        if (empty($tenant?->h1_headline) && $this->isHub($tenantId)) {
-            $issues[] = $this->issue('missing_homepage_h1');
-        }
+        // No heading check: the "hub heading" field was retired on
+        // 2026-10-24. Both sites take their front-page heading from the landing
+        // page editor, and without one they use the community's name.
 
         return $this->buildCheck('tenant_metadata', [], $issues, 10);
-    }
-
-    private function isHub(int $tenantId): bool
-    {
-        if ($tenantId === 1) {
-            return true;
-        }
-        try {
-            return DB::table('tenants')->where('parent_id', $tenantId)->where('is_active', 1)->exists();
-        } catch (\Throwable) {
-            return false;
-        }
     }
 
     private function checkSeoSettings(int $tenantId): array

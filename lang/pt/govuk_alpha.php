@@ -344,6 +344,7 @@ return [
         'caption' => ':community',
         'title' => 'Acessível',
         'description' => 'Use uma versão mais simples e acessível do :community para tarefas básicas da comunidade.',
+        'how_it_works_title' => 'Como funciona',
         'supporting_text' => 'Essas páginas usam estrutura clara, navegação simples, controles de formulário padrão e aprimoramento progressivo para que o serviço principal funcione bem com teclados, leitores de tela e conexões de baixa largura de banda.',
         'primary_guest' => 'Faça login',
         'secondary_guest' => 'Cadastre-se',

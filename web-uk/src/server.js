@@ -110,6 +110,7 @@ const { applyTrustedProxies } = require('./lib/trusted-proxies');
 const { handleApiError } = require('./lib/routeHelpers');
 const { buildShellLocals, resolveBackendMediaUrl } = require('./lib/accessible-shell');
 const { NOINDEX } = require('./lib/seo-meta');
+const { landingHomeContent } = require('./lib/landing-content');
 const { robotsRoute, sitemapRoute } = require('./lib/accessible-sitemap');
 
 function applyRobotsHeader(res, directive) {
@@ -926,22 +927,20 @@ async function loadTenantHomeData(req, res) {
 
   const communityName = tenant.name || tenant.slug || req.accessibleRouting?.tenantSlug || res.locals.tenantName;
   const networkCommunities = normalizeNetworkCommunities(tenant, req);
-  const usesNetworkLanding = networkCommunities.length > 0 || Number(tenant.id) === 1;
-  const configuredHomeHeading = usesNetworkLanding ? tenant.seo?.h1_headline : '';
-  // 🔴 An ordinary community's home H1 is the community's NAME. It used to be the
-  // literal "Accessible" (home.title) on every community, so the most important
-  // heading on the busiest page said nothing about whose site it was. The
-  // translated "Accessible" label is kept, as the caption above the heading
-  // (home.njk), so the page still says which version of the site this is.
-  // Network landings (a hub, or the master tenant) keep their configured
-  // headline or the "Accessible" label, with the community name as caption.
-  const ordinaryCommunityHeading = !usesNetworkLanding ? String(communityName || '').trim() : '';
-  const homeHeading = configuredHomeHeading || ordinaryCommunityHeading || 'Accessible';
-  const homeHeadingKey = configuredHomeHeading || ordinaryCommunityHeading ? '' : 'home.title';
-  const homeCaptionKey = ordinaryCommunityHeading ? 'home.title' : 'home.caption';
-  const configuredHomeDescription = usesNetworkLanding ? tenant.seo?.hero_intro : '';
-  const homeDescription = configuredHomeDescription || '';
-  const homeDescriptionKey = configuredHomeDescription ? '' : 'home.description';
+  // The heading and intro are the community's own front-page wording from the
+  // landing page editor, the same on every community (2026-10-24). They used
+  // to come from the "hub heading" / "hub intro" SEO fields, shown on hubs
+  // only, so most communities' wording appeared nowhere. Without editor
+  // wording the H1 is the community's NAME — never the bare "Accessible"
+  // label, which said nothing about whose site it was. "Accessible" stays as
+  // the caption, so the page still says which version of the site this is.
+  const landing = landingHomeContent(tenant.landing_page_config);
+  const nameHeading = String(communityName || '').trim();
+  const homeHeading = landing.heading || nameHeading || 'Accessible';
+  const homeHeadingKey = landing.heading || nameHeading ? '' : 'home.title';
+  const homeCaptionKey = landing.heading || nameHeading ? 'home.title' : 'home.caption';
+  const homeDescription = landing.intro;
+  const homeDescriptionKey = landing.intro ? '' : 'home.description';
 
   return {
     tenant,
@@ -952,6 +951,8 @@ async function loadTenantHomeData(req, res) {
     homeDescription,
     homeDescriptionKey,
     tagline: tenant.tagline || '',
+    landingHowItWorks: landing.howItWorks,
+    landingClosing: landing.closing,
     networkCommunities,
     stats: {
       members: numberLabel(stats.members, res.locals.formatLocaleNumber),

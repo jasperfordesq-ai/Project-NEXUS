@@ -99,9 +99,6 @@ function TenantAddressField({ label, value, placeholder, copyLabel, onCopy }: {
 
 export function TenantForm() {
   const { t, i18n } = useTranslation('admin_super');
-  // The hub heading/intro use the community admin's /admin/seo wording, so
-  // both screens describe these fields the same way.
-  const { t: tSeo } = useTranslation('admin_advanced', { keyPrefix: 'advanced' });
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const isEdit = !!id;
@@ -135,8 +132,6 @@ export function TenantForm() {
     // SEO
     meta_title: '',
     meta_description: '',
-    h1_headline: '',
-    hero_intro: '',
     og_image_url: '',
     robots_directive: '',
     seo_organization_type: '',
@@ -206,8 +201,6 @@ export function TenantForm() {
           address: tenant.address || '',
           meta_title: tenant.meta_title || '',
           meta_description: tenant.meta_description || '',
-          h1_headline: tenant.h1_headline || '',
-          hero_intro: tenant.hero_intro || '',
           og_image_url: tenant.og_image_url || '',
           robots_directive: tenant.robots_directive || '',
           seo_organization_type: tenant.seo_organization_type || '',
@@ -633,22 +626,6 @@ export function TenantForm() {
                 onValueChange={(v) => updateField('meta_description', v)}
                 description={t('tenant_form.characters_count', { count: form.meta_description.length, max: 180 })}
                 maxLength={180}
-                minRows={2}
-              />
-              <Input
-                label={tSeo('label_h1_headline')}
-                placeholder={t('tenant_form.h1_headline_placeholder')}
-                value={form.h1_headline}
-                onValueChange={(v) => updateField('h1_headline', v)}
-                description={tSeo('desc_h1_headline')}
-                maxLength={100}
-              />
-              <Textarea
-                label={tSeo('label_hero_intro_text')}
-                placeholder={t('tenant_form.hero_intro_placeholder')}
-                value={form.hero_intro}
-                onValueChange={(v) => updateField('hero_intro', v)}
-                description={tSeo('desc_hero_intro')}
                 minRows={2}
               />
               <div className="rounded-lg border border-border p-4">

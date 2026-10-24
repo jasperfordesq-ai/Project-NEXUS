@@ -143,6 +143,27 @@ class TenantBootstrapControllerTest extends TestCase
         $response->assertJsonPath('data.id', $this->testTenantId);
     }
 
+    /**
+     * The "hub heading" / "hub intro" fields were retired on 2026-10-24: both
+     * sites take their front-page wording from the landing page editor. The
+     * columns still exist, so a stored value must not reach either site.
+     */
+    public function test_bootstrap_no_longer_publishes_the_retired_hub_heading_and_intro(): void
+    {
+        DB::table('tenants')->where('id', $this->testTenantId)->update([
+            'h1_headline' => 'Retired heading',
+            'hero_intro' => 'Retired intro',
+        ]);
+        app(RedisCache::class)->delete('tenant_bootstrap', $this->testTenantId);
+
+        $response = $this->apiGet('/v2/tenant/bootstrap?slug=' . $this->testTenantSlug);
+
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('h1_headline', $response->json('data.seo') ?? []);
+        $this->assertArrayNotHasKey('hero_intro', $response->json('data.seo') ?? []);
+        $this->assertStringNotContainsString('Retired heading', $response->getContent());
+    }
+
     public function test_bootstrap_exposes_child_tenants_for_tenant_switcher_with_resolved_urls(): void
     {
         DB::table('tenants')->updateOrInsert(

@@ -344,6 +344,7 @@ return [
         'caption' => ':community',
         'title' => 'Inrochtana',
         'description' => 'Úsáid leagan níos simplí, inrochtana de :community le haghaidh príomhthascanna pobail.',
+        'how_it_works_title' => 'Conas a oibríonn sé',
         'supporting_text' => 'Úsáideann na leathanaigh seo struchtúr soiléir, loingseoireacht shimplí, rialuithe caighdeánacha foirmeacha agus feabhsú forásach ionas go n-oibríonn an croísheirbhís go maith le méarchláir, léitheoirí scáileáin agus naisc íseal-bandaleithead.',
         'primary_guest' => 'Sínigh isteach',
         'secondary_guest' => 'Clár',

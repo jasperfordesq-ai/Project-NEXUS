@@ -477,8 +477,6 @@ export function TenantShow() {
               <dl className="grid grid-cols-1 gap-4">
                 <DetailField label={t('super.label_meta_title')} value={tenant.meta_title} />
                 <DetailField label={t('super.label_meta_description')} value={tenant.meta_description} />
-                <DetailField label={t('super.label_h1_headline')} value={tenant.h1_headline} />
-                <DetailField label={t('super.label_hero_introduction')} value={tenant.hero_intro} />
                 <DetailField label={t('super.label_o_g_image_u_r_l')} value={tenant.og_image_url} />
                 <DetailField label={t('super.label_robots_directive')} value={tenant.robots_directive} />
                 <DetailField label={t('super.label_organisation_type')} value={tenant.seo_organization_type} />

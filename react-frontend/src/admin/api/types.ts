@@ -1668,8 +1668,6 @@ export interface SuperAdminTenant {
   address?: string;
   meta_title?: string;
   meta_description?: string;
-  h1_headline?: string;
-  hero_intro?: string;
   og_image_url?: string;
   robots_directive?: string;
   seo_organization_type?: string;
@@ -1731,8 +1729,6 @@ export interface CreateTenantPayload {
   address?: string;
   meta_title?: string;
   meta_description?: string;
-  h1_headline?: string;
-  hero_intro?: string;
   og_image_url?: string;
   robots_directive?: string;
   seo_organization_type?: string;
@@ -1763,8 +1759,6 @@ export interface UpdateTenantPayload {
   address?: string;
   meta_title?: string;
   meta_description?: string;
-  h1_headline?: string;
-  hero_intro?: string;
   og_image_url?: string;
   robots_directive?: string;
   seo_organization_type?: string;

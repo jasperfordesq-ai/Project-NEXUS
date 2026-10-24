@@ -590,8 +590,6 @@ class AdminSuperController extends BaseApiController
             // SEO fields
             'meta_title' => $input['meta_title'] ?? '',
             'meta_description' => $input['meta_description'] ?? '',
-            'h1_headline' => $input['h1_headline'] ?? '',
-            'hero_intro' => $input['hero_intro'] ?? '',
             'og_image_url' => $input['og_image_url'] ?? '',
             'robots_directive' => $input['robots_directive'] ?? '',
             'seo_organization_type' => $input['seo_organization_type'] ?? '',

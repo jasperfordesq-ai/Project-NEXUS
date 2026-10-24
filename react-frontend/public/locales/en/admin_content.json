@@ -1330,6 +1330,7 @@
     "landing_intro_blank": "Any box you leave empty keeps the standard wording, so you only need to fill in what you want to change.",
     "landing_intro_save": "Nothing changes for visitors until you press Save.",
     "landing_intro_live_link": "“Open the live page” shows what is saved right now, not your unsaved edits.",
+    "landing_intro_accessible": "The accessible site's home page uses the same main heading, the text under it, your “How it works” steps and your closing message. Its buttons and layout stay the same.",
     "landing_open_live_page": "Open the live page",
     "landing_outline_title": "Page order",
     "landing_outline_hint": "Top to bottom, as visitors see it. Drag the handle or use the arrows to change the order.",

@@ -110,7 +110,7 @@ class LlmsController
         }
         $target = $folder ?? $root;
 
-        $columns = 'id, name, slug, domain, tagline, description, meta_title, meta_description, h1_headline, hero_intro, features, configuration';
+        $columns = 'id, name, slug, domain, tagline, description, meta_title, meta_description, features, configuration';
         if ($target !== null) {
             $tenant = DB::selectOne("SELECT {$columns} FROM tenants WHERE id = ? AND is_active = 1", [$target['tenant_id']]);
             // A community that chose its accessible site for search engines

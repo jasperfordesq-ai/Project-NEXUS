@@ -65,7 +65,7 @@ const PRIMARY_SITE_CHOICES = [
 
 // Keys stored directly on the tenants table
 const TENANT_KEYS = [
-  'tenant_meta_title', 'tenant_meta_description', 'tenant_h1_headline', 'tenant_hero_intro',
+  'tenant_meta_title', 'tenant_meta_description',
   // Also on the super-admin tenant form (owner, 23 Oct 2026).
   'tenant_tagline', 'tenant_robots_directive', 'tenant_seo_organization_type',
 ] as const;
@@ -149,8 +149,6 @@ export function SeoOverview() {
     seo_primary_site: 'standard',
     tenant_meta_title: '',
     tenant_meta_description: '',
-    tenant_h1_headline: '',
-    tenant_hero_intro: '',
     tenant_tagline: '',
     tenant_robots_directive: '',
     tenant_seo_organization_type: '',
@@ -374,16 +372,6 @@ export function SeoOverview() {
       detail: mt.length > 0 ? t('health_tenant_title_set', { title: mt }) : t('health_tenant_title_missing'),
     });
 
-    // H1 headline. Only a hub community (one with sub-communities) uses it,
-    // and whether this community is a hub is not known here, so a missing
-    // heading is information, not a warning.
-    const h1 = String(formData.tenant_h1_headline || '');
-    checks.push({
-      name: t('health_homepage_h1'),
-      status: h1.length > 0 ? 'pass' : 'info',
-      detail: h1.length > 0 ? t('health_homepage_h1_set', { headline: h1 }) : t('health_homepage_h1_missing'),
-    });
-
     return checks;
   };
 
@@ -470,23 +458,6 @@ export function SeoOverview() {
                 max: META_DESCRIPTION_MAX,
                 shown: META_DESCRIPTION_SHOWN,
               })}
-            />
-            <Input
-              label={t('label_h1_headline')}
-              placeholder={t('placeholder_welcome_to_our_community')}
-              variant="secondary"
-              value={String(formData.tenant_h1_headline || '')}
-              maxLength={100}
-              onValueChange={(v) => updateField('tenant_h1_headline', v)}
-              description={t('desc_h1_headline')}
-            />
-            <Input
-              label={t('label_hero_intro_text')}
-              placeholder={t('placeholder_exchange_skills_and_time_with_your_community')}
-              variant="secondary"
-              value={String(formData.tenant_hero_intro || '')}
-              onValueChange={(v) => updateField('tenant_hero_intro', v)}
-              description={t('desc_hero_intro')}
             />
             <SeoChoiceFields
               tagline={String(formData.tenant_tagline || '')}

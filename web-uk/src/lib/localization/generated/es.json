@@ -1379,6 +1379,7 @@
                 "caption": ":community",
                 "title": "Accesible",
                 "description": "Utilice una versión más sencilla y accesible de :community para las tareas principales de la comunidad.",
+                "how_it_works_title": "Cómo funciona",
                 "supporting_text": "Estas páginas utilizan una estructura clara, navegación sencilla, controles de formulario estándar y mejoras progresivas para que el servicio principal funcione bien con teclados, lectores de pantalla y conexiones de bajo ancho de banda.",
                 "primary_guest": "Iniciar sesión",
                 "secondary_guest": "Registro",

@@ -98,8 +98,6 @@ const makeSeoData = (overrides: Record<string, unknown> = {}) => ({
       seo_bing_verification: '',
       tenant_meta_title: 'My Timebank',
       tenant_meta_description: 'A community platform',
-      tenant_h1_headline: 'Welcome to My Timebank',
-      tenant_hero_intro: 'Exchange time with your neighbours',
       ...overrides,
     },
   },
@@ -451,15 +449,14 @@ describe('SeoOverview', () => {
     expect(screen.queryByText(/NEXUS/)).not.toBeInTheDocument();
   });
 
-  it('does not warn about a missing hub heading: only hub communities use it', async () => {
-    mockAdminSettings.getSeoSettings.mockResolvedValue(makeSeoData({ tenant_h1_headline: '' }));
+  it('no longer offers the retired hub heading and intro (2026-10-24)', async () => {
     const { SeoOverview } = await import('./SeoOverview');
     render(<SeoOverview />);
     await waitForLoad();
 
-    const detail = screen.getByText('Not set — only needed for hub communities (communities with sub-communities)');
-    expect(detail.closest('[data-testid="health-check-info"]')).not.toBeNull();
-    expect(detail.closest('[data-testid="health-check-warning"]')).toBeNull();
+    expect(screen.queryByText('Accessible site hub heading')).not.toBeInTheDocument();
+    expect(screen.queryByText('Accessible site hub intro')).not.toBeInTheDocument();
+    expect(screen.queryByText(/hub communities/)).not.toBeInTheDocument();
   });
 
   // Google verification (2026-10-24): an empty box is not a problem. Most

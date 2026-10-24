@@ -1332,6 +1332,7 @@
     "landing_intro_blank": "Ogni campo lasciato vuoto mantiene il testo standard, quindi devi compilare solo ciò che vuoi cambiare.",
     "landing_intro_save": "Per i visitatori non cambia nulla finché non premi Salva.",
     "landing_intro_live_link": "«Apri la pagina pubblicata» mostra ciò che è salvato in questo momento, non le tue modifiche non salvate.",
+    "landing_intro_accessible": "La home page del sito accessibile usa lo stesso titolo principale, il testo sottostante, i tuoi passaggi «Come funziona» e il tuo messaggio finale. I pulsanti e l'impaginazione restano invariati.",
     "landing_open_live_page": "Apri la pagina pubblicata",
     "landing_outline_title": "Ordine della pagina",
     "landing_outline_hint": "Dall’alto verso il basso, come la vedono i visitatori. Trascina la maniglia o usa le frecce per cambiare l’ordine.",

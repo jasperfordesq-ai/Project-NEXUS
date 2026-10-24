@@ -1334,6 +1334,7 @@
     "landing_intro_blank": "Każde pole, które zostawisz puste, zachowuje standardowy tekst, więc wypełniasz tylko to, co chcesz zmienić.",
     "landing_intro_save": "Dla odwiedzających nic się nie zmienia, dopóki nie klikniesz Zapisz.",
     "landing_intro_live_link": "„Otwórz opublikowaną stronę” pokazuje to, co jest obecnie zapisane, a nie Twoje niezapisane zmiany.",
+    "landing_intro_accessible": "Strona główna wersji dostępnej używa tego samego głównego nagłówka, tekstu pod nim, Twoich kroków „Jak to działa” i wiadomości końcowej. Jej przyciski i układ pozostają bez zmian.",
     "landing_open_live_page": "Otwórz opublikowaną stronę",
     "landing_outline_title": "Kolejność na stronie",
     "landing_outline_hint": "Od góry do dołu, tak jak widzą to odwiedzający. Przeciągnij uchwyt lub użyj strzałek, aby zmienić kolejność.",

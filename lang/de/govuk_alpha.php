@@ -344,6 +344,7 @@ return [
         'caption' => ':community',
         'title' => 'Zugänglich',
         'description' => 'Verwenden Sie eine einfachere, zugängliche Version von :community für zentrale Community-Aufgaben.',
+        'how_it_works_title' => 'So funktioniert es',
         'supporting_text' => 'Diese Seiten verwenden eine klare Struktur, eine einfache Navigation, Standardformularsteuerelemente und progressive Verbesserungen, sodass der Kerndienst gut mit Tastaturen, Bildschirmleseprogrammen und Verbindungen mit geringer Bandbreite funktioniert.',
         'primary_guest' => 'Melden Sie sich an',
         'secondary_guest' => 'Registrieren',

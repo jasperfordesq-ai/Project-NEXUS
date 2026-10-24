@@ -344,6 +344,7 @@ return [
         'caption' => ':community',
         'title' => 'Toegankelijk',
         'description' => 'Gebruik een eenvoudigere, toegankelijkere versie van :community voor kerntaken van de gemeenschap.',
+        'how_it_works_title' => 'Hoe het werkt',
         'supporting_text' => 'Deze pagina\'s maken gebruik van een duidelijke structuur, duidelijke navigatie, standaardformulierbesturingselementen en progressieve verbeteringen, zodat de kernservice goed werkt met toetsenborden, schermlezers en verbindingen met een lage bandbreedte.',
         'primary_guest' => 'Log in',
         'secondary_guest' => 'Registreren',

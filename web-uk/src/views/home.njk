@@ -93,6 +93,26 @@
     </section>
   {% endif %}
 
+  {# The community's own "How it works" steps from the landing page editor;
+     absent unless it wrote some. #}
+  {% if landingHowItWorks %}
+    <section class="govuk-!-margin-bottom-8" aria-labelledby="how-it-works-heading">
+      <h2 class="govuk-heading-l" id="how-it-works-heading">{{ landingHowItWorks.title or t("home.how_it_works_title") }}</h2>
+      {% if landingHowItWorks.subtitle %}
+        <p class="govuk-body">{{ landingHowItWorks.subtitle }}</p>
+      {% endif %}
+      <ol class="govuk-list govuk-list--number govuk-list--spaced">
+        {% for step in landingHowItWorks.steps %}
+          <li>
+            {% if step.title %}<strong>{{ step.title }}</strong>{% endif %}
+            {% if step.title and step.description %}<br>{% endif %}
+            {{ step.description }}
+          </li>
+        {% endfor %}
+      </ol>
+    </section>
+  {% endif %}
+
   <div class="govuk-inset-text">
     {{ t("home.accessibility_note") }}
   </div>
@@ -129,6 +149,23 @@
       </article>
     {% endfor %}
   </div>
+
+  {# The community's closing message from the landing page editor. #}
+  {% if landingClosing %}
+    <div class="govuk-grid-row govuk-!-margin-top-8">
+      <div class="govuk-grid-column-two-thirds">
+        {% if landingClosing.title %}
+          <h2 class="govuk-heading-l">{{ landingClosing.title }}</h2>
+        {% endif %}
+        {% if landingClosing.description %}
+          <p class="govuk-body-l">{{ landingClosing.description }}</p>
+        {% endif %}
+        {% if not isAuthenticated %}
+          {{ govukButton({ text: t("home.secondary_guest"), href: urlFor("/register") }) }}
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 
   <div class="govuk-grid-row govuk-!-margin-top-8">
     <div class="govuk-grid-column-two-thirds">

@@ -476,9 +476,10 @@ describe('Public Routes', () => {
           slug: 'timebank-global',
           domain: 'timebank.global',
           tagline: 'Connecting Communities Worldwide...',
-          seo: {
-            h1_headline: 'Exchange Skills Across Borders',
-            hero_intro: 'Join the world largest timebanking community.'
+          landing_page_config: {
+            sections: [
+              { id: 'hero', type: 'hero', enabled: true, order: 0, content: { headline_1: 'Exchange Skills', headline_2: 'Across Borders', subheadline: 'Join the world largest timebanking community.' } }
+            ]
           },
           tenant_switcher: {
             source: 'children',
@@ -580,8 +581,11 @@ describe('Public Routes', () => {
         .set('Host', 'project-nexus.ie');
 
       expect(response.status).toBe(200);
-      expect(response.text).toContain('Build Thriving Communities with NEXUS');
-      expect(response.text).toContain('NEXUS is the all-in-one platform for launching and managing timebanks.');
+      // The retired "hub heading" / "hub intro" SEO fields are not read any more
+      // (2026-10-24): without landing page editor wording, the H1 is the name.
+      expect(response.text).not.toContain('Build Thriving Communities with NEXUS');
+      expect(response.text).not.toContain('NEXUS is the all-in-one platform for launching and managing timebanks.');
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Master</h1>');
       expect(response.text).toContain('Communities in this network');
       expect(response.text).toContain('Partner Demo');
       expect(response.text).toContain('href="/partner-demo"');
@@ -628,9 +632,10 @@ describe('Public Routes', () => {
           name: 'Timebank Global',
           slug: 'timebank-global',
           domain: 'timebank.global',
-          seo: {
-            h1_headline: 'Exchange Skills Across Borders',
-            hero_intro: 'Join the world largest timebanking community.'
+          landing_page_config: {
+            sections: [
+              { id: 'hero', type: 'hero', enabled: true, order: 0, content: { headline_1: 'Exchange Skills', headline_2: 'Across Borders', subheadline: 'Join the world largest timebanking community.' } }
+            ]
           },
           tenant_switcher: {
             source: 'children',
@@ -701,6 +706,48 @@ describe('Public Routes', () => {
       expect(api.getTenantBootstrap).toHaveBeenCalledWith({ host: 'acme-accessible.test' });
       expect(api.getPlatformStats).toHaveBeenCalledWith({ host: 'acme-accessible.test' });
       expect(api.getTenants).not.toHaveBeenCalled();
+    });
+
+    it('uses the landing page editor wording on an ordinary community home (2026-10-24)', async () => {
+      const api = require('../src/lib/api');
+      api.getTenants.mockClear();
+      api.getTenantBootstrap.mockClear();
+      api.getPlatformStats.mockClear();
+      api.getTenantBootstrap.mockResolvedValueOnce({
+        data: {
+          id: 2,
+          name: 'Acme Timebank',
+          slug: 'acme',
+          accessible_domain: 'acme-accessible.test',
+          seo: { h1_headline: 'Retired hub heading', hero_intro: 'Retired hub intro' },
+          landing_page_config: {
+            sections: [
+              { id: 'hero', type: 'hero', enabled: true, order: 0, content: { headline_1: 'Give an hour.', headline_2: 'Get an hour back.', subheadline: 'Acme is a free skill-swapping community.', cta_primary_link: '/somewhere-else' } },
+              { id: 'how_it_works', type: 'how_it_works', enabled: true, order: 1, content: { steps: [{ title: 'Join for free', description: 'Create your profile.' }, { title: 'Find someone nearby', description: '' }] } },
+              { id: 'cta', type: 'cta', enabled: true, order: 2, content: { title: 'Ready to swap your first hour?', description: 'Join Acme today.' } }
+            ]
+          }
+        }
+      });
+      api.getPlatformStats.mockResolvedValueOnce({ data: { members: 1, hours_exchanged: 2, listings: 3, communities: 1 } });
+
+      const response = await request(app)
+        .get('/')
+        .set('Host', 'acme-accessible.test');
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Give an hour. Get an hour back.</h1>');
+      expect(response.text).toContain('<span class="govuk-caption-xl">Accessible</span>');
+      expect(response.text).toContain('Acme is a free skill-swapping community.');
+      expect(response.text).toContain('<p class="govuk-body-l">Acme is a free skill-swapping community.</p>');
+      expect(response.text).toContain('id="how-it-works-heading">How it works</h2>');
+      expect(response.text).toContain('<strong>Join for free</strong>');
+      expect(response.text).toContain('Find someone nearby');
+      expect(response.text).toContain('Ready to swap your first hour?');
+      expect(response.text).toContain('Join Acme today.');
+      expect(response.text).not.toContain('Retired hub heading');
+      expect(response.text).not.toContain('Retired hub intro');
+      expect(response.text).not.toContain('/somewhere-else');
     });
 
     it('canonicalizes tenant-prefixed accessible paths to slugless paths on custom domains', async () => {

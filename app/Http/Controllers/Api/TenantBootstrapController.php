@@ -917,14 +917,6 @@ class TenantBootstrapController extends BaseApiController
             $seo['meta_description'] = $tenant['meta_description'];
         }
 
-        if (!empty($tenant['h1_headline'])) {
-            $seo['h1_headline'] = $tenant['h1_headline'];
-        }
-
-        if (!empty($tenant['hero_intro'])) {
-            $seo['hero_intro'] = $tenant['hero_intro'];
-        }
-
         // robots_directive controls the <meta name="robots"> tag in SeoHead.
         // Only forward when explicitly set to a non-default value.
         $robotsDirective = $tenant['robots_directive'] ?? '';

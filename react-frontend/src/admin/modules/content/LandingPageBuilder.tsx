@@ -531,6 +531,7 @@ export function LandingPageBuilder() {
               <li>{t('content.landing_intro_blank')}</li>
               <li>{t('content.landing_intro_save')}</li>
               <li>{t('content.landing_intro_live_link')}</li>
+              <li>{t('content.landing_intro_accessible')}</li>
             </ul>
           </div>
         </CardBody>
