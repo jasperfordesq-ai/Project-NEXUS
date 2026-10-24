@@ -6129,6 +6129,34 @@
                 "revoke": "Alle vertrauenswürdigen Geräte vergessen",
                 "revoked": "Vertrauenswürdige Geräte entfernt. Bei der nächsten Anmeldung ist eine Überprüfung erforderlich.",
                 "failed": "Die Aktion konnte nicht abgeschlossen werden. Prüfen Sie den Code und versuchen Sie es erneut."
+            },
+            "own_records": {
+                "groups_label": "Gruppen",
+                "events_label": "Veranstaltungen",
+                "open_wallet": "Ihr Konto öffnen",
+                "open_listings": "Ihre Angebote ansehen",
+                "open_groups": "Ihre Gruppen ansehen",
+                "open_events": "Ihre Veranstaltungen ansehen",
+                "my_listings": "Meine Angebote",
+                "my_listings_description": "Alle Angebote, die Sie veröffentlicht haben, einschließlich abgelaufener oder noch zu genehmigender Angebote.",
+                "all_listings": "Alle Angebote durchsuchen",
+                "status_nav_label": "Ihre Angebote nach Status",
+                "status": {
+                    "live": "Aktiv",
+                    "review": "Wartet auf Genehmigung",
+                    "rejected": "Nicht genehmigt",
+                    "expired": "Abgelaufen",
+                    "closed": "Geschlossen"
+                },
+                "my_listings_empty": "Sie haben hier keine Angebote.",
+                "my_listings_load_error": "Ihre Angebote konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+                "edit": "Bearbeiten",
+                "my_groups": "Meine Gruppen",
+                "all_groups": "Alle Gruppen",
+                "my_events": "Meine Veranstaltungen",
+                "all_events": "Alle Veranstaltungen",
+                "my_events_description": "Veranstaltungen, die Sie organisieren oder für die Sie zugesagt haben.",
+                "my_events_empty": "Sie organisieren keine passenden Veranstaltungen und haben für keine zugesagt."
             }
         },
         "govuk_alpha_activity": {

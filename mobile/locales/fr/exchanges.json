@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "L’autre membre a confirmé {{hours}} heures. Un écart de plus d’un quart d’heure envoie cet échange en révision au lieu de le clôturer.",
     "loadMore": "Afficher plus d’échanges"
   },
-  "unknownMember": "Membre inconnu"
+  "unknownMember": "Membre inconnu",
+  "mine": {
+    "title": "Mes annonces",
+    "description": "Tout ce que vous avez proposé ou demandé, et si les autres membres peuvent le voir.",
+    "tabsLabel": "Afficher vos annonces par état",
+    "tab": {
+      "live": "Visibles",
+      "review": "En attente de vérification",
+      "rejected": "Non approuvées",
+      "expired": "Expirées",
+      "closed": "Fermées"
+    },
+    "empty": {
+      "live": "Vous n'avez aucune annonce visible",
+      "review": "Rien en attente de vérification",
+      "rejected": "Rien ici",
+      "expired": "Rien n'a expiré",
+      "closed": "Aucune annonce fermée"
+    },
+    "emptyLiveBody": "Proposez une compétence ou demandez de l'aide, et elle apparaîtra ici.",
+    "loadError": "Impossible de charger vos annonces.",
+    "visibleUntil": "Visible jusqu'au {{date}}",
+    "state": {
+      "review": "Un administrateur vérifie cette annonce. Les autres membres la verront une fois approuvée.",
+      "rejected": "Un administrateur n'a pas approuvé cette annonce, les autres membres ne peuvent donc pas la voir.",
+      "expired": "Cette annonce a expiré. Les autres membres ne peuvent pas la voir tant que vous ne l'avez pas renouvelée.",
+      "closed": "Cette annonce est fermée, les autres membres ne peuvent donc pas la voir."
+    },
+    "rejectedReason": "Motif indiqué : {{reason}}",
+    "newListing": "Nouvelle annonce"
+  }
 }

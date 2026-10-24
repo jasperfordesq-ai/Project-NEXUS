@@ -1,0 +1,79 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-xl">{{ t("listings.caption", { community: tenant.name or tenant.slug or tenantSlug }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("own_records.my_listings") }}</h1>
+      <p class="govuk-body-l">{{ t("own_records.my_listings_description") }}</p>
+
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("listings.create.title") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("own_records.all_listings") }}</a>
+      </div>
+
+      <nav class="govuk-!-margin-bottom-6" aria-label="{{ t('own_records.status_nav_label') }}">
+        <ul class="govuk-list nexus-alpha-inline-flex-tags" data-my-listings-tabs>
+          {% for tab in tabs %}
+            <li>
+              {% if tab.current %}
+                <a class="govuk-link govuk-!-font-weight-bold" href="{{ urlFor(tab.href) }}" aria-current="page">{{ t("own_records.status." + tab.value) }} ({{ tab.count }})</a>
+              {% else %}
+                <a class="govuk-link" href="{{ urlFor(tab.href) }}">{{ t("own_records.status." + tab.value) }} ({{ tab.count }})</a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+
+      <form method="get" action="{{ urlFor('/listings/mine') }}" class="govuk-!-margin-bottom-6">
+        {% if status != "live" %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="type">{{ t("listings.type_label") }}</label>
+          <select class="govuk-select" id="type" name="type">
+            <option value="">{{ t("listings.all_types") }}</option>
+            <option value="offer"{% if type == "offer" %} selected{% endif %}>{{ t("listings.offer") }}</option>
+            <option value="request"{% if type == "request" %} selected{% endif %}>{{ t("listings.request") }}</option>
+          </select>
+        </div>
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+      </form>
+
+      <h2 class="govuk-heading-l">{{ t("own_records.status." + status) }}</h2>
+
+      {% if loadError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p>{{ t("own_records.my_listings_load_error") }}</p></div>
+          </div>
+        </div>
+      {% elif listings.length == 0 %}
+        <div class="govuk-inset-text">{{ t("own_records.my_listings_empty") }}</div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for listing in listings %}
+            <article class="nexus-alpha-card">
+              {{ govukTag({ text: t("listings." ~ listing.type), classes: "govuk-tag--purple" if listing.type == "request" else "govuk-tag--blue" }) }}
+              <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id) }}">{{ listing.title }}</a>
+              </h3>
+              {% if listing.description %}<p class="govuk-body">{{ listing.description | truncate(220) }}</p>{% endif %}
+              <p class="govuk-body govuk-!-margin-bottom-0">
+                <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id ~ '/edit') }}">{{ t("own_records.edit") }}<span class="govuk-visually-hidden"> {{ listing.title }}</span></a>
+              </p>
+            </article>
+          {% endfor %}
+        </div>
+        {% if nextHref %}{{ govukPagination({ next: { text: t("actions.load_more"), labelText: t("listings.more_results_label"), href: urlFor(nextHref) }, landmarkLabel: t("listings.pagination_label"), classes: "govuk-pagination--block govuk-!-margin-top-6" }) }}{% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

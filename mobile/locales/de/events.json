@@ -1088,5 +1088,9 @@
     "proposed_value": "Deine Änderung: {{value}}",
     "not_set": "Nicht festgelegt",
     "no_differences": "Keine Unterschiede zur aktuellen Richtlinie."
+  },
+  "myEvents": {
+    "button": "Meine Veranstaltungen",
+    "empty": "Du hast noch keine Veranstaltungen organisiert und dich für keine angemeldet."
   }
 }

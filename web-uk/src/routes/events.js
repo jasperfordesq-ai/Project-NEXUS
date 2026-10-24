@@ -3364,6 +3364,12 @@ router.get('/', asyncRoute(async (req, res) => {
   const stepFree = ['any', 'yes', 'no', 'unknown'].includes(String(req.query.step_free))
     ? String(req.query.step_free)
     : 'any';
+  // scope=mine: "My events" - only events the member organises or has RSVP'd
+  // "going" to (GET /v2/events?scope=mine). It needs a signed-in member, so a
+  // signed-out visitor is sent to sign in rather than shown a list that is
+  // silently everyone's.
+  const scope = req.query.scope === 'mine' ? 'mine' : '';
+  if (scope && !token && !res.locals.eventsDisabled) return redirectTo(res, loginRedirect());
   const upcomingOnly = when === 'upcoming';
   const hasFilters = Boolean(searchQuery || categoryId || when !== 'upcoming' || near !== 'any' || stepFree !== 'any');
   let nearNoLocation = false;
@@ -3414,6 +3420,7 @@ router.get('/', asyncRoute(async (req, res) => {
       category_id: categoryId,
       when,
       step_free: stepFree,
+      ...(scope ? { scope } : {}),
       ...nearFilters
     }).catch((error) => {
       if (!token && isAuthError(error)) {
@@ -3454,7 +3461,9 @@ router.get('/', asyncRoute(async (req, res) => {
     : '';
 
   res.render('events/index', {
-    title: res.locals.t('govuk_alpha.events.title'),
+    title: scope
+      ? res.locals.t('govuk_alpha.own_records.my_events')
+      : res.locals.t('govuk_alpha.events.title'),
     events,
     loadError,
     categories,
@@ -3465,6 +3474,7 @@ router.get('/', asyncRoute(async (req, res) => {
     when,
     near,
     stepFree,
+    scope,
     nearNoLocation,
     moduleDisabled: false,
     eventStatus,

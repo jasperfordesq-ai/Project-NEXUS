@@ -27,7 +27,10 @@
       <p class="govuk-body-l">{{ t("listings.description") }}</p>
 
       {% if isAuthenticated %}
-        <p class="govuk-body"><a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("listings.create.title") }}</a></p>
+        <div class="govuk-button-group">
+          <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("listings.create.title") }}</a>
+          <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/mine') }}" role="button" draggable="false" data-module="govuk-button">{{ t("own_records.my_listings") }}</a>
+        </div>
       {% else %}
         <div class="govuk-inset-text"><p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/login?status=auth-required') }}">{{ t("listings.create.auth_link") }}</a></p></div>
       {% endif %}

@@ -26,6 +26,8 @@ interface NativePressableProps {
   feedback?: NativePressableFeedback;
   haptics?: boolean;
   accessibilityLabel?: string;
+  /** What happens on activation, read after the label ("Opens your wallet"). */
+  accessibilityHint?: string;
   accessibilityRole?: AccessibilityRole;
   /**
    * Passed through so a row that represents a CHOICE can announce whether it is the
@@ -49,6 +51,7 @@ export default function NativePressable({
   feedback = 'scale',
   haptics = true,
   accessibilityLabel,
+  accessibilityHint,
   accessibilityRole = 'button',
   accessibilityState,
   testID,
@@ -77,6 +80,7 @@ export default function NativePressable({
     return (
       <Pressable
         accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
         accessibilityRole={accessibilityRole}
         accessibilityState={accessibilityState}
         className={`overflow-hidden ${className ?? ''}`}
@@ -99,6 +103,7 @@ export default function NativePressable({
   return (
     <FeedbackRoot
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityRole={accessibilityRole}
       accessibilityState={accessibilityState}
       animation={useScale ? false : 'disable-all'}

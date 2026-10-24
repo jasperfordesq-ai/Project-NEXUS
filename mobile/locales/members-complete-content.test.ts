@@ -30,6 +30,8 @@ describe('complete mobile Irish Members catalogue', () => {
       'profile.amountPlaceholder',
       'profile.xp',
       'collections.fallbackItemTitle',
+      // "{{label}}: {{value}}" — a stat card's screen-reader label; both parts arrive translated.
+      'profile.statA11y',
     ]);
 
     expect(irishFlat.size).toBe(englishFlat.size);

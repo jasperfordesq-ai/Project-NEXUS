@@ -197,7 +197,12 @@
     "thanksSentMessage": "{{name}} wurde benachrichtigt.",
     "thanksError": "Der Dank konnte nicht gesendet werden.",
     "transferConfirmTitle": "Guthaben an eine andere Gemeinschaft senden?",
-    "transferConfirmMessage": "{{amount}} Stunden verlassen dein Guthaben und gehen an {{name}} in {{community}}. Das lässt sich in der App nicht rückgängig machen."
+    "transferConfirmMessage": "{{amount}} Stunden verlassen dein Guthaben und gehen an {{name}} in {{community}}. Das lässt sich in der App nicht rückgängig machen.",
+    "statA11y": "{{label}}: {{value}}",
+    "statOpensWallet": "Öffnet dein Wallet",
+    "statOpensListings": "Öffnet deine Inserate",
+    "statOpensGroups": "Öffnet die Gruppen, in denen du Mitglied bist",
+    "statOpensEvents": "Öffnet die Veranstaltungen, die du organisierst oder besuchst"
   },
   "collections": {
     "removeConfirmTitle": "Dieses gespeicherte Element entfernen?",

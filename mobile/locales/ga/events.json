@@ -1088,5 +1088,9 @@
     "proposed_value": "D’athrú: {{value}}",
     "not_set": "Gan socrú",
     "no_differences": "Níl aon difríocht ón bpolasaí reatha."
+  },
+  "myEvents": {
+    "button": "Mo Imeachtaí",
+    "empty": "Níor eagraigh tú aon imeacht fós agus níor chláraigh tú le dul chuig aon cheann."
   }
 }

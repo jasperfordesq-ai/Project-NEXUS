@@ -6129,6 +6129,34 @@
                 "revoke": "Forget all trusted devices",
                 "revoked": "Trusted devices removed. They will need verification at the next sign-in.",
                 "failed": "Unable to complete this action. Check your code and try again."
+            },
+            "own_records": {
+                "groups_label": "Groups",
+                "events_label": "Events",
+                "open_wallet": "open your wallet",
+                "open_listings": "see your listings",
+                "open_groups": "see your groups",
+                "open_events": "see your events",
+                "my_listings": "My listings",
+                "my_listings_description": "Every listing you have posted, including listings that have expired or are waiting for approval.",
+                "all_listings": "Browse all listings",
+                "status_nav_label": "Your listings by status",
+                "status": {
+                    "live": "Live",
+                    "review": "Waiting for approval",
+                    "rejected": "Not approved",
+                    "expired": "Expired",
+                    "closed": "Closed"
+                },
+                "my_listings_empty": "You have no listings here.",
+                "my_listings_load_error": "We could not load your listings. Please try again.",
+                "edit": "Edit",
+                "my_groups": "My groups",
+                "all_groups": "All groups",
+                "my_events": "My events",
+                "all_events": "All events",
+                "my_events_description": "Events you are organising or have said you are going to.",
+                "my_events_empty": "You are not organising or going to any events that match."
             }
         },
         "govuk_alpha_activity": {

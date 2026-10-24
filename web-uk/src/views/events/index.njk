@@ -17,8 +17,8 @@
   {% endif %}
 
   <span class="govuk-caption-xl">{{ t("events.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("events.title") }}</h1>
-  <p class="govuk-body-l">{{ t("events.description") }}</p>
+  <h1 class="govuk-heading-xl">{% if scope == "mine" %}{{ t("own_records.my_events") }}{% else %}{{ t("events.title") }}{% endif %}</h1>
+  <p class="govuk-body-l">{% if scope == "mine" %}{{ t("own_records.my_events_description") }}{% else %}{{ t("events.description") }}{% endif %}</p>
 
   {% if not moduleDisabled %}
     <p class="govuk-body">
@@ -88,9 +88,14 @@
       </div>
     </div>
   {% elif isAuthenticated %}
-    <p class="govuk-body">
+    <div class="govuk-button-group">
       {{ govukButton({ text: t("actions.create_event"), href: urlFor("/events/new") }) }}
-    </p>
+      {% if scope == "mine" %}
+        {{ govukButton({ text: t("own_records.all_events"), href: urlFor("/events"), classes: "govuk-button--secondary" }) }}
+      {% else %}
+        {{ govukButton({ text: t("own_records.my_events"), href: urlFor("/events?scope=mine"), classes: "govuk-button--secondary" }) }}
+      {% endif %}
+    </div>
   {% else %}
     <div class="govuk-inset-text">
       <p class="govuk-body">
@@ -101,6 +106,7 @@
 
   {% if not moduleDisabled %}
   <form method="get" action="{{ urlFor('/events') }}" class="govuk-!-margin-bottom-7">
+    {% if scope == "mine" %}<input type="hidden" name="scope" value="mine">{% endif %}
     <fieldset class="govuk-fieldset" aria-describedby="events-filter-hint">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
         <h2 class="govuk-fieldset__heading">{{ t("events.filters_title") }}</h2>
@@ -171,7 +177,7 @@
       <div class="govuk-button-group">
         {{ govukButton({ text: t("actions.search") }) }}
         {% if hasFilters %}
-          <a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("actions.clear_filters") }}</a>
+          <a class="govuk-link" href="{{ urlFor('/events?scope=mine' if scope == 'mine' else '/events') }}">{{ t("actions.clear_filters") }}</a>
         {% endif %}
       </div>
     </fieldset>
@@ -192,9 +198,9 @@
   {% elif events.length == 0 %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-      <p class="govuk-body">{{ t("events.empty") }}</p>
+      <p class="govuk-body">{% if scope == "mine" %}{{ t("own_records.my_events_empty") }}{% else %}{{ t("events.empty") }}{% endif %}</p>
       {% if hasFilters %}
-        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("actions.clear_filters") }}</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events?scope=mine' if scope == 'mine' else '/events') }}">{{ t("actions.clear_filters") }}</a></p>
       {% endif %}
     </div>
   {% else %}
@@ -239,7 +245,7 @@
     {% if pagination.hasMore and pagination.cursor %}
       <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('events.pagination_label') }}">
         <div class="govuk-pagination__next">
-          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/events?when=' + when + '&near=' + near + ('&q=' + (searchQuery | urlencode) if searchQuery else '') + ('&category_id=' + categoryId if categoryId else '') + ('&step_free=' + stepFree if stepFree != 'any' else '') + '&cursor=' + (pagination.cursor | urlencode)) }}" rel="next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/events?when=' + when + '&near=' + near + ('&scope=mine' if scope == 'mine' else '') + ('&q=' + (searchQuery | urlencode) if searchQuery else '') + ('&category_id=' + categoryId if categoryId else '') + ('&step_free=' + stepFree if stepFree != 'any' else '') + '&cursor=' + (pagination.cursor | urlencode)) }}" rel="next">
             <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
             <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span><span class="govuk-visually-hidden">:</span>
             <span class="govuk-pagination__link-label">{{ t("events.more_results_label") }}</span>

@@ -475,6 +475,19 @@ describe('ExchangesScreen', () => {
     expect(mockExchangesPush).toHaveBeenCalledWith('/(modals)/exchange-requests');
   });
 
+  /*
+    This list shows only live, approved listings. "My listings" is the way back to the
+    member's own — including the expired, under-review and not-approved ones.
+  */
+  it('offers a way into the member’s own listings in every state', async () => {
+    const view = render(<ExchangesScreen />);
+    await waitFor(() => expect(view.getByTestId('exchanges-my-listings')).toBeTruthy());
+
+    fireEvent.press(view.getByTestId('exchanges-my-listings'));
+
+    expect(mockExchangesPush).toHaveBeenCalledWith('/(modals)/my-listings');
+  });
+
   it('does not claim 0 results when the first load failed', () => {
     mockUsePaginatedApi.mockReturnValue({ ...defaultPaginatedState, items: [], isLoading: false, error: 'Network error. Please check your connection.' });
     const failed = render(<ExchangesScreen />);

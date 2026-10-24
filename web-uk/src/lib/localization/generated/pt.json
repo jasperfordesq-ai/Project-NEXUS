@@ -6129,6 +6129,34 @@
                 "revoke": "Esquecer todos os dispositivos de confiança",
                 "revoked": "Dispositivos de confiança removidos. Será necessária verificação no próximo início de sessão.",
                 "failed": "Não foi possível concluir a ação. Verifique o código e tente novamente."
+            },
+            "own_records": {
+                "groups_label": "Grupos",
+                "events_label": "Eventos",
+                "open_wallet": "abrir a sua carteira",
+                "open_listings": "ver os seus anúncios",
+                "open_groups": "ver os seus grupos",
+                "open_events": "ver os seus eventos",
+                "my_listings": "Os meus anúncios",
+                "my_listings_description": "Todos os anúncios que publicou, incluindo os que expiraram ou aguardam aprovação.",
+                "all_listings": "Ver todos os anúncios",
+                "status_nav_label": "Os seus anúncios por estado",
+                "status": {
+                    "live": "Ativos",
+                    "review": "A aguardar aprovação",
+                    "rejected": "Não aprovados",
+                    "expired": "Expirados",
+                    "closed": "Fechados"
+                },
+                "my_listings_empty": "Não tem anúncios aqui.",
+                "my_listings_load_error": "Não foi possível carregar os seus anúncios. Tente novamente.",
+                "edit": "Editar",
+                "my_groups": "Os meus grupos",
+                "all_groups": "Todos os grupos",
+                "my_events": "Os meus eventos",
+                "all_events": "Todos os eventos",
+                "my_events_description": "Eventos que organiza ou em que disse que vai participar.",
+                "my_events_empty": "Não está a organizar nem a participar em nenhum evento correspondente."
             }
         },
         "govuk_alpha_activity": {

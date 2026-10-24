@@ -21,9 +21,14 @@
     </div>
   {% endif %}
 
-  <p class="govuk-body">
+  <div class="govuk-button-group">
     <a href="{{ urlFor('/groups/new') }}" class="govuk-button" role="button" draggable="false" data-module="govuk-button">{{ t("polish_groups.create_group_cta") }}</a>
-  </p>
+    {% if groupsFilter == "joined" %}
+      <a href="{{ urlFor('/groups') }}" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">{{ t("own_records.all_groups") }}</a>
+    {% else %}
+      <a href="{{ urlFor('/groups?filter=joined') }}" class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button">{{ t("own_records.my_groups") }}</a>
+    {% endif %}
+  </div>
 
   <form action="{{ urlFor('/groups') }}" method="get" class="govuk-!-margin-bottom-6">
     {{ govukInput({

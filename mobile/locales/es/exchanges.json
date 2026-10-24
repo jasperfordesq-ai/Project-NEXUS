@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "La otra persona ha confirmado {{hours}} horas. Una diferencia de más de un cuarto de hora envía este intercambio a revisión en lugar de completarlo.",
     "loadMore": "Mostrar más intercambios"
   },
-  "unknownMember": "Miembro desconocido"
+  "unknownMember": "Miembro desconocido",
+  "mine": {
+    "title": "Mis anuncios",
+    "description": "Todo lo que has ofrecido o pedido, y si otros miembros pueden verlo.",
+    "tabsLabel": "Mostrar tus anuncios por estado",
+    "tab": {
+      "live": "Visibles",
+      "review": "En revisión",
+      "rejected": "No aprobados",
+      "expired": "Caducados",
+      "closed": "Cerrados"
+    },
+    "empty": {
+      "live": "No tienes anuncios visibles",
+      "review": "Nada en revisión",
+      "rejected": "No hay nada aquí",
+      "expired": "Nada ha caducado",
+      "closed": "No hay anuncios cerrados"
+    },
+    "emptyLiveBody": "Ofrece una habilidad o pide ayuda, y aparecerá aquí.",
+    "loadError": "No se pudieron cargar tus anuncios.",
+    "visibleUntil": "Visible hasta el {{date}}",
+    "state": {
+      "review": "Un administrador está revisando este anuncio. Otros miembros lo verán cuando se apruebe.",
+      "rejected": "Un administrador no aprobó este anuncio, así que otros miembros no pueden verlo.",
+      "expired": "Este anuncio ha caducado. Otros miembros no pueden verlo hasta que lo renueves.",
+      "closed": "Este anuncio está cerrado, así que otros miembros no pueden verlo."
+    },
+    "rejectedReason": "Motivo indicado: {{reason}}",
+    "newListing": "Nuevo anuncio"
+  }
 }

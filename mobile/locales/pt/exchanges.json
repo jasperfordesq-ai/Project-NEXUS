@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "O outro membro confirmou {{hours}} horas. Uma diferença superior a um quarto de hora envia esta troca para revisão em vez de a concluir.",
     "loadMore": "Mostrar mais trocas"
   },
-  "unknownMember": "Membro desconhecido"
+  "unknownMember": "Membro desconhecido",
+  "mine": {
+    "title": "Os meus anúncios",
+    "description": "Tudo o que ofereceu ou pediu, e se os outros membros o podem ver.",
+    "tabsLabel": "Mostrar os seus anúncios por estado",
+    "tab": {
+      "live": "Visíveis",
+      "review": "A aguardar revisão",
+      "rejected": "Não aprovados",
+      "expired": "Expirados",
+      "closed": "Fechados"
+    },
+    "empty": {
+      "live": "Não tem anúncios visíveis",
+      "review": "Nada a aguardar revisão",
+      "rejected": "Nada aqui",
+      "expired": "Nada expirou",
+      "closed": "Sem anúncios fechados"
+    },
+    "emptyLiveBody": "Ofereça uma competência ou peça ajuda, e aparecerá aqui.",
+    "loadError": "Não foi possível carregar os seus anúncios.",
+    "visibleUntil": "Visível até {{date}}",
+    "state": {
+      "review": "Um administrador está a rever este anúncio. Os outros membros vão vê-lo quando for aprovado.",
+      "rejected": "Um administrador não aprovou este anúncio, por isso os outros membros não o podem ver.",
+      "expired": "Este anúncio expirou. Os outros membros não o podem ver até o renovar.",
+      "closed": "Este anúncio está fechado, por isso os outros membros não o podem ver."
+    },
+    "rejectedReason": "Motivo indicado: {{reason}}",
+    "newListing": "Novo anúncio"
+  }
 }

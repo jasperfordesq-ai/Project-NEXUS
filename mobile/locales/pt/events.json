@@ -1088,5 +1088,9 @@
     "proposed_value": "A sua alteração: {{value}}",
     "not_set": "Não definido",
     "no_differences": "Sem diferenças em relação à política atual."
+  },
+  "myEvents": {
+    "button": "Os meus eventos",
+    "empty": "Ainda não organizou nenhum evento nem se inscreveu em nenhum."
   }
 }

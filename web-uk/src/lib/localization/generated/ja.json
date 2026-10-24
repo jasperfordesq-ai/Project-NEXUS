@@ -6129,6 +6129,34 @@
                 "revoke": "すべての信頼済みデバイスを削除",
                 "revoked": "信頼済みデバイスを削除しました。次回のログイン時に認証が必要です。",
                 "failed": "操作を完了できませんでした。コードを確認して再試行してください。"
+            },
+            "own_records": {
+                "groups_label": "グループ",
+                "events_label": "イベント",
+                "open_wallet": "ウォレットを開く",
+                "open_listings": "自分の出品を見る",
+                "open_groups": "自分のグループを見る",
+                "open_events": "自分のイベントを見る",
+                "my_listings": "自分の出品",
+                "my_listings_description": "期限切れや承認待ちのものも含め、あなたが投稿したすべての出品です。",
+                "all_listings": "すべての出品を見る",
+                "status_nav_label": "ステータス別の出品",
+                "status": {
+                    "live": "公開中",
+                    "review": "承認待ち",
+                    "rejected": "承認されませんでした",
+                    "expired": "期限切れ",
+                    "closed": "終了"
+                },
+                "my_listings_empty": "ここには出品がありません。",
+                "my_listings_load_error": "出品を読み込めませんでした。もう一度お試しください。",
+                "edit": "編集",
+                "my_groups": "自分のグループ",
+                "all_groups": "すべてのグループ",
+                "my_events": "自分のイベント",
+                "all_events": "すべてのイベント",
+                "my_events_description": "あなたが主催しているイベント、または参加すると回答したイベントです。",
+                "my_events_empty": "条件に合う主催中または参加予定のイベントはありません。"
             }
         },
         "govuk_alpha_activity": {

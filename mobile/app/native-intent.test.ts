@@ -33,6 +33,19 @@ describe('native intent route rewriting', () => {
     expect(mapSystemPathToNativeRoute('/help')).toBe('/(modals)/help-faqs');
   });
 
+  it("opens the website's My Listings, My Groups and My Events views on their native equivalents", () => {
+    expect(mapSystemPathToNativeRoute('/listings/mine')).toBe('/(modals)/my-listings');
+    expect(mapSystemPathToNativeRoute('https://app.project-nexus.ie/hour-timebank/listings/mine?tab=expired&type=offer'))
+      .toBe('/(modals)/my-listings?tab=expired');
+    expect(mapSystemPathToNativeRoute('/groups?scope=joined')).toBe('/(modals)/groups?scope=joined');
+    expect(mapSystemPathToNativeRoute('/groups')).toBe('/(modals)/groups');
+    expect(mapSystemPathToNativeRoute('/events?scope=mine')).toBe('/(tabs)/events?scope=mine');
+    expect(mapSystemPathToNativeRoute('/events')).toBe('/(tabs)/events');
+    // Only the one known value is carried; anything else opens the plain list.
+    expect(mapSystemPathToNativeRoute('/events?scope=everyone')).toBe('/(tabs)/events');
+    expect(mapSystemPathToNativeRoute('/listings/42')).toBe('/(modals)/exchange-detail?id=42');
+  });
+
   it('keeps the current-member profile link on the Profile tab', () => {
     expect(mapSystemPathToNativeRoute('/profile')).toBe('/(tabs)/profile');
     expect(mapSystemPathToNativeRoute('/profile/25717')).toBe('/(modals)/member-profile?id=25717');

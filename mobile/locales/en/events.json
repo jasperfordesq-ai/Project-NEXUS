@@ -1088,5 +1088,9 @@
     "proposed_value": "Your change: {{value}}",
     "not_set": "Not set",
     "no_differences": "No differences from the current policy."
+  },
+  "myEvents": {
+    "button": "My Events",
+    "empty": "You haven't organised or signed up to go to any events yet."
   }
 }

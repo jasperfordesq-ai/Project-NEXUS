@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "Das andere Mitglied hat {{hours}} Stunden bestätigt. Eine Abweichung von mehr als einer Viertelstunde schickt diesen Austausch zur Prüfung, statt ihn abzuschließen.",
     "loadMore": "Weitere Austausche anzeigen"
   },
-  "unknownMember": "Unbekanntes Mitglied"
+  "unknownMember": "Unbekanntes Mitglied",
+  "mine": {
+    "title": "Meine Inserate",
+    "description": "Alles, was du angeboten oder gesucht hast, und ob andere Mitglieder es sehen können.",
+    "tabsLabel": "Deine Inserate nach Status anzeigen",
+    "tab": {
+      "live": "Sichtbar",
+      "review": "Wird geprüft",
+      "rejected": "Nicht freigegeben",
+      "expired": "Abgelaufen",
+      "closed": "Geschlossen"
+    },
+    "empty": {
+      "live": "Du hast keine sichtbaren Inserate",
+      "review": "Nichts wartet auf Prüfung",
+      "rejected": "Hier ist nichts",
+      "expired": "Nichts ist abgelaufen",
+      "closed": "Keine geschlossenen Inserate"
+    },
+    "emptyLiveBody": "Biete eine Fähigkeit an oder bitte um Hilfe – dann erscheint es hier.",
+    "loadError": "Deine Inserate konnten nicht geladen werden.",
+    "visibleUntil": "Sichtbar bis {{date}}",
+    "state": {
+      "review": "Eine Administratorin oder ein Administrator prüft dieses Inserat. Andere Mitglieder sehen es, sobald es freigegeben ist.",
+      "rejected": "Dieses Inserat wurde nicht freigegeben, daher können andere Mitglieder es nicht sehen.",
+      "expired": "Dieses Inserat ist abgelaufen. Andere Mitglieder sehen es erst wieder, wenn du es erneuerst.",
+      "closed": "Dieses Inserat ist geschlossen, daher können andere Mitglieder es nicht sehen."
+    },
+    "rejectedReason": "Angegebener Grund: {{reason}}",
+    "newListing": "Neues Inserat"
+  }
 }

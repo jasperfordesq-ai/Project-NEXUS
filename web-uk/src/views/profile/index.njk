@@ -40,19 +40,26 @@
   </div>
 
   <h2 class="govuk-heading-l">{{ t("profile.activity_title") }}</h2>
+  {# Each stat on your own profile links to your own records (wallet, My
+     listings, My groups, My events) when that part of the community is
+     switched on. The link sits inside the <dt> so the <dl> stays valid; its
+     visually hidden suffix says where it goes. #}
+  {% macro ownStat(label, value, href, hint, key) %}
+    <div class="nexus-alpha-stat" data-profile-stat="{{ key }}">
+      <dt>{% if href %}<a class="govuk-link" href="{{ href }}">{{ label }}<span class="govuk-visually-hidden"> ({{ hint }})</span></a>{% else %}{{ label }}{% endif %}</dt>
+      <dd>{{ value }}</dd>
+    </div>
+  {% endmacro %}
   <dl class="nexus-alpha-stat-grid">
-    <div class="nexus-alpha-stat">
-      <dt>{{ t("profile.hours_given_label") }}</dt>
-      <dd>{{ profileStats.hoursGivenLabel }}</dd>
-    </div>
-    <div class="nexus-alpha-stat">
-      <dt>{{ t("profile.hours_received_label") }}</dt>
-      <dd>{{ profileStats.hoursReceivedLabel }}</dd>
-    </div>
-    <div class="nexus-alpha-stat">
-      <dt>{{ t("profile.active_listings_label") }}</dt>
-      <dd>{{ profileStats.listingsCountLabel }}</dd>
-    </div>
+    {{ ownStat(t("profile.hours_given_label"), profileStats.hoursGivenLabel, (urlFor(profileStatLinks.wallet) if profileStatLinks.wallet else ''), t("own_records.open_wallet"), "hours-given") }}
+    {{ ownStat(t("profile.hours_received_label"), profileStats.hoursReceivedLabel, (urlFor(profileStatLinks.wallet) if profileStatLinks.wallet else ''), t("own_records.open_wallet"), "hours-received") }}
+    {{ ownStat(t("profile.active_listings_label"), profileStats.listingsCountLabel, (urlFor(profileStatLinks.listings) if profileStatLinks.listings else ''), t("own_records.open_listings"), "listings") }}
+    {% if profileFeatures.groups %}
+      {{ ownStat(t("own_records.groups_label"), profileStats.groupsCountLabel, (urlFor(profileStatLinks.groups) if profileStatLinks.groups else ''), t("own_records.open_groups"), "groups") }}
+    {% endif %}
+    {% if profileFeatures.events %}
+      {{ ownStat(t("own_records.events_label"), profileStats.eventsCountLabel, (urlFor(profileStatLinks.events) if profileStatLinks.events else ''), t("own_records.open_events"), "events") }}
+    {% endif %}
     {% if profileStats.ratingLabel %}
       <div class="nexus-alpha-stat">
         <dt>{{ t("profile.rating_label") }}</dt>

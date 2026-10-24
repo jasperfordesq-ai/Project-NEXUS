@@ -179,6 +179,47 @@ export function getExchanges(
   });
 }
 
+/** Where one of the member's own listings stands, as GET /v2/listings/mine groups them. */
+export type OwnedListingGroup = 'live' | 'review' | 'rejected' | 'expired' | 'closed';
+
+export const OWNED_LISTING_GROUPS: readonly OwnedListingGroup[] = ['live', 'review', 'rejected', 'expired', 'closed'];
+
+export type OwnedListing = Exchange & {
+  owner_state?: OwnedListingGroup;
+  rejection_reason?: string | null;
+};
+
+export interface OwnedListingsResponse {
+  data: OwnedListing[];
+  meta: {
+    cursor: string | null;
+    has_more: boolean;
+    limit?: number;
+    /** How many of the member's listings sit in each group, whichever group was asked for. */
+    counts?: Partial<Record<OwnedListingGroup, number>>;
+  };
+}
+
+/**
+ * GET /api/v2/listings/mine — the signed-in member's own listings, one group at a time.
+ *
+ * Every public listings view shows only live, approved listings, so this is the only
+ * place a member can find their own listing once it has expired, is waiting for an
+ * administrator, or was not approved. Same endpoint and parameters as the website's
+ * My Listings page.
+ */
+export function getMyListings(
+  status: OwnedListingGroup = 'live',
+  cursor: string | null = null,
+  limit = 20,
+): Promise<OwnedListingsResponse> {
+  return api.get<OwnedListingsResponse>(`${API_V2}/listings/mine`, {
+    status,
+    limit: String(limit),
+    ...(cursor ? { cursor } : {}),
+  });
+}
+
 /** GET /api/v2/listings/:id */
 export function getExchange(id: number): Promise<{ data: Exchange }> {
   return api.get<{ data: Exchange }>(`${API_V2}/listings/${id}`);

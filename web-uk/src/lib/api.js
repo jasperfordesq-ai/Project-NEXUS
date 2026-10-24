@@ -736,6 +736,23 @@ async function getListings(token, params = {}) {
   });
 }
 
+// The signed-in member's OWN listings, one owner group at a time
+// (GET /v2/listings/mine). Unlike GET /v2/listings?user_id=… it also returns
+// listings that have expired, are waiting for review or were not approved,
+// and reports a count for every group in `meta.counts`. Backs /listings/mine.
+async function getMyListings(token, params = {}) {
+  const query = new URLSearchParams();
+  if (params.status) query.set('status', params.status);
+  if (params.type) query.set('type', params.type);
+  if (params.limit) query.set('limit', params.limit);
+  if (params.cursor) query.set('cursor', params.cursor);
+
+  const queryString = query.toString();
+  return request(`/api/v2/listings/mine${queryString ? `?${queryString}` : ''}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function getListing(token, id) {
   return request(`/api/v2/listings/${encodeURIComponent(id)}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -2903,6 +2920,9 @@ async function getEvents(token, params = {}) {
   if (params.near_lng !== undefined && params.near_lng !== null) query.set('near_lng', params.near_lng);
   if (params.radius_km) query.set('radius_km', params.radius_km);
   if (params.step_free && params.step_free !== 'any') query.set('step_free', params.step_free);
+  // scope=mine: only events the signed-in member organises or has RSVP'd
+  // "going" to. Any other value is never sent.
+  if (params.scope === 'mine') query.set('scope', 'mine');
   if (params.when) {
     query.set('when', params.when);
   } else if (params.upcoming_only === false) {
@@ -4200,6 +4220,7 @@ module.exports = {
   getUserBlockStatus,
   // Listings
   getListings,
+  getMyListings,
   getListing,
   getPublicListing,
   createListing,

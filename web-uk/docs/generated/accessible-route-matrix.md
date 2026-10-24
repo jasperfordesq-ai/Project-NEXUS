@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-23T21:24:12.354Z
-Laravel commit SHA: `37f469a9aa10a26f46a44730d0748e189d8e528c`
-Web UK repository commit SHA: `37f469a9aa10a26f46a44730d0748e189d8e528c`
+Generated: 2026-10-24T16:04:38.790Z
+Laravel commit SHA: `ed8135ecff835e1745a01956e6ba93245ff10626`
+Web UK repository commit SHA: `ed8135ecff835e1745a01956e6ba93245ff10626`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 837 |
+| web-uk routes | 838 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 127 |
+| Extra web-uk routes | 128 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -63,7 +63,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | leaderboard | 5 | 0 | 0 | 0 |
 | legal | 6 | 0 | 3 | 0 |
 | legal-acceptance | 0 | 0 | 2 | 0 |
-| listings | 19 | 0 | 1 | 0 |
+| listings | 19 | 0 | 2 | 0 |
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 2 | 0 |
@@ -141,6 +141,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/legal/{param}/versions/{param}` | legal | legal/version | web-uk/src/routes/legal.js |
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
+| GET | `/listings/mine` | listings | listings/mine | web-uk/src/routes/listings.js |
 | GET | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup/complete` | login |  | web-uk/src/server.js |

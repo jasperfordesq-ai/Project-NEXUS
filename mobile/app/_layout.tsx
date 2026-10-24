@@ -528,6 +528,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('exchanges:editTitle') }}
       />
       <Stack.Screen
+        name="(modals)/my-listings"
+        options={{ ...modalOptions, headerShown: false, title: t('exchanges:mine.title') }}
+      />
+      <Stack.Screen
         name="(modals)/new-event"
         options={{ ...modalOptions, headerShown: false, title: t('events:create.title') }}
       />

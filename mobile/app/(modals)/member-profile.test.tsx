@@ -998,3 +998,94 @@ describe('MemberProfileScreen', () => {
     ));
   });
 });
+
+/*
+  The stat cards on the member's OWN profile open the records behind them, as on the
+  website (ProfilePage.tsx): hours -> Wallet, listings -> My Listings, groups -> My Groups,
+  events -> My Events. On anyone else's profile they must stay plain numbers.
+*/
+describe('MemberProfileScreen own-profile stat cards', () => {
+  const ownMember = { ...mockMember, id: 1, name: 'Test User' };
+  const STAT_IDS = [
+    'profile-stat-hours-given',
+    'profile-stat-hours-received',
+    'profile-stat-total-hours',
+    'profile-stat-listings',
+    'profile-stat-groups',
+    'profile-stat-events',
+  ];
+
+  it('opens the wallet, My Listings, My Groups and My Events from your own profile', () => {
+    mockParams = { id: '1' };
+    mockUseApi.mockReturnValue({ data: { data: ownMember }, isLoading: false, error: null, refresh: jest.fn() });
+    const { router } = require('expo-router');
+
+    const { getByTestId } = render(<MemberProfileScreen />);
+
+    fireEvent.press(getByTestId('profile-stat-hours-given'));
+    fireEvent.press(getByTestId('profile-stat-hours-received'));
+    fireEvent.press(getByTestId('profile-stat-total-hours'));
+    expect(router.push).toHaveBeenCalledTimes(3);
+    expect(router.push).toHaveBeenNthCalledWith(1, '/(modals)/wallet');
+    expect(router.push).toHaveBeenNthCalledWith(3, '/(modals)/wallet');
+
+    fireEvent.press(getByTestId('profile-stat-listings'));
+    expect(router.push).toHaveBeenLastCalledWith('/(modals)/my-listings');
+
+    fireEvent.press(getByTestId('profile-stat-groups'));
+    expect(router.push).toHaveBeenLastCalledWith({ pathname: '/(modals)/groups', params: { scope: 'joined' } });
+
+    // Events is a tab: reached the way every link reaches a tab, with My Events selected.
+    fireEvent.press(getByTestId('profile-stat-events'));
+    expect(router.replace).toHaveBeenCalledWith({ pathname: '/(tabs)/events', params: { scope: 'mine' } });
+  });
+
+  it('tells a screen reader what each card is and where it goes', () => {
+    mockParams = { id: '1' };
+    mockUseApi.mockReturnValue({ data: { data: ownMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { getByTestId } = render(<MemberProfileScreen />);
+
+    const card = getByTestId('profile-stat-listings');
+    expect(card.props.accessibilityRole).toBe('button');
+    expect(card.props.accessibilityHint).toBe('profile.statOpensListings');
+    expect(card.props.accessibilityLabel).toBe('profile.statA11y');
+  });
+
+  it("leaves someone else's stat cards as plain numbers", () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { queryByTestId, getByText } = render(<MemberProfileScreen />);
+
+    expect(getByText('Hours Given')).toBeTruthy();
+    for (const id of STAT_IDS) expect(queryByTestId(id)).toBeNull();
+  });
+
+  it('leaves a federated profile with your own id as plain numbers', () => {
+    mockParams = { id: '1', tenant_id: '5' };
+    mockUseApi.mockReturnValue({
+      data: { data: { ...ownMember, tenant_id: 5, timebank: { id: 5, name: 'Partner Demo' } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    const { queryByTestId } = render(<MemberProfileScreen />);
+
+    for (const id of STAT_IDS) expect(queryByTestId(id)).toBeNull();
+  });
+
+  it('does not link a card to a module or feature the community has switched off', () => {
+    mockParams = { id: '1' };
+    mockHasModule.mockReturnValue(false);
+    mockHasFeature.mockImplementation((feature: string) => feature === 'events');
+    mockUseApi.mockReturnValue({ data: { data: ownMember }, isLoading: false, error: null, refresh: jest.fn() });
+
+    const { queryByTestId, getByTestId } = render(<MemberProfileScreen />);
+
+    expect(queryByTestId('profile-stat-hours-given')).toBeNull();
+    expect(queryByTestId('profile-stat-listings')).toBeNull();
+    expect(queryByTestId('profile-stat-groups')).toBeNull();
+    expect(getByTestId('profile-stat-events')).toBeTruthy();
+  });
+});

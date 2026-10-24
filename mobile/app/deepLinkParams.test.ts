@@ -64,7 +64,10 @@ function screenSource(route: string, depth = 0): string | null {
     const src = fs.readFileSync(candidate, 'utf8');
     const reExport = src.match(/export\s*\{\s*default\s*\}\s*from\s*'([^']+)'/);
     if (reExport) {
-      const target = path.posix.join(path.posix.dirname(rel), reExport[1].replace(/^\.\//, ''));
+      // `app/(modals)/groups.tsx` re-exports through the `@/app/` alias, not a relative path.
+      const target = reExport[1].startsWith('@/app/')
+        ? reExport[1].slice('@/app/'.length)
+        : path.posix.join(path.posix.dirname(rel), reExport[1].replace(/^\.\//, ''));
       return screenSource(`/${target}`, depth + 1);
     }
     return src;

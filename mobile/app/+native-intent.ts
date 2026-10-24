@@ -426,6 +426,8 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
 
     case 'listings':
       if (isCreateAlias(id)) return appendParams('/(modals)/new-exchange', params);
+      // The member's own listings in every state; `tab` is the website's own group parameter.
+      if (id === 'mine') return appendParams('/(modals)/my-listings', { tab: params.tab });
       return id ? appendParams('/(modals)/exchange-detail', { ...params, id }) : '/(tabs)/exchanges';
 
     case 'events':
@@ -437,13 +439,17 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
           ...(segments[2] ? { section: segments[2] } : {}),
         });
       }
-      return id ? appendParams('/(modals)/event-detail', { ...params, id }) : '/(tabs)/events';
+      if (id) return appendParams('/(modals)/event-detail', { ...params, id });
+      // /events?scope=mine is the website's My Events view (and the own-profile Events card).
+      return appendParams('/(tabs)/events', { scope: params.scope === 'mine' ? 'mine' : undefined });
 
     case 'groups':
       if (id === 'invite' && detail) return appendParams('/(modals)/group-invite', { ...params, token: detail });
       if (isCreateAlias(id)) return appendParams('/(modals)/new-group', params);
       if (id && detail === 'chat') return appendParams('/(modals)/group-detail', { id, tab: 'chatrooms', ...params });
-      return id ? appendParams('/(modals)/group-detail', { ...params, id }) : '/(modals)/groups';
+      if (id) return appendParams('/(modals)/group-detail', { ...params, id });
+      // /groups?scope=joined is the website's My Groups filter (and the own-profile Groups card).
+      return appendParams('/(modals)/groups', { scope: params.scope === 'joined' ? 'joined' : undefined });
 
     case 'members':
       return id ? appendParams('/(modals)/member-profile', { ...params, id }) : '/(modals)/members';

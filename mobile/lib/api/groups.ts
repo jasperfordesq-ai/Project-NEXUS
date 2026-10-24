@@ -521,12 +521,14 @@ export interface CreateGroupPayload {
  */
 export function getGroups(
   cursor: string | null,
-  params?: { search?: string; visibility?: string },
+  params?: { search?: string; visibility?: string; memberUserId?: number },
 ): Promise<GroupsResponse> {
   const query: Record<string, string> = { per_page: '20' };
   if (cursor) query['cursor'] = cursor;
   if (params?.search) query['q'] = params.search;
   if (params?.visibility) query['visibility'] = params.visibility;
+  // "My Groups": the groups this member belongs to — what the website's My Groups filter sends.
+  if (params?.memberUserId !== undefined) query['user_id'] = String(params.memberUserId);
   return api.get<GroupsResponse>(`${API_V2}/groups`, query);
 }
 

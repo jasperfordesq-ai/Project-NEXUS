@@ -3,10 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Card as HeroCard, Spinner, Surface } from 'heroui-native';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import ErrorState from '@/components/ui/ErrorState';
 
 import { getGroups, type Group, type GroupsResponse } from '@/lib/api/groups';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 import { usePaginatedApi } from '@/lib/hooks/usePaginatedApi';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -30,7 +31,8 @@ import { SkeletonBox } from '@/components/ui/Skeleton';
 import { withRouteGate } from '@/components/withRouteGate';
 import RemoteImage from '@/components/ui/RemoteImage';
 
-type FilterValue = 'all' | 'public' | 'private';
+/** `joined` is "My Groups": the groups the signed-in member belongs to. */
+type FilterValue = 'all' | 'public' | 'private' | 'joined';
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 type ApiGroup = Group & {
   viewer_membership?: { status?: string; role?: string } | null;
@@ -272,16 +274,34 @@ function GroupsScreen() {
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
-  const [filter, setFilter] = useState<FilterValue>('all');
+  const { user } = useAuth();
+  const memberUserId = Number(user?.id);
+  const canShowJoined = Number.isFinite(memberUserId) && memberUserId > 0;
+  /*
+    `?scope=joined` opens straight on My Groups — the member's own profile links here from
+    its Groups card, and the website's /groups?scope=joined deep link maps here too. The
+    effect follows a later link while the screen is already mounted.
+  */
+  const { scope } = useLocalSearchParams<{ scope?: string }>();
+  const wantsJoined = scope === 'joined' && canShowJoined;
+  const [filter, setFilter] = useState<FilterValue>(wantsJoined ? 'joined' : 'all');
+  useEffect(() => {
+    if (wantsJoined) setFilter('joined');
+  }, [wantsJoined]);
 
   const fetchGroups = useCallback(
     (cursor: string | null) => {
-      const params: { search?: string; visibility?: string } = {};
+      const params: { search?: string; visibility?: string; memberUserId?: number } = {};
       if (debouncedSearch) params.search = debouncedSearch;
-      if (filter !== 'all') params.visibility = filter;
+      if (filter === 'joined') {
+        // The same request the website's My Groups filter sends: GET /v2/groups?user_id=<me>.
+        if (canShowJoined) params.memberUserId = memberUserId;
+      } else if (filter !== 'all') {
+        params.visibility = filter;
+      }
       return getGroups(cursor, params);
     },
-    [debouncedSearch, filter],
+    [debouncedSearch, filter, canShowJoined, memberUserId],
   );
 
   const { items, isLoading, isLoadingMore, error, hasMore, loadMore, refresh } =
@@ -307,6 +327,7 @@ function GroupsScreen() {
   const groups = useMemo(() => items as ApiGroup[], [items]);
   const filterOptions: { value: FilterValue; label: string }[] = [
     { value: 'all', label: t('filter.all') },
+    ...(canShowJoined ? [{ value: 'joined' as const, label: t('filter.joined') }] : []),
     { value: 'public', label: t('filter.public') },
     { value: 'private', label: t('filter.private') },
   ];

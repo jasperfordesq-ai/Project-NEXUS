@@ -751,6 +751,40 @@ describe('API Request Functions', () => {
       );
     });
 
+    it('reads the member\'s own listings from GET /v2/listings/mine with status, type, limit and cursor', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: [], meta: { counts: {} } })
+      });
+
+      await api.getMyListings('test-token', { status: 'expired', type: 'request', limit: 20, cursor: 'c2' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/listings/mine?status=expired&type=request&limit=20&cursor=c2',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('sends scope=mine on the events list only when asked for "My events"', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: [], meta: {} })
+      });
+
+      await api.getEvents('test-token', { per_page: 12, scope: 'mine', when: 'past' });
+      expect(mockFetch).toHaveBeenLastCalledWith(
+        'http://localhost:5000/api/v2/events?per_page=12&scope=mine&when=past',
+        expect.anything()
+      );
+
+      await api.getEvents('test-token', { per_page: 12, scope: 'everyone' });
+      expect(mockFetch.mock.calls[mockFetch.mock.calls.length - 1][0]).not.toContain('scope=');
+    });
+
     it('should use Laravel cursor and supported listing query params', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,

@@ -9,6 +9,7 @@ const { randomUUID, timingSafeEqual } = require('node:crypto');
 const { requireAuth } = require('../middleware/auth');
 const {
   getListings,
+  getMyListings,
   getListing,
   createListing,
   updateListing,
@@ -1344,6 +1345,86 @@ router.get('/', asyncRoute(async (req, res) => {
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));
+
+// The signed-in member's own listings, grouped the way the API groups them
+// (live / waiting for review / not approved / expired / closed). The public
+// list above only ever shows live listings, so before this page a member could
+// not find their own listing once it expired or was waiting for an
+// administrator. Mirrors react-frontend MyListingsPage: GET /v2/listings/mine.
+const MY_LISTINGS_STATUSES = ['live', 'review', 'rejected', 'expired', 'closed'];
+// Shown even when empty: the two states every member can reach.
+const MY_LISTINGS_ALWAYS_SHOWN = ['live', 'expired'];
+
+router.get('/mine', requireAuth, asyncRoute(async (req, res) => {
+  const status = MY_LISTINGS_STATUSES.includes(String(req.query.status || ''))
+    ? String(req.query.status)
+    : 'live';
+  const type = ['offer', 'request'].includes(String(req.query.type || '')) ? String(req.query.type) : '';
+  const cursor = trimmed(req.query.cursor);
+
+  let loadError = false;
+  let result = { data: [], meta: {} };
+  try {
+    result = await getMyListings(req.token, {
+      status,
+      limit: 20,
+      ...(type ? { type } : {}),
+      ...(cursor ? { cursor } : {})
+    });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    loadError = true;
+  }
+
+  const meta = result?.meta || {};
+  const counts = meta.counts && typeof meta.counts === 'object' ? meta.counts : {};
+  const listings = collectionFrom(result)
+    .map((listing) => ({
+      id: positiveInteger(listing && listing.id),
+      title: trimmed(listing && (listing.title || listing.name)),
+      type: String(listing?.type || 'offer').toLowerCase() === 'request' ? 'request' : 'offer',
+      description: trimmed(String(listing?.description || '').replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' '),
+      imageUrl: resolveBackendMediaUrl(listing && (listing.image_url || listing.imageUrl))
+    }))
+    .filter((listing) => listing.id && listing.title);
+
+  const statusHref = (value) => {
+    const query = new URLSearchParams();
+    if (value !== 'live') query.set('status', value);
+    if (type) query.set('type', type);
+    const qs = query.toString();
+    return `/listings/mine${qs ? `?${qs}` : ''}`;
+  };
+  const tabs = MY_LISTINGS_STATUSES
+    .map((value) => ({
+      value,
+      count: Math.max(0, Math.trunc(Number(counts[value]) || 0)),
+      href: statusHref(value),
+      current: value === status
+    }))
+    .filter((tab) => tab.current || tab.count > 0 || MY_LISTINGS_ALWAYS_SHOWN.includes(tab.value));
+
+  const nextCursor = trimmed(meta.cursor || meta.next_cursor);
+  let nextHref = null;
+  if (meta.has_more && nextCursor) {
+    const nextQuery = new URLSearchParams();
+    if (status !== 'live') nextQuery.set('status', status);
+    if (type) nextQuery.set('type', type);
+    nextQuery.set('cursor', nextCursor);
+    nextHref = `/listings/mine?${nextQuery.toString()}`;
+  }
+
+  res.render('listings/mine', {
+    title: res.locals.t('govuk_alpha.own_records.my_listings'),
+    activeNav: 'listings',
+    listings,
+    tabs,
+    status,
+    type,
+    loadError,
+    nextHref
+  });
+}, { redirectOn401: loginRedirect() }));
 
 // New listing form
 router.get('/new', requireAuth, asyncRoute(async (req, res) => {

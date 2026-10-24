@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FlatList, Linking, RefreshControl, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Location from 'expo-location';
 import * as Haptics from '@/lib/haptics';
@@ -438,6 +438,21 @@ function ExchangesScreen() {
           </HeroButton>
         </View>
       </View>
+
+      {/*
+        The member's own listings, in every state. This list shows only live, approved
+        listings, so without this a listing that had expired or was waiting for review
+        could not be found again from the app.
+      */}
+      <HeroButton
+        size="sm"
+        variant="secondary"
+        testID="exchanges-my-listings"
+        onPress={() => router.push('/(modals)/my-listings' as Href)}
+      >
+        <Ionicons name="clipboard-outline" size={15} color={primary} />
+        <HeroButton.Label numberOfLines={1}>{t('mine.title')}</HeroButton.Label>
+      </HeroButton>
 
       <Tabs value={typeFilter} onValueChange={(value) => setTypeFilter(value as 'all' | ExchangeType)} variant="secondary">
         <Tabs.List>

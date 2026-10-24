@@ -82,6 +82,8 @@ export const ROUTE_REQUIREMENTS: Readonly<Record<string, RouteRequirement>> = {
   'exchange-detail': M('listings'),
   'new-exchange': M('listings'),
   'edit-exchange': M('listings'),
+  // The website's /listings/mine is gated on the listings module the same way.
+  'my-listings': M('listings'),
   matches: M('listings'),
   'match-preferences': M('listings'),
   'exchange-requests': { features: ['exchange_workflow'], modules: ['listings'] },

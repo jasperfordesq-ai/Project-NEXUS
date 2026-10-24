@@ -29,6 +29,8 @@ describe('mobile Irish member profile discovery', () => {
       'profile.shareMessage',
       'profile.amountPlaceholder',
       'profile.xp',
+      // "{{label}}: {{value}}" — a stat card's screen-reader label; both parts arrive translated.
+      'profile.statA11y',
     ]);
     const reviewedPaths = [...englishFlat.keys()].filter((path) => path.startsWith('profile.'));
 

@@ -197,7 +197,12 @@
     "thanksSentMessage": "{{name}} a été prévenu.",
     "thanksError": "Impossible d'envoyer ce merci.",
     "transferConfirmTitle": "Envoyer des crédits à une autre communauté ?",
-    "transferConfirmMessage": "{{amount}} heures quitteront votre portefeuille pour {{name}} dans {{community}}. Cette opération est irréversible depuis l’application."
+    "transferConfirmMessage": "{{amount}} heures quitteront votre portefeuille pour {{name}} dans {{community}}. Cette opération est irréversible depuis l’application.",
+    "statA11y": "{{label}} : {{value}}",
+    "statOpensWallet": "Ouvre votre Wallet",
+    "statOpensListings": "Ouvre vos annonces",
+    "statOpensGroups": "Ouvre les groupes dont vous êtes membre",
+    "statOpensEvents": "Ouvre les événements que vous organisez ou auxquels vous participez"
   },
   "collections": {
     "removeConfirmTitle": "Retirer cet élément enregistré ?",

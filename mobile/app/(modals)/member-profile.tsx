@@ -174,6 +174,16 @@ function MemberProfileScreenInner() {
   const isFederatedProfile = isExternalFederatedProfile || (safeTenantId !== null && (!Number.isFinite(authTenantId) || safeTenantId !== authTenantId));
   const isOwnProfile = !isFederatedProfile && user?.id === safeMemberId;
   const sameTenantCanSendCredits = !isOwnProfile && !isFederatedProfile && (hasModule('wallet') || hasFeature('wallet'));
+  const statLinks = useMemo(
+    () => ownProfileStatLinks({
+      isOwnProfile,
+      wallet: hasModule('wallet') || hasFeature('wallet'),
+      listings: hasModule('listings'),
+      groups: hasFeature('groups'),
+      events: hasFeature('events'),
+    }),
+    [isOwnProfile, hasModule, hasFeature],
+  );
 
   const { data, isLoading, error, errorStatus, refresh } = useApi(
     () => loadMemberProfileData(safeMemberId, safeTenantId, isFederatedProfile),
@@ -738,16 +748,23 @@ function MemberProfileScreenInner() {
             />
           ) : null}
 
+          {/*
+            On your OWN profile each number opens the records behind it, as on the website:
+            hours -> Wallet, listings -> My Listings, groups -> My Groups, events -> My Events.
+            Someone else's profile (and every federated one) keeps them as plain numbers.
+            Each destination respects the community's switches, so a card never leads to
+            "Not available here".
+          */}
           <View className="mt-3 gap-3">
             <View className="flex-row gap-3">
-              <StatCard value={Math.round(totalGiven)} label={t('profile.hoursGiven')} icon="arrow-up-outline" primary={primary} theme={theme} />
-              <StatCard value={Math.round(totalReceived)} label={t('profile.hoursReceived')} icon="arrow-down-outline" primary={primary} theme={theme} />
-              <StatCard value={Math.round(totalExchanged)} label={t('profile.totalHours')} icon="swap-horizontal-outline" primary={primary} theme={theme} />
+              <StatCard testID="profile-stat-hours-given" value={Math.round(totalGiven)} label={t('profile.hoursGiven')} icon="arrow-up-outline" primary={primary} theme={theme} t={t} link={statLinks.wallet} />
+              <StatCard testID="profile-stat-hours-received" value={Math.round(totalReceived)} label={t('profile.hoursReceived')} icon="arrow-down-outline" primary={primary} theme={theme} t={t} link={statLinks.wallet} />
+              <StatCard testID="profile-stat-total-hours" value={Math.round(totalExchanged)} label={t('profile.totalHours')} icon="swap-horizontal-outline" primary={primary} theme={theme} t={t} link={statLinks.wallet} />
             </View>
             <View className="flex-row gap-3">
-              <StatCard value={activeListings} label={t('profile.activeListings')} icon="list-outline" primary={primary} theme={theme} />
-              <StatCard value={groupsCount} label={t('profile.groups')} icon="people-outline" primary={primary} theme={theme} />
-              <StatCard value={eventsAttended} label={t('profile.events')} icon="calendar-outline" primary={primary} theme={theme} />
+              <StatCard testID="profile-stat-listings" value={activeListings} label={t('profile.activeListings')} icon="list-outline" primary={primary} theme={theme} t={t} link={statLinks.listings} />
+              <StatCard testID="profile-stat-groups" value={groupsCount} label={t('profile.groups')} icon="people-outline" primary={primary} theme={theme} t={t} link={statLinks.groups} />
+              <StatCard testID="profile-stat-events" value={eventsAttended} label={t('profile.events')} icon="calendar-outline" primary={primary} theme={theme} t={t} link={statLinks.events} />
             </View>
           </View>
 
@@ -1413,15 +1430,105 @@ function SectionTitle({ icon, title, primary, theme }: { icon: IoniconName; titl
   );
 }
 
-function StatCard({ value, label, icon, primary, theme }: { value: number; label: string; icon: IoniconName; primary: string; theme: Theme }) {
-  return (
+/** Where a stat card on the member's own profile leads, and what a screen reader says it does. */
+interface StatLink {
+  open: () => void;
+  hintKey: string;
+}
+
+interface StatLinks {
+  wallet?: StatLink;
+  listings?: StatLink;
+  groups?: StatLink;
+  events?: StatLink;
+}
+
+/**
+ * The stat-card destinations for the signed-in member's own profile, or none at all.
+ *
+ * Wallet, My Listings and My Groups open over the profile like every other screen it links
+ * to. Events is a tab, so it is reached the way the app reaches every tab from a link
+ * (`lib/utils/navigateToLink.ts`): replace, carrying `scope=mine` so it opens on My Events.
+ */
+function ownProfileStatLinks({
+  isOwnProfile,
+  wallet,
+  listings,
+  groups,
+  events,
+}: {
+  isOwnProfile: boolean;
+  wallet: boolean;
+  listings: boolean;
+  groups: boolean;
+  events: boolean;
+}): StatLinks {
+  if (!isOwnProfile) return {};
+  const links: StatLinks = {};
+  if (wallet) links.wallet = { open: () => router.push('/(modals)/wallet'), hintKey: 'profile.statOpensWallet' };
+  if (listings) links.listings = { open: () => router.push('/(modals)/my-listings' as Href), hintKey: 'profile.statOpensListings' };
+  if (groups) {
+    links.groups = {
+      open: () => router.push({ pathname: '/(modals)/groups', params: { scope: 'joined' } } as unknown as Href),
+      hintKey: 'profile.statOpensGroups',
+    };
+  }
+  if (events) {
+    links.events = {
+      open: () => router.replace({ pathname: '/(tabs)/events', params: { scope: 'mine' } } as unknown as Href),
+      hintKey: 'profile.statOpensEvents',
+    };
+  }
+  return links;
+}
+
+function StatCard({
+  value,
+  label,
+  icon,
+  primary,
+  theme,
+  t,
+  link,
+  testID,
+}: {
+  value: number;
+  label: string;
+  icon: IoniconName;
+  primary: string;
+  theme: Theme;
+  t: TFunction;
+  link?: StatLink;
+  testID?: string;
+}) {
+  const card = (
     <HeroCard variant="secondary" className="flex-1">
       <HeroCard.Body className="items-center gap-1 px-2 py-3">
         <Ionicons name={icon} size={16} color={primary} />
         <Text className="text-xl font-bold" style={{ color: primary }}>{value}</Text>
-        <Text className="text-center text-[11px] leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>{label}</Text>
+        <View className="flex-row items-center justify-center gap-0.5">
+          <Text className="text-center text-[11px] leading-4" style={{ color: theme.textSecondary }} numberOfLines={2}>{label}</Text>
+          {/* A phone has no hover, so a card that opens something shows the arrow list rows use. */}
+          {link ? <Ionicons name="chevron-forward" size={11} color={theme.textSecondary} /> : null}
+        </View>
       </HeroCard.Body>
     </HeroCard>
+  );
+
+  if (!link) return card;
+
+  return (
+    <NativePressable
+      className="flex-1"
+      contentClassName="flex-1"
+      onPress={link.open}
+      accessibilityRole="button"
+      accessibilityLabel={t('profile.statA11y', { label, value })}
+      accessibilityHint={t(link.hintKey)}
+      testID={testID}
+    >
+      {card}
+    </NativePressable>
   );
 }
 

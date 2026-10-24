@@ -9,13 +9,14 @@ import { render, fireEvent } from '@testing-library/react-native';
 // --- Mocks ---
 
 const mockRouterPush = jest.fn();
+let mockSearchParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => {
   return {
     useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
     useSegments: () => ['(tabs)'],
     router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
-    useLocalSearchParams: () => ({}),
+    useLocalSearchParams: () => mockSearchParams,
     useNavigation: () => ({ setOptions: jest.fn() }),
     useFocusEffect: jest.fn(),
   };
@@ -34,6 +35,7 @@ jest.mock('react-i18next', () => ({
         'filter.all': 'All',
         'filter.public': 'Public',
         'filter.private': 'Private',
+        'filter.joined': 'My Groups',
         'featured': 'Featured',
         'joined': 'Joined',
         'stats.groups': 'Groups',
@@ -98,6 +100,10 @@ jest.mock('@/lib/api/groups', () => ({
   getGroups: jest.fn(),
 }));
 
+jest.mock('@/lib/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 1, tenant_id: 2 }, isAuthenticated: true }),
+}));
+
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 jest.mock('@/components/ui/Skeleton', () => ({
@@ -122,6 +128,7 @@ const defaultPaginatedState = {
 
 beforeEach(() => {
   mockRouterPush.mockReset();
+  mockSearchParams = {};
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
 });
 
@@ -223,5 +230,44 @@ describe('GroupsScreen', () => {
     // Should not render empty text when loading
     const { queryByText } = render(<GroupsScreen />);
     expect(queryByText('No groups found.')).toBeNull();
+  });
+});
+
+/*
+  My Groups — the groups the signed-in member belongs to. The website's filter sends
+  GET /v2/groups?user_id=<me>; the member's own profile opens it with ?scope=joined.
+*/
+describe('GroupsScreen My Groups', () => {
+  const { getGroups } = require('@/lib/api/groups');
+
+  function latestFetcher() {
+    return mockUsePaginatedApi.mock.calls.at(-1)?.[0] as (cursor: string | null) => unknown;
+  }
+
+  it("offers My Groups and asks for the signed-in member's groups", () => {
+    const { getByText } = render(<GroupsScreen />);
+
+    latestFetcher()(null);
+    expect(getGroups).toHaveBeenLastCalledWith(null, {});
+
+    fireEvent.press(getByText('My Groups'));
+    latestFetcher()('c2');
+    expect(getGroups).toHaveBeenLastCalledWith('c2', { memberUserId: 1 });
+  });
+
+  it('opens straight on My Groups from ?scope=joined', () => {
+    mockSearchParams = { scope: 'joined' };
+    render(<GroupsScreen />);
+
+    latestFetcher()(null);
+    expect(getGroups).toHaveBeenLastCalledWith(null, { memberUserId: 1 });
+  });
+
+  it('ignores an unknown scope', () => {
+    mockSearchParams = { scope: 'everything' };
+    render(<GroupsScreen />);
+
+    latestFetcher()(null);
+    expect(getGroups).toHaveBeenLastCalledWith(null, {});
   });
 });

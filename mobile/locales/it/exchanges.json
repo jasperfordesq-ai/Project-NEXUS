@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "L’altro membro ha confermato {{hours}} ore. Una differenza superiore a un quarto d’ora invia questo scambio in revisione invece di completarlo.",
     "loadMore": "Mostra altri scambi"
   },
-  "unknownMember": "Membro sconosciuto"
+  "unknownMember": "Membro sconosciuto",
+  "mine": {
+    "title": "I miei annunci",
+    "description": "Tutto ciò che hai offerto o chiesto, e se gli altri membri possono vederlo.",
+    "tabsLabel": "Mostra i tuoi annunci per stato",
+    "tab": {
+      "live": "Visibili",
+      "review": "In attesa di verifica",
+      "rejected": "Non approvati",
+      "expired": "Scaduti",
+      "closed": "Chiusi"
+    },
+    "empty": {
+      "live": "Non hai annunci visibili",
+      "review": "Niente in attesa di verifica",
+      "rejected": "Niente qui",
+      "expired": "Niente è scaduto",
+      "closed": "Nessun annuncio chiuso"
+    },
+    "emptyLiveBody": "Offri una competenza o chiedi aiuto, e apparirà qui.",
+    "loadError": "Impossibile caricare i tuoi annunci.",
+    "visibleUntil": "Visibile fino al {{date}}",
+    "state": {
+      "review": "Un amministratore sta verificando questo annuncio. Gli altri membri lo vedranno una volta approvato.",
+      "rejected": "Un amministratore non ha approvato questo annuncio, quindi gli altri membri non possono vederlo.",
+      "expired": "Questo annuncio è scaduto. Gli altri membri non possono vederlo finché non lo rinnovi.",
+      "closed": "Questo annuncio è chiuso, quindi gli altri membri non possono vederlo."
+    },
+    "rejectedReason": "Motivo indicato: {{reason}}",
+    "newListing": "Nuovo annuncio"
+  }
 }

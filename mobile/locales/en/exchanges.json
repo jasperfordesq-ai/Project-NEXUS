@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "The other member has confirmed {{hours}} hours. A difference of more than a quarter of an hour sends this exchange for review instead of completing it.",
     "loadMore": "Show more exchanges"
   },
-  "unknownMember": "Unknown member"
+  "unknownMember": "Unknown member",
+  "mine": {
+    "title": "My listings",
+    "description": "Everything you have offered or asked for, and whether other members can see it.",
+    "tabsLabel": "Show your listings by state",
+    "tab": {
+      "live": "Live",
+      "review": "Waiting for review",
+      "rejected": "Not approved",
+      "expired": "Expired",
+      "closed": "Closed"
+    },
+    "empty": {
+      "live": "You have no live listings",
+      "review": "Nothing is waiting for review",
+      "rejected": "Nothing here",
+      "expired": "Nothing has expired",
+      "closed": "No closed listings"
+    },
+    "emptyLiveBody": "Offer a skill or ask for help, and it will appear here.",
+    "loadError": "We could not load your listings.",
+    "visibleUntil": "Visible until {{date}}",
+    "state": {
+      "review": "An administrator is checking this listing. Other members will see it once it is approved.",
+      "rejected": "An administrator did not approve this listing, so other members cannot see it.",
+      "expired": "This listing has expired. Other members cannot see it until you renew it.",
+      "closed": "This listing is closed, so other members cannot see it."
+    },
+    "rejectedReason": "Reason given: {{reason}}",
+    "newListing": "New listing"
+  }
 }

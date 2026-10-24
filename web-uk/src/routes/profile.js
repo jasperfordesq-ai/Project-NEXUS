@@ -758,6 +758,8 @@ function ownProfileStats(profile, gamificationResult) {
     stats.receivedCount
   );
   const listingsCount = Math.trunc(numericProfileValue(stats.listings_count, stats.listingsCount));
+  const groupsCount = Math.trunc(numericProfileValue(profile.groups_count, stats.groups_count, stats.groupsCount));
+  const eventsCount = Math.trunc(numericProfileValue(profile.events_attended, stats.events_attended, stats.eventsAttended));
   const ratingValue = profile.rating ?? stats.average_rating ?? stats.averageRating;
   const rating = ratingValue === null || ratingValue === undefined || ratingValue === ''
     ? null
@@ -769,6 +771,8 @@ function ownProfileStats(profile, gamificationResult) {
     hoursGivenLabel: formatProfileNumber(hoursGiven, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
     hoursReceivedLabel: formatProfileNumber(hoursReceived, { minimumFractionDigits: 1, maximumFractionDigits: 2 }),
     listingsCountLabel: formatProfileNumber(listingsCount, { maximumFractionDigits: 0 }),
+    groupsCountLabel: formatProfileNumber(groupsCount, { maximumFractionDigits: 0 }),
+    eventsCountLabel: formatProfileNumber(eventsCount, { maximumFractionDigits: 0 }),
     ratingLabel: rating === null ? '' : formatProfileNumber(rating, { maximumFractionDigits: 1 }),
     levelLabel: formatProfileNumber(level, { maximumFractionDigits: 0 }),
     xpLabel: formatProfileNumber(xp, { maximumFractionDigits: 0 })
@@ -2064,7 +2068,21 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
   const profileFeatures = {
     listings: flagEnabled(tenant, 'listings', 'modules', true),
     reviews: flagEnabled(tenant, 'reviews', 'features', true),
-    gamification: flagEnabled(tenant, 'gamification', 'features', true)
+    gamification: flagEnabled(tenant, 'gamification', 'features', true),
+    wallet: flagEnabled(tenant, 'wallet', 'modules', true),
+    groups: flagEnabled(tenant, 'groups', 'features', true),
+    events: flagEnabled(tenant, 'events', 'features', true)
+  };
+  // 🔴 This page is only ever the signed-in member's OWN profile, so every stat
+  // links to their own records — the same destinations as the main website's
+  // profile cards. A link is offered only where the tenant gate for its
+  // destination is open (the same gates tenant-feature-gates.js enforces), so
+  // it never leads to a 403. Other members' profiles (/members/:id) stay text.
+  const profileStatLinks = {
+    wallet: profileFeatures.wallet ? '/wallet' : '',
+    listings: profileFeatures.listings ? '/listings/mine' : '',
+    groups: profileFeatures.groups ? '/groups?filter=joined' : '',
+    events: profileFeatures.events ? '/events?scope=mine' : ''
   };
   const [listingsResult, reviewsResult, gamificationResult, badgesResult, availabilityResult, activityResult] = await Promise.all([
     memberId && profileFeatures.listings
@@ -2117,6 +2135,7 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
     joinedLabel: formatProfileDate(profileValue(profile, 'created_at')),
     communityName: res.locals.tenantName || res.locals.serviceName || '',
     profileFeatures,
+    profileStatLinks,
     profileAvailability: profileAvailabilityFrom(availabilityResult, t),
     profileActivity: profileActivityFrom(activityResult, t),
     successMessage: statusConfig?.message || flashSuccess

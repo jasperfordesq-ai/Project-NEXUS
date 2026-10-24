@@ -938,6 +938,12 @@ export type EventStepFreeFilter = 'yes' | 'no' | 'unknown';
 export interface EventDiscoveryFilters {
   groupId?: number | null;
   stepFree?: EventStepFreeFilter | null;
+  /**
+   * "My Events": only events the signed-in member organises or has said they are going
+   * to (`scope=mine`, combinable with `when`). The same filter the website's My Events
+   * toggle sends.
+   */
+  mine?: boolean;
 }
 
 export async function getCanonicalEvents(
@@ -951,6 +957,7 @@ export async function getCanonicalEvents(
   if (cursor) params.cursor = cursor;
   if (filters.groupId) params.group_id = String(filters.groupId);
   if (filters.stepFree) params.step_free = filters.stepFree;
+  if (filters.mine) params.scope = 'mine';
   const response = await api.get<unknown>(endpoint, params, eventRequestOptions);
   return parseContract(endpoint, eventsResponseSchema, response);
 }

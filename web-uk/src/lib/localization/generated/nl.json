@@ -6129,6 +6129,34 @@
                 "revoke": "Alle vertrouwde apparaten vergeten",
                 "revoked": "Vertrouwde apparaten verwijderd. Bij de volgende aanmelding is verificatie nodig.",
                 "failed": "De actie kon niet worden voltooid. Controleer uw code en probeer het opnieuw."
+            },
+            "own_records": {
+                "groups_label": "Groepen",
+                "events_label": "Evenementen",
+                "open_wallet": "open je portemonnee",
+                "open_listings": "bekijk je advertenties",
+                "open_groups": "bekijk je groepen",
+                "open_events": "bekijk je evenementen",
+                "my_listings": "Mijn advertenties",
+                "my_listings_description": "Alle advertenties die je hebt geplaatst, ook advertenties die verlopen zijn of op goedkeuring wachten.",
+                "all_listings": "Alle advertenties bekijken",
+                "status_nav_label": "Je advertenties per status",
+                "status": {
+                    "live": "Actief",
+                    "review": "Wacht op goedkeuring",
+                    "rejected": "Niet goedgekeurd",
+                    "expired": "Verlopen",
+                    "closed": "Gesloten"
+                },
+                "my_listings_empty": "Je hebt hier geen advertenties.",
+                "my_listings_load_error": "We konden je advertenties niet laden. Probeer het opnieuw.",
+                "edit": "Bewerken",
+                "my_groups": "Mijn groepen",
+                "all_groups": "Alle groepen",
+                "my_events": "Mijn evenementen",
+                "all_events": "Alle evenementen",
+                "my_events_description": "Evenementen die je organiseert of waarvoor je hebt aangegeven te komen.",
+                "my_events_empty": "Je organiseert of bezoekt geen evenementen die hieraan voldoen."
             }
         },
         "govuk_alpha_activity": {

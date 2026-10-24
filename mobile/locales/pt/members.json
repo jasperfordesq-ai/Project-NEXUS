@@ -197,7 +197,12 @@
     "thanksSentMessage": "{{name}} foi avisado.",
     "thanksError": "Não foi possível enviar esse agradecimento.",
     "transferConfirmTitle": "Enviar créditos para outra comunidade?",
-    "transferConfirmMessage": "{{amount}} horas vão sair da sua carteira e passar para {{name}} em {{community}}. Não é possível anular esta operação na aplicação."
+    "transferConfirmMessage": "{{amount}} horas vão sair da sua carteira e passar para {{name}} em {{community}}. Não é possível anular esta operação na aplicação.",
+    "statA11y": "{{label}}: {{value}}",
+    "statOpensWallet": "Abre a sua Wallet",
+    "statOpensListings": "Abre os seus anúncios",
+    "statOpensGroups": "Abre os grupos a que pertence",
+    "statOpensEvents": "Abre os eventos que organiza ou a que vai"
   },
   "collections": {
     "removeConfirmTitle": "Remover este item guardado?",

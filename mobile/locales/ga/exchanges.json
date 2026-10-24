@@ -563,5 +563,35 @@
     "confirmSheetOtherConfirmed_other": "Tá {{hours}} uair deimhnithe ag an gcomhalta eile. Má tá difríocht níos mó ná ceathrú uaire ann, seoltar an malartú seo le hathbhreithniú in ionad é a chur i gcrích.",
     "loadMore": "Taispeáin tuilleadh malartuithe"
   },
-  "unknownMember": "Ball anaithnid"
+  "unknownMember": "Ball anaithnid",
+  "mine": {
+    "title": "Mo liostálacha",
+    "description": "Gach rud a thairg tú nó a d'iarr tú, agus an féidir le baill eile é a fheiceáil.",
+    "tabsLabel": "Taispeáin do liostálacha de réir stádais",
+    "tab": {
+      "live": "Le feiceáil",
+      "review": "Ag fanacht le hathbhreithniú",
+      "rejected": "Gan faomhadh",
+      "expired": "Imithe in éag",
+      "closed": "Dúnta"
+    },
+    "empty": {
+      "live": "Níl aon liostáil agat atá le feiceáil",
+      "review": "Níl aon rud ag fanacht le hathbhreithniú",
+      "rejected": "Níl aon rud anseo",
+      "expired": "Níl aon rud imithe in éag",
+      "closed": "Níl aon liostáil dúnta"
+    },
+    "emptyLiveBody": "Tairg scil nó iarr cabhair, agus beidh sé le feiceáil anseo.",
+    "loadError": "Níorbh fhéidir do liostálacha a lódáil.",
+    "visibleUntil": "Le feiceáil go dtí {{date}}",
+    "state": {
+      "review": "Tá riarthóir ag seiceáil na liostála seo. Feicfidh baill eile í nuair a fhaomhfar í.",
+      "rejected": "Níor fhaomh riarthóir an liostáil seo, mar sin ní féidir le baill eile í a fheiceáil.",
+      "expired": "Tá an liostáil seo imithe in éag. Ní féidir le baill eile í a fheiceáil go dtí go n-athnuafaidh tú í.",
+      "closed": "Tá an liostáil seo dúnta, mar sin ní féidir le baill eile í a fheiceáil."
+    },
+    "rejectedReason": "An chúis a tugadh: {{reason}}",
+    "newListing": "Liostáil nua"
+  }
 }

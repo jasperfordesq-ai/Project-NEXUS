@@ -9,6 +9,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 // --- Mocks ---
 
 const mockRouterPush = jest.fn();
+let mockSearchParams: Record<string, string | undefined> = {};
 const mockGetCanonicalEvents = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -16,7 +17,7 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useSegments: () => ['(tabs)'],
   router: { push: (...args: unknown[]) => mockRouterPush(...args), replace: jest.fn(), back: jest.fn() },
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockSearchParams,
   useNavigation: () => ({ setOptions: jest.fn() }),
 }));
 
@@ -112,6 +113,7 @@ const defaultPaginatedState = {
 
 beforeEach(() => {
   mockRouterPush.mockReset();
+  mockSearchParams = {};
   mockGetCanonicalEvents.mockReset();
   mockUsePaginatedApi.mockReturnValue(defaultPaginatedState);
 });
@@ -352,5 +354,39 @@ describe('EventsScreen', () => {
 
     const { getByText } = render(<EventsScreen />);
     expect(getByText('Online')).toBeTruthy();
+  });
+});
+
+/*
+  My Events — events the member organises or is going to (GET /v2/events?scope=mine).
+  The member's own profile opens it with ?scope=mine.
+*/
+describe('EventsScreen My Events', () => {
+  function latestFetcher() {
+    return mockUsePaginatedApi.mock.calls.at(-1)?.[0] as (cursor: string | null) => Promise<unknown>;
+  }
+
+  it('toggles My Events on and off, keeping Upcoming/Past', async () => {
+    const { getByTestId } = render(<EventsScreen />);
+
+    await latestFetcher()(null);
+    expect(mockGetCanonicalEvents).toHaveBeenLastCalledWith('upcoming', null, 20, { stepFree: null });
+
+    fireEvent.press(getByTestId('events-my-events-toggle'));
+    await latestFetcher()(null);
+    expect(mockGetCanonicalEvents).toHaveBeenLastCalledWith('upcoming', null, 20, { stepFree: null, mine: true });
+    expect(getByTestId('events-my-events-toggle').props.accessibilityState).toEqual(expect.objectContaining({ selected: true }));
+
+    fireEvent.press(getByTestId('events-my-events-toggle'));
+    await latestFetcher()(null);
+    expect(mockGetCanonicalEvents).toHaveBeenLastCalledWith('upcoming', null, 20, { stepFree: null });
+  });
+
+  it('opens straight on My Events from ?scope=mine', async () => {
+    mockSearchParams = { scope: 'mine' };
+    render(<EventsScreen />);
+
+    await latestFetcher()(null);
+    expect(mockGetCanonicalEvents).toHaveBeenLastCalledWith('upcoming', null, 20, { stepFree: null, mine: true });
   });
 });

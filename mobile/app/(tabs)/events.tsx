@@ -3,10 +3,10 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import * as Haptics from '@/lib/haptics';
 import { Card as HeroCard, Select, Separator, Spinner, Surface } from 'heroui-native';
@@ -56,16 +56,33 @@ function EventsScreen() {
   const theme = useTheme();
   const [when, setWhen] = useState<EventTab>('upcoming');
   const [stepFree, setStepFree] = useState<StepFreeSelection>('any');
+  /*
+    "My Events" — only events the member organises or is going to (`scope=mine` on the
+    API, combinable with Upcoming/Past). `?scope=mine` opens the screen on it: the
+    member's own profile links here from its Events card, and so does the website's
+    /events?scope=mine. The effect follows a later link while the tab is already mounted.
+  */
+  const { scope } = useLocalSearchParams<{ scope?: string }>();
+  const [mine, setMine] = useState(scope === 'mine');
+  useEffect(() => {
+    if (scope === 'mine') setMine(true);
+  }, [scope]);
 
   const fetcher = useCallback(
     (cursor: string | null) => getCanonicalEvents(when, cursor, 20, {
       stepFree: stepFree === 'any' ? null : stepFree,
+      ...(mine ? { mine: true } : {}),
     }),
-    [when, stepFree],
+    [when, stepFree, mine],
   );
 
   const { items, isLoading, isLoadingMore, hasMore, refresh, loadMore, error } =
-    usePaginatedApi<CanonicalEvent, CanonicalEventsResponse>(fetcher, extractEventsPage, [when, stepFree]);
+    usePaginatedApi<CanonicalEvent, CanonicalEventsResponse>(fetcher, extractEventsPage, [when, stepFree, mine]);
+
+  function handleMineToggle() {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setMine((current) => !current);
+  }
   const refreshOnFocus = refresh;
   /*
     🔴 S4-09: an RSVP, a join, or something created on a child screen was invisible here
@@ -95,7 +112,7 @@ function EventsScreen() {
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>
       {error && items.length === 0 ? (
         <View className="flex-1">
-          <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
+          <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} mine={mine} onMineToggle={handleMineToggle} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
           <HeroCard variant="secondary" className="mx-4 my-8">
             <HeroCard.Body className="items-center gap-4">
               <Ionicons name="warning-outline" size={30} color={primary} />
@@ -133,7 +150,7 @@ function EventsScreen() {
           onEndReached={() => { if (hasMore) void loadMore(); }}
           onEndReachedThreshold={0.4}
           ListHeaderComponent={
-            <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
+            <EventsHeader t={t} primary={primary} theme={theme} when={when} onTabChange={handleTabChange} stepFree={stepFree} onStepFreeChange={setStepFree} mine={mine} onMineToggle={handleMineToggle} count={error && items.length === 0 ? null : items.length} isLoading={isLoading} />
           }
           ListEmptyComponent={
             isLoading ? (
@@ -146,7 +163,7 @@ function EventsScreen() {
                     {t('noEvents', { when: t(when).toLowerCase() })}
                   </Text>
                   <Text className="text-center text-sm leading-5" style={{ color: theme.textSecondary }}>
-                    {when === 'upcoming' ? t('emptyUpcoming') : t('emptyPast')}
+                    {mine ? t('myEvents.empty') : when === 'upcoming' ? t('emptyUpcoming') : t('emptyPast')}
                   </Text>
                 </HeroCard.Body>
               </HeroCard>
@@ -188,6 +205,8 @@ function EventsHeader({
   onTabChange,
   stepFree,
   onStepFreeChange,
+  mine,
+  onMineToggle,
   count,
   isLoading,
 }: {
@@ -198,6 +217,8 @@ function EventsHeader({
   onTabChange: (tab: EventTab) => void;
   stepFree: StepFreeSelection;
   onStepFreeChange: (value: StepFreeSelection) => void;
+  mine: boolean;
+  onMineToggle: () => void;
   count: number | null;
   isLoading: boolean;
 }) {
@@ -271,6 +292,18 @@ function EventsHeader({
             </Tabs.Trigger>
           </Tabs.List>
         </Tabs>
+
+        {/* A toggle, as on the website: it narrows whichever of Upcoming/Past is showing. */}
+        <HeroButton
+          testID="events-my-events-toggle"
+          size="sm"
+          variant={mine ? 'primary' : 'secondary'}
+          onPress={onMineToggle}
+          accessibilityState={{ selected: mine }}
+        >
+          <Ionicons name={mine ? 'person' : 'person-outline'} size={15} color={mine ? theme.onPrimary : primary} />
+          <HeroButton.Label>{t('myEvents.button')}</HeroButton.Label>
+        </HeroButton>
 
         <View className="gap-1.5">
           <Text className="text-sm font-medium" style={{ color: theme.text }}>
