@@ -366,8 +366,11 @@ class SocialControllerTest extends TestCase
                 'event' => DB::table('events')->insertGetId([
                     'tenant_id' => $tenantId, 'user_id' => $userId,
                     'title' => 'Test event', 'description' => 'x',
+                    // Full future datetimes: the feed hides events whose
+                    // end (or start) time has passed, and a bare '12:00:00'
+                    // in these DATETIME columns is not a future moment.
                     'start_date' => '2030-01-01 12:00:00',
-                    'start_time' => '12:00:00', 'end_time' => '13:00:00',
+                    'start_time' => '2030-01-01 12:00:00', 'end_time' => '2030-01-01 13:00:00',
                     'is_online'  => 0, 'created_at' => $now, 'updated_at' => $now,
                 ]),
                 'goal' => DB::table('goals')->insertGetId([
@@ -697,6 +700,9 @@ class SocialControllerTest extends TestCase
             'description' => 'desc',
             'location'    => 'somewhere',
             'start_date'  => date('Y-m-d H:i:s', strtotime('+1 day')),
+            // start_time is what the feed's "already finished" check reads.
+            'start_time'  => date('Y-m-d H:i:s', strtotime('+1 day')),
+            'end_time'    => date('Y-m-d H:i:s', strtotime('+1 day +1 hour')),
             'is_virtual'  => 0,
             'created_at'  => now(),
             'updated_at'  => now(),
