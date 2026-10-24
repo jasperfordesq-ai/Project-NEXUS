@@ -174,11 +174,22 @@ class PodcastService
         return PodcastShow::with(['owner:id,name,avatar_url'])->find($id);
     }
 
+    /**
+     * Resolve a show by slug, or by numeric id when no slug matches. The
+     * accessible frontend (web-uk) links podcasts by id; the slug wins so a
+     * show whose slug is all digits keeps its own address.
+     */
     public static function findShowBySlug(string $slug, ?int $userId = null, bool $isAdmin = false): ?PodcastShow
     {
         $show = PodcastShow::where('slug', $slug)
             ->with('owner:id,name,avatar_url')
             ->first();
+
+        if (!$show && ctype_digit($slug)) {
+            $show = PodcastShow::where('id', (int) $slug)
+                ->with('owner:id,name,avatar_url')
+                ->first();
+        }
 
         if (!$show) {
             return null;
@@ -210,6 +221,14 @@ class PodcastService
             ->where('slug', $slug)
             ->with(['show.owner:id,name,avatar_url', 'author:id,name,avatar_url', 'chapters'])
             ->first();
+
+        // Same id fallback as findShowBySlug(), still confined to this show.
+        if (!$episode && ctype_digit($slug)) {
+            $episode = PodcastEpisode::where('show_id', $show->id)
+                ->where('id', (int) $slug)
+                ->with(['show.owner:id,name,avatar_url', 'author:id,name,avatar_url', 'chapters'])
+                ->first();
+        }
 
         if ($episode) {
             self::applyConfigVisibilityToEpisode($episode);
