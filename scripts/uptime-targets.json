@@ -118,6 +118,23 @@
       "expectBodyContains": "nexus-webuk"
     },
     {
+      "name": "Accessible frontend (TimeBank Ireland community domain)",
+      "url": "https://accessible.hour-timebank.ie",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "TimeBank Ireland accessible domain is web-uk",
+      "url": "https://accessible.hour-timebank.ie/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ],
+      "expectBodyContains": "nexus-webuk"
+    },
+    {
       "name": "Accessible frontend (AWID community domain)",
       "url": "https://accessible-awid.timebank.global",
       "track": "production",
