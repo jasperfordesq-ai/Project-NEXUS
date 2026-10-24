@@ -93,6 +93,59 @@ final class EventFeedLifecycleVisibilityTest extends TestCase
         self::assertSame([$publishedId], $ownVisibleIds);
     }
 
+    /**
+     * A finished event stays "published + scheduled" in the database — nothing
+     * moves it to completed when its time passes — so the lifecycle check alone
+     * kept past events on the feed after the events page had dropped them.
+     */
+    public function test_feed_hides_events_that_have_already_finished(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+        ]);
+        $this->userIds[] = (int) $user->id;
+
+        $live = [
+            'status' => 'active',
+            'publication_status' => 'published',
+            'operational_status' => 'scheduled',
+        ];
+        $upcomingId = $this->event((int) $user->id, 'Upcoming event', $live);
+        $runningId = $this->event((int) $user->id, 'Running event', $live + [
+            'start_time' => now()->subHour(),
+            'end_time' => now()->addHour(),
+        ]);
+        $this->event((int) $user->id, 'Finished event', $live + [
+            'start_time' => now()->subDays(2),
+            'end_time' => now()->subDays(2)->addHours(2),
+        ]);
+        $this->event((int) $user->id, 'Past event without an end time', $live + [
+            'start_time' => now()->subDay(),
+            'end_time' => null,
+        ]);
+
+        $service = new FeedService(new FeedActivity(), new FeedPost());
+        foreach (['events', 'all'] as $type) {
+            $result = $service->getFeed(
+                (int) $user->id,
+                ['type' => $type, 'mode' => 'chronological', 'limit' => 100],
+            );
+
+            $ownVisibleIds = array_values(array_intersect(
+                array_column(array_filter(
+                    $result['items'],
+                    static fn (array $item): bool => ($item['type'] ?? null) === 'event',
+                ), 'id'),
+                $this->eventIds,
+            ));
+            sort($ownVisibleIds);
+            $expected = [$upcomingId, $runningId];
+            sort($expected);
+            self::assertSame($expected, $ownVisibleIds, "feed type={$type}");
+        }
+    }
+
     /** @param array<string,mixed> $lifecycle */
     private function event(int $userId, string $title, array $lifecycle): int
     {

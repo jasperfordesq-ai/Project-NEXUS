@@ -15,6 +15,7 @@ use App\Services\FeedRankingService;
 use App\Services\LinkPreviewService;
 use App\Services\MentionService;
 use App\Services\ShareService;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -249,6 +250,7 @@ class FeedService
                         ->from('events as visible_events')
                         ->whereColumn('visible_events.id', 'feed_activity.source_id');
                     EventSearchVisibility::applyToQuery($events, $tenantId, 'visible_events');
+                    self::excludeFinishedEvents($events, 'visible_events');
                 });
         });
 
@@ -1082,6 +1084,18 @@ class FeedService
      *
      * @param  array<int, array<string, mixed>>  $items
      */
+    /**
+     * A finished event keeps publication "published" and operational
+     * "scheduled" — nothing moves it to completed when its time passes — so
+     * the lifecycle boundary alone left past events on the feed after the
+     * events page had dropped them. An event leaves the feed once it ends;
+     * one with no end time leaves once it starts.
+     */
+    private static function excludeFinishedEvents(QueryBuilder $query, string $table): void
+    {
+        $query->whereRaw("COALESCE({$table}.end_time, {$table}.start_time) >= ?", [now()]);
+    }
+
     private function filterOutOrphanedItems(array $items, int $tenantId, ?int $currentUserId = null): array
     {
         if (empty($items)) {
@@ -1126,6 +1140,7 @@ class FeedService
                 // remain in the database for audit, so existence-only filtering
                 // would leak stale cards after a lifecycle transition.
                 EventSearchVisibility::applyToQuery($query, $tenantId, $table);
+                self::excludeFinishedEvents($query, $table);
             } else {
                 $query->where($table . '.tenant_id', $tenantId);
             }
