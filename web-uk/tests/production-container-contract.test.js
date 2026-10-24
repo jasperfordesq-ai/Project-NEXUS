@@ -24,7 +24,10 @@ describe('production container source contract', () => {
     // Node 22 ("Jod") is the active LTS, supported to 2027-04.
     const MINIMUM_NODE_MAJOR = 22;
 
-    const baseImage = dockerfile.match(/^ARG NODE_IMAGE=node:(\d+)-alpine$/m);
+    // An exact release (node:22.23.4-alpine) is allowed: the deploy never pulls,
+    // so a bare major tag stayed on whatever 22.x the server first fetched
+    // (22.22.0 missed the 21 Oct 2026 security release, F-604).
+    const baseImage = dockerfile.match(/^ARG NODE_IMAGE=node:(\d+)(?:\.\d+\.\d+)?-alpine$/m);
     expect(baseImage).not.toBeNull();
     expect(Number(baseImage[1])).toBeGreaterThanOrEqual(MINIMUM_NODE_MAJOR);
 
@@ -39,7 +42,7 @@ describe('production container source contract', () => {
     const pkg = JSON.parse(
       fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
     );
-    const imageMajor = Number(dockerfile.match(/^ARG NODE_IMAGE=node:(\d+)-alpine$/m)[1]);
+    const imageMajor = Number(dockerfile.match(/^ARG NODE_IMAGE=node:(\d+)(?:\.\d+\.\d+)?-alpine$/m)[1]);
     const enginesMajor = Number(pkg.engines.node.match(/(\d+)/)[1]);
 
     expect(enginesMajor).toBe(imageMajor);
