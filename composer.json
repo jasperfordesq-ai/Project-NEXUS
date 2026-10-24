@@ -70,7 +70,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.2.30"
+            "php": "8.2.35"
         },
         "allow-plugins": {
             "php-http/discovery": true

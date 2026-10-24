@@ -37,7 +37,7 @@
 
 # ── linux-libc-dev kernel CVEs (NOT exploitable in Docker containers) ───────
 # These are all Linux kernel vulnerabilities found in the Debian base image
-# (php:8.2.30-apache). Docker containers share the HOST kernel — the
+# (php:8.2.35-apache). Docker containers share the HOST kernel — the
 # linux-libc-dev package only provides kernel header files for compilation, NOT
 # the running kernel. These CVEs require:
 #   - Direct access to host kernel (not available in containers)

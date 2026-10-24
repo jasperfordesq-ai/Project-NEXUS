@@ -66,11 +66,16 @@ final class F552ReactNginxVersionDisclosureTest extends TestCase
 
         self::assertCount(1, array_unique($images), 'Both production Dockerfiles must ship the same nginx image');
 
+        // An exact patch pin (nginx:1.30.6-alpine) is allowed and preferred: the
+        // deploy builds with --no-cache but never --pull, so a line tag such as
+        // nginx:1.30-alpine stayed on whatever patch the server first fetched
+        // (1.30.5 missed the 14 Oct 2026 security release, F-603). What stays
+        // forbidden is a distro tag that hides the nginx version (nginx:alpine3.21).
         $image = reset($images);
         self::assertSame(
             1,
-            preg_match('/^nginx:1\.(\d+)-alpine$/', $image, $version),
-            "Pin a stable nginx line such as nginx:1.30-alpine, not a distro tag that freezes the nginx version (got {$image})"
+            preg_match('/^nginx:1\.(\d+)(?:\.\d+)?-alpine$/', $image, $version),
+            "Pin a stable nginx release such as nginx:1.30.6-alpine, not a distro tag that hides the nginx version (got {$image})"
         );
         $minor = (int) $version[1];
         self::assertSame(0, $minor % 2, "nginx 1.{$minor} is a mainline branch; production follows an even-numbered stable line");

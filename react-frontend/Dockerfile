@@ -4,7 +4,7 @@
 # Node 22 with Vite dev server for development
 # =============================================================================
 
-FROM node:22-alpine
+FROM node:22.23.4-alpine
 
 # Build arguments
 ARG NODE_ENV=development

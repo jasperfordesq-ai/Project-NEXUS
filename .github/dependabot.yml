@@ -12,6 +12,27 @@ updates:
       php-development:
         dependency-type: development
 
+  # Container base images (php, nginx, node). Added 2026-10-24 (E-112): the
+  # images are pinned to exact patch releases and nothing watched them, so
+  # production sat on PHP 8.2.30 through five security releases and missed the
+  # PHP2Shell fix (F-602). A new PHP minor, Node major or nginx line is a
+  # deliberate upgrade, not a weekly PR (odd nginx minors are mainline, which
+  # production does not follow).
+  - package-ecosystem: docker
+    directories: ['/', '/react-frontend', '/web-uk']
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: php
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Node ships security fixes in minor releases too (22.22 -> 22.23).
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
+      - dependency-name: nginx
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+
   - package-ecosystem: npm
     directory: /
     schedule:

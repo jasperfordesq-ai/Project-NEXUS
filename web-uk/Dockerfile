@@ -16,7 +16,7 @@
 # image shipped 20. This aligns the image with what is actually tested.
 #
 # Node 22 is the active LTS ("Jod"), supported to 2027-04.
-ARG NODE_IMAGE=node:22-alpine
+ARG NODE_IMAGE=node:22.23.4-alpine
 
 # -----------------------------------------------------------------------------
 # Base stage - shared between dev and prod

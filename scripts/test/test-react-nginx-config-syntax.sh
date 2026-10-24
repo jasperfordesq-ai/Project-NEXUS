@@ -59,7 +59,7 @@ case "$(uname -s)" in
         export MSYS_NO_PATHCONV=1
         ;;
 esac
-IMAGE="nginx:1.30-alpine"
+IMAGE="nginx:1.30.6-alpine"
 CONFIGS=(nginx.conf nginx.bluegreen.conf)
 
 if ! docker info >/dev/null 2>&1; then

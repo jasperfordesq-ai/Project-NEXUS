@@ -50,7 +50,7 @@ docker run -d --name "$CONTAINER" \
     -v "$ENTRYPOINT:/test-entrypoint.sh:ro" \
     -v "$AUTH_HELPER:/usr/local/bin/nexus-maintenance-render-auth:ro" \
     -e PRERENDER_PHP_UID=33 \
-    nginx:1.30-alpine sh -ceu '
+    nginx:1.30.6-alpine sh -ceu '
         apk add --no-cache acl apache2-utils util-linux >/dev/null
         /test-entrypoint.sh
         : > /tmp/acl-ready

@@ -62,7 +62,7 @@ STUBCONF
 docker network create "$NETWORK" >/dev/null
 docker run -d --rm --name "$STUB" --network "$NETWORK" --network-alias api \
     -v "$(dpath "$TEST_ROOT/stub.conf"):/etc/nginx/conf.d/default.conf:ro" \
-    nginx:1.30-alpine >/dev/null
+    nginx:1.30.6-alpine >/dev/null
 
 docker run -d --rm \
     --name "$CONTAINER" \
@@ -73,7 +73,7 @@ docker run -d --rm \
     -v "$(dpath "$CONF"):/etc/nginx/templates/default.conf.template:ro" \
     -v "$(dpath "$HTML"):/usr/share/nginx/html" \
     -v "$(dpath "$TEST_ROOT/nginx/trusted-bots.list"):/etc/nginx/prerender-trusted-bot-ips.list:ro" \
-    nginx:1.30-alpine >/dev/null
+    nginx:1.30.6-alpine >/dev/null
 
 PORT="$(docker inspect --format '{{(index (index .NetworkSettings.Ports "80/tcp") 0).HostPort}}' "$CONTAINER")"
 BASE="http://127.0.0.1:$PORT"
