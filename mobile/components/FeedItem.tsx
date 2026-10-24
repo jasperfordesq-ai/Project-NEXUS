@@ -156,6 +156,17 @@ const TYPE_CONFIG: Record<
     icon: 'people-outline',
     strip: ['#D946EF', '#A855F7', '#D946EF'],
   },
+  // Colours follow the web card's podcast gradients (fuchsia/violet, violet/blue).
+  podcast_show: {
+    chipColor: 'accent',
+    icon: 'mic-outline',
+    strip: ['#D946EF', '#8B5CF6', '#D946EF'],
+  },
+  podcast_episode: {
+    chipColor: 'accent',
+    icon: 'headset-outline',
+    strip: ['#8B5CF6', '#3B82F6', '#8B5CF6'],
+  },
   resource: {
     chipColor: 'accent',
     icon: 'library-outline',
@@ -291,6 +302,22 @@ function getDetailTarget(item: FeedItemType) {
       return item.receiver ? { pathname: '/(modals)/member-profile', params: { id: String(item.receiver.id) }, labelKey: 'detail.profile' } : null;
     case 'blog':
       return item.slug ? { pathname: '/(modals)/blog-post', params: { id: item.slug }, labelKey: 'detail.blog' } : null;
+    /*
+     * 🔴 Podcast cards had no case here until 2026-10-24, so tapping one did nothing on
+     * either phone. The routes take slugs, not ids — mirror the web's getItemDetailPath.
+     */
+    case 'podcast_show':
+      return item.slug
+        ? { pathname: '/(modals)/podcast-show', params: { slug: item.slug }, labelKey: 'detail.podcastShow' }
+        : null;
+    case 'podcast_episode':
+      return item.slug && item.show_slug
+        ? {
+            pathname: '/(modals)/podcast-episode',
+            params: { showSlug: item.show_slug, episodeSlug: item.slug },
+            labelKey: 'detail.podcastEpisode',
+          }
+        : null;
     case 'post':
     case 'poll':
     case 'challenge':
@@ -559,6 +586,13 @@ function FeedItemInner({
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = null;
+      }
+      // 🔴 A double tap on a card nothing can be liked on (a podcast, say) used to send a
+      // like anyway, and the server answered 400 "Invalid target_type" as a toast. There
+      // is nothing to like, so treat the double tap as the open it was meant to be.
+      if (!canRespond) {
+        navigateToDetail();
+        return;
       }
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       showHeartOverlay();

@@ -148,7 +148,9 @@
     "level_up": "Subir de nível",
     "badge_earned": "Distintivo",
     "unlike": "Remover gosto",
-    "like": "Curtir"
+    "like": "Curtir",
+    "podcast_show": "Podcast",
+    "podcast_episode": "Episódio de podcast"
   },
   "poll": {
     "totalVotes": "{{count}} votos",
@@ -235,7 +237,9 @@
     "volunteer": "Ver oportunidade",
     "goal": "Ver meta",
     "profile": "Ver perfil",
-    "blog": "Ler postagem"
+    "blog": "Ler postagem",
+    "podcastShow": "Ver podcast",
+    "podcastEpisode": "Ouvir episódio"
   },
   "stats": {
     "reactions": "{{count}} reação",

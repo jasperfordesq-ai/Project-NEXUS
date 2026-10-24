@@ -20,7 +20,9 @@ export type FeedItemType =
   | 'discussion'
   | 'resource'
   | 'badge_earned'
-  | 'level_up';
+  | 'level_up'
+  | 'podcast_show'
+  | 'podcast_episode';
 
 export type FeedFilter =
   | 'all'
@@ -113,6 +115,8 @@ export interface FeedItem {
   is_official?: boolean;
   content_truncated?: boolean;
   slug?: string | null;
+  /** Podcast episodes only: the slug of the show the episode belongs to. */
+  show_slug?: string | null;
   start_date: string | null;
   job_type: string | null;
   commitment: string | null;

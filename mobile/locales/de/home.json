@@ -148,7 +148,9 @@
     "level_up": "Stufe up",
     "badge_earned": "Abzeichen",
     "unlike": "Gefällt mir nicht mehr",
-    "like": "Gefällt mir"
+    "like": "Gefällt mir",
+    "podcast_show": "Podcast",
+    "podcast_episode": "Podcastfolge"
   },
   "poll": {
     "totalVotes": "{{count}} Stimmen",
@@ -235,7 +237,9 @@
     "volunteer": "Gelegenheit anzeigen",
     "goal": "Ziel anzeigen",
     "profile": "Profil anzeigen",
-    "blog": "Beitrag lesen"
+    "blog": "Beitrag lesen",
+    "podcastShow": "Podcast ansehen",
+    "podcastEpisode": "Folge anhören"
   },
   "stats": {
     "reactions": "{{count}} Reaktion",

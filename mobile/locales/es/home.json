@@ -148,7 +148,9 @@
     "level_up": "Subir de nivel",
     "badge_earned": "Insignia",
     "unlike": "Ya no me gusta",
-    "like": "Me gusta"
+    "like": "Me gusta",
+    "podcast_show": "Programa de pódcast",
+    "podcast_episode": "Episodio de pódcast"
   },
   "poll": {
     "totalVotes": "{{count}} votos",
@@ -235,7 +237,9 @@
     "volunteer": "Ver oportunidad",
     "goal": "Ver objetivo",
     "profile": "Ver perfil",
-    "blog": "Leer publicación"
+    "blog": "Leer publicación",
+    "podcastShow": "Ver programa de pódcast",
+    "podcastEpisode": "Escuchar episodio"
   },
   "stats": {
     "reactions": "{{count}} reacción",

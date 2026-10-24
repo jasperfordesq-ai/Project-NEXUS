@@ -148,7 +148,9 @@
     "level_up": "Leibhéal suas",
     "badge_earned": "Suaitheantas",
     "unlike": "Ní Maith Liom",
-    "like": "Cosúil le"
+    "like": "Cosúil le",
+    "podcast_show": "Clár podchraolta",
+    "podcast_episode": "Eipeasóid phodchraolta"
   },
   "poll": {
     "totalVotes": "{{count}} vóta",
@@ -235,7 +237,9 @@
     "volunteer": "Féach ar dheis",
     "goal": "Féach ar an sprioc",
     "profile": "Féach ar phróifíl",
-    "blog": "Léigh postáil"
+    "blog": "Léigh postáil",
+    "podcastShow": "Féach ar an gclár podchraolta",
+    "podcastEpisode": "Éist leis an eipeasóid"
   },
   "stats": {
     "reactions": "{{count}} freagairt",

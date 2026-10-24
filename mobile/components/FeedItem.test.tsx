@@ -650,6 +650,97 @@ describe('the heart on cards nothing can be reacted to', () => {
   });
 });
 
+describe('podcast cards in the feed', () => {
+  /**
+   * 🔴 Reported from a real phone (Android and iOS, 2026-10-24): a podcast card in the
+   * feed showed an "Invalid target_type" error, and tapping it did not open the show.
+   *
+   * Two defects, both about a type the card did not know:
+   *   - `getDetailTarget` had no case for `podcast_show` / `podcast_episode`, so a tap
+   *     resolved to no destination and silently did nothing.
+   *   - a double tap called `toggleLike` for ANY type, including ones the server will
+   *     not accept: POST /api/v2/feed/like {target_type:"podcast_show"} -> 400
+   *     "Invalid target_type". A member tapping a "dead" card twice gets exactly that.
+   */
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  function podcast(type: 'podcast_show' | 'podcast_episode') {
+    return {
+      id: 88,
+      type,
+      title: 'Community Voices',
+      content: 'Stories from our members.',
+      image_url: null,
+      slug: type === 'podcast_show' ? 'community-voices' : 'episode-one',
+      show_slug: type === 'podcast_episode' ? 'community-voices' : null,
+      user_id: 1,
+      author_name: 'Alice Smith',
+      author_avatar: null,
+      is_liked: false,
+      likes_count: 0,
+      comments_count: 0,
+      created_at: '2026-10-20T10:00:00Z',
+      location: null,
+      rating: null,
+      start_date: null,
+      job_type: null,
+      commitment: null,
+      submission_deadline: null,
+      receiver: null,
+    } as unknown as FeedItemType;
+  }
+
+  it('🔴 opens the podcast show from a show card', () => {
+    const { router } = require('expo-router');
+    const { getByText } = render(<FeedItem item={podcast('podcast_show')} />);
+
+    fireEvent.press(getByText('detail.podcastShow'));
+
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/podcast-show',
+      params: { slug: 'community-voices' },
+    });
+  });
+
+  it('🔴 opens the episode from an episode card', () => {
+    const { router } = require('expo-router');
+    const { getByText } = render(<FeedItem item={podcast('podcast_episode')} />);
+
+    fireEvent.press(getByText('detail.podcastEpisode'));
+
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/podcast-episode',
+      params: { showSlug: 'community-voices', episodeSlug: 'episode-one' },
+    });
+  });
+
+  it('offers no link when the episode has no show to go with it', () => {
+    const item = { ...podcast('podcast_episode'), show_slug: null } as unknown as FeedItemType;
+    const { queryByText } = render(<FeedItem item={item} />);
+
+    expect(queryByText('detail.podcastEpisode')).toBeNull();
+  });
+
+  it('🔴 a double tap on a podcast card opens it once and sends no like the server would refuse', () => {
+    const { toggleLike, toggleReaction } = require('@/lib/api/feed');
+    const { router } = require('expo-router');
+    const { getByText } = render(<FeedItem item={podcast('podcast_show')} />);
+
+    fireEvent.press(getByText('Community Voices'));
+    fireEvent.press(getByText('Community Voices'));
+
+    expect(toggleLike).not.toHaveBeenCalled();
+    expect(toggleReaction).not.toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(modals)/podcast-show',
+      params: { slug: 'community-voices' },
+    });
+  });
+});
+
 describe('gamification milestone cards are not rendered at all', () => {
   /*
    * Removed on the owner's instruction (2026-08-27). A `badge_earned` /

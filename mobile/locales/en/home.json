@@ -148,7 +148,9 @@
     "level_up": "Level up",
     "badge_earned": "Badge",
     "unlike": "Unlike",
-    "like": "Like"
+    "like": "Like",
+    "podcast_show": "Podcast show",
+    "podcast_episode": "Podcast episode"
   },
   "poll": {
     "totalVotes": "{{count}} votes",
@@ -235,7 +237,9 @@
     "volunteer": "View opportunity",
     "goal": "View goal",
     "profile": "View profile",
-    "blog": "Read post"
+    "blog": "Read post",
+    "podcastShow": "View podcast show",
+    "podcastEpisode": "Listen to episode"
   },
   "stats": {
     "reactions": "{{count}} reaction",
