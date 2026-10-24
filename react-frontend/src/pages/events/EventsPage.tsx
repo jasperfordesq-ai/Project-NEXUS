@@ -43,6 +43,7 @@ import X from 'lucide-react/icons/x';
 import Repeat from 'lucide-react/icons/repeat';
 import List from 'lucide-react/icons/list';
 import Rows3 from 'lucide-react/icons/rows-3';
+import CalendarCheck from 'lucide-react/icons/calendar-check';
 import { useTranslation } from 'react-i18next';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { useAuth } from '@/contexts/AuthContext';
@@ -103,6 +104,8 @@ interface EventQueryInput {
   category: string;
   stepFree: StepFreeFilter;
   proximity: ProximityFilterParams | null;
+  /** Only events the viewer organises or is going to. */
+  mine: boolean;
   cursor?: string | null;
 }
 
@@ -120,6 +123,7 @@ function buildEventQueryParams(f: EventQueryInput): Record<string, string | numb
     cursor: f.cursor ?? undefined,
     category_id: f.category === 'all' ? undefined : f.category,
     step_free: f.stepFree === 'any' ? undefined : f.stepFree,
+    scope: f.mine ? 'mine' : undefined,
     near_lat: f.proximity?.near_lat,
     near_lng: f.proximity?.near_lng,
     radius_km: f.proximity?.radius_km,
@@ -195,7 +199,12 @@ export function EventsPage() {
   const nextCursorRef = useRef<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
-  const [filter, setFilter] = useState<EventFilter>('upcoming');
+  // "My Events" lives in the URL (?scope=mine) so the profile's Events card can
+  // link straight to it. Guests have no events of their own.
+  const myEventsOnly = isAuthenticated && searchParams.get('scope') === 'mine';
+  // Arriving on My Events shows past events too, so the list matches the
+  // profile count, which includes events already attended.
+  const [filter, setFilter] = useState<EventFilter>(() => (myEventsOnly ? 'all' : 'upcoming'));
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [stepFreeFilter, setStepFreeFilter] = useState<StepFreeFilter>(() => stepFreeFilterFrom(searchParams.get('step_free')));
   const [proximityParams, setProximityParams] = useState<ProximityFilterParams | null>(null);
@@ -340,6 +349,7 @@ export function EventsPage() {
         category: selectedCategory,
         stepFree: stepFreeFilter,
         proximity: proximityParams,
+        mine: myEventsOnly,
         cursor: append ? nextCursorRef.current : undefined,
       }), { signal: controller.signal });
       if (controller.signal.aborted) return;
@@ -380,7 +390,7 @@ export function EventsPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedQuery, filter, selectedCategory, stepFreeFilter, proximityParams]);
+  }, [debouncedQuery, filter, selectedCategory, stepFreeFilter, proximityParams, myEventsOnly]);
 
   const loadEventsRef = useRef(loadEvents);
   loadEventsRef.current = loadEvents;
@@ -400,7 +410,7 @@ export function EventsPage() {
         abortControllerRef.current.abort();
       }
     };
-  }, [activeView, debouncedQuery, filter, selectedCategory, stepFreeFilter, proximityParams]);
+  }, [activeView, debouncedQuery, filter, selectedCategory, stepFreeFilter, proximityParams, myEventsOnly]);
 
   // Update URL params
   useEffect(() => {
@@ -415,6 +425,27 @@ export function EventsPage() {
       return params;
     }, { replace: true });
   }, [searchQuery, selectedCategory, stepFreeFilter, setSearchParams]);
+
+  const toggleMyEvents = useCallback(() => {
+    setSearchParams((current) => {
+      const params = new URLSearchParams(current);
+      if (params.get('scope') === 'mine') params.delete('scope');
+      else params.set('scope', 'mine');
+      return params;
+    });
+  }, [setSearchParams]);
+
+  const myEventsButton = isAuthenticated ? (
+    <Button
+      variant={myEventsOnly ? 'primary' : 'tertiary'}
+      className="font-semibold"
+      aria-pressed={myEventsOnly}
+      onPress={toggleMyEvents}
+      startContent={<CalendarCheck className="w-4 h-4" aria-hidden="true" />}
+    >
+      {t('my_events.button')}
+    </Button>
+  ) : null;
 
   const changeView = useCallback((view: EventsView) => {
     setSearchParams((current) => {
@@ -511,6 +542,7 @@ export function EventsPage() {
             <div className="flex flex-wrap gap-2">
               {/* Calendar feeds stay for every signed-in member — only creating is gated. */}
               <CalendarSubscriptionPanel />
+              {myEventsButton}
               {mayCreateEvent && (
                 <Button as={Link} to={tenantPath('/events/create')}
                   color="primary"
@@ -551,6 +583,7 @@ export function EventsPage() {
       {isPhone && isAuthenticated && (
         <div className="flex flex-wrap items-center gap-2 px-1">
           <CalendarSubscriptionPanel />
+          {myEventsButton}
           {mayCreateEvent && (
             <Button as={Link} to={tenantPath('/events/create')}
               color="primary"
@@ -807,7 +840,9 @@ export function EventsPage() {
               icon={<Calendar className="w-12 h-12" aria-hidden="true" />}
               title={t('no_events')}
               description={
-                selectedCategory !== 'all'
+                myEventsOnly
+                  ? t('my_events.empty')
+                  : selectedCategory !== 'all'
                   ? t('no_events_category', { category: categories.find((c) => String(c.id) === selectedCategory)?.name })
                   : filter === 'upcoming'
                     ? t('no_events_upcoming')

@@ -711,6 +711,9 @@ class EventsController extends BaseApiController
         if ($this->query('user_id') !== null) {
             $filters['user_id'] = $this->query('user_id');
         }
+        if ($this->query('scope') === 'mine') {
+            $filters['mine'] = true;
+        }
         if ($this->query('q') !== null) {
             $filters['search'] = $this->query('q');
         }

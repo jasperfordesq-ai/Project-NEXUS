@@ -148,6 +148,8 @@ export function ProfilePage() {
   const hasFeed = hasModule('feed');
   const hasSettings = hasModule('settings');
   const hasDirectMessaging = useFeature('direct_messaging');
+  const hasGroups = useFeature('groups');
+  const hasEvents = useFeature('events');
   const hasMessages = hasModule('messages') && hasDirectMessaging;
   const toast = useToast();
 
@@ -882,30 +884,35 @@ export function ProfilePage() {
             label={t('stats.hours_given')}
             value={profile.total_hours_given ?? 0}
             color="emerald"
+            to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
           />
           <ProfileStatCard
             icon={<ArrowDownLeft className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.hours_received')}
             value={profile.total_hours_received ?? 0}
             color="indigo"
+            to={isOwnProfile && hasWallet ? tenantPath('/wallet') : undefined}
           />
           <ProfileStatCard
             icon={<ListTodo className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.active_listings')}
             value={profile.stats?.listings_count ?? listings.length}
             color="purple"
+            to={isOwnProfile && hasListings ? tenantPath('/listings/mine') : undefined}
           />
           <ProfileStatCard
             icon={<Users className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.groups')}
             value={profile.groups_count ?? 0}
             color="amber"
+            to={isOwnProfile && hasGroups ? tenantPath('/groups?scope=joined') : undefined}
           />
           <ProfileStatCard
             icon={<CalendarCheck className="w-5 h-5" aria-hidden="true" />}
             label={t('stats.events')}
             value={profile.events_attended ?? 0}
             color="rose"
+            to={isOwnProfile && hasEvents ? tenantPath('/events?scope=mine') : undefined}
           />
         </dl>
       </motion.div>
@@ -1445,6 +1452,8 @@ interface ProfileStatCardProps {
   label: string;
   value: number;
   color: 'emerald' | 'indigo' | 'purple' | 'amber' | 'rose';
+  /** When set, the whole card links here (own profile only). */
+  to?: string;
 }
 
 const colorClasses: Record<string, string> = {
@@ -1455,13 +1464,23 @@ const colorClasses: Record<string, string> = {
   rose: 'from-rose-500/20 to-pink-500/20 text-rose-500',
 };
 
-function ProfileStatCard({ icon, label, value, color }: ProfileStatCardProps) {
+function ProfileStatCard({ icon, label, value, color, to }: ProfileStatCardProps) {
   return (
-    <GlassCard className="p-4 text-center hover:bg-theme-hover transition-colors">
+    <GlassCard
+      className={`relative p-4 text-center hover:bg-theme-hover transition-colors${to ? ' focus-within:ring-2 focus-within:ring-[var(--color-primary)]' : ''}`}
+    >
       <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${colorClasses[color]} mb-2`}>
         {icon}
       </div>
-      <dt className="text-xs text-theme-subtle">{label}</dt>
+      {/* The link stretches over the whole card (after:inset-0) so the card is
+          clickable while the <dl> keeps its valid dt/dd structure. */}
+      <dt className="text-xs text-theme-subtle">
+        {to ? (
+          <Link to={to} className="outline-none after:absolute after:inset-0 after:content-['']">
+            {label}
+          </Link>
+        ) : label}
+      </dt>
       <dd className="text-xl font-bold text-theme-primary">{value}</dd>
     </GlassCard>
   );

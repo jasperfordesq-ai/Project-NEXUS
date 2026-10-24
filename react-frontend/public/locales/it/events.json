@@ -1002,5 +1002,9 @@
     "hybrid": "Di persona e online"
   },
   "going_many": "{{count}} partecipante/i",
-  "interested_many": "{{count}} interessato/i"
+  "interested_many": "{{count}} interessato/i",
+  "my_events": {
+    "button": "I miei eventi",
+    "empty": "Non hai ancora organizzato nessun evento né ti sei iscritto a nessuno."
+  }
 }

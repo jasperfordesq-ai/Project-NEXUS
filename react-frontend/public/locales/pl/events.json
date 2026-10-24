@@ -1017,5 +1017,9 @@
   "going_few": "{{count}} będzie działać",
   "going_many": "{{count}} będzie działać",
   "interested_few": "{{count}} zainteresowany",
-  "interested_many": "{{count}} zainteresowany"
+  "interested_many": "{{count}} zainteresowany",
+  "my_events": {
+    "button": "Moje wydarzenia",
+    "empty": "Nie zorganizowałeś jeszcze żadnego wydarzenia ani nie zapisałeś się na żadne."
+  }
 }

@@ -989,5 +989,9 @@
     "cancelled": "Cancelled",
     "postponed": "Postponed",
     "hybrid": "In person and online"
+  },
+  "my_events": {
+    "button": "My Events",
+    "empty": "You haven't organised or signed up to go to any events yet."
   }
 }

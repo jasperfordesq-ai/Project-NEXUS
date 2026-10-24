@@ -989,5 +989,9 @@
     "cancelled": "Geannuleerd",
     "postponed": "Uitgesteld",
     "hybrid": "Persoonlijk en online"
+  },
+  "my_events": {
+    "button": "Mijn evenementen",
+    "empty": "Je hebt nog geen evenementen georganiseerd of je voor een evenement aangemeld."
   }
 }

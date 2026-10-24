@@ -1031,5 +1031,9 @@
   "going_two": "Tá {{count}} duine ag dul",
   "interested_few": "Tá suim ag {{count}} duine",
   "interested_many": "Tá suim ag {{count}} duine",
-  "interested_two": "Tá suim ag {{count}} duine"
+  "interested_two": "Tá suim ag {{count}} duine",
+  "my_events": {
+    "button": "Mo Imeachtaí",
+    "empty": "Níor eagraigh tú aon imeacht fós agus níor chláraigh tú le dul chuig aon cheann."
+  }
 }

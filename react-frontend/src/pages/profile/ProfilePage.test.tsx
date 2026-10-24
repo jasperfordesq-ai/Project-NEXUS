@@ -225,6 +225,27 @@ describe('ProfilePage', () => {
     expect(screen.queryByRole('link', { name: /send message/i })).not.toBeInTheDocument();
   });
 
+  it("links the stat cards to the member's own wallet, listings, groups and events", async () => {
+    routeState.id = '1';
+    const { container } = render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('dl a[href="/test/wallet"]')).toHaveLength(2);
+    });
+    expect(container.querySelector('dl a[href="/test/listings/mine"]')).not.toBeNull();
+    expect(container.querySelector('dl a[href="/test/groups?scope=joined"]')).not.toBeNull();
+    expect(container.querySelector('dl a[href="/test/events?scope=mine"]')).not.toBeNull();
+  });
+
+  it("does not link the stat cards on someone else's profile", async () => {
+    const { container } = render(<ProfilePage />);
+
+    await waitFor(() => {
+      expect(container.querySelectorAll('dl dt').length).toBeGreaterThan(0);
+    });
+    expect(container.querySelectorAll('dl a')).toHaveLength(0);
+  });
+
   it('renders without crashing', () => {
     render(<ProfilePage />);
     // Was `expect(document.body).toBeTruthy()`, which could not fail. isLoading

@@ -187,6 +187,64 @@ final class EventDiscoveryContractTest extends TestCase
         }
     }
 
+    private function rsvp(int $eventId, int $userId, string $status): void
+    {
+        DB::table('event_rsvps')->insert([
+            'tenant_id' => $this->testTenantId,
+            'event_id' => $eventId,
+            'user_id' => $userId,
+            'status' => $status,
+            'created_at' => now(),
+        ]);
+    }
+
+    public function test_scope_mine_returns_only_events_the_viewer_organises_or_is_going_to(): void
+    {
+        $viewer = $this->authenticate();
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+
+        $organised = $this->event($viewer->id, 'Mine: organised', '2030-02-01 10:00:00');
+        $going = $this->event($other->id, 'Mine: going', '2030-02-02 10:00:00');
+        $interested = $this->event($other->id, 'Mine: only interested', '2030-02-03 10:00:00');
+        $unrelated = $this->event($other->id, 'Mine: unrelated', '2030-02-04 10:00:00');
+        $pastGoing = $this->event($other->id, 'Mine: past going', '2030-01-01 10:00:00');
+        $this->rsvp($going, $viewer->id, 'going');
+        $this->rsvp($interested, $viewer->id, 'interested');
+        $this->rsvp($unrelated, $other->id, 'going');
+        $this->rsvp($pastGoing, $viewer->id, 'going');
+
+        $upcoming = $this->apiGet('/v2/events?scope=mine&per_page=50');
+        $upcoming->assertOk();
+        $this->assertSame([$organised, $going], $this->ids($upcoming));
+
+        $all = $this->apiGet('/v2/events?scope=mine&when=all&per_page=50');
+        $all->assertOk();
+        $ids = $this->ids($all);
+        sort($ids);
+        $this->assertSame([$organised, $going, $pastGoing], $ids);
+
+        // Without the scope the other events are still listed.
+        $this->assertContains($unrelated, $this->ids($this->apiGet('/v2/events?per_page=50')));
+    }
+
+    public function test_scope_mine_keeps_the_series_occurrence_the_viewer_is_going_to(): void
+    {
+        $viewer = $this->authenticate();
+        $other = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $templateId = $this->event($other->id, 'Mine series template', '2030-02-01 10:00:00', [
+            'is_recurring_template' => 1,
+        ]);
+        $laterChild = $this->event($other->id, 'Mine series later child', '2030-02-08 10:00:00', [
+            'parent_event_id' => $templateId,
+        ]);
+        $this->rsvp($laterChild, $viewer->id, 'going');
+
+        $response = $this->apiGet('/v2/events?scope=mine&per_page=10');
+
+        $response->assertOk();
+        $this->assertSame([$laterChild], $this->ids($response));
+    }
+
     public function test_recurring_collapse_ignores_inactive_siblings_and_counts_only_active_occurrences(): void
     {
         $organizer = $this->authenticate();

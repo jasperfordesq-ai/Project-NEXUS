@@ -1045,5 +1045,9 @@
   "interested_few": "{{count}} مهتم",
   "interested_many": "{{count}} مهتم",
   "interested_two": "{{count}} مهتم",
-  "interested_zero": "{{count}} مهتم"
+  "interested_zero": "{{count}} مهتم",
+  "my_events": {
+    "button": "فعالياتي",
+    "empty": "لم تنظّم أي فعالية ولم تسجّل لحضور أي فعالية بعد."
+  }
 }

@@ -172,6 +172,24 @@ class EventService
      *
      * @return array{items: array, cursor: string|null, has_more: bool}
      */
+    /**
+     * Limit a query to events the user organises or has RSVP'd "going" to.
+     */
+    private static function whereMine($query, string $alias, int $userId): void
+    {
+        $query->where(function ($mine) use ($alias, $userId) {
+            $mine->where("{$alias}.user_id", $userId)
+                ->orWhereExists(function ($rsvp) use ($alias, $userId) {
+                    $rsvp->selectRaw('1')
+                        ->from('event_rsvps')
+                        ->whereColumn('event_rsvps.event_id', "{$alias}.id")
+                        ->whereColumn('event_rsvps.tenant_id', "{$alias}.tenant_id")
+                        ->where('event_rsvps.user_id', $userId)
+                        ->where('event_rsvps.status', 'going');
+                });
+        });
+    }
+
     public static function getAll(array $filters = []): array
     {
         $limit = max(1, min((int) ($filters['limit'] ?? 20), 100));
@@ -191,6 +209,9 @@ class EventService
         $organizerId = self::resolveDiscoveryPositiveId($filters['user_id'] ?? null, 'user_id');
         $search = self::resolveDiscoverySearch($filters['search'] ?? null);
         $stepFree = self::resolveDiscoveryStepFree($filters['step_free'] ?? null);
+        // "My events": events the viewer organises or has said they are going
+        // to. A guest asking for it gets nothing rather than everything.
+        $mineUserId = !empty($filters['mine']) ? ($viewerId ?? 0) : null;
 
         $coordinateInputs = [
             'near_lat' => $filters['near_lat'] ?? null,
@@ -232,6 +253,7 @@ class EventService
             'user_id' => $organizerId,
             'search' => $search,
             'step_free' => $stepFree,
+            'mine' => $mineUserId,
             'near_lat' => $nearLat !== null ? sprintf('%.8F', $nearLat) : null,
             'near_lng' => $nearLng !== null ? sprintf('%.8F', $nearLng) : null,
             'radius_km' => $radiusKm !== null ? sprintf('%.3F', $radiusKm) : null,
@@ -332,6 +354,10 @@ class EventService
             $query->where('user_id', $organizerId);
         }
 
+        if ($mineUserId !== null) {
+            self::whereMine($query, 'events', $mineUserId);
+        }
+
         if ($search !== null) {
             $term = '%' . $search . '%';
             $query->where(function (Builder $q) use ($term) {
@@ -368,6 +394,7 @@ class EventService
             $seriesId,
             $groupId,
             $organizerId,
+            $mineUserId,
             $search,
             $stepFree,
             $hasProximity,
@@ -394,6 +421,11 @@ class EventService
             }
             if ($organizerId !== null) {
                 $sub->where('e2.user_id', $organizerId);
+            }
+            if ($mineUserId !== null) {
+                // Without this a sibling occurrence the viewer is not going to
+                // would hide the one they are going to.
+                self::whereMine($sub, 'e2', $mineUserId);
             }
             if ($search !== null) {
                 $term = '%' . $search . '%';
