@@ -62,7 +62,6 @@ const ISSUE_TRANSLATION_KEYS = {
   missing_meta_description: 'seo_audit_issue_missing_meta_description',
   meta_description_too_long: 'seo_audit_issue_meta_description_too_long',
   meta_description_too_short: 'seo_audit_issue_meta_description_too_short',
-  missing_homepage_h1: 'seo_audit_issue_missing_homepage_h1',
   search_engines_blocked: 'seo_audit_issue_search_engines_blocked',
   canonical_urls_not_enabled: 'seo_audit_issue_canonical_urls_not_enabled',
   open_graph_not_enabled: 'seo_audit_issue_open_graph_not_enabled',

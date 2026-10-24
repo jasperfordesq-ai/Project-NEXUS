@@ -1821,7 +1821,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "Ce problème enregistré utilise un ancien format. Lancez l'audit à nouveau pour obtenir tous les détails.",
     "seo_audit_issue_meta_description_too_long": "La description méta de la page d'accueil fait {{length}} caractères ; le maximum est de {{max}}.",
     "seo_audit_issue_meta_description_too_short": "La description méta de la page d'accueil fait {{length}} caractères ; le minimum est de {{min}}.",
-    "seo_audit_issue_missing_homepage_h1": "Ce hub n’a pas de titre de hub pour le site accessible : sa page d’accueil accessible utilise donc un titre générique.",
     "seo_audit_issue_search_engines_blocked": "Il est demandé aux moteurs de recherche de ne pas indexer cette communauté (directive robots « noindex »). Elle n’apparaîtra ni sur Google ni sur Bing. Modifiez-la dans le formulaire du locataire du super-administrateur, onglet SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "La page d'accueil manque de son titre méta par défaut.",
     "seo_audit_issue_missing_meta_description": "La page d'accueil est dépourvue de sa description meta par défaut.",

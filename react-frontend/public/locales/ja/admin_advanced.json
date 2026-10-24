@@ -1763,7 +1763,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "この保存された問題は古い形式を使用しています。詳細については、再度監査を実行してください。",
     "seo_audit_issue_meta_description_too_long": "ホームページのメタディスクリプションは{{length}}文字です。最大{{max}}文字までです。",
     "seo_audit_issue_meta_description_too_short": "ホームページのメタディスクリプションは{{length}}文字です。最低{{min}}文字必要です。",
-    "seo_audit_issue_missing_homepage_h1": "このハブにはアクセシブルサイトのハブ見出しがないため、アクセシブルなホームページは一般的な見出しを使用します。",
     "seo_audit_issue_search_engines_blocked": "検索エンジンにこのコミュニティをインデックスしないよう指示しています（robots 指示「noindex」）。Google や Bing に表示されません。スーパー管理者のテナント編集画面の SEO タブで変更してください。",
     "seo_audit_issue_missing_homepage_meta_title": "ホームページにデフォルトのメタタイトルがありません。",
     "seo_audit_issue_missing_meta_description": "ホームページにデフォルトのメタディスクリプションがありません。",

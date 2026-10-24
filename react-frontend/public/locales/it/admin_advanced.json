@@ -1822,7 +1822,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "Questo problema salvato utilizza un formato più vecchio. Esegui di nuovo l'audit per tutti i dettagli.",
     "seo_audit_issue_meta_description_too_long": "La meta descrizione della pagina iniziale è lunga {{length}} caratteri; il massimo è {{max}}.",
     "seo_audit_issue_meta_description_too_short": "La meta descrizione della pagina iniziale è lunga {{length}} caratteri; il minimo è {{min}}.",
-    "seo_audit_issue_missing_homepage_h1": "Questo hub non ha un titolo dell’hub per il sito accessibile, quindi la sua home page accessibile usa un titolo generico.",
     "seo_audit_issue_search_engines_blocked": "Ai motori di ricerca viene chiesto di non indicizzare questa comunità (direttiva robots \"noindex\"). Non comparirà su Google né su Bing. Modificala nel modulo del tenant del super amministratore, scheda SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "La pagina iniziale non ha il suo meta titolo predefinito.",
     "seo_audit_issue_missing_meta_description": "La homepage non ha la sua descrizione meta predefinita.",

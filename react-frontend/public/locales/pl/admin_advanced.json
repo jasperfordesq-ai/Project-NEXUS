@@ -1874,7 +1874,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "Ten zapisany problem używa starszego formatu. Uruchom audyt ponownie, aby uzyskać pełne szczegóły.",
     "seo_audit_issue_meta_description_too_long": "Opis meta strony głównej ma długość {{length}} znaków; maksymalnie {{max}}.",
     "seo_audit_issue_meta_description_too_short": "Opis meta strony głównej ma długość {{length}} znaków; minimalnie {{min}}.",
-    "seo_audit_issue_missing_homepage_h1": "Ten hub nie ma nagłówka huba dla serwisu dostępnego, więc jego dostępna strona główna używa ogólnego nagłówka.",
     "seo_audit_issue_search_engines_blocked": "Wyszukiwarki otrzymują polecenie, by nie indeksować tej społeczności (dyrektywa robots „noindex”). Nie pojawi się w Google ani w Bing. Zmień to w formularzu dzierżawcy superadministratora, karta SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "Strona główna nie ma domyślnego tytułu meta.",
     "seo_audit_issue_missing_meta_description": "Strona główna nie ma domyślnego opisu meta.",

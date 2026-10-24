@@ -287,6 +287,34 @@ describe('Public Routes', () => {
       expect(response.text.match(/This module is not enabled for this community\./g)).toHaveLength(2);
     });
 
+    it('does not show the landing page invitation to join to a signed-in member (2026-10-24)', async () => {
+      const api = require('../src/lib/api');
+      const cookieSignature = require('cookie-signature');
+      const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+      api.getTenantBootstrap.mockResolvedValueOnce({
+        data: {
+          id: 2,
+          name: 'Acme Timebank',
+          slug: 'acme',
+          landing_page_config: {
+            sections: [
+              { id: 'hero', type: 'hero', enabled: true, order: 0, content: { headline_1: 'Give an hour.' } },
+              { id: 'cta', type: 'cta', enabled: true, order: 1, content: { title: 'Ready to swap your first hour?' } }
+            ]
+          }
+        }
+      });
+      api.getPlatformStats.mockResolvedValueOnce({ data: {} });
+
+      const response = await request(app)
+        .get('/acme/accessible')
+        .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('<h1 class="govuk-heading-xl">Give an hour.</h1>');
+      expect(response.text).not.toContain('Ready to swap your first hour?');
+    });
+
     it('canonicalizes Laravel legacy alpha mount paths to the cleaner accessible mount', async () => {
       const response = await request(app).get('/acme/alpha/login?status=auth-required');
 
@@ -737,7 +765,8 @@ describe('Public Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.text).toContain('<h1 class="govuk-heading-xl">Give an hour. Get an hour back.</h1>');
-      expect(response.text).toContain('<span class="govuk-caption-xl">Accessible</span>');
+      // The community's own heading moves its name into the caption.
+      expect(response.text).toContain('<span class="govuk-caption-xl">Acme Timebank</span>');
       expect(response.text).toContain('Acme is a free skill-swapping community.');
       expect(response.text).toContain('<p class="govuk-body-l">Acme is a free skill-swapping community.</p>');
       expect(response.text).toContain('id="how-it-works-heading">How it works</h2>');

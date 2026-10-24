@@ -1967,7 +1967,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "تستخدم هذه المشكلة المحفوظة صيغة قديمة. قم بتشغيل التدقيق مرة أخرى للحصول على التفاصيل الكاملة.",
     "seo_audit_issue_meta_description_too_long": "وصف الميتا لصفحة البداية يحتوي على {{length}} أحرف؛ الحد الأقصى هو {{max}}.",
     "seo_audit_issue_meta_description_too_short": "وصف الميتا لصفحة البداية يحتوي على {{length}} أحرف؛ الحد الأدنى هو {{min}}.",
-    "seo_audit_issue_missing_homepage_h1": "لا يوجد لهذا المركز عنوان مركز للموقع الميسّر، لذا تستخدم صفحته الرئيسية الميسّرة عنواناً عاماً.",
     "seo_audit_issue_search_engines_blocked": "محركات البحث مُبلَّغة بعدم فهرسة هذا المجتمع (توجيه الروبوتات \"noindex\"). لن يظهر في Google أو Bing. غيّره في نموذج المستأجر لدى المشرف العام، تبويب SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "صفحة البداية تفتقد إلى عنوان الميتا الافتراضي.",
     "seo_audit_issue_missing_meta_description": "الصفحة الرئيسية تفتقد وصفها التعريفي الافتراضي.",

@@ -1821,7 +1821,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "Este problema guardado utiliza un formato antiguo. Vuelva a ejecutar la auditoría para obtener todos los detalles.",
     "seo_audit_issue_meta_description_too_long": "La meta descripción de la página de inicio tiene {{length}} caracteres; el máximo es {{max}}.",
     "seo_audit_issue_meta_description_too_short": "La meta descripción de la página de inicio tiene {{length}} caracteres; el mínimo es {{min}}.",
-    "seo_audit_issue_missing_homepage_h1": "Este hub no tiene encabezado de hub para el sitio accesible, así que su página de inicio accesible usa un encabezado genérico.",
     "seo_audit_issue_search_engines_blocked": "Se indica a los buscadores que no indexen esta comunidad (directiva robots «noindex»). No aparecerá en Google ni en Bing. Cámbialo en el formulario del inquilino del superadministrador, pestaña SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "La página de inicio no tiene su título meta predeterminado.",
     "seo_audit_issue_missing_meta_description": "La página de inicio no tiene su meta descripción predeterminada.",

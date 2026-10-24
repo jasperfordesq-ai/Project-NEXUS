@@ -1916,7 +1916,6 @@
     "seo_audit_issue_legacy_result_requires_rerun": "Úsáideann an saincheist shábháilte seo sean-fhormáid. Rith an iniúchadh arís chun na sonraí iomlána a fháil.",
     "seo_audit_issue_meta_description_too_long": "Tá fad {{length}} carachtar ag cur síos meta na leathanach baile; is é {{max}} an fad uasta.",
     "seo_audit_issue_meta_description_too_short": "Tá fad {{length}} carachtar ag cur síos meta na leathanach baile; is é {{min}} an fad íosta.",
-    "seo_audit_issue_missing_homepage_h1": "Níl ceannteideal mol an tsuímh inrochtana ag an mol seo, mar sin úsáideann a leathanach baile inrochtana ceannteideal ginearálta.",
     "seo_audit_issue_search_engines_blocked": "Iarrtar ar innill chuardaigh gan an pobal seo a innéacsú (treoir robots \"noindex\"). Ní bheidh sé le feiceáil ar Google ná ar Bing. Athraigh é ar fhoirm an tionónta san ollriarachán, cluaisín SEO.",
     "seo_audit_issue_missing_homepage_meta_title": "Tá teideal meta réamhshocraithe in easnamh ar an leathanach baile.",
     "seo_audit_issue_missing_meta_description": "Tá cur síos réamhshocraithe meta ar an láithreán baile ar iarraidh.",

@@ -932,13 +932,15 @@ async function loadTenantHomeData(req, res) {
   // to come from the "hub heading" / "hub intro" SEO fields, shown on hubs
   // only, so most communities' wording appeared nowhere. Without editor
   // wording the H1 is the community's NAME — never the bare "Accessible"
-  // label, which said nothing about whose site it was. "Accessible" stays as
-  // the caption, so the page still says which version of the site this is.
+  // label, which said nothing about whose site it was. With the name as the
+  // H1, "Accessible" is the caption, so the page still says which version of
+  // the site this is; with the community's own heading, the caption is the
+  // name, so the page still says whose site it is.
   const landing = landingHomeContent(tenant.landing_page_config);
   const nameHeading = String(communityName || '').trim();
   const homeHeading = landing.heading || nameHeading || 'Accessible';
   const homeHeadingKey = landing.heading || nameHeading ? '' : 'home.title';
-  const homeCaptionKey = landing.heading || nameHeading ? 'home.title' : 'home.caption';
+  const homeCaptionKey = !landing.heading && nameHeading ? 'home.title' : 'home.caption';
   const homeDescription = landing.intro;
   const homeDescriptionKey = landing.intro ? '' : 'home.description';
 

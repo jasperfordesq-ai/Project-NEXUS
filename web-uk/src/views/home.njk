@@ -150,8 +150,9 @@
     {% endfor %}
   </div>
 
-  {# The community's closing message from the landing page editor. #}
-  {% if landingClosing %}
+  {# The community's closing message from the landing page editor: an
+     invitation to join, so members who are signed in do not see it. #}
+  {% if landingClosing and not isAuthenticated %}
     <div class="govuk-grid-row govuk-!-margin-top-8">
       <div class="govuk-grid-column-two-thirds">
         {% if landingClosing.title %}
@@ -160,9 +161,7 @@
         {% if landingClosing.description %}
           <p class="govuk-body-l">{{ landingClosing.description }}</p>
         {% endif %}
-        {% if not isAuthenticated %}
-          {{ govukButton({ text: t("home.secondary_guest"), href: urlFor("/register") }) }}
-        {% endif %}
+        {{ govukButton({ text: t("home.secondary_guest"), href: urlFor("/register") }) }}
       </div>
     </div>
   {% endif %}

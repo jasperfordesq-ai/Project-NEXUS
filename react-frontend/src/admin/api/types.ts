@@ -931,7 +931,6 @@ export type SeoAuditIssueCode =
   | 'missing_meta_description'
   | 'meta_description_too_long'
   | 'meta_description_too_short'
-  | 'missing_homepage_h1'
   | 'search_engines_blocked'
   | 'canonical_urls_not_enabled'
   | 'open_graph_not_enabled'
