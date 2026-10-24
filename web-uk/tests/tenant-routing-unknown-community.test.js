@@ -327,6 +327,15 @@ describe('🔴 the slug-less route set is refused on the SHARED platform host', 
     }
   });
 
+  it('serves the built-in footer badge from /images on the shared host', async () => {
+    // The footer's default "Powered by" badge is a bare /images/... path. It was
+    // missing from the unprefixed list, so on accessible.project-nexus.ie every
+    // community without an uploaded badge showed a broken image (24 Oct 2026).
+    const response = await get('/images/powered-by-project-nexus-2026-10-light.png');
+    expect(response.status).toBe(200);
+    expect(response.body.rewrittenUrl).not.toBe('/__accessible-domain-not-found__');
+  });
+
   it('does NOT refuse when a single-tenant fallback is configured (local dev)', async () => {
     // web-uk/.env.docker sets ACCESSIBLE_TENANT_SLUG, and the app is browsed
     // slug-less on localhost in development. This guard must not break that.

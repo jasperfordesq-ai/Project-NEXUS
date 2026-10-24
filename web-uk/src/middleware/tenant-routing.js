@@ -13,6 +13,10 @@ const UNPREFIXED_PATHS = [
   '/downloads',
   '/favicon.ico',
   '/health',
+  // Brand imagery web-uk serves itself (server.js), e.g. the footer's default
+  // "Powered by" badge. Without this, the shared host 404s it for every community
+  // that has not uploaded its own badge.
+  '/images',
   '/js',
   '/manifest.json',
   '/robots.txt',
