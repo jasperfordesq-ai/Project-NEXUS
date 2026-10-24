@@ -82,6 +82,10 @@ vi.mock('../../api/adminApi', () => ({
     getSeoSettings: vi.fn().mockResolvedValue({ success: true, data: {} }),
     updateSeoSettings: vi.fn().mockResolvedValue({ success: true }),
     getSitemapStats: vi.fn().mockResolvedValue({ success: true, data: {} }),
+    getSeoVerificationDns: vi.fn().mockResolvedValue({
+      success: true,
+      data: { applicable: false, google_found: false, google_found_on: null },
+    }),
   },
   adminTools: {
     get404Errors: vi.fn().mockResolvedValue({ success: true, data: [] }),
