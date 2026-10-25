@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Vous recevez une notification en temps réel dès que l'option est cochée.",
           "requires_broker_approval": "Les mises en relation et les échanges avec le membre attendent la validation d'un coordinateur. Les messages ne sont pas copiés.",
-          "requires_vetted_interaction": "Les membres non sélectionnés sont masqués du flux de découverte des membres.",
+          "requires_vetted_interaction": "Seuls les membres dont la vérification a été enregistrée par cette communauté peuvent contacter le membre. Tous les autres sont bloqués.",
           "restricts_matching": "Les mises en relation avec le membre sont retenues dans Approbations d'appariement jusqu'à ce qu'un coordinateur les approuve. Aucun des deux membres n'en est informé avant.",
-          "restricts_messaging": "Les autres membres ne peuvent pas contacter directement le membre ; on leur propose de passer par un coordinateur. Les messages ne sont pas copiés.",
+          "restricts_messaging": "Seuls les coordinateurs, et les membres qu'un coordinateur autorise pour lui, peuvent contacter directement le membre, dans les deux sens. Les autres peuvent demander l'aide d'un coordinateur. Les groupes dont il fait partie fonctionnent normalement. Les messages ne sont pas copiés.",
           "vetting_type_required": "Spécifie quelle vérification un membre contactant doit détenir, par exemple garda_vetting."
         },
         "table_aria": "Effets des déclencheurs de protection",
@@ -433,7 +433,7 @@
       "requires_broker_approval": "Exiger l’approbation du coordinateur",
       "requires_vetted_interaction": "Membres vérifiés uniquement",
       "restricts_matching": "Restreindre les mises en relation",
-      "restricts_messaging": "Surveiller les messages"
+      "restricts_messaging": "Contact via un coordinateur"
     },
     "type_checkbox": "Case à cocher",
     "type_info": "Informations",
@@ -495,6 +495,22 @@
     "offer_to_new_members_desc": "Désactivé, les membres qui ne l'ont pas déjà choisie ne la verront pas. Les membres qui l'ont déjà choisie la conservent et la voient toujours.",
     "not_offered_chip": "Non proposé aux nouveaux membres",
     "holder_count": "Membres ayant fait ce choix : {{count}}",
-    "members_are_told": "Ce que l'on dit aux membres sur son effet"
+    "members_are_told": "Ce que l'on dit aux membres sur son effet",
+    "approved_contacts": {
+      "heading": "Membres autorisés à les contacter",
+      "intro": "Seuls les coordinateurs et les membres que vous autorisez ici peuvent contacter {{name}}, et {{name}} ne peut contacter qu'eux. Autorisez un membre après avoir vérifié que le contact est sûr ; vous pouvez retirer l'autorisation à tout moment.",
+      "none": "Personne n'est encore autorisé : seuls les coordinateurs peuvent les contacter.",
+      "add_label": "Autoriser un membre",
+      "add_placeholder": "Rechercher des membres par nom",
+      "no_results": "Aucun membre correspondant",
+      "clear": "Effacer",
+      "approve_button": "Autoriser le contact",
+      "remove_button": "Retirer",
+      "remove_aria": "Retirer l'autorisation de {{name}}",
+      "approved_toast": "{{name}} peut maintenant contacter ce membre.",
+      "removed_toast": "Autorisation retirée.",
+      "failed": "Cela n'a pas fonctionné. Veuillez réessayer.",
+      "approved_on": "autorisé {{when}}"
+    }
   }
 }

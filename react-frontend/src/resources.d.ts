@@ -27847,6 +27847,22 @@ export default interface Resources {
       "active_options_desc": "Safeguarding options that are currently active and available to members",
       "add_option": "Add Option",
       "add_safeguarding_option": "Add Safeguarding Option",
+      "approved_contacts": {
+        "add_label": "Approve a member",
+        "add_placeholder": "Search members by name",
+        "approve_button": "Approve contact",
+        "approved_on": "approved {{when}}",
+        "approved_toast": "{{name}} can now contact this member.",
+        "clear": "Clear",
+        "failed": "That did not work. Please try again.",
+        "heading": "Members approved to contact them",
+        "intro": "Only coordinators and the members you approve here can contact {{name}}, and {{name}} can contact only them. Approve a member once you have checked the contact is safe; you can withdraw it at any time.",
+        "no_results": "No matching members",
+        "none": "Nobody is approved yet, so only coordinators can contact them.",
+        "remove_aria": "Withdraw approval for {{name}}",
+        "remove_button": "Withdraw",
+        "removed_toast": "Approval withdrawn."
+      },
       "aria_deactivate_option": "Deactivate Option",
       "aria_edit_option": "Edit Option",
       "assignment_revoked": "Assignment Revoked",
@@ -28077,9 +28093,9 @@ export default interface Resources {
           "effects": {
             "notify_admin_on_selection": "You get a real-time notification the moment the option is ticked.",
             "requires_broker_approval": "Matches and exchanges involving the member wait for a coordinator's sign-off. Messages are not copied.",
-            "requires_vetted_interaction": "Non-vetted members are hidden from the member's discovery feed.",
+            "requires_vetted_interaction": "Only members whose vetting this community has recorded can contact the member at all. Everyone else is blocked.",
             "restricts_matching": "Matches involving the member are held in Match Approvals until a coordinator approves them. Neither member is told about a match before that.",
-            "restricts_messaging": "Other members cannot contact the member directly; they are offered a way to ask a coordinator. Messages are not copied.",
+            "restricts_messaging": "Only coordinators, and members a coordinator approves for them, can contact the member directly, in either direction. Others are offered a way to ask a coordinator. Groups they belong to work as normal. Messages are not copied.",
             "vetting_type_required": "Specifies which vetting a contacting member must hold, for example garda_vetting."
           },
           "intro_prefix": "A safeguarding option (defined per-tenant in",
@@ -28250,7 +28266,7 @@ export default interface Resources {
         "requires_broker_approval": "Require coordinator approval",
         "requires_vetted_interaction": "Vetted members only",
         "restricts_matching": "Restrict matching",
-        "restricts_messaging": "Monitor messaging"
+        "restricts_messaging": "Contact through a coordinator"
       },
       "type_checkbox": "Checkbox",
       "type_info": "Info",

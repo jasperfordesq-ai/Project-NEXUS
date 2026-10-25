@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "オプションにチェックを入れた瞬間にリアルタイムの通知が届きます。",
           "requires_broker_approval": "そのメンバーが関わるマッチングと交換は、コーディネーターの承認を待ちます。メッセージはコピーされません。",
-          "requires_vetted_interaction": "精査されていないメンバーは、メンバーの発見フィードから非表示になります。",
+          "requires_vetted_interaction": "このコミュニティが審査を記録したメンバーだけが、このメンバーに連絡できます。それ以外の人はすべてブロックされます。",
           "restricts_matching": "このメンバーが関わるマッチングは、コーディネーターが承認するまで「マッチング承認」で保留されます。それまでどちらのメンバーにも知らされません。",
-          "restricts_messaging": "ほかのメンバーはそのメンバーに直接連絡できず、コーディネーターに頼む方法が案内されます。メッセージはコピーされません。",
+          "restricts_messaging": "このメンバーに直接連絡できる（双方向）のは、コーディネーターと、コーディネーターが許可したメンバーだけです。それ以外の人にはコーディネーターに依頼する方法が案内されます。所属グループは通常どおり利用できます。メッセージはコピーされません。",
           "vetting_type_required": "連絡するメンバーがどの審査を保持する必要があるかを指定します (例: garda_vetting)。"
         },
         "table_aria": "トリガー効果の保護",
@@ -433,7 +433,7 @@
       "requires_broker_approval": "コーディネーターの承認を必須にする",
       "requires_vetted_interaction": "審査済みメンバーのみ",
       "restricts_matching": "マッチングを制限",
-      "restricts_messaging": "メッセージを監視"
+      "restricts_messaging": "コーディネーター経由の連絡"
     },
     "type_checkbox": "チェックボックス",
     "type_info": "情報",
@@ -495,6 +495,22 @@
     "offer_to_new_members_desc": "オフにすると、まだ選択していないメンバーには表示されません。すでに選択したメンバーは引き続き保持し、確認できます。",
     "not_offered_chip": "新しいメンバーには非表示",
     "holder_count": "これを選んだメンバー: {{count}}",
-    "members_are_told": "メンバーに表示される説明"
+    "members_are_told": "メンバーに表示される説明",
+    "approved_contacts": {
+      "heading": "連絡を許可されたメンバー",
+      "intro": "{{name}}さんに連絡できるのは、コーディネーターとここで許可したメンバーだけです。{{name}}さんも、その人たちにしか連絡できません。連絡が安全であることを確認してから許可してください。許可はいつでも取り消せます。",
+      "none": "まだ誰も許可されていないため、連絡できるのはコーディネーターだけです。",
+      "add_label": "メンバーを許可する",
+      "add_placeholder": "名前でメンバーを検索",
+      "no_results": "該当するメンバーはいません",
+      "clear": "クリア",
+      "approve_button": "連絡を許可",
+      "remove_button": "取り消す",
+      "remove_aria": "{{name}}さんの許可を取り消す",
+      "approved_toast": "{{name}}さんはこのメンバーに連絡できるようになりました。",
+      "removed_toast": "許可を取り消しました。",
+      "failed": "うまくいきませんでした。もう一度お試しください。",
+      "approved_on": "{{when}}に許可"
+    }
   }
 }

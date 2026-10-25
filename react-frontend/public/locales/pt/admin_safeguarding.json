@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Você recebe uma notificação em tempo real no momento em que a opção é marcada.",
           "requires_broker_approval": "As correspondências e trocas com o membro aguardam a aprovação de um coordenador. As mensagens não são copiadas.",
-          "requires_vetted_interaction": "Membros não avaliados ficam ocultos no feed de descoberta do membro.",
+          "requires_vetted_interaction": "Só os membros cuja verificação esta comunidade registou podem contactar o membro. Todos os outros são bloqueados.",
           "restricts_matching": "As correspondências com o membro ficam retidas em Aprovações de Correspondência até que um coordenador as aprove. Nenhum dos dois membros é avisado antes disso.",
-          "restricts_messaging": "Os outros membros não podem contactar o membro diretamente; podem pedir ajuda a um coordenador. As mensagens não são copiadas.",
+          "restricts_messaging": "Só os coordenadores, e os membros que um coordenador autorize, podem contactar diretamente o membro, nos dois sentidos. Aos restantes é oferecida a opção de pedir a um coordenador. Os grupos a que pertence funcionam normalmente. As mensagens não são copiadas.",
           "vetting_type_required": "Especifica qual verificação um membro de contato deve realizar, por exemplo garda_vetting."
         },
         "table_aria": "Efeitos dos gatilhos de proteção",
@@ -433,7 +433,7 @@
       "requires_broker_approval": "Exigir aprovação do coordenador",
       "requires_vetted_interaction": "Apenas membros verificados",
       "restricts_matching": "Restringir correspondências",
-      "restricts_messaging": "Monitorizar mensagens"
+      "restricts_messaging": "Contacto através de um coordenador"
     },
     "type_checkbox": "Caixa de seleção",
     "type_info": "Informações",
@@ -495,6 +495,22 @@
     "offer_to_new_members_desc": "Quando desligado, os membros que ainda não a escolheram não a verão. Quem já a escolheu mantém-na e continua a vê-la.",
     "not_offered_chip": "Não oferecido a novos membros",
     "holder_count": "Membros que escolheram isto: {{count}}",
-    "members_are_told": "O que é dito aos membros sobre o que faz"
+    "members_are_told": "O que é dito aos membros sobre o que faz",
+    "approved_contacts": {
+      "heading": "Membros autorizados a contactá-los",
+      "intro": "Só os coordenadores e os membros que autorizar aqui podem contactar {{name}}, e {{name}} só os pode contactar a eles. Autorize um membro depois de verificar que o contacto é seguro; pode retirar a autorização a qualquer momento.",
+      "none": "Ainda ninguém está autorizado, por isso só os coordenadores os podem contactar.",
+      "add_label": "Autorizar um membro",
+      "add_placeholder": "Pesquisar membros pelo nome",
+      "no_results": "Nenhum membro corresponde",
+      "clear": "Limpar",
+      "approve_button": "Autorizar contacto",
+      "remove_button": "Retirar",
+      "remove_aria": "Retirar a autorização de {{name}}",
+      "approved_toast": "{{name}} já pode contactar este membro.",
+      "removed_toast": "Autorização retirada.",
+      "failed": "Não resultou. Tente novamente.",
+      "approved_on": "autorizado {{when}}"
+    }
   }
 }

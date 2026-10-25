@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Riceverai una notifica in tempo reale nel momento in cui l'opzione viene selezionata.",
           "requires_broker_approval": "Gli abbinamenti e gli scambi con il membro attendono il via libera di un coordinatore. I messaggi non vengono copiati.",
-          "requires_vetted_interaction": "I membri non controllati vengono nascosti dal feed di scoperta del membro.",
+          "requires_vetted_interaction": "Solo i membri la cui verifica è stata registrata da questa comunità possono contattare il membro. Tutti gli altri sono bloccati.",
           "restricts_matching": "Gli abbinamenti con il membro restano in attesa in Approvazioni degli abbinamenti finché un coordinatore non li approva. Nessuno dei due membri ne viene informato prima.",
-          "restricts_messaging": "Gli altri membri non possono contattare direttamente il membro; viene proposto loro di rivolgersi a un coordinatore. I messaggi non vengono copiati.",
+          "restricts_messaging": "Solo i coordinatori, e i membri che un coordinatore autorizza, possono contattare direttamente il membro, in entrambe le direzioni. Agli altri viene offerto un modo per chiedere a un coordinatore. I gruppi di cui fa parte funzionano normalmente. I messaggi non vengono copiati.",
           "vetting_type_required": "Specifica quale controllo deve mantenere un membro contattante, ad esempio garda_vetting."
         },
         "table_aria": "Salvaguardare gli effetti scatenanti",
@@ -433,7 +433,7 @@
       "requires_broker_approval": "Richiedi l'approvazione del coordinatore",
       "requires_vetted_interaction": "Solo membri verificati",
       "restricts_matching": "Limita gli abbinamenti",
-      "restricts_messaging": "Monitora i messaggi"
+      "restricts_messaging": "Contatto tramite un coordinatore"
     },
     "type_checkbox": "Casella di controllo",
     "type_info": "Informazioni",
@@ -495,6 +495,22 @@
     "offer_to_new_members_desc": "Se disattivato, i membri che non l'hanno già scelta non la vedranno. Chi l'ha già scelta la mantiene e può ancora vederla.",
     "not_offered_chip": "Non offerto ai nuovi membri",
     "holder_count": "Membri che l'hanno scelto: {{count}}",
-    "members_are_told": "Cosa viene detto ai membri che fa"
+    "members_are_told": "Cosa viene detto ai membri che fa",
+    "approved_contacts": {
+      "heading": "Membri autorizzati a contattarli",
+      "intro": "Solo i coordinatori e i membri che autorizzi qui possono contattare {{name}}, e {{name}} può contattare solo loro. Autorizza un membro dopo aver verificato che il contatto è sicuro; puoi revocarlo in qualsiasi momento.",
+      "none": "Nessuno è ancora autorizzato, quindi solo i coordinatori possono contattarli.",
+      "add_label": "Autorizza un membro",
+      "add_placeholder": "Cerca membri per nome",
+      "no_results": "Nessun membro corrispondente",
+      "clear": "Cancella",
+      "approve_button": "Autorizza il contatto",
+      "remove_button": "Revoca",
+      "remove_aria": "Revoca l'autorizzazione per {{name}}",
+      "approved_toast": "{{name}} ora può contattare questo membro.",
+      "removed_toast": "Autorizzazione revocata.",
+      "failed": "Non ha funzionato. Riprova.",
+      "approved_on": "autorizzato {{when}}"
+    }
   }
 }

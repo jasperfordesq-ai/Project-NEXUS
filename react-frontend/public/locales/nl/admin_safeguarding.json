@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Je krijgt een real-time melding zodra de optie is aangevinkt.",
           "requires_broker_approval": "Matches en uitwisselingen met het lid wachten op goedkeuring door een coördinator. Berichten worden niet gekopieerd.",
-          "requires_vetted_interaction": "Niet-doorgelichte leden worden verborgen in de ontdekkingsfeed van het lid.",
+          "requires_vetted_interaction": "Alleen leden van wie deze gemeenschap de screening heeft vastgelegd, kunnen contact opnemen met het lid. Alle anderen worden geblokkeerd.",
           "restricts_matching": "Matches met het lid worden in Matchgoedkeuringen vastgehouden tot een coördinator ze goedkeurt. Geen van beide leden hoort er eerder van.",
-          "restricts_messaging": "Andere leden kunnen het lid niet rechtstreeks benaderen; ze krijgen de mogelijkheid een coördinator te vragen. Berichten worden niet gekopieerd.",
+          "restricts_messaging": "Alleen coördinatoren, en leden die een coördinator voor dit lid goedkeurt, kunnen direct contact opnemen, in beide richtingen. Anderen krijgen de mogelijkheid een coördinator te vragen. Groepen waar het lid in zit, werken gewoon. Berichten worden niet gekopieerd.",
           "vetting_type_required": "Specificeert welke doorlichting een contacterend lid moet hebben, bijvoorbeeld garda_vetting."
         },
         "table_aria": "Triggereffecten beschermen",
@@ -433,7 +433,7 @@
       "requires_broker_approval": "Goedkeuring van coördinator vereisen",
       "requires_vetted_interaction": "Alleen gescreende leden",
       "restricts_matching": "Matching beperken",
-      "restricts_messaging": "Berichten monitoren"
+      "restricts_messaging": "Contact via een coördinator"
     },
     "type_checkbox": "Selectievakje",
     "type_info": "Info",
@@ -495,6 +495,22 @@
     "offer_to_new_members_desc": "Als dit uit staat, zien leden die deze optie nog niet hebben gekozen haar niet. Leden die haar al hebben gekozen, houden haar en kunnen haar nog steeds zien.",
     "not_offered_chip": "Niet aangeboden aan nieuwe leden",
     "holder_count": "Leden die dit kozen: {{count}}",
-    "members_are_told": "Wat leden te horen krijgen over wat dit doet"
+    "members_are_told": "Wat leden te horen krijgen over wat dit doet",
+    "approved_contacts": {
+      "heading": "Leden die contact mogen opnemen",
+      "intro": "Alleen coördinatoren en de leden die u hier goedkeurt, kunnen contact opnemen met {{name}}, en {{name}} kan alleen met hen contact opnemen. Keur een lid goed zodra u hebt gecontroleerd dat het contact veilig is; u kunt de goedkeuring altijd intrekken.",
+      "none": "Nog niemand is goedgekeurd, dus alleen coördinatoren kunnen contact opnemen.",
+      "add_label": "Een lid goedkeuren",
+      "add_placeholder": "Leden zoeken op naam",
+      "no_results": "Geen overeenkomende leden",
+      "clear": "Wissen",
+      "approve_button": "Contact goedkeuren",
+      "remove_button": "Intrekken",
+      "remove_aria": "Goedkeuring voor {{name}} intrekken",
+      "approved_toast": "{{name}} kan nu contact opnemen met dit lid.",
+      "removed_toast": "Goedkeuring ingetrokken.",
+      "failed": "Dat is niet gelukt. Probeer het opnieuw.",
+      "approved_on": "goedgekeurd {{when}}"
+    }
   }
 }

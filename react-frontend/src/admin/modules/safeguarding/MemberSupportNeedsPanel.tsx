@@ -38,6 +38,7 @@ import {
   requestBadgeRefresh,
   type MemberSupportNeed,
 } from './safeguardingShared';
+import { ApprovedContactsSection } from './ApprovedContactsSection';
 
 type ShowFilter = 'unseen' | 'all';
 
@@ -297,6 +298,10 @@ export function MemberSupportNeedsPanel({ onOpenMember }: MemberSupportNeedsPane
                             </ul>
                           )}
                         </div>
+                      )}
+
+                      {protections.includes('restricts_messaging') && (
+                        <ApprovedContactsSection userId={entry.user_id} userName={entry.user_name} />
                       )}
                     </div>
                   </div>
