@@ -37,6 +37,19 @@ describe('dynamic import chunk recovery', () => {
     expect(isChunkLoadError(new Error('ordinary API failure'))).toBe(false);
   });
 
+  it('recognizes the Safari wording of a stale-chunk failure', () => {
+    // REGRESSION (Sentry NEXUS-REACT-16, 2026-10-24): an iPhone left open across
+    // a deploy hit Safari's "Importing a module script failed." on /members. The
+    // matcher only knew the Chrome and Firefox wording, so no reload was tried
+    // and the member got the crash screen.
+    const safariError = new TypeError('Importing a module script failed.');
+    expect(isChunkLoadError(safariError)).toBe(true);
+
+    const { reload, purge, schedule } = makeHarness();
+    expect(requestStaleChunkRecovery(safariError, { reload, purge, schedule })).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
   it('returns a successfully imported module unchanged', async () => {
     const module = { value: 'loaded' };
     await expect(importWithChunkRecovery(async () => module)).resolves.toBe(module);

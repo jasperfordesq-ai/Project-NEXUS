@@ -20,6 +20,8 @@ export function isChunkLoadError(error: unknown): error is Error {
   return (
     error.message?.includes('Failed to fetch dynamically imported module') ||
     error.message?.includes('error loading dynamically imported module') ||
+    // Safari / iOS WebKit wording (Sentry NEXUS-REACT-16).
+    error.message?.includes('Importing a module script failed') ||
     error.message?.includes('Loading chunk') ||
     error.message?.includes('Loading CSS chunk') ||
     error.message?.includes('Unable to preload CSS') ||
