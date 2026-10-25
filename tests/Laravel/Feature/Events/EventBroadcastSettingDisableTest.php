@@ -204,8 +204,8 @@ final class EventBroadcastSettingDisableTest extends TestCase
     private function safeguarding(): SafeguardingInteractionPolicy
     {
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')->zeroOrMoreTimes();
-        $policy->shouldReceive('assertLocalContactAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')->zeroOrMoreTimes();
 
         return $policy;
     }

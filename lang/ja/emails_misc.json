@@ -218,7 +218,11 @@
     "shared_title": "報告の全文が共有されました",
     "shared_body": "{{organisation}}のセーフガーディング責任者として、セーフガーディング報告 #{{incident_id}} の全文を読めるようになりました。サインインしてお読みください。誰が報告したかは記載されていません。",
     "shared_cta": "報告を読む",
-    "share_withdrawn_bell": "保護に関する報告 #{{incident_id}} の全文は共有されなくなりました。概要は引き続き確認できます。"
+    "share_withdrawn_bell": "保護に関する報告 #{{incident_id}} の全文は共有されなくなりました。概要は引き続き確認できます。",
+    "contact_reason_via_coordinator": "送信者自身の連絡先はコーディネーターを通じて手配されますが、このメンバーはまだ承認されていません。",
+    "contact_attempt_contacted_label": "連絡を取ろうとしたメンバー",
+    "contact_attempt_via_body": "コーディネーターを通じて連絡先が手配されたメンバーが、連絡を許可されていないメンバーにメッセージを送信しようとしました。連絡先が安全な場合は、サポート ニーズ ページで連絡先を承認できます。",
+    "coordination_request_via_body": "コーディネーターを通じて連絡先が手配されているメンバーが、別のメンバーと連絡を取るためのサポートを求めています。連絡先が安全な場合は、サポート ニーズ ページで連絡先を承認できます。"
   },
   "onboarding_completed": {
     "subject": "準備完了です、{{name}} さん!{{community}} へようこそ",

@@ -45,7 +45,7 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
         $eventId = $this->event((int) $organizer->id);
         $this->confirmedRegistration($eventId, (int) $recipient->id, (int) $organizer->id);
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')->atLeast()->once();
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')->atLeast()->once();
         $broadcasts = new EventBroadcastService(new EventBroadcastAudienceResolver($policy));
         $created = $broadcasts->createDraft($eventId, $organizer, 'announcement',
             ['registration_confirmed'], ['in_app'], 'Schedule recovery fixture', 'schedule-recovery-create');
@@ -105,7 +105,7 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
         $eventId = $this->event((int) $organizer->id);
         $this->confirmedRegistration($eventId, (int) $recipient->id, (int) $organizer->id);
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')->zeroOrMoreTimes();
         App::instance(SafeguardingInteractionPolicy::class, $policy);
         $created = app(EventBroadcastService::class)->createDraft($eventId, $organizer, 'announcement',
             ['registration_confirmed'], ['in_app'], 'Zulu schedule fixture', 'zulu-schedule-create');
@@ -255,10 +255,10 @@ final class EventBroadcastRuntimeIntegrationTest extends TestCase
         $this->confirmedRegistration($eventId, (int) $recipient->id, (int) $organizer->id);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
-            ->with((int) $organizer->id, [(int) $recipient->id], $this->testTenantId, 'event_broadcast')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
+            ->with((int) $organizer->id, [(int) $recipient->id], [], $this->testTenantId, 'event_broadcast')
             ->atLeast()->once();
-        $policy->shouldReceive('assertLocalContactAllowed')
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')
             ->with((int) $organizer->id, (int) $recipient->id, $this->testTenantId, 'event_broadcast')
             ->once();
 

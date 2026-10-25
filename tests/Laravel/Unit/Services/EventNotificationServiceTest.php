@@ -67,9 +67,9 @@ class EventNotificationServiceTest extends TestCase
             ]));
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
             ->once()
-            ->with(10, [20, 30], 2, 'event_broadcast');
+            ->with(10, [20, 30], [], 2, 'event_broadcast');
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         $this->notificationAlias->shouldReceive('create')->twice(); // 20 and 30 only

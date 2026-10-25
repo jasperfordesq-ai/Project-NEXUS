@@ -90,7 +90,13 @@ class NotifySafeguardingContactAttemptBlocked implements ShouldQueue
                 return;
             }
 
-            $adminLink = "/broker/safeguarding?user={$event->recipientId}";
+            // The protected member is the sender when their own coordinator-arranged
+            // contact stopped the message; their support-needs page is where a
+            // coordinator approves the contact.
+            $viaCoordinator = $event->reasonCode === 'SAFEGUARDING_CONTACT_VIA_COORDINATOR';
+            $adminLink = $viaCoordinator
+                ? "/broker/safeguarding/support-needs?user={$event->senderId}"
+                : "/broker/safeguarding?user={$event->recipientId}";
 
             foreach ($staffUsers as $staff) {
                 LocaleContext::withLocale($staff, function () use ($staff, $event, $senderName, $recipientName, $adminLink) {
@@ -175,10 +181,14 @@ class NotifySafeguardingContactAttemptBlocked implements ShouldQueue
                 'recipient' => $recipientName,
             ]))
             ->greeting($staffName)
-            ->paragraph(__('emails_misc.safeguarding.contact_attempt_body'))
+            ->paragraph(__($event->reasonCode === 'SAFEGUARDING_CONTACT_VIA_COORDINATOR'
+                ? 'emails_misc.safeguarding.contact_attempt_via_body'
+                : 'emails_misc.safeguarding.contact_attempt_body'))
             ->infoCard([
                 __('emails_misc.safeguarding.contact_attempt_sender_label') => $senderName,
-                __('emails_misc.safeguarding.contact_attempt_recipient_label') => $recipientName,
+                __($event->reasonCode === 'SAFEGUARDING_CONTACT_VIA_COORDINATOR'
+                    ? 'emails_misc.safeguarding.contact_attempt_contacted_label'
+                    : 'emails_misc.safeguarding.contact_attempt_recipient_label') => $recipientName,
                 __('emails_misc.safeguarding.contact_attempt_reason_label') => $reason,
                 __('emails_misc.safeguarding.contact_attempt_required_vetting_label') => $requiredVetting,
             ])
@@ -224,6 +234,7 @@ class NotifySafeguardingContactAttemptBlocked implements ShouldQueue
         return match ($reasonCode) {
             'VETTING_REQUIRED' => __('emails_misc.safeguarding.contact_reason_vetting_required'),
             'SAFEGUARDING_CONTACT_RESTRICTED' => __('emails_misc.safeguarding.contact_reason_contact_restricted'),
+            'SAFEGUARDING_CONTACT_VIA_COORDINATOR' => __('emails_misc.safeguarding.contact_reason_via_coordinator'),
             default => __('emails_misc.safeguarding.contact_reason_unknown'),
         };
     }

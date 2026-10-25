@@ -218,7 +218,11 @@
     "shared_title": "Un signalement complet vous a été transmis",
     "shared_body": "En tant que référent protection de {{organisation}}, vous pouvez maintenant lire le signalement de protection complet n° {{incident_id}}. Connectez-vous pour le lire. Il n'indique pas qui a fait le signalement.",
     "shared_cta": "Lire le signalement",
-    "share_withdrawn_bell": "Le signalement de protection complet #{{incident_id}} n'est plus partagé avec vous. Son résumé reste visible."
+    "share_withdrawn_bell": "Le signalement de protection complet #{{incident_id}} n'est plus partagé avec vous. Son résumé reste visible.",
+    "contact_reason_via_coordinator": "Le contact de l'expéditeur est organisé par l'intermédiaire d'un coordinateur, et ce membre n'est pas encore approuvé pour lui.",
+    "contact_attempt_contacted_label": "Membre qu'ils ont essayé de contacter",
+    "contact_attempt_via_body": "Un membre dont le contact est organisé par l'intermédiaire d'un coordinateur a tenté d'envoyer un message à un membre qu'il n'est pas autorisé à contacter. Si le contact est sûr, vous pouvez l'approuver sur sa page de besoins d'assistance.",
+    "coordination_request_via_body": "Un membre dont le contact est organisé par l'intermédiaire d'un coordinateur a demandé de l'aide pour entrer en contact avec un autre membre. Si le contact est sûr, vous pouvez l'approuver sur sa page de besoins d'assistance."
   },
   "onboarding_completed": {
     "subject": "Tout est prêt, {{name}} ! Bienvenue sur {{community}}",

@@ -79,9 +79,10 @@ class EventNotificationService
                 ->unique()
                 ->values()
                 ->all();
-            app(SafeguardingInteractionPolicy::class)->assertManyLocalContactsAllowed(
+            app(SafeguardingInteractionPolicy::class)->assertCommunitySpaceBroadcastAllowed(
                 $organizerId,
                 $recipientIds,
+                [],
                 $tenantId,
                 'event_broadcast',
             );

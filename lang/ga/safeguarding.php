@@ -10,9 +10,12 @@ return [
         'vetting_required_title' => 'Ta seiceail chosanta de dhith',
         'vetting_required_detail' => 'Ní féidir teagmháil a dhéanamh leis an gcomhalta seo maidir leis an gcineál idirghníomhaíochta seo ach ag daoine a bhfuil stádas reatha :types taifeadta ag a bpobal dóibh. Is meiteashonraí amháin atá sa taifead; níor cheart aon doiciméad a sheoladh ná a uaslódáil.',
         'vetting_required_action' => 'Oscail cabhair',
-        'contact_restricted' => 'D iarr an comhalta seo go socroidh comhordaitheoir teagmhail thar a cheann. Nior seoladh do theachtaireacht. Dean teagmhail le do bhroiceir no riarthoir pobail chun an chead cheim shabhailte eile a shocru.',
-        'contact_restricted_title' => 'Ta socru comhordaitheora ag teastail',
-        'contact_restricted_detail' => 'Níl an comhalta seo ar fáil do theachtaireachtaí díreacha toisc go n-éilíonn a gcuid sainroghanna coimirce teagmháil trí chomhordaitheoir. Is féidir leat iarraidh ar chomhordaitheoir cabhrú leis an teagmháil a eagrú.',
+        'contact_restricted' => 'Ní féidir teagmháil a dhéanamh leis an gcomhalta seo ach trí chomhordaitheoir. Níor seoladh aon rud. Is féidir leat iarraidh ar chomhordaitheoir sibh a chur i dteagmháil le chéile.',
+        'contact_restricted_title' => 'Teagmháil trí chomhordaitheoir',
+        'contact_restricted_detail' => 'Socraítear teagmháil leis an gcomhalta seo trí chomhordaitheoir. Is féidir leat iarraidh ar chomhordaitheoir sibh a chur i dteagmháil le chéile.',
+        'contact_via_coordinator' => 'Roghnaigh tú go socródh comhordaitheoir teagmháil duit, mar sin níor seoladh aon rud. Iarr ar chomhordaitheoir tú a chur i dteagmháil leis an gcomhalta seo.',
+        'contact_via_coordinator_title' => 'Iarr ar chomhordaitheoir tú a chur i dteagmháil',
+        'contact_via_coordinator_detail' => 'Roghnaigh tú go socródh comhordaitheoir teagmháil duit. Iarr ar chomhordaitheoir, agus nuair a bheidh an comhalta seo ceadaithe acu, is féidir libh labhairt le chéile.',
         'contact_restricted_action' => 'Oscail cabhair',
         'coordination_not_required' => 'Tá teagmháil dhíreach leis an gcomhalta seo ar fáil faoi láthair — ní gá comhordaitheoir a bheith agat chun é a eagrú. Athnuaigh an leathanach agus bain triail as teachtaireacht a sheoladh arís.',
         'coordination_request_failed' => 'Níorbh fhéidir do iarratas a sheoladh chuig an gcomhordaitheoir faoi láthair. Bain triail eile as ar ball.',
@@ -99,14 +102,19 @@ return [
         'switch_not_held' => 'Níl an socrú “comhaltaí grinnfhiosraithe amháin” agat, mar sin níl aon rud le haistriú.',
         'switch_unavailable' => 'Níl cur in aithne ag comhordaitheoir ar fáil sa phobal seo fós. Déan teagmháil le comhordaitheoir, le do thoil.',
     ],
+    'approved_contacts' => [
+        'invalid_contact' => 'Roghnaigh comhalta eile den phobal seo.',
+        'not_found' => 'Níorbh fhéidir an cead sin a aimsiú. B’fhéidir gur tarraingíodh siar é cheana.',
+    ],
     'effects' => [
         'broker_approval' => 'Féachann comhordaitheoir ar aon mhalartú a shocraíonn tú sula dtéann sé ar aghaidh. Ní féidir leo do theachtaireachtaí a léamh.',
-        'restricts_messaging' => 'Ní féidir le comhaltaí eile teachtaireacht a chur chugat go díreach. Socraíonn comhordaitheoir teagmháil duit.',
+        'restricts_messaging' => 'Ní féidir le comhaltaí eile teachtaireacht a chur chugat, malartú a thosú leat ná tú a lua mura bhfuil siad ceadaithe ag comhordaitheoir. Is féidir le comhordaitheoirí teagmháil a dhéanamh leat i gcónaí. Chun teagmháil a dhéanamh le duine, iarr ar chomhordaitheoir. Oibríonn na grúpaí a bhfuil tú iontu mar is gnách.',
         'restricts_matching' => 'Seiceálann comhordaitheoir ar dtús na meaitseálacha a mholtar idir tú féin agus comhaltaí eile.',
         'vetted_only' => 'Ní féidir ach le comhaltaí a bhfuil :vetting taifeadta ag an bpobal seo dóibh teachtaireacht a chur chugat, freagra a thabhairt ort, creidmheasanna ama a sheoladh chugat nó malartú a thosú leat. Cuirtear cosc ar gach duine eile.',
         'vetted_count' => '{0} Níl :vetting taifeadta anseo d’aon chomhalta faoi láthair, mar sin ní féidir le duine ar bith teagmháil a dhéanamh leat fad atá sé seo ar siúl.|{1} Níl :vetting taifeadta anseo ach do chomhalta amháin faoi láthair.|[2,*] Tá :vetting taifeadta anseo do :count comhalta faoi láthair.',
         'notify_coordinator' => 'Cuirtear comhordaitheoir ar an eolas faoi do rogha, ionas gur féidir leo teagmháil a dhéanamh leat má bhíonn aon rud uait.',
         'no_home_visits' => 'Tá a fhios ag na comhordaitheoirí nach mian leat cuairteanna baile mura socraíonn siad iad.',
+        'check_before_helping' => 'Cuirtear comhordaitheoir ar an eolas agus deimhneoidh sé an bhfuil grinnfhiosrú (:vetting) ag teastáil. Go dtí go ndéanfaidh siad sin, ná socraigh cabhair a bhaineann le leanaí nó le daoine fásta leochaileacha tríd an mbanc ama.',
         'informational' => 'Ní athraíonn aon rud do chomhaltaí eile. Cabhraíonn do fhreagra leis na comhordaitheoirí tacú leat.',
         'declined' => 'Ní athraíonn aon rud. Is féidir leis na comhordaitheoirí a fheiceáil gur fhéach tú ar an gcéim seo.',
         'vetting_fallback' => 'grinnfhiosrú',
@@ -117,7 +125,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Measaim gur duine fásta leochaileach mé agus ba mhaith liom tacaíocht bhreise',
-                    'description' => 'Beidh comhordaitheoir i dteagmháil leat chun labhairt faoin gcaoi ar féidir linn cabhrú, agus féachfaidh sé ar do mhalartuithe agus ar do mheaitseálacha. Is féidir le comhaltaí eile teachtaireacht a chur chugat fós.',
+                    'description' => 'Chun tú a choinneáil slán, ní bheidh comhaltaí eile in ann teagmháil a dhéanamh leat go díreach. Beidh comhordaitheoir i dteagmháil leat, socróidh sé teagmháil le comhaltaí eile duit, agus is féidir leis comhaltaí áirithe a cheadú chun teagmháil a dhéanamh leat.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Ba mhaith liom go gcoinneodh comhordaitheoir súil ar mo mhalartuithe agus go gcabhródh sé liom aithne a chur ar chomhaltaí',
@@ -128,7 +136,7 @@ return [
                 ],
                 'requires_coordinator_contact' => [
                     'label' => 'Ba mhaith liom go socródh comhordaitheoir gach teagmháil dom in ionad comhaltaí a bheith ag cur teachtaireachtaí chugam go díreach',
-                    'description' => 'Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon. Ní bheidh comhaltaí eile in ann teachtaireacht a chur chugat go díreach.',
+                    'description' => 'Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon, agus is féidir leis comhaltaí áirithe a cheadú chun teagmháil a dhéanamh leat. Ní bheidh comhaltaí eile in ann teagmháil a dhéanamh leat go díreach.',
                 ],
                 'no_home_visits' => [
                     'label' => 'Níl mé ag iarraidh go dtabharfadh comhaltaí cuairt ar mo theach mura bhfuil sé socraithe ag comhordaitheoir',
@@ -138,7 +146,7 @@ return [
                     'label' => 'Tá sé beartaithe agam seirbhísí a thairiscint a bhféadfadh leanaí nó daoine óga (faoi 18) a bheith bainteach leo',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Tá sé beartaithe agam seirbhísí a thairiscint a bhféadfadh daoine fásta leochaileacha a bheith bainteach leo',
+                    'label' => 'Tá sé beartaithe agam cabhair a thairiscint a bhaineann le leanaí nó le daoine fásta leochaileacha (mar shampla teagasc do pháiste comhalta, nó cúram pearsanta)',
                 ],
                 'none_apply' => [
                     'label' => 'Ní bhaineann aon cheann díobh seo liom',
@@ -154,13 +162,13 @@ return [
                     'description' => 'In Éirinn, socraítear Grinnfhiosrúchán an Gharda Síochána trí eagraíocht do ról ar leith. Ní áirítear anseo ach grinnfhiosrú atá taifeadta ag an bpobal seo, ní grinnfhiosrú atá ag duine trína phost nó trí ghrúpa eile.',
                 ],
                 'requires_coordinator_contact' => [
-                    'description' => 'Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon. Ní bheidh comhaltaí eile in ann teachtaireacht a chur chugat go díreach.',
+                    'description' => 'Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon, agus is féidir leis comhaltaí áirithe a cheadú chun teagmháil a dhéanamh leat. Ní bheidh comhaltaí eile in ann teagmháil a dhéanamh leat go díreach.',
                 ],
                 'works_with_children' => [
                     'description' => 'D’fhéadfadh comhordaitheoir riachtanais Ghrinnfhiosrúchán an Gharda Síochána a phlé leat. In Éirinn, tá grinnfhiosrúchán de dhíth le haghaidh gníomhaíochtaí áirithe a bhaineann le leanaí faoin Acht um an mBiúró Náisiúnta Grinnfhiosrúcháin, 2012.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil Grinnfhiosrúchán an Gharda Síochána ag teastáil don obair atá beartaithe agat. Faoin Acht um an mBiúró Náisiúnta Grinnfhiosrúcháin 2012, tá grinnfhiosrú trí eagraíocht chláraithe ag teastáil le haghaidh roinnt oibre a dhéantar go príomha le daoine leochaileacha.',
+                    'description' => 'Cuirfear comhordaitheoir ar an eolas. In Éirinn, teastaíonn Grinnfhiosrúchán an Gharda Síochána le haghaidh roinnt oibre rialta le leanaí nó le daoine leochaileacha, agus ní féidir é a shocrú ach trí eagraíocht chláraithe; teastaíonn sé i gcónaí le haghaidh teagasc, traenáil nó meantóireacht leanaí. Ná socraigh cabhair den chineál seo tríd an mbanc ama go dtí go mbeidh comhordaitheoir tar éis a dheimhniú cad atá ag teastáil.',
                 ],
             ],
         ],
@@ -175,7 +183,7 @@ return [
                     'description' => 'Déanfaidh comhordaitheoir measúnú ar an ról agus ar dhlínse na RA is infheidhme sula gcinnfidh sé cén tseiceáil cosanta is iomchuí ó thaobh an dlí de.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Déanfaidh comhordaitheoir measúnú ar an ról, ar na daoine fásta atá i gceist agus ar an dlínse is infheidhme sa RA sula gcinnfidh sé cén seiceáil cosanta is iomchuí ó thaobh an dlí de.',
+                    'description' => 'Cuirfear comhordaitheoir ar an eolas agus deimhneoidh sé an bhfuil seiceáil DBS Fheabhsaithe, PVG nó AccessNI ag teastáil don obair atá beartaithe agat. Ná socraigh cabhair den chineál seo tríd an mbanc ama go dtí go ndéanfaidh siad sin.',
                 ],
             ],
         ],
@@ -190,7 +198,7 @@ return [
                     'description' => 'D’fhéadfadh comhordaitheoir riachtanais seiceála DBS a phlé leat.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil seiceáil DBS ag teastáil don obair atá beartaithe agat.',
+                    'description' => 'Cuirfear comhordaitheoir ar an eolas agus deimhneoidh sé an bhfuil seiceáil DBS ag teastáil don obair atá beartaithe agat. Ná socraigh cabhair den chineál seo tríd an mbanc ama go dtí go ndéanfaidh siad sin.',
                 ],
             ],
         ],
@@ -208,7 +216,7 @@ return [
                     'description' => 'D’fhéadfadh comhordaitheoir ballraíocht sa scéim PVG a phlé leat.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Tá sé beartaithe agam seirbhísí a thairiscint a bhféadfadh daoine fásta cosanta a bheith bainteach leo',
+                    'label' => 'Tá sé beartaithe agam cabhair a thairiscint a bhaineann le leanaí nó le daoine fásta cosanta (mar shampla teagasc do pháiste comhalta, nó cúram pearsanta)',
                 ],
             ],
         ],
@@ -223,7 +231,7 @@ return [
                     'description' => 'D’fhéadfadh comhordaitheoir seiceáil AccessNI a phlé leat.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil seiceáil AccessNI ag teastáil don obair atá beartaithe agat.',
+                    'description' => 'Cuirfear comhordaitheoir ar an eolas agus deimhneoidh sé an bhfuil seiceáil AccessNI ag teastáil don obair atá beartaithe agat. Ná socraigh cabhair den chineál seo tríd an mbanc ama go dtí go ndéanfaidh siad sin.',
                 ],
             ],
         ],

@@ -491,9 +491,10 @@ class GroupLifecycleService
                         $cohort,
                         static fn (int $recipientId): bool => $recipientId !== $senderId,
                     ));
-                    $policy->assertManyLocalContactsAllowed(
+                    $policy->assertCommunitySpaceBroadcastAllowed(
                         $senderId,
                         $recipientIds,
+                        [],
                         $tenantId,
                         'group_clone_member_activation',
                     );

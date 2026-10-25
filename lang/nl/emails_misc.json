@@ -218,7 +218,11 @@
     "shared_title": "Er is een volledige melding met u gedeeld",
     "shared_body": "Als vertrouwenspersoon van {{organisation}} kunt u nu de volledige veiligheidsmelding #{{incident_id}} lezen. Log in om die te lezen. Er staat niet in wie de melding heeft gedaan.",
     "shared_cta": "Melding lezen",
-    "share_withdrawn_bell": "De volledige veiligheidsmelding #{{incident_id}} wordt niet meer met u gedeeld. De samenvatting blijft zichtbaar."
+    "share_withdrawn_bell": "De volledige veiligheidsmelding #{{incident_id}} wordt niet meer met u gedeeld. De samenvatting blijft zichtbaar.",
+    "contact_reason_via_coordinator": "Het eigen contact van de afzender wordt geregeld via een coördinator, en dit lid is nog niet voor hem goedgekeurd.",
+    "contact_attempt_contacted_label": "Lid met wie ze probeerden contact op te nemen",
+    "contact_attempt_via_body": "Een lid wiens contact via een coördinator wordt geregeld, heeft geprobeerd een lid een bericht te sturen met wie hij geen toestemming heeft contact op te nemen. Als het contact veilig is, kunt u het goedkeuren op de pagina met ondersteuningsbehoeften.",
+    "coordination_request_via_body": "Een lid wiens contact via een coördinator wordt geregeld, heeft hulp gevraagd bij het in contact komen met een ander lid. Als het contact veilig is, kunt u het goedkeuren op de pagina met ondersteuningsbehoeften."
   },
   "onboarding_completed": {
     "subject": "Alles is klaar, {{name}}! Welkom bij {{community}}",

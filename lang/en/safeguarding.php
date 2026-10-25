@@ -10,9 +10,12 @@ return [
         'vetting_required_title' => 'Safeguarding check needed',
         'vetting_required_detail' => 'This member can only be contacted for this type of interaction by members whose community has recorded a current :types status. The record is metadata only; no document should be sent or uploaded.',
         'vetting_required_action' => 'Open help',
-        'contact_restricted' => 'This member has asked for a coordinator to arrange contact on their behalf. Your message has not been sent. Please contact your broker or community administrator so they can help arrange the next safe step.',
-        'contact_restricted_title' => 'Coordinator arrangement needed',
-        'contact_restricted_detail' => 'This member is not available for direct messages because their safeguarding preferences require coordinator-mediated contact. You can ask a coordinator to help arrange contact.',
+        'contact_restricted' => 'This member can only be contacted through a coordinator. Nothing has been sent. You can ask a coordinator to put you in touch.',
+        'contact_restricted_title' => 'Contact through a coordinator',
+        'contact_restricted_detail' => 'Contact with this member is arranged through a coordinator. You can ask a coordinator to put you in touch.',
+        'contact_via_coordinator' => 'You chose to have a coordinator arrange contact for you, so nothing has been sent. Ask a coordinator to put you in touch with this member.',
+        'contact_via_coordinator_title' => 'Ask a coordinator to put you in touch',
+        'contact_via_coordinator_detail' => 'You chose to have a coordinator arrange contact for you. Ask a coordinator, and once they have approved this member you can talk to each other.',
         'contact_restricted_action' => 'Open help',
         'coordination_not_required' => 'Direct contact with this member is currently available — you do not need a coordinator to arrange it. Please refresh the page and try messaging again.',
         'coordination_request_failed' => 'We could not send your request to the coordinator just now. Please try again shortly.',
@@ -99,17 +102,22 @@ return [
         'switch_not_held' => 'You do not have the vetted-members-only setting, so there is nothing to switch.',
         'switch_unavailable' => 'Coordinator introductions are not available in this community yet. Please contact a coordinator.',
     ],
+    'approved_contacts' => [
+        'invalid_contact' => 'Choose another member of this community.',
+        'not_found' => 'That approval could not be found. It may already have been withdrawn.',
+    ],
     // What a choice actually does, in the member's own words. Generated from
     // the option's triggers by SafeguardingEffectsService, so this text can
     // never promise more, or less, than the platform enforces.
     'effects' => [
         'broker_approval' => 'A coordinator looks over any exchange you arrange before it goes ahead. They cannot read your messages.',
-        'restricts_messaging' => 'Other members cannot message you directly. A coordinator arranges contact for you.',
+        'restricts_messaging' => 'Other members cannot message you, start an exchange with you or mention you unless a coordinator has approved them. Coordinators can always contact you. To get in touch with someone, ask a coordinator. Groups you belong to work as normal.',
         'restricts_matching' => 'Suggested matches between you and other members are checked by a coordinator first.',
         'vetted_only' => 'Only members whose :vetting this community has recorded can message you, reply to you, send you time credits or start an exchange with you. Everyone else is blocked.',
         'vetted_count' => '{0} No members have :vetting recorded here at the moment, so nobody can contact you while this is on.|{1} Only 1 member has :vetting recorded here at the moment.|[2,*] :count members have :vetting recorded here at the moment.',
         'notify_coordinator' => 'A coordinator is told about your choice, so they can get in touch if you need anything.',
         'no_home_visits' => 'Coordinators know you do not want home visits unless they arrange them.',
+        'check_before_helping' => 'A coordinator is told and will confirm whether vetting (:vetting) is needed. Until they have, please do not arrange help involving children or vulnerable adults through the timebank.',
         'informational' => 'Nothing changes for other members. Your answer helps coordinators support you.',
         'declined' => 'Nothing changes. Coordinators can see that you have looked at this step.',
         'vetting_fallback' => 'vetting',
@@ -120,7 +128,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'I consider myself a vulnerable adult and would like extra support',
-                    'description' => 'A coordinator will be in touch to talk about how we can help, and will look over your exchanges and matches. Other members can still message you.',
+                    'description' => 'To keep you safe, other members will not be able to contact you directly. A coordinator will be in touch, will arrange contact with other members for you, and can approve particular members to get in touch with you.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'I would like a coordinator to keep an eye on my exchanges and help introduce me to members',
@@ -131,7 +139,7 @@ return [
                 ],
                 'requires_coordinator_contact' => [
                     'label' => 'I would like a coordinator to arrange all contact for me instead of members messaging me directly',
-                    'description' => 'A coordinator will arrange contact and exchanges on your behalf. Other members will not be able to message you directly.',
+                    'description' => 'A coordinator will arrange contact and exchanges on your behalf, and can approve particular members to get in touch with you. Other members will not be able to contact you directly.',
                 ],
                 'no_home_visits' => [
                     'label' => 'I do not want members visiting my home unless a coordinator has arranged it',
@@ -141,7 +149,7 @@ return [
                     'label' => 'I plan to offer services that may involve children or young people (under 18)',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'I plan to offer services that may involve vulnerable adults',
+                    'label' => 'I plan to offer help that involves children or vulnerable adults (for example tutoring a member\x27s child, or personal care)',
                 ],
                 'none_apply' => [
                     'label' => 'None of these apply to me',
@@ -154,9 +162,9 @@ return [
             'vetting_authority' => 'National Vetting Bureau',
             'options' => [
                 'requires_vetted_partners' => ['description' => 'In Ireland, Garda Vetting is arranged through an organisation for a particular role. Only vetting that this community has recorded counts here, not vetting someone has through their job or another group.'],
-                'requires_coordinator_contact' => ['description' => 'A coordinator will arrange contact and exchanges on your behalf. Other members will not be able to message you directly.'],
+                'requires_coordinator_contact' => ['description' => 'A coordinator will arrange contact and exchanges on your behalf, and can approve particular members to get in touch with you. Other members will not be able to contact you directly.'],
                 'works_with_children' => ['description' => 'A coordinator may discuss Garda Vetting requirements with you. In Ireland, certain activities involving children require vetting under the National Vetting Bureau Act 2012.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator may talk to you about whether Garda Vetting is needed for what you plan to do. Under the National Vetting Bureau Act 2012, some work mainly with vulnerable people needs vetting through a registered organisation.'],
+                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told. In Ireland, some regular work with children or vulnerable people needs Garda Vetting, which only a registered organisation can arrange, and teaching, coaching or mentoring children always does. Please do not arrange this kind of help through the timebank until a coordinator has confirmed what is needed.'],
             ],
         ],
         'united_kingdom' => [
@@ -165,7 +173,7 @@ return [
             'options' => [
                 'requires_vetted_partners' => ['description' => 'Across the United Kingdom, this means an Enhanced DBS, PVG or AccessNI check that this community has recorded. A check someone has through their job or another group does not count here.'],
                 'works_with_children' => ['description' => 'A coordinator will assess the role and applicable UK jurisdiction before deciding which safeguarding check is legally appropriate.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator will assess the role, the adults involved and the applicable UK jurisdiction before deciding which safeguarding check is legally appropriate.'],
+                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told and will confirm whether an Enhanced DBS, PVG or AccessNI check is needed for what you plan to do. Please do not arrange this kind of help through the timebank until they have.'],
             ],
         ],
         'england_wales' => [
@@ -174,7 +182,7 @@ return [
             'options' => [
                 'requires_vetted_partners' => ['description' => 'In England & Wales, this means an Enhanced DBS check that this community has recorded. A check someone has through their job or another group does not count here.'],
                 'works_with_children' => ['description' => 'A coordinator may discuss DBS check requirements with you.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator may talk to you about whether a DBS check is needed for what you plan to do.'],
+                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told and will confirm whether a DBS check is needed for what you plan to do. Please do not arrange this kind of help through the timebank until they have.'],
             ],
         ],
         'scotland' => [
@@ -184,8 +192,8 @@ return [
                 'is_vulnerable_adult' => ['label' => 'I consider myself a vulnerable or protected adult and may need additional safeguarding support'],
                 'requires_vetted_partners' => ['description' => 'In Scotland, this means PVG scheme membership that this community has recorded. Membership someone has through their job or another group does not count here.'],
                 'works_with_children' => ['description' => 'A coordinator may discuss PVG scheme membership with you.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator may talk to you about whether PVG scheme membership is needed for what you plan to do.'],
-                'works_with_vulnerable_adults' => ['label' => 'I plan to offer services that may involve protected adults'],
+                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told and will confirm whether PVG scheme membership is needed for what you plan to do. Please do not arrange this kind of help through the timebank until they have.'],
+                'works_with_vulnerable_adults' => ['label' => 'I plan to offer help that involves children or protected adults (for example tutoring a member\x27s child, or personal care)'],
             ],
         ],
         'northern_ireland' => [
@@ -194,7 +202,7 @@ return [
             'options' => [
                 'requires_vetted_partners' => ['description' => 'In Northern Ireland, this means an AccessNI check that this community has recorded. A check someone has through their job or another group does not count here.'],
                 'works_with_children' => ['description' => 'A coordinator may discuss AccessNI checking with you.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator may talk to you about whether an AccessNI check is needed for what you plan to do.'],
+                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told and will confirm whether an AccessNI check is needed for what you plan to do. Please do not arrange this kind of help through the timebank until they have.'],
             ],
         ],
         'custom' => ['name' => 'Custom'],

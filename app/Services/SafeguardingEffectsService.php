@@ -90,6 +90,24 @@ class SafeguardingEffectsService
         if (! empty($merged['restricts_matching'])) {
             $lines[] = ['key' => 'restricts_matching', 'text' => __('safeguarding.effects.restricts_matching')];
         }
+        // Offering help that involves children or vulnerable adults (owner, 25
+        // Oct 2026): nothing is blocked, but the member waits for a coordinator
+        // to confirm whether vetting is needed for it.
+        if (in_array('works_with_vulnerable_adults', $optionKeys, true)) {
+            $helperCodes = [];
+            foreach ($selections as $selection) {
+                $code = $selection['option_key'] === 'works_with_vulnerable_adults'
+                    ? ($selection['triggers']['vetting_type_required'] ?? null)
+                    : null;
+                if (is_string($code) && $code !== '') {
+                    $helperCodes[] = $code;
+                }
+            }
+            $lines[] = [
+                'key' => 'check_before_helping',
+                'text' => __('safeguarding.effects.check_before_helping', ['vetting' => $this->vettingLabel(array_values(array_unique($helperCodes)))]),
+            ];
+        }
         if (in_array('no_home_visits', $optionKeys, true)) {
             $lines[] = ['key' => 'no_home_visits', 'text' => __('safeguarding.effects.no_home_visits')];
         }

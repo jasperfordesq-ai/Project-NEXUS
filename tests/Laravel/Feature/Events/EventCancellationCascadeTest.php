@@ -92,10 +92,10 @@ final class EventCancellationCascadeTest extends TestCase
     private function broadcastService(int $organizerId, int $recipientId): EventBroadcastService
     {
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
-            ->with($organizerId, [$recipientId], $this->testTenantId, 'event_broadcast')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
+            ->with($organizerId, [$recipientId], [], $this->testTenantId, 'event_broadcast')
             ->zeroOrMoreTimes();
-        $policy->shouldReceive('assertLocalContactAllowed')
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')
             ->zeroOrMoreTimes();
 
         return new EventBroadcastService(new EventBroadcastAudienceResolver($policy));

@@ -38,7 +38,7 @@ final class SafeguardingChoicesEmailTest extends TestCase
         app()->instance(EmailDispatchService::class, $this->mailer);
 
         Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
-        $this->apiPut('/v2/admin/vetting/policy', ['jurisdiction' => 'ireland'])->assertStatus(200);
+        $this->apiPut('/v2/admin/vetting/policy', ['jurisdiction' => 'england_wales'])->assertStatus(200);
     }
 
     public function test_the_summary_lists_only_the_protections_that_are_on(): void

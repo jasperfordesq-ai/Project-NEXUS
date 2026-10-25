@@ -59,7 +59,121 @@ class SafeguardingInteractionPolicy
     public function __construct(
         private readonly MemberVettingAttestationService $attestations,
         private readonly SafeguardingJurisdictionService $jurisdictions,
+        private readonly SafeguardingApprovedContactService $approvedContacts,
     ) {}
+
+    /**
+     * Contact inside a shared community space — joining a group, posting to a
+     * group's members, an organiser's event broadcast, an emergency alert —
+     * rather than contact aimed at one member.
+     *
+     * Owner decision, 25 Oct 2026: a member whose choice routes contact
+     * through a coordinator (`restricts_messaging`) must not freeze the groups
+     * they belong to. Before this, one such member stopped everyone posting in
+     * that group's chat rooms, discussions and announcements, stopped anyone
+     * joining it, and made event broadcasts and emergency alerts fail. In a
+     * space that restriction is therefore not applied; it still applies to
+     * anything aimed at the member (direct messages, @mentions, exchanges,
+     * credits). Vetting requirements and blocks are unchanged here.
+     */
+    public function evaluateCommunitySpaceContact(
+        int $senderId,
+        int $recipientId,
+        int $tenantId,
+        string $channel,
+    ): SafeguardingInteractionDecision {
+        $blocked = $this->blockedDecision($senderId, $recipientId, $tenantId, crossCommunity: false);
+        if ($blocked !== null) {
+            return $blocked;
+        }
+
+        return $this->evaluate(
+            senderUserId: $senderId,
+            senderTenantId: $tenantId,
+            recipientId: $recipientId,
+            recipientTenantId: $tenantId,
+            channel: $channel,
+            externalActor: false,
+            communitySpace: true,
+        );
+    }
+
+    /** @throws SafeguardingPolicyException */
+    public function assertCommunitySpaceContactAllowed(
+        int $senderId,
+        int $recipientId,
+        int $tenantId,
+        string $channel,
+    ): void {
+        $this->throwWhenDenied($this->evaluateCommunitySpaceContact($senderId, $recipientId, $tenantId, $channel));
+    }
+
+    /**
+     * Indivisible send to a community space's members (see
+     * evaluateCommunitySpaceContact) plus anyone it targets directly
+     * (@mentions, a named recipient). The members are checked as a space; the
+     * targeted recipients are checked as direct contact.
+     *
+     * @param list<int> $spaceMemberIds
+     * @param list<int> $directRecipientIds
+     */
+    public function evaluateCommunitySpaceBroadcast(
+        int $senderId,
+        array $spaceMemberIds,
+        array $directRecipientIds,
+        int $tenantId,
+        string $channel,
+    ): SafeguardingInteractionDecision {
+        $direct = array_values(array_unique(array_map('intval', $directRecipientIds)));
+        $space = array_values(array_diff(array_unique(array_map('intval', $spaceMemberIds)), $direct));
+
+        $firstDenial = null;
+        foreach ([[$space, true], [$direct, false]] as [$recipientIds, $communitySpace]) {
+            foreach ($recipientIds as $recipientId) {
+                if ($recipientId <= 0 || $recipientId === $senderId) {
+                    continue;
+                }
+                $decision = $this->evaluate(
+                    senderUserId: $senderId,
+                    senderTenantId: $tenantId,
+                    recipientId: $recipientId,
+                    recipientTenantId: $tenantId,
+                    channel: $channel,
+                    externalActor: false,
+                    communitySpace: $communitySpace,
+                );
+                if ($decision->isUnavailable()) {
+                    return $decision;
+                }
+                if ($decision->isDenied() && $firstDenial === null) {
+                    $firstDenial = $decision;
+                }
+            }
+        }
+
+        return $firstDenial ?? $this->allowed($tenantId);
+    }
+
+    /**
+     * @param list<int> $spaceMemberIds
+     * @param list<int> $directRecipientIds
+     * @throws SafeguardingPolicyException
+     */
+    public function assertCommunitySpaceBroadcastAllowed(
+        int $senderId,
+        array $spaceMemberIds,
+        array $directRecipientIds,
+        int $tenantId,
+        string $channel,
+    ): void {
+        $this->throwWhenDenied($this->evaluateCommunitySpaceBroadcast(
+            $senderId,
+            $spaceMemberIds,
+            $directRecipientIds,
+            $tenantId,
+            $channel,
+        ));
+    }
 
     public function evaluateLocalContact(
         int $senderId,
@@ -130,6 +244,18 @@ class SafeguardingInteractionPolicy
             }
         }
 
+        // The sender's own choice is read without a lock: taking a second
+        // member's preference lock here would invert the lock order of a
+        // reply travelling the other way. A sender racing their own
+        // preference change can only affect their own contact.
+        try {
+            $senderTriggers = SafeguardingTriggerService::getActiveTriggersUncached($senderId, $tenantId);
+        } catch (\Throwable $e) {
+            $this->logUnavailable($tenantId, $recipientId, $channel, 'locked_sender_trigger_lookup_failed', $e);
+
+            return $this->unavailable($tenantId, 'SAFEGUARDING_POLICY_UNAVAILABLE');
+        }
+
         return $this->evaluateResolvedState(
             senderUserId: $senderId,
             senderTenantId: $tenantId,
@@ -139,6 +265,7 @@ class SafeguardingInteractionPolicy
             externalActor: false,
             triggers: $triggers,
             policy: $policy,
+            senderTriggers: $senderTriggers,
         );
     }
 
@@ -340,9 +467,13 @@ class SafeguardingInteractionPolicy
         int $recipientTenantId,
         string $channel,
         bool $externalActor,
+        bool $communitySpace = false,
     ): SafeguardingInteractionDecision {
         try {
             $triggers = SafeguardingTriggerService::getActiveTriggers($recipientId, $recipientTenantId);
+            $senderTriggers = ($senderUserId !== null && $senderTenantId !== null && ! $externalActor)
+                ? SafeguardingTriggerService::getActiveTriggers($senderUserId, $senderTenantId)
+                : [];
         } catch (\Throwable $e) {
             $this->logUnavailable($recipientTenantId, $recipientId, $channel, 'trigger_lookup_failed', $e);
 
@@ -369,12 +500,15 @@ class SafeguardingInteractionPolicy
             externalActor: $externalActor,
             triggers: $triggers,
             policy: $policy,
+            senderTriggers: $senderTriggers,
+            communitySpace: $communitySpace,
         );
     }
 
     /**
      * @param array<string, mixed> $triggers
      * @param array<string, mixed>|null $policy
+     * @param array<string, mixed> $senderTriggers
      */
     private function evaluateResolvedState(
         ?int $senderUserId,
@@ -385,18 +519,47 @@ class SafeguardingInteractionPolicy
         bool $externalActor,
         array $triggers,
         ?array $policy,
+        array $senderTriggers = [],
+        bool $communitySpace = false,
     ): SafeguardingInteractionDecision {
 
-        if (! empty($triggers['restricts_messaging'])) {
-            return new SafeguardingInteractionDecision(
-                status: SafeguardingInteractionDecision::DENY,
-                code: 'SAFEGUARDING_CONTACT_RESTRICTED',
-                recipientTenantId: $recipientTenantId,
-                purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
-                scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
-                scopeIdentifier: '',
-                canRequestCoordinator: true,
-            );
+        // Coordinator-arranged contact (`restricts_messaging`, owner decision
+        // 25 Oct 2026). Coordinators of the member's community, and members a
+        // coordinator has approved for them, may contact them; nobody else.
+        // It works in both directions: until then a protected member could
+        // send a message nobody was allowed to answer. Not applied inside a
+        // community space — see evaluateCommunitySpaceContact().
+        if (! $communitySpace) {
+            if (! empty($senderTriggers['restricts_messaging'])
+                && $senderUserId !== null
+                && $senderTenantId !== null
+                && ! $this->coordinatorArrangedContactAllowed($senderTenantId, $senderUserId, $recipientId, $recipientTenantId)) {
+                return new SafeguardingInteractionDecision(
+                    status: SafeguardingInteractionDecision::DENY,
+                    code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+                    recipientTenantId: $recipientTenantId,
+                    purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
+                    scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
+                    scopeIdentifier: '',
+                    canRequestCoordinator: true,
+                    restrictedBySender: true,
+                );
+            }
+
+            if (! empty($triggers['restricts_messaging'])
+                && ($externalActor
+                    || $senderUserId === null
+                    || ! $this->coordinatorArrangedContactAllowed($recipientTenantId, $recipientId, $senderUserId, $senderTenantId))) {
+                return new SafeguardingInteractionDecision(
+                    status: SafeguardingInteractionDecision::DENY,
+                    code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+                    recipientTenantId: $recipientTenantId,
+                    purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
+                    scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
+                    scopeIdentifier: '',
+                    canRequestCoordinator: true,
+                );
+            }
         }
 
         if (empty($triggers['requires_vetted_interaction'])) {
@@ -492,6 +655,26 @@ class SafeguardingInteractionPolicy
         );
     }
 
+    /**
+     * May $otherUserId have direct contact with the protected member? Yes for
+     * a coordinator of the protected member's own community, and for a member
+     * of that community whom a coordinator has approved for this protected
+     * member. A member of another community never qualifies.
+     */
+    private function coordinatorArrangedContactAllowed(
+        int $protectedTenantId,
+        int $protectedUserId,
+        ?int $otherUserId,
+        ?int $otherTenantId,
+    ): bool {
+        if ($otherUserId === null || $otherTenantId === null || $otherTenantId !== $protectedTenantId) {
+            return false;
+        }
+
+        return $this->approvedContacts->isStaff($protectedTenantId, $otherUserId)
+            || $this->approvedContacts->isApproved($protectedTenantId, $protectedUserId, $otherUserId);
+    }
+
     private function allowed(int $recipientTenantId): SafeguardingInteractionDecision
     {
         return new SafeguardingInteractionDecision(
@@ -511,7 +694,7 @@ class SafeguardingInteractionPolicy
             return;
         }
 
-        $message = match ($decision->code) {
+        $message = $decision->restrictedBySender ? __('safeguarding.errors.contact_via_coordinator') : match ($decision->code) {
             // F-336: the same message the 20 hand-placed assertNoBlockBetween()
             // call sites throw, so a member sees one sentence for one situation.
             'BLOCKED' => __('safeguarding.errors.blocked_interaction'),

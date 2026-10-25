@@ -218,7 +218,11 @@
     "shared_title": "A full report has been shared with you",
     "shared_body": "As safeguarding lead for {{organisation}}, you can now read the full safeguarding report #{{incident_id}}. Sign in to read it. It does not say who made the report.",
     "shared_cta": "Read the report",
-    "share_withdrawn_bell": "The full safeguarding report #{{incident_id}} is no longer shared with you. You can still see its summary."
+    "share_withdrawn_bell": "The full safeguarding report #{{incident_id}} is no longer shared with you. You can still see its summary.",
+    "contact_reason_via_coordinator": "The sender's own contact is arranged through a coordinator, and this member is not approved for them yet.",
+    "contact_attempt_contacted_label": "Member they tried to contact",
+    "contact_attempt_via_body": "A member whose contact is arranged through a coordinator tried to message a member they are not approved to contact. If the contact is safe, you can approve it on their support-needs page.",
+    "coordination_request_via_body": "A member whose contact is arranged through a coordinator has asked for help getting in touch with another member. If the contact is safe, you can approve it on their support-needs page."
   },
   "onboarding_completed": {
     "subject": "You're all set, {{name}}! Welcome to {{community}}",

@@ -121,6 +121,9 @@ final class SafeguardingInteractionDecisionTest extends TestCase
             'required_attestation_codes',
             'required_attestation_labels',
             'can_request_coordinator',
+            // 25 Oct 2026: the sender's own coordinator-arranged-contact choice
+            // stopped it, not the recipient's — same code, different words.
+            'restricted_by_sender',
         ], array_keys(self::make(SafeguardingInteractionDecision::ALLOW)->toArray()));
     }
 
@@ -137,6 +140,7 @@ final class SafeguardingInteractionDecisionTest extends TestCase
             requiredAttestationCodes: ['dbs_enhanced'],
             requiredAttestationLabels: ['DBS Enhanced'],
             canRequestCoordinator: true,
+            restrictedBySender: true,
         );
 
         $this->assertSame([
@@ -150,6 +154,7 @@ final class SafeguardingInteractionDecisionTest extends TestCase
             'required_attestation_codes' => ['dbs_enhanced'],
             'required_attestation_labels' => ['DBS Enhanced'],
             'can_request_coordinator' => true,
+            'restricted_by_sender' => true,
         ], $decision->toArray());
     }
 

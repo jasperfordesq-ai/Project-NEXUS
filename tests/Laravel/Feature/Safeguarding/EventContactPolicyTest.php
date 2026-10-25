@@ -128,9 +128,9 @@ class EventContactPolicyTest extends TestCase
         ]);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
             ->once()
-            ->with($organizer->id, [$attendee->id], $this->testTenantId, 'event_broadcast')
+            ->with($organizer->id, [$attendee->id], [], $this->testTenantId, 'event_broadcast')
             ->andThrow($this->denial());
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 

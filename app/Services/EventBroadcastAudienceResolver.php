@@ -78,9 +78,10 @@ final class EventBroadcastAudienceResolver
             ->values()
             ->all();
         if ($assertContactPolicy && $ids !== []) {
-            $this->safeguarding->assertManyLocalContactsAllowed(
+            $this->safeguarding->assertCommunitySpaceBroadcastAllowed(
                 $organizerId,
                 $ids,
+                [],
                 $tenantId,
                 'event_broadcast',
             );

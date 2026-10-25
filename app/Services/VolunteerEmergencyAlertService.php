@@ -123,9 +123,10 @@ class VolunteerEmergencyAlertService
 
         try {
             $candidates = self::qualifiedVolunteers($shiftId, $skillsJson, $tenantId);
-            app(SafeguardingInteractionPolicy::class)->assertManyLocalContactsAllowed(
+            app(SafeguardingInteractionPolicy::class)->assertCommunitySpaceBroadcastAllowed(
                 $createdBy,
                 $candidates->pluck('user_id')->map(static fn ($id): int => (int) $id)->all(),
+                [],
                 $tenantId,
                 'volunteer_emergency_alert_broadcast',
             );

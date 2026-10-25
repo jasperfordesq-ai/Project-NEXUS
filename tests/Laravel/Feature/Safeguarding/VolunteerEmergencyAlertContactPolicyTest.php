@@ -78,9 +78,9 @@ class VolunteerEmergencyAlertContactPolicyTest extends TestCase
         Sanctum::actingAs($owner, ['*']);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
             ->once()
-            ->with($owner->id, [$volunteer->id], $this->testTenantId, 'volunteer_emergency_alert_broadcast')
+            ->with($owner->id, [$volunteer->id], [], $this->testTenantId, 'volunteer_emergency_alert_broadcast')
             ->andThrow(new SafeguardingPolicyException('VETTING_REQUIRED', 'Vetting required'));
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 

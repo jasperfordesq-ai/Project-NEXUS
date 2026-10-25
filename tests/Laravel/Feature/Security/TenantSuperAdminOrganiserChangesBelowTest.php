@@ -486,7 +486,7 @@ final class TenantSuperAdminOrganiserChangesBelowTest extends TestCase
     private function allowLocalContacts(): void
     {
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')->zeroOrMoreTimes();
         App::instance(SafeguardingInteractionPolicy::class, $policy);
     }
 

@@ -185,7 +185,7 @@ class GroupServiceTest extends TestCase
         ]);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertLocalContactAllowed')
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')
             ->once()
             ->with((int) $joining->id, (int) $owner->id, $this->testTenantId, 'group_join')
             ->andThrow(new SafeguardingPolicyException('VETTING_REQUIRED', 'Vetting required'));

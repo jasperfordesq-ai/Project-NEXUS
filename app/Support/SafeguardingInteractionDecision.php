@@ -29,6 +29,12 @@ final readonly class SafeguardingInteractionDecision
         public array $requiredAttestationCodes = [],
         public array $requiredAttestationLabels = [],
         public bool $canRequestCoordinator = false,
+        /**
+         * True when the SENDER's own protection stopped the interaction (they
+         * chose to have a coordinator arrange contact), rather than the
+         * recipient's. Same code, different explanation for the member.
+         */
+        public bool $restrictedBySender = false,
     ) {}
 
     public function isAllowed(): bool
@@ -60,6 +66,7 @@ final readonly class SafeguardingInteractionDecision
             'required_attestation_codes' => $this->requiredAttestationCodes,
             'required_attestation_labels' => $this->requiredAttestationLabels,
             'can_request_coordinator' => $this->canRequestCoordinator,
+            'restricted_by_sender' => $this->restrictedBySender,
         ];
     }
 }

@@ -195,6 +195,16 @@ class TenantSafeguardingOption extends Model
         ?string $value,
     ): ?string {
         $translationKey = self::presetTranslationKey($presetSource, $optionKey, $field);
+        // A row can outlive its option's place in the preset (25 Oct 2026: the
+        // Ireland preset dropped "only vetted members", which its holders keep).
+        // A stored platform key that still exists is still platform copy;
+        // without this the member would read the raw key.
+        if ($translationKey === null
+            && $presetSource !== null
+            && self::isPresetTranslationKey($value)
+            && Lang::has((string) $value, 'en', false)) {
+            return $value;
+        }
         if ($translationKey === null || $value === null) {
             return null;
         }

@@ -218,7 +218,11 @@
     "shared_title": "Udostępniono Ci pełne zgłoszenie",
     "shared_body": "Jako osoba odpowiedzialna za ochronę w organizacji {{organisation}} możesz teraz przeczytać pełne zgłoszenie dotyczące ochrony nr {{incident_id}}. Zaloguj się, aby je przeczytać. Nie wynika z niego, kto zrobił zgłoszenie.",
     "shared_cta": "Przeczytaj zgłoszenie",
-    "share_withdrawn_bell": "Pełne zgłoszenie dotyczące ochrony nr {{incident_id}} nie jest już Ci udostępnione. Podsumowanie pozostaje widoczne."
+    "share_withdrawn_bell": "Pełne zgłoszenie dotyczące ochrony nr {{incident_id}} nie jest już Ci udostępnione. Podsumowanie pozostaje widoczne.",
+    "contact_reason_via_coordinator": "Własny kontakt nadawcy jest ustalany za pośrednictwem koordynatora i ten członek nie jest jeszcze dla niego zatwierdzony.",
+    "contact_attempt_contacted_label": "Członek, z którym próbowano się skontaktować",
+    "contact_attempt_via_body": "Członek, z którym kontakt odbywa się za pośrednictwem koordynatora, próbował wysłać wiadomość do członka, z którym nie ma pozwolenia na kontakt. Jeśli kontakt jest bezpieczny, możesz go zatwierdzić na stronie potrzeb wsparcia.",
+    "coordination_request_via_body": "Członek, z którym kontakt odbywa się za pośrednictwem koordynatora, poprosił o pomoc w skontaktowaniu się z innym członkiem. Jeśli kontakt jest bezpieczny, możesz go zatwierdzić na stronie potrzeb wsparcia."
   },
   "onboarding_completed": {
     "subject": "Wszystko gotowe, {{name}}! Witamy w {{community}}",

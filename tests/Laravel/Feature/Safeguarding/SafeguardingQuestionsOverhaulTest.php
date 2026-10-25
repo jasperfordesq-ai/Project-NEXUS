@@ -34,8 +34,6 @@ use Tests\Laravel\TestCase;
  *    keeps protecting (and stays visible to) the members who chose it;
  *  - a gentler "coordinator introductions" option exists that does not cut
  *    the member off;
- *  - "I consider myself a vulnerable adult" no longer silently blocks every
- *    direct message;
  *  - the under-18 question is gone (the platform is adults only).
  */
 final class SafeguardingQuestionsOverhaulTest extends TestCase
@@ -54,15 +52,15 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
             $this->assertContains('coordinator_introductions', $keys, "{$presetKey} must offer coordinator introductions");
 
             $byKey = array_column($preset['options'], null, 'option_key');
+            // Not offered to new members (UK presets), or not offered at all
+            // (Ireland, where vetting is per organisation and role).
             $this->assertFalse(
-                $byKey['requires_vetted_partners']['accepts_new_selections'] ?? true,
+                $byKey['requires_vetted_partners']['accepts_new_selections'] ?? false,
                 "{$presetKey}: the hard vetted-only block must not be offered to new members by default",
             );
-            $this->assertArrayNotHasKey(
-                'restricts_messaging',
-                $byKey['is_vulnerable_adult']['triggers'],
-                "{$presetKey}: identifying as a vulnerable adult must not silently block all messages",
-            );
+            // "Vulnerable adult" blocks direct contact again (owner, 25 Oct
+            // 2026), now with coordinators and approved contacts let through —
+            // see VulnerableMemberContactTest.
             $this->assertFalse(
                 (bool) ($byKey['coordinator_introductions']['triggers']['restricts_messaging'] ?? false),
                 "{$presetKey}: coordinator introductions must not block messages",
@@ -76,7 +74,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_the_wizard_hides_the_vetted_only_block_from_members_who_do_not_hold_it(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $member = $this->member();
 
         Sanctum::actingAs($member);
@@ -84,12 +82,13 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
         $this->assertNotContains('requires_vetted_partners', $keys);
         $this->assertNotContains('works_with_children', $keys);
-        $this->assertContains('coordinator_introductions', $keys);
+        // "Just the essentials" (owner, 25 Oct 2026).
+        $this->assertSame(['is_vulnerable_adult', 'works_with_vulnerable_adults', 'none_apply'], $keys);
     }
 
     public function test_a_member_who_holds_the_vetted_only_block_still_sees_it_and_it_still_protects_them(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $holder = $this->member();
         $this->holdOption($holder, 'requires_vetted_partners');
 
@@ -106,7 +105,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_a_new_member_cannot_select_the_closed_option_by_calling_the_api(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $member = $this->member();
         $optionId = $this->optionId('requires_vetted_partners');
 
@@ -124,7 +123,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_every_option_tells_the_member_what_it_does_before_they_choose_it(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $holder = $this->member();
         $this->holdOption($holder, 'requires_vetted_partners');
 
@@ -140,17 +139,23 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
         $this->assertStringContainsString('message you', $text);
         $this->assertStringContainsString('time credits', $text);
         $this->assertStringContainsString('No members', $text, 'With no vetting recorded the member must be told nobody can reach them');
+
+        $helper = collect($options)->firstWhere('option_key', 'works_with_vulnerable_adults');
+        $this->assertStringContainsString(
+            'please do not arrange help involving children or vulnerable adults',
+            implode(' ', $helper['effects']),
+            'Someone offering help to children or vulnerable adults is asked to wait for a coordinator',
+        );
     }
 
     public function test_coordinator_introductions_adds_oversight_without_cutting_the_member_off(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $member = $this->member();
 
-        Sanctum::actingAs($member);
-        $this->apiPost('/v2/onboarding/safeguarding', [
-            'preferences' => [['option_id' => $this->optionId('coordinator_introductions'), 'value' => '1']],
-        ])->assertOk();
+        // No longer offered to new members, but kept for those who hold it and
+        // as the target of the switch away from vetted-only.
+        $this->holdOption($member, 'coordinator_introductions');
 
         SafeguardingTriggerService::invalidateCache($member->id, $this->testTenantId);
         $this->assertTrue(SafeguardingTriggerService::requiresBrokerApproval($member->id, $this->testTenantId));
@@ -164,7 +169,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_a_holder_can_switch_from_vetted_only_to_coordinator_introductions_in_one_step(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         $holder = $this->member();
         $this->holdOption($holder, 'requires_vetted_partners');
 
@@ -194,7 +199,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_switching_is_refused_for_a_member_who_does_not_hold_the_vetted_option(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         Sanctum::actingAs($this->member());
 
         $this->apiPost('/v2/safeguarding/switch-to-coordinator-introductions')->assertStatus(409);
@@ -202,13 +207,13 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
 
     public function test_saving_choices_queues_one_summary_email_and_declining_queues_none(): void
     {
-        $this->applyIrelandPreset();
+        $this->applyEnglandWalesPreset();
         Queue::fake();
 
         $member = $this->member();
         Sanctum::actingAs($member);
         $this->apiPost('/v2/onboarding/safeguarding', [
-            'preferences' => [['option_id' => $this->optionId('no_home_visits'), 'value' => '1']],
+            'preferences' => [['option_id' => $this->optionId('works_with_vulnerable_adults'), 'value' => '1']],
         ])->assertOk();
         Queue::assertPushed(SendSafeguardingChoicesSummary::class, fn ($job) => $job->userId === $member->id);
 
@@ -221,10 +226,10 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
         Queue::assertNotPushed(SendSafeguardingChoicesSummary::class);
     }
 
-    private function applyIrelandPreset(): void
+    private function applyEnglandWalesPreset(): void
     {
         Sanctum::actingAs(User::factory()->forTenant($this->testTenantId)->admin()->create());
-        $this->apiPut('/v2/admin/vetting/policy', ['jurisdiction' => 'ireland'])->assertStatus(200);
+        $this->apiPut('/v2/admin/vetting/policy', ['jurisdiction' => 'england_wales'])->assertStatus(200);
     }
 
     private function member(): User

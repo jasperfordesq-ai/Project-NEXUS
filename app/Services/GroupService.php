@@ -2626,10 +2626,13 @@ class GroupService
         )));
         sort($members, SORT_NUMERIC);
 
+        // A group is a community space: a member who chose coordinator-arranged
+        // contact does not stop others joining, nor is stopped from joining
+        // (owner decision, 25 Oct 2026). Blocks and vetting still apply.
         $policy = app(SafeguardingInteractionPolicy::class);
         foreach ($members as $memberId) {
-            $policy->assertLocalContactAllowed($joiningUserId, $memberId, $tenantId, $channel);
-            $policy->assertLocalContactAllowed($memberId, $joiningUserId, $tenantId, $channel);
+            $policy->assertCommunitySpaceContactAllowed($joiningUserId, $memberId, $tenantId, $channel);
+            $policy->assertCommunitySpaceContactAllowed($memberId, $joiningUserId, $tenantId, $channel);
         }
     }
 
@@ -2669,11 +2672,13 @@ class GroupService
                 ->all();
 
             $recipientIds[] = (int) $group->owner_id;
-            $recipientIds = array_merge($recipientIds, $additionalRecipientIds);
 
+            // Explicit targets and @mentions are direct contact; the cohort is
+            // a community space (see SafeguardingInteractionPolicy).
+            $directRecipientIds = array_map('intval', $additionalRecipientIds);
             if ($content !== null && $content !== '') {
                 foreach (GroupMentionService::parseMentions($content) as $mention) {
-                    $recipientIds[] = (int) $mention['user_id'];
+                    $directRecipientIds[] = (int) $mention['user_id'];
                 }
             }
         } catch (SafeguardingPolicyException $e) {
@@ -2688,19 +2693,24 @@ class GroupService
             );
         }
 
-        $recipientIds = array_values(array_unique(array_filter(
-            array_map(static fn (mixed $id): int => (int) $id, $recipientIds),
+        $keep = static fn (array $ids): array => array_values(array_unique(array_filter(
+            array_map(static fn (mixed $id): int => (int) $id, $ids),
             static fn (int $id): bool => $id > 0 && $id !== $senderId,
         )));
+        $directRecipientIds = $keep($directRecipientIds);
+        // Someone targeted directly is checked as direct contact only.
+        $recipientIds = array_values(array_diff($keep($recipientIds), $directRecipientIds));
         sort($recipientIds, SORT_NUMERIC);
+        sort($directRecipientIds, SORT_NUMERIC);
 
-        if ($recipientIds === []) {
+        if ($recipientIds === [] && $directRecipientIds === []) {
             return;
         }
 
-        app(SafeguardingInteractionPolicy::class)->assertManyLocalContactsAllowed(
+        app(SafeguardingInteractionPolicy::class)->assertCommunitySpaceBroadcastAllowed(
             $senderId,
             $recipientIds,
+            $directRecipientIds,
             $tenantId,
             $channel,
         );

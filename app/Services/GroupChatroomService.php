@@ -148,9 +148,10 @@ class GroupChatroomService
             ->pluck('user_id')
             ->map(static fn ($id): int => (int) $id)
             ->all();
-        $decision = app(SafeguardingInteractionPolicy::class)->evaluateManyLocalContacts(
+        $decision = app(SafeguardingInteractionPolicy::class)->evaluateCommunitySpaceBroadcast(
             $userId,
             $recipientIds,
+            [],
             $tenantId,
             'group_chatroom_create',
         );
@@ -474,9 +475,10 @@ class GroupChatroomService
             ->pluck('user_id')
             ->map(static fn ($id): int => (int) $id)
             ->all();
-        $decision = app(SafeguardingInteractionPolicy::class)->evaluateManyLocalContacts(
+        $decision = app(SafeguardingInteractionPolicy::class)->evaluateCommunitySpaceBroadcast(
             $userId,
             $recipientIds,
+            [],
             $tenantId,
             'group_chatroom_message',
         );

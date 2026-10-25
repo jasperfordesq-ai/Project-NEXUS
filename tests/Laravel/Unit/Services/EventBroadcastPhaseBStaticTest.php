@@ -22,7 +22,7 @@ final class EventBroadcastPhaseBStaticTest extends TestCase
         self::assertStringContainsString('EventCapacityRegistrationState::Confirmed', $source);
         self::assertStringContainsString('EventWaitlistQueueState::Waiting', $source);
         self::assertStringContainsString('EventAttendanceState::Attended', $source);
-        self::assertStringContainsString('assertManyLocalContactsAllowed', $source);
+        self::assertStringContainsString('assertCommunitySpaceBroadcastAllowed', $source);
         self::assertStringNotContainsString('event_rsvps', $source);
         self::assertStringNotContainsString("DB::table('event_waitlist')", $source);
     }
@@ -49,7 +49,7 @@ final class EventBroadcastPhaseBStaticTest extends TestCase
 
         self::assertStringContainsString('LocaleContext::withLocale', $source);
         self::assertStringContainsString('EventNotificationPreferenceResolver::resolveForEvent', $source);
-        self::assertStringContainsString('assertLocalContactAllowed', $source);
+        self::assertStringContainsString('assertCommunitySpaceContactAllowed', $source);
         self::assertStringContainsString('event_broadcast_delivery_attempts', $source);
         self::assertStringContainsString('DeadLetter', $source);
         self::assertStringContainsString('next_attempt_at', $source);

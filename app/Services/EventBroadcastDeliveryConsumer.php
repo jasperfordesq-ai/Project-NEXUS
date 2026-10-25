@@ -282,7 +282,7 @@ final class EventBroadcastDeliveryConsumer
         }
 
         try {
-            $this->safeguarding->assertLocalContactAllowed(
+            $this->safeguarding->assertCommunitySpaceContactAllowed(
                 (int) $event->user_id,
                 $recipientId,
                 $tenantId,

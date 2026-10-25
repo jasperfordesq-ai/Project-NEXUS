@@ -49,8 +49,8 @@ final class EventBroadcastDeliveryReliabilityTest extends TestCase
         TenantContext::setById($this->testTenantId);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')->zeroOrMoreTimes();
-        $policy->shouldReceive('assertLocalContactAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')->zeroOrMoreTimes();
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')->zeroOrMoreTimes();
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
         $this->broadcasts = new EventBroadcastService(new EventBroadcastAudienceResolver($policy));
     }

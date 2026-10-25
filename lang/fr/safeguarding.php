@@ -10,9 +10,12 @@ return [
         'vetting_required_title' => 'Verification de protection necessaire',
         'vetting_required_detail' => 'Ce membre ne peut être contacté pour ce type d’interaction que par des personnes dont la communauté a enregistré un statut :types à jour. Cet enregistrement contient uniquement des métadonnées ; aucun document ne doit être envoyé ou téléversé.',
         'vetting_required_action' => 'Ouvrir aide',
-        'contact_restricted' => 'Ce membre a demande qu un coordinateur organise le contact en son nom. Votre message n a pas ete envoye. Contactez votre broker ou administrateur de communaute pour organiser la prochaine etape sure.',
-        'contact_restricted_title' => 'Arrangement par coordinateur requis',
-        'contact_restricted_detail' => 'Ce membre n\'est pas disponible pour les messages directs, car ses préférences de protection nécessitent un contact organisé par un coordinateur. Vous pouvez demander à un coordinateur de vous aider à organiser un contact.',
+        'contact_restricted' => 'Ce membre ne peut être contacté que par l\'intermédiaire d\'un coordinateur. Rien n\'a été envoyé. Vous pouvez demander à un coordinateur de vous mettre en contact.',
+        'contact_restricted_title' => 'Contact via un coordinateur',
+        'contact_restricted_detail' => 'Le contact avec ce membre est organisé par l\'intermédiaire d\'un coordinateur. Vous pouvez demander à un coordinateur de vous mettre en contact.',
+        'contact_via_coordinator' => 'Vous avez choisi qu\'un coordinateur organise le contact pour vous, rien n\'a donc été envoyé. Demandez à un coordinateur de vous mettre en contact avec ce membre.',
+        'contact_via_coordinator_title' => 'Demandez à un coordinateur de vous mettre en contact',
+        'contact_via_coordinator_detail' => 'Vous avez choisi qu\'un coordinateur prenne contact pour vous. Demandez à un coordinateur, et une fois qu’il aura approuvé ce membre, vous pourrez vous parler.',
         'contact_restricted_action' => 'Ouvrir aide',
         'coordination_not_required' => 'Le contact direct avec ce membre est actuellement disponible — vous n\'avez pas besoin d\'un coordinateur pour l\'organiser. Veuillez actualiser la page et réessayer d\'envoyer un message.',
         'coordination_request_failed' => 'Nous n\'avons pas pu envoyer votre demande au coordinateur pour le moment. Veuillez réessayer dans quelques instants.',
@@ -99,14 +102,19 @@ return [
         'switch_not_held' => 'Vous n’avez pas le paramètre réservé aux membres approuvés, il n’y a donc rien à changer.',
         'switch_unavailable' => 'Les présentations des coordinateurs ne sont pas encore disponibles dans cette communauté. Veuillez contacter un coordinateur.',
     ],
+    'approved_contacts' => [
+        'invalid_contact' => 'Choisissez un autre membre de cette communauté.',
+        'not_found' => 'Cette approbation n\'a pas pu être trouvée. Il se peut qu\'il ait déjà été retiré.',
+    ],
     'effects' => [
         'broker_approval' => 'Un coordinateur examine tout échange que vous organisez avant qu’il n’ait lieu. Ils ne peuvent pas lire vos messages.',
-        'restricts_messaging' => 'Les autres membres ne peuvent pas vous envoyer de message directement. Un coordinateur organise le contact pour vous.',
+        'restricts_messaging' => 'Les autres membres ne peuvent pas vous envoyer de message, démarrer un échange avec vous ou vous mentionner à moins qu\'un coordinateur ne les ait approuvés. Les coordinateurs peuvent toujours vous contacter. Pour entrer en contact avec quelqu\'un, demandez à un coordinateur. Les groupes auxquels vous appartenez fonctionnent normalement.',
         'restricts_matching' => 'Les correspondances suggérées entre vous et les autres membres sont d’abord vérifiées par un coordinateur.',
         'vetted_only' => 'Seuls les membres dont :vetting cette communauté a enregistré peuvent vous envoyer un message, vous répondre, vous envoyer des crédits temps ou démarrer un échange avec vous. Tout le monde est bloqué.',
         'vetted_count' => '{0} Aucun membre n\'a :vetting enregistré ici pour le moment. Personne ne peut donc vous contacter pendant que cette activité est activée.|{1} Un seul membre a :vetting enregistré ici pour le moment.|[2,*] :count membres ont :vetting enregistrés ici pour le moment.',
         'notify_coordinator' => 'Un coordinateur est informé de votre choix et peut vous contacter si vous avez besoin de quoi que ce soit.',
         'no_home_visits' => 'Les coordonnateurs savent que vous ne souhaitez pas de visites à domicile à moins qu\'ils ne les organisent.',
+        'check_before_helping' => 'Un coordinateur est informé et confirmera si une vérification (:vetting) est nécessaire. En attendant, veuillez ne pas organiser d\'aide impliquant des enfants ou des adultes vulnérables via la banque de temps.',
         'informational' => 'Rien ne change pour les autres membres. Votre réponse aide les coordinateurs à vous soutenir.',
         'declined' => 'Rien ne change. Les coordinateurs peuvent voir que vous avez examiné cette étape.',
         'vetting_fallback' => 'vérification',
@@ -117,7 +125,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Je me considère comme un adulte vulnérable et j\'aimerais un soutien supplémentaire',
-                    'description' => 'Un coordinateur vous contactera pour discuter de la manière dont nous pouvons vous aider et examinera vos échanges et matchs. Les autres membres peuvent toujours vous envoyer un message.',
+                    'description' => 'Pour assurer votre sécurité, les autres membres ne pourront pas vous contacter directement. Un coordinateur vous contactera, organisera le contact avec d\'autres membres pour vous et pourra approuver certains membres pour qu\'ils vous contactent.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'J\'aimerais qu\'un coordinateur garde un œil sur mes échanges et m\'aide à me présenter aux membres',
@@ -128,7 +136,7 @@ return [
                 ],
                 'requires_coordinator_contact' => [
                     'label' => 'J\'aimerais qu\'un coordinateur organise tous les contacts pour moi au lieu que les membres m\'envoient des messages directement',
-                    'description' => 'Un coordinateur organisera les contacts et les échanges en votre nom. Les autres membres ne pourront pas vous envoyer de message directement.',
+                    'description' => 'Un coordinateur organisera les contacts et les échanges en votre nom et pourra approuver certains membres pour vous contacter. Les autres membres ne pourront pas vous contacter directement.',
                 ],
                 'no_home_visits' => [
                     'label' => 'Je ne veux pas que des membres viennent chez moi à moins qu\'un coordinateur ne l\'ait organisé.',
@@ -138,7 +146,7 @@ return [
                     'label' => 'Je prévois de proposer des services susceptibles d’impliquer des enfants ou des jeunes (moins de 18 ans)',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Je prévois de proposer des services susceptibles d’impliquer des personnes adultes vulnérables',
+                    'label' => 'J\'ai l\'intention d\'offrir une aide impliquant des enfants ou des adultes vulnérables (par exemple, tutorat de l\'enfant d\'un membre ou soins personnels)',
                 ],
                 'none_apply' => [
                     'label' => 'Aucune de ces situations ne me concerne',
@@ -154,13 +162,13 @@ return [
                     'description' => 'En Irlande, Garda Vetting est organisée par l\'intermédiaire d\'une organisation chargée d\'un rôle particulier. Seul le fait de vérifier que cette communauté a enregistré compte ici, et non de vérifier que quelqu\'un l\'a fait par le biais de son travail ou d\'un autre groupe.',
                 ],
                 'requires_coordinator_contact' => [
-                    'description' => 'Un coordinateur organisera les contacts et les échanges en votre nom. Les autres membres ne pourront pas vous envoyer de message directement.',
+                    'description' => 'Un coordinateur organisera les contacts et les échanges en votre nom et pourra approuver certains membres pour vous contacter. Les autres membres ne pourront pas vous contacter directement.',
                 ],
                 'works_with_children' => [
                     'description' => 'Une personne coordinatrice pourra discuter avec vous des exigences de la Garda Vetting. En Irlande, certaines activités impliquant des enfants nécessitent une vérification en vertu de la loi de 2012 sur le Bureau national de vérification.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinateur peut vous demander si Garda Vetting est nécessaire pour ce que vous envisagez de faire. En vertu de la loi de 2012 sur le Bureau national de contrôle, certains travaux principalement auprès de personnes vulnérables doivent être contrôlés par une organisation enregistrée.',
+                    'description' => 'Un coordinateur en sera informé. En Irlande, certains travaux réguliers avec des enfants ou des personnes vulnérables nécessitent Garda Vetting, que seule une organisation enregistrée peut organiser, et c\'est toujours le cas pour l\'enseignement, l\'encadrement ou le mentorat des enfants. Veuillez ne pas organiser ce type d\'aide via la banque de temps tant qu\'un coordinateur n\'a pas confirmé ce qui est nécessaire.',
                 ],
             ],
         ],
@@ -175,7 +183,7 @@ return [
                     'description' => 'Un coordinateur évaluera le rôle et la juridiction britannique applicable avant de décider quel contrôle de sauvegarde est légalement approprié.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinateur évaluera le rôle, les adultes impliqués et la juridiction britannique applicable avant de décider quel contrôle de sauvegarde est légalement approprié.',
+                    'description' => 'Un coordinateur sera informé et confirmera si une vérification Enhanced DBS, PVG ou AccessNI est nécessaire pour ce que vous envisagez de faire. S\'il vous plaît, n\'organisez pas ce type d\'aide via la banque de temps jusqu\'à ce qu\'ils l\'aient fait.',
                 ],
             ],
         ],
@@ -190,7 +198,7 @@ return [
                     'description' => 'Une personne coordinatrice pourra discuter avec vous des exigences de vérification DBS.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinateur peut vous demander si une vérification DBS est nécessaire pour ce que vous envisagez de faire.',
+                    'description' => 'Un coordinateur sera informé et confirmera si une vérification DBS est nécessaire pour ce que vous envisagez de faire. S\'il vous plaît, n\'organisez pas ce type d\'aide via la banque de temps jusqu\'à ce qu\'ils l\'aient fait.',
                 ],
             ],
         ],
@@ -208,7 +216,7 @@ return [
                     'description' => 'Une personne coordinatrice pourra discuter avec vous de l’adhésion au régime PVG.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Je prévois de proposer des services susceptibles d’impliquer des personnes adultes protégées',
+                    'label' => 'J\'envisage d\'offrir une aide impliquant des enfants ou des adultes protégés (par exemple, tutorat de l\'enfant d\'un membre ou soins personnels)',
                 ],
             ],
         ],
@@ -223,7 +231,7 @@ return [
                     'description' => 'Une personne coordinatrice pourra discuter avec vous de la vérification AccessNI.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinateur peut vous demander si une vérification AccessNI est nécessaire pour ce que vous envisagez de faire.',
+                    'description' => 'Un coordonnateur sera informé et confirmera si une vérification AccessNI est nécessaire pour ce que vous envisagez de faire. S\'il vous plaît, n\'organisez pas ce type d\'aide via la banque de temps avant qu\'ils ne l\'aient fait.',
                 ],
             ],
         ],

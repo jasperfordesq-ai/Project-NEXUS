@@ -10,9 +10,12 @@ return [
         'vetting_required_title' => 'Veiligheidscontrole nodig',
         'vetting_required_detail' => 'Dit lid kan voor dit type interactie alleen worden benaderd door mensen van wie de community een actuele :types-status heeft vastgelegd. De registratie bevat uitsluitend metadata; er mag geen document worden verstuurd of geüpload.',
         'vetting_required_action' => 'Help openen',
-        'contact_restricted' => 'Dit lid wil dat een coordinator het contact namens hen regelt. Je bericht is niet verzonden. Neem contact op met je broker of communitybeheerder zodat zij de volgende veilige stap kunnen regelen.',
-        'contact_restricted_title' => 'Coordinatorafspraak nodig',
-        'contact_restricted_detail' => 'Dit lid is niet beschikbaar voor directe berichten, omdat hun beveiligingsvoorkeuren vereisen dat contact via een coördinator verloopt. U kunt een coördinator vragen om het contact te helpen regelen.',
+        'contact_restricted' => 'Dit lid is alleen te bereiken via een coördinator. Er is niets verzonden. U kunt een coördinator vragen om u in contact te brengen.',
+        'contact_restricted_title' => 'Contact via een coördinator',
+        'contact_restricted_detail' => 'Het contact met dit lid verloopt via een coördinator. U kunt een coördinator vragen om u in contact te brengen.',
+        'contact_via_coordinator' => 'U heeft ervoor gekozen om een ​​coördinator het contact voor u te laten regelen, er is dus niets verzonden. Vraag een coördinator om u in contact te brengen met dit lid.',
+        'contact_via_coordinator_title' => 'Vraag een coördinator om u in contact te brengen',
+        'contact_via_coordinator_detail' => 'U heeft ervoor gekozen om een ​​coördinator het contact voor u te laten regelen. Vraag het aan een coördinator, en zodra zij dit lid hebben goedgekeurd, kun je met elkaar praten.',
         'contact_restricted_action' => 'Help openen',
         'coordination_not_required' => 'Direct contact met dit lid is momenteel mogelijk — u heeft geen coördinator nodig om dat te regelen. Vernieuw de pagina en probeer opnieuw een bericht te sturen.',
         'coordination_request_failed' => 'We konden uw verzoek op dit moment niet naar de coördinator sturen. Probeer het binnenkort opnieuw.',
@@ -99,14 +102,19 @@ return [
         'switch_not_held' => 'U beschikt niet over de instelling \'Alleen doorgelichte leden\', dus u hoeft niets te wijzigen.',
         'switch_unavailable' => 'Coördinatorintroducties zijn nog niet beschikbaar in deze community. Neem dan contact op met een coördinator.',
     ],
+    'approved_contacts' => [
+        'invalid_contact' => 'Kies een ander lid van deze community.',
+        'not_found' => 'Die goedkeuring kon niet worden gevonden. Mogelijk is deze al ingetrokken.',
+    ],
     'effects' => [
         'broker_approval' => 'Een coördinator controleert elke uitwisseling die u regelt voordat deze doorgaat. Ze kunnen uw berichten niet lezen.',
-        'restricts_messaging' => 'Andere leden kunnen u niet rechtstreeks een bericht sturen. Een coördinator regelt het contact voor u.',
+        'restricts_messaging' => 'Andere leden kunnen u geen berichten sturen, een uitwisseling met u starten of u vermelden, tenzij een coördinator hen heeft goedgekeurd. Coördinatoren kunnen altijd contact met u opnemen. Als u met iemand in contact wilt komen, kunt u dit aan een coördinator vragen. Groepen waartoe u behoort, werken normaal.',
         'restricts_matching' => 'Voorgestelde matches tussen jou en andere leden worden eerst door een coördinator gecontroleerd.',
         'vetted_only' => 'Alleen leden van wie :vetting deze community heeft opgenomen, kunnen u een bericht sturen, antwoorden, u tijdskredieten sturen of een uitwisseling met u starten. Alle anderen zijn geblokkeerd.',
         'vetted_count' => '{0} Er zijn momenteel geen leden die hier :vetting hebben opgenomen, dus niemand kan contact met je opnemen terwijl dit actief is.|{1} Slechts één lid heeft hier momenteel :vetting opgenomen.|[2,*] :count leden hebben hier momenteel :vetting opgenomen.',
         'notify_coordinator' => 'Een coördinator wordt op de hoogte gesteld van uw keuze, zodat zij contact met u kunnen opnemen als u iets nodig heeft.',
         'no_home_visits' => 'Coördinatoren weten dat u geen huisbezoeken wilt, tenzij zij deze regelen.',
+        'check_before_helping' => 'Een coördinator wordt geïnformeerd en zal bevestigen of doorlichting (:vetting) nodig is. Zolang dit niet het geval is, kunt u via de tijdbank geen hulp voor kinderen of kwetsbare volwassenen regelen.',
         'informational' => 'Voor de overige leden verandert er niets. Uw antwoord helpt coördinatoren u te ondersteunen.',
         'declined' => 'Er verandert niets. Coördinatoren kunnen zien dat u naar deze stap heeft gekeken.',
         'vetting_fallback' => 'doorlichting',
@@ -117,7 +125,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Ik beschouw mezelf als een kwetsbare volwassene en zou graag extra ondersteuning willen',
-                    'description' => 'Een coördinator zal contact met u opnemen om te bespreken hoe we u kunnen helpen, en zal uw uitwisselingen en wedstrijden bekijken. Andere leden kunnen u nog steeds berichten sturen.',
+                    'description' => 'Om u veilig te houden, kunnen andere leden niet rechtstreeks contact met u opnemen. Een coördinator neemt contact met u op, regelt het contact met andere leden voor u en kan bepaalde leden toestemming geven om contact met u op te nemen.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Ik wil graag dat een coördinator mijn uitwisselingen in de gaten houdt en mij helpt kennis te maken met de leden',
@@ -128,7 +136,7 @@ return [
                 ],
                 'requires_coordinator_contact' => [
                     'label' => 'Ik wil graag dat een coördinator al het contact voor mij regelt, in plaats van dat leden mij rechtstreeks berichten sturen',
-                    'description' => 'Een coördinator regelt namens u het contact en de uitwisseling. Andere leden kunnen u niet rechtstreeks een bericht sturen.',
+                    'description' => 'Een coördinator regelt namens u de contacten en uitwisselingen en kan bepaalde leden toestemming geven om contact met u op te nemen. Andere leden kunnen niet rechtstreeks contact met u opnemen.',
                 ],
                 'no_home_visits' => [
                     'label' => 'Ik wil niet dat leden mijn huis bezoeken tenzij een coördinator dit heeft geregeld',
@@ -138,7 +146,7 @@ return [
                     'label' => 'Ik ben van plan diensten aan te bieden waarbij kinderen of jongeren (jonger dan 18 jaar) betrokken kunnen zijn',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Ik ben van plan diensten aan te bieden waarbij kwetsbare volwassenen betrokken kunnen zijn',
+                    'label' => 'Ik ben van plan hulp te bieden waarbij kinderen of kwetsbare volwassenen betrokken zijn (bijvoorbeeld bijles geven aan een kind van een lid of persoonlijke verzorging)',
                 ],
                 'none_apply' => [
                     'label' => 'Geen van deze situaties is op mij van toepassing',
@@ -154,13 +162,13 @@ return [
                     'description' => 'In Ierland wordt Garda Vetting geregeld via een organisatie voor een bepaalde rol. Alleen het doorlichten dat deze gemeenschap heeft geregistreerd telt hier, niet het doorlichten van iemand via zijn werk of een andere groep.',
                 ],
                 'requires_coordinator_contact' => [
-                    'description' => 'Een coördinator regelt namens u het contact en de uitwisseling. Andere leden kunnen u niet rechtstreeks een bericht sturen.',
+                    'description' => 'Een coördinator regelt namens u de contacten en uitwisselingen en kan bepaalde leden toestemming geven om contact met u op te nemen. Andere leden kunnen niet rechtstreeks contact met u opnemen.',
                 ],
                 'works_with_children' => [
                     'description' => 'Een coördinator kan de vereisten voor Garda Vetting met u bespreken. In Ierland is voor bepaalde activiteiten met kinderen screening vereist op grond van de National Vetting Bureau Act 2012.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Een coördinator kan met u bespreken of Garda Vetting nodig is voor wat u van plan bent te doen. Volgens de National Vetting Bureau Act 2012 werken sommigen voornamelijk met kwetsbare mensen die doorgelicht moeten worden via een geregistreerde organisatie.',
+                    'description' => 'Er wordt een coördinator op de hoogte gesteld. In Ierland is voor sommige reguliere werkzaamheden met kinderen of kwetsbare mensen Garda Vetting nodig, wat alleen een geregistreerde organisatie kan regelen, en het lesgeven, coachen of begeleiden van kinderen doet dat altijd. Regel dit soort hulp alstublieft niet via de tijdbank totdat een coördinator heeft bevestigd wat er nodig is.',
                 ],
             ],
         ],
@@ -175,7 +183,7 @@ return [
                     'description' => 'Een coördinator zal de rol en de toepasselijke Britse jurisdictie beoordelen alvorens te beslissen welke vrijwaringscontrole juridisch passend is.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Een coördinator zal de rol, de betrokken volwassenen en de toepasselijke Britse jurisdictie beoordelen alvorens te beslissen welke vrijwaringscontrole juridisch passend is.',
+                    'description' => 'Een coördinator krijgt te horen en zal bevestigen of een uitgebreide DBS-, PVG- of AccessNI-controle nodig is voor wat u van plan bent te doen. Regel dit soort hulp alstublieft niet via de tijdbank voordat zij dat hebben gedaan.',
                 ],
             ],
         ],
@@ -190,7 +198,7 @@ return [
                     'description' => 'Een coördinator kan de vereisten voor een DBS-controle met u bespreken.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Een coördinator kan met u bespreken of een DBS-check nodig is voor wat u van plan bent te doen.',
+                    'description' => 'Een coördinator krijgt bericht en bevestigt of een DBS-controle nodig is voor wat u van plan bent te doen. Regel dit soort hulp alstublieft niet via de tijdbank voordat zij dat hebben gedaan.',
                 ],
             ],
         ],
@@ -208,7 +216,7 @@ return [
                     'description' => 'Een coördinator kan deelname aan de PVG-regeling met u bespreken.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Ik ben van plan diensten aan te bieden waarbij beschermde volwassenen betrokken kunnen zijn',
+                    'label' => 'Ik ben van plan hulp te bieden waarbij kinderen of beschermde volwassenen betrokken zijn (bijvoorbeeld het geven van bijles aan een kind van een lid of persoonlijke verzorging)',
                 ],
             ],
         ],
@@ -223,7 +231,7 @@ return [
                     'description' => 'Een coördinator kan een AccessNI-controle met u bespreken.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Een coördinator kan met u bespreken of een AccessNI-check nodig is voor wat u van plan bent te doen.',
+                    'description' => 'Een coördinator krijgt bericht en zal bevestigen of een AccessNI-controle nodig is voor wat u van plan bent te doen. Regel dit soort hulp alstublieft niet via de tijdbank voordat zij dat hebben gedaan.',
                 ],
             ],
         ],

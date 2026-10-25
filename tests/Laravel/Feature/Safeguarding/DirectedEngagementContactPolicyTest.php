@@ -251,9 +251,9 @@ class DirectedEngagementContactPolicyTest extends TestCase
         Sanctum::actingAs($author, ['*']);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
             ->once()
-            ->with($author->id, [$owner->id], $this->testTenantId, 'group_discussion_create')
+            ->with($author->id, [$owner->id], [], $this->testTenantId, 'group_discussion_create')
             ->andThrow($this->denied());
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
@@ -281,9 +281,9 @@ class DirectedEngagementContactPolicyTest extends TestCase
         $questionId = $this->question($groupId, $owner->id);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertManyLocalContactsAllowed')
+        $policy->shouldReceive('assertCommunitySpaceBroadcastAllowed')
             ->once()
-            ->with($voter->id, [$owner->id], $this->testTenantId, 'group_qa_vote')
+            ->with($voter->id, [], [$owner->id], $this->testTenantId, 'group_qa_vote')
             ->andThrow($this->denied());
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
@@ -321,7 +321,7 @@ class DirectedEngagementContactPolicyTest extends TestCase
         ]);
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldNotReceive('assertManyLocalContactsAllowed');
+        $policy->shouldNotReceive('assertCommunitySpaceBroadcastAllowed');
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         $response = $this->apiPost("/v2/groups/{$groupId}/qa/vote", [
@@ -349,7 +349,7 @@ class DirectedEngagementContactPolicyTest extends TestCase
         $cachedCount = (int) DB::table('groups')->where('id', $groupId)->value('cached_member_count');
 
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertLocalContactAllowed')
+        $policy->shouldReceive('assertCommunitySpaceContactAllowed')
             ->once()
             ->with($requester->id, $owner->id, $this->testTenantId, 'group_join_request_accept')
             ->andThrow($this->denied());

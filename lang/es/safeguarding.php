@@ -10,9 +10,12 @@ return [
         'vetting_required_title' => 'Se necesita una comprobacion de proteccion',
         'vetting_required_detail' => 'Solo pueden contactar con este miembro para este tipo de interacción quienes tengan un estado :types vigente registrado por su comunidad. El registro contiene únicamente metadatos; no debe enviarse ni subirse ningún documento.',
         'vetting_required_action' => 'Abrir ayuda',
-        'contact_restricted' => 'Esta persona ha pedido que un coordinador organice el contacto en su nombre. Tu mensaje no se ha enviado. Contacta con tu broker o administrador de la comunidad para organizar el siguiente paso seguro.',
-        'contact_restricted_title' => 'Hace falta coordinacion',
-        'contact_restricted_detail' => 'Este miembro no está disponible para mensajes directos porque sus preferencias de salvaguarda requieren que el contacto sea gestionado por un coordinador. Puedes pedir a un coordinador que ayude a organizar el contacto.',
+        'contact_restricted' => 'Este miembro sólo puede ser contactado a través de un coordinador. No se ha enviado nada. Puedes pedirle a un coordinador que te ponga en contacto.',
+        'contact_restricted_title' => 'Contactar a través de un coordinador',
+        'contact_restricted_detail' => 'El contacto con este miembro se organiza a través de un coordinador. Puedes pedirle a un coordinador que te ponga en contacto.',
+        'contact_via_coordinator' => 'Elegiste que un coordinador se pusiera en contacto contigo, por lo que no se ha enviado nada. Pídele a un coordinador que te ponga en contacto con este miembro.',
+        'contact_via_coordinator_title' => 'Pídele a un coordinador que te ponga en contacto',
+        'contact_via_coordinator_detail' => 'Usted eligió que un coordinador se comunicara con usted. Pregúntale a un coordinador y una vez que haya aprobado a este miembro podréis hablar entre vosotros.',
         'contact_restricted_action' => 'Abrir ayuda',
         'coordination_not_required' => 'El contacto directo con este miembro está disponible en este momento — no necesitas un coordinador para gestionarlo. Por favor, actualiza la página e intenta enviar un mensaje de nuevo.',
         'coordination_request_failed' => 'No pudimos enviar tu solicitud al coordinador en este momento. Por favor, inténtalo de nuevo en breve.',
@@ -99,14 +102,19 @@ return [
         'switch_not_held' => 'No tiene la configuración exclusiva para miembros examinados, por lo que no hay nada que cambiar.',
         'switch_unavailable' => 'Las presentaciones de coordinadores aún no están disponibles en esta comunidad. Por favor contacte a un coordinador.',
     ],
+    'approved_contacts' => [
+        'invalid_contact' => 'Elija otro miembro de esta comunidad.',
+        'not_found' => 'Esa aprobación no se pudo encontrar. Es posible que ya lo hayan retirado.',
+    ],
     'effects' => [
         'broker_approval' => 'Un coordinador supervisa cualquier intercambio que usted organice antes de que se lleve a cabo. No pueden leer sus mensajes.',
-        'restricts_messaging' => 'Otros miembros no pueden enviarle mensajes directamente. Un coordinador organiza el contacto para usted.',
+        'restricts_messaging' => 'Otros miembros no pueden enviarle mensajes, iniciar un intercambio con usted ni mencionarlo a menos que un coordinador los haya aprobado. Los coordinadores siempre pueden contactarte. Para ponerse en contacto con alguien, pregunte a un coordinador. Los grupos a los que pertenece funcionan normalmente.',
         'restricts_matching' => 'Un coordinador primero verifica las coincidencias sugeridas entre usted y otros miembros.',
         'vetted_only' => 'Solo los miembros cuyo :vetting esta comunidad haya grabado pueden enviarte mensajes, responderte, enviarte créditos de tiempo o iniciar un intercambio contigo. Todos los demás están bloqueados.',
         'vetted_count' => '{0} Ningún miembro ha :vetting grabado aquí en este momento, por lo que nadie puede comunicarse contigo mientras esto esté activo.|{1} Solo 1 miembro ha :vetting grabado aquí en este momento.|[2,*] :count miembros tiene :vetting grabado aquí en este momento.',
         'notify_coordinator' => 'Se informa a un coordinador sobre tu elección, para que pueda ponerse en contacto si necesitas algo.',
         'no_home_visits' => 'Los coordinadores saben que usted no desea visitas domiciliarias a menos que ellas las organicen.',
+        'check_before_helping' => 'Se informa a un coordinador, que confirmará si es necesaria una investigación de antecedentes (:vetting). Hasta que lo hayan hecho, no organice ayuda que involucre a niños o adultos vulnerables a través del banco de tiempo.',
         'informational' => 'Nada cambia para los demás miembros. Su respuesta ayuda a que los coordinadores lo apoyen.',
         'declined' => 'Nada cambia. Los coordinadores pueden ver que usted ha observado este paso.',
         'vetting_fallback' => 'investigación de antecedentes',
@@ -117,7 +125,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Me considero un adulto vulnerable y me gustaría recibir apoyo adicional.',
-                    'description' => 'Un coordinador se pondrá en contacto para hablar sobre cómo podemos ayudar y revisará sus intercambios y coincidencias. Otros miembros aún pueden enviarte mensajes.',
+                    'description' => 'Para mantenerlo seguro, otros miembros no podrán comunicarse con usted directamente. Un coordinador se pondrá en contacto, organizará el contacto con otros miembros por usted y puede aprobar que miembros concretos se pongan en contacto con usted.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Me gustaría que un coordinador vigilara mis intercambios y me ayudara a presentarme a los miembros.',
@@ -128,7 +136,7 @@ return [
                 ],
                 'requires_coordinator_contact' => [
                     'label' => 'Me gustaría que un coordinador organizara todos los contactos por mí en lugar de que los miembros me envíen mensajes directamente',
-                    'description' => 'Un coordinador organizará el contacto y los intercambios en su nombre. Otros miembros no podrán enviarle mensajes directamente.',
+                    'description' => 'Un coordinador organizará el contacto y los intercambios en su nombre y puede aprobar que miembros concretos se pongan en contacto con usted. Otros miembros no podrán contactarlo directamente.',
                 ],
                 'no_home_visits' => [
                     'label' => 'No quiero que los miembros visiten mi casa a menos que un coordinador lo haya arreglado.',
@@ -138,7 +146,7 @@ return [
                     'label' => 'Tengo previsto ofrecer servicios que puedan implicar a niños, niñas o jóvenes (menores de 18 años)',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Tengo previsto ofrecer servicios que puedan implicar a personas adultas vulnerables',
+                    'label' => 'Planeo ofrecer ayuda que involucre a niños o adultos vulnerables (por ejemplo, tutoría para el hijo de un miembro o cuidado personal).',
                 ],
                 'none_apply' => [
                     'label' => 'Ninguna de estas opciones se aplica a mí',
@@ -154,13 +162,13 @@ return [
                     'description' => 'En Irlanda, Garda Vetting se organiza a través de una organización para una función determinada. Aquí solo cuenta la investigación de lo que esta comunidad ha registrado, no la investigación de alguien a través de su trabajo u otro grupo.',
                 ],
                 'requires_coordinator_contact' => [
-                    'description' => 'Un coordinador organizará el contacto y los intercambios en su nombre. Otros miembros no podrán enviarle mensajes directamente.',
+                    'description' => 'Un coordinador organizará el contacto y los intercambios en su nombre y puede aprobar que miembros concretos se pongan en contacto con usted. Otros miembros no podrán contactarlo directamente.',
                 ],
                 'works_with_children' => [
                     'description' => 'Una persona coordinadora puede hablar con usted sobre los requisitos de Garda Vetting. En Irlanda, determinadas actividades con menores requieren evaluación conforme a la Ley de la Oficina Nacional de Evaluación de 2012.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinador puede hablar con usted sobre si es necesario Garda Vetting para lo que planea hacer. Según la Ley de la Oficina Nacional de Investigación de Investigaciones de 2012, algunos trabajos principalmente con personas vulnerables necesitan ser examinados a través de una organización registrada.',
+                    'description' => 'Se le informará a un coordinador. En Irlanda, algunos trabajos regulares con niños o personas vulnerables necesitan Garda Vetting, que sólo una organización registrada puede organizar, y que siempre es necesario enseñar, entrenar o asesorar a niños. Por favor, no organice este tipo de ayuda a través del banco de tiempo hasta que un coordinador haya confirmado lo que se necesita.',
                 ],
             ],
         ],
@@ -175,7 +183,7 @@ return [
                     'description' => 'Un coordinador evaluará la función y la jurisdicción aplicable del Reino Unido antes de decidir qué control de salvaguardia es legalmente apropiado.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinador evaluará el papel, los adultos involucrados y la jurisdicción aplicable del Reino Unido antes de decidir qué control de protección es legalmente apropiado.',
+                    'description' => 'Se le informará a un coordinador, quien le confirmará si se necesita una verificación de DBS mejorado, PVG o AccessNI para lo que planea hacer. Por favor, no organice este tipo de ayuda a través del banco de tiempo hasta que lo hayan hecho.',
                 ],
             ],
         ],
@@ -190,7 +198,7 @@ return [
                     'description' => 'Una persona coordinadora puede hablar con usted sobre los requisitos de comprobación DBS.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinador puede hablar con usted sobre si es necesaria una verificación DBS para lo que planea hacer.',
+                    'description' => 'Se le informará a un coordinador y éste le confirmará si es necesaria una verificación DBS para lo que planea hacer. Por favor, no organice este tipo de ayuda a través del banco de tiempo hasta que lo hayan hecho.',
                 ],
             ],
         ],
@@ -208,7 +216,7 @@ return [
                     'description' => 'Una persona coordinadora puede hablar con usted sobre la pertenencia al programa PVG.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'Tengo previsto ofrecer servicios que puedan implicar a personas adultas protegidas',
+                    'label' => 'Planeo ofrecer ayuda que involucre a niños o adultos protegidos (por ejemplo, tutoría para el hijo de un miembro o cuidado personal).',
                 ],
             ],
         ],
@@ -223,7 +231,7 @@ return [
                     'description' => 'Una persona coordinadora puede hablar con usted sobre la comprobación AccessNI.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Un coordinador puede hablar con usted sobre si es necesaria una verificación de AccessNI para lo que planea hacer.',
+                    'description' => 'Se le informará a un coordinador y éste le confirmará si es necesaria una verificación de AccessNI para lo que planea hacer. Por favor, no organice este tipo de ayuda a través del banco de tiempo hasta que lo hayan hecho.',
                 ],
             ],
         ],

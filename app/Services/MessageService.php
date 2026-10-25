@@ -86,7 +86,7 @@ class MessageService
                 $tenantId,
                 $senderId,
                 $recipientId,
-                $gate['code'],
+                self::alertReasonCode($gate),
                 $gate['required_vetting_types'],
                 $gate['required_vetting_labels'],
             );
@@ -775,7 +775,7 @@ class MessageService
                     $tenantId,
                     $senderId,
                     $receiverId,
-                    $safeguardingGate['code'],
+                    self::alertReasonCode($safeguardingGate),
                     $safeguardingGate['required_vetting_types'],
                     $safeguardingGate['required_vetting_labels'],
                 );
@@ -883,7 +883,7 @@ class MessageService
                         $tenantId,
                         $senderId,
                         $receiverId,
-                        $lockedGate['code'],
+                        self::alertReasonCode($lockedGate),
                         $lockedGate['required_vetting_types'],
                         $lockedGate['required_vetting_labels'],
                     );
@@ -1078,7 +1078,7 @@ class MessageService
                 tenantId: $tenantId,
                 senderId: $senderId,
                 recipientId: $recipientId,
-                reasonCode: $gate['code'],
+                reasonCode: self::alertReasonCode($gate),
                 requiredVettingTypes: $gate['required_vetting_types'],
                 requiredVettingLabels: $gate['required_vetting_labels'],
             ));
@@ -1310,7 +1310,22 @@ class MessageService
             'required_vetting_types' => $decision->requiredAttestationCodes,
             'required_vetting_labels' => $decision->requiredAttestationLabels,
             'can_request_coordinator' => $decision->canRequestCoordinator,
+            'restricted_by_sender' => $decision->restrictedBySender,
         ];
+    }
+
+    /**
+     * Reason code for staff alerts. When the SENDER's own choice stopped the
+     * message, the protected member is the sender, not the recipient: staff
+     * get a different alert that links to the sender's approved contacts.
+     *
+     * @param array<string, mixed> $gate
+     */
+    private static function alertReasonCode(array $gate): string
+    {
+        return ! empty($gate['restricted_by_sender'])
+            ? 'SAFEGUARDING_CONTACT_VIA_COORDINATOR'
+            : (string) ($gate['code'] ?? 'SAFEGUARDING_CONTACT_RESTRICTED');
     }
 
     /**
@@ -1349,6 +1364,20 @@ class MessageService
                 'action_label' => __('safeguarding.errors.vetting_required_action'),
                 'required_vetting_types' => array_values($gate['required_vetting_types'] ?? []),
                 'required_vetting_labels' => $labels,
+            ];
+        }
+
+        // Same code either way, so every client keeps its handling; the words
+        // differ. A member who chose coordinator-arranged contact is told to
+        // ask a coordinator; anyone else is told contact goes through one —
+        // never why.
+        if (! empty($gate['restricted_by_sender'])) {
+            return [
+                'code' => 'SAFEGUARDING_CONTACT_RESTRICTED',
+                'message' => __('safeguarding.errors.contact_via_coordinator'),
+                'title' => __('safeguarding.errors.contact_via_coordinator_title'),
+                'detail' => __('safeguarding.errors.contact_via_coordinator_detail'),
+                'action_label' => __('safeguarding.errors.contact_restricted_action'),
             ];
         }
 
