@@ -6,13 +6,11 @@ Last reviewed: 2026-10-25
 
 The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
 
-
 ## Audit reconciliation — 25 October 2026 (two passes)
 
 The owner authorized a code-led ASP.NET/Laravel comparison against both unchanged web frontends and documentation updates on 25 October. This is a narrow exception to the September pause, not a resumption. ASP.NET is not currently interchangeable; earlier completeness or active-delivery statements are superseded by the current audit.
 
 Current readiness: [code-led contract audit](../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
-
 
 Last reviewed: 2026-07-30
 
