@@ -34,7 +34,7 @@ final class SpaRouteSegments
         'group-bookings', 'group-exchanges', 'group-locations', 'group-ranking', 'group-types', 'groups',
         'help', 'ideation', 'image-settings', 'impact-report', 'impact-summary', 'install-app', 'insurance',
         'integrations', 'jobs', 'join', 'kb', 'landing-page', 'leaderboard', 'legal', 'legal-documents',
-        'linked-accounts', 'listings', 'login', 'marketplace', 'match-approvals', 'match-debug', 'matches',
+        'linked-accounts', 'listings', 'listings-digest', 'login', 'marketplace', 'match-approvals', 'match-debug', 'matches',
         'matching-diagnostic', 'me', 'member-premium', 'members', 'menus', 'messages', 'moderation',
         'module-configuration', 'monitoring', 'municipality-calendar', 'national', 'native-app', 'newsletter',
         'newsletters', 'nexus-score', 'notifications', 'onboarding', 'onboarding-settings', 'operations',
