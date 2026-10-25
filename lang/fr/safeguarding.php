@@ -13,9 +13,9 @@ return [
         'contact_restricted' => 'Ce membre ne peut être contacté que par l\'intermédiaire d\'un coordinateur. Rien n\'a été envoyé. Vous pouvez demander à un coordinateur de vous mettre en contact.',
         'contact_restricted_title' => 'Contact via un coordinateur',
         'contact_restricted_detail' => 'Le contact avec ce membre est organisé par l\'intermédiaire d\'un coordinateur. Vous pouvez demander à un coordinateur de vous mettre en contact.',
-        'contact_via_coordinator' => 'Vous avez choisi qu\'un coordinateur organise le contact pour vous, rien n\'a donc été envoyé. Demandez à un coordinateur de vous mettre en contact avec ce membre.',
-        'contact_via_coordinator_title' => 'Demandez à un coordinateur de vous mettre en contact',
-        'contact_via_coordinator_detail' => 'Vous avez choisi qu\'un coordinateur prenne contact pour vous. Demandez à un coordinateur, et une fois qu’il aura approuvé ce membre, vous pourrez vous parler.',
+        'contact_via_coordinator' => 'En raison du choix de sécurité que vous avez fait, vous ne pouvez contacter que les coordinateurs et les membres dont cette communauté a enregistré la vérification. Rien n\'a été envoyé. Un coordinateur peut vous aider à entrer en contact.',
+        'contact_via_coordinator_title' => 'Vous pouvez contacter les coordinateurs et les membres sélectionnés',
+        'contact_via_coordinator_detail' => 'En raison du choix de sécurité que vous avez fait, vous pouvez contacter les coordinateurs et les membres dont cette communauté a enregistré la vérification. Demandez à un coordinateur si vous souhaitez de l’aide pour contacter ce membre.',
         'contact_restricted_action' => 'Ouvrir aide',
         'coordination_not_required' => 'Le contact direct avec ce membre est actuellement disponible — vous n\'avez pas besoin d\'un coordinateur pour l\'organiser. Veuillez actualiser la page et réessayer d\'envoyer un message.',
         'coordination_request_failed' => 'Nous n\'avons pas pu envoyer votre demande au coordinateur pour le moment. Veuillez réessayer dans quelques instants.',
@@ -102,16 +102,12 @@ return [
         'switch_not_held' => 'Vous n’avez pas le paramètre réservé aux membres approuvés, il n’y a donc rien à changer.',
         'switch_unavailable' => 'Les présentations des coordinateurs ne sont pas encore disponibles dans cette communauté. Veuillez contacter un coordinateur.',
     ],
-    'approved_contacts' => [
-        'invalid_contact' => 'Choisissez un autre membre de cette communauté.',
-        'not_found' => 'Cette approbation n\'a pas pu être trouvée. Il se peut qu\'il ait déjà été retiré.',
-    ],
     'effects' => [
         'broker_approval' => 'Un coordinateur examine tout échange que vous organisez avant qu’il n’ait lieu. Ils ne peuvent pas lire vos messages.',
-        'restricts_messaging' => 'Les autres membres ne peuvent pas vous envoyer de message, démarrer un échange avec vous ou vous mentionner à moins qu\'un coordinateur ne les ait approuvés. Les coordinateurs peuvent toujours vous contacter. Pour entrer en contact avec quelqu\'un, demandez à un coordinateur. Les groupes auxquels vous appartenez fonctionnent normalement.',
+        'restricts_messaging' => 'Les autres membres ne peuvent pas vous envoyer de message, démarrer un échange avec vous ou vous mentionner. Les coordinateurs peuvent toujours vous contacter et vous pouvez les contacter. Les groupes auxquels vous appartenez fonctionnent normalement.',
         'restricts_matching' => 'Les correspondances suggérées entre vous et les autres membres sont d’abord vérifiées par un coordinateur.',
-        'vetted_only' => 'Seuls les membres dont :vetting cette communauté a enregistré peuvent vous envoyer un message, vous répondre, vous envoyer des crédits temps ou démarrer un échange avec vous. Tout le monde est bloqué.',
-        'vetted_count' => '{0} Aucun membre n\'a :vetting enregistré ici pour le moment. Personne ne peut donc vous contacter pendant que cette activité est activée.|{1} Un seul membre a :vetting enregistré ici pour le moment.|[2,*] :count membres ont :vetting enregistrés ici pour le moment.',
+        'vetted_only' => 'Seuls les coordinateurs et membres dont :vetting cette communauté a enregistré peuvent vous envoyer un message, vous répondre, vous envoyer des crédits temps ou démarrer un échange avec vous, et vous ne pouvez les contacter qu\'eux. Tout le monde est bloqué. Les groupes auxquels vous appartenez fonctionnent normalement.',
+        'vetted_count' => '{0} Aucun membre n\'a :vetting enregistré ici pour le moment. Pour l\'instant, seuls les coordinateurs peuvent vous contacter.|{1} Un seul membre a :vetting enregistré ici pour le moment.|[2,*] :count membres ont :vetting enregistrés ici pour le moment.',
         'notify_coordinator' => 'Un coordinateur est informé de votre choix et peut vous contacter si vous avez besoin de quoi que ce soit.',
         'no_home_visits' => 'Les coordonnateurs savent que vous ne souhaitez pas de visites à domicile à moins qu\'ils ne les organisent.',
         'check_before_helping' => 'Un coordinateur est informé et confirmera si une vérification (:vetting) est nécessaire. En attendant, veuillez ne pas organiser d\'aide impliquant des enfants ou des adultes vulnérables via la banque de temps.',
@@ -125,7 +121,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Je me considère comme un adulte vulnérable et j\'aimerais un soutien supplémentaire',
-                    'description' => 'Pour assurer votre sécurité, les autres membres ne pourront pas vous contacter directement. Un coordinateur vous contactera, organisera le contact avec d\'autres membres pour vous et pourra approuver certains membres pour qu\'ils vous contactent.',
+                    'description' => 'Pour assurer votre sécurité, seuls les coordinateurs et les membres dont cette communauté a enregistré la vérification pourront vous contacter, et vous ne pourrez les contacter qu\'eux. Un coordinateur vous contactera.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'J\'aimerais qu\'un coordinateur garde un œil sur mes échanges et m\'aide à me présenter aux membres',

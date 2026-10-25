@@ -59,7 +59,7 @@ class SafeguardingInteractionPolicy
     public function __construct(
         private readonly MemberVettingAttestationService $attestations,
         private readonly SafeguardingJurisdictionService $jurisdictions,
-        private readonly SafeguardingApprovedContactService $approvedContacts,
+        private readonly SafeguardingCoordinatorDirectory $coordinators,
     ) {}
 
     /**
@@ -67,14 +67,15 @@ class SafeguardingInteractionPolicy
      * group's members, an organiser's event broadcast, an emergency alert —
      * rather than contact aimed at one member.
      *
-     * Owner decision, 25 Oct 2026: a member whose choice routes contact
-     * through a coordinator (`restricts_messaging`) must not freeze the groups
-     * they belong to. Before this, one such member stopped everyone posting in
-     * that group's chat rooms, discussions and announcements, stopped anyone
-     * joining it, and made event broadcasts and emergency alerts fail. In a
-     * space that restriction is therefore not applied; it still applies to
-     * anything aimed at the member (direct messages, @mentions, exchanges,
-     * credits). Vetting requirements and blocks are unchanged here.
+     * Owner decision, 25 Oct 2026: a member whose own choice limits who may
+     * contact them (a self-identified vulnerable adult — vetted contact only —
+     * or a coordinator-only choice) must not freeze the groups they belong to.
+     * Before this, one such member stopped everyone posting in that group's
+     * chat rooms, discussions and announcements, stopped anyone joining it,
+     * and made event broadcasts and emergency alerts fail. In a space those
+     * choices are therefore not applied; they still apply to anything aimed at
+     * the member (direct messages, @mentions, exchanges, credits). Blocks
+     * between two members still apply.
      */
     public function evaluateCommunitySpaceContact(
         int $senderId,
@@ -523,43 +524,55 @@ class SafeguardingInteractionPolicy
         bool $communitySpace = false,
     ): SafeguardingInteractionDecision {
 
-        // Coordinator-arranged contact (`restricts_messaging`, owner decision
-        // 25 Oct 2026). Coordinators of the member's community, and members a
-        // coordinator has approved for them, may contact them; nobody else.
-        // It works in both directions: until then a protected member could
-        // send a message nobody was allowed to answer. Not applied inside a
-        // community space — see evaluateCommunitySpaceContact().
-        if (! $communitySpace) {
-            if (! empty($senderTriggers['restricts_messaging'])
-                && $senderUserId !== null
-                && $senderTenantId !== null
-                && ! $this->coordinatorArrangedContactAllowed($senderTenantId, $senderUserId, $recipientId, $recipientTenantId)) {
-                return new SafeguardingInteractionDecision(
-                    status: SafeguardingInteractionDecision::DENY,
-                    code: 'SAFEGUARDING_CONTACT_RESTRICTED',
-                    recipientTenantId: $recipientTenantId,
-                    purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
-                    scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
-                    scopeIdentifier: '',
-                    canRequestCoordinator: true,
-                    restrictedBySender: true,
-                );
-            }
+        // Inside a community space a member's own contact choices are not
+        // applied (owner decision, 25 Oct 2026) — see
+        // evaluateCommunitySpaceContact(). Blocks were checked by the caller.
+        if ($communitySpace) {
+            return $this->allowed($recipientTenantId);
+        }
 
-            if (! empty($triggers['restricts_messaging'])
-                && ($externalActor
-                    || $senderUserId === null
-                    || ! $this->coordinatorArrangedContactAllowed($recipientTenantId, $recipientId, $senderUserId, $senderTenantId))) {
-                return new SafeguardingInteractionDecision(
-                    status: SafeguardingInteractionDecision::DENY,
-                    code: 'SAFEGUARDING_CONTACT_RESTRICTED',
-                    recipientTenantId: $recipientTenantId,
-                    purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
-                    scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
-                    scopeIdentifier: '',
-                    canRequestCoordinator: true,
-                );
-            }
+        // A member whose own choice limits who they may deal with ("I consider
+        // myself a vulnerable adult", "only vetted members", "coordinator
+        // arranges all contact") may start contact only with people who could
+        // contact them: coordinators and, unless contact is coordinator-only,
+        // members whose vetting their community has recorded. Until 25 Oct 2026
+        // they could send a message nobody was allowed to answer.
+        if ((! empty($senderTriggers['restricts_messaging']) || ! empty($senderTriggers['requires_vetted_interaction']))
+            && $senderUserId !== null
+            && $senderTenantId !== null
+            && ! $this->senderMayStartContact($senderTenantId, $senderTriggers, $recipientId, $recipientTenantId)) {
+            return new SafeguardingInteractionDecision(
+                status: SafeguardingInteractionDecision::DENY,
+                code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+                recipientTenantId: $recipientTenantId,
+                purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
+                scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
+                scopeIdentifier: '',
+                canRequestCoordinator: true,
+                restrictedBySender: true,
+            );
+        }
+
+        // Coordinators of the member's own community can always contact them,
+        // whatever the member chose (owner decision, 25 Oct 2026).
+        if (! $externalActor
+            && $senderUserId !== null
+            && $senderTenantId === $recipientTenantId
+            && (! empty($triggers['restricts_messaging']) || ! empty($triggers['requires_vetted_interaction']))
+            && $this->coordinators->isStaff($recipientTenantId, $senderUserId)) {
+            return $this->allowed($recipientTenantId);
+        }
+
+        if (! empty($triggers['restricts_messaging'])) {
+            return new SafeguardingInteractionDecision(
+                status: SafeguardingInteractionDecision::DENY,
+                code: 'SAFEGUARDING_CONTACT_RESTRICTED',
+                recipientTenantId: $recipientTenantId,
+                purposeCode: SafeguardingJurisdictionService::PURPOSE_SAFEGUARDED_MEMBER_CONTACT,
+                scopeType: SafeguardingJurisdictionService::SCOPE_TENANT,
+                scopeIdentifier: '',
+                canRequestCoordinator: true,
+            );
         }
 
         if (empty($triggers['requires_vetted_interaction'])) {
@@ -656,23 +669,51 @@ class SafeguardingInteractionPolicy
     }
 
     /**
-     * May $otherUserId have direct contact with the protected member? Yes for
-     * a coordinator of the protected member's own community, and for a member
-     * of that community whom a coordinator has approved for this protected
-     * member. A member of another community never qualifies.
+     * May a member whose own choice limits who they deal with start contact
+     * with this recipient? Coordinators of their community: always. Other
+     * members of their community: only when the member's choice is vetting
+     * based (not coordinator-only) and the community has recorded the
+     * recipient's vetting under its current policy. Never another community.
+     *
+     * @param array<string, mixed> $senderTriggers
      */
-    private function coordinatorArrangedContactAllowed(
-        int $protectedTenantId,
-        int $protectedUserId,
-        ?int $otherUserId,
-        ?int $otherTenantId,
+    private function senderMayStartContact(
+        int $senderTenantId,
+        array $senderTriggers,
+        int $recipientId,
+        int $recipientTenantId,
     ): bool {
-        if ($otherUserId === null || $otherTenantId === null || $otherTenantId !== $protectedTenantId) {
+        if ($recipientTenantId !== $senderTenantId) {
+            return false;
+        }
+        if ($this->coordinators->isStaff($senderTenantId, $recipientId)) {
+            return true;
+        }
+        if (! empty($senderTriggers['restricts_messaging'])) {
             return false;
         }
 
-        return $this->approvedContacts->isStaff($protectedTenantId, $otherUserId)
-            || $this->approvedContacts->isApproved($protectedTenantId, $protectedUserId, $otherUserId);
+        try {
+            $policy = $this->jurisdictions->getPolicy($senderTenantId);
+            if (! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
+                return false;
+            }
+
+            return $this->attestations->hasConfirmedAttestation(
+                tenantId: $senderTenantId,
+                memberId: $recipientId,
+                schemeCode: $policy['scheme_code'],
+                attestationCode: $policy['attestation_code'],
+                purposeCode: $policy['purpose_code'],
+                scopeType: $policy['scope_type'],
+                scopeIdentifier: $policy['scope_identifier'],
+                policyVersion: $policy['policy_version'],
+            );
+        } catch (\Throwable $e) {
+            $this->logUnavailable($senderTenantId, $recipientId, 'sender_vetting', 'sender_attestation_lookup_failed', $e);
+
+            return false;
+        }
     }
 
     private function allowed(int $recipientTenantId): SafeguardingInteractionDecision

@@ -219,10 +219,10 @@
     "shared_body": "Jako osoba odpowiedzialna za ochronę w organizacji {{organisation}} możesz teraz przeczytać pełne zgłoszenie dotyczące ochrony nr {{incident_id}}. Zaloguj się, aby je przeczytać. Nie wynika z niego, kto zrobił zgłoszenie.",
     "shared_cta": "Przeczytaj zgłoszenie",
     "share_withdrawn_bell": "Pełne zgłoszenie dotyczące ochrony nr {{incident_id}} nie jest już Ci udostępnione. Podsumowanie pozostaje widoczne.",
-    "contact_reason_via_coordinator": "Własny kontakt nadawcy jest ustalany za pośrednictwem koordynatora i ten członek nie jest jeszcze dla niego zatwierdzony.",
+    "contact_reason_via_coordinator": "Własny wybór bezpieczeństwa nadawcy pozwala na kontakt tylko z koordynatorami i członkami, których weryfikacja została zarejestrowana przez społeczność, a ten członek nie ma zarejestrowanej weryfikacji.",
     "contact_attempt_contacted_label": "Członek, z którym próbowano się skontaktować",
-    "contact_attempt_via_body": "Członek, z którym kontakt odbywa się za pośrednictwem koordynatora, próbował wysłać wiadomość do członka, z którym nie ma pozwolenia na kontakt. Jeśli kontakt jest bezpieczny, możesz go zatwierdzić na stronie potrzeb wsparcia.",
-    "coordination_request_via_body": "Członek, z którym kontakt odbywa się za pośrednictwem koordynatora, poprosił o pomoc w skontaktowaniu się z innym członkiem. Jeśli kontakt jest bezpieczny, możesz go zatwierdzić na stronie potrzeb wsparcia."
+    "contact_attempt_via_body": "Członek, którego wybór dotyczący bezpieczeństwa ogranicza kontakt z koordynatorami i zweryfikowanymi członkami, próbował wysłać wiadomość do członka bez zarejestrowanej weryfikacji. Jeśli kontakt będzie bezpieczny, możesz pomóc w jego zorganizowaniu.",
+    "coordination_request_via_body": "Członek, którego wybór dotyczący bezpieczeństwa ogranicza kontakt z koordynatorami i zweryfikowanymi członkami, poprosił o pomoc w skontaktowaniu się z członkiem, który nie zarejestrował żadnej weryfikacji. Jeśli kontakt będzie bezpieczny, możesz pomóc w jego zorganizowaniu."
   },
   "onboarding_completed": {
     "subject": "Wszystko gotowe, {{name}}! Witamy w {{community}}",

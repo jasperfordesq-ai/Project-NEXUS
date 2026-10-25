@@ -13048,7 +13048,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=503 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=504 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17672,22 +17672,6 @@ CREATE TABLE `roles` (
   KEY `idx_level` (`level`),
   KEY `idx_tenant` (`tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `safeguarding_approved_contacts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `safeguarding_approved_contacts` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `tenant_id` int(10) unsigned NOT NULL,
-  `protected_user_id` int(10) unsigned NOT NULL,
-  `contact_user_id` int(10) unsigned NOT NULL,
-  `approved_by` int(10) unsigned DEFAULT NULL,
-  `approved_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `revoked_by` int(10) unsigned DEFAULT NULL,
-  `revoked_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_sg_approved_contacts_pair` (`tenant_id`,`protected_user_id`,`contact_user_id`,`revoked_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `safeguarding_assignment_events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -22766,7 +22750,7 @@ INSERT INTO `laravel_migrations` VALUES
 (498,'2026_10_21_140000_make_wellbeing_notification_record_unique',164),
 (499,'2026_10_25_100000_create_listings_digest_sends_table',165),
 (500,'2026_10_25_200000_overhaul_safeguarding_questions',166),
-(502,'2026_10_25_210000_coordinator_arranged_contact',167);
+(503,'2026_10_25_210000_vulnerable_adults_use_vetting',167);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

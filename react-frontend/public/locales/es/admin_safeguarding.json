@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Recibe una notificación en tiempo real en el momento en que se marca la opción.",
           "requires_broker_approval": "Las coincidencias e intercambios con el miembro esperan el visto bueno de un coordinador. Los mensajes no se copian.",
-          "requires_vetted_interaction": "Solo los miembros cuya verificación haya registrado esta comunidad pueden contactar con el miembro. Todos los demás quedan bloqueados.",
+          "requires_vetted_interaction": "Solo los coordinadores y los miembros cuya verificación haya registrado esta comunidad pueden contactar con el miembro, y el miembro solo puede contactar con ellos. Los grupos a los que pertenece funcionan con normalidad.",
           "restricts_matching": "Las coincidencias con el miembro quedan retenidas en Aprobaciones de coincidencias hasta que un coordinador las apruebe. Ninguno de los dos miembros recibe aviso antes.",
-          "restricts_messaging": "Solo los coordinadores, y los miembros que un coordinador autorice, pueden contactar directamente con el miembro, en ambos sentidos. A los demás se les ofrece pedir ayuda a un coordinador. Los grupos a los que pertenece funcionan con normalidad. Los mensajes no se copian.",
+          "restricts_messaging": "Solo los coordinadores pueden contactar directamente con el miembro, en ambos sentidos. A los demás se les ofrece pedir ayuda a un coordinador. Los grupos a los que pertenece funcionan con normalidad. Los mensajes no se copian.",
           "vetting_type_required": "Especifica qué verificación debe realizar un miembro de contacto, por ejemplo garda_vetting."
         },
         "table_aria": "Efectos de los desencadenantes de protección",
@@ -495,22 +495,6 @@
     "offer_to_new_members_desc": "Si está desactivado, los miembros que aún no la hayan elegido no la verán. Quienes ya la eligieron la conservan y pueden seguir viéndola.",
     "not_offered_chip": "No se ofrece a nuevos miembros",
     "holder_count": "Miembros que lo eligieron: {{count}}",
-    "members_are_told": "Lo que se dice a los miembros que hace",
-    "approved_contacts": {
-      "heading": "Miembros autorizados a contactarle",
-      "intro": "Solo los coordinadores y los miembros que autorices aquí pueden contactar con {{name}}, y {{name}} solo puede contactar con ellos. Autoriza a un miembro cuando hayas comprobado que el contacto es seguro; puedes retirar la autorización en cualquier momento.",
-      "none": "Aún no hay nadie autorizado, así que solo los coordinadores pueden contactarle.",
-      "add_label": "Autorizar a un miembro",
-      "add_placeholder": "Buscar miembros por nombre",
-      "no_results": "No hay miembros que coincidan",
-      "clear": "Borrar",
-      "approve_button": "Autorizar contacto",
-      "remove_button": "Retirar",
-      "remove_aria": "Retirar la autorización de {{name}}",
-      "approved_toast": "{{name}} ya puede contactar con este miembro.",
-      "removed_toast": "Autorización retirada.",
-      "failed": "No ha funcionado. Inténtalo de nuevo.",
-      "approved_on": "autorizado {{when}}"
-    }
+    "members_are_told": "Lo que se dice a los miembros que hace"
   }
 }

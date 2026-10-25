@@ -219,10 +219,10 @@
     "shared_body": "Mar cheannaire cosanta {{organisation}}, is féidir leat an tuairisc chosanta iomlán #{{incident_id}} a léamh anois. Sínigh isteach chun í a léamh. Ní deir sí cé a rinne an tuairisc.",
     "shared_cta": "Léigh an tuairisc",
     "share_withdrawn_bell": "Níl an tuairisc chosanta iomlán #{{incident_id}} á roinnt leat a thuilleadh. Is féidir leat a hachoimre a fheiceáil fós.",
-    "contact_reason_via_coordinator": "Socraítear teagmháil an tseoltóra féin trí chomhordaitheoir, agus níl an comhalta seo ceadaithe dóibh fós.",
+    "contact_reason_via_coordinator": "Ní cheadaíonn rogha sábháilteachta an tseoltóra féin teagmháil ach le comhordaitheoirí agus le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal, agus níl aon ghrinnfhiosrú taifeadta don chomhalta seo.",
     "contact_attempt_contacted_label": "An comhalta ar bhain siad triail as teagmháil a dhéanamh leis",
-    "contact_attempt_via_body": "Bhain comhalta a socraítear a theagmháil trí chomhordaitheoir triail as teachtaireacht a chur chuig comhalta nach bhfuil siad ceadaithe chun teagmháil a dhéanamh leis. Más sábháilte an teagmháil, is féidir leat í a cheadú ar a leathanach riachtanas tacaíochta.",
-    "coordination_request_via_body": "D’iarr comhalta a socraítear a theagmháil trí chomhordaitheoir cabhair chun teagmháil a dhéanamh le comhalta eile. Más sábháilte an teagmháil, is féidir leat í a cheadú ar a leathanach riachtanas tacaíochta."
+    "contact_attempt_via_body": "Bhain comhalta a bhfuil a rogha sábháilteachta ag teorannú teagmhála le comhordaitheoirí agus le comhaltaí grinnfhiosraithe triail as teachtaireacht a chur chuig comhalta nach bhfuil aon ghrinnfhiosrú taifeadta dó. Más sábháilte an teagmháil, is féidir leat cabhrú í a shocrú.",
+    "coordination_request_via_body": "D’iarr comhalta a bhfuil a rogha sábháilteachta ag teorannú teagmhála le comhordaitheoirí agus le comhaltaí grinnfhiosraithe cabhair chun teagmháil a dhéanamh le comhalta nach bhfuil aon ghrinnfhiosrú taifeadta dó. Más sábháilte an teagmháil, is féidir leat cabhrú í a shocrú."
   },
   "onboarding_completed": {
     "subject": "Tá tú réidh, {{name}}! Fáilte go {{community}}",

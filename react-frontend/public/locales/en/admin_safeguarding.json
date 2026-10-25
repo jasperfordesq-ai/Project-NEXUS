@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "You get a real-time notification the moment the option is ticked.",
           "requires_broker_approval": "Matches and exchanges involving the member wait for a coordinator's sign-off. Messages are not copied.",
-          "requires_vetted_interaction": "Only members whose vetting this community has recorded can contact the member at all. Everyone else is blocked.",
+          "requires_vetted_interaction": "Only coordinators and members whose vetting this community has recorded can contact the member, and the member can contact only them. Groups they belong to work as normal.",
           "restricts_matching": "Matches involving the member are held in Match Approvals until a coordinator approves them. Neither member is told about a match before that.",
-          "restricts_messaging": "Only coordinators, and members a coordinator approves for them, can contact the member directly, in either direction. Others are offered a way to ask a coordinator. Groups they belong to work as normal. Messages are not copied.",
+          "restricts_messaging": "Only coordinators can contact the member directly, in either direction. Others are offered a way to ask a coordinator. Groups they belong to work as normal. Messages are not copied.",
           "vetting_type_required": "Specifies which vetting a contacting member must hold, for example garda_vetting."
         },
         "table_aria": "Safeguarding trigger effects",
@@ -495,22 +495,6 @@
     "offer_to_new_members_desc": "When off, members who have not already chosen this will not see it. Members who already chose it keep it and can still see it.",
     "not_offered_chip": "Not offered to new members",
     "holder_count": "Members who chose this: {{count}}",
-    "members_are_told": "What members are told it does",
-    "approved_contacts": {
-      "heading": "Members approved to contact them",
-      "intro": "Only coordinators and the members you approve here can contact {{name}}, and {{name}} can contact only them. Approve a member once you have checked the contact is safe; you can withdraw it at any time.",
-      "none": "Nobody is approved yet, so only coordinators can contact them.",
-      "add_label": "Approve a member",
-      "add_placeholder": "Search members by name",
-      "no_results": "No matching members",
-      "clear": "Clear",
-      "approve_button": "Approve contact",
-      "remove_button": "Withdraw",
-      "remove_aria": "Withdraw approval for {{name}}",
-      "approved_toast": "{{name}} can now contact this member.",
-      "removed_toast": "Approval withdrawn.",
-      "failed": "That did not work. Please try again.",
-      "approved_on": "approved {{when}}"
-    }
+    "members_are_told": "What members are told it does"
   }
 }

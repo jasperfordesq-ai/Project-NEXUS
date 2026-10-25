@@ -219,10 +219,10 @@
     "shared_body": "Como responsável pela proteção de {{organisation}}, já pode ler a participação de proteção completa n.º {{incident_id}}. Inicie sessão para a ler. Não indica quem fez a participação.",
     "shared_cta": "Ler a participação",
     "share_withdrawn_bell": "A comunicação de proteção completa #{{incident_id}} já não está partilhada consigo. O resumo continua visível.",
-    "contact_reason_via_coordinator": "O contato do próprio remetente é feito por meio de um coordenador, e esse membro ainda não está aprovado para ele.",
+    "contact_reason_via_coordinator": "A escolha de segurança do próprio remetente permite o contato apenas com coordenadores e membros cuja verificação foi registrada pela comunidade, e esse membro não possui verificação registrada.",
     "contact_attempt_contacted_label": "Membro com quem eles tentaram entrar em contato",
-    "contact_attempt_via_body": "Um membro cujo contato foi organizado por meio de um coordenador tentou enviar uma mensagem a um membro para o qual não estava autorizado a entrar em contato. Se o contato for seguro, você poderá aprová-lo na página de necessidades de suporte.",
-    "coordination_request_via_body": "Um membro cujo contato é feito através de um coordenador pediu ajuda para entrar em contato com outro membro. Se o contato for seguro, você poderá aprová-lo na página de necessidades de suporte."
+    "contact_attempt_via_body": "Um membro cuja escolha de segurança limita o contato a coordenadores e membros avaliados tentou enviar uma mensagem a um membro sem registro de verificação. Se o contato for seguro, você pode ajudar a organizá-lo.",
+    "coordination_request_via_body": "Um membro cuja escolha de segurança limita o contato a coordenadores e membros avaliados pediu ajuda para entrar em contato com um membro que não possui verificação registrada. Se o contato for seguro, você pode ajudar a organizá-lo."
   },
   "onboarding_completed": {
     "subject": "Está tudo pronto, {{name}}! Bem-vindo a {{community}}",

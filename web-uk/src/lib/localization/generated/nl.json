@@ -12205,9 +12205,9 @@
                 "contact_restricted": "Dit lid is alleen te bereiken via een coördinator. Er is niets verzonden. U kunt een coördinator vragen om u in contact te brengen.",
                 "contact_restricted_title": "Contact via een coördinator",
                 "contact_restricted_detail": "Het contact met dit lid verloopt via een coördinator. U kunt een coördinator vragen om u in contact te brengen.",
-                "contact_via_coordinator": "U heeft ervoor gekozen om een ​​coördinator het contact voor u te laten regelen, er is dus niets verzonden. Vraag een coördinator om u in contact te brengen met dit lid.",
-                "contact_via_coordinator_title": "Vraag een coördinator om u in contact te brengen",
-                "contact_via_coordinator_detail": "U heeft ervoor gekozen om een ​​coördinator het contact voor u te laten regelen. Vraag het aan een coördinator, en zodra zij dit lid hebben goedgekeurd, kun je met elkaar praten.",
+                "contact_via_coordinator": "Vanwege de veiligheidskeuze die je hebt gemaakt, kun je alleen contact opnemen met coördinatoren en leden waarvan de doorlichting door deze community is vastgelegd. Er is niets verzonden. Een coördinator kan u helpen contact op te nemen.",
+                "contact_via_coordinator_title": "U kunt contact opnemen met coördinatoren en gescreende leden",
+                "contact_via_coordinator_detail": "Vanwege de veiligheidskeuze die u heeft gemaakt, kunt u contact opnemen met coördinatoren en leden waarvan de doorlichting door deze community is vastgelegd. Vraag een coördinator of u hulp nodig heeft om in contact te komen met dit lid.",
                 "contact_restricted_action": "Help openen",
                 "coordination_not_required": "Direct contact met dit lid is momenteel mogelijk — u heeft geen coördinator nodig om dat te regelen. Vernieuw de pagina en probeer opnieuw een bericht te sturen.",
                 "coordination_request_failed": "We konden uw verzoek op dit moment niet naar de coördinator sturen. Probeer het binnenkort opnieuw.",
@@ -12294,16 +12294,12 @@
                 "switch_not_held": "U beschikt niet over de instelling 'Alleen doorgelichte leden', dus u hoeft niets te wijzigen.",
                 "switch_unavailable": "Coördinatorintroducties zijn nog niet beschikbaar in deze community. Neem dan contact op met een coördinator."
             },
-            "approved_contacts": {
-                "invalid_contact": "Kies een ander lid van deze community.",
-                "not_found": "Die goedkeuring kon niet worden gevonden. Mogelijk is deze al ingetrokken."
-            },
             "effects": {
                 "broker_approval": "Een coördinator controleert elke uitwisseling die u regelt voordat deze doorgaat. Ze kunnen uw berichten niet lezen.",
-                "restricts_messaging": "Andere leden kunnen u geen berichten sturen, een uitwisseling met u starten of u vermelden, tenzij een coördinator hen heeft goedgekeurd. Coördinatoren kunnen altijd contact met u opnemen. Als u met iemand in contact wilt komen, kunt u dit aan een coördinator vragen. Groepen waartoe u behoort, werken normaal.",
+                "restricts_messaging": "Andere leden kunnen u geen berichten sturen, een uitwisseling met u starten of u vermelden. Coördinatoren kunnen altijd contact met u opnemen, en u kunt contact met hen opnemen. Groepen waartoe u behoort, werken normaal.",
                 "restricts_matching": "Voorgestelde matches tussen jou en andere leden worden eerst door een coördinator gecontroleerd.",
-                "vetted_only": "Alleen leden van wie :vetting deze community heeft opgenomen, kunnen u een bericht sturen, antwoorden, u tijdskredieten sturen of een uitwisseling met u starten. Alle anderen zijn geblokkeerd.",
-                "vetted_count": "{0} Er zijn momenteel geen leden die hier :vetting hebben opgenomen, dus niemand kan contact met je opnemen terwijl dit actief is.|{1} Slechts één lid heeft hier momenteel :vetting opgenomen.|[2,*] :count leden hebben hier momenteel :vetting opgenomen.",
+                "vetted_only": "Alleen coördinatoren en leden van wie :vetting deze community heeft opgenomen, kunnen u een bericht sturen, antwoorden, u tijdskredieten sturen of een uitwisseling met u starten, en u kunt alleen met hen contact opnemen. Alle anderen zijn geblokkeerd. Groepen waartoe u behoort, werken normaal.",
+                "vetted_count": "{0} Momenteel hebben geen leden :vetting hier opgenomen, dus voorlopig kunnen alleen coördinatoren contact met u opnemen.|{1} Slechts één lid heeft momenteel :vetting hier opgenomen.|[2,*] :count leden hebben hier momenteel :vetting opgenomen.",
                 "notify_coordinator": "Een coördinator wordt op de hoogte gesteld van uw keuze, zodat zij contact met u kunnen opnemen als u iets nodig heeft.",
                 "no_home_visits": "Coördinatoren weten dat u geen huisbezoeken wilt, tenzij zij deze regelen.",
                 "check_before_helping": "Een coördinator wordt geïnformeerd en zal bevestigen of doorlichting (:vetting) nodig is. Zolang dit niet het geval is, kunt u via de tijdbank geen hulp voor kinderen of kwetsbare volwassenen regelen.",
@@ -12317,7 +12313,7 @@
                     "options": {
                         "is_vulnerable_adult": {
                             "label": "Ik beschouw mezelf als een kwetsbare volwassene en zou graag extra ondersteuning willen",
-                            "description": "Om u veilig te houden, kunnen andere leden niet rechtstreeks contact met u opnemen. Een coördinator neemt contact met u op, regelt het contact met andere leden voor u en kan bepaalde leden toestemming geven om contact met u op te nemen."
+                            "description": "Om u veilig te houden, kunnen alleen coördinatoren en leden wier controle deze community heeft geregistreerd contact met u opnemen, en u kunt alleen contact met hen opnemen. Een coördinator zal contact met u opnemen."
                         },
                         "coordinator_introductions": {
                             "label": "Ik wil graag dat een coördinator mijn uitwisselingen in de gaten houdt en mij helpt kennis te maken met de leden",

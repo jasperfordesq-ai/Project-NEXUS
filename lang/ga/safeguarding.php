@@ -13,9 +13,9 @@ return [
         'contact_restricted' => 'Ní féidir teagmháil a dhéanamh leis an gcomhalta seo ach trí chomhordaitheoir. Níor seoladh aon rud. Is féidir leat iarraidh ar chomhordaitheoir sibh a chur i dteagmháil le chéile.',
         'contact_restricted_title' => 'Teagmháil trí chomhordaitheoir',
         'contact_restricted_detail' => 'Socraítear teagmháil leis an gcomhalta seo trí chomhordaitheoir. Is féidir leat iarraidh ar chomhordaitheoir sibh a chur i dteagmháil le chéile.',
-        'contact_via_coordinator' => 'Roghnaigh tú go socródh comhordaitheoir teagmháil duit, mar sin níor seoladh aon rud. Iarr ar chomhordaitheoir tú a chur i dteagmháil leis an gcomhalta seo.',
-        'contact_via_coordinator_title' => 'Iarr ar chomhordaitheoir tú a chur i dteagmháil',
-        'contact_via_coordinator_detail' => 'Roghnaigh tú go socródh comhordaitheoir teagmháil duit. Iarr ar chomhordaitheoir, agus nuair a bheidh an comhalta seo ceadaithe acu, is féidir libh labhairt le chéile.',
+        'contact_via_coordinator' => 'De bharr na rogha sábháilteachta a rinne tú, ní féidir leat teagmháil a dhéanamh ach le comhordaitheoirí agus le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo. Níor seoladh aon rud. Is féidir le comhordaitheoir cabhrú leat teagmháil a dhéanamh.',
+        'contact_via_coordinator_title' => 'Is féidir leat teagmháil a dhéanamh le comhordaitheoirí agus le comhaltaí grinnfhiosraithe',
+        'contact_via_coordinator_detail' => 'De bharr na rogha sábháilteachta a rinne tú, is féidir leat teagmháil a dhéanamh le comhordaitheoirí agus le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo. Iarr ar chomhordaitheoir más mian leat cabhair chun teagmháil a dhéanamh leis an gcomhalta seo.',
         'contact_restricted_action' => 'Oscail cabhair',
         'coordination_not_required' => 'Tá teagmháil dhíreach leis an gcomhalta seo ar fáil faoi láthair — ní gá comhordaitheoir a bheith agat chun é a eagrú. Athnuaigh an leathanach agus bain triail as teachtaireacht a sheoladh arís.',
         'coordination_request_failed' => 'Níorbh fhéidir do iarratas a sheoladh chuig an gcomhordaitheoir faoi láthair. Bain triail eile as ar ball.',
@@ -102,16 +102,12 @@ return [
         'switch_not_held' => 'Níl an socrú “comhaltaí grinnfhiosraithe amháin” agat, mar sin níl aon rud le haistriú.',
         'switch_unavailable' => 'Níl cur in aithne ag comhordaitheoir ar fáil sa phobal seo fós. Déan teagmháil le comhordaitheoir, le do thoil.',
     ],
-    'approved_contacts' => [
-        'invalid_contact' => 'Roghnaigh comhalta eile den phobal seo.',
-        'not_found' => 'Níorbh fhéidir an cead sin a aimsiú. B’fhéidir gur tarraingíodh siar é cheana.',
-    ],
     'effects' => [
         'broker_approval' => 'Féachann comhordaitheoir ar aon mhalartú a shocraíonn tú sula dtéann sé ar aghaidh. Ní féidir leo do theachtaireachtaí a léamh.',
-        'restricts_messaging' => 'Ní féidir le comhaltaí eile teachtaireacht a chur chugat, malartú a thosú leat ná tú a lua mura bhfuil siad ceadaithe ag comhordaitheoir. Is féidir le comhordaitheoirí teagmháil a dhéanamh leat i gcónaí. Chun teagmháil a dhéanamh le duine, iarr ar chomhordaitheoir. Oibríonn na grúpaí a bhfuil tú iontu mar is gnách.',
+        'restricts_messaging' => 'Ní féidir le comhaltaí eile teachtaireacht a chur chugat, malartú a thosú leat ná tú a lua. Is féidir le comhordaitheoirí teagmháil a dhéanamh leat i gcónaí, agus is féidir leatsa teagmháil a dhéanamh leo. Oibríonn na grúpaí a bhfuil tú iontu mar is gnách.',
         'restricts_matching' => 'Seiceálann comhordaitheoir ar dtús na meaitseálacha a mholtar idir tú féin agus comhaltaí eile.',
-        'vetted_only' => 'Ní féidir ach le comhaltaí a bhfuil :vetting taifeadta ag an bpobal seo dóibh teachtaireacht a chur chugat, freagra a thabhairt ort, creidmheasanna ama a sheoladh chugat nó malartú a thosú leat. Cuirtear cosc ar gach duine eile.',
-        'vetted_count' => '{0} Níl :vetting taifeadta anseo d’aon chomhalta faoi láthair, mar sin ní féidir le duine ar bith teagmháil a dhéanamh leat fad atá sé seo ar siúl.|{1} Níl :vetting taifeadta anseo ach do chomhalta amháin faoi láthair.|[2,*] Tá :vetting taifeadta anseo do :count comhalta faoi láthair.',
+        'vetted_only' => 'Ní féidir ach le comhordaitheoirí agus le comhaltaí a bhfuil :vetting taifeadta ag an bpobal seo dóibh teachtaireacht a chur chugat, freagra a thabhairt ort, creidmheasanna ama a sheoladh chugat ná malartú a thosú leat, agus ní féidir leatsa teagmháil a dhéanamh ach leo siúd. Cuirtear cosc ar gach duine eile. Oibríonn na grúpaí a bhfuil tú iontu mar is gnách.',
+        'vetted_count' => '{0} Níl :vetting taifeadta anseo d’aon chomhalta faoi láthair, mar sin ní féidir ach le comhordaitheoirí teagmháil a dhéanamh leat go fóill.|{1} Níl :vetting taifeadta anseo ach do chomhalta amháin faoi láthair.|[2,*] Tá :vetting taifeadta anseo do :count comhalta faoi láthair.',
         'notify_coordinator' => 'Cuirtear comhordaitheoir ar an eolas faoi do rogha, ionas gur féidir leo teagmháil a dhéanamh leat má bhíonn aon rud uait.',
         'no_home_visits' => 'Tá a fhios ag na comhordaitheoirí nach mian leat cuairteanna baile mura socraíonn siad iad.',
         'check_before_helping' => 'Cuirtear comhordaitheoir ar an eolas agus deimhneoidh sé an bhfuil grinnfhiosrú (:vetting) ag teastáil. Go dtí go ndéanfaidh siad sin, ná socraigh cabhair a bhaineann le leanaí nó le daoine fásta leochaileacha tríd an mbanc ama.',
@@ -125,7 +121,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Measaim gur duine fásta leochaileach mé agus ba mhaith liom tacaíocht bhreise',
-                    'description' => 'Chun tú a choinneáil slán, ní bheidh comhaltaí eile in ann teagmháil a dhéanamh leat go díreach. Beidh comhordaitheoir i dteagmháil leat, socróidh sé teagmháil le comhaltaí eile duit, agus is féidir leis comhaltaí áirithe a cheadú chun teagmháil a dhéanamh leat.',
+                    'description' => 'Chun tú a choinneáil slán, ní bheidh ach comhordaitheoirí agus comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo in ann teagmháil a dhéanamh leat, agus ní bheidh tusa in ann teagmháil a dhéanamh ach leo siúd. Beidh comhordaitheoir i dteagmháil leat.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Ba mhaith liom go gcoinneodh comhordaitheoir súil ar mo mhalartuithe agus go gcabhródh sé liom aithne a chur ar chomhaltaí',

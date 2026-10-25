@@ -219,10 +219,10 @@
     "shared_body": "Como responsable de protección de {{organisation}}, ya puede leer la denuncia de protección completa n.º {{incident_id}}. Inicie sesión para leerla. No indica quién hizo la denuncia.",
     "shared_cta": "Leer la denuncia",
     "share_withdrawn_bell": "El informe de protección completo #{{incident_id}} ya no se comparte con usted. El resumen sigue visible.",
-    "contact_reason_via_coordinator": "El contacto propio del remitente se organiza a través de un coordinador y este miembro aún no está aprobado para él.",
+    "contact_reason_via_coordinator": "La propia elección de seguridad del remitente permite el contacto solo con coordinadores y miembros cuya investigación de antecedentes haya registrado la comunidad, y este miembro no tiene ninguna investigación de antecedentes registrada.",
     "contact_attempt_contacted_label": "Miembro con el que intentaron contactar",
-    "contact_attempt_via_body": "Un miembro cuyo contacto se organiza a través de un coordinador intentó enviar un mensaje a un miembro con el que no está autorizado a contactar. Si el contacto es seguro, puede aprobarlo en su página de necesidades de soporte.",
-    "coordination_request_via_body": "Un miembro cuyo contacto se organiza a través de un coordinador ha pedido ayuda para ponerse en contacto con otro miembro. Si el contacto es seguro, puede aprobarlo en su página de necesidades de soporte."
+    "contact_attempt_via_body": "Un miembro cuya elección de seguridad limita el contacto con los coordinadores y los miembros examinados intentó enviar un mensaje a un miembro sin que se registrara ninguna investigación de antecedentes. Si el contacto fuera seguro, usted puede ayudar a organizarlo.",
+    "coordination_request_via_body": "Un miembro cuya elección de seguridad limita el contacto con los coordinadores y los miembros examinados ha pedido ayuda para ponerse en contacto con un miembro que no tiene ningún registro de investigación registrado. Si el contacto fuera seguro, usted puede ayudar a organizarlo."
   },
   "onboarding_completed": {
     "subject": "¡Todo listo, {{name}}! Bienvenido a {{community}}",

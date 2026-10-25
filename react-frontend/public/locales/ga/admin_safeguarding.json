@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Gheobhaidh tú fógra fíor-ama nuair a chuirtear tic leis an rogha.",
           "requires_broker_approval": "Fanann meaitseálacha agus malartuithe leis an mball le faomhadh ó chomhordaitheoir. Ní chóipeáiltear teachtaireachtaí.",
-          "requires_vetted_interaction": "Ní féidir ach le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo teagmháil a dhéanamh leis an gcomhalta ar chor ar bith. Cuirtear cosc ar gach duine eile.",
+          "requires_vetted_interaction": "Ní féidir ach le comhordaitheoirí agus le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo teagmháil a dhéanamh leis an gcomhalta, agus ní féidir leis an gcomhalta teagmháil a dhéanamh ach leo siúd. Oibríonn na grúpaí a bhfuil siad iontu mar is gnách.",
           "restricts_matching": "Coinnítear meaitseálacha leis an mball i bhFaomhadh meaitseálacha go dtí go gceadaíonn comhordaitheoir iad. Ní insítear d'aon bhall fúthu roimhe sin.",
-          "restricts_messaging": "Ní féidir ach le comhordaitheoirí, agus le comhaltaí a cheadaíonn comhordaitheoir dóibh, teagmháil dhíreach a dhéanamh leis an gcomhalta, sa dá threo. Tairgtear bealach do dhaoine eile chun comhordaitheoir a iarraidh. Oibríonn na grúpaí a bhfuil siad iontu mar is gnách. Ní dhéantar cóip de theachtaireachtaí.",
+          "restricts_messaging": "Ní féidir ach le comhordaitheoirí teagmháil dhíreach a dhéanamh leis an gcomhalta, sa dá threo. Tairgtear bealach do dhaoine eile chun comhordaitheoir a iarraidh. Oibríonn na grúpaí a bhfuil siad iontu mar is gnách. Ní dhéantar cóip de theachtaireachtaí.",
           "vetting_type_required": "Sonraíonn sé cén t-seiceáil a chaithfidh ball teagmhála a bheith aige, mar shampla garda_vetting."
         },
         "table_aria": "Éifeachtaí truicear a chosaint",
@@ -495,22 +495,6 @@
     "offer_to_new_members_desc": "Nuair atá sé múchta, ní fheicfidh comhaltaí nár roghnaigh é cheana é. Coinníonn comhaltaí a roghnaigh é cheana é agus is féidir leo é a fheiceáil fós.",
     "not_offered_chip": "Ní thairgtear do chomhaltaí nua",
     "holder_count": "Comhaltaí a roghnaigh é seo: {{count}}",
-    "members_are_told": "Cad a insítear do chomhaltaí a dhéanann sé",
-    "approved_contacts": {
-      "heading": "Comhaltaí a bhfuil cead acu teagmháil a dhéanamh leo",
-      "intro": "Ní féidir ach le comhordaitheoirí agus leis na comhaltaí a cheadaíonn tú anseo teagmháil a dhéanamh le {{name}}, agus ní féidir le {{name}} teagmháil a dhéanamh ach leo siúd. Ceadaigh comhalta nuair a bheidh seiceáil déanta agat go bhfuil an teagmháil sábháilte; is féidir leat é a tharraingt siar am ar bith.",
-      "none": "Níl aon duine ceadaithe fós, mar sin ní féidir ach le comhordaitheoirí teagmháil a dhéanamh leo.",
-      "add_label": "Ceadaigh comhalta",
-      "add_placeholder": "Cuardaigh comhaltaí de réir ainm",
-      "no_results": "Níl aon chomhalta comhoiriúnach ann",
-      "clear": "Glan",
-      "approve_button": "Ceadaigh teagmháil",
-      "remove_button": "Tarraing siar",
-      "remove_aria": "Tarraing siar an cead do {{name}}",
-      "approved_toast": "Is féidir le {{name}} teagmháil a dhéanamh leis an gcomhalta seo anois.",
-      "removed_toast": "Tarraingíodh siar an cead.",
-      "failed": "Níor oibrigh sé sin. Bain triail eile as, le do thoil.",
-      "approved_on": "ceadaithe {{when}}"
-    }
+    "members_are_told": "Cad a insítear do chomhaltaí a dhéanann sé"
   }
 }

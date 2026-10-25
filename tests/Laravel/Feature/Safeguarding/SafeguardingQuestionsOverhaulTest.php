@@ -83,7 +83,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
         $this->assertNotContains('requires_vetted_partners', $keys);
         $this->assertNotContains('works_with_children', $keys);
         // "Just the essentials" (owner, 25 Oct 2026).
-        $this->assertSame(['is_vulnerable_adult', 'works_with_vulnerable_adults', 'none_apply'], $keys);
+        $this->assertSame(['is_vulnerable_adult', 'none_apply'], $keys);
     }
 
     public function test_a_member_who_holds_the_vetted_only_block_still_sees_it_and_it_still_protects_them(): void
@@ -139,13 +139,6 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
         $this->assertStringContainsString('message you', $text);
         $this->assertStringContainsString('time credits', $text);
         $this->assertStringContainsString('No members', $text, 'With no vetting recorded the member must be told nobody can reach them');
-
-        $helper = collect($options)->firstWhere('option_key', 'works_with_vulnerable_adults');
-        $this->assertStringContainsString(
-            'please do not arrange help involving children or vulnerable adults',
-            implode(' ', $helper['effects']),
-            'Someone offering help to children or vulnerable adults is asked to wait for a coordinator',
-        );
     }
 
     public function test_coordinator_introductions_adds_oversight_without_cutting_the_member_off(): void
@@ -213,7 +206,7 @@ final class SafeguardingQuestionsOverhaulTest extends TestCase
         $member = $this->member();
         Sanctum::actingAs($member);
         $this->apiPost('/v2/onboarding/safeguarding', [
-            'preferences' => [['option_id' => $this->optionId('works_with_vulnerable_adults'), 'value' => '1']],
+            'preferences' => [['option_id' => $this->optionId('is_vulnerable_adult'), 'value' => '1']],
         ])->assertOk();
         Queue::assertPushed(SendSafeguardingChoicesSummary::class, fn ($job) => $job->userId === $member->id);
 

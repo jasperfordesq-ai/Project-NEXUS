@@ -7,36 +7,30 @@
 /**
  * Country/jurisdiction safeguarding presets.
  *
- * What new members are asked (owner, 25 Oct 2026: "just the essentials"):
+ * What new members are asked (owner decisions, 25 Oct 2026):
  *
  *   1. "I consider myself a vulnerable adult" — the one question that switches
- *      safeguards on. It routes ALL direct contact through a coordinator
- *      (`restricts_messaging`): coordinators, and members a coordinator
- *      approves for this member, can contact them; nobody else. The member asks
- *      a coordinator to put them in touch with someone. Groups they belong to
- *      keep working. See SafeguardingInteractionPolicy.
- *   2. "I plan to offer help that involves children or vulnerable adults"
- *      (e.g. tutoring a member's child, personal care). Members are adults;
- *      the people they help may not be. A coordinator is told and confirms
- *      whether vetting is needed before such help is arranged through the
- *      timebank (Garda Vetting in Ireland, only through a registered relevant
- *      organisation, and always for teaching, coaching or mentoring children;
- *      in the UK, the DBS told Timebanking UK in 2018 that members are unlikely
- *      to be eligible for standard or enhanced checks because exchanges are
- *      personal arrangements). Informational: nothing is blocked.
- *   3. "None of these apply to me" — always last.
+ *      safeguards on, through the community's vetting system: coordinators of
+ *      the community, and members whose vetting the community has recorded
+ *      (Garda Vetting in Ireland; Enhanced DBS, PVG or AccessNI in the UK — the
+ *      jurisdiction's own check), can contact the member; nobody else. The
+ *      member can contact the same people. Groups they belong to keep working.
+ *      Coordinator approval of exchanges and matches applies too. See
+ *      SafeguardingInteractionPolicy.
+ *   2. "None of these apply to me" — always last.
  *
  * Kept but not offered to new members (`accepts_new_selections => false`), so
  * members who already chose them keep their protection:
+ *   - "I plan to offer help involving children or vulnerable adults" —
+ *     retired for now; minors are to be handled separately;
  *   - "a coordinator keeps an eye on my exchanges" (also the target of the
  *     one-step switch away from "vetted members only");
  *   - "no home visits without a coordinator";
- *   - "coordinator arranges all contact" — the vulnerable-adult question now
- *     does exactly this;
- *   - "only vetted members may contact me" — UK presets only; vetting is done by
- *     an organisation for a role, never a member's personal status. NOT in
- *     the Ireland preset at all: Garda Vetting is not portable between
- *     organisations.
+ *   - "coordinator arranges all contact";
+ *   - "only vetted members may contact me" — folded into the vulnerable-adult
+ *     question. UK presets only; NOT in the Ireland preset (Garda Vetting is
+ *     requested by a registered organisation for a role, so a separate
+ *     member-level "vetted only" preference adds nothing there).
  *
  * Members do not declare their age: the platform is adults only.
  *
@@ -79,9 +73,10 @@ $preset = static fn (string $key, array $j): array => [
             $common . 'is_vulnerable_adult.description',
             [
                 'requires_broker_approval' => true,
-                'restricts_messaging' => true,
                 'restricts_matching' => true,
                 'notify_admin_on_selection' => true,
+                'requires_vetted_interaction' => true,
+                'vetting_type_required' => $j['vetting'],
             ],
         ),
         $option(
@@ -92,6 +87,7 @@ $preset = static fn (string $key, array $j): array => [
                 'notify_admin_on_selection' => true,
                 'vetting_type_required' => $j['vetting'],
             ],
+            false,
         ),
         $option(
             'coordinator_introductions',

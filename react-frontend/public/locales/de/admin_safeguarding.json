@@ -238,9 +238,9 @@
         "effects": {
           "notify_admin_on_selection": "Sobald die Option aktiviert ist, erhalten Sie eine Echtzeitbenachrichtigung.",
           "requires_broker_approval": "Vermittlungen und Tauschvorgänge mit dem Mitglied warten auf die Freigabe durch eine Koordination. Nachrichten werden nicht kopiert.",
-          "requires_vetted_interaction": "Nur Mitglieder, deren Überprüfung diese Gemeinschaft erfasst hat, können das Mitglied überhaupt kontaktieren. Alle anderen werden blockiert.",
+          "requires_vetted_interaction": "Nur Koordinatoren und Mitglieder, deren Überprüfung diese Gemeinschaft erfasst hat, können das Mitglied kontaktieren, und das Mitglied kann nur sie kontaktieren. Gruppen, in denen es Mitglied ist, funktionieren normal.",
           "restricts_matching": "Vermittlungen mit dem Mitglied werden in den Match-Genehmigungen zurückgehalten, bis eine Koordination sie freigibt. Vorher erfährt keines der beiden Mitglieder davon.",
-          "restricts_messaging": "Nur Koordinatoren und von einem Koordinator freigegebene Mitglieder können das Mitglied direkt kontaktieren, in beide Richtungen. Andere erhalten die Möglichkeit, einen Koordinator zu fragen. Gruppen, in denen es Mitglied ist, funktionieren normal. Nachrichten werden nicht kopiert.",
+          "restricts_messaging": "Nur Koordinatoren können das Mitglied direkt kontaktieren, in beide Richtungen. Andere erhalten die Möglichkeit, einen Koordinator zu fragen. Gruppen, in denen es Mitglied ist, funktionieren normal. Nachrichten werden nicht kopiert.",
           "vetting_type_required": "Gibt an, welche Überprüfung ein kontaktierendes Mitglied haben muss, zum Beispiel garda_vetting."
         },
         "table_aria": "Auswirkungen von Schutzauslösern",
@@ -495,22 +495,6 @@
     "offer_to_new_members_desc": "Wenn ausgeschaltet, sehen Mitglieder, die diese Option noch nicht gewählt haben, sie nicht. Mitglieder, die sie bereits gewählt haben, behalten sie und sehen sie weiterhin.",
     "not_offered_chip": "Neuen Mitgliedern nicht angeboten",
     "holder_count": "Mitglieder mit dieser Wahl: {{count}}",
-    "members_are_told": "Was Mitgliedern dazu gesagt wird",
-    "approved_contacts": {
-      "heading": "Mitglieder, die Kontakt aufnehmen dürfen",
-      "intro": "Nur Koordinatoren und die Mitglieder, die Sie hier freigeben, können {{name}} kontaktieren, und {{name}} kann nur sie kontaktieren. Geben Sie ein Mitglied frei, sobald Sie geprüft haben, dass der Kontakt sicher ist; Sie können die Freigabe jederzeit zurückziehen.",
-      "none": "Noch niemand ist freigegeben, daher können nur Koordinatoren Kontakt aufnehmen.",
-      "add_label": "Mitglied freigeben",
-      "add_placeholder": "Mitglieder nach Namen suchen",
-      "no_results": "Keine passenden Mitglieder",
-      "clear": "Leeren",
-      "approve_button": "Kontakt freigeben",
-      "remove_button": "Zurückziehen",
-      "remove_aria": "Freigabe für {{name}} zurückziehen",
-      "approved_toast": "{{name}} kann dieses Mitglied jetzt kontaktieren.",
-      "removed_toast": "Freigabe zurückgezogen.",
-      "failed": "Das hat nicht funktioniert. Bitte versuchen Sie es erneut.",
-      "approved_on": "freigegeben {{when}}"
-    }
+    "members_are_told": "Was Mitgliedern dazu gesagt wird"
   }
 }

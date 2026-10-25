@@ -219,10 +219,10 @@
     "shared_body": "Als schutzbeauftragte Person von {{organisation}} können Sie jetzt die vollständige Meldung zum Schutz #{{incident_id}} lesen. Melden Sie sich dazu an. Wer die Meldung gemacht hat, steht nicht darin.",
     "shared_cta": "Meldung lesen",
     "share_withdrawn_bell": "Die vollständige Schutzmeldung #{{incident_id}} wird nicht mehr mit Ihnen geteilt. Die Zusammenfassung bleibt sichtbar.",
-    "contact_reason_via_coordinator": "Der eigene Kontakt des Absenders wird über einen Koordinator vermittelt und dieses Mitglied ist für ihn noch nicht freigegeben.",
+    "contact_reason_via_coordinator": "Die eigene Sicherheitsauswahl des Absenders erlaubt den Kontakt nur mit Koordinatoren und Mitgliedern, deren Überprüfung die Community aufgezeichnet hat, und für dieses Mitglied wurde keine Überprüfung aufgezeichnet.",
     "contact_attempt_contacted_label": "Mitglied, das sie zu kontaktieren versuchten",
-    "contact_attempt_via_body": "Ein Mitglied, dessen Kontakt über einen Koordinator vermittelt wird, hat versucht, einem Mitglied eine Nachricht zu senden, für dessen Kontakt es keine Berechtigung hat. Wenn der Kontakt sicher ist, können Sie ihn auf der Seite „Supportbedarf“ genehmigen.",
-    "coordination_request_via_body": "Ein Mitglied, dessen Kontakt über einen Koordinator vermittelt wird, hat um Hilfe bei der Kontaktaufnahme mit einem anderen Mitglied gebeten. Wenn der Kontakt sicher ist, können Sie ihn auf der Seite „Supportbedarf“ genehmigen."
+    "contact_attempt_via_body": "Ein Mitglied, dessen Sicherheitsentscheidung den Kontakt zu Koordinatoren und überprüften Mitgliedern einschränkt, hat versucht, einem Mitglied eine Nachricht zu senden, ohne dass eine Überprüfung aufgezeichnet wurde. Wenn der Kontakt sicher wäre, können Sie bei der Organisation helfen.",
+    "coordination_request_via_body": "Ein Mitglied, dessen Sicherheitsentscheidung den Kontakt zu Koordinatoren und überprüften Mitgliedern einschränkt, hat um Hilfe bei der Kontaktaufnahme mit einem Mitglied gebeten, für das keine Überprüfung registriert ist. Wenn der Kontakt sicher wäre, können Sie bei der Organisation helfen."
   },
   "onboarding_completed": {
     "subject": "Alles bereit, {{name}}! Willkommen bei {{community}}",

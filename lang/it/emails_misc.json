@@ -219,10 +219,10 @@
     "shared_body": "Come referente per la tutela di {{organisation}}, ora puoi leggere la segnalazione di tutela completa n. {{incident_id}}. Accedi per leggerla. Non indica chi ha fatto la segnalazione.",
     "shared_cta": "Leggi la segnalazione",
     "share_withdrawn_bell": "La segnalazione di tutela completa #{{incident_id}} non è più condivisa con te. Il riepilogo resta visibile.",
-    "contact_reason_via_coordinator": "Il contatto del mittente è organizzato tramite un coordinatore e questo membro non è ancora approvato per lui.",
+    "contact_reason_via_coordinator": "La scelta di sicurezza del mittente consente il contatto solo con coordinatori e membri il cui controllo è stato registrato dalla comunità, e questo membro non ha alcun controllo registrato.",
     "contact_attempt_contacted_label": "Membro che hanno provato a contattare",
-    "contact_attempt_via_body": "Un membro il cui contatto è stato organizzato tramite un coordinatore ha provato a inviare un messaggio a un membro che non è autorizzato a contattare. Se il contatto è sicuro, puoi approvarlo nella pagina delle esigenze di supporto.",
-    "coordination_request_via_body": "Un membro il cui contatto è stato organizzato tramite un coordinatore ha chiesto aiuto per mettersi in contatto con un altro membro. Se il contatto è sicuro, puoi approvarlo nella pagina delle esigenze di supporto."
+    "contact_attempt_via_body": "Un membro la cui scelta di sicurezza limita i contatti ai coordinatori e ai membri controllati ha provato a inviare un messaggio a un membro senza alcuna verifica registrata. Se il contatto fosse sicuro, puoi aiutare a organizzarlo.",
+    "coordination_request_via_body": "Un membro la cui scelta di sicurezza limita i contatti ai coordinatori e ai membri controllati ha chiesto aiuto per entrare in contatto con un membro che non ha registrato alcuna verifica. Se il contatto fosse sicuro, puoi aiutare a organizzarlo."
   },
   "onboarding_completed": {
     "subject": "Tutto pronto, {{name}}! Benvenuto in {{community}}",

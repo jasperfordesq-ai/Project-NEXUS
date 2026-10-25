@@ -3156,11 +3156,6 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::get('/v2/admin/safeguarding/authority-attestations', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'authorityAttestations']);
     Route::post('/v2/admin/safeguarding/authority-attestations', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'attestAuthority'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/admin/safeguarding/authority-attestations/{id}/revoke', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'revokeAuthorityAttestation'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
-    // Coordinator-approved contacts for a member whose contact goes through a
-    // coordinator (owner decision, 25 Oct 2026).
-    Route::get('/v2/admin/safeguarding/members/{userId}/approved-contacts', [\App\Http\Controllers\Api\AdminSafeguardingApprovedContactsController::class, 'index'])->whereNumber('userId');
-    Route::post('/v2/admin/safeguarding/members/{userId}/approved-contacts', [\App\Http\Controllers\Api\AdminSafeguardingApprovedContactsController::class, 'store'])->whereNumber('userId')->middleware('throttle:nexus-route-60-per-1m');
-    Route::delete('/v2/admin/safeguarding/members/{userId}/approved-contacts/{approvalId}', [\App\Http\Controllers\Api\AdminSafeguardingApprovedContactsController::class, 'destroy'])->whereNumber('userId')->whereNumber('approvalId')->middleware('throttle:nexus-route-60-per-1m');
 });
 
 // Tier 2a — tenant-level safeguarding declaration (Tusla / Children First Act 2015)

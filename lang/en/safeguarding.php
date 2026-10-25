@@ -13,9 +13,9 @@ return [
         'contact_restricted' => 'This member can only be contacted through a coordinator. Nothing has been sent. You can ask a coordinator to put you in touch.',
         'contact_restricted_title' => 'Contact through a coordinator',
         'contact_restricted_detail' => 'Contact with this member is arranged through a coordinator. You can ask a coordinator to put you in touch.',
-        'contact_via_coordinator' => 'You chose to have a coordinator arrange contact for you, so nothing has been sent. Ask a coordinator to put you in touch with this member.',
-        'contact_via_coordinator_title' => 'Ask a coordinator to put you in touch',
-        'contact_via_coordinator_detail' => 'You chose to have a coordinator arrange contact for you. Ask a coordinator, and once they have approved this member you can talk to each other.',
+        'contact_via_coordinator' => 'Because of the safety choice you made, you can only contact coordinators and members whose vetting this community has recorded. Nothing has been sent. A coordinator can help you get in touch.',
+        'contact_via_coordinator_title' => 'You can contact coordinators and vetted members',
+        'contact_via_coordinator_detail' => 'Because of the safety choice you made, you can contact coordinators and members whose vetting this community has recorded. Ask a coordinator if you would like help getting in touch with this member.',
         'contact_restricted_action' => 'Open help',
         'coordination_not_required' => 'Direct contact with this member is currently available — you do not need a coordinator to arrange it. Please refresh the page and try messaging again.',
         'coordination_request_failed' => 'We could not send your request to the coordinator just now. Please try again shortly.',
@@ -102,19 +102,15 @@ return [
         'switch_not_held' => 'You do not have the vetted-members-only setting, so there is nothing to switch.',
         'switch_unavailable' => 'Coordinator introductions are not available in this community yet. Please contact a coordinator.',
     ],
-    'approved_contacts' => [
-        'invalid_contact' => 'Choose another member of this community.',
-        'not_found' => 'That approval could not be found. It may already have been withdrawn.',
-    ],
     // What a choice actually does, in the member's own words. Generated from
     // the option's triggers by SafeguardingEffectsService, so this text can
     // never promise more, or less, than the platform enforces.
     'effects' => [
         'broker_approval' => 'A coordinator looks over any exchange you arrange before it goes ahead. They cannot read your messages.',
-        'restricts_messaging' => 'Other members cannot message you, start an exchange with you or mention you unless a coordinator has approved them. Coordinators can always contact you. To get in touch with someone, ask a coordinator. Groups you belong to work as normal.',
+        'restricts_messaging' => 'Other members cannot message you, start an exchange with you or mention you. Coordinators can always contact you, and you can contact them. Groups you belong to work as normal.',
         'restricts_matching' => 'Suggested matches between you and other members are checked by a coordinator first.',
-        'vetted_only' => 'Only members whose :vetting this community has recorded can message you, reply to you, send you time credits or start an exchange with you. Everyone else is blocked.',
-        'vetted_count' => '{0} No members have :vetting recorded here at the moment, so nobody can contact you while this is on.|{1} Only 1 member has :vetting recorded here at the moment.|[2,*] :count members have :vetting recorded here at the moment.',
+        'vetted_only' => 'Only coordinators and members whose :vetting this community has recorded can message you, reply to you, send you time credits or start an exchange with you, and you can contact only them. Everyone else is blocked. Groups you belong to work as normal.',
+        'vetted_count' => '{0} No members have :vetting recorded here at the moment, so for now only coordinators can contact you.|{1} Only 1 member has :vetting recorded here at the moment.|[2,*] :count members have :vetting recorded here at the moment.',
         'notify_coordinator' => 'A coordinator is told about your choice, so they can get in touch if you need anything.',
         'no_home_visits' => 'Coordinators know you do not want home visits unless they arrange them.',
         'check_before_helping' => 'A coordinator is told and will confirm whether vetting (:vetting) is needed. Until they have, please do not arrange help involving children or vulnerable adults through the timebank.',
@@ -128,7 +124,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'I consider myself a vulnerable adult and would like extra support',
-                    'description' => 'To keep you safe, other members will not be able to contact you directly. A coordinator will be in touch, will arrange contact with other members for you, and can approve particular members to get in touch with you.',
+                    'description' => 'To keep you safe, only coordinators and members whose vetting this community has recorded will be able to contact you, and you will be able to contact only them. A coordinator will be in touch.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'I would like a coordinator to keep an eye on my exchanges and help introduce me to members',

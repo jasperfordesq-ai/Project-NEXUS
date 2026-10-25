@@ -114,7 +114,7 @@ describe("MemberSupportNeedsPanel (Members' support needs)", () => {
     expect(screen.queryByText('Already Seen')).not.toBeInTheDocument();
     // The protection is named, using the same wording as the Safeguarding Options page.
     expect(screen.getByText('Vetted members only')).toBeInTheDocument();
-    expect(screen.getByText(/Only members whose vetting this community has recorded can contact the member at all/)).toBeInTheDocument();
+    expect(screen.getByText(/Only coordinators and members whose vetting this community has recorded can contact the member/)).toBeInTheDocument();
     expect(screen.getByText('Only vetted members, please')).toBeInTheDocument();
   });
 

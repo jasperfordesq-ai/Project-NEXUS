@@ -12205,9 +12205,9 @@
                 "contact_restricted": "Z tym członkiem można się skontaktować wyłącznie za pośrednictwem koordynatora. Nic nie zostało wysłane. Możesz poprosić koordynatora o skontaktowanie się z Tobą.",
                 "contact_restricted_title": "Kontakt poprzez koordynatora",
                 "contact_restricted_detail": "Kontakt z tym członkiem odbywa się za pośrednictwem koordynatora. Możesz poprosić koordynatora o skontaktowanie się z Tobą.",
-                "contact_via_coordinator": "Wybrałeś opcję kontaktu z koordynatorem, więc nic nie zostało wysłane. Poproś koordynatora, aby skontaktował Cię z tym członkiem.",
-                "contact_via_coordinator_title": "Poproś koordynatora, aby się z Tobą skontaktował",
-                "contact_via_coordinator_detail": "Wybrałeś opcję kontaktu z koordynatorem. Zapytaj koordynatora, a kiedy zatwierdzi tego członka, będziecie mogli ze sobą porozmawiać.",
+                "contact_via_coordinator": "Ze względu na dokonany wybór dotyczący bezpieczeństwa możesz kontaktować się wyłącznie z koordynatorami i członkami, których weryfikacja została zarejestrowana przez tę społeczność. Nic nie zostało wysłane. Koordynator może pomóc w nawiązaniu kontaktu.",
+                "contact_via_coordinator_title": "Możesz skontaktować się z koordynatorami i zweryfikowanymi członkami",
+                "contact_via_coordinator_detail": "Ze względu na dokonany wybór dotyczący bezpieczeństwa możesz skontaktować się z koordynatorami i członkami, których weryfikacja została zarejestrowana przez tę społeczność. Zapytaj koordynatora, czy chcesz pomóc w skontaktowaniu się z tym członkiem.",
                 "contact_restricted_action": "Otworz pomoc",
                 "coordination_not_required": "Bezpośredni kontakt z tym członkiem jest obecnie dostępny — nie potrzebujesz koordynatora, aby go nawiązać. Odśwież stronę i spróbuj ponownie wysłać wiadomość.",
                 "coordination_request_failed": "Nie udało się wysłać Twojej prośby do koordynatora. Spróbuj ponownie za chwilę.",
@@ -12294,16 +12294,12 @@
                 "switch_not_held": "Nie masz ustawienia tylko dla zweryfikowanych członków, więc nie ma czego zmieniać.",
                 "switch_unavailable": "Przedstawienia koordynatorów nie są jeszcze dostępne w tej społeczności. Prosimy o kontakt z koordynatorem."
             },
-            "approved_contacts": {
-                "invalid_contact": "Wybierz innego członka tej społeczności.",
-                "not_found": "Nie udało się znaleźć tej zgody. Być może zostało już wycofane."
-            },
             "effects": {
                 "broker_approval": "Koordynator przygląda się każdej zorganizowanej przez Ciebie wymianie, zanim ona się rozpocznie. Nie mogą czytać Twoich wiadomości.",
-                "restricts_messaging": "Inni członkowie nie mogą wysyłać Ci wiadomości, rozpoczynać z Tobą wymiany zdań ani wspominać o Tobie, chyba że koordynator ich zatwierdzi. Koordynatorzy zawsze mogą się z Tobą skontaktować. Aby się z kimś skontaktować, zapytaj koordynatora. Grupy, do których należysz, działają normalnie.",
+                "restricts_messaging": "Inni członkowie nie mogą wysyłać Ci wiadomości, rozpoczynać z Tobą rozmów ani wspominać o Tobie. Koordynatorzy zawsze mogą się z Tobą skontaktować, a Ty możesz skontaktować się z nimi. Grupy, do których należysz, działają normalnie.",
                 "restricts_matching": "Sugerowane dopasowania między Tobą a innymi członkami są najpierw sprawdzane przez koordynatora.",
-                "vetted_only": "Tylko członkowie, których :vetting zarejestrowała ta społeczność, mogą wysyłać Ci wiadomości, odpowiadać, wysyłać Ci kredyty czasowe lub rozpoczynać z Tobą wymianę zdań. Wszyscy inni są zablokowani.",
-                "vetted_count": "{0} W tej chwili żaden członek nie zarejestrował tutaj :vetting, więc nikt nie może się z Tobą skontaktować, gdy ta funkcja jest włączona.|{1} W tej chwili tylko 1 członek zarejestrował tutaj :vetting.|[2,*] :count członków zarejestrowało tutaj w tej chwili :vetting.",
+                "vetted_only": "Tylko koordynatorzy i członkowie, których :vetting zarejestrowała ta społeczność, mogą wysyłać Ci wiadomości, odpowiadać, wysyłać Ci kredyty czasowe lub rozpoczynać z Tobą wymianę zdań. Tylko z nimi możesz się kontaktować. Wszyscy inni są zablokowani. Grupy, do których należysz, działają normalnie.",
+                "vetted_count": "{0} W tej chwili żaden członek nie zarejestrował tutaj :vetting, więc na razie mogą się z Tobą skontaktować tylko koordynatorzy.|{1} W tej chwili tylko 1 członek zarejestrował tutaj :vetting.|[2,*] :count członków zarejestrowało tutaj w tej chwili :vetting.",
                 "notify_coordinator": "Koordynator zostaje poinformowany o Twoim wyborze, więc może się z Tobą skontaktować, jeśli będziesz czegoś potrzebować.",
                 "no_home_visits": "Koordynatorzy wiedzą, że nie chcesz wizyt domowych, chyba że je zorganizują.",
                 "check_before_helping": "Koordynator zostaje o tym poinformowany i potwierdzi, czy konieczna jest weryfikacja (:vetting). Dopóki tego nie zrobią, proszę nie organizować pomocy z udziałem dzieci lub bezbronnych dorosłych za pośrednictwem banku czasu.",
@@ -12317,7 +12313,7 @@
                     "options": {
                         "is_vulnerable_adult": {
                             "label": "Uważam się za bezbronną osobę dorosłą i potrzebuję dodatkowego wsparcia",
-                            "description": "Aby zapewnić Ci bezpieczeństwo, inni członkowie nie będą mogli skontaktować się z Tobą bezpośrednio. Koordynator skontaktuje się z Tobą, zorganizuje dla Ciebie kontakt z innymi członkami i może zatwierdzić poszczególnych członków do skontaktowania się z Tobą."
+                            "description": "Aby zapewnić Ci bezpieczeństwo, tylko koordynatorzy i członkowie, których weryfikacja została zarejestrowana przez tę społeczność, będą mogli się z Tobą skontaktować, a Ty będziesz mógł kontaktować się tylko z nimi. Koordynator skontaktuje się z Tobą."
                         },
                         "coordinator_introductions": {
                             "label": "Chciałbym, aby koordynator obserwował moje wymiany i pomagał przedstawiać mnie członkom",

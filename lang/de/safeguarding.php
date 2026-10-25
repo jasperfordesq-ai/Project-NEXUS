@@ -13,9 +13,9 @@ return [
         'contact_restricted' => 'Dieses Mitglied kann nur über einen Koordinator kontaktiert werden. Es wurde nichts gesendet. Sie können einen Koordinator bitten, den Kontakt zu Ihnen herzustellen.',
         'contact_restricted_title' => 'Kontakt über einen Koordinator',
         'contact_restricted_detail' => 'Der Kontakt zu diesem Mitglied wird über einen Koordinator vermittelt. Sie können einen Koordinator bitten, den Kontakt zu Ihnen herzustellen.',
-        'contact_via_coordinator' => 'Sie haben sich dafür entschieden, dass ein Koordinator den Kontakt für Sie arrangiert, daher wurde nichts gesendet. Bitten Sie einen Koordinator, Sie mit diesem Mitglied in Kontakt zu bringen.',
-        'contact_via_coordinator_title' => 'Bitten Sie einen Koordinator, den Kontakt zu Ihnen herzustellen',
-        'contact_via_coordinator_detail' => 'Sie haben sich dafür entschieden, dass ein Koordinator den Kontakt für Sie vermittelt. Fragen Sie einen Koordinator, und sobald dieser dieses Mitglied genehmigt hat, können Sie miteinander sprechen.',
+        'contact_via_coordinator' => 'Aufgrund der von Ihnen getroffenen Sicherheitsentscheidung können Sie nur Koordinatoren und Mitglieder kontaktieren, deren Überprüfung diese Community aufgezeichnet hat. Es wurde nichts gesendet. Ein Koordinator kann Ihnen bei der Kontaktaufnahme helfen.',
+        'contact_via_coordinator_title' => 'Sie können Kontakt zu Koordinatoren und geprüften Mitgliedern aufnehmen',
+        'contact_via_coordinator_detail' => 'Aufgrund der von Ihnen getroffenen Sicherheitsentscheidung können Sie Koordinatoren und Mitglieder kontaktieren, deren Überprüfung diese Community aufgezeichnet hat. Fragen Sie einen Koordinator, ob Sie Hilfe bei der Kontaktaufnahme mit diesem Mitglied benötigen.',
         'contact_restricted_action' => 'Hilfe oeffnen',
         'coordination_not_required' => 'Ein direkter Kontakt mit diesem Mitglied ist derzeit möglich — Sie benötigen keinen Koordinator, um ihn zu vermitteln. Bitte laden Sie die Seite neu und versuchen Sie erneut, eine Nachricht zu senden.',
         'coordination_request_failed' => 'Ihre Anfrage konnte gerade nicht an den Koordinator gesendet werden. Bitte versuchen Sie es in Kürze erneut.',
@@ -102,16 +102,12 @@ return [
         'switch_not_held' => 'Sie verfügen nicht über die Einstellung „Nur für geprüfte Mitglieder“, sodass Sie nichts ändern müssen.',
         'switch_unavailable' => 'Koordinatoreinführungen sind in dieser Community noch nicht verfügbar. Bitte wenden Sie sich an einen Koordinator.',
     ],
-    'approved_contacts' => [
-        'invalid_contact' => 'Wählen Sie ein anderes Mitglied dieser Community.',
-        'not_found' => 'Diese Zustimmung konnte nicht gefunden werden. Möglicherweise wurde es bereits zurückgezogen.',
-    ],
     'effects' => [
         'broker_approval' => 'Ein Koordinator prüft jeden von Ihnen arrangierten Austausch, bevor er durchgeführt wird. Sie können Ihre Nachrichten nicht lesen.',
-        'restricts_messaging' => 'Andere Mitglieder können Ihnen keine Nachrichten senden, keinen Austausch mit Ihnen beginnen oder Sie erwähnen, es sei denn, ein Koordinator hat dies genehmigt. Koordinatoren können Sie jederzeit kontaktieren. Um mit jemandem in Kontakt zu treten, fragen Sie einen Koordinator. Gruppen, denen Sie angehören, funktionieren wie gewohnt.',
+        'restricts_messaging' => 'Andere Mitglieder können Ihnen keine Nachrichten senden, keinen Austausch mit Ihnen starten oder Sie erwähnen. Koordinatoren können Sie jederzeit kontaktieren, und Sie können sie kontaktieren. Gruppen, denen Sie angehören, funktionieren wie gewohnt.',
         'restricts_matching' => 'Vorgeschlagene Übereinstimmungen zwischen Ihnen und anderen Mitgliedern werden zunächst von einem Koordinator geprüft.',
-        'vetted_only' => 'Nur Mitglieder, deren :vetting diese Community aufgezeichnet hat, können Ihnen Nachrichten senden, Ihnen antworten, Ihnen Zeitguthaben senden oder einen Austausch mit Ihnen beginnen. Alle anderen sind blockiert.',
-        'vetted_count' => '{0} Im Moment sind hier keine Mitglieder :vetting registriert, daher kann niemand Sie kontaktieren, während dies läuft.|{1} Nur 1 Mitglied hat im Moment :vetting hier registriert.|[2,*] :count Mitglieder haben im Moment :vetting hier registriert.',
+        'vetted_only' => 'Nur Koordinatoren und Mitglieder, deren :vetting diese Community aufgezeichnet hat, können Ihnen Nachrichten senden, Ihnen antworten, Ihnen Zeitguthaben senden oder einen Austausch mit Ihnen beginnen, und Sie können nur sie kontaktieren. Alle anderen sind blockiert. Gruppen, denen Sie angehören, funktionieren wie gewohnt.',
+        'vetted_count' => '{0} Im Moment sind hier keine Mitglieder :vetting registriert, daher können Sie vorerst nur von Koordinatoren kontaktiert werden.|{1} Im Moment hat hier nur 1 Mitglied :vetting registriert.|[2,*] Mitglieder von :count haben im Moment :vetting hier registriert.',
         'notify_coordinator' => 'Ein Koordinator wird über Ihre Wahl informiert, sodass er sich bei Bedarf mit Ihnen in Verbindung setzen kann.',
         'no_home_visits' => 'Die Koordinatoren wissen, dass Sie keine Hausbesuche wünschen, es sei denn, sie arrangieren sie.',
         'check_before_helping' => 'Ein Koordinator wird darüber informiert und wird bestätigen, ob eine Überprüfung (:vetting) erforderlich ist. Bitte arrangieren Sie bis dahin keine Hilfe für Kinder oder schutzbedürftige Erwachsene über die Zeitbank.',
@@ -125,7 +121,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Ich betrachte mich als verletzlichen Erwachsenen und hätte gerne zusätzliche Unterstützung',
-                    'description' => 'Zu Ihrer Sicherheit können andere Mitglieder Sie nicht direkt kontaktieren. Ein Koordinator wird sich mit Ihnen in Verbindung setzen, den Kontakt zu anderen Mitgliedern für Sie arrangieren und bestimmten Mitgliedern die Kontaktaufnahme mit Ihnen genehmigen.',
+                    'description' => 'Um Ihre Sicherheit zu gewährleisten, können nur Koordinatoren und Mitglieder, deren Überprüfung diese Community aufgezeichnet hat, Sie kontaktieren, und Sie können nur mit ihnen Kontakt aufnehmen. Ein Koordinator wird sich mit Ihnen in Verbindung setzen.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Ich möchte, dass ein Koordinator meinen Austausch im Auge behält und mir dabei hilft, mich den Mitgliedern vorzustellen',

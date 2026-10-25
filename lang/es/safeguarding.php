@@ -13,9 +13,9 @@ return [
         'contact_restricted' => 'Este miembro sólo puede ser contactado a través de un coordinador. No se ha enviado nada. Puedes pedirle a un coordinador que te ponga en contacto.',
         'contact_restricted_title' => 'Contactar a través de un coordinador',
         'contact_restricted_detail' => 'El contacto con este miembro se organiza a través de un coordinador. Puedes pedirle a un coordinador que te ponga en contacto.',
-        'contact_via_coordinator' => 'Elegiste que un coordinador se pusiera en contacto contigo, por lo que no se ha enviado nada. Pídele a un coordinador que te ponga en contacto con este miembro.',
-        'contact_via_coordinator_title' => 'Pídele a un coordinador que te ponga en contacto',
-        'contact_via_coordinator_detail' => 'Usted eligió que un coordinador se comunicara con usted. Pregúntale a un coordinador y una vez que haya aprobado a este miembro podréis hablar entre vosotros.',
+        'contact_via_coordinator' => 'Debido a la elección de seguridad que tomó, solo puede comunicarse con los coordinadores y miembros cuya investigación de antecedentes haya registrado esta comunidad. No se ha enviado nada. Un coordinador puede ayudarle a ponerse en contacto.',
+        'contact_via_coordinator_title' => 'Puede ponerse en contacto con coordinadores y miembros examinados.',
+        'contact_via_coordinator_detail' => 'Debido a la elección de seguridad que tomó, puede comunicarse con los coordinadores y miembros cuya investigación de antecedentes ha registrado esta comunidad. Pregúntele a un coordinador si desea ayuda para ponerse en contacto con este miembro.',
         'contact_restricted_action' => 'Abrir ayuda',
         'coordination_not_required' => 'El contacto directo con este miembro está disponible en este momento — no necesitas un coordinador para gestionarlo. Por favor, actualiza la página e intenta enviar un mensaje de nuevo.',
         'coordination_request_failed' => 'No pudimos enviar tu solicitud al coordinador en este momento. Por favor, inténtalo de nuevo en breve.',
@@ -102,16 +102,12 @@ return [
         'switch_not_held' => 'No tiene la configuración exclusiva para miembros examinados, por lo que no hay nada que cambiar.',
         'switch_unavailable' => 'Las presentaciones de coordinadores aún no están disponibles en esta comunidad. Por favor contacte a un coordinador.',
     ],
-    'approved_contacts' => [
-        'invalid_contact' => 'Elija otro miembro de esta comunidad.',
-        'not_found' => 'Esa aprobación no se pudo encontrar. Es posible que ya lo hayan retirado.',
-    ],
     'effects' => [
         'broker_approval' => 'Un coordinador supervisa cualquier intercambio que usted organice antes de que se lleve a cabo. No pueden leer sus mensajes.',
-        'restricts_messaging' => 'Otros miembros no pueden enviarle mensajes, iniciar un intercambio con usted ni mencionarlo a menos que un coordinador los haya aprobado. Los coordinadores siempre pueden contactarte. Para ponerse en contacto con alguien, pregunte a un coordinador. Los grupos a los que pertenece funcionan normalmente.',
+        'restricts_messaging' => 'Otros miembros no pueden enviarte mensajes, iniciar un intercambio contigo ni mencionarte. Los coordinadores siempre pueden comunicarse con usted y usted puede comunicarse con ellos. Los grupos a los que pertenece funcionan normalmente.',
         'restricts_matching' => 'Un coordinador primero verifica las coincidencias sugeridas entre usted y otros miembros.',
-        'vetted_only' => 'Solo los miembros cuyo :vetting esta comunidad haya grabado pueden enviarte mensajes, responderte, enviarte créditos de tiempo o iniciar un intercambio contigo. Todos los demás están bloqueados.',
-        'vetted_count' => '{0} Ningún miembro ha :vetting grabado aquí en este momento, por lo que nadie puede comunicarse contigo mientras esto esté activo.|{1} Solo 1 miembro ha :vetting grabado aquí en este momento.|[2,*] :count miembros tiene :vetting grabado aquí en este momento.',
+        'vetted_only' => 'Solo los coordinadores y miembros cuyos :vetting esta comunidad haya grabado pueden enviarte mensajes, responderte, enviarte créditos de tiempo o iniciar un intercambio contigo, y solo puedes contactarlos. Todos los demás están bloqueados. Los grupos a los que pertenece funcionan normalmente.',
+        'vetted_count' => '{0} Ningún miembro ha grabado :vetting aquí en este momento, por lo que por ahora solo los coordinadores pueden comunicarse contigo.|{1} Solo 1 miembro ha grabado aquí :vetting en este momento.|[2,*] Los miembros :count han grabado aquí :vetting en este momento.',
         'notify_coordinator' => 'Se informa a un coordinador sobre tu elección, para que pueda ponerse en contacto si necesitas algo.',
         'no_home_visits' => 'Los coordinadores saben que usted no desea visitas domiciliarias a menos que ellas las organicen.',
         'check_before_helping' => 'Se informa a un coordinador, que confirmará si es necesaria una investigación de antecedentes (:vetting). Hasta que lo hayan hecho, no organice ayuda que involucre a niños o adultos vulnerables a través del banco de tiempo.',
@@ -125,7 +121,7 @@ return [
             'options' => [
                 'is_vulnerable_adult' => [
                     'label' => 'Me considero un adulto vulnerable y me gustaría recibir apoyo adicional.',
-                    'description' => 'Para mantenerlo seguro, otros miembros no podrán comunicarse con usted directamente. Un coordinador se pondrá en contacto, organizará el contacto con otros miembros por usted y puede aprobar que miembros concretos se pongan en contacto con usted.',
+                    'description' => 'Para mantenerlo seguro, solo los coordinadores y miembros cuya investigación de antecedentes haya registrado esta comunidad podrán comunicarse con usted, y usted solo podrá comunicarse con ellos. Un coordinador se pondrá en contacto.',
                 ],
                 'coordinator_introductions' => [
                     'label' => 'Me gustaría que un coordinador vigilara mis intercambios y me ayudara a presentarme a los miembros.',
