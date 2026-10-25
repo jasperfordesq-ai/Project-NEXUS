@@ -490,6 +490,11 @@
       "filter_all": "Tutti",
       "consent_yes": "Il membro ha acconsentito",
       "consent_no": "Il membro non ha acconsentito"
-    }
+    },
+    "offer_to_new_members": "Offri ai nuovi membri",
+    "offer_to_new_members_desc": "Se disattivato, i membri che non l'hanno già scelta non la vedranno. Chi l'ha già scelta la mantiene e può ancora vederla.",
+    "not_offered_chip": "Non offerto ai nuovi membri",
+    "holder_count": "Membri che l'hanno scelto: {{count}}",
+    "members_are_told": "Cosa viene detto ai membri che fa"
   }
 }

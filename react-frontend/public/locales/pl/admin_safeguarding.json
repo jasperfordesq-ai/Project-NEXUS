@@ -490,6 +490,11 @@
       "filter_all": "Wszystkie",
       "consent_yes": "Członek się zgodził",
       "consent_no": "Członek się nie zgodził"
-    }
+    },
+    "offer_to_new_members": "Oferuj nowym członkom",
+    "offer_to_new_members_desc": "Gdy wyłączone, członkowie, którzy jeszcze jej nie wybrali, nie zobaczą tej opcji. Ci, którzy już ją wybrali, zachowują ją i nadal ją widzą.",
+    "not_offered_chip": "Nieoferowane nowym członkom",
+    "holder_count": "Członkowie, którzy to wybrali: {{count}}",
+    "members_are_told": "Co członkowie widzą o działaniu tej opcji"
   }
 }

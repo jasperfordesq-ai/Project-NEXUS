@@ -8,7 +8,7 @@
   "step_safeguarding": "Schutz",
   "safeguarding_title": "Unterstützung & Schutz",
   "safeguarding_subtitle": "Teilen Sie uns mit, ob Sie zusätzliche Unterstützung benötigen",
-  "safeguarding_intro": "Ihre Sicherheit ist uns wichtig. Wenn Sie sich als schutzbedürftigen Erwachsenen betrachten oder wenn Sie bei der Nutzung dieser Gemeinschaft zusätzliche Unterstützung wünschen, teilen Sie uns dies bitte unten mit. Unsere Koordinatoren können geschützte Austausche arrangieren, in Ihrem Namen Kontakt vermitteln und sicherstellen, dass Sie mit angemessen überprüften Mitgliedern zusammengeführt werden. Ihre Antworten sind vertraulich und nur für Gemeinschaftskoordinatoren sichtbar — niemals in Ihrem öffentlichen Profil.",
+  "safeguarding_intro": "Ihre Sicherheit ist uns wichtig. Wenn Sie sich bei der Nutzung dieser Gemeinschaft zusätzliche Unterstützung wünschen, teilen Sie uns das unten mit. Bei jeder Auswahl steht genau, was sie bewirkt, bevor Sie sie treffen. Ihre Antworten sind vertraulich und nur für die Koordinatoren der Gemeinschaft sichtbar – niemals in Ihrem öffentlichen Profil.",
   "safeguarding_gdpr_notice": "Diese Informationen werden als sensible personenbezogene Daten eingestuft. Wir erheben sie ausschließlich, um Ihre Sicherheit bei Gemeinschaftsaustauschen zu gewährleisten. Ihre Auswahl wird mit einem Zustimmungsnachweis gespeichert und kann jederzeit in Ihren Einstellungen geändert werden. Nur Gemeinschaftskoordinatoren und Administratoren können Ihre Antworten einsehen.",
   "welcome_title": "Willkommen bei {{name}}!",
   "welcome_description": "Richten Sie Ihr Profil ein, damit Sie sich mit Ihrer Gemeinschaft verbinden und Zeitguthaben austauschen können.",
@@ -131,7 +131,8 @@
       "continue_cta": "Weitermachen",
       "declination_title": "Vermerkt — Ihre Antwort ist gespeichert",
       "declination_intro": "Danke, dass Sie diese Optionen geprüft haben. Ihre Antwort wurde gespeichert, damit die Koordinatoren wissen, dass Sie diesen Schritt zur Kenntnis genommen und berücksichtigt haben."
-    }
+    },
+    "what_this_does": "Was das bewirkt"
   },
   "page_meta": {
     "title": "Einführung"

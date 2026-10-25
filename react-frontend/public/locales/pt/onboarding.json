@@ -8,7 +8,7 @@
   "step_safeguarding": "Proteção",
   "safeguarding_title": "Apoio e salvaguarda",
   "safeguarding_subtitle": "Diga-nos se deseja apoio adicional",
-  "safeguarding_intro": "A sua segurança é importante para nós. Se se considera um adulto vulnerável, ou se deseja apoio adicional ao usar esta comunidade, informe-nos abaixo. Os nossos coordenadores podem organizar trocas com salvaguardas, mediar contactos em seu nome e garantir que seja correspondido com membros devidamente verificados. As suas respostas são confidenciais e apenas visíveis para os coordenadores da comunidade — nunca no seu perfil público.",
+  "safeguarding_intro": "A sua segurança é importante para nós. Se quiser apoio adicional ao utilizar esta comunidade, indique-o abaixo. Cada opção explica exatamente o que faz antes de a escolher. As suas respostas são confidenciais e só são visíveis para os coordenadores da comunidade — nunca no seu perfil público.",
   "safeguarding_gdpr_notice": "Esta informação é classificada como dados pessoais sensíveis. Recolhemo-la exclusivamente para garantir a sua segurança durante as trocas comunitárias. As suas seleções são armazenadas com um registro de consentimento e podem ser alteradas a qualquer momento nas suas configurações. Apenas os coordenadores e administradores da comunidade podem ver as suas respostas.",
   "welcome_title": "Bem-vindo a {{name}}!",
   "welcome_description": "Vamos configurar o seu perfil para que possa começar a conectar-se com a sua comunidade e trocar créditos de tempo.",
@@ -131,7 +131,8 @@
       "continue_cta": "Continuar",
       "declination_title": "Anotado — a sua resposta está registrada",
       "declination_intro": "Obrigado por rever estas opções. A sua resposta foi salva para que os coordenadores saibam que viu e considerou este passo."
-    }
+    },
+    "what_this_does": "O que isto faz"
   },
   "page_meta": {
     "title": "Integração"

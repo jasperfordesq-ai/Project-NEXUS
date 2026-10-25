@@ -8,7 +8,7 @@
   "step_safeguarding": "Protection",
   "safeguarding_title": "Soutien et protection",
   "safeguarding_subtitle": "Indiquez-nous si vous souhaitez un soutien supplémentaire",
-  "safeguarding_intro": "Votre sécurité nous importe. Si vous vous considérez comme un adulte vulnérable, ou si vous souhaitez un soutien supplémentaire lors de l'utilisation de cette communauté, veuillez nous le faire savoir ci-dessous. Nos coordinateurs peuvent organiser des échanges sécurisés, servir d'intermédiaire en votre nom et veiller à ce que vous soyez mis en relation avec des membres dûment vérifiés. Vos réponses sont confidentielles et uniquement visibles par les coordinateurs de la communauté — jamais sur votre profil public.",
+  "safeguarding_intro": "Votre sécurité nous importe. Si vous souhaitez un soutien supplémentaire lorsque vous utilisez cette communauté, indiquez-le ci-dessous. Chaque choix vous explique exactement ce qu'il fait avant que vous ne le sélectionniez. Vos réponses sont confidentielles et visibles uniquement par les coordinateurs de la communauté, jamais sur votre profil public.",
   "safeguarding_gdpr_notice": "Ces informations sont classées comme données personnelles sensibles. Nous les collectons uniquement pour assurer votre sécurité lors des échanges communautaires. Vos sélections sont stockées avec un registre de consentement et peuvent être modifiées à tout moment depuis vos paramètres. Seuls les coordinateurs et administrateurs de la communauté peuvent consulter vos réponses.",
   "welcome_title": "Bienvenue sur {{name}} !",
   "welcome_description": "Configurez votre profil pour commencer à vous connecter avec votre communauté et échanger des crédits de temps.",
@@ -131,7 +131,8 @@
       "continue_cta": "Continuer",
       "declination_title": "Noté — votre réponse est enregistrée",
       "declination_intro": "Merci d'avoir examiné ces options. Votre réponse a été enregistrée afin que les coordinateurs sachent que vous avez pris connaissance de cette étape et l'avez examinée."
-    }
+    },
+    "what_this_does": "Ce que cela fait"
   },
   "page_meta": {
     "title": "Intégration"

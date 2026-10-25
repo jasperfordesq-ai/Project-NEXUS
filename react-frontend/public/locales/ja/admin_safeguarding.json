@@ -490,6 +490,11 @@
       "filter_all": "すべて",
       "consent_yes": "メンバーが同意済み",
       "consent_no": "メンバーは未同意"
-    }
+    },
+    "offer_to_new_members": "新しいメンバーに表示する",
+    "offer_to_new_members_desc": "オフにすると、まだ選択していないメンバーには表示されません。すでに選択したメンバーは引き続き保持し、確認できます。",
+    "not_offered_chip": "新しいメンバーには非表示",
+    "holder_count": "これを選んだメンバー: {{count}}",
+    "members_are_told": "メンバーに表示される説明"
   }
 }

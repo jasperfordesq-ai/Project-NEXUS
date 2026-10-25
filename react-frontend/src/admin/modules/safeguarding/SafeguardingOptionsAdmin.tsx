@@ -51,6 +51,12 @@ interface SafeguardingOption {
   select_options: unknown[] | null;
   triggers: Record<string, boolean | string> | null;
   preset_source: string | null;
+  /** False = hidden from members who have not already chosen it; holders keep it. */
+  accepts_new_selections?: boolean;
+  /** Members who currently hold this option. */
+  holder_count?: number;
+  /** The plain-language account members are given of what it does. */
+  effects?: string[];
 }
 
 interface OptionFormData {
@@ -60,6 +66,7 @@ interface OptionFormData {
   description: string;
   help_url: string;
   is_required: boolean;
+  accepts_new_selections: boolean;
   triggers: {
     requires_vetted_interaction: boolean;
     requires_broker_approval: boolean;
@@ -77,6 +84,7 @@ const EMPTY_FORM: OptionFormData = {
   description: '',
   help_url: '',
   is_required: false,
+  accepts_new_selections: true,
   triggers: {
     requires_vetted_interaction: false,
     requires_broker_approval: false,
@@ -244,6 +252,7 @@ export function SafeguardingOptionsAdmin() {
       description: opt.description || '',
       help_url: opt.help_url || '',
       is_required: opt.is_required,
+      accepts_new_selections: opt.accepts_new_selections !== false,
       triggers: {
         requires_vetted_interaction: opt.triggers?.requires_vetted_interaction === true,
         requires_broker_approval: opt.triggers?.requires_broker_approval === true,
@@ -422,6 +431,15 @@ export function SafeguardingOptionsAdmin() {
                 <p className="text-xs text-theme-muted">{t('safeguarding.required_desc')}</p>
               </div>
             </Switch>
+            <Switch
+              isSelected={form.accepts_new_selections}
+              onValueChange={(v) => setForm(prev => ({ ...prev, accepts_new_selections: v }))}
+            >
+              <div>
+                <p className="font-medium text-sm">{t('safeguarding.offer_to_new_members')}</p>
+                <p className="text-xs text-theme-muted">{t('safeguarding.offer_to_new_members_desc')}</p>
+              </div>
+            </Switch>
 
             <div className="border-t pt-4 mt-2">
               <h4 className="font-semibold text-sm mb-3">{t('safeguarding.behavioral_triggers')}</h4>
@@ -537,9 +555,29 @@ function OptionCard({
               {t(presetI18nKey, { ns: 'admin_system' })}
             </Chip>
           )}
+          {option.accepts_new_selections === false && (
+            <Chip size="sm" variant="soft" color="default" className="text-xs">
+              {t('safeguarding.not_offered_chip')}
+            </Chip>
+          )}
+          {typeof option.holder_count === 'number' && (
+            <Chip size="sm" variant="soft" color="accent" className="text-xs">
+              {t('safeguarding.holder_count', { count: option.holder_count })}
+            </Chip>
+          )}
         </div>
         {option.description && (
           <p className="text-xs text-theme-muted ml-6 mb-1">{option.description}</p>
+        )}
+        {(option.effects?.length ?? 0) > 0 && (
+          <div className="ml-6 mt-1 mb-1">
+            <p className="text-xs font-semibold text-theme-secondary">{t('safeguarding.members_are_told')}</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              {option.effects?.map((effect) => (
+                <li key={effect} className="text-xs text-theme-secondary">{effect}</li>
+              ))}
+            </ul>
+          </div>
         )}
         {activeTriggers.length > 0 && (
           <div className="flex flex-wrap gap-1 ml-6 mt-1">

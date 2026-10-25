@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Qualcuno è stato registrato come responsabile del tuo supporto. È necessaria la tua risposta.",
       "action": "Rivedi questo"
-    }
+    },
+    "what_this_does": "Cosa comporta"
   },
   "header": {
     "title": "Impostazioni",

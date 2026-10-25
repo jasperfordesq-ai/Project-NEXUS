@@ -53,11 +53,23 @@ export interface MemberPreference {
     requires_vetted_interaction: boolean;
     vetting_type_required: string | null;
   };
+  /** What this choice does, in plain words, generated from the enforced rules. */
+  effects?: string[];
+}
+
+interface SwitchCopy {
+  heading: string;
+  body: string;
+  button: string;
 }
 
 interface MyPreferencesResponse {
   preferences: MemberPreference[];
   count: number;
+  /** True when the member holds "vetted members only" and a gentler option exists. */
+  can_switch_to_coordinator_introductions?: boolean;
+  /** Server-translated, so it matches the wording of the email the member was sent. */
+  switch_copy?: SwitchCopy | null;
 }
 
 /**
@@ -215,6 +227,8 @@ export function SafeguardingTab() {
 
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<MemberPreference[]>([]);
+  const [switchCopy, setSwitchCopy] = useState<SwitchCopy | null>(null);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [vettingStatus, setVettingStatus] = useState<MyVettingStatus | null>(null);
   const [guardians, setGuardians] = useState<MyGuardian[]>([]);
   const [wards, setWards] = useState<MyWard[]>([]);
@@ -244,8 +258,14 @@ export function SafeguardingTab() {
       ]);
       if (preferencesResponse.success && preferencesResponse.data) {
         setPreferences(preferencesResponse.data.preferences ?? []);
+        setSwitchCopy(
+          preferencesResponse.data.can_switch_to_coordinator_introductions
+            ? preferencesResponse.data.switch_copy ?? null
+            : null,
+        );
       } else {
         setPreferences([]);
+        setSwitchCopy(null);
       }
       setVettingStatus(vettingResponse.success && vettingResponse.data ? vettingResponse.data : null);
       // 🔴 api.ts never throws, so `success` must be checked explicitly — a
@@ -271,6 +291,27 @@ export function SafeguardingTab() {
   useEffect(() => {
     loadPreferences();
   }, [loadPreferences]);
+
+  const handleSwitchToIntroductions = useCallback(async () => {
+    try {
+      setIsSwitching(true);
+      const res = await api.post<{ switched: boolean; message: string }>(
+        '/v2/safeguarding/switch-to-coordinator-introductions',
+      );
+      // 🔴 api.ts never throws, so `success` must be checked explicitly.
+      if (res.success && res.data) {
+        toast.success(res.data.message);
+        await loadPreferences();
+      } else {
+        toast.error(t('safeguarding.revoke_error_toast'), res.error || '');
+      }
+    } catch (error) {
+      logError('Switch to coordinator introductions failed', error);
+      toast.error(t('safeguarding.revoke_error_toast'));
+    } finally {
+      setIsSwitching(false);
+    }
+  }, [loadPreferences, t, toast]);
 
   const handleRevokeClick = (pref: MemberPreference) => {
     setPendingRevoke(pref);
@@ -814,6 +855,22 @@ export function SafeguardingTab() {
           </div>
         )}
 
+        {switchCopy && (
+          <div className="mb-4 rounded-lg border border-[var(--color-warning)] bg-theme-elevated p-4">
+            <h3 className="text-sm font-semibold text-theme-primary">{switchCopy.heading}</h3>
+            <p className="mt-1 text-sm leading-6 text-theme-secondary">{switchCopy.body}</p>
+            <Button
+              size="sm"
+              variant="primary"
+              className="mt-3"
+              onPress={handleSwitchToIntroductions}
+              isLoading={isSwitching}
+            >
+              {switchCopy.button}
+            </Button>
+          </div>
+        )}
+
         {preferences.length === 0 ? (
           <div className="p-6 text-center rounded-lg bg-theme-elevated border border-theme-default">
             <Lock className="w-8 h-8 mx-auto mb-2 text-theme-muted opacity-50" />
@@ -863,8 +920,24 @@ export function SafeguardingTab() {
                           })}
                         </p>
                       )}
+                      {/* What this choice actually does. Older servers send no
+                          `effects`, and then the chips below are the fallback. */}
+                      {!isDeclination && (pref.effects?.length ?? 0) > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-semibold text-theme-secondary">
+                            {t('safeguarding.what_this_does')}
+                          </p>
+                          <ul className="mt-1 list-disc space-y-1 pl-4">
+                            {pref.effects?.map((effect) => (
+                              <li key={effect} className="text-xs leading-relaxed text-theme-secondary">
+                                {effect}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       {/* Never show activation chips for the declination option */}
-                      {!isDeclination && activationChips.length > 0 && (
+                      {!isDeclination && (pref.effects?.length ?? 0) === 0 && activationChips.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {activationChips.map((label) => (
                             <Chip key={label} size="sm" variant="soft" color="warning">

@@ -335,20 +335,31 @@ describe('SafeguardingStep', () => {
     expect(defaultProps.onNext).toHaveBeenCalled();
   });
 
-  it('does not describe match approval when only broker review was selected', async () => {
-    mockGet.mockResolvedValue({
-      success: true,
-      data: [{
-        id: 3,
-        option_key: 'broker_review',
-        option_type: 'checkbox',
-        label: 'I would like a broker to review exchanges',
-        description: null,
-        help_url: null,
-        is_required: false,
-        triggers: { requires_broker_approval: true },
-      }],
-    });
+  // The API sends members `effects` (plain sentences generated from the rules
+  // that are enforced), never raw `triggers`. Until 25 Oct 2026 this screen read
+  // `triggers`, so in production its summary always said nothing activates —
+  // even for a choice that blocked all contact.
+  const brokerReviewOption = {
+    id: 3,
+    option_key: 'broker_review',
+    option_type: 'checkbox',
+    label: 'I would like a broker to review exchanges',
+    description: null,
+    help_url: null,
+    is_required: false,
+    select_options: null,
+    effects: ['A coordinator looks over any exchange you arrange before it goes ahead.'],
+  };
+
+  it('tells the member what an option does before they choose it', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [brokerReviewOption] });
+    render(<SafeguardingStep {...defaultProps} />);
+
+    expect(await screen.findByText('A coordinator looks over any exchange you arrange before it goes ahead.')).toBeInTheDocument();
+  });
+
+  it('summarises exactly what the selected options do, and nothing else', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [brokerReviewOption] });
 
     const { userEvent } = await import('@/test/test-utils');
     const user = userEvent.setup();
@@ -357,7 +368,9 @@ describe('SafeguardingStep', () => {
     await user.click(await screen.findByText('I would like a broker to review exchanges'));
     await user.click(screen.getByText('Save & Continue'));
 
-    expect(await screen.findByText(/checks and approves exchanges and matches involving you/)).toBeInTheDocument();
+    expect(await screen.findByText('What activates as a result')).toBeInTheDocument();
+    expect(screen.getAllByText('A coordinator looks over any exchange you arrange before it goes ahead.').length).toBeGreaterThan(0);
     expect(screen.queryByText(/checks each match suggested for you/)).toBeNull();
+    expect(screen.queryByText(/No automatic protections activate/)).toBeNull();
   });
 });

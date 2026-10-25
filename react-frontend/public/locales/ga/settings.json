@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Taifeadadh go bhfuil duine éigin freagrach as tacaíocht a thabhairt duit. Tá do fhreagra ag teastáil.",
       "action": "Déan athbhreithniú air seo"
-    }
+    },
+    "what_this_does": "Cad a dhéanann sé seo"
   },
   "header": {
     "title": "Socruithe",

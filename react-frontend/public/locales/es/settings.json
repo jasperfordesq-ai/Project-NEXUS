@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Alguien ha sido registrado como responsable de apoyarte. Se necesita tu respuesta.",
       "action": "Revisa esto"
-    }
+    },
+    "what_this_does": "Qué hace esto"
   },
   "header": {
     "title": "Configuración",

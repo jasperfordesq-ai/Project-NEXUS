@@ -28108,6 +28108,7 @@ export default interface Resources {
           "title": "How vetting gates interactions"
         }
       },
+      "holder_count": "Members who chose this: {{count}}",
       "inactive": "Inactive",
       "inactive_options": "Inactive Options",
       "inactive_options_desc": "Safeguarding options that have been deactivated",
@@ -28133,6 +28134,7 @@ export default interface Resources {
       "member_preferences_desc": "View and manage individual member safeguarding preferences",
       "member_preferences_load_failed": "The member list could not be loaded. Refresh the page to try again.",
       "member_safeguarding_preferences": "Member Safeguarding Preferences",
+      "members_are_told": "What members are told it does",
       "message_reviewed": "Message Reviewed",
       "never": "Never",
       "new_assignment": "New Assignment",
@@ -28144,6 +28146,9 @@ export default interface Resources {
       "no_options_configured": "No options configured",
       "no_options_configured_desc": "No safeguarding options have been created yet",
       "none": "None",
+      "not_offered_chip": "Not offered to new members",
+      "offer_to_new_members": "Offer to new members",
+      "offer_to_new_members_desc": "When off, members who have not already chosen this will not see it. Members who already chose it keep it and can still see it.",
       "open_member": "Open {{name}}'s record",
       "option_created": "Option Created",
       "option_deactivated": "Option Deactivated",
@@ -56150,10 +56155,11 @@ export default interface Resources {
       "save_continue": "Save & Continue",
       "save_failed": "Save failed",
       "select_option": "Choose an option",
-      "try_again": "Please try again."
+      "try_again": "Please try again.",
+      "what_this_does": "What this does"
     },
     "safeguarding_gdpr_notice": "This information is classified as sensitive personal data. We collect it solely to ensure your safety during community exchanges. Your selections are stored with a consent record and can be changed at any time from your settings. Only community coordinators and administrators can view your responses.",
-    "safeguarding_intro": "Your safety matters to us. If you consider yourself a vulnerable adult, or if you would like additional support when using this community, please let us know below. Our coordinators can arrange safeguarded exchanges, mediate contact on your behalf, and ensure you are matched with appropriately vetted members. Your responses are confidential and only visible to community coordinators — never on your public profile.",
+    "safeguarding_intro": "Your safety matters to us. If you would like extra support while using this community, let us know below. Each choice tells you exactly what it does before you pick it. Your answers are confidential and only visible to community coordinators — never on your public profile.",
     "safeguarding_subtitle": "Let us know if you'd like additional support",
     "safeguarding_title": "Support & Safeguarding",
     "skills_add_button": "Add",
@@ -59096,7 +59102,8 @@ export default interface Resources {
         "status_revoked": "Revoked",
         "status_unavailable": "Your vetting status could not be loaded.",
         "title": "Your private community vetting status"
-      }
+      },
+      "what_this_does": "What this does"
     },
     "save": "Save Settings",
     "save_changes": "Save Changes",

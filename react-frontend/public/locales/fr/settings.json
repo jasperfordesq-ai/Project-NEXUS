@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Une personne a été enregistrée comme responsable de votre soutien. Votre réponse est nécessaire.",
       "action": "Revoir ceci"
-    }
+    },
+    "what_this_does": "Ce que cela fait"
   },
   "header": {
     "title": "Paramètres",

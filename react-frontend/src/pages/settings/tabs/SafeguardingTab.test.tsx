@@ -146,6 +146,47 @@ describe('SafeguardingTab', () => {
     expect(screen.getByText(/Do not upload or send a DBS/i)).toBeInTheDocument();
   });
 
+  it('explains what each held choice does', async () => {
+    mockLoads({}, [{ ...preference, effects: ['A coordinator looks over any exchange you arrange before it goes ahead.'] }]);
+    render(<SafeguardingTab />);
+
+    expect(await screen.findByText('A coordinator looks over any exchange you arrange before it goes ahead.')).toBeInTheDocument();
+  });
+
+  it('lets a vetted-only holder switch to coordinator introductions in one step', async () => {
+    const switchCopy = {
+      heading: 'A gentler option is available',
+      body: 'That stops almost everyone reaching you.',
+      button: 'Switch to coordinator introductions',
+    };
+    mockedGet.mockImplementation((url: string) => {
+      if (url === '/v2/safeguarding/my-preferences') {
+        return Promise.resolve({
+          success: true,
+          data: { preferences: [preference], count: 1, can_switch_to_coordinator_introductions: true, switch_copy: switchCopy },
+        });
+      }
+      if (url === '/v2/safeguarding/my-vetting-status') return Promise.resolve({ success: true, data: vettingStatus });
+      if (url === '/v2/safeguarding/my-guardians') return Promise.resolve({ success: true, data: { guardians: [], pending_count: 0 } });
+      if (url === '/v2/safeguarding/my-wards') return Promise.resolve({ success: true, data: { wards: [] } });
+      return Promise.resolve({ success: false });
+    });
+    mockedPost.mockResolvedValue({ success: true, data: { switched: true, message: 'Done.' } });
+    render(<SafeguardingTab />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Switch to coordinator introductions' }));
+
+    await waitFor(() => expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/switch-to-coordinator-introductions'));
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Done.'));
+  });
+
+  it('does not offer the switch to members who do not hold the vetted-only choice', async () => {
+    render(<SafeguardingTab />);
+    await waitFor(() => expect(screen.getByText('Supervised matching')).toBeInTheDocument());
+
+    expect(screen.queryByRole('button', { name: /coordinator introductions/i })).toBeNull();
+  });
+
   it('does not offer review when the jurisdiction policy is unavailable', async () => {
     mockLoads({
       policy: { ...vettingStatus.policy, configured: false, contact_policy_available: false },

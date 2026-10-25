@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Er is iemand geregistreerd die verantwoordelijk is voor de ondersteuning van u. Jouw antwoord is nodig.",
       "action": "Bekijk dit"
-    }
+    },
+    "what_this_does": "Wat dit doet"
   },
   "header": {
     "title": "Instellingen",

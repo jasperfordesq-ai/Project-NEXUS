@@ -490,6 +490,11 @@
       "filter_all": "All",
       "consent_yes": "Member has agreed",
       "consent_no": "Member has not agreed"
-    }
+    },
+    "offer_to_new_members": "Offer to new members",
+    "offer_to_new_members_desc": "When off, members who have not already chosen this will not see it. Members who already chose it keep it and can still see it.",
+    "not_offered_chip": "Not offered to new members",
+    "holder_count": "Members who chose this: {{count}}",
+    "members_are_told": "What members are told it does"
   }
 }

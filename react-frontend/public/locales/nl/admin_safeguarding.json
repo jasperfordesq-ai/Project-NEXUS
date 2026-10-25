@@ -490,6 +490,11 @@
       "filter_all": "Alle",
       "consent_yes": "Lid heeft ingestemd",
       "consent_no": "Lid heeft niet ingestemd"
-    }
+    },
+    "offer_to_new_members": "Aanbieden aan nieuwe leden",
+    "offer_to_new_members_desc": "Als dit uit staat, zien leden die deze optie nog niet hebben gekozen haar niet. Leden die haar al hebben gekozen, houden haar en kunnen haar nog steeds zien.",
+    "not_offered_chip": "Niet aangeboden aan nieuwe leden",
+    "holder_count": "Leden die dit kozen: {{count}}",
+    "members_are_told": "Wat leden te horen krijgen over wat dit doet"
   }
 }

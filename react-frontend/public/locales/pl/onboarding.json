@@ -8,7 +8,7 @@
   "step_safeguarding": "Ochrona",
   "safeguarding_title": "Wsparcie i ochrona",
   "safeguarding_subtitle": "Poinformuj nas, czy potrzebujesz dodatkowego wsparcia",
-  "safeguarding_intro": "Twoje bezpieczeństwo jest dla nas ważne. Jeśli uważasz się za dorosłego w trudnej sytuacji lub chciałbyś uzyskać dodatkowe wsparcie podczas korzystania z tej społeczności, daj nam znać poniżej. Nasi koordynatorzy mogą zorganizować bezpieczne wymiany, pośredniczyć w kontaktach w Twoim imieniu i zapewnić, że zostaniesz dopasowany do odpowiednio zweryfikowanych członków. Twoje odpowiedzi są poufne i widoczne tylko dla koordynatorów społeczności — nigdy w Twoim publicznym profilu.",
+  "safeguarding_intro": "Twoje bezpieczeństwo jest dla nas ważne. Jeśli chcesz dodatkowego wsparcia podczas korzystania z tej społeczności, daj nam znać poniżej. Przy każdej opcji jest dokładnie opisane, co ona oznacza, zanim ją wybierzesz. Twoje odpowiedzi są poufne i widoczne tylko dla koordynatorów społeczności – nigdy w Twoim profilu publicznym.",
   "safeguarding_gdpr_notice": "Informacje te są sklasyfikowane jako wrażliwe dane osobowe. Zbieramy je wyłącznie w celu zapewnienia Twojego bezpieczeństwa podczas wymiany w ramach społeczności. Twoje wybory są przechowywane wraz z zapisem zgody i można je zmienić w dowolnym momencie w ustawieniach. Tylko koordynatorzy i administratorzy społeczności mogą przeglądać Twoje odpowiedzi.",
   "welcome_title": "Witamy w {{name}}!",
   "welcome_description": "Ustawmy twój profil, abyś mógł zacząć łączyć się ze swoją społecznością i wymieniać kredyty czasowe.",
@@ -131,7 +131,8 @@
       "continue_cta": "Kontynuuj",
       "declination_title": "Odnotowano — Twoja odpowiedź jest zarejestrowana",
       "declination_intro": "Dziękujemy za zapoznanie się z tymi opcjami. Twoja odpowiedź została zapisana, aby koordynatorzy wiedzieli, że zapoznałeś się z tym krokiem i go rozważyłeś."
-    }
+    },
+    "what_this_does": "Co to oznacza"
   },
   "page_meta": {
     "title": "Wdrożenie"

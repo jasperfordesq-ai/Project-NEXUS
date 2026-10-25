@@ -48,16 +48,12 @@ interface SafeguardingOption {
   help_url: string | null;
   is_required: boolean;
   select_options: string | null; // JSON array of {value, label} for select type
-  triggers?: Record<string, unknown> | null;
-}
-
-interface AggregatedTriggers {
-  requires_broker_approval: boolean;
-  restricts_messaging: boolean;
-  restricts_matching: boolean;
-  requires_vetted_interaction: boolean;
-  notify_admin_on_selection: boolean;
-  vetting_types_required: string[];
+  /**
+   * What choosing this option actually does, in plain words, already in the
+   * member's language. Generated server-side from the rules that are enforced,
+   * so the wizard can never promise more or less than the platform does.
+   */
+  effects?: string[];
 }
 
 interface SafeguardingStepProps {
@@ -91,8 +87,6 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
     return () => { mountedRef.current = false; };
   }, []);
 
-  // ── Aggregated triggers (OR-merge across selected options) ────────────────
-
   const selectedOptions = useMemo(
     () => options.filter(o =>
       selections[o.id] ||
@@ -101,28 +95,17 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
     [options, selections, selectValues]
   );
 
-  const aggregatedTriggers = useMemo<AggregatedTriggers>(() => {
-    const agg: AggregatedTriggers = {
-      requires_broker_approval: false,
-      restricts_messaging: false,
-      restricts_matching: false,
-      requires_vetted_interaction: false,
-      notify_admin_on_selection: false,
-      vetting_types_required: [],
-    };
+  // What the member's choices do, merged across everything they selected.
+  // This used to be derived from option `triggers`, which the API never sends
+  // to members — so the summary always fell through to "no protections
+  // activate", even for choices that blocked all contact.
+  const activations = useMemo(() => {
+    const seen = new Set<string>();
     for (const opt of selectedOptions) {
-      const triggers = opt.triggers ?? {};
-      if (triggers.requires_broker_approval) agg.requires_broker_approval = true;
-      if (triggers.restricts_messaging) agg.restricts_messaging = true;
-      if (triggers.restricts_matching) agg.restricts_matching = true;
-      if (triggers.requires_vetted_interaction) agg.requires_vetted_interaction = true;
-      if (triggers.notify_admin_on_selection) agg.notify_admin_on_selection = true;
-      if (typeof triggers.vetting_type_required === 'string'
-          && !agg.vetting_types_required.includes(triggers.vetting_type_required)) {
-        agg.vetting_types_required.push(triggers.vetting_type_required);
-      }
+      if (opt.option_key === 'none_apply') continue;
+      for (const effect of opt.effects ?? []) seen.add(effect);
     }
-    return agg;
+    return Array.from(seen);
   }, [selectedOptions]);
 
   // ── Load safeguarding options from API ────────────────────────────────────
@@ -299,26 +282,9 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
 
   if (confirmationShown) {
     const isDecliningOnly = selectedOptions.length > 0 && selectedOptions.every(o => o.option_key === 'none_apply');
-
-    // Only compute activations when real protections were selected.
-    const activations: string[] = [];
-    if (!isDecliningOnly) {
-      if (aggregatedTriggers.requires_broker_approval) {
-        activations.push(t('safeguarding.confirmation.activation_broker_review'));
-      }
-      if (aggregatedTriggers.restricts_matching) {
-        activations.push(t('safeguarding.confirmation.activation_match_approval'));
-      }
-      if (aggregatedTriggers.requires_vetted_interaction) {
-        activations.push(t('safeguarding.confirmation.activation_discovery_hidden'));
-      }
-      if (aggregatedTriggers.notify_admin_on_selection) {
-        activations.push(t('safeguarding.confirmation.activation_notification'));
-      }
-      if (activations.length === 0) {
-        activations.push(t('safeguarding.confirmation.activation_none'));
-      }
-    }
+    const shownActivations = activations.length > 0
+      ? activations
+      : [t('safeguarding.confirmation.activation_none')];
 
     return (
       <div className="space-y-6">
@@ -400,7 +366,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                 </h3>
               </div>
               <ul className="space-y-2">
-                {activations.map((activation) => (
+                {shownActivations.map((activation) => (
                   <li key={activation} className="flex items-start gap-2 pl-1">
                     <span className="text-[var(--color-warning)] mt-1">•</span>
                     <span className="text-sm text-theme-secondary">{activation}</span>
@@ -525,6 +491,20 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                     <p className="text-xs text-theme-muted mt-1 leading-relaxed">
                       {option.description}
                     </p>
+                  )}
+                  {!isNoneApply && (option.effects?.length ?? 0) > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold text-theme-secondary">
+                        {t('safeguarding.what_this_does')}
+                      </p>
+                      <ul className="mt-1 space-y-1 list-disc pl-4">
+                        {option.effects?.map((effect) => (
+                          <li key={effect} className="text-xs text-theme-secondary leading-relaxed">
+                            {effect}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                   {/* Select dropdown for 'select' type options */}
                   {option.option_type === 'select' && (() => {

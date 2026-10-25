@@ -8,7 +8,7 @@
   "step_safeguarding": "Safeguarding",
   "safeguarding_title": "Support & Safeguarding",
   "safeguarding_subtitle": "Let us know if you'd like additional support",
-  "safeguarding_intro": "Your safety matters to us. If you consider yourself a vulnerable adult, or if you would like additional support when using this community, please let us know below. Our coordinators can arrange safeguarded exchanges, mediate contact on your behalf, and ensure you are matched with appropriately vetted members. Your responses are confidential and only visible to community coordinators — never on your public profile.",
+  "safeguarding_intro": "Your safety matters to us. If you would like extra support while using this community, let us know below. Each choice tells you exactly what it does before you pick it. Your answers are confidential and only visible to community coordinators — never on your public profile.",
   "safeguarding_gdpr_notice": "This information is classified as sensitive personal data. We collect it solely to ensure your safety during community exchanges. Your selections are stored with a consent record and can be changed at any time from your settings. Only community coordinators and administrators can view your responses.",
   "welcome_title": "Welcome to {{name}}!",
   "welcome_description": "Let's set up your profile so you can start connecting with your community and exchanging time credits.",
@@ -131,7 +131,8 @@
       "continue_cta": "Continue",
       "declination_title": "Noted — your response is recorded",
       "declination_intro": "Thank you for reviewing these options. Your response has been saved so coordinators know you have seen and considered this step."
-    }
+    },
+    "what_this_does": "What this does"
   },
   "page_meta": {
     "title": "Onboarding"

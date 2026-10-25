@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Es wurde festgestellt, dass jemand für Ihre Unterstützung verantwortlich ist. Ihre Antwort wird benötigt.",
       "action": "Überprüfen Sie dies"
-    }
+    },
+    "what_this_does": "Was das bewirkt"
   },
   "header": {
     "title": "Einstellungen",

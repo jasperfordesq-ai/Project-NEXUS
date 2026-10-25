@@ -490,6 +490,11 @@
       "filter_all": "Todos",
       "consent_yes": "O membro concordou",
       "consent_no": "O membro não concordou"
-    }
+    },
+    "offer_to_new_members": "Oferecer a novos membros",
+    "offer_to_new_members_desc": "Quando desligado, os membros que ainda não a escolheram não a verão. Quem já a escolheu mantém-na e continua a vê-la.",
+    "not_offered_chip": "Não oferecido a novos membros",
+    "holder_count": "Membros que escolheram isto: {{count}}",
+    "members_are_told": "O que é dito aos membros sobre o que faz"
   }
 }

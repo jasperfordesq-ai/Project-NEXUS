@@ -8,7 +8,7 @@
   "step_safeguarding": "Tutela",
   "safeguarding_title": "Supporto e protezione",
   "safeguarding_subtitle": "Facci sapere se desideri un supporto aggiuntivo",
-  "safeguarding_intro": "La tua sicurezza è importante per noi. Se ti consideri un adulto vulnerabile, o se desideri un supporto aggiuntivo nell'utilizzo di questa comunità, comunicacelo di seguito. I nostri coordinatori possono organizzare scambi protetti, fare da intermediari nei contatti per tuo conto e assicurarsi che tu venga abbinato a membri opportunamente verificati. Le tue risposte sono riservate e visibili solo ai coordinatori della comunità — mai sul tuo profilo pubblico.",
+  "safeguarding_intro": "La tua sicurezza è importante per noi. Se desideri un supporto aggiuntivo mentre usi questa comunità, faccelo sapere qui sotto. Ogni scelta ti spiega esattamente cosa comporta prima che tu la selezioni. Le tue risposte sono riservate e visibili solo ai coordinatori della comunità, mai sul tuo profilo pubblico.",
   "safeguarding_gdpr_notice": "Queste informazioni sono classificate come dati personali sensibili. Le raccogliamo esclusivamente per garantire la tua sicurezza durante gli scambi comunitari. Le tue selezioni vengono memorizzate con un registro del consenso e possono essere modificate in qualsiasi momento dalle tue impostazioni. Solo i coordinatori e gli amministratori della comunità possono visualizzare le tue risposte.",
   "welcome_title": "Benvenuto su {{name}}!",
   "welcome_description": "Configuri il Suo profilo per iniziare a connettersi con la Sua comunità e scambiare crediti di tempo.",
@@ -131,7 +131,8 @@
       "continue_cta": "Continuare",
       "declination_title": "Preso nota — la tua risposta è registrata",
       "declination_intro": "Grazie per aver esaminato queste opzioni. La tua risposta è stata salvata in modo che i coordinatori sappiano che hai visto e valutato questo passaggio."
-    }
+    },
+    "what_this_does": "Cosa comporta"
   },
   "page_meta": {
     "title": "Accoglienza"

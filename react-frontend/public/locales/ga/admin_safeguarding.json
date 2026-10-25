@@ -490,6 +490,11 @@
       "filter_all": "Gach ceann",
       "consent_yes": "D’aontaigh an ball",
       "consent_no": "Níor aontaigh an ball"
-    }
+    },
+    "offer_to_new_members": "Tairg do chomhaltaí nua",
+    "offer_to_new_members_desc": "Nuair atá sé múchta, ní fheicfidh comhaltaí nár roghnaigh é cheana é. Coinníonn comhaltaí a roghnaigh é cheana é agus is féidir leo é a fheiceáil fós.",
+    "not_offered_chip": "Ní thairgtear do chomhaltaí nua",
+    "holder_count": "Comhaltaí a roghnaigh é seo: {{count}}",
+    "members_are_told": "Cad a insítear do chomhaltaí a dhéanann sé"
   }
 }

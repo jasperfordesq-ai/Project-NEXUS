@@ -8,7 +8,7 @@
   "step_safeguarding": "Bescherming",
   "safeguarding_title": "Ondersteuning & bescherming",
   "safeguarding_subtitle": "Laat ons weten of u extra ondersteuning wenst",
-  "safeguarding_intro": "Uw veiligheid is belangrijk voor ons. Als u zichzelf beschouwt als een kwetsbare volwassene, of als u extra ondersteuning wilt bij het gebruik van deze gemeenschap, laat het ons hieronder weten. Onze coördinatoren kunnen beveiligde uitwisselingen regelen, contact namens u bemiddelen en ervoor zorgen dat u wordt gekoppeld aan naar behoren gescreende leden. Uw reacties zijn vertrouwelijk en alleen zichtbaar voor gemeenschapscoördinatoren — nooit op uw openbare profiel.",
+  "safeguarding_intro": "Uw veiligheid is belangrijk voor ons. Als u extra ondersteuning wilt bij het gebruik van deze gemeenschap, laat het ons hieronder weten. Bij elke keuze staat precies wat die doet voordat u hem kiest. Uw antwoorden zijn vertrouwelijk en alleen zichtbaar voor de coördinatoren van de gemeenschap, nooit op uw openbare profiel.",
   "safeguarding_gdpr_notice": "Deze informatie wordt geclassificeerd als gevoelige persoonsgegevens. We verzamelen deze uitsluitend om uw veiligheid tijdens gemeenschapsuitwisselingen te waarborgen. Uw selecties worden opgeslagen met een toestemmingsregistratie en kunnen op elk moment worden gewijzigd via uw instellingen. Alleen gemeenschapscoördinatoren en beheerders kunnen uw reacties bekijken.",
   "welcome_title": "Welkom bij {{name}}!",
   "welcome_description": "Laten we je profiel instellen zodat je kunt beginnen met verbinden met je gemeenschap en tijdcredits kunt uitwisselen.",
@@ -131,7 +131,8 @@
       "continue_cta": "Doorgaan",
       "declination_title": "Genoteerd — uw reactie is geregistreerd",
       "declination_intro": "Bedankt voor het beoordelen van deze opties. Uw reactie is opgeslagen zodat coördinatoren weten dat u deze stap heeft gezien en overwogen."
-    }
+    },
+    "what_this_does": "Wat dit doet"
   },
   "page_meta": {
     "title": "Onboarding"

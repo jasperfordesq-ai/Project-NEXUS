@@ -490,6 +490,11 @@
       "filter_all": "Alle",
       "consent_yes": "Mitglied hat zugestimmt",
       "consent_no": "Mitglied hat nicht zugestimmt"
-    }
+    },
+    "offer_to_new_members": "Neuen Mitgliedern anbieten",
+    "offer_to_new_members_desc": "Wenn ausgeschaltet, sehen Mitglieder, die diese Option noch nicht gewählt haben, sie nicht. Mitglieder, die sie bereits gewählt haben, behalten sie und sehen sie weiterhin.",
+    "not_offered_chip": "Neuen Mitgliedern nicht angeboten",
+    "holder_count": "Mitglieder mit dieser Wahl: {{count}}",
+    "members_are_told": "Was Mitgliedern dazu gesagt wird"
   }
 }

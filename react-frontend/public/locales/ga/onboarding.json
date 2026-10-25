@@ -8,7 +8,7 @@
   "step_safeguarding": "Cosaint",
   "safeguarding_title": "Tacaíocht & Cosaint",
   "safeguarding_subtitle": "Cuir in iúl dúinn más mian leat tacaíocht bhreise",
-  "safeguarding_intro": "Tá do shábháilteacht tábhachtach dúinn. Má mheasann tú gur duine fásta leochaileach thú, nó má theastaíonn tacaíocht bhreise uait agus tú ag úsáid an phobail seo, cuir in iúl dúinn thíos é. Is féidir lenár gcomhordaitheoirí malartuithe cosanta a eagrú, teagmháil a idirghabháil ar do shon, agus a chinntiú go meaitseálfar thú le baill a bhfuil seiceáil chuí déanta orthu. Tá do fhreagraí rúnda agus ní féidir ach le comhordaitheoirí pobail iad a fheiceáil — ní bheidh siad ar do phróifíl phoiblí riamh.",
+  "safeguarding_intro": "Tá do shábháilteacht tábhachtach dúinn. Más mian leat tacaíocht bhreise agus tú ag úsáid an phobail seo, cuir in iúl dúinn thíos. Insíonn gach rogha duit go díreach cad a dhéanann sí sula roghnaíonn tú í. Tá do fhreagraí faoi rún agus ní fheiceann ach comhordaitheoirí an phobail iad — ní bhíonn siad riamh ar do phróifíl phoiblí.",
   "safeguarding_gdpr_notice": "Aicmítear an fhaisnéis seo mar shonraí pearsanta íogaire. Bailímid í go heisiach chun do shábháilteacht a chinntiú le linn malartuithe pobail. Stóráiltear do roghanna le taifead toilithe agus is féidir iad a athrú am ar bith ó do shocruithe. Ní féidir ach le comhordaitheoirí agus riarthóirí pobail do fhreagraí a fheiceáil.",
   "welcome_title": "Failte go {{name}}!",
   "welcome_description": "Socraigh do phroifil ionas go mbeidh tu in ann nascadh le do phobal agus creidmheasanna ama a mhalartú.",
@@ -131,7 +131,8 @@
       "continue_cta": "Lean ort",
       "declination_title": "Tógtha ar aird — tá do fhreagra taifeadta",
       "declination_intro": "Go raibh maith agat as na roghanna seo a athbhreithniú. Tá do fhreagra sábháilte ionas go mbeidh a fhios ag na comhordaitheoirí gur léigh tú agus gur bhreithnígh tú an chéim seo."
-    }
+    },
+    "what_this_does": "Cad a dhéanann sé seo"
   },
   "page_meta": {
     "title": "Ar Bord"

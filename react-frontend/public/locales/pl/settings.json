@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Ktoś został zapisany jako odpowiedzialny za wspieranie Cię. Twoja odpowiedź jest potrzebna.",
       "action": "Przejrzyj to"
-    }
+    },
+    "what_this_does": "Co to oznacza"
   },
   "header": {
     "title": "Ustawienia",

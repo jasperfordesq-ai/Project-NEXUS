@@ -421,7 +421,8 @@
     "guardians_prompt": {
       "message": "Someone has been recorded as responsible for supporting you. Your answer is needed.",
       "action": "Review this"
-    }
+    },
+    "what_this_does": "What this does"
   },
   "header": {
     "title": "Settings",
