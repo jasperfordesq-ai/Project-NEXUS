@@ -4508,7 +4508,7 @@ describe('shared accessible frontend shell', () => {
     const cases = [
       ['SAFEGUARDING_POLICY_UNAVAILABLE', 'link-safeguarding-unavailable', 'We cannot confirm the community safeguarding policy right now.'],
       ['VETTING_REQUIRED', 'link-vetting-required', 'Safeguarding check needed'],
-      ['SAFEGUARDING_CONTACT_RESTRICTED', 'link-contact-restricted', 'This member has asked for a coordinator to arrange contact on their behalf.']
+      ['SAFEGUARDING_CONTACT_RESTRICTED', 'link-contact-restricted', 'This member can only be contacted through a coordinator.']
     ];
 
     for (const [code, status, message] of cases) {
