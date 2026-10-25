@@ -40,6 +40,14 @@
       "reason": "braces stack-exhaustion DoS (CVE-2026-93687); braces 3.0.3 is the latest release and no fixed version exists. In web-uk it arrives via chokidar 3.6.0, from nodemon and sass (devDependencies) and from nunjucks's OPTIONAL chokidar peer — so it IS installed in the production image, but never executed there: nunjucks require()s chokidar only when its `watch` option is on (node_modules/nunjucks/src/node-loaders.js), and web-uk/src/server.js sets `watch: NODE_ENV === 'development'`, while the production image (web-uk/Dockerfile) and compose.webuk.bluegreen.yml run with NODE_ENV=production. Even in development chokidar only expands the repo's own template paths, never request input. Short expiry on purpose: re-check for a fixed braces then. Mirrored in .trivyignore (CVE-2026-93687).",
       "added": "2026-10-03",
       "expires": "2026-11-03"
+    },
+    {
+      "id": "GHSA-mrhx-c7xc-m3w5",
+      "scope": "mobile",
+      "package": "zod",
+      "reason": "zod memory exhaustion while validating oversized constrained collections (CVE-2023-54404). Affected range is everything below 4.6.6, so the 3.x line has no fix: 3.25.76 is the last 3.x release. The app's own zod is ^4.6.7 (fixed, E-113). The flagged copy is mobile/node_modules/@expo/cli/node_modules/zod@3.25.76, which @expo/cli pins at ^3.25.76 (still so in the latest @expo/cli, 58.1.15) and uses only in its dev server (DevToolsPlugin.schema.js, createMCPDevToolsExtensionSchema.js) on a developer machine: not in the app bundle, not on any server, never sees member input. npm's only offered fix is expo 54.0.38, a major DOWNGRADE. Forcing zod 4 into @expo/cli would change the API it was written against. Same decision and reasoning as the CVE-2023-54404 entry in .trivyignore (E-113, 24 Oct 2026), which covered only the Trivy gate; this is the matching npm-audit entry it missed. Remove when Expo moves @expo/cli to zod 4.",
+      "added": "2026-10-25",
+      "expires": "2027-01-25"
     }
   ]
 }
