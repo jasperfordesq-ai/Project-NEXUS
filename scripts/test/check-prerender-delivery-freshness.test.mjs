@@ -25,7 +25,10 @@ import test from 'node:test';
 // at import time, from the environment.
 process.env.NEXUS_DELIVERY_MAX_SNAPSHOT_AGE_HOURS = '24';
 
-const { judgeFreshness, sameCommit, buildCommitOf, renderAgeHoursFrom } = await import(
+const {
+  judgeFreshness, sameCommit, buildCommitOf, renderAgeHoursFrom,
+  loadTtlTable, refreshIntervalHoursFor, ageLimitHoursFor,
+} = await import(
   '../check-prerender-delivery.mjs'
 );
 
@@ -187,4 +190,53 @@ test('importing the module does not run the probe', () => {
   // The import at the top of this file completed without making a network
   // request or calling process.exit(); reaching here proves the guard holds.
   assert.ok(true);
+});
+
+// ── Per-page limits (2026-10-25) ─────────────────────────────────────────────
+// Fixed pages carry no <lastmod> since 2026-10-23, so they refresh on their TTL
+// (30 days for /about), not daily. The 25 Oct deploy reported 12 healthy /about
+// pages STALE at 43 hours. These pin both directions of the fix.
+
+test('the TTL table is read from config/prerender.php', () => {
+  const table = loadTtlTable();
+  assert.ok(table, 'config/prerender.php ttl block must parse');
+  assert.equal(table['/'], 6 * 3600);
+  assert.equal(table['/about'], 30 * 24 * 3600);
+  assert.ok(table.default > 0);
+});
+
+test('a 43-hour-old /about snapshot is within its 30-day refresh interval', () => {
+  const limit = ageLimitHoursFor('/about');
+  assert.ok(limit >= 30 * 24, `limit was ${limit}h`);
+  const verdict = judgeFreshness(FROZEN, DEPLOYED, new Map(), 43.1, limit);
+  assert.equal(verdict.stale, false);
+});
+
+test('control: a home page 43 hours without a re-render is still STALE', () => {
+  // '/' refreshes every 6 hours, so it keeps the daily floor (24h in this file).
+  const limit = ageLimitHoursFor('/');
+  assert.equal(limit, 24);
+  const verdict = judgeFreshness(FROZEN, DEPLOYED, new Map(), 43.1, limit);
+  assert.equal(verdict.stale, true);
+  assert.match(verdict.ageNote, /limit 24h/);
+});
+
+test('an /about page frozen past its interval is still caught', () => {
+  const limit = ageLimitHoursFor('/about');
+  const verdict = judgeFreshness(FROZEN, DEPLOYED, new Map(), limit + 1, limit);
+  assert.equal(verdict.stale, true);
+});
+
+test('paths match the way config/prerender.php reads them', () => {
+  const table = { '/': 6 * 3600, '/blog/**': 7 * 24 * 3600, '/page/*': 7 * 24 * 3600, default: 3600 };
+  assert.equal(refreshIntervalHoursFor('/', table), 6);
+  assert.equal(refreshIntervalHoursFor('/blog/a/b', table), 168);
+  assert.equal(refreshIntervalHoursFor('/page/x', table), 168);
+  assert.equal(refreshIntervalHoursFor('/page/x/y', table), 1, 'one segment only for /*');
+  assert.equal(refreshIntervalHoursFor('/other', table), 1);
+});
+
+test('without a readable TTL table every page keeps the strict daily limit', () => {
+  assert.equal(ageLimitHoursFor('/about', null), 24);
+  assert.equal(loadTtlTable('/no/such/file.php'), null);
 });

@@ -99,6 +99,69 @@ const SHA_RE = /^[0-9a-f]{7,40}$/i;
 
 const REPO_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+// 🔴 Not every page is re-rendered daily (corrected 2026-10-25). Since
+// 2026-10-23 the sitemap gives fixed pages (/about, /help, legal pages) no
+// <lastmod> — a date that always says "today" teaches Google to ignore every
+// date in the sitemap (SitemapService::getStaticPageUrls). The drift detector
+// therefore leaves them to their TTL in config/prerender.php: 30 days for
+// /about. Judging those pages against the daily limit reported 12 of 30 pages
+// "STALE" on the 25 Oct deploy while both refresh sweeps were healthy.
+//
+// So each page is judged against its own refresh interval from that table, plus
+// TTL_SLACK_HOURS for the recache queue, and never less than the daily limit.
+// The table is read from config/prerender.php so the two cannot drift apart;
+// if it cannot be read, every page falls back to the daily limit (strict).
+const TTL_SLACK_HOURS = 6;
+
+function loadTtlTable(file = path.join(REPO_DIR, 'config', 'prerender.php')) {
+  let src;
+  try {
+    src = fs.readFileSync(file, 'utf8');
+  } catch {
+    return null;
+  }
+  const start = src.indexOf("'ttl'");
+  if (start === -1) return null;
+  const end = src.indexOf('],', start);
+  const block = src.slice(start, end === -1 ? undefined : end);
+  const table = {};
+  const re = /'([^']+)'\s*=>\s*([0-9*\s]+?)\s*,/g;
+  let m;
+  while ((m = re.exec(block)) !== null) {
+    const seconds = m[2].split('*').map((x) => Number(x.trim())).reduce((a, b) => a * b, 1);
+    if (Number.isFinite(seconds) && seconds > 0) table[m[1]] = seconds;
+  }
+  return Object.keys(table).length > 0 ? table : null;
+}
+
+const TTL_TABLE = loadTtlTable();
+
+/**
+ * Refresh interval in hours for a path, matched the way config/prerender.php
+ * reads: exact path, then "/x/*" (one segment) and "/x/**" (any depth), then
+ * 'default'. Null when the table is unavailable.
+ */
+function refreshIntervalHoursFor(pagePath, table = TTL_TABLE) {
+  if (!table) return null;
+  const clean = (String(pagePath || '/').split('?')[0].replace(/\/+$/, '')) || '/';
+  if (table[clean] !== undefined) return table[clean] / 3600;
+  for (const [pattern, seconds] of Object.entries(table)) {
+    if (pattern.endsWith('/**') && clean.startsWith(pattern.slice(0, -2))) return seconds / 3600;
+    if (pattern.endsWith('/*')) {
+      const prefix = pattern.slice(0, -1);
+      if (clean.startsWith(prefix) && !clean.slice(prefix.length).includes('/')) return seconds / 3600;
+    }
+  }
+  return table.default !== undefined ? table.default / 3600 : null;
+}
+
+/** How old a snapshot of this page may be before it counts as frozen. */
+function ageLimitHoursFor(pagePath, table = TTL_TABLE) {
+  const interval = refreshIntervalHoursFor(pagePath, table);
+  if (interval === null) return MAX_SNAPSHOT_AGE_HOURS;
+  return Math.max(MAX_SNAPSHOT_AGE_HOURS, interval + TTL_SLACK_HOURS);
+}
+
 function git(args) {
   try {
     return execFileSync('git', args, {
@@ -288,7 +351,7 @@ function hasMetaDescription(body) {
  * An unresolvable comparison is not evidence of a fault, and inventing one here
  * would be the false alarm this whole file exists to avoid.
  */
-function judgeFreshness(built, expected, ageCache, renderAgeHours = null) {
+function judgeFreshness(built, expected, ageCache, renderAgeHours = null, limitHours = MAX_SNAPSHOT_AGE_HOURS) {
   if (!built) {
     return { stale: false, built: null, note: ' (no build marker)' };
   }
@@ -298,12 +361,12 @@ function judgeFreshness(built, expected, ageCache, renderAgeHours = null) {
 
   if (typeof renderAgeHours === 'number' && Number.isFinite(renderAgeHours) && renderAgeHours >= 0) {
     const rendered = Math.round(renderAgeHours * 10) / 10;
-    if (renderAgeHours > MAX_SNAPSHOT_AGE_HOURS) {
+    if (renderAgeHours > limitHours) {
       return {
         stale: true,
         built,
         ageHours: rendered,
-        ageNote: `last re-rendered ${rendered}h ago (limit ${MAX_SNAPSHOT_AGE_HOURS}h)`,
+        ageNote: `last re-rendered ${rendered}h ago (limit ${limitHours}h)`,
       };
     }
     return {
@@ -324,12 +387,12 @@ function judgeFreshness(built, expected, ageCache, renderAgeHours = null) {
     };
   }
   const rounded = Math.round(ageHours * 10) / 10;
-  if (ageHours > MAX_SNAPSHOT_AGE_HOURS) {
+  if (ageHours > limitHours) {
     return {
       stale: true,
       built,
       ageHours: rounded,
-      ageNote: `that commit is ${rounded}h old (limit ${MAX_SNAPSHOT_AGE_HOURS}h) — the response had no usable Last-Modified, so this is judged by commit age, which can over-state staleness`,
+      ageNote: `that commit is ${rounded}h old (limit ${limitHours}h) — the response had no usable Last-Modified, so this is judged by commit age, which can over-state staleness`,
     };
   }
   return { stale: false, built, note: ` (built from ${built.slice(0, 12)}, ${rounded}h old)` };
@@ -405,7 +468,7 @@ async function main() {
   console.log(`check-prerender-delivery: probing ${origins.length} origin(s) as Googlebot`);
   console.log(`  paths: ${PATHS.join(', ')}   minimum real-page size: ${MIN_BYTES} bytes`);
   console.log(expected
-    ? `  expected build: ${expected.slice(0, 12)}   stale after: ${MAX_SNAPSHOT_AGE_HOURS}h without a re-render\n`
+    ? `  expected build: ${expected.slice(0, 12)}   stale after: ${MAX_SNAPSHOT_AGE_HOURS}h without a re-render, or a page's own refresh interval + ${TTL_SLACK_HOURS}h if longer\n`
     : `  expected build: UNKNOWN — freshness will be reported but cannot be judged\n`);
 
   let shells = 0;      // served the empty SPA shell — platform-wide fault
@@ -428,7 +491,7 @@ async function main() {
       if (r.real) {
         // Freshness is judged only on a page that is otherwise fine. A blank
         // page is already the louder fault and does not need a second label.
-        const freshness = judgeFreshness(r.buildCommit, expected, ageCache, r.renderAgeHours);
+        const freshness = judgeFreshness(r.buildCommit, expected, ageCache, r.renderAgeHours, ageLimitHoursFor(path));
         if (freshness.stale) {
           stale += 1;
           staleDetail.push({ page: `${origin}${path}`, ...freshness });
@@ -513,6 +576,7 @@ async function main() {
 // so a test seeds it and drives every branch directly.
 export {
   judgeFreshness, sameCommit, buildCommitOf, expectedCommit, renderAgeHoursFrom,
+  loadTtlTable, refreshIntervalHoursFor, ageLimitHoursFor,
   originsFromPlan, compareOriginLists, originsFromArgs,
 };
 

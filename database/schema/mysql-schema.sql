@@ -13523,6 +13523,21 @@ CREATE TABLE `listings` (
   CONSTRAINT `listings_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=567 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `listings_digest_sends`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `listings_digest_sends` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `listing_id` int(10) unsigned NOT NULL,
+  `sent_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_listings_digest_sends_member_listing` (`tenant_id`,`user_id`,`listing_id`),
+  KEY `idx_listings_digest_sends_member_sent` (`tenant_id`,`user_id`,`sent_at`),
+  KEY `idx_listings_digest_sends_sent_at` (`sent_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `login_attempts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -22717,7 +22732,8 @@ INSERT INTO `laravel_migrations` VALUES
 (495,'2026_10_21_100000_create_vol_wellbeing_alert_notifications',162),
 (496,'2026_10_21_100100_create_vol_wellbeing_alert_notes',162),
 (497,'2026_10_21_120000_let_orphaned_wellbeing_notes_be_deleted',163),
-(498,'2026_10_21_140000_make_wellbeing_notification_record_unique',164);
+(498,'2026_10_21_140000_make_wellbeing_notification_record_unique',164),
+(499,'2026_10_25_100000_create_listings_digest_sends_table',165);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
