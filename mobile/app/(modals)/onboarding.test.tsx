@@ -153,6 +153,47 @@ describe('OnboardingScreen', () => {
     expect(mockReplace).toHaveBeenCalledWith('/(tabs)/home');
   });
 
+  it('shows what each safeguarding option really does when the server says so', async () => {
+    jest.mocked(getSafeguardingOptions).mockResolvedValueOnce([
+      {
+        id: 11,
+        option_key: 'only_vetted_contact',
+        option_type: 'checkbox',
+        label: 'Only vetted members can contact me',
+        is_required: false,
+        effects: [
+          'Members without community-recorded vetting cannot message you.',
+          'A coordinator is told you made this choice.',
+        ],
+      },
+      {
+        id: 12,
+        option_key: 'old_server_option',
+        option_type: 'checkbox',
+        label: 'Option from an older server',
+        is_required: false,
+      },
+      {
+        id: 13,
+        option_key: 'empty_effects',
+        option_type: 'checkbox',
+        label: 'Option with no effects',
+        is_required: false,
+        effects: [],
+      },
+    ]);
+    const { getAllByText, getByTestId, getByText, queryByTestId } = render(<OnboardingScreen />);
+    await waitFor(() => expect(getByText('Welcome to Timebank Global!')).toBeTruthy());
+    fireEvent.press(getByTestId('onboarding-next'));
+
+    await waitFor(() => expect(getByTestId('safeguarding-effects-11')).toBeTruthy());
+    expect(getAllByText('safeguarding.what_this_does')).toHaveLength(1);
+    expect(getByText('Members without community-recorded vetting cannot message you.')).toBeTruthy();
+    expect(getByText('A coordinator is told you made this choice.')).toBeTruthy();
+    expect(queryByTestId('safeguarding-effects-12')).toBeNull();
+    expect(queryByTestId('safeguarding-effects-13')).toBeNull();
+  });
+
   it('visibly refuses to bypass a required safeguarding response', async () => {
     const { getByTestId, getByText } = render(<OnboardingScreen />);
     await waitFor(() => expect(getByText('Welcome to Timebank Global!')).toBeTruthy());

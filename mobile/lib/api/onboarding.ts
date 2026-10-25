@@ -61,6 +61,11 @@ export interface SafeguardingOption {
   help_url?: string | null;
   is_required: boolean;
   select_options?: string | null;
+  /**
+   * Plain-language sentences, already translated by the server, saying what
+   * choosing this option really does. Older servers do not send it.
+   */
+  effects?: string[];
 }
 
 export interface SafeguardingPreference {

@@ -475,6 +475,7 @@ function OnboardingScreenInner() {
                     <Text className="font-semibold text-foreground">{option.label}{option.is_required ? ' *' : ''}</Text>
                   )}
                   {option.description ? <Text className="text-sm leading-5 text-muted-foreground">{option.description}</Text> : null}
+                  <SafeguardingEffects effects={option.effects} heading={t('safeguarding.what_this_does')} optionId={option.id} />
                   {option.option_type === 'select' ? parseSelectOptions(option.select_options).map((choice) => {
                     const selected = safeguardingSelectValues[option.id] === choice.value;
                     return (
@@ -584,6 +585,26 @@ function Summary({ title, values, categories, empty }: { title: string; values: 
     <View className="gap-1 rounded-panel-inner bg-default-50 p-3">
       <Text className="font-semibold text-foreground">{title}</Text>
       <Text className="text-sm text-muted-foreground">{names.length > 0 ? names.join(', ') : empty}</Text>
+    </View>
+  );
+}
+
+/**
+ * What choosing a safeguarding option really does, in the server's own words
+ * (already translated). Older servers send no `effects`, so render nothing then.
+ */
+function SafeguardingEffects({ effects, heading, optionId }: { effects?: string[]; heading: string; optionId: number }) {
+  const lines = (effects ?? []).filter((line) => typeof line === 'string' && line.trim() !== '');
+  if (lines.length === 0) return null;
+  return (
+    <View testID={`safeguarding-effects-${optionId}`} className="gap-1 rounded-panel-inner bg-default-50 p-3">
+      <Text accessibilityRole="header" className="text-sm font-semibold text-foreground">{heading}</Text>
+      {lines.map((line, index) => (
+        <View key={index} className="flex-row gap-2" accessible accessibilityLabel={line}>
+          <Text className="text-sm leading-5 text-muted-foreground" importantForAccessibility="no">{'•'}</Text>
+          <Text className="min-w-0 flex-1 text-sm leading-5 text-muted-foreground">{line}</Text>
+        </View>
+      ))}
     </View>
   );
 }

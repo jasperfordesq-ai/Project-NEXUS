@@ -112,6 +112,7 @@
     "select_option": "Choisissez une option",
     "or_separator": "ou",
     "learn_more": "Apprendre encore plus",
+    "what_this_does": "Ce que cela fait",
     "confirmation": {
       "title": "Vos préférences de sauvegarde ont été enregistrées",
       "intro": "Merci d'avoir partagé cela. Voici un résumé de ce que vous avez choisi, qui peut le voir et ce qui s'active en conséquence.",
