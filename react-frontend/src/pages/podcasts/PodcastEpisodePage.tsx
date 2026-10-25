@@ -12,6 +12,8 @@ import { usePodcastPlayer } from '@/contexts/PodcastPlayerContext';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { podcastsApi, type PodcastEpisode } from '@/lib/api/podcasts';
+import { episodeAvailability } from '@/lib/podcasts/availability';
+import { EpisodeAvailabilityChip } from '@/components/podcasts/EpisodeAvailabilityChip';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import FileText from 'lucide-react/icons/file-text';
 import Heart from 'lucide-react/icons/heart';
@@ -196,16 +198,15 @@ export default function PodcastEpisodePage() {
         <header>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <Chip size="sm" variant="soft">{t(`episode.type.${episode.episode_type}`, { defaultValue: episode.episode_type })}</Chip>
-            {episode.status !== 'published' || episode.moderation_status !== 'approved' ? (
-              <Chip
-                size="sm"
-                variant="soft"
-                color={episode.moderation_status === 'rejected' || episode.moderation_status === 'flagged' ? 'danger' : 'warning'}
-              >
-                {t(`moderation.${episode.moderation_status}`, { defaultValue: episode.moderation_status })}
-              </Chip>
-            ) : null}
+            {/* 🔴 This chip used to show the MODERATION state whenever the episode was not
+                live, so an unpublished draft read "Approved". */}
+            <EpisodeAvailabilityChip episode={episode} />
           </div>
+          {episodeAvailability(episode, String) !== null && (
+            <p className="mb-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground" role="note">
+              {t('episode.unlisted_notice')}
+            </p>
+          )}
           <h1 className="text-3xl font-bold leading-tight">{episode.title}</h1>
           <p className="mt-2 text-sm text-muted">
             {episode.show?.title ? t('episode.from_show', { title: episode.show.title }) : t('title')}

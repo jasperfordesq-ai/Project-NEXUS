@@ -407,6 +407,12 @@ app.use(helmet({
       // Docker those differ, and allowing the container-only hostname would
       // permit a host the browser cannot resolve while blocking the one it can.
       imgSrc: ["'self'", "data:", new URL(getPublicAssetBaseUrl()).origin],
+      // 🔴 Podcast audio. With no media-src the browser fell back to default-src 'self'
+      // and silently refused every <audio> source: an uploaded episode is served by the
+      // API host (/api/v2/podcasts/media/...), a linked one from any podcast host. Same
+      // rule as the platform's own policy (app/Http/Middleware/SecurityHeaders.php:
+      // "media-src 'self' https: blob:"), plus the asset origin for local http setups.
+      mediaSrc: ["'self'", 'https:', new URL(getPublicAssetBaseUrl()).origin],
       fontSrc: ["'self'"],
       // challenges.cloudflare.com — Turnstile siteverify (server-side) +
       // browser-side widget telemetry posts back to its own origin.

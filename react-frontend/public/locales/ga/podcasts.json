@@ -49,7 +49,8 @@
     "episode_count_two": "{{count}} eipeasóid",
     "follower_count_few": "{{count}} leantóir",
     "follower_count_many": "{{count}} leantóir",
-    "follower_count_two": "{{count}} leantóir"
+    "follower_count_two": "{{count}} leantóir",
+    "unlisted_notice": "Níl na heachtraí a bhfuil lipéad orthu ar fáil d’éisteoirí fós. Is féidir leat iad a fheiceáil mar gur tusa a bhainistíonn an podchraoladh seo."
   },
   "episode": {
     "load_failed": "Níorbh fhéidir an eipeasóid seo a lódáil",
@@ -89,7 +90,8 @@
     },
     "reactions_count_few": "{{count}} freagairt",
     "reactions_count_many": "{{count}} freagairt",
-    "reactions_count_two": "{{count}} freagairt"
+    "reactions_count_two": "{{count}} freagairt",
+    "unlisted_notice": "Ní féidir le héisteoirí an eachtra seo a fheiceáil ná éisteacht léi fós. Is féidir leatsa mar gur tusa a bhainistíonn an podchraoladh seo. Foilsigh í ón stiúideo podchraolta nuair a bheidh sí réidh."
   },
   "player": {
     "volume": "Airde fuaime",

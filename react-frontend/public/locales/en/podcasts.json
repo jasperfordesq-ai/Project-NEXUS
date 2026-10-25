@@ -43,7 +43,8 @@
     "episodes": "Episodes",
     "no_episodes": "No published episodes yet.",
     "load_failed": "This podcast show could not be loaded",
-    "retry": "Try again"
+    "retry": "Try again",
+    "unlisted_notice": "Episodes with a label are not available to listeners yet. You can see them because you manage this podcast."
   },
   "episode": {
     "title": "Podcast episode",
@@ -80,7 +81,8 @@
       "full": "Full episode",
       "trailer": "Trailer",
       "bonus": "Bonus"
-    }
+    },
+    "unlisted_notice": "Listeners cannot see or hear this episode yet. You can because you manage this podcast. Publish it from Podcast Studio when it is ready."
   },
   "player": {
     "unsupported": "Your browser does not support the audio player.",

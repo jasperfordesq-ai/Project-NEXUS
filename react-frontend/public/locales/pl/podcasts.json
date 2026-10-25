@@ -47,7 +47,8 @@
     "episode_count_few": "{{count}} odcinki",
     "episode_count_many": "{{count}} odcinków",
     "follower_count_few": "{{count}} obserwujących",
-    "follower_count_many": "{{count}} obserwujących"
+    "follower_count_many": "{{count}} obserwujących",
+    "unlisted_notice": "Odcinki z etykietą nie są jeszcze dostępne dla słuchaczy. Widzisz je, ponieważ zarządzasz tym podcastem."
   },
   "episode": {
     "load_failed": "Nie udało się wczytać tego odcinka",
@@ -86,7 +87,8 @@
       "bonus": "Bonus"
     },
     "reactions_count_few": "{{count}} reakcje",
-    "reactions_count_many": "{{count}} reakcji"
+    "reactions_count_many": "{{count}} reakcji",
+    "unlisted_notice": "Słuchacze nie mogą jeszcze zobaczyć ani odsłuchać tego odcinka. Ty możesz, ponieważ zarządzasz tym podcastem. Opublikuj go w studiu podcastów, gdy będzie gotowy."
   },
   "player": {
     "volume": "Głośność",

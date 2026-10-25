@@ -45,7 +45,8 @@
     "episodes": "Episodios",
     "no_episodes": "Aún no hay episodios publicados.",
     "episode_count_many": "{{count}} episodios",
-    "follower_count_many": "{{count}} seguidores"
+    "follower_count_many": "{{count}} seguidores",
+    "unlisted_notice": "Los episodios con una etiqueta aún no están disponibles para los oyentes. Puedes verlos porque gestionas este pódcast."
   },
   "episode": {
     "load_failed": "No se pudo cargar este episodio de pódcast",
@@ -83,7 +84,8 @@
       "trailer": "Tráiler",
       "bonus": "Extra"
     },
-    "reactions_count_many": "{{count}} reacciones"
+    "reactions_count_many": "{{count}} reacciones",
+    "unlisted_notice": "Los oyentes aún no pueden ver ni escuchar este episodio. Tú sí, porque gestionas este pódcast. Publícalo desde el estudio de pódcast cuando esté listo."
   },
   "player": {
     "volume": "Volumen",

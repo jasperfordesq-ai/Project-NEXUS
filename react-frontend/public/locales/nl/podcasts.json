@@ -43,7 +43,8 @@
     "unsubscribed": "Toon niet gevolgd.",
     "subscribe_failed": "Kan de volgvoorkeur niet updaten.",
     "episodes": "Afleveringen",
-    "no_episodes": "Nog geen gepubliceerde afleveringen."
+    "no_episodes": "Nog geen gepubliceerde afleveringen.",
+    "unlisted_notice": "Afleveringen met een label zijn nog niet beschikbaar voor luisteraars. U ziet ze omdat u deze podcast beheert."
   },
   "episode": {
     "load_failed": "Deze podcastaflevering kon niet worden geladen",
@@ -80,7 +81,8 @@
       "full": "Volledige aflevering",
       "trailer": "Trailer",
       "bonus": "Bonus"
-    }
+    },
+    "unlisted_notice": "Luisteraars kunnen deze aflevering nog niet zien of beluisteren. U wel, omdat u deze podcast beheert. Publiceer hem vanuit de podcaststudio als hij klaar is."
   },
   "player": {
     "volume": "Volume",

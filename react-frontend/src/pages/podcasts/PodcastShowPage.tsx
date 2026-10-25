@@ -13,6 +13,8 @@ import { API_BASE } from '@/lib/api';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safePodcastArtworkUrl } from '@/lib/podcasts/artwork';
 import { podcastsApi, type PodcastShow } from '@/lib/api/podcasts';
+import { episodeAvailability } from '@/lib/podcasts/availability';
+import { EpisodeAvailabilityChip } from '@/components/podcasts/EpisodeAvailabilityChip';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
 import Bell from 'lucide-react/icons/bell';
 import BellOff from 'lucide-react/icons/bell-off';
@@ -56,6 +58,8 @@ export default function PodcastShowPage() {
   }, [showSlug, retryKey, t]);
 
   const isOwner = user?.id && show?.owner_user_id === user.id;
+  // Not-yet-live episodes reach this page only for the owner and admins; say so.
+  const hasUnlistedEpisodes = (show?.episodes ?? []).some((episode) => episodeAvailability(episode, String) !== null);
   const feedUrl = tenant?.id
     ? `${API_BASE}/v2/podcasts/feed/${tenant.id}/${encodeURIComponent(showSlug)}.xml`
     : `${API_BASE}/v2/podcasts/${encodeURIComponent(showSlug)}/feed.xml`;
@@ -169,15 +173,23 @@ export default function PodcastShowPage() {
 
       <section className="mt-8">
         <h2 className="mb-4 text-xl font-semibold">{t('show.episodes')}</h2>
+        {hasUnlistedEpisodes && (
+          <p className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground" role="note">
+            {t('show.unlisted_notice')}
+          </p>
+        )}
         {show.episodes && show.episodes.length > 0 ? (
           <div className="space-y-3">
             {show.episodes.map((episode) => (
               <Card key={episode.id}>
                 <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <Link className="font-semibold hover:text-accent" to={tenantPath(`/podcasts/${show.slug}/${episode.slug}`)}>
-                      {episode.title}
-                    </Link>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link className="font-semibold hover:text-accent" to={tenantPath(`/podcasts/${show.slug}/${episode.slug}`)}>
+                        {episode.title}
+                      </Link>
+                      <EpisodeAvailabilityChip episode={episode} />
+                    </div>
                     <p className="mt-1 line-clamp-2 text-sm text-muted">{episode.summary || episode.description || t('episode.no_summary')}</p>
                   </div>
                   <Button as={Link} to={tenantPath(`/podcasts/${show.slug}/${episode.slug}`)} variant="tertiary" size="sm" startContent={<Radio size={16} aria-hidden="true" />}>

@@ -116,6 +116,36 @@ describe('PodcastEpisodePage', () => {
     });
   });
 
+  it('labels an unpublished draft as a draft, not with its moderation result', async () => {
+    // 🔴 25 Oct 2026: a draft (moderation "approved") read "Approved" here, and its
+    // owner, who can play it, took it for a published episode.
+    mockEpisode.mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: 42, show_id: 7, author_user_id: 3, title: 'Draft episode', slug: 'public-episode',
+        audio_url: 'https://cdn.example.test/public.mp3', explicit: false, episode_type: 'full',
+        visibility: 'public', status: 'draft', moderation_status: 'approved', listen_count: 0,
+        reaction_count: 0, viewer_has_reacted: false,
+        show: { id: 7, owner_user_id: 3, title: 'Community show', slug: 'community-show', language: 'en', visibility: 'public', status: 'published', moderation_status: 'approved', episode_count: 0, subscriber_count: 0 },
+      },
+    });
+
+    renderEpisodePage();
+
+    expect(await screen.findByRole('heading', { name: 'Draft episode' })).toBeInTheDocument();
+    expect(screen.getByText('Draft')).toBeInTheDocument();
+    expect(screen.queryByText('Approved')).not.toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent(/Listeners cannot see or hear this episode yet/);
+  });
+
+  it('shows no availability label or notice on a live episode', async () => {
+    renderEpisodePage();
+
+    expect(await screen.findByRole('heading', { name: 'Public episode' })).toBeInTheDocument();
+    expect(screen.queryByText('Draft')).not.toBeInTheDocument();
+    expect(screen.queryByRole('note')).not.toBeInTheDocument();
+  });
+
   // Listen-completion analytics are owned by PodcastPlayerContext now (they
   // must survive this page unmounting) — see PodcastPlayerContext.test.tsx.
   it('renders the player bound to the loaded episode and route show slug', async () => {

@@ -205,6 +205,9 @@ describe('Public Routes', () => {
       // MIT licence does not require it. Asserted absent so it cannot return.
       expect(response.text).not.toContain('Not affiliated with GOV.UK');
       expect(response.headers['content-security-policy']).toContain('img-src \'self\' data: http://127.0.0.1:8090');
+      // Podcast audio comes from the API host or any podcast host. Without media-src
+      // the browser fell back to default-src 'self' and refused every episode (25 Oct 2026).
+      expect(response.headers['content-security-policy']).toContain('media-src \'self\' https: http://127.0.0.1:8090');
       expect(response.text).toContain('Built for accessibility needs');
       expect(response.text).toContain('Members');
       expect(response.text).toContain('1,234');

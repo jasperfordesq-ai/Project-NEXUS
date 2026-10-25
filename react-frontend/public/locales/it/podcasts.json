@@ -45,7 +45,8 @@
     "episodes": "Episodi",
     "no_episodes": "Nessun episodio ancora pubblicato.",
     "episode_count_many": "{{count}} episodi",
-    "follower_count_many": "{{count}} iscritti"
+    "follower_count_many": "{{count}} iscritti",
+    "unlisted_notice": "Gli episodi con un'etichetta non sono ancora disponibili per gli ascoltatori. Li vedi perché gestisci questo podcast."
   },
   "episode": {
     "load_failed": "Impossibile caricare questo episodio",
@@ -83,7 +84,8 @@
       "trailer": "Trailer",
       "bonus": "Bonus"
     },
-    "reactions_count_many": "{{count}} reazioni"
+    "reactions_count_many": "{{count}} reazioni",
+    "unlisted_notice": "Gli ascoltatori non possono ancora vedere né ascoltare questo episodio. Tu puoi perché gestisci questo podcast. Pubblicalo dallo studio podcast quando è pronto."
   },
   "player": {
     "volume": "Volume",

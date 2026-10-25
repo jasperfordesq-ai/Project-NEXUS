@@ -43,7 +43,8 @@
     "unsubscribed": "Sie folgen der Show nicht mehr.",
     "subscribe_failed": "Die Follow-Präferenz konnte nicht aktualisiert werden.",
     "episodes": "Folgen",
-    "no_episodes": "Noch keine veröffentlichten Episoden."
+    "no_episodes": "Noch keine veröffentlichten Episoden.",
+    "unlisted_notice": "Folgen mit einer Kennzeichnung sind für Hörerinnen und Hörer noch nicht verfügbar. Sie sehen sie, weil Sie diesen Podcast verwalten."
   },
   "episode": {
     "load_failed": "Diese Podcastfolge konnte nicht geladen werden",
@@ -80,7 +81,8 @@
       "full": "Vollständige Folge",
       "trailer": "Trailer",
       "bonus": "Bonus"
-    }
+    },
+    "unlisted_notice": "Hörerinnen und Hörer können diese Folge noch nicht sehen oder hören. Sie können es, weil Sie diesen Podcast verwalten. Veröffentlichen Sie sie im Podcast-Studio, wenn sie fertig ist."
   },
   "player": {
     "volume": "Lautstärke",

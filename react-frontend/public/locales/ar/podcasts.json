@@ -51,7 +51,8 @@
     "follower_count_few": "{{count}} متابعين",
     "follower_count_many": "{{count}} متابعين",
     "follower_count_two": "{{count}} متابعين",
-    "follower_count_zero": "{{count}} متابعين"
+    "follower_count_zero": "{{count}} متابعين",
+    "unlisted_notice": "الحلقات التي تحمل تسمية غير متاحة للمستمعين بعد. يمكنك رؤيتها لأنك تدير هذا البودكاست."
   },
   "episode": {
     "load_failed": "تعذر تحميل حلقة البودكاست هذه",
@@ -92,7 +93,8 @@
     "reactions_count_few": "{{count}} reactions",
     "reactions_count_many": "{{count}} reactions",
     "reactions_count_two": "{{count}} reactions",
-    "reactions_count_zero": "{{count}} reactions"
+    "reactions_count_zero": "{{count}} reactions",
+    "unlisted_notice": "لا يمكن للمستمعين رؤية هذه الحلقة أو سماعها بعد. يمكنك ذلك لأنك تدير هذا البودكاست. انشرها من استوديو البودكاست عندما تكون جاهزة."
   },
   "player": {
     "volume": "مستوى الصوت",
