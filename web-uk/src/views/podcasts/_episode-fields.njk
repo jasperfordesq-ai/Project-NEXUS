@@ -14,7 +14,7 @@
   <div class="govuk-form-group">
     <label class="govuk-label{% if not edit %} govuk-label--s{% endif %}" for="episode_description{{ suffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_description_label") }}{% if not edit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
     {% if not edit %}<div id="episode_description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.episode_description_hint") }}</div>{% endif %}
-    <textarea class="govuk-textarea" id="episode_description{{ suffix }}" name="episode_description" rows="3"{% if not edit %} aria-describedby="episode_description-hint"{% endif %}>{{ ep.description }}</textarea>
+    <textarea class="govuk-textarea" id="episode_description{{ suffix }}" name="episode_description" rows="3"{% if not edit %} aria-describedby="episode_description-hint"{% endif %}>{{ ep.descriptionOnly }}</textarea>
   </div>
 {% endmacro %}
 
@@ -120,7 +120,7 @@
   <div class="govuk-form-group">
     <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="chapters_json{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.chapters_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
     <div id="chapters_json-hint{{ episodeFieldSuffix }}" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.chapters_hint") }}</div>
-    <textarea class="govuk-textarea" id="chapters_json{{ episodeFieldSuffix }}" name="chapters_json" rows="6" aria-describedby="chapters_json-hint{{ episodeFieldSuffix }}">{{ episodeField.chaptersJson }}</textarea>
+    <textarea class="govuk-textarea" id="chapters_json{{ episodeFieldSuffix }}" name="chapters_json" rows="6" aria-describedby="chapters_json-hint{{ episodeFieldSuffix }}">{{ episodeField.chaptersText }}</textarea>
   </div>
 {% endif %}
 

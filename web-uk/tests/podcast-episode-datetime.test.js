@@ -7,7 +7,8 @@
  * Episode `scheduled_for` was converted from a native datetime-local input to the GOV.UK
  * date + single-time pattern. The payload builder must recombine the four posted fields
  * into the same YYYY-MM-DDTHH:MM the Laravel API already expected, and keep the existing
- * "absent on create → omitted, absent on update → null" behaviour.
+ * "absent on create → omitted, absent on update → null" behaviour. Since 2026-10-25 the
+ * value is sent with its zone (":00Z"): the form says the time is UTC.
  */
 const { episodePayload } = require('../src/routes/podcast-actions');
 
@@ -16,11 +17,11 @@ describe('podcast episode scheduled_for recombination', () => {
     const { payload } = episodePayload({
       'scheduled_for-day': '7', 'scheduled_for-month': '9', 'scheduled_for-year': '2026', 'scheduled_for-time': '8:05pm'
     });
-    expect(payload.scheduled_for).toBe('2026-09-07T20:05');
+    expect(payload.scheduled_for).toBe('2026-09-07T20:05:00Z');
   });
 
   it('still accepts an already-composed single value', () => {
-    expect(episodePayload({ scheduled_for: '2026-09-07T20:05' }).payload.scheduled_for).toBe('2026-09-07T20:05');
+    expect(episodePayload({ scheduled_for: '2026-09-07T20:05' }).payload.scheduled_for).toBe('2026-09-07T20:05:00Z');
   });
 
   it('omits scheduled_for on create when empty, and nulls it on update', () => {

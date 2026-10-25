@@ -170,7 +170,8 @@ describe('podcast show page', () => {
     // govukTag puts the label on its own line inside the <strong>.
     expect(response.text).toMatch(/>\s*Draft\s*<\/strong>/);
     expect(response.text).toMatch(/>\s*Awaiting review\s*<\/strong>/);
-    expect(response.text).toMatch(/>\s*Scheduled for 2999-01-02 09:30\s*<\/strong>/);
+    // In UTC and named as such (api-instant.js).
+    expect(response.text).toMatch(/>\s*Scheduled for 2 January 2999 at 09:30 UTC\s*<\/strong>/);
     expect(response.text).toMatch(/>\s*Audio still being checked\s*<\/strong>/);
     // One label per not-yet-live episode; the live one has none.
     expect((response.text.match(/<strong class="govuk-tag govuk-tag--(yellow|red)/g) || []).length).toBe(4);

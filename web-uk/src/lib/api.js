@@ -2375,9 +2375,11 @@ function appendPodcastEpisodeFields(form, data) {
     'scheduled_for'
   ];
   fields.forEach((field) => {
-    if (data[field] !== undefined && data[field] !== null) {
-      form.append(field, String(data[field]));
-    }
+    if (data[field] === undefined) return;
+    // null means "clear it" (an edit that blanked the box). It used to be dropped, so
+    // replacing the audio file could never clear a schedule or an episode number. An
+    // empty multipart field reaches the API as null (ConvertEmptyStringsToNull).
+    form.append(field, data[field] === null ? '' : String(data[field]));
   });
   form.append('explicit', data.explicit ? '1' : '0');
   if (data.chapters !== undefined) {

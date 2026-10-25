@@ -87,6 +87,28 @@ function studioRedirect(showId, status) {
   return statusRedirect(`/podcasts/studio/${showId}`, status);
 }
 
+function payloadErrorStatus(errors, fallback) {
+  if (errors.includes('scheduled_for')) return 'episode-schedule-invalid';
+  if (errors.includes('chapters_json')) return 'episode-chapters-invalid';
+  return fallback;
+}
+
+/**
+ * Keep the API's own reason for refusing a request, for the next page to show.
+ *
+ * 🔴 Every refusal used to collapse into one generic message ("could not be added"),
+ * whether the API said the audio link was a web page, the media was still being
+ * scanned or the show does not allow private episodes. The API words its message in
+ * the member's language (the request carries Accept-Language), so it is shown as is.
+ * Server errors (5xx) and unparseable bodies keep the generic message only.
+ */
+function rememberApiReason(req, error) {
+  if (!(error instanceof ApiError) || !req.flash || error.status < 400 || error.status >= 500) return;
+  const first = Array.isArray(error.data && error.data.errors) ? error.data.errors[0] : null;
+  const message = trimmed((first && first.message) || (error.data && error.data.message), 300);
+  if (message) req.flash('podcastApiReason', message);
+}
+
 function allowedVisibility(value) {
   const visibility = trimmed(value);
   return ['public', 'members', 'private'].includes(visibility) ? visibility : 'public';
@@ -163,8 +185,10 @@ function episodePayload(body, options = {}) {
   // existing schedule, so the episode could go out early while the page said "saved".
   const scheduled = readDateTime(body, 'scheduled_for');
   const scheduledFor = scheduled.value || '';
+  // The form says the time is UTC; sending it with an explicit zone means the API
+  // cannot read it as anything else, whatever its own default zone.
   if (scheduled.error) errors.push('scheduled_for');
-  else if (scheduledFor !== '') payload.scheduled_for = scheduledFor;
+  else if (scheduledFor !== '') payload.scheduled_for = `${scheduledFor}:00Z`;
   else if (options.update) payload.scheduled_for = null;
 
   if (options.transcriptsEnabled) {
@@ -173,21 +197,50 @@ function episodePayload(body, options = {}) {
   }
 
   if (options.chaptersEnabled) {
-    const chaptersJson = trimmed(body.chapters_json);
-    if (chaptersJson === '') {
+    const chaptersText = trimmed(body.chapters_json);
+    if (chaptersText === '') {
       if (options.update) payload.chapters = [];
     } else {
-      try {
-        const chapters = JSON.parse(chaptersJson);
-        if (!Array.isArray(chapters)) errors.push('chapters_json');
-        else payload.chapters = chapters;
-      } catch {
-        errors.push('chapters_json');
-      }
+      const chapters = parseChapters(chaptersText);
+      if (chapters === null) errors.push('chapters_json');
+      else payload.chapters = chapters;
     }
   }
 
   return { payload, errors };
+}
+
+function chapterSeconds(token) {
+  if (/^\d+$/.test(token)) return Number(token);
+  const match = token.match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/);
+  if (!match || Number(match[3]) > 59 || (match[1] !== undefined && Number(match[2]) > 59)) return null;
+  return (Number(match[1] || 0) * 3600) + (Number(match[2]) * 60) + Number(match[3]);
+}
+
+/**
+ * Chapters as the website takes them — one per line, a start time then a title
+ * ("0:00 Introduction", "1:02:30 Questions") — or, as before, a JSON list (needed
+ * for a chapter with a link). Null when any line has no valid start time.
+ */
+function parseChapters(text) {
+  if (text.startsWith('[')) {
+    try {
+      const chapters = JSON.parse(text);
+      return Array.isArray(chapters) ? chapters : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const chapters = [];
+  for (const line of text.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
+    const [token, ...rest] = line.split(/\s+/);
+    const seconds = chapterSeconds(token);
+    const title = rest.join(' ').trim();
+    if (seconds === null || title === '') return null;
+    chapters.push({ title: title.slice(0, 200), starts_at_seconds: seconds, position: chapters.length });
+  }
+  return chapters;
 }
 
 async function podcastMeta(token) {
@@ -231,6 +284,7 @@ async function updateEpisodeFromStudio(req, res, token, showId, episodeId) {
   } catch (error) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     return redirectTo(res, studioRedirect(showId, 'episode-save-failed'));
   }
   const { payload, errors } = episodePayload(req.body, {
@@ -248,7 +302,7 @@ async function updateEpisodeFromStudio(req, res, token, showId, episodeId) {
   }
   if (errors.length > 0) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
-    return redirectTo(res, studioRedirect(showId, errors.includes('scheduled_for') ? 'episode-schedule-invalid' : 'episode-save-failed'));
+    return redirectTo(res, studioRedirect(showId, payloadErrorStatus(errors, 'episode-save-failed')));
   }
 
   let status = 'episode-saved';
@@ -271,6 +325,7 @@ async function updateEpisodeFromStudio(req, res, token, showId, episodeId) {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     status = 'episode-save-failed';
   } finally {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
@@ -291,6 +346,7 @@ router.post('/:id(\\d+)/subscribe', asyncRoute(async (req, res) => {
     status = data && data.subscribed === false ? 'unsubscribed' : 'subscribed';
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
   }
 
   return redirectTo(res, statusRedirect(`/podcasts/${id}`, status));
@@ -315,6 +371,7 @@ router.post('/studio/new', asyncRoute(async (req, res) => {
   } catch (error) {
     await removeUploadedFile(artwork);
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     return redirectTo(res, statusRedirect('/podcasts/studio/new', 'show-create-failed'));
   }
 
@@ -334,6 +391,7 @@ router.post('/studio/new', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     return redirectTo(res, studioRedirect(showId, 'show-save-failed'));
   } finally {
     await removeUploadedFile(artwork);
@@ -377,6 +435,7 @@ router.post('/studio/:id(\\d+)/update', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     status = 'show-save-failed';
   } finally {
     await removeUploadedFile(artwork);
@@ -399,6 +458,174 @@ router.post('/studio/:id(\\d+)/publish', asyncRoute(async (req, res) => {
       : 'show-published';
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
+  }
+
+  return redirectTo(res, studioRedirect(id, status));
+}));
+
+function episodePath(showId, episodeId) {
+  return `/podcasts/${showId}/episodes/${episodeId}`;
+}
+
+// Like / remove like, as the website's reaction button. The form posts the state it
+// wants (active=1 or 0) rather than "toggle", so a double submit cannot undo itself.
+router.post('/:showId(\\d+)/episodes/:id(\\d+)/like', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const showId = Number(req.params.showId);
+  const episodeId = Number(req.params.id);
+  const active = checked(req.body.active);
+  let status = active ? 'liked' : 'unliked';
+  try {
+    await callPodcast(token, 'POST', `/episodes/${encodeURIComponent(episodeId)}/reaction`, { reaction: 'like', active });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = 'like-failed';
+  }
+
+  return redirectTo(res, statusRedirect(episodePath(showId, episodeId), status));
+}));
+
+const REPORT_REASONS = ['safety', 'spam', 'rights', 'other'];
+
+function renderReportForm(req, res, showId, episodeId, values = {}, errorText = '') {
+  return res.status(errorText ? 422 : 200).render('podcasts/report', {
+    title: res.locals.t('govuk_alpha.podcasts.report_title'),
+    activeNav: 'explore',
+    showId,
+    episodeId,
+    reasons: REPORT_REASONS,
+    values,
+    errorText,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+// Report an episode to the community's moderators (POST /v2/podcasts/episodes/{id}/report).
+router.get('/:showId(\\d+)/episodes/:id(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  return renderReportForm(req, res, Number(req.params.showId), Number(req.params.id));
+}));
+
+router.post('/:showId(\\d+)/episodes/:id(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const showId = Number(req.params.showId);
+  const episodeId = Number(req.params.id);
+  const reason = trimmed(req.body.reason);
+  const details = trimmed(req.body.details, 2000);
+  if (!REPORT_REASONS.includes(reason)) {
+    return renderReportForm(req, res, showId, episodeId, { details }, res.locals.t('govuk_alpha.podcasts.report_reason_missing'));
+  }
+
+  let status = 'reported';
+  try {
+    await callPodcast(token, 'POST', `/episodes/${encodeURIComponent(episodeId)}/report`, {
+      reason,
+      ...(details ? { details } : {})
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = 'report-failed';
+  }
+
+  return redirectTo(res, statusRedirect(episodePath(showId, episodeId), status));
+}));
+
+function renderConfirm(req, res, { heading, warning, button, action, cancel }) {
+  const t = res.locals.t;
+  return res.render('confirm-delete', {
+    title: t(heading),
+    activeNav: 'explore',
+    confirmHeading: t(heading),
+    confirmWarning: t(warning),
+    confirmButton: t(button),
+    confirmAction: action,
+    cancelHref: cancel,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+// "Are you sure?" before deleting a whole show and all its episodes. The studio page
+// used to POST the delete straight from its button, while a single episode already
+// had this page.
+router.get('/studio/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  return renderConfirm(req, res, {
+    heading: 'govuk_alpha_commerce.podcast_studio.delete_heading',
+    warning: 'govuk_alpha_commerce.podcast_studio.delete_warning',
+    button: 'govuk_alpha_commerce.podcast_studio.action_delete',
+    action: `/podcasts/studio/${id}/delete`,
+    cancel: `/podcasts/studio/${id}`
+  });
+}));
+
+// Archive: take a show or episode down without deleting it, as the website can
+// (POST /v2/podcasts/{id}/archive, .../episodes/{id}/archive). Publishing it again
+// brings it back.
+router.get('/studio/:id(\\d+)/archive', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  return renderConfirm(req, res, {
+    heading: 'govuk_alpha_commerce.podcast_studio.archive_show_confirm_heading',
+    warning: 'govuk_alpha_commerce.podcast_studio.archive_show_warning',
+    button: 'govuk_alpha_commerce.podcast_studio.archive_show_button',
+    action: `/podcasts/studio/${id}/archive`,
+    cancel: `/podcasts/studio/${id}`
+  });
+}));
+
+router.post('/studio/:id(\\d+)/archive', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  let status = 'show-archived';
+  try {
+    await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/archive`);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
+    status = 'show-archive-failed';
+  }
+
+  return redirectTo(res, studioRedirect(id, status));
+}));
+
+router.get('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/archive', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const episodeId = Number(req.params.episodeId);
+  return renderConfirm(req, res, {
+    heading: 'govuk_alpha_commerce.podcast_studio.archive_episode_confirm_heading',
+    warning: 'govuk_alpha_commerce.podcast_studio.archive_episode_warning',
+    button: 'govuk_alpha_commerce.podcast_studio.archive_episode_button',
+    action: `/podcasts/studio/${id}/episodes/${episodeId}/archive`,
+    cancel: `/podcasts/studio/${id}`
+  });
+}));
+
+router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/archive', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const episodeId = Number(req.params.episodeId);
+  let status = 'episode-archived';
+  try {
+    await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/episodes/${encodeURIComponent(episodeId)}/archive`);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
+    status = 'episode-archive-failed';
   }
 
   return redirectTo(res, studioRedirect(id, status));
@@ -414,6 +641,7 @@ router.post('/studio/:id(\\d+)/delete', asyncRoute(async (req, res) => {
     await callPodcast(token, 'DELETE', `/${encodeURIComponent(id)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     status = 'show-delete-failed';
   }
 
@@ -433,6 +661,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
   } catch (error) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     return redirectTo(res, studioRedirect(id, 'episode-failed'));
   }
   const { payload, errors } = episodePayload(req.body, {
@@ -453,7 +682,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
   }
   if (errors.length > 0) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
-    return redirectTo(res, studioRedirect(id, errors.includes('scheduled_for') ? 'episode-schedule-invalid' : 'episode-failed'));
+    return redirectTo(res, studioRedirect(id, payloadErrorStatus(errors, 'episode-failed')));
   }
 
   let status = 'episode-added';
@@ -473,6 +702,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
       episodeId = positiveInteger(data && (data.id || data.episode_id));
     } catch (error) {
       if (redirectOnAuthError(error, res)) return undefined;
+      rememberApiReason(req, error);
       status = error instanceof ApiError && error.status === 422 ? 'episode-invalid-audio' : 'episode-failed';
     }
 
@@ -482,6 +712,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
         await uploadPodcastEpisodeCover(token, id, episodeId, await bufferedUpload(cover, 'podcast-episode-cover'));
       } catch (error) {
         if (redirectOnAuthError(error, res)) return undefined;
+        rememberApiReason(req, error);
         // The episode WAS created. Saying it failed led members to add it again.
         status = 'episode-cover-failed';
       }
@@ -504,6 +735,7 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/publish', asyncRoute(as
     await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/episodes/${encodeURIComponent(episodeId)}/publish`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     status = 'episode-publish-failed';
   }
 
@@ -541,6 +773,7 @@ router.post('/studio/:id(\\d+)/episodes/:episodeId(\\d+)/delete', asyncRoute(asy
     await callPodcast(token, 'DELETE', `/${encodeURIComponent(id)}/episodes/${encodeURIComponent(episodeId)}`);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    rememberApiReason(req, error);
     status = 'episode-delete-failed';
   }
 

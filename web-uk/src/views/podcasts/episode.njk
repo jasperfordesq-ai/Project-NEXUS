@@ -13,6 +13,28 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="episode-status-heading">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="episode-status-heading">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list"><li>{{ status.message }}</li></ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
   <span class="govuk-caption-xl">{{ show.title }}</span>
   <h1 class="govuk-heading-xl">{{ episode.title }}</h1>
 
@@ -28,7 +50,7 @@
   {% endif %}
 
   {% if episode.description %}
-    <div class="govuk-body-l">{{ episode.description | striptags | nl2br | safe }}</div>
+    <div class="govuk-body{% if not episode.summaryText %}-l{% endif %}">{{ episode.description | striptags | nl2br | safe }}</div>
   {% endif %}
 
   {% if episode.audioUrl %}
@@ -43,8 +65,34 @@
     </div>
   {% endif %}
 
+  <div class="govuk-button-group">
+    {% if reactionsEnabled %}
+      <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/like') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="active" value="{% if viewerLikes %}0{% else %}1{% endif %}">
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{% if viewerLikes %}{{ t("govuk_alpha.podcasts.unlike_button") }}{% else %}{{ t("govuk_alpha.podcasts.like_button") }}{% endif %}</button>
+      </form>
+    {% endif %}
+    <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/report') }}">{{ t("govuk_alpha.podcasts.report_link") }}</a>
+  </div>
+  {% if reactionsEnabled and likeCount > 0 %}
+    <p class="govuk-body-s">{{ tc("govuk_alpha.podcasts.likes_count", likeCount, { count: likeCount }) }}</p>
+  {% endif %}
+
+  {% if episode.chapterList.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha.podcasts.chapters_heading") }}</h2>
+    <ol class="govuk-list">
+      {% for chapter in episode.chapterList %}
+        <li><span class="govuk-!-font-weight-bold">{{ chapter.time }}</span> {{ chapter.title }}</li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
   {% if episode.transcript %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha.polish_commerce.podcast_episode_transcript") }}</h2>
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/transcript.txt') }}" download>{{ t("govuk_alpha.podcasts.transcript_download") }}</a>
+    </p>
     <div class="govuk-body">{{ episode.transcript | nl2br | safe }}</div>
   {% endif %}
     </div>

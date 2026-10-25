@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-24T16:04:38.790Z
-Laravel commit SHA: `ed8135ecff835e1745a01956e6ba93245ff10626`
-Web UK repository commit SHA: `ed8135ecff835e1745a01956e6ba93245ff10626`
+Generated: 2026-10-25T08:44:10.439Z
+Laravel commit SHA: `2169213c0db93134ed27c87caf8ae131f00078c2`
+Web UK repository commit SHA: `2169213c0db93134ed27c87caf8ae131f00078c2`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 838 |
+| web-uk routes | 848 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 128 |
+| Extra web-uk routes | 138 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -78,7 +78,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | organisations | 9 | 0 | 0 | 0 |
 | page | 0 | 0 | 1 | 0 |
 | password | 2 | 0 | 0 | 0 |
-| podcasts | 14 | 0 | 1 | 0 |
+| podcasts | 14 | 0 | 11 | 0 |
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
@@ -150,7 +150,17 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/marketplace/offers/{param}/accept-counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
+| GET | `/podcasts/{param}/episodes/{param}/report` | podcasts |  | web-uk/src/routes/podcast-actions.js |
+| GET | `/podcasts/{param}/episodes/{param}/transcript.txt` | podcasts |  | web-uk/src/routes/podcasts.js |
+| GET | `/podcasts/studio/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
+| GET | `/podcasts/studio/{param}/delete` | podcasts |  | web-uk/src/routes/podcast-actions.js |
+| GET | `/podcasts/studio/{param}/episodes/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/podcasts/studio/{param}/episodes/{param}/delete` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |
+| GET | `/podcasts/studio/{param}/feed-check` | podcasts | podcasts/feed-check | web-uk/src/routes/podcasts.js |
+| POST | `/podcasts/{param}/episodes/{param}/like` | podcasts |  | web-uk/src/routes/podcast-actions.js |
+| POST | `/podcasts/{param}/episodes/{param}/report` | podcasts | confirm-delete | web-uk/src/routes/podcast-actions.js |
+| POST | `/podcasts/studio/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
+| POST | `/podcasts/studio/{param}/episodes/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
 | POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |

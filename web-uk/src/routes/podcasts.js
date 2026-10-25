@@ -11,6 +11,8 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { splitDateTime } = require('../lib/date-input');
 const { translateForRequest } = require('../lib/request-translator');
+const { formatApiDateTime, parseApiInstant } = require('../lib/api-instant');
+const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
 
@@ -51,7 +53,9 @@ const STUDIO_SUCCESS_KEYS = {
   'episode-added': 'status_episode_added',
   'episode-saved': 'status_show_saved',
   'episode-published': 'status_episode_published',
-  'episode-deleted': 'status_episode_deleted'
+  'episode-deleted': 'status_episode_deleted',
+  'show-archived': 'status_show_archived',
+  'episode-archived': 'status_episode_archived'
 };
 const STUDIO_ERROR_KEYS = {
   'show-delete-failed': 'status_show_delete_failed',
@@ -65,6 +69,9 @@ const STUDIO_ERROR_KEYS = {
   'episode-audio-missing': 'status_episode_audio_missing',
   'episode-invalid-audio': 'status_episode_invalid_audio',
   'episode-schedule-invalid': 'error_schedule',
+  'episode-chapters-invalid': 'error_chapters',
+  'show-archive-failed': 'status_show_archive_failed',
+  'episode-archive-failed': 'status_episode_archive_failed',
   'episode-cover-failed': 'status_episode_cover_failed',
   'episode-publish-failed': 'status_episode_publish_failed',
   'episode-delete-failed': 'status_episode_delete_failed'
@@ -73,6 +80,14 @@ const PODCAST_STATUS_KEYS = {
   subscribed: { type: 'success', key: 'podcast_subscribe_success' },
   unsubscribed: { type: 'success', key: 'podcast_unsubscribe_success' },
   'subscribe-failed': { type: 'error', key: 'podcast_subscribe_failed' }
+};
+
+const EPISODE_PAGE_STATUS_KEYS = {
+  liked: { type: 'success', key: 'govuk_alpha.podcasts.liked' },
+  unliked: { type: 'success', key: 'govuk_alpha.podcasts.unliked' },
+  'like-failed': { type: 'error', key: 'govuk_alpha.podcasts.like_failed' },
+  reported: { type: 'success', key: 'govuk_alpha.podcasts.report_sent' },
+  'report-failed': { type: 'error', key: 'govuk_alpha.podcasts.report_failed' }
 };
 
 function tokenFrom(req) {
@@ -279,6 +294,30 @@ function decorateShow(show) {
   };
 }
 
+function chapterRows(chapters) {
+  return (Array.isArray(chapters) ? chapters : [])
+    .map((chapter) => ({
+      title: trimmed(chapter && chapter.title),
+      starts_at_seconds: Math.max(0, Math.floor(Number(chapter && chapter.starts_at_seconds) || 0)),
+      ...(trimmed(chapter && chapter.url) ? { url: trimmed(chapter.url) } : {})
+    }))
+    .filter((chapter) => chapter.title !== '');
+}
+
+function formatChapterTime(totalSeconds) {
+  const safe = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = String(safe % 60).padStart(2, '0');
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${seconds}` : `${minutes}:${seconds}`;
+}
+
+function chaptersEditText(chapters) {
+  const rows = chapterRows(chapters);
+  if (rows.some((chapter) => chapter.url)) return JSON.stringify(rows, null, 2);
+  return rows.map((chapter) => `${formatChapterTime(chapter.starts_at_seconds)} ${chapter.title}`).join('\n');
+}
+
 function decorateEpisode(episode, showId = null) {
   const row = episode && typeof episode === 'object' ? episode : {};
   const id = positiveInteger(row.id);
@@ -291,18 +330,25 @@ function decorateEpisode(episode, showId = null) {
     showId: positiveInteger(row.show_id) || showId,
     title: trimmed(row.title) || translateForRequest('govuk_alpha.podcasts.episodes_title'),
     description: stripHtml(row.description || row.summary || ''),
+    // 🔴 The edit form's Description box. `description` above falls back to the summary
+    // for display, and the form used it, so saving any edit copied the summary into the
+    // description and the episode page then showed it twice.
+    descriptionOnly: stripHtml(row.description || ''),
     // Shown above the description on the episode page, as on the website. Empty when
     // there is no separate description, because `description` already carries it.
-    summaryText: row.description ? stripHtml(row.summary || '').trim() : '',
+    // Also empty when the two are the same text, which the old edit form produced (below).
+    summaryText: row.description && stripHtml(row.summary || '').trim() !== stripHtml(row.description).trim()
+      ? stripHtml(row.summary || '').trim()
+      : '',
     cardDescription: limitedText(row.description || row.summary || '', 240),
     audioUrl: backendRelativeUrl(row.audio_url),
     coverImageUrl: backendRelativeUrl(row.cover_image_url),
     transcript: String(row.transcript || '').trim(),
-    chaptersJson: Array.isArray(row.chapters) ? JSON.stringify(row.chapters.map((chapter) => ({
-      title: trimmed(chapter.title),
-      starts_at_seconds: Math.max(0, Number(chapter.starts_at_seconds) || 0),
-      ...(trimmed(chapter.url) ? { url: trimmed(chapter.url) } : {})
-    })), null, 2) : '',
+    // Chapters are edited as plain lines ("0:00 Introduction"), as on the website;
+    // the form used to ask for raw JSON. A chapter link has no place in that format,
+    // so a chapter that carries one keeps the JSON form (podcast-actions.js reads both).
+    chapterList: chapterRows(row.chapters).map((chapter) => ({ ...chapter, time: formatChapterTime(chapter.starts_at_seconds) })),
+    chaptersText: chaptersEditText(row.chapters),
     scheduledFor: trimmed(row.scheduled_for).slice(0, 16),
     scheduledForParts: splitDateTime(trimmed(row.scheduled_for).slice(0, 16)),
     status,
@@ -335,11 +381,12 @@ function episodeAvailability(row, now = Date.now()) {
   }
   if (moderation !== 'approved') return { key: 'govuk_alpha.podcasts.availability_pending' };
 
-  const scheduled = Date.parse(trimmed(row.scheduled_for));
-  if (Number.isFinite(scheduled) && scheduled > now) {
+  const scheduled = parseApiInstant(trimmed(row.scheduled_for));
+  if (scheduled && scheduled.getTime() > now) {
     return {
       key: 'govuk_alpha.podcasts.availability_scheduled',
-      params: { date: new Date(scheduled).toISOString().slice(0, 16).replace('T', ' ') }
+      // In UTC and named as such, the accessible site's rule for times (api-instant.js).
+      params: { date: formatApiDateTime(scheduled, getRequestIntlLocale() || 'en-GB') }
     };
   }
 
@@ -376,7 +423,7 @@ function showEpisodes(show) {
 function studioEpisodes(show) {
   const rows = Array.isArray(show.episodes) ? show.episodes : [];
   return rows
-    .map((episode) => decorateEpisode(episode, show.id))
+    .map((row) => studioEpisode(decorateEpisode(row, show.id), row))
     .filter((episode) => episode.id !== null);
 }
 
@@ -411,7 +458,7 @@ function showFormErrors(status) {
   };
 }
 
-function statusEntry(status) {
+function statusEntry(status, req = null) {
   const key = trimmed(status);
   if (STUDIO_SUCCESS_KEYS[key]) {
     return {
@@ -420,12 +467,86 @@ function statusEntry(status) {
     };
   }
   if (STUDIO_ERROR_KEYS[key]) {
+    // The API's own reason, kept by podcast-actions.js rememberApiReason(), read once.
+    const reasons = req && typeof req.flash === 'function' ? req.flash('podcastApiReason') : [];
     return {
       type: 'error',
-      message: translateForRequest(`govuk_alpha_commerce.podcast_studio.${STUDIO_ERROR_KEYS[key]}`)
+      message: translateForRequest(`govuk_alpha_commerce.podcast_studio.${STUDIO_ERROR_KEYS[key]}`),
+      detail: Array.isArray(reasons) && reasons.length ? String(reasons[0]) : ''
     };
   }
   return null;
+}
+
+/** Whether the API will accept "publish" for this episode (PodcastService::publishEpisode). */
+function mediaReady(row) {
+  if (row.hosted_audio !== true) return true;
+  return trimmed(row.media_processing_status) === 'complete'
+    && ['clean', 'not_required'].includes(trimmed(row.media_scan_status));
+}
+
+/** One label for a show in the studio: draft, archived, awaiting review, not approved, or live. */
+function showAvailability(row) {
+  const status = trimmed(row.status) || 'draft';
+  if (status === 'archived') return { key: 'govuk_alpha.podcasts.availability_archived', tag: 'govuk-tag--grey' };
+  if (status !== 'published') return { key: 'govuk_alpha.podcasts.availability_draft', tag: 'govuk-tag--grey' };
+  const moderation = trimmed(row.moderation_status) || 'approved';
+  if (moderation === 'rejected' || moderation === 'flagged') return { key: 'govuk_alpha.podcasts.availability_rejected', tag: 'govuk-tag--red' };
+  if (moderation !== 'approved') return { key: 'govuk_alpha.podcasts.availability_pending', tag: 'govuk-tag--yellow' };
+  return { key: 'govuk_alpha_commerce.podcast_studio.status_published', tag: 'govuk-tag--green' };
+}
+
+function moderationFeedback(row) {
+  const feedback = trimmed(row.moderation_feedback, 1000);
+  return feedback
+    ? translateForRequest('govuk_alpha_commerce.podcast_studio.moderation_feedback', { feedback })
+    : '';
+}
+
+/** Studio view of an episode: its label, what can be done with it, and why not. */
+function studioEpisode(episode, row) {
+  const withLabel = withAvailability(episode, row);
+  const status = trimmed(row.status) || 'draft';
+  const ready = mediaReady(row);
+  // A draft whose audio is not ready says so, because that — not "draft" — is why
+  // there is no Publish button. Same rules as episodeAvailability()'s media check.
+  const mediaLabel = !ready ? episodeAvailability({ ...row, status: 'published', moderation_status: 'approved', scheduled_for: null }) : null;
+  const label = !withLabel.isLive && mediaLabel && status !== 'archived'
+    ? { text: translateForRequest(mediaLabel.key), tag: mediaLabel.tag || 'govuk-tag--yellow' }
+    : null;
+  return {
+    ...withLabel,
+    // A live episode reads "Published"; anything else names why listeners cannot hear it.
+    studioLabel: withLabel.isLive
+      ? translateForRequest('govuk_alpha_commerce.podcast_studio.episode_status_published')
+      : (label ? label.text : withLabel.availabilityLabel),
+    studioTag: withLabel.isLive ? 'govuk-tag--green' : (label ? label.tag : withLabel.availabilityTag),
+    // 🔴 Publish was offered for every non-published episode, including ones whose
+    // audio was still being scanned or had failed; the API refused (409) and the page
+    // said only "could not be published". Offered now only when it can succeed.
+    canPublish: ['draft', 'archived'].includes(status) && ready,
+    canArchive: status !== 'archived',
+    moderationFeedback: moderationFeedback(row)
+  };
+}
+
+/** Listener figures for a show, or null when listen analytics are switched off. */
+function showStatsView(result) {
+  const data = objectFrom(result);
+  if (!data || data.enabled !== true || !data.totals || typeof data.totals !== 'object') return null;
+  const count = (value) => Math.max(0, Math.floor(Number(value) || 0));
+  return {
+    days: count(data.days) || 30,
+    listens: count(data.totals.listens),
+    uniqueListeners: count(data.totals.unique_listeners),
+    // PodcastService::completionRate() returns a whole-number percentage.
+    completionRate: Math.min(100, count(data.totals.completion_rate)),
+    subscribers: count(data.totals.subscribers),
+    topEpisodes: (Array.isArray(data.top_episodes) ? data.top_episodes : [])
+      .map((row) => ({ title: trimmed(row && row.title), listens: count(row && row.listen_count) }))
+      .filter((row) => row.title !== '')
+      .slice(0, 5)
+  };
 }
 
 function requireToken(req, res) {
@@ -504,7 +625,7 @@ router.get('/studio', asyncRoute(async (req, res) => {
       activeNav: 'explore',
       shows,
       canCreateShow: meta.can_create_show === true,
-      status: statusEntry(req.query.status)
+      status: statusEntry(req.query.status, req)
     });
   } catch (error) {
     return renderPodcastError(error, res, 'Podcast studio');
@@ -547,7 +668,7 @@ router.get('/studio/new', asyncRoute(async (req, res) => {
         visibility: 'public'
       },
       visibilities: meta.enable_private_shows === true ? ['public', 'members', 'private'] : ['public'],
-      status: statusEntry(req.query.status),
+      status: statusEntry(req.query.status, req),
       ...showFormErrors(req.query.status)
     });
   } catch (error) {
@@ -570,6 +691,21 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
       return undefined;
     }
 
+    // Listen figures, as the website's stats panel shows them. Optional: the studio
+    // still works when they cannot be read or analytics are switched off.
+    let statsResult = null;
+    try {
+      statsResult = await callPodcast(token, 'GET', `/${encodeURIComponent(show.id)}/stats?days=30`);
+    } catch {
+      statsResult = null;
+    }
+    const stats = showStatsView(statsResult);
+    const availability = showAvailability(show);
+    show.studioLabel = translateForRequest(availability.key);
+    show.studioTag = availability.tag;
+    show.moderationFeedback = moderationFeedback(show);
+    show.subscriberCount = Math.max(0, Math.floor(Number(show.subscriber_count) || 0));
+
     const episodeVisibilities = meta.enable_private_shows === true
       ? ['inherit', 'public', 'members', 'private']
       : ['inherit', 'public'];
@@ -591,11 +727,53 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
       episodeVisibilities,
       transcriptsEnabled: meta.enable_transcripts === true,
       chaptersEnabled: meta.enable_chapters === true,
-      status: statusEntry(req.query.status),
+      rssFeedEnabled: meta.enable_rss_feed !== false,
+      stats,
+      status: statusEntry(req.query.status, req),
       episodeStoreAction: `/podcasts/studio/${show.id}/episodes`
     });
   } catch (error) {
     return renderPodcastError(error, res, 'Edit your podcast');
+  }
+}));
+
+// Episode-specific feed issues carry the episode id ("episode_12_missing_audio_url");
+// the website collapses them the same way (react-frontend/src/lib/podcasts/feedIssues.ts).
+const FEED_ISSUE_KEYS = [
+  'show_not_public', 'missing_public_episodes', 'missing_title', 'missing_description',
+  'missing_language', 'missing_artwork', 'episode_media_not_ready', 'episode_missing_audio_url',
+  'episode_missing_audio_length', 'episode_missing_audio_mime'
+];
+
+function feedIssueText(issue) {
+  const key = trimmed(issue).replace(/^episode_\d+_/, 'episode_');
+  return FEED_ISSUE_KEYS.includes(key)
+    ? translateForRequest(`govuk_alpha_commerce.podcast_studio.feed_issue_${key}`)
+    : translateForRequest('govuk_alpha_commerce.podcast_studio.feed_issue_other', { issue: trimmed(issue, 120) });
+}
+
+// RSS feed check, as the website's "Validate feed" (GET /v2/podcasts/{id}/validate-feed):
+// whether podcast directories can read the show's feed, and what to fix first.
+router.get('/studio/:id(\\d+)/feed-check', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+
+  const showId = positiveInteger(req.params.id);
+  try {
+    const feedResult = await callPodcast(token, 'GET', `/${encodeURIComponent(showId)}/validate-feed`);
+    const result = objectFrom(feedResult) || {};
+    const unique = (rows) => [...new Set((Array.isArray(rows) ? rows : []).map(feedIssueText))];
+    return res.render('podcasts/feed-check', {
+      title: res.locals.t('govuk_alpha_commerce.podcast_studio.feed_check_title'),
+      activeNav: 'explore',
+      showId,
+      valid: result.valid === true,
+      errors: unique(result.errors),
+      warnings: unique(result.warnings),
+      skipped: Math.max(0, Math.floor(Number(result.skipped_episode_count) || 0))
+    });
+  } catch (error) {
+    return renderPodcastError(error, res, 'Podcast feed check');
   }
 }));
 
@@ -615,12 +793,44 @@ router.get('/:showId(\\d+)/episodes/:id(\\d+)', asyncRoute(async (req, res) => {
 
     const show = decorateShow(episodeData.show || { id: showId });
     const episode = withAvailability(decorateEpisode(episodeData, show.id), episodeData);
+    const statusConfig = EPISODE_PAGE_STATUS_KEYS[trimmed(req.query.status)];
     return res.render('podcasts/episode', {
       title: episode.title,
       activeNav: 'explore',
       show,
-      episode
+      episode,
+      // As on the website: likes only when the community has them switched on, and the
+      // chapter list and transcript only when those are switched on (the API blanks them).
+      reactionsEnabled: episodeData.reactions_enabled !== false,
+      viewerLikes: episodeData.viewer_has_reacted === true,
+      likeCount: Math.max(0, Math.floor(Number(episodeData.reaction_count) || 0)),
+      status: statusConfig ? { type: statusConfig.type, message: res.locals.t(statusConfig.key) } : null
     });
+  } catch (error) {
+    return renderPodcastError(error, res, 'Podcast episode');
+  }
+}));
+
+// The transcript as a text file, as the website's "Download transcript". Served from
+// here rather than the API's distribution route, which answers only for public episodes.
+router.get('/:showId(\\d+)/episodes/:id(\\d+)/transcript.txt', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+
+  const showId = positiveInteger(req.params.showId);
+  const episodeId = positiveInteger(req.params.id);
+  try {
+    const episodeData = objectFrom(await callPodcast(token, 'GET', `/${encodeURIComponent(showId)}/${encodeURIComponent(episodeId)}`));
+    const transcript = episodeData ? String(episodeData.transcript || '').trim() : '';
+    if (!transcript) {
+      res.status(404).render('errors/404', { title: res.locals.t('govuk_alpha.error_pages.404_title') });
+      return undefined;
+    }
+    const slug = trimmed(episodeData.slug).replace(/[^a-z0-9-]/gi, '') || `episode-${episodeId}`;
+    res.set('Content-Type', 'text/plain; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="${slug}-transcript.txt"`);
+    res.set('Cache-Control', 'private, no-store');
+    return res.send(transcript);
   } catch (error) {
     return renderPodcastError(error, res, 'Podcast episode');
   }

@@ -30,6 +30,7 @@
           <div class="govuk-error-summary__body">
             <ul class="govuk-list govuk-error-summary__list">
               <li>{{ status.message }}</li>
+              {% if status.detail %}<li>{{ status.detail }}</li>{% endif %}
             </ul>
           </div>
         </div>
@@ -40,8 +41,50 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.podcast_studio.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.podcast_studio.title_edit") }}</h1>
 
-  {% if show.status != "published" %}
+  <p class="govuk-body">{{ govukTag({ text: show.studioLabel, classes: show.studioTag }) }}</p>
+  {% if show.moderationFeedback %}
+    <div class="govuk-inset-text">{{ show.moderationFeedback }}</div>
+  {% endif %}
+  {% if show.status == "draft" %}
     <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.publish_hint") }}</p>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.podcast_studio.stats_heading") }}</h2>
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.podcast_studio.stats_subscribers") }}</dt>
+      <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.subscribers if stats else show.subscriberCount) }}</dd>
+    </div>
+    {% if stats %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.podcast_studio.stats_listens") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.listens) }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.podcast_studio.stats_unique_listeners") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.uniqueListeners) }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.podcast_studio.stats_completion_rate") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.completionRate) }}%</dd>
+      </div>
+    {% endif %}
+  </dl>
+  {% if stats %}
+    <p class="govuk-body-s">{{ t("govuk_alpha_commerce.podcast_studio.stats_period", { days: stats.days }) }}</p>
+    {% if stats.topEpisodes.length %}
+      <h3 class="govuk-heading-s">{{ t("govuk_alpha_commerce.podcast_studio.stats_top_episodes") }}</h3>
+      <ol class="govuk-list govuk-list--number">
+        {% for row in stats.topEpisodes %}
+          <li>{{ row.title }} — {{ tc("govuk_alpha_commerce.podcast_studio.stats_listen_count", row.listens, { count: formatLocaleNumber(row.listens) }) }}</li>
+        {% endfor %}
+      </ol>
+    {% endif %}
+  {% endif %}
+  {% if rssFeedEnabled %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/feed-check') }}">{{ t("govuk_alpha_commerce.podcast_studio.feed_check_link") }}</a>
+    </p>
   {% endif %}
 
   <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/update') }}" enctype="multipart/form-data" novalidate>
@@ -99,14 +142,20 @@
               {% if episode.episodeNumberLabel %}<span class="govuk-body-s nexus-alpha-meta">{{ episode.episodeNumberLabel }} - </span>{% endif %}
               {{ episode.title }}
             </span>
-            {{ govukTag({ text: episode.statusLabel, classes: (episode.statusTag) }) }}
+            {{ govukTag({ text: episode.studioLabel, classes: episode.studioTag }) }}
           </div>
+          {% if episode.moderationFeedback %}
+            <p class="govuk-body-s govuk-!-margin-top-2">{{ episode.moderationFeedback }}</p>
+          {% endif %}
           <div class="nexus-alpha-actions govuk-!-margin-top-2">
-            {% if episode.status != "published" %}
+            {% if episode.canPublish %}
               <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/publish') }}" class="govuk-!-display-inline">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_publish") }}</button>
+              <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_publish") }}</button>
               </form>
+            {% endif %}
+            {% if episode.canArchive %}
+              <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/archive') }}">{{ t("govuk_alpha_commerce.podcast_studio.archive_episode_button") }}</a>
             {% endif %}
             <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</a>
           </div>
@@ -141,22 +190,21 @@
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.action_publish_heading") }}</h2>
     <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/publish') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.action_publish") }}</button>
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.action_publish") }}</button>
     </form>
   {% endif %}
 
+  {% if show.status != "archived" %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_heading") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_warning") }}</p>
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/archive') }}">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_button") }}</a>
+  {% endif %}
+
+  {# A link to a confirmation page, as for one episode: deleting the whole show used to
+     happen straight from this button. #}
   <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.delete_heading") }}</h2>
-  <div class="govuk-warning-text">
-    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-    <strong class="govuk-warning-text__text">
-      <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
-      {{ t("govuk_alpha_commerce.podcast_studio.delete_warning") }}
-    </strong>
-  </div>
-  <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/delete') }}">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</button>
-  </form>
+  <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.delete_warning") }}</p>
+  <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</a>
     </div>
   </div>
 {% endblock %}

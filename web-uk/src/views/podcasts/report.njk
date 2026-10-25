@@ -1,0 +1,63 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/podcasts/' + (showId | string) + '/episodes/' + (episodeId | string)) }}">{{ t("govuk_alpha.polish_commerce.podcast_episode_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorText %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#reason">{{ errorText }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha.podcasts.report_title") }}</h1>
+
+      <form method="post" action="{{ urlFor('/podcasts/' + (showId | string) + '/episodes/' + (episodeId | string) + '/report') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset"{% if errorText %} aria-describedby="reason-error"{% endif %}>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha.podcasts.report_reason_legend") }}</legend>
+            {% if errorText %}
+              <p id="reason-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errorText }}</p>
+            {% endif %}
+            <div class="govuk-radios" data-module="govuk-radios">
+              {% for reason in reasons %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="{% if loop.first %}reason{% else %}reason-{{ reason }}{% endif %}" name="reason" type="radio" value="{{ reason }}"{% if values.reason == reason %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="{% if loop.first %}reason{% else %}reason-{{ reason }}{% endif %}">{{ t("govuk_alpha.podcasts.report_reason_" + reason) }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="details">{{ t("govuk_alpha.podcasts.report_details_label") }}</label>
+          <div id="details-hint" class="govuk-hint">{{ t("govuk_alpha.podcasts.report_details_hint") }}</div>
+          <textarea class="govuk-textarea" id="details" name="details" rows="4" maxlength="2000" aria-describedby="details-hint">{{ values.details }}</textarea>
+        </div>
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha.podcasts.report_submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/podcasts/' + (showId | string) + '/episodes/' + (episodeId | string)) }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

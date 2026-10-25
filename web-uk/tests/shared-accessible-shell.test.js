@@ -32584,7 +32584,8 @@ describe('shared accessible frontend shell', () => {
       episode_type: 'bonus',
       visibility: 'public',
       explicit: true,
-      scheduled_for: '2030-06-15T12:30',
+      // UTC, sent with its zone (2026-10-25).
+      scheduled_for: '2030-06-15T12:30:00Z',
       file: expect.objectContaining({
         filename: 'first-update.mp3',
         contentType: 'audio/mpeg',
