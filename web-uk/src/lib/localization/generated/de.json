@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Es wurden noch keine Episoden veröffentlicht.",
                 "by_label": "Von :name",
                 "episodes_count": "{0} Keine Episoden|{1} 1 Episode|[2,*] :count Episoden",
-                "download_episode": "Episode herunterladen: :title"
+                "download_episode": "Episode herunterladen: :title",
+                "manage_link": "Diesen Podcast verwalten",
+                "manager_notice": "Folgen mit einer Kennzeichnung sind für Hörerinnen und Hörer noch nicht verfügbar. Sie sehen sie, weil Sie diesen Podcast verwalten.",
+                "episode_manager_notice": "Hörerinnen und Hörer können diese Folge noch nicht sehen. Sie sehen sie, weil Sie diesen Podcast verwalten.",
+                "availability_draft": "Entwurf",
+                "availability_archived": "Archiviert",
+                "availability_pending": "Wartet auf Prüfung",
+                "availability_rejected": "Nicht freigegeben",
+                "availability_scheduled": "Geplant für :date",
+                "availability_media_checking": "Audio wird noch geprüft",
+                "availability_media_failed": "Audio konnte nicht verwendet werden"
             },
             "coupons": {
                 "title": "Gutscheine",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Deine Folge ist veröffentlicht.",
                 "status_episode_publish_failed": "Leider konnte Ihre Folge nicht veröffentlicht werden. Bitte versuchen Sie es erneut.",
                 "status_episode_deleted": "Ihre Folge wurde gelöscht.",
-                "status_episode_delete_failed": "Leider konnte Ihre Episode nicht gelöscht werden. Bitte versuchen Sie es erneut."
+                "status_episode_delete_failed": "Leider konnte Ihre Episode nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+                "status_episode_cover_failed": "Ihre Folge wurde hinzugefügt, aber das Titelbild konnte nicht hochgeladen werden. Bearbeiten Sie die Folge, um das Bild erneut zu versuchen."
             },
             "analytics": {
                 "title": "Kursanalyse",

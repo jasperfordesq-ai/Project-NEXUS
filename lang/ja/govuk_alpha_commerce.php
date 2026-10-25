@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => '申し訳ありませんが、あなたのエピソードは公開できませんでした。もう一度試してください。',
         'status_episode_deleted' => 'あなたのエピソードは削除されました。',
         'status_episode_delete_failed' => '申し訳ありませんが、エピソードを削除できませんでした。もう一度試してください。',
+        'status_episode_cover_failed' => 'エピソードは追加されましたが、カバー画像をアップロードできませんでした。エピソードを編集して、もう一度画像を追加してください。',
     ],
     'analytics' => [
         'title' => 'コース分析',

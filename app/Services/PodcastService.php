@@ -400,6 +400,12 @@ class PodcastService
     public static function updateEpisode(PodcastEpisode $episode, array $data, ?UploadedFile $audioFile = null): PodcastEpisode
     {
         self::validateChapterPayload($data['chapters'] ?? null);
+        // A form that echoes back the address this API handed out for a hosted
+        // upload is not asking to replace it. Treating it as a new link deleted
+        // the stored file (web-uk's edit form did exactly that).
+        if (array_key_exists('audio_url', $data) && self::isOwnHostedAudioAddress($episode, (string) $data['audio_url'])) {
+            unset($data['audio_url']);
+        }
         $oldDisk = (string) ($episode->audio_storage_disk ?: 'local');
         $oldPath = $episode->audio_storage_path;
         $oldMedia = self::episodeMediaAttributes($episode);
@@ -2659,6 +2665,33 @@ class PodcastService
         // previous object has been retired. Otherwise a fast worker can process
         // media that the replacement compensation subsequently removes.
         self::storeHostedAudio($episode, $file, false);
+    }
+
+    /**
+     * True when $url is one of the addresses this API serves a hosted episode's
+     * own upload from: the media proxy (with or without a signature) or the
+     * stored disk URL.
+     */
+    private static function isOwnHostedAudioAddress(PodcastEpisode $episode, string $url): bool
+    {
+        if (!$episode->audio_storage_path) {
+            return false;
+        }
+
+        $url = trim($url);
+        if ($url === '') {
+            return false;
+        }
+
+        $tenantId = (int) ($episode->tenant_id ?: TenantContext::getId());
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        if ($path === '/api/v2/podcasts/media/' . $tenantId . '/' . $episode->id . '/audio') {
+            return true;
+        }
+
+        $stored = (string) $episode->getRawOriginal('audio_url');
+
+        return $stored !== '' && strtok($url, '?') === strtok($stored, '?');
     }
 
     private static function clearHostedAudio(PodcastEpisode $episode): void

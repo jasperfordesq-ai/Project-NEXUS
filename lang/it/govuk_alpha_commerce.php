@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Siamo spiacenti, non è stato possibile pubblicare il tuo episodio. Per favore riprova.',
         'status_episode_deleted' => 'Il tuo episodio è stato eliminato.',
         'status_episode_delete_failed' => 'Siamo spiacenti, non è stato possibile eliminare la tua puntata. Per favore riprova.',
+        'status_episode_cover_failed' => 'Il tuo episodio è stato aggiunto, ma non è stato possibile caricare l\'immagine di copertina. Modifica l\'episodio per riprovare con l\'immagine.',
     ],
     'analytics' => [
         'title' => 'Analisi del corso',

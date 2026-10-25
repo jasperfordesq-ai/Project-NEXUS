@@ -64,6 +64,8 @@ const STUDIO_ERROR_KEYS = {
   'episode-title-missing': 'status_episode_title_missing',
   'episode-audio-missing': 'status_episode_audio_missing',
   'episode-invalid-audio': 'status_episode_invalid_audio',
+  'episode-schedule-invalid': 'error_schedule',
+  'episode-cover-failed': 'status_episode_cover_failed',
   'episode-publish-failed': 'status_episode_publish_failed',
   'episode-delete-failed': 'status_episode_delete_failed'
 };
@@ -264,8 +266,10 @@ function decorateShow(show) {
       ? translateForRequest('govuk_alpha.podcasts.by_label', { name: ownerName })
       : '',
     artworkUrl: backendRelativeUrl(row.artwork_url),
-    rssUrl: backendRelativeUrl(row.rss_url),
-    rssEnabled: Boolean(row.rss_enabled) && backendRelativeUrl(row.rss_url),
+    // The API sends no feed address (there is no `rss_url` field — this read one until
+    // 2026-10-25, so the link never appeared). Built per request like the website's.
+    rssUrl: '',
+    rssEnabled: false,
     episodeCount: Number.isFinite(Number(episodeCount)) ? Number(episodeCount) : 0,
     status,
     statusLabel: SHOW_STATUS_KEYS[status] ? translateForRequest(SHOW_STATUS_KEYS[status]) : status,
@@ -287,6 +291,9 @@ function decorateEpisode(episode, showId = null) {
     showId: positiveInteger(row.show_id) || showId,
     title: trimmed(row.title) || translateForRequest('govuk_alpha.podcasts.episodes_title'),
     description: stripHtml(row.description || row.summary || ''),
+    // Shown above the description on the episode page, as on the website. Empty when
+    // there is no separate description, because `description` already carries it.
+    summaryText: row.description ? stripHtml(row.summary || '').trim() : '',
     cardDescription: limitedText(row.description || row.summary || '', 240),
     audioUrl: backendRelativeUrl(row.audio_url),
     coverImageUrl: backendRelativeUrl(row.cover_image_url),
@@ -308,11 +315,61 @@ function decorateEpisode(episode, showId = null) {
   };
 }
 
+/**
+ * Why listeners cannot hear an episode yet, or null when they can.
+ *
+ * The API returns not-yet-live episodes only to the show's owner and to admins
+ * (PodcastService::visibleEpisodeQuery / canViewEpisode). This mirrors the same
+ * rules so a manager is told which one applies. 🔴 This page used to drop every
+ * episode whose status was not "published", so a manager saw "No episodes" while
+ * the website listed the episode.
+ */
+function episodeAvailability(row, now = Date.now()) {
+  const status = trimmed(row.status) || 'draft';
+  if (status === 'archived') return { key: 'govuk_alpha.podcasts.availability_archived' };
+  if (status !== 'published') return { key: 'govuk_alpha.podcasts.availability_draft' };
+
+  const moderation = trimmed(row.moderation_status) || 'approved';
+  if (moderation === 'rejected' || moderation === 'flagged') {
+    return { key: 'govuk_alpha.podcasts.availability_rejected', tag: 'govuk-tag--red' };
+  }
+  if (moderation !== 'approved') return { key: 'govuk_alpha.podcasts.availability_pending' };
+
+  const scheduled = Date.parse(trimmed(row.scheduled_for));
+  if (Number.isFinite(scheduled) && scheduled > now) {
+    return {
+      key: 'govuk_alpha.podcasts.availability_scheduled',
+      params: { date: new Date(scheduled).toISOString().slice(0, 16).replace('T', ' ') }
+    };
+  }
+
+  if (row.hosted_audio === true) {
+    const scan = trimmed(row.media_scan_status);
+    if (['infected', 'failed', 'rejected'].includes(scan) || trimmed(row.media_processing_status) === 'failed') {
+      return { key: 'govuk_alpha.podcasts.availability_media_failed', tag: 'govuk-tag--red' };
+    }
+    if (trimmed(row.media_processing_status) !== 'complete' || !['clean', 'not_required'].includes(scan)) {
+      return { key: 'govuk_alpha.podcasts.availability_media_checking' };
+    }
+  }
+
+  return null;
+}
+
+function withAvailability(episode, row) {
+  const availability = episodeAvailability(row);
+  return {
+    ...episode,
+    isLive: availability === null,
+    availabilityLabel: availability ? translateForRequest(availability.key, availability.params || {}) : '',
+    availabilityTag: availability ? (availability.tag || 'govuk-tag--yellow') : ''
+  };
+}
+
 function showEpisodes(show) {
   const rows = Array.isArray(show.episodes) ? show.episodes : [];
   return rows
-    .filter((episode) => !episode.status || episode.status === 'published')
-    .map((episode) => decorateEpisode(episode, show.id))
+    .map((row) => withAvailability(decorateEpisode(row, show.id), row))
     .filter((episode) => episode.id !== null);
 }
 
@@ -557,7 +614,7 @@ router.get('/:showId(\\d+)/episodes/:id(\\d+)', asyncRoute(async (req, res) => {
     }
 
     const show = decorateShow(episodeData.show || { id: showId });
-    const episode = decorateEpisode(episodeData, show.id);
+    const episode = withAvailability(decorateEpisode(episodeData, show.id), episodeData);
     return res.render('podcasts/episode', {
       title: episode.title,
       activeNav: 'explore',
@@ -575,7 +632,10 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   const showId = positiveInteger(req.params.id);
   try {
-    const result = await callPodcast(token, 'GET', `/${encodeURIComponent(showId)}`);
+    const [result, profileResult] = await Promise.all([
+      callPodcast(token, 'GET', `/${encodeURIComponent(showId)}`),
+      getRequestProfile(req, token).catch(() => null)
+    ]);
     const showData = objectFrom(result);
     if (!showData) {
       res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
@@ -583,13 +643,26 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     }
 
     const show = decorateShow({ id: showId, ...showData });
-    const episodes = showEpisodes(show).map((episode) => decorateEpisode(episode, show.id));
+    // Same address as the website: /api/v2/podcasts/feed/{tenantId}/{slug}.xml. Podcast
+    // apps send no community header, so the tenant id has to be in the address.
+    const tenantId = positiveInteger(req.accessibleRouting && req.accessibleRouting.tenant && req.accessibleRouting.tenant.id);
+    if (showData.rss_enabled === true && tenantId !== null && trimmed(showData.slug)) {
+      show.rssUrl = resolveBackendMediaUrl(`/api/v2/podcasts/feed/${tenantId}/${encodeURIComponent(trimmed(showData.slug))}.xml`);
+      show.rssEnabled = Boolean(show.rssUrl);
+    }
+    const episodes = showEpisodes(show);
+    const profile = objectFrom(profileResult) || {};
+    const viewerId = positiveInteger(profile.id);
+    // As on the website: the owner manages the show and is not offered "Subscribe".
+    const isOwner = viewerId !== null && viewerId === positiveInteger(showData.owner_user_id);
     const statusConfig = PODCAST_STATUS_KEYS[trimmed(req.query.status)];
     return res.render('podcasts/detail', {
       title: show.title,
       activeNav: 'explore',
       show,
       episodes,
+      isOwner,
+      hasUnlistedEpisodes: episodes.some((episode) => !episode.isLive),
       status: statusConfig ? {
         type: statusConfig.type,
         message: res.locals.t(`govuk_alpha.polish_commerce.${statusConfig.key}`)

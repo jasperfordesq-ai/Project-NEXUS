@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Leider konnte Ihre Folge nicht veröffentlicht werden. Bitte versuchen Sie es erneut.',
         'status_episode_deleted' => 'Ihre Folge wurde gelöscht.',
         'status_episode_delete_failed' => 'Leider konnte Ihre Episode nicht gelöscht werden. Bitte versuchen Sie es erneut.',
+        'status_episode_cover_failed' => 'Ihre Folge wurde hinzugefügt, aber das Titelbild konnte nicht hochgeladen werden. Bearbeiten Sie die Folge, um das Bild erneut zu versuchen.',
     ],
     'analytics' => [
         'title' => 'Kursanalyse',

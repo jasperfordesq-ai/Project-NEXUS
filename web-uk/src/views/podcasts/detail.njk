@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/podcasts') }}" class="govuk-back-link">{{ t("govuk_alpha.podcasts.back") }}</a>
@@ -41,8 +42,11 @@
   <span class="govuk-caption-xl">{% if show.byLabel %}{{ show.byLabel }}{% else %}{{ tenantName }}{% endif %}</span>
   <h1 class="govuk-heading-xl">{{ show.title }}</h1>
 
+  {% if show.summary %}
+    <p class="govuk-body-l">{{ show.summary }}</p>
+  {% endif %}
   {% if show.description %}
-    <div class="govuk-body-l">{{ show.description | striptags | nl2br | safe }}</div>
+    <div class="govuk-body">{{ show.description | striptags | nl2br | safe }}</div>
   {% endif %}
 
   {% if show.rssEnabled %}
@@ -51,14 +55,25 @@
     </p>
   {% endif %}
 
-  <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6">
-    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-      {% if isSubscribed %}{{ t("govuk_alpha.polish_commerce.podcast_unsubscribe") }}{% else %}{{ t("govuk_alpha.polish_commerce.podcast_subscribe") }}{% endif %}
-    </button>
-  </form>
+  {% if isOwner %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string)) }}">{{ t("govuk_alpha.podcasts.manage_link") }}</a>
+    </p>
+  {% else %}
+    <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+        {% if isSubscribed %}{{ t("govuk_alpha.polish_commerce.podcast_unsubscribe") }}{% else %}{{ t("govuk_alpha.polish_commerce.podcast_subscribe") }}{% endif %}
+      </button>
+    </form>
+  {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha.podcasts.episodes_title") }}</h2>
+  {% if hasUnlistedEpisodes %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.podcasts.manager_notice") }}</p>
+    </div>
+  {% endif %}
   {% if not episodes.length %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha.podcasts.episodes_empty") }}</p>
@@ -70,6 +85,9 @@
           <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
             <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string)) }}">{{ episode.title }}</a>
           </h3>
+          {% if not episode.isLive %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: episode.availabilityLabel, classes: episode.availabilityTag }) }}</p>
+          {% endif %}
           {% if episode.cardDescription %}
             <p class="govuk-body govuk-!-margin-bottom-2">{{ episode.cardDescription }}</p>
           {% endif %}

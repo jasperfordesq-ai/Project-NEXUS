@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'عذرًا، لا يمكن نشر الحلقة الخاصة بك. يرجى المحاولة مرة أخرى.',
         'status_episode_deleted' => 'لقد تم حذف حلقتك.',
         'status_episode_delete_failed' => 'عذرًا، لا يمكن حذف الحلقة الخاصة بك. يرجى المحاولة مرة أخرى.',
+        'status_episode_cover_failed' => 'تمت إضافة حلقتك، لكن تعذّر رفع صورة الغلاف. عدّل الحلقة لتجربة الصورة مرة أخرى.',
     ],
     'analytics' => [
         'title' => 'تحليلات الدورة',

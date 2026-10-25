@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Sorry, je aflevering kon niet worden gepubliceerd. Probeer het opnieuw.',
         'status_episode_deleted' => 'Je aflevering is verwijderd.',
         'status_episode_delete_failed' => 'Sorry, je aflevering kan niet worden verwijderd. Probeer het opnieuw.',
+        'status_episode_cover_failed' => 'Uw aflevering is toegevoegd, maar de omslagafbeelding kon niet worden geüpload. Bewerk de aflevering om de afbeelding opnieuw te proberen.',
     ],
     'analytics' => [
         'title' => 'Cursusanalyse',

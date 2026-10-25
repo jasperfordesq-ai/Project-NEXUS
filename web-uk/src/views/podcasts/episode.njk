@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/podcasts/' + (show.id | string)) }}" class="govuk-back-link">{{ t("govuk_alpha.polish_commerce.podcast_episode_back") }}</a>
@@ -14,6 +15,17 @@
     <div class="govuk-grid-column-two-thirds">
   <span class="govuk-caption-xl">{{ show.title }}</span>
   <h1 class="govuk-heading-xl">{{ episode.title }}</h1>
+
+  {% if not episode.isLive %}
+    <p class="govuk-body">{{ govukTag({ text: episode.availabilityLabel, classes: episode.availabilityTag }) }}</p>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.podcasts.episode_manager_notice") }}</p>
+    </div>
+  {% endif %}
+
+  {% if episode.summaryText %}
+    <p class="govuk-body-l">{{ episode.summaryText }}</p>
+  {% endif %}
 
   {% if episode.description %}
     <div class="govuk-body-l">{{ episode.description | striptags | nl2br | safe }}</div>

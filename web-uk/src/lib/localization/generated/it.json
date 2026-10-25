@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Non è ancora stato pubblicato nessun episodio.",
                 "by_label": "Di :name",
                 "episodes_count": "{0} Nessun episodio|{1} 1 episodio|[2,*] :count episodi",
-                "download_episode": "Scarica episodio: :title"
+                "download_episode": "Scarica episodio: :title",
+                "manage_link": "Gestisci questo podcast",
+                "manager_notice": "Gli episodi con un'etichetta non sono ancora disponibili per gli ascoltatori. Li vedi perché gestisci questo podcast.",
+                "episode_manager_notice": "Gli ascoltatori non possono ancora vedere questo episodio. Lo vedi perché gestisci questo podcast.",
+                "availability_draft": "Bozza",
+                "availability_archived": "Archiviato",
+                "availability_pending": "In attesa di revisione",
+                "availability_rejected": "Non approvato",
+                "availability_scheduled": "Programmato per il :date",
+                "availability_media_checking": "L'audio è ancora in fase di controllo",
+                "availability_media_failed": "Non è stato possibile usare l'audio"
             },
             "coupons": {
                 "title": "Coupon",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Il tuo episodio è stato pubblicato.",
                 "status_episode_publish_failed": "Siamo spiacenti, non è stato possibile pubblicare il tuo episodio. Per favore riprova.",
                 "status_episode_deleted": "Il tuo episodio è stato eliminato.",
-                "status_episode_delete_failed": "Siamo spiacenti, non è stato possibile eliminare la tua puntata. Per favore riprova."
+                "status_episode_delete_failed": "Siamo spiacenti, non è stato possibile eliminare la tua puntata. Per favore riprova.",
+                "status_episode_cover_failed": "Il tuo episodio è stato aggiunto, ma non è stato possibile caricare l'immagine di copertina. Modifica l'episodio per riprovare con l'immagine."
             },
             "analytics": {
                 "title": "Analisi del corso",

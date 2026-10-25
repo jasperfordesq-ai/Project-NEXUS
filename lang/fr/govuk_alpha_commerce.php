@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Désolé, votre épisode n\'a pas pu être publié. Veuillez réessayer.',
         'status_episode_deleted' => 'Votre épisode a été supprimé.',
         'status_episode_delete_failed' => 'Désolé, votre épisode n\'a pas pu être supprimé. Veuillez réessayer.',
+        'status_episode_cover_failed' => 'Votre épisode a été ajouté, mais son image de couverture n\'a pas pu être téléversée. Modifiez l\'épisode pour réessayer l\'image.',
     ],
     'analytics' => [
         'title' => 'Analyse des cours',

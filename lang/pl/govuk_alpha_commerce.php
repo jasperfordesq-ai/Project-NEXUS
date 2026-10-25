@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Przepraszamy, Twój odcinek nie mógł zostać opublikowany. Spróbuj ponownie.',
         'status_episode_deleted' => 'Twój odcinek został usunięty.',
         'status_episode_delete_failed' => 'Przepraszamy, nie można usunąć odcinka. Spróbuj ponownie.',
+        'status_episode_cover_failed' => 'Odcinek został dodany, ale nie udało się przesłać obrazu okładki. Edytuj odcinek, aby spróbować ponownie dodać obraz.',
     ],
     'analytics' => [
         'title' => 'Analityka kursów',

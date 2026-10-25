@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Aucun épisode n'a encore été publié.",
                 "by_label": "Par :name",
                 "episodes_count": "{0} Aucun épisode|{1} 1 épisode|[2,*] :count épisodes",
-                "download_episode": "Télécharger l'épisode : :title"
+                "download_episode": "Télécharger l'épisode : :title",
+                "manage_link": "Gérer ce podcast",
+                "manager_notice": "Les épisodes portant une étiquette ne sont pas encore disponibles pour les auditeurs. Vous les voyez parce que vous gérez ce podcast.",
+                "episode_manager_notice": "Les auditeurs ne peuvent pas encore voir cet épisode. Vous le voyez parce que vous gérez ce podcast.",
+                "availability_draft": "Brouillon",
+                "availability_archived": "Archivé",
+                "availability_pending": "En attente de vérification",
+                "availability_rejected": "Non approuvé",
+                "availability_scheduled": "Programmé pour le :date",
+                "availability_media_checking": "L'audio est encore en cours de vérification",
+                "availability_media_failed": "L'audio n'a pas pu être utilisé"
             },
             "coupons": {
                 "title": "Coupons",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Votre épisode est publié.",
                 "status_episode_publish_failed": "Désolé, votre épisode n'a pas pu être publié. Veuillez réessayer.",
                 "status_episode_deleted": "Votre épisode a été supprimé.",
-                "status_episode_delete_failed": "Désolé, votre épisode n'a pas pu être supprimé. Veuillez réessayer."
+                "status_episode_delete_failed": "Désolé, votre épisode n'a pas pu être supprimé. Veuillez réessayer.",
+                "status_episode_cover_failed": "Votre épisode a été ajouté, mais son image de couverture n'a pas pu être téléversée. Modifiez l'épisode pour réessayer l'image."
             },
             "analytics": {
                 "title": "Analyse des cours",

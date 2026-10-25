@@ -159,8 +159,12 @@ function episodePayload(body, options = {}) {
 
   // GOV.UK date+time fields (scheduled_for-day/-month/-year/-time) recombine to the same
   // YYYY-MM-DDTHH:MM the native input posted; readDateTime also accepts a single value.
-  const scheduledFor = readDateTime(body, 'scheduled_for').value || '';
-  if (scheduledFor !== '') payload.scheduled_for = scheduledFor;
+  // 🔴 A mistyped date used to read as "no date", and on an update that cleared the
+  // existing schedule, so the episode could go out early while the page said "saved".
+  const scheduled = readDateTime(body, 'scheduled_for');
+  const scheduledFor = scheduled.value || '';
+  if (scheduled.error) errors.push('scheduled_for');
+  else if (scheduledFor !== '') payload.scheduled_for = scheduledFor;
   else if (options.update) payload.scheduled_for = null;
 
   if (options.transcriptsEnabled) {
@@ -244,7 +248,7 @@ async function updateEpisodeFromStudio(req, res, token, showId, episodeId) {
   }
   if (errors.length > 0) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
-    return redirectTo(res, studioRedirect(showId, 'episode-save-failed'));
+    return redirectTo(res, studioRedirect(showId, errors.includes('scheduled_for') ? 'episode-schedule-invalid' : 'episode-save-failed'));
   }
 
   let status = 'episode-saved';
@@ -449,7 +453,7 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
   }
   if (errors.length > 0) {
     await Promise.all([removeUploadedFile(file), removeUploadedFile(cover)]);
-    return redirectTo(res, studioRedirect(id, 'episode-failed'));
+    return redirectTo(res, studioRedirect(id, errors.includes('scheduled_for') ? 'episode-schedule-invalid' : 'episode-failed'));
   }
 
   let status = 'episode-added';
@@ -478,7 +482,8 @@ router.post('/studio/:id(\\d+)/episodes', asyncRoute(async (req, res) => {
         await uploadPodcastEpisodeCover(token, id, episodeId, await bufferedUpload(cover, 'podcast-episode-cover'));
       } catch (error) {
         if (redirectOnAuthError(error, res)) return undefined;
-        status = 'episode-save-failed';
+        // The episode WAS created. Saying it failed led members to add it again.
+        status = 'episode-cover-failed';
       }
     }
 

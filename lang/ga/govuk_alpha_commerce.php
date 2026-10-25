@@ -852,6 +852,7 @@ return [
         'status_episode_publish_failed' => 'Ár leithscéal, níorbh fhéidir do chlár a fhoilsiú. Bain triail eile as.',
         'status_episode_deleted' => 'Scriosadh do eipeasóid.',
         'status_episode_delete_failed' => 'Ár leithscéal, níorbh fhéidir do eipeasóid a scriosadh. Bain triail eile as.',
+        'status_episode_cover_failed' => 'Cuireadh d’eachtra leis, ach níorbh fhéidir a híomhá chlúdaigh a uaslódáil. Cuir an eachtra in eagar chun an íomhá a thriail arís.',
     ],
     'analytics' => [
         'title' => 'Anailísíocht chúrsa',

@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Níl aon eipeasóidí foilsithe fós.",
                 "by_label": "Le :name",
                 "episodes_count": "{0} Gan eipeasóid|{1} 1 eipeasóid|[2,*] :count eipeasóid",
-                "download_episode": "Íoslódáil eipeasóid: :title"
+                "download_episode": "Íoslódáil eipeasóid: :title",
+                "manage_link": "Bainistigh an podchraoladh seo",
+                "manager_notice": "Níl na heachtraí a bhfuil lipéad orthu ar fáil d’éisteoirí fós. Is féidir leat iad a fheiceáil mar gur tusa a bhainistíonn an podchraoladh seo.",
+                "episode_manager_notice": "Ní féidir le héisteoirí an eachtra seo a fheiceáil fós. Is féidir leat í a fheiceáil mar gur tusa a bhainistíonn an podchraoladh seo.",
+                "availability_draft": "Dréacht",
+                "availability_archived": "Cartlannaithe",
+                "availability_pending": "Ag fanacht le hathbhreithniú",
+                "availability_rejected": "Níor ceadaíodh",
+                "availability_scheduled": "Sceidealaithe do :date",
+                "availability_media_checking": "Fuaim fós á seiceáil",
+                "availability_media_failed": "Níorbh fhéidir an fhuaim a úsáid"
             },
             "coupons": {
                 "title": "Cúpóin",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Foilsítear d’eachtra.",
                 "status_episode_publish_failed": "Ár leithscéal, níorbh fhéidir do chlár a fhoilsiú. Bain triail eile as.",
                 "status_episode_deleted": "Scriosadh do eipeasóid.",
-                "status_episode_delete_failed": "Ár leithscéal, níorbh fhéidir do eipeasóid a scriosadh. Bain triail eile as."
+                "status_episode_delete_failed": "Ár leithscéal, níorbh fhéidir do eipeasóid a scriosadh. Bain triail eile as.",
+                "status_episode_cover_failed": "Cuireadh d’eachtra leis, ach níorbh fhéidir a híomhá chlúdaigh a uaslódáil. Cuir an eachtra in eagar chun an íomhá a thriail arís."
             },
             "analytics": {
                 "title": "Anailísíocht chúrsa",

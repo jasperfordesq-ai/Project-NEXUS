@@ -4115,7 +4115,17 @@
                 "episodes_empty": "No episodes have been published yet.",
                 "by_label": "By :name",
                 "episodes_count": "{0} No episodes|{1} 1 episode|[2,*] :count episodes",
-                "download_episode": "Download episode: :title"
+                "download_episode": "Download episode: :title",
+                "manage_link": "Manage this podcast",
+                "manager_notice": "Episodes with a label are not available to listeners yet. You can see them because you manage this podcast.",
+                "episode_manager_notice": "Listeners cannot see this episode yet. You can see it because you manage this podcast.",
+                "availability_draft": "Draft",
+                "availability_archived": "Archived",
+                "availability_pending": "Awaiting review",
+                "availability_rejected": "Not approved",
+                "availability_scheduled": "Scheduled for :date",
+                "availability_media_checking": "Audio still being checked",
+                "availability_media_failed": "Audio could not be used"
             },
             "coupons": {
                 "title": "Coupons",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Your episode is published.",
                 "status_episode_publish_failed": "Sorry, your episode could not be published. Please try again.",
                 "status_episode_deleted": "Your episode was deleted.",
-                "status_episode_delete_failed": "Sorry, your episode could not be deleted. Please try again."
+                "status_episode_delete_failed": "Sorry, your episode could not be deleted. Please try again.",
+                "status_episode_cover_failed": "Your episode was added, but its cover image could not be uploaded. Edit the episode to try the image again."
             },
             "analytics": {
                 "title": "Course analytics",

@@ -4115,7 +4115,17 @@
                 "episodes_empty": "まだ公開されたエピソードはありません。",
                 "by_label": ":name 制作",
                 "episodes_count": "{0} エピソードなし|{1} 1 エピソード|[2,*] :count エピソード",
-                "download_episode": "エピソードをダウンロード: :title"
+                "download_episode": "エピソードをダウンロード: :title",
+                "manage_link": "このポッドキャストを管理",
+                "manager_notice": "ラベルが付いたエピソードは、まだリスナーに公開されていません。このポッドキャストを管理しているため、あなたには表示されています。",
+                "episode_manager_notice": "このエピソードはまだリスナーに表示されません。このポッドキャストを管理しているため、あなたには表示されています。",
+                "availability_draft": "下書き",
+                "availability_archived": "アーカイブ済み",
+                "availability_pending": "審査待ち",
+                "availability_rejected": "承認されていません",
+                "availability_scheduled": ":date に公開予定",
+                "availability_media_checking": "音声を確認中です",
+                "availability_media_failed": "音声を使用できませんでした"
             },
             "coupons": {
                 "title": "クーポン",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "あなたのエピソードが公開されています。",
                 "status_episode_publish_failed": "申し訳ありませんが、あなたのエピソードは公開できませんでした。もう一度試してください。",
                 "status_episode_deleted": "あなたのエピソードは削除されました。",
-                "status_episode_delete_failed": "申し訳ありませんが、エピソードを削除できませんでした。もう一度試してください。"
+                "status_episode_delete_failed": "申し訳ありませんが、エピソードを削除できませんでした。もう一度試してください。",
+                "status_episode_cover_failed": "エピソードは追加されましたが、カバー画像をアップロードできませんでした。エピソードを編集して、もう一度画像を追加してください。"
             },
             "analytics": {
                 "title": "コース分析",

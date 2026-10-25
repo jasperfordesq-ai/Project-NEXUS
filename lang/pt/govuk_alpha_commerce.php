@@ -847,6 +847,7 @@ return [
         'status_episode_publish_failed' => 'Lamentamos, mas não foi possível publicar o seu episódio. Por favor, tente novamente.',
         'status_episode_deleted' => 'Seu episódio foi excluído.',
         'status_episode_delete_failed' => 'Desculpe, não foi possível excluir seu episódio. Por favor, tente novamente.',
+        'status_episode_cover_failed' => 'O seu episódio foi adicionado, mas não foi possível carregar a imagem de capa. Edite o episódio para tentar a imagem novamente.',
     ],
     'analytics' => [
         'title' => 'Análise do curso',

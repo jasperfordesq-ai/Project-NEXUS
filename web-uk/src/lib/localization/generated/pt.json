@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Ainda não foram publicados episódios.",
                 "by_label": "Por :name",
                 "episodes_count": "{0} Nenhum episódio|{1} 1 episódio|[2,*] :count episódios",
-                "download_episode": "Descarregar episódio: :title"
+                "download_episode": "Descarregar episódio: :title",
+                "manage_link": "Gerir este podcast",
+                "manager_notice": "Os episódios com uma etiqueta ainda não estão disponíveis para os ouvintes. Consegue vê-los porque gere este podcast.",
+                "episode_manager_notice": "Os ouvintes ainda não conseguem ver este episódio. Consegue vê-lo porque gere este podcast.",
+                "availability_draft": "Rascunho",
+                "availability_archived": "Arquivado",
+                "availability_pending": "A aguardar revisão",
+                "availability_rejected": "Não aprovado",
+                "availability_scheduled": "Agendado para :date",
+                "availability_media_checking": "O áudio ainda está a ser verificado",
+                "availability_media_failed": "Não foi possível usar o áudio"
             },
             "coupons": {
                 "title": "Cupões",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Seu episódio foi publicado.",
                 "status_episode_publish_failed": "Lamentamos, mas não foi possível publicar o seu episódio. Por favor, tente novamente.",
                 "status_episode_deleted": "Seu episódio foi excluído.",
-                "status_episode_delete_failed": "Desculpe, não foi possível excluir seu episódio. Por favor, tente novamente."
+                "status_episode_delete_failed": "Desculpe, não foi possível excluir seu episódio. Por favor, tente novamente.",
+                "status_episode_cover_failed": "O seu episódio foi adicionado, mas não foi possível carregar a imagem de capa. Edite o episódio para tentar a imagem novamente."
             },
             "analytics": {
                 "title": "Análise do curso",

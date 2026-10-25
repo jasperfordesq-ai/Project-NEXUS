@@ -879,6 +879,7 @@ return [
         'status_episode_publish_failed' => 'Sorry, your episode could not be published. Please try again.',
         'status_episode_deleted' => 'Your episode was deleted.',
         'status_episode_delete_failed' => 'Sorry, your episode could not be deleted. Please try again.',
+        'status_episode_cover_failed' => 'Your episode was added, but its cover image could not be uploaded. Edit the episode to try the image again.',
     ],
 
     'analytics' => [

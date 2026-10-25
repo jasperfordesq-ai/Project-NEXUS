@@ -4115,7 +4115,17 @@
                 "episodes_empty": "لم تُنشر أي حلقات بعد.",
                 "by_label": "بواسطة :name",
                 "episodes_count": "{0} ليست هناك حلقات|{1} حلقة واحدة|[2,*] :count حلقة",
-                "download_episode": "تنزيل الحلقة: :title"
+                "download_episode": "تنزيل الحلقة: :title",
+                "manage_link": "إدارة هذا البودكاست",
+                "manager_notice": "الحلقات التي تحمل تسمية غير متاحة للمستمعين بعد. يمكنك رؤيتها لأنك تدير هذا البودكاست.",
+                "episode_manager_notice": "لا يمكن للمستمعين رؤية هذه الحلقة بعد. يمكنك رؤيتها لأنك تدير هذا البودكاست.",
+                "availability_draft": "مسودة",
+                "availability_archived": "مؤرشفة",
+                "availability_pending": "بانتظار المراجعة",
+                "availability_rejected": "غير معتمدة",
+                "availability_scheduled": "مجدولة في :date",
+                "availability_media_checking": "لا يزال الصوت قيد الفحص",
+                "availability_media_failed": "تعذّر استخدام الصوت"
             },
             "coupons": {
                 "title": "القسائم",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "تم نشر الحلقة الخاصة بك.",
                 "status_episode_publish_failed": "عذرًا، لا يمكن نشر الحلقة الخاصة بك. يرجى المحاولة مرة أخرى.",
                 "status_episode_deleted": "لقد تم حذف حلقتك.",
-                "status_episode_delete_failed": "عذرًا، لا يمكن حذف الحلقة الخاصة بك. يرجى المحاولة مرة أخرى."
+                "status_episode_delete_failed": "عذرًا، لا يمكن حذف الحلقة الخاصة بك. يرجى المحاولة مرة أخرى.",
+                "status_episode_cover_failed": "تمت إضافة حلقتك، لكن تعذّر رفع صورة الغلاف. عدّل الحلقة لتجربة الصورة مرة أخرى."
             },
             "analytics": {
                 "title": "تحليلات الدورة",

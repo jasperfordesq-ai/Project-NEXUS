@@ -4115,7 +4115,17 @@
                 "episodes_empty": "Nie opublikowano jeszcze żadnych odcinków.",
                 "by_label": "Przez :name",
                 "episodes_count": "{0} Brak odcinków|{1} 1 odcinek|[2,*] :count odcinki",
-                "download_episode": "Pobierz odcinek: :title"
+                "download_episode": "Pobierz odcinek: :title",
+                "manage_link": "Zarządzaj tym podcastem",
+                "manager_notice": "Odcinki z etykietą nie są jeszcze dostępne dla słuchaczy. Widzisz je, ponieważ zarządzasz tym podcastem.",
+                "episode_manager_notice": "Słuchacze nie widzą jeszcze tego odcinka. Widzisz go, ponieważ zarządzasz tym podcastem.",
+                "availability_draft": "Wersja robocza",
+                "availability_archived": "Zarchiwizowany",
+                "availability_pending": "Oczekuje na sprawdzenie",
+                "availability_rejected": "Niezatwierdzony",
+                "availability_scheduled": "Zaplanowano na :date",
+                "availability_media_checking": "Dźwięk jest jeszcze sprawdzany",
+                "availability_media_failed": "Nie udało się użyć dźwięku"
             },
             "coupons": {
                 "title": "Kupony",
@@ -7322,7 +7332,8 @@
                 "status_episode_published": "Twój odcinek został opublikowany.",
                 "status_episode_publish_failed": "Przepraszamy, Twój odcinek nie mógł zostać opublikowany. Spróbuj ponownie.",
                 "status_episode_deleted": "Twój odcinek został usunięty.",
-                "status_episode_delete_failed": "Przepraszamy, nie można usunąć odcinka. Spróbuj ponownie."
+                "status_episode_delete_failed": "Przepraszamy, nie można usunąć odcinka. Spróbuj ponownie.",
+                "status_episode_cover_failed": "Odcinek został dodany, ale nie udało się przesłać obrazu okładki. Edytuj odcinek, aby spróbować ponownie dodać obraz."
             },
             "analytics": {
                 "title": "Analityka kursów",

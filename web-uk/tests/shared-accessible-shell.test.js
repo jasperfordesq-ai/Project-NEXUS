@@ -32199,8 +32199,8 @@ describe('shared accessible frontend shell', () => {
         description: 'Stories from <strong>local members</strong>.',
         owner: { name: 'Aisha Khan' },
         artwork_url: 'https://media.example.test/podcast.png',
+        slug: 'community-voices',
         rss_enabled: true,
-        rss_url: '/api/v2/podcasts/7/feed.xml',
         episodes: [
           {
             id: 99,
@@ -32225,8 +32225,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community voices');
     expect(response.text).toContain('Stories from local members.');
     expect(response.text).not.toContain('&lt;strong&gt;');
-    expect(response.text).toContain('RSS feed');
-    expect(response.text).toContain('href="http://127.0.0.1:8090/api/v2/podcasts/7/feed.xml"');
+    // The API sends no `rss_url` (this mock used to invent one). The feed address
+    // needs the community id, which this unrouted mount does not have, so no link.
+    // The routed case is pinned in podcast-pages-audit.test.js.
+    expect(response.text).not.toContain('RSS feed');
     expect(response.text).toContain('Subscribe to this podcast');
     expect(response.text).toContain('First update');
     expect(response.text).toContain('href="/podcasts/7/episodes/99"');
@@ -32647,7 +32649,9 @@ describe('shared accessible frontend shell', () => {
       });
 
     expect(rejectedEpisodeCoverResponse.status).toBe(302);
-    expect(rejectedEpisodeCoverResponse.headers.location).toBe('/podcasts/studio/42?status=episode-save-failed');
+    // The episode was created; only its cover failed (2026-10-25 — this said
+    // "episode-save-failed", and members added the episode a second time).
+    expect(rejectedEpisodeCoverResponse.headers.location).toBe('/podcasts/studio/42?status=episode-cover-failed');
 
     const artworkResponse = await agent
       .post('/podcasts/studio/42/update')
