@@ -18,6 +18,7 @@ const {
   getUserReviews,
   invalidateUserCache,
   requestAccountDeletion,
+  switchToCoordinatorIntroductions,
   uploadProfileAvatar,
   ApiError
 } = require('../lib/api');
@@ -199,6 +200,15 @@ const PROFILE_STATUS_MESSAGES = {
     message: 'The safeguarding preference could not be updated.',
     anchor: 'safeguarding'
   },
+  'safeguarding-switched': {
+    type: 'success',
+    message: 'Your choice has been changed. A coordinator will keep an eye on your exchanges.'
+  },
+  'safeguarding-switch-failed': {
+    type: 'error',
+    message: 'Your choice could not be changed. Please try again.',
+    anchor: 'safeguarding'
+  },
   'vetting-review-requested': { type: 'success', message: 'Broker review requested.' },
   'vetting-review-evidence-prohibited': {
     type: 'error',
@@ -263,6 +273,8 @@ const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'skill-failed': 'profile_settings.skills.failed',
   'safeguarding-revoked': 'profile_settings.safeguarding.revoked',
   'safeguarding-failed': 'profile_settings.safeguarding.failed',
+  'safeguarding-switched': 'profile_settings.safeguarding.switched',
+  'safeguarding-switch-failed': 'profile_settings.safeguarding.switch_failed',
   'vetting-review-requested': 'profile_settings.safeguarding.vetting.review_requested_toast',
   'vetting-review-evidence-prohibited': 'profile_settings.safeguarding.vetting.no_documents',
   'vetting-review-unavailable': 'profile_settings.safeguarding.vetting.policy_unavailable_body',
@@ -870,9 +882,36 @@ function normalizeSafeguarding(payload) {
       label: option.label || option.name || 'Safeguarding preference',
       description: option.description || '',
       policy_review_required: checked(option.policy_review_required),
-      activations
+      activations,
+      effects: plainStrings(option.effects)
     };
   });
+}
+
+/** Keeps only non-empty strings; the API sends them already translated. */
+function plainStrings(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+/**
+ * The "switch to coordinator introductions" offer. Shown only when the API says
+ * the member can switch AND sent all three translated strings — a half-filled
+ * panel would put a button on the page with nothing explaining it.
+ */
+function safeguardingSwitchFrom(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
+  if (payload.can_switch_to_coordinator_introductions !== true) return null;
+  const copy = payload.switch_copy;
+  if (!copy || typeof copy !== 'object') return null;
+  const heading = typeof copy.heading === 'string' ? copy.heading.trim() : '';
+  const body = typeof copy.body === 'string' ? copy.body.trim() : '';
+  const button = typeof copy.button === 'string' ? copy.button.trim() : '';
+  if (!heading || !button) return null;
+  return { heading, body, button };
 }
 
 function marketingConsentFrom(payload) {
@@ -1015,6 +1054,7 @@ function buildProfileSettingsViewModel(req, data) {
     sessions: data.sessions,
     safeguarding: data.safeguarding,
     safeguardingPolicyReviewRequired: data.safeguarding.some((option) => option.policy_review_required),
+    safeguardingSwitch: data.safeguardingSwitch || null,
     vetting: {
       available: vettingStatus !== null,
       decision: vettingDecision,
@@ -1234,6 +1274,7 @@ router.get('/settings', asyncRoute(async (req, res) => {
     passkeys: [],
     sessions: [],
     safeguarding: [],
+    safeguardingSwitch: null,
     vettingStatus: null,
     marketingConsent: undefined
   };
@@ -1321,9 +1362,9 @@ router.get('/settings', asyncRoute(async (req, res) => {
   }
 
   try {
-    data.safeguarding = normalizeSafeguarding(
-      payloadFrom(await callProfile(token, 'GET', '/safeguarding/my-preferences'))
-    );
+    const safeguardingPayload = payloadFrom(await callProfile(token, 'GET', '/safeguarding/my-preferences'));
+    data.safeguarding = normalizeSafeguarding(safeguardingPayload);
+    data.safeguardingSwitch = safeguardingSwitchFrom(safeguardingPayload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadFailed = true;
@@ -1740,6 +1781,22 @@ router.post('/safeguarding/revoke', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     status = 'safeguarding-failed';
+  }
+
+  return redirectTo(res, profileSettingsRedirect(status, '#safeguarding'));
+}));
+
+router.post('/safeguarding/switch-to-coordinator-introductions', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let status = 'safeguarding-switched';
+  try {
+    await switchToCoordinatorIntroductions(token);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // 409 NOT_HELD / UNAVAILABLE and any other failure: nothing changed.
+    status = 'safeguarding-switch-failed';
   }
 
   return redirectTo(res, profileSettingsRedirect(status, '#safeguarding'));

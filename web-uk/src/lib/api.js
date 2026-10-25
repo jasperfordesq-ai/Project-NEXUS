@@ -3218,6 +3218,18 @@ async function createCaregiverRequestOnBehalf(token, payload) {
   });
 }
 
+/**
+ * One-step move from "vetted members only" to "coordinator introductions".
+ * No body: the API decides from what the member already holds, and answers 409
+ * (NOT_HELD / UNAVAILABLE) when the switch does not apply.
+ */
+async function switchToCoordinatorIntroductions(token) {
+  return request('/api/v2/safeguarding/switch-to-coordinator-introductions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function getMyGuardians(token) {
   return request('/api/v2/safeguarding/my-guardians', {
     headers: { Authorization: `Bearer ${token}` }
@@ -4440,6 +4452,7 @@ module.exports = {
   approveCaregiverLink,
   rejectCaregiverLink,
   createCaregiverRequestOnBehalf,
+  switchToCoordinatorIntroductions,
   getMyGuardians,
   getMyWards,
   respondToGuardian,

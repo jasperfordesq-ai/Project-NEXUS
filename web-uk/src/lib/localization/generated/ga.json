@@ -4968,6 +4968,9 @@
                     "revoke_button": "Tarraing siar",
                     "revoked": "Tá do rogha cosanta tarraingthe siar.",
                     "failed": "Níorbh fhéidir linn do rogha cosanta a nuashonrú. Bain triail eile as.",
+                    "effects_heading": "Cad a dhéanann sé seo",
+                    "switched": "Tá do rogha athraithe. Coinneoidh comhordaitheoir súil ar do mhalartuithe.",
+                    "switch_failed": "Níorbh fhéidir do rogha a athrú. Bain triail eile as, le do thoil.",
                     "policy_review_title": "Athbhreithnigh do shainroghanna cosanta",
                     "policy_review_body": "D’athraigh do phobal a dhlínse cosanta. Fanann do chosaintí gníomhach. Seiceáil an fhoclaíocht nuashonraithe agus deimhnigh go léiríonn sí do rogha fós.",
                     "policy_review_confirm": "Deimhnigh mo shainroghanna",
@@ -12206,6 +12209,15 @@
                 "coordination_not_required": "Tá teagmháil dhíreach leis an gcomhalta seo ar fáil faoi láthair — ní gá comhordaitheoir a bheith agat chun é a eagrú. Athnuaigh an leathanach agus bain triail as teachtaireacht a sheoladh arís.",
                 "coordination_request_failed": "Níorbh fhéidir do iarratas a sheoladh chuig an gcomhordaitheoir faoi láthair. Bain triail eile as ar ball.",
                 "vetting_check_failed": "Níorbh fhéidir linn do stádas grinnfhiosrúcháin a dheimhniú faoi láthair. Bain triail eile as i gceann tamaill.",
+                "policy_unavailable": "Ní féidir linn an polasaí cosanta pobail a dhearbhú faoi láthair. Níor seoladh aon teachtaireacht. Bain triail eile as gan mhoill.",
+                "blocked_interaction": "Ní féidir leat idirghníomhú leis an mball seo.",
+                "interaction_not_allowed": "Ní cheadaíonn beartas cosanta pobail an fhaighteora an t-idirghníomhú díreach seo. Iarr cabhair ar chomhordaitheoir.",
+                "policy_unavailable_title": "Níl seiceáil cosanta ar fáil go sealadach",
+                "policy_unavailable_detail": "Níorbh fhéidir le Tionscadal NEXUS an beartas teagmhála a mheas go sábháilte, mar sin cuireadh an t-idirghníomhú seo ar sos.",
+                "policy_unavailable_action": "Seiceáil arís",
+                "listing_role_confirmation_required": "Éilíonn an liostú seo cinneadh DBS feabhsaithe ar leithligh arna dhaingniú ag an bpobal don ról seo. Ní shásaíonn deimhniú teagmhála teachtaire ceanglais chosanta a bhaineann go sonrach leis an ról.",
+                "listing_role_feature_unavailable": "Ní féidir seiceáil ar thaifid choiriúla a bhaineann go sonrach le róil a chumasú anseo go fóill. Ní dhéantar dearbhú teagmhála Messenger a athúsáid d'aon ghnó mar imréiteach róil.",
+                "compliance_policy_unavailable": "Ní féidir linn na ceanglais chosanta don liostú seo a dhearbhú go sábháilte faoi láthair. Bain triail eile as ar ball le do thoil nó déan teagmháil le do bhróicéir.",
                 "statement_required": "Teastaíonn Ráiteas Cosanta Leanaí (PDF) sula bhféadfaidh tú a dhearbhú go n-oibríonn an pobal seo le leanaí nó le daoine fásta leochaileacha. Uaslódáil ceann chun leanúint ar aghaidh.",
                 "invalid_file": "Níorbh fhéidir an comhad uaslódáilte a léamh. Bain triail as comhad PDF bailí.",
                 "pdf_required": "Caithfidh an ráiteas cosanta a bheith ina chomhad PDF.",
@@ -12213,16 +12225,7 @@
                 "storage_failed": "Níorbh fhéidir linn an comhad a shábháil. Bain triail eile as.",
                 "statement_missing": "Níl aon ráiteas cosanta ar comhad don phobal seo.",
                 "file_missing": "Níorbh fhéidir an comhad ráitis cosanta a aimsiú ar an bhfreastalaí. Uaslódáil arís é.",
-                "revoke_failed": "Níorbh fhéidir an rogha sin a chúlghairm. B’fhéidir go raibh sí cúlghairthe cheana.",
-                "policy_unavailable": "Ní féidir linn an polasaí cosanta pobail a dhearbhú faoi láthair. Níor seoladh aon teachtaireacht. Bain triail eile as gan mhoill.",
-                "interaction_not_allowed": "Ní cheadaíonn beartas cosanta pobail an fhaighteora an t-idirghníomhú díreach seo. Iarr cabhair ar chomhordaitheoir.",
-                "blocked_interaction": "Ní féidir leat idirghníomhú leis an mball seo.",
-                "policy_unavailable_title": "Níl seiceáil cosanta ar fáil go sealadach",
-                "policy_unavailable_detail": "Níorbh fhéidir le Tionscadal NEXUS an beartas teagmhála a mheas go sábháilte, mar sin cuireadh an t-idirghníomhú seo ar sos.",
-                "policy_unavailable_action": "Seiceáil arís",
-                "listing_role_confirmation_required": "Éilíonn an liostú seo cinneadh DBS feabhsaithe ar leithligh arna dhaingniú ag an bpobal don ról seo. Ní shásaíonn deimhniú teagmhála teachtaire ceanglais chosanta a bhaineann go sonrach leis an ról.",
-                "listing_role_feature_unavailable": "Ní féidir seiceáil ar thaifid choiriúla a bhaineann go sonrach le róil a chumasú anseo go fóill. Ní dhéantar dearbhú teagmhála Messenger a athúsáid d'aon ghnó mar imréiteach róil.",
-                "compliance_policy_unavailable": "Ní féidir linn na ceanglais chosanta don liostú seo a dhearbhú go sábháilte faoi láthair. Bain triail eile as ar ball le do thoil nó déan teagmháil le do bhróicéir."
+                "revoke_failed": "Níorbh fhéidir an rogha sin a chúlghairm. B’fhéidir go raibh sí cúlghairthe cheana."
             },
             "vetting_types": {
                 "dbs_basic": "DBS Bunúsach",
@@ -12261,7 +12264,7 @@
                 "what_activates_heading": "Cad a thosaíonn mar thoradh air",
                 "activation_broker_review": "Déanfaidh comhordaitheoir meaitseálacha nó malartuithe cosanta a athbhreithniú agus a cheadú nuair a éilíonn do rogha é. Ní thugann sé seo rochtain dóibh ar ábhar teachtaireachtaí.",
                 "activation_match_approval": "Ceadóidh comhordaitheoir meaitseálacha a bhaineann leat sula moltar don bhall eile iad.",
-                "activation_discovery_hidden": "Beidh tú i bhfolach ó fhionnachtain ag baill nach bhfuil an grinnfhiosrúchán riachtanach acu.",
+                "activation_discovery_hidden": "Ní féidir le comhaltaí nach bhfuil grinnfhiosrú taifeadta ag an bpobal seo dóibh teachtaireacht a chur chugat, freagra a thabhairt ort, creidmheasanna ama a sheoladh chugat ná malartú a thosú leat.",
                 "activation_notification": "Cuireadh comhordaitheoir ar an eolas agus rachaidh sé/sí i dteagmháil leat chun plé a dhéanamh ar conas is féidir linn cabhrú.",
                 "activation_none": "Ní thosaíonn aon chosaint uathoibríoch ó na roghanna seo. Cuirtear do shainroghanna ar taifead d’fheasacht an chomhordaitheora.",
                 "revoke_heading": "Conas iad seo a athrú nó a chúlghairm aon uair",
@@ -12280,26 +12283,48 @@
                 "revoke_confirm_yes": "Tá, cúlghair",
                 "revoke_confirm_no": "Coinnigh í",
                 "revoked_toast": "Cúlghaireadh an rogha.",
-                "revoke_error_toast": "Chuaigh rud éigin amú. Bain triail eile as."
+                "revoke_error_toast": "Chuaigh rud éigin amú. Bain triail eile as.",
+                "switch_heading": "Tá rogha níos séimhe ar fáil",
+                "switch_body": "Roghnaigh tú nach ndéanfadh ach comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo teagmháil leat. Cuireann sé sin cosc ar bheagnach gach duine teacht ort. Is féidir leat aistriú chuig comhordaitheoir a choinneoidh súil ar do mhalartuithe agus a chuirfidh in aithne do chomhaltaí thú ina ionad, agus beidh comhaltaí eile in ann teachtaireacht a chur chugat arís.",
+                "switch_button": "Aistrigh chuig cur in aithne ag comhordaitheoir",
+                "switched_toast": "Déanta. Coinneoidh comhordaitheoir súil ar do mhalartuithe, agus is féidir le comhaltaí teachtaireacht a chur chugat arís.",
+                "switch_not_held": "Níl an socrú “comhaltaí grinnfhiosraithe amháin” agat, mar sin níl aon rud le haistriú.",
+                "switch_unavailable": "Níl cur in aithne ag comhordaitheoir ar fáil sa phobal seo fós. Déan teagmháil le comhordaitheoir, le do thoil."
+            },
+            "effects": {
+                "broker_approval": "Féachann comhordaitheoir ar aon mhalartú a shocraíonn tú sula dtéann sé ar aghaidh. Ní féidir leo do theachtaireachtaí a léamh.",
+                "restricts_messaging": "Ní féidir le comhaltaí eile teachtaireacht a chur chugat go díreach. Socraíonn comhordaitheoir teagmháil duit.",
+                "restricts_matching": "Seiceálann comhordaitheoir ar dtús na meaitseálacha a mholtar idir tú féin agus comhaltaí eile.",
+                "vetted_only": "Ní féidir ach le comhaltaí a bhfuil :vetting taifeadta ag an bpobal seo dóibh teachtaireacht a chur chugat, freagra a thabhairt ort, creidmheasanna ama a sheoladh chugat nó malartú a thosú leat. Cuirtear cosc ar gach duine eile.",
+                "vetted_count": "{0} Níl :vetting taifeadta anseo d’aon chomhalta faoi láthair, mar sin ní féidir le duine ar bith teagmháil a dhéanamh leat fad atá sé seo ar siúl.|{1} Níl :vetting taifeadta anseo ach do chomhalta amháin faoi láthair.|[2,*] Tá :vetting taifeadta anseo do :count comhalta faoi láthair.",
+                "notify_coordinator": "Cuirtear comhordaitheoir ar an eolas faoi do rogha, ionas gur féidir leo teagmháil a dhéanamh leat má bhíonn aon rud uait.",
+                "no_home_visits": "Tá a fhios ag na comhordaitheoirí nach mian leat cuairteanna baile mura socraíonn siad iad.",
+                "informational": "Ní athraíonn aon rud do chomhaltaí eile. Cabhraíonn do fhreagra leis na comhordaitheoirí tacú leat.",
+                "declined": "Ní athraíonn aon rud. Is féidir leis na comhordaitheoirí a fheiceáil gur fhéach tú ar an gcéim seo.",
+                "vetting_fallback": "grinnfhiosrú"
             },
             "presets": {
                 "common": {
-                    "help_text": "Glacann an pobal seo cosaint daoine go dáiríre. Má mheasann tú gur duine fásta leochaileach thú nó má tá tacaíocht bhreise uait, cuir in iúl dúinn é ionas gur féidir lenár gcomhordaitheoirí malartuithe sábháilte a eagrú duit.",
+                    "help_text": "Glacann an pobal seo le cosaint go dáiríre. Más mian leat cúram breise agus tú ag úsáid an bhainc ama, cuir in iúl dúinn thíos agus cabhróidh ár gcomhordaitheoirí leat. Insíonn gach rogha duit go díreach cad a dhéanann sí sula roghnaíonn tú í.",
                     "options": {
                         "is_vulnerable_adult": {
-                            "label": "Measaim gur duine fásta leochaileach mé agus d’fhéadfadh tacaíocht bhreise chosanta a bheith ag teastáil uaim",
-                            "description": "Cuireann sé seo in iúl dár gcomhordaitheoirí go bhféadfadh tacaíocht bhreise a bheith uait agus malartuithe á n-eagrú. Rachaidh comhordaitheoir i dteagmháil leat chun plé a dhéanamh ar an gcaoi ar féidir linn cabhrú leat. Tá an fhaisnéis seo faoi rún."
+                            "label": "Measaim gur duine fásta leochaileach mé agus ba mhaith liom tacaíocht bhreise",
+                            "description": "Beidh comhordaitheoir i dteagmháil leat chun labhairt faoin gcaoi ar féidir linn cabhrú, agus féachfaidh sé ar do mhalartuithe agus ar do mheaitseálacha. Is féidir le comhaltaí eile teachtaireacht a chur chugat fós."
+                        },
+                        "coordinator_introductions": {
+                            "label": "Ba mhaith liom go gcoinneodh comhordaitheoir súil ar mo mhalartuithe agus go gcabhródh sé liom aithne a chur ar chomhaltaí",
+                            "description": "Oiriúnach más mian leat suaimhneas intinne gan a bheith scoite amach. Is féidir le comhaltaí eile teachtaireacht a chur chugat fós."
                         },
                         "requires_vetted_partners": {
-                            "label": "B’fhearr liom gan idirghníomhú ach le baill a ndearnadh grinnfhiosrúchán cuí orthu"
+                            "label": "Ní féidir ach le comhaltaí a bhfuil a ngrinnfhiosrú taifeadta ag an bpobal seo teagmháil a dhéanamh liom"
                         },
                         "requires_coordinator_contact": {
-                            "label": "Ba mhaith liom go gcabhródh comhordaitheoir liom mo mhalartuithe a eagrú seachas teagmháil dhíreach a dhéanamh liom",
-                            "description": "Déanfaidh comhordaitheoir idirghabháil i ngach teagmháil agus cabhróidh sé nó sí le malartuithe a eagrú ar do shon. Ní bheidh baill eile in ann teachtaireacht a chur chugat go díreach."
+                            "label": "Ba mhaith liom go socródh comhordaitheoir gach teagmháil dom in ionad comhaltaí a bheith ag cur teachtaireachtaí chugam go díreach",
+                            "description": "Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon. Ní bheidh comhaltaí eile in ann teachtaireacht a chur chugat go díreach."
                         },
                         "no_home_visits": {
-                            "label": "Ní theastaíonn uaim go dtabharfadh baill cuairt ar mo theach gan socrú ó chomhordaitheoir",
-                            "description": "Socrófar gach cuairt baile trí chomhordaitheoir ar féidir leis nó léi a chinntiú go bhfuil cosaintí cuí i bhfeidhm."
+                            "label": "Níl mé ag iarraidh go dtabharfadh comhaltaí cuairt ar mo theach mura bhfuil sé socraithe ag comhordaitheoir",
+                            "description": "Cuirtear na comhordaitheoirí ar an eolas, ionas gur féidir leo cabhrú le haon chuairt ar do theach a shocrú agus a chinntiú go bhfuil na cosaintí cearta i bhfeidhm."
                         },
                         "works_with_children": {
                             "label": "Tá sé beartaithe agam seirbhísí a thairiscint a bhféadfadh leanaí nó daoine óga (faoi 18) a bheith bainteach leo"
@@ -12318,16 +12343,16 @@
                     "vetting_authority": "An Biúró Náisiúnta Grinnfhiosrúcháin",
                     "options": {
                         "requires_vetted_partners": {
-                            "description": "In Éirinn, ciallaíonn sé seo baill a bhfuil Grinnfhiosrúchán an Gharda Síochána déanta orthu. Cinnteoidh ár gcomhordaitheoirí nach ndéanfar tú a mheaitseáil ach le baill a ndearnadh grinnfhiosrúchán orthu."
+                            "description": "In Éirinn, socraítear Grinnfhiosrúchán an Gharda Síochána trí eagraíocht do ról ar leith. Ní áirítear anseo ach grinnfhiosrú atá taifeadta ag an bpobal seo, ní grinnfhiosrú atá ag duine trína phost nó trí ghrúpa eile."
                         },
                         "requires_coordinator_contact": {
-                            "description": "Déanfaidh comhordaitheoir (bróicéir) idirghabháil i ngach teagmháil agus cabhróidh sé nó sí le malartuithe a eagrú ar do shon. Ní bheidh baill eile in ann teachtaireacht a chur chugat go díreach."
+                            "description": "Socróidh comhordaitheoir teagmháil agus malartuithe ar do shon. Ní bheidh comhaltaí eile in ann teachtaireacht a chur chugat go díreach."
                         },
                         "works_with_children": {
                             "description": "D’fhéadfadh comhordaitheoir riachtanais Ghrinnfhiosrúchán an Gharda Síochána a phlé leat. In Éirinn, tá grinnfhiosrúchán de dhíth le haghaidh gníomhaíochtaí áirithe a bhaineann le leanaí faoin Acht um an mBiúró Náisiúnta Grinnfhiosrúcháin, 2012."
                         },
                         "works_with_vulnerable_adults": {
-                            "description": "D’fhéadfadh comhordaitheoir riachtanais Ghrinnfhiosrúchán an Gharda Síochána a phlé leat. D’fhéadfadh grinnfhiosrúchán a bheith de dhíth le haghaidh gníomhaíochtaí a bhaineann le daoine fásta leochaileacha."
+                            "description": "D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil Grinnfhiosrúchán an Gharda Síochána ag teastáil don obair atá beartaithe agat. Faoin Acht um an mBiúró Náisiúnta Grinnfhiosrúcháin 2012, tá grinnfhiosrú trí eagraíocht chláraithe ag teastáil le haghaidh roinnt oibre a dhéantar go príomha le daoine leochaileacha."
                         }
                     }
                 },
@@ -12336,7 +12361,7 @@
                     "vetting_authority": "DBS, Disclosure Scotland agus AccessNI",
                     "options": {
                         "requires_vetted_partners": {
-                            "description": "Ar fud na Ríochta Aontaithe, deimhníonn comhordaitheoirí an bunús cuí Feabhsaithe DBS, PVG agus/nó AccessNI le haghaidh teagmhála faoi chosaint."
+                            "description": "Ar fud na Ríochta Aontaithe, ciallaíonn sé seo seiceáil DBS Fheabhsaithe, PVG nó AccessNI atá taifeadta ag an bpobal seo. Ní áirítear anseo seiceáil atá ag duine trína phost nó trí ghrúpa eile."
                         },
                         "works_with_children": {
                             "description": "Déanfaidh comhordaitheoir measúnú ar an ról agus ar dhlínse na RA is infheidhme sula gcinnfidh sé cén tseiceáil cosanta is iomchuí ó thaobh an dlí de."
@@ -12351,10 +12376,13 @@
                     "vetting_authority": "An tSeirbhís um Nochtadh agus Urchosc",
                     "options": {
                         "requires_vetted_partners": {
-                            "description": "I Sasana agus sa Bhreatain Bheag, ciallaíonn sé seo baill a bhfuil seiceáil DBS déanta orthu. Cinnteoidh ár gcomhordaitheoirí nach ndéanfar tú a mheaitseáil ach le baill a ndearnadh grinnfhiosrúchán orthu."
+                            "description": "I Sasana agus sa Bhreatain Bheag, ciallaíonn sé seo seiceáil DBS Fheabhsaithe atá taifeadta ag an bpobal seo. Ní áirítear anseo seiceáil atá ag duine trína phost nó trí ghrúpa eile."
                         },
                         "works_with_children": {
                             "description": "D’fhéadfadh comhordaitheoir riachtanais seiceála DBS a phlé leat."
+                        },
+                        "works_with_vulnerable_adults": {
+                            "description": "D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil seiceáil DBS ag teastáil don obair atá beartaithe agat."
                         }
                     }
                 },
@@ -12366,7 +12394,7 @@
                             "label": "Measaim gur duine fásta leochaileach nó cosanta mé agus d’fhéadfadh tacaíocht bhreise chosanta a bheith ag teastáil uaim"
                         },
                         "requires_vetted_partners": {
-                            "description": "In Albain, ciallaíonn sé seo baill den scéim PVG. Cinnteoidh ár gcomhordaitheoirí nach ndéanfar tú a mheaitseáil ach le baill a ndearnadh grinnfhiosrúchán orthu."
+                            "description": "In Albain, ciallaíonn sé seo ballraíocht i scéim PVG atá taifeadta ag an bpobal seo. Ní áirítear anseo ballraíocht atá ag duine trína phost nó trí ghrúpa eile."
                         },
                         "works_with_children": {
                             "description": "D’fhéadfadh comhordaitheoir ballraíocht sa scéim PVG a phlé leat."
@@ -12381,10 +12409,13 @@
                     "vetting_authority": "AccessNI",
                     "options": {
                         "requires_vetted_partners": {
-                            "description": "I dTuaisceart Éireann, ciallaíonn sé seo baill a bhfuil seiceáil AccessNI déanta orthu. Cinnteoidh ár gcomhordaitheoirí nach ndéanfar tú a mheaitseáil ach le baill a ndearnadh grinnfhiosrúchán orthu."
+                            "description": "I dTuaisceart Éireann, ciallaíonn sé seo seiceáil AccessNI atá taifeadta ag an bpobal seo. Ní áirítear anseo seiceáil atá ag duine trína phost nó trí ghrúpa eile."
                         },
                         "works_with_children": {
                             "description": "D’fhéadfadh comhordaitheoir seiceáil AccessNI a phlé leat."
+                        },
+                        "works_with_vulnerable_adults": {
+                            "description": "D’fhéadfadh comhordaitheoir labhairt leat faoi cé acu an bhfuil seiceáil AccessNI ag teastáil don obair atá beartaithe agat."
                         }
                     }
                 },

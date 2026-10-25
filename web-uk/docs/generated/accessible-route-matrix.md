@@ -2,20 +2,20 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-25T15:19:43.416Z
-Laravel commit SHA: `c8ba1a167a1c0c42c4ba6a7c50c43e7fd84af160`
-Web UK repository commit SHA: `c8ba1a167a1c0c42c4ba6a7c50c43e7fd84af160`
-Laravel working tree dirty: no
-Web UK repository working tree dirty: no
-Provenance caveat: Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs.
+Generated: 2026-10-25T16:19:04.416Z
+Laravel commit SHA: `7a0f53710c41af4e3f72dfdd4a281db7e4a065d3`
+Web UK repository commit SHA: `7a0f53710c41af4e3f72dfdd4a281db7e4a065d3`
+Laravel working tree dirty: yes
+Web UK repository working tree dirty: yes
+Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 848 |
+| web-uk routes | 849 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 138 |
+| Extra web-uk routes | 139 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -82,7 +82,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
-| profile | 23 | 0 | 3 | 0 |
+| profile | 23 | 0 | 4 | 0 |
 | register | 2 | 0 | 0 | 0 |
 | report-a-problem | 2 | 0 | 0 | 0 |
 | resources | 12 | 0 | 0 | 0 |
@@ -162,6 +162,7 @@ Provenance caveat: Both working trees were clean when generated; the commit SHAs
 | POST | `/podcasts/studio/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | POST | `/podcasts/studio/{param}/episodes/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
+| POST | `/profile/safeguarding/switch-to-coordinator-introductions` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |

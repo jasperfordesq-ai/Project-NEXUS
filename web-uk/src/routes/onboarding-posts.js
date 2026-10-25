@@ -125,7 +125,12 @@ function normalizeSafeguardingOption(option) {
     description: String(item.description || '').trim(),
     help_url: safeHelpUrl(item.help_url),
     select_options: item.select_options && typeof item.select_options === 'object' ? item.select_options : {},
-    is_required: Boolean(item.is_required)
+    is_required: Boolean(item.is_required),
+    // Plain-language sentences, already translated by the API, saying what
+    // choosing this option actually does. Rendered verbatim (autoescaped).
+    effects: Array.isArray(item.effects)
+      ? item.effects.filter((effect) => typeof effect === 'string').map((effect) => effect.trim()).filter(Boolean)
+      : []
   };
 }
 

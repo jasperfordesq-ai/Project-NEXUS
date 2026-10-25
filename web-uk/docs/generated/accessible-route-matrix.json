@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-25T15:19:43.416Z",
+  "generatedAt": "2026-10-25T16:19:04.416Z",
   "provenance": {
-    "generatedAt": "2026-10-25T15:19:43.416Z",
+    "generatedAt": "2026-10-25T16:19:04.416Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "c8ba1a167a1c0c42c4ba6a7c50c43e7fd84af160",
-    "laravelWorkingTreeDirty": false,
+    "laravelCommitSha": "7a0f53710c41af4e3f72dfdd4a281db7e4a065d3",
+    "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "c8ba1a167a1c0c42c4ba6a7c50c43e7fd84af160",
-    "webUkRepositoryWorkingTreeDirty": false,
-    "caveat": "Both working trees were clean when generated; the commit SHAs identify the exact checked-out inputs."
+    "webUkRepositoryCommitSha": "7a0f53710c41af4e3f72dfdd4a281db7e4a065d3",
+    "webUkRepositoryWorkingTreeDirty": true,
+    "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-25T15:19:43.416Z",
+    "generatedAt": "2026-10-25T16:19:04.416Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 848,
+    "webUkRoutes": 849,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 138,
+    "extraWebUkRoutes": 139,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -133,7 +133,7 @@
       "profile": {
         "matched": 23,
         "missing": 0,
-        "extraWebUk": 3,
+        "extraWebUk": 4,
         "ignoredInfrastructure": 0
       },
       "robots.txt": {
@@ -1487,6 +1487,27 @@
       "webUkPath": "/privacy",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/legal.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/profile/safeguarding/switch-to-coordinator-introductions",
+      "family": "profile",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/profile/safeguarding/switch-to-coordinator-introductions",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/profile.js",
       "webUkRouteKind": ""
     },
     {

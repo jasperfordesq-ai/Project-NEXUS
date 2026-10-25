@@ -8248,6 +8248,21 @@ describe('API Request Functions', () => {
       );
     });
 
+    it('switches from vetted-members-only to coordinator introductions with no body', async () => {
+      jsonOnce({ data: { switched: true, message: 'Switched' } });
+
+      await api.switchToCoordinatorIntroductions('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/switch-to-coordinator-introductions',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+      expect(mockFetch.mock.calls[0][1].body).toBeUndefined();
+    });
+
     it('consents to a guardian arrangement', async () => {
       jsonOnce({ data: { consented: true } });
 

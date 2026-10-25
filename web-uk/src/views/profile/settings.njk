@@ -544,12 +544,32 @@
             </form>
           {% endif %}
         </div>
+        {% if safeguardingSwitch %}
+          <div class="govuk-inset-text" id="safeguarding-switch">
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ safeguardingSwitch.heading }}</h3>
+            {% if safeguardingSwitch.body %}<p class="govuk-body">{{ safeguardingSwitch.body }}</p>{% endif %}
+            <form method="post" action="{{ urlFor('/profile/safeguarding/switch-to-coordinator-introductions') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ safeguardingSwitch.button }}</button>
+            </form>
+          </div>
+        {% endif %}
         {% if safeguarding.length %}
           {% for option in safeguarding %}
               <div class="nexus-alpha-card govuk-!-margin-bottom-4">
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ option.label }}</h3>
                 {% if option.description %}<p class="govuk-body-s nexus-alpha-meta">{{ option.description }}</p>{% endif %}
-                {% if option.activations.length %}
+                {# `effects` are the API's own translated sentences about what this
+                   choice really does. The older activation labels are only a
+                   fallback for a server that does not send them yet. #}
+                {% if option.effects.length %}
+                  <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-1" id="sg-pref-{{ option.option_id }}-effects-heading">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
+                  <ul class="govuk-list govuk-list--bullet govuk-body-s" aria-labelledby="sg-pref-{{ option.option_id }}-effects-heading">
+                    {% for effect in option.effects %}
+                      <li>{{ effect }}</li>
+                    {% endfor %}
+                  </ul>
+                {% elif option.activations.length %}
                   <ul class="govuk-list govuk-list--bullet govuk-body-s">
                     {% for activation in option.activations %}
                       <li>{{ t("profile_settings.safeguarding.activations." ~ activation) }}</li>

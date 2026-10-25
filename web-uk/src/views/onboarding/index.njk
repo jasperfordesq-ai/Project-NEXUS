@@ -196,9 +196,25 @@
                   {% set noneOption = option %}
                 {% elif option.option_type != "info" and option.option_type != "select" %}
                   <div class="govuk-checkboxes__item">
-                    <input class="govuk-checkboxes__input" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]" type="checkbox" value="1"{% if option.description or option.help_url %} aria-describedby="{% if option.description %}sg-{{ option.id }}-hint{% if option.help_url %} {% endif %}{% endif %}{% if option.help_url %}sg-{{ option.id }}-help{% endif %}"{% endif %}>
+                    {% set describedBy = "" %}
+                    {% if option.description %}{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-hint" %}{% endif %}
+                    {% if option.effects.length %}{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-effects" %}{% endif %}
+                    {% if option.help_url %}{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-help" %}{% endif %}
+                    <input class="govuk-checkboxes__input" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]" type="checkbox" value="1"{% if describedBy %} aria-describedby="{{ describedBy | trim }}"{% endif %}>
                     <label class="govuk-label govuk-checkboxes__label" for="sg-{{ option.id }}">{{ option.label }}</label>
                     {% if option.description %}<div id="sg-{{ option.id }}-hint" class="govuk-hint govuk-checkboxes__hint">{{ option.description }}</div>{% endif %}
+                    {# What ticking this really does, in the API's own translated
+                       words. Read out with the checkbox via aria-describedby. #}
+                    {% if option.effects.length %}
+                      <div id="sg-{{ option.id }}-effects" class="govuk-hint govuk-checkboxes__hint">
+                        <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
+                        <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+                          {% for effect in option.effects %}
+                            <li>{{ effect }}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
                     {% if option.help_url %}<div id="sg-{{ option.id }}-help" class="govuk-hint govuk-checkboxes__hint"><a class="govuk-link" href="{{ option.help_url }}" rel="noopener">{{ t("govuk_alpha.help.title") }}</a></div>{% endif %}
                   </div>
                 {% endif %}
@@ -225,7 +241,20 @@
               <div class="govuk-form-group govuk-!-margin-top-4">
                 <label class="govuk-label" for="sg-{{ option.id }}">{{ option.label }}</label>
                 {% if option.description %}<div id="sg-{{ option.id }}-hint" class="govuk-hint">{{ option.description }}</div>{% endif %}
-                <select class="govuk-select" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]"{% if option.description %} aria-describedby="sg-{{ option.id }}-hint"{% endif %}>
+                {% if option.effects.length %}
+                  <div id="sg-{{ option.id }}-effects" class="govuk-hint">
+                    <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
+                    <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+                      {% for effect in option.effects %}
+                        <li>{{ effect }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+                {% set selectDescribedBy = "" %}
+                {% if option.description %}{% set selectDescribedBy = selectDescribedBy ~ " sg-" ~ option.id ~ "-hint" %}{% endif %}
+                {% if option.effects.length %}{% set selectDescribedBy = selectDescribedBy ~ " sg-" ~ option.id ~ "-effects" %}{% endif %}
+                <select class="govuk-select" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]"{% if selectDescribedBy %} aria-describedby="{{ selectDescribedBy | trim }}"{% endif %}>
                   <option value="">{{ t("govuk_alpha.onboarding.safeguarding.select_none") }}</option>
                   {% for value, label in option.select_options %}
                     <option value="{{ value }}">{{ label }}</option>

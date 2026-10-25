@@ -164,11 +164,16 @@ describe('onboarding safeguarding is one GDS checkbox question', () => {
   });
 
   it('wires each option description and help link to its checkbox', () => {
-    expect(region).toContain('aria-describedby="{% if option.description %}sg-{{ option.id }}-hint');
+    // Hint, effects list and help link are joined into one aria-describedby.
+    expect(region).toContain('{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-hint" %}');
+    expect(region).toContain('{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-effects" %}');
+    expect(region).toContain('{% set describedBy = describedBy ~ " sg-" ~ option.id ~ "-help" %}');
+    expect(region).toContain('{% if describedBy %} aria-describedby="{{ describedBy | trim }}"{% endif %}');
+    expect(region).toContain('<div id="sg-{{ option.id }}-effects" class="govuk-hint govuk-checkboxes__hint">');
     expect(region).toContain('<div id="sg-{{ option.id }}-hint" class="govuk-hint govuk-checkboxes__hint">{{ option.description }}</div>');
     expect(region).toContain('<div id="sg-{{ option.id }}-help" class="govuk-hint govuk-checkboxes__hint">');
     // The select question keeps its own hint wiring.
-    expect(region).toContain('<select class="govuk-select" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]"{% if option.description %} aria-describedby="sg-{{ option.id }}-hint"{% endif %}>');
+    expect(region).toContain('<select class="govuk-select" id="sg-{{ option.id }}" name="safeguarding[{{ option.id }}]"{% if selectDescribedBy %} aria-describedby="{{ selectDescribedBy | trim }}"{% endif %}>');
     // The help link markup the shared shell test pins is unchanged.
     expect(region).toContain('href="{{ option.help_url }}" rel="noopener">{{ t("govuk_alpha.help.title") }}</a>');
   });
