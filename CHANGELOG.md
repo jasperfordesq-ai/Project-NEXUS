@@ -8484,7 +8484,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Four suites in the same directory stay quarantined, and deliberately so: they are not this cluster. One is a delete-confirmation dialog race, one asserts a computed percentage, one an error-message spy, and one looks up checkboxes by a derived label. Recording which failure belongs to which cause is the point of the list; lumping them together is how a quarantine file stops being a work queue.
 
 ### Documentation
-- **Audit documentation CI follow-up:** corrected Markdown spacing in the maintained architecture, monorepo, dual-backend and documentation-index pages; no application behavior changed.
 
 - **The contributor documentation was telling people to do the exact thing that created the 99,139-value translation debt.** A review of every maintained document against the last month's work found five that had fallen behind, and one of them was actively harmful: both `docs/I18N.md` and the agent guide instructed contributors to add a new English key "to every other locale file". That satisfies the structural parity gate — which compares key sets and cannot see a wrong value — and is precisely how 62.3% of non-English PHP values ended up as byte-identical English while CI stayed green. Both now say to translate the key, name the two translation helpers, and explain why parity alone proves nothing.
 
@@ -8757,7 +8756,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   No blocking findings; all three are candidates for switching back on. **Nothing was switched on as part of this work** — that is a deliberate production decision, and the recommended order is recorded with the audit.
 
 ### Documentation
-- **Audit documentation CI follow-up:** corrected Markdown spacing in the maintained architecture, monorepo, dual-backend and documentation-index pages; no application behavior changed.
 
 - **Renamed the federation protocol switches so they say who is on the other end and which way data flows.** The old names actively misled — including the platform's own author, who reasonably read them as "one of these is for partners on another server, the other is for communities sharing this one". Both were for other servers. The real difference between them is **direction**, and no label mentioned it.
 
