@@ -1,5 +1,16 @@
 # Project NEXUS User Guide
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The two current web clients are React and Web UK; Blade references below describe retired history. Feature guidance is conceptual and does not certify the ASP.NET edition. See the current audit before attempting backend switching.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained user reference - not a product-readiness certificate**

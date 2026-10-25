@@ -1,5 +1,16 @@
 # Getting Started As A Member
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Sign-in and onboarding guidance must not be interpreted as freshly verified against ASP.NET. The current React browser session contract differs from the backend; the audit records this blocker.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained user reference - behavior varies by community**

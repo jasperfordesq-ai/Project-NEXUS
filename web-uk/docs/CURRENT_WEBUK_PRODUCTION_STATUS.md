@@ -1,5 +1,12 @@
 # Current Web UK Production Status (Goal W2)
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The October ASP.NET audit does not change this frontend’s own production score or claim a new hosted check. Backend interchangeability is a separate gate: current ASP.NET contract blockers are recorded below via the maintained audit link.
+
+Current readiness: [code-led contract audit](../../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+
 Last reviewed: 2026-08-19
 
 Status: **Canonical current — sole Web UK scoring source**

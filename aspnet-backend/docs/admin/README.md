@@ -1,5 +1,16 @@
 # Tenant And Community Administrator Guide
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Newsletter/legal CRUD, refunds, group bulk archive and FAQ writes contain false-success or audit-only paths. Route availability must not be taken as evidence that an administrator action was saved or executed.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained administrator reference - not a platform-operator runbook**

@@ -1,5 +1,21 @@
 # Laravel Contract-Identity Remediation Runbook
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+Use the new-install scope and owned packages in ROADMAP.md before historical scoring mechanics.52 packages are work estimates, not a competing certification denominator. No points were banked by any of the three audit passes.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Use the code-led audit to prepare the future backlog. No points were banked or journeys recertified. Future certification must exercise both unchanged clients, stored state and eventual effects; a 2xx response alone is insufficient.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained reference — fixed rubric and cross-workstream completion gate**

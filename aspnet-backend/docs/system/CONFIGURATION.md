@@ -1,5 +1,21 @@
 # Configuration And Secrets
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+Choose one backend per independent installation; configure existing frontend base/target settings only. Preserve current default-off optional features and verify supported enabled states. Shared databases, dual writes and live cross-engine switching are not assumed.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Source defaults in web-uk/src/lib/backend-contract.js are Laravel http://127.0.0.1:8090 and ASP.NET http://localhost:5080. Explicit environment overrides take precedence. Configurable selection is not proof of contract compatibility; no live environment values were inspected.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained system reference - values must be verified per environment**

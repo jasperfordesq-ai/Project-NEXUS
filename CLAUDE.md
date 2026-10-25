@@ -1,5 +1,10 @@
 # Project NEXUS — Claude Code Guide
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](aspnet-backend/docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+
+
 @AGENTS.md
 
 ---

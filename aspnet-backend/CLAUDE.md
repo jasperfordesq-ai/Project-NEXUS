@@ -1,5 +1,14 @@
 # Project NEXUS .NET Edition - Agent Guide
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+
+
+## Current ASP.NET boundary — 25 October 2026
+
+Development remains paused. The owner authorized the code-led audit and documentation correction only. Both unchanged frontends must eventually switch by configuration; compatibility is currently blocked. See [current findings](docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Older August resumption statements below are historical and do not authorize implementation, CI, runtime or deployment work.
+
 > **Re-imported 2026-08-10.** The 2026-08-09 monorepo move did not bring this
 > file across, and the repo-wide `CLAUDE.md` ignore rule would have excluded it
 > anyway. Recovered from the archive repository with its paths corrected for the
@@ -24,7 +33,7 @@ Last reviewed: 2026-08-21
 >
 > 🔴 **BOTH CLAIMS IN ITEM 2 ARE NOW OUT OF DATE (corrected 2026-08-21).**
 > (a) **The ASP.NET pause lifted on 2026-08-14** — see the banner immediately
-> below; development is active. (b) The "no successful backup since 2026-03-08"
+> below; development subsequently paused again in September. (b) The "no successful backup since 2026-03-08"
 > line is true of the *scheduled off-server job* but incomplete: a
 > **restore-tested off-server copy from 2026-08-10** exists (265/265 tables,
 > 53/53 migrations, 49,958 rows) and the database container has been stopped
@@ -37,7 +46,7 @@ Last reviewed: 2026-08-21
 > **DEVELOPMENT PAUSE LIFTED 2026-08-14.** Development was paused on 15 July
 > 2026; on 14 August 2026 the owner explicitly instructed resumption of the
 > ASP.NET contract-parity workstream toward full parity and production
-> readiness. Local implementation, tests, and migrations are authorized again.
+> readiness. That August authorization was superseded by the September pause; October authorizes audit and documentation only.
 > Production deployment, production-container operations, and live-provider
 > actions still require separate explicit owner authorization per deploy — the
 > live ASP.NET database still has no successful backup since 2026-03-08, and

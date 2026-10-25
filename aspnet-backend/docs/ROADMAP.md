@@ -1,232 +1,59 @@
-# ASP.NET Edition — Plain-English Roadmap
+# ASP.NET new-installation scope and resumption roadmap
 
-> 🔴 **Paused on 11 September 2026 (owner decision).** Not abandoned: work resumes
-> when the rest of the platform is more mature. Nothing below is being worked on
-> until then; see [ADR-0005](decisions/ADR-0005-aspnet-edition-halted.md).
+**Estimate clarification (25 October):** The roughly 950 engineer-day total is an uncalibrated sum of broad human-effort allowances, not a reliable delivery forecast and not a measured AI-assisted estimate. Do not convert it into a promised calendar duration. Retain the work inventory; establish an AI-assisted forecast only after representative implementation and runtime verification are measured following explicit resumption.
 
-Status: **Canonical current - owner-facing summary** (technical detail lives in
-[CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md); the work
-list is [JOURNEY_CERTIFICATION_LEDGER.md](JOURNEY_CERTIFICATION_LEDGER.md))
+Last reviewed: 2026-10-25 (three audit passes; current source and scoped implementation assessment).
 
-Last updated: 2026-08-25
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused.
 
-## Where we are, in three lines
+## How much work is involved
 
-Every status report from here uses exactly this format. Both numbers can only ever
-go up, and the build enforces it.
+| Workstream | Packages | Low | Planning allowance | High |
+| --- | ---: | ---: | ---: | ---: |
+| Shared backend and installation | 9 | 89 | 174 | 303 |
+| React/member/platform-admin domain | 25 | 225 | 468 | 883 |
+| Shared volunteer/care/matching and Web UK acceptance | 15 | 126 | 233 | 398 |
+| Shared verification and readiness | 4 | 38 | 76 | 128 |
+| **Total engineer-days** | **53** | **478** | **951** | **1712** |
 
-- **Score: 383/1000 candidate** (rubric R5; banked floor remains 324 until the batched push is green)
-- **Journeys certified: 41 of 250**
-- **Movement since last report: +31**
+The reconciled assessment contains **53 work packages**. Budgetary scenarios are **478 / 951 / 1,712 engineer-days** (low / conservative planning allowance / high rework). Round these to about **480–1,710**, with an allowance around **950**. The exact sums do not imply exact forecasting: these include verification and repair of real but unproven modules, not just confirmed missing code. They are not a calibrated most-likely prediction, statistical interval or a promise of AI elapsed time. Local tests/review are included in each package; shared verification is counted once, with no extra blanket contingency.
 
-Eight more core member journeys now meet the certification bar since this roadmap
-was last updated: onboarding, sign-out and server-side invalidation, new direct
-messaging, connection request/accept, profile-setting persistence, password
-recovery through a captured email, and continuity across a genuinely expired
-access token. The latest focused run selected recovery and refresh together,
-drove the unchanged React app against both backends, and finished 7/7 MATCH with
-no failures or skips. Persisted and security effects were asserted rather than
-inferred from successful responses.
+An engineer-day is 7.5 effective engineering hours, including focused tests and review. 951 days is about 47.55 person-months at 20 effective days/month. Four experienced contributors at an assumed 75% effective capacity yield an arithmetic 63.4 weeks, roughly 15 months; three yield 84.5 weeks, roughly 20 months. These are illustrations, not delivery dates or linear-scaling guarantees. Staffing, decision delay and measured throughput remain unknown. No current percentage-complete score is justified.
 
-The ledger therefore computes a **383** candidate score, while the banked floor
-stays **324** at pushed, green SHA `32bd2f94d`. The candidate becomes banked only
-after this batch is pushed and the required CI workflows are green; no intermediate
-push is needed between individual journeys.
+## Start with a measured tranche
 
-## What this is, and why we are building it
+The first **15–25 engineer-days**, already included within P1/B6/B1 and selected owning domain packages, establish an isolated blank installation, actual migration discovery/replay, initial tenant/admin, deterministic paired fixtures and owned caller contracts. They also measure a few representative repairs before revising the remaining estimate. This is not a claim that the whole foundation completes in that time.
 
-Project NEXUS ships as **two editions of the same product**. One runs on Laravel
-(PHP). One runs on ASP.NET (.NET). Both run the same **three applications** — the
-main app, the accessible site and the mobile app — and you switch between them
-with a setting, not a rewrite.
+1. Freeze source/client hashes, installation profile, actor/feature/provider matrix and acceptance scope.
+2. Recreate independent synthetic PostgreSQL and Laravel fixtures; verify migration replay and non-demo first-admin setup. No production-derived data.
+3. Expand dynamic frontend callers and exercise real route matching, then browser/BFF session continuity.
+4. Capture failing populated workflows and persisted/effect assertions; repair representative slices only after explicit resumption.
+5. Re-estimate the next wave using measured effort and failures. Preserve uncertainty for untraced state machines.
 
-The main app contains two quite separate things: what a member sees, and the
-admin panel. They are one application and one build, but they use different
-halves of the server (the admin side alone has 514 addresses), so they are
-tracked and scored separately. When you see four things listed, that is three
-applications and four surfaces — not four apps.
+## Delivery sequence and ownership
 
-The reason is commercial: **some public-sector buyers require a .NET application
-stack as a condition of procurement.** Many will accept the Laravel platform. Some
-will not, and for those the ASP.NET edition is the difference between winning the
-contract and not being allowed to bid. That is now a formal decision
-([ADR-0003](decisions/ADR-0003-aspnet-is-a-committed-deliverable.md)) so no future
-session treats this as a side experiment again.
+| Stage | Packages | Required result |
+| --- | --- | --- |
+| Foundation | P1, B1, B6, B2; B7 evolves alongside | Trustworthy fixtures, unique route ownership, fresh setup and both unchanged clients' session lifecycle |
+| Shared domain infrastructure | B3–B5, B8–B9 | Conserved settlement, complete privacy lifecycle, reliable workers/Pusher/provider outcomes and current required interoperability |
+| Product workflows | RA01–RA25, UK-V1–UK-V14 and UK-M1 | All assigned member/admin/organisation workflows and negative outcomes match, including later reads/effects |
+| Cross-cutting and certification | P2–P4 plus B7 | Locale/error contracts, four-client/backend combinations, installation/restore and current operator/acceptance evidence |
 
-## The number moved again today. This is the last time, and here is the mechanism
+Every package is a budget envelope with named vertical slices, evidence and acceptance. One migration owner coordinates schema changes. Parallel work is by owned domain, not by route aliases. UK owns shared volunteering/care/matching; React-specific volunteering scope is only the extra consumer work. RA21 owns shared municipal/national/regional calculations; RA14 owns financial statements. RA09 is dispatcher plumbing and pilot lifecycle, not all module CRUD. B5 owns worker/Pusher infrastructure; RA24 owns podcast bytes/playback; RA16 owns AI conversation execution using existing providers. RA25 owns the current consumed subscription, invoice, checkout and refund lifecycle; it reuses B8 provider transport and B3 ledger primitives. Focused domain tests and final integrated testing are not charged twice.
 
-The score has now been re-cut four times: 712, 598, 653, 353, and today 270. You
-were right to be angry about that and right to demand it be checked.
+## Decisions and exclusions
 
-| | What changed | Was the software worse? |
-|---|---|---|
-| 712 → 598 | We built the first tool that could actually compare the two backends' answers. It found far less agreement than counting addresses had implied. | No |
-| 598 → 653 | Five days of real work finally got formally banked. | No — better |
-| 653 → 353 | The question changed: from "do the addresses look right" to "is the product proved to work". | No |
-| 353 → 270 | **Your scope decision today**: the mobile app joined the plan (331 addresses, ~138,000 lines, previously in no plan at all) and the admin surface grew from 25 tracked journeys to 72. | No |
+- Insurance is an unresolved cross-contract conflict: Web UK requires a file that Laravel rejects. Choose compatible backend behavior or explicitly defer that workflow; no frontend change is silently permitted.
+- Preserve default-off optional features while implementing actual supported configured behavior. Enabling an unmatched ASP.NET legacy federation saga is not automatically required.
+- Select supported installation targets and provider sandbox owners. Actual customer deployment, existing-community ETL/cutover, shared live data/dual writes, mobile certification, external certification and waiting for credentials/approvals are excluded.
+- New functionality absent from both current client contracts is excluded. Current product import/export tools are included; excluding community migration does not remove those features.
 
-Today's is the only one caused by a decision rather than a measurement
-correction, and you made it knowing the cost. **Three mechanisms now make another
-one impossible**, each checked by the build rather than promised on a page:
+## Evidence and completion
 
-1. **Spare slots.** Every section of the work list carries pre-counted spare
-   slots. A journey discovered next month fills a slot instead of making the list
-   longer. If a section runs out of spares, that comes to you as a decision — it
-   can never quietly change the total.
-2. **A floor.** The published score cannot go below its recorded floor; the build
-   fails if anyone tries. If we discover something we thought worked doesn't, the
-   work list records that immediately and honestly, and the headline waits until
-   the net is positive again.
-3. **The score is calculated, not typed.** The build recomputes it from the work
-   list every run and fails if the two disagree. Not theoretical: yesterday's 353
-   was arithmetically wrong — the summary said 20 items where the list held 19 —
-   and this check catches exactly that. It was deliberately broken twelve
-   different ways to confirm it fails before being trusted.
+Current source inventories and selected experiments establish defects, not full certification. The earlier556selected-unit pass coexists with33ambiguous route samples.186 EF-discovered migrations differ from188source files; SQL generation and zero model/snapshot diff do not prove a blank database. The new pure-comparator probe demonstrates why shape MATCH cannot certify values/effects. No paired DB/browser/provider run was performed in this assessment.
 
-## Ten more journeys are certified — and what that cost to find
+Done means the required corpus passes for React+Laravel, React+ASP.NET, Web UK+Laravel and Web UK+ASP.NET on reproducible independent new installations, using unchanged frontend source. Verify roles/tenants, pagination, files, meaningful values, stored state, idempotency and eventual effects. Source, local tests, CI, hosted operation and owner acceptance remain distinct states. No release follows automatically from audit or implementation completion.
 
-"Certified" has a strict meaning here: a real member action, driven through the
-app's own screens against .NET, **and** the identical run passing against Laravel
-side by side, so a difference in test data can never be mistaken for a broken
-backend.
+Detailed source-backed scope, ownership, acceptance, dependency graph, scenario arithmetic and unstarted tasks are retained in `.local-docs-archive/aspnet-audit/2026-10-25/scope-pass/`. The package ledger is `IMPLEMENTATION-WORK-PACKAGES.json`/`.csv`; `tasks/start-stage.md` is the concrete first-stage checklist. These ignored artifacts are local and are not present in a fresh clone. This maintained document carries the public-safe scope and readiness summary.
 
-Ten journeys on the accessible site now meet that bar (the eleventh, the exchange itself, was certified yesterday): signing in, posting to the
-feed, creating a listing, replying to an event invitation, sending a message,
-transferring credits, applying to volunteer, joining a group, leaving a review,
-and changing a setting that sticks. All ten were run against both engines in the
-same pass, twice, with nothing excused.
-
-Getting there needed one decision from you and three repairs.
-
-- **Your decision.** The accessible site is built to work without JavaScript, so
-  filling in a form and sending it is that site's normal way of working, not a
-  shortcut around it. You accepted that as genuine use. That alone accounted for
-  seven of the ten.
-- **Joining a group was broken for every group.** The server was sending "are you
-  in this group?" *next to* the group instead of *inside* it, so the page never
-  saw it and offered "Join" even to the group's own owner — whose join was then
-  refused. Every individual piece of that answer was correct and both engines
-  replied "fine", so nothing that compares answers could ever have caught it.
-  Only opening the page did.
-- **Leaving a review could not work.** The address that saves a review did
-  nothing at all while replying "saved", so members were told their review had
-  been left over a page that stayed empty. And the form was being built without
-  the recipient's name, because that field simply was not in the reply — an
-  absence, which a comparison of what two replies have in common cannot see.
-- **Two were never faults at all.** Applying to volunteer and joining a group
-  could not be checked against Laravel because its test data gave the test
-  account the only opportunity and the only group. Recorded as test-data gaps
-  rather than blamed on either engine, and now fixed.
-
-🔴 The warning worth taking from this: two of the three real faults were
-invisible to every automatic comparison we run. The other five sections of the
-work list have not been walked this way yet.
-
-## What works today, proved by using it
-
-A member can sign up, verify their email, accept the legal agreement, complete
-onboarding, sign in and out, recover a password from the delivered email, remain
-signed in across a real access-token expiry, use the dashboard, browse and scroll
-the feed, filter it, post, comment, browse and create listings, browse events,
-RSVP, start and continue messages, transfer credits, see wallet history, connect
-with another member, browse profiles, and persist theme and profile settings —
-all through the app's own screens against the .NET engine and the same-run
-Laravel control.
-
-That test can now **fail**. Until today it caught every error and exited
-successfully anyway, so a green run proved nothing at all. It was fixed and then
-proved red: pointed at a dead address, it correctly reported 36 of 37 steps broken.
-
-The accessible site signs in against .NET and 20 of its pages render the same as
-against Laravel, checked side by side in the same run.
-
-## The honest gaps
-
-- **The main app has 31 of 42 Tier 1 rows certified.** Excluding two pre-counted
-  reserve slots, nine real journeys remain: feed page-2 loading and reaction
-  persistence need stable card hooks; multi-photo posts and signed offline event
-  check-in have named backend/storage gaps; voice/attachment messaging is built
-  but unproven; WebAuthn registration/sign-in and 2FA still need durable challenge
-  subsystems; and search correctness has not been compared against a known
-  fixture. The broader module and staff tiers remain much less explored.
-- **The admin panel is barely touched** — 514 admin addresses never compared, and
-  it holds almost all the do-nothing endpoints. Buyers evaluate the admin panel,
-  which is why it now carries 150 of the 1,000 points.
-- **The mobile app has not started** — 34 journeys, nothing attempted. Much of it
-  reuses member functions certified elsewhere, so a measurement pass will tell us
-  how much is real work instead of guessing.
-- **317 endpoints still answer "success" while doing nothing.** Two were worse
-  than that: a member's legal request to erase their data, and their request for a
-  copy of it, both replied "queued" and did nothing. **Both fixed today** — they
-  refuse honestly now. A third of the same kind is recorded and queued.
-- **`/explore` has no .NET version at all**, against 2,257 lines of Laravel.
-- **Push notifications cannot work.** The code uses a Google delivery address and
-  login method both switched off in July 2024.
-- **Languages: 7 of 11 seeded, and no per-request language handling at all.**
-  Arabic is missing, so there is no right-to-left language. A Welsh- or
-  Irish-language buyer would fail us on this today.
-- **Background tasks: 26 of about 117.** Previously published as 26 of 69, which
-  flattered us — one Laravel task fans out into 49 more.
-
-## Two things I got wrong, corrected
-
-**The backup emergency was overstated.** I told you the .NET database had "no
-successful backup since 8 March, nothing to restore from". The *scheduled* job has
-been broken since then — but a **restore-tested copy from 10 August exists off the
-server** (all 265 tables, 49,958 rows, verified by actually restoring it), and the
-database has been switched off since, so that copy is current. This was written
-down on 16 August and I repeated the older claim in six places without reading it.
-What genuinely remains: repair the scheduled job, copy the last few hours' dump,
-and don't restart that container. Real work, yours to schedule — not the emergency
-I described.
-
-**Two problems were overstated the other way too.** Search indexing has a working
-administrator rebuild (only the automatic updating is missing, so the index goes
-stale until someone rebuilds it), and Stripe payment webhooks *are* properly
-handled on two paths with correct signature checking — only one unused alias
-isn't, and it refuses honestly.
-
-## Time frames
-
-Working days means days you actually run sessions. You said near-daily, so the
-calendar column assumes 5–7 sessions a week.
-
-| Milestone | Working days | Calendar |
-|---|---:|---|
-| Fixture fixed, first journeys certified | 2–4 | this week |
-| **Procurement demo grade (~550)** — enough to put it in front of a buyer with evidence | 20–30 | **4–6 weeks** |
-| **First-customer grade (~780)** — one .NET-required customer could be operated | 50–75 | **9–14 weeks** |
-| Everything, including mobile (~950) | 85–120 | **15–22 weeks** |
-
-Milestone levels are lower than the equivalents quoted yesterday because the
-denominator grew: 550 now covers more certified product than 600 did then.
-
-**Was 11 weeks unreasonable?** Partly. The platform is about 2.13 million lines of
-product code across three client applications and two backends — Laravel's business logic alone
-is 521,000 lines. It is genuinely large. But your instinct that something was off
-is right: **the porting is already done.** 2,655 of 2,667 addresses exist, and the
-only gaps the main app cares about are five, all one social-login feature. What is
-left is proving behaviour, one journey at a time.
-
-**Why more agents will not compress this much.** The test suite takes 40 minutes
-and the build another 20–35, and every batch must end green. That caps useful
-batches at roughly 6–10 a day however many agents ran. Database migrations go one
-at a time. There is one comparison environment. Agents make finding and fixing
-nearly free; they do not make verification free.
-
-**These estimates get replaced by measured ones.** After the accessible-site phase
-there is a mandatory checkpoint that cannot pass without six real measurements —
-including how many defects each admin journey actually turns up, the number the
-whole back half depends on. That is the last time these figures are a guess.
-
-## What needs you
-
-1. **A test hook on the feed card** — a one-line frontend change that unblocks two
-   feed journeys currently impossible to verify. The only frontend edit I'd ask
-   for.
-2. **The uncalled do-nothing endpoints** — 63 are called by nothing at all. Delete
-   in both editions, or implement? You see the list first.
-3. **Repair the scheduled backup** and copy the final dump. Infrastructure, and it
-   gates any production use.
-4. **Live provider credentials** (Stripe, push, identity checks) when we reach
-   them — those cannot be simulated.
+Current findings: [status](CURRENT_ASPNET_CONTRACT_STATUS.md). Fresh-session brief: [handoff](HANDOFF_PROMPT.md). Review limits: [modules](MODULES.md). Database evidence: [schema readiness](CURRENT_SCHEMA_READINESS.md).

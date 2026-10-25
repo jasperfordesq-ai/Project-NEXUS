@@ -1,5 +1,21 @@
 # Project NEXUS System Documentation
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+Operator readiness includes non-demo bootstrap, workers/provider outcomes, asset storage, upgrades from the first ASP.NET release and restore into an isolated target. Existing scripts are reusable inputs, not fresh proof. Refer to the costed ROADMAP before restarting anything.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Use the current contract audit before acting on these operator references. Build/source evidence is separate from live runtime, backup, restore and deployment proof.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained system reference - product status remains separate**

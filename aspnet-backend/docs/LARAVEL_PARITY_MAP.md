@@ -1,5 +1,21 @@
 # Laravel Full-Parity Map
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The 53-package scope assigns every named current product family to backend/shared, React-domain, volunteer/care/matching or shared verification ownership. It does not retire Laravel or imply physical schema identity. Preserve supported disabled and configured optional behavior.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Current module gaps include authentication, goals, newsletters/legal/admin mutations, group exchanges, refunds, exports, podcast storage, broadcasts and realtime events. Read the maintained audit for concrete findings. Earlier module completion labels are not current two-client certification.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained reference — detailed evidence and gap map, not a current score**

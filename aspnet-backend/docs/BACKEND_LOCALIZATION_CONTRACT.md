@@ -1,5 +1,21 @@
 # Backend Localization Contract
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+P2 owns shared locale/error/timezone/currency contract verification; B5 owns recipient-language delivery; feature calculations stay with their domain. Frontend translations remain unchanged. No locale/runtime pass is claimed.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+This audit did not replay recipient-language, fallback, formatting or cross-backend localization journeys. Existing localization rules remain the target; dated evidence below is not refreshed by a successful build or route inventory.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last verified: 2026-07-15
 
 Status: **Maintained reference — ASP.NET backend localization ledger, not a score**

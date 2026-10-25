@@ -1,5 +1,16 @@
 # Accessible Shared Frontend Direction
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The supported accessible frontend is web-uk/, not the deleted Blade frontend. Presentation authority remains GOV.UK/WCAG and behavior is traced from current clients and Laravel. ASP.NET switching remains blocked by the current audit.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Status: **Maintained reference - superseded in part; read the 2026-08-11 status header first**
 
 > 🔴 **Status header added 2026-08-11.** On that date the owner decided `web-uk`

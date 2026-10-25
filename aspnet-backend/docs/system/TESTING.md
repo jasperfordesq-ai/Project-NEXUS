@@ -1,5 +1,25 @@
 # Testing And Evidence
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The pure-comparator probe confirms structure alone misses changed permission, money, state and later-row content. P1 builds deterministic outcome fixtures; P3 orchestrates integrated 4-combination evidence without duplicating package-local test effort. No DB/browser/provider verification was added in this scope pass.
+
+
+## Audit reconciliation — 25 October 2026
+
+The monorepo includes both react-frontend/ and web-uk/. October verification: isolated .NET Release build (0 errors, 29 warnings), 49 selected API tests, 5 messaging tests, and 77 mocked Web UK tests passed. This is not the full suite or a two-backend runtime replay. Stateful tests still require disposable databases.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Deeper-pass evidence
+
+The isolated `FullyQualifiedName~UnitTests` selection passed 556, failed 0, skipped 0. It overlaps the earlier 49 API tests; do not sum them. The separate routing harness exercised5803synthetic samples and reproduced33ambiguous matches with no controller execution. The schema harness compared186discovered migrations and model/snapshot metadata and generated SQL without connecting. Neither harness proves authenticated HTTP behavior or migration replay. Current restart acceptance cases are in [ROADMAP](../ROADMAP.md).
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained system reference - test results are SHA-specific**

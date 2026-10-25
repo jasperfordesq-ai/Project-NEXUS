@@ -1,5 +1,16 @@
 # Accessibility, Language, And Support
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Web UK is the maintained accessible client. Accessibility and language support evidence is separate from ASP.NET API compatibility; this audit did not rerun accessibility or language journeys.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained user reference - evidence limits stated explicitly**

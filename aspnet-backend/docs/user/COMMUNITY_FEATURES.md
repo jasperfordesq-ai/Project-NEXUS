@@ -1,5 +1,16 @@
 # Community Features
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Shared feature descriptions are not ASP.NET readiness claims. Workshop/team settlement, goals and other workflows have confirmed gaps; do not treat an accepted response as a completed operation.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained user reference - module availability is tenant-specific**

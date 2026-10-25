@@ -1,5 +1,14 @@
 # CLAUDE.md - Project NEXUS Accessible Frontend (`web-uk`)
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](../aspnet-backend/docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+
+
+## Current ASP.NET boundary — 25 October 2026
+
+Development remains paused. The owner authorized the code-led audit and documentation correction only. Both unchanged frontends must eventually switch by configuration; compatibility is currently blocked. See [current findings](../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Older August resumption statements below are historical and do not authorize implementation, CI, runtime or deployment work.
+
 > ## 🔴 READ THIS FIRST — 2026-08-14: `web-uk` IS THE ONLY ACCESSIBLE FRONTEND, AND IT IS DEPLOYED
 >
 > This file is long and much of it was written while `web-uk` was an uncertified
@@ -26,18 +35,8 @@
 > binding. (The old "ASP.NET stays paused" clause that stood here is corrected
 > below.)
 
-> 🔴 **ASP.NET (corrected 2026-08-21).** Earlier wording here said the ASP.NET
-> backend "stays paused" and was "a future second backend only". **Both are wrong
-> and have been since 2026-08-14.** ASP.NET development is ACTIVE and the edition is
-> a **committed deliverable** — public-sector buyers who require a .NET stack cannot
-> otherwise be bid for. `web-uk` is a first-class client of it: **30 journey rows /
-> 120 points of the ASP.NET score are Web UK's**, and certifying them is a scheduled
-> phase of that work, not a someday. Read
-> [`../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`](../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md),
-> [`../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md`](../aspnet-backend/docs/decisions/ADR-0004-journey-equivalence-is-the-target.md)
-> and the work list
-> [`../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md`](../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md)
-> before declining ASP.NET work in this directory.
+> **Current ASP.NET boundary: development is paused; October audit and documentation only are authorized.**
+
 >
 > What genuinely still applies: **nothing is deployed without explicit
 > authorisation**; the live ASP.NET database's *scheduled* backup has been failing

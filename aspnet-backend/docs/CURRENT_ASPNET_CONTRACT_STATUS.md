@@ -1,8 +1,134 @@
-# Current ASP.NET Contract Status
+# Current ASP.NET contract status
 
-Last verified: 2026-08-25 (41 journeys certified locally; 383 candidate at implementation `f25935184`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
+**Estimate clarification (25 October):** The roughly 950 engineer-day total is an uncalibrated sum of broad human-effort allowances, not a reliable delivery forecast and not a measured AI-assisted estimate. Do not convert it into a promised calendar duration. Retain the work inventory; establish an AI-assisted forecast only after representative implementation and runtime verification are measured following explicit resumption.
 
-Status: **Canonical current - ASP.NET score and certification source**
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused.
+
+The reconciled assessment contains **53 work packages**. Budgetary scenarios are **478 / 951 / 1,712 engineer-days** (low / conservative planning allowance / high rework). Round these to about **480–1,710**, with an allowance around **950**. The exact sums do not imply exact forecasting: these include verification and repair of real but unproven modules, not just confirmed missing code. They are not a calibrated most-likely prediction, statistical interval or a promise of AI elapsed time. Local tests/review are included in each package; shared verification is counted once, with no extra blanket contingency.
+
+New source findings include fabricated enterprise-role CRUD, audit-only pilot updates, empty financial statements, absent current qualifications/fundraising workflows and wellbeing sharing mismatch. The migration-drift script masks command failure. The actual shape comparator returned MATCH for synthetic changed permissions, amounts and states; it cannot establish outcome parity. Earlier runtime/test evidence below keeps its original boundary.
+
+Read [ROADMAP.md](ROADMAP.md) for the costed sequence and [HANDOFF_PROMPT.md](HANDOFF_PROMPT.md) for the next session. Detailed source-backed scope, ownership, acceptance, dependency graph, scenario arithmetic and unstarted tasks are retained in `.local-docs-archive/aspnet-audit/2026-10-25/scope-pass/`. The package ledger is `IMPLEMENTATION-WORK-PACKAGES.json`/`.csv`; `tasks/start-stage.md` is the concrete first-stage checklist. These ignored artifacts are local and are not present in a fresh clone. This maintained document carries the public-safe scope and readiness summary.
+
+
+**Not currently interchangeable. Development remains paused; this is a two-pass audit and restart-preparation record, not implementation or release approval.**
+
+## Deeper code-led audit — 25 October 2026
+
+| ID | Priority | Finding and consequence (source-traced unless reproduced) | Required future acceptance |
+| --- | --- | --- | --- |
+| D-P01 | P1 | 33 synthetic requests throw ambiguous-match errors, including group preferences/scheduled posts and skill actions | Real consumer corpus selects one intended action; HTTP and browser outcomes then pass |
+| D-P02 | P2 | 188 migration source files but 186 EF-discovered migrations; filename checker calls the former runtime count | Explain orphan classes; compare discovered IDs; replay blank and upgrade databases |
+| DR-01 | P1 | Listing continuation returns null cursor while has_more is true; React repeats page one | More than two pages, no duplicates, valid next cursor and terminal page |
+| DR-02 | P1 | Numeric profile listing query ignores route owner | Two distinct owners and empty/restricted profiles return the correct records |
+| DR-03 | P1 | Ordinary listing browse omits Laravel's status/moderation visibility predicates | Active, pending, rejected, closed and deleted fixture outcomes match |
+| DR-04 | P1 | Unified search returns grouped object while React iterates a flat list | Real client renders all supported types, empty states and filters |
+| DR-05 | P2 | Comment read truncates to 20 roots and one reply depth | Complete tree/count/order after create, reply and delete |
+| DR-06 | P1 | RSVP writes going without the capacity/waitlist registration workflow | Capacity-one concurrent requests, waitlist/refusal and persisted counters match |
+| D-W01 | P1 | Opportunity detail omits Web UK's consumed management grants | Owner/co-admin can manage; applicant/stranger cannot |
+| D-W02 | P1 | Shift request/response names differ; edit/delete/roster handlers absent | Create, reload, edit, roster and cancel work with actual client payloads |
+| D-W03 | P2 | Application list array/page contract differs from items/cursor | 25 applications render and paginate once each; decisions survive reload |
+| D-W04 | P1 | Expense JSON binding, organisation ownership and tenant currency differ; organisation review paths absent | JSON and file claims retain organisation/currency, receipt bytes and idempotency |
+| D-W05 | P1 | Web UK rejects the matches envelope; underlying row shape also differs | Empty/populated matches render correct module IDs, links and reasons |
+| D-W06 | P1 | Dismissal treats listing ID as match-row ID | Deliberately different IDs affect only the selected listing, preserving reason |
+| D-B01 | P1 | React deletion completes with profile/listing/subscription remnants | Full caller-visible anonymization/lifecycle and retained-ledger assertions |
+| D-B02 | P1 | Web UK erasure request deliberately returns 501 | Persist request and invalidate sessions with the expected request/logout contract |
+| D-B03 | P1 | Generic push queue drains only from invitation processing | Group/volunteer notification reaches fake provider with no invitation present |
+| D-B04 | P1/P2 | Saved global push opt-out is not checked by shared delivery | Two-device opt-out and already-pending notifications cause zero provider calls |
+
+### Deeper source anchors
+
+- [Listing/profile and RSVP compatibility handlers](../src/Nexus.Api/Controllers/V15MemberParityController.cs), [search handler](../src/Nexus.Api/Controllers/SearchController.cs), [threaded comments](../src/Nexus.Api/Services/ThreadedCommentService.cs).
+- [Volunteer grants/applications/shifts](../src/Nexus.Api/Controllers/VolunteeringController.cs), [expense submission](../src/Nexus.Api/Controllers/VolunteerExpenseSubmissionController.cs), [Web UK volunteer routes](../../web-uk/src/routes/volunteering-actions.js).
+- [Matching boundary](../src/Nexus.Api/Controllers/CompatibilityController.cs), [matching service](../src/Nexus.Api/Services/MatchingService.cs), [Web UK match consumer](../../web-uk/src/routes/matches.js).
+- [Erasure implementation](../src/Nexus.Api/Services/GdprService.cs), [generic push queue/delivery](../src/Nexus.Api/Services/PushNotificationService.cs), [actual alias convention](../src/Nexus.Api/Routing/AdminV2RouteAliasConvention.cs).
+
+### New verification and corrections
+
+- The isolated API unit selection passed **556**, failed 0, skipped 0. Earlier 49 API tests overlap; do not add them to 556. Earlier 5 messaging and 77 mocked Web UK passes were not repeated in this pass.
+- **5,803 synthetic routing requests; 33 AmbiguousMatchException results.** The harness uses actual MVC aliases and API-versioning registration and stops before controller/auth/database execution. Default response status 200 in that harness is unused; selected endpoint/exception is the evidence. Goal GET/checkins, GET/reminder and DELETE select a 405 endpoint; PUT goal and GET podcasts select controllers.
+- Npgsql metadata inspection: **186 EF-discovered migrations**, zero model/snapshot differences; offline idempotent SQL generation succeeded (1,254,215 characters). **188 is the migration source-file count**, not EF discovery. Two orphan classes lack discovery metadata; a discovered later migration also creates the federation tables, so absence of those classes is not proof of missing tables.
+- Rechecked 7,781 previously captured source hashes: one unrelated listings-digest admin file changed (`react-frontend/src/admin/modules/newsletters/ListingsDigestAdmin.tsx`); ASP.NET source hashes were unchanged. Source baseline remains the recorded HEAD; hashes identify inspected inputs, not exhaustive manual coverage.
+- No database connection, migration execution, real HTTP/browser journey, provider call, crash injection or hosted replay. The full integration suite was not run. This remains preparation, not compatibility certification.
+
+Separate candidates requiring fault injection: settlement commits before notification intent is durable; push sends have no independent atomic claim in the examined dispatcher; erasure Processing may remain stranded after a crash. These are source-supported failure windows, not reproduced production incidents. Localization, external federation, SSO/billing, all remaining admin branches and every module state transition are not certified by this review.
+
+The practical restart sequence is in [ROADMAP.md](ROADMAP.md); the fresh-session brief is [HANDOFF_PROMPT.md](HANDOFF_PROMPT.md). Full evidence is in the ignored local audit archive under `deep-pass/`.
+
+## First-pass findings still open — 25 October 2026
+
+**ASP.NET is not currently interchangeable with Laravel for the two unchanged web frontends. Development remains paused.** The owner authorized this audit and documentation correction, not implementation, CI reactivation, runtime restart or deployment. Configuration-only switching remains the required outcome.
+
+| Finding | Consequence | Evidence appendix |
+| --- | --- | --- |
+| React login/session binding and cookie refresh differ | Current client cannot adopt/renew the expected browser session; CORS also omits the binding header | React R01–R02 |
+| Group workshop/team split rules differ | A two-hour workshop with three two-hour receivers debits 2 instead of 6; no 4-hour community-fund leg | Web UK W01 |
+| Newsletter segments/templates and legal-document administration contain fabricated success | Changes do not survive a subsequent read; publication/compliance responses are not evidence of stored state | React R06–R07 |
+| Refund, bulk group archive and FAQ writes fall through to audit-only dispatch | Success/accepted responses record intent without the requested provider or domain mutation | Backend B02–B03 |
+| Goal aliases and persistence are incomplete | Missing v2 DELETE/check-in/reminder reads; check-in/reminder writes do not persist the requested data | Routing follow-up |
+| Podcast upload does not store the audio | Ready/clean metadata and a self-referential playback URL cannot provide uploaded playback | React R04 |
+| AI chat request and response shapes differ | Client sends message and expects nested message content; handler requires prompt and returns a different shape | React R03 |
+| Support multipart and conditional impact validation differ | Screenshot submissions and valid non-bug submissions fail the expected contract | Web UK W03–W04 |
+| Saved-search execution returns an empty success | No saved query parameters are returned, including for a nonexistent ID | Web UK W05 |
+| Event broadcast scheduling has no identified delivery consumer | Queued state is not evidence of delivery | Backend B01 |
+| Member export omits the Laravel export sections | A downloadable archive is not a complete equivalent export | Backend B04 |
+| Pusher message events differ from SignalR delivery | Existing client subscriptions do not establish compatible message/read updates | React R05 |
+| MFA recovery/device contracts differ | Missing recovery/device routes and ignored remembered-device input | React R08 / Web UK W07 |
+| Group preview and public certificate-check contracts are absent | Existing Web UK/both-client journeys cannot call their expected operations | Web UK W02/W06 |
+| Insurance upload is a three-way contract disagreement | Laravel refuses certificate files, Web UK requires one, ASP.NET stores one; changing ASP.NET alone cannot reconcile this | Web UK W08 |
+| Wallet completion effects differ | Core ledger writes exist, but the expected notification/review follow-up chain is absent | Backend B05 |
+
+### Source anchors for the principal findings
+
+These implementation links make the current summary reviewable without the local evidence archive. Detailed line numbers and Laravel/client counterparts are in the audit package.
+
+- Session continuity: [ASP.NET auth](../src/Nexus.Api/Controllers/AuthController.cs), [React transport](../../react-frontend/src/lib/api.ts), [Laravel browser cookies](../../app/Http/Middleware/BrowserRefreshCookie.php).
+- Settlement: [ASP.NET group exchange service](../src/Nexus.Api/Services/GroupExchangeService.cs), [Laravel calculator](../../app/Services/GroupExchangeSplitCalculator.php).
+- False-success admin operations: [newsletter handlers](../src/Nexus.Api/Controllers/AdminCompatibility2Controller.cs), [legal handlers](../src/Nexus.Api/Controllers/AdminCompatibility3Controller.cs), [audit-only dispatcher](../src/Nexus.Api/Controllers/AdminExplicitParityController.cs).
+- Goals: [alias convention](../src/Nexus.Api/Routing/AdminV2RouteAliasConvention.cs), [write handlers](../src/Nexus.Api/Controllers/CompatibilityAliasController.cs).
+- Uploads and exports: [podcast service](../src/Nexus.Api/Services/PodcastsCompatibilityService.cs), [member export](../src/Nexus.Api/Controllers/MemberParityController.cs), [Laravel export](../../app/Services/MemberDataExportService.php).
+- Event delivery: [ASP.NET scheduling](../src/Nexus.Api/Services/EventBroadcastService.cs), [Laravel delivery consumer](../../app/Services/EventBroadcastDeliveryConsumer.php).
+
+Test-quality finding: some route tests accept any result except 404/405, an admin test explicitly passes audit-only execution, and the wallet concurrency test permits all requests to fail with 500. These tests need outcome assertions before they can support readiness; this does not imply that all tests are weak.
+
+### Evidence and limits
+
+The audit read implementation and callers, not documentation as product evidence. Repository-wide inventories were followed by manual controller/service/Laravel/frontend traces and focused probes. Scope: ASP.NET source, Laravel API/services, canonical React and Web UK. Mobile, hosted environments and production data were not audited.
+
+Source capture: initial HEAD `7d49f3251c3f8a98cc14b30d6213d2d55b5837ca`; later observed HEAD `67e030fbac1a470b0ef8f2fb7bff4d908c0a547d`. The shared tree advanced during review; there was no ASP.NET change between those commits. The evidence manifest hashes 7,781 source files; it is provenance, not a claim that every line was manually reviewed.
+
+- Isolated offline restore and Release build: all five .NET projects, zero errors, 29 warnings.
+- Selected backend tests: 49 API and 5 messaging tests passed, none failed/skipped. These are a selected subset, not the full regression suite.
+- Five Web UK suites: 77 tests passed with mocked contracts, not two-backend runtime proof.
+- Direct controller probes: segment creation returns HTTP-result 201/id 0 followed by an empty list; nonexistent saved-search execution returns an empty success. No middleware/HTTP/database was exercised by these probes.
+- Direct invocation of the C# split calculator confirmed receiver allocations 0.67/0.67/0.66 for the workshop above. Laravel's 2/2/2 plus fund4 comparison was traced in source, not executed in PHP.
+- MVC metadata: 5,835 declarations / 5,796 normalized method/path shapes. Source scraper: 5,936 ASP.NET and 2,760 Laravel routes. Different extraction boundaries mean these are inventories, not compatible-operation counts.
+- No-op heuristic: 546 flagged route-methods across 313 methods, with known false positives. These are review candidates, not 546 confirmed defects.
+- Schema source inventory: 489 Laravel migration files / 188 ASP.NET migration source files (186 discovered by EF in the deeper pass); 518/460 source table names, 258 names matched. Different schemas and extraction rules prevent interpreting 260 unmatched names as 260 missing features.
+
+Not performed: full regression suite; disposable database migration replay; fresh Laravel/ASP.NET HTTP comparison; unchanged-client browser journeys; real workers/providers, refund, email, upload playback, backup/restore or hosted replay. The deeper pass above supersedes candidate-only routing status with 33 reproduced synthetic ambiguous matches. No current completion percentage or recertification is justified.
+
+### Preparation for a future restart
+
+1. Preserve the development pause. Agree the contract baseline and evidence-driven backlog before resumption.
+2. When implementation is explicitly reopened, restore browser login/refresh and method-aware routing, then verify both unchanged frontends.
+3. Correct settlement/refunds and false-success persistence paths; assert persisted state, ledger conservation and external outcomes, not only HTTP status.
+4. Complete uploads/playback, exports, broadcasts, realtime events and remaining module contracts.
+5. Reconcile the insurance policy/consumer disagreement rather than copying an obsolete client upload into the backend.
+6. Replay blank and upgrade migrations on disposable databases, run the full regression suites, and certify each workflow against both backends with the same fixtures and clients. Count untested/unavailable outcomes explicitly.
+
+Detailed file/line references, reproduction notes and machine-readable evidence are retained in the local audit package at `.local-docs-archive/aspnet-audit/2026-10-25/` (ignored, not available in a fresh clone). This curated summary is the shared readiness record.
+
+## Historical scoring record — not current certification
+
+The record below is preserved for provenance and score-tool continuity. It does not override the October audit. Its 383 candidate, 324 floor and journey claims are dated evidence, not a current completion score.
+
+
+Historical verification date: 2026-08-25 (41 journeys certified locally; 383 candidate at implementation `f25935184`; banked floor 324 at pushed, green `32bd2f94d` pending the next batched push and green CI)
+
+Status: **Historical August score record; not current certification**
 
 <!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=383/1000 -->
 <!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R5 -->
@@ -53,7 +179,7 @@ runs the product; `WEBUK-W2-PROD-R1` measures whether the accessible frontend is
 safe to serve (`../../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`). Never
 blend them.
 
-🔴 **How this file works.** It holds ONLY what is current. Dated narrative
+🔴 **How this file works.** This preserved section describes the August baseline only. Dated narrative
 lives in `HISTORY/STATUS_ARCHIVE_2026-0{7,8}.md`. The finite work list is
 [`JOURNEY_CERTIFICATION_LEDGER.md`](JOURNEY_CERTIFICATION_LEDGER.md). The
 standing session brief is [`HANDOFF_PROMPT.md`](HANDOFF_PROMPT.md). The

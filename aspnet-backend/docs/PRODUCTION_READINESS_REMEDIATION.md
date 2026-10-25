@@ -1,5 +1,21 @@
 # ASP.NET Production-Readiness Remediation Backlog
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The costed readiness assessment includes supported new-install packaging/restore and final verification, but no actual customer deployment. CI ASP.NET jobs remain paused; a green overall workflow does not run them. Drift-tool errors must be reported as errors, not a clean model.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Prioritize session continuity, settlement/refunds, false-success mutations, uploads/exports/workers, and remaining caller contracts. The build and selected tests pass, but neither establishes production readiness. No operational readiness or new security certification is asserted.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Status: **Maintained reference - verified-defect backlog (the re-verified block wins over older items below it)**
 
 **Opened 2026-08-15 at monorepo HEAD `870c1e989`.** This is the single actionable

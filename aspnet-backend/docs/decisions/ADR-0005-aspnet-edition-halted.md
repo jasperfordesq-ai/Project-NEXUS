@@ -1,5 +1,17 @@
 # ADR-0005: The ASP.NET Edition Is Paused
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+Owner clarification,25 October: audit at migration-level depth and prepare a costed restart package, but deliver independent new installations with both web frontends unchanged. Existing-community data migration has not been requested. This extends audit/readiness documentation authority only; it does not resume implementation.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Owner addendum, 25 October: audit source deeply against Laravel and both switchable frontends, then update documentation, while development remains paused. This explicitly authorizes source inspection, isolated build/tests and audit/doc artifacts. It does not reopen implementation, CI jobs, containers or deployment. The September decision below remains historical context; its blanket audit prohibition and untouched-document rule are narrowed by this addendum. Prior certifications remain dated evidence, not current certification.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+
 Date accepted: 2026-09-11
 
 Status: **Maintained reference - accepted; suspends ADR-0003's delivery sequencing**

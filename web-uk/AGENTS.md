@@ -1,5 +1,14 @@
 # Agent Instructions For web-uk
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](../aspnet-backend/docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+
+
+## Current ASP.NET boundary — 25 October 2026
+
+Development remains paused. The owner authorized the code-led audit and documentation correction only. Both unchanged frontends must eventually switch by configuration; compatibility is currently blocked. See [current findings](../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Older August resumption statements below are historical and do not authorize implementation, CI, runtime or deployment work.
+
 The repository-wide instructions in [`../AGENTS.md`](../AGENTS.md) apply here.
 
 > ## 🔴 READ THIS FIRST — corrected 2026-08-17: `web-uk` IS THE ONLY ACCESSIBLE FRONTEND, AND IT IS LIVE
@@ -36,16 +45,8 @@ The repository-wide instructions in [`../AGENTS.md`](../AGENTS.md) apply here.
 > presentation; `react-frontend/` for what a member can do; the Laravel API for
 > the contract. Blade is historic and gone, and is not the specification.
 >
-> 🔴 **Corrected 2026-08-21: ASP.NET is NOT paused** — development resumed
-> 2026-08-14 and the edition is a committed deliverable driven by public-sector
-> procurement; Web UK owns 30 journey rows of its certification. Read
-> `../aspnet-backend/docs/decisions/ADR-0003-aspnet-is-a-committed-deliverable.md`,
-> `ADR-0004-journey-equivalence-is-the-target.md` and
-> `../aspnet-backend/docs/JOURNEY_CERTIFICATION_LEDGER.md` before declining ASP.NET
-> work here. What still applies: the live ASP.NET database container must not be
-> restarted (scheduled backups have failed since 2026-03-08; a restore-tested
-> 2026-08-10 off-server copy does exist), nothing deploys without explicit
-> authorisation, and stateful certification uses the disposable Laravel on `:8091`.
+> **Current ASP.NET boundary: development is paused; October audit and documentation only are authorized.**
+
 >
 > The superseded sentence read: "the ASP.NET backend stays paused with its database
 > boundary closed; the shared local `nexus` database is production-derived and

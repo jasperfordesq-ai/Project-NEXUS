@@ -1,5 +1,16 @@
 # ASP.NET API Consumer Guide
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+ASP.NET is a committed but paused second backend. Integrators must not assume current interchangeability from route availability. The audit records request/session/media-type, response and side-effect gaps.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained integration reference - experimental and not contract-certified**

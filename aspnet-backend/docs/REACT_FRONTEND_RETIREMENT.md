@@ -1,5 +1,16 @@
 # React Frontend Retirement Policy
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The canonical client is react-frontend/ at the monorepo root. Keep the retired ASP.NET-specific frontend retired; do not solve compatibility failures with a second client or backend-specific page branches.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 > **Pre-consolidation paths.** Written before the 2026-08-09 move into the
 > platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
 > `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read

@@ -1,5 +1,21 @@
 # Backend Switching Contract
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](../../aspnet-backend/docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Source: src/lib/backend-contract.js resolves ACCESSIBLE_BACKEND_TARGET (laravel or aspnet), explicit API_BASE_URL, then target base overrides/defaults. Defaults are Laravel http://127.0.0.1:8090 and ASP.NET http://localhost:5080. The current frontends are web-uk/ and react-frontend/ in the monorepo; Blade is retired. Existing configuration-only selection does not establish parity: support multipart/impact, group workshop/preview, saved search, certificate checks and remembered-device contracts differ. Insurance is a three-way disagreement. Older route and runtime totals below are historical scoped evidence.
+
+Current readiness: [code-led contract audit](../../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 > 🔴 **Status header added 2026-08-11.** On that date the owner decided `web-uk`
 > becomes the production accessible frontend and the Laravel Blade accessible
 > frontend retires. Read `docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` at the repository

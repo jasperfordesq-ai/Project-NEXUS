@@ -1,5 +1,16 @@
 # Journey Certification Ledger
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The August journey rows are historical evidence only. Current login/refresh, goals, upload, admin, settlement and export findings prevent relying on those rows as fresh certification. No score, denominator or prior evidence date was silently changed. Recertify against both unchanged clients after fixes and same-run comparison.
+
+Current readiness: [code-led contract audit](CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last verified: 2026-08-25 (local certification evidence:
 `react-smoke-2026-08-25T21-02-49-889Z.json`; 7 paired MATCH, no failures or
 skips. Score banking awaits the next batched push and green CI.)

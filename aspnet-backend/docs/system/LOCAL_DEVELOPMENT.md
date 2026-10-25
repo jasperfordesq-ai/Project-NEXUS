@@ -1,5 +1,21 @@
 # Local Development
 
+## New-installation scope and implementation assessment — 25 October 2026
+
+The first resumed stage must use a separately provisioned disposable new install, never ordinary production-derived local data. Docker, PostgreSQL CLI and PHP were not found on this audit shell PATH; no runtime was started. Existing run commands remain future operational reference.
+
+
+## Audit reconciliation — 25 October 2026 (two passes)
+
+Commands below are operational reference for a future authorized restart. The audit built an isolated source copy without starting the application or database. It did not inspect or change remote runtime state.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+## Historical baseline — not revalidated by this audit
+
+Earlier scores, certifications, test totals and readiness statements below retain their original dates. They are not current compatibility evidence; the audit above takes precedence.
+
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained system reference - local development only**

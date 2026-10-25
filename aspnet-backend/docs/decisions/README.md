@@ -1,5 +1,12 @@
 # Architecture Decision Records
 
+## Audit reconciliation — 25 October 2026 (two passes)
+
+The owner authorized a code-led ASP.NET/Laravel comparison against both unchanged web frontends and documentation updates on 25 October. This is a narrow exception to the September pause, not a resumption. ASP.NET is not currently interchangeable; earlier completeness or active-delivery statements are superseded by the current audit.
+
+Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.md). Development remains paused; this audit/doc update does not authorize implementation, CI reactivation, container restart or deployment.
+
+
 Last reviewed: 2026-08-21
 
 Status: **Maintained index - accepted product and architecture decisions**
