@@ -570,30 +570,6 @@ async function uploadProfileAvatar(token, data) {
   });
 }
 
-async function uploadInsuranceCertificate(token, data) {
-  const form = new globalThis.FormData();
-  form.append('insurance_type', data.insurance_type || '');
-  form.append('provider_name', data.provider_name || '');
-  form.append('policy_number', data.policy_number || '');
-  form.append('coverage_amount', data.coverage_amount || '');
-  form.append('start_date', data.start_date || '');
-  form.append('expiry_date', data.expiry_date || '');
-  form.append('notes', data.notes || '');
-
-  if (data.file && data.file.buffer) {
-    const blob = new globalThis.Blob([data.file.buffer], {
-      type: data.file.contentType || 'application/octet-stream'
-    });
-    form.append('certificate_file', blob, data.file.filename || 'certificate');
-  }
-
-  return request('/api/v2/users/me/insurance', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: form
-  });
-}
-
 async function getOnboardingStatus(token) {
   return request('/api/v2/onboarding/status', {
     headers: { Authorization: `Bearer ${token}` }
@@ -4203,7 +4179,6 @@ module.exports = {
   getProfile,
   updateProfile,
   uploadProfileAvatar,
-  uploadInsuranceCertificate,
   getOnboardingStatus,
   getOnboardingConfig,
   getOnboardingCategories,

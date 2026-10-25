@@ -217,7 +217,7 @@ return [
         'insurance-file-required' => 'Scegli un file di certificato da caricare.',
         'insurance-file-type' => 'Il certificato deve essere un file PDF, JPG o PNG.',
         'insurance-file-large' => 'Il file del certificato deve essere inferiore a 10 MB.',
-        'insurance-failed' => 'Siamo spiacenti, non è stato possibile caricare il tuo certificato. Per favore riprova.',
+        'insurance-failed' => 'Siamo spiacenti, non è stato possibile salvare i dati assicurativi. Riprova.',
         'insurance-recorded' => 'I dati assicurativi sono stati salvati.',
         'insurance-file-forbidden' => 'Non caricare documenti assicurativi o dati sensibili della polizza.',
         'insurance-expiry-required' => 'Inserisci una data di scadenza valida.',

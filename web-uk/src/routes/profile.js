@@ -1071,7 +1071,7 @@ function buildProfileSettingsViewModel(req, data) {
         text: translateStatusMessage(
           req,
           'govuk_alpha_settings.insurance.description',
-          'Upload or review proof of insurance for verified activity.'
+          'Record the insurance type, provider and expiry date only. Do not upload documents or sensitive policy data.'
         )
       } : null,
       {

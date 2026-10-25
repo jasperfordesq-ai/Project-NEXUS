@@ -2655,37 +2655,6 @@ describe('API Request Functions', () => {
       expect(options.body.get('receipt').name).toBe('bus.pdf');
     });
 
-    it('should upload insurance certificates to Laravel with multipart file data', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ data: { id: 42 } })
-      });
-
-      await api.uploadInsuranceCertificate('test-token', {
-        insurance_type: 'public_liability',
-        provider_name: 'Example Mutual',
-        policy_number: 'PL-123',
-        expiry_date: '2027-06-30',
-        file: {
-          buffer: Buffer.from('%PDF insurance certificate', 'utf8'),
-          filename: 'insurance.pdf',
-          contentType: 'application/pdf'
-        }
-      });
-
-      const [, options] = mockFetch.mock.calls[0];
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5000/api/v2/users/me/insurance',
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer test-token'
-          })
-        })
-      );
-      expect(options.body).toBeInstanceOf(FormData);
-    });
   });
 
   describe('callMarketplaceApi', () => {

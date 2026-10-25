@@ -217,7 +217,7 @@ return [
         'insurance-file-required' => 'Elija un archivo de certificado para cargar.',
         'insurance-file-type' => 'El certificado debe ser un archivo PDF, JPG o PNG.',
         'insurance-file-large' => 'El archivo del certificado debe tener un tamaño inferior a 10 MB.',
-        'insurance-failed' => 'Lo sentimos, no pudimos cargar su certificado. Por favor inténtalo de nuevo.',
+        'insurance-failed' => 'Lo sentimos, no pudimos guardar tu registro de seguro. Inténtalo de nuevo.',
         'insurance-recorded' => 'Se ha guardado tu registro de seguro.',
         'insurance-file-forbidden' => 'No subas documentos de seguro ni datos sensibles de la póliza.',
         'insurance-expiry-required' => 'Introduce una fecha de vencimiento válida.',

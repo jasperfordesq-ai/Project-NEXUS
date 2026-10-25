@@ -23,7 +23,6 @@ jest.mock('../src/lib/api', () => ({
   getProfile: jest.fn(),
   invalidateUserCache: jest.fn(),
   requestAccountDeletion: jest.fn(),
-  uploadInsuranceCertificate: jest.fn(),
   uploadProfileAvatar: jest.fn()
 }));
 
@@ -137,7 +136,6 @@ describe('Laravel account and settings contract parity', () => {
       }
       return Promise.resolve({ data: {} });
     });
-    api.uploadInsuranceCertificate.mockResolvedValue({ data: { id: 12 } });
     api.uploadProfileAvatar.mockResolvedValue({ data: { avatar_url: '/uploads/avatar.jpg' } });
   });
 
@@ -465,8 +463,95 @@ describe('Laravel account and settings contract parity', () => {
 
     expect(response.status).toBe(404);
     expect(response.body.view).toBe('errors/404');
-    expect(api.uploadInsuranceCertificate).not.toHaveBeenCalled();
+    expect(api.callUserSettingsApi).not.toHaveBeenCalledWith('test-token', 'POST', '/insurance', expect.anything());
     expect(api.callUserSettingsApi).not.toHaveBeenCalledWith('test-token', 'GET', '/insurance');
+  });
+
+  // Laravel stores an insurance RECORD — type, optional provider, required expiry — and
+  // refuses any `certificate_file` with 422 DOCUMENT_UPLOAD_FORBIDDEN
+  // (UserInsuranceController::store, since 2026-07-14). The form used to demand a file
+  // and always sent it, so it could never succeed. React's Settings page sends exactly
+  // these three fields.
+  describe('insurance record (details only, no document)', () => {
+    const t = createTranslator('en');
+    const validRecord = {
+      insurance_type: 'professional_indemnity',
+      provider_name: '  West Cork Mutual  ',
+      'expiry_date-day': '31',
+      'expiry_date-month': '3',
+      'expiry_date-year': '2027'
+    };
+
+    it('saves type, provider and expiry as JSON and never sends a document', async () => {
+      api.callUserSettingsApi.mockResolvedValue({ data: { id: 9 } });
+
+      const response = await request(settingsApp()).post('/settings/insurance').type('form').send(validRecord);
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/settings/insurance?status=insurance-recorded#certificates');
+      expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'POST', '/insurance', {
+        insurance_type: 'professional_indemnity',
+        provider_name: 'West Cork Mutual',
+        expiry_date: '2027-03-31'
+      });
+      const [, , , payload] = api.callUserSettingsApi.mock.calls.find(([, method]) => method === 'POST');
+      expect(Object.keys(payload).sort()).toEqual(['expiry_date', 'insurance_type', 'provider_name']);
+    });
+
+    it('sends a null provider when none is given', async () => {
+      api.callUserSettingsApi.mockResolvedValue({ data: { id: 9 } });
+
+      await request(settingsApp()).post('/settings/insurance').type('form').send({ ...validRecord, provider_name: '' });
+
+      expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'POST', '/insurance', expect.objectContaining({
+        provider_name: null
+      }));
+    });
+
+    it.each([
+      ['missing', { 'expiry_date-day': '', 'expiry_date-month': '', 'expiry_date-year': '' }],
+      ['impossible', { 'expiry_date-day': '31', 'expiry_date-month': '2', 'expiry_date-year': '2027' }]
+    ])('refuses a %s expiry date before calling the API', async (label, expiry) => {
+      const response = await request(settingsApp()).post('/settings/insurance').type('form').send({ ...validRecord, ...expiry });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/settings/insurance?status=insurance-expiry-required#upload');
+      expect(api.callUserSettingsApi).not.toHaveBeenCalledWith('test-token', 'POST', '/insurance', expect.anything());
+    });
+
+    it('reports an API refusal as a failed save', async () => {
+      api.callUserSettingsApi.mockRejectedValue(new api.ApiError('Validation failed', 422, {}));
+
+      const response = await request(settingsApp()).post('/settings/insurance').type('form').send(validRecord);
+
+      expect(response.headers.location).toBe('/settings/insurance?status=insurance-failed#upload');
+    });
+
+    it('confirms a saved record and points field errors at the right control', async () => {
+      api.callUserSettingsApi.mockResolvedValue({ data: [] });
+
+      const saved = await request(settingsApp()).get('/settings/insurance?status=insurance-recorded');
+      expect(saved.body.locals.successStatus).toBe(true);
+      expect(saved.body.locals.statusMessage).toBe(t('govuk_alpha_settings.states.insurance-recorded'));
+
+      const expiry = await request(settingsApp()).get('/settings/insurance?status=insurance-expiry-required');
+      expect(expiry.body.locals.errorStatus).toBe(true);
+      expect(expiry.body.locals.errorAnchor).toBe('expiry_date-day');
+      expect(expiry.body.locals.expiryError).toBe(t('govuk_alpha_settings.states.insurance-expiry-required'));
+    });
+
+    it('renders a plain form with no file upload and no fields Laravel would discard', () => {
+      const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'views', 'settings', 'insurance.njk'), 'utf8');
+
+      expect(source).not.toContain('multipart/form-data');
+      expect(source).not.toContain('type="file"');
+      for (const field of ['certificate_file', 'policy_number', 'coverage_amount', 'start_date', 'name="notes"']) {
+        expect(source).not.toContain(field);
+      }
+      expect(source).toContain('name: "expiry_date"');
+      expect(source).toContain('name="provider_name"');
+      expect(source).toContain('name="insurance_type"');
+    });
   });
 
   it('links the blocked-member settings control to the implemented Laravel-parity route', () => {

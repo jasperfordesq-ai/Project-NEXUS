@@ -4,10 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const fs = require('fs/promises');
 const {
   callUserSettingsApi,
-  uploadInsuranceCertificate,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -104,12 +102,18 @@ const SETTINGS_STATUS_MESSAGES = {
   'gdpr-invalid': 'Choose the type of request you want to make.',
   'gdpr-failed': 'Sorry, we could not submit your request. Please try again.',
   'insurance-uploaded': 'Your certificate has been uploaded and is awaiting review.',
+  'insurance-recorded': 'Your insurance record has been saved.',
   'insurance-type-invalid': 'Choose the type of insurance.',
-  'insurance-file-required': 'Choose a certificate file to upload.',
-  'insurance-file-type': 'The certificate must be a PDF, JPG or PNG file.',
-  'insurance-file-large': 'The certificate file must be smaller than 10MB.',
-  'insurance-failed': 'Sorry, we could not upload your certificate. Please try again.'
+  'insurance-expiry-required': 'Enter a valid insurance expiry date.',
+  'insurance-failed': 'Sorry, we could not save your insurance record. Please try again.'
 };
+const INSURANCE_ERROR_STATUSES = ['insurance-type-invalid', 'insurance-expiry-required', 'insurance-failed'];
+// The GOV.UK date input's first box carries the field's id, so the summary link lands there.
+const INSURANCE_ERROR_ANCHORS = {
+  'insurance-type-invalid': 'insurance_type',
+  'insurance-expiry-required': 'expiry_date-day'
+};
+
 // 🔴 These three statuses have no govuk_alpha_settings.states.* key; their text lives in
 // the already-translated safeguarding.errors.* namespace. Resolve them there so a member
 // hears the message in their own language instead of the English literal above. The
@@ -161,20 +165,6 @@ function allowedValue(value, allowed, fallback = null) {
 function positiveInteger(value) {
   const number = Number(value);
   return Number.isInteger(number) && number > 0 ? number : null;
-}
-
-function uploadedFile(req, fieldName) {
-  const file = req.files && req.files[fieldName];
-  return file && typeof file === 'object' ? file : null;
-}
-
-async function removeUploadedFile(file) {
-  if (!file || !file.filepath) return;
-  try {
-    await fs.unlink(file.filepath);
-  } catch {
-    // Temporary upload cleanup is best-effort only.
-  }
 }
 
 function isAuthError(error) {
@@ -742,15 +732,13 @@ router.get('/insurance', asyncRoute(async (req, res) => {
       ? res.locals.t(`govuk_alpha_settings.states.${status}`)
       : '',
     insuranceForm: consumeFormReplay(req, 'settings', 'insurance'),
-    successStatus: status === 'insurance-uploaded',
-    errorStatus: [
-      'insurance-type-invalid',
-      'insurance-file-required',
-      'insurance-file-type',
-      'insurance-file-large',
-      'insurance-failed'
-    ].includes(status),
-    errorAnchor: status === 'insurance-type-invalid' ? 'insurance_type' : 'certificate_file',
+    // `insurance-uploaded` is kept only so an old bookmarked confirmation still reads.
+    successStatus: ['insurance-recorded', 'insurance-uploaded'].includes(status),
+    errorStatus: INSURANCE_ERROR_STATUSES.includes(status),
+    errorAnchor: INSURANCE_ERROR_ANCHORS[status] || 'insurance_type',
+    expiryError: status === 'insurance-expiry-required'
+      ? res.locals.t('govuk_alpha_settings.states.insurance-expiry-required')
+      : '',
     certificates,
     insuranceTypes: SETTINGS_INSURANCE_TYPES.map((type) => ({
       value: type,
@@ -851,76 +839,49 @@ router.post('/linked-accounts/revoke', asyncRoute(async (req, res) => {
 
 router.post('/insurance', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
-  const file = uploadedFile(req, 'certificate_file');
-  if (!token) {
-    await removeUploadedFile(file);
-    return redirectTo(res, loginRedirect());
-  }
-  if (!insuranceEnabledForRequest(req)) {
-    await removeUploadedFile(file);
-    return renderNotFound(res);
-  }
+  if (!token) return redirectTo(res, loginRedirect());
+  if (!insuranceEnabledForRequest(req)) return renderNotFound(res);
 
+  // 🔴 Laravel keeps an insurance RECORD, not a document: type, optional provider and
+  // a required expiry date (UserInsuranceController::store). Any `certificate_file`
+  // is refused with 422 DOCUMENT_UPLOAD_FORBIDDEN, and every other field is discarded.
+  // This form required a certificate and always sent it, so from 14 July 2026 it could
+  // not succeed. It now sends exactly what React's Settings page sends.
   const insuranceType = allowedValue(req.body.insurance_type, SETTINGS_INSURANCE_TYPES, null);
-  // 🔴 The most input this frontend could lose in one go: four text fields, two GOV.UK
-  // date triples and a 1,000-character notes box, all blanked by a file-type or file-size
-  // rejection the member could not have predicted. The CERTIFICATE cannot be restored —
-  // a browser forbids setting a file input's value — which is precisely why keeping the
-  // details around it matters: they have to re-pick the file either way.
-  const rememberUpload = () => rememberFormReplay(req, 'settings', 'insurance', {
+  const providerName = trimmed(req.body.provider_name, 255);
+  const expiry = readDate(req.body, 'expiry_date');
+  const rememberRecord = () => rememberFormReplay(req, 'settings', 'insurance', {
     insuranceType: trimmed(req.body.insurance_type, 60),
-    providerName: trimmed(req.body.provider_name, 255),
-    policyNumber: trimmed(req.body.policy_number, 255),
-    coverageAmount: trimmed(req.body.coverage_amount, 20),
-    notes: trimmed(req.body.notes, 1000),
-    startDateParts: dateParts(req.body, 'start_date'),
+    providerName,
     expiryDateParts: dateParts(req.body, 'expiry_date')
   });
 
   if (insuranceType === null) {
-    rememberUpload();
-    await removeUploadedFile(file);
+    rememberRecord();
     return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-type-invalid', '#upload'));
   }
 
-  if (!file) {
-    rememberUpload();
-    return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-file-required', '#upload'));
+  if (!expiry.value) {
+    rememberRecord();
+    return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-expiry-required', '#upload'));
   }
 
   try {
-    const buffer = await fs.readFile(file.filepath);
-    await uploadInsuranceCertificate(token, {
+    await callSettings(token, 'POST', '/insurance', {
       insurance_type: insuranceType,
-      provider_name: trimmed(req.body.provider_name, 255),
-      policy_number: trimmed(req.body.policy_number, 255),
-      coverage_amount: trimmed(req.body.coverage_amount),
-      start_date: readDate(req.body, 'start_date').value || '',
-      expiry_date: readDate(req.body, 'expiry_date').value || '',
-      notes: trimmed(req.body.notes, 1000),
-      file: {
-        buffer,
-        filename: trimmed(file.originalFilename) || 'certificate',
-        contentType: trimmed(file.mimetype) || 'application/octet-stream',
-        size: file.size
-      }
+      provider_name: providerName || null,
+      expiry_date: expiry.value
     });
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    const field = apiErrorField(error);
-    const message = String(error?.message || '').toLowerCase();
-    const status = field === 'certificate_file' && /type|pdf|jpe?g|png|mime/.test(message)
-      ? 'insurance-file-type'
-      : field === 'certificate_file' && /size|large|limit|10\s*mb/.test(message)
-        ? 'insurance-file-large'
-        : 'insurance-failed';
-    rememberUpload();
+    rememberRecord();
+    const status = apiErrorCode(error) === 'VALIDATION_ERROR' && apiErrorField(error) === 'expiry_date'
+      ? 'insurance-expiry-required'
+      : 'insurance-failed';
     return redirectTo(res, settingsStatusRedirect('/settings/insurance', status, '#upload'));
-  } finally {
-    await removeUploadedFile(file);
   }
 
-  return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-uploaded', '#certificates'));
+  return redirectTo(res, settingsStatusRedirect('/settings/insurance', 'insurance-recorded', '#certificates'));
 }));
 
 module.exports = router;

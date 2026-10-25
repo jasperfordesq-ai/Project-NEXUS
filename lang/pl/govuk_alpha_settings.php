@@ -217,7 +217,7 @@ return [
         'insurance-file-required' => 'Wybierz plik certyfikatu do przesłania.',
         'insurance-file-type' => 'Certyfikat musi być plikiem PDF, JPG lub PNG.',
         'insurance-file-large' => 'Plik certyfikatu musi być mniejszy niż 10MB.',
-        'insurance-failed' => 'Przepraszamy, nie mogliśmy przesłać Twojego certyfikatu. Spróbuj ponownie.',
+        'insurance-failed' => 'Przepraszamy, nie udało się zapisać danych ubezpieczenia. Spróbuj ponownie.',
         'insurance-recorded' => 'Dane ubezpieczenia zostały zapisane.',
         'insurance-file-forbidden' => 'Nie przesyłaj dokumentów ubezpieczeniowych ani poufnych danych polisy.',
         'insurance-expiry-required' => 'Wprowadź prawidłową datę wygaśnięcia.',

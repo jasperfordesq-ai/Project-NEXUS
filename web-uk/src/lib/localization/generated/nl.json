@@ -10462,7 +10462,7 @@
                 "insurance-file-required": "Kies een certificaatbestand om te uploaden.",
                 "insurance-file-type": "Het certificaat moet een PDF-, JPG- of PNG-bestand zijn.",
                 "insurance-file-large": "Het certificaatbestand moet kleiner zijn dan 10 MB.",
-                "insurance-failed": "Sorry, we konden uw certificaat niet uploaden. Probeer het opnieuw.",
+                "insurance-failed": "Sorry, we konden uw verzekeringsgegevens niet opslaan. Probeer het opnieuw.",
                 "insurance-recorded": "Uw verzekeringsgegevens zijn opgeslagen.",
                 "insurance-file-forbidden": "Upload geen verzekeringsdocumenten of gevoelige polisgegevens.",
                 "insurance-expiry-required": "Voer een geldige vervaldatum in."

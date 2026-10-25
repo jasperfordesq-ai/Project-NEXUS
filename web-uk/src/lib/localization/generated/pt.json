@@ -10462,7 +10462,7 @@
                 "insurance-file-required": "Escolha um arquivo de certificado para fazer upload.",
                 "insurance-file-type": "O certificado deve ser um arquivo PDF, JPG ou PNG.",
                 "insurance-file-large": "O arquivo do certificado deve ser menor que 10 MB.",
-                "insurance-failed": "Desculpe, não foi possível fazer upload do seu certificado. Por favor, tente novamente.",
+                "insurance-failed": "Desculpe, não foi possível guardar o seu registo de seguro. Tente novamente.",
                 "insurance-recorded": "O seu registo de seguro foi guardado.",
                 "insurance-file-forbidden": "Não carregue documentos de seguro nem dados sensíveis da apólice.",
                 "insurance-expiry-required": "Introduza uma data de validade válida."

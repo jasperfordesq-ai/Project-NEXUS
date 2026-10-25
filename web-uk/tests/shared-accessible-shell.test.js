@@ -200,7 +200,6 @@ jest.mock('../src/lib/api', () => ({
   getResourceCategoryTree: jest.fn().mockResolvedValue({ data: [] }),
   uploadResource: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   submitVolunteerExpenseWithReceipt: jest.fn().mockResolvedValue({ data: { id: 43 } }),
-  uploadInsuranceCertificate: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   downloadResource: jest.fn(),
   deleteResource: jest.fn().mockResolvedValue({ data: { deleted: true } }),
   reorderResources: jest.fn().mockResolvedValue({ data: { message: 'reordered' } }),
@@ -512,7 +511,6 @@ describe('shared accessible frontend shell', () => {
     api.getResourceCategories.mockReset().mockResolvedValue({ data: [] });
     api.getResourceCategoryTree.mockReset().mockResolvedValue({ data: [] });
     api.uploadResource.mockReset().mockResolvedValue({ data: { id: 42 } });
-    api.uploadInsuranceCertificate.mockReset().mockResolvedValue({ data: { id: 42 } });
     api.downloadResource.mockReset();
     api.deleteResource.mockReset().mockResolvedValue({ data: { deleted: true } });
     api.reorderResources.mockReset().mockResolvedValue({ data: { message: 'reordered' } });
@@ -4558,7 +4556,7 @@ describe('shared accessible frontend shell', () => {
 
     const unsigned = await request(app).get('/settings/insurance');
     const signed = await request(app)
-      .get('/acme/accessible/settings/insurance?status=insurance-uploaded')
+      .get('/acme/accessible/settings/insurance?status=insurance-recorded')
       .set('Cookie', signedAuthCookieHeader());
 
     expect(unsigned.status).toBe(302);
@@ -4567,7 +4565,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.status).toBe(200);
     expect(signed.text).toContain('Back to settings');
     expect(signed.text).toContain('Success');
-    expect(signed.text).toContain('Your certificate has been uploaded and is awaiting review.');
+    expect(signed.text).toContain('Your insurance record has been saved.');
     expect(signed.text).toContain('Account settings');
     // Laravel renamed this copy: insurance.title "Insurance certificates" ->
     // "Insurance records", certificates_heading "Your certificates" -> "Your
@@ -4576,10 +4574,8 @@ describe('shared accessible frontend shell', () => {
     // 🔴 The description change is NOT cosmetic and is worth reading: Laravel
     // went from "Upload proof of insurance so the team can verify your cover."
     // to telling members to record metadata ONLY and explicitly NOT to upload
-    // documents or sensitive policy data. That is a privacy decision upstream.
-    // Web UK's page still offers an upload; reconciling that is outstanding
-    // parity work, tracked in CURRENT_LARAVEL_FIRST_PARITY_STATUS.md, not
-    // something this catalog refresh changes.
+    // documents or sensitive policy data. That is a privacy decision upstream,
+    // and since 25 Oct 2026 the form follows it: type, provider and expiry only.
     expect(signed.text).toContain('Insurance records');
     expect(signed.text).toContain('Record the insurance type, provider and expiry date only. Do not upload documents or sensitive policy data.');
     expect(signed.text).toContain('Your insurance records');
@@ -4593,18 +4589,15 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Type of insurance');
     expect(signed.text).toContain('Professional indemnity');
     expect(signed.text).toContain('Insurance provider (optional)');
-    expect(signed.text).toContain('Policy number (optional)');
-    // The handler and API have always read these three; the form now offers
-    // them (they previously went up as empty strings on every upload).
-    expect(signed.text).toContain('Amount of cover (optional)');
-    expect(signed.text).toContain('name="coverage_amount"');
-    expect(signed.text).toContain('Start date (optional)');
-    expect(signed.text).toContain('name="start_date-day"');
-    expect(signed.text).toContain('Notes (optional)');
-    expect(signed.text).toContain('name="notes"');
     expect(signed.text).toContain('Expiry date');
-    expect(signed.text).toContain('Certificate file');
+    expect(signed.text).toContain('name="expiry_date-day"');
     expect(signed.text).toContain('Save insurance record');
+    // Laravel refuses a certificate file and discards everything else, so the
+    // form no longer asks for any of it.
+    for (const gone of ['Policy number', 'Amount of cover', 'Start date', 'Notes (optional)', 'Certificate file',
+      'name="certificate_file"', 'multipart/form-data']) {
+      expect(signed.text).not.toContain(gone);
+    }
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
 
@@ -4626,14 +4619,13 @@ describe('shared accessible frontend shell', () => {
     const upload = await agent
       .post('/acme/accessible/settings/insurance')
       .set('Cookie', signedAuthCookieHeader())
-      .field('_csrf', csrfToken)
-      .field('insurance_type', 'public_liability');
+      .type('form')
+      .send({ _csrf: csrfToken, insurance_type: 'public_liability' });
 
     expect(disabled.status).toBe(404);
     expect(absent.status).toBe(404);
     expect(upload.status).toBe(404);
     expect(api.callUserSettingsApi).not.toHaveBeenCalled();
-    expect(api.uploadInsuranceCertificate).not.toHaveBeenCalled();
 
     api.getTenantBootstrap.mockResolvedValueOnce(tenantBootstrap('acme', { compliance: { insurance_enabled: false } }));
     const profileSettings = await request(app)
@@ -30861,7 +30853,7 @@ describe('shared accessible frontend shell', () => {
       insurance_type: 'public_liability',
       provider_name: 'Example Mutual'
     });
-    expect(insuranceResponse.headers.location).toBe('/acme/accessible/settings/insurance?status=insurance-file-required#upload');
+    expect(insuranceResponse.headers.location).toBe('/acme/accessible/settings/insurance?status=insurance-expiry-required#upload');
     expect(api.callUserSettingsApi).not.toHaveBeenCalled();
 
     const unsigned = request.agent(app);
@@ -30876,7 +30868,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.callUserSettingsApi).not.toHaveBeenCalled();
   });
 
-  it('submits the Laravel settings insurance upload route with multipart file data', async () => {
+  it('saves a Laravel insurance record (details only, no document) through the full app', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -30889,29 +30881,23 @@ describe('shared accessible frontend shell', () => {
     const response = await agent
       .post('/acme/accessible/settings/insurance')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
-      .field('_csrf', csrfMatch[1])
-      .field('insurance_type', 'public_liability')
-      .field('provider_name', 'Example Mutual')
-      .field('policy_number', 'PL-123')
-      .field('expiry_date', '2027-06-30')
-      .attach('certificate_file', Buffer.from('%PDF insurance certificate', 'utf8'), {
-        filename: 'insurance.pdf',
-        contentType: 'application/pdf'
+      .type('form')
+      .send({
+        _csrf: csrfMatch[1],
+        insurance_type: 'public_liability',
+        provider_name: 'Example Mutual',
+        'expiry_date-day': '30',
+        'expiry_date-month': '6',
+        'expiry_date-year': '2027'
       });
 
     expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/acme/accessible/settings/insurance?status=insurance-uploaded#certificates');
-    expect(api.uploadInsuranceCertificate).toHaveBeenCalledWith('test-token', expect.objectContaining({
+    expect(response.headers.location).toBe('/acme/accessible/settings/insurance?status=insurance-recorded#certificates');
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'POST', '/insurance', {
       insurance_type: 'public_liability',
       provider_name: 'Example Mutual',
-      policy_number: 'PL-123',
-      expiry_date: '2027-06-30',
-      file: expect.objectContaining({
-        filename: 'insurance.pdf',
-        contentType: 'application/pdf',
-        buffer: Buffer.from('%PDF insurance certificate', 'utf8')
-      })
-    }));
+      expiry_date: '2027-06-30'
+    });
   });
 
   it('submits Laravel message action aliases and redirects signed-out visitors', async () => {

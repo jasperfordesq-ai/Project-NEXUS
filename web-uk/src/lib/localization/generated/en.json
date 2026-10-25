@@ -10443,7 +10443,7 @@
                 "insurance-file-required": "Choose a certificate file to upload.",
                 "insurance-file-type": "The certificate must be a PDF, JPG or PNG file.",
                 "insurance-file-large": "The certificate file must be smaller than 10MB.",
-                "insurance-failed": "Sorry, we could not upload your certificate. Please try again.",
+                "insurance-failed": "Sorry, we could not save your insurance record. Please try again.",
                 "insurance-recorded": "Your insurance record has been saved.",
                 "insurance-file-forbidden": "Do not upload insurance documents or sensitive policy data.",
                 "insurance-expiry-required": "Enter a valid insurance expiry date."

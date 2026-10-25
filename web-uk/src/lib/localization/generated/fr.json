@@ -10462,7 +10462,7 @@
                 "insurance-file-required": "Choisissez un fichier de certificat à télécharger.",
                 "insurance-file-type": "Le certificat doit être un fichier PDF, JPG ou PNG.",
                 "insurance-file-large": "Le fichier de certificat doit être inférieur à 10 Mo.",
-                "insurance-failed": "Désolé, nous n'avons pas pu télécharger votre certificat. Veuillez réessayer.",
+                "insurance-failed": "Désolé, nous n’avons pas pu enregistrer votre dossier d’assurance. Veuillez réessayer.",
                 "insurance-recorded": "Votre dossier d’assurance a été enregistré.",
                 "insurance-file-forbidden": "Ne téléversez aucun document d’assurance ni donnée sensible de police.",
                 "insurance-expiry-required": "Saisissez une date d’expiration valide."

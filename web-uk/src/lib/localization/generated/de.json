@@ -10462,7 +10462,7 @@
                 "insurance-file-required": "Wählen Sie eine Zertifikatsdatei zum Hochladen aus.",
                 "insurance-file-type": "Das Zertifikat muss eine PDF-, JPG- oder PNG-Datei sein.",
                 "insurance-file-large": "Die Zertifikatsdatei muss kleiner als 10 MB sein.",
-                "insurance-failed": "Leider konnten wir Ihr Zertifikat nicht hochladen. Bitte versuchen Sie es erneut.",
+                "insurance-failed": "Leider konnten wir Ihre Versicherungsdaten nicht speichern. Bitte versuchen Sie es erneut.",
                 "insurance-recorded": "Ihre Versicherungsdaten wurden gespeichert.",
                 "insurance-file-forbidden": "Laden Sie keine Versicherungsdokumente oder sensiblen Policendaten hoch.",
                 "insurance-expiry-required": "Geben Sie ein gültiges Ablaufdatum der Versicherung ein."

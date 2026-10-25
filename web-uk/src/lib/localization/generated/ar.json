@@ -10462,7 +10462,7 @@
                 "insurance-file-required": "اختر ملف شهادة لتحميله.",
                 "insurance-file-type": "يجب أن تكون الشهادة ملف PDF أو JPG أو PNG.",
                 "insurance-file-large": "يجب أن يكون حجم ملف الشهادة أقل من 10 ميغابايت.",
-                "insurance-failed": "عذرًا، لم نتمكن من تحميل شهادتك. يرجى المحاولة مرة أخرى.",
+                "insurance-failed": "عذرًا، لم نتمكن من حفظ سجل التأمين. يرجى المحاولة مرة أخرى.",
                 "insurance-recorded": "تم حفظ سجل التأمين.",
                 "insurance-file-forbidden": "لا ترفع مستندات التأمين أو بيانات الوثيقة الحساسة.",
                 "insurance-expiry-required": "أدخل تاريخ انتهاء صالحًا للتأمين."

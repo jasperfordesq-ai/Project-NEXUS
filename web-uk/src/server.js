@@ -2335,11 +2335,6 @@ app.post(
 );
 app.use('/onboarding/avatar', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
 app.use(
-  '/settings/insurance',
-  parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }),
-  multipartStatusErrorRedirect('/settings/insurance', 'insurance-file-large', 'insurance-file-required')
-);
-app.use(
   '/profile/settings',
   parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }),
   multipartStatusErrorRedirect('/profile/settings', 'avatar-invalid', 'avatar-invalid')

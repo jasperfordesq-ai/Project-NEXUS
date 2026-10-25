@@ -5,7 +5,7 @@
 
 /**
  * The remaining forms that lost typed input on a failure: group exchanges, saved
- * collections, appreciations, group file uploads, insurance certificates and the
+ * collections, appreciations, group file uploads, insurance records and the
  * account-deletion reason.
  *
  * Two rules this file pins as much as the refilling itself:
@@ -52,7 +52,6 @@ jest.mock('../src/lib/api', () => {
     getGroup: jest.fn(),
     uploadGroupFile: jest.fn(),
     callUserSettingsApi: jest.fn(),
-    uploadInsuranceCertificate: jest.fn(),
     requestAccountDeletion: jest.fn(),
     getProfile: jest.fn(),
     invalidateUserCache: jest.fn()
@@ -269,7 +268,7 @@ describe('group file upload keeps the folder and description', () => {
     api.callGroupApi.mockResolvedValue({ data: { items: [] } });
   });
 
-  // No file is attached, so the route takes the `insurance-file-required` equivalent exit.
+  // No file is attached, so the route takes its "choose a file" exit.
   it('refills the folder and description when no file was chosen', async () => {
     const agent = request.agent(buildApp());
     const post = await agent
@@ -298,12 +297,11 @@ describe('group file upload keeps the folder and description', () => {
 });
 
 // --------------------------------------------------------------------------------------
-// insurance certificate — the largest single loss on the frontend
+// insurance record — type, provider and expiry survive a refused expiry date
 // --------------------------------------------------------------------------------------
 
-describe('insurance certificate form keeps every field around the unrecoverable file', () => {
+describe('insurance record form keeps what was typed when the expiry date is refused', () => {
   const MOUNT = `${PREFIX}/settings`;
-  const NOTES = 'Renewed through the community broker; the policy number changed this year.';
 
   function buildApp() {
     const settingsRoutes = require('../src/routes/settings');
@@ -312,7 +310,6 @@ describe('insurance certificate form keeps every field around the unrecoverable 
 
   beforeEach(() => {
     api.callUserSettingsApi.mockReset();
-    api.uploadInsuranceCertificate.mockReset();
     api.getProfile.mockReset();
     api.getProfile.mockResolvedValue({ data: { id: 7, name: 'Test Member' } });
     api.callUserSettingsApi.mockResolvedValue({
@@ -320,51 +317,40 @@ describe('insurance certificate form keeps every field around the unrecoverable 
     });
   });
 
-  it('refills all ten fields when no certificate file was chosen', async () => {
+  it('refills the type, provider and the partial expiry date', async () => {
     const agent = request.agent(buildApp());
     const post = await agent
       .post(`${MOUNT}/insurance`)
       .type('form')
       .send({
         _csrf: 'test-csrf-token',
-        insurance_type: 'public_liability',
+        insurance_type: 'professional_indemnity',
         provider_name: 'West Cork Mutual',
-        policy_number: 'WCM-2026-0041',
-        coverage_amount: '2000000',
-        notes: NOTES,
-        'start_date-day': '1',
-        'start_date-month': '4',
-        'start_date-year': '2026',
         'expiry_date-day': '31',
-        'expiry_date-month': '3',
+        'expiry_date-month': '2',
         'expiry_date-year': '2027'
       });
     expect(post.status).toBe(302);
-    expect(post.headers.location).toContain('status=insurance-file-required');
+    expect(post.headers.location).toContain('status=insurance-expiry-required');
 
-    const page = await agent.get(`${MOUNT}/insurance?status=insurance-file-required`);
+    const page = await agent.get(`${MOUNT}/insurance?status=insurance-expiry-required`);
     expect(page.status).toBe(200);
     expect(valueOf(page.text, 'provider_name')).toBe('West Cork Mutual');
-    expect(valueOf(page.text, 'policy_number')).toBe('WCM-2026-0041');
-    expect(valueOf(page.text, 'coverage_amount')).toBe('2000000');
-    expect(textareaValue(page.text, 'insurance_notes')).toBe(NOTES);
-    expect(valueOf(page.text, 'start_date-day')).toBe('1');
-    expect(valueOf(page.text, 'start_date-year')).toBe('2026');
     expect(valueOf(page.text, 'expiry_date-day')).toBe('31');
+    expect(valueOf(page.text, 'expiry_date-month')).toBe('2');
     expect(valueOf(page.text, 'expiry_date-year')).toBe('2027');
-    expect(page.text).toContain('<option value="public_liability" selected');
-    // The certificate itself cannot be restored and must not pretend to be.
-    expect(page.text).not.toMatch(/id="certificate_file"[^>]*\svalue=/);
+    expect(page.text).toContain('<option value="professional_indemnity" selected');
+    expect(page.text).toContain('href="#expiry_date-day"');
+    expect(page.text).toContain('govuk-input--error');
   });
 
   it('consumes the stash once', async () => {
     const agent = request.agent(buildApp());
     await agent.post(`${MOUNT}/insurance`).type('form')
-      .send({ _csrf: 'test-csrf-token', insurance_type: 'public_liability', provider_name: 'West Cork Mutual', notes: NOTES });
-    await agent.get(`${MOUNT}/insurance?status=insurance-file-required`);
+      .send({ _csrf: 'test-csrf-token', insurance_type: 'public_liability', provider_name: 'West Cork Mutual' });
+    await agent.get(`${MOUNT}/insurance?status=insurance-expiry-required`);
     const second = await agent.get(`${MOUNT}/insurance`);
     expect(valueOf(second.text, 'provider_name')).toBe('');
-    expect(textareaValue(second.text, 'insurance_notes')).toBe('');
   });
 });
 
