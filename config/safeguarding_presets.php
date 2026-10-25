@@ -9,13 +9,30 @@
  *
  * STRUCTURE: Each preset has TWO sections of options:
  *
- *   1. VULNERABLE ADULT SELF-IDENTIFICATION (priority — these flag the member)
- *      Options for members who consider themselves vulnerable and need
- *      safeguarded/mediated interactions. These trigger broker protections.
+ *   1. SUPPORT REQUESTS (priority — these protect the member who ticks them)
+ *      Options for members who would like extra care. These trigger broker
+ *      protections. What each one actually does is told to the member before
+ *      they tick it, generated from its triggers by SafeguardingEffectsService
+ *      — so the label/description say why you would choose it, never what it
+ *      enforces.
  *
  *   2. SERVICE PROVIDER DECLARATIONS (secondary — informational)
- *      Options for members who intend to provide services to vulnerable groups.
- *      Country-specific vetting terminology. Mainly informational for coordinators.
+ *      Members who intend to provide services to vulnerable adults. Country-
+ *      specific vetting terminology. Informational for coordinators.
+ *
+ * Overhauled 25 Oct 2026:
+ *  - no under-18 question: the platform is adults only;
+ *  - "only vetted members may contact me" (requires_vetted_partners) is
+ *    `accepts_new_selections => false`. It blocks all contact from anyone
+ *    whose vetting the community has not recorded, which in practice cut
+ *    members off entirely. It stays defined so members who already chose it
+ *    keep their protection, and a community that genuinely records vetting
+ *    can re-offer it from the broker panel;
+ *  - "coordinator introductions" is the gentler route: coordinator oversight
+ *    without cutting the member off;
+ *  - "I consider myself a vulnerable adult" no longer blocks every direct
+ *    message. Blocking direct contact is what requires_coordinator_contact is
+ *    for, and that option says so.
  *
  * When an admin selects a preset, it populates tenant_safeguarding_options rows.
  * The admin can then freely edit, add, or remove options. The preset is a
@@ -27,417 +44,124 @@
  * policy supports the selected code.
  */
 
+$option = static fn (string $key, string $label, string $description, array $triggers, bool $acceptsNew = true): array => [
+    'option_key' => $key,
+    'option_type' => 'checkbox',
+    'label' => $label,
+    'description' => $description,
+    'triggers' => $triggers,
+    'accepts_new_selections' => $acceptsNew,
+];
+
+$common = 'safeguarding.presets.common.options.';
+
+/**
+ * @param array{vetting: string, vetted_description: string, vulnerable_adults_description: string, vulnerable_adult_label?: string, vulnerable_adults_label?: string, coordinator_contact_description?: string} $j
+ */
+$preset = static fn (string $key, array $j): array => [
+    'name' => "safeguarding.presets.{$key}.name",
+    'vetting_authority' => "safeguarding.presets.{$key}.vetting_authority",
+    'help_text' => 'safeguarding.presets.common.help_text',
+    'options' => [
+        // ── SUPPORT REQUESTS ─────────────────────────────────────────────
+        $option(
+            'is_vulnerable_adult',
+            $j['vulnerable_adult_label'] ?? $common . 'is_vulnerable_adult.label',
+            $common . 'is_vulnerable_adult.description',
+            [
+                'requires_broker_approval' => true,
+                'restricts_matching' => true,
+                'notify_admin_on_selection' => true,
+            ],
+        ),
+        $option(
+            'coordinator_introductions',
+            $common . 'coordinator_introductions.label',
+            $common . 'coordinator_introductions.description',
+            [
+                'requires_broker_approval' => true,
+                'restricts_matching' => true,
+                'notify_admin_on_selection' => true,
+            ],
+        ),
+        $option(
+            'requires_coordinator_contact',
+            $common . 'requires_coordinator_contact.label',
+            $j['coordinator_contact_description'] ?? $common . 'requires_coordinator_contact.description',
+            [
+                'requires_broker_approval' => true,
+                'restricts_messaging' => true,
+                'notify_admin_on_selection' => true,
+            ],
+        ),
+        $option(
+            'requires_vetted_partners',
+            $common . 'requires_vetted_partners.label',
+            $j['vetted_description'],
+            [
+                'requires_vetted_interaction' => true,
+                'restricts_matching' => true,
+                'notify_admin_on_selection' => true,
+                'vetting_type_required' => $j['vetting'],
+            ],
+            false,
+        ),
+        $option(
+            'no_home_visits',
+            $common . 'no_home_visits.label',
+            $common . 'no_home_visits.description',
+            ['notify_admin_on_selection' => true],
+        ),
+
+        // ── SERVICE PROVIDER DECLARATIONS (informational) ────────────────
+        $option(
+            'works_with_vulnerable_adults',
+            $j['vulnerable_adults_label'] ?? $common . 'works_with_vulnerable_adults.label',
+            $j['vulnerable_adults_description'],
+            [
+                'notify_admin_on_selection' => true,
+                'vetting_type_required' => $j['vetting'],
+            ],
+        ),
+
+        // ── DECLINATION (always last) ─────────────────────────────────────
+        $option('none_apply', $common . 'none_apply.label', $common . 'none_apply.description', []),
+    ],
+];
+
 return [
-    'ireland' => [
-        'name' => 'safeguarding.presets.ireland.name',
-        'vetting_authority' => 'safeguarding.presets.ireland.vetting_authority',
-        'help_text' => 'safeguarding.presets.common.help_text',
-        'options' => [
-            // ── VULNERABLE ADULT SELF-IDENTIFICATION (flagging) ──────────
-            [
-                'option_key' => 'is_vulnerable_adult',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.is_vulnerable_adult.label',
-                'description' => 'safeguarding.presets.common.options.is_vulnerable_adult.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'requires_vetted_partners',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_vetted_partners.label',
-                'description' => 'safeguarding.presets.ireland.options.requires_vetted_partners.description',
-                'triggers' => [
-                    'requires_vetted_interaction' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'garda_vetting',
-                ],
-            ],
-            [
-                'option_key' => 'requires_coordinator_contact',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_coordinator_contact.label',
-                'description' => 'safeguarding.presets.ireland.options.requires_coordinator_contact.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'no_home_visits',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.no_home_visits.label',
-                'description' => 'safeguarding.presets.common.options.no_home_visits.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
+    'ireland' => $preset('ireland', [
+        'vetting' => 'garda_vetting',
+        'vetted_description' => 'safeguarding.presets.ireland.options.requires_vetted_partners.description',
+        'vulnerable_adults_description' => 'safeguarding.presets.ireland.options.works_with_vulnerable_adults.description',
+        'coordinator_contact_description' => 'safeguarding.presets.ireland.options.requires_coordinator_contact.description',
+    ]),
 
-            // ── SERVICE PROVIDER DECLARATIONS (informational) ────────────
-            [
-                'option_key' => 'works_with_children',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_children.label',
-                'description' => 'safeguarding.presets.ireland.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'garda_vetting',
-                ],
-            ],
-            [
-                'option_key' => 'works_with_vulnerable_adults',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_vulnerable_adults.label',
-                'description' => 'safeguarding.presets.ireland.options.works_with_vulnerable_adults.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'garda_vetting',
-                ],
-            ],
-            // ── DECLINATION (always last) ─────────────────────────────────
-            [
-                'option_key' => 'none_apply',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.none_apply.label',
-                'description' => 'safeguarding.presets.common.options.none_apply.description',
-                'triggers' => [],
-            ],
-        ],
-    ],
+    'united_kingdom' => $preset('united_kingdom', [
+        'vetting' => 'uk_safeguarding_clearance',
+        'vetted_description' => 'safeguarding.presets.united_kingdom.options.requires_vetted_partners.description',
+        'vulnerable_adults_description' => 'safeguarding.presets.united_kingdom.options.works_with_vulnerable_adults.description',
+    ]),
 
-    'united_kingdom' => [
-        'name' => 'safeguarding.presets.united_kingdom.name',
-        'vetting_authority' => 'safeguarding.presets.united_kingdom.vetting_authority',
-        'help_text' => 'safeguarding.presets.common.help_text',
-        'options' => [
-            [
-                'option_key' => 'is_vulnerable_adult',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.is_vulnerable_adult.label',
-                'description' => 'safeguarding.presets.common.options.is_vulnerable_adult.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'requires_vetted_partners',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_vetted_partners.label',
-                'description' => 'safeguarding.presets.united_kingdom.options.requires_vetted_partners.description',
-                'triggers' => [
-                    'requires_vetted_interaction' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'uk_safeguarding_clearance',
-                ],
-            ],
-            [
-                'option_key' => 'requires_coordinator_contact',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_coordinator_contact.label',
-                'description' => 'safeguarding.presets.common.options.requires_coordinator_contact.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'no_home_visits',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.no_home_visits.label',
-                'description' => 'safeguarding.presets.common.options.no_home_visits.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'works_with_children',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_children.label',
-                'description' => 'safeguarding.presets.united_kingdom.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'uk_safeguarding_clearance',
-                ],
-            ],
-            [
-                'option_key' => 'works_with_vulnerable_adults',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_vulnerable_adults.label',
-                'description' => 'safeguarding.presets.united_kingdom.options.works_with_vulnerable_adults.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'uk_safeguarding_clearance',
-                ],
-            ],
-            [
-                'option_key' => 'none_apply',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.none_apply.label',
-                'description' => 'safeguarding.presets.common.options.none_apply.description',
-                'triggers' => [],
-            ],
-        ],
-    ],
+    'england_wales' => $preset('england_wales', [
+        'vetting' => 'dbs_enhanced',
+        'vetted_description' => 'safeguarding.presets.england_wales.options.requires_vetted_partners.description',
+        'vulnerable_adults_description' => 'safeguarding.presets.england_wales.options.works_with_vulnerable_adults.description',
+    ]),
 
-    'england_wales' => [
-        'name' => 'safeguarding.presets.england_wales.name',
-        'vetting_authority' => 'safeguarding.presets.england_wales.vetting_authority',
-        'help_text' => 'safeguarding.presets.common.help_text',
-        'options' => [
-            // ── VULNERABLE ADULT SELF-IDENTIFICATION (flagging) ──────────
-            [
-                'option_key' => 'is_vulnerable_adult',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.is_vulnerable_adult.label',
-                'description' => 'safeguarding.presets.common.options.is_vulnerable_adult.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'requires_vetted_partners',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_vetted_partners.label',
-                'description' => 'safeguarding.presets.england_wales.options.requires_vetted_partners.description',
-                'triggers' => [
-                    'requires_vetted_interaction' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'dbs_enhanced',
-                ],
-            ],
-            [
-                'option_key' => 'requires_coordinator_contact',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_coordinator_contact.label',
-                'description' => 'safeguarding.presets.common.options.requires_coordinator_contact.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'no_home_visits',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.no_home_visits.label',
-                'description' => 'safeguarding.presets.common.options.no_home_visits.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
+    'scotland' => $preset('scotland', [
+        'vetting' => 'pvg_scotland',
+        'vetted_description' => 'safeguarding.presets.scotland.options.requires_vetted_partners.description',
+        'vulnerable_adults_description' => 'safeguarding.presets.scotland.options.works_with_vulnerable_adults.description',
+        'vulnerable_adult_label' => 'safeguarding.presets.scotland.options.is_vulnerable_adult.label',
+        'vulnerable_adults_label' => 'safeguarding.presets.scotland.options.works_with_vulnerable_adults.label',
+    ]),
 
-            // ── SERVICE PROVIDER DECLARATIONS (informational) ────────────
-            [
-                'option_key' => 'works_with_children',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_children.label',
-                'description' => 'safeguarding.presets.england_wales.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'dbs_enhanced',
-                ],
-            ],
-            [
-                'option_key' => 'works_with_vulnerable_adults',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_vulnerable_adults.label',
-                'description' => 'safeguarding.presets.england_wales.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'dbs_enhanced',
-                ],
-            ],
-            // ── DECLINATION (always last) ─────────────────────────────────
-            [
-                'option_key' => 'none_apply',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.none_apply.label',
-                'description' => 'safeguarding.presets.common.options.none_apply.description',
-                'triggers' => [],
-            ],
-        ],
-    ],
-
-    'scotland' => [
-        'name' => 'safeguarding.presets.scotland.name',
-        'vetting_authority' => 'safeguarding.presets.scotland.vetting_authority',
-        'help_text' => 'safeguarding.presets.common.help_text',
-        'options' => [
-            // ── VULNERABLE ADULT SELF-IDENTIFICATION (flagging) ──────────
-            [
-                'option_key' => 'is_vulnerable_adult',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.scotland.options.is_vulnerable_adult.label',
-                'description' => 'safeguarding.presets.common.options.is_vulnerable_adult.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'requires_vetted_partners',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_vetted_partners.label',
-                'description' => 'safeguarding.presets.scotland.options.requires_vetted_partners.description',
-                'triggers' => [
-                    'requires_vetted_interaction' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'pvg_scotland',
-                ],
-            ],
-            [
-                'option_key' => 'requires_coordinator_contact',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_coordinator_contact.label',
-                'description' => 'safeguarding.presets.common.options.requires_coordinator_contact.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'no_home_visits',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.no_home_visits.label',
-                'description' => 'safeguarding.presets.common.options.no_home_visits.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-
-            // ── SERVICE PROVIDER DECLARATIONS (informational) ────────────
-            [
-                'option_key' => 'works_with_children',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_children.label',
-                'description' => 'safeguarding.presets.scotland.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'pvg_scotland',
-                ],
-            ],
-            [
-                'option_key' => 'works_with_vulnerable_adults',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.scotland.options.works_with_vulnerable_adults.label',
-                'description' => 'safeguarding.presets.scotland.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'pvg_scotland',
-                ],
-            ],
-            // ── DECLINATION (always last) ─────────────────────────────────
-            [
-                'option_key' => 'none_apply',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.none_apply.label',
-                'description' => 'safeguarding.presets.common.options.none_apply.description',
-                'triggers' => [],
-            ],
-        ],
-    ],
-
-    'northern_ireland' => [
-        'name' => 'safeguarding.presets.northern_ireland.name',
-        'vetting_authority' => 'safeguarding.presets.northern_ireland.vetting_authority',
-        'help_text' => 'safeguarding.presets.common.help_text',
-        'options' => [
-            // ── VULNERABLE ADULT SELF-IDENTIFICATION (flagging) ──────────
-            [
-                'option_key' => 'is_vulnerable_adult',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.is_vulnerable_adult.label',
-                'description' => 'safeguarding.presets.common.options.is_vulnerable_adult.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'requires_vetted_partners',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_vetted_partners.label',
-                'description' => 'safeguarding.presets.northern_ireland.options.requires_vetted_partners.description',
-                'triggers' => [
-                    'requires_vetted_interaction' => true,
-                    'restricts_matching' => true,
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'access_ni',
-                ],
-            ],
-            [
-                'option_key' => 'requires_coordinator_contact',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.requires_coordinator_contact.label',
-                'description' => 'safeguarding.presets.common.options.requires_coordinator_contact.description',
-                'triggers' => [
-                    'requires_broker_approval' => true,
-                    'restricts_messaging' => true,
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-            [
-                'option_key' => 'no_home_visits',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.no_home_visits.label',
-                'description' => 'safeguarding.presets.common.options.no_home_visits.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                ],
-            ],
-
-            // ── SERVICE PROVIDER DECLARATIONS (informational) ────────────
-            [
-                'option_key' => 'works_with_children',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_children.label',
-                'description' => 'safeguarding.presets.northern_ireland.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'access_ni',
-                ],
-            ],
-            [
-                'option_key' => 'works_with_vulnerable_adults',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.works_with_vulnerable_adults.label',
-                'description' => 'safeguarding.presets.northern_ireland.options.works_with_children.description',
-                'triggers' => [
-                    'notify_admin_on_selection' => true,
-                    'vetting_type_required' => 'access_ni',
-                ],
-            ],
-            // ── DECLINATION (always last) ─────────────────────────────────
-            [
-                'option_key' => 'none_apply',
-                'option_type' => 'checkbox',
-                'label' => 'safeguarding.presets.common.options.none_apply.label',
-                'description' => 'safeguarding.presets.common.options.none_apply.description',
-                'triggers' => [],
-            ],
-        ],
-    ],
+    'northern_ireland' => $preset('northern_ireland', [
+        'vetting' => 'access_ni',
+        'vetted_description' => 'safeguarding.presets.northern_ireland.options.requires_vetted_partners.description',
+        'vulnerable_adults_description' => 'safeguarding.presets.northern_ireland.options.works_with_vulnerable_adults.description',
+    ]),
 
     'custom' => [
         'name' => 'safeguarding.presets.custom.name',

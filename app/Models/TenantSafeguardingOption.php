@@ -41,6 +41,7 @@ class TenantSafeguardingOption extends Model
         'sort_order',
         'is_active',
         'is_required',
+        'accepts_new_selections',
         'select_options',
         'triggers',
         'preset_source',
@@ -50,6 +51,7 @@ class TenantSafeguardingOption extends Model
         'sort_order' => 'integer',
         'is_active' => 'boolean',
         'is_required' => 'boolean',
+        'accepts_new_selections' => 'boolean',
         'select_options' => 'array',
         'triggers' => 'array',
     ];
@@ -65,6 +67,15 @@ class TenantSafeguardingOption extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->orderBy('sort_order');
+    }
+
+    /**
+     * Whether a member who has not already chosen this option may choose it.
+     * A closed option keeps protecting, and stays visible to, its holders.
+     */
+    public function acceptsNewSelections(): bool
+    {
+        return $this->accepts_new_selections !== false;
     }
 
     /**

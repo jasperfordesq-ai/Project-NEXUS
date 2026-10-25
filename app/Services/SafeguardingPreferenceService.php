@@ -54,6 +54,37 @@ class SafeguardingPreferenceService
     }
 
     /**
+     * Options a particular member may see and answer: every active option that
+     * is still offered to new members, plus any closed option the member
+     * already holds — so they can see it, keep it, or change their mind.
+     */
+    public static function getOptionsForMember(int $tenantId, int $userId): array
+    {
+        $heldOptionIds = self::heldOptionIds($tenantId, $userId);
+
+        return TenantSafeguardingOption::where('tenant_id', $tenantId)
+            ->active()
+            ->get()
+            ->filter(static fn (TenantSafeguardingOption $opt): bool =>
+                $opt->acceptsNewSelections() || in_array((int) $opt->id, $heldOptionIds, true))
+            ->values()
+            ->map(fn (TenantSafeguardingOption $opt) => $opt->toLocalizedArray())
+            ->all();
+    }
+
+    /** @return list<int> option ids the member currently holds (not revoked) */
+    private static function heldOptionIds(int $tenantId, int $userId): array
+    {
+        return UserSafeguardingPreference::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->pluck('option_id')
+            ->map(static fn ($id): int => (int) $id)
+            ->all();
+    }
+
+    /**
      * Get ALL options for a tenant (including inactive), for admin management.
      */
     public static function getAllOptionsForTenant(?int $tenantId = null): array
@@ -90,6 +121,7 @@ class SafeguardingPreferenceService
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => $data['is_active'] ?? true,
             'is_required' => $data['is_required'] ?? false,
+            'accepts_new_selections' => $data['accepts_new_selections'] ?? true,
             'select_options' => $data['select_options'] ?? null,
             'triggers' => $data['triggers'] ?? [],
             'preset_source' => $data['preset_source'] ?? null,
@@ -119,7 +151,9 @@ class SafeguardingPreferenceService
                 return null;
             }
 
-            $fillable = ['label', 'description', 'help_url', 'sort_order', 'is_active', 'is_required', 'option_type', 'select_options', 'triggers'];
+            // accepts_new_selections is safe for staff to change either way: closing
+            // an option to newcomers never touches a member who already holds it.
+            $fillable = ['label', 'description', 'help_url', 'sort_order', 'is_active', 'is_required', 'accepts_new_selections', 'option_type', 'select_options', 'triggers'];
             $updates = array_intersect_key($data, array_flip($fillable));
             if (isset($updates['label'])) {
                 $label = strip_tags(trim($updates['label']));
@@ -533,6 +567,7 @@ class SafeguardingPreferenceService
                     'sort_order' => $sortOrder,
                     'is_active' => true,
                     'is_required' => false,
+                    'accepts_new_selections' => (bool) ($optionData['accepts_new_selections'] ?? true),
                     'select_options' => $optionData['select_options'] ?? null,
                     'triggers' => $optionData['triggers'] ?? [],
                     'preset_source' => $presetKey,
@@ -799,7 +834,7 @@ class SafeguardingPreferenceService
     ): void {
         $tenantId = TenantContext::getId();
         $now = now();
-        $preferences = self::validatePreferencePayload($tenantId, $preferences);
+        $preferences = self::validatePreferencePayload($tenantId, $preferences, $userId);
 
         // Server-side mutual exclusivity: if none_apply is submitted alongside
         // real option selections, real options win (they activate protections;
@@ -878,6 +913,11 @@ class SafeguardingPreferenceService
                 if (! $option instanceof TenantSafeguardingOption || ! $option->is_active) {
                     throw new \InvalidArgumentException(__('api.safeguarding_preference_option_invalid'));
                 }
+                $held = $existingPreferences->get($optionId);
+                if (! $option->acceptsNewSelections()
+                    && ! ($held instanceof UserSafeguardingPreference && $held->revoked_at === null)) {
+                    throw new \InvalidArgumentException(__('api.safeguarding_preference_option_invalid'));
+                }
 
                 $value = UserSafeguardingPreference::normalizeSelectedValue(
                     $option->option_type,
@@ -945,14 +985,114 @@ class SafeguardingPreferenceService
                 'error'     => $e->getMessage(),
             ]);
         }
+
+        self::queueChoicesSummary($tenantId, $userId);
     }
 
-    private static function validatePreferencePayload(int $tenantId, array $preferences): array
+    /**
+     * Ask for a "your safety choices" email in ten minutes. Several changes in
+     * that window produce one email (the job is unique per member), and the
+     * job itself sends nothing when the member has only declined, or when the
+     * summary would be identical to the last one they were sent.
+     */
+    public static function queueChoicesSummary(int $tenantId, int $userId): void
+    {
+        try {
+            $hasRealChoice = DB::table('user_safeguarding_preferences as p')
+                ->join('tenant_safeguarding_options as o', 'o.id', '=', 'p.option_id')
+                ->where('p.tenant_id', $tenantId)
+                ->where('p.user_id', $userId)
+                ->whereNull('p.revoked_at')
+                ->where('o.is_active', 1)
+                ->where('o.option_key', '!=', 'none_apply')
+                ->exists();
+            if (! $hasRealChoice) {
+                return;
+            }
+
+            \App\Jobs\SendSafeguardingChoicesSummary::dispatch($tenantId, $userId)
+                ->delay(now()->addMinutes(10));
+        } catch (\Throwable $e) {
+            // The choice is saved and enforced; only the courtesy email failed
+            // to queue. `php artisan safeguarding:send-choice-summaries` sends
+            // any summary a member is still owed.
+            Log::error('SafeguardingPreferenceService: choices summary could not be queued', [
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'exception_class' => $e::class,
+            ]);
+        }
+    }
+
+    /**
+     * Move a member from "only vetted members may contact me" to "coordinator
+     * introductions" in one step, at the member's own request. Both halves are
+     * the member's decision, so the staff-side guard against weakening a live
+     * protection does not apply — this is the member exercising it.
+     *
+     * @return 'switched'|'not_held'|'unavailable'
+     */
+    public static function switchVettedToCoordinatorIntroductions(int $userId, ?string $ipAddress = null): string
+    {
+        $tenantId = TenantContext::getId();
+
+        $options = TenantSafeguardingOption::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->whereIn('option_key', ['requires_vetted_partners', 'coordinator_introductions'])
+            ->get()
+            ->keyBy('option_key');
+        $vetted = $options->get('requires_vetted_partners');
+        $introductions = $options->get('coordinator_introductions');
+
+        if (! $vetted instanceof TenantSafeguardingOption
+            || ! in_array((int) $vetted->id, self::heldOptionIds($tenantId, $userId), true)) {
+            return 'not_held';
+        }
+        if (! $introductions instanceof TenantSafeguardingOption) {
+            return 'unavailable';
+        }
+
+        $now = now();
+        DB::transaction(function () use ($tenantId, $userId, $vetted, $introductions, $now, $ipAddress): void {
+            app(SafeguardingJurisdictionService::class)->lockPolicyForUpdate($tenantId);
+
+            UserSafeguardingPreference::withoutGlobalScopes()->updateOrCreate(
+                ['tenant_id' => $tenantId, 'user_id' => $userId, 'option_id' => $introductions->id],
+                [
+                    'selected_value' => '1',
+                    'consent_given_at' => $now,
+                    'consent_ip' => $ipAddress,
+                    'revoked_at' => null,
+                    'policy_review_required_at' => null,
+                    'policy_review_reason_code' => null,
+                ],
+            );
+            UserSafeguardingPreference::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('option_id', $vetted->id)
+                ->whereNull('revoked_at')
+                ->update(['revoked_at' => $now]);
+        });
+
+        self::logActivity($userId, 'safeguarding_switched_to_coordinator_introductions', 'user', $userId, [
+            'revoked_option_id' => (int) $vetted->id,
+            'selected_option_id' => (int) $introductions->id,
+        ]);
+
+        SafeguardingTriggerService::activateTriggersForUser($userId, $tenantId, notifyStaffOfMemberSelection: true);
+        self::queueChoicesSummary($tenantId, $userId);
+
+        return 'switched';
+    }
+
+    private static function validatePreferencePayload(int $tenantId, array $preferences, int $userId): array
     {
         $activeOptions = TenantSafeguardingOption::where('tenant_id', $tenantId)
             ->where('is_active', true)
             ->get()
             ->keyBy('id');
+        $heldOptionIds = self::heldOptionIds($tenantId, $userId);
 
         $validated = [];
         $submittedValues = [];
@@ -965,6 +1105,11 @@ class SafeguardingPreferenceService
 
             /** @var TenantSafeguardingOption $option */
             $option = $activeOptions->get($optionId);
+            // A closed option is not offered to members who do not already
+            // hold it; the wizard hides it, and a direct API call is refused.
+            if (! $option->acceptsNewSelections() && ! in_array($optionId, $heldOptionIds, true)) {
+                throw new \InvalidArgumentException(__('api.safeguarding_preference_option_invalid'));
+            }
             $value = UserSafeguardingPreference::normalizeSelectedValue(
                 $option->option_type,
                 array_key_exists('value', $pref) ? $pref['value'] : '1',
@@ -988,6 +1133,9 @@ class SafeguardingPreferenceService
 
         foreach ($activeOptions as $option) {
             if (!$option->is_required || $option->option_type === 'info') {
+                continue;
+            }
+            if (! $option->acceptsNewSelections() && ! in_array((int) $option->id, $heldOptionIds, true)) {
                 continue;
             }
 
@@ -1058,6 +1206,7 @@ class SafeguardingPreferenceService
 
         // Re-evaluate triggers (may deactivate protections)
         SafeguardingTriggerService::activateTriggersForUser($userId, $tenantId);
+        self::queueChoicesSummary($tenantId, $userId);
 
         // Bell admins/brokers — a member has withdrawn consent, protections
         // may have changed. Render per-staff so each admin sees the bell in

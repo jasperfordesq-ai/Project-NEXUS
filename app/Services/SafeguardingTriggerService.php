@@ -152,33 +152,34 @@ class SafeguardingTriggerService
                     'works_with_vulnerable_adults' => false,
                     'no_home_visits' => false,
                 ];
-                if ($triggers['restricts_matching']) {
-                    // Check if any of the selected options specifically flag children or vulnerable adults
-                    $prefs = UserSafeguardingPreference::where('tenant_id', $tenantId)
-                        ->where('user_id', $userId)
-                        ->active()
-                        ->with('option')
-                        ->get();
+                // Until 25 Oct 2026 this ran only when restricts_matching was on,
+                // which none of the three flagging options set, so these user
+                // flags could never become true. They follow the member's
+                // live selections on active options directly.
+                $prefs = UserSafeguardingPreference::where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->active()
+                    ->with('option')
+                    ->get();
 
-                    foreach ($prefs as $pref) {
-                        $option = $pref->option;
-                        if (! $option || ! UserSafeguardingPreference::isEffectivelySelected(
-                            $option->option_type,
-                            $pref->selected_value,
-                        )) {
-                            continue;
-                        }
+                foreach ($prefs as $pref) {
+                    $option = $pref->option;
+                    if (! $option || ! $option->is_active || ! UserSafeguardingPreference::isEffectivelySelected(
+                        $option->option_type,
+                        $pref->selected_value,
+                    )) {
+                        continue;
+                    }
 
-                        $key = $option->option_key;
-                        if ($key === 'works_with_children') {
-                            $updates['works_with_children'] = true;
-                        }
-                        if ($key === 'works_with_vulnerable_adults') {
-                            $updates['works_with_vulnerable_adults'] = true;
-                        }
-                        if ($key === 'no_home_visits') {
-                            $updates['no_home_visits'] = true;
-                        }
+                    $key = $option->option_key;
+                    if ($key === 'works_with_children') {
+                        $updates['works_with_children'] = true;
+                    }
+                    if ($key === 'works_with_vulnerable_adults') {
+                        $updates['works_with_vulnerable_adults'] = true;
+                    }
+                    if ($key === 'no_home_visits') {
+                        $updates['no_home_visits'] = true;
                     }
                 }
                 User::where('id', $userId)

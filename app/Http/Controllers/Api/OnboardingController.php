@@ -176,12 +176,15 @@ class OnboardingController extends BaseApiController
     /** GET onboarding/safeguarding-options — active safeguarding options for member */
     public function safeguardingOptions(): JsonResponse
     {
-        $this->requireAuth();
+        $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
-        $options = SafeguardingPreferenceService::getOptionsForTenant($tenantId);
+        // Closed options are offered only to the members who already hold them.
+        $options = SafeguardingPreferenceService::getOptionsForMember($tenantId, $userId);
+        $effects = app(\App\Services\SafeguardingEffectsService::class);
 
-        // Strip internal fields — members see label, description, type, required, select_options only
+        // Strip internal fields. Raw triggers stay server-side; `effects` is the
+        // plain-language account of what each choice does, derived from them.
         $memberOptions = array_map(fn ($opt) => [
             'id' => $opt['id'],
             'option_key' => $opt['option_key'],
@@ -191,6 +194,7 @@ class OnboardingController extends BaseApiController
             'help_url' => $opt['help_url'],
             'is_required' => $opt['is_required'],
             'select_options' => $opt['select_options'],
+            'effects' => $effects->forOption($tenantId, (string) $opt['option_key'], is_array($opt['triggers'] ?? null) ? $opt['triggers'] : []),
         ], $options);
 
         return $this->respondWithData($memberOptions);

@@ -28,16 +28,16 @@ class SafeguardingPresetLocalizationTest extends TestCase
         $keyed = $this->createPresetOption();
         $legacy = TenantSafeguardingOption::create([
             'tenant_id' => $this->testTenantId,
-            'option_key' => 'works_with_children',
+            'option_key' => 'works_with_vulnerable_adults',
             'option_type' => 'checkbox',
             'label' => Lang::get(
-                'safeguarding.presets.common.options.works_with_children.label',
+                'safeguarding.presets.common.options.works_with_vulnerable_adults.label',
                 [],
                 'en',
                 false,
             ),
             'description' => Lang::get(
-                'safeguarding.presets.england_wales.options.works_with_children.description',
+                'safeguarding.presets.england_wales.options.works_with_vulnerable_adults.description',
                 [],
                 'en',
                 false,
@@ -92,7 +92,7 @@ class SafeguardingPresetLocalizationTest extends TestCase
             $byKey[$keyed->option_key]['label'],
         );
         $this->assertSame(
-            Lang::get('safeguarding.presets.common.options.works_with_children.label', [], 'ga', false),
+            Lang::get('safeguarding.presets.common.options.works_with_vulnerable_adults.label', [], 'ga', false),
             $byKey[$legacy->option_key]['label'],
         );
         $this->assertSame('Broker-authored safeguarding wording', $byKey[$custom->option_key]['label']);

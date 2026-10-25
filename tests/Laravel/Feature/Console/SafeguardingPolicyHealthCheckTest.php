@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Tests\Laravel\Feature\Console;
 
 use App\Models\User;
+use App\Services\MemberVettingAttestationService;
 use App\Services\SafeguardingJurisdictionService;
 use App\Services\SafeguardingTriggerService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -72,7 +73,7 @@ class SafeguardingPolicyHealthCheckTest extends TestCase
         }
     }
 
-    public function test_passes_when_the_policy_is_usable(): void
+    public function test_passes_when_the_policy_is_usable_and_vetting_is_recorded(): void
     {
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         app(SafeguardingJurisdictionService::class)->configure($this->testTenantId, 'ireland', $admin->id);
@@ -80,7 +81,29 @@ class SafeguardingPolicyHealthCheckTest extends TestCase
         $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
         $this->protectMember($member);
 
+        $vetted = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        app(MemberVettingAttestationService::class)->confirmForCurrentPolicy($this->testTenantId, $vetted->id, $admin->id);
+
         $this->artisan('safeguarding:check-policy-health')->assertExitCode(0);
+    }
+
+    /**
+     * 25 Oct 2026: a usable policy is not enough. Tenant 2 had a working
+     * Ireland policy and five members requiring vetted contact — and no
+     * vetting recorded for anyone, so nobody could reach them. That passed
+     * this check until now.
+     */
+    public function test_alerts_when_the_policy_is_usable_but_nobody_has_vetting_recorded(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        app(SafeguardingJurisdictionService::class)->configure($this->testTenantId, 'ireland', $admin->id);
+
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->protectMember($member);
+
+        $this->artisan('safeguarding:check-policy-health')
+            ->expectsOutputToContain("Tenant {$this->testTenantId}: members require vetted contact but no vetting is recorded")
+            ->assertExitCode(1);
     }
 
     public function test_passes_when_no_live_selections_exist_anywhere(): void

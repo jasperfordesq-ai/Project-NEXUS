@@ -6,6 +6,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\MemberVettingAttestationService;
 use App\Services\SafeguardingJurisdictionService;
 use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
@@ -38,8 +39,10 @@ class SafeguardingPolicyHealthCheck extends Command
 
     protected $description = 'Alert when a tenant has live vetted-interaction selections but an unusable safeguarding policy';
 
-    public function handle(SafeguardingJurisdictionService $jurisdictions): int
-    {
+    public function handle(
+        SafeguardingJurisdictionService $jurisdictions,
+        MemberVettingAttestationService $attestations,
+    ): int {
         if (! Schema::hasTable('user_safeguarding_preferences') || ! Schema::hasTable('tenant_safeguarding_options')) {
             $this->warn('Safeguarding tables absent — nothing to check.');
 
@@ -66,6 +69,7 @@ class SafeguardingPolicyHealthCheck extends Command
         }
 
         $affected = [];
+        $unreachable = [];
         foreach (array_keys($tenantIds) as $tenantId) {
             $policy = $jurisdictions->getPolicyUncached($tenantId);
             if (! SafeguardingJurisdictionService::isContactGateUsable($policy)) {
@@ -74,7 +78,21 @@ class SafeguardingPolicyHealthCheck extends Command
                     'jurisdiction' => $policy['jurisdiction'],
                     'configured' => (bool) $policy['configured'],
                 ];
+            } elseif ($attestations->stats($tenantId)['confirmed'] === 0) {
+                // The gate works, but nobody can pass it: the community has
+                // recorded no vetting at all, so these members can be reached by
+                // no one. That was tenant 2 on 25 Oct 2026, unnoticed, because
+                // a usable policy is all the check above asks for.
+                $unreachable[] = ['tenant_id' => $tenantId, 'jurisdiction' => $policy['jurisdiction']];
             }
+        }
+
+        if ($unreachable !== []) {
+            $this->reportUnreachable($unreachable);
+        }
+
+        if ($affected === [] && $unreachable !== []) {
+            return self::FAILURE;
         }
 
         if ($affected === []) {
@@ -125,5 +143,38 @@ class SafeguardingPolicyHealthCheck extends Command
         }
 
         return self::FAILURE;
+    }
+
+    /** @param list<array{tenant_id: int, jurisdiction: string}> $unreachable */
+    private function reportUnreachable(array $unreachable): void
+    {
+        $message = 'Members require vetted contact in communities that have recorded no vetting';
+        $context = [
+            'affected_tenants' => $unreachable,
+            'affected_count' => count($unreachable),
+            'fix' => 'Record vetting for members in the broker panel (Vetting), or ask the affected members to switch to coordinator introductions in their safeguarding settings.',
+        ];
+
+        OperatorLog::withoutSentry()->error($message, $context);
+
+        try {
+            if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {
+                \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($context): void {
+                    $scope->setTag('alert', 'safeguarding_policy_health');
+                    $scope->setFingerprint(['safeguarding_vetted_contact_unreachable']);
+                    $scope->setContext('safeguarding_policy_health', $context);
+                });
+                \Sentry\captureMessage($message, \Sentry\Severity::error());
+            }
+        } catch (\Throwable $e) {
+            Log::debug('safeguarding:check-policy-health Sentry capture failed: ' . $e->getMessage());
+        }
+
+        foreach ($unreachable as $row) {
+            $this->error(sprintf(
+                'Tenant %d: members require vetted contact but no vetting is recorded, so nobody can reach them.',
+                $row['tenant_id'],
+            ));
+        }
     }
 }

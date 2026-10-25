@@ -17,6 +17,15 @@ return [
         'coordination_not_required' => 'O contacto direto com este membro está atualmente disponível — não necessita de um coordenador para o organizar. Por favor, atualize a página e tente enviar uma mensagem novamente.',
         'coordination_request_failed' => 'Não foi possível enviar o seu pedido ao coordenador neste momento. Por favor, tente novamente em breve.',
         'vetting_check_failed' => 'Não foi possível confirmar o seu estado de verificação neste momento. Por favor, tente novamente em breve.',
+        'policy_unavailable' => 'Não podemos confirmar a política de salvaguarda da comunidade neste momento. Nenhuma mensagem foi enviada. Por favor, tente novamente em breve.',
+        'blocked_interaction' => 'Não pode interagir com este membro.',
+        'interaction_not_allowed' => 'A política de salvaguarda da comunidade do destinatário não permite esta interação direta. Peça ajuda a um coordenador.',
+        'policy_unavailable_title' => 'Verificação de proteção temporariamente indisponível',
+        'policy_unavailable_detail' => 'O Projeto NEXUS não conseguiu avaliar com segurança a política de contato, portanto esta interação foi pausada.',
+        'policy_unavailable_action' => 'Verifique novamente',
+        'listing_role_confirmation_required' => 'Esta listagem requer uma decisão separada de DBS Avançado confirmada pela comunidade para esta função. Uma confirmação de contato do mensageiro não atende aos requisitos de proteção específicos da função.',
+        'listing_role_feature_unavailable' => 'A verificação de antecedentes criminais específica da função ainda não pode ser habilitada aqui. A confirmação de contato do Messenger não é reutilizada deliberadamente como liberação de função.',
+        'compliance_policy_unavailable' => 'Não podemos confirmar com segurança os requisitos de proteção para esta listagem neste momento. Tente novamente mais tarde ou entre em contato com seu corretor.',
         'statement_required' => 'É necessário um PDF da Declaração de Proteção à Criança antes de você declarar que esta comunidade trabalha com crianças ou adultos vulneráveis. Faça upload de um para continuar.',
         'invalid_file' => 'O arquivo enviado não pôde ser lido. Tente novamente com um PDF válido.',
         'pdf_required' => 'A declaração de salvaguarda deve ser um arquivo PDF.',
@@ -25,15 +34,6 @@ return [
         'statement_missing' => 'Nenhuma declaração de salvaguarda está arquivada para esta comunidade.',
         'file_missing' => 'O arquivo da instrução de salvaguarda não foi encontrado no servidor. Faça upload novamente.',
         'revoke_failed' => 'Não poderíamos revogar essa preferência. Pode já ter sido revogado.',
-        'policy_unavailable' => 'Não podemos confirmar a política de salvaguarda da comunidade neste momento. Nenhuma mensagem foi enviada. Por favor, tente novamente em breve.',
-        'interaction_not_allowed' => 'A política de salvaguarda da comunidade do destinatário não permite esta interação direta. Peça ajuda a um coordenador.',
-        'blocked_interaction' => 'Não pode interagir com este membro.',
-        'policy_unavailable_title' => 'Verificação de proteção temporariamente indisponível',
-        'policy_unavailable_detail' => 'O Projeto NEXUS não conseguiu avaliar com segurança a política de contato, portanto esta interação foi pausada.',
-        'policy_unavailable_action' => 'Verifique novamente',
-        'listing_role_confirmation_required' => 'Esta listagem requer uma decisão separada de DBS Avançado confirmada pela comunidade para esta função. Uma confirmação de contato do mensageiro não atende aos requisitos de proteção específicos da função.',
-        'listing_role_feature_unavailable' => 'A verificação de antecedentes criminais específica da função ainda não pode ser habilitada aqui. A confirmação de contato do Messenger não é reutilizada deliberadamente como liberação de função.',
-        'compliance_policy_unavailable' => 'Não podemos confirmar com segurança os requisitos de proteção para esta listagem neste momento. Tente novamente mais tarde ou entre em contato com seu corretor.',
     ],
     'vetting_types' => [
         'dbs_basic' => 'DBS Básico',
@@ -72,7 +72,7 @@ return [
         'what_activates_heading' => 'O que é ativado como resultado',
         'activation_broker_review' => 'Um coordenador analisará e aprovará correspondências ou trocas protegidas quando sua preferência selecionada assim o exigir. Isso não lhes dá acesso ao conteúdo da mensagem.',
         'activation_match_approval' => 'Um coordenador aprovará partidas envolvendo você antes de serem sugeridas ao outro membro.',
-        'activation_discovery_hidden' => 'Você ficará oculto para membros que não concluíram a verificação exigida.',
+        'activation_discovery_hidden' => 'Membros sem verificação registrados por esta comunidade não podem enviar mensagens, responder, enviar créditos de tempo ou iniciar uma troca com você.',
         'activation_notification' => 'Um coordenador foi notificado e entrará em contato para discutir como podemos ajudar.',
         'activation_none' => 'Nenhuma proteção automática é ativada nessas seleções. Suas preferências são registradas para conhecimento do coordenador.',
         'revoke_heading' => 'Como alterá-los ou revogá-los a qualquer momento',
@@ -92,25 +92,47 @@ return [
         'revoke_confirm_no' => 'Mantenha-o',
         'revoked_toast' => 'Preferência revogada.',
         'revoke_error_toast' => 'Algo deu errado. Por favor, tente novamente.',
+        'switch_heading' => 'Uma opção mais suave está disponível',
+        'switch_body' => 'Você optou por ser contatado apenas por membros cuja verificação esta comunidade tenha registrado. Isso impede que quase todo mundo chegue até você. Você pode passar a ter um coordenador para ficar de olho em suas trocas e apresentá-lo aos membros, e outros membros poderão enviar mensagens para você novamente.',
+        'switch_button' => 'Mudar para apresentações do coordenador',
+        'switched_toast' => 'Feito. Um coordenador ficará de olho nas suas trocas e os membros poderão enviar mensagens para você novamente.',
+        'switch_not_held' => 'Você não tem a configuração somente para membros avaliados, então não há nada para mudar.',
+        'switch_unavailable' => 'As apresentações do coordenador ainda não estão disponíveis nesta comunidade. Entre em contato com um coordenador.',
+    ],
+    'effects' => [
+        'broker_approval' => 'Um coordenador examina qualquer intercâmbio que você organizar antes de prosseguir. Eles não podem ler suas mensagens.',
+        'restricts_messaging' => 'Outros membros não podem enviar mensagens diretamente para você. Um coordenador organiza o contato para você.',
+        'restricts_matching' => 'As correspondências sugeridas entre você e outros membros são verificadas primeiro por um coordenador.',
+        'vetted_only' => 'Somente membros cujos :vetting esta comunidade gravou podem enviar mensagens para você, responder, enviar créditos de tempo ou iniciar uma troca com você. Todos os outros estão bloqueados.',
+        'vetted_count' => '{0} Nenhum membro :vetting gravou aqui no momento, então ninguém pode entrar em contato com você enquanto isso estiver ativado.|{1} Apenas 1 membro tem :vetting gravado aqui no momento.|[2,*] :count membros têm :vetting gravado aqui no momento.',
+        'notify_coordinator' => 'Um coordenador é informado sobre sua escolha, para que possa entrar em contato caso precise de alguma coisa.',
+        'no_home_visits' => 'Os coordenadores sabem que você não deseja visitas domiciliares, a menos que eles as organizem.',
+        'informational' => 'Nada muda para os outros membros. Sua resposta ajuda os coordenadores a apoiá-lo.',
+        'declined' => 'Nada muda. Os coordenadores podem ver que você deu uma olhada nesta etapa.',
+        'vetting_fallback' => 'verificação',
     ],
     'presets' => [
         'common' => [
-            'help_text' => 'Esta comunidade leva a proteção a sério. Se se considera uma pessoa adulta vulnerável ou precisa de apoio adicional, informe-nos para que a nossa equipa de coordenação possa ajudar a organizar trocas seguras.',
+            'help_text' => 'Esta comunidade leva a proteção a sério. Se desejar cuidados extras ao usar o banco de tempo, informe-nos abaixo e nossos coordenadores irão ajudá-lo. Cada escolha diz exatamente o que faz antes de você escolhê-la.',
             'options' => [
                 'is_vulnerable_adult' => [
-                    'label' => 'Considero-me uma pessoa adulta vulnerável e posso precisar de apoio adicional de proteção',
-                    'description' => 'Isto permite que a nossa equipa de coordenação saiba que poderá precisar de apoio adicional ao organizar trocas. Uma pessoa coordenadora entrará em contacto para falar sobre como podemos ajudar. Estas informações são confidenciais.',
+                    'label' => 'Considero-me um adulto vulnerável e gostaria de apoio extra',
+                    'description' => 'Um coordenador entrará em contato para conversar sobre como podemos ajudar e cuidará de suas trocas e combinações. Outros membros ainda podem enviar mensagens para você.',
+                ],
+                'coordinator_introductions' => [
+                    'label' => 'Gostaria que um coordenador ficasse de olho nas minhas trocas e me ajudasse a me apresentar aos membros',
+                    'description' => 'Bom se você quiser alguma garantia sem ser interrompido. Outros membros ainda podem enviar mensagens para você.',
                 ],
                 'requires_vetted_partners' => [
-                    'label' => 'Preferia interagir apenas com membros que tenham sido devidamente verificados',
+                    'label' => 'Somente membros cuja verificação desta comunidade tenha sido registrada podem entrar em contato comigo',
                 ],
                 'requires_coordinator_contact' => [
-                    'label' => 'Gostaria que uma pessoa coordenadora me ajudasse a organizar as minhas trocas em vez de ser contactado diretamente',
-                    'description' => 'Uma pessoa coordenadora fará a mediação de todos os contactos e ajudará a organizar as trocas em seu nome. Os outros membros não poderão enviar-lhe mensagens diretamente.',
+                    'label' => 'Gostaria que um coordenador organizasse todos os contatos para mim, em vez de os membros me enviarem mensagens diretamente',
+                    'description' => 'Um coordenador organizará contatos e trocas em seu nome. Outros membros não poderão enviar mensagens diretamente para você.',
                 ],
                 'no_home_visits' => [
-                    'label' => 'Não quero que membros visitem a minha casa sem organização por uma pessoa coordenadora',
-                    'description' => 'Todas as visitas domiciliárias serão organizadas através de uma pessoa coordenadora que possa garantir a existência de medidas de proteção adequadas.',
+                    'label' => 'Não quero que membros visitem minha casa, a menos que um coordenador tenha organizado isso',
+                    'description' => 'Os coordenadores são informados, para que possam ajudar a organizar qualquer visita à sua casa e garantir que as proteções corretas estejam em vigor.',
                 ],
                 'works_with_children' => [
                     'label' => 'Planeio oferecer serviços que possam envolver crianças ou jovens (com menos de 18 anos)',
@@ -129,16 +151,16 @@ return [
             'vetting_authority' => 'Gabinete Nacional de Verificação',
             'options' => [
                 'requires_vetted_partners' => [
-                    'description' => 'Na Irlanda, isto significa membros com Garda Vetting. A nossa equipa de coordenação garantirá que apenas seja associado a membros verificados.',
+                    'description' => 'Na Irlanda, o Garda Vetting é organizado através de uma organização para uma função específica. Apenas a verificação do que esta comunidade registrou conta aqui, não a verificação de alguém por meio de seu trabalho ou de outro grupo.',
                 ],
                 'requires_coordinator_contact' => [
-                    'description' => 'Uma pessoa coordenadora (intermediária) fará a mediação de todos os contactos e ajudará a organizar as trocas em seu nome. Os outros membros não poderão enviar-lhe mensagens diretamente.',
+                    'description' => 'Um coordenador organizará contatos e trocas em seu nome. Outros membros não poderão enviar mensagens diretamente para você.',
                 ],
                 'works_with_children' => [
                     'description' => 'Uma pessoa coordenadora poderá falar consigo sobre os requisitos da Garda Vetting. Na Irlanda, determinadas atividades que envolvem crianças exigem verificação ao abrigo da Lei do Gabinete Nacional de Verificação de 2012.',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'description' => 'Uma pessoa coordenadora poderá falar consigo sobre os requisitos da Garda Vetting. As atividades que envolvem pessoas adultas vulneráveis podem exigir verificação.',
+                    'description' => 'Um coordenador pode conversar com você sobre se a Garda Vetting é necessária para o que você planeja fazer. Ao abrigo da Lei do National Vetting Bureau Act de 2012, alguns trabalhos principalmente com pessoas vulneráveis ​​necessitam de verificação através de uma organização registada.',
                 ],
             ],
         ],
@@ -147,7 +169,7 @@ return [
             'vetting_authority' => 'DBS, Disclosure Scotland e AccessNI',
             'options' => [
                 'requires_vetted_partners' => [
-                    'description' => 'Em todo o Reino Unido, os coordenadores confirmam a base apropriada de DBS Aprimorado, PVG e/ou AccessNI para contato protegido.',
+                    'description' => 'Em todo o Reino Unido, isso significa uma verificação Enhanced DBS, PVG ou AccessNI que esta comunidade registrou. Um cheque que alguém recebeu através de seu trabalho ou de outro grupo não conta aqui.',
                 ],
                 'works_with_children' => [
                     'description' => 'Um coordenador avaliará a função e a jurisdição aplicável no Reino Unido antes de decidir qual verificação de salvaguarda é legalmente apropriada.',
@@ -162,10 +184,13 @@ return [
             'vetting_authority' => 'Serviço de Divulgação e Impedimento',
             'options' => [
                 'requires_vetted_partners' => [
-                    'description' => 'Em Inglaterra e no País de Gales, isto significa membros com verificação DBS. A nossa equipa de coordenação garantirá que apenas seja associado a membros verificados.',
+                    'description' => 'Na Inglaterra e no País de Gales, isso significa uma verificação de DBS aprimorada que esta comunidade registrou. Um cheque que alguém recebeu através de seu trabalho ou de outro grupo não conta aqui.',
                 ],
                 'works_with_children' => [
                     'description' => 'Uma pessoa coordenadora poderá falar consigo sobre os requisitos da verificação DBS.',
+                ],
+                'works_with_vulnerable_adults' => [
+                    'description' => 'Um coordenador pode conversar com você sobre se uma verificação DBS é necessária para o que você planeja fazer.',
                 ],
             ],
         ],
@@ -177,7 +202,7 @@ return [
                     'label' => 'Considero-me uma pessoa adulta vulnerável ou protegida e posso precisar de apoio adicional de proteção',
                 ],
                 'requires_vetted_partners' => [
-                    'description' => 'Na Escócia, isto significa membros do regime PVG. A nossa equipa de coordenação garantirá que apenas seja associado a membros verificados.',
+                    'description' => 'Na Escócia, isto significa adesão ao esquema PVG que esta comunidade registou. A associação de alguém por meio de seu trabalho ou de outro grupo não conta aqui.',
                 ],
                 'works_with_children' => [
                     'description' => 'Uma pessoa coordenadora poderá falar consigo sobre a adesão ao regime PVG.',
@@ -192,10 +217,13 @@ return [
             'vetting_authority' => 'AcessoNI',
             'options' => [
                 'requires_vetted_partners' => [
-                    'description' => 'Na Irlanda do Norte, isto significa membros com verificação AccessNI. A nossa equipa de coordenação garantirá que apenas seja associado a membros verificados.',
+                    'description' => 'Na Irlanda do Norte, isto significa uma verificação do AccessNI que esta comunidade registou. Um cheque que alguém recebeu através de seu trabalho ou de outro grupo não conta aqui.',
                 ],
                 'works_with_children' => [
                     'description' => 'Uma pessoa coordenadora poderá falar consigo sobre a verificação AccessNI.',
+                ],
+                'works_with_vulnerable_adults' => [
+                    'description' => 'Um coordenador pode conversar com você sobre se uma verificação do AccessNI é necessária para o que você planeja fazer.',
                 ],
             ],
         ],

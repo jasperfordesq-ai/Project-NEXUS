@@ -97,12 +97,14 @@ class SafeguardingMemberController extends BaseApiController
             ))
             ->values();
 
-        $preferences = $rows->map(function ($row) {
+        $effects = app(\App\Services\SafeguardingEffectsService::class);
+        $preferences = $rows->map(function ($row) use ($effects, $tenantId) {
             $triggers = is_string($row->triggers)
                 ? (json_decode($row->triggers, true) ?: [])
                 : (array) ($row->triggers ?? []);
 
             return [
+                'effects' => $effects->forOption($tenantId, (string) $row->option_key, $triggers),
                 'preference_id' => (int) $row->preference_id,
                 'option_id' => (int) $row->option_id,
                 'option_key' => $row->option_key,
@@ -133,10 +135,49 @@ class SafeguardingMemberController extends BaseApiController
             ];
         })->all();
 
+        $holdsVettedOnly = collect($preferences)->contains(
+            static fn (array $preference): bool => $preference['option_key'] === 'requires_vetted_partners',
+        );
+        $introductionsOffered = $holdsVettedOnly && DB::table('tenant_safeguarding_options')
+            ->where('tenant_id', $tenantId)
+            ->where('option_key', 'coordinator_introductions')
+            ->where('is_active', 1)
+            ->exists();
+
         return $this->respondWithData([
             'preferences' => $preferences,
             'count' => count($preferences),
+            'can_switch_to_coordinator_introductions' => $introductionsOffered,
+            // The same words the member's email quotes, from one source.
+            'switch_copy' => $introductionsOffered ? [
+                'heading' => __('safeguarding.settings.switch_heading'),
+                'body' => __('safeguarding.settings.switch_body'),
+                'button' => __('safeguarding.settings.switch_button'),
+            ] : null,
         ]);
+    }
+
+    /**
+     * POST /v2/safeguarding/switch-to-coordinator-introductions
+     *
+     * One step from "only vetted members may contact me" — which in practice
+     * meant nobody could — to coordinator oversight that does not cut the
+     * member off. Member-initiated only; staff cannot do this for them.
+     */
+    public function switchToCoordinatorIntroductions(Request $request): JsonResponse
+    {
+        $userId = $this->requireAuth();
+
+        $outcome = SafeguardingPreferenceService::switchVettedToCoordinatorIntroductions($userId, $request->ip());
+
+        return match ($outcome) {
+            'switched' => $this->respondWithData([
+                'switched' => true,
+                'message' => __('safeguarding.settings.switched_toast'),
+            ]),
+            'not_held' => $this->respondWithError('NOT_HELD', __('safeguarding.settings.switch_not_held'), null, 409),
+            default => $this->respondWithError('UNAVAILABLE', __('safeguarding.settings.switch_unavailable'), null, 409),
+        };
     }
 
     /**

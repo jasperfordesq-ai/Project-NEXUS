@@ -40,9 +40,22 @@ class AdminSafeguardingOptionsController extends BaseApiController
         $this->requireBrokerOrAdmin();
         $tenantId = TenantContext::getId();
 
-        return $this->respondWithData(
-            SafeguardingPreferenceService::getAllOptionsForTenant($tenantId)
-        );
+        // Staff see the same plain-language effects members see, plus how many
+        // members currently hold each option — so "N members can be reached
+        // by nobody" is visible instead of discovered.
+        $effects = app(\App\Services\SafeguardingEffectsService::class);
+        $holders = \Illuminate\Support\Facades\DB::table('user_safeguarding_preferences')
+            ->where('tenant_id', $tenantId)
+            ->whereNull('revoked_at')
+            ->groupBy('option_id')
+            ->pluck(\Illuminate\Support\Facades\DB::raw('COUNT(DISTINCT user_id)'), 'option_id');
+
+        $options = array_map(static fn (array $opt): array => $opt + [
+            'holder_count' => (int) ($holders[$opt['id']] ?? 0),
+            'effects' => $effects->forOption($tenantId, (string) $opt['option_key'], is_array($opt['triggers'] ?? null) ? $opt['triggers'] : []),
+        ], SafeguardingPreferenceService::getAllOptionsForTenant($tenantId));
+
+        return $this->respondWithData($options);
     }
 
     /** POST /v2/admin/safeguarding/options */
@@ -74,6 +87,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
             'sort_order' => (int) $this->input('sort_order', 0),
             'is_active' => filter_var($this->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
             'is_required' => filter_var($this->input('is_required', false), FILTER_VALIDATE_BOOLEAN),
+            'accepts_new_selections' => filter_var($this->input('accepts_new_selections', true), FILTER_VALIDATE_BOOLEAN),
             'select_options' => $this->input('select_options'),
             'triggers' => $this->input('triggers', []),
         ];
@@ -208,7 +222,7 @@ class AdminSafeguardingOptionsController extends BaseApiController
             }
         }
 
-        foreach (['is_active', 'is_required'] as $booleanField) {
+        foreach (['is_active', 'is_required', 'accepts_new_selections'] as $booleanField) {
             if (array_key_exists($booleanField, $data)) {
                 $data[$booleanField] = filter_var($data[$booleanField], FILTER_VALIDATE_BOOLEAN);
             }
