@@ -945,5 +945,18 @@
     "revoke": "Déan dearmad ar gach gléas iontaofa",
     "revoked": "Baineadh na gléasanna iontaofa. Beidh fíorú de dhíth orthu ag an gcéad síniú isteach eile.",
     "failed": "Níorbh fhéidir an gníomh seo a chur i gcrích. Seiceáil do chód agus bain triail eile as."
+  },
+  "listings_digest": {
+    "label": "Achoimre tairiscintí agus iarratas",
+    "description": "Ríomhphost leis na tairiscintí agus na hiarratais nua i do phobal. Ní thaispeánann sé ach liostaí nach bhfaca tú ann roimhe seo.",
+    "option_default": "Réamhshocrú an phobail ({{frequency}})",
+    "option_weekly": "Gach seachtain",
+    "option_monthly": "Gach mí",
+    "option_off": "As",
+    "frequency_weekly": "gach seachtain",
+    "frequency_monthly": "gach mí",
+    "frequency_off": "as",
+    "saved": "Sábháladh socrú an ríomhphoist achoimre",
+    "save_failed": "Níorbh fhéidir socrú an ríomhphoist achoimre a shábháil"
   }
 }

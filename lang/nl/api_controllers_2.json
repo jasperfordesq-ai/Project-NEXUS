@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Afleveringen kunnen maximaal 200 hoofdstukken hebben.",
   "podcasts.private_shows_disabled": "Privé- en alleen-voor-leden-podcastshows zijn uitgeschakeld voor deze community.",
   "podcasts.media_not_ready": "De gehoste audio van deze aflevering wordt nog gecontroleerd of heeft de mediavalidatie niet doorstaan.",
-  "podcasts.external_artwork_not_allowed": "Podcastafbeeldingen moeten eerst naar dit platform worden geüpload."
+  "podcasts.external_artwork_not_allowed": "Podcastafbeeldingen moeten eerst naar dit platform worden geüpload.",
+  "listings_digest.confirm_required": "Bevestig dat je nu alle leden een e-mail wilt sturen.",
+  "listings_digest.send_failed": "Het overzicht kon niet in de wachtrij worden gezet. Probeer het opnieuw."
 }

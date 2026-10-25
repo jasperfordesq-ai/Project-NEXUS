@@ -1531,6 +1531,22 @@ export const adminLegalDocs = {
 // Newsletters
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Offers & requests round-up email (ListingsDigestController)
+export interface ListingsDigestAdminSettings {
+  default_frequency: 'weekly' | 'monthly' | 'off';
+  recipient_count: number;
+}
+
+export const adminListingsDigest = {
+  get: () => api.get<ListingsDigestAdminSettings>('/v2/admin/listings-digest'),
+  update: (defaultFrequency: ListingsDigestAdminSettings['default_frequency']) =>
+    api.put<ListingsDigestAdminSettings>('/v2/admin/listings-digest', { default_frequency: defaultFrequency }),
+  preview: (mode: 'all' | 'new' = 'all') =>
+    api.get<{ html: string }>(`/v2/admin/listings-digest/preview?mode=${mode}`),
+  sendNow: () =>
+    api.post<{ queued: boolean; recipient_count: number }>('/v2/admin/listings-digest/send', { confirm: true }),
+};
+
 export const adminNewsletters = {
   list: (params: { page?: number; status?: string } = {}) =>
     api.get<PaginatedResponse<Newsletter>>(`/v2/admin/newsletters${buildQuery(params)}`),

@@ -618,7 +618,8 @@
     "title_create": "Crea newsletter",
     "title_edit": "Modifica newsletter",
     "towns_description": "Paesi o città separati da virgole.",
-    "towns_placeholder": "Nomi di paesi o città..."
+    "towns_placeholder": "Nomi di paesi o città...",
+    "tag_recent_listings": "Ultime offerte e richieste"
   },
   "newsletter_builder": {
     "studio_title": "Progettare e-mail",
@@ -1222,5 +1223,37 @@
       "wrapper": "Involucro",
       "raw": "Grezzo"
     }
+  },
+  "listings_digest": {
+    "page_title": "Riepilogo di offerte e richieste",
+    "title": "Riepilogo di offerte e richieste",
+    "description": "Un'email ai membri con le offerte e le richieste della tua comunità: un motivo per tornare a scambiare.",
+    "send_now": "Invia ora",
+    "schedule_title": "Frequenza",
+    "default_label": "I membri lo ricevono",
+    "frequency_monthly": "Mensile",
+    "frequency_weekly": "Settimanale",
+    "frequency_off": "Disattivato (i membri possono comunque attivarlo)",
+    "default_help": "I membri possono scegliere la propria frequenza nelle impostazioni delle notifiche. Questo è ciò che ricevono tutti gli altri.",
+    "how_it_works": "Ogni membro riceve solo annunci che non gli sono mai stati inviati, mai i propri, e nessuna email se non c'è nulla di nuovo.",
+    "recipient_count_one": "{{count}} membro riceverà «Invia ora»",
+    "recipient_count_other": "{{count}} membri riceveranno «Invia ora»",
+    "preview_title": "Anteprima",
+    "preview_mode_label": "Cosa visualizzare",
+    "preview_mode_all": "Invia ora: tutto ciò che viene offerto",
+    "preview_mode_new": "Automatico: ciò che è nuovo per me",
+    "preview_refresh": "Aggiorna anteprima",
+    "load_failed": "Impossibile caricare le impostazioni del riepilogo",
+    "preview_failed": "Impossibile caricare l'anteprima",
+    "default_saved": "Frequenza predefinita salvata",
+    "default_save_failed": "Impossibile salvare la frequenza predefinita",
+    "send_queued_one": "Invio a {{count}} membro in background",
+    "send_queued_other": "Invio a {{count}} membri in background",
+    "send_failed": "Impossibile avviare l'invio. Riprova.",
+    "confirm_title": "Inviare ora un'email a tutti i membri?",
+    "confirm_message_one": "Verranno inviate tutte le offerte e richieste attuali a {{count}} membro che non ha disattivato il riepilogo. L'azione è irreversibile.",
+    "confirm_message_other": "Verranno inviate tutte le offerte e richieste attuali a {{count}} membri che non hanno disattivato il riepilogo. L'azione è irreversibile.",
+    "confirm_send": "Invia a tutti",
+    "cancel": "Annulla"
   }
 }

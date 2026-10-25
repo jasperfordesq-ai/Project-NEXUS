@@ -933,5 +933,18 @@
     "revoke": "Forget all trusted devices",
     "revoked": "Trusted devices removed. They will need verification at the next sign-in.",
     "failed": "Unable to complete this action. Check your code and try again."
+  },
+  "listings_digest": {
+    "label": "Offers & requests round-up",
+    "description": "An email with the new offers and requests in your community. It only ever shows listings you have not seen in it before.",
+    "option_default": "Community default ({{frequency}})",
+    "option_weekly": "Weekly",
+    "option_monthly": "Monthly",
+    "option_off": "Off",
+    "frequency_weekly": "weekly",
+    "frequency_monthly": "monthly",
+    "frequency_off": "off",
+    "saved": "Round-up email setting saved",
+    "save_failed": "Could not save your round-up email setting"
   }
 }

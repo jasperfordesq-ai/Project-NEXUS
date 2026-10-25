@@ -624,7 +624,8 @@
     "title_create": "Cruthaigh nuachtlitir",
     "title_edit": "Cuir in eagar nuachtlitir",
     "towns_description": "Bailte nó cathracha scartha le camóg.",
-    "towns_placeholder": "Ainmneacha bailte nó cathracha..."
+    "towns_placeholder": "Ainmneacha bailte nó cathracha...",
+    "tag_recent_listings": "Na tairiscintí agus na hiarratais is déanaí"
   },
   "newsletter_builder": {
     "studio_title": "Ríomhphost deartha",
@@ -1240,5 +1241,46 @@
       "wrapper": "Coimeádán",
       "raw": "Ábhar amh"
     }
+  },
+  "listings_digest": {
+    "page_title": "Achoimre tairiscintí agus iarratas",
+    "title": "Achoimre tairiscintí agus iarratas",
+    "description": "Ríomhphost chuig baill leis na tairiscintí agus na hiarratais i do phobal — cúis le filleadh agus trádáil.",
+    "send_now": "Seol anois",
+    "schedule_title": "Cé chomh minic",
+    "default_label": "Faigheann baill é",
+    "frequency_monthly": "Gach mí",
+    "frequency_weekly": "Gach seachtain",
+    "frequency_off": "As (is féidir le baill é a chasadh air fós)",
+    "default_help": "Is féidir le baill a minicíocht féin a roghnú ina socruithe fógraí. Is é seo a fhaigheann gach duine eile.",
+    "how_it_works": "Ní fhaigheann gach ball ach liostaí nár seoladh chucu roimhe seo, riamh a gcuid féin, agus gan ríomhphost nuair nach bhfuil aon rud nua.",
+    "recipient_count_one": "Gheobhaidh {{count}} bhall “Seol anois”",
+    "recipient_count_other": "Gheobhaidh {{count}} ball “Seol anois”",
+    "recipient_count_two": "Gheobhaidh {{count}} ball “Seol anois”",
+    "recipient_count_few": "Gheobhaidh {{count}} ball “Seol anois”",
+    "recipient_count_many": "Gheobhaidh {{count}} ball “Seol anois”",
+    "preview_title": "Réamhamharc",
+    "preview_mode_label": "Cad le réamhamharc",
+    "preview_mode_all": "Seol anois: gach a bhfuil ar fáil",
+    "preview_mode_new": "Uathoibríoch: a bhfuil nua domsa",
+    "preview_refresh": "Athnuaigh an réamhamharc",
+    "load_failed": "Níorbh fhéidir socruithe na hachoimre a lódáil",
+    "preview_failed": "Níorbh fhéidir an réamhamharc a lódáil",
+    "default_saved": "Sábháladh an mhinicíocht réamhshocraithe",
+    "default_save_failed": "Níorbh fhéidir an mhinicíocht réamhshocraithe a shábháil",
+    "send_queued_one": "Á sheoladh chuig {{count}} bhall sa chúlra",
+    "send_queued_other": "Á sheoladh chuig {{count}} ball sa chúlra",
+    "send_queued_two": "Á sheoladh chuig {{count}} ball sa chúlra",
+    "send_queued_few": "Á sheoladh chuig {{count}} ball sa chúlra",
+    "send_queued_many": "Á sheoladh chuig {{count}} ball sa chúlra",
+    "send_failed": "Níorbh fhéidir tosú ag seoladh. Bain triail eile as.",
+    "confirm_title": "Ríomhphost a sheoladh chuig gach ball anois?",
+    "confirm_message_one": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} bhall nár mhúch an achoimre. Ní féidir é a chealú.",
+    "confirm_message_other": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} ball nár mhúch an achoimre. Ní féidir é a chealú.",
+    "confirm_message_two": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} ball nár mhúch an achoimre. Ní féidir é a chealú.",
+    "confirm_message_few": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} ball nár mhúch an achoimre. Ní féidir é a chealú.",
+    "confirm_message_many": "Seolfaidh sé seo gach tairiscint agus iarratas reatha chuig {{count}} ball nár mhúch an achoimre. Ní féidir é a chealú.",
+    "confirm_send": "Seol chuig gach duine",
+    "cancel": "Cealaigh"
   }
 }

@@ -5091,6 +5091,16 @@
                         "instant": "En el momento",
                         "daily": "Diariamente",
                         "monthly": "Mensualmente"
+                    },
+                    "round_up_label": "Resumen de ofertas y solicitudes",
+                    "round_up_hint": "Un correo con las nuevas ofertas y solicitudes de tu comunidad. Solo muestra anuncios que aún no se te han enviado.",
+                    "round_up_options": {
+                        "default_weekly": "Ajuste de la comunidad (semanal)",
+                        "default_monthly": "Ajuste de la comunidad (mensual)",
+                        "default_off": "Ajuste de la comunidad (desactivado)",
+                        "weekly": "Semanal",
+                        "monthly": "Mensual",
+                        "off": "No enviarlo"
                     }
                 },
                 "passkeys": {

@@ -771,7 +771,8 @@
     "marketplace_cases": "DSA|disputas|quejas|denuncias|casos",
     "registration_policy": "reglas de registro|quién puede unirse|verificación de identidad|verificación de correo|registro",
     "fadp": "Suiza|suizo|nLPD|protección de datos|registro de actividades de tratamiento",
-    "stripe_account": "stripe|pagos|tarjeta|banco|transferencias|conectar|donaciones"
+    "stripe_account": "stripe|pagos|tarjeta|banco|transferencias|conectar|donaciones",
+    "listings_digest": "resumen|ofertas|solicitudes|anuncios|correo|semanal|mensual"
   },
   "user_report": "Informe de usuario",
   "municipal_impact": "Informes de impacto municipal",
@@ -838,5 +839,6 @@
   "permissions_list": "Lista de permisos",
   "fadp": "Protección de datos suiza (FADP)",
   "subscriptions": "Suscripciones",
-  "stripe_account": "Cuenta de Stripe"
+  "stripe_account": "Cuenta de Stripe",
+  "listings_digest": "Correo de ofertas y solicitudes"
 }

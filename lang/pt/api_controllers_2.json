@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Os episódios podem ter no máximo 200 capítulos.",
   "podcasts.private_shows_disabled": "Os programas de podcast privados e apenas para membros estão desativados para esta comunidade.",
   "podcasts.media_not_ready": "O áudio alojado deste episódio ainda está a ser verificado ou não passou na validação.",
-  "podcasts.external_artwork_not_allowed": "A imagem do podcast tem de ser carregada nesta plataforma antes de poder ser utilizada."
+  "podcasts.external_artwork_not_allowed": "A imagem do podcast tem de ser carregada nesta plataforma antes de poder ser utilizada.",
+  "listings_digest.confirm_required": "Confirme que pretende enviar agora um e-mail a todos os membros.",
+  "listings_digest.send_failed": "Não foi possível colocar o resumo em fila. Tente novamente."
 }

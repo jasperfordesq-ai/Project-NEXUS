@@ -941,5 +941,18 @@
     "revoke": "Zapomnij wszystkie zaufane urządzenia",
     "revoked": "Usunięto zaufane urządzenia. Przy następnym logowaniu będzie wymagana weryfikacja.",
     "failed": "Nie udało się ukończyć działania. Sprawdź kod i spróbuj ponownie."
+  },
+  "listings_digest": {
+    "label": "Podsumowanie ofert i próśb",
+    "description": "E-mail z nowymi ofertami i prośbami w Twojej społeczności. Pokazuje tylko ogłoszenia, których jeszcze w nim nie widziałeś.",
+    "option_default": "Domyślne ustawienie społeczności ({{frequency}})",
+    "option_weekly": "Co tydzień",
+    "option_monthly": "Co miesiąc",
+    "option_off": "Wyłączone",
+    "frequency_weekly": "co tydzień",
+    "frequency_monthly": "co miesiąc",
+    "frequency_off": "wyłączone",
+    "saved": "Zapisano ustawienie podsumowania",
+    "save_failed": "Nie udało się zapisać ustawienia podsumowania"
   }
 }

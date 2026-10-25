@@ -249,5 +249,7 @@
   "marketplace_listing": {
     "seller_suspended": "Your seller account is suspended and cannot create new listings.",
     "create_failed": "Failed to create listing."
-  }
+  },
+  "listings_digest.confirm_required": "Confirm that you want to email every member now.",
+  "listings_digest.send_failed": "The round-up could not be queued. Please try again."
 }

@@ -449,6 +449,7 @@ function useAdminNav(): NavSection[] {
         items: [
           { label: t('all_content'), href: '/admin/listings', icon: ListChecks },
           categoriesItem,
+          { label: t('listings_digest'), href: '/admin/listings-digest', icon: Mail, keywords: keyword(t('search_keywords.listings_digest')) },
         ],
       }] : []),
       {

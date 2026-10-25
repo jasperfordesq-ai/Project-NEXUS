@@ -420,6 +420,17 @@
               {% endfor %}
             </select>
           </div>
+          {% if listingsDigestOptions %}
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="listings_digest_frequency">{{ t("profile_settings.notifications.round_up_label") }}</label>
+            <div id="listings-digest-frequency-hint" class="govuk-hint">{{ t("profile_settings.notifications.round_up_hint") }}</div>
+            <select class="govuk-select" id="listings_digest_frequency" name="listings_digest_frequency" aria-describedby="listings-digest-frequency-hint">
+              {% for option in listingsDigestOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
           <button class="govuk-button govuk-!-margin-top-6" data-module="govuk-button">{{ t("profile_settings.notifications.save") }}</button>
         </form>
       </section>

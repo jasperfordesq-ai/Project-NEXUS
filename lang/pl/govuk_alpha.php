@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Codziennie',
                 'monthly' => 'Co miesiąc',
             ],
+            'round_up_label' => 'Podsumowanie ofert i próśb',
+            'round_up_hint' => 'E-mail z nowymi ofertami i prośbami w Twojej społeczności. Pokazuje tylko ogłoszenia, których jeszcze Ci nie wysłano.',
+            'round_up_options' => [
+                'default_weekly' => 'Ustawienie społeczności (co tydzień)',
+                'default_monthly' => 'Ustawienie społeczności (co miesiąc)',
+                'default_off' => 'Ustawienie społeczności (wyłączone)',
+                'weekly' => 'Co tydzień',
+                'monthly' => 'Co miesiąc',
+                'off' => 'Nie wysyłaj',
+            ],
         ],
         'passkeys' => [
             'title' => 'Klucze dostępu',

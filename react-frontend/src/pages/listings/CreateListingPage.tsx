@@ -10,7 +10,7 @@
  * ComposeHub listing tab). Page chrome only — the form owns all state.
  */
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 
@@ -25,6 +25,13 @@ export function CreateListingPage() {
   const { id } = useParams<{ id: string }>();
   const { tenantPath } = useTenant();
   const isEditing = !!id;
+  // ?type=request preselects the listing type (the offers & requests
+  // round-up email links "Ask for help" here).
+  const [searchParams] = useSearchParams();
+  const requestedType = searchParams.get('type');
+  const initialValues = !isEditing && (requestedType === 'offer' || requestedType === 'request')
+    ? { type: requestedType as 'offer' | 'request' }
+    : undefined;
   const pageTitle = isEditing ? t('page_meta.edit.title') : t('page_meta.create.title');
   usePageTitle(pageTitle);
 
@@ -41,7 +48,7 @@ export function CreateListingPage() {
         { label: isEditing ? t('form.edit_title') : t('form.new_title') },
       ]} />
 
-      <ListingForm variant="page" listingId={id} />
+      <ListingForm variant="page" listingId={id} initialValues={initialValues} />
     </motion.div>
   );
 }

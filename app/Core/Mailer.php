@@ -249,7 +249,7 @@ class Mailer
         }
 
         // Newsletter-type bulk mail
-        if (in_array($category, ['newsletter', 'newsletter_test', 'federation_digest', 'group_digest', 'notification_digest', 'gamification_digest'], true)) {
+        if (in_array($category, ['newsletter', 'newsletter_test', 'federation_digest', 'group_digest', 'notification_digest', 'gamification_digest', 'listings_digest'], true)) {
             return self::CATEGORY_NEWSLETTERS;
         }
 

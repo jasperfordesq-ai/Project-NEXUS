@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Episoden können höchstens 200 Kapitel haben.",
   "podcasts.private_shows_disabled": "Private und nur Mitgliedern zugängliche Podcast-Shows sind für diese Community deaktiviert.",
   "podcasts.media_not_ready": "Die Audiodatei dieser Episode wird noch geprüft oder hat die Medienvalidierung nicht bestanden.",
-  "podcasts.external_artwork_not_allowed": "Podcast-Grafiken müssen zuerst auf diese Plattform hochgeladen werden."
+  "podcasts.external_artwork_not_allowed": "Podcast-Grafiken müssen zuerst auf diese Plattform hochgeladen werden.",
+  "listings_digest.confirm_required": "Bestätige, dass du jetzt allen Mitgliedern eine E-Mail senden möchtest.",
+  "listings_digest.send_failed": "Der Überblick konnte nicht eingereiht werden. Bitte versuche es erneut."
 }

@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Dagelijks',
                 'monthly' => 'Maandelijks',
             ],
+            'round_up_label' => 'Overzicht van aanbod en vragen',
+            'round_up_hint' => 'Een e-mail met het nieuwe aanbod en de nieuwe vragen in je gemeenschap. Je ziet alleen advertenties die je nog niet zijn toegestuurd.',
+            'round_up_options' => [
+                'default_weekly' => 'Instelling van de gemeenschap (wekelijks)',
+                'default_monthly' => 'Instelling van de gemeenschap (maandelijks)',
+                'default_off' => 'Instelling van de gemeenschap (uit)',
+                'weekly' => 'Wekelijks',
+                'monthly' => 'Maandelijks',
+                'off' => 'Niet versturen',
+            ],
         ],
         'passkeys' => [
             'title' => 'Toegangssleutels',

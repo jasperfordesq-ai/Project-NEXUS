@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Quotidiano',
                 'monthly' => 'Mensile',
             ],
+            'round_up_label' => 'Riepilogo di offerte e richieste',
+            'round_up_hint' => 'Un\'email con le nuove offerte e richieste della tua comunità. Mostra solo annunci che non ti sono già stati inviati.',
+            'round_up_options' => [
+                'default_weekly' => 'Impostazione della comunità (settimanale)',
+                'default_monthly' => 'Impostazione della comunità (mensile)',
+                'default_off' => 'Impostazione della comunità (disattivato)',
+                'weekly' => 'Settimanale',
+                'monthly' => 'Mensile',
+                'off' => 'Non inviarlo',
+            ],
         ],
         'passkeys' => [
             'title' => 'Passkey',

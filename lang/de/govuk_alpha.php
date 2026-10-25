@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Täglich',
                 'monthly' => 'Monatlich',
             ],
+            'round_up_label' => 'Überblick über Angebote und Gesuche',
+            'round_up_hint' => 'Eine E-Mail mit den neuen Angeboten und Gesuchen deiner Gemeinschaft. Sie zeigt nur Einträge, die dir noch nicht geschickt wurden.',
+            'round_up_options' => [
+                'default_weekly' => 'Einstellung der Gemeinschaft (wöchentlich)',
+                'default_monthly' => 'Einstellung der Gemeinschaft (monatlich)',
+                'default_off' => 'Einstellung der Gemeinschaft (aus)',
+                'weekly' => 'Wöchentlich',
+                'monthly' => 'Monatlich',
+                'off' => 'Nicht senden',
+            ],
         ],
         'passkeys' => [
             'title' => 'Passschlüssel',

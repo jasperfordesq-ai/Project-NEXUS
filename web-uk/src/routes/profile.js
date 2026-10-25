@@ -62,6 +62,17 @@ const PROFILE_TYPE_LABELS = {
   individual: 'Individual',
   organisation: 'Organisation'
 };
+// Offers & requests round-up email (Laravel ListingsDigestController).
+const PROFILE_LISTINGS_DIGEST_CHOICES = ['default', 'weekly', 'monthly', 'off'];
+const PROFILE_LISTINGS_DIGEST_COMMUNITY = ['weekly', 'monthly', 'off'];
+const PROFILE_LISTINGS_DIGEST_LABELS = {
+  default_weekly: 'Community setting (weekly)',
+  default_monthly: 'Community setting (monthly)',
+  default_off: 'Community setting (off)',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  off: 'Do not send it'
+};
 const PROFILE_DIGEST_LABELS = {
   off: 'Off',
   instant: 'Immediately',
@@ -617,6 +628,30 @@ function profileStatusConfig(req, status) {
   return localizedStatusConfig(req, status, PROFILE_STATUS_MESSAGES, PROFILE_STATUS_MESSAGE_KEYS);
 }
 
+function normalizeListingsDigest(payload) {
+  const source = payload && typeof payload === 'object' ? payload : {};
+  return {
+    frequency: allowedValue(source.frequency, PROFILE_LISTINGS_DIGEST_CHOICES, 'default'),
+    community_default: allowedValue(source.community_default, PROFILE_LISTINGS_DIGEST_COMMUNITY, 'monthly')
+  };
+}
+
+function listingsDigestOptions(req, settings) {
+  if (!settings) return null;
+  return PROFILE_LISTINGS_DIGEST_CHOICES.map((value) => {
+    const labelKey = value === 'default' ? `default_${settings.community_default}` : value;
+    return {
+      value,
+      label: translateStatusMessage(
+        req,
+        `profile_settings.notifications.round_up_options.${labelKey}`,
+        PROFILE_LISTINGS_DIGEST_LABELS[labelKey] || value
+      ),
+      selected: value === settings.frequency
+    };
+  });
+}
+
 function normalizeNotificationPrefs(payload) {
   const source = payload && typeof payload === 'object' ? payload : {};
   return {
@@ -958,6 +993,7 @@ function buildProfileSettingsViewModel(req, data) {
       PROFILE_LOCALE_LABELS,
       autoTranslateLocale
     ),
+    listingsDigestOptions: listingsDigestOptions(req, data.listingsDigest),
     digestOptions: localizedOptions(
       req,
       PROFILE_DIGEST_FREQUENCIES,
@@ -1242,6 +1278,20 @@ router.get('/settings', asyncRoute(async (req, res) => {
     loadFailed = true;
   }
 
+  // The offers & requests round-up exists only where listings are switched on.
+  // A failure here hides the control rather than failing the whole page.
+  const settingsTenant = req.accessibleRouting?.tenant && typeof req.accessibleRouting.tenant === 'object'
+    ? req.accessibleRouting.tenant
+    : {};
+  if (flagEnabled(settingsTenant, 'listings', 'modules', true)) {
+    try {
+      data.listingsDigest = normalizeListingsDigest(payloadFrom(await callUserSettings(token, 'GET', '/listings-digest')));
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      data.listingsDigest = null;
+    }
+  }
+
   try {
     data.matchPrefs = normalizeMatchPrefs(payloadFrom(await callUserSettings(token, 'GET', '/match-preferences')));
   } catch (error) {
@@ -1495,6 +1545,10 @@ router.post('/notifications', asyncRoute(async (req, res) => {
         context_id: 0,
         frequency: digestFrequency
       });
+    }
+    const listingsDigestFrequency = allowedValue(req.body.listings_digest_frequency, PROFILE_LISTINGS_DIGEST_CHOICES, null);
+    if (listingsDigestFrequency) {
+      await callUserSettings(token, 'PUT', '/listings-digest', { frequency: listingsDigestFrequency });
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;

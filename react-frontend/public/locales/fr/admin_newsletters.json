@@ -618,7 +618,8 @@
     "title_create": "Créer une newsletter",
     "title_edit": "Modifier la newsletter",
     "towns_description": "Villes ou communes séparées par des virgules.",
-    "towns_placeholder": "Noms de villes ou communes..."
+    "towns_placeholder": "Noms de villes ou communes...",
+    "tag_recent_listings": "Dernières offres et demandes"
   },
   "newsletter_builder": {
     "studio_title": "Concevoir un e-mail",
@@ -1222,5 +1223,37 @@
       "raw": "Brut",
       "section": "Section"
     }
+  },
+  "listings_digest": {
+    "page_title": "Récapitulatif des offres et demandes",
+    "title": "Récapitulatif des offres et demandes",
+    "description": "Un e-mail aux membres avec les offres et demandes de votre communauté — une raison de revenir échanger.",
+    "send_now": "Envoyer maintenant",
+    "schedule_title": "Fréquence",
+    "default_label": "Les membres le reçoivent",
+    "frequency_monthly": "Chaque mois",
+    "frequency_weekly": "Chaque semaine",
+    "frequency_off": "Désactivé (les membres peuvent toujours l'activer)",
+    "default_help": "Les membres peuvent choisir leur propre fréquence dans leurs réglages de notification. Voici ce que reçoivent les autres.",
+    "how_it_works": "Chaque membre ne reçoit que des annonces qui ne lui ont jamais été envoyées, jamais les siennes, et aucun e-mail s'il n'y a rien de nouveau.",
+    "recipient_count_one": "{{count}} membre recevra « Envoyer maintenant »",
+    "recipient_count_other": "{{count}} membres recevront « Envoyer maintenant »",
+    "preview_title": "Aperçu",
+    "preview_mode_label": "Que prévisualiser",
+    "preview_mode_all": "Envoyer maintenant : tout ce qui est proposé",
+    "preview_mode_new": "Automatique : ce qui est nouveau pour moi",
+    "preview_refresh": "Actualiser l'aperçu",
+    "load_failed": "Impossible de charger les réglages du récapitulatif",
+    "preview_failed": "Impossible de charger l'aperçu",
+    "default_saved": "Fréquence par défaut enregistrée",
+    "default_save_failed": "Impossible d'enregistrer la fréquence par défaut",
+    "send_queued_one": "Envoi à {{count}} membre en arrière-plan",
+    "send_queued_other": "Envoi à {{count}} membres en arrière-plan",
+    "send_failed": "Impossible de lancer l'envoi. Veuillez réessayer.",
+    "confirm_title": "Envoyer un e-mail à tous les membres maintenant ?",
+    "confirm_message_one": "Cela envoie toutes les offres et demandes actuelles à {{count}} membre qui n'a pas désactivé le récapitulatif. Action irréversible.",
+    "confirm_message_other": "Cela envoie toutes les offres et demandes actuelles à {{count}} membres qui n'ont pas désactivé le récapitulatif. Action irréversible.",
+    "confirm_send": "Envoyer à tout le monde",
+    "cancel": "Annuler"
   }
 }

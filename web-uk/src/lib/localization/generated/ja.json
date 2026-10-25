@@ -5091,6 +5091,16 @@
                         "instant": "リアルタイム",
                         "daily": "毎日",
                         "monthly": "毎月"
+                    },
+                    "round_up_label": "提供とリクエストのまとめ",
+                    "round_up_hint": "コミュニティの新しい提供とリクエストをお知らせするメールです。まだ送られていない掲載だけが表示されます。",
+                    "round_up_options": {
+                        "default_weekly": "コミュニティの設定（毎週）",
+                        "default_monthly": "コミュニティの設定（毎月）",
+                        "default_off": "コミュニティの設定（オフ）",
+                        "weekly": "毎週",
+                        "monthly": "毎月",
+                        "off": "送らない"
                     }
                 },
                 "passkeys": {

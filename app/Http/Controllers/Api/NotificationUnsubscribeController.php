@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Log;
  *   listings         → email_listings
  *   events           → email_events
  *   digest           → email_digest
+ *   listings_digest  → email_listings_digest (the offers & requests round-up)
  *   gamification     → email_gamification_digest + email_gamification_milestones
  *   org              → email_org_payments + email_org_transfers + email_org_membership + email_org_admin
  *   federation       → federation_notifications_enabled (column, not JSON)
@@ -59,6 +60,7 @@ class NotificationUnsubscribeController extends BaseApiController
         'email_messages',
         'email_listings',
         'email_digest',
+        'email_listings_digest',
         'email_connections',
         'email_transactions',
         'email_reviews',
@@ -81,6 +83,7 @@ class NotificationUnsubscribeController extends BaseApiController
         'listings'      => ['email_listings'],
         'events'        => ['email_events'],
         'digest'        => ['email_digest'],
+        'listings_digest' => ['email_listings_digest'],
         'gamification'  => ['email_gamification_digest', 'email_gamification_milestones'],
         'org'           => ['email_org_payments', 'email_org_transfers', 'email_org_membership', 'email_org_admin'],
     ];

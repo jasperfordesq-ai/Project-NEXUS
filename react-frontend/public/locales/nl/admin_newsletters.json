@@ -615,7 +615,8 @@
     "title_create": "Nieuwsbrief aanmaken",
     "title_edit": "Nieuwsbrief bewerken",
     "towns_description": "Steden of dorpen gescheiden door komma's.",
-    "towns_placeholder": "Stad- of dorpsnamen..."
+    "towns_placeholder": "Stad- of dorpsnamen...",
+    "tag_recent_listings": "Nieuwste aanbod en vragen"
   },
   "newsletter_builder": {
     "studio_title": "Ontwerp e-mail",
@@ -1213,5 +1214,37 @@
       "wrapper": "Omhulsel",
       "raw": "Ruw"
     }
+  },
+  "listings_digest": {
+    "page_title": "Overzicht van aanbod en vragen",
+    "title": "Overzicht van aanbod en vragen",
+    "description": "Een e-mail aan leden met het aanbod en de vragen in je gemeenschap — een reden om terug te komen en te ruilen.",
+    "send_now": "Nu versturen",
+    "schedule_title": "Hoe vaak",
+    "default_label": "Leden krijgen het",
+    "frequency_monthly": "Maandelijks",
+    "frequency_weekly": "Wekelijks",
+    "frequency_off": "Uit (leden kunnen het zelf nog aanzetten)",
+    "default_help": "Leden kunnen in hun meldingsinstellingen zelf kiezen hoe vaak. Dit krijgt iedereen anders.",
+    "how_it_works": "Elk lid krijgt alleen advertenties die het nog nooit is toegestuurd, nooit de eigen, en geen e-mail als er niets nieuws is.",
+    "recipient_count_one": "{{count}} lid krijgt „Nu versturen”",
+    "recipient_count_other": "{{count}} leden krijgen „Nu versturen”",
+    "preview_title": "Voorbeeld",
+    "preview_mode_label": "Wat wil je bekijken",
+    "preview_mode_all": "Nu versturen: al het aanbod",
+    "preview_mode_new": "Automatisch: wat nieuw is voor mij",
+    "preview_refresh": "Voorbeeld vernieuwen",
+    "load_failed": "De instellingen van het overzicht konden niet worden geladen",
+    "preview_failed": "Het voorbeeld kon niet worden geladen",
+    "default_saved": "Standaardfrequentie opgeslagen",
+    "default_save_failed": "Standaardfrequentie kon niet worden opgeslagen",
+    "send_queued_one": "Wordt op de achtergrond verstuurd naar {{count}} lid",
+    "send_queued_other": "Wordt op de achtergrond verstuurd naar {{count}} leden",
+    "send_failed": "Versturen kon niet worden gestart. Probeer het opnieuw.",
+    "confirm_title": "Nu alle leden een e-mail sturen?",
+    "confirm_message_one": "Hiermee gaat al het huidige aanbod en alle vragen naar {{count}} lid dat het overzicht niet heeft uitgezet. Dit kan niet ongedaan worden gemaakt.",
+    "confirm_message_other": "Hiermee gaat al het huidige aanbod en alle vragen naar {{count}} leden die het overzicht niet hebben uitgezet. Dit kan niet ongedaan worden gemaakt.",
+    "confirm_send": "Naar iedereen versturen",
+    "cancel": "Annuleren"
   }
 }

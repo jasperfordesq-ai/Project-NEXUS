@@ -22,6 +22,7 @@ import ArrowRight from 'lucide-react/icons/arrow-right';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useWebPush } from '@/hooks/useWebPush';
 import { useTenant } from '@/contexts';
+import { ListingsDigestSetting } from './ListingsDigestSetting';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -253,6 +254,8 @@ export function NotificationsTab({
               checked={notifications.email_listings}
               onChange={(checked) => onNotificationsChange((prev) => ({ ...prev, email_listings: checked }))}
             />}
+
+            {hasListings && <ListingsDigestSetting />}
 
             {hasWallet && <SettingToggle
               label={t('notification_prefs.credit_transactions')}

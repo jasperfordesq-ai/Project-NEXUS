@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Odcinki mogą mieć najwyżej 200 rozdziałów.",
   "podcasts.private_shows_disabled": "Prywatne i dostępne tylko dla członków programy podcastowe są wyłączone dla tej społeczności.",
   "podcasts.media_not_ready": "Hostowany dźwięk tego odcinka jest nadal sprawdzany lub nie przeszedł walidacji multimediów.",
-  "podcasts.external_artwork_not_allowed": "Grafika podcastu musi zostać przesłana na tę platformę przed użyciem."
+  "podcasts.external_artwork_not_allowed": "Grafika podcastu musi zostać przesłana na tę platformę przed użyciem.",
+  "listings_digest.confirm_required": "Potwierdź, że chcesz teraz wysłać e-mail do wszystkich członków.",
+  "listings_digest.send_failed": "Nie udało się dodać podsumowania do kolejki. Spróbuj ponownie."
 }

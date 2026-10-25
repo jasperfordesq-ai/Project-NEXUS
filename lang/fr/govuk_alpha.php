@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Quotidien',
                 'monthly' => 'Mensuel',
             ],
+            'round_up_label' => 'Récapitulatif des offres et demandes',
+            'round_up_hint' => 'Un e-mail avec les nouvelles offres et demandes de votre communauté. Il ne montre que des annonces qui ne vous ont pas déjà été envoyées.',
+            'round_up_options' => [
+                'default_weekly' => 'Réglage de la communauté (chaque semaine)',
+                'default_monthly' => 'Réglage de la communauté (chaque mois)',
+                'default_off' => 'Réglage de la communauté (désactivé)',
+                'weekly' => 'Chaque semaine',
+                'monthly' => 'Chaque mois',
+                'off' => 'Ne pas l\'envoyer',
+            ],
         ],
         'passkeys' => [
             'title' => 'Clés d\'accès',

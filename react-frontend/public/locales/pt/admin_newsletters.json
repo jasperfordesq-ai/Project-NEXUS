@@ -618,7 +618,8 @@
     "title_create": "Criar boletim informativo",
     "title_edit": "Editar boletim informativo",
     "towns_description": "Cidades ou municípios separados por vírgula.",
-    "towns_placeholder": "Nomes de cidades ou municípios..."
+    "towns_placeholder": "Nomes de cidades ou municípios...",
+    "tag_recent_listings": "Últimas ofertas e pedidos"
   },
   "newsletter_builder": {
     "studio_title": "Projetar e-mail",
@@ -1222,5 +1223,37 @@
       "wrapper": "Envoltório",
       "raw": "Bruto"
     }
+  },
+  "listings_digest": {
+    "page_title": "Resumo de ofertas e pedidos",
+    "title": "Resumo de ofertas e pedidos",
+    "description": "Um e-mail aos membros com as ofertas e pedidos da sua comunidade — um motivo para voltar e trocar.",
+    "send_now": "Enviar agora",
+    "schedule_title": "Frequência",
+    "default_label": "Os membros recebem-no",
+    "frequency_monthly": "Mensal",
+    "frequency_weekly": "Semanal",
+    "frequency_off": "Desativado (os membros ainda podem ativá-lo)",
+    "default_help": "Os membros podem escolher a sua própria frequência nas definições de notificações. Isto é o que todos os outros recebem.",
+    "how_it_works": "Cada membro só recebe anúncios que nunca lhe foram enviados, nunca os seus, e nenhum e-mail quando não há nada de novo.",
+    "recipient_count_one": "{{count}} membro vai receber «Enviar agora»",
+    "recipient_count_other": "{{count}} membros vão receber «Enviar agora»",
+    "preview_title": "Pré-visualização",
+    "preview_mode_label": "O que pré-visualizar",
+    "preview_mode_all": "Enviar agora: tudo o que está a ser oferecido",
+    "preview_mode_new": "Automático: o que é novo para mim",
+    "preview_refresh": "Atualizar pré-visualização",
+    "load_failed": "Não foi possível carregar as definições do resumo",
+    "preview_failed": "Não foi possível carregar a pré-visualização",
+    "default_saved": "Frequência predefinida guardada",
+    "default_save_failed": "Não foi possível guardar a frequência predefinida",
+    "send_queued_one": "A enviar a {{count}} membro em segundo plano",
+    "send_queued_other": "A enviar a {{count}} membros em segundo plano",
+    "send_failed": "Não foi possível iniciar o envio. Tente novamente.",
+    "confirm_title": "Enviar um e-mail a todos os membros agora?",
+    "confirm_message_one": "Isto envia todas as ofertas e pedidos atuais a {{count}} membro que não desativou o resumo. Não é possível anular.",
+    "confirm_message_other": "Isto envia todas as ofertas e pedidos atuais a {{count}} membros que não desativaram o resumo. Não é possível anular.",
+    "confirm_send": "Enviar a todos",
+    "cancel": "Cancelar"
   }
 }

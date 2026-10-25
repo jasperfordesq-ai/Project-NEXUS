@@ -615,7 +615,8 @@
     "title_create": "ニュースレターを作成",
     "title_edit": "ニュースレターを編集",
     "towns_description": "カンマ区切りの町または都市。",
-    "towns_placeholder": "町または都市の名前..."
+    "towns_placeholder": "町または都市の名前...",
+    "tag_recent_listings": "最新の提供とリクエスト"
   },
   "newsletter_builder": {
     "studio_title": "メールをデザインする",
@@ -1213,5 +1214,37 @@
       "wrapper": "ラッパー",
       "raw": "未加工コンテンツ"
     }
+  },
+  "listings_digest": {
+    "page_title": "提供とリクエストのまとめ",
+    "title": "提供とリクエストのまとめ",
+    "description": "コミュニティの提供とリクエストをメンバーにお知らせするメールです。戻ってきて交換するきっかけになります。",
+    "send_now": "今すぐ送信",
+    "schedule_title": "送信頻度",
+    "default_label": "メンバーへの送信",
+    "frequency_monthly": "毎月",
+    "frequency_weekly": "毎週",
+    "frequency_off": "オフ（メンバーは自分でオンにできます）",
+    "default_help": "メンバーは通知設定で自分の頻度を選べます。ここで選んだ頻度がそれ以外のメンバーに適用されます。",
+    "how_it_works": "各メンバーには、まだ送られていない掲載だけが届きます。自分の掲載は含まれず、新しいものがなければメールは送られません。",
+    "recipient_count_one": "{{count}}人のメンバーに「今すぐ送信」が届きます",
+    "recipient_count_other": "{{count}}人のメンバーに「今すぐ送信」が届きます",
+    "preview_title": "プレビュー",
+    "preview_mode_label": "プレビューの内容",
+    "preview_mode_all": "今すぐ送信：提供されているすべて",
+    "preview_mode_new": "自動：自分にとって新しいもの",
+    "preview_refresh": "プレビューを更新",
+    "load_failed": "まとめの設定を読み込めませんでした",
+    "preview_failed": "プレビューを読み込めませんでした",
+    "default_saved": "既定の頻度を保存しました",
+    "default_save_failed": "既定の頻度を保存できませんでした",
+    "send_queued_one": "{{count}}人のメンバーにバックグラウンドで送信中です",
+    "send_queued_other": "{{count}}人のメンバーにバックグラウンドで送信中です",
+    "send_failed": "送信を開始できませんでした。もう一度お試しください。",
+    "confirm_title": "今すぐ全メンバーにメールを送りますか？",
+    "confirm_message_one": "まとめをオフにしていない{{count}}人のメンバーに、現在のすべての提供とリクエストを送信します。取り消しはできません。",
+    "confirm_message_other": "まとめをオフにしていない{{count}}人のメンバーに、現在のすべての提供とリクエストを送信します。取り消しはできません。",
+    "confirm_send": "全員に送信",
+    "cancel": "キャンセル"
   }
 }

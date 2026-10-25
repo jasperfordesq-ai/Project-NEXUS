@@ -937,5 +937,18 @@
     "revoke": "Oublier tous les appareils de confiance",
     "revoked": "Appareils de confiance supprimés. Une vérification sera nécessaire à la prochaine connexion.",
     "failed": "Impossible de terminer cette action. Vérifiez votre code et réessayez."
+  },
+  "listings_digest": {
+    "label": "Récapitulatif des offres et demandes",
+    "description": "Un e-mail avec les nouvelles offres et demandes de votre communauté. Il ne montre que des annonces que vous n'y avez pas déjà vues.",
+    "option_default": "Par défaut de la communauté ({{frequency}})",
+    "option_weekly": "Chaque semaine",
+    "option_monthly": "Chaque mois",
+    "option_off": "Désactivé",
+    "frequency_weekly": "chaque semaine",
+    "frequency_monthly": "chaque mois",
+    "frequency_off": "désactivé",
+    "saved": "Réglage du récapitulatif enregistré",
+    "save_failed": "Impossible d'enregistrer le réglage du récapitulatif"
   }
 }

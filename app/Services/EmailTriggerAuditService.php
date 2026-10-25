@@ -159,6 +159,7 @@ class EmailTriggerAuditService
             ['module' => 'digests', 'event' => 'civic_digest_claim_source', 'category' => 'civic_digest', 'critical' => false, 'source_table' => 'civic_digest_delivery_claims'],
             ['module' => 'digests', 'event' => 'federation_activity_digest', 'category' => 'federation_digest', 'critical' => false, 'source_table' => 'email_log'],
             ['module' => 'digests', 'event' => 'group_activity_digest', 'category' => 'group_digest', 'critical' => false, 'source_table' => 'email_log'],
+            ['module' => 'digests', 'event' => 'offers_and_requests_round_up', 'category' => 'listings_digest', 'critical' => false, 'source_table' => 'email_log'],
             ['module' => 'events', 'event' => 'event_created_update_cancellation_rsvp_reminder', 'category' => 'event_notification', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'safeguarding', 'event' => 'safeguarding_alerts', 'category' => 'safeguarding', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'safeguarding', 'event' => 'vetting_result', 'category' => 'vetting', 'critical' => true, 'source_table' => 'email_log'],

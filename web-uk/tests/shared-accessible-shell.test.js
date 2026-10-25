@@ -33031,6 +33031,20 @@ describe('shared accessible frontend shell', () => {
       frequency: 'daily'
     });
 
+    // The offers & requests round-up frequency is saved through its own endpoint,
+    // and an unknown value is ignored rather than sent.
+    const roundUpResponse = await post('/profile/notifications', {
+      email_messages: 'on',
+      listings_digest_frequency: 'weekly'
+    });
+    expect(roundUpResponse.headers.location).toBe('/profile/settings?status=notifications-saved#notifications');
+    expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/listings-digest', {
+      frequency: 'weekly'
+    });
+    api.callUserSettingsApi.mockClear();
+    await post('/profile/notifications', { email_messages: 'on', listings_digest_frequency: 'hourly' });
+    expect(api.callUserSettingsApi.mock.calls.some(([, , path]) => path === '/listings-digest')).toBe(false);
+
     api.callWebAuthnApi
       .mockResolvedValueOnce({ data: { security_confirmation_token: 'confirm-rename' } })
       .mockResolvedValueOnce({ data: { device_name: 'Work laptop' } });

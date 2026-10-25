@@ -158,6 +158,7 @@ const NewsletterDiagnostics = lazy(() => import('./modules/newsletters/Newslette
 const NewsletterStats = lazy(() => import('./modules/newsletters/NewsletterStats'));
 const NewsletterActivity = lazy(() => import('./modules/newsletters/NewsletterActivity'));
 const PolicyEmailStats = lazy(() => import('./modules/newsletters/PolicyEmailStats'));
+const ListingsDigestAdmin = lazy(() => import('./modules/newsletters/ListingsDigestAdmin'));
 
 // Volunteering module
 const VolunteeringOverview = lazy(() => import('./modules/volunteering/VolunteeringOverview'));
@@ -425,6 +426,9 @@ export function AdminRoutes() {
       {/* Content moderation (queue, feed, comments, reviews, reports) is fully
           retired from the admin panel (owner-approved 2026-07-02, no redirects)
           — it lives in the broker panel at /broker/moderation/*. */}
+
+      {/* Offers & requests round-up email — a listings feature, not a newsletter one */}
+      <Route path="listings-digest" element={<Lazy><ListingsDigestAdmin /></Lazy>} />
 
       {/* ─── MARKETING ─── */}
       <Route element={

@@ -4124,6 +4124,16 @@ return [
                 'daily' => 'Daily',
                 'monthly' => 'Monthly',
             ],
+            'round_up_label' => 'Offers and requests round-up',
+            'round_up_hint' => 'An email with the new offers and requests in your community. It only shows listings you have not already been sent.',
+            'round_up_options' => [
+                'default_weekly' => 'Community setting (weekly)',
+                'default_monthly' => 'Community setting (monthly)',
+                'default_off' => 'Community setting (off)',
+                'weekly' => 'Weekly',
+                'monthly' => 'Monthly',
+                'off' => 'Do not send it',
+            ],
         ],
         'passkeys' => [
             'title' => 'Passkeys',

@@ -1795,6 +1795,12 @@ class CronJobRunner
                 echo $this->runSubTask('abuse-daily-report', fn() => $this->abuseDetectionDailyReportInternal());
             }
 
+            if ($hour === 10 && $minute === 0) {
+                $taskNum++;
+                echo "\n[{$taskNum}] Offers & requests round-up...\n";
+                echo $this->runSubTask('listings-digest', fn() => $this->listingsDigestInternal());
+            }
+
             if ($hour === 8 && $minute === 0) {
                 $taskNum++;
                 echo "\n[{$taskNum}] Processing daily digest...\n";
@@ -3417,6 +3423,18 @@ class CronJobRunner
      * iterates tenants internally (same bug that caused 11× duplicate
      * gamification emails — see gamificationWeeklyDigestInternal).
      */
+    /**
+     * Offers & requests round-up (daily 10:00). Each member falls due on
+     * their own weekly/monthly interval, so most days send to few people.
+     * ListingsDigestService iterates tenants itself — do NOT wrap this in
+     * forEachTenant() (see gamificationWeeklyDigestInternal).
+     */
+    private function listingsDigestInternal(): void
+    {
+        $stats = app(\App\Services\ListingsDigestService::class)->runScheduled();
+        echo "   Communities: {$stats['tenants']}, sent: {$stats['sent']}, nothing new: {$stats['skipped_empty']}, failed: {$stats['failed']}.\n";
+    }
+
     private function groupWeeklyDigestsInternal(): void
     {
         try {
@@ -3978,6 +3996,15 @@ class CronJobRunner
         $this->startJob('gamification-cleanup');
         ob_start();
         try { $this->gamificationCleanupInternal(); $this->logJob('success', ob_get_clean()); }
+        catch (\Throwable $e) { $out = ob_get_clean(); $this->logJob('error', $out . "\n" . $e->getMessage()); }
+    }
+
+    public function listingsDigest(): void
+    {
+        $this->checkAccess();
+        $this->startJob('listings-digest');
+        ob_start();
+        try { $this->listingsDigestInternal(); $this->logJob('success', ob_get_clean()); }
         catch (\Throwable $e) { $out = ob_get_clean(); $this->logJob('error', $out . "\n" . $e->getMessage()); }
     }
 

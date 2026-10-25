@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Ní féidir níos mó ná 200 caibidil a bheith ag eipeasóid.",
   "podcasts.private_shows_disabled": "Tá seónna podchraolta príobháideacha agus do bhaill amháin díchumasaithe don phobal seo.",
   "podcasts.media_not_ready": "Tá fuaim óstáilte na heipeasóide seo fós á seiceáil nó níor éirigh léi sa bhailíochtú meán.",
-  "podcasts.external_artwork_not_allowed": "Ní mór saothar ealaíne an phodchraolta a uaslódáil chuig an ardán seo sular féidir é a úsáid."
+  "podcasts.external_artwork_not_allowed": "Ní mór saothar ealaíne an phodchraolta a uaslódáil chuig an ardán seo sular féidir é a úsáid.",
+  "listings_digest.confirm_required": "Deimhnigh gur mian leat ríomhphost a sheoladh chuig gach ball anois.",
+  "listings_digest.send_failed": "Níorbh fhéidir an achoimre a chur sa scuaine. Bain triail eile as."
 }

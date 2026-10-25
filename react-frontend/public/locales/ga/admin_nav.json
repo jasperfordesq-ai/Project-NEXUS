@@ -779,7 +779,8 @@
     "marketplace_cases": "DSA|díospóidí|gearáin|tuairiscí|cásanna",
     "registration_policy": "rialacha clárúcháin|cé atá in ann páirt a ghlacadh|fíorú aitheantais|fíorú ríomhphoist|clárú",
     "fadp": "an Eilvéis|Eilvéiseach|nDSG|cosaint sonraí|clár próiseála",
-    "stripe_account": "stripe|íocaíochtaí|cárta|banc|íocaíochtaí amach|ceangail|síntiúis"
+    "stripe_account": "stripe|íocaíochtaí|cárta|banc|íocaíochtaí amach|ceangail|síntiúis",
+    "listings_digest": "achoimre|tairiscintí|iarratais|liostaí|ríomhphost|seachtain|mí"
   },
   "user_report": "Tuairisc Úsáideoir",
   "municipal_impact": "Tuarascálacha Tionchair Chathrach",
@@ -846,5 +847,6 @@
   "permissions_list": "Liosta ceadanna",
   "fadp": "Cosaint sonraí na hEilvéise (FADP)",
   "subscriptions": "Síntiúis",
-  "stripe_account": "Cuntas Stripe"
+  "stripe_account": "Cuntas Stripe",
+  "listings_digest": "Ríomhphost tairiscintí agus iarratas"
 }

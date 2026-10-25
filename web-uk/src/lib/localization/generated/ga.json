@@ -5091,6 +5091,16 @@
                         "instant": "De réir mar a tharlaíonn sé",
                         "daily": "Laethúil",
                         "monthly": "Míosúil"
+                    },
+                    "round_up_label": "Achoimre tairiscintí agus iarratas",
+                    "round_up_hint": "Ríomhphost leis na tairiscintí agus na hiarratais nua i do phobal. Ní thaispeánann sé ach liostaí nár seoladh chugat cheana.",
+                    "round_up_options": {
+                        "default_weekly": "Socrú an phobail (gach seachtain)",
+                        "default_monthly": "Socrú an phobail (gach mí)",
+                        "default_off": "Socrú an phobail (as)",
+                        "weekly": "Gach seachtain",
+                        "monthly": "Gach mí",
+                        "off": "Ná seol é"
                     }
                 },
                 "passkeys": {

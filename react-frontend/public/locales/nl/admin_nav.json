@@ -767,7 +767,8 @@
     "marketplace_cases": "DSA|geschillen|klachten|meldingen|zaken",
     "registration_policy": "aanmeldregels|wie mag lid worden|identiteitscontrole|e-mailverificatie|registratie",
     "fadp": "Zwitserland|Zwitserse|nDSG|gegevensbescherming|verwerkingsregister",
-    "stripe_account": "stripe|betalingen|kaart|bank|uitbetalingen|koppelen|donaties"
+    "stripe_account": "stripe|betalingen|kaart|bank|uitbetalingen|koppelen|donaties",
+    "listings_digest": "overzicht|aanbod|vragen|advertenties|e-mail|wekelijks|maandelijks"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",
@@ -834,5 +835,6 @@
   "permissions_list": "Lijst met rechten",
   "fadp": "Zwitserse gegevensbescherming (FADP)",
   "subscriptions": "Abonnementen",
-  "stripe_account": "Stripe-account"
+  "stripe_account": "Stripe-account",
+  "listings_digest": "E-mail met aanbod en vragen"
 }

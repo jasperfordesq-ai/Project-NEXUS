@@ -28,7 +28,8 @@
     "marketplace_cases": "DSA|disputes|complaints|reports|cases",
     "registration_policy": "sign-up rules|who can join|identity verification|email verification|registration",
     "fadp": "Switzerland|Swiss|nDSG|revDSG|data protection|processing register",
-    "stripe_account": "stripe|payments|card|bank|payouts|connect|donations"
+    "stripe_account": "stripe|payments|card|bank|payouts|connect|donations",
+    "listings_digest": "round-up|digest|offers|requests|listings|email|weekly|monthly"
   },
   "community_fund": "Community Fund",
   "dashboard": "Dashboard",
@@ -834,5 +835,6 @@
   "permissions_list": "Permissions list",
   "fadp": "Swiss data protection (FADP)",
   "subscriptions": "Subscriptions",
-  "stripe_account": "Stripe account"
+  "stripe_account": "Stripe account",
+  "listings_digest": "Offers & requests email"
 }

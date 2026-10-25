@@ -933,5 +933,18 @@
     "revoke": "Alle vertrauenswürdigen Geräte vergessen",
     "revoked": "Vertrauenswürdige Geräte entfernt. Bei der nächsten Anmeldung ist eine Überprüfung erforderlich.",
     "failed": "Die Aktion konnte nicht abgeschlossen werden. Prüfen Sie den Code und versuchen Sie es erneut."
+  },
+  "listings_digest": {
+    "label": "Überblick über Angebote und Gesuche",
+    "description": "Eine E-Mail mit den neuen Angeboten und Gesuchen deiner Gemeinschaft. Sie zeigt nur Einträge, die du darin noch nicht gesehen hast.",
+    "option_default": "Standard der Gemeinschaft ({{frequency}})",
+    "option_weekly": "Wöchentlich",
+    "option_monthly": "Monatlich",
+    "option_off": "Aus",
+    "frequency_weekly": "wöchentlich",
+    "frequency_monthly": "monatlich",
+    "frequency_off": "aus",
+    "saved": "Einstellung für den Überblick gespeichert",
+    "save_failed": "Die Einstellung für den Überblick konnte nicht gespeichert werden"
   }
 }

@@ -621,7 +621,8 @@
     "title_edit": "Edytuj newsletter",
     "towns_description": "Miasta lub miejscowości, oddzielone przecinkami.",
     "towns_placeholder": "Nazwy miast lub miejscowości...",
-    "label_segment": "Segment"
+    "label_segment": "Segment",
+    "tag_recent_listings": "Najnowsze oferty i prośby"
   },
   "newsletter_builder": {
     "studio_title": "Projekt e-maila",
@@ -1231,5 +1232,43 @@
       "wrapper": "Opakowanie",
       "raw": "Surowy"
     }
+  },
+  "listings_digest": {
+    "page_title": "Podsumowanie ofert i próśb",
+    "title": "Podsumowanie ofert i próśb",
+    "description": "E-mail do członków z ofertami i prośbami w Twojej społeczności — powód, by wrócić i się wymieniać.",
+    "send_now": "Wyślij teraz",
+    "schedule_title": "Jak często",
+    "default_label": "Członkowie otrzymują je",
+    "frequency_monthly": "Co miesiąc",
+    "frequency_weekly": "Co tydzień",
+    "frequency_off": "Wyłączone (członkowie mogą je włączyć)",
+    "default_help": "Członkowie mogą wybrać własną częstotliwość w ustawieniach powiadomień. To otrzymują wszyscy pozostali.",
+    "how_it_works": "Każdy członek dostaje tylko ogłoszenia, których mu jeszcze nie wysłano, nigdy własnych, i żadnego e-maila, gdy nie ma nic nowego.",
+    "recipient_count_one": "Liczba członków, którzy otrzymają „Wyślij teraz”: {{count}}",
+    "recipient_count_other": "Liczba członków, którzy otrzymają „Wyślij teraz”: {{count}}",
+    "recipient_count_few": "Liczba członków, którzy otrzymają „Wyślij teraz”: {{count}}",
+    "recipient_count_many": "Liczba członków, którzy otrzymają „Wyślij teraz”: {{count}}",
+    "preview_title": "Podgląd",
+    "preview_mode_label": "Co pokazać",
+    "preview_mode_all": "Wyślij teraz: wszystko, co jest oferowane",
+    "preview_mode_new": "Automatycznie: co jest dla mnie nowe",
+    "preview_refresh": "Odśwież podgląd",
+    "load_failed": "Nie udało się wczytać ustawień podsumowania",
+    "preview_failed": "Nie udało się wczytać podglądu",
+    "default_saved": "Zapisano domyślną częstotliwość",
+    "default_save_failed": "Nie udało się zapisać domyślnej częstotliwości",
+    "send_queued_one": "Wysyłanie w tle, liczba członków: {{count}}",
+    "send_queued_other": "Wysyłanie w tle, liczba członków: {{count}}",
+    "send_queued_few": "Wysyłanie w tle, liczba członków: {{count}}",
+    "send_queued_many": "Wysyłanie w tle, liczba członków: {{count}}",
+    "send_failed": "Nie udało się rozpocząć wysyłki. Spróbuj ponownie.",
+    "confirm_title": "Wysłać teraz e-mail do wszystkich członków?",
+    "confirm_message_one": "Wszystkie aktualne oferty i prośby zostaną wysłane do członków, którzy nie wyłączyli podsumowania (liczba: {{count}}). Tej operacji nie można cofnąć.",
+    "confirm_message_other": "Wszystkie aktualne oferty i prośby zostaną wysłane do członków, którzy nie wyłączyli podsumowania (liczba: {{count}}). Tej operacji nie można cofnąć.",
+    "confirm_message_few": "Wszystkie aktualne oferty i prośby zostaną wysłane do członków, którzy nie wyłączyli podsumowania (liczba: {{count}}). Tej operacji nie można cofnąć.",
+    "confirm_message_many": "Wszystkie aktualne oferty i prośby zostaną wysłane do członków, którzy nie wyłączyli podsumowania (liczba: {{count}}). Tej operacji nie można cofnąć.",
+    "confirm_send": "Wyślij do wszystkich",
+    "cancel": "Anuluj"
   }
 }

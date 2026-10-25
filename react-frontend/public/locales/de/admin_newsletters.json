@@ -615,7 +615,8 @@
     "title_edit": "Newsletter bearbeiten",
     "towns_description": "Kommagetrennte Städte oder Ortschaften.",
     "towns_placeholder": "Stadt- oder Ortsnamen...",
-    "label_segment": "Segment"
+    "label_segment": "Segment",
+    "tag_recent_listings": "Neueste Angebote und Gesuche"
   },
   "newsletter_builder": {
     "studio_title": "E-Mail entwerfen",
@@ -1213,5 +1214,37 @@
       "wrapper": "Container",
       "raw": "Rohinhalt"
     }
+  },
+  "listings_digest": {
+    "page_title": "Überblick über Angebote und Gesuche",
+    "title": "Überblick über Angebote und Gesuche",
+    "description": "Eine E-Mail an die Mitglieder mit den Angeboten und Gesuchen deiner Gemeinschaft — ein Grund, wiederzukommen und zu tauschen.",
+    "send_now": "Jetzt senden",
+    "schedule_title": "Wie oft",
+    "default_label": "Mitglieder erhalten ihn",
+    "frequency_monthly": "Monatlich",
+    "frequency_weekly": "Wöchentlich",
+    "frequency_off": "Aus (Mitglieder können ihn trotzdem einschalten)",
+    "default_help": "Mitglieder können in ihren Benachrichtigungseinstellungen selbst wählen, wie oft. Das hier gilt für alle anderen.",
+    "how_it_works": "Jedes Mitglied bekommt nur Einträge, die ihm noch nie geschickt wurden, nie die eigenen, und keine E-Mail, wenn es nichts Neues gibt.",
+    "recipient_count_one": "{{count}} Mitglied erhält „Jetzt senden“",
+    "recipient_count_other": "{{count}} Mitglieder erhalten „Jetzt senden“",
+    "preview_title": "Vorschau",
+    "preview_mode_label": "Was soll angezeigt werden",
+    "preview_mode_all": "Jetzt senden: alle Angebote",
+    "preview_mode_new": "Automatisch: was für mich neu ist",
+    "preview_refresh": "Vorschau aktualisieren",
+    "load_failed": "Die Einstellungen konnten nicht geladen werden",
+    "preview_failed": "Die Vorschau konnte nicht geladen werden",
+    "default_saved": "Standardhäufigkeit gespeichert",
+    "default_save_failed": "Die Standardhäufigkeit konnte nicht gespeichert werden",
+    "send_queued_one": "Wird im Hintergrund an {{count}} Mitglied gesendet",
+    "send_queued_other": "Wird im Hintergrund an {{count}} Mitglieder gesendet",
+    "send_failed": "Der Versand konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "confirm_title": "Jetzt allen Mitgliedern eine E-Mail senden?",
+    "confirm_message_one": "Damit gehen alle aktuellen Angebote und Gesuche an {{count}} Mitglied, das den Überblick nicht abbestellt hat. Das lässt sich nicht rückgängig machen.",
+    "confirm_message_other": "Damit gehen alle aktuellen Angebote und Gesuche an {{count}} Mitglieder, die den Überblick nicht abbestellt haben. Das lässt sich nicht rückgängig machen.",
+    "confirm_send": "An alle senden",
+    "cancel": "Abbrechen"
   }
 }

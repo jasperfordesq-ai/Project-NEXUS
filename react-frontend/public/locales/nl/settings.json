@@ -933,5 +933,18 @@
     "revoke": "Alle vertrouwde apparaten vergeten",
     "revoked": "Vertrouwde apparaten verwijderd. Bij de volgende aanmelding is verificatie nodig.",
     "failed": "De actie kon niet worden voltooid. Controleer uw code en probeer het opnieuw."
+  },
+  "listings_digest": {
+    "label": "Overzicht van aanbod en vragen",
+    "description": "Een e-mail met het nieuwe aanbod en de nieuwe vragen in je gemeenschap. Je ziet er alleen advertenties in die je er nog niet eerder in zag.",
+    "option_default": "Standaard van de gemeenschap ({{frequency}})",
+    "option_weekly": "Wekelijks",
+    "option_monthly": "Maandelijks",
+    "option_off": "Uit",
+    "frequency_weekly": "wekelijks",
+    "frequency_monthly": "maandelijks",
+    "frequency_off": "uit",
+    "saved": "Instelling voor het overzicht opgeslagen",
+    "save_failed": "Instelling voor het overzicht kon niet worden opgeslagen"
   }
 }

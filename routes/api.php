@@ -804,6 +804,10 @@ Route::delete('/v2/users/me', [\App\Http\Controllers\Api\UsersController::class,
 Route::get('/v2/users/me/listings', [\App\Http\Controllers\Api\UsersController::class, 'myListings']);
 Route::get('/v2/users/me/notifications', [\App\Http\Controllers\Api\UsersController::class, 'notificationPreferences']);
 Route::put('/v2/users/me/notifications', [\App\Http\Controllers\Api\UsersController::class, 'updateNotificationPreferences']);
+Route::get('/v2/users/me/listings-digest', [\App\Http\Controllers\Api\ListingsDigestController::class, 'showMine'])
+    ->middleware('module:listings');
+Route::put('/v2/users/me/listings-digest', [\App\Http\Controllers\Api\ListingsDigestController::class, 'updateMine'])
+    ->middleware('module:listings');
 Route::put('/v2/users/me/notification-settings', [\App\Http\Controllers\Api\NotificationSettingsController::class, 'update'])
     ->middleware('module:notifications');
 Route::get('/v2/users/me/consent', [\App\Http\Controllers\Api\UsersController::class, 'getConsent']);
@@ -2748,6 +2752,11 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/insurance/{id}/reject', [\App\Http\Controllers\Api\AdminInsuranceCertificateController::class, 'reject']);
     Route::delete('/v2/admin/insurance/{id}', [\App\Http\Controllers\Api\AdminInsuranceCertificateController::class, 'destroy']);
 });
+// Offers & requests round-up email (ListingsDigestService)
+Route::get('/v2/admin/listings-digest', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminShow']);
+Route::put('/v2/admin/listings-digest', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminUpdate']);
+Route::get('/v2/admin/listings-digest/preview', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminPreview']);
+Route::post('/v2/admin/listings-digest/send', [\App\Http\Controllers\Api\ListingsDigestController::class, 'adminSend']);
 Route::get('/v2/admin/newsletters', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'index']);
 Route::post('/v2/admin/newsletters', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'store']);
 Route::get('/v2/admin/newsletters/subscribers', [\App\Http\Controllers\Api\AdminNewsletterController::class, 'subscribers']);

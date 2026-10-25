@@ -4058,6 +4058,16 @@ return [
                 'daily' => 'Diariamente',
                 'monthly' => 'Mensalmente',
             ],
+            'round_up_label' => 'Resumo de ofertas e pedidos',
+            'round_up_hint' => 'Um e-mail com as novas ofertas e pedidos da sua comunidade. Só mostra anúncios que ainda não lhe foram enviados.',
+            'round_up_options' => [
+                'default_weekly' => 'Definição da comunidade (semanal)',
+                'default_monthly' => 'Definição da comunidade (mensal)',
+                'default_off' => 'Definição da comunidade (desativado)',
+                'weekly' => 'Semanal',
+                'monthly' => 'Mensal',
+                'off' => 'Não enviar',
+            ],
         ],
         'passkeys' => [
             'title' => 'Chaves de acesso',

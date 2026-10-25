@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "Les épisodes peuvent contenir au maximum 200 chapitres.",
   "podcasts.private_shows_disabled": "Les émissions de podcast privées et réservées aux membres sont désactivées pour cette communauté.",
   "podcasts.media_not_ready": "L'audio hébergé de cet épisode est encore en cours de vérification ou n'a pas réussi la validation.",
-  "podcasts.external_artwork_not_allowed": "L'illustration du podcast doit être téléversée sur cette plateforme avant utilisation."
+  "podcasts.external_artwork_not_allowed": "L'illustration du podcast doit être téléversée sur cette plateforme avant utilisation.",
+  "listings_digest.confirm_required": "Confirmez que vous voulez envoyer un e-mail à tous les membres maintenant.",
+  "listings_digest.send_failed": "Le récapitulatif n'a pas pu être mis en file d'attente. Veuillez réessayer."
 }

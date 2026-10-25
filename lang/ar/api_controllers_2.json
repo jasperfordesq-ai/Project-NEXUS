@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "يمكن أن تحتوي الحلقة على 200 فصل كحد أقصى.",
   "podcasts.private_shows_disabled": "برامج البودكاست الخاصة والمقتصرة على الأعضاء معطّلة لهذا المجتمع.",
   "podcasts.media_not_ready": "لا يزال الصوت المستضاف لهذه الحلقة قيد الفحص أو لم يجتز التحقق من الوسائط.",
-  "podcasts.external_artwork_not_allowed": "يجب رفع صورة البودكاست إلى هذه المنصة قبل استخدامها."
+  "podcasts.external_artwork_not_allowed": "يجب رفع صورة البودكاست إلى هذه المنصة قبل استخدامها.",
+  "listings_digest.confirm_required": "أكّد أنك تريد مراسلة جميع الأعضاء الآن.",
+  "listings_digest.send_failed": "تعذّر وضع الملخص في قائمة الإرسال. يُرجى المحاولة مرة أخرى."
 }

@@ -22756,6 +22756,7 @@ export default interface Resources {
     "landing_page": "Landing Page",
     "legal_documents": "Legal Documents",
     "listings": "Listings",
+    "listings_digest": "Offers & requests email",
     "logout": "Log Out",
     "marketing": "Marketing",
     "marketplace": "Marketplace & Freecycle",
@@ -22842,6 +22843,7 @@ export default interface Resources {
       "group_join_requests": "membership requests|pending members|join group|approvals",
       "groups": "clubs|circles|communities",
       "help_faqs": "frequently asked questions|questions|help centre|answers",
+      "listings_digest": "round-up|digest|offers|requests|listings|email|weekly|monthly",
       "marketplace_cases": "DSA|disputes|complaints|reports|cases",
       "native_app": "native app|mobile app|android|ios|installs|installations|push|device|play store",
       "outbound_webhooks": "webhooks|integration|crm|api|notify another system",
@@ -23148,6 +23150,38 @@ export default interface Resources {
         "tablet": "Tablet",
         "undo": "Undo"
       }
+    },
+    "listings_digest": {
+      "cancel": "Cancel",
+      "confirm_message_one": "This emails every current offer and request to {{count}} member who has not turned the round-up off. It cannot be undone.",
+      "confirm_message_other": "This emails every current offer and request to {{count}} members who have not turned the round-up off. It cannot be undone.",
+      "confirm_send": "Send to everyone",
+      "confirm_title": "Email every member now?",
+      "default_help": "Members can choose their own frequency in their notification settings. This is what everyone else gets.",
+      "default_label": "Members get it",
+      "default_save_failed": "Could not save the default frequency",
+      "default_saved": "Default frequency saved",
+      "description": "An email to members with the offers and requests in your community — a reason to come back and trade.",
+      "frequency_monthly": "Monthly",
+      "frequency_off": "Off (members can still turn it on)",
+      "frequency_weekly": "Weekly",
+      "how_it_works": "Each member only gets listings they haven't been sent before, never their own, and no email when there is nothing new.",
+      "load_failed": "Could not load the round-up settings",
+      "page_title": "Offers & requests round-up",
+      "preview_failed": "Could not load the preview",
+      "preview_mode_all": "Send now: everything on offer",
+      "preview_mode_label": "What to preview",
+      "preview_mode_new": "Automatic: what is new for me",
+      "preview_refresh": "Refresh preview",
+      "preview_title": "Preview",
+      "recipient_count_one": "{{count}} member will get “Send now”",
+      "recipient_count_other": "{{count}} members will get “Send now”",
+      "schedule_title": "How often",
+      "send_failed": "Could not start sending. Please try again.",
+      "send_now": "Send now",
+      "send_queued_one": "Sending to {{count}} member in the background",
+      "send_queued_other": "Sending to {{count}} members in the background",
+      "title": "Offers & requests round-up"
     },
     "newsletter_activity": {
       "all_events": "All events",
@@ -23597,6 +23631,7 @@ export default interface Resources {
       "tag_first_name": "First name",
       "tag_full_name": "Full name",
       "tag_last_name": "Last name",
+      "tag_recent_listings": "Latest offers & requests",
       "tag_tenant_name": "Community name",
       "tag_unsubscribe_link": "Unsubscribe link",
       "test_email_sent": "Test email sent",
@@ -45783,6 +45818,10 @@ export default interface Resources {
       "view_event": "View event",
       "workspace_label": "Event operations"
     },
+    "my_events": {
+      "button": "My Events",
+      "empty": "You haven't organised or signed up to go to any events yet."
+    },
     "near_me": "Near me",
     "near_me_no_location": "Set your location in your profile to use Near me",
     "nearby_error": "Unable to load nearby events",
@@ -56499,7 +56538,8 @@ export default interface Resources {
         "bonus": "Bonus",
         "full": "Full episode",
         "trailer": "Trailer"
-      }
+      },
+      "unlisted_notice": "Listeners cannot see or hear this episode yet. You can because you manage this podcast. Publish it from Podcast Studio when it is ready."
     },
     "fields": {
       "artwork_file": "Show artwork",
@@ -56583,6 +56623,7 @@ export default interface Resources {
       "subscribe": "Follow show",
       "subscribe_failed": "Could not update follow preference.",
       "subscribed": "Show followed.",
+      "unlisted_notice": "Episodes with a label are not available to listeners yet. You can see them because you manage this podcast.",
       "unsubscribe": "Unfollow show",
       "unsubscribed": "Show unfollowed."
     },
@@ -58740,6 +58781,19 @@ export default interface Resources {
     "language": "Language",
     "language_appearance": "Language & Appearance",
     "language_preference": "Language Preference",
+    "listings_digest": {
+      "description": "An email with the new offers and requests in your community. It only ever shows listings you have not seen in it before.",
+      "frequency_monthly": "monthly",
+      "frequency_off": "off",
+      "frequency_weekly": "weekly",
+      "label": "Offers & requests round-up",
+      "option_default": "Community default ({{frequency}})",
+      "option_monthly": "Monthly",
+      "option_off": "Off",
+      "option_weekly": "Weekly",
+      "save_failed": "Could not save your round-up email setting",
+      "saved": "Round-up email setting saved"
+    },
     "log_out": "Log Out",
     "logout_modal": {
       "confirm_message": "Are you sure you want to log out of your account?",

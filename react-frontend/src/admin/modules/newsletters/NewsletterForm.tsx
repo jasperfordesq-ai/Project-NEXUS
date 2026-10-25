@@ -69,6 +69,8 @@ const personalizationTags = [
   { token: '{{email}}', labelKey: 'newsletter_form.tag_email' },
   { token: '{{tenant_name}}', labelKey: 'newsletter_form.tag_tenant_name' },
   { token: '{{unsubscribe_link}}', labelKey: 'newsletter_form.tag_unsubscribe_link' },
+  // Replaced with the newest offers & requests as cards (ListingsDigestService::newsletterBlock).
+  { token: '{{recent_listings}}', labelKey: 'newsletter_form.tag_recent_listings' },
 ];
 
 const listToCsv = (value: unknown): string => {

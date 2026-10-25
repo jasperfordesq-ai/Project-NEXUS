@@ -28,6 +28,9 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => children,
 }));
 
+// The round-up control loads and saves on its own; it has its own tests.
+vi.mock('./ListingsDigestSetting', () => ({ ListingsDigestSetting: () => null }));
+
 const mockHasModule = vi.fn(() => true);
 const mockHasFeature = vi.fn(() => true);
 

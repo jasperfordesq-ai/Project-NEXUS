@@ -247,5 +247,7 @@
   "podcasts.too_many_chapters": "エピソードのチャプターは最大200個までです。",
   "podcasts.private_shows_disabled": "このコミュニティでは、非公開およびメンバー限定のポッドキャスト番組は無効になっています。",
   "podcasts.media_not_ready": "このエピソードの音声は確認中か、メディア検証に合格していません。",
-  "podcasts.external_artwork_not_allowed": "ポッドキャスト画像は、使用する前にこのプラットフォームへアップロードする必要があります。"
+  "podcasts.external_artwork_not_allowed": "ポッドキャスト画像は、使用する前にこのプラットフォームへアップロードする必要があります。",
+  "listings_digest.confirm_required": "今すぐ全メンバーにメールを送ることを確認してください。",
+  "listings_digest.send_failed": "まとめを送信キューに追加できませんでした。もう一度お試しください。"
 }

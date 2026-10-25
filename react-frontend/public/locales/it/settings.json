@@ -937,5 +937,18 @@
     "revoke": "Dimentica tutti i dispositivi attendibili",
     "revoked": "Dispositivi attendibili rimossi. Sarà necessaria la verifica al prossimo accesso.",
     "failed": "Impossibile completare l’azione. Controlla il codice e riprova."
+  },
+  "listings_digest": {
+    "label": "Riepilogo di offerte e richieste",
+    "description": "Un'email con le nuove offerte e richieste della tua comunità. Mostra solo annunci che non hai già visto nel riepilogo.",
+    "option_default": "Predefinito della comunità ({{frequency}})",
+    "option_weekly": "Settimanale",
+    "option_monthly": "Mensile",
+    "option_off": "Disattivato",
+    "frequency_weekly": "settimanale",
+    "frequency_monthly": "mensile",
+    "frequency_off": "disattivato",
+    "saved": "Impostazione del riepilogo salvata",
+    "save_failed": "Impossibile salvare l'impostazione del riepilogo"
   }
 }

@@ -615,7 +615,8 @@
     "title_edit": "Edit newsletter",
     "towns_description": "Comma-separated towns or cities.",
     "towns_placeholder": "Town or city names...",
-    "unable_to_calculate": "Unable to calculate"
+    "unable_to_calculate": "Unable to calculate",
+    "tag_recent_listings": "Latest offers & requests"
   },
   "newsletter_builder": {
     "studio_title": "Design email",
@@ -1213,5 +1214,37 @@
       "wrapper": "Wrapper",
       "raw": "Raw"
     }
+  },
+  "listings_digest": {
+    "page_title": "Offers & requests round-up",
+    "title": "Offers & requests round-up",
+    "description": "An email to members with the offers and requests in your community — a reason to come back and trade.",
+    "send_now": "Send now",
+    "schedule_title": "How often",
+    "default_label": "Members get it",
+    "frequency_monthly": "Monthly",
+    "frequency_weekly": "Weekly",
+    "frequency_off": "Off (members can still turn it on)",
+    "default_help": "Members can choose their own frequency in their notification settings. This is what everyone else gets.",
+    "how_it_works": "Each member only gets listings they haven't been sent before, never their own, and no email when there is nothing new.",
+    "recipient_count_one": "{{count}} member will get “Send now”",
+    "recipient_count_other": "{{count}} members will get “Send now”",
+    "preview_title": "Preview",
+    "preview_mode_label": "What to preview",
+    "preview_mode_all": "Send now: everything on offer",
+    "preview_mode_new": "Automatic: what is new for me",
+    "preview_refresh": "Refresh preview",
+    "load_failed": "Could not load the round-up settings",
+    "preview_failed": "Could not load the preview",
+    "default_saved": "Default frequency saved",
+    "default_save_failed": "Could not save the default frequency",
+    "send_queued_one": "Sending to {{count}} member in the background",
+    "send_queued_other": "Sending to {{count}} members in the background",
+    "send_failed": "Could not start sending. Please try again.",
+    "confirm_title": "Email every member now?",
+    "confirm_message_one": "This emails every current offer and request to {{count}} member who has not turned the round-up off. It cannot be undone.",
+    "confirm_message_other": "This emails every current offer and request to {{count}} members who have not turned the round-up off. It cannot be undone.",
+    "confirm_send": "Send to everyone",
+    "cancel": "Cancel"
   }
 }

@@ -742,6 +742,35 @@ class NewsletterService
         ];
     }
 
+    /** @var array<string, string> rendered {{recent_listings}} blocks, per tenant + locale + hour */
+    private static array $recentListingsBlocks = [];
+
+    /** Plain-text stand-in for {{recent_listings}}: the community's listings page. */
+    private static function listingsPageUrl(): string
+    {
+        return TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/listings';
+    }
+
+    /**
+     * The {{recent_listings}} block for the current tenant, rendered once per
+     * tenant, locale and hour rather than once per recipient.
+     */
+    private static function recentListingsBlock(): string
+    {
+        $tenantId = (int) TenantContext::getId();
+        $key = $tenantId . '|' . (app()->getLocale() ?: 'en') . '|' . date('YmdH');
+        if (!isset(self::$recentListingsBlocks[$key])) {
+            try {
+                self::$recentListingsBlocks[$key] = app(\App\Services\ListingsDigestService::class)->newsletterBlock($tenantId);
+            } catch (\Throwable $e) {
+                Log::error('Newsletter: {{recent_listings}} block failed', ['tenant_id' => $tenantId, 'error' => $e->getMessage()]);
+                self::$recentListingsBlocks[$key] = '';
+            }
+        }
+
+        return self::$recentListingsBlocks[$key];
+    }
+
     /**
      * Personalize + token-replace + tracked-link-wrap HTML-bearing content.
      * Shared by richtext, html and builder formats.
@@ -750,6 +779,12 @@ class NewsletterService
     {
         if ($recipient) {
             $content = self::personalizeContent($content, $recipient);
+        }
+
+        // {{recent_listings}} → the newest offers and requests as cards, the
+        // same cards as the offers & requests round-up email.
+        if (str_contains($content, '{{recent_listings}}')) {
+            $content = str_replace('{{recent_listings}}', self::recentListingsBlock(), $content);
         }
 
         // {{unsubscribe_link}} → a full <a> element (drop into body text).
@@ -958,8 +993,8 @@ HTML;
             $text = self::personalizeContentRaw($text, $recipient);
         }
         $text = str_replace(
-            ['{{tenant_name}}', '{{unsubscribe_link}}', '{{unsubscribe_url}}'],
-            [$tenantName, $chrome['unsubscribeUrl'], $chrome['unsubscribeUrl']],
+            ['{{tenant_name}}', '{{unsubscribe_link}}', '{{unsubscribe_url}}', '{{recent_listings}}'],
+            [$tenantName, $chrome['unsubscribeUrl'], $chrome['unsubscribeUrl'], self::listingsPageUrl()],
             $text
         );
 
@@ -1010,8 +1045,8 @@ HTML;
                 $text = self::personalizeContentRaw($text, $recipient);
             }
             $text = str_replace(
-                ['{{tenant_name}}', '{{unsubscribe_link}}'],
-                [$tenantName, $chrome['unsubscribeUrl']],
+                ['{{tenant_name}}', '{{unsubscribe_link}}', '{{recent_listings}}'],
+                [$tenantName, $chrome['unsubscribeUrl'], self::listingsPageUrl()],
                 $text
             );
 

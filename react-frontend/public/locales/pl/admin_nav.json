@@ -775,7 +775,8 @@
     "marketplace_cases": "DSA|spory|skargi|zgłoszenia|sprawy",
     "registration_policy": "zasady zapisu|kto może dołączyć|weryfikacja tożsamości|weryfikacja e-mail|rejestracja",
     "fadp": "Szwajcaria|szwajcarska|nDSG|ochrona danych|rejestr czynności przetwarzania",
-    "stripe_account": "stripe|płatności|karta|bank|wypłaty|połącz|darowizny"
+    "stripe_account": "stripe|płatności|karta|bank|wypłaty|połącz|darowizny",
+    "listings_digest": "podsumowanie|oferty|prośby|ogłoszenia|e-mail|tygodniowy|miesięczny"
   },
   "user_report": "Raport użytkownika",
   "municipal_impact": "Miejskie raporty oddziaływania",
@@ -842,5 +843,6 @@
   "permissions_list": "Lista uprawnień",
   "fadp": "Szwajcarska ochrona danych (FADP)",
   "subscriptions": "Subskrypcje",
-  "stripe_account": "Konto Stripe"
+  "stripe_account": "Konto Stripe",
+  "listings_digest": "E-mail z ofertami i prośbami"
 }

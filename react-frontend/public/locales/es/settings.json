@@ -937,5 +937,18 @@
     "revoke": "Olvidar todos los dispositivos de confianza",
     "revoked": "Dispositivos de confianza eliminados. Deberán verificarse al volver a iniciar sesión.",
     "failed": "No se pudo completar la acción. Comprueba tu código e inténtalo de nuevo."
+  },
+  "listings_digest": {
+    "label": "Resumen de ofertas y solicitudes",
+    "description": "Un correo con las nuevas ofertas y solicitudes de tu comunidad. Solo muestra anuncios que aún no has visto en él.",
+    "option_default": "Predeterminado de la comunidad ({{frequency}})",
+    "option_weekly": "Semanal",
+    "option_monthly": "Mensual",
+    "option_off": "Desactivado",
+    "frequency_weekly": "semanal",
+    "frequency_monthly": "mensual",
+    "frequency_off": "desactivado",
+    "saved": "Ajuste del resumen guardado",
+    "save_failed": "No se pudo guardar el ajuste del resumen"
   }
 }

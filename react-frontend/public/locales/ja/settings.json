@@ -933,5 +933,18 @@
     "revoke": "すべての信頼済みデバイスを削除",
     "revoked": "信頼済みデバイスを削除しました。次回のログイン時に認証が必要です。",
     "failed": "操作を完了できませんでした。コードを確認して再試行してください。"
+  },
+  "listings_digest": {
+    "label": "提供とリクエストのまとめ",
+    "description": "コミュニティの新しい提供とリクエストをお知らせするメールです。以前にまとめで見た掲載は表示されません。",
+    "option_default": "コミュニティの既定（{{frequency}}）",
+    "option_weekly": "毎週",
+    "option_monthly": "毎月",
+    "option_off": "オフ",
+    "frequency_weekly": "毎週",
+    "frequency_monthly": "毎月",
+    "frequency_off": "オフ",
+    "saved": "まとめメールの設定を保存しました",
+    "save_failed": "まとめメールの設定を保存できませんでした"
   }
 }
