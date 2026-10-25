@@ -24,6 +24,24 @@ Last reviewed: 2026-10-25 (two code-led audit passes).
 - [Testing](system/TESTING.md), [local development](system/LOCAL_DEVELOPMENT.md), [configuration](system/CONFIGURATION.md), [operator hub](system/README.md).
 - [Documentation governance](DOCUMENTATION_GOVERNANCE.md), [decision index](decisions/README.md), [user guidance](user/README.md), [admin guidance](admin/README.md), [API guidance](api/README.md).
 
+## Detail removed on 25 October, and where it is
+
+The Codex documentation pass (`7bad16055`) cut about 4,800 lines from the maintained
+references. `API_PARITY.md`, `SCHEMA_PARITY.md`, `CONTRACT_PARITY_PLAN.md`,
+`FRONTEND_PARITY.md`, `CURRENT_SCHEMA_READINESS.md`, `ARCHITECTURE.md` and `MODULES.md`
+each shrank to a short summary. Much of what was removed was dated evidence. But
+`CONTRACT_PARITY_PLAN.md` also held the working method a restart will need: the
+disposable Laravel on `:8091`, the parity fixtures (`scripts/parity-fixture.sql`,
+`scripts/parity-fixture-aspnet.sql`), the signed-in comparison, the consumed-field
+differ (`scripts/build-parity-corpus.mjs`, `scripts/rank-read-differences.mjs`) and
+the React smoke control arm. The previous text is in git. Read any of these with:
+
+```bash
+git show 7bad16055^:aspnet-backend/docs/CONTRACT_PARITY_PLAN.md
+```
+
+Treat its numbers as August history, not current status.
+
 ## Historical evidence
 
 [Journey ledger](JOURNEY_CERTIFICATION_LEDGER.md), prior score sections and dated handoffs retain their original dates. They are not current passes. Build/unit results, generated inventories and frontend production scores cannot certify backend interchangeability. The first-pass and deeper audit reports and raw evidence are in the ignored local archive; a fresh clone carries the curated current findings above, not that machine-local bundle.

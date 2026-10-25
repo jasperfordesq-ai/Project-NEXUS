@@ -1,5 +1,106 @@
 # Current ASP.NET contract status
 
+## Independent verification — 25 October 2026 (second reviewer)
+
+The owner asked for an independent check of the Codex audit recorded below.
+Every Codex finding was re-traced from source (frontend caller → selected
+ASP.NET action, including `AdminV2RouteAliasConvention` aliases and the
+`LaravelDataEnvelopeFilter` → Laravel handler), and journeys Codex did not cover
+were audited fresh. The Release solution was rebuilt at `206aff531`: zero errors,
+33 warnings. Nothing was executed against a database, server or browser; every
+verdict below is from source, and the "Not verified" list at the end is part of
+the result.
+
+**Verdict: ASP.NET is not interchangeable with Laravel for either unchanged web
+frontend, and a new ASP.NET installation cannot be set up.** The Codex findings
+are accurate. None was refuted; a few are overstated, several understated, and
+the fresh pass found blockers Codex missed, including some in the most basic
+journeys.
+
+### Why the gap is larger than in August
+
+The August journey certifications (historical record below) were real at the
+time, but the target has moved while ASP.NET stood still. Between the pause on
+2026-09-11 and `206aff531`, `aspnet-backend/src` received 2 commits; React
+`src/` received 492, `web-uk/src` 120, `app/` 808, and `routes/api.php` gained
+about 181 route declarations. Example: React's browser login now requires the
+`session_binding` / HttpOnly refresh-cookie contract (`a9df1e55d`, 2026-09-24),
+which ASP.NET never implemented, so the August-certified login and refresh rows
+(1.6, 1.7) no longer hold against today's client. The gap will keep widening for as
+long as Laravel and the frontends change and ASP.NET does not. Any restart plan
+needs a mechanism that detects drift on every Laravel/frontend change, not a
+one-off audit.
+
+### Codex findings — verification result
+
+| Codex ID | Result | Correction or addition |
+| --- | --- | --- |
+| R-01, R-02 | Confirmed | Also breaks the 2FA login path (`TotpController.cs:169` issues no binding). |
+| R-03, R-04, R-06, R-08 | Confirmed | — |
+| R-05 | Confirmed | P2 is the fairer severity; polling still refreshes messages. |
+| R-07 | Confirmed | A real `LegalDocumentService` and admin controller exist at `api/admin/legal/documents` (`LegalDocumentsController.cs`), and the member acceptance gate uses real documents. The React admin calls the fabricated `/v2/admin/legal-documents` handlers instead, so admins see "no documents" while members must still accept real ones. The repair is mostly rewiring, not building. |
+| W-01, W-02, W-04 to W-07 | Confirmed | W-03 and W-07 also affect React (`ReportProblemButton.tsx` sends multipart; `AuthContext.tsx` sends `trust_device`). |
+| W-08 | Confirmed, **and it is a live Laravel defect** | Laravel refuses any `certificate_file` (`UserInsuranceController.php:38`, since `70047c526`, 2026-07-14), but web-uk requires one (`routes/settings.js`) and always sends it (`lib/api.js` `uploadInsuranceCertificate`). The accessible-site insurance form cannot succeed against production today. Fix it in normal bug triage, independently of ASP.NET. |
+| B-01 to B-04, B-06 | Confirmed | B-03 also covers `groups/bulk-unarchive` (`AdminExplicitParityController.cs:587`). |
+| B-05 | Confirmed | Arguably P1: payment recipients are never told they were paid. |
+| Goal routes and writes | Confirmed | Also fake: goal `from-template` (returns `id=0`) and add-buddy (`CompatibilityAliasController.cs:988-1014`). `GET /v2/goals/{id}/buddy-requests` and accept/decline have no ASP.NET route. A bodyless legacy DELETE likely fails binding (non-nullable `[FromBody] JsonElement`). |
+| D-P01 (33 ambiguous routes) | Mechanism confirmed; impact partly overstated | Root cause: the alias convention de-duplicates only on identical template text, so `{groupId:int}` versus `{id:int}` slips through. Controller-level aliases never consult action routes. Group scheduled posts and `notification-prefs` are consumed by both clients. The `skills/my` examples are not consumed (React uses `/v2/users/me/skills`). The third `users/me/listings` "collision" is only a listed candidate, not a tie. Missed by Codex: web-uk `DELETE /api/ai/conversations/{id}` is one of the 33. Fixing the 33 one by one will not stop new collisions; the convention itself needs a method-and-pattern-aware duplicate check. |
+| DR-01 to DR-05, D-W01 to D-W06, D-B01 to D-B03 | Confirmed | DR-03: the ASP.NET `Listing` entity has no moderation-status column at all, so part of the fix is schema. DR-02: the correct owner-filtered handler exists (`CompatibilityController.GetUserListings`) but is outranked by the constrained route. D-W03 is arguably P1 (managers see no applicants). D-W04: JSON is certainly rejected (415), not "possibly". D-W06: a repeat dismissal returns 400 where Laravel is idempotent. |
+| DR-06 | Confirmed and understated | React's "join waitlist" (`POST /v2/events/{id}/waitlist`) is routed to the same `V2Rsvp` action, which defaults to `going`, so joining a waitlist confirms a place. `GET .../waitlist` returns an empty stub. |
+| D-B04 | Partly | Codex's claim that "a complete file search has no `push_enabled` reference" is wrong: `EventNotificationPreferenceResolver.cs:53` honours it for event invitations. The gap holds for every generic `SendPushAsync` producer. |
+| Durability candidates | Confirmed as source windows only | Not fault-injected. |
+
+### New findings (not in the Codex audit)
+
+| ID | Priority | Finding | Evidence |
+| --- | --- | --- | --- |
+| V-01 | P1 | **A new installation cannot create its first community or administrator.** Seeding runs only in Development (fictitious `acme`/`globex` with published passwords) or as the opt-in demo showcase. No migration inserts a tenant, and tenant creation through the API needs an existing platform super admin. A fresh production database answers "No active tenant found". Laravel's `TenantSeeder` creates the master tenant and a super admin from `NEXUS_BOOTSTRAP_ADMIN_PASSWORD`. | `Program.cs:466-486`, `Data/SeedData.cs`, `AdminCompatibility3Controller.cs` (`PlatformSuperAdminOnly`); Laravel `database/seeders/TenantSeeder.php` |
+| V-02 | P1 (security, not deployed) | **Any signed-in member can set any member's attendance on any event.** `V2Rsvp` takes `user_id` from the request body (`GetInt(body, "user_id") ?? CurrentUserId()`) behind a plain `[Authorize]`. It serves `/attendance`, `/attendance/bulk`, `/attendees/{attendeeId}/check-in` (ignoring `attendeeId` and always answering `checked_in = true`) and `/waitlist`. ASP.NET is not deployed, so no one is exposed. It must be fixed before any ASP.NET release. Recorded here rather than in the security register because ASP.NET is outside every security engagement's scope (ADR-0005). | `V15MemberParityController.cs:610-636` |
+| V-03 | P1 | **Admin "approve member" does not let the member sign in.** The endpoint sets only `IsActive`. Login still refuses `PendingAdminReview`, and the member drops off the pending list, so the account looks approved. The correct transition (`RegistrationOrchestrator.AdminApproveAsync`) is reachable only on a route no frontend calls. | `AdminCompatibilityController.cs:453-475`, `AuthController.cs:337-341`, `RegistrationPolicyController.cs:520` |
+| V-04 | P1 | **Email verification cannot complete from either frontend.** Both clients post an anonymous `{token}` from an emailed link. ASP.NET requires sign-in, reads a 6-digit `code`, and emails a code, not a link. web-uk's resend endpoint is a stub that reports "sent". Separately, ASP.NET's Standard registration mode activates accounts without any email verification, where Laravel always requires it (a policy difference). | `AuthController.cs:1374-1376`, `:1007-1020`, `:1636-1640`; `CompatibilityAliasController.cs:2921-2925`; `RegistrationOrchestrator.cs:118-125` |
+| V-05 | P1 | **Registration in approval-mode communities leaves React falsely "signed in".** ASP.NET returns 201 with no tokens and no `requires_approval`/`requires_verification` flags, so React takes its "no gates" path. | `AuthController.cs:1046-1107`; React `AuthContext.tsx:808-858`; Laravel `RegistrationService.php:640-673` |
+| V-06 | P1 | **New members have no starting balance, so the first exchange fails.** Laravel grants the configured starting balance (default 5 h) on activation and on admin creation. ASP.NET grants none automatically, and settlement refuses with InsufficientBalance. | `ExchangeService.cs:491-503`; Laravel `StartingBalanceService.php`, `RegistrationService.php:744` |
+| V-07 | P1 | **Exchanges send no notifications at any step.** `ExchangeService` has no notification dependency, and `SendExchangeNotificationAsync` has no callers. Laravel notifies on request, accept, decline, approve, reject and pending-broker. | `ExchangeService.cs:75-91`, `EmailNotificationService.cs:193`; Laravel `ExchangeWorkflowService.php:167-344` |
+| V-08 | P1 | **Creating a group from React fails (415).** React always sends multipart; ASP.NET binds JSON only. web-uk sends JSON, so it works there. | `GroupsController.cs:423-425`; React `groupForm.ts`, `CreateGroupPage.tsx` |
+| V-09 | P1 | **Feed posts with an image fail from both clients (415).** Text posts work, but `visibility`, `publish_status` and `scheduled_at` are ignored, so scheduled posts publish immediately. | `V15SocialCompatibilityController.cs:346-349`; React `PostTab.tsx`; web-uk `api.js` |
+| V-10 | P1 | **The admin module switches do nothing, and every module shows as on.** Writes go to `modules.{x}`, bootstrap reads `module.{x}`, and `GET /v2/admin/config` returns a shape React does not read. Feature toggles (`features.`) do work. | `AdminCompatibilityController.cs:1304-1320`, `CompatibilityController.cs:2068-2084`, `AdminController.cs:1182-1203`; React `ModuleConfiguration.tsx` |
+| V-11 | P1 | **Listing image upload, delete, reorder, renew, report and analytics are success-shaped stubs.** | `V15MemberParityController.cs:1157-1165`; React `ListingForm.tsx` |
+| V-12 | P2 | **Wallet history shows at most 20 rows with a blank counterparty.** It ignores `per_page`/`cursor`/`type`, returns no cursor, and omits `other_user`. | `V15MemberParityController.cs:1315-1340`; React `WalletPage.tsx` |
+| V-13 | P2 | **The default avatar image is missing**, so members without a photo show a broken image. | React `helpers.ts:137`; ASP.NET `wwwroot` has no `assets/img/defaults` |
+| V-14 | P1 | **Most recurring member-facing jobs have no ASP.NET equivalent.** Missing: notification email queue and daily/monthly digests, newsletters, event reminders, event broadcast and message-delivery outboxes, match digests, listing-expiry reminders, listings round-up, gamification daily/streaks, scheduled feed/group posts, member invitations, retention enforcement, overdue-GDPR checks, sitemap, session cleanup. About 29 hosted services do exist. | `Extensions/ServiceExtensions.cs:206-431`; Laravel `bootstrap/app.php`, `CronJobRunner` |
+| V-15 | P2 | **Outbound email supports only SendGrid and the Gmail API outside Development.** An installation with an ordinary SMTP server cannot send mail. Welcome and verification emails are fire-and-forget (`Task.Run`), with failures only logged. | `ServiceExtensions.cs:71-88`, `AuthController.cs:984-1030` |
+| V-16 | P2 | **Features shipped since the pause have no ASP.NET route**, for example the offers-and-requests round-up (`/v2/users/me/listings-digest`, released 2026-10-25). This is the drift described above, not an isolated case. | React `ListingsDigestSetting.tsx:42,61` |
+
+Areas that looked correct in this pass (route and handler present, no defect
+found; response shapes not diffed field by field): tenant bootstrap feature
+defaults, standard password reset (though web-uk's `experience: 'accessible'`
+is ignored, so accessible-site users land on the React reset page), direct
+messages and notifications at route level, group join and leave, event
+create/list/detail, avatar upload and serving, and personal wallet locking.
+
+### Not verified
+
+No database, HTTP server, browser, provider or worker was run. The 33 ambiguous
+routes are taken from Codex's in-process harness, with the mechanism confirmed
+by reading the convention and routes. They were not re-executed. Response shapes
+for messages, notifications and events were not diffed field by field. Admin and
+super-admin branches beyond those named, localization, federation, SSO, billing,
+the mobile app and every module state machine remain unaudited. No completion
+percentage is justified.
+
+### What this means for the estimate below
+
+Codex's 53-package work list is a reasonable inventory, and nothing found here
+contradicts its shape. Its day counts (478 / 951 / 1,712 engineer-days) are
+judgement allowances for human engineers, not measurements. Treat them as an
+order of magnitude only. The new findings fall mostly inside existing packages:
+B6 bootstrap, B2 identity, B3 settlement, B5 workers, RA04, RA02, RA22 and RA01.
+They do not need new packages, but they show that even the core packages are
+larger than "verify and repair". The only defensible forecast is the one Codex
+also recommends: do one measured vertical slice first, then re-estimate.
+
+---
+
 **Estimate clarification (25 October):** The roughly 950 engineer-day total is an uncalibrated sum of broad human-effort allowances, not a reliable delivery forecast and not a measured AI-assisted estimate. Do not convert it into a promised calendar duration. Retain the work inventory; establish an AI-assisted forecast only after representative implementation and runtime verification are measured following explicit resumption.
 
 ## New-installation scope and implementation assessment — 25 October 2026
@@ -103,7 +204,7 @@ Source capture: initial HEAD `7d49f3251c3f8a98cc14b30d6213d2d55b5837ca`; later o
 - Selected backend tests: 49 API and 5 messaging tests passed, none failed/skipped. These are a selected subset, not the full regression suite.
 - Five Web UK suites: 77 tests passed with mocked contracts, not two-backend runtime proof.
 - Direct controller probes: segment creation returns HTTP-result 201/id 0 followed by an empty list; nonexistent saved-search execution returns an empty success. No middleware/HTTP/database was exercised by these probes.
-- Direct invocation of the C# split calculator confirmed receiver allocations 0.67/0.67/0.66 for the workshop above. Laravel's 2/2/2 plus fund4 comparison was traced in source, not executed in PHP.
+- Direct invocation of the C# split calculator confirmed receiver allocations 0.67/0.67/0.66 for the workshop above. Laravel's 2/2/2 plus fund 4 comparison was traced in source, not executed in PHP.
 - MVC metadata: 5,835 declarations / 5,796 normalized method/path shapes. Source scraper: 5,936 ASP.NET and 2,760 Laravel routes. Different extraction boundaries mean these are inventories, not compatible-operation counts.
 - No-op heuristic: 546 flagged route-methods across 313 methods, with known false positives. These are review candidates, not 546 confirmed defects.
 - Schema source inventory: 489 Laravel migration files / 188 ASP.NET migration source files (186 discovered by EF in the deeper pass); 518/460 source table names, 258 names matched. Different schemas and extraction rules prevent interpreting 260 unmatched names as 260 missing features.

@@ -13,7 +13,7 @@ Current readiness: [code-led contract audit](../CURRENT_ASPNET_CONTRACT_STATUS.m
 
 ## Deeper-pass evidence
 
-The isolated `FullyQualifiedName~UnitTests` selection passed 556, failed 0, skipped 0. It overlaps the earlier 49 API tests; do not sum them. The separate routing harness exercised5803synthetic samples and reproduced33ambiguous matches with no controller execution. The schema harness compared186discovered migrations and model/snapshot metadata and generated SQL without connecting. Neither harness proves authenticated HTTP behavior or migration replay. Current restart acceptance cases are in [ROADMAP](../ROADMAP.md).
+The isolated `FullyQualifiedName~UnitTests` selection passed 556, failed 0, skipped 0. It overlaps the earlier 49 API tests; do not sum them. The separate routing harness exercised 5,803 synthetic samples and reproduced 33 ambiguous matches with no controller execution. The schema harness compared 186 discovered migrations and model/snapshot metadata and generated SQL without connecting. Neither harness proves authenticated HTTP behavior or migration replay. Current restart acceptance cases are in [ROADMAP](../ROADMAP.md).
 
 ## Historical baseline — not revalidated by this audit
 

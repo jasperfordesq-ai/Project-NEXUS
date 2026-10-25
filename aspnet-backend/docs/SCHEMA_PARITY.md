@@ -13,4 +13,4 @@ Last reviewed: 2026-10-25 (two code-led audit passes).
 
 Use [current schema readiness](CURRENT_SCHEMA_READINESS.md) for measured discovery and replay status. The current model matches its snapshot and can generate SQL, but no database migration was executed. Source names and model snapshots cannot establish Laravel data/behavior equivalence.
 
-The188source-file versus186EF-discovery discrepancy is now explicit. Expense ownership/currency and account-erasure lifecycle findings also require data-semantic tests beyond table existence. Future verification must exercise current entities and supported upgrade history with both-backend synthetic fixtures; do not infer completeness from matching258table names.
+The 188 source-file versus 186 EF-discovery discrepancy is now explicit. Expense ownership/currency and account-erasure lifecycle findings also require data-semantic tests beyond table existence. Future verification must exercise current entities and supported upgrade history with both-backend synthetic fixtures; do not infer completeness from matching 258 table names.

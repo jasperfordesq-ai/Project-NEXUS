@@ -1,5 +1,40 @@
 # ASP.NET new-installation scope and resumption roadmap
 
+## Where things stand — 25 October 2026 (independently verified)
+
+**Goal:** two interchangeable backends. React and the accessible site (web-uk),
+unchanged, run against either Laravel or ASP.NET by configuration alone.
+
+**Today:** that goal is not met, and a new ASP.NET installation cannot even be
+set up, because there is no way to create its first community or administrator.
+A second reviewer re-checked the Codex audit against the source and found it
+accurate. The same pass found further blockers in basic journeys: sign-in,
+email verification, member approval, first exchange, group creation, posts with
+images, and module switches. Details and evidence are in
+[CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md).
+
+**Why it slipped:** ASP.NET has been frozen since 2026-09-11 while Laravel and
+both frontends kept changing (about 181 new Laravel route declarations and
+over 600 frontend commits). Things certified in August, such as React login,
+stopped working without anyone touching ASP.NET.
+
+**What a restart needs, in order** (none of this is authorised until the owner
+explicitly resumes development, see [ADR-0005](decisions/ADR-0005-aspnet-edition-halted.md)):
+
+1. **Stop the drift first.** Put a check in place that compares, on every
+   change, the calls React and web-uk make against what ASP.NET answers. Without
+   it, any repair is overtaken by new Laravel features.
+2. **Make a new install possible.** Add a first-community and first-admin
+   bootstrap, outbound SMTP, and the recurring jobs a community relies on.
+3. **Fix the shared plumbing once:** routing duplicates in the alias
+   convention, the browser login/refresh cookie contract, email verification
+   and approval, and push and notification delivery.
+4. **Then go journey by journey**, proving each one by driving the unchanged
+   frontend against both backends with the same test data and reading back
+   what was saved.
+5. **Re-estimate after the first measured slice.** The day counts below are
+   allowances, not forecasts.
+
 **Estimate clarification (25 October):** The roughly 950 engineer-day total is an uncalibrated sum of broad human-effort allowances, not a reliable delivery forecast and not a measured AI-assisted estimate. Do not convert it into a promised calendar duration. Retain the work inventory; establish an AI-assisted forecast only after representative implementation and runtime verification are measured following explicit resumption.
 
 Last reviewed: 2026-10-25 (three audit passes; current source and scoped implementation assessment).
@@ -50,7 +85,7 @@ Every package is a budget envelope with named vertical slices, evidence and acce
 
 ## Evidence and completion
 
-Current source inventories and selected experiments establish defects, not full certification. The earlier556selected-unit pass coexists with33ambiguous route samples.186 EF-discovered migrations differ from188source files; SQL generation and zero model/snapshot diff do not prove a blank database. The new pure-comparator probe demonstrates why shape MATCH cannot certify values/effects. No paired DB/browser/provider run was performed in this assessment.
+Current source inventories and selected experiments establish defects, not full certification. The earlier 556 selected-unit pass coexists with 33 ambiguous route samples.186 EF-discovered migrations differ from 188 source files; SQL generation and zero model/snapshot diff do not prove a blank database. The new pure-comparator probe demonstrates why shape MATCH cannot certify values/effects. No paired DB/browser/provider run was performed in this assessment.
 
 Done means the required corpus passes for React+Laravel, React+ASP.NET, Web UK+Laravel and Web UK+ASP.NET on reproducible independent new installations, using unchanged frontend source. Verify roles/tenants, pagination, files, meaningful values, stored state, idempotency and eventual effects. Source, local tests, CI, hosted operation and owner acceptance remain distinct states. No release follows automatically from audit or implementation completion.
 

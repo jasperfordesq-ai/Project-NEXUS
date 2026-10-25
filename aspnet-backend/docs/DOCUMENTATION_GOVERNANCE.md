@@ -1,6 +1,6 @@
 # ASP.NET documentation governance
 
-Last reviewed:2026-10-25. The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused.
+Last reviewed: 2026-10-25. The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused.
 
 | Subject | Current authority |
 | --- | --- |
@@ -15,7 +15,7 @@ Last reviewed:2026-10-25. The owner clarified that **new installations must work
 
 Source and actual caller behavior are evidence; these documents index findings and decisions. Never turn a source observation into a claimed browser/database/provider pass, or a local test into CI/deployed/accepted status. Existing marker tools check historical arithmetic and migration filenames; their success is not current compatibility or runtime-migration proof.
 
-The owner-requested work breakdown is a separate planning artifact, not a new journey-completion denominator. It contains52budget packages, not52passed journeys. Its low/planning/high values are capacity allowances and must not be labelled a calibrated likely forecast. Update scope, ownership, scenarios, task dependencies and affected public summaries atomically when new evidence changes the estimate. Preserve the old baseline in local/version history rather than laundering its date.
+The owner-requested work breakdown is a separate planning artifact, not a new journey-completion denominator. It contains 53 budget packages, not 53 passed journeys. Its low/planning/high values are capacity allowances and must not be labelled a calibrated likely forecast. Update scope, ownership, scenarios, task dependencies and affected public summaries atomically when new evidence changes the estimate. Preserve the old baseline in local/version history rather than laundering its date.
 
 Keep detailed source dumps, generated inventories, effort worksheets and task plans in the ignored audit archive. Maintain small public-safe summaries and working links here. Existing user/admin/operator guidance may describe the target product; current ASP.NET readiness must always defer to the status record. Do not promise success-shaped stubs to users.
 

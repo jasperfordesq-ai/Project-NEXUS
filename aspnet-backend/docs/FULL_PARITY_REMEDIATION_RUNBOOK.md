@@ -2,7 +2,7 @@
 
 ## New-installation scope and implementation assessment — 25 October 2026
 
-Use the new-install scope and owned packages in ROADMAP.md before historical scoring mechanics.52 packages are work estimates, not a competing certification denominator. No points were banked by any of the three audit passes.
+Use the new-install scope and owned packages in ROADMAP.md before historical scoring mechanics. 53 packages are work estimates, not a competing certification denominator. No points were banked by any of the three audit passes.
 
 
 ## Audit reconciliation — 25 October 2026 (two passes)

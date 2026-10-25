@@ -2,7 +2,7 @@
 
 ## New-installation scope and implementation assessment — 25 October 2026
 
-The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy.
+The owner clarified that **new installations must work on either backend with both web frontends unchanged**. Laravel remains supported. Existing-community data transfer, a shared live database and simultaneous cross-engine synchronization are not part of this stage. Fresh database, first tenant/admin, configuration, workers, media, install/recovery and all required current client workflows are included. Audit and planning are authorized; implementation remains paused. See the [costed restart scope](docs/ROADMAP.md). The audit contains an unstarted work breakdown and verification requirements; it is not authority to implement or deploy. An independent second review the same day confirmed every Codex finding and found further blockers in basic journeys. Among them, a new ASP.NET installation has no way to create its first community or administrator. See the [verification section](docs/CURRENT_ASPNET_CONTRACT_STATUS.md#independent-verification--25-october-2026-second-reviewer).
 
 
 ## Current ASP.NET boundary — 25 October 2026

@@ -21,6 +21,6 @@ For each batch, record:
 4. Repair in the owning backend/service, then repeat success/refusal/retry/concurrency cases. Do not generalize a field rewrite from a small sample.
 5. Evidence revision and execution boundary: source, in-process, DB integration, browser, CI, hosted and owner acceptance separately.
 
-Avoid weak oracles already observed: not404/not405 allows500; a downloadable JSON with email is not a complete export; audit-entry insertion is not a refund; a Pending row is not a delivered push; an unchanged balance after all500s is not a working concurrency test. The deeper unit selection passes556 while routing still fails33samples.
+Avoid weak oracles already observed: not-404/not-405 allows 500; a downloadable JSON with email is not a complete export; audit-entry insertion is not a refund; a Pending row is not a delivered push; an unchanged balance after all 500s is not a working concurrency test. The deeper unit selection passes 556 while routing still fails 33 samples.
 
 Use isolated PostgreSQL and disposable Laravel fixtures for future stateful work. No production-derived database or real provider is needed to establish the first failing contracts. The current audit did not run these future journeys. Historical scores remain separate from new evidence; no new points were banked.

@@ -15,19 +15,19 @@ Last reviewed: 2026-10-25 (two code-led audit passes).
 
 | Check | Result | Meaning |
 | --- | --- | --- |
-| Migration source files excluding designer/snapshot |188| Files counted by existing scripts |
-| EF IMigrationsAssembly discovery |186| Actual registered migration IDs in the compiled model |
+| Migration source files excluding designer/snapshot | 188 | Files counted by existing scripts |
+| EF IMigrationsAssembly discovery | 186 | Actual registered migration IDs in the compiled model |
 | Current model versus snapshot |0 operations; pending=false| Snapshot agreement only |
 | Idempotent SQL generation |Succeeded offline| No SQL was executed |
 | Blank/upgrade replay |Not run| Required before claiming schema readiness |
 
 Undiscovered classes:20260305120000_AddTenantUpdatedAt and20260307181700_FederationCoreExpansion lack the required complete discovery metadata/designer companions. A discovered Phase38to40 migration also creates the federation tables. Do not activate these old classes blindly: replay could duplicate existing operations. Resolve their intended status against a real disposable replay first.
 
-Laravel source comparison reports489migration files,518 table names; ASP.NET extraction reports460table names,258name matches. These are extraction results, not semantic coverage or missing-feature counts.
+Laravel source comparison reports 489 migration files,518 table names; ASP.NET extraction reports 460 table names, 258 name matches. These are extraction results, not semantic coverage or missing-feature counts.
 
 ## Legacy marker semantics
 
-The unchanged score checker counts files on disk despite the runtime wording below.188is retained solely as that file-count contract; it is not the runtime-discovery result. Correcting the checker belongs to resumed implementation/tooling work. The product-SHA marker is historical, not the October test revision.
+The unchanged score checker counts files on disk despite the runtime wording below. 188 is retained solely as that file-count contract; it is not the runtime-discovery result. Correcting the checker belongs to resumed implementation/tooling work. The product-SHA marker is historical, not the October test revision.
 
 <!-- doc-consistency: SCHEMA_CURRENT_PRODUCT_SHA=c767050a3eabd064bdf647695b9699b98186342b -->
 <!-- doc-consistency: SCHEMA_CURRENT_RUNTIME_MIGRATIONS=188 -->
