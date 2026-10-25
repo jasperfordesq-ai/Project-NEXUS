@@ -93,7 +93,7 @@ export function ListingsDigestAdmin() {
         toast.success(t('listings_digest.send_queued', { count: res.data.recipient_count }));
         setIsConfirmOpen(false);
       } else {
-        toast.error(res.error || t('listings_digest.send_failed'));
+        toast.error(t('listings_digest.send_failed'));
       }
     } catch {
       toast.error(t('listings_digest.send_failed'));

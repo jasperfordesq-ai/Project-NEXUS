@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2805,
-  "api_route_rows": 2770,
-  "distinct_api_paths": 2311,
+  "total_registered_routes": 2811,
+  "api_route_rows": 2776,
+  "distinct_api_paths": 2315,
   "route_source_fingerprint": {
-    "digest": "45b9f306dd6e95d6469134713360d1feee493bac4526666d274fcc10323a9049",
+    "digest": "c588deb832a4ad1195e8477f6078b2a74c41fae23d5d4d9b8cf945ed33fe90a4",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "118ab309d5b5ea8a2eaf6892967d6ac507f360a9544dc3b38b1e9c010f4ea002"
+        "sha256": "93ba8a01c99e0966dc59aad80185749b45fbf77fdddab0164c6082ffd0045653"
       },
       {
         "file": "routes/channels.php",
@@ -2200,6 +2200,16 @@
     ],
     "/api/v2/admin/listings": [
       "GET"
+    ],
+    "/api/v2/admin/listings-digest": [
+      "GET",
+      "PUT"
+    ],
+    "/api/v2/admin/listings-digest/preview": [
+      "GET"
+    ],
+    "/api/v2/admin/listings-digest/send": [
+      "POST"
     ],
     "/api/v2/admin/listings/featured": [
       "GET"
@@ -6805,6 +6815,10 @@
     ],
     "/api/v2/users/me/listings": [
       "GET"
+    ],
+    "/api/v2/users/me/listings-digest": [
+      "GET",
+      "PUT"
     ],
     "/api/v2/users/me/match-preferences": [
       "GET",
