@@ -1,6 +1,6 @@
 {
   "note": "Decisions already taken on Sentry issues, written by scripts/sentry-triage.mjs. Committed on purpose: a judgement ('third-party noise, not worth fixing') must survive and be reviewable, and a ledgered issue stays out of the nightly queue until it recurs in a NEWER release than the one it was judged in. Decisions: fixed | wont-fix | needs-owner | watching.",
-  "lastRunAt": "2026-10-25T03:07:59.729Z",
+  "lastRunAt": "2026-10-26T03:08:12.837Z",
   "issues": {
     "120262618": {
       "title": "RedisException: php_network_getaddresses: getaddrinfo for nexus-php-redis failed: Temporary failure in name resolution",
@@ -654,10 +654,10 @@
       "title": "Safeguarding contact gate unusable for tenants with live vetted-interaction selections",
       "culprit": null,
       "decision": "needs-owner",
-      "note": "25 Oct: same daily 08:05 UTC alarm, newest 24 Oct. Not a failed fix. Owner action still outstanding: set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel. Policy fails safe until then.",
+      "note": "26 Oct: same daily 08:05 UTC alarm, newest 25 Oct. Not a failed fix. Owner still needs to set the safeguarding jurisdiction for hour-timebank (tenant 2) in the broker panel; the 25 Oct safeguarding overhaul commits (bc451e741 onward) change this check but are not deployed. Policy fails safe until then.",
       "sha": null,
-      "decidedAt": "2026-10-25T03:13:10.005Z",
-      "decidedAtRelease": "nexus-php@4829c58e1501"
+      "decidedAt": "2026-10-26T03:09:14.034Z",
+      "decidedAtRelease": "nexus-php@07b9bd70980d"
     },
     "143797835": {
       "title": "[APP LOG] Event: mobile_error | Version: 1.2.0 | Platform: mobile | Data: {\"name\":\"Error\",\"message\":\"Calling the 'setValueWithKeyAsync' function has failed\\n\\u2192 Caused by: A required entitlement isn't present.\",\"stack\":\"Error: Calling the 'setValueWi...",
@@ -717,10 +717,10 @@
       "title": "N+1 Query",
       "culprit": "nexus:run-all",
       "decision": "watching",
-      "note": "25 Oct: newest event 24 Oct 22:00 UTC on release 5e1379ca7, same info-level N+1 in the every-minute nexus:run-all cron, no member affected. Exact query not re-read this run. Not auto-fixed: the fix belongs in TenantContext/CronJobRunner caching (tenant-isolation code).",
+      "note": "26 Oct: newest 25 Oct 21:00 UTC on release c9abd44ba. Same info-level pattern: the every-minute nexus:run-all cron runs 'select * from tenants where id = ? limit 1' once per tenant (15 repeats). Not a failed fix, just recurring. Fix still belongs in TenantContext/CronJobRunner caching (tenant-isolation code), so not auto-fixed.",
       "sha": null,
-      "decidedAt": "2026-10-25T03:13:08.714Z",
-      "decidedAtRelease": "nexus-php@5e1379ca7797"
+      "decidedAt": "2026-10-26T03:09:12.958Z",
+      "decidedAtRelease": "nexus-php@c9abd44bac25"
     },
     "145943666": {
       "title": "ApiResponseError: Your session has expired. Please log in again.",
@@ -955,6 +955,15 @@
       "sha": "eac14e427",
       "decidedAt": "2026-10-25T03:12:31.922Z",
       "decidedAtRelease": "nexus-react@bb4405a9615c"
+    },
+    "156054059": {
+      "title": "Blocking Operation",
+      "culprit": "/api/v2/events",
+      "decision": "watching",
+      "note": "26 Oct: one event on 25 Oct 13:10 UTC (~20 min after the c9abd44ba deploy). Sentry flagged a 409 ms app start-up on one /api/v2/events request; no error, no member impact. Most likely a cold start on the freshly switched colour. Not a code bug; act only if it repeats.",
+      "sha": null,
+      "decidedAt": "2026-10-26T03:09:11.618Z",
+      "decidedAtRelease": null
     }
   }
 }
