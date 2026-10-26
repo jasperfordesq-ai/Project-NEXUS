@@ -188,5 +188,45 @@
   "draftStorage": {
     "title": "Níl an dréacht cosanta",
     "message": "Níorbh fhéidir an dréacht seo a shábháil go slán ar an ngléas seo. Coinnigh an aip ar oscailt, seiceáil stóras an ghléis, agus déan athrú eile chun triail eile a bhaint as."
+  },
+  "memberReport": {
+    "titleMember": "Tuairiscigh {{name}}",
+    "titleMessage": "Tuairiscigh teachtaireacht ó {{name}}",
+    "reportMember": "Tuairiscigh",
+    "reportMemberA11y": "Tuairiscigh {{name}} do chomhordaitheoirí do phobail",
+    "reportMessage": "Tuairiscigh an teachtaireacht",
+    "privacy": "Feicfidh comhordaitheoirí do phobail é seo. Ní insítear don duine a dtuairiscíonn tú cé a rinne an tuairisc.",
+    "reasonLabel": "Cén fáth a bhfuil tú á thuairisciú seo?",
+    "reason": {
+      "safeguarding_concern": "Imní faoi chosaint duine",
+      "harassment": "Ciapadh",
+      "inappropriate": "Iompar míchuí",
+      "scam_or_fraud": "Camscéim nó calaois",
+      "spam": "Turscar",
+      "other": "Eile"
+    },
+    "help": {
+      "safeguarding_concern": "Tá imní ort go bhfuil duine á ghortú, á shaothrú nó i mbaol",
+      "harassment": "Teagmháil bhagrach, mhaslach nó gan iarraidh",
+      "inappropriate": "Iompar nó ábhar maslach nó míchuí",
+      "scam_or_fraud": "Ag iarraidh airgid, sonraí bainc nó faisnéise pearsanta",
+      "spam": "Fógraíocht gan iarraidh nó teachtaireachtaí arís agus arís eile",
+      "other": "Rud éigin eile — inis tuilleadh dúinn, le do thoil"
+    },
+    "detailsLabel": "Tuilleadh sonraí (roghnach)",
+    "detailsLabelRequired": "Tuilleadh sonraí (riachtanach)",
+    "detailsPlaceholder": "Inis do na comhordaitheoirí cad a tharla",
+    "detailsCount": "{{used}} as {{max}} carachtar",
+    "detailsRequired": "Inis tuilleadh dúinn faoi cad a tharla, le do thoil.",
+    "detailsTooLong": "Coinnigh na sonraí faoi {{max}} carachtar ar a mhéad.",
+    "chooseReason": "Roghnaigh cúis le do thuairisc.",
+    "emergency": "Má tá duine i mbaol láithreach, déan teagmháil leis na seirbhísí éigeandála.",
+    "send": "Seol an tuairisc",
+    "sending": "Á sheoladh…",
+    "cancel": "Cealaigh",
+    "close": "Dún",
+    "sent": "Go raibh maith agat. Seoladh do thuairisc chuig comhordaitheoirí do phobail.",
+    "already": "Tá sé seo tuairiscithe agat cheana.",
+    "failed": "Níorbh fhéidir do thuairisc a sheoladh. Bain triail eile as."
   }
 }

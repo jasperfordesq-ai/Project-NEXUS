@@ -140,6 +140,10 @@ export interface MessagingRestrictionStatus {
   messaging_disabled: boolean;
   under_monitoring: boolean;
   restriction_reason: string | null;
+  /** Community copies some messages to coordinators for safeguarding review. */
+  review_notice_required?: boolean;
+  /** Someone supporting a participant may view this conversation (asked with partner_id). */
+  supporter_view_notice_required?: boolean;
 }
 
 export interface ConversationListOptions {
@@ -215,8 +219,11 @@ export function sendTypingIndicator(recipientId: number, isTyping: boolean): Pro
   return api.post(`${API_V2}/messages/typing`, { recipient_id: recipientId, is_typing: isTyping });
 }
 
-export function getMessagingRestrictionStatus(): Promise<{ data: MessagingRestrictionStatus }> {
-  return api.get<{ data: MessagingRestrictionStatus }>(`${API_V2}/messages/restriction-status`);
+/** Pass the conversation partner so the supporter-view notice can be answered for this pair. */
+export function getMessagingRestrictionStatus(partnerId?: number | null): Promise<{ data: MessagingRestrictionStatus }> {
+  const params: Record<string, string> = {};
+  if (partnerId && partnerId > 0) params.partner_id = String(partnerId);
+  return api.get<{ data: MessagingRestrictionStatus }>(`${API_V2}/messages/restriction-status`, params);
 }
 
 export function toggleMessageReaction(messageId: number, emoji: string): Promise<{ data?: { action?: 'added' | 'removed'; emoji?: string; message_id?: number } }> {

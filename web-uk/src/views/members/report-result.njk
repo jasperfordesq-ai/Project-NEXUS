@@ -1,0 +1,39 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Result of reporting a member or a message (src/lib/member-concern-report.js):
+  a confirmation panel when the report was filed, or — when the member had already
+  reported it (HTTP 409) — an ordinary information page. That second case is not an
+  error: the coordinators already have the report.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+
+{% set K = "govuk_alpha_members.concern_report." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if already %}
+        <h1 class="govuk-heading-xl">{{ t(K + "already_title") }}</h1>
+        <p class="govuk-body">{{ t(K + "already_body") }}</p>
+      {% else %}
+        {% if reportId %}
+          {{ govukPanel({
+            titleText: t(K + "sent_title"),
+            html: (t(K + "sent_reference") | escape) + "<br><strong>" + (reportId | string | escape) + "</strong>"
+          }) }}
+        {% else %}
+          {{ govukPanel({ titleText: t(K + "sent_title") }) }}
+        {% endif %}
+        <p class="govuk-body">{{ t(K + "sent_body") }}</p>
+        <p class="govuk-body">{{ t(K + "sent_next") }}</p>
+      {% endif %}
+
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(doneHref) }}">{{ doneText }}</a></p>
+    </div>
+  </div>
+{% endblock %}

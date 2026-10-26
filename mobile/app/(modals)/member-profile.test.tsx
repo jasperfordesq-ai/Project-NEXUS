@@ -11,7 +11,7 @@ jest.mock('@/lib/walletOperation', () => ({
 }));
 
 import React from 'react';
-import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { reserveWalletOperation, completeWalletOperation } from '@/lib/walletOperation';
 
 // --- Mocks ---
@@ -256,6 +256,11 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 1, name: 'Test User', tenant_id: 2 }, isAuthenticated: true }),
 }));
 
+jest.mock('@/components/ReportMemberSheet', () => {
+  const { View } = require('react-native');
+  return ({ visible, target, subjectName }: { visible: boolean; target: { type: string; id: number } | null; subjectName: string }) =>
+    visible && target ? <View testID="mock-report-sheet" accessibilityLabel={`${target.type}:${target.id}:${subjectName}`} /> : null;
+});
 jest.mock('@/components/ui/Avatar', () => 'View');
 jest.mock('@/components/ui/LoadingSpinner', () => () => null);
 
@@ -562,6 +567,24 @@ describe('MemberProfileScreen', () => {
     const { queryByText } = render(<MemberProfileScreen />);
 
     expect(queryByText('Block member')).toBeNull();
+    expect(screen.queryByTestId('member-profile-report')).toBeNull();
+  });
+
+  it('offers Report beside Block and opens the report sheet for this member', () => {
+    mockUseApi.mockReturnValue({ data: { data: mockMember }, isLoading: false, error: null, refresh: jest.fn() });
+    render(<MemberProfileScreen />);
+
+    expect(screen.queryByTestId('mock-report-sheet')).toBeNull();
+    fireEvent.press(screen.getByTestId('member-profile-report'));
+    expect(screen.getByTestId('mock-report-sheet').props.accessibilityLabel).toBe('member:7:Alice Tanner');
+  });
+
+  it('does not offer Report on your own profile', () => {
+    mockParams = { id: '1' };
+    mockUseApi.mockReturnValue({ data: { data: { ...mockMember, id: 1, name: 'Test User' } }, isLoading: false, error: null, refresh: jest.fn() });
+    render(<MemberProfileScreen />);
+
+    expect(screen.queryByTestId('member-profile-report')).toBeNull();
   });
 
   it('opens same-community wallet transfers from member profiles', () => {

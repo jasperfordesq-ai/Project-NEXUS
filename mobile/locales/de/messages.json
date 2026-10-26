@@ -46,6 +46,7 @@
     "messageCount_other": "{{count}} Nachrichten",
     "messagingRestrictedTitle": "Nachrichten pausiert",
     "messagingRestrictedContact": "Bitte kontaktiere dein Community-Team, bevor du weitere Nachrichten sendest.",
+    "reviewNotice": "Nachrichten in dieser Unterhaltung können zum Schutz von einer Koordinationsperson geprüft werden oder für eine Vertrauensperson eines Beteiligten sichtbar sein.",
     "messageOptions": "Nachrichtenoptionen",
     "messageActions": "Nachrichtenaktionen",
     "loadEarlier": "Ältere Nachrichten laden",

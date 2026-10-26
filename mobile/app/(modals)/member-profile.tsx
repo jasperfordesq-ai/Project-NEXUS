@@ -66,6 +66,7 @@ import WalletReconciliationNotice from '@/components/wallet/WalletReconciliation
 import { endorseSkill } from '@/lib/api/endorsements';
 import { sendAppreciation } from '@/lib/api/appreciations';
 import { blockUser } from '@/lib/api/settings';
+import ReportMemberSheet from '@/components/ReportMemberSheet';
 import AccentIcon from '@/components/ui/AccentIcon';
 import {
   getBadges,
@@ -202,6 +203,7 @@ function MemberProfileScreenInner() {
   const connActionPendingRef = useRef(false);
   const isMountedRef = useRef(true);
   const [isBlocking, setIsBlocking] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
   const [showFederationTransfer, setShowFederationTransfer] = useState(false);
 
   useEffect(() => () => { isMountedRef.current = false; }, []);
@@ -868,6 +870,16 @@ function MemberProfileScreenInner() {
                   {isBlocking ? <Spinner size="sm" /> : <Ionicons name="ban-outline" size={18} color="#ffffff" />}
                   <HeroButton.Label>{t('profile.block')}</HeroButton.Label>
                 </HeroButton>
+                {/* Reports go to this community's coordinators; never offered on your own or a federated profile. */}
+                <HeroButton
+                  variant="secondary"
+                  onPress={() => setReportVisible(true)}
+                  testID="member-profile-report"
+                  accessibilityLabel={t('common:memberReport.reportMemberA11y', { name: displayName })}
+                >
+                  <Ionicons name="flag-outline" size={18} color={theme.text} />
+                  <HeroButton.Label>{t('common:memberReport.reportMember')}</HeroButton.Label>
+                </HeroButton>
               </HeroCard.Body>
             </HeroCard>
           ) : null}
@@ -1047,6 +1059,12 @@ function MemberProfileScreenInner() {
           </HeroButton>
         </View>
       </BottomSheet>
+      <ReportMemberSheet
+        visible={reportVisible}
+        target={!isOwnProfile && !isFederatedProfile && safeMemberId ? { type: 'member', id: safeMemberId } : null}
+        subjectName={displayName}
+        onClose={() => setReportVisible(false)}
+      />
       {confirmDialog}
     </SafeAreaView>
   );

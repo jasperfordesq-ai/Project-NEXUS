@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "De gehoste audio van deze aflevering wordt nog gecontroleerd of heeft de mediavalidatie niet doorstaan.",
   "podcasts.external_artwork_not_allowed": "Podcastafbeeldingen moeten eerst naar dit platform worden geüpload.",
   "listings_digest.confirm_required": "Bevestig dat je nu alle leden een e-mail wilt sturen.",
-  "listings_digest.send_failed": "Het overzicht kon niet in de wachtrij worden gezet. Probeer het opnieuw."
+  "listings_digest.send_failed": "Het overzicht kon niet in de wachtrij worden gezet. Probeer het opnieuw.",
+  "member_reports.cannot_report_self": "Je kunt jezelf niet melden.",
+  "member_reports.member_not_found": "Lid niet gevonden.",
+  "member_reports.message_not_found": "Bericht niet gevonden.",
+  "member_reports.invalid_category": "Kies een reden voor je melding.",
+  "member_reports.details_required": "Beschrijf wat er is gebeurd.",
+  "member_reports.details_too_long": "Houd je beschrijving op maximaal {{max}} tekens.",
+  "member_reports.already_reported": "Je hebt dit al gemeld. De coördinatoren van je gemeenschap kijken ernaar."
 }

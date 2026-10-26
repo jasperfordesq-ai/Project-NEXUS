@@ -297,8 +297,12 @@
       "misleading": "Enganador",
       "spam": "Spam ou fraude",
       "not_timebank_service": "Não é um serviço de banco de tempo",
-      "other": "Outro"
-    }
+      "other": "Outro",
+      "safeguarding_concern": "Alguém pode estar em risco (proteção)",
+      "harassment": "Assédio ou intimidação",
+      "scam_or_fraud": "Burla ou fraude"
+    },
+    "content_type_message": "Mensagem"
   },
   "something_wrong": "Algo deu errado. Por favor, tente novamente."
 }

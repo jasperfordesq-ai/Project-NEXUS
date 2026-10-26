@@ -297,8 +297,12 @@
       "misleading": "Fuorviante",
       "spam": "Spam o truffa",
       "not_timebank_service": "Non è un servizio di banca del tempo",
-      "other": "Altro"
-    }
+      "other": "Altro",
+      "safeguarding_concern": "Qualcuno potrebbe essere in pericolo (tutela)",
+      "harassment": "Molestie o bullismo",
+      "scam_or_fraud": "Truffa o frode"
+    },
+    "content_type_message": "Messaggio"
   },
   "something_wrong": "Qualcosa è andato storto. Per favore riprova."
 }

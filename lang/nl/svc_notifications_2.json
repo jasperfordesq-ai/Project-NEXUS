@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Actie ondernomen op je advertentie \"{{title}}\": {{action}}.",
   "marketplace_enforcement.cleared_bell": "Een melding over je advertentie \"{{title}}\" is beoordeeld — geen actie ondernomen.",
   "marketplace_enforcement.appeal_outcome_bell": "Bezwaar afgehandeld voor je advertentie \"{{title}}\": {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Je verkopersaccount is geschorst en je advertenties zijn verwijderd."
+  "marketplace_enforcement.suspended_bell": "Je verkopersaccount is geschorst en je advertenties zijn verwijderd.",
+  "member_concern.member_alert": "Een lid heeft een ander lid gemeld. Bekijk de melding.",
+  "member_concern.message_alert": "Een lid heeft een ontvangen bericht gemeld. Bekijk de melding.",
+  "member_concern.safeguarding_alert": "Een lid heeft een zorg over veiligheid gemeld. Bekijk deze zo snel mogelijk."
 }

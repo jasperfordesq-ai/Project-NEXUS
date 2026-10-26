@@ -24,7 +24,7 @@ class ReportTargetResolver
     private const PREVIEW_LENGTH = 200;
 
     /** Target types this service knows how to resolve to a real row. */
-    private const RESOLVABLE_TYPES = ['user', 'post', 'feed_post', 'comment', 'listing', 'event', 'review'];
+    private const RESOLVABLE_TYPES = ['user', 'post', 'feed_post', 'comment', 'listing', 'event', 'review', 'message'];
 
     /**
      * Resolve a batch of report rows into target metadata.
@@ -119,6 +119,7 @@ class ReportTargetResolver
             'listing' => self::resolveContent('listings', $ids, $tenantIds, label: 'title', hasSoftDelete: true),
             'event' => self::resolveContent('events', $ids, $tenantIds, label: 'title', hasSoftDelete: false),
             'review' => self::resolveReviews($ids, $tenantIds),
+            'message' => self::resolveMessages($ids, $tenantIds),
             default => [],
         };
     }
@@ -212,6 +213,48 @@ class ReportTargetResolver
      * @param array<int,int> $tenantIds
      * @return array<int,array<string,mixed>>
      */
+    /**
+     * A reported direct message. The author is the sender, so the sender is a
+     * party to the report (ReportQueueVisibility). The preview here is the
+     * message as it is now; AdminReportsController prefers the words captured
+     * when it was reported (`reports.target_snapshot`).
+     *
+     * @param array<int,int> $ids
+     * @param array<int,int> $tenantIds
+     * @return array<int,array<string,mixed>>
+     */
+    private static function resolveMessages(array $ids, array $tenantIds): array
+    {
+        $query = DB::table('messages as m')
+            ->leftJoin('users as u', 'u.id', '=', 'm.sender_id')
+            ->whereIn('m.id', $ids);
+        if (!empty($tenantIds)) {
+            $query->whereIn('m.tenant_id', $tenantIds);
+        }
+        $rows = $query->get([
+            'm.id',
+            'm.sender_id',
+            'm.body as preview',
+            'u.name as author_name',
+            'u.avatar_url as author_avatar',
+        ]);
+
+        $out = [];
+        foreach ($rows as $row) {
+            $id = (int) $row->id;
+            $out[$id] = [
+                'target_label' => null,
+                'target_preview' => self::trimPreview($row->preview),
+                'target_avatar' => $row->author_avatar ?: null,
+                'target_author_id' => (int) $row->sender_id,
+                'target_author_name' => $row->author_name ?: null,
+                'target_exists' => true,
+            ];
+        }
+
+        return $out;
+    }
+
     private static function resolveReviews(array $ids, array $tenantIds): array
     {
         $query = DB::table('reviews as c')

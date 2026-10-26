@@ -12430,7 +12430,10 @@ describe('shared accessible frontend shell', () => {
     expect(profileResponse.text).toContain('name="action" value="connect"');
     expect(profileResponse.text).toContain('action="/members/77/review"');
     expect(profileResponse.text).not.toContain('action="/reviews/user/77"');
-    expect(profileResponse.text).toContain('href="/report-a-problem?return=%2Fmembers%2F77"');
+    // Since 26 Oct 2026 the profile reports the member to the community's
+    // coordinators instead of linking to the generic site problem form.
+    expect(profileResponse.text).toContain('href="/members/77/report"');
+    expect(profileResponse.text).not.toContain('href="/report-a-problem?return=%2Fmembers%2F77"');
     expect(profileResponse.text).not.toContain('/reports/new');
     expect(profileResponse.text).not.toContain('action="/members/77/connect"');
   });

@@ -1,6 +1,6 @@
 # Safeguarding & Consent
 
-Last reviewed: 2026-09-25
+Last reviewed: 2026-10-26
 
 This page maps the safeguarding, guardian and consent subsystems as they exist in
 code. It was written by reading the services, controllers, routes and the ~30
@@ -338,6 +338,28 @@ Jurisdiction- and domain-specific consent records also exist:
 Related: `safeguarding_flagged_messages` (message review),
 `user_safeguarding_preferences` and `tenant_safeguarding_settings` /
 `tenant_safeguarding_options` (which triggers apply, per tenant and per member).
+
+### Reporting a member or a message (26 October 2026)
+
+`safeguarding_reports` belongs to the Caring Community module, which is an
+unfinished module and must not be relied on. The general route for a member is
+the shared `reports` queue:
+
+- `POST /v2/users/{id}/report` and `POST /v2/messages/{id}/report`
+  (`MemberConcernReportService`), with a `category` from a closed list —
+  `safeguarding_concern`, `harassment`, `inappropriate`, `scam_or_fraud`,
+  `spam`, `other` — and optional details (required for `other`).
+- Only the receiver of a direct message can report it, and only a message from
+  their own community. `reports.target_snapshot` keeps the words as they were
+  when reported, and the staff queue shows that copy, so the sender cannot edit
+  or delete the evidence away.
+- Reports are worked in the existing queue (`AdminReportsController`) by
+  brokers, coordinators and admins, under `ReportQueueVisibility`: nobody below
+  admin tier sees or closes a report about themselves. A reported message's
+  sender counts as a party (`ReportTargetResolver` resolves `message`).
+- Staff alerts go through `NotificationDispatcher::notifyModerationAdmins()`
+  with the reporter and the reported member excluded. A `safeguarding_concern`
+  uses the urgent wording and theme.
 
 > **Caveat:** there are four independent reporting systems in the platform —
 > generic content `reports`, `safeguarding_reports`, volunteering safeguarding

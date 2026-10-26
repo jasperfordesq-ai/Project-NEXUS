@@ -833,7 +833,11 @@
     "marketplace_subject": "Action needed: marketplace report #{{report_id}}",
     "marketplace_body": "A marketplace report has been filed (report #{{report_id}}). Reason: {{reason}}. Under Digital Services Act rules this must be acknowledged and acted on within 24 hours. Please review it in the admin panel now.",
     "job_subject": "Job posting flagged for review — {{title}}",
-    "job_body": "A job posting was automatically flagged as possible spam. Title: {{title}} (#{{job_id}}). Spam score: {{score}}/100. It is held pending review — please approve or reject it in the admin panel."
+    "job_body": "A job posting was automatically flagged as possible spam. Title: {{title}} (#{{job_id}}). Spam score: {{score}}/100. It is held pending review — please approve or reject it in the admin panel.",
+    "member_concern_subject": "New report about a member — #{{report_id}}",
+    "member_concern_body": "A member has reported another member, or a message they received. Reference: #{{report_id}}. Please review it in your reports queue. The member it is about has not been told.",
+    "safeguarding_subject": "Safeguarding concern raised — #{{report_id}}",
+    "safeguarding_body": "A member has raised a safeguarding concern about another member. Reference: #{{report_id}}. Please review it as soon as possible. The member it is about has not been told."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "not specified",

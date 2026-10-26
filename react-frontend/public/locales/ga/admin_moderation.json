@@ -297,8 +297,12 @@
       "misleading": "Míthreorach",
       "spam": "Turscar nó camscéim",
       "not_timebank_service": "Ní seirbhís bainc ama é",
-      "other": "Eile"
-    }
+      "other": "Eile",
+      "safeguarding_concern": "D'fhéadfadh duine a bheith i mbaol (cosaint)",
+      "harassment": "Ciapadh nó bulaíocht",
+      "scam_or_fraud": "Camscéim nó calaois"
+    },
+    "content_type_message": "Teachtaireacht"
   },
   "something_wrong": "Chuaigh rud éigin mícheart. Bain triail eile as."
 }

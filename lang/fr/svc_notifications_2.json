@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Mesure prise concernant votre annonce « {{title}} » : {{action}}.",
   "marketplace_enforcement.cleared_bell": "Un signalement concernant votre annonce « {{title}} » a été examiné — aucune mesure prise.",
   "marketplace_enforcement.appeal_outcome_bell": "Appel résolu pour votre annonce « {{title}} » : {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Votre compte vendeur a été suspendu et vos annonces supprimées."
+  "marketplace_enforcement.suspended_bell": "Votre compte vendeur a été suspendu et vos annonces supprimées.",
+  "member_concern.member_alert": "Un membre a signalé un autre membre. Veuillez examiner le signalement.",
+  "member_concern.message_alert": "Un membre a signalé un message qu’il a reçu. Veuillez examiner le signalement.",
+  "member_concern.safeguarding_alert": "Un membre a signalé une préoccupation de protection. Veuillez l’examiner dès que possible."
 }

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, userEvent } from '@/test/test-utils';
 
 const { mockApiGet, mockUseFeature, mockHasModule, routeState, AUTH_STATE } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
@@ -321,5 +321,28 @@ describe('ProfilePage', () => {
     });
     // The stale profile-1 name must be gone (pre-fix it remained on screen).
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+  });
+  it("offers to report the member from the profile's More options menu", async () => {
+    const user = userEvent.setup();
+    render(<ProfilePage />);
+    await screen.findByText('Test bio');
+
+    await user.click(screen.getByRole('button', { name: 'More options' }));
+    await user.click(await screen.findByRole('menuitem', { name: /^Report$/ }));
+
+    expect(await screen.findByText('Report John Doe')).toBeInTheDocument();
+    expect(
+      screen.getByText("Your community's coordinators will see this. The person you report is not told who reported them."),
+    ).toBeInTheDocument();
+  });
+
+  it('does not offer to report yourself', async () => {
+    routeState.id = '1';
+    render(<ProfilePage />);
+    await waitFor(() => {
+      expect(screen.queryByTestId('loading-screen')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'More options' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Report /)).not.toBeInTheDocument();
   });
 });

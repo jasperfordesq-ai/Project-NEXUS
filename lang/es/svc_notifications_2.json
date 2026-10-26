@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Medida tomada sobre tu anuncio \"{{title}}\": {{action}}.",
   "marketplace_enforcement.cleared_bell": "Una denuncia sobre tu anuncio \"{{title}}\" fue revisada — no se tomó ninguna medida.",
   "marketplace_enforcement.appeal_outcome_bell": "Apelación resuelta para tu anuncio \"{{title}}\": {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Tu cuenta de vendedor ha sido suspendida y tus anuncios eliminados."
+  "marketplace_enforcement.suspended_bell": "Tu cuenta de vendedor ha sido suspendida y tus anuncios eliminados.",
+  "member_concern.member_alert": "Un miembro ha denunciado a otro miembro. Revisa la denuncia.",
+  "member_concern.message_alert": "Un miembro ha denunciado un mensaje que recibió. Revisa la denuncia.",
+  "member_concern.safeguarding_alert": "Un miembro ha planteado una preocupación de protección. Revísala lo antes posible."
 }

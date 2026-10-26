@@ -3357,5 +3357,52 @@
     "open_admin": "Oscail an painéal riaracháin",
     "refused_title": "Níl tú ach ar cuairt sa phobal seo",
     "refused_body": "Mar bhainisteoir ó phobal eile is féidir leat breathnú thart anseo, ach ní féidir leat aon rud a phostáil, a fhreagairt, clárú ná a sheoladh. Déan athruithe sa phainéal riaracháin."
+  },
+  "member_report": {
+    "action_report": "Tuairiscigh",
+    "action_report_message": "Tuairiscigh an teachtaireacht",
+    "title_member": "Tuairiscigh {{name}}",
+    "title_message": "Tuairiscigh an teachtaireacht seo",
+    "member_fallback": "an ball seo",
+    "reason_label": "Cén fáth a bhfuil tú á thuairisciú seo?",
+    "reason_required_error": "Roghnaigh cúis le do thuairisc.",
+    "details_label": "Inis tuilleadh do na comhordaitheoirí (roghnach)",
+    "details_label_required": "Inis do na comhordaitheoirí cad a tharla",
+    "details_placeholder": "Cad a tharla? Cuir isteach aon rud a chabhródh leis na comhordaitheoirí é a thuiscint.",
+    "details_required_error": "Déan cur síos ar d'imní, le do thoil.",
+    "reassurance": "Feicfidh comhordaitheoirí do phobail é seo. Ní insítear don duine a thuairiscíonn tú cé a thuairiscigh iad.",
+    "emergency": "Má tá duine i mbaol láithreach, déan teagmháil leis na seirbhísí éigeandála.",
+    "cancel": "Cealaigh",
+    "submit": "Seol an tuairisc",
+    "close": "Dún",
+    "success": "Go raibh maith agat. Seoladh do thuairisc chuig comhordaitheoirí do phobail.",
+    "already_reported": "Tá sé seo tuairiscithe agat cheana. Tá comhordaitheoirí do phobail ag féachaint air.",
+    "error_generic": "Níorbh fhéidir linn do thuairisc a sheoladh. Bain triail eile as.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "D'fhéadfadh duine a bheith i mbaol",
+        "help": "Tá imní ort go bhfuil duine á ghortú, á shaothrú nó á chur i mbaol"
+      },
+      "harassment": {
+        "label": "Ciapadh nó bulaíocht",
+        "help": "Teagmháil bhagrach, mhaslach nó nach bhfuil uait"
+      },
+      "inappropriate": {
+        "label": "Míchuí nó maslach",
+        "help": "Ábhar nó iompar gnéasach, fuathmhar nó maslach"
+      },
+      "scam_or_fraud": {
+        "label": "Camscéim nó calaois",
+        "help": "Ag iarraidh airgid, sonraí bainc nó faisnéis phearsanta"
+      },
+      "spam": {
+        "label": "Turscar",
+        "help": "Fógraíocht nach bhfuil uait nó teachtaireachtaí arís agus arís eile"
+      },
+      "other": {
+        "label": "Rud éigin eile",
+        "help": "Inis do na comhordaitheoirí i d'fhocail féin thíos"
+      }
+    }
   }
 }

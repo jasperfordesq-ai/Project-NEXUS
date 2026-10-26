@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Podjęto działanie wobec Twojego ogłoszenia „{{title}}”: {{action}}.",
   "marketplace_enforcement.cleared_bell": "Zgłoszenie dotyczące Twojego ogłoszenia „{{title}}” sprawdzono — nie podjęto działań.",
   "marketplace_enforcement.appeal_outcome_bell": "Odwołanie rozpatrzone dla Twojego ogłoszenia „{{title}}”: {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Twoje konto sprzedawcy zostało zawieszone, a ogłoszenia usunięte."
+  "marketplace_enforcement.suspended_bell": "Twoje konto sprzedawcy zostało zawieszone, a ogłoszenia usunięte.",
+  "member_concern.member_alert": "Członek zgłosił innego członka. Sprawdź zgłoszenie.",
+  "member_concern.message_alert": "Członek zgłosił otrzymaną wiadomość. Sprawdź zgłoszenie.",
+  "member_concern.safeguarding_alert": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony. Sprawdź ją jak najszybciej."
 }

@@ -67,6 +67,7 @@ import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageGetJSON, safe
 import type { Message, User } from '@/types/api';
 import { MessageContextCard } from '@/components/messages/MessageContextCard';
 import { MessageBubble } from './components/MessageBubble';
+import { ReportConcernModal } from '@/components/safety/ReportConcernModal';
 import { MessageInputArea } from './components/MessageInputArea';
 import type { AttachmentPreview } from './components/MessageInputArea';
 
@@ -410,6 +411,8 @@ export function ConversationPage() {
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingText, setEditingText] = useState('');
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  // A received message the member is reporting to the community's coordinators
+  const [reportingMessage, setReportingMessage] = useState<Message | null>(null);
 
   // Safeguarding notice state (reappears on reload)
   const [isSafeguardingDismissed, setIsSafeguardingDismissed] = useState(false);
@@ -2760,6 +2763,7 @@ export function ConversationPage() {
                       highlightQuery={searchQuery}
                       onEdit={startEditing}
                       onDelete={(id) => setPendingDeleteId(id)}
+                      onReport={setReportingMessage}
                       isEditing={editingMessageId === message.id}
                       editingText={editingMessageId === message.id ? editingText : ''}
                       onEditingTextChange={setEditingText}
@@ -2897,6 +2901,17 @@ export function ConversationPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Report a received message to the community's coordinators */}
+      {reportingMessage ? (
+        <ReportConcernModal
+          targetKind="message"
+          targetId={reportingMessage.id}
+          targetName={conversation?.meta?.other_user?.name ?? null}
+          isOpen
+          onClose={() => setReportingMessage(null)}
+        />
+      ) : null}
 
       {/* Delete Message Modal */}
       <Modal

@@ -297,8 +297,12 @@
       "misleading": "Misleidend",
       "spam": "Spam of oplichterij",
       "not_timebank_service": "Geen tijdbankdienst",
-      "other": "Anders"
-    }
+      "other": "Anders",
+      "safeguarding_concern": "Iemand loopt mogelijk gevaar (veiligheid)",
+      "harassment": "Intimidatie of pesten",
+      "scam_or_fraud": "Oplichting of fraude"
+    },
+    "content_type_message": "Bericht"
   },
   "something_wrong": "Er is iets misgegaan. Probeer het opnieuw."
 }

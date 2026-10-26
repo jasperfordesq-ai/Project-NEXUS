@@ -185,5 +185,45 @@
   "draftStorage": {
     "title": "Brouillon non protégé",
     "message": "Ce brouillon n’a pas pu être enregistré de façon sécurisée sur cet appareil. Gardez l’application ouverte, vérifiez l’espace de stockage, puis apportez une autre modification pour réessayer."
+  },
+  "memberReport": {
+    "titleMember": "Signaler {{name}}",
+    "titleMessage": "Signaler un message de {{name}}",
+    "reportMember": "Signaler",
+    "reportMemberA11y": "Signaler {{name}} aux coordinateurs de votre communauté",
+    "reportMessage": "Signaler le message",
+    "privacy": "Les coordinateurs de votre communauté verront ce signalement. La personne signalée ne saura pas qui l’a signalée.",
+    "reasonLabel": "Pourquoi faites-vous ce signalement ?",
+    "reason": {
+      "safeguarding_concern": "Inquiétude pour la sécurité d’une personne",
+      "harassment": "Harcèlement",
+      "inappropriate": "Comportement inapproprié",
+      "scam_or_fraud": "Arnaque ou fraude",
+      "spam": "Pourriel",
+      "other": "Autre"
+    },
+    "help": {
+      "safeguarding_concern": "Vous craignez qu’une personne soit maltraitée, exploitée ou mise en danger",
+      "harassment": "Contact menaçant, injurieux ou non désiré",
+      "inappropriate": "Comportement ou contenu choquant ou inapproprié",
+      "scam_or_fraud": "Demande d’argent, de coordonnées bancaires ou d’informations personnelles",
+      "spam": "Publicité non sollicitée ou messages répétés",
+      "other": "Autre chose — dites-nous en plus"
+    },
+    "detailsLabel": "Plus de détails (facultatif)",
+    "detailsLabelRequired": "Plus de détails (obligatoire)",
+    "detailsPlaceholder": "Expliquez aux coordinateurs ce qui s’est passé",
+    "detailsCount": "{{used}} caractères sur {{max}}",
+    "detailsRequired": "Dites-nous en plus sur ce qui s’est passé.",
+    "detailsTooLong": "Limitez les détails à {{max}} caractères maximum.",
+    "chooseReason": "Choisissez un motif pour votre signalement.",
+    "emergency": "Si quelqu’un est en danger immédiat, contactez les services d’urgence.",
+    "send": "Envoyer le signalement",
+    "sending": "Envoi…",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "sent": "Merci. Votre signalement a été envoyé aux coordinateurs de votre communauté.",
+    "already": "Vous avez déjà fait ce signalement.",
+    "failed": "Votre signalement n’a pas pu être envoyé. Veuillez réessayer."
   }
 }

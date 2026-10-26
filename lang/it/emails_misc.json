@@ -833,7 +833,11 @@
     "marketplace_subject": "Azione necessaria: segnalazione marketplace #{{report_id}}",
     "marketplace_body": "È stata presentata una segnalazione marketplace (segnalazione #{{report_id}}). Motivo: {{reason}}. In base al Digital Services Act deve essere riscontrata e gestita entro 24 ore. Esaminala subito nel pannello di amministrazione.",
     "job_subject": "Annuncio di lavoro segnalato per revisione — {{title}}",
-    "job_body": "Un annuncio di lavoro è stato automaticamente segnalato come possibile spam. Titolo: {{title}} (#{{job_id}}). Punteggio spam: {{score}}/100. È in attesa di revisione — approvalo o rifiutalo nel pannello di amministrazione."
+    "job_body": "Un annuncio di lavoro è stato automaticamente segnalato come possibile spam. Titolo: {{title}} (#{{job_id}}). Punteggio spam: {{score}}/100. È in attesa di revisione — approvalo o rifiutalo nel pannello di amministrazione.",
+    "member_concern_subject": "Nuova segnalazione su un membro — #{{report_id}}",
+    "member_concern_body": "Un membro ha segnalato un altro membro o un messaggio ricevuto. Riferimento: #{{report_id}}. Esaminala nel tuo elenco delle segnalazioni. Il membro interessato non è stato informato.",
+    "safeguarding_subject": "Segnalato un problema di tutela — #{{report_id}}",
+    "safeguarding_body": "Un membro ha segnalato un problema di tutela riguardante un altro membro. Riferimento: #{{report_id}}. Esaminalo il prima possibile. Il membro interessato non è stato informato."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "non specificato",

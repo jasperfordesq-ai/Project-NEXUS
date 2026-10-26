@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Azione intrapresa sul tuo annuncio \"{{title}}\": {{action}}.",
   "marketplace_enforcement.cleared_bell": "Una segnalazione sul tuo annuncio \"{{title}}\" è stata esaminata — nessuna azione intrapresa.",
   "marketplace_enforcement.appeal_outcome_bell": "Ricorso risolto per il tuo annuncio \"{{title}}\": {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Il tuo account venditore è stato sospeso e i tuoi annunci rimossi."
+  "marketplace_enforcement.suspended_bell": "Il tuo account venditore è stato sospeso e i tuoi annunci rimossi.",
+  "member_concern.member_alert": "Un membro ha segnalato un altro membro. Esamina la segnalazione.",
+  "member_concern.message_alert": "Un membro ha segnalato un messaggio ricevuto. Esamina la segnalazione.",
+  "member_concern.safeguarding_alert": "Un membro ha segnalato un problema di tutela. Esaminalo il prima possibile."
 }

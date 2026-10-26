@@ -41,10 +41,12 @@ import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import ShieldOff from 'lucide-react/icons/shield-off';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import ExternalLink from 'lucide-react/icons/external-link';
+import Flag from 'lucide-react/icons/flag';
 import { MemberPlainText } from '@/components/ui/MemberPlainText';
 import { LoadingScreen, EmptyState } from '@/components/feedback';
 import { LocationMapCard } from '@/components/location/LocationMapCard';
 import { ReviewModal } from '@/components/reviews';
+import { ReportConcernModal } from '@/components/safety/ReportConcernModal';
 import { TranslateButton } from '@/components/i18n/TranslateButton';
 import { TransferModal } from '@/components/wallet';
 import { ProfileFeed } from '@/components/profile/ProfileFeed';
@@ -173,6 +175,8 @@ export function ProfilePage() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [isBlockConfirmOpen, setIsBlockConfirmOpen] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
+  // Report-a-concern dialog (member → community coordinators)
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   // Disconnect confirmation
   const [isDisconnectConfirmOpen, setIsDisconnectConfirmOpen] = useState(false);
@@ -753,6 +757,16 @@ export function ProfilePage() {
                     >
                       {t('unblock_user')}
                     </Button>
+                    {isAuthenticated && (
+                      <Button
+                        variant="flat"
+                        className="bg-theme-elevated text-theme-secondary"
+                        startContent={<Flag className="w-4 h-4" aria-hidden="true" />}
+                        onPress={() => setIsReportOpen(true)}
+                      >
+                        {t('member_report.action_report', { ns: 'common' })}
+                      </Button>
+                    )}
                   </>
                 ) : (
                   <>
@@ -830,6 +844,7 @@ export function ProfilePage() {
                           onAction={(key) => {
                             if (key === 'review') setIsReviewModalOpen(true);
                             if (key === 'disconnect') setIsDisconnectConfirmOpen(true);
+                            if (key === 'report') setIsReportOpen(true);
                             if (key === 'block') setIsBlockConfirmOpen(true);
                           }}
                         >
@@ -843,6 +858,9 @@ export function ProfilePage() {
                               {t('disconnect_confirm')}
                             </DropdownItem>
                           ) : null}
+                          <DropdownItem key="report" id="report" startContent={<Flag className="w-4 h-4" />}>
+                            {t('member_report.action_report', { ns: 'common' })}
+                          </DropdownItem>
                           <DropdownItem key="block" id="block" className="text-danger" color="danger" startContent={<ShieldOff className="w-4 h-4" />}>
                             {t('block_user')}
                           </DropdownItem>
@@ -1379,6 +1397,17 @@ export function ProfilePage() {
           initialRecipientId={profile.id}
         />
       )}
+
+      {/* Report a concern about this member to the community's coordinators */}
+      {!isOwnProfile && isAuthenticated && profile?.id ? (
+        <ReportConcernModal
+          targetKind="member"
+          targetId={profile.id}
+          targetName={profile.name || profile.first_name || null}
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+        />
+      ) : null}
 
       {/* Block User Confirmation Modal */}
       <Modal isOpen={isBlockConfirmOpen} onOpenChange={setIsBlockConfirmOpen} size="sm">

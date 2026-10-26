@@ -833,7 +833,11 @@
     "marketplace_subject": "Wymagane działanie: zgłoszenie marketplace #{{report_id}}",
     "marketplace_body": "Złożono zgłoszenie marketplace (zgłoszenie #{{report_id}}). Powód: {{reason}}. Zgodnie z aktem o usługach cyfrowych (DSA) należy je potwierdzić i rozpatrzyć w ciągu 24 godzin. Sprawdź je teraz w panelu administracyjnym.",
     "job_subject": "Ogłoszenie o pracę oznaczone do przeglądu — {{title}}",
-    "job_body": "Ogłoszenie o pracę zostało automatycznie oznaczone jako możliwy spam. Tytuł: {{title}} (#{{job_id}}). Wynik spamu: {{score}}/100. Oczekuje na przegląd — zatwierdź je lub odrzuć w panelu administracyjnym."
+    "job_body": "Ogłoszenie o pracę zostało automatycznie oznaczone jako możliwy spam. Tytuł: {{title}} (#{{job_id}}). Wynik spamu: {{score}}/100. Oczekuje na przegląd — zatwierdź je lub odrzuć w panelu administracyjnym.",
+    "member_concern_subject": "Nowe zgłoszenie dotyczące członka — #{{report_id}}",
+    "member_concern_body": "Członek zgłosił innego członka lub otrzymaną wiadomość. Numer: #{{report_id}}. Sprawdź je na liście zgłoszeń. Osoba, której dotyczy zgłoszenie, nie została powiadomiona.",
+    "safeguarding_subject": "Zgłoszono obawę dotyczącą ochrony — #{{report_id}}",
+    "safeguarding_body": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony w związku z innym członkiem. Numer: #{{report_id}}. Sprawdź ją jak najszybciej. Osoba, której dotyczy zgłoszenie, nie została powiadomiona."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "nie podano",

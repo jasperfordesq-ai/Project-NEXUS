@@ -2694,6 +2694,18 @@ async function unblockMember(token, userId) {
   });
 }
 
+/**
+ * Report a member to the community's coordinators (POST /api/v2/users/{id}/report).
+ * `data` is { category, details? }; see src/lib/member-concern-report.js.
+ */
+async function reportMember(token, userId, data) {
+  return request(`/api/v2/users/${encodeURIComponent(userId)}/report`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  });
+}
+
 async function endorseMemberSkill(token, userId, data) {
   return request(`/api/v2/members/${encodeURIComponent(userId)}/endorse`, {
     method: 'POST',
@@ -4610,6 +4622,7 @@ module.exports = {
   removeMemberConnection,
   blockMember,
   unblockMember,
+  reportMember,
   endorseMemberSkill,
   removeMemberEndorsement,
   getMemberEndorsements,

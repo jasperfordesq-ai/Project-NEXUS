@@ -19,6 +19,7 @@ import MoreVertical from 'lucide-react/icons/ellipsis-vertical';
 import Copy from 'lucide-react/icons/copy';
 import Pencil from 'lucide-react/icons/pencil';
 import Trash2 from 'lucide-react/icons/trash-2';
+import Flag from 'lucide-react/icons/flag';
 import Check from 'lucide-react/icons/check';
 import CheckCheck from 'lucide-react/icons/check-check';
 import FileText from 'lucide-react/icons/file-text';
@@ -89,6 +90,8 @@ export interface MessageBubbleProps {
   highlightQuery?: string;
   onEdit?: (message: Message) => void;
   onDelete?: (messageId: number) => void;
+  /** Report a message the member received (never offered for their own). */
+  onReport?: (message: Message) => void;
   isEditing?: boolean;
   editingText?: string;
   onEditingTextChange?: (text: string) => void;
@@ -109,6 +112,7 @@ export const MessageBubble = memo(function MessageBubble({
   highlightQuery,
   onEdit,
   onDelete,
+  onReport,
   isEditing,
   editingText,
   onEditingTextChange,
@@ -144,6 +148,9 @@ export const MessageBubble = memo(function MessageBubble({
   const isVoiceMessage = message.is_voice || message.audio_url;
   const isDeleted = message.is_deleted;
   const canUseActions = !isEditing && !isDeleted;
+  // Only the receiver can report a direct message, and federated messages are
+  // refused by the server, so the action is not offered for them.
+  const canReport = !!onReport && !isOwn && !message.is_federated;
 
   // Long-press opens the mobile action sheet (native messaging pattern).
   const { longPressProps } = useLongPress({
@@ -422,8 +429,8 @@ export const MessageBubble = memo(function MessageBubble({
                 <SmilePlus className="size-4 text-theme-muted" aria-hidden="true" />
               </Button>
 
-              {/* Edit/Delete button — shown for all messages (receiver can delete for themselves or everyone) */}
-              {!isVoiceMessage && (
+              {/* Edit/Delete/Report button — shown for all messages (receiver can delete for themselves or everyone) */}
+              {(!isVoiceMessage || canReport) && (
                 <Button
                   isIconOnly
                   variant="tertiary"
@@ -494,19 +501,36 @@ export const MessageBubble = memo(function MessageBubble({
                   {t('message_edit')}
                 </Button>
               )}
-              <Button
-                variant="danger-soft"
-                size="sm"
-                className="min-h-11 justify-start text-sm text-red-600 dark:text-red-400"
-                startContent={<Trash2 className="w-3 h-3" aria-hidden="true" />}
-                onPress={() => {
-                  onDelete?.(message.id);
-                  setShowMessageMenu(false);
-                }}
-                role="menuitem"
-              >
-                {t('message_delete')}
-              </Button>
+              {!isVoiceMessage && (
+                <Button
+                  variant="danger-soft"
+                  size="sm"
+                  className="min-h-11 justify-start text-sm text-red-600 dark:text-red-400"
+                  startContent={<Trash2 className="w-3 h-3" aria-hidden="true" />}
+                  onPress={() => {
+                    onDelete?.(message.id);
+                    setShowMessageMenu(false);
+                  }}
+                  role="menuitem"
+                >
+                  {t('message_delete')}
+                </Button>
+              )}
+              {canReport && (
+                <Button
+                  variant="tertiary"
+                  size="sm"
+                  className="min-h-11 justify-start text-sm text-theme-muted"
+                  startContent={<Flag className="w-3 h-3" aria-hidden="true" />}
+                  onPress={() => {
+                    onReport?.(message);
+                    setShowMessageMenu(false);
+                  }}
+                  role="menuitem"
+                >
+                  {t('member_report.action_report_message', { ns: 'common' })}
+                </Button>
+              )}
             </div>
           )}
 
@@ -579,6 +603,19 @@ export const MessageBubble = memo(function MessageBubble({
                     }}
                   >
                     {t('message_delete')}
+                  </Button>
+                )}
+                {canReport && (
+                  <Button
+                    variant="tertiary"
+                    className="min-h-12 justify-start gap-3 text-theme-primary"
+                    startContent={<Flag className="w-4 h-4 text-theme-muted" aria-hidden="true" />}
+                    onPress={() => {
+                      setShowActionSheet(false);
+                      onReport?.(message);
+                    }}
+                  >
+                    {t('member_report.action_report_message', { ns: 'common' })}
                   </Button>
                 )}
               </div>

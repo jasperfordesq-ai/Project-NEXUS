@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "O áudio alojado deste episódio ainda está a ser verificado ou não passou na validação.",
   "podcasts.external_artwork_not_allowed": "A imagem do podcast tem de ser carregada nesta plataforma antes de poder ser utilizada.",
   "listings_digest.confirm_required": "Confirme que pretende enviar agora um e-mail a todos os membros.",
-  "listings_digest.send_failed": "Não foi possível colocar o resumo em fila. Tente novamente."
+  "listings_digest.send_failed": "Não foi possível colocar o resumo em fila. Tente novamente.",
+  "member_reports.cannot_report_self": "Não pode denunciar-se a si próprio.",
+  "member_reports.member_not_found": "Membro não encontrado.",
+  "member_reports.message_not_found": "Mensagem não encontrada.",
+  "member_reports.invalid_category": "Escolha um motivo para a sua denúncia.",
+  "member_reports.details_required": "Descreva o que aconteceu.",
+  "member_reports.details_too_long": "A descrição não pode ter mais de {{max}} caracteres.",
+  "member_reports.already_reported": "Já denunciou isto. As pessoas coordenadoras da sua comunidade vão analisar."
 }

@@ -185,5 +185,45 @@
   "draftStorage": {
     "title": "Bozza non protetta",
     "message": "Non è stato possibile salvare questa bozza in modo sicuro sul dispositivo. Tieni aperta l’app, controlla lo spazio disponibile e apporta un’altra modifica per riprovare."
+  },
+  "memberReport": {
+    "titleMember": "Segnala {{name}}",
+    "titleMessage": "Segnala un messaggio di {{name}}",
+    "reportMember": "Segnala",
+    "reportMemberA11y": "Segnala {{name}} ai coordinatori della tua comunità",
+    "reportMessage": "Segnala messaggio",
+    "privacy": "I coordinatori della tua comunità vedranno questa segnalazione. Alla persona segnalata non viene detto chi l’ha segnalata.",
+    "reasonLabel": "Perché fai questa segnalazione?",
+    "reason": {
+      "safeguarding_concern": "Preoccupazione per la tutela di una persona",
+      "harassment": "Molestie",
+      "inappropriate": "Comportamento inappropriato",
+      "scam_or_fraud": "Truffa o frode",
+      "spam": "Messaggi indesiderati",
+      "other": "Altro"
+    },
+    "help": {
+      "safeguarding_concern": "Temi che qualcuno venga danneggiato, sfruttato o messo in pericolo",
+      "harassment": "Contatti minacciosi, offensivi o indesiderati",
+      "inappropriate": "Comportamenti o contenuti offensivi o inappropriati",
+      "scam_or_fraud": "Richiesta di denaro, coordinate bancarie o informazioni personali",
+      "spam": "Pubblicità indesiderata o messaggi ripetuti",
+      "other": "Qualcos’altro: raccontaci di più"
+    },
+    "detailsLabel": "Altri dettagli (facoltativo)",
+    "detailsLabelRequired": "Altri dettagli (obbligatorio)",
+    "detailsPlaceholder": "Racconta ai coordinatori cosa è successo",
+    "detailsCount": "{{used}} di {{max}} caratteri",
+    "detailsRequired": "Raccontaci di più su cosa è successo.",
+    "detailsTooLong": "Limita i dettagli a non più di {{max}} caratteri.",
+    "chooseReason": "Scegli un motivo per la segnalazione.",
+    "emergency": "Se qualcuno è in pericolo immediato, contatta i servizi di emergenza.",
+    "send": "Invia segnalazione",
+    "sending": "Invio in corso…",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "sent": "Grazie. La tua segnalazione è stata inviata ai coordinatori della tua comunità.",
+    "already": "Hai già fatto questa segnalazione.",
+    "failed": "Non è stato possibile inviare la segnalazione. Riprova."
   }
 }

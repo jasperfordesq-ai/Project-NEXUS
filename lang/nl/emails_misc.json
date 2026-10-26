@@ -833,7 +833,11 @@
     "marketplace_subject": "Actie vereist: marktplaatsmelding #{{report_id}}",
     "marketplace_body": "Er is een marktplaatsmelding ingediend (melding #{{report_id}}). Reden: {{reason}}. Op grond van de Digital Services Act moet deze binnen 24 uur worden bevestigd en behandeld. Beoordeel het nu in het beheerpaneel.",
     "job_subject": "Vacature gemarkeerd voor beoordeling — {{title}}",
-    "job_body": "Een vacature is automatisch gemarkeerd als mogelijke spam. Titel: {{title}} (#{{job_id}}). Spamscore: {{score}}/100. Ze wacht op beoordeling — keur ze goed of af in het beheerpaneel."
+    "job_body": "Een vacature is automatisch gemarkeerd als mogelijke spam. Titel: {{title}} (#{{job_id}}). Spamscore: {{score}}/100. Ze wacht op beoordeling — keur ze goed of af in het beheerpaneel.",
+    "member_concern_subject": "Nieuwe melding over een lid — #{{report_id}}",
+    "member_concern_body": "Een lid heeft een ander lid, of een ontvangen bericht, gemeld. Referentie: #{{report_id}}. Bekijk de melding in je meldingenlijst. Het betrokken lid is niet ingelicht.",
+    "safeguarding_subject": "Zorg over veiligheid gemeld — #{{report_id}}",
+    "safeguarding_body": "Een lid heeft een zorg over de veiligheid van of rond een ander lid gemeld. Referentie: #{{report_id}}. Bekijk deze zo snel mogelijk. Het betrokken lid is niet ingelicht."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "niet gespecificeerd",

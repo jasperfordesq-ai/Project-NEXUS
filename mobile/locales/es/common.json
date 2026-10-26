@@ -185,5 +185,45 @@
   "draftStorage": {
     "title": "Borrador sin proteger",
     "message": "Este borrador no se pudo guardar de forma segura en el dispositivo. Mantén la aplicación abierta, comprueba el almacenamiento y haz otro cambio para volver a intentarlo."
+  },
+  "memberReport": {
+    "titleMember": "Denunciar a {{name}}",
+    "titleMessage": "Denunciar un mensaje de {{name}}",
+    "reportMember": "Denunciar",
+    "reportMemberA11y": "Denunciar a {{name}} ante los coordinadores de tu comunidad",
+    "reportMessage": "Denunciar mensaje",
+    "privacy": "Los coordinadores de tu comunidad verán esta denuncia. A la persona denunciada no se le dice quién la denunció.",
+    "reasonLabel": "¿Por qué denuncias esto?",
+    "reason": {
+      "safeguarding_concern": "Preocupación por la seguridad de alguien",
+      "harassment": "Acoso",
+      "inappropriate": "Comportamiento inapropiado",
+      "scam_or_fraud": "Estafa o fraude",
+      "spam": "Correo no deseado",
+      "other": "Otro motivo"
+    },
+    "help": {
+      "safeguarding_concern": "Te preocupa que alguien esté sufriendo daño, explotación o esté en peligro",
+      "harassment": "Contacto amenazante, abusivo o no deseado",
+      "inappropriate": "Comportamiento o contenido ofensivo o inapropiado",
+      "scam_or_fraud": "Pide dinero, datos bancarios o información personal",
+      "spam": "Publicidad no deseada o mensajes repetidos",
+      "other": "Otra cosa: cuéntanos más, por favor"
+    },
+    "detailsLabel": "Más detalles (opcional)",
+    "detailsLabelRequired": "Más detalles (obligatorio)",
+    "detailsPlaceholder": "Cuenta a los coordinadores lo que ocurrió",
+    "detailsCount": "{{used}} de {{max}} caracteres",
+    "detailsRequired": "Cuéntanos más sobre lo que ocurrió, por favor.",
+    "detailsTooLong": "Limita los detalles a {{max}} caracteres como máximo.",
+    "chooseReason": "Elige un motivo para tu denuncia.",
+    "emergency": "Si alguien está en peligro inmediato, llama a los servicios de emergencia.",
+    "send": "Enviar denuncia",
+    "sending": "Enviando…",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "sent": "Gracias. Tu denuncia se ha enviado a los coordinadores de tu comunidad.",
+    "already": "Ya has denunciado esto.",
+    "failed": "No se pudo enviar tu denuncia. Inténtalo de nuevo."
   }
 }

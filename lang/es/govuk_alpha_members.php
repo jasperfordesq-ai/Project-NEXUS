@@ -105,4 +105,62 @@ return [
         'empty_title' => 'Algunas coincidencias aún no se pueden mostrar',
         'empty_body' => 'La configuración de protección de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelva cuando el equipo de su comunidad la haya completado.',
     ],
+    // A member reports another member, or a direct message they received, to
+    // their community's coordinators (POST /v2/users/{id}/report and
+    // POST /v2/messages/{id}/report).
+    'concern_report' => [
+        'link_member' => 'Denunciar a este miembro',
+        'link_message' => 'Denunciar este mensaje',
+        'member_heading' => 'Denunciar a :name',
+        'member_heading_unnamed' => 'Denunciar a un miembro',
+        'message_heading' => 'Denunciar un mensaje de :name',
+        'message_heading_unnamed' => 'Denunciar un mensaje',
+        'legend' => '¿Por qué hace esta denuncia?',
+        'categories' => [
+            'safeguarding_concern' => [
+                'label' => 'Una preocupación por la protección de alguien',
+                'hint' => 'Le preocupa que alguien esté sufriendo daño, explotación o riesgo',
+            ],
+            'harassment' => [
+                'label' => 'Acoso o intimidación',
+                'hint' => 'Contacto amenazante, abusivo o no deseado',
+            ],
+            'inappropriate' => [
+                'label' => 'Comportamiento inapropiado',
+                'hint' => 'Comportamiento o contenido ofensivo o inapropiado',
+            ],
+            'scam_or_fraud' => [
+                'label' => 'Una estafa o fraude',
+                'hint' => 'Pide dinero, datos bancarios o información personal',
+            ],
+            'spam' => [
+                'label' => 'Mensajes no deseados (spam)',
+                'hint' => 'Publicidad no deseada o mensajes repetidos',
+            ],
+            'other' => [
+                'label' => 'Otra cosa',
+                'hint' => 'Otra cosa: cuéntenos más',
+            ],
+        ],
+        'details_label' => 'Cuéntenos qué ocurrió',
+        'details_hint' => 'Incluya todo lo que ayude a los coordinadores a entender qué ocurrió. Es opcional, salvo que haya elegido «Otra cosa».',
+        'inset' => 'Los coordinadores de su comunidad verán esta denuncia. A la persona denunciada no se le dice quién la denunció.',
+        'emergency_warning' => 'Si alguien está en peligro inmediato, póngase en contacto con los servicios de emergencia.',
+        'submit' => 'Enviar denuncia',
+        'sent_title' => 'Denuncia enviada',
+        'sent_reference' => 'Su número de referencia',
+        'sent_body' => 'Gracias. Los coordinadores de su comunidad revisarán su denuncia.',
+        'sent_next' => 'Es posible que se pongan en contacto con usted si necesitan más información. A la persona denunciada no se le dice quién la denunció.',
+        'already_title' => 'Ya ha hecho esta denuncia',
+        'already_body' => 'Los coordinadores de su comunidad ya tienen su denuncia y la revisarán. No necesita volver a denunciarlo.',
+        'back_to_profile' => 'Volver al perfil',
+        'back_to_conversation' => 'Volver a la conversación',
+        'errors' => [
+            'category_required' => 'Elija por qué hace esta denuncia',
+            'details_required' => 'Cuéntenos qué ocurrió',
+            'details_too_long' => 'La descripción debe tener como máximo :max caracteres',
+            'failed' => 'No se pudo enviar su denuncia. Inténtelo de nuevo.',
+            'rate_limited' => 'Ha enviado demasiadas denuncias. Inténtelo de nuevo más tarde.',
+        ],
+    ],
 ];

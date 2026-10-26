@@ -46,6 +46,7 @@
     "messageCount_other": "{{count}} messaggi",
     "messagingRestrictedTitle": "Messaggi in pausa",
     "messagingRestrictedContact": "Contatta il team della comunita prima di inviare altri messaggi.",
+    "reviewNotice": "I messaggi di questa conversazione possono essere esaminati da una persona coordinatrice per motivi di tutela, o visibili a una persona di fiducia che sostiene uno dei partecipanti.",
     "messageOptions": "Opzioni messaggio",
     "messageActions": "Azioni del messaggio",
     "loadEarlier": "Carica i messaggi precedenti",

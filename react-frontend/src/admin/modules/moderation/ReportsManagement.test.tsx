@@ -413,6 +413,49 @@ describe('ReportsManagement', () => {
     expect(screen.queryByText('not_timebank_service')).not.toBeInTheDocument();
   });
 
+  it('shows member concern categories as words, highlights safeguarding, and labels message and member reports', async () => {
+    const byEndpoint = (endpoint: string) => {
+      if (endpoint?.includes('stats')) {
+        return {
+          data: makeStats(), isLoading: false, error: null,
+          execute: vi.fn(), refetch: vi.fn(), reset: vi.fn(), setData: vi.fn(),
+          loading: false, meta: null,
+        };
+      }
+      return {
+        data: [
+          makeReport({
+            id: 11, content_type: 'message', category: 'safeguarding_concern',
+            reason: 'safeguarding_concern', target_preview: 'Meet me alone, do not tell anyone',
+          }),
+          makeReport({
+            id: 12, content_type: 'user', category: 'harassment',
+            reason: 'He keeps turning up at my door', target_label: 'Pat Member', target_preview: null,
+          }),
+          makeReport({ id: 13, content_type: 'message', category: 'scam_or_fraud', reason: 'scam_or_fraud' }),
+        ],
+        isLoading: false, error: null,
+        execute: vi.fn(), refetch: vi.fn(), reset: vi.fn(), setData: vi.fn(),
+        loading: false, meta: { total_pages: 1, total: 3 },
+      };
+    };
+    mockUseApi.mockImplementation(byEndpoint as unknown as Parameters<typeof mockUseApi.mockImplementation>[0]);
+
+    const { default: ReportsManagement } = await import('./ReportsManagement');
+    render(<ReportsManagement />);
+
+    const safeguarding = await screen.findByText('Someone may be at risk (safeguarding)');
+    expect(safeguarding.closest('[data-report-category="safeguarding_concern"]')).not.toBeNull();
+    expect(screen.getByText('Harassment or bullying')).toBeInTheDocument();
+    expect(screen.getByText('He keeps turning up at my door')).toBeInTheDocument();
+    expect(screen.getByText('Scam or fraud')).toBeInTheDocument();
+    expect(screen.getByText('Meet me alone, do not tell anyone')).toBeInTheDocument();
+    expect(screen.getAllByText('Message').length).toBeGreaterThan(0);
+    expect(screen.queryByText('safeguarding_concern')).not.toBeInTheDocument();
+    expect(screen.queryByText('scam_or_fraud')).not.toBeInTheDocument();
+    expect(screen.queryByText('Unknown content type')).not.toBeInTheDocument();
+  });
+
   it('renders the reported target preview and a View details action', async () => {
     mockUseApi.mockImplementation((endpoint: string) => {
       if (endpoint?.includes('stats')) {

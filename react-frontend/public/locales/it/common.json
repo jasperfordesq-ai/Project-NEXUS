@@ -3271,5 +3271,52 @@
     "open_admin": "Apri il pannello di amministrazione",
     "refused_title": "Stai solo visitando questa comunità",
     "refused_body": "Come gestore di un’altra comunità puoi dare un’occhiata qui, ma non puoi pubblicare, rispondere, iscriverti o inviare nulla. Apporta le modifiche nel pannello di amministrazione."
+  },
+  "member_report": {
+    "action_report": "Segnala",
+    "action_report_message": "Segnala messaggio",
+    "title_member": "Segnala {{name}}",
+    "title_message": "Segnala questo messaggio",
+    "member_fallback": "questo membro",
+    "reason_label": "Perché stai facendo questa segnalazione?",
+    "reason_required_error": "Scegli un motivo per la segnalazione.",
+    "details_label": "Racconta di più ai coordinatori (facoltativo)",
+    "details_label_required": "Racconta ai coordinatori cosa è successo",
+    "details_placeholder": "Cosa è successo? Aggiungi tutto ciò che può aiutare i coordinatori a capire.",
+    "details_required_error": "Descrivi la tua preoccupazione.",
+    "reassurance": "I coordinatori della tua comunità vedranno questa segnalazione. Alla persona segnalata non viene detto chi l'ha segnalata.",
+    "emergency": "Se qualcuno è in pericolo immediato, contatta i servizi di emergenza.",
+    "cancel": "Annulla",
+    "submit": "Invia segnalazione",
+    "close": "Chiudi",
+    "success": "Grazie. La tua segnalazione è stata inviata ai coordinatori della tua comunità.",
+    "already_reported": "Hai già fatto questa segnalazione. I coordinatori della tua comunità la stanno esaminando.",
+    "error_generic": "Non siamo riusciti a inviare la segnalazione. Riprova.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Qualcuno potrebbe essere in pericolo",
+        "help": "Temi che qualcuno venga danneggiato, sfruttato o messo a rischio"
+      },
+      "harassment": {
+        "label": "Molestie o bullismo",
+        "help": "Contatti minacciosi, offensivi o indesiderati"
+      },
+      "inappropriate": {
+        "label": "Inappropriato od offensivo",
+        "help": "Contenuti o comportamenti sessuali, d'odio od offensivi"
+      },
+      "scam_or_fraud": {
+        "label": "Truffa o frode",
+        "help": "Chiede denaro, dati bancari o informazioni personali"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Pubblicità indesiderata o messaggi ripetuti"
+      },
+      "other": {
+        "label": "Altro",
+        "help": "Spiegalo ai coordinatori con parole tue qui sotto"
+      }
+    }
   }
 }

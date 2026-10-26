@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "لا يزال الصوت المستضاف لهذه الحلقة قيد الفحص أو لم يجتز التحقق من الوسائط.",
   "podcasts.external_artwork_not_allowed": "يجب رفع صورة البودكاست إلى هذه المنصة قبل استخدامها.",
   "listings_digest.confirm_required": "أكّد أنك تريد مراسلة جميع الأعضاء الآن.",
-  "listings_digest.send_failed": "تعذّر وضع الملخص في قائمة الإرسال. يُرجى المحاولة مرة أخرى."
+  "listings_digest.send_failed": "تعذّر وضع الملخص في قائمة الإرسال. يُرجى المحاولة مرة أخرى.",
+  "member_reports.cannot_report_self": "لا يمكنك الإبلاغ عن نفسك.",
+  "member_reports.member_not_found": "لم يتم العثور على العضو.",
+  "member_reports.message_not_found": "لم يتم العثور على الرسالة.",
+  "member_reports.invalid_category": "يرجى اختيار سبب للبلاغ.",
+  "member_reports.details_required": "يرجى وصف ما حدث.",
+  "member_reports.details_too_long": "يرجى ألا يتجاوز الوصف {{max}} حرفًا.",
+  "member_reports.already_reported": "لقد أبلغت عن هذا من قبل. سيراجعه منسقو مجتمعك."
 }

@@ -280,3 +280,44 @@ describe('MessageBubble — mobile action sheet (<640px)', () => {
     expect(screen.queryByRole('button', { name: 'aria_message_options' })).toBeNull();
   });
 });
+
+describe('MessageBubble — report message', () => {
+  afterEach(() => {
+    mockViewport(false);
+  });
+
+  it('offers "Report message" in the desktop menu for a message the member received', async () => {
+    const user = (await import('@testing-library/user-event')).default.setup();
+    const onReport = vi.fn();
+    render(<MessageBubble {...defaultProps} isOwn={false} onReport={onReport} />);
+    await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
+    const item = screen.getByRole('button', { name: 'member_report.action_report_message' });
+    await user.click(item);
+    expect(onReport).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
+  });
+
+  it('never offers to report your own message', async () => {
+    const user = (await import('@testing-library/user-event')).default.setup();
+    render(<MessageBubble {...defaultProps} isOwn onReport={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
+    expect(screen.queryByText('member_report.action_report_message')).toBeNull();
+  });
+
+  it('hides the report action for a federated message', async () => {
+    const user = (await import('@testing-library/user-event')).default.setup();
+    const federated = { ...mockMessage, is_federated: true } as Message;
+    render(<MessageBubble {...defaultProps} isOwn={false} message={federated} onReport={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
+    expect(screen.queryByText('member_report.action_report_message')).toBeNull();
+  });
+
+  it('offers "Report message" in the mobile action sheet', async () => {
+    mockViewport(true);
+    const user = (await import('@testing-library/user-event')).default.setup();
+    const onReport = vi.fn();
+    render(<MessageBubble {...defaultProps} isOwn={false} onReport={onReport} />);
+    await user.click(screen.getByRole('button', { name: 'aria_message_options' }));
+    await user.click(screen.getByText('member_report.action_report_message'));
+    expect(onReport).toHaveBeenCalled();
+  });
+});

@@ -46,6 +46,7 @@
     "messageCount_other": "{{count}} messages",
     "messagingRestrictedTitle": "Messaging paused",
     "messagingRestrictedContact": "Please contact your community team before sending more messages.",
+    "reviewNotice": "Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.",
     "messageOptions": "Message options",
     "messageActions": "Message actions",
     "loadEarlier": "Load earlier messages",

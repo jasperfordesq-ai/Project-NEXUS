@@ -1154,9 +1154,11 @@ class NotificationDispatcher
      * @param string $bodyKey    translation key for the email body paragraph
      * @param array  $params     placeholder replacements shared by the keys
      * @param string $theme      EmailTemplateBuilder theme (warning/danger/brand)
+     * @param list<int> $excludeUserIds never alerted — e.g. the member a report is about
+     * @param string|null $brokerLink link for brokers/coordinators, who cannot open the admin panel; null keeps $link for everyone
      * @return int number of admins the alert was dispatched to
      */
-    public static function notifyModerationAdmins(string $type, string $link, string $bellKey, string $subjectKey, string $bodyKey, array $params = [], string $theme = 'warning'): int
+    public static function notifyModerationAdmins(string $type, string $link, string $bellKey, string $subjectKey, string $bodyKey, array $params = [], string $theme = 'warning', array $excludeUserIds = [], ?string $brokerLink = null): int
     {
         $tenantId = TenantContext::getId();
         if ($tenantId === null) {
@@ -1169,18 +1171,21 @@ class NotificationDispatcher
             // role list that misses flag-granted administrators.
             ->where(fn ($q) => \App\Support\Authorization\SafeguardingStaff::scope($q))
             ->where('status', 'active')
-            ->select(['id', 'email', 'preferred_language'])
+            ->when($excludeUserIds !== [], fn ($q) => $q->whereNotIn('id', array_map('intval', $excludeUserIds)))
+            ->select(['id', 'email', 'preferred_language', 'role', 'is_admin', 'is_super_admin', 'is_tenant_super_admin', 'is_god'])
             ->get();
 
         if ($admins->isEmpty()) {
             return 0;
         }
 
-        $adminUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
         $count = 0;
+        $adminLink = $link;
 
         foreach ($admins as $admin) {
             $uid = (int) $admin->id;
+            $link = ($brokerLink !== null && ! \App\Support\Authorization\AdminTier::allows($admin)) ? $brokerLink : $adminLink;
+            $adminUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $link;
 
             LocaleContext::withLocale($admin, function () use ($admin, $uid, $tenantId, $type, $link, $bellKey, $subjectKey, $bodyKey, $params, $theme, $adminUrl): void {
                 $bell = __($bellKey, $params);

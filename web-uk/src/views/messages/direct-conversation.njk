@@ -176,6 +176,14 @@
                   {% endif %}
                 {% endif %}
 
+                {# Only the receiver of a message may report it, so the link is on the
+                   other person's messages only. #}
+                {% if not message.isOwn and not message.isDeleted and message.id %}
+                  <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+                    <a class="govuk-link" href="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/report') }}">{{ t("govuk_alpha_members.concern_report.link_message") }}</a>
+                  </p>
+                {% endif %}
+
                 {% if message.canManage %}
                   <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
                     <summary class="govuk-details__summary">

@@ -3271,5 +3271,52 @@
     "open_admin": "Abrir o painel de administração",
     "refused_title": "Está apenas a visitar esta comunidade",
     "refused_body": "Como gestor de outra comunidade pode explorar aqui, mas não pode publicar, responder, inscrever-se nem enviar nada. Faça as alterações no painel de administração."
+  },
+  "member_report": {
+    "action_report": "Denunciar",
+    "action_report_message": "Denunciar mensagem",
+    "title_member": "Denunciar {{name}}",
+    "title_message": "Denunciar esta mensagem",
+    "member_fallback": "este membro",
+    "reason_label": "Porque está a fazer esta denúncia?",
+    "reason_required_error": "Escolha um motivo para a denúncia.",
+    "details_label": "Conte mais aos coordenadores (opcional)",
+    "details_label_required": "Conte aos coordenadores o que aconteceu",
+    "details_placeholder": "O que aconteceu? Acrescente tudo o que ajude os coordenadores a perceber.",
+    "details_required_error": "Descreva a sua preocupação.",
+    "reassurance": "Os coordenadores da sua comunidade vão ver isto. A pessoa denunciada não é informada de quem a denunciou.",
+    "emergency": "Se alguém estiver em perigo imediato, contacte os serviços de emergência.",
+    "cancel": "Cancelar",
+    "submit": "Enviar denúncia",
+    "close": "Fechar",
+    "success": "Obrigado. A sua denúncia foi enviada aos coordenadores da sua comunidade.",
+    "already_reported": "Já fez esta denúncia. Os coordenadores da sua comunidade estão a analisá-la.",
+    "error_generic": "Não foi possível enviar a sua denúncia. Tente novamente.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Alguém pode estar em risco",
+        "help": "Receia que alguém esteja a ser maltratado, explorado ou posto em risco"
+      },
+      "harassment": {
+        "label": "Assédio ou intimidação",
+        "help": "Contacto ameaçador, abusivo ou indesejado"
+      },
+      "inappropriate": {
+        "label": "Impróprio ou ofensivo",
+        "help": "Conteúdo ou comportamento sexual, de ódio ou ofensivo"
+      },
+      "scam_or_fraud": {
+        "label": "Burla ou fraude",
+        "help": "Pede dinheiro, dados bancários ou informações pessoais"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Publicidade indesejada ou mensagens repetidas"
+      },
+      "other": {
+        "label": "Outra coisa",
+        "help": "Explique aos coordenadores por palavras suas abaixo"
+      }
+    }
   }
 }

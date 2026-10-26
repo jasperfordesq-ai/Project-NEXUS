@@ -13050,7 +13050,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=505 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=506 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17468,6 +17468,8 @@ CREATE TABLE `reports` (
   `status` enum('open','resolved','dismissed') NOT NULL DEFAULT 'open',
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `category` varchar(40) DEFAULT NULL,
+  `target_snapshot` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `tenant_status` (`tenant_id`,`status`),
   KEY `idx_reports_status` (`status`,`tenant_id`)
@@ -22757,7 +22759,8 @@ INSERT INTO `laravel_migrations` VALUES
 (499,'2026_10_25_100000_create_listings_digest_sends_table',165),
 (500,'2026_10_25_200000_overhaul_safeguarding_questions',166),
 (503,'2026_10_25_210000_vulnerable_adults_use_vetting',167),
-(504,'2026_10_26_120000_add_stripe_checkout_session_id_to_card_payment_records',168);
+(504,'2026_10_26_120000_add_stripe_checkout_session_id_to_card_payment_records',168),
+(505,'2026_10_26_150000_add_category_and_snapshot_to_reports',169);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

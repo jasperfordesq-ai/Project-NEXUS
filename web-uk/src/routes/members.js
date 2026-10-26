@@ -24,6 +24,7 @@ const {
   removeMemberConnection,
   blockMember,
   unblockMember,
+  reportMember,
   endorseMemberSkill,
   removeMemberEndorsement,
   transferWalletCredits,
@@ -40,6 +41,11 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
+const {
+  KEY: CONCERN_REPORT_KEY,
+  renderForm: renderConcernReportForm,
+  submitReport: submitConcernReport
+} = require('../lib/member-concern-report');
 
 const router = express.Router();
 
@@ -663,6 +669,61 @@ router.post('/:id(\\d+)/block', asyncRoute(async (req, res) => {
     ? '/profile/blocked?status=member-blocked'
     : memberUrl(id, status));
 }));
+
+// Report this member to the community's coordinators
+// (POST /api/v2/users/{id}/report). The shared journey lives in
+// src/lib/member-concern-report.js; this only says who is being reported.
+function memberReportSubject(id, res) {
+  return {
+    formAction: `${MEMBERS_PATH}/${id}/report`,
+    backHref: `${MEMBERS_PATH}/${id}`,
+    backText: res.locals.t(`${CONCERN_REPORT_KEY}.back_to_profile`),
+    doneHref: `${MEMBERS_PATH}/${id}`
+  };
+}
+
+// The heading names the member when their profile can be read. A member you have
+// blocked, or one who has blocked you, cannot be looked up — and is exactly who
+// someone may need to report — so a refusal falls back to a generic heading.
+async function memberReportHeading(token, id, res) {
+  const t = res.locals.t;
+  try {
+    const user = dataFrom(await getUser(token, id));
+    // memberName() without its "unknown member" fallback: no name, generic heading.
+    const name = user && typeof user === 'object' ? memberName(user, () => '') : '';
+    if (name) {
+      return t(`${CONCERN_REPORT_KEY}.member_heading`, { name });
+    }
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+  }
+  return t(`${CONCERN_REPORT_KEY}.member_heading_unnamed`);
+}
+
+router.get('/:id(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, LOGIN_AUTH_REQUIRED_PATH);
+  }
+  const id = Number(req.params.id);
+  const heading = await memberReportHeading(token, id, res);
+  return renderConcernReportForm(req, res, memberReportSubject(id, res), heading);
+}, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH }));
+
+router.post('/:id(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, LOGIN_AUTH_REQUIRED_PATH);
+  }
+  const id = Number(req.params.id);
+  return submitConcernReport(req, res, {
+    token,
+    send: (bearer, payload) => reportMember(bearer, id, payload),
+    subject: memberReportSubject(id, res),
+    headingFor: () => memberReportHeading(token, id, res),
+    loginPath: LOGIN_AUTH_REQUIRED_PATH
+  });
+}, { redirectOn401: LOGIN_AUTH_REQUIRED_PATH }));
 
 router.post('/:id(\\d+)/unblock', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

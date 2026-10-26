@@ -15,6 +15,7 @@ import XCircle from 'lucide-react/icons/circle-x';
 import AlertCircle from 'lucide-react/icons/circle-alert';
 import Flag from 'lucide-react/icons/flag';
 import Eye from 'lucide-react/icons/eye';
+import ShieldAlert from 'lucide-react/icons/shield-alert';
 import { useTranslation } from 'react-i18next';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -47,6 +48,7 @@ export default function ReportsManagement() {
     { label: t('moderation.content_type_review'), value: 'review' },
     { label: t('moderation.content_type_user'), value: 'user' },
     { label: t('moderation.content_type_listing'), value: 'listing' },
+    { label: t('moderation.content_type_message'), value: 'message' },
   ];
 
   const STATUS_FILTERS = [
@@ -66,9 +68,47 @@ export default function ReportsManagement() {
     spam: t('moderation.report_reasons.spam'),
     not_timebank_service: t('moderation.report_reasons.not_timebank_service'),
     other: t('moderation.report_reasons.other'),
+    // Member concern reports (a member or a direct message they received)
+    safeguarding_concern: t('moderation.report_reasons.safeguarding_concern'),
+    harassment: t('moderation.report_reasons.harassment'),
+    scam_or_fraud: t('moderation.report_reasons.scam_or_fraud'),
   };
   const reasonText = (reason: string | null | undefined): string =>
     (reason ? REPORT_REASON_LABELS[reason.trim()] : undefined) ?? reason ?? '';
+
+  // Member concern reports carry a category code. Show it as a chip — a
+  // safeguarding concern in danger colours so it stands out in the queue — and
+  // show the member's own words beside it only when they wrote some (when they
+  // did not, `reason` is just the category code again).
+  const renderReason = (report: AdminReport, layout: 'cell' | 'drawer') => {
+    const category = report.category?.trim() || null;
+    const ownWords = category && report.reason?.trim() === category ? null : reasonText(report.reason);
+    return (
+      <div className={layout === 'cell' ? 'flex max-w-xs flex-col items-start gap-1' : 'flex flex-col items-start gap-2'}>
+        {category ? (
+          <span data-report-category={category}>
+            <Chip
+              size="sm"
+              variant={category === 'safeguarding_concern' ? 'primary' : 'soft'}
+              color={category === 'safeguarding_concern' ? 'danger' : 'warning'}
+              startContent={category === 'safeguarding_concern' ? <ShieldAlert aria-hidden="true" className="h-3.5 w-3.5" /> : undefined}
+            >
+              {reasonText(category)}
+            </Chip>
+          </span>
+        ) : null}
+        {ownWords ? (
+          <span
+            className={layout === 'cell'
+              ? 'text-sm font-medium text-foreground line-clamp-3'
+              : 'whitespace-pre-line text-sm text-foreground'}
+          >
+            {ownWords}
+          </span>
+        ) : null}
+      </div>
+    );
+  };
 
   const toast = useToast();
   const { user } = useAuth();
@@ -207,6 +247,8 @@ export default function ReportsManagement() {
     user: t('moderation.content_type_user'),
     listing: t('moderation.content_type_listing'),
     event: t('moderation.content_type_event'),
+    group: t('moderation.content_type_group'),
+    message: t('moderation.content_type_message'),
   };
   const typeLabel = (type: string) => CONTENT_TYPE_LABELS[type] ?? t('moderation.content_type_unknown');
 
@@ -302,7 +344,7 @@ export default function ReportsManagement() {
         {renderTargetSummary(report)}
       </TableCell>,
       <TableCell key="reason">
-        <span className="text-sm font-medium text-foreground">{reasonText(report.reason)}</span>
+        {renderReason(report, 'cell')}
       </TableCell>,
       <TableCell key="status">
         {(report.status === 'open' || report.status === 'pending') && (
@@ -725,7 +767,7 @@ export default function ReportsManagement() {
                   <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
                     {t('moderation.drawer_reason')}
                   </h3>
-                  <p className="whitespace-pre-line text-sm text-foreground">{reasonText(detailReport.reason)}</p>
+                  {renderReason(detailReport, 'drawer')}
                 </section>
 
                 {/* Meta */}

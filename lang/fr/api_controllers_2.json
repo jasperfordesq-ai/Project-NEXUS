@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "L'audio hébergé de cet épisode est encore en cours de vérification ou n'a pas réussi la validation.",
   "podcasts.external_artwork_not_allowed": "L'illustration du podcast doit être téléversée sur cette plateforme avant utilisation.",
   "listings_digest.confirm_required": "Confirmez que vous voulez envoyer un e-mail à tous les membres maintenant.",
-  "listings_digest.send_failed": "Le récapitulatif n'a pas pu être mis en file d'attente. Veuillez réessayer."
+  "listings_digest.send_failed": "Le récapitulatif n'a pas pu être mis en file d'attente. Veuillez réessayer.",
+  "member_reports.cannot_report_self": "Vous ne pouvez pas vous signaler vous-même.",
+  "member_reports.member_not_found": "Membre introuvable.",
+  "member_reports.message_not_found": "Message introuvable.",
+  "member_reports.invalid_category": "Veuillez choisir un motif pour votre signalement.",
+  "member_reports.details_required": "Veuillez décrire ce qui s’est passé.",
+  "member_reports.details_too_long": "Votre description ne doit pas dépasser {{max}} caractères.",
+  "member_reports.already_reported": "Vous avez déjà signalé ceci. Les coordinateurs de votre communauté vont l’examiner."
 }

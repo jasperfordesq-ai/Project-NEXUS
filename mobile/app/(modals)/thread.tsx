@@ -43,6 +43,7 @@ import { contrastText, readReceiptColor, withAlpha } from '@/lib/utils/color';
 import { dateLocale } from '@/lib/utils/dateLocale';
 import AppTopBar from '@/components/ui/AppTopBar';
 import ActionSheet from '@/components/ui/ActionSheet';
+import ReportMemberSheet from '@/components/ReportMemberSheet';
 import { useAppToast } from '@/components/ui/AppToast';
 import { useConfirm } from '@/components/ui/useConfirm';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -387,6 +388,12 @@ function ThreadScreenInner() {
     uploadAbortRef.current?.abort();
   }, []);
   const [optionsMessage, setOptionsMessage] = useState<Message | null>(null);
+  // A received message the member is reporting to the community's coordinators.
+  const [reportingMessage, setReportingMessage] = useState<Message | null>(null);
+  const openMessageReport = useCallback((message: Message) => {
+    setOptionsMessage(null);
+    setReportingMessage(message);
+  }, []);
   const flatListRef = useRef<FlatList<ThreadRow>>(null);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recordingRef = useRef<typeof audioRecorder | null>(null);
@@ -764,25 +771,6 @@ function ThreadScreenInner() {
   }, [isFocused, isValidId, messages, refreshCounts, safeThreadLookupId]);
 
   useEffect(() => {
-    if (!isValidId) return undefined;
-    let cancelled = false;
-    getMessagingRestrictionStatus()
-      .then((response) => {
-        if (!cancelled) {
-          setMessagingRestriction(response.data);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMessagingRestriction(null);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isValidId]);
-
-  useEffect(() => {
     recordingMountedRef.current = true;
     return () => {
     recordingMountedRef.current = false;
@@ -815,6 +803,32 @@ function ThreadScreenInner() {
     const incoming = data?.data?.find((message) => !message.is_own);
     return incoming?.sender?.id ?? incoming?.sender_id ?? null;
   }, [data, isNewConversation, isValidId, safeThreadLookupId]);
+
+  useEffect(() => {
+    if (!isValidId) return undefined;
+    let cancelled = false;
+    // Asked with the partner so the supporter-view notice is answered for this pair.
+    getMessagingRestrictionStatus(resolvedRecipientId)
+      .then((response) => {
+        if (!cancelled) {
+          setMessagingRestriction(response.data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMessagingRestriction(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isValidId, resolvedRecipientId]);
+
+  // Same rule and cause-agnostic wording as the websites: shown unless the
+  // community copies nothing AND no supporter may view this conversation, so a
+  // reader can never tell which cause applies. Fails towards showing.
+  const showReviewNotice = messagingRestriction?.review_notice_required !== false
+    || messagingRestriction?.supporter_view_notice_required === true;
 
   const typingSender = useTypingSender(
     resolvedRecipientId,
@@ -1507,6 +1521,15 @@ function ThreadScreenInner() {
           <RestrictionNotice primary={primary} t={t} theme={theme} />
         ) : null}
 
+        {showReviewNotice ? (
+          <View className="mx-4 mb-2 flex-row items-start gap-2 rounded-panel-inner px-3 py-2" style={{ backgroundColor: withAlpha(theme.warning, 0.1) }}>
+            <Ionicons name="shield-checkmark-outline" size={15} color={theme.warning} style={{ marginTop: 1 }} />
+            <Text className="min-w-0 flex-1 text-xs leading-5" style={{ color: theme.textSecondary }}>
+              {t('thread.reviewNotice')}
+            </Text>
+          </View>
+        ) : null}
+
         <FlatList<ThreadRow>
           ref={flatListRef}
           data={threadRows}
@@ -1809,7 +1832,13 @@ function ThreadScreenInner() {
             }}
           />
         ) : undefined}
-        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage, copyMessageText, !isSending && !editingMessage)}
+        actions={buildMessageActions(optionsMessage, t, startEditingMessage, handleDeleteMessage, copyMessageText, !isSending && !editingMessage, openMessageReport)}
+      />
+      <ReportMemberSheet
+        visible={Boolean(reportingMessage)}
+        target={reportingMessage ? { type: 'message', id: reportingMessage.id } : null}
+        subjectName={reportingMessage ? displayName(reportingMessage.sender, unknownMemberLabel) : ''}
+        onClose={() => setReportingMessage(null)}
       />
       {confirmDialog}
     </SafeAreaView>
@@ -1959,6 +1988,7 @@ function buildMessageActions(
   handleDeleteMessage: (message: Message, scope: 'self' | 'everyone') => void,
   copyMessageText: (message: Message) => void,
   canEdit: boolean,
+  reportMessage: (message: Message) => void,
 ) {
   if (!message) return [];
   const hasText = !message.is_voice && !message.is_deleted && Boolean(message.body || message.content);
@@ -1989,6 +2019,13 @@ function buildMessageActions(
       icon: 'trash-bin-outline',
       destructive: true,
       onPress: () => handleDeleteMessage(message, 'everyone'),
+    }] : []),
+    // Only the receiver may report a direct message (the server refuses anyone else), and a
+    // message already deleted has nothing left for coordinators to read.
+    ...(!message.is_own && !message.is_deleted ? [{
+      label: t('common:memberReport.reportMessage'),
+      icon: 'flag-outline',
+      onPress: () => reportMessage(message),
     }] : []),
   ];
 }

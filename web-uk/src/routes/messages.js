@@ -23,6 +23,11 @@ const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { audit } = require('../lib/auditLogger');
 const { getRequestProfile } = require('../lib/request-profile');
+const {
+  KEY: CONCERN_REPORT_KEY,
+  renderForm: renderConcernReportForm,
+  submitReport: submitConcernReport
+} = require('../lib/member-concern-report');
 
 const router = express.Router();
 
@@ -708,6 +713,60 @@ router.post('/:userId(\\d+)/m/:messageId(\\d+)/delete', asyncRoute(async (req, r
 
   return redirectTo(res, messageRedirect(userId, status));
 }));
+
+// Report a direct message you received to the community's coordinators
+// (POST /api/v2/messages/{id}/report). Only the receiver may report a message and
+// federated messages are refused; the API enforces both, answering 404. The shared
+// journey lives in src/lib/member-concern-report.js. Behind the messages module gate
+// like every /messages path (src/middleware/tenant-feature-gates.js).
+function messageReportSubject(userId, messageId, res) {
+  return {
+    formAction: `/messages/${userId}/m/${messageId}/report`,
+    backHref: `/messages/${userId}#m-${messageId}`,
+    backText: res.locals.t(`${CONCERN_REPORT_KEY}.back_to_conversation`),
+    doneHref: `/messages/${userId}`
+  };
+}
+
+async function messageReportHeading(token, userId, res) {
+  const t = res.locals.t;
+  try {
+    const result = await getUser(token, userId);
+    const user = dataFrom(result);
+    const source = user && typeof user === 'object' ? user : {};
+    const name = trimmed(source.name)
+      || `${trimmed(source.first_name)} ${trimmed(source.last_name)}`.trim();
+    if (name) return t(`${CONCERN_REPORT_KEY}.message_heading`, { name });
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+  }
+  return t(`${CONCERN_REPORT_KEY}.message_heading_unnamed`);
+}
+
+router.get('/:userId(\\d+)/m/:messageId(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const userId = Number(req.params.userId);
+  const messageId = Number(req.params.messageId);
+  const heading = await messageReportHeading(token, userId, res);
+  return renderConcernReportForm(req, res, messageReportSubject(userId, messageId, res), heading);
+}, { redirectOn401: loginRedirect() }));
+
+router.post('/:userId(\\d+)/m/:messageId(\\d+)/report', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const userId = Number(req.params.userId);
+  const messageId = Number(req.params.messageId);
+  return submitConcernReport(req, res, {
+    token,
+    send: (bearer, payload) => callMessage(bearer, 'POST', `/${encodeURIComponent(messageId)}/report`, payload),
+    subject: messageReportSubject(userId, messageId, res),
+    headingFor: () => messageReportHeading(token, userId, res),
+    loginPath: loginRedirect()
+  });
+}, { redirectOn401: loginRedirect() }));
 
 router.post('/:userId(\\d+)/m/:messageId(\\d+)/translate', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

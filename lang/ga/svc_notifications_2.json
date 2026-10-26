@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Gníomh déanta ar do liostú \"{{title}}\": {{action}}.",
   "marketplace_enforcement.cleared_bell": "Rinneadh athbhreithniú ar thuairisc faoi do liostú \"{{title}}\" — níor glacadh aon ghníomh.",
   "marketplace_enforcement.appeal_outcome_bell": "Réitíodh achomharc do do liostú \"{{title}}\": {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Cuireadh do chuntas díoltóra ar fionraí agus baineadh do liostuithe."
+  "marketplace_enforcement.suspended_bell": "Cuireadh do chuntas díoltóra ar fionraí agus baineadh do liostuithe.",
+  "member_concern.member_alert": "Rinne ball tuairisc ar bhall eile. Déan athbhreithniú ar an tuairisc.",
+  "member_concern.message_alert": "Rinne ball tuairisc ar theachtaireacht a fuair siad. Déan athbhreithniú ar an tuairisc.",
+  "member_concern.safeguarding_alert": "D’ardaigh ball imní cosanta. Déan athbhreithniú air chomh luath agus is féidir."
 }

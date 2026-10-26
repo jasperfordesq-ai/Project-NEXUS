@@ -297,8 +297,12 @@
       "misleading": "Irreführend",
       "spam": "Spam oder Betrug",
       "not_timebank_service": "Keine Zeitbank-Dienstleistung",
-      "other": "Sonstiges"
-    }
+      "other": "Sonstiges",
+      "safeguarding_concern": "Jemand ist möglicherweise in Gefahr (Schutz)",
+      "harassment": "Belästigung oder Mobbing",
+      "scam_or_fraud": "Betrug"
+    },
+    "content_type_message": "Nachricht"
   },
   "something_wrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
 }

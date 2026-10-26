@@ -9980,6 +9980,61 @@
                 "banner_body": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous.",
                 "empty_title": "Certaines correspondances ne peuvent pas encore être affichées",
                 "empty_body": "La configuration de la protection de votre communauté n'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l'équipe de votre communauté l'aura terminée."
+            },
+            "concern_report": {
+                "link_member": "Signaler ce membre",
+                "link_message": "Signaler ce message",
+                "member_heading": "Signaler :name",
+                "member_heading_unnamed": "Signaler un membre",
+                "message_heading": "Signaler un message de :name",
+                "message_heading_unnamed": "Signaler un message",
+                "legend": "Pourquoi faites-vous ce signalement ?",
+                "categories": {
+                    "safeguarding_concern": {
+                        "label": "Une inquiétude pour la sécurité d’une personne",
+                        "hint": "Vous craignez qu’une personne soit maltraitée, exploitée ou mise en danger"
+                    },
+                    "harassment": {
+                        "label": "Harcèlement ou intimidation",
+                        "hint": "Contact menaçant, injurieux ou non désiré"
+                    },
+                    "inappropriate": {
+                        "label": "Comportement inapproprié",
+                        "hint": "Comportement ou contenu choquant ou inapproprié"
+                    },
+                    "scam_or_fraud": {
+                        "label": "Une arnaque ou une fraude",
+                        "hint": "Demande d’argent, de coordonnées bancaires ou d’informations personnelles"
+                    },
+                    "spam": {
+                        "label": "Messages indésirables (spam)",
+                        "hint": "Publicité non désirée ou messages répétés"
+                    },
+                    "other": {
+                        "label": "Autre chose",
+                        "hint": "Autre chose — dites-nous en plus"
+                    }
+                },
+                "details_label": "Dites-nous ce qui s’est passé",
+                "details_hint": "Ajoutez tout ce qui aidera les coordinateurs à comprendre ce qui s’est passé. C’est facultatif, sauf si vous avez choisi « Autre chose ».",
+                "inset": "Les coordinateurs de votre communauté verront ce signalement. La personne signalée ne sait pas qui l’a signalée.",
+                "emergency_warning": "Si une personne est en danger immédiat, contactez les services d’urgence.",
+                "submit": "Envoyer le signalement",
+                "sent_title": "Signalement envoyé",
+                "sent_reference": "Votre numéro de référence",
+                "sent_body": "Merci. Les coordinateurs de votre communauté vont examiner votre signalement.",
+                "sent_next": "Ils pourront vous contacter s’ils ont besoin de plus d’informations. La personne signalée ne sait pas qui l’a signalée.",
+                "already_title": "Vous avez déjà fait ce signalement",
+                "already_body": "Les coordinateurs de votre communauté ont déjà votre signalement et vont l’examiner. Vous n’avez pas besoin de le signaler à nouveau.",
+                "back_to_profile": "Retour au profil",
+                "back_to_conversation": "Retour à la conversation",
+                "errors": {
+                    "category_required": "Choisissez pourquoi vous faites ce signalement",
+                    "details_required": "Dites-nous ce qui s’est passé",
+                    "details_too_long": "La description doit comporter :max caractères au maximum",
+                    "failed": "Votre signalement n’a pas pu être envoyé. Réessayez.",
+                    "rate_limited": "Vous avez envoyé trop de signalements. Réessayez plus tard."
+                }
             }
         },
         "govuk_alpha_messages": {

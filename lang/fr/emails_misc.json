@@ -833,7 +833,11 @@
     "marketplace_subject": "Action requise : signalement Marketplace #{{report_id}}",
     "marketplace_body": "Un signalement Marketplace a été déposé (signalement #{{report_id}}). Motif : {{reason}}. Conformément au Digital Services Act, il doit être accusé de réception et traité sous 24 heures. Veuillez l’examiner dès maintenant dans le panneau d’administration.",
     "job_subject": "Offre d’emploi signalée pour examen — {{title}}",
-    "job_body": "Une offre d’emploi a été automatiquement signalée comme spam potentiel. Titre : {{title}} (#{{job_id}}). Score de spam : {{score}}/100. Elle est en attente d’examen — veuillez l’approuver ou la refuser dans le panneau d’administration."
+    "job_body": "Une offre d’emploi a été automatiquement signalée comme spam potentiel. Titre : {{title}} (#{{job_id}}). Score de spam : {{score}}/100. Elle est en attente d’examen — veuillez l’approuver ou la refuser dans le panneau d’administration.",
+    "member_concern_subject": "Nouveau signalement concernant un membre — #{{report_id}}",
+    "member_concern_body": "Un membre a signalé un autre membre, ou un message qu’il a reçu. Référence : #{{report_id}}. Veuillez l’examiner dans votre liste de signalements. Le membre concerné n’a pas été informé.",
+    "safeguarding_subject": "Préoccupation de protection signalée — #{{report_id}}",
+    "safeguarding_body": "Un membre a signalé une préoccupation de protection concernant un autre membre. Référence : #{{report_id}}. Veuillez l’examiner dès que possible. Le membre concerné n’a pas été informé."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "non précisé",

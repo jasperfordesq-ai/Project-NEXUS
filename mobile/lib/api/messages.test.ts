@@ -123,8 +123,16 @@ describe('getMessagingRestrictionStatus', () => {
 
     const result = await getMessagingRestrictionStatus();
 
-    expect(api.get).toHaveBeenCalledWith('/api/v2/messages/restriction-status');
+    expect(api.get).toHaveBeenCalledWith('/api/v2/messages/restriction-status', {});
     expect(result.data.messaging_disabled).toBe(true);
+  });
+
+  it('asks about the conversation partner so the supporter notice is answered for the pair', async () => {
+    (api.get as jest.Mock).mockResolvedValue({ data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null } });
+
+    await getMessagingRestrictionStatus(42);
+
+    expect(api.get).toHaveBeenCalledWith('/api/v2/messages/restriction-status', { partner_id: '42' });
   });
 });
 

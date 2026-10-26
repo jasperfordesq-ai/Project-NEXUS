@@ -297,8 +297,12 @@
       "misleading": "مضلل",
       "spam": "بريد عشوائي أو احتيال",
       "not_timebank_service": "ليست خدمة بنك وقت",
-      "other": "أخرى"
-    }
+      "other": "أخرى",
+      "safeguarding_concern": "قد يكون شخص ما في خطر (الحماية)",
+      "harassment": "مضايقة أو تنمّر",
+      "scam_or_fraud": "احتيال"
+    },
+    "content_type_message": "رسالة"
   },
   "something_wrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
 }

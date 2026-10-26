@@ -105,4 +105,62 @@ return [
         'empty_title' => 'Ní féidir roinnt meaitseálacha a thaispeáint go fóill',
         'empty_body' => 'Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail.',
     ],
+    // A member reports another member, or a direct message they received, to
+    // their community's coordinators (POST /v2/users/{id}/report and
+    // POST /v2/messages/{id}/report).
+    'concern_report' => [
+        'link_member' => 'Tuairiscigh an ball seo',
+        'link_message' => 'Tuairiscigh an teachtaireacht seo',
+        'member_heading' => 'Tuairiscigh :name',
+        'member_heading_unnamed' => 'Tuairiscigh ball',
+        'message_heading' => 'Tuairiscigh teachtaireacht ó :name',
+        'message_heading_unnamed' => 'Tuairiscigh teachtaireacht',
+        'legend' => 'Cén fáth a bhfuil tú á thuairisciú seo?',
+        'categories' => [
+            'safeguarding_concern' => [
+                'label' => 'Imní faoi chosaint',
+                'hint' => 'Tá imní ort go bhfuil duine á ghortú, á shaothrú nó á chur i mbaol',
+            ],
+            'harassment' => [
+                'label' => 'Ciapadh nó bulaíocht',
+                'hint' => 'Teagmháil bhagrach, mhaslach nó gan iarraidh',
+            ],
+            'inappropriate' => [
+                'label' => 'Iompar míchuí',
+                'hint' => 'Iompar nó ábhar maslach nó míchuí',
+            ],
+            'scam_or_fraud' => [
+                'label' => 'Camscéim nó calaois',
+                'hint' => 'Ag iarraidh airgid, sonraí bainc nó faisnéise pearsanta',
+            ],
+            'spam' => [
+                'label' => 'Turscar',
+                'hint' => 'Fógraíocht gan iarraidh nó teachtaireachtaí arís agus arís eile',
+            ],
+            'other' => [
+                'label' => 'Rud éigin eile',
+                'hint' => 'Rud éigin eile — inis tuilleadh dúinn',
+            ],
+        ],
+        'details_label' => 'Inis dúinn cad a tharla',
+        'details_hint' => 'Cuir isteach aon rud a chabhróidh leis na comhordaitheoirí an méid a tharla a thuiscint. Tá sé seo roghnach mura roghnaigh tú ‘Rud éigin eile’.',
+        'inset' => 'Feicfidh comhordaitheoirí do phobail é seo. Ní insítear don duine a dtuairiscíonn tú cé a rinne an tuairisc.',
+        'emergency_warning' => 'Má tá duine i mbaol láithreach, déan teagmháil leis na seirbhísí éigeandála.',
+        'submit' => 'Seol an tuairisc',
+        'sent_title' => 'Tuairisc seolta',
+        'sent_reference' => 'D’uimhir thagartha',
+        'sent_body' => 'Go raibh maith agat. Déanfaidh comhordaitheoirí do phobail athbhreithniú ar do thuairisc.',
+        'sent_next' => 'B’fhéidir go rachaidh siad i dteagmháil leat má bhíonn tuilleadh eolais uathu. Ní insítear don duine a thuairiscigh tú cé a rinne an tuairisc.',
+        'already_title' => 'Tá sé seo tuairiscithe agat cheana',
+        'already_body' => 'Tá do thuairisc ag comhordaitheoirí do phobail cheana féin agus déanfaidh siad athbhreithniú uirthi. Ní gá duit é a thuairisciú arís.',
+        'back_to_profile' => 'Ar ais chuig an bpróifíl',
+        'back_to_conversation' => 'Ar ais chuig an gcomhrá',
+        'errors' => [
+            'category_required' => 'Roghnaigh cén fáth a bhfuil tú á thuairisciú seo',
+            'details_required' => 'Inis dúinn cad a tharla',
+            'details_too_long' => 'Ní mór go mbeadh an cur síos ar a tharla :max carachtar nó níos lú',
+            'failed' => 'Níorbh fhéidir do thuairisc a sheoladh. Bain triail eile as.',
+            'rate_limited' => 'Tá an iomarca tuairiscí seolta agat. Bain triail eile as ar ball.',
+        ],
+    ],
 ];

@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "L'audio ospitato di questo episodio è ancora in fase di controllo o non ha superato la convalida.",
   "podcasts.external_artwork_not_allowed": "L'immagine del podcast deve essere caricata su questa piattaforma prima di poter essere utilizzata.",
   "listings_digest.confirm_required": "Conferma di voler inviare ora un'email a tutti i membri.",
-  "listings_digest.send_failed": "Non è stato possibile mettere in coda il riepilogo. Riprova."
+  "listings_digest.send_failed": "Non è stato possibile mettere in coda il riepilogo. Riprova.",
+  "member_reports.cannot_report_self": "Non puoi segnalare te stesso.",
+  "member_reports.member_not_found": "Membro non trovato.",
+  "member_reports.message_not_found": "Messaggio non trovato.",
+  "member_reports.invalid_category": "Scegli un motivo per la segnalazione.",
+  "member_reports.details_required": "Descrivi cosa è successo.",
+  "member_reports.details_too_long": "La descrizione non può superare i {{max}} caratteri.",
+  "member_reports.already_reported": "Hai già segnalato questo contenuto. Le persone coordinatrici della tua comunità lo esamineranno."
 }

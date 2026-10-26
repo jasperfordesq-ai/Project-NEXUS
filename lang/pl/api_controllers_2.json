@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "Hostowany dźwięk tego odcinka jest nadal sprawdzany lub nie przeszedł walidacji multimediów.",
   "podcasts.external_artwork_not_allowed": "Grafika podcastu musi zostać przesłana na tę platformę przed użyciem.",
   "listings_digest.confirm_required": "Potwierdź, że chcesz teraz wysłać e-mail do wszystkich członków.",
-  "listings_digest.send_failed": "Nie udało się dodać podsumowania do kolejki. Spróbuj ponownie."
+  "listings_digest.send_failed": "Nie udało się dodać podsumowania do kolejki. Spróbuj ponownie.",
+  "member_reports.cannot_report_self": "Nie możesz zgłosić samego siebie.",
+  "member_reports.member_not_found": "Nie znaleziono członka.",
+  "member_reports.message_not_found": "Nie znaleziono wiadomości.",
+  "member_reports.invalid_category": "Wybierz powód zgłoszenia.",
+  "member_reports.details_required": "Opisz, co się stało.",
+  "member_reports.details_too_long": "Opis może mieć najwyżej {{max}} znaków.",
+  "member_reports.already_reported": "To zgłoszenie zostało już wysłane. Koordynatorzy Twojej społeczności się nim zajmą."
 }

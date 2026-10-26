@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 240,
+    "producer_count": 241,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -251,9 +251,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReportsController.php:335:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReportsController.php:338:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReportsController.php",
-            "line": 335,
+            "line": 338,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reporterId",
@@ -264,9 +264,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/AdminReportsController.php:405:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/AdminReportsController.php:408:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/AdminReportsController.php",
-            "line": 405,
+            "line": 408,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $reporterId",
@@ -1174,9 +1174,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Listeners/NotifyGroupChatroomMessage.php:181:NotificationDispatcher::fanOutPush",
+            "id": "app/Listeners/NotifyGroupChatroomMessage.php:193:NotificationDispatcher::fanOutPush",
             "file": "app/Listeners/NotifyGroupChatroomMessage.php",
-            "line": 181,
+            "line": 193,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",
@@ -2445,6 +2445,19 @@
             "body_expression": null,
             "type_expression": "match_approved",
             "link_expression": "/listings/{listing_id}",
+            "data_expression": null
+        },
+        {
+            "id": "app/Services/MemberConcernReportService.php:153:NotificationDispatcher::notifyModerationAdmins",
+            "file": "app/Services/MemberConcernReportService.php",
+            "line": 153,
+            "transport": "NotificationDispatcher::notifyModerationAdmins",
+            "role": "producer",
+            "recipient_expression": null,
+            "title_expression": null,
+            "body_expression": null,
+            "type_expression": "member_concern_reported",
+            "link_expression": "/admin/reports",
             "data_expression": null
         },
         {

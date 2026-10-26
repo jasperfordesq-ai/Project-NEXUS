@@ -3314,5 +3314,52 @@
     "open_admin": "Otwórz panel administracyjny",
     "refused_title": "Tylko odwiedzasz tę społeczność",
     "refused_body": "Jako menedżer z innej społeczności możesz się tu rozglądać, ale nie możesz niczego publikować, odpowiadać, zapisywać się ani wysyłać. Zmiany wprowadzaj w panelu administracyjnym."
+  },
+  "member_report": {
+    "action_report": "Zgłoś",
+    "action_report_message": "Zgłoś wiadomość",
+    "title_member": "Zgłoś: {{name}}",
+    "title_message": "Zgłoś tę wiadomość",
+    "member_fallback": "tego członka",
+    "reason_label": "Dlaczego to zgłaszasz?",
+    "reason_required_error": "Wybierz powód zgłoszenia.",
+    "details_label": "Przekaż koordynatorom więcej informacji (opcjonalnie)",
+    "details_label_required": "Opisz koordynatorom, co się stało",
+    "details_placeholder": "Co się stało? Dodaj wszystko, co pomoże koordynatorom zrozumieć sytuację.",
+    "details_required_error": "Opisz swój niepokój.",
+    "reassurance": "Koordynatorzy Twojej społeczności zobaczą to zgłoszenie. Zgłoszona osoba nie dowie się, kto ją zgłosił.",
+    "emergency": "Jeśli komuś grozi bezpośrednie niebezpieczeństwo, skontaktuj się ze służbami ratunkowymi.",
+    "cancel": "Anuluj",
+    "submit": "Wyślij zgłoszenie",
+    "close": "Zamknij",
+    "success": "Dziękujemy. Twoje zgłoszenie zostało wysłane do koordynatorów Twojej społeczności.",
+    "already_reported": "To zgłoszenie zostało już przez Ciebie wysłane. Koordynatorzy Twojej społeczności się nim zajmują.",
+    "error_generic": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Ktoś może być w niebezpieczeństwie",
+        "help": "Obawiasz się, że ktoś jest krzywdzony, wykorzystywany lub narażony na niebezpieczeństwo"
+      },
+      "harassment": {
+        "label": "Nękanie lub zastraszanie",
+        "help": "Groźny, obraźliwy lub niechciany kontakt"
+      },
+      "inappropriate": {
+        "label": "Niestosowne lub obraźliwe",
+        "help": "Treści lub zachowania o charakterze seksualnym, nienawistnym lub obraźliwym"
+      },
+      "scam_or_fraud": {
+        "label": "Oszustwo",
+        "help": "Prośby o pieniądze, dane bankowe lub informacje osobiste"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Niechciane reklamy lub powtarzające się wiadomości"
+      },
+      "other": {
+        "label": "Coś innego",
+        "help": "Opisz to koordynatorom własnymi słowami poniżej"
+      }
+    }
   }
 }

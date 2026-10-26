@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "Tá fuaim óstáilte na heipeasóide seo fós á seiceáil nó níor éirigh léi sa bhailíochtú meán.",
   "podcasts.external_artwork_not_allowed": "Ní mór saothar ealaíne an phodchraolta a uaslódáil chuig an ardán seo sular féidir é a úsáid.",
   "listings_digest.confirm_required": "Deimhnigh gur mian leat ríomhphost a sheoladh chuig gach ball anois.",
-  "listings_digest.send_failed": "Níorbh fhéidir an achoimre a chur sa scuaine. Bain triail eile as."
+  "listings_digest.send_failed": "Níorbh fhéidir an achoimre a chur sa scuaine. Bain triail eile as.",
+  "member_reports.cannot_report_self": "Ní féidir leat tuairisc a dhéanamh ort féin.",
+  "member_reports.member_not_found": "Níor aimsíodh an ball.",
+  "member_reports.message_not_found": "Níor aimsíodh an teachtaireacht.",
+  "member_reports.invalid_category": "Roghnaigh cúis le do thuairisc.",
+  "member_reports.details_required": "Déan cur síos ar cad a tharla.",
+  "member_reports.details_too_long": "Coinnigh do chur síos faoi {{max}} carachtar nó níos lú.",
+  "member_reports.already_reported": "Tá tuairisc déanta agat air seo cheana. Breathnóidh comhordaitheoirí do phobail air."
 }

@@ -6091,6 +6091,27 @@ describe('API Request Functions', () => {
       );
     });
 
+    it('should report a member to the coordinators through the Laravel v2 endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { reported: true, report_id: 4321 } })
+      });
+
+      const result = await api.reportMember('test-token', 77, { category: 'harassment', details: 'Unwanted contact' });
+
+      expect(result).toEqual({ data: { reported: true, report_id: 4321 } });
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/77/report',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+          body: JSON.stringify({ category: 'harassment', details: 'Unwanted contact' })
+        })
+      );
+    });
+
     it('should add and remove member endorsements through Laravel v2 endpoints', async () => {
       mockFetch
         .mockResolvedValueOnce({

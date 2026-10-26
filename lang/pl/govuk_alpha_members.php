@@ -105,4 +105,62 @@ return [
         'empty_title' => 'Niektórych dopasowań nie można jeszcze pokazać',
         'empty_body' => 'Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich. Wróć, gdy zespół Twojej społeczności ją ukończy.',
     ],
+    // A member reports another member, or a direct message they received, to
+    // their community's coordinators (POST /v2/users/{id}/report and
+    // POST /v2/messages/{id}/report).
+    'concern_report' => [
+        'link_member' => 'Zgłoś tego członka',
+        'link_message' => 'Zgłoś tę wiadomość',
+        'member_heading' => 'Zgłoś: :name',
+        'member_heading_unnamed' => 'Zgłoś członka',
+        'message_heading' => 'Zgłoś wiadomość od: :name',
+        'message_heading_unnamed' => 'Zgłoś wiadomość',
+        'legend' => 'Dlaczego to zgłaszasz?',
+        'categories' => [
+            'safeguarding_concern' => [
+                'label' => 'Obawa o bezpieczeństwo osoby',
+                'hint' => 'Obawiasz się, że ktoś jest krzywdzony, wykorzystywany lub narażony na niebezpieczeństwo',
+            ],
+            'harassment' => [
+                'label' => 'Nękanie lub zastraszanie',
+                'hint' => 'Kontakt z groźbami, obraźliwy lub niechciany',
+            ],
+            'inappropriate' => [
+                'label' => 'Niewłaściwe zachowanie',
+                'hint' => 'Obraźliwe lub niewłaściwe zachowanie albo treści',
+            ],
+            'scam_or_fraud' => [
+                'label' => 'Oszustwo',
+                'hint' => 'Prośby o pieniądze, dane bankowe lub dane osobowe',
+            ],
+            'spam' => [
+                'label' => 'Niechciane wiadomości (spam)',
+                'hint' => 'Niechciane reklamy lub powtarzające się wiadomości',
+            ],
+            'other' => [
+                'label' => 'Coś innego',
+                'hint' => 'Coś innego — opowiedz nam więcej',
+            ],
+        ],
+        'details_label' => 'Opisz, co się stało',
+        'details_hint' => 'Podaj wszystko, co pomoże koordynatorom zrozumieć, co się stało. To pole jest opcjonalne, chyba że wybrano „Coś innego”.',
+        'inset' => 'Koordynatorzy Twojej społeczności zobaczą to zgłoszenie. Zgłoszona osoba nie dowie się, kto ją zgłosił.',
+        'emergency_warning' => 'Jeśli komuś grozi bezpośrednie niebezpieczeństwo, skontaktuj się ze służbami ratunkowymi.',
+        'submit' => 'Wyślij zgłoszenie',
+        'sent_title' => 'Zgłoszenie wysłane',
+        'sent_reference' => 'Twój numer referencyjny',
+        'sent_body' => 'Dziękujemy. Koordynatorzy Twojej społeczności rozpatrzą Twoje zgłoszenie.',
+        'sent_next' => 'Mogą się z Tobą skontaktować, jeśli będą potrzebować więcej informacji. Zgłoszona osoba nie dowie się, kto ją zgłosił.',
+        'already_title' => 'To zgłoszenie zostało już przez Ciebie wysłane',
+        'already_body' => 'Koordynatorzy Twojej społeczności mają już Twoje zgłoszenie i je rozpatrzą. Nie musisz zgłaszać tego ponownie.',
+        'back_to_profile' => 'Wróć do profilu',
+        'back_to_conversation' => 'Wróć do rozmowy',
+        'errors' => [
+            'category_required' => 'Wybierz, dlaczego to zgłaszasz',
+            'details_required' => 'Opisz, co się stało',
+            'details_too_long' => 'Opis może mieć maksymalnie :max znaków',
+            'failed' => 'Nie udało się wysłać zgłoszenia. Spróbuj ponownie.',
+            'rate_limited' => 'Wysłano zbyt wiele zgłoszeń. Spróbuj ponownie później.',
+        ],
+    ],
 ];

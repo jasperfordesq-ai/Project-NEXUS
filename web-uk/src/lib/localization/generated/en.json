@@ -9980,6 +9980,61 @@
                 "banner_body": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe.",
                 "empty_title": "Some matches can't be shown yet",
                 "empty_body": "Your community's safeguarding setup isn't finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it."
+            },
+            "concern_report": {
+                "link_member": "Report this member",
+                "link_message": "Report this message",
+                "member_heading": "Report :name",
+                "member_heading_unnamed": "Report a member",
+                "message_heading": "Report a message from :name",
+                "message_heading_unnamed": "Report a message",
+                "legend": "Why are you reporting this?",
+                "categories": {
+                    "safeguarding_concern": {
+                        "label": "A safeguarding concern",
+                        "hint": "You are worried someone is being harmed, exploited or put at risk"
+                    },
+                    "harassment": {
+                        "label": "Harassment or bullying",
+                        "hint": "Threatening, abusive or unwanted contact"
+                    },
+                    "inappropriate": {
+                        "label": "Inappropriate behaviour",
+                        "hint": "Offensive or inappropriate behaviour or content"
+                    },
+                    "scam_or_fraud": {
+                        "label": "A scam or fraud",
+                        "hint": "Asking for money, bank details or personal information"
+                    },
+                    "spam": {
+                        "label": "Spam",
+                        "hint": "Unwanted advertising or repeated messages"
+                    },
+                    "other": {
+                        "label": "Something else",
+                        "hint": "Something else — please tell us more"
+                    }
+                },
+                "details_label": "Tell us what happened",
+                "details_hint": "Include anything that will help the coordinators understand what happened. This is optional unless you chose ‘Something else’.",
+                "inset": "Your community's coordinators will see this. The person you report is not told who reported them.",
+                "emergency_warning": "If someone is in immediate danger, contact the emergency services.",
+                "submit": "Send report",
+                "sent_title": "Report sent",
+                "sent_reference": "Your reference number",
+                "sent_body": "Thank you. Your community's coordinators will review your report.",
+                "sent_next": "They may contact you if they need more information. The person you reported is not told who reported them.",
+                "already_title": "You have already reported this",
+                "already_body": "Your community's coordinators already have your report and will review it. You do not need to report it again.",
+                "back_to_profile": "Back to the profile",
+                "back_to_conversation": "Back to the conversation",
+                "errors": {
+                    "category_required": "Select why you are reporting this",
+                    "details_required": "Tell us what happened",
+                    "details_too_long": "What happened must be :max characters or fewer",
+                    "failed": "Your report could not be sent. Try again.",
+                    "rate_limited": "You have sent too many reports. Try again later."
+                }
             }
         },
         "govuk_alpha_messages": {

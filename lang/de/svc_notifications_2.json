@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "Maßnahme zu Ihrem Inserat „{{title}}“: {{action}}.",
   "marketplace_enforcement.cleared_bell": "Eine Meldung zu Ihrem Inserat „{{title}}“ wurde geprüft — keine Maßnahme ergriffen.",
   "marketplace_enforcement.appeal_outcome_bell": "Einspruch zu Ihrem Inserat „{{title}}“ entschieden: {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Ihr Verkäuferkonto wurde gesperrt und Ihre Inserate entfernt."
+  "marketplace_enforcement.suspended_bell": "Ihr Verkäuferkonto wurde gesperrt und Ihre Inserate entfernt.",
+  "member_concern.member_alert": "Ein Mitglied hat ein anderes Mitglied gemeldet. Bitte prüfe die Meldung.",
+  "member_concern.message_alert": "Ein Mitglied hat eine erhaltene Nachricht gemeldet. Bitte prüfe die Meldung.",
+  "member_concern.safeguarding_alert": "Ein Mitglied hat ein Schutzanliegen gemeldet. Bitte prüfe es so bald wie möglich."
 }

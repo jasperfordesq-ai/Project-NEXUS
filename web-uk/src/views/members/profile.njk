@@ -104,14 +104,14 @@
         </ul>
       {% endif %}
 
-      <p class="govuk-body govuk-!-margin-bottom-4">
-        {% set reportType = "user" %}
-        {% set reportId = user.id %}
-        {% set returnTo = urlFor("/members/" + (user.id | string)) %}
-        {% include "partials/report-link.njk" %}
-      </p>
-
       {% if not isOwnProfile %}
+        {# Report this member to the community's coordinators. Replaces the generic
+           "report a problem" link this page used to carry, which went to the site
+           support form rather than to the coordinators. Offered whether or not you
+           have blocked them: blocking does not undo what they did. #}
+        <p class="govuk-body govuk-!-margin-bottom-4">
+          <a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/report') }}">{{ t("govuk_alpha_members.concern_report.link_member") }}</a>
+        </p>
         {% if isBlocked %}
           <div class="govuk-inset-text govuk-!-margin-top-4"><p class="govuk-body govuk-!-margin-bottom-2">{{ t("profile.block.is_blocked", { name: displayName }) }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/unblock') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--secondary">{{ t("profile.block.unblock") }}</button></form></div>
         {% else %}

@@ -833,7 +833,11 @@
     "marketplace_subject": "Acción necesaria: informe de marketplace #{{report_id}}",
     "marketplace_body": "Se ha presentado un informe de marketplace (informe #{{report_id}}). Motivo: {{reason}}. Según el Reglamento de Servicios Digitales (DSA) debe acusarse y tramitarse en 24 horas. Revísalo ahora en el panel de administración.",
     "job_subject": "Oferta de empleo marcada para revisión — {{title}}",
-    "job_body": "Una oferta de empleo se marcó automáticamente como posible spam. Título: {{title}} (#{{job_id}}). Puntuación de spam: {{score}}/100. Está pendiente de revisión — apruébala o recházala en el panel de administración."
+    "job_body": "Una oferta de empleo se marcó automáticamente como posible spam. Título: {{title}} (#{{job_id}}). Puntuación de spam: {{score}}/100. Está pendiente de revisión — apruébala o recházala en el panel de administración.",
+    "member_concern_subject": "Nueva denuncia sobre un miembro — #{{report_id}}",
+    "member_concern_body": "Un miembro ha denunciado a otro miembro o un mensaje que recibió. Referencia: #{{report_id}}. Revísala en tu lista de denuncias. No se ha informado al miembro afectado.",
+    "safeguarding_subject": "Preocupación de protección planteada — #{{report_id}}",
+    "safeguarding_body": "Un miembro ha planteado una preocupación de protección sobre otro miembro. Referencia: #{{report_id}}. Revísala lo antes posible. No se ha informado al miembro afectado."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "no especificado",

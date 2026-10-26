@@ -3228,5 +3228,52 @@
     "open_admin": "Verwaltungsbereich öffnen",
     "refused_title": "Sie besuchen diese Gemeinschaft nur",
     "refused_body": "Als Verwalter aus einer anderen Gemeinschaft können Sie sich hier umsehen, aber nichts posten, beantworten, sich anmelden oder senden. Änderungen nehmen Sie im Verwaltungsbereich vor."
+  },
+  "member_report": {
+    "action_report": "Melden",
+    "action_report_message": "Nachricht melden",
+    "title_member": "{{name}} melden",
+    "title_message": "Diese Nachricht melden",
+    "member_fallback": "dieses Mitglied",
+    "reason_label": "Warum melden Sie das?",
+    "reason_required_error": "Wählen Sie einen Grund für Ihre Meldung.",
+    "details_label": "Weitere Angaben für die Koordinatoren (optional)",
+    "details_label_required": "Schildern Sie den Koordinatoren, was passiert ist",
+    "details_placeholder": "Was ist passiert? Ergänzen Sie alles, was den Koordinatoren hilft, die Lage zu verstehen.",
+    "details_required_error": "Bitte beschreiben Sie Ihr Anliegen.",
+    "reassurance": "Die Koordinatoren Ihrer Gemeinschaft sehen diese Meldung. Die gemeldete Person erfährt nicht, wer sie gemeldet hat.",
+    "emergency": "Wenn jemand in unmittelbarer Gefahr ist, wenden Sie sich an den Notruf.",
+    "cancel": "Abbrechen",
+    "submit": "Meldung senden",
+    "close": "Schließen",
+    "success": "Vielen Dank. Ihre Meldung wurde an die Koordinatoren Ihrer Gemeinschaft gesendet.",
+    "already_reported": "Sie haben dies bereits gemeldet. Die Koordinatoren Ihrer Gemeinschaft kümmern sich darum.",
+    "error_generic": "Ihre Meldung konnte nicht gesendet werden. Bitte versuchen Sie es erneut.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Jemand ist möglicherweise in Gefahr",
+        "help": "Sie befürchten, dass jemand geschädigt, ausgenutzt oder in Gefahr gebracht wird"
+      },
+      "harassment": {
+        "label": "Belästigung oder Mobbing",
+        "help": "Drohende, beleidigende oder unerwünschte Kontaktaufnahme"
+      },
+      "inappropriate": {
+        "label": "Unangemessen oder anstößig",
+        "help": "Sexuelle, hasserfüllte oder anstößige Inhalte oder Verhaltensweisen"
+      },
+      "scam_or_fraud": {
+        "label": "Betrug",
+        "help": "Fragt nach Geld, Bankdaten oder persönlichen Informationen"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Unerwünschte Werbung oder wiederholte Nachrichten"
+      },
+      "other": {
+        "label": "Etwas anderes",
+        "help": "Beschreiben Sie es den Koordinatoren unten in eigenen Worten"
+      }
+    }
   }
 }

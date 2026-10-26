@@ -833,7 +833,11 @@
     "marketplace_subject": "Handlung erforderlich: Marktplatz-Meldung #{{report_id}}",
     "marketplace_body": "Eine Marktplatz-Meldung wurde eingereicht (Meldung #{{report_id}}). Grund: {{reason}}. Nach den Regeln des Digital Services Act muss sie innerhalb von 24 Stunden bestätigt und bearbeitet werden. Bitte jetzt im Admin-Bereich prüfen.",
     "job_subject": "Stellenanzeige zur Prüfung markiert — {{title}}",
-    "job_body": "Eine Stellenanzeige wurde automatisch als möglicher Spam markiert. Titel: {{title}} (#{{job_id}}). Spam-Score: {{score}}/100. Sie wird bis zur Prüfung zurückgehalten — bitte im Admin-Bereich genehmigen oder ablehnen."
+    "job_body": "Eine Stellenanzeige wurde automatisch als möglicher Spam markiert. Titel: {{title}} (#{{job_id}}). Spam-Score: {{score}}/100. Sie wird bis zur Prüfung zurückgehalten — bitte im Admin-Bereich genehmigen oder ablehnen.",
+    "member_concern_subject": "Neue Meldung über ein Mitglied — #{{report_id}}",
+    "member_concern_body": "Ein Mitglied hat ein anderes Mitglied oder eine erhaltene Nachricht gemeldet. Referenz: #{{report_id}}. Bitte prüfe die Meldung in deiner Meldungsliste. Das betroffene Mitglied wurde nicht informiert.",
+    "safeguarding_subject": "Schutzanliegen gemeldet — #{{report_id}}",
+    "safeguarding_body": "Ein Mitglied hat ein Schutzanliegen zu einem anderen Mitglied gemeldet. Referenz: #{{report_id}}. Bitte prüfe es so bald wie möglich. Das betroffene Mitglied wurde nicht informiert."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "nicht angegeben",

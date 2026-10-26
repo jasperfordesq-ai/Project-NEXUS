@@ -21842,6 +21842,7 @@ export default interface Resources {
       "content_type_event": "Event",
       "content_type_group": "Group",
       "content_type_listing": "Listing",
+      "content_type_message": "Message",
       "content_type_post": "Post",
       "content_type_review": "Review",
       "content_type_unknown": "Unknown content type",
@@ -21963,11 +21964,14 @@ export default interface Resources {
       "report_details": "Report details",
       "report_dismissed_successfully": "Report dismissed successfully",
       "report_reasons": {
+        "harassment": "Harassment or bullying",
         "inappropriate": "Inappropriate content",
         "misleading": "Misleading",
         "not_timebank_service": "Not a timebank service",
         "other": "Other",
+        "safeguarding_concern": "Someone may be at risk (safeguarding)",
         "safety_concern": "Safety concern",
+        "scam_or_fraud": "Scam or fraud",
         "spam": "Spam or scam"
       },
       "report_resolved_successfully": "Report resolved successfully",
@@ -39221,6 +39225,53 @@ export default interface Resources {
     "max_characters": "max {{count}} characters",
     "max_characters_one": "max {{count}} characters",
     "max_characters_other": "max {{count}} characters",
+    "member_report": {
+      "action_report": "Report",
+      "action_report_message": "Report message",
+      "already_reported": "You have already reported this. Your community's coordinators are looking at it.",
+      "cancel": "Cancel",
+      "categories": {
+        "harassment": {
+          "help": "Threatening, abusive or unwanted contact",
+          "label": "Harassment or bullying"
+        },
+        "inappropriate": {
+          "help": "Sexual, hateful or offensive content or behaviour",
+          "label": "Inappropriate or offensive"
+        },
+        "other": {
+          "help": "Tell the coordinators in your own words below",
+          "label": "Something else"
+        },
+        "safeguarding_concern": {
+          "help": "You are worried someone is being harmed, exploited or put at risk",
+          "label": "Someone may be at risk"
+        },
+        "scam_or_fraud": {
+          "help": "Asking for money, bank details or personal information",
+          "label": "Scam or fraud"
+        },
+        "spam": {
+          "help": "Unwanted advertising or repeated messages",
+          "label": "Spam"
+        }
+      },
+      "close": "Close",
+      "details_label": "Tell the coordinators more (optional)",
+      "details_label_required": "Tell the coordinators what happened",
+      "details_placeholder": "What happened? Add anything that would help the coordinators understand.",
+      "details_required_error": "Please describe your concern.",
+      "emergency": "If someone is in immediate danger, contact the emergency services.",
+      "error_generic": "We couldn't send your report. Please try again.",
+      "member_fallback": "this member",
+      "reason_label": "Why are you reporting this?",
+      "reason_required_error": "Choose a reason for your report.",
+      "reassurance": "Your community's coordinators will see this. The person you report is not told who reported them.",
+      "submit": "Send report",
+      "success": "Thank you. Your report has been sent to your community's coordinators.",
+      "title_member": "Report {{name}}",
+      "title_message": "Report this message"
+    },
     "members": {
       "active": "Most Active",
       "all": "All Members",

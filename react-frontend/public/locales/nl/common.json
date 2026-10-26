@@ -3228,5 +3228,52 @@
     "open_admin": "Beheerpaneel openen",
     "refused_title": "Je bezoekt deze gemeenschap alleen",
     "refused_body": "Als beheerder van een andere gemeenschap kun je hier rondkijken, maar je kunt niets plaatsen, beantwoorden, je aanmelden of versturen. Breng wijzigingen aan in het beheerpaneel."
+  },
+  "member_report": {
+    "action_report": "Melden",
+    "action_report_message": "Bericht melden",
+    "title_member": "{{name}} melden",
+    "title_message": "Dit bericht melden",
+    "member_fallback": "dit lid",
+    "reason_label": "Waarom meldt u dit?",
+    "reason_required_error": "Kies een reden voor uw melding.",
+    "details_label": "Vertel de coördinatoren meer (optioneel)",
+    "details_label_required": "Vertel de coördinatoren wat er is gebeurd",
+    "details_placeholder": "Wat is er gebeurd? Voeg alles toe wat de coördinatoren helpt het te begrijpen.",
+    "details_required_error": "Beschrijf uw zorg.",
+    "reassurance": "De coördinatoren van uw gemeenschap zien dit. De persoon die u meldt, krijgt niet te horen wie de melding heeft gedaan.",
+    "emergency": "Als iemand in direct gevaar is, neem dan contact op met de hulpdiensten.",
+    "cancel": "Annuleren",
+    "submit": "Melding versturen",
+    "close": "Sluiten",
+    "success": "Bedankt. Uw melding is verstuurd naar de coördinatoren van uw gemeenschap.",
+    "already_reported": "U hebt dit al gemeld. De coördinatoren van uw gemeenschap bekijken het.",
+    "error_generic": "We konden uw melding niet versturen. Probeer het opnieuw.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Iemand loopt mogelijk gevaar",
+        "help": "U maakt zich zorgen dat iemand wordt geschaad, uitgebuit of in gevaar wordt gebracht"
+      },
+      "harassment": {
+        "label": "Intimidatie of pesten",
+        "help": "Bedreigend, beledigend of ongewenst contact"
+      },
+      "inappropriate": {
+        "label": "Ongepast of aanstootgevend",
+        "help": "Seksuele, hatelijke of aanstootgevende inhoud of gedrag"
+      },
+      "scam_or_fraud": {
+        "label": "Oplichting of fraude",
+        "help": "Vraagt om geld, bankgegevens of persoonlijke informatie"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Ongewenste reclame of herhaalde berichten"
+      },
+      "other": {
+        "label": "Iets anders",
+        "help": "Vertel het de coördinatoren hieronder in uw eigen woorden"
+      }
+    }
   }
 }

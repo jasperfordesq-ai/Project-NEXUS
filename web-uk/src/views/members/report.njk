@@ -1,0 +1,89 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Report a member, or a direct message, to the community's coordinators.
+  Shared by GET/POST /members/:id/report and /messages/:userId/m/:messageId/report
+  (src/lib/member-concern-report.js). Works without JavaScript: the character count
+  is an enhancement and `maxlength` still limits the field.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set K = "govuk_alpha_members.concern_report." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(backHref) }}">{{ backText }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors and errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("states.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ heading }}</h1>
+
+      {{ govukWarningText({
+        text: t(K + "emergency_warning"),
+        iconFallbackText: t("states.warning_prefix")
+      }) }}
+
+      <div class="govuk-inset-text">{{ t(K + "inset") }}</div>
+
+      <form method="post" action="{{ urlFor(formAction) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {% set categoryItems = [] %}
+        {% for category in categories %}
+          {% set categoryItems = (categoryItems.push({
+            value: category,
+            text: t(K + "categories." + category + ".label"),
+            hint: { text: t(K + "categories." + category + ".hint") },
+            checked: values.category == category
+          }), categoryItems) %}
+        {% endfor %}
+
+        {{ govukRadios({
+          idPrefix: "category",
+          name: "category",
+          fieldset: {
+            legend: {
+              text: t(K + "legend"),
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: categoryError } if categoryError else undefined,
+          items: categoryItems
+        }) }}
+
+        {% call characterCount(detailsMax, characterCountMessages, "details") %}
+        <div class="govuk-form-group{% if detailsError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="details">{{ t(K + "details_label") }}</label>
+          <div id="details-hint" class="govuk-hint">{{ t(K + "details_hint") }}</div>
+          {% if detailsError %}
+            <p id="details-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ detailsError }}</p>
+          {% endif %}
+          <textarea class="govuk-textarea govuk-js-character-count{% if detailsError %} govuk-textarea--error{% endif %}" id="details" name="details" rows="6" maxlength="{{ detailsMax }}" aria-describedby="details-hint details-info{% if detailsError %} details-error{% endif %}">{{ values.details }}</textarea>
+        </div>
+        {% endcall %}
+
+        <div class="govuk-button-group">
+          {{ govukButton({ text: t(K + "submit"), preventDoubleClick: true }) }}
+          <a class="govuk-link" href="{{ urlFor(backHref) }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

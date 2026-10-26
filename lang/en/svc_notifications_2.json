@@ -121,5 +121,8 @@
   "marketplace_enforcement.action_bell": "Action taken on your listing \"{{title}}\": {{action}}.",
   "marketplace_enforcement.cleared_bell": "A report about your listing \"{{title}}\" was reviewed — no action taken.",
   "marketplace_enforcement.appeal_outcome_bell": "Appeal resolved for your listing \"{{title}}\": {{action}}.",
-  "marketplace_enforcement.suspended_bell": "Your seller account has been suspended and your listings removed."
+  "marketplace_enforcement.suspended_bell": "Your seller account has been suspended and your listings removed.",
+  "member_concern.member_alert": "A member has reported another member. Please review the report.",
+  "member_concern.message_alert": "A member has reported a message they received. Please review the report.",
+  "member_concern.safeguarding_alert": "Safeguarding concern raised by a member. Please review it as soon as possible."
 }

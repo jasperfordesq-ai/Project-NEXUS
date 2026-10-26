@@ -127,6 +127,7 @@ jest.mock('react-i18next', () => ({
         'thread.messageCount': '2 messages',
         'thread.messagingRestrictedTitle': 'Messaging paused',
         'thread.messagingRestrictedContact': 'Please contact your community team before sending more messages.',
+        'thread.reviewNotice': 'Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.',
         'thread.messageOptions': 'Message options',
         'thread.messageActions': 'Message actions',
         'thread.loadEarlier': 'Load earlier messages',
@@ -214,6 +215,7 @@ jest.mock('@/lib/hooks/useTheme', () => ({
     border: '#dddddd',
     borderSubtle: '#eeeeee',
     error: '#e53e3e',
+    warning: '#b7791f',
   }),
 }));
 
@@ -341,6 +343,11 @@ jest.mock('@/components/ui/ActionSheet', () => {
       </View>
     );
   };
+});
+jest.mock('@/components/ReportMemberSheet', () => {
+  const { View } = require('react-native');
+  return ({ visible, target, subjectName }: { visible: boolean; target: { type: string; id: number } | null; subjectName: string }) =>
+    visible && target ? <View testID="mock-report-sheet" accessibilityLabel={`${target.type}:${target.id}:${subjectName}`} /> : null;
 });
 jest.mock('@/components/OfflineBanner', () => () => null);
 jest.mock('@/components/VoiceMessageBubble', () => {
@@ -1498,6 +1505,51 @@ describe('ThreadScreen', () => {
     }
   });
 
+  describe('safeguarding review notice', () => {
+    const reviewNotice = 'Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.';
+    const conversation = () => mockUseApi.mockReturnValue({
+      data: { data: mockMessages, meta: { conversation: { other_user: { id: 42, name: 'Alice' } } } },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+
+    it('tells the member messages may be reviewed, asking about this partner', async () => {
+      mockGetMessagingRestrictionStatus.mockResolvedValue({
+        data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null, review_notice_required: true },
+      });
+      conversation();
+
+      const { getByText } = render(<ThreadScreen />);
+
+      await waitFor(() => expect(getByText(reviewNotice)).toBeTruthy());
+      expect(mockGetMessagingRestrictionStatus).toHaveBeenCalledWith(42);
+    });
+
+    it('shows the same notice when only a supporter may view the conversation', async () => {
+      mockGetMessagingRestrictionStatus.mockResolvedValue({
+        data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null, review_notice_required: false, supporter_view_notice_required: true },
+      });
+      conversation();
+
+      const { getByText } = render(<ThreadScreen />);
+
+      await waitFor(() => expect(getByText(reviewNotice)).toBeTruthy());
+    });
+
+    it('stays hidden when the community does not copy messages and no supporter can view', async () => {
+      mockGetMessagingRestrictionStatus.mockResolvedValue({
+        data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null, review_notice_required: false, supporter_view_notice_required: false },
+      });
+      conversation();
+
+      const { queryByText } = render(<ThreadScreen />);
+
+      await waitFor(() => expect(mockGetMessagingRestrictionStatus).toHaveBeenCalled());
+      await waitFor(() => expect(queryByText(reviewNotice)).toBeNull());
+    });
+  });
+
   it('shows messaging restriction notice and blocks sends when disabled', async () => {
     mockGetMessagingRestrictionStatus.mockResolvedValue({
       data: { messaging_disabled: true, under_monitoring: true, restriction_reason: 'Safety review' },
@@ -2238,6 +2290,21 @@ describe('reactions made discoverable', () => {
 
     expect(screen.getByLabelText('Copy text')).toBeTruthy();
     expect(screen.queryByLabelText('Edit')).toBeNull();
+  });
+
+  it('a received message offers Report message, which opens the report sheet for that message', () => {
+    const screen = renderWith([mockMessages[0]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+
+    fireEvent.press(screen.getByLabelText('common:memberReport.reportMessage'));
+    expect(screen.queryByLabelText('Message options')).toBeNull();
+    expect(screen.getByTestId('mock-report-sheet').props.accessibilityLabel).toBe('message:1:Alice');
+  });
+
+  it('your own message does not offer Report message', () => {
+    const screen = renderWith([recentMessages[1]]);
+    fireEvent(screen.getAllByLabelText('Message actions')[0], 'longPress');
+    expect(screen.queryByLabelText('common:memberReport.reportMessage')).toBeNull();
   });
 
   it('a deleted message opens nothing', () => {

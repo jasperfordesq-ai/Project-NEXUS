@@ -3271,5 +3271,52 @@
     "open_admin": "Abrir el panel de administración",
     "refused_title": "Solo estás visitando esta comunidad",
     "refused_body": "Como gestor de otra comunidad puedes echar un vistazo aquí, pero no puedes publicar, responder, inscribirte ni enviar nada. Haz los cambios en el panel de administración."
+  },
+  "member_report": {
+    "action_report": "Denunciar",
+    "action_report_message": "Denunciar mensaje",
+    "title_member": "Denunciar a {{name}}",
+    "title_message": "Denunciar este mensaje",
+    "member_fallback": "este miembro",
+    "reason_label": "¿Por qué lo denuncia?",
+    "reason_required_error": "Elija un motivo para su denuncia.",
+    "details_label": "Cuente más a los coordinadores (opcional)",
+    "details_label_required": "Cuente a los coordinadores lo que ocurrió",
+    "details_placeholder": "¿Qué ocurrió? Añada todo lo que ayude a los coordinadores a entenderlo.",
+    "details_required_error": "Describa su preocupación.",
+    "reassurance": "Los coordinadores de su comunidad verán esto. A la persona denunciada no se le dice quién la denunció.",
+    "emergency": "Si alguien corre un peligro inmediato, contacte con los servicios de emergencia.",
+    "cancel": "Cancelar",
+    "submit": "Enviar denuncia",
+    "close": "Cerrar",
+    "success": "Gracias. Su denuncia se ha enviado a los coordinadores de su comunidad.",
+    "already_reported": "Ya ha denunciado esto. Los coordinadores de su comunidad lo están revisando.",
+    "error_generic": "No hemos podido enviar su denuncia. Inténtelo de nuevo.",
+    "categories": {
+      "safeguarding_concern": {
+        "label": "Alguien podría estar en peligro",
+        "help": "Le preocupa que alguien esté sufriendo daño, explotación o riesgo"
+      },
+      "harassment": {
+        "label": "Acoso o intimidación",
+        "help": "Contacto amenazante, abusivo o no deseado"
+      },
+      "inappropriate": {
+        "label": "Inapropiado u ofensivo",
+        "help": "Contenido o comportamiento sexual, de odio u ofensivo"
+      },
+      "scam_or_fraud": {
+        "label": "Estafa o fraude",
+        "help": "Pide dinero, datos bancarios o información personal"
+      },
+      "spam": {
+        "label": "Spam",
+        "help": "Publicidad no deseada o mensajes repetidos"
+      },
+      "other": {
+        "label": "Otro motivo",
+        "help": "Explíqueselo a los coordinadores con sus propias palabras abajo"
+      }
+    }
   }
 }

@@ -833,7 +833,11 @@
     "marketplace_subject": "Gníomh de dhíth: tuairisc mhargaidh #{{report_id}}",
     "marketplace_body": "Comhdaíodh tuairisc mhargaidh (tuairisc #{{report_id}}). Fáth: {{reason}}. Faoi rialacha an Achta um Sheirbhísí Digiteacha (DSA) ní mór é a admháil agus gníomhú air laistigh de 24 uair. Déan athbhreithniú air anois sa phainéal riaracháin.",
     "job_subject": "Cuireadh fógra poist faoi bhratach le hathbhreithniú — {{title}}",
-    "job_body": "Cuireadh fógra poist faoi bhratach go huathoibríoch mar thurscar féideartha. Teideal: {{title}} (#{{job_id}}). Scór turscair: {{score}}/100. Tá sé ar coinneáil go dtí an t-athbhreithniú — formheas nó diúltaigh dó sa phainéal riaracháin."
+    "job_body": "Cuireadh fógra poist faoi bhratach go huathoibríoch mar thurscar féideartha. Teideal: {{title}} (#{{job_id}}). Scór turscair: {{score}}/100. Tá sé ar coinneáil go dtí an t-athbhreithniú — formheas nó diúltaigh dó sa phainéal riaracháin.",
+    "member_concern_subject": "Tuairisc nua faoi bhall — #{{report_id}}",
+    "member_concern_body": "Rinne ball tuairisc ar bhall eile, nó ar theachtaireacht a fuair siad. Tagairt: #{{report_id}}. Déan athbhreithniú air i do liosta tuairiscí. Níor cuireadh an ball lena mbaineann sé ar an eolas.",
+    "safeguarding_subject": "Imní cosanta ardaithe — #{{report_id}}",
+    "safeguarding_body": "D’ardaigh ball imní cosanta faoi bhall eile. Tagairt: #{{report_id}}. Déan athbhreithniú air chomh luath agus is féidir. Níor cuireadh an ball lena mbaineann sé ar an eolas."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "gan sonrú",

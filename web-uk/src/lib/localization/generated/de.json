@@ -9980,6 +9980,61 @@
                 "banner_body": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet.",
                 "empty_title": "Einige Übereinstimmungen können noch nicht angezeigt werden",
                 "empty_body": "Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat."
+            },
+            "concern_report": {
+                "link_member": "Dieses Mitglied melden",
+                "link_message": "Diese Nachricht melden",
+                "member_heading": ":name melden",
+                "member_heading_unnamed": "Ein Mitglied melden",
+                "message_heading": "Eine Nachricht von :name melden",
+                "message_heading_unnamed": "Eine Nachricht melden",
+                "legend": "Warum melden Sie das?",
+                "categories": {
+                    "safeguarding_concern": {
+                        "label": "Eine Sorge um den Schutz einer Person",
+                        "hint": "Sie befürchten, dass jemand verletzt, ausgenutzt oder in Gefahr gebracht wird"
+                    },
+                    "harassment": {
+                        "label": "Belästigung oder Mobbing",
+                        "hint": "Bedrohender, beleidigender oder unerwünschter Kontakt"
+                    },
+                    "inappropriate": {
+                        "label": "Unangemessenes Verhalten",
+                        "hint": "Anstößiges oder unangemessenes Verhalten oder anstößige Inhalte"
+                    },
+                    "scam_or_fraud": {
+                        "label": "Betrug",
+                        "hint": "Fragt nach Geld, Bankdaten oder persönlichen Informationen"
+                    },
+                    "spam": {
+                        "label": "Unerwünschte Nachrichten (Spam)",
+                        "hint": "Unerwünschte Werbung oder wiederholte Nachrichten"
+                    },
+                    "other": {
+                        "label": "Etwas anderes",
+                        "hint": "Etwas anderes – bitte erzählen Sie uns mehr"
+                    }
+                },
+                "details_label": "Erzählen Sie uns, was passiert ist",
+                "details_hint": "Geben Sie alles an, was den Koordinatorinnen und Koordinatoren hilft, das Geschehene zu verstehen. Dies ist freiwillig, außer Sie haben „Etwas anderes“ gewählt.",
+                "inset": "Die Koordinatorinnen und Koordinatoren Ihrer Community sehen diese Meldung. Die gemeldete Person erfährt nicht, wer sie gemeldet hat.",
+                "emergency_warning": "Wenn jemand in unmittelbarer Gefahr ist, wenden Sie sich an die Notrufdienste.",
+                "submit": "Meldung senden",
+                "sent_title": "Meldung gesendet",
+                "sent_reference": "Ihre Referenznummer",
+                "sent_body": "Vielen Dank. Die Koordinatorinnen und Koordinatoren Ihrer Community werden Ihre Meldung prüfen.",
+                "sent_next": "Sie melden sich möglicherweise bei Ihnen, wenn sie weitere Informationen benötigen. Die gemeldete Person erfährt nicht, wer sie gemeldet hat.",
+                "already_title": "Sie haben dies bereits gemeldet",
+                "already_body": "Die Koordinatorinnen und Koordinatoren Ihrer Community haben Ihre Meldung bereits und werden sie prüfen. Sie müssen es nicht erneut melden.",
+                "back_to_profile": "Zurück zum Profil",
+                "back_to_conversation": "Zurück zur Unterhaltung",
+                "errors": {
+                    "category_required": "Wählen Sie aus, warum Sie das melden",
+                    "details_required": "Erzählen Sie uns, was passiert ist",
+                    "details_too_long": "Die Beschreibung darf höchstens :max Zeichen lang sein",
+                    "failed": "Ihre Meldung konnte nicht gesendet werden. Versuchen Sie es erneut.",
+                    "rate_limited": "Sie haben zu viele Meldungen gesendet. Versuchen Sie es später erneut."
+                }
             }
         },
         "govuk_alpha_messages": {

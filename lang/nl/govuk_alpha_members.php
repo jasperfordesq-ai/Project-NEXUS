@@ -105,4 +105,62 @@ return [
         'empty_title' => 'Sommige matches kunnen nog niet worden getoond',
         'empty_body' => 'De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen. Kom terug zodra uw communityteam dit heeft afgerond.',
     ],
+    // A member reports another member, or a direct message they received, to
+    // their community's coordinators (POST /v2/users/{id}/report and
+    // POST /v2/messages/{id}/report).
+    'concern_report' => [
+        'link_member' => 'Dit lid melden',
+        'link_message' => 'Dit bericht melden',
+        'member_heading' => ':name melden',
+        'member_heading_unnamed' => 'Een lid melden',
+        'message_heading' => 'Een bericht van :name melden',
+        'message_heading_unnamed' => 'Een bericht melden',
+        'legend' => 'Waarom meldt u dit?',
+        'categories' => [
+            'safeguarding_concern' => [
+                'label' => 'Zorgen over iemands veiligheid',
+                'hint' => 'U maakt zich zorgen dat iemand schade lijdt, wordt uitgebuit of in gevaar wordt gebracht',
+            ],
+            'harassment' => [
+                'label' => 'Intimidatie of pesten',
+                'hint' => 'Bedreigend, beledigend of ongewenst contact',
+            ],
+            'inappropriate' => [
+                'label' => 'Ongepast gedrag',
+                'hint' => 'Aanstootgevend of ongepast gedrag of ongepaste inhoud',
+            ],
+            'scam_or_fraud' => [
+                'label' => 'Oplichting of fraude',
+                'hint' => 'Vraagt om geld, bankgegevens of persoonlijke informatie',
+            ],
+            'spam' => [
+                'label' => 'Ongewenste berichten (spam)',
+                'hint' => 'Ongewenste reclame of herhaalde berichten',
+            ],
+            'other' => [
+                'label' => 'Iets anders',
+                'hint' => 'Iets anders — vertel ons meer',
+            ],
+        ],
+        'details_label' => 'Vertel ons wat er is gebeurd',
+        'details_hint' => 'Vermeld alles wat de coördinatoren helpt te begrijpen wat er is gebeurd. Dit is optioneel, tenzij u ‘Iets anders’ hebt gekozen.',
+        'inset' => 'De coördinatoren van uw community zien deze melding. De persoon die u meldt, hoort niet wie hem of haar heeft gemeld.',
+        'emergency_warning' => 'Is iemand in direct gevaar? Neem dan contact op met de hulpdiensten.',
+        'submit' => 'Melding versturen',
+        'sent_title' => 'Melding verstuurd',
+        'sent_reference' => 'Uw referentienummer',
+        'sent_body' => 'Bedankt. De coördinatoren van uw community bekijken uw melding.',
+        'sent_next' => 'Zij kunnen contact met u opnemen als ze meer informatie nodig hebben. De persoon die u hebt gemeld, hoort niet wie hem of haar heeft gemeld.',
+        'already_title' => 'U hebt dit al gemeld',
+        'already_body' => 'De coördinatoren van uw community hebben uw melding al en zullen die bekijken. U hoeft het niet opnieuw te melden.',
+        'back_to_profile' => 'Terug naar het profiel',
+        'back_to_conversation' => 'Terug naar het gesprek',
+        'errors' => [
+            'category_required' => 'Kies waarom u dit meldt',
+            'details_required' => 'Vertel ons wat er is gebeurd',
+            'details_too_long' => 'De beschrijving mag maximaal :max tekens lang zijn',
+            'failed' => 'Uw melding kon niet worden verstuurd. Probeer het opnieuw.',
+            'rate_limited' => 'U hebt te veel meldingen verstuurd. Probeer het later opnieuw.',
+        ],
+    ],
 ];

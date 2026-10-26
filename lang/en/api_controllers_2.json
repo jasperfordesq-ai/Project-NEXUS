@@ -251,5 +251,12 @@
     "create_failed": "Failed to create listing."
   },
   "listings_digest.confirm_required": "Confirm that you want to email every member now.",
-  "listings_digest.send_failed": "The round-up could not be queued. Please try again."
+  "listings_digest.send_failed": "The round-up could not be queued. Please try again.",
+  "member_reports.cannot_report_self": "You cannot report yourself.",
+  "member_reports.member_not_found": "Member not found.",
+  "member_reports.message_not_found": "Message not found.",
+  "member_reports.invalid_category": "Please choose a reason for your report.",
+  "member_reports.details_required": "Please describe what happened.",
+  "member_reports.details_too_long": "Please keep your description to {{max}} characters or fewer.",
+  "member_reports.already_reported": "You have already reported this. Your community's coordinators will look at it."
 }

@@ -46,6 +46,7 @@
     "messageCount_other": "{{count}} teachtaireacht",
     "messagingRestrictedTitle": "Teachtaireachtaí curtha ar sos",
     "messagingRestrictedContact": "Déan teagmháil le d'fhoireann pobail sula seolann tú tuilleadh teachtaireachtaí.",
+    "reviewNotice": "Féadfaidh comhordaitheoir teachtaireachtaí sa chomhrá seo a athbhreithniú ar mhaithe le cosaint, nó féadfaidh duine a bhfuil muinín ag rannpháirtí as chun tacú leo iad a fheiceáil.",
     "messageOptions": "Roghanna teachtaireachta",
     "messageActions": "Gníomhartha teachtaireachta",
     "loadEarlier": "Lódáil teachtaireachtaí níos luaithe",

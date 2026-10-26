@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-26T16:02:03.369Z
-Laravel commit SHA: `1c38492435750a9c9bce46e0c5a28a861e621b24`
-Web UK repository commit SHA: `1c38492435750a9c9bce46e0c5a28a861e621b24`
+Generated: 2026-10-26T19:25:48.008Z
+Laravel commit SHA: `20c36cca1f7e9502f0533fd027bb896658fa61c2`
+Web UK repository commit SHA: `20c36cca1f7e9502f0533fd027bb896658fa61c2`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 912 |
+| web-uk routes | 916 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 202 |
+| Extra web-uk routes | 206 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -70,8 +70,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | marketplace | 50 | 0 | 18 | 0 |
 | matches | 4 | 0 | 0 | 0 |
 | me | 6 | 0 | 4 | 0 |
-| members | 11 | 0 | 1 | 0 |
-| messages | 18 | 0 | 0 | 0 |
+| members | 11 | 0 | 3 | 0 |
+| messages | 18 | 0 | 2 | 0 |
 | municipality-calendar | 0 | 0 | 1 | 0 |
 | newsletter | 1 | 0 | 0 | 0 |
 | nexus-score | 2 | 0 | 0 | 0 |
@@ -199,7 +199,11 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/me/verein-invitations` | me | verein/invitations | web-uk/src/routes/verein-invitations.js |
 | POST | `/me/verein-dues/{param}/pay` | me |  | web-uk/src/routes/verein-my-dues.js |
 | POST | `/me/verein-invitations/{param}/respond` | me |  | web-uk/src/routes/verein-invitations.js |
+| GET | `/members/{param}/report` | members |  | web-uk/src/routes/members.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| POST | `/members/{param}/report` | members |  | web-uk/src/routes/members.js |
+| GET | `/messages/{param}/m/{param}/report` | messages |  | web-uk/src/routes/messages.js |
+| POST | `/messages/{param}/m/{param}/report` | messages |  | web-uk/src/routes/messages.js |
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/podcasts/{param}/episodes/{param}/report` | podcasts |  | web-uk/src/routes/podcast-actions.js |

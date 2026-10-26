@@ -618,6 +618,7 @@ Route::middleware('module:listings')->group(function () {
 // Source: httpdocs/routes/messages.php
 // ============================================
 Route::middleware('module:messages')->group(function () {
+    Route::post('/v2/messages/{id}/report', [\App\Http\Controllers\Api\MemberConcernReportController::class, 'reportMessage'])->where('id', '[0-9]+');
 Route::get('/v2/messages', [\App\Http\Controllers\Api\MessagesController::class, 'conversations']);
 Route::get('/v2/messages/unread-count', [\App\Http\Controllers\Api\MessagesController::class, 'unreadCount']);
 Route::get('/v2/messages/restriction-status', [\App\Http\Controllers\Api\MessagesController::class, 'restrictionStatus']);
@@ -832,6 +833,7 @@ Route::get('/v2/users/blocked', [\App\Http\Controllers\Api\BlockUserController::
 Route::post('/v2/users/{id}/block', [\App\Http\Controllers\Api\BlockUserController::class, 'block']);
 Route::delete('/v2/users/{id}/block', [\App\Http\Controllers\Api\BlockUserController::class, 'unblock']);
 Route::get('/v2/users/{id}/block-status', [\App\Http\Controllers\Api\BlockUserController::class, 'status']);
+Route::post('/v2/users/{id}/report', [\App\Http\Controllers\Api\MemberConcernReportController::class, 'reportMember'])->where('id', '[0-9]+');
 Route::get('/v2/users/{id}', [\App\Http\Controllers\Api\UsersController::class, 'show']);
 Route::get('/v2/users/{id}/listings', [\App\Http\Controllers\Api\UsersController::class, 'listings']);
 Route::get('/v2/members/nearby', [\App\Http\Controllers\Api\UsersController::class, 'nearby']);

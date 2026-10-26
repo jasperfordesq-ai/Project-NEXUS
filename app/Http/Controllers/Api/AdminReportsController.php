@@ -254,12 +254,15 @@ class AdminReportsController extends BaseApiController
             'content_type' => $report->target_type,
             'target_id' => (int) $report->target_id,
             'target_label' => $target['target_label'] ?? null,
-            'target_preview' => $target['target_preview'] ?? null,
+            // A reported message is shown as it was when reported, so the
+            // sender cannot edit or delete the evidence away.
+            'target_preview' => ($report->target_snapshot ?? null) ?: ($target['target_preview'] ?? null),
             'target_avatar' => $target['target_avatar'] ?? null,
             'target_author_id' => $target['target_author_id'] ?? null,
             'target_author_name' => $target['target_author_name'] ?? null,
             'target_exists' => $target['target_exists'] ?? true,
             'reason' => $report->reason,
+            'category' => $report->category ?? null,
             'status' => $report->status,
             'created_at' => $report->created_at,
             'updated_at' => $report->updated_at ?? $report->created_at,

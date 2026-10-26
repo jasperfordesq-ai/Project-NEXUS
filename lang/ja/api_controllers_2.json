@@ -249,5 +249,12 @@
   "podcasts.media_not_ready": "このエピソードの音声は確認中か、メディア検証に合格していません。",
   "podcasts.external_artwork_not_allowed": "ポッドキャスト画像は、使用する前にこのプラットフォームへアップロードする必要があります。",
   "listings_digest.confirm_required": "今すぐ全メンバーにメールを送ることを確認してください。",
-  "listings_digest.send_failed": "まとめを送信キューに追加できませんでした。もう一度お試しください。"
+  "listings_digest.send_failed": "まとめを送信キューに追加できませんでした。もう一度お試しください。",
+  "member_reports.cannot_report_self": "自分自身を通報することはできません。",
+  "member_reports.member_not_found": "メンバーが見つかりません。",
+  "member_reports.message_not_found": "メッセージが見つかりません。",
+  "member_reports.invalid_category": "通報の理由を選んでください。",
+  "member_reports.details_required": "何があったかを説明してください。",
+  "member_reports.details_too_long": "説明は{{max}}文字以内にしてください。",
+  "member_reports.already_reported": "すでに通報済みです。コミュニティのコーディネーターが確認します。"
 }

@@ -541,6 +541,8 @@ export interface Message {
   reactions?: Record<string, number>;  // { emoji: count }
   is_edited?: boolean;
   is_deleted?: boolean;
+  /** True for a message that came from a partner community (cannot be reported). */
+  is_federated?: boolean;
 }
 
 export interface MessageAttachment {

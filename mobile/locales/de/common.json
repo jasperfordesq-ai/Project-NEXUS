@@ -185,5 +185,45 @@
   "draftStorage": {
     "title": "Entwurf nicht geschützt",
     "message": "Dieser Entwurf konnte auf diesem Gerät nicht sicher gespeichert werden. Lass die App geöffnet, prüfe den Gerätespeicher und ändere dann etwas, um es erneut zu versuchen."
+  },
+  "memberReport": {
+    "titleMember": "{{name}} melden",
+    "titleMessage": "Eine Nachricht von {{name}} melden",
+    "reportMember": "Melden",
+    "reportMemberA11y": "{{name}} den Koordinatoren deiner Gemeinschaft melden",
+    "reportMessage": "Nachricht melden",
+    "privacy": "Die Koordinatoren deiner Gemeinschaft sehen diese Meldung. Die gemeldete Person erfährt nicht, wer sie gemeldet hat.",
+    "reasonLabel": "Warum meldest du das?",
+    "reason": {
+      "safeguarding_concern": "Sorge um den Schutz einer Person",
+      "harassment": "Belästigung",
+      "inappropriate": "Unangemessenes Verhalten",
+      "scam_or_fraud": "Betrug",
+      "spam": "Spam",
+      "other": "Sonstiges"
+    },
+    "help": {
+      "safeguarding_concern": "Du machst dir Sorgen, dass jemand verletzt, ausgenutzt oder in Gefahr gebracht wird",
+      "harassment": "Drohender, beleidigender oder unerwünschter Kontakt",
+      "inappropriate": "Anstößiges oder unangemessenes Verhalten oder Inhalte",
+      "scam_or_fraud": "Bitten um Geld, Bankdaten oder persönliche Informationen",
+      "spam": "Unerwünschte Werbung oder wiederholte Nachrichten",
+      "other": "Etwas anderes – bitte erzähl uns mehr"
+    },
+    "detailsLabel": "Weitere Angaben (optional)",
+    "detailsLabelRequired": "Weitere Angaben (erforderlich)",
+    "detailsPlaceholder": "Beschreibe den Koordinatoren, was passiert ist",
+    "detailsCount": "{{used}} von {{max}} Zeichen",
+    "detailsRequired": "Bitte erzähl uns mehr darüber, was passiert ist.",
+    "detailsTooLong": "Bitte beschränke die Angaben auf höchstens {{max}} Zeichen.",
+    "chooseReason": "Wähle einen Grund für deine Meldung.",
+    "emergency": "Wenn jemand in unmittelbarer Gefahr ist, verständige den Notdienst.",
+    "send": "Meldung senden",
+    "sending": "Wird gesendet…",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "sent": "Danke. Deine Meldung wurde an die Koordinatoren deiner Gemeinschaft gesendet.",
+    "already": "Du hast das bereits gemeldet.",
+    "failed": "Deine Meldung konnte nicht gesendet werden. Bitte versuche es erneut."
   }
 }

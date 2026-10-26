@@ -2393,6 +2393,11 @@ export interface AdminReport {
   /** False when the reported row no longer exists (deleted content). */
   target_exists?: boolean;
   reason: string;
+  /**
+   * Member concern category (safeguarding_concern, harassment, inappropriate,
+   * scam_or_fraud, spam, other) — null for older report types.
+   */
+  category?: string | null;
   status: 'open' | 'pending' | 'resolved' | 'dismissed';
   created_at: string;
   updated_at?: string;

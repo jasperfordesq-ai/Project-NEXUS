@@ -9980,6 +9980,61 @@
                 "banner_body": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti.",
                 "empty_title": "Alcune corrispondenze non possono ancora essere mostrate",
                 "empty_body": "La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata."
+            },
+            "concern_report": {
+                "link_member": "Segnala questo membro",
+                "link_message": "Segnala questo messaggio",
+                "member_heading": "Segnala :name",
+                "member_heading_unnamed": "Segnala un membro",
+                "message_heading": "Segnala un messaggio di :name",
+                "message_heading_unnamed": "Segnala un messaggio",
+                "legend": "Perché stai facendo questa segnalazione?",
+                "categories": {
+                    "safeguarding_concern": {
+                        "label": "Una preoccupazione per la sicurezza di qualcuno",
+                        "hint": "Temi che qualcuno venga maltrattato, sfruttato o messo in pericolo"
+                    },
+                    "harassment": {
+                        "label": "Molestie o bullismo",
+                        "hint": "Contatti minacciosi, offensivi o indesiderati"
+                    },
+                    "inappropriate": {
+                        "label": "Comportamento inappropriato",
+                        "hint": "Comportamenti o contenuti offensivi o inappropriati"
+                    },
+                    "scam_or_fraud": {
+                        "label": "Una truffa o una frode",
+                        "hint": "Richieste di denaro, dati bancari o informazioni personali"
+                    },
+                    "spam": {
+                        "label": "Messaggi indesiderati (spam)",
+                        "hint": "Pubblicità indesiderata o messaggi ripetuti"
+                    },
+                    "other": {
+                        "label": "Altro",
+                        "hint": "Altro: raccontaci di più"
+                    }
+                },
+                "details_label": "Raccontaci cosa è successo",
+                "details_hint": "Includi tutto ciò che può aiutare i coordinatori a capire cosa è successo. È facoltativo, a meno che tu non abbia scelto «Altro».",
+                "inset": "I coordinatori della tua comunità vedranno questa segnalazione. Alla persona segnalata non viene detto chi l’ha segnalata.",
+                "emergency_warning": "Se qualcuno è in pericolo immediato, contatta i servizi di emergenza.",
+                "submit": "Invia la segnalazione",
+                "sent_title": "Segnalazione inviata",
+                "sent_reference": "Il tuo numero di riferimento",
+                "sent_body": "Grazie. I coordinatori della tua comunità esamineranno la tua segnalazione.",
+                "sent_next": "Potrebbero contattarti se hanno bisogno di altre informazioni. Alla persona segnalata non viene detto chi l’ha segnalata.",
+                "already_title": "Hai già fatto questa segnalazione",
+                "already_body": "I coordinatori della tua comunità hanno già la tua segnalazione e la esamineranno. Non devi segnalarlo di nuovo.",
+                "back_to_profile": "Torna al profilo",
+                "back_to_conversation": "Torna alla conversazione",
+                "errors": {
+                    "category_required": "Scegli perché stai facendo questa segnalazione",
+                    "details_required": "Raccontaci cosa è successo",
+                    "details_too_long": "La descrizione deve contenere al massimo :max caratteri",
+                    "failed": "Non è stato possibile inviare la segnalazione. Riprova.",
+                    "rate_limited": "Hai inviato troppe segnalazioni. Riprova più tardi."
+                }
             }
         },
         "govuk_alpha_messages": {

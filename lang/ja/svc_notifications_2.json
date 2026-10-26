@@ -127,5 +127,8 @@
   "marketplace_enforcement.action_bell": "あなたの出品「{{title}}」に対する措置：{{action}}。",
   "marketplace_enforcement.cleared_bell": "あなたの出品「{{title}}」に関する通報が審査されました — 措置はありません。",
   "marketplace_enforcement.appeal_outcome_bell": "あなたの出品「{{title}}」の異議申し立てが解決しました：{{action}}。",
-  "marketplace_enforcement.suspended_bell": "あなたの出品者アカウントは停止され、出品は削除されました。"
+  "marketplace_enforcement.suspended_bell": "あなたの出品者アカウントは停止され、出品は削除されました。",
+  "member_concern.member_alert": "メンバーが別のメンバーを通報しました。通報を確認してください。",
+  "member_concern.message_alert": "メンバーが受け取ったメッセージを通報しました。通報を確認してください。",
+  "member_concern.safeguarding_alert": "メンバーから安全確保に関する懸念が寄せられました。できるだけ早く確認してください。"
 }
