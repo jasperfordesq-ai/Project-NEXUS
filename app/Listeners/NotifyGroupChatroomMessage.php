@@ -132,6 +132,18 @@ class NotifyGroupChatroomMessage implements ShouldQueue
                 return;
             }
 
+            // A block between the sender and a member (either direction) stops
+            // this personal notification. The message stays visible in the
+            // shared chatroom: blocking is not a group ban.
+            $unblocked = array_map('intval', \App\Services\BlockUserService::withoutBlockedPairs(
+                $senderId,
+                $recipients->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all(),
+            ));
+            $recipients = $recipients->filter(static fn (object $r): bool => in_array((int) $r->id, $unblocked, true))->values();
+            if ($recipients->isEmpty()) {
+                return;
+            }
+
             $recipientIds = $recipients->pluck('id')->all();
 
             // Dedup window: if the recipient already has a chatroom-message

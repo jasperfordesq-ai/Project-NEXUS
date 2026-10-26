@@ -248,6 +248,64 @@ class NotifyGroupChatroomMessageTest extends TestCase
         $this->assertSame(1, $member2Notif, 'Non-muting member should still receive notification');
     }
 
+    /**
+     * A member who blocked the sender is not sent a personal notification
+     * carrying the sender's name and words. The post stays visible in the
+     * shared group; blocking is not a group ban (SafeguardingInteractionPolicy).
+     */
+    public function test_handle_excludes_members_who_blocked_the_sender(): void
+    {
+        DB::table('user_blocks')->insert([
+            'tenant_id'       => 2,
+            'user_id'         => $this->member1Id,
+            'blocked_user_id' => $this->senderId,
+            'created_at'      => now(),
+        ]);
+
+        $this->dispatcherAlias->shouldReceive('fanOutPush')->once();
+
+        (new NotifyGroupChatroomMessage())->handle(new GroupChatroomMessagePosted(
+            tenantId: 2,
+            groupId: $this->groupId,
+            chatroomId: 1,
+            message: ['id' => 9010, 'user_id' => $this->senderId, 'body' => 'Blocked test message'],
+        ));
+
+        $this->assertSame(0, $this->chatroomNotificationCount($this->member1Id), 'A member who blocked the sender must not be notified');
+        $this->assertSame(1, $this->chatroomNotificationCount($this->member2Id));
+    }
+
+    public function test_handle_excludes_members_the_sender_blocked(): void
+    {
+        DB::table('user_blocks')->insert([
+            'tenant_id'       => 2,
+            'user_id'         => $this->senderId,
+            'blocked_user_id' => $this->member1Id,
+            'created_at'      => now(),
+        ]);
+
+        $this->dispatcherAlias->shouldReceive('fanOutPush')->once();
+
+        (new NotifyGroupChatroomMessage())->handle(new GroupChatroomMessagePosted(
+            tenantId: 2,
+            groupId: $this->groupId,
+            chatroomId: 1,
+            message: ['id' => 9011, 'user_id' => $this->senderId, 'body' => 'Blocker sends'],
+        ));
+
+        $this->assertSame(0, $this->chatroomNotificationCount($this->member1Id), 'A member the sender blocked must not be notified');
+        $this->assertSame(1, $this->chatroomNotificationCount($this->member2Id));
+    }
+
+    private function chatroomNotificationCount(int $userId): int
+    {
+        return DB::table('notifications')
+            ->where('tenant_id', 2)
+            ->where('type', 'group_chatroom_message')
+            ->where('user_id', $userId)
+            ->count();
+    }
+
     // -----------------------------------------------------------------------
     // Dedup window
     // -----------------------------------------------------------------------

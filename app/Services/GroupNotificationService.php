@@ -206,7 +206,7 @@ class GroupNotificationService
         ['relative' => $link, 'absolute' => $actionUrl] = $this->notificationLinks("/groups/{$groupId}?tab=discussion");
         $safeActionUrl = htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8');
 
-        $members = $this->getActiveMembers($groupId, $tenantId);
+        $members = $this->membersReachableBy($authorId, $this->getActiveMembers($groupId, $tenantId));
         $policies = GroupNotificationPreferenceService::getForUsers(
             array_map(static fn (object $member): int => (int) $member->user_id, $members),
             $groupId,
@@ -268,7 +268,7 @@ class GroupNotificationService
         ['relative' => $link, 'absolute' => $actionUrl] = $this->notificationLinks("/groups/{$groupId}?tab=announcements");
         $safeActionUrl = htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8');
 
-        $members = $this->getActiveMembers($groupId, $tenantId);
+        $members = $this->membersReachableBy($authorId, $this->getActiveMembers($groupId, $tenantId));
         $policies = GroupNotificationPreferenceService::getForUsers(
             array_map(static fn (object $member): int => (int) $member->user_id, $members),
             $groupId,
@@ -373,6 +373,27 @@ class GroupNotificationService
              AND gm.status IN ('active', 'approved')",
             [$groupId, $tenantId]
         );
+    }
+
+    /**
+     * Drop members who have a block with the author, in either direction. The
+     * post stays visible in the shared group (blocking is not a group ban);
+     * only the personal notification carrying the author's name is withheld.
+     *
+     * @param list<object> $members
+     * @return list<object>
+     */
+    private function membersReachableBy(int $authorId, array $members): array
+    {
+        $reachable = array_map('intval', BlockUserService::withoutBlockedPairs(
+            $authorId,
+            array_map(static fn (object $member): int => (int) $member->user_id, $members),
+        ));
+
+        return array_values(array_filter(
+            $members,
+            static fn (object $member): bool => in_array((int) $member->user_id, $reachable, true),
+        ));
     }
 
     private function getUserLocale(int $userId, int $tenantId): ?string

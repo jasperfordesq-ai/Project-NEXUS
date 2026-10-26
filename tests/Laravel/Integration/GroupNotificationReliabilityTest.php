@@ -186,6 +186,39 @@ class GroupNotificationReliabilityTest extends TestCase
         );
     }
 
+    /**
+     * A block (either direction) between the author and a member stops the
+     * member's personal discussion/announcement notification. The post itself
+     * stays in the shared group: blocking is not a group ban.
+     */
+    public function test_discussion_and_announcement_notifications_skip_blocked_pairs(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $author = User::factory()->forTenant($this->testTenantId)->create();
+        $blocker = User::factory()->forTenant($this->testTenantId)->create();
+        $blockedByAuthor = User::factory()->forTenant($this->testTenantId)->create();
+        $bystander = User::factory()->forTenant($this->testTenantId)->create();
+        $group = Group::factory()->forTenant($this->testTenantId)->create(['owner_id' => $author->id]);
+        foreach ([$blocker, $blockedByAuthor, $bystander] as $member) {
+            $this->insertMembership($group->id, $member->id);
+        }
+        TenantContext::setById($this->testTenantId);
+        DB::table('user_blocks')->insert([
+            ['tenant_id' => $this->testTenantId, 'user_id' => $blocker->id, 'blocked_user_id' => $author->id, 'created_at' => now()],
+            ['tenant_id' => $this->testTenantId, 'user_id' => $author->id, 'blocked_user_id' => $blockedByAuthor->id, 'created_at' => now()],
+        ]);
+
+        $service = new GroupNotificationService();
+        $service->notifyNewDiscussion($group->id, 88, $author->id, 'Spring plans');
+        $service->notifyNewAnnouncement($group->id, $author->id, 'Hall closed');
+
+        foreach ([$blocker, $blockedByAuthor] as $excluded) {
+            self::assertSame(0, DB::table('notifications')->where('user_id', $excluded->id)->count(), 'blocked pair notified');
+            self::assertSame(0, DB::table('notification_queue')->where('user_id', $excluded->id)->count(), 'blocked pair queued');
+        }
+        self::assertSame(2, DB::table('notifications')->where('user_id', $bystander->id)->count());
+    }
+
     private function insertMembership(int $groupId, int $userId): void
     {
         DB::table('group_members')->insert([
