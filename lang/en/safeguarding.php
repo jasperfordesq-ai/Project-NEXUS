@@ -145,7 +145,7 @@ return [
                     'label' => 'I plan to offer services that may involve children or young people (under 18)',
                 ],
                 'works_with_vulnerable_adults' => [
-                    'label' => 'I plan to offer help that involves children or vulnerable adults (for example tutoring a member\x27s child, or personal care)',
+                    'label' => 'I plan to offer help that involves children or vulnerable adults (for example tutoring a member\'s child, or personal care)',
                 ],
                 'none_apply' => [
                     'label' => 'None of these apply to me',
@@ -188,8 +188,7 @@ return [
                 'is_vulnerable_adult' => ['label' => 'I consider myself a vulnerable or protected adult and may need additional safeguarding support'],
                 'requires_vetted_partners' => ['description' => 'In Scotland, this means PVG scheme membership that this community has recorded. Membership someone has through their job or another group does not count here.'],
                 'works_with_children' => ['description' => 'A coordinator may discuss PVG scheme membership with you.'],
-                'works_with_vulnerable_adults' => ['description' => 'A coordinator will be told and will confirm whether PVG scheme membership is needed for what you plan to do. Please do not arrange this kind of help through the timebank until they have.'],
-                'works_with_vulnerable_adults' => ['label' => 'I plan to offer help that involves children or protected adults (for example tutoring a member\x27s child, or personal care)'],
+                'works_with_vulnerable_adults' => ['label' => 'I plan to offer help that involves children or protected adults (for example tutoring a member\'s child, or personal care)'],
             ],
         ],
         'northern_ireland' => [

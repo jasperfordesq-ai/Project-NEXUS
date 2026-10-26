@@ -208,7 +208,6 @@ return [
     'badge_name_required'          => 'Badge name is required',
     'badge_slug_required'          => 'Badge slug is required',
     'badge_slug_invalid'           => 'Badge slug does not exist or is not enabled for this tenant',
-    'user_ids_required'            => 'User IDs array is required',
     'campaign_name_required'       => 'Campaign name is required',
     'feature_name_required'        => 'Feature name is required',
     'module_name_required'         => 'Module name is required',
@@ -629,7 +628,6 @@ return [
     'marketplace_escrow_payout_refund_flow_required' => 'A scheduled or completed payout must be reversed through the payment refund flow.',
     'marketplace_ai_auto_reply_failed' => 'Failed to generate auto-reply',
     'marketplace_ai_description_failed' => 'Failed to generate description',
-    'marketplace_promotions_disabled' => 'Promotions are not enabled for this marketplace.',
     'marketplace_promotions_payment_unavailable' => 'Paid promotion checkout is temporarily unavailable. No promotion was activated.',
     'marketplace_promotion_owner_required' => 'You can only promote your own listings.',
     'marketplace_promotion_type_unknown' => 'Unknown promotion type: :type.',
@@ -723,7 +721,6 @@ return [
     // ADMIN — INSURANCE
     // ============================================
     'invalid_insurance_type'               => 'Invalid insurance type',
-    'invalid_status'                       => 'Invalid status',
     'certificate_already_verified'         => 'Certificate is already verified',
     'reason_required_reject_cert'          => 'A reason is required to reject an insurance certificate',
 
@@ -755,7 +752,6 @@ return [
     // ADMIN — SAFEGUARDING
     // ============================================
     'ward_guardian_emails_required'        => 'Both the supported member\'s and the guardian\'s emails are required',
-    'no_active_member_found'               => 'No active member found with email: :email',
     'ward_not_found_in_tenant'             => 'Supported member not found in this community',
     'support_action_unknown_type'          => 'Unknown support action type',
     'support_action_message_access_already_granted' => 'This person has already approved message access',
@@ -1195,7 +1191,6 @@ return [
     // ============================================
     'vetting_record_not_found'             => 'Vetting record not found',
     'invalid_vetting_type'                 => 'Invalid vetting type',
-    'user_not_found_in_tenant'             => 'User not found in this tenant',
     'invalid_issue_date_format'            => 'Invalid issue date format',
     'invalid_expiry_date_format'           => 'Invalid expiry date format',
     'expiry_after_issue_date'              => 'Expiry date must be after issue date',
@@ -1633,8 +1628,6 @@ return [
     'job_feature_disabled'                 => 'Job Vacancies module is not enabled for this community',
     'job_vacancy_not_found'                => 'Job vacancy not found',
     'job_vacancy_not_accepting_applications' => 'This vacancy is no longer accepting applications',
-    'job_cannot_apply_own'                 => 'You cannot apply to your own job vacancy',
-    'job_application_submitted'            => 'Application submitted',
     'job_candidate_label'                  => 'Candidate #:number',
     'job_create_failed'                    => 'Failed to create job vacancy',
     'job_type_invalid'                     => 'Invalid job type',
@@ -1713,14 +1706,6 @@ return [
     'job_resume_searchable_disabled'       => 'Your profile is no longer searchable by employers',
     'job_candidate_not_found'              => 'Candidate profile not found or not searchable',
     'job_referral_failed'                  => 'Unable to create referral token',
-    'job_slots_manage_forbidden'           => 'You do not have permission to manage interview slots for this vacancy',
-    'job_slots_active_application_required' => 'Only active applications can book interview slots',
-    'job_slot_not_found'                   => 'Interview slot not found',
-    'job_slot_already_booked'              => 'This interview slot has already been booked',
-    'job_slot_passed'                      => 'This interview slot has already passed',
-    'job_cannot_book_own_slot'             => 'You cannot book an interview slot for your own vacancy',
-    'job_slot_not_booked'                  => 'This interview slot is not booked',
-    'job_slots_cancel_forbidden'           => 'You do not have permission to cancel this interview slot',
     'job_slots_required'                   => 'At least one slot is required',
     'job_date_range_required'              => 'date_from and date_to are required',
     'job_day_config_required'              => 'day_config is required',
