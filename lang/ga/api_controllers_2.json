@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Roghnaigh cúis le do thuairisc.",
   "member_reports.details_required": "Déan cur síos ar cad a tharla.",
   "member_reports.details_too_long": "Coinnigh do chur síos faoi {{max}} carachtar nó níos lú.",
-  "member_reports.already_reported": "Tá tuairisc déanta agat air seo cheana. Breathnóidh comhordaitheoirí do phobail air."
+  "member_reports.already_reported": "Tá tuairisc déanta agat air seo cheana. Breathnóidh comhordaitheoirí do phobail air.",
+  "onboarding.safeguarding_required": "Freagair an cheist chosanta sula gcríochnaíonn tú. Mura mbaineann aon cheann de na roghanna leat, roghnaigh “Ní bhaineann aon cheann díobh seo liom”."
 }

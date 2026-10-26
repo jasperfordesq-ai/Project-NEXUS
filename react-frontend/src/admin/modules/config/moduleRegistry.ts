@@ -435,12 +435,12 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     configSource: 'broker_config',
     detailPageUrl: '/admin/broker/configuration',
     configOptions: [
-      // Messaging
-      { key: 'broker_messaging_enabled', type: 'boolean', defaultValue: true, category: 'messaging' },
+      // Messaging. "broker_messaging_enabled" and "require_exchange_for_listings"
+      // are deliberately not offered (owner decision, 26 Oct 2026): nothing
+      // enforced either, and the first hid the member message box.
       { key: 'broker_copy_all_messages', type: 'boolean', defaultValue: false, category: 'messaging' },
       { key: 'broker_copy_threshold_hours', type: 'number', defaultValue: 5, category: 'messaging', min: 1, max: 100 },
       { key: 'new_member_monitoring_days', type: 'number', defaultValue: 30, category: 'messaging', min: 0, max: 365 },
-      { key: 'require_exchange_for_listings', type: 'boolean', defaultValue: false, category: 'messaging' },
       // Risk Tagging
       { key: 'risk_tagging_enabled', type: 'boolean', defaultValue: true, category: 'risk_tagging' },
       { key: 'auto_flag_high_risk', type: 'boolean', defaultValue: true, category: 'risk_tagging' },

@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-26T19:25:48.008Z
-Laravel commit SHA: `20c36cca1f7e9502f0533fd027bb896658fa61c2`
-Web UK repository commit SHA: `20c36cca1f7e9502f0533fd027bb896658fa61c2`
+Generated: 2026-10-26T21:15:46.527Z
+Laravel commit SHA: `356eb65c90b0e361f0d829c54683e8321db8eedb`
+Web UK repository commit SHA: `356eb65c90b0e361f0d829c54683e8321db8eedb`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 916 |
+| web-uk routes | 920 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 206 |
+| Extra web-uk routes | 210 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -84,7 +84,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
 | privacy | 0 | 0 | 1 | 0 |
-| profile | 23 | 0 | 4 | 0 |
+| profile | 23 | 0 | 8 | 0 |
 | register | 2 | 0 | 0 | 0 |
 | report-a-problem | 2 | 0 | 0 | 0 |
 | resources | 12 | 0 | 0 | 0 |
@@ -218,6 +218,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/podcasts/studio/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | POST | `/podcasts/studio/{param}/episodes/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
+| GET | `/profile/safeguarding/add` | profile | profile/safeguarding-add | web-uk/src/routes/profile.js |
+| GET | `/profile/safeguarding/add/confirm` | profile | profile/safeguarding-add-confirm | web-uk/src/routes/profile.js |
+| POST | `/profile/safeguarding/add` | profile |  | web-uk/src/routes/profile.js |
+| POST | `/profile/safeguarding/add/confirm` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/safeguarding/switch-to-coordinator-introductions` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/recovery-codes` | profile |  | web-uk/src/routes/profile.js |
 | POST | `/profile/two-factor/revoke-devices` | profile |  | web-uk/src/routes/profile.js |

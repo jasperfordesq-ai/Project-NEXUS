@@ -113,6 +113,9 @@
     "or_separator": "or",
     "learn_more": "Learn more",
     "what_this_does": "What this does",
+    "answer_missing": "Please choose at least one option before you continue.",
+    "answer_missing_with_none": "Please choose at least one option. If none of them apply to you, choose “{{none}}”.",
+    "answer_needed_title": "Please answer the safeguarding question",
     "confirmation": {
       "title": "Your safeguarding preferences have been saved",
       "intro": "Thank you for sharing this. Here is a summary of what you chose, who can see it, and what activates as a result.",

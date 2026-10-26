@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Scegli un motivo per la segnalazione.",
   "member_reports.details_required": "Descrivi cosa è successo.",
   "member_reports.details_too_long": "La descrizione non può superare i {{max}} caratteri.",
-  "member_reports.already_reported": "Hai già segnalato questo contenuto. Le persone coordinatrici della tua comunità lo esamineranno."
+  "member_reports.already_reported": "Hai già segnalato questo contenuto. Le persone coordinatrici della tua comunità lo esamineranno.",
+  "onboarding.safeguarding_required": "Rispondi alla domanda sulla tutela prima di finire. Se nessuna opzione ti riguarda, scegli «Nessuna di queste situazioni mi riguarda»."
 }

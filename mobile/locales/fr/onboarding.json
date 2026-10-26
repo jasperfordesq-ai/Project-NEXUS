@@ -113,6 +113,9 @@
     "or_separator": "ou",
     "learn_more": "Apprendre encore plus",
     "what_this_does": "Ce que cela fait",
+    "answer_missing": "Veuillez choisir au moins une option avant de continuer.",
+    "answer_missing_with_none": "Veuillez choisir au moins une option. Si aucune ne vous concerne, choisissez « {{none}} ».",
+    "answer_needed_title": "Veuillez répondre à la question de protection",
     "confirmation": {
       "title": "Vos préférences de sauvegarde ont été enregistrées",
       "intro": "Merci d'avoir partagé cela. Voici un résumé de ce que vous avez choisi, qui peut le voir et ce qui s'active en conséquence.",

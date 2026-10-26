@@ -1,0 +1,77 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}#safeguarding">{{ t("actions.back_to_profile") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if chooseError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#option_id">{{ chooseError }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t("profile_settings.safeguarding.add.title") }}</h1>
+      <p class="govuk-body">{{ t("profile_settings.safeguarding.add.intro") }}</p>
+
+      {% if options.length %}
+        <form method="post" action="{{ urlFor('/profile/safeguarding/add') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if chooseError %} govuk-form-group--error{% endif %}">
+            <fieldset class="govuk-fieldset"{% if chooseError %} aria-describedby="option_id-error"{% endif %}>
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t("profile_settings.safeguarding.add.choose_legend") }}</h2>
+              </legend>
+              {% if chooseError %}
+                <p id="option_id-error" class="govuk-error-message">
+                  <span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ chooseError }}
+                </p>
+              {% endif %}
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for option in options %}
+                  {% set inputId = "option_id" if loop.first else "option_id-" ~ option.option_id %}
+                  {% set describedBy = (((inputId ~ "-hint ") if option.description else "") ~ ((inputId ~ "-effects") if option.effects.length else "")) | trim %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="{{ inputId }}" type="radio" name="option_id" value="{{ option.option_id }}"{% if describedBy %} aria-describedby="{{ describedBy }}"{% endif %}>
+                    <label class="govuk-label govuk-radios__label" for="{{ inputId }}">{{ option.label }}</label>
+                    {% if option.description %}
+                      <div id="{{ inputId }}-hint" class="govuk-hint govuk-radios__hint">{{ option.description }}</div>
+                    {% endif %}
+                    {% if option.effects.length %}
+                      <div id="{{ inputId }}-effects" class="govuk-hint govuk-radios__hint">
+                        <p class="govuk-body-s govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
+                        <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+                          {% for effect in option.effects %}
+                            <li>{{ effect }}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("profile_settings.safeguarding.add.continue") }}</button>
+        </form>
+      {% else %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.safeguarding.add.none") }}</p></div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/profile/settings') }}#safeguarding">{{ t("actions.back_to_profile") }}</a></p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

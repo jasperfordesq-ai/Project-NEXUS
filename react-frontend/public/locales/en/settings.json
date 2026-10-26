@@ -422,7 +422,17 @@
       "message": "Someone has been recorded as responsible for supporting you. Your answer is needed.",
       "action": "Review this"
     },
-    "what_this_does": "What this does"
+    "what_this_does": "What this does",
+    "add": {
+      "title": "Add extra support",
+      "intro": "You can ask for extra support at any time. Read what each choice does before you add it.",
+      "button": "Add this",
+      "confirm_title": "Add this support?",
+      "confirm_body": "It starts straight away. We will email you a summary of your choices. You can remove it from your settings at any time.",
+      "confirm_yes": "Yes, add it",
+      "added_toast": "Added. This support is now switched on.",
+      "error_toast": "Could not add that. Nothing was changed."
+    }
   },
   "header": {
     "title": "Settings",

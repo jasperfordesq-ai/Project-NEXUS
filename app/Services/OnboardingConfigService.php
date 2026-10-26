@@ -176,17 +176,55 @@ class OnboardingConfigService
             $unmet[] = 'bio_required';
         }
 
-        // If safeguarding step is enabled AND required AND actually shown
-        // (the community has options to answer), check preferences exist.
-        if ($config['step_safeguarding_enabled'] && $config['step_safeguarding_required']
-            && self::hasActiveSafeguardingOptions($tenantId ?? TenantContext::getId())) {
-            $hasSafeguardingPrefs = DB::selectOne(
-                "SELECT 1 FROM user_safeguarding_preferences WHERE user_id = ? AND tenant_id = ? AND revoked_at IS NULL LIMIT 1",
-                [$userId, $tenantId ?? TenantContext::getId()]
-            );
-            if (!$hasSafeguardingPrefs) {
-                $unmet[] = 'safeguarding_required';
-            }
+        array_push($unmet, ...self::unmetSafeguardingRequirements($tenantId ?? (int) TenantContext::getId(), $userId));
+
+        return $unmet;
+    }
+
+    /**
+     * Safeguarding answers a member still owes before finishing onboarding.
+     *
+     * - `safeguarding_required`: the community made the step required, it is
+     *   shown (there are active options), and the member has recorded no
+     *   answer at all. "None of these apply to me" is an answer.
+     * - `safeguarding_option_required`: an active option marked required, and
+     *   still offered to newcomers, that the member has not chosen.
+     *
+     * Saving already refuses a missing required option; this is checked again
+     * at completion so a client that skips the save cannot finish without
+     * answering (gap found 26 Oct 2026).
+     *
+     * @return list<string>
+     */
+    public static function unmetSafeguardingRequirements(int $tenantId, int $userId): array
+    {
+        $config = self::getConfig($tenantId);
+        if (! $config['step_safeguarding_enabled'] || ! self::hasActiveSafeguardingOptions($tenantId)) {
+            return [];
+        }
+
+        $heldOptionIds = DB::table('user_safeguarding_preferences')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->whereNull('revoked_at')
+            ->pluck('option_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+
+        $unmet = [];
+        if ($config['step_safeguarding_required'] && $heldOptionIds === []) {
+            $unmet[] = 'safeguarding_required';
+        }
+
+        $missingRequired = DB::table('tenant_safeguarding_options')
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->where('is_required', 1)
+            ->where('accepts_new_selections', 1)
+            ->when($heldOptionIds !== [], fn ($q) => $q->whereNotIn('id', $heldOptionIds))
+            ->exists();
+        if ($missingRequired) {
+            $unmet[] = 'safeguarding_option_required';
         }
 
         return $unmet;

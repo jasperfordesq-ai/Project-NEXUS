@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Wybierz powód zgłoszenia.",
   "member_reports.details_required": "Opisz, co się stało.",
   "member_reports.details_too_long": "Opis może mieć najwyżej {{max}} znaków.",
-  "member_reports.already_reported": "To zgłoszenie zostało już wysłane. Koordynatorzy Twojej społeczności się nim zajmą."
+  "member_reports.already_reported": "To zgłoszenie zostało już wysłane. Koordynatorzy Twojej społeczności się nim zajmą.",
+  "onboarding.safeguarding_required": "Zanim skończysz, odpowiedz na pytanie dotyczące ochrony. Jeśli żadna opcja Cię nie dotyczy, wybierz „Żadna z tych sytuacji mnie nie dotyczy”."
 }

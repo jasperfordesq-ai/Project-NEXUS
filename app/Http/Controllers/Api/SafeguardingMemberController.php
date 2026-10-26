@@ -181,6 +181,72 @@ class SafeguardingMemberController extends BaseApiController
     }
 
     /**
+     * GET /v2/safeguarding/available-options
+     *
+     * Choices the signed-in member may still add after joining: options the
+     * community offers to new members that the member does not hold, each with
+     * the plain-language account of what it does.
+     */
+    public function availableOptions(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+        $effects = app(\App\Services\SafeguardingEffectsService::class);
+
+        $options = array_map(static function (TenantSafeguardingOption $opt) use ($effects, $tenantId): array {
+            $localized = $opt->toLocalizedArray();
+            $triggers = is_array($localized['triggers'] ?? null) ? $localized['triggers'] : [];
+
+            return [
+                'option_id' => (int) $opt->id,
+                'option_key' => (string) $opt->option_key,
+                'label' => $localized['label'] ?? '',
+                'description' => $localized['description'] ?? null,
+                'help_url' => $localized['help_url'] ?? null,
+                'effects' => $effects->forOption($tenantId, (string) $opt->option_key, $triggers),
+            ];
+        }, SafeguardingPreferenceService::getAddableOptionsForMember($tenantId, $userId));
+
+        return $this->respondWithData([
+            'options' => $options,
+            'count' => count($options),
+        ]);
+    }
+
+    /**
+     * POST /v2/safeguarding/add-choice  { option_id: int }
+     *
+     * The member adds one safeguarding choice after joining. Same consent
+     * record, coordinator alert, summary email and protections as onboarding.
+     */
+    public function addChoice(Request $request): JsonResponse
+    {
+        $userId = $this->requireAuth();
+
+        $validated = $request->validate([
+            'option_id' => 'required|integer|min:1',
+        ]);
+        $optionId = (int) $validated['option_id'];
+
+        $outcome = SafeguardingPreferenceService::addMemberChoice($userId, $optionId, $request->ip());
+
+        if ($outcome !== 'added') {
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.safeguarding_preference_option_invalid'),
+                'option_id',
+                422
+            );
+        }
+
+        return $this->respondWithData([
+            'added' => true,
+            'option_id' => $optionId,
+            'message' => __('api_controllers_2.onboarding.safeguarding_saved'),
+        ]);
+    }
+
+    /**
      * POST /v2/safeguarding/revoke
      *
      * Member-initiated revocation of a single preference. Accepts:

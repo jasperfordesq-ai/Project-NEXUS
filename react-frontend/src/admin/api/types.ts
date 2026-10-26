@@ -1497,10 +1497,15 @@ export interface MonitoredUser {
 
 export interface BrokerConfig {
   // Messaging
+  /**
+   * Still returned and accepted by the server, but no staff screen offers it
+   * (owner decision, 26 Oct 2026) and the server treats messaging as always on.
+   */
   broker_messaging_enabled: boolean;
   broker_copy_all_messages: boolean;
   broker_copy_threshold_hours: number;
   new_member_monitoring_days: number;
+  /** Stored for compatibility only; never enforced and not offered (26 Oct 2026). */
   require_exchange_for_listings: boolean;
   // Risk Tagging
   risk_tagging_enabled: boolean;

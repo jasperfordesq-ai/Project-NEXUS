@@ -422,7 +422,17 @@
       "message": "Er is iemand geregistreerd die verantwoordelijk is voor de ondersteuning van u. Jouw antwoord is nodig.",
       "action": "Bekijk dit"
     },
-    "what_this_does": "Wat dit doet"
+    "what_this_does": "Wat dit doet",
+    "add": {
+      "title": "Extra ondersteuning toevoegen",
+      "intro": "U kunt op elk moment om extra ondersteuning vragen. Lees wat elke keuze doet voordat u die toevoegt.",
+      "button": "Toevoegen",
+      "confirm_title": "Deze ondersteuning toevoegen?",
+      "confirm_body": "Het gaat meteen in. We sturen u per e-mail een overzicht van uw keuzes. U kunt het altijd weer verwijderen in uw instellingen.",
+      "confirm_yes": "Ja, toevoegen",
+      "added_toast": "Toegevoegd. Deze ondersteuning staat nu aan.",
+      "error_toast": "Dat kon niet worden toegevoegd. Er is niets gewijzigd."
+    }
   },
   "header": {
     "title": "Instellingen",

@@ -75,6 +75,8 @@ const guardian = {
   notes: 'Recorded during onboarding.',
 };
 
+let availableOptions: Array<Record<string, unknown>> = [];
+
 function mockLoads(
   statusOverrides: Record<string, unknown> = {},
   preferences = [preference],
@@ -97,6 +99,9 @@ function mockLoads(
     if (url === '/v2/safeguarding/my-wards') {
       return Promise.resolve({ success: true, data: { wards } });
     }
+    if (url === '/v2/safeguarding/available-options') {
+      return Promise.resolve({ success: true, data: { options: availableOptions, count: availableOptions.length } });
+    }
     return Promise.resolve({ success: false });
   });
 }
@@ -104,6 +109,7 @@ function mockLoads(
 describe('SafeguardingTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    availableOptions = [];
     mockLoads();
   });
 
@@ -421,5 +427,57 @@ describe('SafeguardingTab', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Yes, revoke' }));
 
     await waitFor(() => expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/revoke', { option_id: 10 }));
+  });
+  describe('adding extra support after joining', () => {
+    const openOption = {
+      option_id: 42,
+      option_key: 'is_vulnerable_adult',
+      label: 'I consider myself a vulnerable adult',
+      description: 'Choose this if you would like extra care.',
+      help_url: null,
+      effects: ['Only coordinators and vetted members can message you.'],
+    };
+
+    it('lists choices the member can still add, with what each one does', async () => {
+      availableOptions = [openOption];
+      render(<SafeguardingTab />);
+
+      expect(await screen.findByRole('heading', { name: 'Add extra support' })).toBeInTheDocument();
+      expect(screen.getByText('I consider myself a vulnerable adult')).toBeInTheDocument();
+      expect(screen.getByText('Only coordinators and vetted members can message you.')).toBeInTheDocument();
+      expect(mockedGet).toHaveBeenCalledWith('/v2/safeguarding/available-options');
+    });
+
+    it('hides the section when there is nothing left to add', async () => {
+      render(<SafeguardingTab />);
+      await waitFor(() => expect(screen.getByText('Supervised matching')).toBeInTheDocument());
+      expect(screen.queryByRole('heading', { name: 'Add extra support' })).toBeNull();
+    });
+
+    it('asks for confirmation, then saves the choice and reloads', async () => {
+      availableOptions = [openOption];
+      mockedPost.mockResolvedValue({ success: true, data: { added: true, option_id: 42 } });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Add this' }));
+      expect(mockedPost).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByRole('button', { name: 'Yes, add it' }));
+
+      await waitFor(() => expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/add-choice', { option_id: 42 }));
+      await waitFor(() => expect(toast.success).toHaveBeenCalled());
+      expect(mockedGet.mock.calls.filter(([url]) => url === '/v2/safeguarding/available-options').length).toBeGreaterThan(1);
+    });
+
+    it('says so when the choice could not be added', async () => {
+      availableOptions = [openOption];
+      mockedPost.mockResolvedValue({ success: false, error: 'Not allowed' });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Add this' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Yes, add it' }));
+
+      await waitFor(() => expect(toast.error).toHaveBeenCalled());
+      expect(toast.success).not.toHaveBeenCalled();
+    });
   });
 });

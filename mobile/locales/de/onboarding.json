@@ -113,6 +113,9 @@
     "or_separator": "oder",
     "learn_more": "Erfahren Sie mehr",
     "what_this_does": "Was das bewirkt",
+    "answer_missing": "Bitte wählen Sie mindestens eine Option aus, bevor Sie fortfahren.",
+    "answer_missing_with_none": "Bitte wählen Sie mindestens eine Option aus. Wenn keine davon auf Sie zutrifft, wählen Sie „{{none}}“.",
+    "answer_needed_title": "Bitte beantworten Sie die Frage zum Schutz",
     "confirmation": {
       "title": "Ihre Sicherheitseinstellungen wurden gespeichert",
       "intro": "Vielen Dank, dass Sie dies geteilt haben. Hier finden Sie eine Zusammenfassung dessen, was Sie ausgewählt haben, wer es sehen kann und was dadurch aktiviert wird.",

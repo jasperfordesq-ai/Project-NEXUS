@@ -1,0 +1,42 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/profile/safeguarding/add') }}">{{ t("profile_settings.safeguarding.add.cancel_link") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("profile_settings.safeguarding.add.confirm_title") }}</h1>
+
+      <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ option.label }}</h2>
+        {% if option.description %}<p class="govuk-body">{{ option.description }}</p>{% endif %}
+        {% if option.effects.length %}
+          <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1" id="sg-add-effects-heading">{{ t("profile_settings.safeguarding.effects_heading") }}</p>
+          <ul class="govuk-list govuk-list--bullet" aria-labelledby="sg-add-effects-heading">
+            {% for effect in option.effects %}
+              <li>{{ effect }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <p class="govuk-body">{{ t("profile_settings.safeguarding.add.confirm_body") }}</p>
+
+      <form method="post" action="{{ urlFor('/profile/safeguarding/add/confirm') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="option_id" value="{{ option.option_id }}">
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("profile_settings.safeguarding.add.confirm_button") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/profile/safeguarding/add') }}">{{ t("profile_settings.safeguarding.add.cancel_link") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

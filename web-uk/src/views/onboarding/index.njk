@@ -171,8 +171,13 @@
             {% endif %}
           {% endfor %}
 
-          <fieldset class="govuk-fieldset">
+          {% set safeguardingError = statusBanner and statusBanner.type == "error" and statusBanner.field == "safeguarding" %}
+          <div class="govuk-form-group{% if safeguardingError %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset"{% if safeguardingError %} aria-describedby="safeguarding-error"{% endif %}>
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha.onboarding.safeguarding.options_legend") }}</legend>
+            {% if safeguardingError %}
+              <p id="safeguarding-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+            {% endif %}
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
               {% for option in safeguardingOptions %}
                 {% if option.option_key == "none_apply" %}
@@ -216,6 +221,7 @@
               {% endif %}
             </div>
           </fieldset>
+          </div>
 
           {# Each `option_type: "select"` row is its own labelled question, so it
              gets its own form group after the checkbox fieldset. #}

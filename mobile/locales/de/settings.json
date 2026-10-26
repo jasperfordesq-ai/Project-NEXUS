@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Vibration",
     "hint": "Kurz vibrieren, wenn du eine Haupt- oder Löschschaltfläche antippst."
+  },
+  "safeguarding": {
+    "title": "Schutzpräferenzen",
+    "settingsHint": "Zusätzliche Unterstützung ansehen, hinzufügen oder entfernen",
+    "subtitle": "Das sind Ihre Entscheidungen zu zusätzlicher Unterstützung. Sie können sie jederzeit ändern.",
+    "currentTitle": "Ihre Auswahl",
+    "none": "Sie haben keine zusätzliche Unterstützung angefordert.",
+    "whatThisDoes": "Was das bewirkt",
+    "remove": "Entfernen",
+    "removeConfirmTitle": "Diese Auswahl entfernen?",
+    "removeConfirmBody": "Die Unterstützung endet sofort. Ihre Koordinatoren werden informiert.",
+    "removed": "Auswahl entfernt",
+    "removeError": "Das konnte nicht entfernt werden. Es wurde nichts geändert.",
+    "loadError": "Ihre Auswahl zur zusätzlichen Unterstützung konnte nicht geladen werden.",
+    "addTitle": "Zusätzliche Unterstützung hinzufügen",
+    "addIntro": "Sie können jederzeit zusätzliche Unterstützung anfordern. Lesen Sie, was jede Auswahl bewirkt, bevor Sie sie hinzufügen.",
+    "add": "Hinzufügen",
+    "addConfirmTitle": "Diese Unterstützung hinzufügen?",
+    "addConfirmBody": "Sie gilt sofort. Wir senden Ihnen eine Zusammenfassung Ihrer Auswahl per E-Mail. Sie können sie jederzeit in Ihren Einstellungen wieder entfernen.",
+    "addConfirmYes": "Ja, hinzufügen",
+    "added": "Hinzugefügt. Diese Unterstützung ist jetzt aktiv.",
+    "addError": "Das konnte nicht hinzugefügt werden. Es wurde nichts geändert."
   }
 }

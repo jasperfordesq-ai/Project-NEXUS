@@ -1882,6 +1882,11 @@ class GdprService
                 $this->query("DELETE FROM vol_wellbeing_alerts WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 \App\Services\VolunteerWellbeingService::deleteOrphanedNotes($this->tenantId);
                 $this->query("DELETE FROM vol_accessibility_needs WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
+                // The member's own safeguarding choices ("I consider myself a
+                // vulnerable adult", "None of these apply") and any note they
+                // wrote with them. Owner decision, 26 Oct 2026: these used to
+                // survive erasure. Staff vetting decisions are still held (F-339).
+                $this->query("DELETE FROM user_safeguarding_preferences WHERE user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 $this->query("DELETE FROM vol_guardian_consents WHERE minor_user_id = ? AND tenant_id = ?", [$userId, $this->tenantId]);
                 // F-489 — a safeguarding-training row that records a STAFF
                 // REFUSAL is held, for exactly the reason F-339 gives below for
@@ -3557,6 +3562,9 @@ class GdprService
             )->fetchAll();
 
             return array_map(static function (array $row): array {
+                $row['notes'] = \App\Models\UserSafeguardingPreference::decryptNotes(
+                    isset($row['notes']) ? (string) $row['notes'] : null,
+                );
                 $row['option_label'] = \App\Models\TenantSafeguardingOption::localizeOptionText(
                     isset($row['preset_source']) ? (string) $row['preset_source'] : null,
                     isset($row['option_key']) ? (string) $row['option_key'] : null,

@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "Twoje konto sprzedawcy zostało zawieszone, a ogłoszenia usunięte.",
   "member_concern.member_alert": "Członek zgłosił innego członka. Sprawdź zgłoszenie.",
   "member_concern.message_alert": "Członek zgłosił otrzymaną wiadomość. Sprawdź zgłoszenie.",
-  "member_concern.safeguarding_alert": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony. Sprawdź ją jak najszybciej."
+  "member_concern.safeguarding_alert": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony. Sprawdź ją jak najszybciej.",
+  "safeguarding_health.unusable_alert": "Z niektórymi członkami mogą kontaktować się tylko osoby z zarejestrowaną weryfikacją, ale zasady weryfikacji Twojej społeczności nie są ustawione, więc nikt nie może się z nimi skontaktować. Ustaw je w panelu koordynatora w sekcji Weryfikacja.",
+  "safeguarding_health.unreachable_alert": "Z niektórymi członkami mogą kontaktować się tylko koordynatorzy i członkowie z zarejestrowaną weryfikacją, ale w Twojej społeczności nie zarejestrowano jeszcze żadnej weryfikacji, więc kontaktować się z nimi mogą tylko koordynatorzy. Zarejestruj weryfikacje w panelu koordynatora w sekcji Weryfikacja."
 }

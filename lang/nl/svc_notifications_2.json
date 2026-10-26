@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "Je verkopersaccount is geschorst en je advertenties zijn verwijderd.",
   "member_concern.member_alert": "Een lid heeft een ander lid gemeld. Bekijk de melding.",
   "member_concern.message_alert": "Een lid heeft een ontvangen bericht gemeld. Bekijk de melding.",
-  "member_concern.safeguarding_alert": "Een lid heeft een zorg over veiligheid gemeld. Bekijk deze zo snel mogelijk."
+  "member_concern.safeguarding_alert": "Een lid heeft een zorg over veiligheid gemeld. Bekijk deze zo snel mogelijk.",
+  "safeguarding_health.unusable_alert": "Sommige leden mogen alleen worden benaderd door mensen met een geregistreerde screening, maar de screeningsregels van je gemeenschap zijn niet ingesteld. Niemand kan hen bereiken. Stel ze in via het makelaarspaneel onder Screening.",
+  "safeguarding_health.unreachable_alert": "Sommige leden mogen alleen worden benaderd door coördinatoren en door leden met een geregistreerde screening, maar in je gemeenschap is nog geen screening geregistreerd. Alleen coördinatoren kunnen hen bereiken. Registreer screenings via het makelaarspaneel onder Screening."
 }

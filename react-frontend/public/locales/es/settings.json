@@ -422,7 +422,17 @@
       "message": "Alguien ha sido registrado como responsable de apoyarte. Se necesita tu respuesta.",
       "action": "Revisa esto"
     },
-    "what_this_does": "Qué hace esto"
+    "what_this_does": "Qué hace esto",
+    "add": {
+      "title": "Añadir apoyo adicional",
+      "intro": "Puede pedir apoyo adicional en cualquier momento. Lea lo que hace cada opción antes de añadirla.",
+      "button": "Añadir",
+      "confirm_title": "¿Añadir este apoyo?",
+      "confirm_body": "Empieza de inmediato. Le enviaremos por correo electrónico un resumen de sus opciones. Puede quitarlo en su configuración cuando quiera.",
+      "confirm_yes": "Sí, añadirlo",
+      "added_toast": "Añadido. Este apoyo ya está activado.",
+      "error_toast": "No se pudo añadir. No se ha cambiado nada."
+    }
   },
   "header": {
     "title": "Configuración",

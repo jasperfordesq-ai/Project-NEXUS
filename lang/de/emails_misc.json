@@ -837,7 +837,11 @@
     "member_concern_subject": "Neue Meldung über ein Mitglied — #{{report_id}}",
     "member_concern_body": "Ein Mitglied hat ein anderes Mitglied oder eine erhaltene Nachricht gemeldet. Referenz: #{{report_id}}. Bitte prüfe die Meldung in deiner Meldungsliste. Das betroffene Mitglied wurde nicht informiert.",
     "safeguarding_subject": "Schutzanliegen gemeldet — #{{report_id}}",
-    "safeguarding_body": "Ein Mitglied hat ein Schutzanliegen zu einem anderen Mitglied gemeldet. Referenz: #{{report_id}}. Bitte prüfe es so bald wie möglich. Das betroffene Mitglied wurde nicht informiert."
+    "safeguarding_body": "Ein Mitglied hat ein Schutzanliegen zu einem anderen Mitglied gemeldet. Referenz: #{{report_id}}. Bitte prüfe es so bald wie möglich. Das betroffene Mitglied wurde nicht informiert.",
+    "safeguarding_health_unusable_subject": "Handlung erforderlich: Überprüfungsregeln deiner Gemeinschaft festlegen",
+    "safeguarding_health_unusable_body": "Manche Mitglieder möchten nur von Personen kontaktiert werden, deren Überprüfung deine Gemeinschaft erfasst hat. Die Überprüfungsregeln deiner Gemeinschaft sind nicht festgelegt, daher kann niemand diese Mitglieder erreichen. Bitte lege sie im Broker-Bereich unter „Überprüfung“ fest.",
+    "safeguarding_health_unreachable_subject": "Handlung erforderlich: keine Überprüfung für geschützte Mitglieder erfasst",
+    "safeguarding_health_unreachable_body": "Manche Mitglieder dürfen nur von der Koordination und von Mitgliedern kontaktiert werden, deren Überprüfung deine Gemeinschaft erfasst hat. Es ist noch keine Überprüfung erfasst, daher kann nur die Koordination sie erreichen. Bitte erfasse Überprüfungen im Broker-Bereich unter „Überprüfung“ oder nimm Kontakt mit diesen Mitgliedern auf."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "nicht angegeben",

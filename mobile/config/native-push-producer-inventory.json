@@ -1,7 +1,7 @@
 {
     "schema_version": 3,
     "generated_by": "mobile/scripts/audit-native-push-producers.php",
-    "producer_count": 241,
+    "producer_count": 242,
     "producers": [
         {
             "id": "app/Console/Commands/ClearExpiredMonitoringCommand.php:109:NotificationDispatcher::fanOutPush",
@@ -27,6 +27,19 @@
             "body_expression": "$message",
             "type_expression": "saved_search_alert",
             "link_expression": "$link",
+            "data_expression": null
+        },
+        {
+            "id": "app/Console/Commands/SafeguardingPolicyHealthCheck.php:175:NotificationDispatcher::notifyModerationAdmins",
+            "file": "app/Console/Commands/SafeguardingPolicyHealthCheck.php",
+            "line": 175,
+            "transport": "NotificationDispatcher::notifyModerationAdmins",
+            "role": "producer",
+            "recipient_expression": null,
+            "title_expression": null,
+            "body_expression": null,
+            "type_expression": "safeguarding_policy_health",
+            "link_expression": "/broker/vetting",
             "data_expression": null
         },
         {

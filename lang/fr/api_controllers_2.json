@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Veuillez choisir un motif pour votre signalement.",
   "member_reports.details_required": "Veuillez décrire ce qui s’est passé.",
   "member_reports.details_too_long": "Votre description ne doit pas dépasser {{max}} caractères.",
-  "member_reports.already_reported": "Vous avez déjà signalé ceci. Les coordinateurs de votre communauté vont l’examiner."
+  "member_reports.already_reported": "Vous avez déjà signalé ceci. Les coordinateurs de votre communauté vont l’examiner.",
+  "onboarding.safeguarding_required": "Veuillez répondre à la question de protection avant de terminer. Si aucune option ne vous concerne, choisissez « Aucune de ces situations ne me concerne »."
 }

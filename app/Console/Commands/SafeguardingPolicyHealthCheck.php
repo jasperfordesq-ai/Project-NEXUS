@@ -6,10 +6,13 @@
 
 namespace App\Console\Commands;
 
+use App\Core\TenantContext;
 use App\Services\MemberVettingAttestationService;
+use App\Services\NotificationDispatcher;
 use App\Services\SafeguardingJurisdictionService;
 use App\Support\Sentry\OperatorLog;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -91,6 +94,16 @@ class SafeguardingPolicyHealthCheck extends Command
             $this->reportUnreachable($unreachable);
         }
 
+        // The fix is the community's to make, so its own staff are told too —
+        // not only the platform's error tracker (26 Oct 2026). Once a week per
+        // community and problem, so a daily check does not become daily noise.
+        foreach ($affected as $row) {
+            $this->tellCommunityStaff((int) $row['tenant_id'], 'unusable');
+        }
+        foreach ($unreachable as $row) {
+            $this->tellCommunityStaff((int) $row['tenant_id'], 'unreachable');
+        }
+
         if ($affected === [] && $unreachable !== []) {
             return self::FAILURE;
         }
@@ -143,6 +156,39 @@ class SafeguardingPolicyHealthCheck extends Command
         }
 
         return self::FAILURE;
+    }
+
+    /**
+     * Bell, push and email to the community's brokers, coordinators and admins,
+     * each in their own language. Never fails the check.
+     */
+    private function tellCommunityStaff(int $tenantId, string $problem): void
+    {
+        $onceKey = 'safeguarding_policy_health:told:' . $tenantId . ':' . $problem;
+        if (! Cache::add($onceKey, 1, now()->addDays(7))) {
+            return;
+        }
+
+        $previousTenantId = TenantContext::currentId();
+        try {
+            TenantContext::setById($tenantId);
+            NotificationDispatcher::notifyModerationAdmins(
+                'safeguarding_policy_health',
+                '/broker/vetting',
+                'svc_notifications_2.safeguarding_health.' . $problem . '_alert',
+                'emails_misc.moderation.safeguarding_health_' . $problem . '_subject',
+                'emails_misc.moderation.safeguarding_health_' . $problem . '_body',
+                [],
+                'danger',
+            );
+        } catch (\Throwable $e) {
+            Cache::forget($onceKey);
+            Log::warning('safeguarding:check-policy-health staff alert failed', ['tenant_id' => $tenantId, 'error' => $e->getMessage()]);
+        } finally {
+            if ($previousTenantId !== null) {
+                TenantContext::setById($previousTenantId);
+            }
+        }
     }
 
     /** @param list<array{tenant_id: int, jurisdiction: string}> $unreachable */

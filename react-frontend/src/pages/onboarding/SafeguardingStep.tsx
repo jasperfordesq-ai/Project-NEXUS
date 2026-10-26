@@ -77,6 +77,10 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
   const [selections, setSelections] = useState<Record<number, boolean>>({});
   const [selectValues, setSelectValues] = useState<Record<number, string>>({});
   const [confirmationShown, setConfirmationShown] = useState(false);
+  // Shown when the community made this step required and the member tried to
+  // move on without choosing anything. The server refuses to finish onboarding
+  // in that case (SAFEGUARDING_REQUIRED), so say so here, not at the end.
+  const [answerMissing, setAnswerMissing] = useState(false);
 
   const savingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -138,6 +142,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
   //   • ticking any other option clears none_apply
 
   const toggleOption = useCallback((optionId: number) => {
+    setAnswerMissing(false);
     const option = options.find(o => o.id === optionId);
     const isNoneApply = option?.option_key === 'none_apply';
 
@@ -203,6 +208,12 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
 
     if (selectedPrefs.length === 0 && !isRequired) {
       onNext();
+      return;
+    }
+
+    if (selectedPrefs.length === 0) {
+      // Required step, nothing chosen: stay here and explain how to answer.
+      setAnswerMissing(true);
       return;
     }
 
@@ -521,6 +532,7 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                         selectedKeys={selectValues[option.id] != null ? [selectValues[option.id] ?? ''] : []}
                         onSelectionChange={(keys) => {
                           const value = Array.from(keys)[0] as string || '';
+                          if (value !== '') setAnswerMissing(false);
                           setSelectValues(prev => ({ ...prev, [option.id]: value }));
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -560,6 +572,22 @@ export function SafeguardingStep({ onNext, onBack, onSkip, isRequired, introText
                   {renderOption(noneApplyOption, true)}
                 </>
               )}
+            </div>
+          );
+        })()}
+
+        {answerMissing && (() => {
+          const noneApplyLabel = options.find(o => o.option_key === 'none_apply')?.label;
+          return (
+            <div
+              role="alert"
+              className="mt-4 p-3 rounded-lg border border-[var(--color-danger)] bg-[var(--color-danger)]/10"
+            >
+              <p className="text-sm font-medium text-theme-primary">
+                {noneApplyLabel
+                  ? t('safeguarding.answer_missing_with_none', { none: noneApplyLabel })
+                  : t('safeguarding.answer_missing')}
+              </p>
             </div>
           );
         })()}

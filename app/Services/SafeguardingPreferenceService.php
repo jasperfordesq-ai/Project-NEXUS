@@ -1086,6 +1086,139 @@ class SafeguardingPreferenceService
         return 'switched';
     }
 
+    /**
+     * Options a member may ADD after joining, from their settings: active
+     * checkbox options still offered to new members that the member does not
+     * already hold. "None of these apply" is not extra support and is left out.
+     * Closed options are never offered here; a member who holds one keeps it
+     * and sees it among their current choices.
+     *
+     * @return list<TenantSafeguardingOption>
+     */
+    public static function getAddableOptionsForMember(int $tenantId, int $userId): array
+    {
+        $heldOptionIds = self::heldOptionIds($tenantId, $userId);
+
+        return TenantSafeguardingOption::where('tenant_id', $tenantId)
+            ->active()
+            ->get()
+            ->filter(static fn (TenantSafeguardingOption $opt): bool => $opt->option_type === 'checkbox'
+                && $opt->option_key !== 'none_apply'
+                && $opt->acceptsNewSelections()
+                && ! in_array((int) $opt->id, $heldOptionIds, true))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * A signed-in member adds one safeguarding choice from their settings,
+     * after onboarding. Records consent exactly as the onboarding save does
+     * (consent time and IP, review flags cleared, revocation cleared), then
+     * runs the same follow-on steps: the audit entry, trigger activation with
+     * the coordinator alert, and the member's summary email.
+     *
+     * It does not call saveUserPreferences() because that validates a whole
+     * questionnaire: a lone addition would be refused whenever the community
+     * marks some other question "required". A real choice replaces a held
+     * "none of these apply", as it does in onboarding.
+     *
+     * @return 'added'|'invalid'
+     */
+    public static function addMemberChoice(int $userId, int $optionId, ?string $ipAddress = null): string
+    {
+        $tenantId = TenantContext::getId();
+        $now = now();
+
+        $outcome = DB::transaction(function () use ($tenantId, $userId, $optionId, $now, $ipAddress): string {
+            app(SafeguardingJurisdictionService::class)->lockPolicyForUpdate($tenantId);
+
+            $option = TenantSafeguardingOption::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('id', $optionId)
+                ->lockForUpdate()
+                ->first();
+            if (! $option instanceof TenantSafeguardingOption
+                || ! $option->is_active
+                || $option->option_type !== 'checkbox'
+                || $option->option_key === 'none_apply') {
+                return 'invalid';
+            }
+
+            $existing = UserSafeguardingPreference::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $userId)
+                ->where('option_id', $optionId)
+                ->lockForUpdate()
+                ->first();
+            $held = $existing instanceof UserSafeguardingPreference && $existing->revoked_at === null;
+            if (! $option->acceptsNewSelections() && ! $held) {
+                return 'invalid';
+            }
+
+            $values = [
+                'selected_value' => '1',
+                'consent_given_at' => $now,
+                'consent_ip' => $ipAddress,
+                'revoked_at' => null,
+                'policy_review_required_at' => null,
+                'policy_review_reason_code' => null,
+            ];
+            if ($existing instanceof UserSafeguardingPreference) {
+                $existing->update($values);
+            } else {
+                UserSafeguardingPreference::withoutGlobalScopes()->create(array_merge([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $userId,
+                    'option_id' => $optionId,
+                ], $values));
+            }
+
+            $noneApplyIds = TenantSafeguardingOption::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('option_key', 'none_apply')
+                ->pluck('id')
+                ->all();
+            if ($noneApplyIds !== []) {
+                UserSafeguardingPreference::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('user_id', $userId)
+                    ->whereIn('option_id', $noneApplyIds)
+                    ->whereNull('revoked_at')
+                    ->update(['revoked_at' => $now]);
+            }
+
+            return 'added';
+        });
+
+        if ($outcome !== 'added') {
+            return $outcome;
+        }
+
+        self::logActivity($userId, 'safeguarding_preferences_updated', 'user', $userId, [
+            'options_count' => 1,
+            'added_option_id' => $optionId,
+            'source' => 'member_settings',
+        ]);
+
+        try {
+            SafeguardingTriggerService::activateTriggersForUser(
+                $userId,
+                $tenantId,
+                notifyStaffOfMemberSelection: true,
+            );
+        } catch (\Throwable $e) {
+            Log::error('SafeguardingPreferenceService: trigger activation failed after member added a choice', [
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        self::queueChoicesSummary($tenantId, $userId);
+
+        return 'added';
+    }
+
     private static function validatePreferencePayload(int $tenantId, array $preferences, int $userId): array
     {
         $activeOptions = TenantSafeguardingOption::where('tenant_id', $tenantId)

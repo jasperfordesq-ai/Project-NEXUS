@@ -132,7 +132,10 @@
       "declination_title": "Noté — votre réponse est enregistrée",
       "declination_intro": "Merci d'avoir examiné ces options. Votre réponse a été enregistrée afin que les coordinateurs sachent que vous avez pris connaissance de cette étape et l'avez examinée."
     },
-    "what_this_does": "Ce que cela fait"
+    "what_this_does": "Ce que cela fait",
+    "answer_missing": "Veuillez choisir au moins une option avant de continuer.",
+    "answer_missing_with_none": "Veuillez choisir au moins une option. Si aucune ne vous concerne, choisissez « {{none}} ».",
+    "answer_needed_title": "Veuillez répondre à la question de protection"
   },
   "page_meta": {
     "title": "Intégration"

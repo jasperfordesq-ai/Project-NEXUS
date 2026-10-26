@@ -209,6 +209,15 @@ const PROFILE_STATUS_MESSAGES = {
     message: 'Your choice could not be changed. Please try again.',
     anchor: 'safeguarding'
   },
+  'safeguarding-added': {
+    type: 'success',
+    message: 'This support has been added and is now switched on.'
+  },
+  'safeguarding-add-failed': {
+    type: 'error',
+    message: 'We could not add that support. Nothing was changed.',
+    anchor: 'safeguarding'
+  },
   'vetting-review-requested': { type: 'success', message: 'Broker review requested.' },
   'vetting-review-evidence-prohibited': {
     type: 'error',
@@ -275,6 +284,8 @@ const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'safeguarding-failed': 'profile_settings.safeguarding.failed',
   'safeguarding-switched': 'profile_settings.safeguarding.switched',
   'safeguarding-switch-failed': 'profile_settings.safeguarding.switch_failed',
+  'safeguarding-added': 'profile_settings.safeguarding.add.added',
+  'safeguarding-add-failed': 'profile_settings.safeguarding.add.failed',
   'vetting-review-requested': 'profile_settings.safeguarding.vetting.review_requested_toast',
   'vetting-review-evidence-prohibited': 'profile_settings.safeguarding.vetting.no_documents',
   'vetting-review-unavailable': 'profile_settings.safeguarding.vetting.policy_unavailable_body',
@@ -886,6 +897,25 @@ function normalizeSafeguarding(payload) {
       effects: plainStrings(option.effects)
     };
   });
+}
+
+/**
+ * Choices a member may still add after joining (GET /safeguarding/available-options).
+ * The API decides which: open to new members and not already held.
+ */
+function normalizeAddableSafeguarding(payload) {
+  return arrayFromPayload(payload, ['options', 'items'])
+    .map((option) => ({
+      option_id: positiveInteger(option.option_id || option.id),
+      label: typeof option.label === 'string' ? option.label.trim() : '',
+      description: typeof option.description === 'string' ? option.description.trim() : '',
+      effects: plainStrings(option.effects)
+    }))
+    .filter((option) => option.option_id !== null && option.label !== '');
+}
+
+async function addableSafeguardingOptions(token) {
+  return normalizeAddableSafeguarding(payloadFrom(await callProfile(token, 'GET', '/safeguarding/available-options')));
 }
 
 /** Keeps only non-empty strings; the API sends them already translated. */
@@ -1797,6 +1827,95 @@ router.post('/safeguarding/switch-to-coordinator-introductions', asyncRoute(asyn
     if (redirectOnAuthError(error, res)) return undefined;
     // 409 NOT_HELD / UNAVAILABLE and any other failure: nothing changed.
     status = 'safeguarding-switch-failed';
+  }
+
+  return redirectTo(res, profileSettingsRedirect(status, '#safeguarding'));
+}));
+
+/*
+ * Adding a safeguarding choice after joining. HTML-first, two steps, no
+ * JavaScript: choose one (radios), then check it and confirm. Nothing is saved
+ * until the confirm button; the API applies the choice exactly as onboarding
+ * does (consent record, coordinator alert, summary email, protections).
+ */
+router.get('/safeguarding/add', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let options = [];
+  try {
+    options = await addableSafeguardingOptions(token);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, profileSettingsRedirect('safeguarding-add-failed', '#safeguarding'));
+  }
+
+  const status = typeof req.query.status === 'string' ? req.query.status : '';
+  return res.render('profile/safeguarding-add', {
+    title: translateStatusMessage(req, 'profile_settings.safeguarding.add.title', 'Add extra support'),
+    titleKey: 'profile_settings.safeguarding.add.title',
+    activeNav: 'profile',
+    options,
+    chooseError: status === 'choose-required'
+      ? translateStatusMessage(req, 'profile_settings.safeguarding.add.choose_error', 'Select the support you would like to add')
+      : ''
+  });
+}));
+
+router.post('/safeguarding/add', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const optionId = positiveInteger(req.body.option_id);
+  if (optionId === null) {
+    return redirectTo(res, statusRedirect('/profile/safeguarding/add', 'choose-required', '#option_id'));
+  }
+  return redirectTo(res, `/profile/safeguarding/add/confirm?option_id=${optionId}`);
+}));
+
+router.get('/safeguarding/add/confirm', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const optionId = positiveInteger(req.query.option_id);
+  if (optionId === null) return redirectTo(res, '/profile/safeguarding/add');
+
+  let options = [];
+  try {
+    options = await addableSafeguardingOptions(token);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, profileSettingsRedirect('safeguarding-add-failed', '#safeguarding'));
+  }
+
+  // Only a choice the API still offers can be confirmed.
+  const option = options.find((candidate) => candidate.option_id === optionId);
+  if (!option) return redirectTo(res, '/profile/safeguarding/add');
+
+  return res.render('profile/safeguarding-add-confirm', {
+    title: translateStatusMessage(req, 'profile_settings.safeguarding.add.confirm_title', 'Add this support?'),
+    titleKey: 'profile_settings.safeguarding.add.confirm_title',
+    activeNav: 'profile',
+    option
+  });
+}));
+
+router.post('/safeguarding/add/confirm', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const optionId = positiveInteger(req.body.option_id);
+  if (optionId === null) {
+    return redirectTo(res, statusRedirect('/profile/safeguarding/add', 'choose-required', '#option_id'));
+  }
+
+  let status = 'safeguarding-added';
+  try {
+    await callProfile(token, 'POST', '/safeguarding/add-choice', { option_id: optionId });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // 422: not offered to this member, or not in this community. Nothing changed.
+    status = 'safeguarding-add-failed';
   }
 
   return redirectTo(res, profileSettingsRedirect(status, '#safeguarding'));

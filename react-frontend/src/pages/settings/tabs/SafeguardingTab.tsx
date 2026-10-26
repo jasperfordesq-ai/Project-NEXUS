@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import Shield from 'lucide-react/icons/shield';
 import Trash2 from 'lucide-react/icons/trash-2';
+import Plus from 'lucide-react/icons/plus';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
 import MinusCircle from 'lucide-react/icons/circle-minus';
 import Lock from 'lucide-react/icons/lock';
@@ -55,6 +56,17 @@ export interface MemberPreference {
   };
   /** What this choice does, in plain words, generated from the enforced rules. */
   effects?: string[];
+}
+
+/** A choice the member may still add after joining (open to new members, not held). */
+export interface AddableOption {
+  option_id: number;
+  option_key: string;
+  label: string;
+  description: string | null;
+  help_url?: string | null;
+  /** What this choice does, in plain words, generated from the enforced rules. */
+  effects: string[];
 }
 
 interface SwitchCopy {
@@ -246,16 +258,27 @@ export function SafeguardingTab() {
   const [isConfirmingPolicyReview, setIsConfirmingPolicyReview] = useState(false);
   const [revokingId, setRevokingId] = useState<number | null>(null);
   const [pendingRevoke, setPendingRevoke] = useState<MemberPreference | null>(null);
+  const [addableOptions, setAddableOptions] = useState<AddableOption[]>([]);
+  const [pendingAdd, setPendingAdd] = useState<AddableOption | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const addModal = useDisclosure();
 
   const loadPreferences = useCallback(async () => {
     try {
       setLoading(true);
-      const [preferencesResponse, vettingResponse, guardiansResponse, wardsResponse] = await Promise.all([
+      const [preferencesResponse, vettingResponse, guardiansResponse, wardsResponse, addableResponse] = await Promise.all([
         api.get<MyPreferencesResponse>('/v2/safeguarding/my-preferences'),
         api.get<MyVettingStatus>('/v2/safeguarding/my-vetting-status'),
         api.get<{ guardians: MyGuardian[]; pending_count: number }>('/v2/safeguarding/my-guardians'),
         api.get<{ wards: MyWard[] }>('/v2/safeguarding/my-wards'),
+        api.get<{ options: AddableOption[]; count: number }>('/v2/safeguarding/available-options'),
       ]);
+      // 🔴 api.ts never throws — an unsuccessful response simply offers nothing to add.
+      setAddableOptions(
+        addableResponse?.success && Array.isArray(addableResponse.data?.options)
+          ? addableResponse.data.options
+          : [],
+      );
       if (preferencesResponse.success && preferencesResponse.data) {
         setPreferences(preferencesResponse.data.preferences ?? []);
         setSwitchCopy(
@@ -345,6 +368,38 @@ export function SafeguardingTab() {
       confirmModal.onClose();
     }
   }, [pendingRevoke, t, toast, confirmModal]);
+
+  const handleAddClick = (option: AddableOption) => {
+    setPendingAdd(option);
+    addModal.onOpen();
+  };
+
+  /**
+   * The member adds a choice after joining. The server records consent and
+   * applies it exactly as onboarding does, so re-read rather than guess.
+   */
+  const handleAddConfirm = useCallback(async () => {
+    if (!pendingAdd || isAdding) return;
+    try {
+      setIsAdding(true);
+      const res = await api.post<{ added: boolean; option_id: number }>('/v2/safeguarding/add-choice', {
+        option_id: pendingAdd.option_id,
+      });
+      if (res.success) {
+        toast.success(t('safeguarding.add.added_toast'));
+        addModal.onClose();
+        setPendingAdd(null);
+        await loadPreferences();
+      } else {
+        toast.error(t('safeguarding.add.error_toast'), res.error || '');
+      }
+    } catch (error) {
+      logError('Add safeguarding choice failed', error);
+      toast.error(t('safeguarding.add.error_toast'));
+    } finally {
+      setIsAdding(false);
+    }
+  }, [addModal, isAdding, loadPreferences, pendingAdd, t, toast]);
 
   const handleRespond = useCallback(async (
     assignmentId: number,
@@ -963,7 +1018,94 @@ export function SafeguardingTab() {
             })}
           </div>
         )}
+
+        {/*
+          Adding a choice after joining. Only options the community still offers
+          to new members, and that this member does not hold, are listed — the
+          server decides which those are. Each shows what it does BEFORE the
+          member picks it, and saving goes through a confirm step.
+        */}
+        {addableOptions.length > 0 && (
+          <section className="mt-6 rounded-xl border border-theme-default bg-theme-surface p-4" aria-labelledby="safeguarding-add-heading">
+            <div className="flex items-start gap-3">
+              <Plus className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <h3 id="safeguarding-add-heading" className="text-sm font-semibold text-theme-primary">
+                  {t('safeguarding.add.title')}
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-theme-muted">{t('safeguarding.add.intro')}</p>
+                <ul className="mt-3 space-y-3">
+                  {addableOptions.map((option) => (
+                    <li key={option.option_id} className="rounded-lg border border-theme-default bg-theme-elevated p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-theme-primary">{option.label}</p>
+                          {option.description && (
+                            <p className="mt-1 text-xs leading-relaxed text-theme-muted">{option.description}</p>
+                          )}
+                          {(option.effects?.length ?? 0) > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs font-semibold text-theme-secondary">{t('safeguarding.what_this_does')}</p>
+                              <ul className="mt-1 list-disc space-y-1 pl-4">
+                                {option.effects.map((effect) => (
+                                  <li key={effect} className="text-xs leading-relaxed text-theme-secondary">{effect}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="shrink-0"
+                          isDisabled={isAdding}
+                          onPress={() => handleAddClick(option)}
+                        >
+                          {t('safeguarding.add.button')}
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
       </GlassCard>
+
+      {/* Confirm adding a choice */}
+      <Modal isOpen={addModal.isOpen} onOpenChange={addModal.onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>{t('safeguarding.add.confirm_title')}</ModalHeader>
+              <ModalBody>
+                {pendingAdd && (
+                  <>
+                    <p className="text-sm font-medium text-theme-primary">{pendingAdd.label}</p>
+                    {(pendingAdd.effects?.length ?? 0) > 0 && (
+                      <ul className="mt-2 list-disc space-y-1 pl-4">
+                        {pendingAdd.effects.map((effect) => (
+                          <li key={effect} className="text-sm leading-relaxed text-theme-secondary">{effect}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+                <p className="mt-3 text-sm text-theme-secondary">{t('safeguarding.add.confirm_body')}</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose}>
+                  {t('cancel', { ns: 'common' })}
+                </Button>
+                <Button variant="primary" onPress={handleAddConfirm} isLoading={isAdding}>
+                  {t('safeguarding.add.confirm_yes')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/*
         Confirm refusing or withdrawing, with an OPTIONAL reason.

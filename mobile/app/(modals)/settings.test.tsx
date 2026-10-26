@@ -45,6 +45,8 @@ jest.mock('react-i18next', () => ({
         'privacy.visibility.connections': 'Visible to your connections',
         'blockedUsers.title': 'Blocked users',
         'blockedUsers.settingsHint': 'Review blocked users.',
+        'safeguarding.title': 'Safeguarding preferences',
+        'safeguarding.settingsHint': 'See, add or remove extra support.',
         'dataExport.title': 'Data export',
         'dataExport.settingsHint': 'Request your data.',
         'linkedAccounts.title': 'Linked accounts',
@@ -330,6 +332,9 @@ describe('SettingsScreen', () => {
 
     fireEvent.press(getByText('Blocked users'));
     expect(router.push).toHaveBeenCalledWith('/(modals)/settings-blocked-users');
+
+    fireEvent.press(getByText('Safeguarding preferences'));
+    expect(router.push).toHaveBeenCalledWith('/(modals)/settings-safeguarding');
 
     fireEvent.press(getByText('Data export'));
     expect(router.push).toHaveBeenCalledWith('/(modals)/settings-data-export');

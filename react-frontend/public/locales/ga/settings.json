@@ -422,7 +422,17 @@
       "message": "Taifeadadh go bhfuil duine éigin freagrach as tacaíocht a thabhairt duit. Tá do fhreagra ag teastáil.",
       "action": "Déan athbhreithniú air seo"
     },
-    "what_this_does": "Cad a dhéanann sé seo"
+    "what_this_does": "Cad a dhéanann sé seo",
+    "add": {
+      "title": "Cuir tacaíocht bhreise leis",
+      "intro": "Is féidir leat tacaíocht bhreise a iarraidh am ar bith. Léigh cad a dhéanann gach rogha sula gcuireann tú leis í.",
+      "button": "Cuir leis",
+      "confirm_title": "An tacaíocht seo a chur leis?",
+      "confirm_body": "Tosaíonn sé láithreach. Seolfaimid achoimre ar do roghanna chugat trí ríomhphost. Is féidir leat é a bhaint i do shocruithe am ar bith.",
+      "confirm_yes": "Cuir leis é",
+      "added_toast": "Curtha leis. Tá an tacaíocht seo ar siúl anois.",
+      "error_toast": "Níorbh fhéidir é sin a chur leis. Níor athraíodh aon rud."
+    }
   },
   "header": {
     "title": "Socruithe",

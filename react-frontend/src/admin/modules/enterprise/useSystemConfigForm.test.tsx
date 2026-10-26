@@ -176,3 +176,15 @@ describe('useSystemConfigForm', () => {
     expect(mockAdminEnterprise.getConfig).toHaveBeenCalledTimes(2);
   });
 });
+
+// Owner decision, 26 Oct 2026: nothing enforces the profanity filter, so the
+// switch is not offered. A stored value is left alone (never sent).
+describe('system config schema', () => {
+  it('does not offer the profanity filter switch', async () => {
+    const { buildConfigSchema, SCHEMA_KEYS } = await import('./systemConfigSchema');
+    const keys = buildConfigSchema((key) => key, {}).flatMap((group) => group.settings.map((s) => s.key));
+
+    expect(keys).not.toContain('profanity_filter');
+    expect(SCHEMA_KEYS.has('profanity_filter')).toBe(false);
+  });
+});

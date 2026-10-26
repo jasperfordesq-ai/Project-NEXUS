@@ -59,6 +59,21 @@ class BrokerControlConfigServiceTest extends TestCase
         $this->assertTrue(BrokerControlConfigService::isDirectMessagingEnabled());
     }
 
+    public function test_isDirectMessagingEnabled_stays_true_when_a_community_stored_it_off(): void
+    {
+        // Owner decision, 26 Oct 2026: the switch is hidden and never enforced
+        // as "off" — a stored false must not hide the member message box.
+        DB::shouldReceive('table')->with('tenants')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('first')->andReturn(
+            (object) ['configuration' => json_encode(['broker_controls' => ['messaging' => ['direct_messaging_enabled' => false]]])],
+            (object) ['setting_value' => json_encode(['broker_messaging_enabled' => false])],
+        );
+        DB::shouldReceive('table')->with('tenant_settings')->andReturnSelf();
+
+        $this->assertTrue(BrokerControlConfigService::isDirectMessagingEnabled());
+    }
+
     public function test_isBrokerVisibilityEnabled_returns_true_by_default(): void
     {
         DB::shouldReceive('table')->andReturnSelf();

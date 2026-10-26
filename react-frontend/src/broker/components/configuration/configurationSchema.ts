@@ -67,12 +67,13 @@ export const CONFIGURATION_SCHEMA: ConfigSectionDef[] = [
     id: 'messaging',
     icon: MessageSquare,
     color: 'warning',
+    // "Broker messaging enabled" and "Require exchange for listings" are not
+    // offered (owner decision, 26 Oct 2026): the first actually hid the member
+    // message box and the second was never enforced. Stored values are kept.
     settings: [
-      bool('broker_messaging_enabled', true),
       bool('broker_copy_all_messages', true),
       num('broker_copy_threshold_hours', 'hours', 0, 100),
       num('new_member_monitoring_days', 'days', 0, 365),
-      bool('require_exchange_for_listings', true),
     ],
   },
   {
@@ -158,6 +159,8 @@ export const ADMIN_ONLY_CONFIG_KEYS: ReadonlySet<keyof BrokerConfig> = new Set(
 
 /** Defaults shown before the server answers; every key the page knows. */
 export const DEFAULT_BROKER_CONFIG: BrokerConfig = {
+  // Not shown on the page (26 Oct 2026). Kept so the form still knows the
+  // keys; the save sends only what the broker changed, so they are never sent.
   broker_messaging_enabled: true,
   broker_copy_all_messages: false,
   broker_copy_threshold_hours: 5,

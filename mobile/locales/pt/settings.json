@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Vibração",
     "hint": "Emitir uma vibração curta quando toca num botão principal ou destrutivo."
+  },
+  "safeguarding": {
+    "title": "Preferências de salvaguarda",
+    "settingsHint": "Ver, adicionar ou remover o apoio extra que pediu",
+    "subtitle": "Estas são as opções que escolheu sobre apoio extra. Pode alterá-las a qualquer momento.",
+    "currentTitle": "As suas opções",
+    "none": "Não pediu nenhum apoio extra.",
+    "whatThisDoes": "O que isto faz",
+    "remove": "Remover",
+    "removeConfirmTitle": "Remover esta opção?",
+    "removeConfirmBody": "O apoio que lhe dá termina de imediato. Os seus coordenadores serão informados.",
+    "removed": "Opção removida",
+    "removeError": "Não foi possível remover. Nada foi alterado.",
+    "loadError": "Não foi possível carregar as suas opções de apoio extra.",
+    "addTitle": "Adicionar apoio extra",
+    "addIntro": "Pode pedir apoio extra a qualquer momento. Leia o que cada opção faz antes de a adicionar.",
+    "add": "Adicionar",
+    "addConfirmTitle": "Adicionar este apoio?",
+    "addConfirmBody": "Começa de imediato. Enviaremos por e-mail um resumo das suas opções. Pode removê-lo nas suas definições a qualquer momento.",
+    "addConfirmYes": "Sim, adicionar",
+    "added": "Adicionado. Este apoio está agora ativo.",
+    "addError": "Não foi possível adicionar. Nada foi alterado."
   }
 }

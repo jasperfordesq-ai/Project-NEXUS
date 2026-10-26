@@ -434,7 +434,18 @@ class AiModuleDocsService
             ],
             'caring_community' => [
                 'title' => 'Caring Community — support for vulnerable members',
-                'body' => "If Caring Community is enabled in your tenant, the platform has extra features designed for communities supporting older adults, carers, people with disabilities, and those at risk of social isolation.\n\nFeatures include:\n• Wellbeing check-ins — regular automated check-in messages with a 'I'm OK / I need help' button. Missed check-ins alert designated buddies or admins.\n• Buddy system — members are paired with a regular check-in partner\n• Easy-mode UI — larger text, simpler navigation, voice-controlled posting\n• Trusted helper network — helpers arranged under the community's role-specific safeguarding process, without a public vetting badge\n• Carer support listings — special category for respite, befriending, transport to medical appointments\n• Family/carer view — a family member can have read-only access to their loved one's account with consent\n• Accessible event filtering — wheelchair-accessible, sensory-friendly, easy-language\n• Direct emergency contact in the menu\n\nAll Caring Community features respect dignity, consent, and privacy. Vulnerable adult declarations and safeguarding vetting confirmations are private to the member and authorised safeguarding decision-makers; Project NEXUS does not retain criminal-record certificates.",
+                'body' => "If Caring Community is enabled in your community, there are some extra tools for communities supporting older adults, carers, people with disabilities and people at risk of isolation.
+
+What exists:
+• Ask for help or offer a favour — simple pages for small requests
+• Linked supporters — a member can link a family member or carer and choose what that supporter may see or do for them. Nothing is shared without the member's choice
+• Volunteer wellbeing check-ins — if volunteering is on, volunteers can record how they are doing. If they say they are low or struggling and ask for someone to get in touch, the people the community chose are told
+• Step-free event filter — find events whose organiser confirmed step-free access
+• Report a concern — members can report a safeguarding concern to the community's team
+
+What does not exist: automatic check-in messages, alerts for missed check-ins, buddy pairing, a simplified 'easy mode' layout or an emergency contact button. Never promise these.
+
+Vulnerable adult declarations and safeguarding vetting confirmations are private to the member and authorised safeguarding decision-makers; Project NEXUS does not retain criminal-record certificates.",
                 'keywords' => ['caring community', 'caring', 'vulnerable', 'older', 'elderly', 'isolation', 'lonely', 'carer', 'check in', 'wellbeing', 'disability', 'accessible'],
             ],
             'newsletter' => [

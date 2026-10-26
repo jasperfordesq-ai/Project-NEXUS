@@ -3199,6 +3199,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/v2/safeguarding/confirm-policy-review', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'confirmPolicyReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/vetting-review-request', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'requestVettingReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/revoke', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'revoke']);
+    // Members add a choice after joining (settings), same effects as onboarding.
+    Route::get('/v2/safeguarding/available-options', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'availableOptions']);
+    Route::post('/v2/safeguarding/add-choice', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'addChoice'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/switch-to-coordinator-introductions', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'switchToCoordinatorIntroductions'])->middleware('throttle:nexus-route-10-per-1m');
 });
 

@@ -24,6 +24,7 @@ const STATIC_ROUTE_EXPECTATIONS: Record<string, StaticRouteExpectation> = {
   '/admin/marketplace/reports/1': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/admin/reports': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/broker/matches/requests/1': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
+  '/broker/vetting': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/caring-community/caregiver': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/caring-community/projects/1': { notification_link: '/notifications', native_href: '/(modals)/notifications' },
   '/caring-community/emergency-alerts?alert_id=1': { notification_link: '/notifications', native_href: '/(modals)/notifications' },

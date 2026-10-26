@@ -7,9 +7,12 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasTenantScope;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Crypt;
 
 /**
  * Member safeguarding preference selection.
@@ -49,6 +52,35 @@ class UserSafeguardingPreference extends Model
         'revoked_at' => 'datetime',
         'policy_review_required_at' => 'datetime',
     ];
+
+    /**
+     * The member's own note is encrypted at rest (26 Oct 2026). Notes saved
+     * before that, in plain text, still read back: see decryptNotes().
+     */
+    protected function notes(): Attribute
+    {
+        return Attribute::make(
+            get: static fn (?string $value): ?string => self::decryptNotes($value),
+            set: static fn (?string $value): ?string => ($value === null || $value === '') ? $value : Crypt::encryptString($value),
+        );
+    }
+
+    /**
+     * Read a stored note, encrypted or (if saved before encryption) plain.
+     * For raw-SQL readers such as the GDPR export.
+     */
+    public static function decryptNotes(?string $stored): ?string
+    {
+        if ($stored === null || $stored === '') {
+            return $stored;
+        }
+
+        try {
+            return Crypt::decryptString($stored);
+        } catch (DecryptException) {
+            return $stored;
+        }
+    }
 
     public function user(): BelongsTo
     {

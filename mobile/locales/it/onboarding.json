@@ -113,6 +113,9 @@
     "or_separator": "O",
     "learn_more": "Saperne di più",
     "what_this_does": "Cosa fa",
+    "answer_missing": "Scegli almeno un'opzione prima di continuare.",
+    "answer_missing_with_none": "Scegli almeno un'opzione. Se nessuna ti riguarda, scegli «{{none}}».",
+    "answer_needed_title": "Rispondi alla domanda sulla tutela",
     "confirmation": {
       "title": "Le tue preferenze di protezione sono state salvate",
       "intro": "Grazie per aver condiviso questo Ecco un riepilogo di ciò che hai scelto, chi può vederlo e cosa si attiva di conseguenza.",

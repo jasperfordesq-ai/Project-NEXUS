@@ -113,6 +113,9 @@
     "or_separator": "nó",
     "learn_more": "Foghlaim níos mó",
     "what_this_does": "Cad a dhéanann sé seo",
+    "answer_missing": "Roghnaigh rogha amháin ar a laghad sula leanann tú ar aghaidh.",
+    "answer_missing_with_none": "Roghnaigh rogha amháin ar a laghad. Mura mbaineann aon cheann díobh leat, roghnaigh “{{none}}”.",
+    "answer_needed_title": "Freagair an cheist chosanta, le do thoil",
     "confirmation": {
       "title": "Sábháladh do shainroghanna cosanta",
       "intro": "Go raibh maith agat as é seo a roinnt. Seo achoimre ar cad a roghnaigh tú, cé atá in ann é a fheiceáil, agus cad a ghníomhaíonn mar thoradh air.",

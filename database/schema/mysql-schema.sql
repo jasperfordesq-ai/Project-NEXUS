@@ -13050,7 +13050,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=506 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=508 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14812,6 +14812,44 @@ CREATE TABLE `member_vetting_attestation_events` (
   CONSTRAINT `member_vetting_attestation_events_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_mva_events_no_update`
+             BEFORE UPDATE ON `member_vetting_attestation_events`
+             FOR EACH ROW SIGNAL SQLSTATE '45000'
+             SET MESSAGE_TEXT = 'member_vetting_attestation_events_immutable' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_mva_events_no_delete`
+             BEFORE DELETE ON `member_vetting_attestation_events`
+             FOR EACH ROW SIGNAL SQLSTATE '45000'
+             SET MESSAGE_TEXT = 'member_vetting_attestation_events_immutable' 
+*/;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 DROP TABLE IF EXISTS `member_vetting_attestations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16408,7 +16446,7 @@ CREATE TABLE `performance_request_hourly` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_perf_hourly_bucket` (`tenant_id`,`bucket_hour`),
   KEY `idx_perf_hourly_prune` (`bucket_hour`)
-) ENGINE=InnoDB AUTO_INCREMENT=152750 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=152752 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `performance_request_samples`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16432,7 +16470,7 @@ CREATE TABLE `performance_request_samples` (
   KEY `idx_perf_req_slowest` (`tenant_id`,`duration_ms`),
   KEY `idx_perf_req_memory` (`tenant_id`,`peak_memory_mb`),
   KEY `idx_perf_req_prune` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=91494 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=91496 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `permission_audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -22760,7 +22798,9 @@ INSERT INTO `laravel_migrations` VALUES
 (500,'2026_10_25_200000_overhaul_safeguarding_questions',166),
 (503,'2026_10_25_210000_vulnerable_adults_use_vetting',167),
 (504,'2026_10_26_120000_add_stripe_checkout_session_id_to_card_payment_records',168),
-(505,'2026_10_26_150000_add_category_and_snapshot_to_reports',169);
+(505,'2026_10_26_150000_add_category_and_snapshot_to_reports',169),
+(506,'2026_10_26_160000_make_vetting_history_append_only',170),
+(507,'2026_10_26_170000_correct_caring_community_ai_module_doc',171);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

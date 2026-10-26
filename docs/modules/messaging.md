@@ -22,7 +22,7 @@ Supported workflows:
 | Gate | Kind | Default | Effect when disabled |
 | --- | --- | --- | --- |
 | `messages` | Module (`tenants.configuration.modules`) | `true` | React redirects to `/`; `ConversationPage` returns early on `!hasModule('messages')`. |
-| `direct_messaging` | Feature (`tenants.features`) | `true` | React hides the compose UI and shows a disabled state in `MessagesPage` and `ConversationPage`; controlled by `hasFeature('direct_messaging')`. The broker-side toggle is `BrokerControlConfigService::isDirectMessagingEnabled()` via the `messaging.direct_messaging_enabled` config key. |
+| `direct_messaging` | Feature (`tenants.features`) | `true` | React hides the compose UI and shows a disabled state in `MessagesPage` and `ConversationPage`; controlled by `hasFeature('direct_messaging')`. The old broker-side toggle (`messaging.direct_messaging_enabled`, flat key `broker_messaging_enabled`) is no longer offered on any staff screen and `BrokerControlConfigService::isDirectMessagingEnabled()` always returns `true` (owner decision, 26 Oct 2026): the switch was labelled as broker oversight but hid the member message box on the websites. The stored key is still accepted for compatibility. |
 | `message_translation` | Feature | (per tenant) | `POST /api/v2/messages/{id}/translate` returns `FEATURE_DISABLED` (HTTP 403). |
 
 Every API route under `/v2/messages/*` is protected by the `auth` middleware (JWT). The send endpoint additionally requires `onboarding-required` middleware.

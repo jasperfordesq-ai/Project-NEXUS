@@ -41,6 +41,23 @@ class ExchangeWorkflowServiceTest extends TestCase
     //  test_only_provider_can_accept_exchange [API level],
     //  test_cancelExchange_rejects_a_terminal_exchange) — not stubbed here.
 
+    /**
+     * A broken community approval setting must hold the exchange for a
+     * coordinator, not wave it through (safeguarding gap found 26 Oct 2026).
+     */
+    public function test_needs_broker_approval_fails_safe_when_the_community_setting_cannot_be_read(): void
+    {
+        TenantContext::setById($this->testTenantId);
+        $broken = \Mockery::mock(\App\Services\BrokerControlConfigService::class);
+        $broken->shouldReceive('isExchangeWorkflowEnabled')->andThrow(new \RuntimeException('config table unreadable'));
+        $this->app->instance(\App\Services\BrokerControlConfigService::class, $broken);
+
+        $method = new \ReflectionMethod(ExchangeWorkflowService::class, 'needsBrokerApproval');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke(null, 1, 1.0, null, null));
+    }
+
     public function test_getExchange_returns_null_when_not_found(): void
     {
         // Real query against nexus_test: an id that does not exist must resolve to null

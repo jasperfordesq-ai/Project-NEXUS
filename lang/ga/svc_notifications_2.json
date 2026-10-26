@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "Cuireadh do chuntas díoltóra ar fionraí agus baineadh do liostuithe.",
   "member_concern.member_alert": "Rinne ball tuairisc ar bhall eile. Déan athbhreithniú ar an tuairisc.",
   "member_concern.message_alert": "Rinne ball tuairisc ar theachtaireacht a fuair siad. Déan athbhreithniú ar an tuairisc.",
-  "member_concern.safeguarding_alert": "D’ardaigh ball imní cosanta. Déan athbhreithniú air chomh luath agus is féidir."
+  "member_concern.safeguarding_alert": "D’ardaigh ball imní cosanta. Déan athbhreithniú air chomh luath agus is féidir.",
+  "safeguarding_health.unusable_alert": "Ní féidir ach le daoine a bhfuil a ngrinnfhiosrú taifeadta teagmháil a dhéanamh le roinnt ball, ach níl rialacha grinnfhiosraithe do phobail socraithe, mar sin ní féidir le duine ar bith teacht orthu. Socraigh iad sa phainéal bróicéara faoi Ghrinnfhiosrú.",
+  "safeguarding_health.unreachable_alert": "Ní féidir ach le comhordaitheoirí agus le baill a bhfuil a ngrinnfhiosrú taifeadta teagmháil a dhéanamh le roinnt ball, ach níl aon ghrinnfhiosrú taifeadta i do phobal fós, mar sin ní féidir ach le comhordaitheoirí teacht orthu. Taifead seiceálacha grinnfhiosraithe sa phainéal bróicéara faoi Ghrinnfhiosrú."
 }

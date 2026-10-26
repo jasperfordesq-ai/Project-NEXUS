@@ -837,7 +837,11 @@
     "member_concern_subject": "Tuairisc nua faoi bhall — #{{report_id}}",
     "member_concern_body": "Rinne ball tuairisc ar bhall eile, nó ar theachtaireacht a fuair siad. Tagairt: #{{report_id}}. Déan athbhreithniú air i do liosta tuairiscí. Níor cuireadh an ball lena mbaineann sé ar an eolas.",
     "safeguarding_subject": "Imní cosanta ardaithe — #{{report_id}}",
-    "safeguarding_body": "D’ardaigh ball imní cosanta faoi bhall eile. Tagairt: #{{report_id}}. Déan athbhreithniú air chomh luath agus is féidir. Níor cuireadh an ball lena mbaineann sé ar an eolas."
+    "safeguarding_body": "D’ardaigh ball imní cosanta faoi bhall eile. Tagairt: #{{report_id}}. Déan athbhreithniú air chomh luath agus is féidir. Níor cuireadh an ball lena mbaineann sé ar an eolas.",
+    "safeguarding_health_unusable_subject": "Gníomh ag teastáil: socraigh rialacha grinnfhiosraithe do phobail",
+    "safeguarding_health_unusable_body": "Roghnaigh roinnt ball nach ndéanfadh ach daoine a bhfuil a ngrinnfhiosrú taifeadta ag do phobal teagmháil leo. Níl rialacha grinnfhiosraithe do phobail socraithe, mar sin ní féidir le duine ar bith teacht ar na baill seo. Socraigh iad sa phainéal bróicéara faoi Ghrinnfhiosrú.",
+    "safeguarding_health_unreachable_subject": "Gníomh ag teastáil: níl aon ghrinnfhiosrú taifeadta do bhaill chosanta",
+    "safeguarding_health_unreachable_body": "Ní féidir ach le comhordaitheoirí agus le baill a bhfuil a ngrinnfhiosrú taifeadta ag do phobal teagmháil a dhéanamh le roinnt ball. Níl aon ghrinnfhiosrú taifeadta fós, mar sin ní féidir ach le comhordaitheoirí teacht orthu. Taifead seiceálacha grinnfhiosraithe sa phainéal bróicéara faoi Ghrinnfhiosrú, nó déan teagmháil leis na baill seo."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "gan sonrú",

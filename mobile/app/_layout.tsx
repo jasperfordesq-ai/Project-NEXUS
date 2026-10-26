@@ -1199,6 +1199,10 @@ function RootNavigator() {
         options={{ ...modalOptions, headerShown: false, title: t('settings:blockedUsers.title') }}
       />
       <Stack.Screen
+        name="(modals)/settings-safeguarding"
+        options={{ ...modalOptions, headerShown: false, title: t('settings:safeguarding.title') }}
+      />
+      <Stack.Screen
         name="(modals)/settings-data-export"
         options={{ ...modalOptions, headerShown: false, title: t('settings:dataExport.title') }}
       />

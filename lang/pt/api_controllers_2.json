@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Escolha um motivo para a sua denúncia.",
   "member_reports.details_required": "Descreva o que aconteceu.",
   "member_reports.details_too_long": "A descrição não pode ter mais de {{max}} caracteres.",
-  "member_reports.already_reported": "Já denunciou isto. As pessoas coordenadoras da sua comunidade vão analisar."
+  "member_reports.already_reported": "Já denunciou isto. As pessoas coordenadoras da sua comunidade vão analisar.",
+  "onboarding.safeguarding_required": "Responda à pergunta de proteção antes de terminar. Se nenhuma opção se aplicar a si, escolha «Nenhuma destas situações se aplica a mim»."
 }

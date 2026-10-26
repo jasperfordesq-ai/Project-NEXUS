@@ -115,6 +115,32 @@ class SafeguardingPolicyHealthCheckTest extends TestCase
         $this->artisan('safeguarding:check-policy-health')->assertExitCode(0);
     }
 
+    /**
+     * The community's own staff are told, not only the platform's error
+     * tracker (gap found 26 Oct 2026), and not every day: once a week at most.
+     */
+    public function test_community_staff_are_told_when_nobody_has_vetting_recorded_once_a_week(): void
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        app(SafeguardingJurisdictionService::class)->configure($this->testTenantId, 'ireland', $admin->id);
+        $broker = User::factory()->forTenant($this->testTenantId)->create(['role' => 'broker', 'status' => 'active']);
+        $member = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
+        $this->protectMember($member);
+
+        $this->artisan('safeguarding:check-policy-health')->assertExitCode(1);
+        $this->artisan('safeguarding:check-policy-health')->assertExitCode(1);
+
+        $this->assertSame(1, DB::table('notifications')
+            ->where('user_id', $broker->id)
+            ->where('type', 'safeguarding_policy_health')
+            ->count());
+        $this->assertSame(0, DB::table('notifications')
+            ->where('user_id', $member->id)
+            ->where('type', 'safeguarding_policy_health')
+            ->count(), 'members are never sent the staff alert');
+    }
+
     private function protectMember(User $member): void
     {
         $optionId = DB::table('tenant_safeguarding_options')->insertGetId([

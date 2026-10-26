@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "あなたの出品者アカウントは停止され、出品は削除されました。",
   "member_concern.member_alert": "メンバーが別のメンバーを通報しました。通報を確認してください。",
   "member_concern.message_alert": "メンバーが受け取ったメッセージを通報しました。通報を確認してください。",
-  "member_concern.safeguarding_alert": "メンバーから安全確保に関する懸念が寄せられました。できるだけ早く確認してください。"
+  "member_concern.safeguarding_alert": "メンバーから安全確保に関する懸念が寄せられました。できるだけ早く確認してください。",
+  "safeguarding_health.unusable_alert": "一部のメンバーは審査記録のある人からしか連絡を受けられませんが、コミュニティの審査ルールが設定されていないため、誰も連絡できません。ブローカーパネルの「審査」で設定してください。",
+  "safeguarding_health.unreachable_alert": "一部のメンバーはコーディネーターと審査記録のあるメンバーからしか連絡を受けられませんが、コミュニティにはまだ審査記録がないため、コーディネーターしか連絡できません。ブローカーパネルの「審査」で審査を記録してください。"
 }

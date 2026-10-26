@@ -727,6 +727,58 @@ describe('OnboardingPage', () => {
       expect(api.post).toHaveBeenCalledWith('/v2/onboarding/complete', {});
     });
   });
+
+  // The server refuses to finish (SAFEGUARDING_REQUIRED) when the community
+  // needs a safeguarding answer the member has not given. Show the server's own
+  // words and take the member back to that step (26 Oct 2026).
+  it('takes the member back to the safeguarding step when the server needs an answer', async () => {
+    const { useOnboardingConfig } = await import('@/hooks/useOnboardingConfig');
+    const base = vi.mocked(useOnboardingConfig).getMockImplementation()!();
+    vi.mocked(useOnboardingConfig).mockImplementation(() => ({
+      ...base,
+      config: { ...base.config, step_safeguarding_enabled: true },
+      steps: [
+        { slug: 'welcome', required: false },
+        { slug: 'profile', required: true },
+        { slug: 'skills', required: false },
+        { slug: 'safeguarding', required: false },
+        { slug: 'confirm', required: true },
+      ],
+    }));
+    await setupWithProfileComplete();
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+    try {
+      await reachSkillsStep();
+      await user.click(screen.getByText('Skip'));
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Step 4: Safeguarding \(current\)/ })).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Next'));
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Step 5: Confirm \(current\)/ })).toBeInTheDocument();
+      });
+
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: false,
+        code: 'SAFEGUARDING_REQUIRED',
+        error: 'Please answer the safeguarding question before you finish.',
+      } as never);
+      await user.click(screen.getByText('Finish'));
+
+      await waitFor(() => {
+        expect(stableToastValue.error).toHaveBeenCalledWith(
+          'Please answer the safeguarding question',
+          'Please answer the safeguarding question before you finish.',
+        );
+      });
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Step 4: Safeguarding \(current\)/ })).toBeInTheDocument();
+      });
+    } finally {
+      vi.mocked(useOnboardingConfig).mockImplementation(() => base);
+    }
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

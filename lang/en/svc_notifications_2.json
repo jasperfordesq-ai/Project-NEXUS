@@ -124,5 +124,7 @@
   "marketplace_enforcement.suspended_bell": "Your seller account has been suspended and your listings removed.",
   "member_concern.member_alert": "A member has reported another member. Please review the report.",
   "member_concern.message_alert": "A member has reported a message they received. Please review the report.",
-  "member_concern.safeguarding_alert": "Safeguarding concern raised by a member. Please review it as soon as possible."
+  "member_concern.safeguarding_alert": "Safeguarding concern raised by a member. Please review it as soon as possible.",
+  "safeguarding_health.unusable_alert": "Some members can only be contacted by people with recorded vetting, but your community's vetting rules are not set, so nobody can reach them. Set them in the broker panel under Vetting.",
+  "safeguarding_health.unreachable_alert": "Some members can only be contacted by coordinators and members with recorded vetting, but no vetting is recorded in your community yet, so only coordinators can reach them. Record vetting checks in the broker panel under Vetting."
 }

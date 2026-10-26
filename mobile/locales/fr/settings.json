@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Vibration",
     "hint": "Émettre une brève vibration lorsque vous appuyez sur un bouton principal ou destructeur."
+  },
+  "safeguarding": {
+    "title": "Préférences de protection",
+    "settingsHint": "Voir, ajouter ou retirer le soutien supplémentaire que vous avez demandé",
+    "subtitle": "Voici vos choix concernant le soutien supplémentaire. Vous pouvez les modifier à tout moment.",
+    "currentTitle": "Vos choix",
+    "none": "Vous n’avez demandé aucun soutien supplémentaire.",
+    "whatThisDoes": "Ce que cela fait",
+    "remove": "Retirer",
+    "removeConfirmTitle": "Retirer ce choix ?",
+    "removeConfirmBody": "Le soutien qu’il vous apporte s’arrête immédiatement. Vos coordinateurs seront prévenus.",
+    "removed": "Choix retiré",
+    "removeError": "Impossible de le retirer. Rien n’a été modifié.",
+    "loadError": "Impossible de charger vos choix de soutien supplémentaire.",
+    "addTitle": "Ajouter un soutien supplémentaire",
+    "addIntro": "Vous pouvez demander un soutien supplémentaire à tout moment. Lisez ce que fait chaque choix avant de l’ajouter.",
+    "add": "Ajouter",
+    "addConfirmTitle": "Ajouter ce soutien ?",
+    "addConfirmBody": "Il s’applique immédiatement. Nous vous enverrons par e-mail un récapitulatif de vos choix. Vous pouvez le retirer dans vos paramètres à tout moment.",
+    "addConfirmYes": "Oui, l’ajouter",
+    "added": "Ajouté. Ce soutien est maintenant activé.",
+    "addError": "Impossible de l’ajouter. Rien n’a été modifié."
   }
 }

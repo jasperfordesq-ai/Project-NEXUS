@@ -107,6 +107,10 @@ function OnboardingScreenInner() {
   const [safeguardingSelections, setSafeguardingSelections] = useState<Record<number, boolean>>({});
   const [safeguardingSelectValues, setSafeguardingSelectValues] = useState<Record<number, string>>({});
   const [stepIndex, setStepIndex] = useState(0);
+  // Set when the community made the safeguarding step required and the member
+  // tried to move on without choosing anything. The server refuses to finish in
+  // that case (SAFEGUARDING_REQUIRED), so the screen says so on the step itself.
+  const [safeguardingAnswerMissing, setSafeguardingAnswerMissing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -276,6 +280,7 @@ function OnboardingScreenInner() {
   }, [bio, configuration?.config.avatar_required, configuration?.config.bio_required, goNext, location, locationMissing, minBioLength, profile.avatar_url, refreshUser, showToast, t]);
 
   const toggleSafeguarding = useCallback((option: SafeguardingOption) => {
+    setSafeguardingAnswerMissing(false);
     setSafeguardingSelections((previous) => {
       if (option.option_key === 'none_apply') {
         const cleared = Object.fromEntries(safeguardingOptions.map((item) => [item.id, false]));
@@ -317,6 +322,11 @@ function OnboardingScreenInner() {
         .map((option) => ({ option_id: option.id, value: safeguardingSelectValues[option.id] ?? '' })),
     ];
     if (preferences.length === 0) {
+      const stepRequired = steps.find((step) => step.slug === 'safeguarding')?.required === true;
+      if (stepRequired) {
+        setSafeguardingAnswerMissing(true);
+        return;
+      }
       goNext();
       return;
     }
@@ -333,7 +343,7 @@ function OnboardingScreenInner() {
     } finally {
       if (mountedRef.current) setBusy(false);
     }
-  }, [goNext, safeguardingOptions, safeguardingSelections, safeguardingSelectValues, showToast, t]);
+  }, [goNext, safeguardingOptions, safeguardingSelections, safeguardingSelectValues, showToast, steps, t]);
 
   const finish = useCallback(async () => {
     setBusy(true);
@@ -356,11 +366,19 @@ function OnboardingScreenInner() {
       router.replace('/(tabs)/home');
     } catch (error) {
       if (!mountedRef.current) return;
+      if (error instanceof ApiResponseError && error.code === 'SAFEGUARDING_REQUIRED') {
+        // The community needs a safeguarding answer the member has not given:
+        // show the server's own words and take them back to that step.
+        showToast({ title: t('safeguarding.answer_needed_title'), description: describeApiError(error, t('safeguarding.answer_missing')), variant: 'danger' });
+        const safeguardingIndex = steps.findIndex((step) => step.slug === 'safeguarding');
+        if (safeguardingIndex >= 0) setStepIndex(safeguardingIndex);
+        return;
+      }
       showToast({ title: t('toast_setup_failed'), description: describeApiError(error, t('toast_something_went_wrong')), variant: 'danger' });
     } finally {
       if (mountedRef.current) setBusy(false);
     }
-  }, [interests, needs, offers, refreshUser, showToast, t]);
+  }, [interests, needs, offers, refreshUser, showToast, steps, t]);
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (loadError) {
@@ -484,7 +502,10 @@ function OnboardingScreenInner() {
                         accessibilityRole="radio"
                         accessibilityLabel={choice.label}
                         accessibilityState={{ selected }}
-                        onPress={() => setSafeguardingSelectValues((values) => ({ ...values, [option.id]: choice.value }))}
+                        onPress={() => {
+                          setSafeguardingAnswerMissing(false);
+                          setSafeguardingSelectValues((values) => ({ ...values, [option.id]: choice.value }));
+                        }}
                         className="rounded-panel-inner border p-3"
                         style={{ borderColor: selected ? primary : theme.border }}
                       >
@@ -495,6 +516,18 @@ function OnboardingScreenInner() {
                   {option.help_url ? <Button variant="ghost" size="sm" onPress={() => void openExternal(option.help_url)}>{t('safeguarding.learn_more')}</Button> : null}
                 </View>
               ))}
+              {safeguardingAnswerMissing ? (() => {
+                const noneApply = safeguardingOptions.find((option) => option.option_key === 'none_apply');
+                return (
+                  <View testID="safeguarding-answer-missing" accessibilityRole="alert" accessibilityLiveRegion="assertive" className="rounded-panel-inner border border-danger bg-danger/10 p-3">
+                    <Text className="text-sm font-semibold text-danger">
+                      {noneApply
+                        ? t('safeguarding.answer_missing_with_none', { none: noneApply.label })
+                        : t('safeguarding.answer_missing')}
+                    </Text>
+                  </View>
+                );
+              })() : null}
             </HeroCard.Body>
           </HeroCard>
         ) : null}

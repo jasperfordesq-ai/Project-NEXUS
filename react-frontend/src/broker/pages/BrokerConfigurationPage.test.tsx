@@ -381,6 +381,20 @@ describe('BrokerConfigurationPage', () => {
     });
   });
 
+  // Owner decision, 26 Oct 2026: two switches nothing enforced are hidden.
+  // "Broker messaging enabled" actually hid the member message box, and
+  // "Require exchange for listings" was never checked anywhere.
+  it('does not offer the broker messaging or require-exchange switches', async () => {
+    const { default: BrokerConfigurationPage } = await import('./BrokerConfigurationPage');
+    render(<BrokerConfigurationPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('switch', { name: FIRST_CONTACT })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('switch', { name: 'Broker messaging enabled' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Require exchange for listings' })).toBeNull();
+  });
+
   it('shows an unsaved-changes chip after editing and clears it on save', async () => {
     await renderLoaded();
     expect(screen.queryByText('Unsaved changes')).toBeNull();
@@ -492,11 +506,13 @@ describe('BrokerConfigurationPage', () => {
       expect(screen.getByText('Some settings can only be changed by an admin')).toBeInTheDocument();
     });
 
-    // Every admin-only row carries the lock chip — the twelve of the F-547 set
-    // plus the safeguarding jurisdiction…
-    expect(screen.getAllByText('Admin only')).toHaveLength(13);
+    // Every admin-only row carries the lock chip — the ten of the F-547 set
+    // still on the page plus the safeguarding jurisdiction. "Broker messaging
+    // enabled" and "Require exchange for listings" were admin-only too, but are
+    // no longer offered (owner decision, 26 Oct 2026)…
+    expect(screen.getAllByText('Admin only')).toHaveLength(11);
     // …and its control is disabled.
-    expect(screen.getByRole('switch', { name: 'Broker messaging enabled' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Copy all messages to broker' })).toBeDisabled();
     // Broker-editable settings stay enabled.
     expect(
       screen.getByRole('switch', { name: FIRST_CONTACT })

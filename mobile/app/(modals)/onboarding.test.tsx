@@ -204,6 +204,88 @@ describe('OnboardingScreen', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'danger' }));
   });
 
+  // The server refuses to finish (422 SAFEGUARDING_REQUIRED) when the community
+  // made this step required and the member answered nothing. The screen used to
+  // move on silently, so the member only found out at "Complete setup" (26 Oct 2026).
+  describe('a required safeguarding step needs an answer', () => {
+    const optionalOptions = [
+      { id: 4, option_key: 'is_vulnerable_adult', option_type: 'checkbox' as const, label: 'I would like extra support', is_required: false },
+      { id: 9, option_key: 'none_apply', option_type: 'checkbox' as const, label: 'None of these apply to me', is_required: false },
+    ];
+
+    async function reachSafeguarding(required: boolean) {
+      jest.mocked(getSafeguardingOptions).mockResolvedValueOnce(optionalOptions);
+      jest.mocked(getOnboardingConfig).mockResolvedValueOnce({
+        config: { bio_min_length: 10, safeguarding_intro_text: '' },
+        steps: [
+          { slug: 'welcome', label_code: 'welcome', required: false },
+          { slug: 'safeguarding', label_code: 'safeguarding', required },
+          { slug: 'confirm', label_code: 'confirm', required: false },
+        ],
+      });
+      const screen = render(<OnboardingScreen />);
+      await waitFor(() => expect(screen.getByText('Welcome to Timebank Global!')).toBeTruthy());
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+      await waitFor(() => expect(screen.getByLabelText('None of these apply to me')).toBeTruthy());
+      return screen;
+    }
+
+    it('stays on the step and says how to answer when nothing is chosen', async () => {
+      const screen = await reachSafeguarding(true);
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+
+      const message = await screen.findByTestId('safeguarding-answer-missing');
+      expect(message.props.accessibilityRole).toBe('alert');
+      expect(screen.getByText('safeguarding.answer_missing_with_none')).toBeTruthy();
+      expect(saveSafeguardingPreferences).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('onboarding-complete')).toBeNull();
+    });
+
+    it('clears the message and saves once "None of these apply to me" is chosen', async () => {
+      const screen = await reachSafeguarding(true);
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+      await screen.findByTestId('safeguarding-answer-missing');
+
+      fireEvent(screen.getByLabelText('None of these apply to me'), 'selectedChange', true);
+      expect(screen.queryByTestId('safeguarding-answer-missing')).toBeNull();
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+
+      await waitFor(() => expect(saveSafeguardingPreferences).toHaveBeenCalledWith([{ option_id: 9, value: '1' }]));
+    });
+
+    it('still moves on with no answer when the step is not required', async () => {
+      const screen = await reachSafeguarding(false);
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+
+      await waitFor(() => expect(screen.getByTestId('onboarding-complete')).toBeTruthy());
+      expect(saveSafeguardingPreferences).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('safeguarding-answer-missing')).toBeNull();
+    });
+
+    it('shows the server message and returns to the step when finishing is refused', async () => {
+      const screen = await reachSafeguarding(false);
+      fireEvent.press(screen.getByTestId('onboarding-next'));
+      await waitFor(() => expect(screen.getByTestId('onboarding-complete')).toBeTruthy());
+
+      jest.mocked(completeOnboarding).mockRejectedValueOnce(new ApiResponseError(
+        422,
+        'Please answer the safeguarding question before you finish.',
+        undefined,
+        'SAFEGUARDING_REQUIRED',
+      ));
+      fireEvent.press(screen.getByTestId('onboarding-complete'));
+
+      await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'safeguarding.answer_needed_title',
+        description: 'Please answer the safeguarding question before you finish.',
+        variant: 'danger',
+      })));
+      await waitFor(() => expect(screen.getByLabelText('None of these apply to me')).toBeTruthy());
+      expect(screen.queryByTestId('onboarding-complete')).toBeNull();
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+  });
+
   describe('profile step for a member with no location', () => {
     const profileConfig = {
       config: { bio_min_length: 10, avatar_required: false, bio_required: true },

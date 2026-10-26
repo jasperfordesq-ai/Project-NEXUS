@@ -132,7 +132,10 @@
       "declination_title": "Vermerkt — Ihre Antwort ist gespeichert",
       "declination_intro": "Danke, dass Sie diese Optionen geprüft haben. Ihre Antwort wurde gespeichert, damit die Koordinatoren wissen, dass Sie diesen Schritt zur Kenntnis genommen und berücksichtigt haben."
     },
-    "what_this_does": "Was das bewirkt"
+    "what_this_does": "Was das bewirkt",
+    "answer_missing": "Bitte wählen Sie mindestens eine Option aus, bevor Sie fortfahren.",
+    "answer_missing_with_none": "Bitte wählen Sie mindestens eine Option aus. Wenn keine davon auf Sie zutrifft, wählen Sie „{{none}}“.",
+    "answer_needed_title": "Bitte beantworten Sie die Frage zum Schutz"
   },
   "page_meta": {
     "title": "Einführung"

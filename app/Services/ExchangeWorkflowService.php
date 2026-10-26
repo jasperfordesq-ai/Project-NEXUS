@@ -1951,9 +1951,17 @@ class ExchangeWorkflowService
             }
 
             return true;
-        } catch (\Exception $e) {
-            // If config service not available, default to no broker approval
-            return false;
+        } catch (\Throwable $e) {
+            // Fail safe: if the community's approval rules cannot be read, a
+            // coordinator looks at the exchange rather than nobody (26 Oct 2026;
+            // this used to return false and let every exchange through).
+            Log::error('Exchange broker-approval config unreadable; holding for broker review', [
+                'tenant_id' => $tenantId,
+                'listing_id' => $listingId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return true;
         }
     }
 }

@@ -530,6 +530,22 @@ function SettingsScreen() {
               }}
               theme={theme}
             />
+            {/*
+              Safeguarding choices: see, add and remove extra support. The app had no
+              way to do any of this until 26 Oct 2026 — a member who declined at sign-up
+              could never ask for support later from the phone.
+            */}
+            <ActionRow
+              label={t('safeguarding.title')}
+              subtitle={t('safeguarding.settingsHint')}
+              icon="shield-checkmark-outline"
+              tone={theme.success}
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/(modals)/settings-safeguarding' as Href);
+              }}
+              theme={theme}
+            />
             <ActionRow
               label={t('dataExport.title')}
               subtitle={t('dataExport.settingsHint')}

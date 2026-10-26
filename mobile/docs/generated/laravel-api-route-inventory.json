@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2819,
-  "api_route_rows": 2784,
-  "distinct_api_paths": 2323,
+  "total_registered_routes": 2821,
+  "api_route_rows": 2786,
+  "distinct_api_paths": 2325,
   "route_source_fingerprint": {
-    "digest": "9bf8c266cc85c2899254a5baad3bb2080351fee57c7b0efeb2981aed03ae0d6a",
+    "digest": "d56dd7638ec0e5760bdf32a74a66dd14d9db543edfd5692373f7758e93b9f18a",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "65a211ad46e935923e44fa8c54fb38f9895aad9780adc59d5eccb1084893aa53"
+        "sha256": "04076c38c1447f8f504d9fade3119bc5267960cca53bdc24162a7279c576813c"
       },
       {
         "file": "routes/channels.php",
@@ -6578,6 +6578,12 @@
     ],
     "/api/v2/reviews/{id}": [
       "DELETE",
+      "GET"
+    ],
+    "/api/v2/safeguarding/add-choice": [
+      "POST"
+    ],
+    "/api/v2/safeguarding/available-options": [
       "GET"
     ],
     "/api/v2/safeguarding/confirm-policy-review": [

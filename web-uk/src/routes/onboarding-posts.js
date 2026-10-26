@@ -162,6 +162,10 @@ function statusBanner(status, t) {
     'avatar-required': { type: 'error', anchor: 'avatar' },
     'avatar-failed': { type: 'error', anchor: 'avatar' },
     'safeguarding-failed': { type: 'error', anchor: null },
+    // Both point at the safeguarding answers. The anchor (the first answer's
+    // id) is filled in by the step's GET, which knows the options.
+    'safeguarding-required': { type: 'error', anchor: null, field: 'safeguarding' },
+    'safeguarding-incomplete': { type: 'error', anchor: null, field: 'safeguarding' },
     'complete-failed': { type: 'error', anchor: null },
     'avatar-saved': { type: 'success' }
   };
@@ -291,9 +295,36 @@ function apiErrorFields(error) {
   return fields;
 }
 
+// The API answers 422 SAFEGUARDING_REQUIRED (field `safeguarding`) when the
+// community needs a safeguarding answer the member has not given (26 Oct 2026).
+function isSafeguardingRequired(error) {
+  if (!(error instanceof ApiError)) return false;
+  const codes = Array.isArray(error.data?.errors)
+    ? error.data.errors.map((item) => String(item?.code || ''))
+    : [];
+  if (error.data?.code) codes.push(String(error.data.code));
+  return codes.includes('SAFEGUARDING_REQUIRED') || apiErrorFields(error).includes('safeguarding');
+}
+
+// Whether the community made the safeguarding step required. When the config
+// cannot be read, do not block here: the API makes the final check at "Finish".
+async function safeguardingStepRequired(token) {
+  try {
+    const configData = asObject(dataFrom(await getOnboardingConfig(token)));
+    const stepConfig = normalizeSteps(configData.steps).find((item) => item.slug === 'safeguarding');
+    return Boolean(stepConfig && stepConfig.required);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return false;
+  }
+}
+
 function completeFailureRedirect(error) {
   if (!(error instanceof ApiError)) {
     return '/onboarding/confirm?status=complete-failed';
+  }
+  if (isSafeguardingRequired(error)) {
+    return '/onboarding/safeguarding?status=safeguarding-incomplete';
   }
 
   // 🔴 The field lives at `data.errors[0].field`, NOT `data.field` — that is the
@@ -388,6 +419,21 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
     }
 
     const stepIndex = slugs.indexOf(step);
+    let banner = statusBanner(req.query && req.query.status, res.locals.t);
+    if (banner && banner.field === 'safeguarding') {
+      // GOV.UK: the summary links to the first answer in the group, and the
+      // "nothing chosen" message names the community's own "none apply" answer.
+      const firstAnswer = safeguardingOptions.find((item) => item.option_type !== 'info' && item.option_key !== 'none_apply')
+        || safeguardingOptions.find((item) => item.option_key === 'none_apply');
+      const noneOption = safeguardingOptions.find((item) => item.option_key === 'none_apply');
+      banner = {
+        ...banner,
+        anchor: firstAnswer ? `sg-${firstAnswer.id}` : null
+      };
+      if (req.query.status === 'safeguarding-required' && noneOption) {
+        banner.message = res.locals.t('govuk_alpha.onboarding.states.safeguarding-required-none', { none: noneOption.label });
+      }
+    }
     return res.render('onboarding/index', {
       title: res.locals.t('govuk_alpha.onboarding.title'),
       activeNav: 'dashboard',
@@ -404,7 +450,7 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       skillChoices: step === 'skills' ? skillChoices(categories, getBag(req)) : [],
       safeguardingOptions,
       onboardingUser,
-      statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
+      statusBanner: banner
     });
   } catch (error) {
     if (isAuthError(error)) return redirectTo(res, '/login?status=auth-required');
@@ -502,6 +548,12 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
     const preferences = req.body.skip
       ? []
       : collectSafeguardingFromBody(req.body, req.rawUrlencodedBody);
+    // A community can make this step required. Then "nothing" is not an answer
+    // ("None of these apply to me" is), and the API refuses to finish without
+    // one — so say so here rather than on the last page (26 Oct 2026).
+    if (preferences.length === 0 && await safeguardingStepRequired(req.token)) {
+      return redirectTo(res, '/onboarding/safeguarding?status=safeguarding-required');
+    }
     if (preferences.length > 0) {
       try {
         await saveOnboardingSafeguarding(req.token, preferences);

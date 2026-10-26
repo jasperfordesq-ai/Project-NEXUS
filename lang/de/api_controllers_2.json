@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Bitte wähle einen Grund für deine Meldung.",
   "member_reports.details_required": "Bitte beschreibe, was passiert ist.",
   "member_reports.details_too_long": "Bitte beschränke deine Beschreibung auf höchstens {{max}} Zeichen.",
-  "member_reports.already_reported": "Du hast dies bereits gemeldet. Die Koordination deiner Gemeinschaft wird sich darum kümmern."
+  "member_reports.already_reported": "Du hast dies bereits gemeldet. Die Koordination deiner Gemeinschaft wird sich darum kümmern.",
+  "onboarding.safeguarding_required": "Bitte beantworte die Frage zum Schutz, bevor du abschließt. Wenn keine der Optionen auf dich zutrifft, wähle „Nichts davon trifft auf mich zu“."
 }

@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Vibrazione",
     "hint": "Emetti una breve vibrazione quando tocchi un pulsante principale o distruttivo."
+  },
+  "safeguarding": {
+    "title": "Preferenze di protezione",
+    "settingsHint": "Vedi, aggiungi o rimuovi il supporto extra che hai chiesto",
+    "subtitle": "Queste sono le scelte che hai fatto sul supporto extra. Puoi cambiarle in qualsiasi momento.",
+    "currentTitle": "Le tue scelte",
+    "none": "Non hai chiesto alcun supporto extra.",
+    "whatThisDoes": "Cosa comporta",
+    "remove": "Rimuovi",
+    "removeConfirmTitle": "Rimuovere questa scelta?",
+    "removeConfirmBody": "Il supporto che ti offre si interrompe subito. I tuoi coordinatori saranno avvisati.",
+    "removed": "Scelta rimossa",
+    "removeError": "Impossibile rimuoverlo. Non è stato modificato nulla.",
+    "loadError": "Impossibile caricare le tue scelte sul supporto extra.",
+    "addTitle": "Aggiungi un supporto extra",
+    "addIntro": "Puoi chiedere un supporto extra in qualsiasi momento. Leggi cosa fa ogni scelta prima di aggiungerla.",
+    "add": "Aggiungi",
+    "addConfirmTitle": "Aggiungere questo supporto?",
+    "addConfirmBody": "Si attiva subito. Ti invieremo via email un riepilogo delle tue scelte. Puoi rimuoverlo dalle tue impostazioni in qualsiasi momento.",
+    "addConfirmYes": "Sì, aggiungi",
+    "added": "Aggiunto. Questo supporto è ora attivo.",
+    "addError": "Impossibile aggiungerlo. Non è stato modificato nulla."
   }
 }

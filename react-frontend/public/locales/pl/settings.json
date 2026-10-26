@@ -422,7 +422,17 @@
       "message": "Ktoś został zapisany jako odpowiedzialny za wspieranie Cię. Twoja odpowiedź jest potrzebna.",
       "action": "Przejrzyj to"
     },
-    "what_this_does": "Co to oznacza"
+    "what_this_does": "Co to oznacza",
+    "add": {
+      "title": "Dodaj dodatkowe wsparcie",
+      "intro": "Możesz poprosić o dodatkowe wsparcie w dowolnym momencie. Zanim dodasz wybór, przeczytaj, co on oznacza.",
+      "button": "Dodaj",
+      "confirm_title": "Dodać to wsparcie?",
+      "confirm_body": "Zacznie działać od razu. Wyślemy Ci e-mailem podsumowanie Twoich wyborów. Możesz je usunąć w ustawieniach w dowolnym momencie.",
+      "confirm_yes": "Tak, dodaj",
+      "added_toast": "Dodano. To wsparcie jest teraz włączone.",
+      "error_toast": "Nie udało się tego dodać. Nic nie zostało zmienione."
+    }
   },
   "header": {
     "title": "Ustawienia",

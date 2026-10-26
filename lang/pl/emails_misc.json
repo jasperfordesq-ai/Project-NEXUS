@@ -837,7 +837,11 @@
     "member_concern_subject": "Nowe zgłoszenie dotyczące członka — #{{report_id}}",
     "member_concern_body": "Członek zgłosił innego członka lub otrzymaną wiadomość. Numer: #{{report_id}}. Sprawdź je na liście zgłoszeń. Osoba, której dotyczy zgłoszenie, nie została powiadomiona.",
     "safeguarding_subject": "Zgłoszono obawę dotyczącą ochrony — #{{report_id}}",
-    "safeguarding_body": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony w związku z innym członkiem. Numer: #{{report_id}}. Sprawdź ją jak najszybciej. Osoba, której dotyczy zgłoszenie, nie została powiadomiona."
+    "safeguarding_body": "Członek zgłosił obawę dotyczącą bezpieczeństwa i ochrony w związku z innym członkiem. Numer: #{{report_id}}. Sprawdź ją jak najszybciej. Osoba, której dotyczy zgłoszenie, nie została powiadomiona.",
+    "safeguarding_health_unusable_subject": "Wymagane działanie: ustaw zasady weryfikacji swojej społeczności",
+    "safeguarding_health_unusable_body": "Niektórzy członkowie zdecydowali, że mogą się z nimi kontaktować tylko osoby, których weryfikację zarejestrowała Twoja społeczność. Zasady weryfikacji Twojej społeczności nie są ustawione, więc nikt nie może się z nimi skontaktować. Ustaw je w panelu koordynatora w sekcji Weryfikacja.",
+    "safeguarding_health_unreachable_subject": "Wymagane działanie: brak zarejestrowanej weryfikacji dla chronionych członków",
+    "safeguarding_health_unreachable_body": "Z niektórymi członkami mogą kontaktować się tylko koordynatorzy i członkowie, których weryfikację zarejestrowała Twoja społeczność. Nie zarejestrowano jeszcze żadnej weryfikacji, więc kontaktować się z nimi mogą tylko koordynatorzy. Zarejestruj weryfikacje w panelu koordynatora w sekcji Weryfikacja albo skontaktuj się z tymi członkami."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "nie podano",

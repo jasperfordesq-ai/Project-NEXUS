@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "通報の理由を選んでください。",
   "member_reports.details_required": "何があったかを説明してください。",
   "member_reports.details_too_long": "説明は{{max}}文字以内にしてください。",
-  "member_reports.already_reported": "すでに通報済みです。コミュニティのコーディネーターが確認します。"
+  "member_reports.already_reported": "すでに通報済みです。コミュニティのコーディネーターが確認します。",
+  "onboarding.safeguarding_required": "完了する前に、安全確保に関する質問に答えてください。どの選択肢も当てはまらない場合は「いずれも私には当てはまりません」を選んでください。"
 }

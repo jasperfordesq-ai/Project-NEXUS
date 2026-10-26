@@ -133,6 +133,26 @@ class ExchangesControllerTest extends TestCase
         $this->apiGet('/v2/exchanges')->assertStatus(400);
     }
 
+    public function test_message_box_stays_on_for_a_community_that_switched_broker_messaging_off(): void
+    {
+        // Owner decision, 26 Oct 2026: the "broker messaging enabled" switch is
+        // hidden from staff and messaging stays on. A community that saved it
+        // off (both stored shapes) gets its member-to-member message box back.
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'broker_config'],
+            ['setting_value' => json_encode(['broker_messaging_enabled' => false])]
+        );
+        $raw = DB::table('tenants')->where('id', $this->testTenantId)->value('configuration');
+        $configuration = is_string($raw) ? (json_decode($raw, true) ?: []) : [];
+        $configuration['broker_controls']['messaging']['direct_messaging_enabled'] = false;
+        DB::table('tenants')->where('id', $this->testTenantId)->update(['configuration' => json_encode($configuration)]);
+        $this->authenticatedUser();
+
+        $this->apiGet('/v2/exchanges/config')
+            ->assertStatus(200)
+            ->assertJsonPath('data.direct_messaging_enabled', true);
+    }
+
     // ================================================================
     // CONFIG — Authentication required
     // ================================================================

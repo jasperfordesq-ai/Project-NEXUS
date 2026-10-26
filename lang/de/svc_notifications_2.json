@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "Ihr Verkäuferkonto wurde gesperrt und Ihre Inserate entfernt.",
   "member_concern.member_alert": "Ein Mitglied hat ein anderes Mitglied gemeldet. Bitte prüfe die Meldung.",
   "member_concern.message_alert": "Ein Mitglied hat eine erhaltene Nachricht gemeldet. Bitte prüfe die Meldung.",
-  "member_concern.safeguarding_alert": "Ein Mitglied hat ein Schutzanliegen gemeldet. Bitte prüfe es so bald wie möglich."
+  "member_concern.safeguarding_alert": "Ein Mitglied hat ein Schutzanliegen gemeldet. Bitte prüfe es so bald wie möglich.",
+  "safeguarding_health.unusable_alert": "Manche Mitglieder dürfen nur von Personen mit erfasster Überprüfung kontaktiert werden, aber die Überprüfungsregeln deiner Gemeinschaft sind nicht festgelegt. Niemand kann sie erreichen. Lege sie im Broker-Bereich unter „Überprüfung“ fest.",
+  "safeguarding_health.unreachable_alert": "Manche Mitglieder dürfen nur von der Koordination und von Mitgliedern mit erfasster Überprüfung kontaktiert werden, aber in deiner Gemeinschaft ist noch keine Überprüfung erfasst. Nur die Koordination kann sie erreichen. Erfasse Überprüfungen im Broker-Bereich unter „Überprüfung“."
 }

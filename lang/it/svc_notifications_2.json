@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "Il tuo account venditore è stato sospeso e i tuoi annunci rimossi.",
   "member_concern.member_alert": "Un membro ha segnalato un altro membro. Esamina la segnalazione.",
   "member_concern.message_alert": "Un membro ha segnalato un messaggio ricevuto. Esamina la segnalazione.",
-  "member_concern.safeguarding_alert": "Un membro ha segnalato un problema di tutela. Esaminalo il prima possibile."
+  "member_concern.safeguarding_alert": "Un membro ha segnalato un problema di tutela. Esaminalo il prima possibile.",
+  "safeguarding_health.unusable_alert": "Alcuni membri possono essere contattati solo da persone con verifica registrata, ma le regole di verifica della tua comunità non sono impostate, quindi nessuno può raggiungerli. Impostale nel pannello di coordinamento, alla voce «Verifica».",
+  "safeguarding_health.unreachable_alert": "Alcuni membri possono essere contattati solo dalle persone coordinatrici e da membri con verifica registrata, ma nella tua comunità non è ancora registrata alcuna verifica, quindi solo le persone coordinatrici possono raggiungerli. Registra le verifiche nel pannello di coordinamento, alla voce «Verifica»."
 }

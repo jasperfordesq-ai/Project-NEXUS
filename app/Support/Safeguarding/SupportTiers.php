@@ -13,10 +13,13 @@ namespace App\Support\Safeguarding;
  *
  * Phase 2 of the guardian-module redesign (owner-approved 2026-08-06;
  * proposal in .local-docs-archive/guardian-three-tier-redesign-2026-08-06.md).
- * The tiers mirror Ireland's Assisted Decision-Making (Capacity) Act 2015,
- * which replaced all-or-nothing wardship with graduated arrangements:
+ * The levels were modelled on Ireland's Assisted Decision-Making (Capacity)
+ * Act 2015, which replaced all-or-nothing wardship with graduated
+ * arrangements — but they are not tied to any one country's law. The platform
+ * is global: a level describes what the supporter may do on the platform, not
+ * a legal status, and the Act's terms below are design reference only.
  *
- * | Tier        | ADMCA 2015 analogue              | What the supporter can do          |
+ * | Tier        | ADMCA 2015 analogue (reference)  | What the supporter can do          |
  * |-------------|----------------------------------|------------------------------------|
  * | none        | —                                | nothing for this capability        |
  * | assist      | decision-making assistant        | see, help prepare; never submit    |

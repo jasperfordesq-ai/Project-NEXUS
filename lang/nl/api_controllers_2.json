@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "Kies een reden voor je melding.",
   "member_reports.details_required": "Beschrijf wat er is gebeurd.",
   "member_reports.details_too_long": "Houd je beschrijving op maximaal {{max}} tekens.",
-  "member_reports.already_reported": "Je hebt dit al gemeld. De coördinatoren van je gemeenschap kijken ernaar."
+  "member_reports.already_reported": "Je hebt dit al gemeld. De coördinatoren van je gemeenschap kijken ernaar.",
+  "onboarding.safeguarding_required": "Beantwoord de vraag over veiligheid voordat je afrondt. Is geen van de opties op jou van toepassing, kies dan \"Geen van deze situaties is op mij van toepassing\"."
 }

@@ -130,5 +130,7 @@
   "marketplace_enforcement.suspended_bell": "A sua conta de vendedor foi suspensa e os seus anúncios removidos.",
   "member_concern.member_alert": "Um membro denunciou outro membro. Analise a denúncia.",
   "member_concern.message_alert": "Um membro denunciou uma mensagem que recebeu. Analise a denúncia.",
-  "member_concern.safeguarding_alert": "Um membro levantou uma preocupação de proteção. Analise-a o mais depressa possível."
+  "member_concern.safeguarding_alert": "Um membro levantou uma preocupação de proteção. Analise-a o mais depressa possível.",
+  "safeguarding_health.unusable_alert": "Alguns membros só podem ser contactados por pessoas com verificação registada, mas as regras de verificação da sua comunidade não estão definidas, por isso ninguém os consegue contactar. Defina-as no painel de coordenação, em «Verificação».",
+  "safeguarding_health.unreachable_alert": "Alguns membros só podem ser contactados pelas pessoas coordenadoras e por membros com verificação registada, mas ainda não há nenhuma verificação registada na sua comunidade, por isso só as pessoas coordenadoras os conseguem contactar. Registe as verificações no painel de coordenação, em «Verificação»."
 }

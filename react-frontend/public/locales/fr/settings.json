@@ -422,7 +422,17 @@
       "message": "Une personne a été enregistrée comme responsable de votre soutien. Votre réponse est nécessaire.",
       "action": "Revoir ceci"
     },
-    "what_this_does": "Ce que cela fait"
+    "what_this_does": "Ce que cela fait",
+    "add": {
+      "title": "Ajouter un soutien supplémentaire",
+      "intro": "Vous pouvez demander un soutien supplémentaire à tout moment. Lisez ce que fait chaque choix avant de l’ajouter.",
+      "button": "Ajouter",
+      "confirm_title": "Ajouter ce soutien ?",
+      "confirm_body": "Il s’applique immédiatement. Nous vous enverrons par e-mail un récapitulatif de vos choix. Vous pouvez le retirer dans vos paramètres à tout moment.",
+      "confirm_yes": "Oui, l’ajouter",
+      "added_toast": "Ajouté. Ce soutien est maintenant activé.",
+      "error_toast": "Impossible de l’ajouter. Rien n’a été modifié."
+    }
   },
   "header": {
     "title": "Paramètres",

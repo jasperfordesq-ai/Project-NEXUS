@@ -472,4 +472,114 @@ class OnboardingControllerTest extends TestCase
         $response->assertJsonPath('errors.0.code', 'VALIDATION_ERROR');
         $response->assertJsonPath('errors.0.field', 'preferences');
     }
+    // ------------------------------------------------------------------
+    // Safeguarding answers are enforced at completion, not only at save
+    // (gap found 26 Oct 2026: a client could skip the save and finish).
+    // ------------------------------------------------------------------
+
+    public function test_complete_refuses_when_the_required_safeguarding_step_was_not_answered(): void
+    {
+        $user = $this->memberReadyToFinish();
+        $this->requireSafeguardingStep();
+        $this->option('none_apply_' . uniqid());
+
+        $response = $this->apiPost('/v2/onboarding/complete', ['interests' => []]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.code', 'SAFEGUARDING_REQUIRED');
+        $this->assertFalse((bool) DB::table('users')->where('id', $user->id)->value('onboarding_completed'));
+    }
+
+    public function test_complete_accepts_none_of_these_apply_as_an_answer(): void
+    {
+        $user = $this->memberReadyToFinish();
+        $this->requireSafeguardingStep();
+        $none = $this->option('none_apply_' . uniqid());
+        $this->hold($user->id, $none->id);
+
+        $response = $this->apiPost('/v2/onboarding/complete', ['interests' => []]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    public function test_complete_refuses_when_a_required_option_was_skipped(): void
+    {
+        $this->memberReadyToFinish();
+        $this->option('must_answer_' . uniqid(), required: true);
+
+        $response = $this->apiPost('/v2/onboarding/complete', ['interests' => []]);
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('errors.0.code', 'SAFEGUARDING_REQUIRED');
+    }
+
+    public function test_a_required_option_closed_to_newcomers_is_not_demanded(): void
+    {
+        $this->memberReadyToFinish();
+        $this->option('closed_' . uniqid(), required: true, open: false);
+
+        $response = $this->apiPost('/v2/onboarding/complete', ['interests' => []]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    public function test_an_optional_step_still_completes_without_an_answer(): void
+    {
+        $this->memberReadyToFinish();
+        $this->option('optional_' . uniqid());
+
+        $response = $this->apiPost('/v2/onboarding/complete', ['interests' => []]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201]);
+    }
+
+    private function memberReadyToFinish(): User
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'avatar_url' => 'https://example.com/photo.jpg',
+            'bio' => 'A valid bio that is long enough to pass validation.',
+            'onboarding_completed' => false,
+        ]);
+        Sanctum::actingAs($user, ['*']);
+
+        return $user;
+    }
+
+    private function requireSafeguardingStep(): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'onboarding.step_safeguarding_required'],
+            ['setting_value' => '1'],
+        );
+        \App\Services\OnboardingConfigService::clearConfigCache($this->testTenantId);
+    }
+
+    private function option(string $key, bool $required = false, bool $open = true): TenantSafeguardingOption
+    {
+        return TenantSafeguardingOption::create([
+            'tenant_id' => $this->testTenantId,
+            'option_key' => $key,
+            'option_type' => 'checkbox',
+            'label' => 'Option ' . $key,
+            'sort_order' => 10,
+            'is_active' => true,
+            'is_required' => $required,
+            'accepts_new_selections' => $open,
+            'triggers' => [],
+        ]);
+    }
+
+    private function hold(int $userId, int $optionId): void
+    {
+        DB::table('user_safeguarding_preferences')->insert([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $userId,
+            'option_id' => $optionId,
+            'selected_value' => '1',
+            'consent_given_at' => now(),
+            'created_at' => now(),
+        ]);
+    }
 }

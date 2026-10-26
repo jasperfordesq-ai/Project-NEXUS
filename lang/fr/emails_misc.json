@@ -837,7 +837,11 @@
     "member_concern_subject": "Nouveau signalement concernant un membre — #{{report_id}}",
     "member_concern_body": "Un membre a signalé un autre membre, ou un message qu’il a reçu. Référence : #{{report_id}}. Veuillez l’examiner dans votre liste de signalements. Le membre concerné n’a pas été informé.",
     "safeguarding_subject": "Préoccupation de protection signalée — #{{report_id}}",
-    "safeguarding_body": "Un membre a signalé une préoccupation de protection concernant un autre membre. Référence : #{{report_id}}. Veuillez l’examiner dès que possible. Le membre concerné n’a pas été informé."
+    "safeguarding_body": "Un membre a signalé une préoccupation de protection concernant un autre membre. Référence : #{{report_id}}. Veuillez l’examiner dès que possible. Le membre concerné n’a pas été informé.",
+    "safeguarding_health_unusable_subject": "Action requise : définissez les règles de vérification de votre communauté",
+    "safeguarding_health_unusable_body": "Certains membres ont choisi de n’être contactés que par des personnes dont votre communauté a enregistré la vérification. Les règles de vérification de votre communauté ne sont pas définies, donc personne ne peut joindre ces membres. Veuillez les définir dans l’espace de coordination, rubrique « Vérification ».",
+    "safeguarding_health_unreachable_subject": "Action requise : aucune vérification enregistrée pour des membres protégés",
+    "safeguarding_health_unreachable_body": "Certains membres ne peuvent être contactés que par les coordinateurs et par des membres dont votre communauté a enregistré la vérification. Aucune vérification n’est encore enregistrée, donc seuls les coordinateurs peuvent les joindre. Veuillez enregistrer les vérifications dans l’espace de coordination, rubrique « Vérification », ou prendre contact avec ces membres."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "non précisé",

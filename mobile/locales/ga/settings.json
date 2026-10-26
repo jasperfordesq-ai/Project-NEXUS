@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Creathadh",
     "hint": "Tabhair crith gairid nuair a bhrúnn tú príomhchnaipe nó cnaipe scriosta."
+  },
+  "safeguarding": {
+    "title": "Sainroghanna cosanta",
+    "settingsHint": "Féach ar an tacaíocht bhreise a d’iarr tú, nó cuir leis í nó bain í",
+    "subtitle": "Seo iad na roghanna a rinne tú faoi thacaíocht bhreise. Is féidir leat iad a athrú am ar bith.",
+    "currentTitle": "Do roghanna",
+    "none": "Níor iarr tú aon tacaíocht bhreise.",
+    "whatThisDoes": "Cad a dhéanann sé seo",
+    "remove": "Bain",
+    "removeConfirmTitle": "An rogha seo a bhaint?",
+    "removeConfirmBody": "Stopann an tacaíocht a thugann sé duit láithreach. Cuirfear do chomhordaitheoirí ar an eolas.",
+    "removed": "Baineadh an rogha",
+    "removeError": "Níorbh fhéidir é sin a bhaint. Níor athraíodh aon rud.",
+    "loadError": "Níorbh fhéidir do roghanna faoi thacaíocht bhreise a lódáil.",
+    "addTitle": "Cuir tacaíocht bhreise leis",
+    "addIntro": "Is féidir leat tacaíocht bhreise a iarraidh am ar bith. Léigh cad a dhéanann gach rogha sula gcuireann tú leis í.",
+    "add": "Cuir leis",
+    "addConfirmTitle": "An tacaíocht seo a chur leis?",
+    "addConfirmBody": "Tosaíonn sé láithreach. Seolfaimid achoimre ar do roghanna chugat trí ríomhphost. Is féidir leat é a bhaint i do shocruithe am ar bith.",
+    "addConfirmYes": "Cuir leis é",
+    "added": "Curtha leis. Tá an tacaíocht seo ar siúl anois.",
+    "addError": "Níorbh fhéidir é sin a chur leis. Níor athraíodh aon rud."
   }
 }

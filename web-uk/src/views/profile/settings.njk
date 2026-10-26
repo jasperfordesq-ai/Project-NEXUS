@@ -586,6 +586,9 @@
         {% else %}
           <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.safeguarding.none") }}</p></div>
         {% endif %}
+        <h3 class="govuk-heading-m govuk-!-margin-top-6" id="safeguarding-add">{{ t("profile_settings.safeguarding.add.title") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.safeguarding.add.intro") }}</p>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/profile/safeguarding/add') }}">{{ t("profile_settings.safeguarding.add.title") }}</a>
       </section>
 
       <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">

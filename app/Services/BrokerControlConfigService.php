@@ -256,10 +256,20 @@ class BrokerControlConfigService
     // MESSAGING FEATURE CHECKS
     // =========================================================================
 
+    /**
+     * Always true — owner decision, 26 Oct 2026.
+     *
+     * The "broker messaging enabled" switch (messaging.direct_messaging_enabled,
+     * flat key broker_messaging_enabled) was labelled as broker oversight on
+     * the staff screens, but the websites used it to hide the member-to-member
+     * message box, and the server never enforced it. The owner chose to hide
+     * the switch from staff and leave messaging on, so a community that had
+     * saved it off gets its message box back. The stored key is still accepted
+     * and saved for compatibility; it is simply no longer read here.
+     */
     public static function isDirectMessagingEnabled(): bool
     {
-        $config = self::getConfig('messaging');
-        return (bool) ($config['direct_messaging_enabled'] ?? true);
+        return true;
     }
 
     public static function isFirstContactMonitoringEnabled(): bool

@@ -699,6 +699,7 @@ export function mapSystemPathToNativeRoute(rawPath: string | null): string | nul
       if (id === 'blocked') return appendParams('/(modals)/settings-blocked-users', params);
       if (id === 'data-export') return appendParams('/(modals)/settings-data-export', params);
       if (id === 'verification') return appendParams('/(modals)/verify-identity', params);
+      if (id === 'safeguarding' || params.tab === 'safeguarding') return appendParams('/(modals)/settings-safeguarding', params);
       if (params.tab === 'linked-accounts') return appendParams('/(modals)/settings-linked-accounts', params);
       return appendParams('/(modals)/settings', params);
 

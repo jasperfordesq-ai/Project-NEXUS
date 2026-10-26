@@ -132,7 +132,10 @@
       "declination_title": "Odnotowano — Twoja odpowiedź jest zarejestrowana",
       "declination_intro": "Dziękujemy za zapoznanie się z tymi opcjami. Twoja odpowiedź została zapisana, aby koordynatorzy wiedzieli, że zapoznałeś się z tym krokiem i go rozważyłeś."
     },
-    "what_this_does": "Co to oznacza"
+    "what_this_does": "Co to oznacza",
+    "answer_missing": "Wybierz co najmniej jedną opcję, zanim przejdziesz dalej.",
+    "answer_missing_with_none": "Wybierz co najmniej jedną opcję. Jeśli żadna Cię nie dotyczy, wybierz „{{none}}”.",
+    "answer_needed_title": "Odpowiedz na pytanie dotyczące ochrony"
   },
   "page_meta": {
     "title": "Wdrożenie"

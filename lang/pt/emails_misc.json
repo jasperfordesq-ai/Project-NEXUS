@@ -837,7 +837,11 @@
     "member_concern_subject": "Nova denúncia sobre um membro — #{{report_id}}",
     "member_concern_body": "Um membro denunciou outro membro ou uma mensagem que recebeu. Referência: #{{report_id}}. Analise-a na sua lista de denúncias. O membro em causa não foi informado.",
     "safeguarding_subject": "Preocupação de proteção levantada — #{{report_id}}",
-    "safeguarding_body": "Um membro levantou uma preocupação de proteção sobre outro membro. Referência: #{{report_id}}. Analise-a o mais depressa possível. O membro em causa não foi informado."
+    "safeguarding_body": "Um membro levantou uma preocupação de proteção sobre outro membro. Referência: #{{report_id}}. Analise-a o mais depressa possível. O membro em causa não foi informado.",
+    "safeguarding_health_unusable_subject": "Ação necessária: defina as regras de verificação da sua comunidade",
+    "safeguarding_health_unusable_body": "Alguns membros escolheram ser contactados apenas por pessoas cuja verificação a sua comunidade registou. As regras de verificação da sua comunidade não estão definidas, por isso ninguém consegue contactar estes membros. Defina-as no painel de coordenação, em «Verificação».",
+    "safeguarding_health_unreachable_subject": "Ação necessária: não há verificações registadas para membros protegidos",
+    "safeguarding_health_unreachable_body": "Alguns membros só podem ser contactados pelas pessoas coordenadoras e por membros cuja verificação a sua comunidade registou. Ainda não há nenhuma verificação registada, por isso só as pessoas coordenadoras os conseguem contactar. Registe as verificações no painel de coordenação, em «Verificação», ou contacte estes membros."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "não especificado",

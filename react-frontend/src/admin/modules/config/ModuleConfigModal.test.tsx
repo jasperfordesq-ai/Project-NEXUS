@@ -163,9 +163,9 @@ const makeBrokerModule = (): ModuleDefinition => ({
       max: 100,
     },
     {
-      key: 'broker_messaging_enabled',
+      key: 'broker_copy_all_messages',
       type: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
       category: 'messaging',
     },
   ],
@@ -265,7 +265,7 @@ const makeOnboardingModule = (): ModuleDefinition => ({
 
 const makeBrokerConfig = () => ({
   broker_copy_threshold_hours: 5,
-  broker_messaging_enabled: true,
+  broker_copy_all_messages: false,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ describe('ModuleConfigModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Copy Threshold (Hours)')).toBeInTheDocument();
-      expect(screen.getByText('Broker Messaging')).toBeInTheDocument();
+      expect(screen.getByText('Copy All Messages')).toBeInTheDocument();
     });
   });
 
@@ -403,9 +403,9 @@ describe('ModuleConfigModal', () => {
       />
     );
 
-    await waitFor(() => screen.getByText('Broker Messaging'));
+    await waitFor(() => screen.getByText('Copy All Messages'));
 
-    const switchEl = screen.getByRole('checkbox', { name: /broker messaging/i });
+    const switchEl = screen.getByRole('checkbox', { name: /copy all messages/i });
     fireEvent.click(switchEl);
 
     await waitFor(() => {
@@ -427,10 +427,10 @@ describe('ModuleConfigModal', () => {
       />
     );
 
-    await waitFor(() => screen.getByText('Broker Messaging'));
+    await waitFor(() => screen.getByText('Copy All Messages'));
 
     // Toggle to enable change
-    const switchEl = screen.getByRole('checkbox', { name: /broker messaging/i });
+    const switchEl = screen.getByRole('checkbox', { name: /copy all messages/i });
     fireEvent.click(switchEl);
 
     await waitFor(() => {

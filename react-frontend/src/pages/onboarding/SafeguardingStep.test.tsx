@@ -373,4 +373,73 @@ describe('SafeguardingStep', () => {
     expect(screen.queryByText(/checks each match suggested for you/)).toBeNull();
     expect(screen.queryByText(/No automatic protections activate/)).toBeNull();
   });
+
+  // ── A required step needs an answer (26 Oct 2026) ───────────────────────
+  // The server refuses to finish onboarding (SAFEGUARDING_REQUIRED) when the
+  // community made this step required and the member answered nothing. The
+  // step used to move on silently, so the member only found out at the end.
+
+  const noneApplyOption = {
+    id: 99,
+    option_key: 'none_apply',
+    option_type: 'checkbox' as const,
+    label: 'None of these apply to me',
+    description: null,
+    help_url: null,
+    is_required: false,
+  };
+
+  it('keeps the member on a required step when nothing is chosen, and says how to answer', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [...MOCK_OPTIONS, noneApplyOption] });
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+
+    render(<SafeguardingStep {...defaultProps} isRequired={true} onSkip={undefined} />);
+    await screen.findByText('I consider myself a vulnerable adult');
+
+    await user.click(screen.getByText('Next'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Please choose at least one option');
+    expect(alert).toHaveTextContent('None of these apply to me');
+    expect(defaultProps.onNext).not.toHaveBeenCalled();
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('clears the message once the member chooses an answer, and saves it', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [...MOCK_OPTIONS, noneApplyOption] });
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+
+    render(<SafeguardingStep {...defaultProps} isRequired={true} onSkip={undefined} />);
+    await screen.findByText('I consider myself a vulnerable adult');
+
+    await user.click(screen.getByText('Next'));
+    await screen.findByRole('alert');
+
+    // The label also appears inside the alert, so pick the option row's copy.
+    const rows = screen.getAllByText('None of these apply to me');
+    await user.click(rows[rows.length - 1] as HTMLElement);
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+
+    await user.click(screen.getByText('Save & Continue'));
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith('/v2/onboarding/safeguarding', {
+        preferences: [{ option_id: 99, value: '1' }],
+      });
+    });
+  });
+
+  it('still asks for an answer on a required step with no "none apply" option', async () => {
+    const { userEvent } = await import('@/test/test-utils');
+    const user = userEvent.setup();
+
+    render(<SafeguardingStep {...defaultProps} isRequired={true} onSkip={undefined} />);
+    await screen.findByText('I consider myself a vulnerable adult');
+
+    await user.click(screen.getByText('Next'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Please choose at least one option');
+    expect(defaultProps.onNext).not.toHaveBeenCalled();
+  });
 });

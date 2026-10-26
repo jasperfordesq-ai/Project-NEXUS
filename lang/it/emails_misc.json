@@ -837,7 +837,11 @@
     "member_concern_subject": "Nuova segnalazione su un membro — #{{report_id}}",
     "member_concern_body": "Un membro ha segnalato un altro membro o un messaggio ricevuto. Riferimento: #{{report_id}}. Esaminala nel tuo elenco delle segnalazioni. Il membro interessato non è stato informato.",
     "safeguarding_subject": "Segnalato un problema di tutela — #{{report_id}}",
-    "safeguarding_body": "Un membro ha segnalato un problema di tutela riguardante un altro membro. Riferimento: #{{report_id}}. Esaminalo il prima possibile. Il membro interessato non è stato informato."
+    "safeguarding_body": "Un membro ha segnalato un problema di tutela riguardante un altro membro. Riferimento: #{{report_id}}. Esaminalo il prima possibile. Il membro interessato non è stato informato.",
+    "safeguarding_health_unusable_subject": "Azione richiesta: imposta le regole di verifica della tua comunità",
+    "safeguarding_health_unusable_body": "Alcuni membri hanno scelto di essere contattati solo da persone la cui verifica è stata registrata dalla tua comunità. Le regole di verifica della tua comunità non sono impostate, quindi nessuno può raggiungere questi membri. Impostale nel pannello di coordinamento, alla voce «Verifica».",
+    "safeguarding_health_unreachable_subject": "Azione richiesta: nessuna verifica registrata per membri protetti",
+    "safeguarding_health_unreachable_body": "Alcuni membri possono essere contattati solo dalle persone coordinatrici e da membri la cui verifica è stata registrata dalla tua comunità. Non è ancora registrata alcuna verifica, quindi solo le persone coordinatrici possono raggiungerli. Registra le verifiche nel pannello di coordinamento, alla voce «Verifica», oppure contatta questi membri."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "non specificato",

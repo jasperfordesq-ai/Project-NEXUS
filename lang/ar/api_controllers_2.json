@@ -256,5 +256,6 @@
   "member_reports.invalid_category": "يرجى اختيار سبب للبلاغ.",
   "member_reports.details_required": "يرجى وصف ما حدث.",
   "member_reports.details_too_long": "يرجى ألا يتجاوز الوصف {{max}} حرفًا.",
-  "member_reports.already_reported": "لقد أبلغت عن هذا من قبل. سيراجعه منسقو مجتمعك."
+  "member_reports.already_reported": "لقد أبلغت عن هذا من قبل. سيراجعه منسقو مجتمعك.",
+  "onboarding.safeguarding_required": "يرجى الإجابة عن سؤال الحماية قبل الإنهاء. إذا لم ينطبق عليك أي خيار، فاختر «لا ينطبق عليّ أي مما سبق»."
 }

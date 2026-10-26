@@ -422,7 +422,17 @@
       "message": "Qualcuno è stato registrato come responsabile del tuo supporto. È necessaria la tua risposta.",
       "action": "Rivedi questo"
     },
-    "what_this_does": "Cosa comporta"
+    "what_this_does": "Cosa comporta",
+    "add": {
+      "title": "Aggiungi un supporto extra",
+      "intro": "Puoi chiedere un supporto extra in qualsiasi momento. Leggi cosa fa ogni scelta prima di aggiungerla.",
+      "button": "Aggiungi",
+      "confirm_title": "Aggiungere questo supporto?",
+      "confirm_body": "Si attiva subito. Ti invieremo via email un riepilogo delle tue scelte. Puoi rimuoverlo dalle tue impostazioni in qualsiasi momento.",
+      "confirm_yes": "Sì, aggiungi",
+      "added_toast": "Aggiunto. Questo supporto è ora attivo.",
+      "error_toast": "Impossibile aggiungerlo. Non è stato modificato nulla."
+    }
   },
   "header": {
     "title": "Impostazioni",

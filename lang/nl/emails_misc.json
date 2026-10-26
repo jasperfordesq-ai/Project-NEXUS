@@ -837,7 +837,11 @@
     "member_concern_subject": "Nieuwe melding over een lid — #{{report_id}}",
     "member_concern_body": "Een lid heeft een ander lid, of een ontvangen bericht, gemeld. Referentie: #{{report_id}}. Bekijk de melding in je meldingenlijst. Het betrokken lid is niet ingelicht.",
     "safeguarding_subject": "Zorg over veiligheid gemeld — #{{report_id}}",
-    "safeguarding_body": "Een lid heeft een zorg over de veiligheid van of rond een ander lid gemeld. Referentie: #{{report_id}}. Bekijk deze zo snel mogelijk. Het betrokken lid is niet ingelicht."
+    "safeguarding_body": "Een lid heeft een zorg over de veiligheid van of rond een ander lid gemeld. Referentie: #{{report_id}}. Bekijk deze zo snel mogelijk. Het betrokken lid is niet ingelicht.",
+    "safeguarding_health_unusable_subject": "Actie nodig: stel de screeningsregels van je gemeenschap in",
+    "safeguarding_health_unusable_body": "Sommige leden willen alleen worden benaderd door mensen van wie je gemeenschap de screening heeft geregistreerd. De screeningsregels van je gemeenschap zijn niet ingesteld, dus niemand kan deze leden bereiken. Stel ze in via het makelaarspaneel onder Screening.",
+    "safeguarding_health_unreachable_subject": "Actie nodig: geen screening geregistreerd voor beschermde leden",
+    "safeguarding_health_unreachable_body": "Sommige leden mogen alleen worden benaderd door coördinatoren en door leden van wie je gemeenschap de screening heeft geregistreerd. Er is nog geen screening geregistreerd, dus alleen coördinatoren kunnen hen bereiken. Registreer screenings via het makelaarspaneel onder Screening, of neem contact op met deze leden."
   },
   "marketplace_enforcement": {
     "reason_unspecified": "niet gespecificeerd",

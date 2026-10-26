@@ -455,6 +455,12 @@ export function OnboardingPage() {
         if (response.code === 'VALIDATION_REQUIRED_FIELD') {
           toast.error(t('toast_profile_incomplete'), message);
           goToStep(profileStepIdx);
+        } else if (response.code === 'SAFEGUARDING_REQUIRED') {
+          // The community needs a safeguarding answer the member has not
+          // given. Show the server's own words and return to that step.
+          toast.error(t('safeguarding.answer_needed_title'), message);
+          const safeguardingIdx = stepSlugToIndex.get('safeguarding');
+          if (safeguardingIdx) goToStep(safeguardingIdx);
         } else if (response.code === 'SESSION_EXPIRED') {
           navigate(tenantPath('/login'), { replace: true });
         } else {
@@ -477,7 +483,7 @@ export function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, navigate, tenantPath, refreshUser, goToStep, profileStepIdx, t, skillsPrefilled]);
+  }, [toast, navigate, tenantPath, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
 
   // ── Completion handler ───────────────────────────────────────────────────
 

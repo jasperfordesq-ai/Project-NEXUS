@@ -132,7 +132,10 @@
       "declination_title": "Anotado — a sua resposta está registrada",
       "declination_intro": "Obrigado por rever estas opções. A sua resposta foi salva para que os coordenadores saibam que viu e considerou este passo."
     },
-    "what_this_does": "O que isto faz"
+    "what_this_does": "O que isto faz",
+    "answer_missing": "Escolha pelo menos uma opção antes de continuar.",
+    "answer_missing_with_none": "Escolha pelo menos uma opção. Se nenhuma se aplicar a si, escolha «{{none}}».",
+    "answer_needed_title": "Responda à pergunta de proteção"
   },
   "page_meta": {
     "title": "Integração"

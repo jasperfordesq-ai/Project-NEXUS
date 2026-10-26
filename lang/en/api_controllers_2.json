@@ -258,5 +258,6 @@
   "member_reports.invalid_category": "Please choose a reason for your report.",
   "member_reports.details_required": "Please describe what happened.",
   "member_reports.details_too_long": "Please keep your description to {{max}} characters or fewer.",
-  "member_reports.already_reported": "You have already reported this. Your community's coordinators will look at it."
+  "member_reports.already_reported": "You have already reported this. Your community's coordinators will look at it.",
+  "onboarding.safeguarding_required": "Please answer the safeguarding question before you finish. If none of the options apply to you, choose \"None of these apply to me\"."
 }

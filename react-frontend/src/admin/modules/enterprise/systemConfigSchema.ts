@@ -113,8 +113,9 @@ export function buildConfigSchema(t: Translate, icons: Record<string, ReactNode>
       settings: [
         { key: 'auto_approve_listings', label: t('enterprise.config_auto_approve_listings'), description: t('enterprise.config_auto_approve_listings_desc'), type: 'boolean', default: true },
         { key: 'auto_approve_blog', label: t('enterprise.config_auto_approve_blog'), description: t('enterprise.config_auto_approve_blog_desc'), type: 'boolean', default: false },
+        // No profanity filter switch: nothing enforces it (owner decision,
+        // 26 Oct 2026). A stored value is left alone and never sent.
         { key: 'max_listing_images', label: t('enterprise.config_max_listing_images'), description: t('enterprise.config_max_listing_images_desc'), type: 'number', default: 5, validation: { min: 1, max: 20 } },
-        { key: 'profanity_filter', label: t('enterprise.config_profanity_filter'), description: t('enterprise.config_profanity_filter_desc'), type: 'boolean', default: false },
       ],
     },
     {
@@ -173,7 +174,6 @@ export const STATIC_SETTINGS: StaticSettingDef[] = [
   { key: 'auto_approve_listings', type: 'boolean', default: true },
   { key: 'auto_approve_blog', type: 'boolean', default: false },
   { key: 'max_listing_images', type: 'number', default: 5, validation: { min: 1, max: 20 } },
-  { key: 'profanity_filter', type: 'boolean', default: false },
   { key: 'email_notifications_enabled', type: 'boolean', default: true },
   { key: 'push_notifications_enabled', type: 'boolean', default: true },
   { key: 'digest_frequency', type: 'select', default: 'monthly' },

@@ -422,7 +422,17 @@
       "message": "Es wurde festgestellt, dass jemand für Ihre Unterstützung verantwortlich ist. Ihre Antwort wird benötigt.",
       "action": "Überprüfen Sie dies"
     },
-    "what_this_does": "Was das bewirkt"
+    "what_this_does": "Was das bewirkt",
+    "add": {
+      "title": "Zusätzliche Unterstützung hinzufügen",
+      "intro": "Sie können jederzeit zusätzliche Unterstützung anfordern. Lesen Sie, was jede Auswahl bewirkt, bevor Sie sie hinzufügen.",
+      "button": "Hinzufügen",
+      "confirm_title": "Diese Unterstützung hinzufügen?",
+      "confirm_body": "Sie gilt sofort. Wir senden Ihnen eine Zusammenfassung Ihrer Auswahl per E-Mail. Sie können sie jederzeit in Ihren Einstellungen wieder entfernen.",
+      "confirm_yes": "Ja, hinzufügen",
+      "added_toast": "Hinzugefügt. Diese Unterstützung ist jetzt aktiv.",
+      "error_toast": "Das konnte nicht hinzugefügt werden. Es wurde nichts geändert."
+    }
   },
   "header": {
     "title": "Einstellungen",

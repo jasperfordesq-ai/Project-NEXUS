@@ -352,5 +352,27 @@
   "haptics": {
     "title": "Vibration",
     "hint": "Give a short buzz when you tap a main or destructive button."
+  },
+  "safeguarding": {
+    "title": "Safeguarding preferences",
+    "settingsHint": "See, add or remove the extra support you have asked for",
+    "subtitle": "These are the choices you have made about extra support. You can change them at any time.",
+    "currentTitle": "Your choices",
+    "none": "You have not asked for any extra support.",
+    "whatThisDoes": "What this does",
+    "remove": "Remove",
+    "removeConfirmTitle": "Remove this choice?",
+    "removeConfirmBody": "The support it gives you stops straight away. Your coordinators will be told.",
+    "removed": "Choice removed",
+    "removeError": "Could not remove that. Nothing was changed.",
+    "loadError": "Could not load your choices about extra support.",
+    "addTitle": "Add extra support",
+    "addIntro": "You can ask for extra support at any time. Read what each choice does before you add it.",
+    "add": "Add this",
+    "addConfirmTitle": "Add this support?",
+    "addConfirmBody": "It starts straight away. We will email you a summary of your choices. You can remove it from your settings at any time.",
+    "addConfirmYes": "Yes, add it",
+    "added": "Added. This support is now switched on.",
+    "addError": "Could not add that. Nothing was changed."
   }
 }

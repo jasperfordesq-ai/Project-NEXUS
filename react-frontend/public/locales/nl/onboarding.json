@@ -132,7 +132,10 @@
       "declination_title": "Genoteerd — uw reactie is geregistreerd",
       "declination_intro": "Bedankt voor het beoordelen van deze opties. Uw reactie is opgeslagen zodat coördinatoren weten dat u deze stap heeft gezien en overwogen."
     },
-    "what_this_does": "Wat dit doet"
+    "what_this_does": "Wat dit doet",
+    "answer_missing": "Kies ten minste één optie voordat u verdergaat.",
+    "answer_missing_with_none": "Kies ten minste één optie. Als geen ervan op u van toepassing is, kies dan ‘{{none}}’.",
+    "answer_needed_title": "Beantwoord de vraag over bescherming"
   },
   "page_meta": {
     "title": "Onboarding"

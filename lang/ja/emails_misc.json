@@ -837,7 +837,11 @@
     "member_concern_subject": "メンバーに関する新しい通報 — #{{report_id}}",
     "member_concern_body": "メンバーが別のメンバー、または受け取ったメッセージを通報しました。参照番号：#{{report_id}}。通報一覧で確認してください。通報された本人には知らされていません。",
     "safeguarding_subject": "安全確保に関する懸念の報告 — #{{report_id}}",
-    "safeguarding_body": "メンバーが別のメンバーについて安全確保に関する懸念を報告しました。参照番号：#{{report_id}}。できるだけ早く確認してください。通報された本人には知らされていません。"
+    "safeguarding_body": "メンバーが別のメンバーについて安全確保に関する懸念を報告しました。参照番号：#{{report_id}}。できるだけ早く確認してください。通報された本人には知らされていません。",
+    "safeguarding_health_unusable_subject": "対応が必要です：コミュニティの審査ルールを設定してください",
+    "safeguarding_health_unusable_body": "一部のメンバーは、コミュニティが審査を記録した人からのみ連絡を受けることを選んでいます。コミュニティの審査ルールが設定されていないため、これらのメンバーには誰も連絡できません。ブローカーパネルの「審査」で設定してください。",
+    "safeguarding_health_unreachable_subject": "対応が必要です：保護対象メンバーのための審査記録がありません",
+    "safeguarding_health_unreachable_body": "一部のメンバーは、コーディネーターと、コミュニティが審査を記録したメンバーからのみ連絡を受けられます。まだ審査記録がないため、コーディネーターしか連絡できません。ブローカーパネルの「審査」で審査を記録するか、これらのメンバーに連絡してください。"
   },
   "marketplace_enforcement": {
     "reason_unspecified": "指定なし",

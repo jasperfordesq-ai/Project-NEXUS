@@ -132,7 +132,10 @@
       "declination_title": "Noted — your response is recorded",
       "declination_intro": "Thank you for reviewing these options. Your response has been saved so coordinators know you have seen and considered this step."
     },
-    "what_this_does": "What this does"
+    "what_this_does": "What this does",
+    "answer_missing": "Please choose at least one option before you continue.",
+    "answer_missing_with_none": "Please choose at least one option. If none of them apply to you, choose “{{none}}”.",
+    "answer_needed_title": "Please answer the safeguarding question"
   },
   "page_meta": {
     "title": "Onboarding"

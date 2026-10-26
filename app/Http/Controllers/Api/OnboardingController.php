@@ -134,11 +134,21 @@ class OnboardingController extends BaseApiController
                 );
             }
 
-            // Safeguarding step: options are opt-in. A user choosing none of the
-            // checkboxes is a valid response ("none apply to me"). Marking the
-            // step "required" means it's shown in the wizard, not that the user
-            // must self-classify as vulnerable. Per-option `is_required` flags
-            // are still enforced client-side at the SafeguardingStep component.
+            // Safeguarding step: a member never has to say they are vulnerable —
+            // "None of these apply to me" is an answer. But when the community
+            // made the step required, or marked an option required, the member
+            // must have answered before finishing. Checked here as well as at
+            // save, so a client that skips the save cannot finish (26 Oct 2026).
+            $tenantId = (int) TenantContext::getId();
+            if (OnboardingConfigService::unmetSafeguardingRequirements($tenantId, $userId) !== []) {
+                DB::rollback();
+                return $this->respondWithError(
+                    'SAFEGUARDING_REQUIRED',
+                    __('api_controllers_2.onboarding.safeguarding_required'),
+                    'safeguarding',
+                    422
+                );
+            }
 
             $this->onboardingService->saveOnboardingSkills($userId, $offerNames, $needNames, $replaceSkills);
             $this->onboardingService->completeOnboarding($userId);

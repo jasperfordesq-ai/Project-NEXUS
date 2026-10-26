@@ -125,6 +125,18 @@ describe('module registry groups module', () => {
   });
 });
 
+describe('module registry exchange workflow module', () => {
+  // Owner decision, 26 Oct 2026: hide switches nothing enforces.
+  it('does not offer the broker messaging or require-exchange switches', () => {
+    const exchange = getFeatureModules().find(module => module.id === 'exchange_workflow');
+    const keys = exchange?.configOptions.map(option => option.key) ?? [];
+
+    expect(keys.length).toBeGreaterThan(0);
+    expect(keys).not.toContain('broker_messaging_enabled');
+    expect(keys).not.toContain('require_exchange_for_listings');
+  });
+});
+
 describe('module registry authentication modules', () => {
   it('registers lockout-safe two-factor and passkey enrollment controls', () => {
     const modules = getFeatureModules();

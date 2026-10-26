@@ -132,7 +132,10 @@
       "declination_title": "Preso nota — la tua risposta è registrata",
       "declination_intro": "Grazie per aver esaminato queste opzioni. La tua risposta è stata salvata in modo che i coordinatori sappiano che hai visto e valutato questo passaggio."
     },
-    "what_this_does": "Cosa comporta"
+    "what_this_does": "Cosa comporta",
+    "answer_missing": "Scegli almeno un'opzione prima di continuare.",
+    "answer_missing_with_none": "Scegli almeno un'opzione. Se nessuna ti riguarda, scegli «{{none}}».",
+    "answer_needed_title": "Rispondi alla domanda sulla tutela"
   },
   "page_meta": {
     "title": "Accoglienza"
