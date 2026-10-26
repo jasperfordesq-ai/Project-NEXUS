@@ -1315,9 +1315,26 @@ class MessageService
     }
 
     /**
+     * The member-facing error for a denied decision. Every caller that turns a
+     * decision into an error goes through here, so a member stopped by their
+     * own safety choice is never told that the OTHER member is the protected
+     * one.
+     *
+     * @return array<string, mixed>
+     */
+    public static function safeguardingErrorForDecision(
+        \App\Support\SafeguardingInteractionDecision $decision,
+    ): array {
+        return self::buildSafeguardingError(self::safeguardingDecisionToGate($decision) ?? [
+            'status' => $decision->status,
+            'code' => $decision->code,
+        ]);
+    }
+
+    /**
      * Reason code for staff alerts. When the SENDER's own choice stopped the
      * message, the protected member is the sender, not the recipient: staff
-     * get a different alert that links to the sender's approved contacts.
+     * get a different alert that links to the sender's support needs.
      *
      * @param array<string, mixed> $gate
      */
@@ -2044,13 +2061,7 @@ class MessageService
             return null;
         }
 
-        return self::buildSafeguardingError([
-            'status' => $decision->status,
-            'code' => $decision->code,
-            'required_vetting_types' => $decision->requiredAttestationCodes,
-            'required_vetting_labels' => $decision->requiredAttestationLabels,
-            'can_request_coordinator' => $decision->canRequestCoordinator,
-        ]);
+        return self::safeguardingErrorForDecision($decision);
     }
 
     // -----------------------------------------------------------------

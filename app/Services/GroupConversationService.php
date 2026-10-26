@@ -774,25 +774,13 @@ class GroupConversationService
 
     private static function setSafeguardingError(SafeguardingInteractionDecision $decision): void
     {
-        self::$errors = [MessageService::buildSafeguardingError([
-            'status' => $decision->status,
-            'code' => $decision->code,
-            'required_vetting_types' => $decision->requiredAttestationCodes,
-            'required_vetting_labels' => $decision->requiredAttestationLabels,
-            'can_request_coordinator' => $decision->canRequestCoordinator,
-        ])];
+        self::$errors = [MessageService::safeguardingErrorForDecision($decision)];
     }
 
     /** @return array<string, mixed> */
     private static function formatSafeguardingDecision(SafeguardingInteractionDecision $decision): array
     {
-        $error = MessageService::buildSafeguardingError([
-            'status' => $decision->status,
-            'code' => $decision->code,
-            'required_vetting_types' => $decision->requiredAttestationCodes,
-            'required_vetting_labels' => $decision->requiredAttestationLabels,
-            'can_request_coordinator' => $decision->canRequestCoordinator,
-        ]);
+        $error = MessageService::safeguardingErrorForDecision($decision);
 
         return [
             'restricted' => true,

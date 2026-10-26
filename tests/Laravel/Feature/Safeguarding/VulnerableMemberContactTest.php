@@ -98,6 +98,18 @@ final class VulnerableMemberContactTest extends TestCase
         $this->assertSame(__('safeguarding.errors.contact_via_coordinator_detail'), $response->json('errors.0.detail'));
     }
 
+    public function test_a_vulnerable_member_starting_a_group_conversation_is_told_it_is_their_own_choice(): void
+    {
+        Sanctum::actingAs($this->vulnerable);
+        $response = $this->apiPost('/v2/conversations/groups', [
+            'name' => 'Chat',
+            'member_ids' => [$this->unvetted->id, $this->vetted->id],
+        ])->assertStatus(403)
+            ->assertJsonPath('errors.0.code', 'SAFEGUARDING_CONTACT_RESTRICTED');
+
+        $this->assertSame(__('safeguarding.errors.contact_via_coordinator_detail'), $response->json('errors.0.detail'));
+    }
+
     public function test_coordinators_are_alerted_about_the_right_member_when_a_vulnerable_member_tries_to_message(): void
     {
         Event::fake([SafeguardingContactAttemptBlocked::class]);
