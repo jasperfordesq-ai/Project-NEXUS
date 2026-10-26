@@ -69,7 +69,7 @@ class TenantSafeguardingOptionTest extends TestCase
         $expected = [
             'tenant_id', 'option_key', 'option_type', 'label', 'description',
             'help_url', 'sort_order', 'is_active', 'is_required',
-            'select_options', 'triggers', 'preset_source',
+            'accepts_new_selections', 'select_options', 'triggers', 'preset_source',
         ];
         $this->assertSame($expected, $model->getFillable());
     }
