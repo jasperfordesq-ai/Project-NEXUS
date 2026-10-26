@@ -22756,7 +22756,7 @@ export default interface Resources {
     "landing_page": "Landing Page",
     "legal_documents": "Legal Documents",
     "listings": "Listings",
-    "listings_digest": "Offers & requests email",
+    "listings_digest": "Email Digest",
     "logout": "Log Out",
     "marketing": "Marketing",
     "marketplace": "Marketplace & Freecycle",
