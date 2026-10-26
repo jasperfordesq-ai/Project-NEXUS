@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Insignias obtenidas',
         'badges_empty' => 'Aún no se han obtenido insignias.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Algunas coincidencias están ocultas',
+        'banner_body' => 'La configuración de protección de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos.',
+        'empty_title' => 'Algunas coincidencias aún no se pueden mostrar',
+        'empty_body' => 'La configuración de protección de su comunidad no está terminada, por lo que las coincidencias con miembros protegidos se ocultan por la seguridad de todos. Vuelva cuando el equipo de su comunidad la haya completado.',
+    ],
 ];

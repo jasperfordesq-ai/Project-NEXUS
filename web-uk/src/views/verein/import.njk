@@ -1,0 +1,52 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Import club members from a CSV (React clubs/:id/admin/import). Upload a file
+  or paste the rows; a preview comes first and nobody is created until the
+  organiser confirms. Works without JavaScript (plain multipart form).
+#}
+
+{% extends "layouts/base.njk" %}
+{% set vm = "govuk_alpha_organisations.verein.import." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/clubs/' + (orgId | string) + '/admin/dues') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorText %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#csv-file">{{ errorText }}</a></li></ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <h1 class="govuk-heading-xl">{{ t(vm + "title") }}</h1>
+      <p class="govuk-body-l">{{ t(vm + "subtitle") }}</p>
+      <h2 class="govuk-heading-m">{{ t(vm + "step1") }}</h2>
+      <p class="govuk-body">{{ t(vm + "csv_format") }}</p>
+      <pre class="govuk-body govuk-!-font-size-16" tabindex="0"><code>email,first_name,last_name,phone,role</code></pre>
+
+      <form method="post" action="{{ urlFor('/clubs/' + (orgId | string) + '/admin/import/preview') }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group{% if errorText %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="csv-file">{{ t(vm + "file_label") }}</label>
+          <input class="govuk-file-upload" id="csv-file" name="csv_file" type="file" accept=".csv,text/csv,text/plain">
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="csv-text">{{ t(vm + "csv_label") }}</label>
+          <textarea class="govuk-textarea govuk-!-font-size-16" id="csv-text" name="csv" rows="8" spellcheck="false">{{ csv }}</textarea>
+        </div>
+        <button type="submit" class="govuk-button" data-module="govuk-button">{{ t(vm + "preview") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

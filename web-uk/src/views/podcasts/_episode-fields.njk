@@ -58,8 +58,10 @@
 {% if not episodeFieldEdit or (episodeField.audioUrl and not episodeField.hosted_audio) %}
   <div class="govuk-form-group">
     <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="audio_url{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.audio_url_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
-    {% if not episodeFieldEdit %}<div id="audio_url-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.audio_url_hint") }}</div>{% endif %}
-    <input class="govuk-input" id="audio_url{{ episodeFieldSuffix }}" name="audio_url" type="url" inputmode="url" value="{{ episodeField.audioUrl }}"{% if not episodeFieldEdit %} aria-describedby="audio_url-hint"{% endif %}>
+    {# The hint warns that a link to a web page (Spotify, SoundCloud, a Drive
+       "share" link) will not play — shown when editing too, as on the website. #}
+    <div id="audio_url-hint{{ episodeFieldSuffix }}" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.audio_url_hint") }}</div>
+    <input class="govuk-input" id="audio_url{{ episodeFieldSuffix }}" name="audio_url" type="url" inputmode="url" value="{{ episodeField.audioUrl }}" aria-describedby="audio_url-hint{{ episodeFieldSuffix }}">
   </div>
 {% endif %}
 

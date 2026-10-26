@@ -86,6 +86,13 @@
     {% endif %}
   </dl>
 
+  {% if item.id and item.isOwnItem %}
+    <div class="govuk-button-group govuk-!-margin-top-4">
+      <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/marketplace/' + (item.id | string) + '/edit') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.action_edit") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/photos') }}">{{ t("govuk_alpha_commerce.photos.manage_link") }}</a>
+    </div>
+  {% endif %}
+
   {% if item.id and not item.isOwnItem %}
     {# One button group, one primary. "Buy" is the primary action; everything
        else is secondary or a link — two primaries ("Buy" AND "Message seller")

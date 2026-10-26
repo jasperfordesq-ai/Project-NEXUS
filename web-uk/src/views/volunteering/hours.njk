@@ -5,6 +5,7 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
@@ -179,7 +180,7 @@
     <button class="govuk-button" data-module="govuk-button"{% if not organizations.length %} disabled{% endif %}>{{ t("govuk_alpha.actions.log_hours") }}</button>
   </form>
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.recent_hours_title") }}</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="logged-hours">{{ t("govuk_alpha.volunteering.recent_hours_title") }}</h2>
   {% if not logs.length %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha.volunteering.empty_hours") }}</p>
@@ -215,5 +216,60 @@
         </article>
       {% endfor %}
     </div>
+  {% endif %}
+  {% if logsPaging.older or logsPaging.newest %}
+    {{ govukPagination({
+      landmarkLabel: t("govuk_alpha.volunteering.recent_hours_title"),
+      previous: { href: logsPaging.newest, text: t("govuk_alpha_volunteering.my_hours.newest_entries") } if logsPaging.newest else undefined,
+      next: { href: logsPaging.older, text: t("govuk_alpha_volunteering.my_hours.older_entries") } if logsPaging.older else undefined
+    }) }}
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7" id="your-shifts">{{ t("govuk_alpha_volunteering.my_hours.shifts_list_title") }}</h2>
+  {% if shiftsLoadError %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.my_hours.shifts_load_error") }}</div>
+  {% elif not shifts.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.my_hours.shifts_list_empty") }}</div>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.my_hours.shifts_list_title') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.my_hours.shifts_list_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.my_hours.shifts_col_when") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_safeguarding.col_opportunity") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.my_hours.shifts_col_where") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_safeguarding.col_status") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for shift in shifts %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ shift.whenLabel or "—" }}</td>
+            <td class="govuk-table__cell">
+              {% if shift.opportunityId %}
+                <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ shift.opportunityId) }}">{{ shift.opportunityTitle }}</a>
+              {% else %}{{ shift.opportunityTitle or "—" }}{% endif %}
+            </td>
+            <td class="govuk-table__cell">{{ shift.location or "—" }}</td>
+            <td class="govuk-table__cell">
+              {% if shift.isPast %}
+                {{ govukTag({ text: t("govuk_alpha_volunteering.my_hours.shift_past"), classes: "govuk-tag--grey" }) }}
+              {% else %}
+                {{ govukTag({ text: t("govuk_alpha_volunteering.my_hours.shift_upcoming"), classes: "govuk-tag--green" }) }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+  {% if shiftsPaging.older or shiftsPaging.newest %}
+    {{ govukPagination({
+      landmarkLabel: t("govuk_alpha_volunteering.my_hours.shifts_list_title"),
+      previous: { href: shiftsPaging.newest, text: t("govuk_alpha_volunteering.my_hours.newest_entries") } if shiftsPaging.newest else undefined,
+      next: { href: shiftsPaging.older, text: t("govuk_alpha_volunteering.my_hours.older_shifts") } if shiftsPaging.older else undefined
+    }) }}
   {% endif %}
 {% endblock %}

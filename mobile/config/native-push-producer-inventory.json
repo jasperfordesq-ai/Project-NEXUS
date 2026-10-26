@@ -2877,9 +2877,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/VolOrgWalletService.php:505:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/VolOrgWalletService.php:510:NotificationDispatcher::fanOutPush",
             "file": "app/Services/VolOrgWalletService.php",
-            "line": 505,
+            "line": 510,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) (int) $recipient->id",

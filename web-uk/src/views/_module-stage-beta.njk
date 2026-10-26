@@ -1,0 +1,12 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  "Beta" module label, as the website's ModuleStageBadge stage="beta" (React
+  5837ea12e) on Courses (list and course page) and Podcasts (list): both work
+  end to end but have not been signed off as finished and tested. Reuses the
+  translated "Beta" of the phase banner, so no new strings.
+#}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+<p class="govuk-body">{{ govukTag({ text: t("phase"), classes: "govuk-tag--blue" }) }}</p>

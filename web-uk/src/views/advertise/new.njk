@@ -1,0 +1,94 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Submit a new ad campaign for review. There is no payment step. #}
+
+{% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
+{% set ad = "govuk_alpha_settings.advertise." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/advertise/campaigns') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors.length %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for error in errors %}<li><a href="{{ error.href }}">{{ error.text }}</a></li>{% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t(ad + "create_campaign") }}</h1>
+      <p class="govuk-body">{{ t(ad + "review_note") }}</p>
+
+      <form method="post" action="{{ urlFor('/advertise/campaigns/new') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if errorFor.name %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="ad-name">{{ t(ad + "field_name") }}</label>
+          {% if errorFor.name %}<p id="ad-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ errorFor.name }}</p>{% endif %}
+          <input class="govuk-input{% if errorFor.name %} govuk-input--error{% endif %}" id="ad-name" name="name" type="text" maxlength="255" value="{{ values.name }}"{% if errorFor.name %} aria-describedby="ad-name-error"{% endif %}>
+        </div>
+
+        <div class="govuk-form-group{% if errorFor.placement %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t(ad + "field_type") }}</legend>
+            {% if errorFor.placement %}<p class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ errorFor.placement }}</p>{% endif %}
+            <div class="govuk-radios" data-module="govuk-radios" id="ad-placement">
+              {% for placement in placements %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="ad-placement-{{ placement }}" name="placement" type="radio" value="{{ placement }}"{% if values.placement == placement %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="ad-placement-{{ placement }}">{{ t(ad + "type_" + placement) }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {{ nexusDateInput({
+          name: "start_date",
+          legend: t(ad + "field_start_date"),
+          hint: t("web_uk.date_input.hint"),
+          value: values.startParts,
+          errorMessage: errorFor.start_date,
+          errorFields: values.startErrorFields
+        }, t) }}
+
+        {{ nexusDateInput({
+          name: "end_date",
+          legend: t(ad + "field_end_date"),
+          hint: t("web_uk.date_input.hint"),
+          value: values.endParts,
+          errorMessage: errorFor.end_date,
+          errorFields: values.endErrorFields
+        }, t) }}
+
+        <div class="govuk-form-group{% if errorFor.budget %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="ad-budget">{{ t(ad + "field_budget") }}</label>
+          <div id="ad-budget-hint" class="govuk-hint">{{ t(ad + "field_budget_desc") }}</div>
+          {% if errorFor.budget %}<p id="ad-budget-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ errorFor.budget }}</p>{% endif %}
+          <div class="govuk-input__wrapper">
+            <div class="govuk-input__prefix" aria-hidden="true">€</div>
+            <input class="govuk-input govuk-input--width-5{% if errorFor.budget %} govuk-input--error{% endif %}" id="ad-budget" name="budget" type="text" inputmode="decimal" spellcheck="false" value="{{ values.budget }}" aria-describedby="ad-budget-hint{% if errorFor.budget %} ad-budget-error{% endif %}">
+          </div>
+        </div>
+
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(ad + "submit_create") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/advertise/campaigns') }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

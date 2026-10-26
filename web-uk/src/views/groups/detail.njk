@@ -183,7 +183,7 @@
   <p class="govuk-body">{{ t("groups_t1.events_description") }}</p>
   {# The create handler always accepted a group; this is the entry point that
      was missing, so members could never actually make a group event. #}
-  {% if groupCanParticipate %}
+  {% if groupCanParticipate and canCreateEvents %}
     <p class="govuk-body">
       <a class="govuk-link" href="{{ urlFor('/events/new?group_id=' + (group.id | string)) }}">{{ t("groups_t1.create_event_link") }}</a>
     </p>

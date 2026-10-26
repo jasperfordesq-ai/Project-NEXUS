@@ -35,6 +35,8 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.podcast_studio.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.podcast_studio.description") }}</p>
 
+  {% if guide %}{% include "podcasts/_studio-guide.njk" %}{% endif %}
+
   {% if canCreateShow %}
     <a class="govuk-button" href="{{ urlFor('/podcasts/studio/new') }}" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.create_button") }}</a>
   {% endif %}
@@ -54,6 +56,7 @@
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("govuk_alpha_commerce.podcast_studio.episode_count", show.episodeCount, { count: show.episodeCount }) }}</p>
           <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string)) }}">{{ t("govuk_alpha_commerce.podcast_studio.manage_button") }}</a>
+          {% set shareShow = show %}{% include "podcasts/_share-links.njk" %}
         </article>
       {% endfor %}
     </div>

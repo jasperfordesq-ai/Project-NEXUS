@@ -1,0 +1,38 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set S = "govuk_alpha_events.staff." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string) + '/staff') }}">{{ t(S ~ "back_to_team") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status == "revoke-failed" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(S ~ "status_revoke_failed") }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+      <span class="govuk-caption-xl">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t(S ~ "revoke_title") }}</h1>
+      <p class="govuk-body">{{ t(S ~ "revoke_body", { name: assignment.name, role: (t(S ~ "roles." ~ assignment.role) if assignment.role else t(S ~ "role_unknown")) }) }}</p>
+      <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/staff/' + (assignment.id | string) + '/revoke') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(S ~ "revoke_confirm") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/staff') }}">{{ t(S ~ "revoke_cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

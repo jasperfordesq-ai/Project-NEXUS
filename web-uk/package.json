@@ -10,6 +10,8 @@
     "build:css:production": "sass --quiet-deps --style=compressed --no-source-map --load-path=node_modules/govuk-frontend/dist src/assets/scss/main.scss:public/css/main.css",
     "build:features": "node scripts/build-features-catalogue.js",
     "check:features": "node scripts/build-features-catalogue.js --check",
+    "build:help": "node scripts/build-help-guides.js",
+    "check:help": "node scripts/build-help-guides.js --check",
     "build:changelog": "node scripts/build-changelog.js",
     "check:changelog": "node scripts/build-changelog.js --check",
     "check:changelog:released": "node scripts/build-changelog.js --check-released",

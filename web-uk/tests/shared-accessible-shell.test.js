@@ -1244,7 +1244,9 @@ describe('shared accessible frontend shell', () => {
     expect(api.getClubs).toHaveBeenCalledWith({ per_page: 1 });
     expect(response.text).toContain('Explore');
     expect(response.text).toContain('class="nexus-alpha-card-list');
-    expect(response.text).not.toContain('href="/exchanges"');
+    // Since f3450c8b8 (22 Oct 2026) the exchange_workflow FEATURE is the only
+    // switch, and Laravel defaults it on — no hidden broker setting needed.
+    expect(response.text).toContain('href="/exchanges"');
     expect(response.text).toContain('AI assistant');
     expect(response.text).toContain('Polls');
     expect(response.text).toContain('Clubs');
@@ -6317,7 +6319,8 @@ describe('shared accessible frontend shell', () => {
     expect(api.getOnboardingConfig).toHaveBeenCalledWith('test-token');
     expect(api.getProfile).toHaveBeenCalledWith('test-token');
     expect(profile.text).toContain('Set up your profile');
-    expect(profile.text).toContain('Project NEXUS Accessible — Step 2 of 6');
+    // Five steps: the interests step was retired 2026-10-02 (React 8578ce739).
+    expect(profile.text).toContain('Project NEXUS Accessible — Step 2 of 5');
     expect(profile.text).toContain('Your profile');
     expect(profile.text).toContain('Profile photo');
     expect(profile.text).toContain('About you');
@@ -6334,17 +6337,18 @@ describe('shared accessible frontend shell', () => {
       .get('/onboarding/interests')
       .set('Cookie', signedCookieHeader());
 
-    expect(interests.status).toBe(200);
-    expect(api.getOnboardingCategories).toHaveBeenCalledWith('test-token');
-    expect(interests.text).toContain('Your interests');
-    expect(interests.text).toContain('id="interest-2" name="interests[]"');
-    expect(interests.text).toContain('Gardening');
+    // Retired 2026-10-02 (React 8578ce739): even a stale config listing it
+    // sends the member back to the start, never to an interests page.
+    expect(interests.status).toBe(302);
+    expect(interests.headers.location).toBe('/onboarding');
 
     const skills = await request(app)
       .get('/onboarding/skills')
       .set('Cookie', signedCookieHeader());
 
     expect(skills.status).toBe(200);
+    expect(api.getOnboardingCategories).toHaveBeenCalledWith('test-token');
+    expect(skills.text).toContain('name="offers[]" type="checkbox" value="Gardening"');
     expect(skills.text).toContain('Your skills');
     expect(skills.text).toContain('Skills you can offer');
     expect(skills.text).toContain('Help you are looking for');
@@ -6404,13 +6408,16 @@ describe('shared accessible frontend shell', () => {
       });
 
     expect(response.status).toBe(302);
-    expect(response.headers.location).toBe('/onboarding/interests');
+    expect(response.headers.location).toBe('/onboarding/skills');
     expect(api.updateProfile).toHaveBeenCalledWith('test-token', {
       bio: 'I can help with gardening'
     });
   });
 
-  it('stores onboarding category choices and completes through the Laravel v2 API', async () => {
+  it('stores onboarding skill names and completes through the Laravel v2 API', async () => {
+    // Skills are saved by NAME as `skills: {offer, need, replace}` and no
+    // interests are sent (React 8578ce739; full coverage in
+    // onboarding-skills-step.test.js). With no prefill, replace is false.
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
@@ -6421,26 +6428,15 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
     const csrfMatch = first.text.match(/name="_csrf" value="([^"]+)"/);
 
-    const interests = await agent
-      .post('/onboarding/interests')
-      .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
-      .type('form')
-      .send({
-        _csrf: csrfMatch[1],
-        interests: ['2', 'bad', '3', '2']
-      });
-
-    expect(interests.status).toBe(302);
-    expect(interests.headers.location).toBe('/onboarding/skills');
-
     const skills = await agent
       .post('/onboarding/skills')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
       .send({
         _csrf: csrfMatch[1],
-        offers: ['5'],
-        needs: ['6']
+        offers: ['Gardening'],
+        offers_other: 'Baking, gardening',
+        needs: ['Lifts']
       });
 
     expect(skills.status).toBe(302);
@@ -6455,9 +6451,7 @@ describe('shared accessible frontend shell', () => {
     expect(confirm.status).toBe(302);
     expect(confirm.headers.location).toBe('/dashboard?status=onboarding-complete');
     expect(api.completeOnboarding).toHaveBeenCalledWith('test-token', {
-      interests: [2, 3],
-      offers: [5],
-      needs: [6]
+      skills: { offer: ['Gardening', 'Baking'], need: ['Lifts'], replace: false }
     });
   });
 
@@ -34976,8 +34970,8 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(checkout.status).toBe(200);
-    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/my-offers/sent?per_page=50');
-    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/orders/purchases?limit=50');
+    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/my-offers/sent?per_page=100');
+    expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/orders/purchases?limit=100');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/listings/42?offer_id=12');
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(5, 'test-token', 'GET', '/listings/42/pickup-slots?offer_id=12');
     expect(checkout.text).toContain(createTranslator('en')('govuk_alpha_commerce.buy.accepted_offer_title'));
@@ -34989,7 +34983,7 @@ describe('shared accessible frontend shell', () => {
     const key = checkout.text.match(/name="idempotency_key" value="([^"]+)"/)[1];
 
     api.callMarketplaceApi.mockClear().mockImplementation(async (_token, method, pathName) => {
-      if (method === 'GET' && pathName === '/my-offers/sent?per_page=50') return { data: [{ id: 12, status: 'accepted', amount: 13.25, currency: 'GBP', listing_id: 42 }] };
+      if (method === 'GET' && pathName === '/my-offers/sent?per_page=100') return { data: [{ id: 12, status: 'accepted', amount: 13.25, currency: 'GBP', listing_id: 42 }] };
       if (method === 'GET' && pathName === '/listings/42?offer_id=12') return { data: { id: 42, title: 'Community bike', delivery_method: 'pickup', user: { id: 77 } } };
       if (method === 'GET' && pathName === '/listings/42/pickup-slots?offer_id=12') return { data: [{ id: 8 }] };
       return { data: { id: 91 } };
@@ -35862,7 +35856,8 @@ describe('shared accessible frontend shell', () => {
     expect(page.status).toBe(200);
     expect(page.text).toContain('action="/acme/accessible/marketplace/create"');
     expect(page.text).toContain('name="price_currency" type="text" maxlength="3" value="GBP"');
-    expect(page.text).not.toContain('enctype="multipart/form-data"');
+    // Multipart since 26 Oct 2026: photos can be chosen with a new listing.
+    expect(page.text).toContain('enctype="multipart/form-data"');
     expect(page.text).not.toContain('name="image"');
     expect(csrfMatch).not.toBeNull();
 
@@ -37792,13 +37787,16 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('About donations');
     expect(response.text).toContain('Donations are money gifts to support the community. They are not time credits.');
     expect(response.text).toContain('Fundraising so far');
-    expect(response.text).toContain('Total raised');
-    expect(response.text).toContain('125.50');
-    expect(response.text).toContain('Donors');
-    expect(response.text).toContain('4');
-    expect(response.text).toContain('Active campaigns');
-    expect(response.text).toContain('1');
-    expect(response.text).toContain('Active giving days');
+    // 26 Oct 2026 (React 0a17f2acd): the tiles are live campaigns, raised across
+    // them, and what THIS member gave — the summed donor tile counted people twice.
+    expect(response.text).toContain('Live campaigns');
+    expect(response.text).toContain('Raised so far');
+    expect(response.text).toContain('125.50 EUR');
+    expect(response.text).toContain('You&#39;ve given');
+    expect(response.text).toContain('25.00 EUR');
+    expect(response.text).toContain('1 pending');
+    expect(response.text).not.toContain('<dt>Donors</dt>');
+    expect(response.text).toContain('Coming up');
     expect(response.text).toContain('Winter essentials');
     expect(response.text).toContain('Warm packs for neighbours');
     expect(response.text).toContain('Active');

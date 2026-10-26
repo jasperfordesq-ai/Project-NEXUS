@@ -59,6 +59,7 @@
       </div>
     </div>
   {% elif matches.length %}
+    {% if safeguardingDegraded %}{% set variant = "banner" %}{% include "matches/_safeguarding-notice.njk" %}{% endif %}
     <div class="nexus-alpha-card-list govuk-!-margin-top-4">
       {% for match in matches %}
         <article class="nexus-alpha-card">
@@ -138,6 +139,8 @@
         </article>
       {% endfor %}
     </div>
+  {% elif safeguardingDegraded %}
+    {% set variant = "empty" %}{% include "matches/_safeguarding-notice.njk" %}
   {% else %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{% if activeSource == 'all' %}{{ t("govuk_alpha_connections.matches_empty.title_all") }}{% else %}{{ t("govuk_alpha_connections.matches_empty.title_filtered", { source: sourceLabels[activeSource] }) }}{% endif %}</h2>

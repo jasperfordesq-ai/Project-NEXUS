@@ -158,6 +158,10 @@ return [
         'nav_label' => 'Nascleanúint buntásc',
         'meta_label' => 'Faisnéis tacaíochta agus sannadh',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'Ár Leathanaigh',
+            ],
             'platform' => [
                 'heading' => 'Ardán',
                 'listings' => 'Liostaí',
@@ -3648,6 +3652,10 @@ return [
             'offers_hint' => 'Rudaí ar féidir leat cabhrú le daoine eile leo.',
             'needs_label' => 'Cabhair atá tú ag lorg',
             'needs_hint' => 'Rudaí ar mhaith leat cabhair leo.',
+            'intro' => 'Inis do dhaoine cad is féidir leat cabhrú leis agus cén chabhair ba mhaith leat. Roghnaigh ó na moltaí nó clóscríobh do chuid féin. Is féidir leat iad seo a athrú ar ball.',
+            'offers_other_label' => 'Scileanna eile is féidir leat a thairiscint',
+            'needs_other_label' => 'Cabhair eile atá uait',
+            'other_hint' => 'Cuir camóg idir gach ceann, mar shampla: garraíodóireacht, siúl madraí',
         ],
         'safeguarding' => [
             'title' => 'Cosaint',
@@ -4583,6 +4591,10 @@ return [
         'contact_cta_title' => 'Fós cabhair uait?',
         'contact_cta_body' => 'Mura bhfuil tú in ann an freagra a fháil anseo, déan teagmháil linn agus cabhróimid leat.',
         'contact_cta_button' => 'Déan teagmháil linn',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'Rianán aráin',
+        'main_website_only' => 'Déantar é seo ar an bpríomhshuíomh gréasáin. Níl an leathanach seo ar an suíomh inrochtana.',
     ],
     'kb' => [
         'caption' => ':community',

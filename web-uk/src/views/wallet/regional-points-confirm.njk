@@ -1,0 +1,49 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Check your answers before regional points are sent. Nothing moves until the
+   confirm button is pressed; the recipient name was read back from Laravel. #}
+
+{% extends "layouts/base.njk" %}
+{% set rp = "govuk_alpha_wallet.regional_points." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(rp + "transfer.confirm_title", { points: amountLabel, symbol: symbol, name: recipientName }) }}</h1>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(rp + "transfer.chosen_label") }}</dt>
+          <dd class="govuk-summary-list__value" id="rp-confirm-recipient">{{ recipientName }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t(rp + "transfer.amount") }}</dt>
+          <dd class="govuk-summary-list__value">{{ amountLabel }} {{ symbol }}</dd>
+        </div>
+        {% if message %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(rp + "transfer.message") }}</dt>
+            <dd class="govuk-summary-list__value">{{ message }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t(rp + "transfer.confirm_body") }}</strong>
+      </div>
+      <form method="post" action="{{ urlFor('/wallet/regional-points/transfer') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="nonce" value="{{ nonce }}">
+        <input type="hidden" name="recipient_user_id" value="{{ recipientId }}">
+        <input type="hidden" name="points" value="{{ amount }}">
+        <input type="hidden" name="message" value="{{ message }}">
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(rp + "transfer.confirm_button") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/wallet/regional-points') }}">{{ t(rp + "transfer.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

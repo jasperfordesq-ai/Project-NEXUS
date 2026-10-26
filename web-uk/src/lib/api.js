@@ -1069,6 +1069,15 @@ async function callVolunteeringApi(token, method, path, data = undefined) {
   return request(`/api/v2/volunteering${normalizedPath}`, options);
 }
 
+// The receipt for one of the member's donations (React `donations/:id/receipt`).
+// The API answers 404 for a donation that is not the caller's.
+async function getDonationReceipt(token, id) {
+  return request(`/api/v2/donations/${encodeURIComponent(id)}/receipt`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 // A volunteer's expense claim WITH a receipt (gap B13, 7 Oct 2026). The website sends
 // the claim and the file together as multipart to the same endpoint; a claim without
 // a receipt still goes as JSON through callVolunteeringApi.
@@ -1136,12 +1145,17 @@ async function callCouponApi(token, method, path = '', data = undefined) {
 async function uploadMarketplaceListingImages(token, listingId, data) {
   const form = new globalThis.FormData();
   const files = Array.isArray(data.files) ? data.files : [data.file || data.image].filter(Boolean);
+  // `images[]`, not `image`: Laravel keeps only the LAST of several same-named
+  // `image` parts, so a seller choosing three photos used to get one.
   for (const file of files) {
     if (!file || !file.buffer) continue;
     const blob = new globalThis.Blob([file.buffer], {
       type: file.contentType || 'application/octet-stream'
     });
-    form.append('image', blob, file.filename || 'marketplace-image');
+    form.append('images[]', blob, file.filename || 'marketplace-image');
+  }
+  if (typeof data.idempotencyKey === 'string' && data.idempotencyKey !== '') {
+    form.append('idempotency_key', data.idempotencyKey.slice(0, 128));
   }
 
   return request(`/api/v2/marketplace/listings/${encodeURIComponent(listingId)}/images`, {
@@ -4158,6 +4172,139 @@ async function updatePrivacyPreferences(token, data) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// React-parity pages added 26 Oct 2026. Each mirrors the endpoint the matching
+// React page calls; Laravel stays the authority on every rule and refusal.
+// ---------------------------------------------------------------------------
+
+function bearer(token) {
+  return { Authorization: `Bearer ${token}` };
+}
+
+// Supported decisions: the emailed single-use link. Both calls are public; the
+// token in the path is the only authority, exactly as on React.
+async function getSupportActionByEmailToken(emailToken) {
+  return request(`/api/v2/support-actions/confirm/${encodeURIComponent(emailToken)}`);
+}
+
+async function confirmSupportActionByEmailToken(emailToken) {
+  return request(`/api/v2/support-actions/confirm/${encodeURIComponent(emailToken)}`, { method: 'POST' });
+}
+
+// Regional points — the third currency (feature `caring_community`).
+async function getRegionalPointsSummary(token) {
+  return request('/api/v2/caring-community/regional-points/summary', { headers: bearer(token) });
+}
+
+async function getRegionalPointsHistory(token, limit = 50) {
+  return request(`/api/v2/caring-community/regional-points/history?limit=${encodeURIComponent(limit)}`, { headers: bearer(token) });
+}
+
+async function transferRegionalPoints(token, data) {
+  return request('/api/v2/caring-community/regional-points/transfer', {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify(data)
+  });
+}
+
+// Municipality events calendar — public, feature `caring_community`.
+async function getMunicipalityCalendar(code, from, to) {
+  const query = new URLSearchParams({ from, to }).toString();
+  return request(`/api/v2/municipality/${encodeURIComponent(code)}/events-calendar?${query}`);
+}
+
+// Self-serve ad campaigns (feature `local_advertising`).
+async function getMyAdCampaigns(token) {
+  return request('/api/v2/me/ad-campaigns', { headers: bearer(token) });
+}
+
+async function createMyAdCampaign(token, data) {
+  return request('/api/v2/me/ad-campaigns', {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify(data)
+  });
+}
+
+// Clubs (Verein) — invitations, dues and member import (feature `caring_community`).
+async function getMyVereinInvitations(token) {
+  return request('/api/v2/me/verein-invitations', { headers: bearer(token) });
+}
+
+async function respondToVereinInvitation(token, id, action) {
+  return request(`/api/v2/me/verein-invitations/${encodeURIComponent(id)}/respond`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ action })
+  });
+}
+
+async function getMyVereinDues(token) {
+  return request('/api/v2/me/verein-dues', { headers: bearer(token) });
+}
+
+async function getVereinDuesFeeConfig(token, organizationId) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/fee-config`, { headers: bearer(token) });
+}
+
+async function setVereinDuesFeeConfig(token, organizationId, data) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/fee-config`, {
+    method: 'PUT',
+    headers: bearer(token),
+    body: JSON.stringify(data)
+  });
+}
+
+async function listVereinDues(token, organizationId, params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues${query ? `?${query}` : ''}`, { headers: bearer(token) });
+}
+
+async function listVereinOverdueDues(token, organizationId) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/overdue`, { headers: bearer(token) });
+}
+
+async function generateVereinDues(token, organizationId, year) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/generate`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ year })
+  });
+}
+
+async function remindVereinDues(token, organizationId, duesId) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/${encodeURIComponent(duesId)}/remind`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({})
+  });
+}
+
+async function waiveVereinDues(token, organizationId, duesId, reason) {
+  return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/${encodeURIComponent(duesId)}/waive`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ reason })
+  });
+}
+
+async function previewVereinMemberImport(token, organizationId, csv) {
+  return request(`/api/v2/caring-community/vereine/${encodeURIComponent(organizationId)}/members/import/preview`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ csv })
+  });
+}
+
+async function importVereinMembers(token, organizationId, csv) {
+  return request(`/api/v2/caring-community/vereine/${encodeURIComponent(organizationId)}/members/import`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ csv })
+  });
+}
+
 module.exports = {
   setupRequiredTwoFactor,
   ApiError,
@@ -4242,6 +4389,7 @@ module.exports = {
   getMyVolunteerOrganisations,
   createVolunteerOrganisation,
   callVolunteeringApi,
+  getDonationReceipt,
   submitVolunteerExpenseWithReceipt,
   downloadOrgExpenseReceipt,
   callMarketplaceApi,
@@ -4553,5 +4701,26 @@ module.exports = {
   getNotificationPreferences,
   updateNotificationPreference,
   getPrivacyPreferences,
-  updatePrivacyPreferences
+  updatePrivacyPreferences,
+  // React-parity pages (26 Oct 2026)
+  getSupportActionByEmailToken,
+  confirmSupportActionByEmailToken,
+  getRegionalPointsSummary,
+  getRegionalPointsHistory,
+  transferRegionalPoints,
+  getMunicipalityCalendar,
+  getMyAdCampaigns,
+  createMyAdCampaign,
+  getMyVereinInvitations,
+  respondToVereinInvitation,
+  getMyVereinDues,
+  getVereinDuesFeeConfig,
+  setVereinDuesFeeConfig,
+  listVereinDues,
+  listVereinOverdueDues,
+  generateVereinDues,
+  remindVereinDues,
+  waiveVereinDues,
+  previewVereinMemberImport,
+  importVereinMembers
 };

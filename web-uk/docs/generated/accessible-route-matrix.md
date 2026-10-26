@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-26T12:03:34.006Z
-Laravel commit SHA: `f9b44cbf0f16fa411a8933f2ab2f84cca5a30627`
-Web UK repository commit SHA: `f9b44cbf0f16fa411a8933f2ab2f84cca5a30627`
+Generated: 2026-10-26T14:10:08.776Z
+Laravel commit SHA: `72cf7ee88d484ec8d03adc50d3999b85155a07fe`
+Web UK repository commit SHA: `72cf7ee88d484ec8d03adc50d3999b85155a07fe`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 854 |
+| web-uk routes | 906 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 144 |
+| Extra web-uk routes | 196 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -28,13 +28,14 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | account-deletion | 0 | 0 | 1 | 0 |
 | achievements | 10 | 0 | 0 | 0 |
 | activity | 2 | 0 | 0 | 0 |
+| advertise | 0 | 0 | 3 | 0 |
 | appreciations | 1 | 0 | 0 | 0 |
 | blog | 12 | 0 | 0 | 0 |
 | caring | 0 | 0 | 9 | 0 |
 | changelog | 0 | 0 | 2 | 0 |
 | chat | 2 | 0 | 0 | 0 |
 | child-safety | 0 | 0 | 1 | 0 |
-| clubs | 1 | 0 | 0 | 0 |
+| clubs | 1 | 0 | 10 | 0 |
 | connections | 5 | 0 | 0 | 0 |
 | contact | 2 | 0 | 0 | 0 |
 | cookie-consent | 1 | 0 | 1 | 0 |
@@ -43,7 +44,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | courses | 26 | 0 | 0 | 0 |
 | dashboard | 1 | 0 | 1 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
-| events | 94 | 0 | 2 | 0 |
+| events | 94 | 0 | 11 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
 | explore | 1 | 0 | 0 | 0 |
 | faq | 1 | 0 | 0 | 0 |
@@ -55,7 +56,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | groups | 36 | 0 | 0 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
-| help | 1 | 0 | 0 | 0 |
+| help | 1 | 0 | 3 | 0 |
 | home | 2 | 0 | 0 | 0 |
 | ideation | 34 | 0 | 0 | 0 |
 | jobs | 38 | 0 | 0 | 0 |
@@ -66,11 +67,12 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | listings | 19 | 0 | 2 | 0 |
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
-| marketplace | 50 | 0 | 2 | 0 |
+| marketplace | 50 | 0 | 18 | 0 |
 | matches | 4 | 0 | 0 | 0 |
-| me | 6 | 0 | 0 | 0 |
+| me | 6 | 0 | 3 | 0 |
 | members | 11 | 0 | 1 | 0 |
 | messages | 18 | 0 | 0 | 0 |
+| municipality-calendar | 0 | 0 | 1 | 0 |
 | newsletter | 1 | 0 | 0 | 0 |
 | nexus-score | 2 | 0 | 0 | 0 |
 | notifications | 6 | 0 | 0 | 0 |
@@ -95,6 +97,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | settings | 24 | 0 | 0 | 0 |
 | sitemap.xml | 0 | 0 | 1 | 0 |
 | skills | 1 | 0 | 0 | 0 |
+| support-actions | 0 | 0 | 2 | 0 |
 | terms | 0 | 0 | 1 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
@@ -102,8 +105,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | version | 0 | 0 | 0 | 1 |
-| volunteering | 52 | 0 | 86 | 0 |
-| wallet | 6 | 0 | 0 | 0 |
+| volunteering | 52 | 0 | 88 | 0 |
+| wallet | 6 | 0 | 3 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
 
 ## Missing Laravel Routes
@@ -117,6 +120,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Method | Path | Family | Web UK view | Web UK file |
 | --- | --- | --- | --- | --- |
 | GET | `/account-deletion` | account-deletion |  | web-uk/src/routes/legal.js |
+| GET | `/advertise/campaigns` | advertise | advertise/campaigns | web-uk/src/routes/advertise-campaigns.js |
+| GET | `/advertise/campaigns/new` | advertise |  | web-uk/src/routes/advertise-campaigns.js |
+| POST | `/advertise/campaigns/new` | advertise |  | web-uk/src/routes/advertise-campaigns.js |
 | GET | `/caring` | caring | caring/hub | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver` | caring | caring/caregiver | web-uk/src/routes/caring.js |
 | GET | `/caring/caregiver/link` | caring | caring/link | web-uk/src/routes/caring.js |
@@ -129,14 +135,36 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/changelog` | changelog | public-info/changelog | web-uk/src/routes/public-info.js |
 | GET | `/changelog/{param}` | changelog | public-info/changelog-release | web-uk/src/routes/public-info.js |
 | GET | `/child-safety` | child-safety |  | web-uk/src/routes/legal.js |
+| GET | `/clubs/{param}/admin/dues` | clubs | verein/admin-dues | web-uk/src/routes/verein.js |
+| GET | `/clubs/{param}/admin/dues/{param}/waive` | clubs | verein/admin-waive | web-uk/src/routes/verein.js |
+| GET | `/clubs/{param}/admin/import` | clubs |  | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/dues/{param}/remind` | clubs |  | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/dues/{param}/waive` | clubs | verein/import | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/dues/fee-config` | clubs |  | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/dues/generate` | clubs |  | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/dues/remind-overdue` | clubs |  | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/import` | clubs | verein/import-result | web-uk/src/routes/verein.js |
+| POST | `/clubs/{param}/admin/import/preview` | clubs | verein/import-preview | web-uk/src/routes/verein.js |
 | POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
 | POST | `/dashboard/location` | dashboard |  | web-uk/src/routes/dashboard.js |
+| GET | `/events/{param}/staff` | events | events/staff | web-uk/src/routes/event-organiser-tools.js |
+| GET | `/events/{param}/staff/{param}/revoke` | events | events/staff-revoke | web-uk/src/routes/event-organiser-tools.js |
+| GET | `/events/{param}/tickets/manage` | events | events/ticket-types | web-uk/src/routes/event-organiser-tools.js |
+| GET | `/events/{param}/tickets/types/{param}/edit` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| GET | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
+| POST | `/events/{param}/staff` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| POST | `/events/{param}/staff/{param}/revoke` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| POST | `/events/{param}/tickets/types/{param}/edit` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| POST | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/federation/members/{param}/block` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/federation/members/{param}/unblock` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |
 | POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
+| GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |
+| GET | `/help/{param}/{param}` | help | support/help-section | web-uk/src/routes/support.js |
+| GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |
 | GET | `/legal-acceptance` | legal-acceptance | legal/accept | web-uk/src/routes/legal-acceptance.js |
 | POST | `/legal-acceptance` | legal-acceptance |  | web-uk/src/routes/legal-acceptance.js |
 | GET | `/legal/{param}/versions` | legal | legal/versions | web-uk/src/routes/legal.js |
@@ -149,8 +177,28 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/login/two-factor/setup/complete` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup/start` | login |  | web-uk/src/server.js |
 | GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
+| GET | `/marketplace/{param}/photos` | marketplace | marketplace/photos | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/{param}/photos/{param}/remove` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/borrow` | marketplace | marketplace/listing-list | web-uk/src/routes/marketplace.js |
+| GET | `/marketplace/reports` | marketplace | marketplace/reports | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/reports/{param}` | marketplace | marketplace/report-detail | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/seller/shipping-options` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/shipping` | marketplace | marketplace/shipping | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/shipping/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/shipping/{param}/edit` | marketplace | marketplace/shipping-form | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/{param}/photos` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/{param}/photos/{param}/main` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/{param}/photos/{param}/remove` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/offers/{param}/accept-counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
+| POST | `/marketplace/reports/{param}/appeal` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/shipping` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/shipping/{param}/delete` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/shipping/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/me/verein-dues` | me | verein/my-dues | web-uk/src/routes/verein-my-dues.js |
+| GET | `/me/verein-invitations` | me | verein/invitations | web-uk/src/routes/verein-invitations.js |
+| POST | `/me/verein-invitations/{param}/respond` | me |  | web-uk/src/routes/verein-invitations.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/podcasts/{param}/episodes/{param}/report` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/podcasts/{param}/episodes/{param}/transcript.txt` | podcasts |  | web-uk/src/routes/podcasts.js |
@@ -170,12 +218,15 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/robots.txt` | robots.txt |  | web-uk/src/server.js |
 | GET | `/sitemap.xml` | sitemap.xml |  | web-uk/src/server.js |
+| GET | `/support-actions/confirm/{param}` | support-actions |  | web-uk/src/routes/support-action-confirm.js |
+| POST | `/support-actions/confirm/{param}` | support-actions |  | web-uk/src/routes/support-action-confirm.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | POST | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/volunteering/checkin/{param}` | volunteering | volunteering/checkin-verify | web-uk/src/routes/volunteering-checkin-verify.js |
 | GET | `/volunteering/community-projects/propose` | volunteering | volunteering/community-project-propose | web-uk/src/routes/volunteering-community-projects.js |
+| GET | `/volunteering/donations/{param}/receipt` | volunteering | volunteering/donation-receipt | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/group-signups/{param}/cancel` | volunteering | volunteering/group-signup-cancel | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/group-signups/{param}/members/{param}/remove` | volunteering | volunteering/group-signup-member-remove | web-uk/src/routes/volunteering-actions.js |
 | GET | `/volunteering/group-signups/{param}/members/new` | volunteering | volunteering/group-signup-add-member | web-uk/src/routes/volunteering-actions.js |
@@ -184,6 +235,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/volunteering/incidents/{param}` | volunteering | volunteering/incident-report | web-uk/src/routes/volunteering-incidents.js |
 | GET | `/volunteering/opportunities/{param}/applications` | volunteering | volunteering/opportunity-applicants | web-uk/src/routes/volunteering-opportunity-applicants.js |
 | GET | `/volunteering/opportunities/{param}/cancel` | volunteering | volunteering/opportunity-cancel | web-uk/src/routes/volunteering-opportunity-manage.js |
+| GET | `/volunteering/opportunities/{param}/comments` | volunteering | volunteering/opportunity-comments | web-uk/src/routes/volunteering-opportunity-comments.js |
 | GET | `/volunteering/opportunities/{param}/edit` | volunteering |  | web-uk/src/routes/volunteering-opportunity-manage.js |
 | GET | `/volunteering/opportunities/{param}/repeating/{param}/stop` | volunteering | volunteering/shift-pattern-stop | web-uk/src/routes/volunteering-shifts.js |
 | GET | `/volunteering/opportunities/{param}/repeating/new` | volunteering | volunteering/shift-pattern-form | web-uk/src/routes/volunteering-shifts.js |
@@ -260,6 +312,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/volunteering/qualifications/{param}/withdraw` | volunteering |  | web-uk/src/routes/volunteering-my-qualifications.js |
 | POST | `/volunteering/swaps/new/{param}` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
 | POST | `/volunteering/waitlist/{param}/claim` | volunteering |  | web-uk/src/routes/volunteering-actions.js |
+| GET | `/wallet/regional-points` | wallet | wallet/regional-points | web-uk/src/routes/regional-points.js |
+| POST | `/wallet/regional-points/review` | wallet | wallet/regional-points-confirm | web-uk/src/routes/regional-points.js |
+| POST | `/wallet/regional-points/transfer` | wallet |  | web-uk/src/routes/regional-points.js |
 
 ## Ignored Web UK Infrastructure Routes
 

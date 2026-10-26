@@ -175,7 +175,10 @@ describe('Laravel-first Marketplace template localization', () => {
     ]) {
       expect(formSource).toContain(`t("${translationKey}"`);
     }
-    expect(formSource).not.toContain('enctype="multipart/form-data"');
+    // 26 Oct 2026: the CREATE form is multipart so photos can be chosen with the listing
+    // (marketplace-member-tools.test.js covers the upload); the edit form stays plain and
+    // links to the listing's photos page instead.
+    expect(formSource).toContain('{% if not isEdit %} enctype="multipart/form-data"{% endif %}');
     expect(formSource).not.toContain('name="image"');
     expect(formSource).not.toContain('group_exchanges.form_title_label');
     expect(formSource).not.toContain('jobs_t3.salary_type_none');

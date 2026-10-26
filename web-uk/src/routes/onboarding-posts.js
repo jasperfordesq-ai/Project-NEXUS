@@ -15,6 +15,7 @@ const {
   getOnboardingSafeguardingOptions,
   saveOnboardingSafeguarding,
   completeOnboarding,
+  getUserSkills,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -23,7 +24,16 @@ const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 const SESSION_KEY = 'alphaOnboarding';
-const DEFAULT_STEPS = ['welcome', 'profile', 'interests', 'skills', 'safeguarding', 'confirm'];
+// The "What are you interested in?" step was retired on 2026-10-02 (React
+// 8578ce739): nothing on the platform read its answers, and the API now accepts
+// and DROPS `interests`. A stale tenant config that still lists the slug is
+// filtered out by normalizeSteps, so a member is never shown it.
+const DEFAULT_STEPS = ['welcome', 'profile', 'skills', 'safeguarding', 'confirm'];
+
+// Mirrors OnboardingService::SKILL_NAME_MAX / SKILLS_PER_DIRECTION_MAX. The
+// server re-normalises; trimming here keeps the session bag small.
+const SKILL_NAME_MAX = 100;
+const SKILLS_PER_DIRECTION_MAX = 50;
 
 function getBag(req) {
   if (!req.session) return {};
@@ -163,10 +173,60 @@ function statusBanner(status, t) {
     : null;
 }
 
-function collectIds(value) {
-  return [...new Set(asArray(value)
-    .map((item) => Number(item))
-    .filter((item) => Number.isInteger(item) && item > 0))];
+// Skill NAMES, as the member's skills are now stored (user_skills, which
+// matching, Explore and the personalised feed read). Ticked suggestions arrive
+// as `offers[]`/`needs[]`; the free-text "other" field is comma-separated.
+// Case-insensitive de-duplication, first spelling kept — the server's rule.
+function collectSkillNames(checked, other) {
+  const names = [
+    ...asArray(checked).map((item) => String(item || '')),
+    // Latin, Arabic (U+060C) and Japanese (U+3001) commas, or new lines.
+    ...String(other || '').split(/[,\n،、]/)
+  ];
+  const seen = new Map();
+  for (const raw of names) {
+    const clean = raw.replace(/\s+/g, ' ').trim();
+    if (!clean || clean.length > SKILL_NAME_MAX) continue;
+    const key = clean.toLocaleLowerCase();
+    if (!seen.has(key)) seen.set(key, clean);
+    if (seen.size >= SKILLS_PER_DIRECTION_MAX) break;
+  }
+  return [...seen.values()];
+}
+
+function skillFlag(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
+// Load the member's existing skills into the bag once, exactly as the React
+// wizard pre-selects them. `skillsPrefilled` is what later allows the server to
+// treat the submitted lists as the member's WHOLE set (replace=true); when the
+// load fails we send replace=false so a failed read can never wipe skills.
+async function prefillSkills(bag, token) {
+  if (bag.skillsLoaded) return;
+  bag.skillsLoaded = true;
+  try {
+    const mine = asArray(dataFrom(await getUserSkills(token, 'me'))).map(asObject);
+    bag.offerSkills = collectSkillNames(mine.filter((item) => skillFlag(item.is_offering)).map((item) => item.skill_name));
+    bag.needSkills = collectSkillNames(mine.filter((item) => skillFlag(item.is_requesting)).map((item) => item.skill_name));
+    bag.skillsPrefilled = true;
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    bag.offerSkills = bag.offerSkills || [];
+    bag.needSkills = bag.needSkills || [];
+    bag.skillsPrefilled = false;
+  }
+}
+
+// Suggestions are the community's listing categories (by NAME), followed by any
+// skill the member already has that is not a category, so they can untick it.
+function skillChoices(categories, bag) {
+  const choices = collectSkillNames([
+    ...categories.map((category) => category.name),
+    ...asArray(bag.offerSkills),
+    ...asArray(bag.needSkills)
+  ]);
+  return choices.map((name, index) => ({ id: index + 1, name }));
 }
 
 function collectSafeguarding(raw) {
@@ -305,8 +365,12 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       return redirectTo(res, '/onboarding');
     }
 
-    if (['interests', 'skills'].includes(step)) {
+    if (step === 'skills') {
       categories = asArray(dataFrom(await getOnboardingCategories(token))).map(normalizeCategory).filter((item) => item.id && item.name);
+    }
+
+    if (['skills', 'confirm'].includes(step)) {
+      await prefillSkills(getBag(req), token);
     }
 
     if (step === 'safeguarding') {
@@ -337,6 +401,7 @@ router.get('/:step([a-z]+)', asyncRoute(async (req, res) => {
       config: asObject(configData.config),
       bag: getBag(req),
       categories,
+      skillChoices: step === 'skills' ? skillChoices(categories, getBag(req)) : [],
       safeguardingOptions,
       onboardingUser,
       statusBanner: statusBanner(req.query && req.query.status, res.locals.t)
@@ -424,13 +489,10 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
     }
   }
 
-  if (step === 'interests') {
-    bag.interests = collectIds(req.body.interests);
-  }
-
   if (step === 'skills') {
-    bag.offers = collectIds(req.body.offers);
-    bag.needs = collectIds(req.body.needs);
+    bag.offerSkills = collectSkillNames(req.body.offers, req.body.offers_other);
+    bag.needSkills = collectSkillNames(req.body.needs, req.body.needs_other);
+    bag.skillsSubmitted = true;
   }
 
   if (step === 'safeguarding') {
@@ -452,11 +514,18 @@ router.post('/:step([a-z]+)', asyncRoute(async (req, res) => {
 
   if (step === 'confirm') {
     try {
-      await completeOnboarding(req.token, {
-        interests: collectIds(bag.interests),
-        offers: collectIds(bag.offers),
-        needs: collectIds(bag.needs)
-      });
+      // React sends `skills: {offer, need, replace}` and no interests. Skills
+      // are only sent when the member actually answered the skills step; with
+      // nothing to say, an empty body changes none of their skills.
+      await completeOnboarding(req.token, bag.skillsSubmitted
+        ? {
+          skills: {
+            offer: collectSkillNames(bag.offerSkills),
+            need: collectSkillNames(bag.needSkills),
+            replace: bag.skillsPrefilled === true
+          }
+        }
+        : {});
       if (req.session) delete req.session[SESSION_KEY];
       return redirectTo(res, '/dashboard?status=onboarding-complete');
     } catch (error) {
@@ -475,3 +544,4 @@ module.exports.onboardingStatusBanner = statusBanner;
 
 // Exported for its test (F-253): help links must be https before they reach href.
 module.exports.normalizeSafeguardingOption = normalizeSafeguardingOption;
+module.exports.collectSkillNames = collectSkillNames;

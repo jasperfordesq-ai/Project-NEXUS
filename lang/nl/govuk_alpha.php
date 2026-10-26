@@ -158,6 +158,10 @@ return [
         'nav_label' => 'Voettekstnavigatie',
         'meta_label' => 'Ondersteunende informatie en attributie',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'Onze pagina\'s',
+            ],
             'platform' => [
                 'heading' => 'Platformdienst',
                 'listings' => 'Advertenties',
@@ -3646,6 +3650,10 @@ return [
             'offers_hint' => 'Dingen waarmee u anderen kunt helpen.',
             'needs_label' => 'Hulp waarnaar u op zoek bent',
             'needs_hint' => 'Dingen waarmee u graag hulp wilt.',
+            'intro' => 'Laat anderen weten waarmee je kunt helpen en waarbij je hulp zou willen. Kies uit de suggesties of typ je eigen. Je kunt dit later wijzigen.',
+            'offers_other_label' => 'Andere vaardigheden die je kunt aanbieden',
+            'needs_other_label' => 'Andere hulp die je zoekt',
+            'other_hint' => 'Scheid ze met een komma, bijvoorbeeld: tuinieren, honden uitlaten',
         ],
         'safeguarding' => [
             'title' => 'Veiligheid',
@@ -4581,6 +4589,10 @@ return [
         'contact_cta_title' => 'Heeft u nog hulp nodig%',
         'contact_cta_body' => 'Als u het antwoord hier niet kunt vinden, neem dan contact met ons op en wij helpen u verder.',
         'contact_cta_button' => 'Neem contact met ons op',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'Kruimelpad',
+        'main_website_only' => 'Dit doet u op de hoofdwebsite. De toegankelijke website heeft deze pagina niet.',
     ],
     'kb' => [
         'caption' => ':community',

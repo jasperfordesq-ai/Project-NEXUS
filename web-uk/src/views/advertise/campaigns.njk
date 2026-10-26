@@ -1,0 +1,81 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# A member's own ad campaigns (React advertise/campaigns). #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set ad = "govuk_alpha_settings.advertise." %}
+
+{% block mainContent %}
+  {% if created %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="ad-status-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="ad-status-title">{{ t("states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t(ad + "created_success") }}</p></div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ t(ad + "page_title") }}</h1>
+
+  {% if disabled %}
+    <p class="govuk-inset-text">{{ t(ad + "feature_disabled") }}</p>
+  {% else %}
+    <p class="govuk-body-l">{{ t(ad + "page_subtitle") }}</p>
+    <a class="govuk-button" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/advertise/campaigns/new') }}">{{ t(ad + "create_campaign") }}</a>
+
+    {% if loadFailed %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(ad + "load_error") }}</p></div>
+        </div>
+      </div>
+    {% elif not campaigns.length %}
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">{{ t(ad + "empty_title") }}</h2>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t(ad + "empty_body") }}</p>
+      </div>
+    {% else %}
+      {% for campaign in campaigns %}
+        <div class="govuk-summary-card">
+          <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">{{ campaign.name }}</h2>
+            {{ govukTag({ text: campaign.statusLabel, classes: campaign.statusTag }) }}
+          </div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(ad + "col_type") }}</dt>
+                <dd class="govuk-summary-list__value">{{ campaign.placementLabel }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(ad + "col_budget") }}</dt>
+                <dd class="govuk-summary-list__value">{{ campaign.budgetLabel }}</dd>
+              </div>
+              {% if campaign.datesLabel %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t(ad + "col_dates") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ campaign.datesLabel }}</dd>
+                </div>
+              {% endif %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(ad + "col_impressions") }}</dt>
+                <dd class="govuk-summary-list__value">{{ campaign.impressionsLabel }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(ad + "col_clicks") }}</dt>
+                <dd class="govuk-summary-list__value">{{ campaign.clicksLabel }}</dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t(ad + "col_ctr") }}</dt>
+                <dd class="govuk-summary-list__value">{{ campaign.ctrLabel }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+{% endblock %}

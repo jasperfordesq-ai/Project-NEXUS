@@ -36,6 +36,13 @@ const FEATURE_ROUTE_GATES = [
   // sits under this prefix on purpose, so a community with Caring switched off
   // cannot reach a caregiver-consent decision screen either.
   { prefix: '/caring', featureKey: 'caring_community' },
+  // React puts these four behind the same `caring_community` FeatureGate, and
+  // Laravel refuses them with FEATURE_DISABLED when it is off.
+  { pattern: /^\/wallet\/regional-points(?:\/|$)/, featureKey: 'caring_community' },
+  { prefix: '/municipality-calendar', featureKey: 'caring_community' },
+  { pattern: /^\/clubs\/\d+\/admin(?:\/|$)/, featureKey: 'caring_community' },
+  { pattern: /^\/me\/verein-(?:dues|invitations)(?:\/|$)/, featureKey: 'caring_community' },
+  { prefix: '/advertise', featureKey: 'local_advertising' },
   { prefix: '/chat', featureKey: 'ai_chat' },
   { prefix: '/federation', featureKey: 'federation' },
   { prefix: '/goals', featureKey: 'goals' },

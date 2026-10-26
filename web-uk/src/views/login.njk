@@ -130,6 +130,7 @@
           data-loading="{{ t('auth.login_action') }}"
         >
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% if returnTo %}<input type="hidden" name="return_to" value="{{ returnTo }}">{% endif %}
           {{ govukInput({
             label: {
               text: t("auth.email_label"),

@@ -1,0 +1,65 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+  {% include "marketplace/_form-error-summary.njk" %}
+  {% include "marketplace/_status-banner.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.shipping.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.shipping.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.shipping.description") }}</p>
+
+  {% if not options.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.shipping.empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_commerce.shipping.table_caption') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">{{ t("govuk_alpha_commerce.shipping.table_caption") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.shipping.courier_label") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.shipping.price_label") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.shipping.days_heading") }}</th>
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.shipping.actions_heading") }}</span></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for option in options %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ option.courierName }}{% if option.isDefault %} {{ govukTag({ text: t("govuk_alpha_commerce.shipping.default_tag"), classes: "govuk-tag--green" }) }}{% endif %}</td>
+            <td class="govuk-table__cell">{{ option.priceLabel }}</td>
+            <td class="govuk-table__cell">{{ option.daysLabel }}</td>
+            <td class="govuk-table__cell">
+              <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/shipping/' + (option.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.shipping.edit") }}<span class="govuk-visually-hidden"> — {{ option.courierName }}</span></a>
+              <a class="govuk-link" href="{{ urlFor('/marketplace/shipping/' + (option.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.shipping.delete") }}<span class="govuk-visually-hidden"> — {{ option.courierName }}</span></a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ urlFor('/marketplace/shipping') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.shipping.add_heading") }}</h2>
+          </legend>
+          {% include "marketplace/_shipping-fields.njk" %}
+        </fieldset>
+        <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.shipping.add_submit") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

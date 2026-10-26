@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Verdiende badges',
         'badges_empty' => 'Nog geen badges verdiend.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Sommige matches zijn verborgen',
+        'banner_body' => 'De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen.',
+        'empty_title' => 'Sommige matches kunnen nog niet worden getoond',
+        'empty_body' => 'De veiligheidsinstellingen van uw community zijn nog niet voltooid. Matches met beschermde leden worden voor ieders veiligheid verborgen. Kom terug zodra uw communityteam dit heeft afgerond.',
+    ],
 ];

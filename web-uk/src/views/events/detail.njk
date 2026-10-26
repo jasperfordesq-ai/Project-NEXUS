@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "partials/target-social.njk" import targetSocial %}
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -127,7 +128,7 @@
         {% set permissions = event.permissions or {} %}
         {% set canManageRegistrationRoster = permissions.manage_registration and permissions.manage_people %}
         {% set hasRegistration = relationship and relationship.registrationState and relationship.registrationState != 'none' %}
-        {% if canManageRegistrationRoster or hasRegistration or isOwner or permissions.manage_people or permissions.check_in or permissions.broadcast or recurrenceDefinitions or permissions.edit %}
+        {% if canManageRegistrationRoster or hasRegistration or isOwner or permissions.manage_people or permissions.check_in or permissions.broadcast or recurrenceDefinitions or permissions.edit or permissions.manage_staff %}
           {# Links, not button-styled links. Every destination here is a PAGE, and
              the Design System reserves buttons for actions — so an organiser met a
              wall of up to eight identical grey blocks before any event content,
@@ -140,6 +141,7 @@
               {% if canManageRegistrationRoster or hasRegistration or isOwner %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/registration') }}">{{ t("event_registration.title") }}</a></li>{% endif %}
               {% if permissions.manage_people %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/people') }}">{{ t("govuk_alpha.events.people_title") }}</a></li>{% endif %}
               {% if permissions.check_in %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/check-in') }}">{{ t("govuk_alpha.events.check_in_title") }}</a></li>{% endif %}
+              {% if permissions.manage_staff %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/staff') }}">{{ t("govuk_alpha_events.staff.title") }}</a></li>{% endif %}
               {% if permissions.broadcast %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/communications') }}">{{ t("govuk_alpha.events.communications.title") }}</a></li>{% endif %}
               {% if recurrenceDefinitions %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/recurrence-definition-blueprints') }}">{{ t("event_recurrence_blueprints.tab") }}</a></li>{% endif %}
               {% if isOwner %}
@@ -489,4 +491,18 @@
       {% endif %}
     </div>
   </div>
+
+  {% if isAuthenticated %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {{ targetSocial({
+          item: { type: "event", id: event.id },
+          comments: eventComments,
+          currentUserId: currentUserId,
+          returnTo: "/events/" + (event.id | string),
+          socialStatus: socialStatus
+        }, csrfToken, urlFor, t) }}
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}

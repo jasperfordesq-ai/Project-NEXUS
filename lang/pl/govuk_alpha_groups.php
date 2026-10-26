@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Wróć do grupy',
         'back_to_announcements' => 'Wróć do ogłoszeń',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Rodzaj grupy',
+        'type_all' => 'Wszystkie rodzaje grup',
+    ],
+    'invite_accept' => [
+        'title' => 'Zaproszenie do grupy',
+        'sign_in_needed' => 'Otrzymałeś zaproszenie do grupy. Zaloguj się, aby zobaczyć zaproszenie. Potem wrócisz na tę stronę.',
+        'sign_in' => 'Zaloguj się',
+        'description' => 'Otrzymałeś zaproszenie do tej grupy.',
+        'accept' => 'Przyjmij zaproszenie',
+        'not_now' => 'Nie teraz',
+        'already_member' => 'Jesteś członkiem tej grupy.',
+        'go_to_group' => 'Przejdź do grupy',
+        'success' => 'Jesteś teraz członkiem tej grupy.',
+        'browse_groups' => 'Przeglądaj grupy',
+        'accessible_link_hint' => 'To samo zaproszenie w tej dostępnej wersji serwisu:',
+        'error_invalid' => 'Ten link z zaproszeniem jest nieprawidłowy lub nie jest już dostępny.',
+        'error_expired' => 'To zaproszenie wygasło.',
+        'error_revoked' => 'To zaproszenie zostało wycofane.',
+        'error_email_mismatch' => 'To zaproszenie wysłano na inny adres e-mail. Zaloguj się na konto, na które je wysłano.',
+        'error_capacity' => 'Ta grupa osiągnęła limit członków.',
+        'error_limit' => 'Należysz już do największej dozwolonej liczby grup.',
+        'error_group_unavailable' => 'Ta grupa nie przyjmuje obecnie nowych członków.',
+        'error_safeguarding' => 'Zasady ochrony tej społeczności nie pozwalają ci dołączyć do tej grupy. Poproś koordynatora o pomoc.',
+        'error_safeguarding_unavailable' => 'Nie możemy teraz sprawdzić zasad ochrony tej społeczności. Spróbuj ponownie za chwilę.',
+    ],
 ];

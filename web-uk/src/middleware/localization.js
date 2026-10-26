@@ -12,7 +12,8 @@ const {
   formatLocaleDate,
   formatLocaleNumber,
   formatLocaleRelativeTime,
-  isSupportedLocale
+  isSupportedLocale,
+  regionForTenant
 } = require('../lib/localization');
 const { runWithRequestLocale } = require('../lib/request-locale-context');
 const { characterCountMessages } = require('../lib/character-count-messages');
@@ -161,7 +162,9 @@ async function localization(req, res, next) {
     res.locals.formatLocaleRelativeTime = (value, now = new Date()) => formatLocaleRelativeTime(value, locale, now);
     res.set('Content-Language', locale);
 
-    runWithRequestLocale(locale, next);
+    // The community's date/number region rides beside the language for the
+    // rest of the request (see localeForIntl).
+    runWithRequestLocale(locale, next, regionForTenant(req.accessibleRouting?.tenant));
   } catch (error) {
     next(error);
   }

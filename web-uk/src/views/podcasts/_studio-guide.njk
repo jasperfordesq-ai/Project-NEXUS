@@ -1,0 +1,79 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  How to publish and share a podcast — the website's PodcastStudioGuide (React
+  0d8e2b7d4) as GOV.UK details components, which open and close without
+  JavaScript. Every step is open for a creator who has no show yet.
+
+  The "link" step exists because creators paste page links (Spotify,
+  SoundCloud, Google Drive "share" links): the audio link field accepts any
+  https address, but a web page cannot play or be listed in a podcast feed.
+  Labels a step quotes are this site's own labels, so each language quotes
+  exactly what is on screen. Expects `guide` ({ open, rssEnabled, maxAudioMb }).
+#}
+{% set guideLabels = {
+  public: t("govuk_alpha_commerce.podcast_studio.visibility_public"),
+  add_episode: t("govuk_alpha_commerce.podcast_studio.add_episode_heading"),
+  file_field: t("govuk_alpha_commerce.podcast_studio.audio_file_label"),
+  url_field: t("govuk_alpha_commerce.podcast_studio.audio_url_label"),
+  clean: t("govuk_alpha_commerce.podcast_studio.episode_action_publish"),
+  pending: t("govuk_alpha.podcasts.availability_pending"),
+  validate: t("govuk_alpha_commerce.podcast_studio.feed_check_link"),
+  my_shows: t("govuk_alpha_commerce.podcast_studio.title")
+} %}
+<section class="govuk-!-margin-bottom-6" aria-labelledby="podcast-guide-heading">
+  <h2 class="govuk-heading-m" id="podcast-guide-heading">{{ t("govuk_alpha_commerce.podcast_studio.guide_title") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_intro") }}</p>
+
+  <details class="govuk-details" id="podcast-guide-create"{% if guide.open %} open{% endif %}>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.podcast_studio.guide_create_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_create_body", { public: guideLabels.public }) }}</p>
+    </div>
+  </details>
+
+  <details class="govuk-details" id="podcast-guide-upload"{% if guide.open %} open{% endif %}>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.podcast_studio.guide_upload_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_upload_body", { add_episode: guideLabels.add_episode, file_field: guideLabels.file_field, clean: guideLabels.clean, max: formatLocaleNumber(guide.maxAudioMb) }) }}</p>
+    </div>
+  </details>
+
+  <details class="govuk-details" id="podcast-guide-link"{% if guide.open %} open{% endif %}>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.podcast_studio.guide_link_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_link_body", { url_field: guideLabels.url_field }) }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_link_test") }}</p>
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          {{ t("govuk_alpha_commerce.podcast_studio.guide_link_wont_work") }}
+        </strong>
+      </div>
+      <h3 class="govuk-heading-s">{{ t("govuk_alpha_commerce.podcast_studio.guide_where_title") }}</h3>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_where_hosts") }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_where_archive") }}</p>
+    </div>
+  </details>
+
+  <details class="govuk-details" id="podcast-guide-publish"{% if guide.open %} open{% endif %}>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.podcast_studio.guide_publish_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_publish_body", { pending: guideLabels.pending, validate: guideLabels.validate }) }}</p>
+    </div>
+  </details>
+
+  <details class="govuk-details" id="podcast-guide-share"{% if guide.open %} open{% endif %}>
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.podcast_studio.guide_share_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.guide_share_where", { my_shows: guideLabels.my_shows }) }}</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>{{ t("govuk_alpha_commerce.podcast_studio.guide_share_members") }}</li>
+        {% if guide.rssEnabled %}<li>{{ t("govuk_alpha_commerce.podcast_studio.guide_share_public", { public: guideLabels.public }) }}</li>{% endif %}
+      </ul>
+    </div>
+  </details>
+</section>

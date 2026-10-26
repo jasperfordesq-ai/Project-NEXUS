@@ -9,6 +9,7 @@ const { randomUUID } = require('crypto');
 const {
   ApiError,
   callVolunteeringApi,
+  getDonationReceipt,
   getGroups,
   getVolunteeringCategories,
   searchUsers,
@@ -1200,16 +1201,25 @@ function percentageLabel(value, total) {
   return Math.min(100, Math.max(0, Math.round((amount / goal) * 100)));
 }
 
+/**
+ * The ways a member can record a gift here. The API accepts any method string;
+ * React offers these three for a pledge (0a17f2acd). A card gift needs the card
+ * checkout (a Stripe PaymentIntent confirmed in the browser), which has no hosted,
+ * script-free page, so it is not offered on this frontend.
+ */
+const PLEDGE_METHODS = ['bank_transfer', 'paypal', 'cash'];
+
 function donationMethodLabel(value, t = null) {
   const keys = {
     bank_transfer: 'method_bank_transfer',
     paypal: 'method_paypal',
+    cash: 'method_cash',
     card: 'method_card',
     stripe: 'method_stripe'
   };
   const method = trimmed(value);
-  if (keys[method] && t) return t(`govuk_alpha_volunteering.donations.${keys[method]}`);
-  const labels = { bank_transfer: 'Bank transfer', paypal: 'PayPal', card: 'Card', stripe: 'Card' };
+  if (t) return t(`govuk_alpha_volunteering.donations.${keys[method] || 'method_other'}`);
+  const labels = { bank_transfer: 'Bank transfer', paypal: 'PayPal', cash: 'Cash', card: 'Card', stripe: 'Card' };
   return labels[method] || method || '—';
 }
 
@@ -1277,7 +1287,12 @@ function normalizeGivingDay(row, t = null) {
     raisedLabel: moneyLabel(raised),
     donorCount: Number.isFinite(donorCount) ? donorCount : 0,
     endDateLabel: dateLabel(day.end_date ?? day.ends_at ?? day.endsAt),
-    percent
+    percent,
+    // Only a live campaign can be given to; an ended one stays visible as a record.
+    isLive: status.value === 'active',
+    // The organisation a campaign raises money for (25b96a05d), when it names one.
+    organizationId: positiveInteger(day.organization_id),
+    organizationName: trimmed(day.organization_name)
   };
 }
 
@@ -1291,30 +1306,52 @@ function normalizeDonation(row, t = null) {
     methodLabel: donationMethodLabel(donation.payment_method ?? donation.paymentMethod, t),
     createdAtLabel: dateLabel(donation.created_at ?? donation.createdAt),
     message: trimmed(donation.message),
-    isAnonymous: checked(donation.is_anonymous ?? donation.isAnonymous)
+    isAnonymous: checked(donation.is_anonymous ?? donation.isAnonymous),
+    // Which campaign and organisation the gift went to (0a17f2acd, 25b96a05d).
+    // The API names the campaign even after it has ended.
+    givingDayId: positiveInteger(donation.giving_day_id),
+    campaignTitle: trimmed(donation.giving_day_title),
+    organizationId: positiveInteger(donation.organization_id),
+    organizationName: trimmed(donation.organization_name),
+    rawAmount: Number.isFinite(Number(donation.amount)) ? Number(donation.amount) : 0
   };
 }
 
 function normalizeDonationDashboard(givingDaysResult, donationsResult, t = null) {
   const givingDays = collectionFrom(givingDaysResult).map((day) => normalizeGivingDay(day, t));
   const donations = collectionFrom(donationsResult).map((donation) => normalizeDonation(donation, t));
-  const stats = givingDays.reduce((totals, day) => ({
-    totalRaised: totals.totalRaised + day.raised,
-    totalDonors: totals.totalDonors + day.donorCount,
-    activeCampaigns: totals.activeCampaigns + (day.status.value === 'active' ? 1 : 0)
-  }), { totalRaised: 0, totalDonors: 0, activeCampaigns: 0 });
+  const campaignTitles = new Map(givingDays.filter((day) => day.id).map((day) => [day.id, day.title]));
+  for (const donation of donations) {
+    if (!donation.campaignTitle && donation.givingDayId) donation.campaignTitle = campaignTitles.get(donation.givingDayId) || '';
+  }
+  const live = givingDays.filter((day) => day.isLive);
+  const upcoming = givingDays.filter((day) => day.status.value === 'upcoming');
+  const past = givingDays.filter((day) => !day.isLive && day.status.value !== 'upcoming');
+
+  // 🔴 The old tiles added every campaign's donor_count together, so a member who
+  // gave to two campaigns was counted twice. React replaced that tile (0a17f2acd)
+  // with what THIS member has given, plus their pending pledges; so does this page.
+  const raisedLive = live.reduce((total, day) => total + day.raised, 0);
+  const given = donations
+    .filter((donation) => donation.status.value === 'completed')
+    .reduce((total, donation) => total + donation.rawAmount, 0);
 
   return {
     givingDays,
+    liveGivingDays: live,
+    upcomingGivingDays: upcoming,
+    pastGivingDays: past,
     donations,
-    paymentMethods: [
-      { value: 'bank_transfer', label: donationMethodLabel('bank_transfer', t), checked: true },
-      { value: 'paypal', label: donationMethodLabel('paypal', t), checked: false }
-    ],
+    paymentMethods: PLEDGE_METHODS.map((value, index) => ({
+      value,
+      label: donationMethodLabel(value, t),
+      checked: index === 0
+    })),
     stats: {
-      totalRaisedLabel: moneyLabel(stats.totalRaised),
-      totalDonors: stats.totalDonors,
-      activeCampaigns: stats.activeCampaigns
+      liveCampaigns: live.length,
+      raisedLiveLabel: moneyLabel(raisedLive),
+      givenLabel: moneyLabel(given),
+      pendingPledges: donations.filter((donation) => donation.status.value === 'pending').length
     }
   };
 }
@@ -2258,6 +2295,36 @@ function normalizeHourLog(row, t = null) {
     status,
     organizationName: trimmed(organization.name ?? log.organization_name ?? log.organizationName),
     description: trimmed(log.description)
+  };
+}
+
+/** An API page cursor from the query string: opaque base64, refused if it is anything else. */
+function pageCursor(value) {
+  const text = trimmed(value, 64);
+  return /^[A-Za-z0-9+/=_-]{1,64}$/.test(text) ? text : '';
+}
+
+/** The cursor for the next page, when the API says there is one. */
+function nextPageCursor(result) {
+  const data = dataFrom(result);
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return '';
+  return data.has_more ? pageCursor(data.cursor) : '';
+}
+
+/** One shift the member holds (GET /v2/volunteering/shifts), upcoming or past. */
+function normalizeHeldShift(row, now = Date.now(), t = null) {
+  const shift = row && typeof row === 'object' ? row : {};
+  const startValue = shift.start_time ?? shift.startTime;
+  const endValue = shift.end_time ?? shift.endTime;
+  // Shift times are wall-clock times, read the way the rest of the shift pages read them.
+  const finishes = shiftEpoch(endValue) ?? shiftEpoch(startValue);
+  return {
+    id: positiveInteger(shift.id),
+    whenLabel: shiftWhenLabel(startValue, endValue, t),
+    opportunityId: positiveInteger(shift.opportunity_id),
+    opportunityTitle: trimmed(shift.opportunity_title),
+    location: trimmed(shift.location),
+    isPast: finishes !== null && finishes < now
   };
 }
 
@@ -3301,13 +3368,20 @@ router.get('/hours', asyncRoute(async (req, res) => {
 
   let summary = normalizeHourSummary({});
   let logs = [];
+  let logsNextCursor = '';
   let applications = [];
   let organizations = [];
   let loadError = null;
+  // Every logged entry is reachable (React 7831de104): the API pages them by an
+  // opaque cursor, which this page carries in ?hours_cursor= — "Older entries"
+  // goes one page further, "Back to the newest" returns to the first page.
+  const hoursCursor = pageCursor(req.query.hours_cursor);
+  const shiftsCursor = pageCursor(req.query.shifts_cursor);
   try {
     summary = normalizeHourSummary(await callApi(token, 'GET', '/hours/summary'));
-    logs = collectionFrom(await callApi(token, 'GET', '/hours?per_page=10'))
-      .map((log) => normalizeHourLog(log, res.locals.t));
+    const logsResult = await callApi(token, 'GET', `/hours?per_page=10${hoursCursor ? `&cursor=${encodeURIComponent(hoursCursor)}` : ''}`);
+    logs = collectionFrom(logsResult).map((log) => normalizeHourLog(log, res.locals.t));
+    logsNextCursor = nextPageCursor(logsResult);
     applications = collectionFrom(
       await callApi(token, 'GET', '/applications?status=approved&per_page=50')
     ).map(normalizeApplication);
@@ -3319,6 +3393,31 @@ router.get('/hours', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = 'We could not load your volunteering hours. Please try again.';
   }
+
+  // The shifts the member holds, upcoming and past (GET /v2/volunteering/shifts,
+  // as React's "Your shifts"). Loaded on its own so a failure here does not hide
+  // the hours above it.
+  let shifts = [];
+  let shiftsNextCursor = '';
+  let shiftsLoadError = false;
+  if (!loadError) {
+    try {
+      const shiftsResult = await callApi(token, 'GET', `/shifts?per_page=10${shiftsCursor ? `&cursor=${encodeURIComponent(shiftsCursor)}` : ''}`);
+      const now = Date.now();
+      shifts = collectionFrom(shiftsResult).map((row) => normalizeHeldShift(row, now, res.locals.t)).filter((shift) => shift.id);
+      shiftsNextCursor = nextPageCursor(shiftsResult);
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      shiftsLoadError = true;
+    }
+  }
+  const pageLink = (hours, shiftsPage, anchor) => {
+    const params = new URLSearchParams();
+    if (hours) params.set('hours_cursor', hours);
+    if (shiftsPage) params.set('shifts_cursor', shiftsPage);
+    const query = params.toString();
+    return `${res.locals.urlFor('/volunteering/hours')}${query ? `?${query}` : ''}#${anchor}`;
+  };
 
   const nextGoal = summary.approvedTotal > 0 ? Math.ceil(summary.approvedTotal / 50) * 50 : 0;
   const nextGoalLabel = nextGoal
@@ -3335,6 +3434,16 @@ router.get('/hours', asyncRoute(async (req, res) => {
     nextGoal,
     nextGoalLabel,
     logs,
+    logsPaging: {
+      older: logsNextCursor ? pageLink(logsNextCursor, shiftsCursor, 'logged-hours') : '',
+      newest: hoursCursor ? pageLink('', shiftsCursor, 'logged-hours') : ''
+    },
+    shifts,
+    shiftsLoadError,
+    shiftsPaging: {
+      older: shiftsNextCursor ? pageLink(hoursCursor, shiftsNextCursor, 'your-shifts') : '',
+      newest: shiftsCursor ? pageLink(hoursCursor, '', 'your-shifts') : ''
+    },
     applications,
     organizations,
     loadError,
@@ -3420,6 +3529,57 @@ router.get('/donations', asyncRoute(async (req, res) => {
     donateForm: consumeFormReplay(req, 'volunteering', 'donations'),
     status: donationStatus(trimmed(req.query.status), trimmed(req.query.donate_error), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+/**
+ * A receipt for one of the member's donations (React `donations/:id/receipt`).
+ * GET /api/v2/donations/{id}/receipt answers 404 for a gift that is not theirs.
+ * Printing is the browser's own print command; the page has no script.
+ */
+router.get('/donations/:id(\\d+)/receipt', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) {
+    return redirectTo(res, loginRedirect());
+  }
+  const t = res.locals.t;
+
+  let result;
+  try {
+    result = await getDonationReceipt(token, Number(req.params.id));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    if (error instanceof ApiError && (error.status === 404 || error.status === 403)) {
+      return res.status(404).render('errors/404', { title: t('govuk_alpha_volunteering.donations.receipt_not_found') });
+    }
+    throw error;
+  }
+
+  const data = dataFrom(result) || {};
+  const organisationName = trimmed(data.organization_name);
+  const communityName = trimmed(data.tenant_name);
+  const amount = Number(data.amount);
+  return res.render('volunteering/donation-receipt', {
+    title: t('govuk_alpha_volunteering.donations.receipt_title'),
+    activeNav: 'volunteering',
+    receipt: {
+      id: positiveInteger(data.donation_id) || Number(req.params.id),
+      amountLabel: moneyLabel(Number.isFinite(amount) ? amount : 0),
+      currency: trimmed(data.currency),
+      status: donationStatusPresentation(data.status, t),
+      donorName: trimmed(data.donor_name),
+      dateLabel: dateLabel(data.date),
+      organisationName,
+      campaignTitle: trimmed(data.giving_day_title),
+      communityName,
+      // The money goes to the community's account and is passed on (9c402fbae).
+      heldOnBehalf: organisationName && communityName
+        ? t('govuk_alpha_volunteering.donations.held_on_behalf', { community: communityName, organisation: organisationName })
+        : '',
+      methodLabel: donationMethodLabel(data.payment_method, t),
+      reference: trimmed(data.payment_reference),
+      message: trimmed(data.message)
+    }
   });
 }, { redirectOn401: loginRedirect() }));
 
@@ -4064,6 +4224,7 @@ router.post('/donations', asyncRoute(async (req, res) => {
     amount: trimmed(req.body.amount),
     givingDayId: trimmed(req.body.giving_day_id),
     paymentMethod: trimmed(req.body.payment_method),
+    paymentReference: trimmed(req.body.payment_reference, 100),
     message: trimmed(req.body.message, 500),
     isAnonymous: checked(req.body.is_anonymous)
   });
@@ -4076,14 +4237,20 @@ router.post('/donations', asyncRoute(async (req, res) => {
   }
 
   const givingDayId = positiveInteger(req.body.giving_day_id);
+  const chosenMethod = trimmed(req.body.payment_method);
   const payload = {
     amount,
-    payment_method: trimmed(req.body.payment_method) === 'paypal' ? 'paypal' : 'bank_transfer',
+    payment_method: PLEDGE_METHODS.includes(chosenMethod) ? chosenMethod : 'bank_transfer',
     message: trimmed(req.body.message, 500),
     is_anonymous: checked(req.body.is_anonymous)
   };
   if (givingDayId !== null) {
     payload.giving_day_id = givingDayId;
+  }
+  // The reference the member put on the transfer, so an administrator can match it.
+  const paymentReference = trimmed(req.body.payment_reference, 100);
+  if (paymentReference) {
+    payload.payment_reference = paymentReference;
   }
 
   return runAction(

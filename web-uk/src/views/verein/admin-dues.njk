@@ -1,0 +1,135 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# A club organiser's membership dues overview (React clubs/:id/admin/dues). #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "verein/_status.njk" import vereinStatus %}
+{% set vd = "govuk_alpha_organisations.verein.dues." %}
+{% set base = "/clubs/" + (orgId | string) + "/admin/dues" %}
+
+{% block mainContent %}
+  {{ vereinStatus(statusMessage, t, "verein-dues-members") }}
+  <h1 class="govuk-heading-xl">{{ t(vd + "admin_title") }}</h1>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/clubs/' + (orgId | string) + '/admin/import') }}">{{ t("govuk_alpha_organisations.verein.import.title") }}</a></p>
+
+  {% if overdueCount > 0 %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t(vd + "admin_overdue_count", { count: overdueCount }) }}</strong>
+    </div>
+    <form method="post" action="{{ urlFor(base + '/remind-overdue') }}" class="govuk-!-margin-bottom-6">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(vd + "admin_bulk_remind") }}</button>
+    </form>
+  {% endif %}
+
+  <section aria-labelledby="verein-dues-members" class="govuk-!-margin-bottom-8">
+    <h2 class="govuk-heading-l" id="verein-dues-members">{{ t(vd + "admin_members") }}</h2>
+    <form method="get" action="{{ urlFor(base) }}" class="govuk-!-margin-bottom-4">
+      <div class="govuk-form-group govuk-!-display-inline-block govuk-!-margin-right-4">
+        <label class="govuk-label" for="verein-year">{{ t(vd + "admin_year") }}</label>
+        <select class="govuk-select" id="verein-year" name="year">
+          {% for option in years %}<option value="{{ option }}"{% if option == year %} selected{% endif %}>{{ option }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group govuk-!-display-inline-block govuk-!-margin-right-4">
+        <label class="govuk-label" for="verein-status">{{ t(vd + "admin_filter_status") }}</label>
+        <select class="govuk-select" id="verein-status" name="dues_status">
+          <option value="">{{ t(vd + "status_all") }}</option>
+          {% for option in statuses %}<option value="{{ option }}"{% if option == statusFilter %} selected{% endif %}>{{ t(vd + "status." + option) }}</option>{% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+    </form>
+
+    {% if not rows.length %}
+      <p class="govuk-inset-text">{{ t(vd + "admin_no_rows") }}</p>
+    {% else %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(vd + "admin_members") }}">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">{{ t(vd + "admin_members") }} — {{ year }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t(vd + "col_member") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(vd + "col_amount") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(vd + "col_status") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(vd + "col_due") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(vd + "col_reminders") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(vd + "col_actions") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in rows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.name }}{% if row.email %}<br><span class="govuk-body-s nexus-alpha-meta">{{ row.email }}</span>{% endif %}</th>
+              <td class="govuk-table__cell">{{ row.amountLabel }}</td>
+              <td class="govuk-table__cell">{{ govukTag({ text: row.statusLabel, classes: row.statusTag }) }}</td>
+              <td class="govuk-table__cell">{{ row.dueLabel }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.reminders }}</td>
+              <td class="govuk-table__cell">
+                {% if row.open %}
+                  <form method="post" action="{{ urlFor(base + '/' + (row.id | string) + '/remind') }}" class="govuk-!-margin-bottom-2">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(vd + "action_remind") }}<span class="govuk-visually-hidden"> {{ row.name }}</span></button>
+                  </form>
+                  <a class="govuk-link" href="{{ urlFor(base + '/' + (row.id | string) + '/waive') }}?name={{ row.name | urlencode }}">{{ t(vd + "action_waive") }}<span class="govuk-visually-hidden"> {{ row.name }}</span></a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ urlFor(base + '/generate') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="year" value="{{ year }}">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(vd + "admin_generate", { year: year }) }}</button>
+    </form>
+  </section>
+
+  <section aria-labelledby="verein-fee-config">
+    <h2 class="govuk-heading-l" id="verein-fee-config">{{ t(vd + "admin_fee_config") }}</h2>
+    <form method="post" action="{{ urlFor(base + '/fee-config') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="verein-fee">{{ t(vd + "admin_fee_amount") }}</label>
+        <input class="govuk-input govuk-input--width-5" id="verein-fee" name="fee_amount" type="text" inputmode="decimal" spellcheck="false" value="{{ config.feeAmount }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="verein-currency">{{ t(vd + "admin_currency") }}</label>
+        <select class="govuk-select" id="verein-currency" name="currency">
+          {% for option in currencies %}<option value="{{ option }}"{% if option == config.currency %} selected{% endif %}>{{ option }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="verein-cycle">{{ t(vd + "admin_billing_cycle") }}</label>
+        <select class="govuk-select" id="verein-cycle" name="billing_cycle">
+          {% for option in cycles %}<option value="{{ option }}"{% if option == config.billingCycle %} selected{% endif %}>{{ t(vd + "cycle." + option) }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="verein-grace">{{ t(vd + "admin_grace_period") }}</label>
+        <input class="govuk-input govuk-input--width-3" id="verein-grace" name="grace_period_days" type="text" inputmode="numeric" spellcheck="false" value="{{ config.gracePeriod }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="verein-late-fee">{{ t(vd + "admin_late_fee") }}</label>
+        <input class="govuk-input govuk-input--width-5" id="verein-late-fee" name="late_fee" type="text" inputmode="decimal" spellcheck="false" value="{{ config.lateFee }}">
+      </div>
+      <div class="govuk-form-group">
+        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="verein-active" name="is_active" type="checkbox" value="1"{% if config.isActive %} checked{% endif %}>
+            <label class="govuk-label govuk-checkboxes__label" for="verein-active">{{ t(vd + "admin_active") }}</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t(vd + "admin_save") }}</button>
+    </form>
+  </section>
+{% endblock %}

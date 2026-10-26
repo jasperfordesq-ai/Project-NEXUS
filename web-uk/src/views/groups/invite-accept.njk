@@ -1,0 +1,56 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if justAccepted %}
+        {{ govukNotificationBanner({
+          type: "success",
+          titleText: t("govuk_alpha_groups.common.success_title"),
+          text: t("govuk_alpha_groups.invite_accept.success")
+        }) }}
+      {% endif %}
+
+      {% if errorKey %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_groups.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(errorKey) }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if signedOut %}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.invite_accept.title") }}</h1>
+        <p class="govuk-body">{{ t("govuk_alpha_groups.invite_accept.sign_in_needed") }}</p>
+        <a href="{{ urlFor(signInHref) }}" class="govuk-button" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_groups.invite_accept.sign_in") }}</a>
+      {% elif group and group.id %}
+        <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.invite_accept.title") }}</span>
+        <h1 class="govuk-heading-xl">{{ group.name }}</h1>
+        <p class="govuk-body">{{ tc("groups.members_count", group.memberCount, { count: group.memberCount }) }}</p>
+        {% if alreadyMember %}
+          {% if not justAccepted %}<p class="govuk-body">{{ t("govuk_alpha_groups.invite_accept.already_member") }}</p>{% endif %}
+          <a href="{{ urlFor('/groups/' + (group.id | string)) }}" class="govuk-button" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_groups.invite_accept.go_to_group") }}</a>
+        {% else %}
+          <p class="govuk-body">{{ t("govuk_alpha_groups.invite_accept.description") }}</p>
+          <form method="post" action="{{ urlFor('/groups/invite/' + inviteToken + '/accept') }}" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <div class="govuk-button-group">
+              <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_groups.invite_accept.accept") }}</button>
+              <a class="govuk-link" href="{{ urlFor('/groups') }}">{{ t("govuk_alpha_groups.invite_accept.not_now") }}</a>
+            </div>
+          </form>
+        {% endif %}
+      {% else %}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.invite_accept.title") }}</h1>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups') }}">{{ t("govuk_alpha_groups.invite_accept.browse_groups") }}</a></p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

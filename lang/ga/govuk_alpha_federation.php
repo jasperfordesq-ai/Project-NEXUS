@@ -105,4 +105,8 @@ return [
         'next' => 'Lean ort',
         'do_this_later' => 'Déan é seo níos déanaí',
     ],
+    'safeguarding' => [
+        'heading' => 'Níl teagmháil ar fáil',
+        'body' => 'Ní cheadaíonn beartas cosanta phobal an bhaill seo teagmháil dhíreach uait. Is féidir le comhordaitheoir pobail cabhrú.',
+    ],
 ];

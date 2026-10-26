@@ -83,7 +83,7 @@ return [
         'reaction_for' => 'Réagissez à l\'élément d\'ici :name',
         'not_interested' => 'Pas intéressé',
         'not_interested_hint' => 'Afficher moins d\'éléments de ce type. Cela n’informera personne.',
-        'item_type' => 'Taper',
+        'item_type' => 'Type',
     ],
     'item_types' => [
         'post' => 'Poste',

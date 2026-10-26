@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Ar ais go dtí an grúpa',
         'back_to_announcements' => 'Ar ais go dtí na fógraí',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Cineál grúpa',
+        'type_all' => 'Gach cineál grúpa',
+    ],
+    'invite_accept' => [
+        'title' => 'Cuireadh chuig grúpa',
+        'sign_in_needed' => 'Tugadh cuireadh duit dul isteach i ngrúpa. Sínigh isteach chun an cuireadh a fheiceáil. Tiocfaidh tú ar ais chuig an leathanach seo ina dhiaidh sin.',
+        'sign_in' => 'Sínigh isteach',
+        'description' => 'Tugadh cuireadh duit dul isteach sa ghrúpa seo.',
+        'accept' => 'Glac leis an gcuireadh',
+        'not_now' => 'Ní anois',
+        'already_member' => 'Is ball den ghrúpa seo thú.',
+        'go_to_group' => 'Téigh chuig an ngrúpa',
+        'success' => 'Is ball den ghrúpa seo thú anois.',
+        'browse_groups' => 'Brabhsáil grúpaí',
+        'accessible_link_hint' => 'An cuireadh céanna ar an suíomh inrochtana seo:',
+        'error_invalid' => 'Níl an nasc cuiridh seo bailí nó níl sé ar fáil a thuilleadh.',
+        'error_expired' => 'Tá an cuireadh seo imithe in éag.',
+        'error_revoked' => 'Tarraingíodh siar an cuireadh seo.',
+        'error_email_mismatch' => 'Seoladh an cuireadh seo chuig seoladh ríomhphoist eile. Sínigh isteach leis an gcuntas ar seoladh chuige é.',
+        'error_capacity' => 'Tá uasteorainn ball an ghrúpa seo bainte amach.',
+        'error_limit' => 'Tá an líon is mó grúpaí is féidir leat dul isteach iontu bainte amach agat.',
+        'error_group_unavailable' => 'Níl an grúpa seo ag glacadh le baill faoi láthair.',
+        'error_safeguarding' => 'Ní cheadaíonn rialacha cosanta an phobail seo duit dul isteach sa ghrúpa seo. Iarr cabhair ar chomhordaitheoir.',
+        'error_safeguarding_unavailable' => 'Ní féidir linn rialacha cosanta an phobail seo a sheiceáil faoi láthair. Bain triail eile as ar ball.',
+    ],
 ];

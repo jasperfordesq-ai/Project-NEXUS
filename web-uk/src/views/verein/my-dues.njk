@@ -1,0 +1,65 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  A member's club membership dues (React me/verein-dues). What is owed and its
+  status only: dues can only be paid by card through Stripe.js, which this site
+  does not run, so there is deliberately no pay button and no pretend payment.
+#}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set vd = "govuk_alpha_organisations.verein.dues." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(vd + "my_title") }}</h1>
+      <p class="govuk-body-l">{{ t(vd + "my_subtitle") }}</p>
+
+      {% if loadFailed %}
+        <p class="govuk-inset-text">{{ t(vd + "errors.load_failed") }}</p>
+      {% elif not rows.length %}
+        <p class="govuk-inset-text">{{ t(vd + "empty") }}</p>
+      {% else %}
+        {% if anyOwed %}
+          <div class="govuk-inset-text" id="verein-payment-note">{{ t(vd + "payment_unavailable") }}</div>
+        {% endif %}
+        {% for row in rows %}
+          <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title">{{ row.organisation }}</h2>
+              {{ govukTag({ text: row.statusLabel, classes: row.statusTag }) }}
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t(vd + "year_label") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ row.year }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t(vd + "col_amount") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ row.amountLabel }}</dd>
+                </div>
+                {% if row.dueLabel %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t(vd + "due_label") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ row.dueLabel }}</dd>
+                  </div>
+                {% endif %}
+                {% if row.paidLabel %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t(vd + "paid_label") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ row.paidLabel }}</dd>
+                  </div>
+                {% endif %}
+              </dl>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

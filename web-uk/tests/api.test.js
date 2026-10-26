@@ -8534,4 +8534,60 @@ describe('API Request Functions', () => {
       expect(mockFetch.mock.calls[0][1].headers.Authorization).toBeUndefined();
     });
   });
+  // React-drift pass, 26 Oct 2026: the helpers behind the new accessible pages for
+  // donation receipts, regional points, municipality calendar, ad campaigns, emailed
+  // support-action confirmation and clubs (Verein) dues, invitations and import.
+  // Each case pins the exact Laravel method and path the helper calls.
+  describe('React-drift page helpers', () => {
+    const B = 'http://localhost:5000';
+    const auth = expect.objectContaining({ Authorization: 'Bearer t' });
+    const cases = [
+      ['getDonationReceipt', (api) => api.getDonationReceipt('t', 5), 'GET', '/api/v2/donations/5/receipt', undefined, true],
+      ['getRegionalPointsSummary', (api) => api.getRegionalPointsSummary('t'), 'GET', '/api/v2/caring-community/regional-points/summary', undefined, true],
+      ['getRegionalPointsHistory', (api) => api.getRegionalPointsHistory('t', 20), 'GET', '/api/v2/caring-community/regional-points/history?limit=20', undefined, true],
+      ['transferRegionalPoints', (api) => api.transferRegionalPoints('t', { recipient_id: 3, points: 2 }), 'POST', '/api/v2/caring-community/regional-points/transfer', { recipient_id: 3, points: 2 }, true],
+      ['getMunicipalityCalendar', (api) => api.getMunicipalityCalendar('ZH 01', '2026-10-01', '2026-10-31'), 'GET', '/api/v2/municipality/ZH%2001/events-calendar?from=2026-10-01&to=2026-10-31', undefined, false],
+      ['getMyAdCampaigns', (api) => api.getMyAdCampaigns('t'), 'GET', '/api/v2/me/ad-campaigns', undefined, true],
+      ['createMyAdCampaign', (api) => api.createMyAdCampaign('t', { name: 'Fair' }), 'POST', '/api/v2/me/ad-campaigns', { name: 'Fair' }, true],
+      ['getSupportActionByEmailToken', (api) => api.getSupportActionByEmailToken('abc'), 'GET', '/api/v2/support-actions/confirm/abc', undefined, false],
+      ['confirmSupportActionByEmailToken', (api) => api.confirmSupportActionByEmailToken('abc'), 'POST', '/api/v2/support-actions/confirm/abc', undefined, false],
+      ['getMyVereinInvitations', (api) => api.getMyVereinInvitations('t'), 'GET', '/api/v2/me/verein-invitations', undefined, true],
+      ['respondToVereinInvitation', (api) => api.respondToVereinInvitation('t', 9, 'accept'), 'POST', '/api/v2/me/verein-invitations/9/respond', { action: 'accept' }, true],
+      ['getMyVereinDues', (api) => api.getMyVereinDues('t'), 'GET', '/api/v2/me/verein-dues', undefined, true],
+      ['listVereinDues', (api) => api.listVereinDues('t', 4, { year: '2026', status: 'overdue' }), 'GET', '/api/v2/vereine/4/dues?year=2026&status=overdue', undefined, true],
+      ['listVereinOverdueDues', (api) => api.listVereinOverdueDues('t', 4), 'GET', '/api/v2/vereine/4/dues/overdue', undefined, true],
+      ['getVereinDuesFeeConfig', (api) => api.getVereinDuesFeeConfig('t', 4), 'GET', '/api/v2/vereine/4/dues/fee-config', undefined, true],
+      ['setVereinDuesFeeConfig', (api) => api.setVereinDuesFeeConfig('t', 4, { amount_cents: 2500 }), 'PUT', '/api/v2/vereine/4/dues/fee-config', { amount_cents: 2500 }, true],
+      ['generateVereinDues', (api) => api.generateVereinDues('t', 4, 2027), 'POST', '/api/v2/vereine/4/dues/generate', { year: 2027 }, true],
+      ['remindVereinDues', (api) => api.remindVereinDues('t', 4, 8), 'POST', '/api/v2/vereine/4/dues/8/remind', {}, true],
+      ['waiveVereinDues', (api) => api.waiveVereinDues('t', 4, 8, 'Hardship'), 'POST', '/api/v2/vereine/4/dues/8/waive', { reason: 'Hardship' }, true],
+      ['previewVereinMemberImport', (api) => api.previewVereinMemberImport('t', 4, 'a,b'), 'POST', '/api/v2/caring-community/vereine/4/members/import/preview', { csv: 'a,b' }, true],
+      ['importVereinMembers', (api) => api.importVereinMembers('t', 4, 'a,b'), 'POST', '/api/v2/caring-community/vereine/4/members/import', { csv: 'a,b' }, true]
+    ];
+
+    it.each(cases)('%s calls the Laravel contract', async (_name, call, method, path, body, authed) => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: {} })
+      });
+
+      await call(api);
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [url, options = {}] = mockFetch.mock.calls[0];
+      expect(url).toBe(`${B}${path}`);
+      expect(options.method || 'GET').toBe(method);
+      if (body === undefined) {
+        expect(options.body).toBeUndefined();
+      } else {
+        expect(JSON.parse(options.body)).toEqual(body);
+      }
+      if (authed) {
+        expect(options.headers).toEqual(auth);
+      } else {
+        expect(options.headers && options.headers.Authorization).toBeUndefined();
+      }
+    });
+  });
 });

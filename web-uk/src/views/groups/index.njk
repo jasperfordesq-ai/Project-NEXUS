@@ -52,6 +52,19 @@
       ]
     }) }}
 
+    {% if groupTypes and groupTypes.length %}
+      {% set typeItems = [{ value: "", text: t("govuk_alpha_groups.directory.type_all"), selected: not selectedTypeId }] %}
+      {% for type in groupTypes %}
+        {% set _ = typeItems.push({ value: type.id, text: type.name, selected: selectedTypeId == type.id }) %}
+      {% endfor %}
+      {{ govukSelect({
+        id: "type",
+        name: "type",
+        label: { text: t("govuk_alpha_groups.directory.type_label") },
+        items: typeItems
+      }) }}
+    {% endif %}
+
     <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.search") }}</button>
   </form>
 
@@ -70,6 +83,9 @@
               classes: "govuk-tag--grey" if isPrivate else "govuk-tag--green"
             }) }}
           </div>
+          {% if group.typeLabel %}
+            <p class="govuk-body-s govuk-!-margin-bottom-1"><span class="govuk-visually-hidden">{{ t("govuk_alpha_groups.directory.type_label") }}: </span>{{ govukTag({ text: group.typeLabel, classes: "govuk-tag--blue" }) }}</p>
+          {% endif %}
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("groups.members_count", memberCount, { count: memberCount }) }}</p>
           {% if group.description %}
             <p class="govuk-body govuk-!-margin-bottom-0">{{ group.description | truncate(160) }}</p>

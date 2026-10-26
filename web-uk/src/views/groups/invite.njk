@@ -41,6 +41,10 @@
       <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_groups.invite.generated_heading") }}</h3>
       <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_groups.invite.generated_hint") }}</p>
       <p class="govuk-body"><a class="govuk-link" href="{{ generatedLink }}">{{ generatedLink }}</a></p>
+      {% if accessibleInvitePath %}
+        <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_groups.invite_accept.accessible_link_hint") }}</p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(accessibleInvitePath) }}">{{ urlFor(accessibleInvitePath) }}</a></p>
+      {% endif %}
     </div>
   {% endif %}
 
@@ -97,6 +101,9 @@
                 {{ invite.email }}
               {% else %}
                 {{ govukTag({ text: t("govuk_alpha_groups.invite.pending_type_link"), classes: "govuk-tag--blue" }) }}
+                {% if invite.accessiblePath %}
+                  <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("govuk_alpha_groups.invite_accept.accessible_link_hint") }} <a class="govuk-link" href="{{ urlFor(invite.accessiblePath) }}">{{ urlFor(invite.accessiblePath) }}</a></p>
+                {% endif %}
               {% endif %}
             </td>
             <td class="govuk-table__cell">{{ invite.inviterName }}</td>

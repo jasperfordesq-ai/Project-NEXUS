@@ -104,6 +104,18 @@
     {% elif not viewer.optedIn %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.member_actions.not_opted_in") }}</p></div>
       <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/opt-in') }}">{{ t("fed2.member_actions.optin_link") }}</a>
+    {% elif member.safeguardingBlocked %}
+      {# Laravel's advisory: this member's community safeguarding policy refuses
+         contact from this viewer, so Connect, Message and Send credits are not
+         offered. The sentence is the one the refusal would have carried. #}
+      <div class="govuk-warning-text" id="fed-safeguarding-advisory">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <div class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          <strong>{{ member.safeguardingTitle or t("govuk_alpha_federation.safeguarding.heading") }}</strong>
+        </div>
+      </div>
+      <p class="govuk-body">{{ member.safeguardingDetail or t("govuk_alpha_federation.safeguarding.body") }}</p>
     {% else %}
       {% if member.connectionStatus == "accepted" %}
         <p class="govuk-body">{{ govukTag({ text: t("fed2.member_actions.connect_accepted"), classes: "govuk-tag--green" }) }}</p>

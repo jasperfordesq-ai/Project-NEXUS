@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'グループに戻る',
         'back_to_announcements' => 'お知らせ一覧に戻る',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'グループの種類',
+        'type_all' => 'すべてのグループの種類',
+    ],
+    'invite_accept' => [
+        'title' => 'グループへの招待',
+        'sign_in_needed' => 'グループに招待されています。招待を見るにはログインしてください。ログイン後、このページに戻ります。',
+        'sign_in' => 'ログイン',
+        'description' => 'このグループに招待されています。',
+        'accept' => '招待を受ける',
+        'not_now' => '今はしない',
+        'already_member' => 'あなたはこのグループのメンバーです。',
+        'go_to_group' => 'グループへ移動',
+        'success' => 'このグループのメンバーになりました。',
+        'browse_groups' => 'グループを見る',
+        'accessible_link_hint' => 'このアクセシブルサイトでの同じ招待：',
+        'error_invalid' => 'この招待リンクは無効か、もう利用できません。',
+        'error_expired' => 'この招待は期限切れです。',
+        'error_revoked' => 'この招待は取り消されました。',
+        'error_email_mismatch' => 'この招待は別のメールアドレスに送られました。送信先のアカウントでログインしてください。',
+        'error_capacity' => 'このグループはメンバーの上限に達しています。',
+        'error_limit' => '参加できるグループ数の上限に達しています。',
+        'error_group_unavailable' => 'このグループは現在メンバーを受け付けていません。',
+        'error_safeguarding' => 'このコミュニティの保護ルールにより、このグループには参加できません。コーディネーターに相談してください。',
+        'error_safeguarding_unavailable' => '現在、このコミュニティの保護ルールを確認できません。しばらくしてからもう一度お試しください。',
+    ],
 ];

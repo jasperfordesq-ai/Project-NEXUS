@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Voltar ao grupo',
         'back_to_announcements' => 'Voltar aos anúncios',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Tipo de grupo',
+        'type_all' => 'Todos os tipos de grupo',
+    ],
+    'invite_accept' => [
+        'title' => 'Convite para um grupo',
+        'sign_in_needed' => 'Foi convidado para entrar num grupo. Inicie sessão para ver o convite. Depois voltará a esta página.',
+        'sign_in' => 'Iniciar sessão',
+        'description' => 'Foi convidado para entrar neste grupo.',
+        'accept' => 'Aceitar o convite',
+        'not_now' => 'Agora não',
+        'already_member' => 'É membro deste grupo.',
+        'go_to_group' => 'Ir para o grupo',
+        'success' => 'Agora é membro deste grupo.',
+        'browse_groups' => 'Ver grupos',
+        'accessible_link_hint' => 'O mesmo convite neste site acessível:',
+        'error_invalid' => 'Esta ligação de convite não é válida ou já não está disponível.',
+        'error_expired' => 'Este convite expirou.',
+        'error_revoked' => 'Este convite foi retirado.',
+        'error_email_mismatch' => 'Este convite foi enviado para outro endereço de email. Inicie sessão com a conta para a qual foi enviado.',
+        'error_capacity' => 'Este grupo atingiu o limite de membros.',
+        'error_limit' => 'Atingiu o número máximo de grupos em que pode entrar.',
+        'error_group_unavailable' => 'Este grupo não está a aceitar membros neste momento.',
+        'error_safeguarding' => 'As regras de proteção desta comunidade não lhe permitem entrar neste grupo. Peça ajuda a um coordenador.',
+        'error_safeguarding_unavailable' => 'Neste momento não conseguimos verificar as regras de proteção desta comunidade. Tente novamente daqui a pouco.',
+    ],
 ];

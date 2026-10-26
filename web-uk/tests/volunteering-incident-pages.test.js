@@ -387,4 +387,58 @@ describe('organisation safeguarding pages', () => {
 
     expect(res.status).toBe(404);
   });
+
+  // React parity (8ff04c2aa, 26 Oct 2026): count, what each status means, the
+  // confidentiality reminder, and no update box on a closed report.
+  const html = (value) => value.replace(/'/g, '&#39;');
+
+  it('counts the reports still open, explains each status and reminds staff the reports are confidential', async () => {
+    mockOrgApi({ list: { items: [SUMMARY, { ...SUMMARY, id: 13, status: 'resolved' }, { ...SUMMARY, id: 14, status: 'closed' }] } });
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding`);
+
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.summary', { open: 1, total: 3 }));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.status_help_investigating')));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.status_help_closed')));
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.status_guide_title'));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.status_help_escalated')));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.confidentiality_note')));
+  });
+
+  it('on an open report says where it stands and never to contact the person who reported it', async () => {
+    mockOrgApi();
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding/12`);
+
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.status_now', {
+      status: t('govuk_alpha_volunteering.safeguarding.member_status_looking_into')
+    }));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.what_to_do')));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.confidentiality_note')));
+    expect(res.text).toContain('name="body"');
+  });
+
+  it('offers no update box on a closed report and says why', async () => {
+    mockOrgApi({ detail: { ...DETAIL, status: 'closed', timeline: [] } });
+    const res = await request(createApp()).get(`${MOUNT}/organisations/3/safeguarding/12`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain('name="body"');
+    expect(res.text).not.toContain('/safeguarding/12/updates');
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.closed_no_updates')));
+    expect(res.text).toContain(html(t('govuk_alpha_volunteering.org_safeguarding.status_help_closed')));
+    expect(res.text).toContain(t('govuk_alpha_volunteering.org_safeguarding.history_empty'));
+  });
+
+  it('says so when the report was closed while the update was being written', async () => {
+    mockOrgApi({ updateError: new api.ApiError('Closed', 409, {}) });
+    const agent = request.agent(createApp());
+    const post = await agent.post(`${MOUNT}/organisations/3/safeguarding/12/updates`).type('form')
+      .send({ _csrf: 'test-csrf-token', body: 'We have spoken to the volunteer today.' });
+
+    expect(post.headers.location).toBe(`${MOUNT}/organisations/3/safeguarding/12?status=report-closed#closed`);
+    mockOrgApi({ detail: { ...DETAIL, status: 'closed' } });
+    const page = await agent.get(`${MOUNT}/organisations/3/safeguarding/12?status=report-closed`);
+    expect(page.text).toContain('govuk-error-summary');
+    expect(page.text).toContain('href="#closed"');
+    expect(page.text).toContain('id="closed"');
+  });
 });

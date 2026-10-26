@@ -1,0 +1,120 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
+{% set S = "govuk_alpha_events.staff." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status == "assigned" or status == "revoked" %}
+        {{ govukNotificationBanner({ type: "success", titleText: t("govuk_alpha_events.common.success_title"), text: t(S ~ "status_" ~ (status | replace("-", "_"))) }) }}
+      {% elif status %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(S ~ "status_" ~ (status | replace("-", "_"))) }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t(S ~ "title") }}</h1>
+      <p class="govuk-body">{{ t(S ~ "intro") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t(S ~ "current_heading") }}</h2>
+      {% if loadError %}
+        <p class="govuk-body">{{ t(S ~ "load_error") }}</p>
+      {% elif not activeAssignments.length %}
+        <p class="govuk-body">{{ t(S ~ "empty") }}</p>
+      {% else %}
+        <dl class="govuk-summary-list">
+          {% for assignment in activeAssignments %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ assignment.name }}</dt>
+              <dd class="govuk-summary-list__value">
+                <p class="govuk-body govuk-!-margin-bottom-1">{{ t(S ~ "roles." ~ assignment.role) if assignment.role else t(S ~ "role_unknown") }}</p>
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t(S ~ "role_help." ~ assignment.role) if assignment.role }}</p>
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t(S ~ "expires", { date: assignment.expiresLabel }) if assignment.expiresLabel else t(S ~ "no_expiry") }}</p>
+              </dd>
+              <dd class="govuk-summary-list__actions">
+                <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/staff/' + (assignment.id | string) + '/revoke') }}">{{ t(S ~ "revoke") }}<span class="govuk-visually-hidden"> {{ assignment.name }}</span></a>
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+
+      <h2 class="govuk-heading-l">{{ t(S ~ "add_heading") }}</h2>
+      <form method="get" action="{{ urlFor('/events/' + (event.id | string) + '/staff') }}" novalidate>
+        {{ govukInput({
+          id: "staff-search",
+          name: "q",
+          value: query,
+          label: { text: t(S ~ "search_label"), classes: "govuk-label--s" },
+          hint: { text: t(S ~ "search_hint") },
+          classes: "govuk-!-width-two-thirds",
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: t(S ~ "search_too_short") } if queryTooShort else undefined
+        }) }}
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t(S ~ "search") }}</button>
+      </form>
+
+      {% if searchError %}
+        <p class="govuk-body">{{ t(S ~ "search_error") }}</p>
+      {% elif query and not queryTooShort and not searchResults.length %}
+        <p class="govuk-body">{{ t(S ~ "no_results") }}</p>
+      {% elif searchResults.length %}
+        {% set memberItems = [] %}
+        {% for member in searchResults %}{% set _ = memberItems.push({ value: member.id, text: member.name }) %}{% endfor %}
+        {% set roleItems = [] %}
+        {% for role in roles %}{% set _ = roleItems.push({ value: role, text: t(S ~ "roles." ~ role), hint: { text: t(S ~ "role_help." ~ role) } }) %}{% endfor %}
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/staff') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+          <input type="hidden" name="q" value="{{ query }}">
+          {{ govukRadios({ name: "user_id", idPrefix: "staff-member", fieldset: { legend: { text: t(S ~ "member_legend"), classes: "govuk-fieldset__legend--m" } }, items: memberItems }) }}
+          {{ govukRadios({ name: "role", idPrefix: "staff-role", fieldset: { legend: { text: t(S ~ "role_legend"), classes: "govuk-fieldset__legend--m" } }, items: roleItems }) }}
+          {{ nexusDateTimeInput({ name: "expires_at", idPrefix: "staff-expires", legend: t(S ~ "expiry_legend"), hint: t(S ~ "expiry_hint", { timezone: event.timezone }) }, t) }}
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(S ~ "assign") }}</button>
+        </form>
+      {% endif %}
+
+      {% if pastAssignments.length %}
+        <h2 class="govuk-heading-l">{{ t(S ~ "past_heading") }}</h2>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(S ~ 'past_heading') }}">
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-visually-hidden">{{ t(S ~ "past_heading") }}</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(S ~ "member_column") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t(S ~ "role_column") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t(S ~ "status_column") }}</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for assignment in pastAssignments %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ assignment.name }}</td>
+                <td class="govuk-table__cell">{{ t(S ~ "roles." ~ assignment.role) if assignment.role else t(S ~ "role_unknown") }}</td>
+                <td class="govuk-table__cell">{{ govukTag({ text: t(S ~ "state_" ~ assignment.status), classes: "govuk-tag--grey" }) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

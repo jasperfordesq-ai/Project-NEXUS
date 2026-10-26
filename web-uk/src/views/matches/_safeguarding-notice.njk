@@ -1,0 +1,28 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Laravel reports meta.degraded_reason = "safeguarding_policy_unavailable" when the
+  community's safeguarding setup is unfinished, so matches involving protected
+  members are hidden (React d2ba1b237). The member cannot fix this, so there is
+  deliberately no call to action. `variant` is "banner" (some matches still
+  show) or "empty" (none do).
+#}
+{% if variant == "empty" %}
+  <div class="govuk-inset-text" id="matches-safeguarding-notice">
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_members.matches_safeguarding.empty_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_members.matches_safeguarding.empty_body") }}</p>
+  </div>
+{% else %}
+  <div class="govuk-notification-banner" role="region" aria-labelledby="matches-safeguarding-title" data-module="govuk-notification-banner" id="matches-safeguarding-notice">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="matches-safeguarding-title">{{ t("states.important") }}</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_members.matches_safeguarding.banner_title") }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_members.matches_safeguarding.banner_body") }}</p>
+    </div>
+  </div>
+{% endif %}

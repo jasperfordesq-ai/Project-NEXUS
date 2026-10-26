@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Insignes gagnés',
         'badges_empty' => 'Aucun badge gagné pour l\'instant.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Certaines correspondances sont masquées',
+        'banner_body' => 'La configuration de la protection de votre communauté n\'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous.',
+        'empty_title' => 'Certaines correspondances ne peuvent pas encore être affichées',
+        'empty_body' => 'La configuration de la protection de votre communauté n\'est pas terminée : les correspondances impliquant des membres protégés sont masquées pour la sécurité de tous. Revenez lorsque l\'équipe de votre communauté l\'aura terminée.',
+    ],
 ];

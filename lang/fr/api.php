@@ -2052,7 +2052,7 @@ return [
     'caring_review_payment_description' => 'Paiement automatique pour :hours h d\'assistance approuvée',
     'caring_member_statement_unknown_partner' => 'Partenaire non attribué',
     'caring_member_statement_csv_date' => 'Date',
-    'caring_member_statement_csv_type' => 'Taper',
+    'caring_member_statement_csv_type' => 'Type',
     'caring_member_statement_csv_partner' => 'Partenaire',
     'caring_member_statement_csv_description' => 'Description',
     'caring_member_statement_csv_hours' => 'Heures',

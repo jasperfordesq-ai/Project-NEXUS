@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Suaitheantais tuillte',
         'badges_empty' => 'Níl aon suaitheantais tuillte fós.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Tá roinnt meaitseálacha folaithe',
+        'banner_body' => 'Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán.',
+        'empty_title' => 'Ní féidir roinnt meaitseálacha a thaispeáint go fóill',
+        'empty_body' => 'Níl socrú cosanta do phobail críochnaithe go fóill, mar sin tá meaitseálacha a bhaineann le baill atá faoi chosaint folaithe le gach duine a choinneáil slán. Féach ar ais nuair a bheidh sé críochnaithe ag foireann do phobail.',
+    ],
 ];

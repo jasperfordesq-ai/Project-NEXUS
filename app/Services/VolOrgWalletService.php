@@ -477,7 +477,12 @@ class VolOrgWalletService
                           )
                 ", [$tenantId, $volOrgId, $tenantId, $tenantId, $volOrgId]);
 
-                $dashboardLink = TenantContext::getSlugPrefix() . '/volunteering/org/' . $volOrgId . '/dashboard';
+                // Stored as a path WITHOUT the tenant slug, like every other
+                // organiser bell link. Each client adds its own prefix: the
+                // accessible site prefixed the slug a second time and opened
+                // "Page not found". It opens the wallet tab, which is what the
+                // adjustment changed.
+                $dashboardLink = '/volunteering/org/' . $volOrgId . '/dashboard?tab=wallet';
 
                 foreach ($recipients as $recipient) {
                     // Wrap per-recipient so each owner/admin sees the message in

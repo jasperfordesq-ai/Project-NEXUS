@@ -9,6 +9,7 @@
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
   <h1 class="govuk-heading-xl">{{ t("courses.title") }}</h1>
+  {% include "_module-stage-beta.njk" %}
   <p class="govuk-body-l">{{ t("courses.description") }}</p>
 
   {% set activeTab = 'browse' %}

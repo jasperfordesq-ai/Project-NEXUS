@@ -38,7 +38,7 @@ return [
         'remove_item_label' => 'Supprimer :title de cette collection',
         'empty_title' => 'Aucun article dans cette collection',
         'empty_body' => 'Lorsque vous enregistrez des éléments dans cette collection, ils apparaîtront ici.',
-        'item_type_label' => 'Taper',
+        'item_type_label' => 'Type',
     ],
     'edit' => [
         'heading' => 'Modifier cette collection',

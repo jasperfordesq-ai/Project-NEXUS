@@ -1,0 +1,36 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Outcome of a member import. Temporary passwords appear on this response only. #}
+
+{% extends "layouts/base.njk" %}
+{% set vm = "govuk_alpha_organisations.verein.import." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h1 class="govuk-panel__title">{{ t(vm + "result.title") }}</h1>
+        <div class="govuk-panel__body">{{ t(vm + "result.summary", { created: created, linked: linked, skipped: skipped }) }}</div>
+      </div>
+      {% if passwords.length %}
+        <h2 class="govuk-heading-m">{{ t(vm + "result.passwords_title") }}</h2>
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t(vm + "result.passwords_warning") }}</strong>
+        </div>
+        <dl class="govuk-summary-list">
+          {% for entry in passwords %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ entry.email }}</dt>
+              <dd class="govuk-summary-list__value"><code>{{ entry.password }}</code></dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/clubs/' + (orgId | string) + '/admin/dues') }}">{{ t("govuk_alpha_organisations.verein.dues.admin_title") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

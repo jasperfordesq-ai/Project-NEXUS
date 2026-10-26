@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Terug naar groep',
         'back_to_announcements' => 'Terug naar aankondigingen',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Soort groep',
+        'type_all' => 'Alle soorten groepen',
+    ],
+    'invite_accept' => [
+        'title' => 'Uitnodiging voor een groep',
+        'sign_in_needed' => 'U bent uitgenodigd om lid te worden van een groep. Log in om de uitnodiging te zien. Daarna komt u terug op deze pagina.',
+        'sign_in' => 'Inloggen',
+        'description' => 'U bent uitgenodigd om lid te worden van deze groep.',
+        'accept' => 'Uitnodiging accepteren',
+        'not_now' => 'Niet nu',
+        'already_member' => 'U bent lid van deze groep.',
+        'go_to_group' => 'Naar de groep',
+        'success' => 'U bent nu lid van deze groep.',
+        'browse_groups' => 'Groepen bekijken',
+        'accessible_link_hint' => 'Dezelfde uitnodiging op deze toegankelijke website:',
+        'error_invalid' => 'Deze uitnodigingslink is niet geldig of niet meer beschikbaar.',
+        'error_expired' => 'Deze uitnodiging is verlopen.',
+        'error_revoked' => 'Deze uitnodiging is ingetrokken.',
+        'error_email_mismatch' => 'Deze uitnodiging is naar een ander e-mailadres gestuurd. Log in met het account waarnaar ze is gestuurd.',
+        'error_capacity' => 'Deze groep heeft het maximale aantal leden bereikt.',
+        'error_limit' => 'U bent al lid van het maximale aantal groepen.',
+        'error_group_unavailable' => 'Deze groep neemt op dit moment geen leden aan.',
+        'error_safeguarding' => 'De beschermingsregels van deze gemeenschap staan niet toe dat u lid wordt van deze groep. Vraag een coördinator om hulp.',
+        'error_safeguarding_unavailable' => 'We kunnen de beschermingsregels van deze gemeenschap op dit moment niet controleren. Probeer het straks opnieuw.',
+    ],
 ];

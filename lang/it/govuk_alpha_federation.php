@@ -105,4 +105,8 @@ return [
         'next' => 'Continuare',
         'do_this_later' => 'Fallo più tardi',
     ],
+    'safeguarding' => [
+        'heading' => 'Contatto non disponibile',
+        'body' => 'La politica di tutela della comunità di questo membro non consente un contatto diretto da parte tua. Un coordinatore della comunità può aiutarti.',
+    ],
 ];

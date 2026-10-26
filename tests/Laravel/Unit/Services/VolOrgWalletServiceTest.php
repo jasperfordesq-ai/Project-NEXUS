@@ -386,6 +386,26 @@ class VolOrgWalletServiceTest extends TestCase
         $this->assertFalse(VolOrgWalletService::adminAdjustment($orgId, 0, $admin->id, 'no-op')['success']);
     }
 
+    public function test_admin_adjustment_bell_link_has_no_tenant_slug(): void
+    {
+        $admin = User::factory()->forTenant(2)->create();
+        $orgId = $this->makeOrg(2, 100.0, $admin->id);
+        $this->pinTenant();
+
+        $result = VolOrgWalletService::adminAdjustment($orgId, 25.0, $admin->id, 'top up');
+        $this->assertTrue($result['success']);
+
+        $link = DB::table('notifications')
+            ->where('user_id', $admin->id)
+            ->where('type', 'admin_adjustment')
+            ->orderByDesc('id')
+            ->value('link');
+
+        // Every client adds its own tenant prefix to a stored link. A link that
+        // already carried the slug was doubled on the accessible site.
+        $this->assertSame('/volunteering/org/' . $orgId . '/dashboard?tab=wallet', $link);
+    }
+
     public function test_tenant_isolation_prevents_cross_tenant_access(): void
     {
         // Org in tenant 999

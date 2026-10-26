@@ -1,0 +1,17 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Help Centre breadcrumbs: GOV.UK Breadcrumbs markup, ancestors only (the current
+   page is the h1). `crumbs` is [{ text, href }] with unprefixed paths. #}
+{% if crumbs and crumbs.length %}
+  <nav class="govuk-breadcrumbs" aria-label="{{ t('help_centre.breadcrumb_label') }}">
+    <ol class="govuk-breadcrumbs__list">
+      {% for crumb in crumbs %}
+        <li class="govuk-breadcrumbs__list-item">
+          <a class="govuk-breadcrumbs__link" href="{{ urlFor(crumb.href) }}">{{ crumb.text }}</a>
+        </li>
+      {% endfor %}
+    </ol>
+  </nav>
+{% endif %}

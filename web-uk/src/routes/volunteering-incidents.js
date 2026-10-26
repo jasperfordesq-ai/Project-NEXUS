@@ -194,8 +194,19 @@ const ORG_EVENT_LABELS = {
 const ORG_STATUSES = {
   'update-sent': { type: 'success', key: 'update_sent' },
   'update-too-short': { type: 'error', key: 'update_too_short', field: 'body' },
-  'update-failed': { type: 'error', key: 'update_failed', field: 'body' }
+  'update-failed': { type: 'error', key: 'update_failed', field: 'body' },
+  // The API refuses an update on a closed report (409). The form is hidden on a
+  // closed report, so this only happens when it closed while the page was open.
+  'report-closed': { type: 'error', key: 'closed_no_updates', field: 'closed' }
 };
+
+/** The statuses an organisation can see, in the order a report moves through them. */
+const ORG_STATUS_ORDER = ['open', 'investigating', 'escalated', 'resolved', 'closed'];
+
+/** One plain sentence on what a status means for the organisation (React's status_help). */
+function orgStatusHelp(t, status) {
+  return t(`${ORG_KEY}status_help_${ORG_STATUS_ORDER.includes(status) ? status : 'open'}`);
+}
 
 function orgReplayKey(orgId, incidentId) {
   return `org-incident-update-${orgId}-${incidentId}`;
@@ -213,7 +224,12 @@ function presentOrgSummary(row, t, formatDate) {
     id: Number(item.id) || 0,
     kindLabel: t(`${KEY}incident_type_${typeof item.type === 'string' ? item.type : 'other'}`),
     severityLabel: t(`${KEY}severity_${typeof item.severity === 'string' ? item.severity : 'medium'}`),
+    status,
     statusLabel: memberStatusLabel(t, status),
+    statusHelp: orgStatusHelp(t, status),
+    // "Still open" as React counts it: anything the team has not dealt with or closed.
+    isOpen: status !== 'resolved' && status !== 'closed',
+    isClosed: status === 'closed',
     dateLabel: formatDate(item.incident_date || item.created_at),
     opportunityTitle: typeof item.opportunity_title === 'string' ? item.opportunity_title : '',
     fullReportShared: item.full_report_shared === true
@@ -338,10 +354,16 @@ router.get('/organisations/:id(\\d+)/safeguarding', asyncRoute(async (req, res) 
   const data = result && result.data !== undefined ? result.data : result;
   const rows = data && Array.isArray(data.items) ? data.items : [];
   const formatDate = dateFormatter(res);
+  const items = rows.map((row) => presentOrgSummary(row, t, formatDate)).filter((row) => row.id > 0);
   return res.render('volunteering/organisation-safeguarding', {
     title: t(`${ORG_KEY}title`),
     orgId,
-    items: rows.map((row) => presentOrgSummary(row, t, formatDate)).filter((row) => row.id > 0)
+    items,
+    openCount: items.filter((item) => item.isOpen).length,
+    statusGuide: ORG_STATUS_ORDER.map((status) => ({
+      label: memberStatusLabel(t, status),
+      help: orgStatusHelp(t, status)
+    }))
   });
 }));
 
@@ -393,6 +415,9 @@ router.post('/organisations/:id(\\d+)/safeguarding/:incidentId(\\d+)/updates', a
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
     if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return orgIncidentNotFound(res);
+    // Closed while the page was open: say so. Nothing can be added any more, so
+    // the text is not kept for a retry the API would refuse again.
+    if (error instanceof ApiError && error.status === 409) return back('report-closed', '#closed');
     rememberFormReplay(req, 'volunteering', orgReplayKey(orgId, incidentId), { body });
     if (error instanceof ApiError && error.status === 422) return back('update-too-short', '#body');
     return back('update-failed', '#body');

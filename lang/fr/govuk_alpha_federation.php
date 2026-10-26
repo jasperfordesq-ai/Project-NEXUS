@@ -105,4 +105,8 @@ return [
         'next' => 'Continuer',
         'do_this_later' => 'Fais ça plus tard',
     ],
+    'safeguarding' => [
+        'heading' => 'Contact impossible',
+        'body' => 'La politique de protection de la communauté de ce membre n’autorise pas de contact direct de votre part. Un coordinateur de la communauté peut vous aider.',
+    ],
 ];

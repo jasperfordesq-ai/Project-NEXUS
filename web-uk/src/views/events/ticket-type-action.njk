@@ -1,0 +1,58 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set T = "govuk_alpha_events.ticket_types." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/manage') }}">{{ t(T ~ "back_to_types") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li>{% if status == "reason-required" %}<a href="#reason">{{ t(T ~ "errors.reason_required") }}</a>{% else %}{{ t(T ~ "action_failed") }}{% endif %}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <span class="govuk-caption-xl">{{ ticketType.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t(T ~ action ~ "_title") }}</h1>
+      <p class="govuk-body">{{ t(T ~ action ~ "_body") }}</p>
+      {% if blockedByGateway %}
+        <div class="govuk-inset-text">{{ t(T ~ "time_credit_unavailable") }}</div>
+      {% else %}
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/' + (ticketType.id | string) + '/' + action) }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+          <input type="hidden" name="expected_version" value="{{ ticketType.version }}">
+          {% if needsReason %}
+            {{ govukTextarea({
+              id: "reason",
+              name: "reason",
+              label: { text: t(T ~ "reason_label"), classes: "govuk-label--s" },
+              hint: { text: t(T ~ "reason_hint") },
+              errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: t(T ~ "errors.reason_required") } if status == "reason-required" else undefined),
+              attributes: { maxlength: "500" }
+            }) }}
+          {% endif %}
+          <div class="govuk-button-group">
+            <button type="submit" class="govuk-button{% if action == 'archive' %} govuk-button--warning{% endif %}" data-module="govuk-button" data-prevent-double-click="true">{{ t(T ~ action ~ "_confirm") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/manage') }}">{{ t(T ~ "cancel") }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

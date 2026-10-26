@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Distintivi guadagnati',
         'badges_empty' => 'Nessun badge ancora guadagnato.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Alcune corrispondenze sono nascoste',
+        'banner_body' => 'La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti.',
+        'empty_title' => 'Alcune corrispondenze non possono ancora essere mostrate',
+        'empty_body' => 'La configurazione della tutela della tua comunità non è completa: le corrispondenze che coinvolgono membri protetti sono nascoste per la sicurezza di tutti. Riprova quando il team della tua comunità l’avrà completata.',
+    ],
 ];

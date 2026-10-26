@@ -158,6 +158,10 @@ return [
         'nav_label' => 'Navigazione nel piè di pagina',
         'meta_label' => 'Informazioni di supporto e attribuzione',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'Le nostre pagine',
+            ],
             'platform' => [
                 'heading' => 'Piattaforma',
                 'listings' => 'Annunci',
@@ -3646,6 +3650,10 @@ return [
             'offers_hint' => 'Cose con cui puoi aiutare gli altri.',
             'needs_label' => 'Aiuto che stai cercando',
             'needs_hint' => 'Cose per cui vorresti ricevere aiuto.',
+            'intro' => 'Fai sapere in cosa puoi aiutare e per cosa vorresti aiuto. Scegli tra i suggerimenti o scrivi i tuoi. Potrai modificarli in seguito.',
+            'offers_other_label' => 'Altre competenze che puoi offrire',
+            'needs_other_label' => 'Altro aiuto che stai cercando',
+            'other_hint' => 'Separa ciascuna voce con una virgola, ad esempio: giardinaggio, passeggiate con i cani',
         ],
         'safeguarding' => [
             'title' => 'Tutela',
@@ -4581,6 +4589,10 @@ return [
         'contact_cta_title' => 'Hai ancora bisogno di aiuto%',
         'contact_cta_body' => 'Se non riesci a trovare la risposta qui, contattaci e ti aiuteremo.',
         'contact_cta_button' => 'Contattaci',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'Percorso di navigazione',
+        'main_website_only' => 'Questa operazione si fa sul sito principale. Il sito accessibile non ha questa pagina.',
     ],
     'kb' => [
         'caption' => ':community',

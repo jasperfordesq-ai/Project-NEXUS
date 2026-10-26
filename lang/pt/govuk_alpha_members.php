@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Emblemas ganhos',
         'badges_empty' => 'Nenhum emblema ganho ainda.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Algumas correspondências estão ocultas',
+        'banner_body' => 'A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos.',
+        'empty_title' => 'Algumas correspondências ainda não podem ser mostradas',
+        'empty_body' => 'A configuração de salvaguarda da sua comunidade ainda não está concluída, pelo que as correspondências que envolvem membros protegidos ficam ocultas para segurança de todos. Volte quando a equipe da sua comunidade a tiver concluído.',
+    ],
 ];

@@ -1,0 +1,41 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# The shipping-option fields, shared by the add form and the edit page. Expects `values`
+   and `fieldErrors`. Field ids match SHIPPING_ERROR_FIELDS in marketplace-member-tools.js. #}
+<div class="govuk-form-group{% if fieldErrors.courier_name %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label govuk-label--s" for="courier_name">{{ t("govuk_alpha_commerce.shipping.courier_label") }}</label>
+  <div id="courier_name-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.shipping.courier_hint") }}</div>
+  {% if fieldErrors.courier_name %}<p id="courier_name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.courier_name }}</p>{% endif %}
+  <input class="govuk-input govuk-!-width-two-thirds{% if fieldErrors.courier_name %} govuk-input--error{% endif %}" id="courier_name" name="courier_name" type="text" maxlength="100" value="{{ values.courierName }}" aria-describedby="courier_name-hint{% if fieldErrors.courier_name %} courier_name-error{% endif %}">
+</div>
+
+<div class="govuk-form-group{% if fieldErrors.price %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label govuk-label--s" for="price">{{ t("govuk_alpha_commerce.shipping.price_label") }}</label>
+  <div id="price-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.shipping.price_hint") }}</div>
+  {% if fieldErrors.price %}<p id="price-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.price }}</p>{% endif %}
+  <input class="govuk-input govuk-input--width-5{% if fieldErrors.price %} govuk-input--error{% endif %}" id="price" name="price" type="text" inputmode="decimal" spellcheck="false" value="{{ values.price }}" aria-describedby="price-hint{% if fieldErrors.price %} price-error{% endif %}">
+</div>
+
+<div class="govuk-form-group{% if fieldErrors.currency %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label govuk-label--s" for="currency">{{ t("govuk_alpha_commerce.listing_form.currency_label") }}</label>
+  {% if fieldErrors.currency %}<p id="currency-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.currency }}</p>{% endif %}
+  <input class="govuk-input govuk-input--width-3{% if fieldErrors.currency %} govuk-input--error{% endif %}" id="currency" name="currency" type="text" maxlength="3" autocapitalize="characters" spellcheck="false" value="{{ values.currency }}"{% if fieldErrors.currency %} aria-describedby="currency-error"{% endif %}>
+</div>
+
+<div class="govuk-form-group{% if fieldErrors.estimated_days %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label govuk-label--s" for="estimated_days">{{ t("govuk_alpha_commerce.shipping.days_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  {% if fieldErrors.estimated_days %}<p id="estimated_days-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.estimated_days }}</p>{% endif %}
+  <input class="govuk-input govuk-input--width-3{% if fieldErrors.estimated_days %} govuk-input--error{% endif %}" id="estimated_days" name="estimated_days" type="text" inputmode="numeric" spellcheck="false" value="{{ values.estimatedDays }}"{% if fieldErrors.estimated_days %} aria-describedby="estimated_days-error"{% endif %}>
+</div>
+
+<div class="govuk-form-group">
+  <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+    <div class="govuk-checkboxes__item">
+      <input class="govuk-checkboxes__input" id="is_default" name="is_default" type="checkbox" value="1" {% if values.isDefault %}checked{% endif %}>
+      <label class="govuk-label govuk-checkboxes__label" for="is_default">{{ t("govuk_alpha_commerce.shipping.default_label") }}</label>
+    </div>
+  </div>
+</div>

@@ -16,6 +16,7 @@
   {% if not items.length %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_safeguarding.empty") }}</div>
   {% else %}
+    <p class="govuk-body govuk-!-font-weight-bold" id="org-safeguarding-count">{{ t("govuk_alpha_volunteering.org_safeguarding.summary", { open: openCount, total: items.length }) }}</p>
     <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_safeguarding.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_safeguarding.title") }}</caption>
@@ -42,6 +43,7 @@
             <td class="govuk-table__cell">
               {{ govukTag({ text: item.statusLabel, classes: "govuk-tag--grey" }) }}
               {% if item.fullReportShared %}<br>{{ govukTag({ text: t("govuk_alpha_volunteering.org_safeguarding.shared_chip"), classes: "govuk-tag--green" }) }}{% endif %}
+              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ item.statusHelp }}</p>
             </td>
           </tr>
         {% endfor %}
@@ -49,4 +51,25 @@
     </table>
     </div>
   {% endif %}
+
+  <details class="govuk-details">
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_volunteering.org_safeguarding.status_guide_title") }}</span></summary>
+    <div class="govuk-details__text">
+      <dl class="govuk-summary-list govuk-summary-list--no-border">
+        {% for entry in statusGuide %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ entry.label }}</dt>
+            <dd class="govuk-summary-list__value">{{ entry.help }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </div>
+  </details>
+
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span> {{ t("govuk_alpha_volunteering.org_safeguarding.confidentiality_note") }}
+    </strong>
+  </div>
 {% endblock %}

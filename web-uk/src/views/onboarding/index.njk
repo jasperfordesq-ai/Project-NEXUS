@@ -8,9 +8,8 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 
 {% block mainContent %}
-  {% set bagInterests = bag.interests or [] %}
-  {% set bagOffers = bag.offers or [] %}
-  {% set bagNeeds = bag.needs or [] %}
+  {% set bagOffers = bag.offerSkills or [] %}
+  {% set bagNeeds = bag.needSkills or [] %}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -109,60 +108,44 @@
           <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.profile.save_continue") }}</button>
         </form>
 
-      {% elif step == "interests" %}
-        <h1 class="govuk-heading-xl">{{ t("onboarding.interests.title") }}</h1>
-        <p class="govuk-body">{{ t("onboarding.interests.hint") }}</p>
-        <form method="post" action="{{ urlFor('/onboarding/interests') }}">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset">
-              <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("onboarding.interests.title") }}</legend>
-              <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                {% for category in categories %}
-                  <div class="govuk-checkboxes__item">
-                    <input class="govuk-checkboxes__input" id="interest-{{ category.id }}" name="interests[]" type="checkbox" value="{{ category.id }}"{% if category.id in bagInterests %} checked{% endif %}>
-                    <label class="govuk-label govuk-checkboxes__label" for="interest-{{ category.id }}">{{ category.name }}</label>
-                  </div>
-                {% endfor %}
-              </div>
-            </fieldset>
-          </div>
-          <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.continue") }}</button>
-        </form>
-
+      {#
+        Skills are saved by NAME into the member's skills (user_skills), as the
+        React wizard has done since 2026-10-02: matching, Explore and the
+        personalised feed read them. The community's listing categories are
+        offered as ready-made suggestions; anything else is typed in. The old
+        "Your interests" step is gone — nothing ever read its answers.
+      #}
       {% elif step == "skills" %}
         <h1 class="govuk-heading-xl">{{ t("govuk_alpha.onboarding.skills.title") }}</h1>
+        <p class="govuk-body">{{ t("govuk_alpha.onboarding.skills.intro") }}</p>
         <form method="post" action="{{ urlFor('/onboarding/skills') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% for direction in [
+            { key: "offers", field: "offers", selected: bagOffers, label: t("onboarding.skills.offers_label"), hint: t("onboarding.skills.offers_hint"), otherLabel: t("govuk_alpha.onboarding.skills.offers_other_label") },
+            { key: "needs", field: "needs", selected: bagNeeds, label: t("onboarding.skills.needs_label"), hint: t("onboarding.skills.needs_hint"), otherLabel: t("govuk_alpha.onboarding.skills.needs_other_label") }
+          ] %}
           <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset" aria-describedby="offers-hint">
-              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("onboarding.skills.offers_label") }}</legend>
-              <div id="offers-hint" class="govuk-hint">{{ t("onboarding.skills.offers_hint") }}</div>
+            <fieldset class="govuk-fieldset" aria-describedby="{{ direction.key }}-hint">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ direction.label }}</legend>
+              <div id="{{ direction.key }}-hint" class="govuk-hint">{{ direction.hint }}</div>
+              {% if skillChoices and skillChoices.length %}
               <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                {% for category in categories %}
+                {% for choice in skillChoices %}
                   <div class="govuk-checkboxes__item">
-                    <input class="govuk-checkboxes__input" id="offer-{{ category.id }}" name="offers[]" type="checkbox" value="{{ category.id }}"{% if category.id in bagOffers %} checked{% endif %}>
-                    <label class="govuk-label govuk-checkboxes__label" for="offer-{{ category.id }}">{{ category.name }}</label>
+                    <input class="govuk-checkboxes__input" id="{{ direction.key }}-{{ choice.id }}" name="{{ direction.field }}[]" type="checkbox" value="{{ choice.name }}"{% if choice.name in direction.selected %} checked{% endif %}>
+                    <label class="govuk-label govuk-checkboxes__label" for="{{ direction.key }}-{{ choice.id }}">{{ choice.name }}</label>
                   </div>
                 {% endfor %}
               </div>
-            </fieldset>
-          </div>
-
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset" aria-describedby="needs-hint">
-              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("onboarding.skills.needs_label") }}</legend>
-              <div id="needs-hint" class="govuk-hint">{{ t("onboarding.skills.needs_hint") }}</div>
-              <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                {% for category in categories %}
-                  <div class="govuk-checkboxes__item">
-                    <input class="govuk-checkboxes__input" id="need-{{ category.id }}" name="needs[]" type="checkbox" value="{{ category.id }}"{% if category.id in bagNeeds %} checked{% endif %}>
-                    <label class="govuk-label govuk-checkboxes__label" for="need-{{ category.id }}">{{ category.name }}</label>
-                  </div>
-                {% endfor %}
+              {% endif %}
+              <div class="govuk-form-group govuk-!-margin-top-4 govuk-!-margin-bottom-0">
+                <label class="govuk-label" for="{{ direction.key }}-other">{{ direction.otherLabel }}</label>
+                <div id="{{ direction.key }}-other-hint" class="govuk-hint">{{ t("govuk_alpha.onboarding.skills.other_hint") }}</div>
+                <input class="govuk-input" id="{{ direction.key }}-other" name="{{ direction.field }}_other" type="text" spellcheck="true" aria-describedby="{{ direction.key }}-other-hint">
               </div>
             </fieldset>
           </div>
+          {% endfor %}
 
           <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.continue") }}</button>
         </form>
@@ -288,18 +271,13 @@
             <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/profile') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.bio_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
-            <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.interests_row") }}</dt>
-            <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagInterests.length }) }}</dd>
-            <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/interests') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.interests_row") }}</span></a></dd>
-          </div>
-          <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.skills_offers_row") }}</dt>
-            <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagOffers.length }) }}</dd>
+            <dd class="govuk-summary-list__value">{{ bagOffers | join(", ") if bagOffers.length else t("govuk_alpha.onboarding.count_selected", { count: 0 }) }}</dd>
             <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.skills_offers_row") }}</span></a></dd>
           </div>
           <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ t("onboarding.confirm.skills_needs_row") }}</dt>
-            <dd class="govuk-summary-list__value">{{ t("govuk_alpha.onboarding.count_selected", { count: bagNeeds.length }) }}</dd>
+            <dd class="govuk-summary-list__value">{{ bagNeeds | join(", ") if bagNeeds.length else t("govuk_alpha.onboarding.count_selected", { count: 0 }) }}</dd>
             <dd class="govuk-summary-list__actions"><a class="govuk-link" href="{{ urlFor('/onboarding/skills') }}">{{ t("govuk_alpha.onboarding.confirm.change") }}<span class="govuk-visually-hidden"> — {{ t("onboarding.confirm.skills_needs_row") }}</span></a></dd>
           </div>
         </dl>

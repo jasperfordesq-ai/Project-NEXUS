@@ -1,0 +1,57 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The emailed single-use link for a supported decision. Opening it changes
+  nothing; only the Approve button (a plain form POST) does.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if state == "confirm" %}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_confirm.page_title") }}</h1>
+        <p class="govuk-body-l">{{ t("govuk_alpha_settings.support_confirm.intro", { name: supporterName or t("govuk_alpha_settings.common.unknown_member"), what: t(typeKey) }) }}</p>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.prepared_by") }}</dt>
+            <dd class="govuk-summary-list__value">{{ supporterName or t("govuk_alpha_settings.common.unknown_member") }}</dd>
+          </div>
+          {% if detail %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.detail") }}</dt>
+              <dd class="govuk-summary-list__value">{{ detail }}</dd>
+            </div>
+          {% endif %}
+          {% if expiresOnLabel %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.expires") }}</dt>
+              <dd class="govuk-summary-list__value">{{ expiresOnLabel }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_confirm.nothing_otherwise") }}</p>
+        <form method="post" action="{{ urlFor('/support-actions/confirm/' + token) }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_settings.support_confirm.button") }}</button>
+        </form>
+      {% elif state == "success" %}
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h1 class="govuk-panel__title">{{ t("govuk_alpha_settings.support_confirm.success_title") }}</h1>
+        </div>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_confirm.success_body") }}</p>
+      {% elif state == "unavailable" %}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_confirm.unavailable_title") }}</h1>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_confirm.unavailable_body") }}</p>
+      {% else %}
+        <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_confirm.error_title") }}</h1>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_confirm.error_body") }}</p>
+      {% endif %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/') }}">{{ t("govuk_alpha_settings.support_confirm.close") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

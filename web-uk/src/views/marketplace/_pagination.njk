@@ -1,0 +1,21 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Cursor paging for every marketplace list (26 Oct 2026). Laravel's cursors only go
+  forward, so the way back is "First page" rather than "Previous". The route supplies
+  `pagination = { nextHref, firstHref }`; both are local paths passed through urlFor.
+#}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% if pagination and (pagination.nextHref or pagination.firstHref) %}
+  {% set pagePrevious = { text: t("govuk_alpha_commerce.pagination.first"), href: urlFor(pagination.firstHref) } if pagination.firstHref else false %}
+  {% set pageNext = { text: t("govuk_alpha_commerce.pagination.next"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false %}
+  {{ govukPagination({
+    previous: pagePrevious,
+    next: pageNext,
+    landmarkLabel: t("govuk_alpha_commerce.pagination.label"),
+    classes: "govuk-pagination--block govuk-!-margin-top-6"
+  }) }}
+{% endif %}

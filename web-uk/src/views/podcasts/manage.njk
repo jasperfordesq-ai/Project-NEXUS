@@ -81,6 +81,8 @@
       </ol>
     {% endif %}
   {% endif %}
+  {% set shareShow = show %}{% include "podcasts/_share-links.njk" %}
+
   {% if rssFeedEnabled %}
     <p class="govuk-body">
       <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/feed-check') }}">{{ t("govuk_alpha_commerce.podcast_studio.feed_check_link") }}</a>

@@ -1,0 +1,93 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
+{% set T = "govuk_alpha_events.ticket_types." %}
+{% set formAction = ('/events/' + (event.id | string) + '/tickets/types/' + (ticketType.id | string) + '/edit') if ticketType else ('/events/' + (event.id | string) + '/tickets/types/new') %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/manage') }}">{{ t(T ~ "back_to_types") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errors and errors.length %}
+        {{ govukErrorSummary({ titleText: t("govuk_alpha_events.common.error_title"), errorList: errors, attributes: { tabindex: "-1" } }) }}
+      {% elif apiFailed %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(T ~ "save_failed") }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t(T ~ ("edit_title" if ticketType else "create_title")) }}</h1>
+      <p class="govuk-body">{{ t(T ~ "form_intro") }}</p>
+
+      <form method="post" action="{{ urlFor(formAction) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+        {% if ticketType %}<input type="hidden" name="expected_version" value="{{ ticketType.version }}">{% endif %}
+
+        {{ govukInput({ id: "name", name: "name", value: values.name, label: { text: t(T ~ "name_label"), classes: "govuk-label--s" }, attributes: { maxlength: "191" }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.name } if fieldErrors.name else undefined) }) }}
+        {{ govukTextarea({ id: "description", name: "description", value: values.description, label: { text: t(T ~ "description_label"), classes: "govuk-label--s" }, hint: { text: t(T ~ "optional_hint") } }) }}
+
+        {% set priceHtml %}
+          {{ govukInput({ id: "price", name: "price", value: values.price, inputmode: "decimal", classes: "govuk-input--width-5", label: { text: t(T ~ "price_label") }, hint: { text: t(T ~ "price_hint") }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.price } if fieldErrors.price else undefined) }) }}
+        {% endset %}
+        {{ govukRadios({
+          idPrefix: "kind",
+          name: "kind",
+          fieldset: { legend: { text: t(T ~ "kind_legend"), classes: "govuk-fieldset__legend--s" } },
+          errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.kind } if fieldErrors.kind else undefined),
+          items: [
+            { value: "free", text: t(T ~ "kind_free"), checked: values.kind == "free" },
+            { value: "time_credit", text: t(T ~ "kind_time_credit"), hint: { text: t(T ~ "kind_time_credit_hint") }, checked: values.kind == "time_credit", conditional: { html: priceHtml } }
+          ]
+        }) }}
+
+        {{ govukInput({ id: "allocation_limit", name: "allocation_limit", value: values.allocation_limit, inputmode: "numeric", classes: "govuk-input--width-5", label: { text: t(T ~ "allocation_label"), classes: "govuk-label--s" }, hint: { text: t(T ~ "allocation_hint") }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.allocation_limit } if fieldErrors.allocation_limit else undefined) }) }}
+        {{ govukInput({ id: "per_member_limit", name: "per_member_limit", value: values.per_member_limit, inputmode: "numeric", classes: "govuk-input--width-3", label: { text: t(T ~ "per_member_label"), classes: "govuk-label--s" }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.per_member_limit } if fieldErrors.per_member_limit else undefined) }) }}
+
+        <p class="govuk-body">{{ t(T ~ "timezone_hint", { timezone: event.timezone }) }}</p>
+        {{ nexusDateTimeInput({ name: "sales_opens_at", idPrefix: "sales_opens_at", legend: t(T ~ "sales_open_label"), value: values.sales_opens_at, errorMessage: fieldErrors["sales_opens_at-day"] }, t) }}
+        {{ nexusDateTimeInput({ name: "sales_closes_at", idPrefix: "sales_closes_at", legend: t(T ~ "sales_close_label"), hint: t(T ~ "sales_close_hint"), value: values.sales_closes_at, errorMessage: fieldErrors["sales_closes_at-day"] }, t) }}
+        {{ nexusDateTimeInput({ name: "refund_cutoff_at", idPrefix: "refund_cutoff_at", legend: t(T ~ "refund_cutoff_label"), hint: t(T ~ "refund_cutoff_hint"), value: values.refund_cutoff_at, errorMessage: fieldErrors["refund_cutoff_at-day"] }, t) }}
+
+        {{ govukCheckboxes({
+          idPrefix: "organizer_cancel_refundable",
+          name: "organizer_cancel_refundable",
+          fieldset: { legend: { text: t(T ~ "refund_legend"), classes: "govuk-fieldset__legend--s" } },
+          items: [{ value: "1", text: t(T ~ "organizer_refundable"), hint: { text: t(T ~ "kind_time_credit_only") }, checked: values.organizer_cancel_refundable }]
+        }) }}
+
+        <h2 class="govuk-heading-m">{{ t(T ~ "eligibility_heading") }}</h2>
+        {{ govukCheckboxes({
+          idPrefix: "approved_member_required",
+          name: "approved_member_required",
+          fieldset: { legend: { text: t(T ~ "eligibility_heading"), classes: "govuk-visually-hidden" } },
+          items: [{ value: "1", text: t(T ~ "approved_only"), checked: values.approved_member_required }]
+        }) }}
+        {{ govukInput({ id: "minimum_account_age_days", name: "minimum_account_age_days", value: values.minimum_account_age_days, inputmode: "numeric", classes: "govuk-input--width-4", label: { text: t(T ~ "account_age_label"), classes: "govuk-label--s" }, hint: { text: t(T ~ "account_age_hint") }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.minimum_account_age_days } if fieldErrors.minimum_account_age_days else undefined) }) }}
+        {{ govukInput({ id: "required_group_ids", name: "required_group_ids", value: values.required_group_ids, label: { text: t(T ~ "group_ids_label"), classes: "govuk-label--s" }, hint: { text: t(T ~ "group_ids_hint") }, errorMessage: ({ visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.required_group_ids } if fieldErrors.required_group_ids else undefined) }) }}
+
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(T ~ "save") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/manage') }}">{{ t(T ~ "cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

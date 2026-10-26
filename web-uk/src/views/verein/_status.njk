@@ -1,0 +1,23 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# One outcome banner for the club pages: success panel or error summary. #}
+{% macro vereinStatus(statusMessage, t, anchor) %}
+  {% if statusMessage and statusMessage.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="verein-status-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="verein-status-title">{{ t("states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusMessage.text }}</p></div>
+    </div>
+  {% elif statusMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li><a href="#{{ anchor or 'main-content' }}">{{ statusMessage.text }}</a></li></ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endmacro %}

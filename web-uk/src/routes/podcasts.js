@@ -13,6 +13,7 @@ const { splitDateTime } = require('../lib/date-input');
 const { translateForRequest } = require('../lib/request-translator');
 const { formatApiDateTime, parseApiInstant } = require('../lib/api-instant');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { requestHost } = require('../middleware/tenant-routing');
 
 const router = express.Router();
 
@@ -609,6 +610,66 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 }));
 
+// React's PodcastStudioPage falls back to this when the API sends no limit.
+const DEFAULT_MAX_AUDIO_MB = 250;
+
+function maxAudioMbFrom(meta) {
+  const value = Math.floor(Number(meta && meta.max_audio_size_mb));
+  return Number.isFinite(value) && value > 0 ? value : DEFAULT_MAX_AUDIO_MB;
+}
+
+/**
+ * The links a creator can hand out once a show is live, as the website's
+ * PodcastShareLinks (React 0d8e2b7d4):
+ *  - the show page on THIS site, which members open after signing in (podcast
+ *    pages are behind sign-in, so it is not a public link);
+ *  - for "Anyone" (public) shows on a community with RSS on, the podcast-app
+ *    feed, which works signed out. Podcast apps send no community header, so
+ *    the community id is in the address, exactly as on the show page.
+ * Both are absolute: they are pasted somewhere else.
+ */
+function shareLinksFor(show, req, res, rssEnabled) {
+  const live = trimmed(show.status) === 'published' && trimmed(show.moderation_status || show.moderationStatus || 'approved') === 'approved';
+  if (!live || show.id === null) return { ready: false, links: [], feedNeedsPublic: false };
+
+  const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : (req.protocol || 'https');
+  // requestHost() (the tenant-routing rule, x-forwarded-host first) drops the
+  // port; a link pasted elsewhere needs it back when the site runs on one.
+  const rawHost = req.headers
+    ? String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',').pop().trim().toLowerCase()
+    : '';
+  const port = /^[a-z0-9.-]+:(\d{1,5})$/.test(rawHost) ? rawHost.split(':').pop() : '';
+  const bareHost = req.headers ? requestHost(req) : '';
+  const host = bareHost && port ? `${bareHost}:${port}` : bareHost;
+  const showPath = urlFor(`/podcasts/${show.id}`);
+  const links = [{
+    key: 'show',
+    url: host ? `${protocol}://${host}${showPath}` : showPath,
+    label: translateForRequest('govuk_alpha_commerce.podcast_studio.share_show_link'),
+    hint: translateForRequest('govuk_alpha_commerce.podcast_studio.share_show_link_hint')
+  }];
+
+  const isPublic = show.visibility === 'public';
+  const tenantId = positiveInteger(req.accessibleRouting && req.accessibleRouting.tenant && req.accessibleRouting.tenant.id);
+  const slug = trimmed(show.slug);
+  if (rssEnabled && isPublic && slug) {
+    const feedPath = tenantId !== null
+      ? `/api/v2/podcasts/feed/${tenantId}/${encodeURIComponent(slug)}.xml`
+      : `/api/v2/podcasts/${encodeURIComponent(slug)}/feed.xml`;
+    const feedUrl = resolveBackendMediaUrl(feedPath);
+    if (feedUrl) {
+      links.push({
+        key: 'feed',
+        url: feedUrl,
+        label: translateForRequest('govuk_alpha_commerce.podcast_studio.share_feed_link'),
+        hint: translateForRequest('govuk_alpha_commerce.podcast_studio.share_feed_link_hint')
+      });
+    }
+  }
+  return { ready: true, links, feedNeedsPublic: Boolean(rssEnabled && !isPublic) };
+}
+
 router.get('/studio', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (!token) return undefined;
@@ -616,15 +677,19 @@ router.get('/studio', asyncRoute(async (req, res) => {
   try {
     const result = await callPodcast(token, 'GET', '/mine');
     const meta = metaFrom(result);
+    const rssEnabled = meta.enable_rss_feed !== false;
     const shows = rowsFrom(result)
       .map((show) => decorateShow(show))
-      .filter((show) => show.id !== null);
+      .filter((show) => show.id !== null)
+      .map((show) => ({ ...show, share: shareLinksFor(show, req, res, rssEnabled) }));
 
     return res.render('podcasts/studio', {
       title: res.locals.t('govuk_alpha_commerce.podcast_studio.title'),
       activeNav: 'explore',
       shows,
       canCreateShow: meta.can_create_show === true,
+      // The publishing guide: every step open for a creator with no show yet.
+      guide: { open: shows.length === 0, rssEnabled, maxAudioMb: maxAudioMbFrom(meta) },
       status: statusEntry(req.query.status, req)
     });
   } catch (error) {
@@ -705,6 +770,7 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
     show.studioTag = availability.tag;
     show.moderationFeedback = moderationFeedback(show);
     show.subscriberCount = Math.max(0, Math.floor(Number(show.subscriber_count) || 0));
+    show.share = shareLinksFor(show, req, res, meta.enable_rss_feed !== false);
 
     const episodeVisibilities = meta.enable_private_shows === true
       ? ['inherit', 'public', 'members', 'private']
@@ -885,3 +951,4 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.shareLinksFor = shareLinksFor;

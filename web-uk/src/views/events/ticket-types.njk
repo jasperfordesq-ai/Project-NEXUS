@@ -1,0 +1,63 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set T = "govuk_alpha_events.ticket_types." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets') }}">{{ t(T ~ "back_to_tickets") }}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status == "action-failed" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(T ~ "action_failed") }}</p></div>
+          </div>
+        </div>
+      {% elif status %}
+        {{ govukNotificationBanner({ type: "success", titleText: t("govuk_alpha_events.common.success_title"), text: t(T ~ "status_" ~ status) }) }}
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t(T ~ "title") }}</h1>
+      <p class="govuk-body">{{ t(T ~ "intro") }}</p>
+      {% if not timeCreditSupported %}
+        <div class="govuk-inset-text">{{ t(T ~ "time_credit_unavailable") }}</div>
+      {% endif %}
+      <a href="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/new') }}" class="govuk-button" role="button" draggable="false" data-module="govuk-button">{{ t(T ~ "create") }}</a>
+
+      {% if not ticketTypes.length %}
+        <p class="govuk-body">{{ t(T ~ "empty") }}</p>
+      {% endif %}
+      {% for type in ticketTypes %}
+        <section class="govuk-!-margin-bottom-8" aria-labelledby="ticket-type-{{ type.id }}">
+          <h2 class="govuk-heading-m" id="ticket-type-{{ type.id }}">{{ type.name }}</h2>
+          <p class="govuk-body">{{ govukTag({ text: t(T ~ "state_" ~ type.status), classes: ("govuk-tag--green" if type.status == "active" else "govuk-tag--grey") }) }}</p>
+          {% if type.description %}<p class="govuk-body">{{ type.description }}</p>{% endif %}
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "price") }}</dt><dd class="govuk-summary-list__value">{{ t(T ~ "free") if type.kind == "free" else t(T ~ "credit_price", { value: type.price }) }}</dd></div>
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "allocation") }}</dt><dd class="govuk-summary-list__value">{{ type.allocationLimit }}</dd></div>
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "remaining") }}</dt><dd class="govuk-summary-list__value">{{ type.remaining }}</dd></div>
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "per_member") }}</dt><dd class="govuk-summary-list__value">{{ type.perMemberLimit }}</dd></div>
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(T ~ "sales_window") }}</dt><dd class="govuk-summary-list__value">{{ t(T ~ "sales_window_value", { opens: type.salesOpenLabel, closes: type.salesCloseLabel }) }}</dd></div>
+          </dl>
+          <ul class="govuk-list nexus-alpha-actions">
+            {% if type.canEdit %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/' + (type.id | string) + '/edit') }}">{{ t(T ~ "edit") }}<span class="govuk-visually-hidden"> {{ type.name }}</span></a></li>{% endif %}
+            {% if type.canActivate %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/' + (type.id | string) + '/activate') }}">{{ t(T ~ "activate") }}<span class="govuk-visually-hidden"> {{ type.name }}</span></a></li>{% endif %}
+            {% if type.canPause %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/' + (type.id | string) + '/pause') }}">{{ t(T ~ "pause") }}<span class="govuk-visually-hidden"> {{ type.name }}</span></a></li>{% endif %}
+            {% if type.canArchive %}<li><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/tickets/types/' + (type.id | string) + '/archive') }}">{{ t(T ~ "archive") }}<span class="govuk-visually-hidden"> {{ type.name }}</span></a></li>{% endif %}
+          </ul>
+        </section>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

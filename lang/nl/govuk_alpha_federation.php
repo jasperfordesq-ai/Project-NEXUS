@@ -105,4 +105,8 @@ return [
         'next' => 'Doorgaan',
         'do_this_later' => 'Doe dit later',
     ],
+    'safeguarding' => [
+        'heading' => 'Contact niet mogelijk',
+        'body' => 'Het beschermingsbeleid van de gemeenschap van dit lid staat geen direct contact van jou toe. Een coördinator van de gemeenschap kan helpen.',
+    ],
 ];

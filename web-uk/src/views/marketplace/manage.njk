@@ -26,6 +26,7 @@
   <p class="govuk-body">
     <a class="govuk-button" href="{{ urlFor('/marketplace/create') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.create_button") }}</a>
   </p>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/shipping') }}">{{ t("govuk_alpha_commerce.shipping.manage_link") }}</a></p>
 
   <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_commerce.my_listings.title') }}">
     <ul class="govuk-tabs__list">
@@ -48,6 +49,7 @@
         <div class="nexus-alpha-actions govuk-!-margin-bottom-6">
           <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.my_listings.action_view") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></a>
           <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.my_listings.action_edit") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></a>
+          <a class="govuk-link govuk-!-margin-right-3" href="{{ urlFor('/marketplace/' + (item.id | string) + '/photos') }}">{{ t("govuk_alpha_commerce.photos.action") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></a>
           {% if tab == 'expired' %}
             <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/renew') }}" class="nexus-alpha-inline-form">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">

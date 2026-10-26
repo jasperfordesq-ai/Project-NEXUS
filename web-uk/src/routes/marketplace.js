@@ -370,6 +370,50 @@ async function callMarketplace(token, method, path) {
   return callMarketplaceApi(token, method, path);
 }
 
+// 🔴 Nothing in the marketplace paginated (26 Oct 2026). Every list asked for one capped
+// page (30, 50 or 100) and showed only that, so the 51st offer, order or saved item was
+// unreachable. Laravel answers every one of these lists with a cursor
+// (`meta.cursor` + `meta.has_more`, BaseApiController::respondWithCollection), so each
+// page now offers "Next page" carrying that cursor, and "First page" once you have moved
+// on. A cursor only goes forward, so there is no "previous" — first page is the way back.
+const MAX_CURSOR_LENGTH = 2048;
+
+function cursorFrom(query) {
+  return trimmed(query && query.cursor, MAX_CURSOR_LENGTH);
+}
+
+function appendCursor(params, query) {
+  const cursor = cursorFrom(query);
+  if (cursor) params.set('cursor', cursor);
+  return params;
+}
+
+/** `&cursor=…` for a hand-built API path, or '' on the first page. */
+function cursorSuffix(query) {
+  const cursor = cursorFrom(query);
+  return cursor ? `&cursor=${encodeURIComponent(cursor)}` : '';
+}
+
+function pageLinks(basePath, query, meta) {
+  const params = new URLSearchParams();
+  Object.entries(query || {}).forEach(([key, value]) => {
+    if (key === 'cursor' || key === 'status') return;
+    arrayFrom(value).forEach((item) => {
+      const text = trimmed(item, 500);
+      if (text) params.append(key, text);
+    });
+  });
+  const base = params.toString() ? `${basePath}?${params.toString()}` : basePath;
+  const nextCursor = trimmed(meta && meta.cursor, MAX_CURSOR_LENGTH);
+  const hasMore = Boolean(meta && (meta.has_more === true || meta.has_more === 1 || meta.has_more === 'true'));
+  return {
+    nextHref: hasMore && nextCursor
+      ? `${base}${base.includes('?') ? '&' : '?'}cursor=${encodeURIComponent(nextCursor)}`
+      : '',
+    firstHref: cursorFrom(query) ? base : ''
+  };
+}
+
 function isAuthError(error) {
   return error instanceof ApiError && error.status === 401;
 }
@@ -842,14 +886,47 @@ async function directBuyCheckout(token, id) {
   };
 }
 
+/**
+ * Walk a cursor-paginated marketplace list until `predicate` matches a row.
+ *
+ * 🔴 The accepted-offer checkout used to read ONE page of 50 sent offers, so a buyer with
+ * more than 50 could never complete a purchase the seller had already accepted — the
+ * offer was "not found". There is no single-offer endpoint, so walk the pages (bounded).
+ */
+// `fetchPage(cursor)` makes the call itself, with a literal method and path, so the
+// API consumer ledger can classify it.
+async function findAcrossPages(fetchPage, predicate, maxPages = 20) {
+  let cursor = '';
+  for (let page = 0; page < maxPages; page += 1) {
+    // Sequential on purpose: each page's cursor comes from the one before it.
+    const result = await fetchPage(cursor);
+    const found = rowsFrom(result).find(predicate);
+    if (found) return found;
+    const meta = metaFrom(result);
+    const next = trimmed(meta.cursor, MAX_CURSOR_LENGTH);
+    if (!meta.has_more || !next || next === cursor) return null;
+    cursor = next;
+  }
+  return null;
+}
+
+function cursorParam(cursor) {
+  return cursor ? `&cursor=${encodeURIComponent(cursor)}` : '';
+}
+
 async function acceptedOfferCheckout(token, id) {
-  const [offersResult, ordersResult] = await Promise.all([
-    callMarketplace(token, 'GET', '/my-offers/sent?per_page=50'),
-    callMarketplace(token, 'GET', `/orders/purchases?${ordersQuery('all')}`).catch(() => ({ data: [] }))
+  const [offer, existingOrder] = await Promise.all([
+    findAcrossPages(
+      (cursor) => callMarketplace(token, 'GET', `/my-offers/sent?per_page=100${cursorParam(cursor)}`),
+      (row) => positiveInteger(row && row.id) === id
+    ),
+    findAcrossPages(
+      (cursor) => callMarketplace(token, 'GET', `/orders/purchases?${ordersQuery('all', { cursor }, 100)}`),
+      (row) => positiveInteger(row && row.marketplace_offer_id) === id
+    ).catch(() => null)
   ]);
-  const offer = rowsFrom(offersResult).find((row) => positiveInteger(row && row.id) === id);
   if (!offer || trimmed(offer.status) !== 'accepted') throw new ApiError('Accepted offer not found', 404);
-  if (rowsFrom(ordersResult).some((row) => positiveInteger(row && row.marketplace_offer_id) === id)) {
+  if (existingOrder) {
     return { existingOrder: true };
   }
 
@@ -1160,6 +1237,7 @@ function categoryListingsQuery(categoryId, query) {
   params.set('limit', '30');
   appendText(params, 'q', query.q);
   params.set('category_id', String(categoryId));
+  appendCursor(params, query);
   return params.toString();
 }
 
@@ -1203,12 +1281,13 @@ const ORDER_TAB_STATUSES = {
   cancelled: 'cancelled,refunded'
 };
 
-function ordersQuery(tab) {
+function ordersQuery(tab, query = {}, limit = 50) {
   const params = new URLSearchParams();
-  params.set('limit', '50');
+  params.set('limit', String(limit));
   if (tab !== 'all') {
     params.set('status', Object.hasOwn(ORDER_TAB_STATUSES, tab) ? ORDER_TAB_STATUSES[tab] : tab);
   }
+  appendCursor(params, query);
   return params.toString();
 }
 
@@ -1556,7 +1635,11 @@ function reportFormErrors(req, state) {
 const LISTING_ERROR_FIELDS = {
   'govuk_alpha_commerce.listing_form.error_title': 'title',
   'govuk_alpha_commerce.listing_form.error_description': 'description',
-  'govuk_alpha_commerce.listing_form.error_price': 'price'
+  'govuk_alpha_commerce.listing_form.error_price': 'price',
+  // Optional photos on the create form (26 Oct 2026).
+  'govuk_alpha_commerce.photos.error_too_many': 'images',
+  'govuk_alpha_commerce.photos.error_type': 'images',
+  'govuk_alpha_commerce.photos.error_size': 'images'
 };
 
 /**
@@ -1615,7 +1698,8 @@ router.get('/', asyncRoute(async (req, res) => {
       categories,
       query: trimmed(req.query.q),
       categoryId: positiveInteger(req.query.category_id),
-      status: statusEntry(req, req.query.status)
+      status: statusEntry(req, req.query.status),
+      pagination: pageLinks('/marketplace', req.query, metaFrom(listingResult))
     });
   } catch (error) {
     return renderMarketplaceError(error, res);
@@ -1686,8 +1770,8 @@ router.get('/saved', asyncRoute(async (req, res) => {
   if (!token) return undefined;
 
   try {
-    const listingResult = await callMarketplace(token, 'GET', '/listings/saved?limit=50');
-    const { rows: listings } = listingRowsFrom(listingResult);
+    const listingResult = await callMarketplace(token, 'GET', `/listings/saved?limit=50${cursorSuffix(req.query)}`);
+    const { rows: listings, meta } = listingRowsFrom(listingResult);
     return res.render('marketplace/listing-list', {
       title: 'Saved items',
       titleKey: 'govuk_alpha_commerce.saved.title',
@@ -1695,7 +1779,8 @@ router.get('/saved', asyncRoute(async (req, res) => {
       activeTab: 'saved',
       listings,
       mode: 'saved',
-      status: trimmed(req.query.status) === 'unsaved' ? statusEntry(req, 'unsaved') : null
+      status: trimmed(req.query.status) === 'unsaved' ? statusEntry(req, 'unsaved') : null,
+      pagination: pageLinks('/marketplace/saved', req.query, meta)
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'Saved items');
@@ -1707,8 +1792,8 @@ router.get('/free', asyncRoute(async (req, res) => {
   if (!token) return undefined;
 
   try {
-    const listingResult = await callMarketplace(token, 'GET', '/listings/free?limit=50');
-    const { rows: listings } = listingRowsFrom(listingResult);
+    const listingResult = await callMarketplace(token, 'GET', `/listings/free?limit=50${cursorSuffix(req.query)}`);
+    const { rows: listings, meta } = listingRowsFrom(listingResult);
     return res.render('marketplace/listing-list', {
       title: 'Free items',
       titleKey: 'govuk_alpha_commerce.free_items.title',
@@ -1716,12 +1801,45 @@ router.get('/free', asyncRoute(async (req, res) => {
       activeTab: 'free',
       listings,
       mode: 'free',
-      status: null
+      status: null,
+      pagination: pageLinks('/marketplace/free', req.query, meta)
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'Free items');
   }
 }));
+
+// Borrow & lend (React `marketplace/borrow`, 26 Oct 2026): only the listings members are
+// lending. Lend listings could be created and opened here, but nothing listed them on
+// their own, so a member looking for something to borrow had to sift the whole market.
+router.get('/borrow', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+
+  try {
+    const params = new URLSearchParams({ price_type: 'lend', limit: '30' });
+    appendCursor(params, req.query);
+    const listingResult = await callMarketplace(token, 'GET', `/listings?${params.toString()}`);
+    const { rows: listings, meta } = listingRowsFrom(listingResult);
+    return res.render('marketplace/listing-list', {
+      title: 'Borrow and lend',
+      titleKey: 'govuk_alpha_commerce.borrow.title',
+      activeNav: 'explore',
+      activeTab: 'borrow',
+      listings,
+      mode: 'borrow',
+      status: null,
+      pagination: pageLinks('/marketplace/borrow', req.query, meta)
+    });
+  } catch (error) {
+    return renderMarketplaceError(error, res, 'Borrow and lend');
+  }
+}));
+
+// React's "Become a marketplace partner" pages (`marketplace/become-partner` and
+// `marketplace/seller/onboarding`) are the same merchant-onboarding wizard this site
+// already serves at /marketplace/onboarding. A link in React's shape lands there.
+router.get(['/become-partner', '/seller/onboarding'], (req, res) => redirectTo(res, '/marketplace/onboarding'));
 
 router.get('/category/:slug([A-Za-z0-9_-]+)', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
@@ -1747,7 +1865,8 @@ router.get('/category/:slug([A-Za-z0-9_-]+)', asyncRoute(async (req, res) => {
       mode: 'category',
       query: trimmed(req.query.q),
       category,
-      status: null
+      status: null,
+      pagination: pageLinks(`/marketplace/category/${encodeURIComponent(category.slug)}`, req.query, listingResult.meta)
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'Marketplace category');
@@ -1772,6 +1891,7 @@ router.get('/search', asyncRoute(async (req, res) => {
       listings: listings.rows,
       categories,
       state: advancedSearchState(req.query),
+      pagination: pageLinks('/marketplace/search', req.query, listings.meta),
       ...advancedSearchOptions()
     });
   } catch (error) {
@@ -1786,7 +1906,7 @@ router.get('/seller/:sellerId(\\d+)', asyncRoute(async (req, res) => {
   try {
     const [sellerResult, listingResult] = await Promise.all([
       callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(req.params.sellerId)}`),
-      callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(req.params.sellerId)}/listings?per_page=50`)
+      callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(req.params.sellerId)}/listings?per_page=50${cursorSuffix(req.query)}`)
     ]);
     const translate = typeof res.locals.t === 'function' ? res.locals.t : fallbackTranslator;
     const seller = decorateSeller(objectFrom(sellerResult), translate);
@@ -1794,7 +1914,8 @@ router.get('/seller/:sellerId(\\d+)', asyncRoute(async (req, res) => {
       title: seller.name,
       activeNav: 'explore',
       seller,
-      listings: listingRowsFrom(listingResult).rows
+      listings: listingRowsFrom(listingResult).rows,
+      pagination: pageLinks(`/marketplace/seller/${encodeURIComponent(req.params.sellerId)}`, req.query, metaFrom(listingResult))
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'Seller profile');
@@ -1808,8 +1929,8 @@ router.get('/offers', asyncRoute(async (req, res) => {
   const tab = allowed(req.query.tab, OFFER_TABS, 'received');
   try {
     const result = tab === 'sent'
-      ? await callMarketplace(token, 'GET', '/my-offers/sent?per_page=50')
-      : await callMarketplace(token, 'GET', '/my-offers/received?per_page=50');
+      ? await callMarketplace(token, 'GET', `/my-offers/sent?per_page=50${cursorSuffix(req.query)}`)
+      : await callMarketplace(token, 'GET', `/my-offers/received?per_page=50${cursorSuffix(req.query)}`);
     return res.render('marketplace/offers', {
       title: 'My offers',
       titleKey: 'govuk_alpha_commerce.offers.title',
@@ -1817,7 +1938,8 @@ router.get('/offers', asyncRoute(async (req, res) => {
       activeTab: 'offers',
       tab,
       offers: rowsFrom(result).map((offer) => decorateOffer(offer, tab, res.locals.t)),
-      status: statusEntry(req, req.query.status)
+      status: statusEntry(req, req.query.status),
+      pagination: pageLinks('/marketplace/offers', { ...req.query, tab }, metaFrom(result))
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'My offers');
@@ -1869,8 +1991,8 @@ async function ordersViewModel(req, res, role) {
   const translate = typeof res.locals.t === 'function' ? res.locals.t : fallbackTranslator;
   try {
     const result = isSeller
-      ? await callMarketplace(token, 'GET', `/orders/sales?${ordersQuery(tab)}`)
-      : await callMarketplace(token, 'GET', `/orders/purchases?${ordersQuery(tab)}`);
+      ? await callMarketplace(token, 'GET', `/orders/sales?${ordersQuery(tab, req.query)}`)
+      : await callMarketplace(token, 'GET', `/orders/purchases?${ordersQuery(tab, req.query)}`);
     return {
       title: isSeller ? 'Sales' : 'My orders',
       titleKey: isSeller
@@ -1888,7 +2010,8 @@ async function ordersViewModel(req, res, role) {
         active: value === tab
       })),
       orders: rowsFrom(result).map((order) => decorateOrder(order, role, translate)),
-      status: statusEntry(req, req.query.status)
+      status: statusEntry(req, req.query.status),
+      pagination: pageLinks(isSeller ? '/marketplace/sales' : '/marketplace/orders', { ...req.query, tab }, metaFrom(result))
     };
   } catch (error) {
     renderMarketplaceError(error, res, isSeller ? 'Sales' : 'My orders');
@@ -2221,3 +2344,5 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+// Shared with routes/marketplace-member-tools.js (photos, shipping options, reports).
+module.exports.helpers = { decorateListing, formatMoney, tenantCurrency };

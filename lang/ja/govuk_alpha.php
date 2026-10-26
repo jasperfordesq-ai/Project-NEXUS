@@ -158,6 +158,10 @@ return [
         'nav_label' => 'フッターナビゲーション',
         'meta_label' => '裏付けとなる情報と帰属',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => '私たちのページ',
+            ],
             'platform' => [
                 'heading' => 'プラットフォーム',
                 'listings' => 'リスト',
@@ -3646,6 +3650,10 @@ return [
             'offers_hint' => '他の方をサポートできること。',
             'needs_label' => '希望するサポート',
             'needs_hint' => 'サポートしてほしいこと。',
+            'intro' => '手伝えることと、手伝ってほしいことを教えてください。候補から選ぶか、自分で入力してください。あとで変更できます。',
+            'offers_other_label' => '提供できるその他のスキル',
+            'needs_other_label' => '求めているその他の手助け',
+            'other_hint' => 'それぞれを読点かカンマで区切ってください。例：ガーデニング、犬の散歩',
         ],
         'safeguarding' => [
             'title' => 'セーフガーディング',
@@ -4581,6 +4589,10 @@ return [
         'contact_cta_title' => 'まだ助けが必要ですか%',
         'contact_cta_body' => 'ここで答えが見つからない場合は、ご連絡ください。お手伝いいたします。',
         'contact_cta_button' => 'お問い合わせ',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'パンくずリスト',
+        'main_website_only' => 'この操作はメインのウェブサイトで行います。アクセシブル版のサイトにはこのページがありません。',
     ],
     'kb' => [
         'caption' => ':community',

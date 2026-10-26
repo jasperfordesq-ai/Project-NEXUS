@@ -1,0 +1,162 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Regional points — the community's third currency (React wallet/regional-points).
+  The recipient search is a GET form, so it works without JavaScript and the
+  results are a stable page a screen-reader user can review at their own pace.
+#}
+
+{% extends "layouts/base.njk" %}
+{% set rp = "govuk_alpha_wallet.regional_points." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/wallet') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if unavailable %}
+        <h1 class="govuk-heading-xl">{{ t(rp + "unavailable.title") }}</h1>
+        <p class="govuk-body">{{ t(rp + "unavailable.description") }}</p>
+      {% else %}
+        {% if statusMessage and statusMessage.type == "success" %}
+          <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="rp-status-title">
+            <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="rp-status-title">{{ t("states.success_title") }}</h2></div>
+            <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusMessage.text }}</p></div>
+          </div>
+        {% elif statusMessage %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list"><li><a href="#rp-transfer">{{ statusMessage.text }}</a></li></ul>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <h1 class="govuk-heading-xl">{{ label }}</h1>
+        <p class="govuk-body-l">{{ t(rp + "subtitle") }}</p>
+
+        <dl class="govuk-summary-list govuk-!-margin-bottom-8">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(rp + "balance") }}</dt>
+            <dd class="govuk-summary-list__value"><strong id="rp-balance">{{ balanceLabel }} {{ symbol }}</strong></dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(rp + "lifetime_earned") }}</dt>
+            <dd class="govuk-summary-list__value">{{ earnedLabel }} {{ symbol }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t(rp + "lifetime_spent") }}</dt>
+            <dd class="govuk-summary-list__value">{{ spentLabel }} {{ symbol }}</dd>
+          </div>
+        </dl>
+
+        {% if transfersEnabled %}
+          <section id="rp-transfer" aria-labelledby="rp-transfer-heading" class="govuk-!-margin-bottom-8">
+            <h2 class="govuk-heading-l" id="rp-transfer-heading">{{ t(rp + "transfer.title") }}</h2>
+
+            {% if not chosen %}
+              <form method="get" action="{{ urlFor('/wallet/regional-points') }}#rp-transfer" class="govuk-!-margin-bottom-6">
+                <div class="govuk-form-group{% if searchTooShort %} govuk-form-group--error{% endif %}">
+                  <label class="govuk-label govuk-label--s" for="rp-search">{{ t(rp + "transfer.recipient_label") }}</label>
+                  <div id="rp-search-hint" class="govuk-hint">{{ t(rp + "transfer.recipient_hint") }}</div>
+                  {% if searchTooShort %}
+                    <p id="rp-search-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ t(rp + "transfer.recipient_hint") }}</p>
+                  {% endif %}
+                  <input class="govuk-input govuk-!-width-two-thirds{% if searchTooShort %} govuk-input--error{% endif %}" id="rp-search" name="q" type="search" value="{{ query }}" autocomplete="off" aria-describedby="rp-search-hint{% if searchTooShort %} rp-search-error{% endif %}">
+                </div>
+                <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("actions.search") }}</button>
+              </form>
+
+              {% if searched %}
+                <h3 class="govuk-heading-m">{{ t(rp + "transfer.results_title") }}</h3>
+                {% if not results.length %}
+                  <p class="govuk-inset-text">{{ t(rp + "transfer.recipient_no_results") }}</p>
+                {% else %}
+                  <dl class="govuk-summary-list">
+                    {% for member in results %}
+                      <div class="govuk-summary-list__row">
+                        <dt class="govuk-summary-list__key">{{ member.name }}</dt>
+                        <dd class="govuk-summary-list__actions">
+                          <a class="govuk-link" href="{{ urlFor('/wallet/regional-points') }}?recipient={{ member.id }}&amp;recipient_name={{ member.name | urlencode }}#rp-transfer">{{ t(rp + "transfer.choose") }}<span class="govuk-visually-hidden"> {{ member.name }}</span></a>
+                        </dd>
+                      </div>
+                    {% endfor %}
+                  </dl>
+                {% endif %}
+              {% endif %}
+            {% else %}
+              <form method="post" action="{{ urlFor('/wallet/regional-points/review') }}" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="recipient_user_id" value="{{ chosen.id }}">
+                <input type="hidden" name="recipient_name" value="{{ chosen.name }}">
+                <dl class="govuk-summary-list">
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t(rp + "transfer.chosen_label") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ chosen.name }}</dd>
+                    <dd class="govuk-summary-list__actions">
+                      <a class="govuk-link" href="{{ urlFor('/wallet/regional-points') }}#rp-transfer">{{ t(rp + "transfer.change_recipient") }}<span class="govuk-visually-hidden"> {{ chosen.name }}</span></a>
+                    </dd>
+                  </div>
+                </dl>
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="rp-points">{{ t(rp + "transfer.amount") }}</label>
+                  <div class="govuk-input__wrapper">
+                    <input class="govuk-input govuk-input--width-5" id="rp-points" name="points" type="text" inputmode="decimal" spellcheck="false">
+                    <div class="govuk-input__suffix" aria-hidden="true">{{ symbol }}</div>
+                  </div>
+                </div>
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="rp-message">{{ t(rp + "transfer.message") }}</label>
+                  <textarea class="govuk-textarea" id="rp-message" name="message" rows="3" maxlength="500"></textarea>
+                </div>
+                <button type="submit" class="govuk-button" data-module="govuk-button">{{ t(rp + "transfer.submit") }}</button>
+              </form>
+            {% endif %}
+          </section>
+        {% endif %}
+
+        <section aria-labelledby="rp-history-heading">
+          <h2 class="govuk-heading-l" id="rp-history-heading">{{ t(rp + "history.title") }}</h2>
+          {% if historyFailed %}
+            <p class="govuk-inset-text">{{ t(rp + "errors.load_failed") }}</p>
+          {% elif not history.length %}
+            <p class="govuk-inset-text">{{ t(rp + "history.empty") }}</p>
+          {% else %}
+            <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(rp + "history.table_aria") }}">
+            <table class="govuk-table">
+              <caption class="govuk-table__caption govuk-visually-hidden">{{ t(rp + "history.table_aria") }}</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">{{ t(rp + "history.date") }}</th>
+                  <th scope="col" class="govuk-table__header">{{ t(rp + "history.type") }}</th>
+                  <th scope="col" class="govuk-table__header">{{ t(rp + "history.description") }}</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(rp + "history.amount") }}</th>
+                  <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(rp + "history.balance_after") }}</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for item in history %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ item.dateLabel }}</td>
+                    <td class="govuk-table__cell">{{ item.typeLabel }}</td>
+                    <td class="govuk-table__cell">{{ item.description }}</td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">{{ item.amountLabel }}</td>
+                    <td class="govuk-table__cell govuk-table__cell--numeric">{{ item.balanceAfterLabel }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            </div>
+          {% endif %}
+        </section>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{# One Help Centre guide: /help/:audience/:sectionId/:articleId.
+   The body arrives as data (lib/help-guides.js renderableBody), never as HTML, and
+   every piece of text below is autoescaped. Only the constructs React's HelpBody
+   supports exist: paragraph, ## heading, - bullets, 1. steps, > tip, **bold** and
+   [text](/path) links, the last only when the path maps to a page on this site. #}
+
+{% macro inline(tokens) -%}
+  {%- for token in tokens -%}
+    {%- if token.type == "bold" -%}<strong>{{ token.text }}</strong>
+    {%- elif token.type == "link" -%}<a class="govuk-link" href="{{ urlFor(token.href) }}">{{ token.text }}</a>
+    {%- else -%}{{ token.text }}{%- endif -%}
+  {%- endfor -%}
+{%- endmacro %}
+
+{% block beforeContent %}
+  {% include "support/_help-breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ sectionTitle }}</span>
+      <h1 class="govuk-heading-xl">{{ article.title }}</h1>
+      <p class="govuk-body-l">{{ article.summary }}</p>
+
+      {% if article.headings.length %}
+        <nav class="nexus-alpha-toc" aria-labelledby="help-contents-title">
+          <h2 class="govuk-heading-s" id="help-contents-title">{{ t("legal.contents_title") }}</h2>
+          <ul class="govuk-list">
+            {% for heading in article.headings %}
+              <li><a class="govuk-link" href="#{{ heading.id }}">{{ heading.text }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+
+      {% for block in article.body %}
+        {% if block.kind == "heading" %}
+          <h2 class="govuk-heading-m" id="{{ block.id }}">{{ inline(block.tokens) }}</h2>
+        {% elif block.kind == "bullet" %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in block.items %}<li>{{ inline(item) }}</li>{% endfor %}
+          </ul>
+        {% elif block.kind == "step" %}
+          <ol class="govuk-list govuk-list--number">
+            {% for item in block.items %}<li>{{ inline(item) }}</li>{% endfor %}
+          </ol>
+        {% elif block.kind == "tip" %}
+          <div class="govuk-inset-text">{{ inline(block.tokens) }}</div>
+        {% else %}
+          <p class="govuk-body">{{ inline(block.tokens) }}</p>
+        {% endif %}
+      {% endfor %}
+
+      {% if article.link %}
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor(article.link) }}">{{ ct("open_page") }}</a>
+      {% elif article.mainWebsiteOnly %}
+        <div class="govuk-inset-text">{{ t("help_centre.main_website_only") }}</div>
+      {% endif %}
+
+      {% if previous or next %}
+        <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ ct('pager_label') }}">
+          {% if previous %}
+            <div class="govuk-pagination__prev">
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(previous.href) }}" rel="prev">
+                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                </svg>
+                <span class="govuk-pagination__link-title">{{ ct("previous_article") }}</span>
+                <span class="govuk-visually-hidden">:</span>
+                <span class="govuk-pagination__link-label">{{ previous.title }}</span>
+              </a>
+            </div>
+          {% endif %}
+          {% if next %}
+            <div class="govuk-pagination__next">
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(next.href) }}" rel="next">
+                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                </svg>
+                <span class="govuk-pagination__link-title">{{ ct("next_article") }}</span>
+                <span class="govuk-visually-hidden">:</span>
+                <span class="govuk-pagination__link-label">{{ next.title }}</span>
+              </a>
+            </div>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+      {% if others.length %}
+        <h2 class="govuk-heading-m">{{ ct("in_this_section") }}</h2>
+        <ul class="govuk-list">
+          {% for other in others %}
+            <li><a class="govuk-link" href="{{ urlFor(other.href) }}">{{ other.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% include "support/_help-contact.njk" %}
+    </div>
+  </div>
+{% endblock %}

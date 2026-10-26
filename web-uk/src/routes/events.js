@@ -38,6 +38,8 @@ const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/dat
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
+const { resolveCanCreateEvents } = require('../lib/event-create-permission');
+const { loadTargetComments, socialStatusFrom } = require('../lib/target-comments');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
@@ -3459,6 +3461,8 @@ router.get('/', asyncRoute(async (req, res) => {
   const eventStatus = ['event-archived', 'event-deleted', 'event-archive-failed', 'event-created', 'event-created-image-failed'].includes(trimmed(req.query.status))
     ? trimmed(req.query.status)
     : '';
+  // Hide "Create event" where the community restricts who may create (React 7565bee36).
+  const canCreateEvents = token ? await resolveCanCreateEvents(req, token) : false;
 
   res.render('events/index', {
     title: scope
@@ -3483,6 +3487,7 @@ router.get('/', asyncRoute(async (req, res) => {
       cursor: trimmed(meta.cursor || meta.next_cursor)
     },
     isAuthenticated: Boolean(token),
+    canCreateEvents,
     canModerateEvents: moderationProbe !== null,
     successMessage: eventStatus ? null : (req.flash ? req.flash('success')[0] : null),
     errorMessage: eventStatus ? null : (req.flash ? req.flash('error')[0] : null)
@@ -3491,6 +3496,14 @@ router.get('/', asyncRoute(async (req, res) => {
 
 // Create event form
 router.get('/new', requireAuth, asyncRoute(async (req, res) => {
+  // A community that lets only brokers/administrators create Events gets a plain
+  // explanation instead of a form the API would refuse after it was filled in.
+  if (!(await resolveCanCreateEvents(req, req.token))) {
+    return res.status(403).render('events/create-restricted', {
+      title: res.locals.t('govuk_alpha_events.create_restricted.title'),
+      groupId: positiveInteger(req.query.group_id) || null
+    });
+  }
   let setupErrorMessage = null;
 
   const categoriesResult = await getEventCategories(req.token).catch((error) => {
@@ -3727,9 +3740,15 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     : '';
 
   const scheduleLabels = eventScheduleLabels(event, res.locals.formatLocaleDate);
+  // Comments and likes, as React's SocialInteractionPanel offers on this page.
+  const eventComments = await loadTargetComments(token, 'event', Number(id));
+
   res.render('events/detail', {
     title: event.title,
     event,
+    eventComments,
+    socialStatus: socialStatusFrom(req.query.social),
+    currentUserId,
     myRsvp,
     relationship,
     isOwner: isCurrentUserOwner,

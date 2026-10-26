@@ -1,0 +1,73 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Row-by-row preview of a member import. Import is offered only when no row is invalid. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set vm = "govuk_alpha_organisations.verein.import." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/clubs/' + (orgId | string) + '/admin/import') }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ organisationName or t(vm + "title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t(vm + "step2") }}</h1>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(vm + "summary.total") }}</dt><dd class="govuk-summary-list__value">{{ summary.total }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(vm + "summary.create") }}</dt><dd class="govuk-summary-list__value">{{ summary.create }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(vm + "summary.existing") }}</dt><dd class="govuk-summary-list__value">{{ summary.existing }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(vm + "summary.duplicates") }}</dt><dd class="govuk-summary-list__value">{{ summary.duplicates }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t(vm + "summary.invalid") }}</dt><dd class="govuk-summary-list__value">{{ summary.invalid }}</dd></div>
+  </dl>
+
+  {% if summary.invalid > 0 %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(vm + "errors.has_invalid_summary") }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if items.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(vm + "row.table_aria") }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t(vm + "row.table_aria") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(vm + "row.row") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t(vm + "row.action") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t(vm + "row.email") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t(vm + "row.name") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t(vm + "row.role") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t(vm + "row.errors") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for item in items %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ item.row }}</td>
+            <td class="govuk-table__cell">{{ govukTag({ text: item.actionLabel, classes: "govuk-tag--red" if item.invalid else "govuk-tag--grey" }) }}</td>
+            <td class="govuk-table__cell">{{ item.email }}</td>
+            <td class="govuk-table__cell">{{ item.name }}</td>
+            <td class="govuk-table__cell">{{ item.role }}</td>
+            <td class="govuk-table__cell">{% for message in item.errors %}{{ message }}{% if not loop.last %}<br>{% endif %}{% endfor %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+
+  {% if summary.invalid == 0 and summary.create > 0 %}
+    <form method="post" action="{{ urlFor('/clubs/' + (orgId | string) + '/admin/import') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(vm + "confirm") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

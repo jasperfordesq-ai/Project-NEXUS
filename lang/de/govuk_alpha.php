@@ -158,6 +158,10 @@ return [
         'nav_label' => 'Fußzeilennavigation',
         'meta_label' => 'Unterstützende Informationen und Namensnennung',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'Unsere Seiten',
+            ],
             'platform' => [
                 'heading' => 'Plattform',
                 'listings' => 'Einträge',
@@ -3646,6 +3650,10 @@ return [
             'offers_hint' => 'Dinge, bei denen Sie anderen helfen können.',
             'needs_label' => 'Hilfe, die Sie suchen',
             'needs_hint' => 'Dinge, bei denen Sie Hilfe benötigen.',
+            'intro' => 'Sagen Sie anderen, wobei Sie helfen können und wobei Sie Hilfe möchten. Wählen Sie aus den Vorschlägen oder geben Sie eigene ein. Sie können dies später ändern.',
+            'offers_other_label' => 'Weitere Fähigkeiten, die Sie anbieten können',
+            'needs_other_label' => 'Weitere Hilfe, die Sie suchen',
+            'other_hint' => 'Trennen Sie die Einträge mit Kommas, zum Beispiel: Gartenarbeit, Hunde ausführen',
         ],
         'safeguarding' => [
             'title' => 'Schutzmaßnahmen',
@@ -4581,6 +4589,10 @@ return [
         'contact_cta_title' => 'Brauchen Sie noch Hilfe%',
         'contact_cta_body' => 'Wenn Sie hier keine Antwort finden, kontaktieren Sie uns und wir helfen Ihnen weiter.',
         'contact_cta_button' => 'Kontaktieren Sie uns',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'Brotkrümelnavigation',
+        'main_website_only' => 'Dies erledigen Sie auf der Hauptwebsite. Die barrierefreie Website hat diese Seite nicht.',
     ],
     'kb' => [
         'caption' => ':community',

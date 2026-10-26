@@ -32,6 +32,7 @@ const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { resolveCanCreateEvents } = require('../lib/event-create-permission');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
 
 const router = express.Router();
@@ -307,6 +308,28 @@ function dateInputValue(value) {
   return date.toISOString().slice(0, 10);
 }
 
+/**
+ * The community's active group types, in the admin order, for the directory
+ * filter (GET /api/v2/groups/types). A failure only hides the filter: the list
+ * itself still loads, and a type label on a card comes from the group row.
+ */
+async function loadDirectoryGroupTypes(token) {
+  try {
+    const result = await callGroupApi(token, 'GET', '/types');
+    return collectionFrom(result)
+      .map((row) => ({ id: positiveInteger(row?.id), name: trimmed(row?.name) }))
+      .filter((row) => row.id !== null && row.name !== '');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    return [];
+  }
+}
+
+function groupTypeLabel(raw) {
+  const type = raw && typeof raw.type === 'object' && raw.type !== null ? raw.type : null;
+  return type ? trimmed(type.name) : '';
+}
+
 function normalizeGroup(item, fallbackId = null) {
   const raw = item && typeof item === 'object' ? item : {};
   const viewerMembership = raw.viewer_membership || raw.viewerMembership;
@@ -329,6 +352,7 @@ function normalizeGroup(item, fallbackId = null) {
     coverImageUrl: resolveBackendMediaUrl(raw.cover_image_url || raw.coverImageUrl || raw.cover_url || raw.coverUrl),
     createdAtLabel: dateLabel(raw.created_at || raw.createdAt),
     tagsText: groupTags(raw.tags).join(', '),
+    typeLabel: groupTypeLabel(raw),
     my_membership: membership || null,
     myMembership: membership || null,
     viewerMembershipKnown
@@ -401,7 +425,9 @@ function normalizeInvite(item) {
     type,
     email: trimmed(raw.email || ''),
     inviterName: trimmed(raw.inviter_name || raw.inviterName || raw.created_by_name || raw.createdByName || '') || '—',
-    expiresAtLabel: dateLabel(raw.expires_at || raw.expiresAt) || '-'
+    expiresAtLabel: dateLabel(raw.expires_at || raw.expiresAt) || '-',
+    // A link invite's address on this accessible site (the API's opens the website).
+    accessiblePath: type === 'link' ? accessibleInvitePath(raw.invite_url || raw.inviteUrl) : ''
   };
 }
 
@@ -1004,8 +1030,14 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   };
   if (groupsFilter === 'joined') filters.member = 'me';
   if (groupsFilter === 'public' || groupsFilter === 'private') filters.visibility = groupsFilter;
+  // Group type filter (React c7344ef45): `?type=<id>` as on the website.
+  const typeId = positiveInteger(req.query.type);
+  if (typeId) filters.type_id = typeId;
 
-  const groupsResult = await getGroups(req.token, filters);
+  const [groupsResult, groupTypes] = await Promise.all([
+    getGroups(req.token, filters),
+    loadDirectoryGroupTypes(req.token)
+  ]);
 
   const groups = collectionFrom(groupsResult)
     .map((group) => normalizeGroup(group, positiveInteger(group?.id)));
@@ -1013,6 +1045,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   const nextQuery = new URLSearchParams();
   if (searchQuery) nextQuery.set('q', searchQuery);
   if (groupsFilter !== 'all') nextQuery.set('filter', groupsFilter);
+  if (typeId) nextQuery.set('type', String(typeId));
   const nextCursor = trimmed(meta.cursor || meta.next_cursor);
   if (nextCursor) nextQuery.set('cursor', nextCursor);
 
@@ -1021,6 +1054,8 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     groups,
     searchQuery,
     groupsFilter,
+    groupTypes,
+    selectedTypeId: typeId,
     pagination: {
       hasMore: Boolean(meta.has_more),
       cursor: nextCursor,
@@ -1028,6 +1063,105 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     },
     status: trimmed(req.query.status)
   });
+}, { redirectOn401: loginRedirect() }));
+
+// ---- Group invitation links (React route groups/invite/:token) ------------
+// Organisers mint and email these links from the invite page; this is where a
+// member redeems one. A signed-out visitor is asked to sign in and is brought
+// straight back here afterwards (lib/login-return.js).
+const GROUP_INVITE_TOKEN = '[A-Za-z0-9]{40}';
+const GROUP_INVITE_ERROR_KEYS = {
+  EXPIRED: 'error_expired',
+  REVOKED: 'error_revoked',
+  EMAIL_MISMATCH: 'error_email_mismatch',
+  CAPACITY_FULL: 'error_capacity',
+  MEMBERSHIP_LIMIT_REACHED: 'error_limit',
+  GROUP_UNAVAILABLE: 'error_group_unavailable',
+  SAFEGUARDING_RESTRICTED: 'error_safeguarding',
+  SAFEGUARDING_POLICY_UNAVAILABLE: 'error_safeguarding_unavailable'
+};
+
+function accessibleInvitePath(link) {
+  const match = /\/groups\/invite\/([A-Za-z0-9]{40})(?:[?#]|$)/.exec(String(link || ''));
+  return match ? `/groups/invite/${match[1]}` : '';
+}
+
+function groupInviteErrorCode(error) {
+  const code = apiErrorCode(error);
+  if (code === 'SAFEGUARDING_POLICY_UNAVAILABLE') return code;
+  if (code.startsWith('SAFEGUARDING_') || code === 'VETTING_REQUIRED') return 'SAFEGUARDING_RESTRICTED';
+  return Object.prototype.hasOwnProperty.call(GROUP_INVITE_ERROR_KEYS, code) ? code : 'INVALID';
+}
+
+function groupInviteErrorKey(code) {
+  return `govuk_alpha_groups.invite_accept.${GROUP_INVITE_ERROR_KEYS[code] || 'error_invalid'}`;
+}
+
+// The page is reachable signed out; only a visitor carrying a sign-in is put
+// through requireAuth (which also refreshes an expired access token).
+function authIfSignedIn(req, res, next) {
+  if (req.signedCookies?.token || req.signedCookies?.refresh_token) return requireAuth(req, res, next);
+  return next();
+}
+
+router.get(`/invite/:token(${GROUP_INVITE_TOKEN})`, authIfSignedIn, asyncRoute(async (req, res) => {
+  const inviteToken = req.params.token;
+  const invitePath = `/groups/invite/${inviteToken}`;
+  const token = req.token || '';
+  const base = {
+    title: res.locals.t('govuk_alpha_groups.invite_accept.title'),
+    inviteToken,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  };
+
+  if (!token) {
+    return res.render('groups/invite-accept', {
+      ...base,
+      signedOut: true,
+      signInHref: `/login?status=auth-required&return_to=${encodeURIComponent(invitePath)}`
+    });
+  }
+
+  let preview;
+  try {
+    preview = dataFrom(await callGroup(token, 'GET', `/invite/${encodeURIComponent(inviteToken)}`)) || {};
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    if (!(error instanceof ApiError)) throw error;
+    return res.status(error.status === 404 ? 404 : 200).render('groups/invite-accept', {
+      ...base,
+      errorKey: groupInviteErrorKey(groupInviteErrorCode(error))
+    });
+  }
+
+  const group = preview.group && typeof preview.group === 'object' ? preview.group : {};
+  const membershipStatus = trimmed(preview.membership?.status) || 'none';
+  const queryError = trimmed(req.query.error).toUpperCase();
+  return res.render('groups/invite-accept', {
+    ...base,
+    group: {
+      id: positiveInteger(group.id),
+      name: trimmed(group.name),
+      memberCount: Number(group.member_count) || 0,
+      isPrivate: trimmed(group.visibility || 'public') !== 'public'
+    },
+    alreadyMember: membershipStatus === 'active',
+    justAccepted: trimmed(req.query.status) === 'accepted',
+    errorKey: queryError ? groupInviteErrorKey(queryError) : ''
+  });
+}, { redirectOn401: loginRedirect() }));
+
+router.post(`/invite/:token(${GROUP_INVITE_TOKEN})/accept`, requireAuth, asyncRoute(async (req, res) => {
+  const inviteToken = req.params.token;
+  const invitePath = `/groups/invite/${inviteToken}`;
+  try {
+    await callGroup(req.token, 'POST', `/invite/${encodeURIComponent(inviteToken)}/accept`, {});
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    if (!(error instanceof ApiError)) throw error;
+    return redirectTo(res, `${invitePath}?error=${encodeURIComponent(groupInviteErrorCode(error))}`);
+  }
+  return redirectTo(res, `${invitePath}?status=accepted`);
 }, { redirectOn401: loginRedirect() }));
 
 // Create group form
@@ -1129,7 +1263,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const isMember = isActiveGroupMember(group);
 
-  const [membersResult, eventsResult, announcementsResult, feedResult] = await Promise.all([
+  const [membersResult, eventsResult, announcementsResult, feedResult, canCreateEvents] = await Promise.all([
     getGroupMembers(req.token, id, { per_page: 100 }).catch((error) => {
       if (isAuthError(error)) throw error;
       if (error instanceof ApiError && error.status === 403) return { data: [] };
@@ -1148,7 +1282,9 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
         if (isAuthError(error)) throw error;
         return { data: [] };
       })
-      : Promise.resolve({ data: [] })
+      : Promise.resolve({ data: [] }),
+    // The community may restrict who creates Events (React 7565bee36).
+    isMember ? resolveCanCreateEvents(req, req.token) : Promise.resolve(false)
   ]);
 
   const members = collectionFrom(membersResult);
@@ -1201,6 +1337,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     isMember,
     isPending,
     groupCanParticipate: isMember,
+    canCreateEvents,
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     status: trimmed(req.query.status)
   });
@@ -1255,6 +1392,8 @@ router.get('/:id(\\d+)/invite', requireAuth, asyncRoute(async (req, res) => {
     activeNav: 'explore',
     group,
     generatedLink: inviteGeneratedLink(invitesResult),
+    // The API's link opens the main website; the same token redeems here too.
+    accessibleInvitePath: accessibleInvitePath(inviteGeneratedLink(invitesResult)),
     pendingInvites,
     ...inviteStatus(req.query.status, res.locals.t)
   });

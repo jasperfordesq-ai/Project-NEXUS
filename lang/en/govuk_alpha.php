@@ -159,6 +159,10 @@ return [
         'nav_label' => 'Footer navigation',
         'meta_label' => 'Supporting information and attribution',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'Our Pages',
+            ],
             'platform' => [
                 'heading' => 'Platform',
                 'listings' => 'Listings',
@@ -3713,6 +3717,10 @@ return [
             'offers_hint' => 'Things you can help others with.',
             'needs_label' => 'Help you are looking for',
             'needs_hint' => 'Things you would like help with.',
+            'intro' => 'Tell people what you can help with and what you would like help with. Choose from the suggestions or type your own. You can change these later.',
+            'offers_other_label' => 'Other skills you can offer',
+            'needs_other_label' => 'Other help you are looking for',
+            'other_hint' => 'Separate each one with a comma, for example: gardening, dog walking',
         ],
         'safeguarding' => [
             'title' => 'Safeguarding',
@@ -4652,6 +4660,10 @@ return [
         'contact_cta_title' => 'Still need help?',
         'contact_cta_body' => 'If you cannot find the answer here, get in touch and we will help.',
         'contact_cta_button' => 'Contact us',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'Breadcrumb',
+        'main_website_only' => 'This is done on the main website. The accessible site does not have this page.',
     ],
     'kb' => [
         'caption' => ':community',

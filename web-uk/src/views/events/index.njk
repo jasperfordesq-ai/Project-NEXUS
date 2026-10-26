@@ -89,7 +89,9 @@
     </div>
   {% elif isAuthenticated %}
     <div class="govuk-button-group">
-      {{ govukButton({ text: t("actions.create_event"), href: urlFor("/events/new") }) }}
+      {% if canCreateEvents %}
+        {{ govukButton({ text: t("actions.create_event"), href: urlFor("/events/new") }) }}
+      {% endif %}
       {% if scope == "mine" %}
         {{ govukButton({ text: t("own_records.all_events"), href: urlFor("/events"), classes: "govuk-button--secondary" }) }}
       {% else %}

@@ -1,0 +1,45 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Confirm waiving one member's dues; a reason is required. #}
+
+{% extends "layouts/base.njk" %}
+{% set vd = "govuk_alpha_organisations.verein.dues." %}
+{% set base = "/clubs/" + (orgId | string) + "/admin/dues" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t("actions.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if reasonMissing %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#waive-reason">{{ t(vd + "waive_reason_required") }}</a></li></ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <h1 class="govuk-heading-xl">{{ t(vd + "admin_waive_title") }}</h1>
+      {% if memberName %}<p class="govuk-body-l">{{ memberName }}</p>{% endif %}
+      <form method="post" action="{{ urlFor(base + '/' + (duesId | string) + '/waive') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group{% if reasonMissing %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="waive-reason">{{ t(vd + "admin_waive_reason_label") }}</label>
+          {% if reasonMissing %}<p id="waive-reason-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ t(vd + "waive_reason_required") }}</p>{% endif %}
+          <textarea class="govuk-textarea{% if reasonMissing %} govuk-textarea--error{% endif %}" id="waive-reason" name="reason" rows="3" maxlength="1000"{% if reasonMissing %} aria-describedby="waive-reason-error"{% endif %}></textarea>
+        </div>
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(vd + "admin_confirm_waive") }}</button>
+          <a class="govuk-link" href="{{ urlFor(base) }}">{{ t("actions.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

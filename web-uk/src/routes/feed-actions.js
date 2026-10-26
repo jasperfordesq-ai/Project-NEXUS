@@ -97,12 +97,36 @@ function redirectTo(res, pathname) {
   return res.redirect(localUrl(res, pathname));
 }
 
-function feedStatusRedirect(status) {
+/**
+ * Comments and likes on an event or a volunteering opportunity are posted from
+ * that page, so the member goes back there rather than to the feed. Only these
+ * exact path shapes are accepted (no open redirect); anything else falls back
+ * to the feed as before.
+ */
+const SOCIAL_RETURN_PATHS = [
+  /^\/events\/\d+$/,
+  /^\/volunteering\/opportunities\/\d+\/comments$/
+];
+
+function socialReturnPath(req) {
+  const value = trimmed(req?.body?.return_to, 200);
+  return SOCIAL_RETURN_PATHS.some((pattern) => pattern.test(value)) ? value : '';
+}
+
+function socialReturnRedirect(returnPath, status) {
+  return `${returnPath}?social=${encodeURIComponent(status)}#comments`;
+}
+
+function feedStatusRedirect(status, req = null) {
+  const returnPath = socialReturnPath(req);
+  if (returnPath) return socialReturnRedirect(returnPath, status);
   return `${FEED_PATH}?status=${encodeURIComponent(status)}`;
 }
 
 function feedRedirect(req, status = '', targetType = null, targetId = null) {
   if (!status) return FEED_PATH;
+  const returnPath = socialReturnPath(req);
+  if (returnPath) return socialReturnRedirect(returnPath, status);
 
   const params = new URLSearchParams();
   params.set('status', status);
@@ -299,12 +323,12 @@ router.post('/comments/:id(\\d+)/update', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const id = Number(req.params.id);
   if (!token) {
-    return redirectTo(res, feedStatusRedirect('auth-required'));
+    return redirectTo(res, feedStatusRedirect('auth-required', req));
   }
 
   const content = trimmed(req.body.content, 10000);
   if (content === '') {
-    return redirectTo(res, feedStatusRedirect('comment-empty'));
+    return redirectTo(res, feedStatusRedirect('comment-empty', req));
   }
 
   let status = 'comment-updated';
@@ -315,14 +339,14 @@ router.post('/comments/:id(\\d+)/update', asyncRoute(async (req, res) => {
     status = 'comment-update-failed';
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req));
 }));
 
 router.post('/comments/:id(\\d+)/delete', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const id = Number(req.params.id);
   if (!token) {
-    return redirectTo(res, feedStatusRedirect('auth-required'));
+    return redirectTo(res, feedStatusRedirect('auth-required', req));
   }
 
   let status = 'comment-deleted';
@@ -333,7 +357,7 @@ router.post('/comments/:id(\\d+)/delete', asyncRoute(async (req, res) => {
     status = 'comment-delete-failed';
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req));
 }));
 
 router.post('/comments/:id(\\d+)/react', asyncRoute(async (req, res) => {

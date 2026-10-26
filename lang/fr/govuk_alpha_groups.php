@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Retour au groupe',
         'back_to_announcements' => 'Retour aux annonces',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Type de groupe',
+        'type_all' => 'Tous les types de groupe',
+    ],
+    'invite_accept' => [
+        'title' => 'Invitation à un groupe',
+        'sign_in_needed' => 'Vous avez été invité à rejoindre un groupe. Connectez-vous pour voir l’invitation. Vous reviendrez ensuite sur cette page.',
+        'sign_in' => 'Se connecter',
+        'description' => 'Vous avez été invité à rejoindre ce groupe.',
+        'accept' => 'Accepter l’invitation',
+        'not_now' => 'Pas maintenant',
+        'already_member' => 'Vous êtes membre de ce groupe.',
+        'go_to_group' => 'Aller au groupe',
+        'success' => 'Vous êtes maintenant membre de ce groupe.',
+        'browse_groups' => 'Parcourir les groupes',
+        'accessible_link_hint' => 'La même invitation sur ce site accessible :',
+        'error_invalid' => 'Ce lien d’invitation n’est pas valide ou n’est plus disponible.',
+        'error_expired' => 'Cette invitation a expiré.',
+        'error_revoked' => 'Cette invitation a été retirée.',
+        'error_email_mismatch' => 'Cette invitation a été envoyée à une autre adresse e-mail. Connectez-vous avec le compte auquel elle a été envoyée.',
+        'error_capacity' => 'Ce groupe a atteint son nombre maximum de membres.',
+        'error_limit' => 'Vous avez atteint le nombre maximum de groupes que vous pouvez rejoindre.',
+        'error_group_unavailable' => 'Ce groupe n’accepte pas de nouveaux membres pour le moment.',
+        'error_safeguarding' => 'Les règles de protection de cette communauté ne vous permettent pas de rejoindre ce groupe. Demandez de l’aide à un coordinateur.',
+        'error_safeguarding_unavailable' => 'Nous ne pouvons pas vérifier les règles de protection de cette communauté pour le moment. Veuillez réessayer dans un instant.',
+    ],
 ];

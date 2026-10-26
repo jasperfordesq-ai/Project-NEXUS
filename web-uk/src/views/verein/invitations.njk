@@ -1,0 +1,74 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Cross-club invitations this member has received (React me/verein-invitations). #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "verein/_status.njk" import vereinStatus %}
+{% set vi = "govuk_alpha_organisations.verein.invitations." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ vereinStatus(statusMessage, t, "verein-invitations") }}
+      <h1 class="govuk-heading-xl">{{ t(vi + "title") }}</h1>
+      <p class="govuk-body-l">{{ t(vi + "subtitle") }}</p>
+
+      <div id="verein-invitations">
+        {% if loadFailed %}
+          <p class="govuk-inset-text">{{ t(vi + "load_failed") }}</p>
+        {% elif not invitations.length %}
+          <p class="govuk-inset-text">{{ t(vi + "empty") }}</p>
+        {% else %}
+          {% for invite in invitations %}
+            <div class="govuk-summary-card">
+              <div class="govuk-summary-card__title-wrapper">
+                <h2 class="govuk-summary-card__title">{{ invite.targetName }}</h2>
+                {{ govukTag({ text: invite.statusLabel, classes: invite.statusTag }) }}
+              </div>
+              <div class="govuk-summary-card__content">
+                <dl class="govuk-summary-list">
+                  {% if invite.inviterName %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">{{ t(vi + "from_label") }}</dt>
+                      <dd class="govuk-summary-list__value">{{ invite.inviterName }}{% if invite.sourceName %} ({{ invite.sourceName }}){% endif %}</dd>
+                    </div>
+                  {% endif %}
+                  {% if invite.message %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">{{ t(vi + "message_label") }}</dt>
+                      <dd class="govuk-summary-list__value">{{ invite.message }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if invite.expiresLabel %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">{{ t(vi + "expires_label") }}</dt>
+                      <dd class="govuk-summary-list__value">{{ invite.expiresLabel }}</dd>
+                    </div>
+                  {% endif %}
+                </dl>
+                {% if invite.canRespond %}
+                  <div class="govuk-button-group">
+                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <input type="hidden" name="action" value="accept">
+                      <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(vi + "accept") }}<span class="govuk-visually-hidden"> {{ invite.targetName }}</span></button>
+                    </form>
+                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <input type="hidden" name="action" value="decline">
+                      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(vi + "decline") }}<span class="govuk-visually-hidden"> {{ invite.targetName }}</span></button>
+                    </form>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

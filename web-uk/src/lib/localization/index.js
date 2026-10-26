@@ -5,6 +5,8 @@
 
 'use strict';
 
+const { getRequestRegion } = require('../request-locale-context');
+
 const SUPPORTED_LOCALES = Object.freeze([
   'en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'
 ]);
@@ -154,8 +156,37 @@ function createChoiceTranslator(locale) {
   return (key, count, replacements = {}) => translateChoice(locale, key, count, replacements);
 }
 
-function localeForIntl(locale) {
-  return intlLocales[isSupportedLocale(locale) ? locale : 'en'];
+// ISO 3166-1 alpha-2: exactly two letters. Anything else is ignored, so a
+// malformed community setting can never push formatting somewhere unexpected.
+function normalizeRegion(value) {
+  return typeof value === 'string' && /^[A-Za-z]{2}$/.test(value.trim())
+    ? value.trim().toUpperCase()
+    : null;
+}
+
+// The community's formatting region, by the same rule as the React frontend
+// (TenantContext → regionStore) and Laravel (App\I18n\FormattingLocale): the
+// explicit `general.region` setting from the tenant bootstrap wins, otherwise
+// the community's contact `country_code`. Never the browser's region.
+function regionForTenant(tenant = {}) {
+  if (!tenant || typeof tenant !== 'object') return null;
+  const settings = tenant.settings && typeof tenant.settings === 'object' ? tenant.settings : {};
+  const contact = tenant.contact && typeof tenant.contact === 'object' ? tenant.contact : {};
+  return normalizeRegion(settings.region) || normalizeRegion(contact.country_code);
+}
+
+// The Intl locale for a member's language. The LANGUAGE decides the words; the
+// community's REGION decides field order, month style, clock and number
+// grouping — so a US community gets 8/17/2026 in English and still reads Irish
+// words in Irish. With no region configured the language's own default below
+// is kept (en-GB, de-DE, …).
+function localeForIntl(locale, region) {
+  const language = isSupportedLocale(locale) ? locale : 'en';
+  const resolvedRegion = region === undefined
+    ? normalizeRegion(getRequestRegion())
+    : normalizeRegion(region);
+  if (resolvedRegion) return `${language}-${resolvedRegion}`;
+  return intlLocales[language];
 }
 
 function formatLocaleNumber(value, locale, options = {}) {
@@ -209,6 +240,7 @@ module.exports = {
   formatLocaleRelativeTime,
   isSupportedLocale,
   localeForIntl,
+  regionForTenant,
   translate,
   translateChoice,
   valueInCatalog

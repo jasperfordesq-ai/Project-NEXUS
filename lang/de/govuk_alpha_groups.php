@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Zurück zur Gruppe',
         'back_to_announcements' => 'Zurück zu den Ankündigungen',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Gruppenart',
+        'type_all' => 'Alle Gruppenarten',
+    ],
+    'invite_accept' => [
+        'title' => 'Gruppeneinladung',
+        'sign_in_needed' => 'Sie wurden eingeladen, einer Gruppe beizutreten. Melden Sie sich an, um die Einladung zu sehen. Danach kommen Sie auf diese Seite zurück.',
+        'sign_in' => 'Anmelden',
+        'description' => 'Sie wurden eingeladen, dieser Gruppe beizutreten.',
+        'accept' => 'Einladung annehmen',
+        'not_now' => 'Nicht jetzt',
+        'already_member' => 'Sie sind Mitglied dieser Gruppe.',
+        'go_to_group' => 'Zur Gruppe',
+        'success' => 'Sie sind jetzt Mitglied dieser Gruppe.',
+        'browse_groups' => 'Gruppen durchsuchen',
+        'accessible_link_hint' => 'Dieselbe Einladung auf dieser barrierefreien Website:',
+        'error_invalid' => 'Dieser Einladungslink ist ungültig oder nicht mehr verfügbar.',
+        'error_expired' => 'Diese Einladung ist abgelaufen.',
+        'error_revoked' => 'Diese Einladung wurde zurückgezogen.',
+        'error_email_mismatch' => 'Diese Einladung wurde an eine andere E-Mail-Adresse geschickt. Melden Sie sich mit dem Konto an, an das sie geschickt wurde.',
+        'error_capacity' => 'Diese Gruppe hat ihre Höchstzahl an Mitgliedern erreicht.',
+        'error_limit' => 'Sie sind bereits der höchstmöglichen Zahl an Gruppen beigetreten.',
+        'error_group_unavailable' => 'Diese Gruppe nimmt derzeit keine Mitglieder auf.',
+        'error_safeguarding' => 'Die Schutzregeln dieser Gemeinschaft erlauben Ihnen nicht, dieser Gruppe beizutreten. Bitten Sie eine Koordinatorin oder einen Koordinator um Hilfe.',
+        'error_safeguarding_unavailable' => 'Wir können die Schutzregeln dieser Gemeinschaft gerade nicht prüfen. Bitte versuchen Sie es in Kürze erneut.',
+    ],
 ];

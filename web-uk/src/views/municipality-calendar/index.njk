@@ -1,0 +1,75 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Municipality events calendar: one month as a list of days with events. #}
+
+{% extends "layouts/base.njk" %}
+{% set mc = "govuk_alpha_events.municipality_calendar." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(mc + "title") }}</h1>
+      {% if validCode %}
+        <p class="govuk-body-l">{{ t(mc + "subtitle", { municipality: validCode }) }}</p>
+      {% endif %}
+
+      <form method="get" action="{{ urlFor('/municipality-calendar') }}" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group{% if invalidCode %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="mc-code">{{ t(mc + "code_label") }}</label>
+          <div id="mc-code-hint" class="govuk-hint">{{ t(mc + "code_hint") }}</div>
+          {% if invalidCode %}
+            <p id="mc-code-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("forms.error_prefix") }}</span> {{ t(mc + "code_hint") }}</p>
+          {% endif %}
+          <input class="govuk-input govuk-input--width-10{% if invalidCode %} govuk-input--error{% endif %}" id="mc-code" name="code" type="text" value="{{ code }}" spellcheck="false" autocomplete="off" aria-describedby="mc-code-hint{% if invalidCode %} mc-code-error{% endif %}">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("actions.apply") }}</button>
+      </form>
+
+      {% if not validCode %}
+        <p class="govuk-inset-text">{{ t(mc + "no_municipality") }}</p>
+      {% else %}
+        <h2 class="govuk-heading-l" id="mc-month">{{ monthLabel }}</h2>
+        <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ monthLabel }}">
+          <div class="govuk-pagination__prev">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(previousHref) }}" rel="prev">
+              <span class="govuk-pagination__link-title">{{ t(mc + "prev") }}</span>
+            </a>
+          </div>
+          <div class="govuk-pagination__next">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+              <span class="govuk-pagination__link-title">{{ t(mc + "next") }}</span>
+            </a>
+          </div>
+        </nav>
+
+        {% if loadFailed %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(mc + "load_failed") }}</p></div>
+            </div>
+          </div>
+        {% elif not days.length %}
+          <p class="govuk-inset-text">{{ t(mc + "empty") }}</p>
+        {% else %}
+          {% for day in days %}
+            <h3 class="govuk-heading-m">{{ day.label }}</h3>
+            <ul class="govuk-list govuk-!-margin-bottom-6">
+              {% for event in day.events %}
+                <li>
+                  {% if event.id %}<a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a>{% else %}{{ event.title }}{% endif %}
+                  {% if event.time or event.organisation %}
+                    <span class="govuk-body-s nexus-alpha-meta">{% if event.time %}{{ event.time }}{% endif %}{% if event.time and event.organisation %} · {% endif %}{{ event.organisation }}</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

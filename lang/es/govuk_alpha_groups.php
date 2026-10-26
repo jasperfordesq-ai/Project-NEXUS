@@ -183,4 +183,32 @@ return [
         'back_to_group' => 'Volver al grupo',
         'back_to_announcements' => 'Volver a los anuncios',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Tipo de grupo',
+        'type_all' => 'Todos los tipos de grupo',
+    ],
+    'invite_accept' => [
+        'title' => 'Invitación a un grupo',
+        'sign_in_needed' => 'Te han invitado a unirte a un grupo. Inicia sesión para ver la invitación. Después volverás a esta página.',
+        'sign_in' => 'Iniciar sesión',
+        'description' => 'Te han invitado a unirte a este grupo.',
+        'accept' => 'Aceptar la invitación',
+        'not_now' => 'Ahora no',
+        'already_member' => 'Eres miembro de este grupo.',
+        'go_to_group' => 'Ir al grupo',
+        'success' => 'Ya eres miembro de este grupo.',
+        'browse_groups' => 'Ver grupos',
+        'accessible_link_hint' => 'La misma invitación en este sitio accesible:',
+        'error_invalid' => 'Este enlace de invitación no es válido o ya no está disponible.',
+        'error_expired' => 'Esta invitación ha caducado.',
+        'error_revoked' => 'Esta invitación se ha retirado.',
+        'error_email_mismatch' => 'Esta invitación se envió a otra dirección de correo. Inicia sesión con la cuenta a la que se envió.',
+        'error_capacity' => 'Este grupo ha alcanzado su límite de miembros.',
+        'error_limit' => 'Has alcanzado el número máximo de grupos a los que puedes unirte.',
+        'error_group_unavailable' => 'Este grupo no acepta miembros en este momento.',
+        'error_safeguarding' => 'Las normas de protección de esta comunidad no te permiten unirte a este grupo. Pide ayuda a un coordinador.',
+        'error_safeguarding_unavailable' => 'Ahora mismo no podemos comprobar las normas de protección de esta comunidad. Inténtalo de nuevo en breve.',
+    ],
 ];

@@ -8,6 +8,7 @@ const { timingSafeEqual } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, readDateTime } = require('../lib/date-input');
+const { filesFrom, photoProblem, removeFiles, uploadListingPhotos } = require('../lib/marketplace-photos');
 
 const router = express.Router();
 
@@ -507,7 +508,13 @@ router.post('/create', asyncRoute(async (req, res) => {
   const payload = listingPayload(req.body, defaultCurrency);
   const values = listingFormValues(req.body, defaultCurrency);
   const validationErrors = listingValidationErrorKeys(payload);
+  // Optional photos chosen on the create form (multipart; see server.js). Checked with
+  // the other fields so a wrong file type is reported before the listing exists.
+  const photos = filesFrom(req);
+  const photoError = photos.length > 0 ? photoProblem(photos) : '';
+  if (photoError) validationErrors.push(photoError);
   if (validationErrors.length > 0) {
+    await removeFiles(photos);
     rememberListingForm(req, 'create', values, validationErrors);
     return redirectTo(res, '/marketplace/create?status=listing-validation');
   }
@@ -520,8 +527,19 @@ router.post('/create', asyncRoute(async (req, res) => {
     // approves it. Saying just "created" here told sellers their listing was
     // public when it was not.
     const pendingModeration = Boolean(result && result.meta && result.meta.notice);
+    if (id && photos.length > 0) {
+      try {
+        await uploadListingPhotos(token, id, photos);
+      } catch (uploadError) {
+        if (redirectOnAuthError(uploadError, res)) return undefined;
+        // The listing exists; only the photos failed. Send the seller to the photos
+        // page to try again, never back to a create form that would duplicate it.
+        return redirectTo(res, `/marketplace/${id}/photos?status=created-photos-failed`);
+      }
+    }
     return redirectTo(res, listingRedirect(id || 'mine', pendingModeration ? 'listing-created-pending' : 'listing-created'));
   } catch (error) {
+    await removeFiles(photos);
     if (redirectOnAuthError(error, res)) return undefined;
     rememberListingForm(req, 'create', values, ['govuk_alpha_commerce.listing_form.error_create']);
     return redirectTo(res, '/marketplace/create?status=listing-create-failed');
@@ -778,9 +796,18 @@ router.post('/offers/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   let shippingOptions = [];
   let pickupSlots = [];
   try {
-    const offersResult = await callApi(token, 'GET', '/my-offers/sent?per_page=50');
-    const offers = Array.isArray(dataFrom(offersResult)) ? dataFrom(offersResult) : [];
-    offer = offers.find((row) => positiveInteger(row && row.id) === id && trimmed(row && row.status) === 'accepted');
+    // 🔴 Walk the pages of sent offers (26 Oct 2026). One page of 50 meant a buyer with
+    // more than 50 offers could never pay for one the seller had already accepted.
+    let cursor = '';
+    for (let page = 0; page < 20 && !offer; page += 1) {
+      const offersResult = await callApi(token, 'GET', `/my-offers/sent?per_page=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+      const offers = Array.isArray(dataFrom(offersResult)) ? dataFrom(offersResult) : [];
+      offer = offers.find((row) => positiveInteger(row && row.id) === id && trimmed(row && row.status) === 'accepted');
+      const meta = offersResult && typeof offersResult === 'object' && offersResult.meta ? offersResult.meta : {};
+      const next = trimmed(meta.cursor, 2048);
+      if (offer || !meta.has_more || !next || next === cursor) break;
+      cursor = next;
+    }
     if (!offer) return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
     const authoritativeListingId = positiveInteger(offer.marketplace_listing_id || offer.listing_id || (offer.listing && offer.listing.id));
     if (!authoritativeListingId) return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');

@@ -4,36 +4,106 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 
+{# Help Centre home (/help) and an audience's guides (/help/brokers, /help/admins).
+   Guide text comes from the React Help Centre via scripts/build-help-guides.js;
+   `ct` reads its help_centre strings. The community's own FAQs (Admin -> Help FAQs)
+   stay on the home page and in search results, as in React. #}
+
+{% block beforeContent %}
+  {% include "support/_help-breadcrumbs.njk" %}
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("help.caption", { community: communityName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("help.title") }}</h1>
-      <p class="govuk-body-l">{{ t("help.subtitle", { name: communityName }) }}</p>
+      {% if isHome %}
+        <span class="govuk-caption-xl">{{ t("help.caption", { community: communityName }) }}</span>
+        <h1 class="govuk-heading-xl">{{ t("help.title") }}</h1>
+        <p class="govuk-body-l">{{ t("help.subtitle", { name: communityName }) }}</p>
+      {% else %}
+        <span class="govuk-caption-xl">{{ ct("page_title") }}</span>
+        <h1 class="govuk-heading-xl">{{ audienceTitle }}</h1>
+        <p class="govuk-body-l">{{ audienceDescription }}</p>
+      {% endif %}
 
-      <form method="get" action="{{ urlFor('/help') }}" class="govuk-!-margin-bottom-6">
+      <form method="get" action="{{ urlFor(searchAction) }}" class="govuk-!-margin-bottom-6" role="search">
         <div class="govuk-form-group">
-          <label class="govuk-label" for="q">{{ t("help.search_label") }}</label>
-          <div id="q-hint" class="govuk-hint">{{ t("help.search_hint") }}</div>
+          <label class="govuk-label" for="q">{{ ct("search_label") }}</label>
+          <div id="q-hint" class="govuk-hint">{{ ct("search_placeholder") }}</div>
           <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
         </div>
         <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("help.search_button") }}</button>
       </form>
 
-      {% if faqGroups.length == 0 %}
-        <div class="govuk-inset-text">
-          {{ t("help.no_results") if searchQuery else t("help.empty") }}
-        </div>
+      {% if searching %}
+        <h2 class="govuk-heading-l" id="help-search-heading">{{ ct("search_results_heading", { query: searchQuery }) }}</h2>
+        <p class="govuk-body" role="status">{{ guideResultsCount }}</p>
+        {% if guideResults.length %}
+          <ul class="govuk-list nexus-help-list">
+            {% for result in guideResults %}
+              <li class="govuk-!-margin-bottom-4">
+                <a class="govuk-link govuk-!-font-weight-bold" href="{{ urlFor(result.href) }}">{{ result.title }}</a>
+                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ result.meta }}</p>
+                <p class="govuk-body govuk-!-margin-bottom-0">{{ result.summary }}</p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if guideResults.length == 0 and faqGroups.length == 0 %}
+          <div class="govuk-inset-text">{{ t("help.no_results") }}</div>
+        {% endif %}
       {% else %}
+        <nav aria-labelledby="help-audience-heading" class="govuk-!-margin-bottom-6">
+          <h2 class="govuk-heading-m" id="help-audience-heading">{{ ct("audience_nav_label") }}</h2>
+          <ul class="govuk-list">
+            {% for option in audienceNav %}
+              <li class="govuk-!-margin-bottom-3">
+                {% if option.current %}
+                  <a class="govuk-link govuk-!-font-weight-bold" href="{{ urlFor(option.href) }}" aria-current="page">{{ option.title }}</a>
+                {% else %}
+                  <a class="govuk-link" href="{{ urlFor(option.href) }}">{{ option.title }}</a>
+                {% endif %}
+                <br><span class="govuk-body-s">{{ option.description }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+
+        {% if popular.length %}
+          <h2 class="govuk-heading-m">{{ ct("popular_heading") }}</h2>
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">
+            {% for item in popular %}
+              <li><a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <h2 class="govuk-heading-l">{{ ct("sections_heading") }}</h2>
+        <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+          {% for card in sectionCards %}
+            <article class="nexus-alpha-card">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+                <a class="govuk-link" href="{{ urlFor(card.href) }}">{{ card.title }}</a>
+              </h3>
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ card.summary }}</p>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ card.countLabel }}</p>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if faqGroups.length %}
+        <h2 class="govuk-heading-l">{{ ct("community_faqs_heading") }}</h2>
+        <p class="govuk-body">{{ ct("community_faqs_description", { name: communityName }) }}</p>
         {% for group in faqGroups %}
-          <h2 class="govuk-heading-m">{{ group.category }}</h2>
+          <h3 class="govuk-heading-m">{{ group.category }}</h3>
           <div class="govuk-accordion" data-module="govuk-accordion" id="help-accordion-{{ loop.index0 }}">
             {% for faq in group.faqs %}
               <div class="govuk-accordion__section">
                 <div class="govuk-accordion__section-header">
-                  <h3 class="govuk-accordion__section-heading">
+                  <h4 class="govuk-accordion__section-heading">
                     <span class="govuk-accordion__section-button" id="help-{{ loop.parent.index0 }}-{{ loop.index0 }}-heading">{{ faq.question }}</span>
-                  </h3>
+                  </h4>
                 </div>
                 <div id="help-{{ loop.parent.index0 }}-{{ loop.index0 }}-content" class="govuk-accordion__section-content">
                   <div class="govuk-body">{{ faq.answer | safe }}</div>
@@ -44,9 +114,7 @@
         {% endfor %}
       {% endif %}
 
-      <h2 class="govuk-heading-m">{{ t("help.contact_cta_title") }}</h2>
-      <p class="govuk-body">{{ t("help.contact_cta_body") }}</p>
-      <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/contact') }}">{{ t("help.contact_cta_button") }}</a>
+      {% include "support/_help-contact.njk" %}
     </div>
   </div>
 {% endblock %}

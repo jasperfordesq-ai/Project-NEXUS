@@ -442,12 +442,15 @@ function buildFooterColumns({ tenant = {} } = {}) {
     .filter((column) => column.key !== 'platform' || column.links.length > 0);
 }
 
+// A workflow card (today only Exchanges) is switched by its FEATURE, exactly as
+// Laravel decides: BrokerControlConfigService::isExchangeWorkflowEnabled() reads
+// TenantContext::hasFeature('exchange_workflow') and nothing else since commit
+// f3450c8b8 (22 Oct 2026). The hidden broker setting
+// (broker_controls.exchange_workflow.enabled) this used to read is refused on
+// save and stripped from responses, so reading it hid the card from every
+// community whose feature was on.
 function workflowEnabled(tenant = {}, key) {
-  if (Object.prototype.hasOwnProperty.call(tenant, key)) return Boolean(tenant[key]);
-  const brokerControls = tenant.config?.broker_controls || tenant.broker_controls || {};
-  const workflow = brokerControls[key] || brokerControls.exchange_workflow || {};
-  if (Object.prototype.hasOwnProperty.call(workflow, 'enabled')) return Boolean(workflow.enabled);
-  return false;
+  return flagEnabled(tenant, key, 'features', true);
 }
 
 function buildExploreLinks({ tenant = {}, t = createTranslator('en') } = {}) {
@@ -502,6 +505,54 @@ function prefixFooterColumns(columns, prefix) {
       href: prefixLocalPath(link.href, prefix)
     }))
   }));
+}
+
+// The community's own Page Builder pages, from the SAME bootstrap payload the
+// React menu reads (TenantBootstrapController::buildMenuPages → `menu_pages`,
+// keyed by menu location). React puts `about` pages in its About column and
+// `header` pages in a column titled by the community's `header_column_title`
+// setting (default "Community pages"). The Footer placement was retired on
+// 2026-10-17 (the API maps a stored `footer` row to `header`), so only those two
+// locations exist. Here they become footer navigation, the GOV.UK place for a
+// service's secondary links: `about` pages join the Support column beside
+// "About", and `header` pages get their own column. Titles are the community's
+// own content, so they are shown as written, not translated.
+function menuPageLinks(pages, location) {
+  if (!Array.isArray(pages)) return [];
+  return pages
+    .filter((page) => page && typeof page.slug === 'string'
+      && /^[A-Za-z0-9][A-Za-z0-9_-]{0,119}$/.test(page.slug)
+      && String(page.title || '').trim() !== '')
+    .map((page) => ({
+      key: `page_${location}_${page.slug}`,
+      label: String(page.title).trim(),
+      href: `/page/${page.slug}`,
+      communityPage: true
+    }));
+}
+
+function withCommunityPageColumns(columns, tenant = {}, t = createTranslator('en')) {
+  const menuPages = tenant.menu_pages && typeof tenant.menu_pages === 'object' ? tenant.menu_pages : {};
+  const aboutLinks = menuPageLinks(menuPages.about, 'about');
+  const headerLinks = menuPageLinks(menuPages.header, 'header');
+  const result = columns.map((column) => (
+    column.key === 'support' && aboutLinks.length
+      ? { ...column, links: [...column.links, ...aboutLinks] }
+      : column
+  ));
+  if (headerLinks.length) {
+    // The bootstrap turns "1"/"0"/"true"/"false" into booleans, so only a
+    // non-empty string counts as a configured title — the same rule as React.
+    const configured = tenant.settings && typeof tenant.settings.header_column_title === 'string'
+      ? tenant.settings.header_column_title.trim()
+      : '';
+    result.push({
+      key: 'community_pages',
+      heading: configured || t('footer.columns.community_pages.heading'),
+      links: headerLinks
+    });
+  }
+  return result;
 }
 
 function localizeNavItems(items, t) {
@@ -890,7 +941,11 @@ function buildShellLocals(req, isAuthenticated) {
     // on the shared host (verified 200; /kb redirects, which is fine), so it renders
     // tenant-free and keeps its position at the same place in the footer.
     alphaFooterColumns: tenantSlug ? prefixFooterColumns(
-      localizeFooterColumns(buildFooterColumns({ tenant: routedTenant }), t),
+      withCommunityPageColumns(
+        localizeFooterColumns(buildFooterColumns({ tenant: routedTenant }), t),
+        routedTenant,
+        t
+      ),
       routePrefix
     ) : localizeFooterColumns(
       buildFooterColumns({ tenant: routedTenant }).filter((column) => column.key === 'support'),
@@ -950,5 +1005,6 @@ module.exports = {
   resolveBackendMediaUrl,
   resolveBackendThumbnailUrl,
   resolveBrandingImageUrl,
-  serviceName
+  serviceName,
+  withCommunityPageColumns
 };

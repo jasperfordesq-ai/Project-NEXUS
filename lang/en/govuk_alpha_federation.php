@@ -115,4 +115,8 @@ return [
         'next' => 'Continue',
         'do_this_later' => 'Do this later',
     ],
+    'safeguarding' => [
+        'heading' => 'Contact is not available',
+        'body' => 'This member’s community safeguarding policy does not allow direct contact from you. A community coordinator can help.',
+    ],
 ];

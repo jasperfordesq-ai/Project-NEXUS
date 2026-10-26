@@ -124,6 +124,10 @@
     {% endif %}
   </dl>
 
+  {% if not authRequired %}
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/comments') }}" data-testid="opportunity-comments-link">{{ t("govuk_alpha_events.social.opportunity_link") }}</a></p>
+  {% endif %}
+
   {% if opportunity.checkin %}
     {# Gap B6: the QR the volunteer shows on arrival, for the shift they hold. Server-
        rendered SVG (works with no JavaScript). The label describes its purpose and the

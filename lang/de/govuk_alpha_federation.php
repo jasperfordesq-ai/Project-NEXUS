@@ -105,4 +105,8 @@ return [
         'next' => 'Weitermachen',
         'do_this_later' => 'Tun Sie dies später',
     ],
+    'safeguarding' => [
+        'heading' => 'Kontakt nicht möglich',
+        'body' => 'Die Schutzrichtlinie der Gemeinschaft dieses Mitglieds erlaubt keinen direkten Kontakt von Ihnen. Eine Koordinatorin oder ein Koordinator der Gemeinschaft kann helfen.',
+    ],
 ];

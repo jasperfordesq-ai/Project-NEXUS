@@ -41,6 +41,7 @@ const jobsRoutes = require('./routes/jobs');
 const goalsRoutes = require('./routes/goals');
 const coursesRoutes = require('./routes/courses');
 const eventsRoutes = require('./routes/events');
+const eventOrganiserToolRoutes = require('./routes/event-organiser-tools');
 const whatsOnRoutes = require('./routes/whats-on');
 const venuesRoutes = require('./routes/venues');
 const caringRoutes = require('./routes/caring');
@@ -54,7 +55,9 @@ const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
 const marketplaceActionRoutes = require('./routes/marketplace-actions');
 const marketplaceRoutes = require('./routes/marketplace');
+const marketplaceMemberToolRoutes = require('./routes/marketplace-member-tools');
 const volunteeringActionRoutes = require('./routes/volunteering-actions');
+const volunteeringOpportunityCommentRoutes = require('./routes/volunteering-opportunity-comments');
 const volunteeringIncidentRoutes = require('./routes/volunteering-incidents');
 const volunteeringOrgLinkRoutes = require('./routes/volunteering-org-links');
 const volunteeringShiftRoutes = require('./routes/volunteering-shifts');
@@ -99,6 +102,15 @@ const resourcesRoutes = require('./routes/resources');
 const blogPostRoutes = require('./routes/blog-posts');
 const pollActionRoutes = require('./routes/poll-actions');
 const clubsRoutes = require('./routes/clubs');
+// React-parity pages (26 Oct 2026): regional points, municipality calendar, ad
+// campaigns, supported-decision email link, and the club (Verein) pages.
+const regionalPointsRoutes = require('./routes/regional-points');
+const municipalityCalendarRoutes = require('./routes/municipality-calendar');
+const advertiseCampaignRoutes = require('./routes/advertise-campaigns');
+const supportActionConfirmRoutes = require('./routes/support-action-confirm');
+const vereinRoutes = require('./routes/verein');
+const vereinInvitationRoutes = require('./routes/verein-invitations');
+const vereinMyDuesRoutes = require('./routes/verein-my-dues');
 const podcastRoutes = require('./routes/podcasts');
 const podcastActionRoutes = require('./routes/podcast-actions');
 const federationRoutes = require('./routes/federation');
@@ -2352,6 +2364,8 @@ app.use('/groups/new', parseMultipartForm({ maxFileSize: 8 * 1024 * 1024 }));
 app.use(/^\/groups\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 8 * 1024 * 1024 }));
 app.use(/^\/groups\/\d+\/feed$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
 app.use('/listings/new', parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
+app.use(/^\/clubs\/\d+\/admin\/import\/preview$/, parseMultipartForm({ maxFileSize: 1024 * 1024 }));
+app.use(/^\/marketplace\/(create|\d+\/photos)$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxTotalFileSize: 60 * 1024 * 1024, maxFiles: 20, multiples: true }));
 app.use(/^\/listings\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
 app.use(/^\/messages\/\d+$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, multiples: true }));
 app.use(
@@ -2412,7 +2426,14 @@ app.use('/coupons', doubleCsrfProtection, postOnly(formLimiter), couponsRoutes);
 app.use('/federation', federationRoutes);
 app.use('/blog', doubleCsrfProtection, postOnly(formLimiter), blogPostRoutes);
 app.use('/polls', doubleCsrfProtection, postOnly(formLimiter), pollActionRoutes);
+app.use('/clubs', requireAuth, doubleCsrfProtection, postOnly(formLimiter), vereinRoutes);
 app.use('/clubs', doubleCsrfProtection, postOnly(formLimiter), clubsRoutes);
+app.use('/me/verein-invitations', requireAuth, doubleCsrfProtection, postOnly(formLimiter), vereinInvitationRoutes);
+app.use('/me/verein-dues', requireAuth, vereinMyDuesRoutes);
+app.use('/municipality-calendar', requireAuth, municipalityCalendarRoutes);
+app.use('/advertise/campaigns', requireAuth, doubleCsrfProtection, postOnly(formLimiter), advertiseCampaignRoutes);
+// The emailed single-use link: no sign-in, the token is the authority (as on React).
+app.use('/support-actions/confirm', doubleCsrfProtection, postOnly(formLimiter), supportActionConfirmRoutes);
 app.use('/resources', doubleCsrfProtection, postOnly(formLimiter), resourcesRoutes);
 app.use('/chat', doubleCsrfProtection, postOnly(formLimiter), aiChatRoutes);
 app.use('/skills', doubleCsrfProtection, postOnly(formLimiter), skillsRoutes);
@@ -2547,6 +2568,7 @@ app.use('/listings', doubleCsrfProtection, postOnly(formLimiter), listingsRoutes
 // throttle their POSTs like every other form-bearing route.
 app.use('/profile', doubleCsrfProtection, postOnly(formLimiter), profileRoutes);
 app.use('/activity', doubleCsrfProtection, activityRoutes);
+app.use('/wallet/regional-points', requireAuth, doubleCsrfProtection, postOnly(walletLimiter), regionalPointsRoutes);
 app.use('/wallet', doubleCsrfProtection, postOnly(walletLimiter), walletRoutes);
 app.use('/messages', doubleCsrfProtection, postOnly(formLimiter), messagesRoutes);
 app.use('/podcasts', doubleCsrfProtection, postOnly(formLimiter), podcastActionRoutes);
@@ -2582,8 +2604,12 @@ app.use('/settings/linked-accounts/messages', requireAuth, doubleCsrfProtection,
 app.use('/settings', doubleCsrfProtection, settingsRoutes);
 app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);
+// Event team and ticket-type management. POSTs were already rate-limited by the line above.
+app.use('/events', requireAuth, doubleCsrfProtection, eventOrganiserToolRoutes);
 app.use('/event-templates', doubleCsrfProtection, postOnly(formLimiter), eventTemplateRoutes);
 app.use('/marketplace', doubleCsrfProtection, postOnly(formLimiter), marketplaceActionRoutes);
+// Listing photos, shipping options, my reports. POSTs were already rate-limited by the line above.
+app.use('/marketplace', doubleCsrfProtection, marketplaceMemberToolRoutes);
 // Organiser notification links in React's /volunteering/org/{id}/… shape,
 // redirected to the matching /volunteering/organisations/{id}/… page.
 app.use('/volunteering', requireAuth, volunteeringOrgLinkRoutes);
@@ -2607,6 +2633,8 @@ app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringCheckinVerifyRoutes);
 // A volunteer's own qualifications register; no uploads (gap B15).
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringMyQualificationRoutes);
+// Comments and likes on one opportunity (read-only page; writes go through /feed).
+app.use('/volunteering', requireAuth, volunteeringOpportunityCommentRoutes);
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedActionRoutes);
 app.use('/feed', doubleCsrfProtection, postOnly(formLimiter), feedRoutes);

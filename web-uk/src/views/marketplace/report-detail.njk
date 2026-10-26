@@ -1,0 +1,89 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/reports') }}">{{ t("govuk_alpha_commerce.my_reports.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if appealError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#appeal_text">{{ appealError }}</a></li></ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      {% include "marketplace/_status-banner.njk" %}
+
+      <span class="govuk-caption-xl">{{ report.roleLabel }}</span>
+      <h1 class="govuk-heading-xl">{{ report.reference }}</h1>
+      <p class="govuk-body">{{ govukTag({ text: report.statusLabel, classes: report.statusTagClass }) }}</p>
+
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.report.item_label") }}</dt>
+          <dd class="govuk-summary-list__value">
+            {% if report.listingHref %}<a class="govuk-link" href="{{ urlFor(report.listingHref) }}">{{ report.listingTitle }}</a>{% else %}{{ report.listingTitle or t("govuk_alpha_commerce.my_reports.listing_unavailable") }}{% endif %}
+          </dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_reports.reason_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ report.reasonLabel }}</dd>
+        </div>
+        {% if report.description %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_reports.description_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ report.description }}</dd>
+          </div>
+        {% endif %}
+        {% if report.actionLabel %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_reports.action_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ report.actionLabel }}</dd>
+          </div>
+        {% endif %}
+        {% if report.resolutionReason %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_reports.resolution_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ report.resolutionReason }}</dd>
+          </div>
+        {% endif %}
+        {% if report.appealText %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_reports.appeal_text_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ report.appealText }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      {% if report.status == 'appealed' %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_commerce.my_reports.appeal_pending") }}</div>
+      {% endif %}
+
+      {% if report.canAppeal %}
+        <form method="post" action="{{ urlFor('/marketplace/reports/' + (report.id | string) + '/appeal') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.my_reports.appeal_heading") }}</h2>
+          <p class="govuk-body">{{ t("govuk_alpha_commerce.my_reports.appeal_reporter_intro" if report.isReporter else "govuk_alpha_commerce.my_reports.appeal_seller_intro") }}</p>
+          <div class="govuk-form-group{% if appealError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--s" for="appeal_text">{{ t("govuk_alpha_commerce.my_reports.appeal_label") }}</label>
+            <div id="appeal_text-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.my_reports.appeal_hint") }}</div>
+            {% if appealError %}<p id="appeal_text-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ appealError }}</p>{% endif %}
+            <textarea class="govuk-textarea{% if appealError %} govuk-textarea--error{% endif %}" id="appeal_text" name="appeal_text" rows="6" maxlength="5000" aria-describedby="appeal_text-hint{% if appealError %} appeal_text-error{% endif %}">{{ appealText }}</textarea>
+          </div>
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.my_reports.appeal_submit") }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

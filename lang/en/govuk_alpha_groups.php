@@ -198,4 +198,32 @@ return [
         'file-forbidden'        => 'You do not have permission to perform this action.',
         'file-not-found'        => 'That file could not be found.',
     ],
+
+    // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
+    'directory' => [
+        'type_label' => 'Group type',
+        'type_all' => 'All group types',
+    ],
+    'invite_accept' => [
+        'title' => 'Group invitation',
+        'sign_in_needed' => 'You have been invited to join a group. Sign in to see the invitation. You will come back to this page afterwards.',
+        'sign_in' => 'Sign in',
+        'description' => 'You have been invited to join this group.',
+        'accept' => 'Accept invitation',
+        'not_now' => 'Not now',
+        'already_member' => 'You are a member of this group.',
+        'go_to_group' => 'Go to the group',
+        'success' => 'You are now a member of this group.',
+        'browse_groups' => 'Browse groups',
+        'accessible_link_hint' => 'The same invitation on this accessible site:',
+        'error_invalid' => 'This invitation link is not valid or is no longer available.',
+        'error_expired' => 'This invitation has expired.',
+        'error_revoked' => 'This invitation has been withdrawn.',
+        'error_email_mismatch' => 'This invitation was sent to a different email address. Sign in with the account it was sent to.',
+        'error_capacity' => 'This group has reached its member limit.',
+        'error_limit' => 'You have reached the most groups you can join.',
+        'error_group_unavailable' => 'This group is not accepting members at the moment.',
+        'error_safeguarding' => 'This community\'s safeguarding rules do not allow you to join this group. Ask a coordinator for help.',
+        'error_safeguarding_unavailable' => 'We cannot check this community\'s safeguarding rules right now. Please try again shortly.',
+    ],
 ];

@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Verdiente Abzeichen',
         'badges_empty' => 'Noch keine Abzeichen verdient.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Einige Übereinstimmungen sind ausgeblendet',
+        'banner_body' => 'Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet.',
+        'empty_title' => 'Einige Übereinstimmungen können noch nicht angezeigt werden',
+        'empty_body' => 'Die Schutzkonzept-Einrichtung Ihrer Community ist noch nicht abgeschlossen. Übereinstimmungen mit geschützten Mitgliedern werden zur Sicherheit aller ausgeblendet. Schauen Sie wieder vorbei, sobald Ihr Community-Team die Einrichtung abgeschlossen hat.',
+    ],
 ];

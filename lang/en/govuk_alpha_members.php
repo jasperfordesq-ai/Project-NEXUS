@@ -118,4 +118,10 @@ return [
         'badges_title' => 'Earned badges',
         'badges_empty' => 'No badges earned yet.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Some matches are hidden',
+        'banner_body' => 'Your community\'s safeguarding setup isn\'t finished, so matches involving protected members are hidden to keep everyone safe.',
+        'empty_title' => 'Some matches can\'t be shown yet',
+        'empty_body' => 'Your community\'s safeguarding setup isn\'t finished, so matches involving protected members are hidden to keep everyone safe. Please check back once your community team has completed it.',
+    ],
 ];

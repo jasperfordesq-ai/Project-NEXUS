@@ -105,4 +105,8 @@ return [
         'next' => 'Kontynuować',
         'do_this_later' => 'Zrób to później',
     ],
+    'safeguarding' => [
+        'heading' => 'Kontakt niedostępny',
+        'body' => 'Zasady ochrony społeczności tego członka nie pozwalają na bezpośredni kontakt z Twojej strony. Koordynator społeczności może pomóc.',
+    ],
 ];

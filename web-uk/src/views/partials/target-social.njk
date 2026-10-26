@@ -1,0 +1,67 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Comments and likes on one thing that is not a feed post — an event or a
+  volunteering opportunity — matching React's SocialInteractionPanel there.
+  Every form posts to the existing /feed/items/{type}/{id}/… actions with a
+  `return_to`, so the member comes back to this page (feed-actions.js
+  socialReturnPath). Works with JavaScript off.
+
+  params: item {type, id}, comments, currentUserId, returnTo, socialStatus,
+          asPage (true when the section is the whole page: its heading is the h1)
+#}
+{% from "feed/_comments.njk" import commentList %}
+
+{% macro targetSocial(params, csrfToken, urlFor, t) %}
+  {% set P = "govuk_alpha_events.social." %}
+  {% set successStatuses = ["comment-created", "comment-updated", "comment-deleted", "like-added", "like-removed", "reaction-added", "reaction-removed"] %}
+  {% set errorStatuses = ["comment-empty", "comment-failed", "comment-update-failed", "comment-delete-failed", "like-failed", "reaction-failed", "auth-required"] %}
+  <section class="{{ '' if params.asPage else 'govuk-!-margin-top-8' }}" aria-labelledby="comments">
+    {% if params.asPage %}
+      <h1 class="govuk-heading-xl" id="comments" tabindex="-1">{{ t(P ~ "heading") }}</h1>
+    {% else %}
+      <h2 class="govuk-heading-l" id="comments" tabindex="-1">{{ t(P ~ "heading") }}</h2>
+    {% endif %}
+
+    {% if params.socialStatus in successStatuses %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="social-status-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header"><h3 class="govuk-notification-banner__title" id="social-status-title">{{ t("govuk_alpha_events.common.success_title") }}</h3></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t(P ~ "status." ~ (params.socialStatus | replace("-", "_"))) }}</p></div>
+      </div>
+    {% elif params.socialStatus in errorStatuses %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h3 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h3>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t(P ~ "status." ~ (params.socialStatus | replace("-", "_"))) }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ urlFor('/feed/items/' + params.item.type + '/' + (params.item.id | string) + '/like') }}" class="govuk-!-margin-bottom-6">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="return_to" value="{{ params.returnTo }}">
+      <p class="govuk-hint govuk-!-margin-bottom-2">{{ t(P ~ "like_hint") }}</p>
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(P ~ "like") }}</button>
+    </form>
+
+    {% if params.comments and params.comments.length %}
+      {{ commentList(params.comments, 0, params.item, false, params.currentUserId, csrfToken, urlFor, t, params.returnTo) }}
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_feed.item.no_comments") }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ urlFor('/feed/items/' + params.item.type + '/' + (params.item.id | string) + '/comments') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="return_to" value="{{ params.returnTo }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="target-comment">{{ t("govuk_alpha_feed.item.comment_label") }}</label>
+        <div id="target-comment-hint" class="govuk-hint">{{ t("govuk_alpha_feed.item.comment_hint") }}</div>
+        <textarea class="govuk-textarea" id="target-comment" name="content" rows="4" aria-describedby="target-comment-hint"></textarea>
+      </div>
+      <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_feed.item.comment_submit") }}</button>
+    </form>
+  </section>
+{% endmacro %}

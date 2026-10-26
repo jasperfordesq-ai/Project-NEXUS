@@ -45,6 +45,7 @@
   <span class="govuk-caption-xl">{{ course.authorName or tenantName }}</span>
   <div class="nexus-alpha-module-row">
     <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ course.title }}</h1>
+    {% include "_module-stage-beta.njk" %}
     {{ govukTag({ text: course.costLabel, classes: (course.costTagClass) }) }}
   </div>
 

@@ -7,6 +7,7 @@ const express = require('express');
 const { setupRequiredTwoFactor, login, register, getRegistrationInfo, getTenantBootstrap, logout, forgotPassword, resetPassword, resendVerification, verify2fa, invalidateUserCache, ApiError, ApiOfflineError } = require('../lib/api');
 const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { safeLoginReturnPath } = require('../lib/login-return');
 const { createTranslator } = require('../lib/localization');
 const { isValidEmail } = require('../lib/inputValidator');
 const { rememberTrustedDevice, trustedDeviceCookiesFrom } = require('../lib/trusted-device-cookies');
@@ -219,6 +220,7 @@ function clearPendingTwoFactor(req) {
   delete req.session.pending2faTenantSlug;
   delete req.session.pending2faAllowTrustedDevice;
   delete req.session.pending2faTrustedDeviceDays;
+  delete req.session.pending2faReturnTo;
 }
 
 function rotatingSessionFrom(result) {
@@ -254,6 +256,9 @@ router.get('/login', (req, res) => {
   res.render('login', {
     title: translate(req, 'auth.login_title'),
     loginStatus: status,
+    // A signed-out visitor opening a group invitation comes back to it after
+    // signing in (allowlisted shapes only; see lib/login-return.js).
+    returnTo: safeLoginReturnPath(req.query.return_to),
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     successMessage: statusMessage(req, status, LOGIN_SUCCESS_STATUS_KEYS)
       || legacySuccessMessage
@@ -265,12 +270,14 @@ router.get('/login', (req, res) => {
 router.post('/login', asyncRoute(async (req, res) => {
   const { email, password } = req.body;
   const tenantSlug = tenantSlugForRequest(req);
+  const returnTo = safeLoginReturnPath(req.body.return_to);
 
   if (!email || !password || !tenantSlug) {
     return res.render('login', {
       title: translate(req, 'auth.login_title'),
       error: 'Enter your email, password and tenant',
       values: { email, tenant_slug: tenantSlug },
+      returnTo,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
@@ -306,6 +313,7 @@ router.post('/login', asyncRoute(async (req, res) => {
       req.session.pending2faToken = result.two_factor_token;
       req.session.pending2faTenantSlug = tenantSlug;
       req.session.pending2faSetup = true;
+      if (returnTo) req.session.pending2faReturnTo = returnTo;
       return redirectTo(res, '/login/two-factor/setup');
     }
 
@@ -323,6 +331,7 @@ router.post('/login', asyncRoute(async (req, res) => {
       req.session.pending2faTrustedDeviceDays = Number.isInteger(trustedDeviceDays) && trustedDeviceDays > 0
         ? trustedDeviceDays
         : 30;
+      if (returnTo) req.session.pending2faReturnTo = returnTo;
       return redirectTo(res, '/login/two-factor');
     }
 
@@ -333,7 +342,7 @@ router.post('/login', asyncRoute(async (req, res) => {
       tenantSlug
     });
 
-    return redirectTo(res, '/dashboard');
+    return redirectTo(res, returnTo || '/dashboard');
   } catch (error) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
@@ -368,6 +377,7 @@ router.post('/login', asyncRoute(async (req, res) => {
       loginStatus,
       error: errorMessage,
       values: { email, tenant_slug: tenantSlug },
+      returnTo,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
@@ -410,6 +420,7 @@ async function handleTwoFactorPost(req, res) {
     }
 
     const session = rotatingSessionFrom(result);
+    const returnTo = safeLoginReturnPath(req.session?.pending2faReturnTo);
     clearPendingTwoFactor(req);
     if (allowTrustedDevice && checkboxValue(req.body.trust_device) && result.trusted_device_cookie) {
       rememberTrustedDevice(res, result.trusted_device_cookie, trustedDeviceDays);
@@ -420,7 +431,7 @@ async function handleTwoFactorPost(req, res) {
       tenantSlug: pendingTenantSlug
     });
 
-    return redirectTo(res, '/dashboard');
+    return redirectTo(res, returnTo || '/dashboard');
   } catch (error) {
     if (error instanceof ApiOfflineError) {
       return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
@@ -523,11 +534,12 @@ router.post('/login/two-factor/setup/complete', (req, res) => {
   }
   const tenantSlug = pendingTwoFactorTenantSlug(req);
   const session = completion.session;
+  const returnTo = safeLoginReturnPath(req.session?.pending2faReturnTo);
   clearPendingTwoFactor(req);
   setAuthCookies(res, session.accessToken, session.refreshToken, {
     expiresIn: session.expiresIn, refreshExpiresIn: session.refreshExpiresIn, tenantSlug
   });
-  return redirectTo(res, '/dashboard');
+  return redirectTo(res, returnTo || '/dashboard');
 });
 
 router.get('/login/two-factor', (req, res) => {

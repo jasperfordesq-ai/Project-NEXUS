@@ -160,6 +160,13 @@ function normalizeMember(member, options = {}) {
   const reachKeys = new Set(['local_only', 'remote_ok', 'travel_ok']);
   const reputationScore = numberOrNull(member && (member.reputation_score || member.trust_score));
   const reputationCount = numberOrZero(member && member.reputation_count);
+  // The profile carries Laravel's advisory from the same safeguarding decision the
+  // connect, message and transfer endpoints enforce (React 57a8249a8). Only an
+  // explicit `contact_allowed: false` withholds contact; an absent advisory
+  // (external partners, older responses) is "no advisory", never a refusal. The
+  // send endpoints stay authoritative either way.
+  const safeguarding = asObject(member && member.safeguarding);
+  const safeguardingBlocked = safeguarding.contact_allowed === false;
 
   return {
     id: member && member.id !== undefined ? member.id : '',
@@ -190,7 +197,10 @@ function normalizeMember(member, options = {}) {
       ? t('fed2.reviews.reputation_count', { count: reputationCount })
       : String(reputationCount),
     connectionStatus: trimmed(connectionStatus.status || 'none'),
-    connectionId: connectionStatus.connection_id || null
+    connectionId: connectionStatus.connection_id || null,
+    safeguardingBlocked,
+    safeguardingTitle: safeguardingBlocked ? trimmed(safeguarding.title) : '',
+    safeguardingDetail: safeguardingBlocked ? (trimmed(safeguarding.detail) || trimmed(safeguarding.message)) : ''
   };
 }
 
@@ -1646,6 +1656,11 @@ router.get('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
   });
   if (!member.transactionsEnabled) {
     return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
+  }
+  // The recipient's community safeguarding policy refuses this transfer, so the
+  // form is not offered; the profile explains why (React will not open its modal).
+  if (member.safeguardingBlocked) {
+    return redirectTo(res, `/federation/members/${encodeURIComponent(id)}${tenantQuery}`);
   }
 
   const settingsData = asObject(dataFrom(settingsResult));

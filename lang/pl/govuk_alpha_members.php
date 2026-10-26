@@ -99,4 +99,10 @@ return [
         'badges_title' => 'Zdobyte odznaki',
         'badges_empty' => 'Nie zdobyto jeszcze żadnych odznak.',
     ],
+    'matches_safeguarding' => [
+        'banner_title' => 'Niektóre dopasowania są ukryte',
+        'banner_body' => 'Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich.',
+        'empty_title' => 'Niektórych dopasowań nie można jeszcze pokazać',
+        'empty_body' => 'Konfiguracja ochrony w Twojej społeczności nie została ukończona, dlatego dopasowania z udziałem chronionych członków są ukryte dla bezpieczeństwa wszystkich. Wróć, gdy zespół Twojej społeczności ją ukończy.',
+    ],
 ];

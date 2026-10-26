@@ -211,6 +211,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     sourceLabels: sourceLabels(res.locals.t),
     matches,
     matchMeta,
+    // React d2ba1b237: the community's safeguarding setup is unfinished, so
+    // matches involving protected members are hidden. Explain it; never a CTA.
+    safeguardingDegraded: matchMeta.degraded_reason === 'safeguarding_policy_unavailable',
     errorMessage,
     stats,
     statusMessage: statusMessage(req.query.status, res.locals.t),
@@ -242,6 +245,9 @@ router.get('/board', requireAuth, asyncRoute(async (req, res) => {
     sourceLabels: sourceLabels(res.locals.t, true),
     matches: filteredMatches,
     matchMeta,
+    // React d2ba1b237: the community's safeguarding setup is unfinished, so
+    // matches involving protected members are hidden. Explain it; never a CTA.
+    safeguardingDegraded: matchMeta.degraded_reason === 'safeguarding_policy_unavailable',
     errorMessage,
     stats,
     statusMessage: statusMessage(req.query.status, res.locals.t),

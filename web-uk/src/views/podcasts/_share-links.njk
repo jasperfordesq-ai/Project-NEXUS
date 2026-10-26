@@ -1,0 +1,28 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  A show's share links (podcasts.js shareLinksFor), as the website's
+  PodcastShareLinks. Each full link sits in a read-only text field, so a member
+  can select and copy it with JavaScript off; nothing here needs the clipboard.
+  Expects `shareShow` (a decorated show with `.share`).
+#}
+<div class="govuk-!-margin-top-3">
+  <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_commerce.podcast_studio.share_title") }}</h3>
+  {% if not shareShow.share or not shareShow.share.ready %}
+    <p class="govuk-body-s">{{ t("govuk_alpha_commerce.podcast_studio.share_not_ready") }}</p>
+  {% else %}
+    {% for link in shareShow.share.links %}
+      {% set shareFieldId = "share-" + (shareShow.id | string) + "-" + link.key %}
+      <div class="govuk-form-group govuk-!-margin-bottom-4">
+        <label class="govuk-label govuk-label--s" for="{{ shareFieldId }}">{{ link.label }}</label>
+        <div id="{{ shareFieldId }}-hint" class="govuk-hint">{{ link.hint }}</div>
+        <input class="govuk-input" id="{{ shareFieldId }}" type="text" value="{{ link.url }}" readonly spellcheck="false" autocomplete="off" aria-describedby="{{ shareFieldId }}-hint">
+      </div>
+    {% endfor %}
+    {% if shareShow.share.feedNeedsPublic %}
+      <p class="govuk-body-s">{{ t("govuk_alpha_commerce.podcast_studio.share_feed_needs_public", { public: t("govuk_alpha_commerce.podcast_studio.visibility_public") }) }}</p>
+    {% endif %}
+  {% endif %}
+</div>

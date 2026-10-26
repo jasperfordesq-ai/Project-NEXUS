@@ -158,6 +158,10 @@ return [
         'nav_label' => 'التنقل في التذييل',
         'meta_label' => 'دعم المعلومات والإسناد',
         'columns' => [
+            // A community's own Page Builder pages filed under the header location.
+            'community_pages' => [
+                'heading' => 'صفحاتنا',
+            ],
             'platform' => [
                 'heading' => 'منصة',
                 'listings' => 'القوائم',
@@ -3646,6 +3650,10 @@ return [
             'offers_hint' => 'الأمور التي يمكنك مساعدة الآخرين بها.',
             'needs_label' => 'المساعدة التي تبحث عنها',
             'needs_hint' => 'الأمور التي تودّ الحصول على مساعدة فيها.',
+            'intro' => 'أخبر الآخرين بما يمكنك المساعدة فيه وما تودّ الحصول على مساعدة فيه. اختر من الاقتراحات أو اكتب اقتراحاتك. يمكنك تغيير ذلك لاحقًا.',
+            'offers_other_label' => 'مهارات أخرى يمكنك تقديمها',
+            'needs_other_label' => 'مساعدة أخرى تبحث عنها',
+            'other_hint' => 'افصل بين كل عنصر بفاصلة، مثلًا: البستنة، تمشية الكلاب',
         ],
         'safeguarding' => [
             'title' => 'الحماية',
@@ -4581,6 +4589,10 @@ return [
         'contact_cta_title' => 'هل ما زلت بحاجة إلى المساعدة؟',
         'contact_cta_body' => 'إذا لم تجد الإجابة هنا، تواصل معنا وسنساعدك.',
         'contact_cta_button' => 'اتصل بنا',
+    ],
+    'help_centre' => [
+        'breadcrumb_label' => 'مسار التنقل',
+        'main_website_only' => 'يتم ذلك على الموقع الرئيسي. لا يحتوي الموقع الميسّر على هذه الصفحة.',
     ],
     'kb' => [
         'caption' => ':community',

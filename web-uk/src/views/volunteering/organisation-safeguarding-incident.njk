@@ -26,7 +26,7 @@
         <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
         <div class="govuk-error-summary__body">
           <ul class="govuk-list govuk-error-summary__list">
-            <li><a href="#body">{{ status.message }}</a></li>
+            <li><a href="#{{ 'closed' if status.field == 'closed' else 'body' }}">{{ status.message }}</a></li>
           </ul>
         </div>
       </div>
@@ -40,6 +40,10 @@
     {% if incident.fullReportShared %}{{ govukTag({ text: t("govuk_alpha_volunteering.org_safeguarding.shared_chip"), classes: "govuk-tag--green" }) }}{% endif %}
   </p>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.team_handling") }}</p>
+  <div class="govuk-inset-text">
+    <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("govuk_alpha_volunteering.org_safeguarding.status_now", { status: incident.statusLabel }) }}</p>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ incident.statusHelp }}</p>
+  </div>
 
   <dl class="govuk-summary-list">
     <div class="govuk-summary-list__row">
@@ -74,6 +78,9 @@
   {% endif %}
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_safeguarding.history_heading") }}</h2>
+  {% if not incident.timeline.length %}
+    <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.history_empty") }}</p>
+  {% endif %}
   <ol class="govuk-list">
     {% for event in incident.timeline %}
       <li class="govuk-!-margin-bottom-4">
@@ -84,7 +91,14 @@
     {% endfor %}
   </ol>
 
+  {% if incident.isClosed %}
+  {# The API refuses an update on a closed report (409), so no form is offered:
+     an organiser's text would only be lost. #}
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_safeguarding.updates_heading") }}</h2>
+  <div class="govuk-inset-text" id="closed" tabindex="-1">{{ t("govuk_alpha_volunteering.org_safeguarding.closed_no_updates") }}</div>
+  {% else %}
   {% set bodyError = status and status.field == "body" %}
+  <p class="govuk-body govuk-!-margin-top-6">{{ t("govuk_alpha_volunteering.org_safeguarding.what_to_do") }}</p>
   <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/safeguarding/' ~ incident.id ~ '/updates') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {% call characterCount(updateMax, characterCountMessages, "body") %}
@@ -101,4 +115,12 @@
     {% endcall %}
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_safeguarding.update_send") }}</button>
   </form>
+  {% endif %}
+
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span> {{ t("govuk_alpha_volunteering.org_safeguarding.confidentiality_note") }}
+    </strong>
+  </div>
 {% endblock %}

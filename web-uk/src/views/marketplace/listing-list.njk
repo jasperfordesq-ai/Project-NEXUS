@@ -34,6 +34,11 @@
     <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.free_items.caption", { community: tenantName or serviceName }) }}</span>
     <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.free_items.title") }}</h1>
     <p class="govuk-body-l">{{ t("govuk_alpha_commerce.free_items.description") }}</p>
+  {% elseif mode == 'borrow' %}
+    <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.borrow.caption", { community: tenantName or serviceName }) }}</span>
+    <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.borrow.title") }}</h1>
+    <p class="govuk-body-l">{{ t("govuk_alpha_commerce.borrow.description") }}</p>
+    <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/marketplace/create') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.borrow.lend_something") }}</a>
   {% elseif mode == 'category' %}
     <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.category.caption", { community: tenantName or serviceName }) }}</span>
     <h1 class="govuk-heading-xl">{{ category.name }}</h1>
@@ -65,7 +70,7 @@
     {% else %}
       <div class="govuk-inset-text">
         <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
-        <p class="govuk-body">{% if mode == 'saved' %}{{ t("govuk_alpha_commerce.saved.empty") }}{% elseif mode == 'free' %}{{ t("govuk_alpha_commerce.free_items.empty") }}{% else %}{{ emptyMessage }}{% endif %}</p>
+        <p class="govuk-body">{% if mode == 'saved' %}{{ t("govuk_alpha_commerce.saved.empty") }}{% elseif mode == 'free' %}{{ t("govuk_alpha_commerce.free_items.empty") }}{% elseif mode == 'borrow' %}{{ t("govuk_alpha_commerce.borrow.empty") }}{% else %}{{ emptyMessage }}{% endif %}</p>
       </div>
     {% endif %}
   {% else %}
@@ -82,4 +87,5 @@
       {% endfor %}
     </div>
   {% endif %}
+  {% include "marketplace/_pagination.njk" %}
 {% endblock %}

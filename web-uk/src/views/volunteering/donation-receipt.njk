@@ -1,0 +1,72 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set K = "govuk_alpha_volunteering.donations." %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/donations') }}">{{ t(K ~ "receipt_back") }}</a>
+{% endblock %}
+
+{% block content %}
+  <span class="govuk-caption-l">{{ receipt.communityName }}</span>
+  <h1 class="govuk-heading-l">{{ t(K ~ "receipt_title") }}</h1>
+
+  <p class="govuk-heading-xl govuk-!-margin-bottom-2">{{ receipt.amountLabel }} {{ receipt.currency }}</p>
+  <p class="govuk-body">{{ govukTag({ text: receipt.status.label, classes: receipt.status.className }) }}</p>
+
+  <dl class="govuk-summary-list">
+    {% if receipt.donorName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "receipt_donor") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.donorName }}</dd>
+      </div>
+    {% endif %}
+    {% if receipt.dateLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "col_when") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.dateLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if receipt.organisationName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.organisation_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.organisationName }}</dd>
+      </div>
+    {% endif %}
+    {% if receipt.campaignTitle %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "receipt_campaign") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.campaignTitle }}</dd>
+      </div>
+    {% endif %}
+    {% if receipt.communityName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "receipt_community") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.communityName }}</dd>
+      </div>
+    {% endif %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t(K ~ "receipt_method") }}</dt>
+      <dd class="govuk-summary-list__value">{{ receipt.methodLabel }}</dd>
+    </div>
+    {% if receipt.reference %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "receipt_reference") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.reference }}</dd>
+      </div>
+    {% endif %}
+    {% if receipt.message %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t(K ~ "message_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ receipt.message }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if receipt.heldOnBehalf %}
+    <p class="govuk-body">{{ receipt.heldOnBehalf }}</p>
+  {% endif %}
+{% endblock %}

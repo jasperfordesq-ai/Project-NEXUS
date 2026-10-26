@@ -8,6 +8,7 @@
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha.podcasts.caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha.podcasts.title") }}</h1>
+  {% include "_module-stage-beta.njk" %}
   <p class="govuk-body-l">{{ t("govuk_alpha.podcasts.description") }}</p>
 
   {% if canAccessPodcastStudio %}
