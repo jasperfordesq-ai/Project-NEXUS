@@ -2,11 +2,11 @@
   "generated_by": "mobile/scripts/refresh-laravel-route-inventory.mjs",
   "source": "docker exec nexus-php-app php artisan route:list --json",
   "note": "Authoritative list of the API routes Laravel actually registers. openapi.json is a partial, hand-curated contract (862 of these paths at the time of writing) and is therefore NOT a safe source for drift detection.",
-  "total_registered_routes": 2812,
-  "api_route_rows": 2777,
-  "distinct_api_paths": 2316,
+  "total_registered_routes": 2817,
+  "api_route_rows": 2782,
+  "distinct_api_paths": 2321,
   "route_source_fingerprint": {
-    "digest": "163e2431c6a35a12acdf32a5e111fa4eb9a1ecb8dcc225202f5ea3c249b1215e",
+    "digest": "034d7e287b3b5055b78c0bcf1cc1331304e58a8ce6d133185411f1e6671244a8",
     "files": [
       {
         "file": "routes/api-marketplace-admin.php",
@@ -18,7 +18,7 @@
       },
       {
         "file": "routes/api.php",
-        "sha256": "3385aa2c670e62213702316727ebe68b07c7bdd65223a99788e7c47861329875"
+        "sha256": "2f5e9f656ff146f9ff1e473486d828e18c3f4083a107246efc70f7aa9734a7fe"
       },
       {
         "file": "routes/channels.php",
@@ -4088,8 +4088,14 @@
     "/api/v2/csrf-token": [
       "GET"
     ],
+    "/api/v2/donations/checkout": [
+      "POST"
+    ],
     "/api/v2/donations/payment-intent": [
       "POST"
+    ],
+    "/api/v2/donations/{id}/checkout-status": [
+      "GET"
     ],
     "/api/v2/donations/{id}/receipt": [
       "GET"
@@ -5394,6 +5400,9 @@
     "/api/v2/ideation-templates/{id}/data": [
       "GET"
     ],
+    "/api/v2/identity/checkout": [
+      "POST"
+    ],
     "/api/v2/identity/create-payment": [
       "POST"
     ],
@@ -6113,6 +6122,12 @@
       "GET"
     ],
     "/api/v2/me/verein-dues/{duesId}": [
+      "GET"
+    ],
+    "/api/v2/me/verein-dues/{duesId}/checkout": [
+      "POST"
+    ],
+    "/api/v2/me/verein-dues/{duesId}/checkout-status": [
       "GET"
     ],
     "/api/v2/me/verein-dues/{duesId}/pay": [
