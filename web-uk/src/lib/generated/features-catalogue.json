@@ -537,10 +537,10 @@
         "dormant": "Built, not enabled"
       },
       "title": "Features",
-      "meta_title": "Features - Project NEXUS v1.6",
-      "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
+      "meta_title": "Features",
+      "meta_description": "Every module in Project NEXUS, the software behind {{name}}, with honest maturity labels for timebanking, marketplace, community care and safety.",
       "heading": "What Project NEXUS does",
-      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v2.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v3.1.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "maturity_key_title": "How we label maturity",
       "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
       "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -1127,17 +1127,17 @@
         "dormant": "Tógtha, ní cumasaithe"
       },
       "title": "Gnéithe",
-      "meta_title": "Gnéithe - Project NEXUS v1.6",
-      "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don chónaidhm, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
+      "meta_title": "Gnéithe",
+      "meta_description": "Gach modúl atá ar fáil in Project NEXUS, na bogearraí ar a bhfuil {{name}} bunaithe, le lipéid mhacánta aibíochta don bhaincéireacht ama, don mhargadh, don chúram pobail agus don tsábháilteacht.",
       "heading": "Cad a dhéanann Project NEXUS",
-      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v2.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
+      "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v3.1.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
       "maturity_key_title": "Conas a lipéadaímid aibíocht",
       "maturity_ga": "Ar fáil go ginearálta - cobhsaí, tacaithe, in úsáid i dtáirgeadh ar fud na dtionóntaí píolótacha.",
       "maturity_beta": "Ag obair i dtáirgeadh anois, ach tá an comhéadan poiblí nó an prótacal cumarsáide fós á dhaingniú.",
       "maturity_preview": "Eisithe le déanaí agus ar fáil más mian leat é a chumasú. Beidh athruithe tapa ann — d'fhéadfadh an API agus an t-eispéireas úsáideora athrú.",
       "tech_stack_title": "Cruach theicniúil nua-aimseartha",
       "open_source_title": "Foinse oscailte - AGPL-3.0",
-      "open_source_body": "Tá Project NEXUS go hiomlán foinse oscailte faoi AGPL-3.0. Is féidir gach líne den chód a iniúchadh, a fhorcáil agus a fhéinóstáil. Tá na prótacail chónaidhme doiciméadaithe mar chaighdeáin oscailte ionas nach mbeidh aon ardán amháin i gceannas ar an líonra domhanda banc ama.",
+      "open_source_body": "Tá Project NEXUS go hiomlán foinse oscailte faoi AGPL-3.0. Is féidir gach líne den chód a iniúchadh, a fhorcáil agus a fhéinóstáil. Tá na prótacail an líonra comhpháirtíochta doiciméadaithe mar chaighdeáin oscailte ionas nach mbeidh aon ardán amháin i gceannas ar an líonra domhanda banc ama.",
       "link_repo": "Stór foinseach",
       "link_changelog": "Logleabhar athruithe",
       "link_report_bug": "Tuairiscigh fabht",
@@ -1180,7 +1180,7 @@
             },
             "tenant_hierarchy": {
               "title": "Ordlathas tionóntaí",
-              "description": "Caidreamh tuismitheoir–leanbh idir tionóntaí le scoránú gnéithe agus scóip chónaidhme."
+              "description": "Caidreamh tuismitheoir–leanbh idir tionóntaí le scoránú gnéithe agus scóip an líonra comhpháirtíochta."
             },
             "smart_matching": {
               "title": "Meaitseáil chliste",
@@ -1215,25 +1215,25 @@
           }
         },
         "federation": {
-          "title": "Cónaidhm",
-          "intro": "Tá dhá bhrí éagsúla le cónaidhm anseo, agus tá siad ag céimeanna éagsúla. Úsáidtear an nasc idir pobail ar an tsuiteáil chéanna gach lá. Tá naisc le suiteálacha agus ardáin eile tógtha agus tástáilte, ach tá siad múchta de réir réamhshocraithe agus níl siad in úsáid faoi láthair.",
+          "title": "Líonra comhpháirtíochta",
+          "intro": "Tá dhá bhrí éagsúla leis an líonra comhpháirtíochta anseo, agus tá siad ag céimeanna éagsúla. Úsáidtear an nasc idir pobail ar an tsuiteáil chéanna gach lá. Tá naisc le suiteálacha agus ardáin eile tógtha agus tástáilte, ach tá siad múchta de réir réamhshocraithe agus níl siad in úsáid faoi láthair.",
           "items": {
             "federation_network": {
               "title": "Líonra Pobail (suiteáil chéanna)",
               "description": "Nasc pobail éagsúla atá á n-óstáil ar shuiteáil amháin chun liostálacha, imeachtaí agus teachtaireachtaí a aimsiú thar phobail éagsúla."
             },
             "external_partner_federation": {
-              "title": "Cónaidhm le páirtithe seachtracha",
+              "title": "Líonra comhpháirtíochta le páirtithe seachtracha",
               "description": "Ceangail le suiteálacha NEXUS eile agus le hardáin eile baincéireachta ama trí cheithre phrótacal doiciméadaithe: Nexus Native, Komunitin, Credit Commons (comhoiriúnach le CEN) agus TimeOverflow.",
-              "note": "Tá sé críochnaithe agus tástáilte, agus múchta de réir réamhshocraithe — tugann gach críochphointe seachtrach freagra sealadach nach bhfuil sé ar fáil go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach nasctha faoi láthair. Tá spéis léirithe ag oibreoirí ardán eile, mar sin tá an bhunobair déanta agus iniúchta, ach ní fhorbróimid tuilleadh í go dtí go mbeidh togra comhtháthaithe sonrach ann. Más mian leat dul i gcónaidhm linn, déan teagmháil linn."
+              "note": "Tá sé críochnaithe agus tástáilte, agus múchta de réir réamhshocraithe — tugann gach críochphointe seachtrach freagra sealadach nach bhfuil sé ar fáil go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach nasctha faoi láthair. Tá spéis léirithe ag oibreoirí ardán eile, mar sin tá an bhunobair déanta agus iniúchta, ach ní fhorbróimid tuilleadh í go dtí go mbeidh togra comhtháthaithe sonrach ann. Más mian leat nascadh linn mar chomhpháirtí, déan teagmháil linn."
             },
             "multi_protocol_adapters": {
               "title": "Cuibheoirí ilphrótacal",
               "description": "Cuibheoirí chun naoi gcineál eintitis a shioncronú sa dá threo — baill, liostálacha, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe agus teachtaireachtaí — thar na ceithre phrótacal.",
-              "note": "Tógtha agus clúdaithe ag tástálacha in éineacht le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon cheann de na naisc cumasaithe, mar sin níl aon sioncronú ar siúl."
+              "note": "Tógtha agus clúdaithe ag tástálacha in éineacht leis an líonra comhpháirtíochta na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon cheann de na naisc cumasaithe, mar sin níl aon sioncronú ar siúl."
             },
             "federation_neighborhoods": {
-              "title": "Comharsanachtaí cónaidhme",
+              "title": "Comharsanachtaí an líonra comhpháirtíochta",
               "description": "Cnuasaigh de phobail nasctha atá grúpáilte go geografach le haghaidh comhordú réigiúnach."
             },
             "credit_agreements": {
@@ -1241,13 +1241,13 @@
               "description": "Téarmaí ráta malairte idirbheartaithe idir pobail nasctha."
             },
             "federation_analytics": {
-              "title": "Anailísíocht chónaidhme",
+              "title": "Anailísíocht an líonra comhpháirtíochta",
               "description": "Deais riaracháin le haghaidh gníomhaíochta idirphobail, sláinte sioncronaithe agus líon na n-idirbheart idirphobail."
             },
             "partner_network_portal": {
               "title": "Tairseach Líonra agus Páirtithe",
               "description": "Limistéar ar leith dóibh siúd a reáchtálann líonra pobal seachas aon phobal amháin: eolaire comhpháirtithe, grúpáil comharsanachtaí, comhaontuithe creidmheasa, socruithe don líonra ar fad, gníomhaíocht agus anailísíocht chomhcheangailte, bainistiú sonraí, agus eochracha API lena ndoiciméadacht féin.",
-              "note": "Fanann na codanna a shroicheann suiteálacha eile — páirtithe seachtracha, páirtithe API isteach agus Credit Commons — múchta in éineacht le cuid eile na cónaidhme seachtraí. Tá uirlisí an líonra inmheánaigh in úsáid go laethúil."
+              "note": "Fanann na codanna a shroicheann suiteálacha eile — páirtithe seachtracha, páirtithe API isteach agus Credit Commons — múchta in éineacht le cuid eile an líonra comhpháirtíochta seachtraí. Tá uirlisí an líonra inmheánaigh in úsáid go laethúil."
             }
           }
         },
@@ -1662,7 +1662,7 @@
             },
             "automated_test_suite": {
               "title": "Sraith Tástála Uathoibrithe",
-              "description": "Thart ar 16,500 modh tástála PHP i 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, webhooks, cónaidhm, grúpaí agus an margadh. Ritear iad tar éis gach brú chuig Git, agus cuirtear bac ar imscaradh go dtí go mbíonn an tiomantas a brúdh seiceáilte."
+              "description": "Thart ar 16,500 modh tástála PHP i 1,600 comhad tástála, chomh maith le tuairim is 1,300 sraith tástála comhéadain, a chlúdaíonn sreabhadh airgid, webhooks, an líonra comhpháirtíochta, grúpaí agus an margadh. Ritear iad tar éis gach brú chuig Git, agus cuirtear bac ar imscaradh go dtí go mbíonn an tiomantas a brúdh seiceáilte."
             },
             "performance_monitoring": {
               "title": "Monatóireacht Feidhmíochta",
@@ -1717,8 +1717,8 @@
         "dormant": "Gebaut, nicht aktiviert"
       },
       "title": "Funktionen",
-      "meta_title": "Funktionen - Project NEXUS v1.6",
-      "meta_description": "Alle Module von Project NEXUS v1.6 mit ehrlichen Reifegrad-Kennzeichnungen für Föderation, Zeitbanking, Marktplatz, Community-Tools, Sicherheit, Analytik und Open-Source-Infrastruktur.",
+      "meta_title": "Funktionen",
+      "meta_description": "Alle Module von Project NEXUS, der Software hinter {{name}}, mit ehrlichen Reifegrad-Kennzeichnungen für Zeitbanking, Föderation, Marktplatz, Community-Tools und Sicherheit.",
       "heading": "Was Project NEXUS leistet",
       "subheading": "Project NEXUS ist eine mandantenfähige Community-Plattform der Unternehmensklasse. Jedes der folgenden Module wird heute in Version 1.5 ausgeliefert. Wir kennzeichnen Module ehrlich: Nicht gekennzeichnete Artikel sind allgemein verfügbar; neuere oder aktiv härtende Oberflächen tragen einen Beta- oder Preview-Chip; und ein eingebauter, nicht aktivierter Chip bedeutet, dass die Arbeit beendet und ausgeschaltet ist und auf Nachfrage gewartet wird.",
       "maturity_key_title": "So kennzeichnen wir den Reifegrad",
@@ -2045,7 +2045,7 @@
               "description": "Proprietäres Reputations- und Vertrauenswürdigkeits-Scoring."
             },
             "streaks": {
-              "title": "Streifen",
+              "title": "Serien",
               "description": "Aufeinanderfolgendes Aktivitäts-Tracking zur Belohnung kontinuierlichen Engagements."
             },
             "personal_insights_dashboard": {
@@ -2307,10 +2307,10 @@
         "dormant": "Construit, non activé"
       },
       "title": "Fonctionnalités",
-      "meta_title": "Fonctionnalités - Project NEXUS v1.6",
-      "meta_description": "Tous les modules livrés dans Project NEXUS v1.6, avec des indications honnêtes sur leur maturité pour la fédération, la banque de temps, la place de marché, les outils communautaires, la sécurité, l'analyse et l'infrastructure open source.",
+      "meta_title": "Fonctionnalités",
+      "meta_description": "Tous les modules de Project NEXUS, le logiciel de {{name}}, avec des indications honnêtes sur leur maturité : banque de temps, fédération, place de marché, outils communautaires et sécurité.",
       "heading": "Ce que Project NEXUS fait",
-      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v2.1.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
+      "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v3.1.0. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
       "maturity_key_title": "Comment nous indiquons la maturité",
       "maturity_ga": "Disponibilité générale - stable, prise en charge, utilisée en production chez les locataires pilotes.",
       "maturity_beta": "Déjà en production, mais la surface publique ou le protocole filaire est encore en cours de renforcement.",
@@ -2652,7 +2652,7 @@
             },
             "broker_application": {
               "title": "Demande de courtier et de coordonnateur",
-              "description": "Une application distincte pour les coordinateurs et les courtiers qui interviennent entre les membres lorsqu'un problème de sauvegarde ou de conformité est en cours. Il gère la surveillance des échanges et l'approbation des correspondances, les enregistrements des membres et la progression de l'intégration, les files d'attente de modération pour le flux, les commentaires et les avis, les balises de risque et les listes de surveillance, l'examen des messages pour les membres placés sous surveillance, le suivi des certificats d'assurance et le reporting.",
+              "description": "Une application distincte pour les coordinateurs et les courtiers qui interviennent entre les membres lorsqu'une préoccupation de protection ou de conformité est en cours. Elle gère la surveillance des échanges et l'approbation des correspondances, les dossiers des membres et la progression de l'intégration, les files d'attente de modération pour le fil, les commentaires et les avis, les balises de risque et les listes de surveillance, l'examen des messages pour les membres placés sous surveillance, le suivi des certificats d'assurance et le reporting.",
               "note": "Un courtier est un rôle opérationnel à part entière, pas un administrateur junior : les courtiers obtiennent cette candidature et se voient délibérément refuser le panel d'administration général."
             },
             "two_factor_and_passkeys": {
@@ -2761,7 +2761,7 @@
             },
             "safeguarding_reporting": {
               "title": "Signalement de préoccupations",
-              "description": "Les membres peuvent soulever eux-mêmes une préoccupation en matière de sauvegarde, et le personnel l'examine, l'attribue et la résout à l'aide d'un journal d'actions qui ne peut être que complété, jamais réécrit."
+              "description": "Les membres peuvent soulever eux-mêmes une préoccupation de protection, et le personnel l'examine, l'attribue et la résout à l'aide d'un journal d'actions qui ne peut être que complété, jamais réécrit."
             },
             "surveys_and_projects": {
               "title": "Enquêtes et projets communautaires",
@@ -2897,8 +2897,8 @@
         "dormant": "Costruito, non abilitato"
       },
       "title": "Funzionalità",
-      "meta_title": "Funzionalità - Project NEXUS v1.6",
-      "meta_description": "Ogni modulo rilasciato in Project NEXUS v1.6, con indicazioni oneste di maturità per federazione, banca del tempo, marketplace, strumenti di comunità, sicurezza, analytics e infrastruttura open source.",
+      "meta_title": "Funzionalità",
+      "meta_description": "Ogni modulo di Project NEXUS, il software di {{name}}, con indicazioni oneste di maturità per banca del tempo, federazione, marketplace, strumenti di comunità e sicurezza.",
       "heading": "Cosa fa Project NEXUS",
       "subheading": "Project NEXUS è una piattaforma comunitaria multi-tenant di livello aziendale. Ogni modulo riportato di seguito viene fornito oggi con la versione 1.5. Etichettiamo i moduli in modo onesto: gli elementi non contrassegnati sono generalmente disponibili; le superfici più nuove o che si stanno indurendo attivamente portano un chip Beta o Anteprima; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "maturity_key_title": "Come indichiamo la maturità",
@@ -3487,8 +3487,8 @@
         "dormant": "Construído, não ativado"
       },
       "title": "Funcionalidades",
-      "meta_title": "Funcionalidades - Project NEXUS v1.6",
-      "meta_description": "Todos os módulos disponibilizados no Project NEXUS v1.6, com indicações honestas de maturidade para federação, banco de tempo, marketplace, ferramentas comunitárias, segurança, análise e infraestrutura open source.",
+      "meta_title": "Funcionalidades",
+      "meta_description": "Todos os módulos do Project NEXUS, o software de {{name}}, com indicações honestas de maturidade para banco de tempo, federação, marketplace, ferramentas comunitárias e segurança.",
       "heading": "O que o Project NEXUS faz",
       "subheading": "O Projeto NEXUS é uma plataforma comunitária multilocatária de nível empresarial. Cada módulo abaixo é enviado na versão 1.5 hoje. Rotulamos os módulos honestamente: os itens não marcados estão geralmente disponíveis; superfícies mais novas ou de endurecimento ativo carregam um chip Beta ou Preview; e um chip Construído e não habilitado significa que a obra está finalizada e desligada, aguardando demanda.",
       "maturity_key_title": "Como indicamos a maturidade",
@@ -3499,7 +3499,7 @@
       "open_source_title": "Open source - AGPL-3.0",
       "open_source_body": "O Project NEXUS é totalmente open source sob a AGPL-3.0. Cada linha de código pode ser auditada, criada em fork e alojada de forma autónoma. Os protocolos de federação estão documentados como normas abertas para que nenhuma plataforma controle sozinha a rede global de bancos de tempo.",
       "link_repo": "Repositório do código-fonte",
-      "link_changelog": "Registo de alterações",
+      "link_changelog": "Registro de alterações",
       "link_report_bug": "Reportar um erro",
       "link_about": "Sobre este tenant",
       "security_title": "Divulgação de segurança",
@@ -3676,7 +3676,7 @@
             },
             "volunteering": {
               "title": "Voluntariado",
-              "description": "Oportunidades de voluntariado, registo de horas, check-ins, despesas, certificados, monitorização do bem-estar, alertas de emergência e uma carteira da organização de voluntariado que paga créditos de tempo pelas horas aprovadas."
+              "description": "Oportunidades de voluntariado, registro de horas, check-ins, despesas, certificados, monitorização do bem-estar, alertas de emergência e uma carteira da organização de voluntariado que paga créditos de tempo pelas horas aprovadas."
             },
             "job_vacancies": {
               "title": "Vagas de emprego",
@@ -3766,7 +3766,7 @@
             },
             "resources_and_knowledge_base": {
               "title": "Recursos e base de conhecimento",
-              "description": "Artigos estruturados e uma biblioteca partilhada de recursos."
+              "description": "Artigos estruturados e uma biblioteca compartilhada de recursos."
             },
             "help_center": {
               "title": "Centro de ajuda",
@@ -3786,7 +3786,7 @@
             },
             "legal_hub": {
               "title": "Hub jurídico",
-              "description": "Documentos legais com versões, com barreiras de aceitação e registo de auditoria."
+              "description": "Documentos legais com versões, com barreiras de aceitação e registro de auditoria."
             },
             "impact_reports": {
               "title": "Relatórios de impacto",
@@ -3870,7 +3870,7 @@
             },
             "match_learning": {
               "title": "Aprendizagem de correspondências",
-              "description": "Ciclo de feedback que melhora as recomendações a partir das interações do utilizador."
+              "description": "Ciclo de feedback que melhora as recomendações a partir das interações do usuário."
             },
             "algorithm_health_dashboard": {
               "title": "Painel de saúde dos algoritmos",
@@ -3949,7 +3949,7 @@
             },
             "municipality_reporting": {
               "title": "Relatórios Municipais",
-              "description": "Um calendário municipal partilhado, uma caixa de entrada de feedback dos residentes que encaminha perguntas, ideias, problemas e reclamações para a equipa certa, e relatórios criados para o conselho e parceiros do setor público."
+              "description": "Um calendário municipal compartilhado, uma caixa de entrada de feedback dos residentes que encaminha perguntas, ideias, problemas e reclamações para a equipe certa, e relatórios criados para o conselho e parceiros do setor público."
             },
             "community_market": {
               "title": "Mercado Comunitário",
@@ -3966,7 +3966,7 @@
           "items": {
             "enterprise_security": {
               "title": "Segurança empresarial",
-              "description": "CSRF, limitação de débito, 2FA TOTP, chaves de acesso WebAuthn, nonces CSP, lista de permissões CORS, validação de Form Request, barreiras de verificação por email e registo por código de convite."
+              "description": "CSRF, limitação de débito, 2FA TOTP, chaves de acesso WebAuthn, nonces CSP, lista de permissões CORS, validação de Form Request, barreiras de verificação por email e registro por código de convite."
             },
             "stripe_payments_layer": {
               "title": "Camada de pagamentos Stripe",
@@ -3974,7 +3974,7 @@
             },
             "gdpr_compliance_suite": {
               "title": "Suíte de conformidade RGPD",
-              "description": "Pedidos de dados, gestão de consentimentos, consentimento de cookies, registo de violações e registo de auditoria completo."
+              "description": "Pedidos de dados, gestão de consentimentos, consentimento de cookies, registro de violações e registro de auditoria completo."
             },
             "fraud_and_abuse_detection": {
               "title": "Deteção de fraude e abuso",
@@ -3990,7 +3990,7 @@
             },
             "wcag_2_1_aa_accessibility": {
               "title": "Acessibilidade WCAG 2.1 AA",
-              "description": "Conformidade de acessibilidade auditada em toda a superfície de utilizador."
+              "description": "Conformidade de acessibilidade auditada em toda a superfície de usuário."
             },
             "multi_language_support": {
               "title": "Suporte multilingue",
@@ -3998,7 +3998,7 @@
             },
             "self_hosted_prerendering": {
               "title": "Pré-renderização auto-alojada",
-              "description": "Snapshots de Playwright apenas para bots, servidos aos rastreadores de SEO; os utilizadores recebem sempre a SPA em direto."
+              "description": "Snapshots de Playwright apenas para bots, servidos aos rastreadores de SEO; os usuários recebem sempre a SPA em direto."
             },
             "guided_onboarding": {
               "title": "Integração guiada",
@@ -4077,8 +4077,8 @@
         "dormant": "Construido, no habilitado"
       },
       "title": "Funcionalidades",
-      "meta_title": "Funcionalidades - Project NEXUS v1.6",
-      "meta_description": "Todos los módulos incluidos en Project NEXUS v1.6, con etiquetas honestas de madurez para federación, banco de tiempo, marketplace, herramientas comunitarias, seguridad, analítica e infraestructura open source.",
+      "meta_title": "Funcionalidades",
+      "meta_description": "Todos los módulos de Project NEXUS, el software de {{name}}, con etiquetas honestas de madurez para banco de tiempo, federación, marketplace, herramientas comunitarias y seguridad.",
       "heading": "Qué hace Project NEXUS",
       "subheading": "Project NEXUS es una plataforma comunitaria multiinquilino de nivel empresarial. Todos los módulos siguientes se envían hoy en la versión 1.5. Etiquetamos los módulos con honestidad: los artículos sin marcar están disponibles con carácter general; las superficies más nuevas o que se endurecen activamente llevan un chip Beta o Preview; y un chip integrado, no habilitado significa que el trabajo está terminado y apagado, a la espera de la demanda.",
       "maturity_key_title": "Cómo etiquetamos la madurez",
@@ -4122,7 +4122,7 @@
           "items": {
             "timebanking_engine": {
               "title": "Motor de banco de tiempo",
-              "description": "Sistema completo de intercambio de créditos con monedero, transacciones y controles de bróker."
+              "description": "Sistema completo de intercambio de créditos con monedero, transacciones y controles de intermediario."
             },
             "multi_tenancy": {
               "title": "Multi-tenant",
@@ -4222,7 +4222,7 @@
             },
             "exchange_workflow": {
               "title": "Flujo de intercambio",
-              "description": "Ciclo de vida estructurado para el intercambio de servicios con aprobación del bróker y gestión de disputas."
+              "description": "Ciclo de vida estructurado para el intercambio de servicios con aprobación del intermediario y gestión de disputas."
             },
             "group_exchanges": {
               "title": "Intercambios grupales",
@@ -4421,9 +4421,9 @@
               "description": "Gestión de contactos desde admin con notas, tareas, etiquetas, líneas de tiempo de actividad y exportación."
             },
             "broker_application": {
-              "title": "Solicitud de corredor y coordinador",
-              "description": "Una aplicación separada para los coordinadores y corredores que intervienen entre los miembros cuando surge una inquietud sobre salvaguardia o cumplimiento. Mantiene la supervisión del intercambio y la aprobación de coincidencias, registros de miembros y progreso de incorporación, colas de moderación para el feed, comentarios y revisiones, etiquetas de riesgo y listas de vigilancia, revisión de mensajes para los miembros bajo monitoreo, seguimiento de certificados de seguro e informes.",
-              "note": "Un corredor es una función operativa por derecho propio, no un administrador junior: los corredores obtienen esta solicitud y se les niega deliberadamente el panel de administración general."
+              "title": "Aplicación para intermediarios y coordinadores",
+              "description": "Una aplicación separada para los coordinadores y intermediarios que intervienen entre los miembros cuando surge una inquietud sobre protección o cumplimiento. Mantiene la supervisión del intercambio y la aprobación de coincidencias, registros de miembros y progreso de incorporación, colas de moderación para el feed, comentarios y revisiones, etiquetas de riesgo y listas de vigilancia, revisión de mensajes para los miembros bajo monitoreo, seguimiento de certificados de seguro e informes.",
+              "note": "Un intermediario es una función operativa por derecho propio, no un administrador junior: los intermediarios obtienen esta solicitud y se les niega deliberadamente el panel de administración general."
             },
             "two_factor_and_passkeys": {
               "title": "Inicio de sesión de dos factores y claves de acceso",
@@ -4667,10 +4667,10 @@
         "dormant": "Gebouwd, niet ingeschakeld"
       },
       "title": "Functies",
-      "meta_title": "Functies - Project NEXUS v1.6",
-      "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
+      "meta_title": "Functies",
+      "meta_description": "Alle modules van Project NEXUS, de software achter {{name}}, met eerlijke volwassenheidslabels voor timebanking, federatie, marktplaats, community-tools en beveiliging.",
       "heading": "Wat Project NEXUS doet",
-      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v2.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
+      "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v3.1.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
       "maturity_key_title": "Hoe we volwassenheid labelen",
       "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
       "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -5012,7 +5012,7 @@
             },
             "broker_application": {
               "title": "Aanvraag makelaar en coördinator",
-              "description": "Een aparte applicatie voor de coördinatoren en makelaars die tussen de leden in stappen wanneer er sprake is van een beveiligings- of nalevingsprobleem. Het houdt toezicht op de uitwisselingen en goedkeuring van wedstrijden, ledengegevens en voortgang van de onboarding, moderatiewachtrijen voor de feed, opmerkingen en beoordelingen, risicotags en volglijsten, berichtbeoordeling voor leden die onder toezicht staan, bijhouden van verzekeringscertificaten en rapportage.",
+              "description": "Een aparte applicatie voor de coördinatoren en makelaars die tussen de leden in stappen wanneer er sprake is van een beschermings- of nalevingsprobleem. Het houdt toezicht op de uitwisselingen en goedkeuring van matches, ledengegevens en voortgang van de onboarding, moderatiewachtrijen voor de feed, opmerkingen en beoordelingen, risicotags en volglijsten, berichtbeoordeling voor leden die onder toezicht staan, bijhouden van verzekeringscertificaten en rapportage.",
               "note": "Een makelaar is op zichzelf een operationele rol, geen junior beheerder: makelaars krijgen deze aanvraag en worden bewust geweigerd in het algemene adminpanel."
             },
             "two_factor_and_passkeys": {
@@ -5121,7 +5121,7 @@
             },
             "safeguarding_reporting": {
               "title": "Rapporteren van zorgen",
-              "description": "Leden kunnen zelf een beveiligingsprobleem melden, en het personeel kan het beoordelen, toewijzen en oplossen aan de hand van een actielogboek dat alleen kan worden toegevoegd en nooit kan worden herschreven."
+              "description": "Leden kunnen zelf een beschermingsprobleem melden, en het personeel kan het beoordelen, toewijzen en oplossen aan de hand van een actielogboek dat alleen kan worden toegevoegd en nooit kan worden herschreven."
             },
             "surveys_and_projects": {
               "title": "Enquêtes en gemeenschapsprojecten",
@@ -5248,7 +5248,7 @@
       "results_summary": "Toont {{shown}} van {{total}} vermeldingen",
       "no_results_title": "Niets komt overeen met die zoekopdracht",
       "no_results_body": "Probeer een korter woord of kies Alles om de hele lijst terug te brengen.",
-      "clear_filters": "Duidelijk zoeken en filters"
+      "clear_filters": "Zoekopdracht en filters wissen"
     },
     "pl": {
       "chips": {
@@ -5257,8 +5257,8 @@
         "dormant": "Zbudowany, nie włączony"
       },
       "title": "Funkcje",
-      "meta_title": "Funkcje - Project NEXUS v1.6",
-      "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.6, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
+      "meta_title": "Funkcje",
+      "meta_description": "Każdy moduł Project NEXUS, oprogramowania, na którym działa {{name}}, z uczciwymi etykietami dojrzałości dla bankowania czasu, federacji, marketplace'u i bezpieczeństwa.",
       "heading": "Co robi Project NEXUS",
       "subheading": "Project NEXUS to platforma społecznościowa klasy korporacyjnej, obsługująca wielu dzierżawców. Każdy poniższy moduł jest już dostępny w wersji 1.5. Uczciwie etykietujemy moduły: nieoznaczone elementy są ogólnie dostępne; nowsze lub aktywnie utwardzające się powierzchnie mają chip Beta lub Preview; a wbudowany, niewłączony chip oznacza, że ​​praca została zakończona i wyłączona i oczekuje na żądanie.",
       "maturity_key_title": "Jak oznaczamy dojrzałość",
@@ -5335,7 +5335,7 @@
               "note": "Żyj dzisiaj. Każda strona w głównej aplikacji ma pasującą dostępną stronę, ale każda z nich jest nadal sprawdzana pod kątem zachowania głównej aplikacji po zachowaniu, dlatego ma etykietę Beta, a nie GA."
             },
             "explore_discovery": {
-              "title": "Odkryć",
+              "title": "Odkrywanie",
               "description": "Jedna wyselekcjonowana strona przedstawiająca umiejętności, listy, wydarzenia, grupy, posty i osoby warte zobaczenia, dzięki czemu członkowie nie muszą przeszukiwać każdej sekcji, aby je znaleźć."
             },
             "maps_and_location": {
@@ -5847,10 +5847,10 @@
         "dormant": "構築済み、有効化されていない"
       },
       "title": "機能",
-      "meta_title": "機能 - Project NEXUS v1.6",
-      "meta_description": "Project NEXUS v1.6 で提供されるすべてのモジュールを、フェデレーション、タイムバンキング、マーケットプレイス、コミュニティツール、セキュリティ、分析、オープンソース基盤の各分野で、正直な成熟度ラベルとともに紹介します。",
+      "meta_title": "機能",
+      "meta_description": "{{name}} を支えるソフトウェア Project NEXUS のすべてのモジュールを、タイムバンキング、フェデレーション、マーケットプレイス、コミュニティツール、セキュリティの各分野で、正直な成熟度ラベルとともに紹介します。",
       "heading": "Project NEXUS でできること",
-      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v2.1.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
+      "subheading": "Project NEXUS は、エンタープライズ グレードのマルチテナント コミュニティ プラットフォームです。以下のすべてのモジュールは本日 v3.1.0 で出荷されます。私たちはモジュールに正直にラベルを付けています。マークのないアイテムは一般提供です。新しい表面や強化が進んでいる表面には、ベータ チップまたはプレビュー チップが搭載されています。内蔵されているが有効になっていないチップは、作業が終了してスイッチがオフになり、要求を待っていることを意味します。",
       "maturity_key_title": "成熟度の表記について",
       "maturity_ga": "一般提供 (GA) - 安定して稼働し、サポートされ、パイロットテナントで本番運用中。",
       "maturity_beta": "本番で稼働中ですが、公開インターフェイスやワイヤープロトコルはまだ強化作業中です。",
@@ -6437,8 +6437,8 @@
         "dormant": "بنيت، لم يتم تمكينها"
       },
       "title": "الميزات",
-      "meta_title": "الميزات - Project NEXUS v1.6",
-      "meta_description": "كل وحدة تم إصدارها في Project NEXUS v1.6، مع تصنيفات نضج صادقة للاتحاد، وبنك الوقت، والسوق، وأدوات المجتمع، والأمان، والتحليلات، والبنية التحتية مفتوحة المصدر.",
+      "meta_title": "الميزات",
+      "meta_description": "كل وحدة في Project NEXUS، البرنامج الذي يعمل عليه {{name}}، مع تصنيفات نضج صادقة لبنك الوقت والاتحاد والسوق وأدوات المجتمع والأمان.",
       "heading": "ماذا يقدم Project NEXUS",
       "subheading": "Project NEXUS عبارة عن منصة مجتمعية متعددة المستأجرين على مستوى المؤسسات. يتم شحن كل وحدة أدناه في الإصدار 1.5 اليوم. نقوم بتسمية الوحدات بأمانة: العناصر غير المميزة متاحة بشكل عام؛ تحمل الأسطح الأحدث أو شديدة الصلابة شريحة Beta أو Preview؛ والشريحة المدمجة وغير الممكّنة تعني انتهاء العمل وإيقافه في انتظار الطلب.",
       "maturity_key_title": "كيف نُصنّف النضج",
@@ -6515,7 +6515,7 @@
               "note": "عش اليوم. تحتوي كل صفحة في التطبيق الرئيسي على صفحة مطابقة يمكن الوصول إليها، ولكن لا يزال يتم التحقق من كل صفحة مقابل سلوك التطبيق الرئيسي حسب السلوك، ولهذا السبب يحمل تصنيف Beta بدلاً من GA."
             },
             "explore_discovery": {
-              "title": "يكتشف",
+              "title": "اكتشاف",
               "description": "صفحة واحدة منسقة تعرض المهارات والقوائم والأحداث والمجموعات والمشاركات والأشخاص الذين يستحقون المشاهدة، حتى لا يضطر الأعضاء إلى البحث في كل قسم للعثور عليهم."
             },
             "maps_and_location": {
