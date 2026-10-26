@@ -1,0 +1,142 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Optional identity verification (React /verify-identity-optional). One page, one
+  step at a time, chosen by routes/identity-verification.js from the server's
+  status. Works with JavaScript off: every action is a form post that sends the
+  member to Stripe's hosted page, and "Check again" is a plain link.
+#}
+
+{% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
+{% from "_card-payment.njk" import confirmingPayment as confirmingNotice, paymentCancelled as cancelledNotice, paymentSucceeded, paymentProblem %}
+{% set id = "govuk_alpha_settings.identity." %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if dob and dob.error %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#date_of_birth-day">{{ dob.error }}</a></li></ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if status %}
+        {% if status.type == "error" %}
+          {{ paymentProblem(status.message, t) }}
+        {% else %}
+          {{ paymentSucceeded(status.message, "", t) }}
+        {% endif %}
+      {% endif %}
+
+      {% if paymentCancelled %}{{ cancelledNotice(t) }}{% endif %}
+      {% if paymentReceived and step == "start" %}{{ paymentSucceeded(t(id + "payment_received"), "", t) }}{% endif %}
+
+      {% if step == "error" %}
+        <h1 class="govuk-heading-xl">{{ t(id + "page_title") }}</h1>
+        {{ paymentProblem(loadError, t) }}
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/verify-identity-optional') }}">{{ t("govuk_alpha_settings.card_payment.check_again") }}</a></p>
+
+      {% elif step == "verified" %}
+        <div class="govuk-panel govuk-panel--confirmation">
+          <h1 class="govuk-panel__title">{{ t(id + "verified_title") }}</h1>
+          <div class="govuk-panel__body">{{ t(id + "verified_body") }}</div>
+        </div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/account') }}">{{ t(id + "go_to_settings") }}</a></p>
+
+      {% elif step == "failed" %}
+        <h1 class="govuk-heading-xl">{{ t(id + "failed_title") }}</h1>
+        <p class="govuk-body-l">{{ t(id + "failed_body") }}</p>
+        {% if failureReason %}<div class="govuk-inset-text" id="identity-failure-reason">{{ failureReason }}</div>{% endif %}
+        <p class="govuk-body">{{ t(id + "failed_hint") }}</p>
+        <form method="post" action="{{ urlFor('/verify-identity-optional/start') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="form_token" value="{{ startFormToken }}">
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(id + "try_again") }}</button>
+        </form>
+
+      {% elif step == "in_progress" %}
+        <h1 class="govuk-heading-xl">{{ t(id + "in_progress_title") }}</h1>
+        <p class="govuk-body">{{ t(id + "in_progress_body") }}</p>
+        <p class="govuk-body"><a class="govuk-button" role="button" draggable="false" data-module="govuk-button" href="{{ checkAgainHref }}" id="identity-check-again">{{ t("govuk_alpha_settings.card_payment.check_again") }}</a></p>
+        <form method="post" action="{{ urlFor('/verify-identity-optional/start') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="form_token" value="{{ startFormToken }}">
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(id + "try_again") }}</button>
+        </form>
+
+      {% elif step == "dob" %}
+        {% if stepLabel %}<span class="govuk-caption-l">{{ stepLabel }}</span>{% endif %}
+        <h1 class="govuk-heading-xl">{{ t(id + "dob_title") }}</h1>
+        <form method="post" action="{{ urlFor('/verify-identity-optional/date-of-birth') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ nexusDateInput({
+            name: "date_of_birth",
+            legend: t(id + "dob_title"),
+            legendClasses: "govuk-fieldset__legend--s govuk-visually-hidden",
+            hint: t(id + "dob_body"),
+            value: (dob.parts if dob else undefined),
+            errorMessage: (dob.error if dob else undefined),
+            errorFields: (dob.errorFields if dob else [])
+          }, t) }}
+          <div class="govuk-button-group">
+            <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(id + "continue") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/dashboard') }}">{{ t(id + "maybe_later") }}</a>
+          </div>
+        </form>
+
+      {% elif step == "payment" %}
+        {% if stepLabel %}<span class="govuk-caption-l">{{ stepLabel }}</span>{% endif %}
+        <h1 class="govuk-heading-xl">{{ t(id + "fee_title") }}</h1>
+        {% if confirmingPayment %}
+          {{ confirmingNotice(checkAgainHref, t) }}
+        {% else %}
+          <p class="govuk-body">{{ t(id + "fee_body", { fee: feeLabel }) }}</p>
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(id + "fee_one_time_label") }}</dt>
+              <dd class="govuk-summary-list__value" id="identity-fee">{{ feeLabel }}</dd>
+            </div>
+          </dl>
+          <p class="govuk-body">{{ t("govuk_alpha_settings.card_payment.redirect_hint") }}</p>
+          <form method="post" action="{{ urlFor('/verify-identity-optional/pay') }}" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="form_token" value="{{ feeFormToken }}">
+            <div class="govuk-button-group">
+              <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(id + "pay_button", { fee: feeLabel }) }}</button>
+              <a class="govuk-link" href="{{ urlFor('/dashboard') }}">{{ t(id + "maybe_later") }}</a>
+            </div>
+          </form>
+        {% endif %}
+
+      {% else %}
+        {% if stepLabel %}<span class="govuk-caption-l">{{ stepLabel }}</span>{% endif %}
+        <h1 class="govuk-heading-xl">{{ t(id + "start_title") }}</h1>
+        <p class="govuk-body-l">{{ t(id + "start_body") }}</p>
+        <h2 class="govuk-heading-m">{{ t(id + "what_needed_title") }}</h2>
+        <ul class="govuk-list govuk-list--bullet">
+          <li>{{ t(id + "need_document") }}</li>
+          <li>{{ t(id + "need_camera") }}</li>
+          <li>{{ t(id + "need_minutes") }}</li>
+        </ul>
+        <p class="govuk-body">{{ t(id + "start_hint") }}</p>
+        <form method="post" action="{{ urlFor('/verify-identity-optional/start') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="form_token" value="{{ startFormToken }}">
+          <div class="govuk-button-group">
+            <button type="submit" class="govuk-button govuk-button--start" data-module="govuk-button" data-prevent-double-click="true">{{ t(id + "start_button") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/dashboard') }}">{{ t(id + "maybe_later") }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

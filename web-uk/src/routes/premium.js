@@ -15,6 +15,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { absoluteUrl } = require('../lib/absolute-url');
 
 const router = express.Router();
 
@@ -172,7 +173,9 @@ const PRICING_STATUS_MESSAGES = {
   'subscribe-failed': { type: 'error', messageKey: 'premium.states.subscribe-failed' },
   // /premium/manage redirects here when there is nothing to manage; without an
   // entry the member landed on the pricing page with no explanation at all.
-  'no-subscription': { type: 'info', messageKey: 'premium.states.no-subscription' }
+  'no-subscription': { type: 'info', messageKey: 'premium.states.no-subscription' },
+  // Stripe's cancel address: `/premium/return?status=success&cancelled=1`.
+  'checkout-cancelled': { type: 'info', messageKey: 'govuk_alpha_settings.card_payment.cancelled_body' }
 };
 
 const MANAGE_STATUS_MESSAGES = {
@@ -246,6 +249,13 @@ router.get('/return', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
 
+  // Stripe appends `cancelled=1` to the address we gave it, which itself says
+  // `status=success`; the cancellation wins. The address is never proof of a
+  // subscription: "success" shows as success only once the server reports a plan.
+  if (req.query.cancelled === '1') {
+    return redirectTo(res, '/premium?status=checkout-cancelled');
+  }
+
   let returnStatus = typeof req.query.status === 'string' ? req.query.status : '';
   if (!['success', 'pending', 'failed'].includes(returnStatus)) {
     returnStatus = 'failed';
@@ -253,6 +263,9 @@ router.get('/return', asyncRoute(async (req, res) => {
 
   try {
     const me = returnStatus === 'success' ? premiumMe(await getMemberPremiumMe(token)) : {};
+    if (returnStatus === 'success' && currentTierName(me) === '' && !me.subscription) {
+      returnStatus = 'pending';
+    }
     return res.render('premium/return', {
       title: res.locals.t('premium.title'),
       activeNav: 'explore',
@@ -280,11 +293,12 @@ router.post('/subscribe', asyncRoute(async (req, res) => {
     const result = await createMemberPremiumCheckout(token, {
       tier_id: tierId,
       interval: normaliseInterval(req.body.interval),
-      return_url: localUrl(res, '/premium/return?status=success')
+      // Absolute: Laravel reads a bare path as a WEBSITE path (26 Oct 2026).
+      return_url: absoluteUrl(req, res, '/premium/return?status=success')
     });
     const checkoutUrl = externalUrlFrom(result, 'checkout_url');
     if (checkoutUrl !== '') {
-      return res.redirect(checkoutUrl);
+      return res.redirect(303, checkoutUrl);
     }
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
@@ -301,11 +315,11 @@ router.post('/portal', asyncRoute(async (req, res) => {
 
   try {
     const result = await createMemberPremiumPortal(token, {
-      return_url: localUrl(res, '/premium/manage')
+      return_url: absoluteUrl(req, res, '/premium/manage')
     });
     const portalUrl = externalUrlFrom(result, 'portal_url');
     if (portalUrl !== '') {
-      return res.redirect(portalUrl);
+      return res.redirect(303, portalUrl);
     }
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;

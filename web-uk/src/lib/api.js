@@ -1078,6 +1078,56 @@ async function getDonationReceipt(token, id) {
   });
 }
 
+// Card payments on Stripe's hosted payment page (26 Oct 2026). The server creates
+// the page and returns `checkout_url`; the status calls ask Stripe, so the
+// address Stripe sends the member back to is never treated as proof of payment.
+async function createDonationCheckout(token, data) {
+  return request('/api/v2/donations/checkout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  });
+}
+
+async function getDonationCheckoutStatus(token, id) {
+  return request(`/api/v2/donations/${encodeURIComponent(id)}/checkout-status`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// Optional identity verification (React /verify-identity-optional).
+async function getIdentityVerificationStatus(token) {
+  return request('/api/v2/identity/status', {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function saveIdentityDateOfBirth(token, dateOfBirth) {
+  return request('/api/v2/identity/save-dob', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ date_of_birth: dateOfBirth })
+  });
+}
+
+async function createIdentityFeeCheckout(token, returnUrl) {
+  return request('/api/v2/identity/checkout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ return_url: returnUrl })
+  });
+}
+
+async function startIdentityVerification(token, returnUrl) {
+  return request('/api/v2/identity/start', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ return_url: returnUrl })
+  });
+}
+
 // A volunteer's expense claim WITH a receipt (gap B13, 7 Oct 2026). The website sends
 // the claim and the file together as multipart to the same endpoint; a claim without
 // a receipt still goes as JSON through callVolunteeringApi.
@@ -4244,6 +4294,18 @@ async function getMyVereinDues(token) {
   return request('/api/v2/me/verein-dues', { headers: bearer(token) });
 }
 
+async function createVereinDuesCheckout(token, duesId, returnUrl) {
+  return request(`/api/v2/me/verein-dues/${encodeURIComponent(duesId)}/checkout`, {
+    method: 'POST',
+    headers: bearer(token),
+    body: JSON.stringify({ return_url: returnUrl })
+  });
+}
+
+async function getVereinDuesCheckoutStatus(token, duesId) {
+  return request(`/api/v2/me/verein-dues/${encodeURIComponent(duesId)}/checkout-status`, { headers: bearer(token) });
+}
+
 async function getVereinDuesFeeConfig(token, organizationId) {
   return request(`/api/v2/vereine/${encodeURIComponent(organizationId)}/dues/fee-config`, { headers: bearer(token) });
 }
@@ -4390,6 +4452,12 @@ module.exports = {
   createVolunteerOrganisation,
   callVolunteeringApi,
   getDonationReceipt,
+  createDonationCheckout,
+  getDonationCheckoutStatus,
+  getIdentityVerificationStatus,
+  saveIdentityDateOfBirth,
+  createIdentityFeeCheckout,
+  startIdentityVerification,
   submitVolunteerExpenseWithReceipt,
   downloadOrgExpenseReceipt,
   callMarketplaceApi,
@@ -4714,6 +4782,8 @@ module.exports = {
   getMyVereinInvitations,
   respondToVereinInvitation,
   getMyVereinDues,
+  createVereinDuesCheckout,
+  getVereinDuesCheckoutStatus,
   getVereinDuesFeeConfig,
   setVereinDuesFeeConfig,
   listVereinDues,

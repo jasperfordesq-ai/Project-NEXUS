@@ -128,6 +128,16 @@ const ACCOUNT_LINKS = Object.freeze([
     enabled: () => true
   },
   {
+    // React shows this in its header while the member is not yet verified; here it
+    // sits with the other account settings (26 Oct 2026).
+    href: '/verify-identity-optional',
+    titleKey: 'govuk_alpha_settings.identity.page_title',
+    descriptionKey: 'govuk_alpha_settings.identity.account_description',
+    title: 'Verify Identity',
+    description: 'Check your photo ID to earn a verified identity badge on your profile.',
+    enabled: (tenant) => flagEnabled(tenant, 'identity_verification', 'features', true)
+  },
+  {
     href: '/settings/linked-accounts',
     titleKey: 'govuk_alpha_settings.nav.linked_accounts',
     descriptionKey: 'govuk_alpha_settings.linked.description',

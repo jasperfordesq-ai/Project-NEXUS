@@ -8,9 +8,9 @@
  * overview and member import (React `me/verein-invitations`, `me/verein-dues`,
  * `clubs/:id/admin/dues`, `clubs/:id/admin/import`).
  *
- * 🔴 Paying dues is BLOCKED: Laravel offers only a Stripe PaymentIntent for dues.
- * These tests pin that the member sees what is owed, is told card payment is not
- * available here, and that nothing ever calls the pay endpoint.
+ * Paying dues by card (Stripe's hosted page, 26 Oct 2026) is pinned in
+ * tests/card-payments-hosted-checkout.test.js. Here: the member sees what is owed,
+ * and the old PaymentIntent endpoint (`/pay` on the API) is never called.
  */
 
 const fs = require('node:fs');
@@ -101,10 +101,10 @@ describe('a member’s club invitations', () => {
   });
 });
 
-describe('a member’s dues (payment BLOCKED)', () => {
+describe('a member’s dues', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('shows what is owed and says card payment is unavailable, with no pay button', async () => {
+  it('shows what is owed, with a Pay now button for the owed row', async () => {
     api.getMyVereinDues.mockResolvedValue({
       data: { items: [{ id: 8, organization_name: 'Choir', membership_year: 2026, amount_cents: 5000, currency: 'CHF', status: 'overdue', due_date: '2026-03-01' }] }
     });
@@ -116,8 +116,9 @@ describe('a member’s dues (payment BLOCKED)', () => {
     expect(res.text).toMatch(/CHF\s?50\.00/);
     expect(res.text).toContain(t('govuk_alpha_organisations.verein.dues.status.overdue'));
     expect(res.text).toContain('verein-payment-note');
-    expect(res.text).not.toContain('/pay');
-    expect(res.text).not.toContain('Pay now');
+    expect(res.text).toContain(`action="${PREFIX}/me/verein-dues/8/pay"`);
+    expect(res.text).toContain(t('govuk_alpha_organisations.verein.dues.pay_now'));
+    expect(res.text).not.toContain('payment_unavailable');
   });
 
   it('shows no payment note when nothing is owed', async () => {

@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Verein;
 
+use App\Support\Payments\CheckoutReturnUrl;
 use App\Core\TenantContext;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Services\Verein\VereinDuesAuthorizationService;
@@ -75,6 +76,63 @@ class MyDuesController extends BaseApiController
         } catch (\RuntimeException $e) {
             return $this->respondWithError('VEREIN_DUES_ERROR', $e->getMessage(), null, 422);
         }
+    }
+
+    /**
+     * POST /api/v2/me/verein-dues/{duesId}/checkout
+     *
+     * The member's own dues on a Stripe-hosted payment page, for the accessible
+     * site (no JavaScript). Body: `return_url` (accepted only on this community's
+     * website or accessible site). Response: `checkout_url`, or `already_paid`.
+     */
+    public function checkoutDues(int $duesId): JsonResponse
+    {
+        $forbidden = $this->guardFeature();
+        if ($forbidden) return $forbidden;
+
+        $userId = $this->requireAuth();
+        $returnUrl = CheckoutReturnUrl::safe((string) ($this->getAllInput()['return_url'] ?? ''), '/me/verein-dues');
+
+        try {
+            $result = $this->duesService->createCheckoutSession(
+                $duesId,
+                $userId,
+                CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'success', 'dues' => (string) $duesId, 'session_id' => '{CHECKOUT_SESSION_ID}']),
+                CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'cancelled', 'dues' => (string) $duesId]),
+            );
+        } catch (\DomainException $e) {
+            return $this->respondWithError('PAYMENT_IN_PROGRESS', __('verein_dues.errors.payment_intent_failed'), null, 409);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\RuntimeException $e) {
+            return $this->respondWithError('VEREIN_DUES_ERROR', $e->getMessage(), null, 422);
+        }
+
+        if ($result['already_paid']) {
+            return $this->respondWithData(['already_paid' => true]);
+        }
+
+        return $this->respondWithData(['checkout_url' => $result['checkout_url']]);
+    }
+
+    /**
+     * GET /api/v2/me/verein-dues/{duesId}/checkout-status
+     *
+     * The member's own dues status after the hosted payment page; asks Stripe
+     * when the webhook has not arrived yet.
+     */
+    public function checkoutStatus(int $duesId): JsonResponse
+    {
+        $forbidden = $this->guardFeature();
+        if ($forbidden) return $forbidden;
+
+        $userId = $this->requireAuth();
+        $status = $this->duesService->reconcileCheckout($duesId, $userId);
+        if ($status === null) {
+            return $this->respondWithError('NOT_FOUND', __('verein_dues.errors.dues_not_found'), null, 404);
+        }
+
+        return $this->respondWithData(['dues_id' => $duesId, 'status' => $status]);
     }
 
     public function membershipStatus(int $userId): JsonResponse

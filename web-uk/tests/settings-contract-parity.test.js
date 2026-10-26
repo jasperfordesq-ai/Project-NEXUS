@@ -149,7 +149,8 @@ describe('Laravel account and settings contract parity', () => {
           reviews: false,
           job_vacancies: false,
           group_exchanges: false,
-          gamification: false
+          gamification: false,
+          identity_verification: false
         }
       },
       unreadMessageCount: 5,
@@ -184,7 +185,7 @@ describe('Laravel account and settings contract parity', () => {
       '/wallet', '/messages', '/connections', '/notifications', '/reviews',
       '/activity', '/saved', '/jobs', '/matches', '/group-exchanges',
       '/achievements', '/leaderboard', '/nexus-score', '/profile',
-      '/profile/settings', '/settings/linked-accounts', '/settings/appearance'
+      '/profile/settings', '/verify-identity-optional', '/settings/linked-accounts', '/settings/appearance'
     ]);
     expect(links.find(({ href }) => href === '/messages')).toMatchObject({ badge: 3 });
   });

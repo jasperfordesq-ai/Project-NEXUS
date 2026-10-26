@@ -12316,11 +12316,13 @@ CREATE TABLE `identity_verification_sessions` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   `completed_at` datetime DEFAULT NULL,
+  `stripe_checkout_session_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_ivs_tenant_user` (`tenant_id`,`user_id`),
   KEY `idx_ivs_provider_session` (`provider_slug`,`provider_session_id`),
   KEY `idx_ivs_status` (`status`),
   KEY `fk_ivs_user` (`user_id`),
+  KEY `idx_ivs_checkout_session` (`stripe_checkout_session_id`),
   CONSTRAINT `fk_ivs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ivs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -13048,7 +13050,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=504 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=505 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -20629,12 +20631,14 @@ CREATE TABLE `verein_member_dues` (
   `refunded_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `stripe_checkout_session_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `verein_dues_org_user_year_unique` (`organization_id`,`user_id`,`membership_year`),
   KEY `verein_dues_org_year_idx` (`organization_id`,`membership_year`),
   KEY `verein_dues_user_status_idx` (`user_id`,`status`),
   KEY `verein_dues_tenant_status_idx` (`tenant_id`,`status`),
-  KEY `verein_dues_pi_idx` (`stripe_payment_intent_id`)
+  KEY `verein_dues_pi_idx` (`stripe_payment_intent_id`),
+  KEY `verein_dues_checkout_session_idx` (`stripe_checkout_session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `verein_membership_fees`;
@@ -20931,6 +20935,7 @@ CREATE TABLE `vol_donations` (
   `creation_idempotency_key_hash` char(64) DEFAULT NULL,
   `creation_request_hash` char(64) DEFAULT NULL,
   `organization_id` int(11) DEFAULT NULL,
+  `stripe_checkout_session_id` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_vd_stripe_pi` (`stripe_payment_intent_id`),
   UNIQUE KEY `uq_vol_donation_creation_idempotency` (`tenant_id`,`user_id`,`creation_idempotency_key_hash`),
@@ -20944,7 +20949,8 @@ CREATE TABLE `vol_donations` (
   KEY `idx_vd_gift_aid_status` (`gift_aid_claim_status`),
   KEY `idx_vd_gift_aid_postcode` (`gift_aid_postcode`),
   KEY `idx_vol_donations_tenant_created` (`tenant_id`,`created_at`),
-  KEY `idx_vol_donations_org` (`tenant_id`,`organization_id`)
+  KEY `idx_vol_donations_org` (`tenant_id`,`organization_id`),
+  KEY `idx_vd_checkout_session` (`stripe_checkout_session_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_emergency_alert_recipients`;
@@ -22750,7 +22756,8 @@ INSERT INTO `laravel_migrations` VALUES
 (498,'2026_10_21_140000_make_wellbeing_notification_record_unique',164),
 (499,'2026_10_25_100000_create_listings_digest_sends_table',165),
 (500,'2026_10_25_200000_overhaul_safeguarding_questions',166),
-(503,'2026_10_25_210000_vulnerable_adults_use_vetting',167);
+(503,'2026_10_25_210000_vulnerable_adults_use_vetting',167),
+(504,'2026_10_26_120000_add_stripe_checkout_session_id_to_card_payment_records',168);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -1451,6 +1451,9 @@ Route::post('/v2/stories/{id}/stickers', [\App\Http\Controllers\Api\StoryControl
 
 // Stripe donation payment routes
 Route::post('/v2/donations/payment-intent', [\App\Http\Controllers\Api\DonationPaymentController::class, 'createPaymentIntent']);
+// Hosted Stripe payment page for the accessible site (no JavaScript), 26 Oct 2026.
+Route::post('/v2/donations/checkout', [\App\Http\Controllers\Api\DonationPaymentController::class, 'createCheckout']);
+Route::get('/v2/donations/{id}/checkout-status', [\App\Http\Controllers\Api\DonationPaymentController::class, 'checkoutStatus'])->whereNumber('id');
 Route::get('/v2/donations/{id}/receipt', [\App\Http\Controllers\Api\DonationPaymentController::class, 'getDonationReceipt']);
 
 // ============================================
@@ -3207,6 +3210,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v2/me/verein-dues', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'myDues']);
     Route::get('/v2/me/verein-dues/{duesId}', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'showDues'])->whereNumber('duesId');
     Route::post('/v2/me/verein-dues/{duesId}/pay', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'payDues'])->whereNumber('duesId');
+    Route::post('/v2/me/verein-dues/{duesId}/checkout', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'checkoutDues'])->whereNumber('duesId');
+    Route::get('/v2/me/verein-dues/{duesId}/checkout-status', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'checkoutStatus'])->whereNumber('duesId');
     Route::get('/v2/users/{userId}/verein-membership-status', [\App\Http\Controllers\Api\Verein\MyDuesController::class, 'membershipStatus'])->whereNumber('userId');
 
     // Verein-admin scoped (tenant admin OR scoped verein_admin per-org)
@@ -3662,6 +3667,7 @@ Route::get('/v2/identity/status', [\App\Http\Controllers\Api\OptionalIdentityVer
 Route::post('/v2/identity/start', [\App\Http\Controllers\Api\OptionalIdentityVerificationController::class, 'startVerification'])->middleware('throttle:nexus-route-5-per-1m');
 Route::post('/v2/identity/save-dob', [\App\Http\Controllers\Api\OptionalIdentityVerificationController::class, 'saveDob'])->middleware('throttle:nexus-route-10-per-1m');
 Route::post('/v2/identity/create-payment', [\App\Http\Controllers\Api\OptionalIdentityVerificationController::class, 'createPaymentIntent'])->middleware('throttle:nexus-route-5-per-1m');
+Route::post('/v2/identity/checkout', [\App\Http\Controllers\Api\OptionalIdentityVerificationController::class, 'createCheckout'])->middleware('throttle:nexus-route-5-per-1m');
 // NOTE: identity webhook route moved to public webhook section (below auth group)
 // NOTE: /docs, /auth/forgot-password, /auth/reset-password, /auth/verify-email,
 // /auth/resend-verification, /auth/resend-verification-by-email are public routes (registered above auth group)

@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\Payments\HostedCheckoutService;
 use App\Services\MemberPremiumService;
 use App\Services\StripeDonationService;
 use App\Services\DonationOperationsService;
@@ -158,6 +159,7 @@ class StripeWebhookController extends BaseApiController
                 match ($event->type) {
                     'checkout.session.completed' => $this->handleCheckoutCompleted($event->data->object),
                     'checkout.session.async_payment_succeeded' => $this->handleCheckoutAsyncPaymentSucceeded($event->data->object),
+                    'checkout.session.expired' => $this->handleCheckoutExpired($event->data->object),
                     'customer.subscription.updated' => $this->handleSubscriptionUpdated($event->data->object),
                     'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event->data->object),
                     'invoice.paid' => $this->handleInvoicePaid($event->data->object),
@@ -245,6 +247,14 @@ class StripeWebhookController extends BaseApiController
         // a marketplace marker so a session that somehow lost nexus_type is still
         // reconciled (the buyer has already paid) rather than misrouted to the
         // subscription handler and dropped.
+        // Hosted payment pages for the identity fee, donations and club dues
+        // (accessible site, 26 Oct 2026). Routed first and explicitly so such
+        // a session can never reach the community-billing handler below.
+        if (HostedCheckoutService::owns($session)) {
+            HostedCheckoutService::handleWebhookEvent('checkout.session.completed', $session);
+            return;
+        }
+
         $meta = $session->metadata ?? null;
         $isMarketplace = (($meta->nexus_type ?? null) === 'marketplace')
             || !empty($meta->nexus_order_id ?? null);
@@ -254,6 +264,21 @@ class StripeWebhookController extends BaseApiController
         }
 
         StripeSubscriptionService::handleCheckoutCompleted($session);
+    }
+
+    /**
+     * A hosted payment page expired unpaid. Only the identity fee, donation and
+     * club-dues pages act on it (closing a record that was never paid); any
+     * other session type is logged as before.
+     */
+    private function handleCheckoutExpired(object $session): void
+    {
+        if (HostedCheckoutService::owns($session)) {
+            HostedCheckoutService::handleWebhookEvent('checkout.session.expired', $session);
+            return;
+        }
+
+        Log::info('Stripe webhook: checkout.session.expired not handled for this session type');
     }
 
     /**

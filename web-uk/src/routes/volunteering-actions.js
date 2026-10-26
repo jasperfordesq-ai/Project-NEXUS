@@ -9,6 +9,8 @@ const { randomUUID } = require('crypto');
 const {
   ApiError,
   callVolunteeringApi,
+  createDonationCheckout,
+  getDonationCheckoutStatus,
   getDonationReceipt,
   getGroups,
   getVolunteeringCategories,
@@ -25,6 +27,14 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { formatApiDateTime, parseApiInstant } = require('../lib/api-instant');
 const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
+const { absoluteUrl } = require('../lib/absolute-url');
+const {
+  consumePaymentFormToken,
+  issuePaymentFormToken,
+  recentCheckoutUrl,
+  rememberCheckoutUrl,
+  safeStripeCheckoutUrl
+} = require('../lib/payment-form-token');
 
 const router = express.Router();
 const ACCESSIBILITY_NEED_TYPES = [
@@ -631,6 +641,15 @@ function donationStatus(status, donateError = '', t = null) {
         : 'Thank you. Your donation has been recorded and is awaiting confirmation of payment.'
     };
   }
+  if (status === 'card-failed' || status === 'card-form-expired') {
+    return {
+      type: 'error',
+      message: t
+        ? t(status === 'card-failed' ? 'govuk_alpha_settings.card_payment.start_failed' : 'govuk_alpha_settings.card_payment.form_expired')
+        : 'Your card payment could not be started. Please try again.',
+      field: 'donate-amount'
+    };
+  }
   if (status === 'donate-failed') {
     const messages = {
       amount: 'error_amount',
@@ -1203,11 +1222,19 @@ function percentageLabel(value, total) {
 
 /**
  * The ways a member can record a gift here. The API accepts any method string;
- * React offers these three for a pledge (0a17f2acd). A card gift needs the card
- * checkout (a Stripe PaymentIntent confirmed in the browser), which has no hosted,
- * script-free page, so it is not offered on this frontend.
+ * React offers these three for a pledge (0a17f2acd).
+ *
+ * Card (26 Oct 2026) is not a pledge: it posts the same fields to
+ * `POST /api/v2/donations/checkout`, which creates a Stripe-hosted payment page
+ * the member is sent to. React offers card donations to every member, so this
+ * page does too; a community without card payments set up answers with an error
+ * that is shown. A card gift is only ever confirmed by
+ * `GET /donations/{id}/checkout-status`, never by the address Stripe returns to.
  */
 const PLEDGE_METHODS = ['bank_transfer', 'paypal', 'cash'];
+const CARD_METHOD = 'card';
+const DONATION_PURPOSE = 'donation';
+const DONATION_CHECKOUT_SESSION_KEY = 'donationCheckout';
 
 function donationMethodLabel(value, t = null) {
   const keys = {
@@ -1342,7 +1369,7 @@ function normalizeDonationDashboard(givingDaysResult, donationsResult, t = null)
     upcomingGivingDays: upcoming,
     pastGivingDays: past,
     donations,
-    paymentMethods: PLEDGE_METHODS.map((value, index) => ({
+    paymentMethods: PLEDGE_METHODS.concat([CARD_METHOD]).map((value, index) => ({
       value,
       label: donationMethodLabel(value, t),
       checked: index === 0
@@ -3503,6 +3530,43 @@ router.get('/wellbeing', asyncRoute(async (req, res) => {
   });
 }, { redirectOn401: loginRedirect() }));
 
+/**
+ * Back from Stripe's payment page. The donation id was kept in the session when
+ * the page was opened; its status is asked of the server (which asks Stripe).
+ */
+async function donationCheckoutReturn(req, token, t) {
+  const checkout = trimmed(req.query.checkout);
+  if (checkout === 'cancelled') return { state: 'cancelled' };
+  if (checkout !== 'success') return null;
+  const remembered = req.session && req.session[DONATION_CHECKOUT_SESSION_KEY];
+  const donationId = remembered ? positiveInteger(remembered.id) : null;
+  // Nothing remembered (another browser, an expired session): say only that the
+  // payment is being confirmed; the gift shows in the list once it is.
+  if (!donationId) return { state: 'confirming' };
+
+  let status = '';
+  try {
+    const result = await getDonationCheckoutStatus(token, donationId);
+    const data = result && result.data && typeof result.data === 'object' ? result.data : (result || {});
+    status = trimmed(data.status);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    status = '';
+  }
+  if (['completed', 'failed', 'refunded'].includes(status)) {
+    delete req.session[DONATION_CHECKOUT_SESSION_KEY];
+  }
+  if (status === 'completed') {
+    return {
+      state: 'completed',
+      title: t('govuk_alpha_volunteering.donations.card_success_title'),
+      message: t('govuk_alpha_volunteering.donations.card_success_message', { amount: trimmed(remembered.amountLabel) })
+    };
+  }
+  if (status === 'failed') return { state: 'failed' };
+  return { state: 'confirming' };
+}
+
 router.get('/donations', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
@@ -3528,6 +3592,9 @@ router.get('/donations', asyncRoute(async (req, res) => {
     loadError,
     donateForm: consumeFormReplay(req, 'volunteering', 'donations'),
     status: donationStatus(trimmed(req.query.status), trimmed(req.query.donate_error), res.locals.t),
+    cardReturn: await donationCheckoutReturn(req, token, res.locals.t),
+    checkAgainHref: res.locals.urlFor('/volunteering/donations?checkout=success'),
+    donationFormToken: issuePaymentFormToken(req, DONATION_PURPOSE),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -4238,6 +4305,9 @@ router.post('/donations', asyncRoute(async (req, res) => {
 
   const givingDayId = positiveInteger(req.body.giving_day_id);
   const chosenMethod = trimmed(req.body.payment_method);
+  if (chosenMethod === CARD_METHOD) {
+    return startCardDonation(req, res, { amount, givingDayId });
+  }
   const payload = {
     amount,
     payment_method: PLEDGE_METHODS.includes(chosenMethod) ? chosenMethod : 'bank_transfer',
@@ -4263,6 +4333,55 @@ router.post('/donations', asyncRoute(async (req, res) => {
     '/volunteering/donations?status=donate-failed#donate'
   );
 }));
+
+/**
+ * A card donation: the same fields as React's card checkout, sent to the hosted
+ * checkout endpoint, then a 303 to Stripe. A single-use form token stops a double
+ * submit opening two payments (and two pending donations).
+ */
+async function startCardDonation(req, res, { amount, givingDayId }) {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  if (!consumePaymentFormToken(req, DONATION_PURPOSE, req.body.form_token)) {
+    const recent = recentCheckoutUrl(req, DONATION_PURPOSE);
+    if (recent) return res.redirect(303, recent);
+    return redirectTo(res, '/volunteering/donations?status=card-form-expired#donate');
+  }
+
+  const currency = tenantCurrency(req);
+  const payload = {
+    amount,
+    currency,
+    message: trimmed(req.body.message, 500),
+    is_anonymous: checked(req.body.is_anonymous),
+    return_url: absoluteUrl(req, res, '/volunteering/donations')
+  };
+  if (givingDayId !== null) payload.giving_day_id = givingDayId;
+
+  let data;
+  try {
+    const result = await createDonationCheckout(token, payload);
+    data = result && result.data && typeof result.data === 'object' ? result.data : (result || {});
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    if (error instanceof ApiError && error.status === 422) {
+      return redirectTo(res, '/volunteering/donations?status=donate-failed&donate_error=validation#donate');
+    }
+    return redirectTo(res, '/volunteering/donations?status=card-failed#donate');
+  }
+
+  const checkoutUrl = safeStripeCheckoutUrl(data.checkout_url);
+  if (!checkoutUrl) return redirectTo(res, '/volunteering/donations?status=card-failed#donate');
+  if (req.session) {
+    req.session[DONATION_CHECKOUT_SESSION_KEY] = {
+      id: positiveInteger(data.donation_id),
+      amountLabel: `${moneyLabel(amount)} ${currency}`
+    };
+  }
+  rememberCheckoutUrl(req, DONATION_PURPOSE, checkoutUrl);
+  return res.redirect(303, checkoutUrl);
+}
 
 // The chosen person is posted from the name search (gap B5). A refusal goes back to
 // the search, with the search kept, so the leader can try again or choose someone else.

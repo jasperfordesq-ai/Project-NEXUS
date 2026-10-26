@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Impossibile esonerare le quote.',
             ],
             'my_subtitle' => 'Le tue quote associative per i club di cui fai parte.',
-            'payment_unavailable' => 'Il pagamento delle quote con carta non è ancora disponibile su questo sito. Chiedi al tuo club come pagare, oppure paga sul sito principale del club.',
+            'pay_now' => 'Paga ora',
+            'payment_success' => 'Pagamento ricevuto. La tua iscrizione è ora attiva.',
             'waive_reason_required' => 'Inserisci un motivo per l’esonero da queste quote.',
         ],
         'import' => [

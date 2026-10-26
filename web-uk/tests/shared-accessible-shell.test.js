@@ -10726,12 +10726,14 @@ describe('shared accessible frontend shell', () => {
         interval: 'year'
       });
 
-    expect(response.status).toBe(302);
+    // 303 to Stripe, with this site's ABSOLUTE return address: Laravel reads a
+    // bare path as a website path (26 Oct 2026).
+    expect(response.status).toBe(303);
     expect(response.headers.location).toBe('https://checkout.stripe.test/session');
     expect(api.createMemberPremiumCheckout).toHaveBeenCalledWith('test-token', {
       tier_id: 7,
       interval: 'yearly',
-      return_url: '/premium/return?status=success'
+      return_url: expect.stringMatching(/^http:\/\/127\.0\.0\.1(:\d+)?\/premium\/return\?status=success$/)
     });
   });
 
@@ -10752,10 +10754,10 @@ describe('shared accessible frontend shell', () => {
       .type('form')
       .send({ _csrf: csrfMatch[1] });
 
-    expect(response.status).toBe(302);
+    expect(response.status).toBe(303);
     expect(response.headers.location).toBe('https://billing.stripe.test/session');
     expect(api.createMemberPremiumPortal).toHaveBeenCalledWith('test-token', {
-      return_url: '/premium/manage'
+      return_url: expect.stringMatching(/^http:\/\/127\.0\.0\.1(:\d+)?\/premium\/manage$/)
     });
   });
 
@@ -10818,10 +10820,10 @@ describe('shared accessible frontend shell', () => {
     expect(api.createMemberPremiumCheckout).toHaveBeenLastCalledWith('test-token', {
       tier_id: 7,
       interval: 'monthly',
-      return_url: '/acme/accessible/premium/return?status=success'
+      return_url: expect.stringMatching(/^http:\/\/127\.0\.0\.1(:\d+)?\/acme\/accessible\/premium\/return\?status=success$/)
     });
     expect(api.createMemberPremiumPortal).toHaveBeenLastCalledWith('test-token', {
-      return_url: '/acme/accessible/premium/manage'
+      return_url: expect.stringMatching(/^http:\/\/127\.0\.0\.1(:\d+)?\/acme\/accessible\/premium\/manage$/)
     });
   });
 
@@ -37827,7 +37829,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="donate-method-paypal" name="payment_method" type="radio" value="paypal"');
     expect(response.text).toContain('id="donate-message" name="message" rows="3" maxlength="500"');
     expect(response.text).toContain('id="donate-anonymous" name="is_anonymous" type="checkbox" value="1"');
-    expect(response.text).toContain('Record donation');
+    // Card (Stripe's hosted page) sits beside the pledge methods, so the button no
+    // longer says "Record donation" (26 Oct 2026).
+    expect(response.text).toContain('id="donate-method-card" name="payment_method" type="radio" value="card"');
+    expect(response.text).toContain('>Continue</button>');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 

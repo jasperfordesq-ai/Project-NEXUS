@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Não foi possível dispensar as quotas.',
             ],
             'my_subtitle' => 'As suas quotas de sócio dos clubes a que pertence.',
-            'payment_unavailable' => 'O pagamento de quotas com cartão ainda não está disponível neste site. Pergunte ao seu clube como pagar, ou pague no site principal do clube.',
+            'pay_now' => 'Pagar agora',
+            'payment_success' => 'Pagamento recebido. A sua adesão está agora ativa.',
             'waive_reason_required' => 'Introduza um motivo para a dispensa destas quotas.',
         ],
         'import' => [

@@ -1,0 +1,57 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Shared notices for a card payment taken on Stripe's hosted page (identity fee,
+  donations, club dues). Shown when Stripe sends the member back. The wording
+  never claims a payment is complete: only the server's status call decides that.
+#}
+
+{% macro confirmingPayment(checkAgainHref, t) %}
+  <div class="govuk-notification-banner" role="region" aria-labelledby="card-payment-confirming-title" data-module="govuk-notification-banner" id="card-payment-confirming">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="card-payment-confirming-title">{{ t("govuk_alpha_settings.card_payment.confirming_title") }}</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_settings.card_payment.confirming_title") }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_settings.card_payment.confirming_body") }}</p>
+      <p class="govuk-body"><a class="govuk-notification-banner__link" href="{{ checkAgainHref }}">{{ t("govuk_alpha_settings.card_payment.check_again") }}</a></p>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro paymentCancelled(t) %}
+  <div class="govuk-notification-banner" role="region" aria-labelledby="card-payment-cancelled-title" data-module="govuk-notification-banner" id="card-payment-cancelled">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="card-payment-cancelled-title">{{ t("govuk_alpha_settings.card_payment.cancelled_title") }}</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_settings.card_payment.cancelled_body") }}</p>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro paymentSucceeded(heading, body, t) %}
+  <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="card-payment-success-title" data-module="govuk-notification-banner" id="card-payment-success">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="card-payment-success-title">{{ t("govuk_alpha_settings.common.success_title") }}</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-notification-banner__heading">{{ heading }}</p>
+      {% if body %}<p class="govuk-body">{{ body }}</p>{% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro paymentProblem(message, t) %}
+  <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1" id="card-payment-problem">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list"><li>{{ message }}</li></ul>
+      </div>
+    </div>
+  </div>
+{% endmacro %}

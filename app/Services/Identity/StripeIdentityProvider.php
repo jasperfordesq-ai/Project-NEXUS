@@ -87,9 +87,15 @@ class StripeIdentityProvider implements IdentityVerificationProviderInterface
         }
 
         // Return URL after hosted verification
-        $frontendUrl = \App\Core\TenantContext::getFrontendUrl();
-        $slugPrefix = \App\Core\TenantContext::getSlugPrefix();
-        $params['return_url'] = $frontendUrl . $slugPrefix . '/verify-identity/callback';
+        // The caller passes an already-validated address (CheckoutReturnUrl) when
+        // the member started on the accessible site; otherwise the website.
+        if (!empty($metadata['return_url']) && is_string($metadata['return_url'])) {
+            $params['return_url'] = $metadata['return_url'];
+        } else {
+            $frontendUrl = \App\Core\TenantContext::getFrontendUrl();
+            $slugPrefix = \App\Core\TenantContext::getSlugPrefix();
+            $params['return_url'] = $frontendUrl . $slugPrefix . '/verify-identity/callback';
+        }
 
         $response = $this->stripeRequest('POST', '/identity/verification_sessions', $params, $apiKey);
 

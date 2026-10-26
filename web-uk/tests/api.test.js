@@ -8562,7 +8562,16 @@ describe('API Request Functions', () => {
       ['remindVereinDues', (api) => api.remindVereinDues('t', 4, 8), 'POST', '/api/v2/vereine/4/dues/8/remind', {}, true],
       ['waiveVereinDues', (api) => api.waiveVereinDues('t', 4, 8, 'Hardship'), 'POST', '/api/v2/vereine/4/dues/8/waive', { reason: 'Hardship' }, true],
       ['previewVereinMemberImport', (api) => api.previewVereinMemberImport('t', 4, 'a,b'), 'POST', '/api/v2/caring-community/vereine/4/members/import/preview', { csv: 'a,b' }, true],
-      ['importVereinMembers', (api) => api.importVereinMembers('t', 4, 'a,b'), 'POST', '/api/v2/caring-community/vereine/4/members/import', { csv: 'a,b' }, true]
+      ['importVereinMembers', (api) => api.importVereinMembers('t', 4, 'a,b'), 'POST', '/api/v2/caring-community/vereine/4/members/import', { csv: 'a,b' }, true],
+      // Card payments on Stripe's hosted page (26 Oct 2026).
+      ['createVereinDuesCheckout', (api) => api.createVereinDuesCheckout('t', 8, 'https://a.example/me/verein-dues'), 'POST', '/api/v2/me/verein-dues/8/checkout', { return_url: 'https://a.example/me/verein-dues' }, true],
+      ['getVereinDuesCheckoutStatus', (api) => api.getVereinDuesCheckoutStatus('t', 8), 'GET', '/api/v2/me/verein-dues/8/checkout-status', undefined, true],
+      ['createDonationCheckout', (api) => api.createDonationCheckout('t', { amount: 5, currency: 'EUR', return_url: 'https://a.example/volunteering/donations' }), 'POST', '/api/v2/donations/checkout', { amount: 5, currency: 'EUR', return_url: 'https://a.example/volunteering/donations' }, true],
+      ['getDonationCheckoutStatus', (api) => api.getDonationCheckoutStatus('t', 77), 'GET', '/api/v2/donations/77/checkout-status', undefined, true],
+      ['getIdentityVerificationStatus', (api) => api.getIdentityVerificationStatus('t'), 'GET', '/api/v2/identity/status', undefined, true],
+      ['saveIdentityDateOfBirth', (api) => api.saveIdentityDateOfBirth('t', '1980-04-03'), 'POST', '/api/v2/identity/save-dob', { date_of_birth: '1980-04-03' }, true],
+      ['createIdentityFeeCheckout', (api) => api.createIdentityFeeCheckout('t', 'https://a.example/verify-identity-optional'), 'POST', '/api/v2/identity/checkout', { return_url: 'https://a.example/verify-identity-optional' }, true],
+      ['startIdentityVerification', (api) => api.startIdentityVerification('t', 'https://a.example/verify-identity-optional/callback'), 'POST', '/api/v2/identity/start', { return_url: 'https://a.example/verify-identity-optional/callback' }, true]
     ];
 
     it.each(cases)('%s calls the Laravel contract', async (_name, call, method, path, body, authed) => {

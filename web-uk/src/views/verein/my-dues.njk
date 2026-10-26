@@ -4,18 +4,32 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {#
-  A member's club membership dues (React me/verein-dues). What is owed and its
-  status only: dues can only be paid by card through Stripe.js, which this site
-  does not run, so there is deliberately no pay button and no pretend payment.
+  A member's club membership dues (React me/verein-dues). "Pay now" posts to
+  this site, which asks Laravel for a Stripe-hosted payment page and sends the
+  member there. The banner after Stripe sends them back comes from the server's
+  status call, never from the address (26 Oct 2026).
 #}
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_card-payment.njk" import confirmingPayment, paymentCancelled, paymentSucceeded, paymentProblem %}
 {% set vd = "govuk_alpha_organisations.verein.dues." %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if payError %}{{ paymentProblem(payError, t) }}{% endif %}
+      {% if outcome %}
+        {% if outcome.state == "paid" %}
+          {{ paymentSucceeded(t(vd + "payment_success"), "", t) }}
+        {% elif outcome.state == "confirming" %}
+          {{ confirmingPayment(checkAgainHref, t) }}
+        {% elif outcome.state == "cancelled" %}
+          {{ paymentCancelled(t) }}
+        {% else %}
+          {{ paymentProblem(t("govuk_alpha_settings.card_payment.not_completed"), t) }}
+        {% endif %}
+      {% endif %}
       <h1 class="govuk-heading-xl">{{ t(vd + "my_title") }}</h1>
       <p class="govuk-body-l">{{ t(vd + "my_subtitle") }}</p>
 
@@ -25,7 +39,7 @@
         <p class="govuk-inset-text">{{ t(vd + "empty") }}</p>
       {% else %}
         {% if anyOwed %}
-          <div class="govuk-inset-text" id="verein-payment-note">{{ t(vd + "payment_unavailable") }}</div>
+          <p class="govuk-body" id="verein-payment-note">{{ t("govuk_alpha_settings.card_payment.redirect_hint") }}</p>
         {% endif %}
         {% for row in rows %}
           <div class="govuk-summary-card">
@@ -56,6 +70,13 @@
                   </div>
                 {% endif %}
               </dl>
+              {% if row.owed and row.id %}
+                <form method="post" action="{{ urlFor('/me/verein-dues/' ~ row.id ~ '/pay') }}" novalidate>
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="form_token" value="{{ row.formToken }}">
+                  <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(vd + "pay_now") }}<span class="govuk-visually-hidden">: {{ row.organisation }}, {{ row.year }}, {{ row.amountLabel }}</span></button>
+                </form>
+              {% endif %}
             </div>
           </div>
         {% endfor %}

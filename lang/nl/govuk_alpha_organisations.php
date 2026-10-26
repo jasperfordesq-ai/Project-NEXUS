@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Kon contributies niet kwijtschelden.',
             ],
             'my_subtitle' => 'Je contributie voor de clubs waarvan je lid bent.',
-            'payment_unavailable' => 'Contributie betalen met een kaart is op deze site nog niet mogelijk. Vraag je club hoe je kunt betalen, of betaal op de hoofdwebsite van de club.',
+            'pay_now' => 'Nu betalen',
+            'payment_success' => 'Betaling ontvangen. Uw lidmaatschap is nu actief.',
             'waive_reason_required' => 'Voer een reden in voor het kwijtschelden van deze contributie.',
         ],
         'import' => [

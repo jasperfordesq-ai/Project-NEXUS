@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-26T14:10:08.776Z
-Laravel commit SHA: `72cf7ee88d484ec8d03adc50d3999b85155a07fe`
-Web UK repository commit SHA: `72cf7ee88d484ec8d03adc50d3999b85155a07fe`
+Generated: 2026-10-26T16:02:03.369Z
+Laravel commit SHA: `1c38492435750a9c9bce46e0c5a28a861e621b24`
+Web UK repository commit SHA: `1c38492435750a9c9bce46e0c5a28a861e621b24`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 906 |
+| web-uk routes | 912 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 196 |
+| Extra web-uk routes | 202 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -69,7 +69,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | logout | 1 | 0 | 0 | 0 |
 | marketplace | 50 | 0 | 18 | 0 |
 | matches | 4 | 0 | 0 | 0 |
-| me | 6 | 0 | 3 | 0 |
+| me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 1 | 0 |
 | messages | 18 | 0 | 0 | 0 |
 | municipality-calendar | 0 | 0 | 1 | 0 |
@@ -104,6 +104,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | venues | 5 | 0 | 0 | 0 |
 | verify-certificate | 0 | 0 | 3 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
+| verify-identity-optional | 0 | 0 | 5 | 0 |
 | version | 0 | 0 | 0 | 1 |
 | volunteering | 52 | 0 | 88 | 0 |
 | wallet | 6 | 0 | 3 | 0 |
@@ -196,6 +197,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/marketplace/shipping/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/me/verein-dues` | me | verein/my-dues | web-uk/src/routes/verein-my-dues.js |
 | GET | `/me/verein-invitations` | me | verein/invitations | web-uk/src/routes/verein-invitations.js |
+| POST | `/me/verein-dues/{param}/pay` | me |  | web-uk/src/routes/verein-my-dues.js |
 | POST | `/me/verein-invitations/{param}/respond` | me |  | web-uk/src/routes/verein-invitations.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
@@ -224,6 +226,11 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | GET | `/verify-certificate/{param}` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
 | POST | `/verify-certificate` | verify-certificate |  | web-uk/src/routes/certificate-check.js |
+| GET | `/verify-identity-optional` | verify-identity-optional |  | web-uk/src/routes/identity-verification.js |
+| GET | `/verify-identity-optional/callback` | verify-identity-optional |  | web-uk/src/routes/identity-verification.js |
+| POST | `/verify-identity-optional/date-of-birth` | verify-identity-optional |  | web-uk/src/routes/identity-verification.js |
+| POST | `/verify-identity-optional/pay` | verify-identity-optional |  | web-uk/src/routes/identity-verification.js |
+| POST | `/verify-identity-optional/start` | verify-identity-optional |  | web-uk/src/routes/identity-verification.js |
 | GET | `/volunteering/checkin/{param}` | volunteering | volunteering/checkin-verify | web-uk/src/routes/volunteering-checkin-verify.js |
 | GET | `/volunteering/community-projects/propose` | volunteering | volunteering/community-project-propose | web-uk/src/routes/volunteering-community-projects.js |
 | GET | `/volunteering/donations/{param}/receipt` | volunteering | volunteering/donation-receipt | web-uk/src/routes/volunteering-actions.js |

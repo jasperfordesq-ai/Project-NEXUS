@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'No se pudieron eximir las cuotas.',
             ],
             'my_subtitle' => 'Tus cuotas de socio de los clubes a los que perteneces.',
-            'payment_unavailable' => 'El pago de cuotas con tarjeta aún no está disponible en este sitio. Pregunta a tu club cómo pagar, o paga en el sitio web principal del club.',
+            'pay_now' => 'Pagar ahora',
+            'payment_success' => 'Pago recibido. Tu membresía ya está activa.',
             'waive_reason_required' => 'Introduce un motivo para condonar estas cuotas.',
         ],
         'import' => [

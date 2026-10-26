@@ -12,6 +12,7 @@ use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
+use App\Services\Payments\HostedCheckoutService;
 use App\Services\StripeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -512,22 +513,33 @@ class VereinDuesService
             throw new \InvalidArgumentException(__('verein_dues.errors.cannot_pay_status'));
         }
 
+        // The card form is about to be used: a hosted payment page still open for
+        // these dues is closed first, so the same dues cannot be paid twice.
+        if (!empty($dues->stripe_checkout_session_id)
+            && !HostedCheckoutService::expireIfOpen((string) $dues->stripe_checkout_session_id)) {
+            throw new \RuntimeException(__('verein_dues.errors.payment_intent_failed'));
+        }
+
         $client = StripeService::client();
         $idempotencyKey = "verein-dues-{$tenantId}-{$duesId}";
+        $intentParams = [
+            'amount' => (int) $dues->amount_cents,
+            'currency' => strtolower((string) $dues->currency),
+            'metadata' => self::paymentMetadata($tenantId, $duesId, $userId, $dues),
+            'description' => "Verein membership dues {$dues->membership_year}",
+        ];
 
         try {
-            $intent = $client->paymentIntents->create([
-                'amount' => (int) $dues->amount_cents,
-                'currency' => strtolower((string) $dues->currency),
-                'metadata' => [
-                    'nexus_tenant_id' => (string) $tenantId,
-                    'nexus_dues_id' => (string) $duesId,
-                    'nexus_user_id' => (string) $userId,
-                    'nexus_organization_id' => (string) $dues->organization_id,
-                    'nexus_type' => 'verein_dues',
-                ],
-                'description' => "Verein membership dues {$dues->membership_year}",
-            ], ['idempotency_key' => $idempotencyKey]);
+            $intent = $client->paymentIntents->create($intentParams, ['idempotency_key' => $idempotencyKey]);
+            // A hosted payment page cancels an unpaid card-form intent before it
+            // opens; the stable key would hand that cancelled intent back. Start
+            // a fresh one instead.
+            if ((string) ($intent->status ?? '') === 'canceled') {
+                $intent = $client->paymentIntents->create(
+                    $intentParams,
+                    ['idempotency_key' => $idempotencyKey . '-after-' . $intent->id]
+                );
+            }
         } catch (\Throwable $e) {
             Log::error('VereinDues: failed to create PaymentIntent', [
                 'dues_id' => $duesId,
@@ -542,6 +554,7 @@ class VereinDuesService
             ->where('tenant_id', $tenantId)
             ->update([
             'stripe_payment_intent_id' => $intent->id,
+            'stripe_checkout_session_id' => null,
             'updated_at' => now(),
         ]);
 
@@ -549,6 +562,172 @@ class VereinDuesService
             'client_secret' => $intent->client_secret,
             'payment_intent_id' => $intent->id,
         ];
+    }
+
+    /** The metadata both ways of paying put on the payment, read by the webhook. */
+    private static function paymentMetadata(int $tenantId, int $duesId, int $userId, object $dues): array
+    {
+        return [
+            'nexus_tenant_id' => (string) $tenantId,
+            'nexus_dues_id' => (string) $duesId,
+            'nexus_user_id' => (string) $userId,
+            'nexus_organization_id' => (string) $dues->organization_id,
+            'nexus_type' => 'verein_dues',
+        ];
+    }
+
+    /**
+     * Hosted payment page for dues (accessible site — no JavaScript).
+     *
+     * Only the member's own pending or overdue dues. Before a page opens, an
+     * unpaid card-form intent is cancelled (a succeeded one means the dues are
+     * already paid; one still processing refuses), and an open page for the
+     * same amount is reused. The page carries the same metadata as the card
+     * form, so the existing payment_intent.succeeded handling marks it paid.
+     *
+     * @return array{already_paid:bool, checkout_url:?string}
+     * @throws \RuntimeException|\InvalidArgumentException|\DomainException DomainException = payment in progress
+     */
+    public function createCheckoutSession(int $duesId, int $userId, string $successUrl, string $cancelUrl): array
+    {
+        $tenantId = TenantContext::getId();
+
+        $dues = DB::table('verein_member_dues')
+            ->where('id', $duesId)
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->first();
+        if (!$dues) {
+            throw new \RuntimeException(__('verein_dues.errors.dues_not_found'));
+        }
+        if ($dues->status === 'paid') {
+            return ['already_paid' => true, 'checkout_url' => null];
+        }
+        if (!in_array($dues->status, ['pending', 'overdue'], true)) {
+            throw new \InvalidArgumentException(__('verein_dues.errors.cannot_pay_status'));
+        }
+
+        $client = StripeService::client();
+        $currency = strtolower((string) $dues->currency);
+        $amount = (int) $dues->amount_cents;
+
+        if (!empty($dues->stripe_payment_intent_id)) {
+            $pi = $client->paymentIntents->retrieve((string) $dues->stripe_payment_intent_id);
+            $status = (string) ($pi->status ?? '');
+            if ($status === 'succeeded') {
+                // Paid by card; the webhook (or this reconciliation) records it.
+                self::handleWebhookEvent('payment_intent.succeeded', $pi);
+                return ['already_paid' => true, 'checkout_url' => null];
+            }
+            if ($status === 'processing' || $status === 'requires_capture') {
+                throw new \DomainException('A card payment for these dues is still being processed.');
+            }
+            if ($status !== 'canceled') {
+                $client->paymentIntents->cancel((string) $dues->stripe_payment_intent_id, []);
+            }
+            DB::table('verein_member_dues')
+                ->where('id', $duesId)
+                ->where('tenant_id', $tenantId)
+                ->where('stripe_payment_intent_id', (string) $dues->stripe_payment_intent_id)
+                ->whereIn('status', ['pending', 'overdue'])
+                ->update(['stripe_payment_intent_id' => null, 'updated_at' => now()]);
+        }
+
+        $url = HostedCheckoutService::reusableUrl($dues->stripe_checkout_session_id ?? null, $amount, $currency);
+        if ($url !== null) {
+            return ['already_paid' => false, 'checkout_url' => $url];
+        }
+
+        $attempt = !empty($dues->stripe_checkout_session_id)
+            ? substr(sha1((string) $dues->stripe_checkout_session_id), 0, 12)
+            : 'first';
+        $orgName = (string) (DB::table('vol_organizations')
+            ->where('id', $dues->organization_id)
+            ->where('tenant_id', $tenantId)
+            ->value('name') ?? '');
+        $description = trim("Verein membership dues {$dues->membership_year}" . ($orgName !== '' ? " — {$orgName}" : ''));
+
+        try {
+            $session = HostedCheckoutService::create([
+                'kind' => HostedCheckoutService::KIND_VEREIN_DUES,
+                'amount_minor' => $amount,
+                'currency' => $currency,
+                'name' => $description,
+                'description' => $description,
+                'metadata' => self::paymentMetadata($tenantId, $duesId, $userId, $dues),
+                'customer_email' => (string) (DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->value('email') ?? '') ?: null,
+                'success_url' => $successUrl,
+                'cancel_url' => $cancelUrl,
+                'idempotency_key' => "verein-dues-checkout-{$tenantId}-{$duesId}-{$attempt}",
+                'client_reference_id' => "verein_dues:{$duesId}",
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('VereinDues: failed to create Checkout Session', [
+                'dues_id' => $duesId,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException(__('verein_dues.errors.payment_intent_failed'));
+        }
+
+        DB::table('verein_member_dues')
+            ->where('id', $duesId)
+            ->where('tenant_id', $tenantId)
+            ->update([
+                'stripe_checkout_session_id' => (string) $session->id,
+                'updated_at' => now(),
+            ]);
+
+        return ['already_paid' => false, 'checkout_url' => (string) $session->url];
+    }
+
+    /**
+     * A member back from the hosted page before the webhook arrives: ask Stripe.
+     * Records the payment ONLY when Stripe reports the session paid, through the
+     * same idempotent path the webhook uses. Returns the dues status.
+     */
+    public function reconcileCheckout(int $duesId, int $userId): ?string
+    {
+        $tenantId = TenantContext::getId();
+        $dues = DB::table('verein_member_dues')
+            ->where('id', $duesId)
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->first();
+        if (!$dues) {
+            return null;
+        }
+        if (in_array($dues->status, ['pending', 'overdue'], true) && !empty($dues->stripe_checkout_session_id)) {
+            $session = HostedCheckoutService::retrieve((string) $dues->stripe_checkout_session_id);
+            $piId = $session ? HostedCheckoutService::paymentIntentId($session) : null;
+            if ($session && (string) ($session->payment_status ?? '') === 'paid' && $piId !== null) {
+                $pi = StripeService::client()->paymentIntents->retrieve($piId);
+                if ((string) ($pi->status ?? '') === 'succeeded') {
+                    self::handleWebhookEvent('payment_intent.succeeded', $pi);
+                }
+            }
+            $dues = DB::table('verein_member_dues')->where('id', $duesId)->where('tenant_id', $tenantId)->first();
+        }
+
+        return $dues ? (string) $dues->status : null;
+    }
+
+    /** checkout.session.completed: store the intent id against the dues. */
+    public static function linkCheckoutPaymentIntent(string $checkoutSessionId, string $paymentIntentId): void
+    {
+        DB::table('verein_member_dues')
+            ->where('stripe_checkout_session_id', $checkoutSessionId)
+            ->whereNull('stripe_payment_intent_id')
+            ->update(['stripe_payment_intent_id' => $paymentIntentId, 'updated_at' => now()]);
+    }
+
+    /** checkout.session.expired: the page can no longer be paid; forget it. */
+    public static function handleCheckoutExpired(string $checkoutSessionId): void
+    {
+        DB::table('verein_member_dues')
+            ->where('stripe_checkout_session_id', $checkoutSessionId)
+            ->whereIn('status', ['pending', 'overdue'])
+            ->update(['stripe_checkout_session_id' => null, 'updated_at' => now()]);
     }
 
     /**

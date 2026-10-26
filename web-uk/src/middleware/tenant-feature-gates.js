@@ -59,7 +59,12 @@ const FEATURE_ROUTE_GATES = [
   { prefix: '/premium', featureKey: 'member_premium' },
   { prefix: '/resources', featureKey: 'resources' },
   { prefix: '/reviews', featureKey: 'reviews' },
-  { prefix: '/search', featureKey: 'search' }
+  { prefix: '/search', featureKey: 'search' },
+  // Optional identity verification (React FeatureGate feature="identity_verification").
+  // Two entries on purpose: '/verify-identity' does not prefix-match
+  // '/verify-identity-optional' (the match is whole path segments).
+  { prefix: '/verify-identity', featureKey: 'identity_verification' },
+  { prefix: '/verify-identity-optional', featureKey: 'identity_verification' }
 ];
 
 function pathMatchesPrefix(pathname, prefix) {

@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Services\Payments\HostedCheckoutService;
 use App\Core\EmailTemplateBuilder;
 use App\Core\Mailer;
 use App\Core\TenantContext;
@@ -97,6 +98,33 @@ class StripeDonationService
      * @throws \InvalidArgumentException On validation failure
      */
     public static function createPaymentIntent(int $userId, int $tenantId, array $data): array
+    {
+        return self::startCardDonation($userId, $tenantId, $data, null);
+    }
+
+    /**
+     * Hosted payment page for a card donation (accessible site — no JavaScript).
+     *
+     * Everything up to the payment is the card-form path, unchanged: the same
+     * validation, currency rule, campaign check, organisation, Stripe account and
+     * pending donation row. Only the last step differs: a Stripe Checkout Session
+     * on the same account, carrying the same metadata, so the existing
+     * payment_intent.succeeded handling completes the donation (it adopts the
+     * intent by the donation number). A donation is a new row each time, so there
+     * is no session to reuse; a double submission is stopped by the caller.
+     *
+     * @param array{success_url:string, cancel_url:string} $returnUrls
+     * @return array{checkout_url:string, donation_id:int}
+     */
+    public static function createCheckoutSession(int $userId, int $tenantId, array $data, array $returnUrls): array
+    {
+        return self::startCardDonation($userId, $tenantId, $data, $returnUrls);
+    }
+
+    /**
+     * @param array{success_url:string, cancel_url:string}|null $hosted null = card form
+     */
+    private static function startCardDonation(int $userId, int $tenantId, array $data, ?array $hosted): array
     {
         $amount = (float) ($data['amount'] ?? 0);
         if ($amount < 0.50) {
@@ -261,22 +289,33 @@ class StripeDonationService
             return $donation;
         });
 
+        $intentDescription = self::paymentDescription($tenantName, $organisation, $givingDayTitle);
+        $intentMetadata = array_merge([
+            'nexus_tenant_id' => (string) $tenantId,
+            'nexus_tenant_name' => $tenantName,
+            'nexus_tenant_slug' => $tenantSlug,
+            'nexus_user_id' => (string) $userId,
+            'nexus_donation_id' => (string) $donation->id,
+            'nexus_donation_type' => 'monetary',
+            'nexus_payment_route' => $paymentRoute,
+            'nexus_stripe_account_id' => $tenantStripeAccountId ?: 'platform_default',
+        ], self::attributionMetadata($organisation, $givingDayId, $givingDayTitle));
+
+        if ($hosted !== null) {
+            return self::openDonationCheckout(
+                $donation, $tenantId, $amount, $currency, $intentDescription, $intentMetadata,
+                $stripeCustomerId ?: null, (string) ($user->email ?? ''), $tenantStripeAccountId ?: null,
+                $hosted, $historyRefs,
+            );
+        }
+
         // Create PaymentIntent
         try {
             $paymentIntentParams = [
                 'amount' => self::toStripeMinorUnits($amount, $currency),
                 'currency' => $currency,
-                'description' => self::paymentDescription($tenantName, $organisation, $givingDayTitle),
-                'metadata' => array_merge([
-                    'nexus_tenant_id' => (string) $tenantId,
-                    'nexus_tenant_name' => $tenantName,
-                    'nexus_tenant_slug' => $tenantSlug,
-                    'nexus_user_id' => (string) $userId,
-                    'nexus_donation_id' => (string) $donation->id,
-                    'nexus_donation_type' => 'monetary',
-                    'nexus_payment_route' => $paymentRoute,
-                    'nexus_stripe_account_id' => $tenantStripeAccountId ?: 'platform_default',
-                ], self::attributionMetadata($organisation, $givingDayId, $givingDayTitle)),
+                'description' => $intentDescription,
+                'metadata' => $intentMetadata,
             ];
 
             if ($stripeCustomerId) {
@@ -507,6 +546,168 @@ class StripeDonationService
             'country' => $ready ? 'GB' : null,
             'consented_at' => $ready ? now()->toDateTimeString() : null,
         ];
+    }
+
+    /**
+     * The hosted-page tail of startCardDonation(). A failure leaves the attempt
+     * on record as failed with a history entry, exactly as the card form does.
+     *
+     * @param array<string,string> $metadata
+     * @param array{success_url:string, cancel_url:string} $hosted
+     * @return array{checkout_url:string, donation_id:int}
+     */
+    private static function openDonationCheckout(
+        object $donation,
+        int $tenantId,
+        float $amount,
+        string $currency,
+        string $description,
+        array $metadata,
+        ?string $stripeCustomerId,
+        string $donorEmail,
+        ?string $tenantStripeAccountId,
+        array $hosted,
+        \Closure $historyRefs,
+    ): array {
+        try {
+            $session = HostedCheckoutService::create([
+                'kind' => HostedCheckoutService::KIND_DONATION,
+                'amount_minor' => self::toStripeMinorUnits($amount, $currency),
+                'currency' => $currency,
+                'name' => $description,
+                'description' => $description,
+                'metadata' => $metadata,
+                'customer' => $stripeCustomerId,
+                'customer_email' => $stripeCustomerId ? null : ($donorEmail !== '' ? $donorEmail : null),
+                'stripe_account' => $tenantStripeAccountId,
+                'success_url' => $hosted['success_url'],
+                'cancel_url' => $hosted['cancel_url'],
+                'idempotency_key' => "vol-donation-checkout-{$tenantId}-{$donation->id}",
+                'client_reference_id' => "donation:{$donation->id}",
+            ]);
+        } catch (\Throwable $e) {
+            DB::transaction(function () use ($donation, $tenantId, $historyRefs, $e) {
+                $affected = DB::table('vol_donations')
+                    ->where('id', $donation->id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'failed']);
+                if ($affected > 0) {
+                    FundraisingHistoryService::record(
+                        $tenantId, 'donation_payment_not_started', FundraisingHistoryService::ACTOR_SYSTEM, null,
+                        $historyRefs((int) $donation->id), null, null, ['error' => get_class($e)],
+                    );
+                }
+            });
+            Log::error('Stripe: failed to create donation checkout', [
+                'donation_id' => $donation->id,
+                'tenant_id' => $tenantId,
+                'stripe_account_id' => $tenantStripeAccountId,
+                'error' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('Failed to create checkout session: ' . $e->getMessage());
+        }
+
+        DB::table('vol_donations')
+            ->where('id', $donation->id)
+            ->where('tenant_id', $tenantId)
+            ->update(['stripe_checkout_session_id' => (string) $session->id]);
+
+        Log::info('Stripe: Checkout Session created for donation', [
+            'donation_id' => $donation->id,
+            'checkout_session_id' => $session->id,
+            'tenant_id' => $tenantId,
+            'stripe_account_id' => $tenantStripeAccountId,
+        ]);
+
+        return [
+            'checkout_url' => (string) $session->url,
+            'donation_id' => (int) $donation->id,
+        ];
+    }
+
+    /**
+     * A member back from the hosted page before the webhook arrives: ask Stripe.
+     * The donation is completed ONLY when Stripe reports the session paid and its
+     * payment intent succeeded, through the same locked, idempotent
+     * handlePaymentSucceeded() the webhook uses. Returns the donation's status,
+     * or null when it is not this member's donation.
+     */
+    public static function reconcileCheckout(int $donationId, int $userId, int $tenantId): ?string
+    {
+        $donation = DB::table('vol_donations')
+            ->where('id', $donationId)
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->first();
+        if (!$donation) {
+            return null;
+        }
+
+        if ($donation->status === 'pending' && !empty($donation->stripe_checkout_session_id)) {
+            $account = !empty($donation->stripe_account_id) ? (string) $donation->stripe_account_id : null;
+            $session = HostedCheckoutService::retrieve((string) $donation->stripe_checkout_session_id, $account);
+            $piId = $session ? HostedCheckoutService::paymentIntentId($session) : null;
+            if ($session && (string) ($session->payment_status ?? '') === 'paid' && $piId !== null) {
+                try {
+                    $pi = StripeService::client()->paymentIntents->retrieve(
+                        $piId,
+                        [],
+                        $account ? ['stripe_account' => $account] : []
+                    );
+                    if ((string) ($pi->status ?? '') === 'succeeded') {
+                        self::handlePaymentSucceeded($pi);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Stripe donation: hosted payment status check failed', [
+                        'donation_id' => $donationId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+            $donation = DB::table('vol_donations')->where('id', $donationId)->where('tenant_id', $tenantId)->first();
+        }
+
+        return $donation ? (string) $donation->status : null;
+    }
+
+    /** checkout.session.completed: store the intent id against its donation. */
+    public static function linkCheckoutPaymentIntent(string $checkoutSessionId, string $paymentIntentId): void
+    {
+        DB::table('vol_donations')
+            ->where('stripe_checkout_session_id', $checkoutSessionId)
+            ->whereNull('stripe_payment_intent_id')
+            ->update(['stripe_payment_intent_id' => $paymentIntentId]);
+    }
+
+    /**
+     * checkout.session.expired: the member never paid. The pending donation is
+     * closed as failed, with a history entry, as when a payment cannot start.
+     */
+    public static function handleCheckoutExpired(string $checkoutSessionId): void
+    {
+        $donation = DB::table('vol_donations')
+            ->where('stripe_checkout_session_id', $checkoutSessionId)
+            ->first();
+        if (!$donation) {
+            return;
+        }
+
+        DB::transaction(function () use ($donation) {
+            $affected = DB::table('vol_donations')
+                ->where('id', $donation->id)
+                ->where('tenant_id', $donation->tenant_id)
+                // A session only expires unpaid; a declined card may already have
+                // linked its intent id, so the id is not part of the test.
+                ->where('status', 'pending')
+                ->update(['status' => 'failed']);
+            if ($affected > 0) {
+                FundraisingHistoryService::record(
+                    (int) $donation->tenant_id, 'donation_payment_not_started', FundraisingHistoryService::ACTOR_STRIPE, null,
+                    self::historyRefs($donation), null, null, ['reason' => 'checkout_expired'],
+                );
+            }
+        });
     }
 
     /**
@@ -776,6 +977,17 @@ class StripeDonationService
             Log::info('Stripe donation: no matching donation for failed PaymentIntent', [
                 'payment_intent_id' => $piId,
                 'meta_tenant_id' => $metaTenantId,
+            ]);
+            return;
+        }
+
+        // On a hosted payment page a declined card is not the end: the member can
+        // try another card on the same page, and a failed donation can never be
+        // completed later. Only the page expiring closes it (handleCheckoutExpired).
+        if (!empty($donation->stripe_checkout_session_id ?? null)) {
+            Log::info('Stripe donation: payment_failed ignored on an open hosted page', [
+                'donation_id' => $donation->id,
+                'payment_intent_id' => $piId,
             ]);
             return;
         }

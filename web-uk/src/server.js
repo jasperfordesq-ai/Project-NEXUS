@@ -111,6 +111,7 @@ const supportActionConfirmRoutes = require('./routes/support-action-confirm');
 const vereinRoutes = require('./routes/verein');
 const vereinInvitationRoutes = require('./routes/verein-invitations');
 const vereinMyDuesRoutes = require('./routes/verein-my-dues');
+const identityVerificationRoutes = require('./routes/identity-verification');
 const podcastRoutes = require('./routes/podcasts');
 const podcastActionRoutes = require('./routes/podcast-actions');
 const federationRoutes = require('./routes/federation');
@@ -2429,7 +2430,8 @@ app.use('/polls', doubleCsrfProtection, postOnly(formLimiter), pollActionRoutes)
 app.use('/clubs', requireAuth, doubleCsrfProtection, postOnly(formLimiter), vereinRoutes);
 app.use('/clubs', doubleCsrfProtection, postOnly(formLimiter), clubsRoutes);
 app.use('/me/verein-invitations', requireAuth, doubleCsrfProtection, postOnly(formLimiter), vereinInvitationRoutes);
-app.use('/me/verein-dues', requireAuth, vereinMyDuesRoutes);
+app.use('/me/verein-dues', requireAuth, doubleCsrfProtection, postOnly(formLimiter), vereinMyDuesRoutes);
+app.use('/verify-identity-optional', doubleCsrfProtection, postOnly(formLimiter), identityVerificationRoutes);
 app.use('/municipality-calendar', requireAuth, municipalityCalendarRoutes);
 app.use('/advertise/campaigns', requireAuth, doubleCsrfProtection, postOnly(formLimiter), advertiseCampaignRoutes);
 // The emailed single-use link: no sign-in, the token is the authority (as on React).

@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Níorbh fhéidir táillí a tharscaoileadh.',
             ],
             'my_subtitle' => 'Do tháillí ballraíochta do na clubanna a bhfuil tú i do bhall díobh.',
-            'payment_unavailable' => 'Níl íocaíocht táillí le cárta ar fáil ar an suíomh seo fós. Fiafraigh de do chlub conas íoc, nó íoc ar phríomhshuíomh gréasáin an chlub.',
+            'pay_now' => 'Íoc anois',
+            'payment_success' => 'Íocaíocht faighte. Tá do bhallraíocht gníomhach anois.',
             'waive_reason_required' => 'Cuir isteach cúis le haghaidh na táillí seo a tharscaoileadh.',
         ],
         'import' => [

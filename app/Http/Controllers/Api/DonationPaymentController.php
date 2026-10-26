@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Core\TenantContext;
 use App\Services\StripeDonationService;
+use App\Support\Payments\CheckoutReturnUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -102,6 +103,99 @@ class DonationPaymentController extends BaseApiController
      * @param int $id Donation ID
      * @return JsonResponse
      */
+    /**
+     * POST /api/v2/donations/checkout
+     *
+     * A card donation on a Stripe-hosted payment page, for the accessible site
+     * (no JavaScript). Same fields and rules as /v2/donations/payment-intent, plus
+     * `return_url` (accepted only on this community's website or accessible site).
+     * Response: `checkout_url` to redirect to and the pending `donation_id`.
+     */
+    public function createCheckout(Request $request): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = $this->getTenantId();
+
+        $this->rateLimit('donation_payment_intent', 10, 60);
+
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:0.50',
+            'currency' => 'required|string|size:3',
+            'giving_day_id' => 'nullable|integer|min:1',
+            'opportunity_id' => 'nullable|integer|min:1',
+            'community_project_id' => 'nullable|integer|min:1',
+            'message' => 'nullable|string|max:500',
+            'is_anonymous' => 'nullable|boolean',
+            'fund_code' => 'nullable|string|max:80',
+            'gift_aid_enabled' => 'nullable|boolean',
+            'gift_aid.declaration_name' => 'nullable|string|max:160',
+            'gift_aid.address_line1' => 'nullable|string|max:190',
+            'gift_aid.address_line2' => 'nullable|string|max:190',
+            'gift_aid.town' => 'nullable|string|max:120',
+            'gift_aid.postcode' => 'nullable|string|max:40',
+            'gift_aid.country' => 'nullable|string|size:2',
+            'return_url' => 'nullable|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $messages) {
+                $errors[] = [
+                    'code' => 'VALIDATION_ERROR',
+                    'message' => $messages[0],
+                    'field' => $field,
+                ];
+            }
+            return $this->respondWithErrors($errors, 422);
+        }
+
+        $data = $validator->validated();
+        $returnUrl = CheckoutReturnUrl::safe((string) ($data['return_url'] ?? ''), '/volunteering/donations');
+        unset($data['return_url']);
+
+        try {
+            $result = StripeDonationService::createCheckoutSession($userId, $tenantId, $data, [
+                'success_url' => CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'success', 'session_id' => '{CHECKOUT_SESSION_ID}']),
+                'cancel_url' => CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'cancelled']),
+            ]);
+
+            return $this->respondWithData([
+                'checkout_url' => $result['checkout_url'],
+                'donation_id' => $result['donation_id'],
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\RuntimeException $e) {
+            Log::error('DonationPaymentController: createCheckout failed', [
+                'user_id' => $userId,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+            return $this->respondWithError('PAYMENT_ERROR', __('api.payment_processing_failed'), null, 500);
+        }
+    }
+
+    /**
+     * GET /api/v2/donations/{id}/checkout-status
+     *
+     * The member's own donation status after the hosted payment page; asks Stripe
+     * when the webhook has not arrived yet. Never trusts the return address.
+     */
+    public function checkoutStatus(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = $this->getTenantId();
+
+        $this->rateLimit('donation_checkout_status', 30, 60);
+
+        $status = StripeDonationService::reconcileCheckout($id, $userId, $tenantId);
+        if ($status === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.donation_not_found'), null, 404);
+        }
+
+        return $this->respondWithData(['donation_id' => $id, 'status' => $status]);
+    }
+
     public function getDonationReceipt(int $id): JsonResponse
     {
         $userId = $this->requireAuth();

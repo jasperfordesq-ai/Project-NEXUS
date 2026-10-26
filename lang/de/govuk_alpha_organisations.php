@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Beiträge konnten nicht erlassen werden.',
             ],
             'my_subtitle' => 'Ihre Mitgliedsbeiträge für die Vereine, denen Sie angehören.',
-            'payment_unavailable' => 'Die Zahlung von Beiträgen per Karte ist auf dieser Website noch nicht möglich. Fragen Sie Ihren Verein, wie Sie zahlen können, oder zahlen Sie auf der Hauptwebsite des Vereins.',
+            'pay_now' => 'Jetzt zahlen',
+            'payment_success' => 'Zahlung eingegangen. Ihre Mitgliedschaft ist jetzt aktiv.',
             'waive_reason_required' => 'Geben Sie einen Grund für den Erlass dieser Beiträge ein.',
         ],
         'import' => [

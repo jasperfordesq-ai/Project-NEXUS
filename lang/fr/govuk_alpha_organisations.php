@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Impossible de dispenser les cotisations.',
             ],
             'my_subtitle' => 'Vos cotisations pour les clubs dont vous êtes membre.',
-            'payment_unavailable' => 'Le paiement des cotisations par carte n’est pas encore possible sur ce site. Demandez à votre club comment payer, ou payez sur le site principal du club.',
+            'pay_now' => 'Payer maintenant',
+            'payment_success' => 'Paiement reçu. Votre adhésion est maintenant active.',
             'waive_reason_required' => 'Saisissez la raison de l’exonération de ces cotisations.',
         ],
         'import' => [

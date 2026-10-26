@@ -199,7 +199,8 @@ return [
                 'waive_failed' => 'Nie udało się anulować składek.',
             ],
             'my_subtitle' => 'Twoje składki członkowskie w klubach, do których należysz.',
-            'payment_unavailable' => 'Płacenie składek kartą nie jest jeszcze dostępne w tej witrynie. Zapytaj swój klub, jak zapłacić, lub zapłać na głównej stronie klubu.',
+            'pay_now' => 'Zapłać teraz',
+            'payment_success' => 'Płatność otrzymana. Twoje członkostwo jest teraz aktywne.',
             'waive_reason_required' => 'Podaj powód umorzenia tych składek.',
         ],
         'import' => [

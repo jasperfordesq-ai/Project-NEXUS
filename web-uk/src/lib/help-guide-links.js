@@ -38,6 +38,7 @@ const HELP_LINK_TARGETS = Object.freeze({
   '/dashboard': '/dashboard',
   '/events': '/events',
   '/exchanges': '/exchanges',
+  '/verify-identity-optional': '/verify-identity-optional',
   '/explore': '/explore',
   '/faq': '/faq',
   '/federation': '/federation',
@@ -130,7 +131,6 @@ const HELP_LINK_TARGETS = Object.freeze({
   '/caring-community/safeguarding/report': null,
   '/install-app': null,
   '/matches/preferences': null,
-  '/verify-identity-optional': null,
 
   // The Broker Panel, the admin panel and partner management are on the main
   // website only.

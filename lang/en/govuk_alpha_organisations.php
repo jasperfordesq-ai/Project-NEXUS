@@ -205,7 +205,8 @@ return [
                 'waive_failed' => 'Could not waive dues.',
             ],
             'my_subtitle' => 'Your membership dues for the clubs you belong to.',
-            'payment_unavailable' => 'Paying dues by card is not available on this site yet. Ask your club how to pay, or pay on the club’s main website.',
+            'pay_now' => 'Pay now',
+            'payment_success' => 'Payment received. Your membership is now active.',
             'waive_reason_required' => 'Enter a reason for waiving these dues.',
         ],
         'import' => [

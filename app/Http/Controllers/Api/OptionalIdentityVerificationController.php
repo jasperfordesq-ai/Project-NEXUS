@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Support\Payments\CheckoutReturnUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,16 @@ class OptionalIdentityVerificationController extends BaseApiController
         $paymentCompleted = ($feeCents > 0)
             ? IdentityVerificationPaymentService::hasCompletedPayment($tenantId, $userId)
             : true; // No fee = considered paid
+
+        // A member back from the hosted payment page before the webhook: ask
+        // Stripe about the page (marks paid only when Stripe says it is paid).
+        if (!$paymentCompleted && $feeCents > 0) {
+            try {
+                $paymentCompleted = IdentityVerificationPaymentService::reconcileCheckouts($tenantId, $userId);
+            } catch (\Throwable $e) {
+                Log::warning('Stripe hosted fee status check failed', ['error' => $e->getMessage()]);
+            }
+        }
 
         // If payment is pending, check Stripe directly (webhook may be delayed)
         if (!$paymentCompleted && $feeCents > 0) {
@@ -270,6 +281,12 @@ class OptionalIdentityVerificationController extends BaseApiController
             return $this->respondWithData(['payment_required' => false, 'already_paid' => true]);
         }
 
+        // A hosted payment page still open for this fee is closed first, so the
+        // fee cannot be paid both ways.
+        if (!IdentityVerificationPaymentService::closeOpenCheckouts($tenantId, $userId)) {
+            return $this->respondWithError('SERVICE_UNAVAILABLE', __('api_controllers_2.identity.payment_failed'), null, 503);
+        }
+
         try {
             $result = IdentityVerificationPaymentService::createPaymentIntent($userId, $tenantId, $feeCents);
 
@@ -294,6 +311,57 @@ class OptionalIdentityVerificationController extends BaseApiController
             Log::error('Failed to create verification payment', ['user' => $userId, 'error' => $e->getMessage()]);
             return $this->respondWithError('SERVER_INTERNAL_ERROR', __('api_controllers_2.identity.payment_failed'), null, 503);
         }
+    }
+
+    /**
+     * POST /api/v2/identity/checkout
+     *
+     * The fee on a Stripe-hosted payment page, for the accessible site (no
+     * JavaScript). Body: `return_url` — where Stripe sends the member back to;
+     * accepted only on this community's website or accessible site.
+     * Response: `checkout_url` to redirect to, or `already_paid` /
+     * `payment_required: false` when there is nothing to pay.
+     */
+    public function createCheckout(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = $this->getTenantId();
+
+        if ($disabled = $this->guardFeatureEnabled()) {
+            return $disabled;
+        }
+
+        $feeCents = IdentityVerificationPaymentService::getFeeCents($tenantId);
+        if ($feeCents <= 0) {
+            return $this->respondWithData(['payment_required' => false, 'message' => __('api_controllers_2.identity.no_fee_required')]);
+        }
+
+        $returnUrl = CheckoutReturnUrl::safe((string) ($this->getAllInput()['return_url'] ?? ''), '/verify-identity-optional');
+
+        try {
+            $result = IdentityVerificationPaymentService::createCheckoutSession(
+                $userId,
+                $tenantId,
+                $feeCents,
+                CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'success', 'session_id' => '{CHECKOUT_SESSION_ID}']),
+                CheckoutReturnUrl::withQuery($returnUrl, ['checkout' => 'cancelled']),
+            );
+        } catch (\DomainException $e) {
+            return $this->respondWithError('PAYMENT_IN_PROGRESS', __('api_controllers_2.identity.payment_failed'), null, 409);
+        } catch (\Throwable $e) {
+            Log::error('Failed to create verification fee checkout', ['user' => $userId, 'error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_INTERNAL_ERROR', __('api_controllers_2.identity.payment_failed'), null, 503);
+        }
+
+        if ($result['already_paid']) {
+            return $this->respondWithData(['payment_required' => false, 'already_paid' => true]);
+        }
+
+        return $this->respondWithData([
+            'checkout_url' => $result['checkout_url'],
+            'fee_cents' => $feeCents,
+            'fee_currency' => TenantContext::getCurrency(),
+        ]);
     }
 
     /**
@@ -358,6 +426,14 @@ class OptionalIdentityVerificationController extends BaseApiController
         $userEmail = DB::table('users')->where('id', $userId)->where('tenant_id', $tenantId)->value('email');
         if ($userEmail) {
             $providerConfig['provided_details'] = ['email' => $userEmail];
+        }
+
+        // Where the provider's hosted page sends the member back to. The
+        // accessible site passes its own address; anything not on this
+        // community's website or accessible site falls back to the website.
+        $requestedReturn = (string) ($this->getAllInput()['return_url'] ?? '');
+        if ($requestedReturn !== '') {
+            $providerConfig['return_url'] = CheckoutReturnUrl::safe($requestedReturn, '/verify-identity/callback');
         }
 
         try {

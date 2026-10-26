@@ -5,12 +5,25 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_character-count.njk" import characterCount %}
+{% from "_card-payment.njk" import confirmingPayment, paymentCancelled, paymentSucceeded, paymentProblem %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
 {% endblock %}
 
 {% block content %}
+  {# Back from Stripe's card payment page: the state comes from the server's status call. #}
+  {% if cardReturn %}
+    {% if cardReturn.state == "completed" %}
+      {{ paymentSucceeded(cardReturn.title, cardReturn.message, t) }}
+    {% elif cardReturn.state == "confirming" %}
+      {{ confirmingPayment(checkAgainHref, t) }}
+    {% elif cardReturn.state == "cancelled" %}
+      {{ paymentCancelled(t) }}
+    {% else %}
+      {{ paymentProblem(t("govuk_alpha_volunteering.donations.card_payment_failed"), t) }}
+    {% endif %}
+  {% endif %}
   {% if status %}
     {% if status.type == "success" %}
       <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="donations-success-title">
@@ -190,9 +203,12 @@
 
   <h2 class="govuk-heading-l" id="donate-form">{{ t("govuk_alpha_volunteering.donations.form_title") }}</h2>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.donations.pledge_intro") }}</p>
+  <p class="govuk-body" id="donate-card-intro">{{ t("govuk_alpha_volunteering.donations.card_intro") }}</p>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.donations.currency_fixed_hint", { currency: tenantCurrency }) }}</p>
   <form id="donate" method="post" action="{{ urlFor('/volunteering/donations#donate') }}" class="govuk-!-margin-bottom-8">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {# Single-use: a second submit of this page can never open a second card payment. #}
+    <input type="hidden" name="form_token" value="{{ donationFormToken }}">
 
     <div class="govuk-form-group{% if status and status.type == 'error' %} govuk-form-group--error{% endif %}">
       <label class="govuk-label govuk-label--s" for="donate-amount">{{ t("govuk_alpha_volunteering.donations.amount_label") }}</label>
@@ -265,6 +281,7 @@
       </div>
     </div>
 
-    <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_volunteering.donations.submit_button") }}</button>
+    {# "Continue", not "Record donation": with Card chosen it opens the payment page. #}
+    <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha.onboarding.continue") }}</button>
   </form>
 {% endblock %}

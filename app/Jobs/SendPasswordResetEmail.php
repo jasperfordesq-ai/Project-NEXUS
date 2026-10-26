@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Support\Tenancy\AccessibleFrontendUrl;
 use App\Core\EmailTemplateBuilder;
 use App\Core\Env;
 use App\Core\TenantContext;
@@ -200,31 +201,7 @@ final class SendPasswordResetEmail implements ShouldQueue
     /** Only registered tenant domains or the configured platform host may be used. */
     private function accessibleResetBase(): ?string
     {
-        $tenant = TenantContext::get();
-        $domain = trim((string) ($tenant['accessible_domain'] ?? ''));
-        if ($domain !== '' && filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-            return 'https://' . $domain;
-        }
-
-        $parentId = (int) ($tenant['parent_id'] ?? 0);
-        if ($parentId > 0) {
-            $parentDomain = trim((string) DB::table('tenants')
-                ->where('id', $parentId)->where('is_active', 1)->value('accessible_domain'));
-            if ($parentDomain !== '' && filter_var($parentDomain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-                return 'https://' . $parentDomain . '/' . rawurlencode((string) $tenant['slug']) . '/accessible';
-            }
-        }
-
-        $platformUrl = rtrim((string) config('app.accessible_frontend_url', ''), '/');
-        $host = parse_url($platformUrl, PHP_URL_HOST);
-        if (parse_url($platformUrl, PHP_URL_SCHEME) === 'https'
-            && is_string($host)
-            && filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)
-            && !empty($tenant['slug'])) {
-            return $platformUrl . '/' . rawurlencode((string) $tenant['slug']) . '/accessible';
-        }
-
-        return null;
+        return AccessibleFrontendUrl::base();
     }
 
     private function resolvePasswordResetUser(string $email): ?array
