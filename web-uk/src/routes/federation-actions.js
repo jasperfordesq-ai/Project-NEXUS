@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { callFederationApi, ApiError } = require('../lib/api');
+const { callFederationApi, blockMember, unblockMember, ApiError } = require('../lib/api');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { asyncRoute } = require('../lib/routeHelpers');
 
@@ -395,6 +395,62 @@ router.post('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
   }
 
   return redirectTo(res, memberRedirect(receiverId, receiverTenantId, status));
+}));
+
+// F-284: a member may block a member of a partner community on the same
+// installation. The block stops that person's federated messages, connection
+// requests and credit transfers in both directions, and the server enforces it.
+// It is the ordinary member block endpoint, which accepts a partner-community
+// target since 29 Sep 2026.
+//
+// 🔴 Internal partners only. A member of an EXTERNAL partner (tenant id
+// `ext-N`) carries the other installation's user id, which names nobody here —
+// or someone else entirely — so it must never reach /v2/users/{id}/block.
+function internalPartnerTenantId(value) {
+  return positiveInteger(trimmed(value, 32));
+}
+
+router.post('/members/:id(\\d+)/block', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const memberId = Number(req.params.id);
+  const memberTenantId = internalPartnerTenantId(req.body.member_tenant_id);
+  if (memberTenantId === null) {
+    return redirectTo(res, statusRedirect('/federation/members', 'block-failed'));
+  }
+
+  let status = 'member-blocked';
+  try {
+    await blockMember(token, memberId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = error instanceof ApiError && error.status === 400 ? 'block-self' : 'block-failed';
+  }
+
+  return redirectTo(res, memberRedirect(memberId, memberTenantId, status));
+}));
+
+router.post('/members/:id(\\d+)/unblock', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const memberId = Number(req.params.id);
+  const memberTenantId = internalPartnerTenantId(req.body.member_tenant_id);
+  if (memberTenantId === null) {
+    return redirectTo(res, statusRedirect('/federation/members', 'unblock-failed'));
+  }
+
+  let status = 'member-unblocked';
+  try {
+    await unblockMember(token, memberId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    // 404 means "not blocked": the outcome the member asked for already holds.
+    if (!(error instanceof ApiError && error.status === 404)) status = 'unblock-failed';
+  }
+
+  return redirectTo(res, memberRedirect(memberId, memberTenantId, status));
 }));
 
 router.post('/onboarding', asyncRoute(async (req, res) => {

@@ -91,7 +91,17 @@
   <section id="fed-actions" class="govuk-!-margin-top-6" aria-labelledby="fed-actions-heading">
     <h2 id="fed-actions-heading" class="govuk-heading-l">{{ t("fed2.member_actions.heading") }}</h2>
 
-    {% if not viewer.optedIn %}
+    {% if blockState and blockState.isBlocked %}
+      {# F-284: a block stops federated contact both ways, so no contact is offered. #}
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-2">{{ t("profile.block.is_blocked", { name: member.name }) }}</p>
+        <form method="post" action="{{ urlFor('/federation/members/' + (member.id | string) + '/unblock') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="member_tenant_id" value="{{ member.tenantId }}">
+          <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile.block.unblock") }}</button>
+        </form>
+      </div>
+    {% elif not viewer.optedIn %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.member_actions.not_opted_in") }}</p></div>
       <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/opt-in') }}">{{ t("fed2.member_actions.optin_link") }}</a>
     {% else %}
@@ -146,6 +156,20 @@
       {% elif not member.transactionsEnabled %}
         <p class="govuk-body-s nexus-alpha-meta">{{ t("fed2.member_actions.transactions_off") }}</p>
       {% endif %}
+    {% endif %}
+
+    {% if blockState and blockState.blockable and not blockState.isBlocked %}
+      <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+        <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile.block.toggle") }}</span></summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body">{{ t("profile.block.explain") }}</p>
+          <form method="post" action="{{ urlFor('/federation/members/' + (member.id | string) + '/block') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="member_tenant_id" value="{{ member.tenantId }}">
+            <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile.block.block") }}</button>
+          </form>
+        </div>
+      </details>
     {% endif %}
   </section>
 

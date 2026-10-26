@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-10-25T16:19:05.202Z",
+  "generatedAt": "2026-10-26T12:03:34.768Z",
   "provenance": {
-    "generatedAt": "2026-10-25T16:19:05.202Z",
+    "generatedAt": "2026-10-26T12:03:34.768Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "7a0f53710c41af4e3f72dfdd4a281db7e4a065d3",
+    "laravelCommitSha": "f9b44cbf0f16fa411a8933f2ab2f84cca5a30627",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "7a0f53710c41af4e3f72dfdd4a281db7e4a065d3",
+    "webUkRepositoryCommitSha": "f9b44cbf0f16fa411a8933f2ab2f84cca5a30627",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -284,6 +284,7 @@
         "tests/backend-contract.test.js",
         "tests/csrf-session-binding.test.js",
         "tests/error-page-render-without-locals.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/gds-conventions.test.js",
         "tests/laravel-runtime-smoke-local-server.test.js",
         "tests/laravel-runtime-smoke.test.js",
@@ -8336,7 +8337,7 @@
       "method": "GET",
       "path": "/api/v2/federation/activity",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:862",
+      "source": "src/routes/federation.js:892",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8363,6 +8364,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8398,6 +8400,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8410,7 +8413,7 @@
       "method": "GET",
       "path": "/api/v2/federation/connections?status={param}&limit={param}&offset={param}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1416",
+      "source": "src/routes/federation.js:1446",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8434,6 +8437,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8470,6 +8474,7 @@
         "tests/api-consumer-ledger.test.js",
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8505,6 +8510,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8539,6 +8545,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8550,7 +8557,7 @@
       "method": "GET",
       "path": "/api/v2/federation/events?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1197",
+      "source": "src/routes/federation.js:1227",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8583,6 +8590,7 @@
         "tests/api.test.js",
         "tests/empty-state-heading-contract.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8595,7 +8603,7 @@
       "method": "GET",
       "path": "/api/v2/federation/groups?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1020",
+      "source": "src/routes/federation.js:1050",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8619,6 +8627,7 @@
         "tests/api.test.js",
         "tests/empty-state-heading-contract.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8631,7 +8640,7 @@
       "method": "GET",
       "path": "/api/v2/federation/listings?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1080",
+      "source": "src/routes/federation.js:1110",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8659,6 +8668,7 @@
         "tests/api.test.js",
         "tests/empty-state-heading-contract.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8671,7 +8681,7 @@
       "method": "GET",
       "path": "/api/v2/federation/members?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1324",
+      "source": "src/routes/federation.js:1354",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8698,6 +8708,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8710,7 +8721,7 @@
       "method": "GET",
       "path": "/api/v2/federation/members/{param}?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1153",
+      "source": "src/routes/federation.js:1183",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -8737,6 +8748,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8749,7 +8761,7 @@
       "method": "GET",
       "path": "/api/v2/federation/members/{param}/reviews?{query}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1678",
+      "source": "src/routes/federation.js:1708",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8772,6 +8784,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8783,7 +8796,7 @@
       "method": "GET",
       "path": "/api/v2/federation/messages",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1477",
+      "source": "src/routes/federation.js:1507",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8810,6 +8823,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8849,6 +8863,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -8884,6 +8899,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8895,7 +8911,7 @@
       "method": "POST",
       "path": "/api/v2/federation/messages/mark-read-batch",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1552",
+      "source": "src/routes/federation.js:1582",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON object: ids",
@@ -8918,6 +8934,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -8929,7 +8946,7 @@
       "method": "POST",
       "path": "/api/v2/federation/opt-out",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation-actions.js:494",
+      "source": "src/routes/federation-actions.js:550",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -8956,6 +8973,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/gds-component-conformance.test.js",
         "tests/laravel-runtime-smoke.test.js",
@@ -8969,7 +8987,7 @@
       "method": "GET",
       "path": "/api/v2/federation/partners",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:861",
+      "source": "src/routes/federation.js:891",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -8997,6 +9015,7 @@
         "tests/api.test.js",
         "tests/empty-state-heading-contract.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -9009,7 +9028,7 @@
       "method": "GET",
       "path": "/api/v2/federation/partners/{param}",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:1286",
+      "source": "src/routes/federation.js:1316",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9033,6 +9052,7 @@
         "tests/api.test.js",
         "tests/empty-state-heading-contract.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -9045,7 +9065,7 @@
       "method": "GET",
       "path": "/api/v2/federation/settings",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:904",
+      "source": "src/routes/federation.js:934",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9072,6 +9092,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -9084,7 +9105,7 @@
       "method": "PUT",
       "path": "/api/v2/federation/settings",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation-actions.js:509",
+      "source": "src/routes/federation-actions.js:565",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9111,6 +9132,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js"
@@ -9123,7 +9145,7 @@
       "method": "POST",
       "path": "/api/v2/federation/setup",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation-actions.js:446",
+      "source": "src/routes/federation-actions.js:502",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "JSON caller payload; validate against Laravel operation",
@@ -9150,6 +9172,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -9161,7 +9184,7 @@
       "method": "GET",
       "path": "/api/v2/federation/status",
       "apiHelper": "callFederationApi",
-      "source": "src/routes/federation.js:860",
+      "source": "src/routes/federation.js:890",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -9188,6 +9211,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -9222,6 +9246,7 @@
       "tests": [
         "tests/api.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -23525,7 +23550,7 @@
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/members.js",
+      "redirects": "consumer-controlled: src/routes/federation-actions.js, src/routes/members.js",
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
@@ -23536,10 +23561,12 @@
         "tags": []
       },
       "frontendConsumers": [
+        "src/routes/federation-actions.js",
         "src/routes/members.js"
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/runtime/member-block-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -23558,7 +23585,7 @@
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/members.js",
+      "redirects": "consumer-controlled: src/routes/federation-actions.js, src/routes/members.js",
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
@@ -23569,10 +23596,12 @@
         "tags": []
       },
       "frontendConsumers": [
+        "src/routes/federation-actions.js",
         "src/routes/members.js"
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/shared-accessible-shell.test.js"
       ],
       "directApiHelperAssertion": true,
@@ -23590,7 +23619,7 @@
       "responseShape": "JSON/text response via ApiError-aware request",
       "statusCodes": [],
       "errorEnvelope": "non-2xx becomes ApiError(status,data); network failure becomes ApiOfflineError(503)",
-      "redirects": "consumer-controlled: src/routes/members.js",
+      "redirects": "consumer-controlled: src/routes/federation.js, src/routes/members.js",
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
@@ -23601,10 +23630,12 @@
         "tags": []
       },
       "frontendConsumers": [
+        "src/routes/federation.js",
         "src/routes/members.js"
       ],
       "tests": [
         "tests/api.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/runtime/member-block-mutation.spec.js",
         "tests/shared-accessible-shell.test.js"
       ],
@@ -26636,7 +26667,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/community-projects?per_page=20",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1285",
+      "source": "src/server.js:1286",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "query/path parameters; no request body expected",
@@ -29229,6 +29260,7 @@
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-org-links.test.js",
         "tests/volunteering-org-opportunities.test.js",
         "tests/volunteering-org-roster.test.js",
         "tests/volunteering-runs-organisation.test.js"
@@ -29271,6 +29303,7 @@
         "tests/laravel-runtime-smoke.test.js",
         "tests/ledger-token-crosscheck.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-org-links.test.js",
         "tests/volunteering-org-opportunities.test.js",
         "tests/volunteering-org-roster.test.js",
         "tests/volunteering-runs-organisation.test.js"
@@ -29327,6 +29360,7 @@
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
         "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-org-links.test.js",
         "tests/volunteering-org-opportunities.test.js",
         "tests/volunteering-org-qualifications.test.js",
         "tests/volunteering-org-roster.test.js",
@@ -29386,6 +29420,7 @@
         "tests/volunteering-opportunity-manage.test.js",
         "tests/volunteering-org-expenses.test.js",
         "tests/volunteering-org-fundraising.test.js",
+        "tests/volunteering-org-links.test.js",
         "tests/volunteering-org-opportunities.test.js",
         "tests/volunteering-org-qualifications.test.js",
         "tests/volunteering-org-roster.test.js",
@@ -29434,6 +29469,7 @@
         "tests/api.test.js",
         "tests/laravel-runtime-smoke.test.js",
         "tests/shared-accessible-shell.test.js",
+        "tests/volunteering-org-links.test.js",
         "tests/volunteering-org-opportunities.test.js",
         "tests/volunteering-org-roster.test.js",
         "tests/volunteering-runs-organisation.test.js"
@@ -31704,7 +31740,7 @@
       "method": "GET",
       "path": "/api/v2/volunteering/shifts/{param}/checkin",
       "apiHelper": "callVolunteeringApi",
-      "source": "src/server.js:1516",
+      "source": "src/server.js:1517",
       "tenantAuthority": "request-scoped tenant header unless bearer, explicit tenant, Host, or Origin already supplies authority",
       "authAndRole": "bearer required by helper/OpenAPI; Laravel policy and consumer route guard remain authoritative",
       "requestShape": "path:id",
@@ -32754,6 +32790,7 @@
         "tests/batch1-route-behaviour.test.js",
         "tests/csrf-session-binding.test.js",
         "tests/federation-onboarding-session.test.js",
+        "tests/federation-partner-block.test.js",
         "tests/form-field-error-targeting-more.test.js",
         "tests/member-location-prompt.test.js",
         "tests/routes.test.js",

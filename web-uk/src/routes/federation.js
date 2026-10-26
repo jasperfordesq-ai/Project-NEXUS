@@ -9,7 +9,8 @@ const {
   ApiError,
   ApiOfflineError,
   callFederationApi,
-  getBalance
+  getBalance,
+  getUserBlockStatus
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
@@ -598,6 +599,29 @@ function federationBanner(type, key, t) {
   return { type, message: t ? t(`govuk_alpha_federation.banners.${key}`) : key };
 }
 
+function profileBlockBanner(type, key, t) {
+  return { type, message: t ? t(`profile.block.${key}`) : key };
+}
+
+/**
+ * F-284: whether the viewer has blocked this partner-community member. Only an
+ * INTERNAL partner (numeric tenant id) can be blocked — an external partner's
+ * member id belongs to another installation — so anything else is not
+ * blockable. A failed lookup reads as "not blocked": the server still refuses
+ * contact across a block, and offering Block again is harmless.
+ */
+async function partnerBlockState(token, member) {
+  const internal = /^\d+$/.test(String(member.tenantId ?? '')) && /^\d+$/.test(String(member.id ?? ''));
+  if (!internal) return { blockable: false, isBlocked: false };
+  try {
+    const result = await getUserBlockStatus(token, member.id);
+    return { blockable: true, isBlocked: asObject(dataFrom(result)).is_blocked === true };
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    return { blockable: true, isBlocked: false };
+  }
+}
+
 function statusBanner(status, t) {
   const banners = {
     'opted-in': () => federationBanner('success', 'opted_in', t),
@@ -623,7 +647,13 @@ function memberStatusBanner(status, t) {
     'message-failed': () => federationBanner('error', 'message_failed', t),
     'message-not-enabled': () => federationBanner('error', 'message_not_enabled', t),
     'message-recipient-unavailable': () => federationBanner('error', 'message_recipient_unavailable', t),
-    'transfer-sent': () => federationBanner('success', 'transfer_sent', t)
+    'transfer-sent': () => federationBanner('success', 'transfer_sent', t),
+    // F-284: block / unblock reuse the member profile's reviewed wording.
+    'member-blocked': () => profileBlockBanner('success', 'status_member_blocked', t),
+    'member-unblocked': () => profileBlockBanner('success', 'status_member_unblocked', t),
+    'block-self': () => profileBlockBanner('error', 'status_block_self', t),
+    'block-failed': () => profileBlockBanner('error', 'status_block_failed', t),
+    'unblock-failed': () => profileBlockBanner('error', 'status_block_failed', t)
   };
 
   // Own keys only: a status of "constructor" or "toString" would otherwise
@@ -1687,12 +1717,15 @@ router.get('/members/:id(\\d+)', asyncRoute(async (req, res) => {
     }
   }
 
+  const blockState = await partnerBlockState(token, member);
+
   return res.render('federation/member', {
     title: member.name,
     activeNav: 'explore',
     federationActiveTab: 'members',
     member,
     reviews,
+    blockState,
     viewer: {
       optedIn: bool(settings.federation_optin) || bool(settingsData.enabled),
       messagingEnabled: bool(settings.messaging_enabled_federated),

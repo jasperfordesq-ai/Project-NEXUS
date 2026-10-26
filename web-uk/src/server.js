@@ -56,6 +56,7 @@ const marketplaceActionRoutes = require('./routes/marketplace-actions');
 const marketplaceRoutes = require('./routes/marketplace');
 const volunteeringActionRoutes = require('./routes/volunteering-actions');
 const volunteeringIncidentRoutes = require('./routes/volunteering-incidents');
+const volunteeringOrgLinkRoutes = require('./routes/volunteering-org-links');
 const volunteeringShiftRoutes = require('./routes/volunteering-shifts');
 const volunteeringOpportunityManageRoutes = require('./routes/volunteering-opportunity-manage');
 const volunteeringOrgExpenseRoutes = require('./routes/volunteering-org-expenses');
@@ -2583,6 +2584,9 @@ app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);
 app.use('/event-templates', doubleCsrfProtection, postOnly(formLimiter), eventTemplateRoutes);
 app.use('/marketplace', doubleCsrfProtection, postOnly(formLimiter), marketplaceActionRoutes);
+// Organiser notification links in React's /volunteering/org/{id}/… shape,
+// redirected to the matching /volunteering/organisations/{id}/… page.
+app.use('/volunteering', requireAuth, volunteeringOrgLinkRoutes);
 // A safeguarding report's own page and its "add information" form, ahead of the
 // volunteering actions that own the incident list and report form.
 app.use('/volunteering', requireAuth, doubleCsrfProtection, postOnly(formLimiter), volunteeringIncidentRoutes);
