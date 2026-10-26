@@ -90,7 +90,7 @@ const TARGETS = [
   ['pages/messages/components/MessageBubble.tsx', "aria_message_options", 2],
   ['pages/messages/components/MessageBubble.tsx', "key={emoji}", 3],
   ['pages/messages/components/MessageBubble.tsx', "handleTranslate", 2],
-  ['pages/messages/components/MessageBubble.tsx', 'role="menuitem"', 2],
+  ['pages/messages/components/MessageBubble.tsx', 'role="menuitem"', 3],
   ['pages/messages/components/MessageBubble.tsx', "onCancelEdit", 1],
   ['pages/messages/components/MessageBubble.tsx', "onSaveEdit", 1],
   ['pages/goals/components/GoalTemplatePickerModal.tsx', "template.use_template_aria", 1],

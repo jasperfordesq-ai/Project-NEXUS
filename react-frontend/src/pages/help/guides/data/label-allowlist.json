@@ -26,20 +26,6 @@
         "en"
       ],
       "reason": "A key word bolded where the guide explains who runs a community, not an on-screen label."
-    },
-    {
-      "label": "Signaler un problème",
-      "locales": [
-        "fr"
-      ],
-      "reason": "The phone app's \"Report a problem\" button on an exchange (mobile/locales/fr/exchanges.json). The website's own button is now \"Help & support\", so these words no longer appear in the web interface text."
-    },
-    {
-      "label": "Tuairiscigh fadhb",
-      "locales": [
-        "ga"
-      ],
-      "reason": "The phone app's \"Report a problem\" button on an exchange (mobile/locales/ga/exchanges.json). The website's own button is now \"Help & support\", so these words no longer appear in the web interface text."
     }
   ]
 }
