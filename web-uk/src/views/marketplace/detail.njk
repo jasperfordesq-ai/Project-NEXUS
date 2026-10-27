@@ -55,6 +55,12 @@
     <div class="govuk-body">{{ item.description | nl2br | safe }}</div>
   {% endif %}
 
+  {% if item.videoUrl %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.listing_video.label") }}</h2>
+    {% set videoUrl = item.videoUrl %}
+    {% include "marketplace/_listing-video.njk" %}
+  {% endif %}
+
   <dl class="govuk-summary-list">
     {% if item.condition %}
       <div class="govuk-summary-list__row">

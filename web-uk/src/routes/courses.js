@@ -10,6 +10,7 @@ const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
+const { readDate, splitDate } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const router = express.Router();
 // then fetch's URL normalisation collapses `..`) could redirect the member's OWN
 // authenticated call to a different API endpoint. Reject anything non-numeric here,
 // once, for the whole router — a 404 is the correct answer for a bad id.
-for (const idParam of ['id', 'lessonId', 'sectionId', 'attemptId']) {
+for (const idParam of ['id', 'lessonId', 'sectionId', 'attemptId', 'commentId', 'questionId']) {
   router.param(idParam, (req, res, next, value) => {
     if (/^\d+$/.test(String(value))) return next();
     return res.status(404).render('errors/404', { title: res.locals.t ? res.locals.t('error_pages.404_title') : 'Not found' });
@@ -30,7 +31,15 @@ for (const idParam of ['id', 'lessonId', 'sectionId', 'attemptId']) {
 const COURSE_LEVELS = ['beginner', 'intermediate', 'advanced'];
 const COURSE_VISIBILITIES = ['members', 'public'];
 const COURSE_ENROLLMENT_TYPES = ['self_paced', 'cohort'];
-const LESSON_CONTENT_TYPES = ['text', 'video', 'pdf', 'embed'];
+// 'quiz' joined the builder on 27 Oct 2026 with quiz authoring (React CourseBuilder).
+const LESSON_CONTENT_TYPES = ['text', 'video', 'pdf', 'embed', 'quiz'];
+// CourseLessonService::DRIP_TYPES.
+const LESSON_DRIP_TYPES = ['none', 'days_after_enroll', 'fixed_date'];
+// Question types the learner page can answer and the API can mark: three marked
+// automatically (CourseQuizService::OBJECTIVE_TYPES) and a written answer the
+// author marks from the grading queue.
+const QUESTION_TYPES = ['mcq', 'multi', 'truefalse', 'short'];
+const QUESTION_OPTION_LIMIT = 26;
 // 🔴 These four maps held English words ('Beginner', 'Members only', 'Self-paced',
 // 'Video lesson') and were rendered straight into the page in every language,
 // while their translated twins already existed unused. Keys only from here on;
@@ -103,7 +112,12 @@ const LEARN_STATUS_MESSAGES = {
   'quiz-pending-review': { type: 'success', key: 'quiz_pending_review' },
   'quiz-failed': { type: 'error', key: 'quiz_failed' },
   'quiz-no-attempts': { type: 'error', key: 'quiz_no_attempts' },
-  'quiz-error': { type: 'error', key: 'quiz_error' }
+  'quiz-error': { type: 'error', key: 'quiz_error' },
+  'comment-posted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_posted' },
+  'comment-deleted': { type: 'success', messageKey: 'govuk_alpha_courses.discussion.comment_deleted' },
+  'comment-required': { type: 'error', messageKey: 'govuk_alpha_courses.discussion.comment_required' },
+  'comment-failed': { type: 'error', messageKey: 'govuk_alpha_courses.discussion.comment_failed' },
+  'comment-delete-failed': { type: 'error', messageKey: 'govuk_alpha_courses.discussion.comment_delete_failed' }
 };
 const INSTRUCTOR_STATUS_MESSAGES = {
   deleted: { type: 'success', key: 'deleted' },
@@ -131,7 +145,25 @@ const FORM_STATUS_MESSAGES = {
   'lesson-title-missing': { type: 'error', key: 'lesson_title_missing' },
   'cohort-added': { type: 'success', key: 'cohort_added' },
   'cohort-failed': { type: 'error', key: 'cohort_failed' },
-  'cohort-name-missing': { type: 'error', key: 'cohort_name_missing' }
+  'cohort-name-missing': { type: 'error', key: 'cohort_name_missing' },
+  'order-saved': { type: 'success', messageKey: 'govuk_alpha_courses.lesson_editor.order_saved' },
+  'order-changed': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.order_changed' },
+  'order-failed': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.order_failed' }
+};
+// The single-lesson editor: release timing, free preview and quiz questions.
+const LESSON_EDIT_STATUS_MESSAGES = {
+  'lesson-added': { type: 'success', key: 'lesson_added' },
+  'lesson-failed': { type: 'error', key: 'lesson_failed' },
+  'lesson-quiz-failed': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.lesson_quiz_failed' },
+  'question-added': { type: 'success', messageKey: 'govuk_alpha_courses.lesson_editor.question_added' },
+  'question-deleted': { type: 'success', messageKey: 'govuk_alpha_courses.lesson_editor.question_deleted' },
+  'question-failed': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.question_failed', href: '#question_prompt' },
+  'question-prompt-missing': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.question_prompt_missing', href: '#question_prompt' },
+  'question-options-missing': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.question_options_missing', href: '#question_options' },
+  'question-correct-invalid': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.question_correct_invalid', href: '#question_correct' },
+  'drip-days-invalid': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.drip_days_invalid', href: '#drip_offset_days' },
+  'drip-date-invalid': { type: 'error', messageKey: 'govuk_alpha_courses.lesson_editor.drip_date_invalid', href: '#drip_date-day' },
+  'lesson-title-missing': { type: 'error', key: 'lesson_title_missing', href: '#lesson_title' }
 };
 const GRADING_STATUS_MESSAGES = {
   graded: { type: 'success', key: 'graded' },
@@ -271,7 +303,8 @@ function routeStatus(query, map, t) {
   return {
     key,
     type: entry.type,
-    message: t(`govuk_alpha_courses.status.${entry.key}`)
+    href: entry.href || '',
+    message: t(entry.messageKey || `govuk_alpha_courses.status.${entry.key}`)
   };
 }
 
@@ -439,7 +472,25 @@ function normalizeLesson(lesson, progress = { completed: new Set(), available: n
     quizId: positiveInteger(lesson.quiz_id) || positiveInteger(lesson.quiz && lesson.quiz.id),
     isCompleted: progress.completed.has(id) || !!lesson.is_completed,
     available: progress.available.has(id) ? progress.available.get(id) : lesson.available !== false,
-    unlockAtLabel: progress.unlockAt && progress.unlockAt.has(id) ? reviewDateLabel(progress.unlockAt.get(id)) : ''
+    unlockAtLabel: progress.unlockAt && progress.unlockAt.has(id) ? reviewDateLabel(progress.unlockAt.get(id)) : '',
+    // Authoring view of the release settings (CourseLessonService drip fields).
+    ...lessonReleaseSettings(lesson)
+  };
+}
+
+function lessonReleaseSettings(lesson) {
+  const dripType = allowed(lesson.drip_type, LESSON_DRIP_TYPES, 'none');
+  const days = Number(lesson.drip_offset_days);
+  const dripDate = /^\d{4}-\d{2}-\d{2}/.test(trimmed(lesson.drip_date)) ? trimmed(lesson.drip_date).slice(0, 10) : '';
+  return {
+    dripType,
+    dripOffsetDays: Number.isInteger(days) && days >= 0 ? days : null,
+    dripDate,
+    dripDateLabel: dripDate
+      ? new Intl.DateTimeFormat(getRequestIntlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+        .format(new Date(`${dripDate}T00:00:00Z`))
+      : '',
+    isPreview: checked(lesson.is_preview)
   };
 }
 
@@ -788,6 +839,231 @@ function applyCourseFormValues(course, values) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Lesson discussions (React LessonDiscussion). Enrolled learners, the author and
+// admins may read and post; a member deletes only their own comment.
+// ---------------------------------------------------------------------------
+
+function normalizeComment(comment, currentUserId) {
+  const userId = positiveInteger(comment.user_id) || positiveInteger(comment.user && comment.user.id);
+  return {
+    id: positiveInteger(comment.id) || 0,
+    body: trimmed(comment.body, 10000),
+    authorName: trimmed(comment.user && comment.user.name),
+    postedLabel: comment.created_at ? reviewDateLabel(comment.created_at) : '',
+    isOwn: currentUserId !== null && userId === currentUserId,
+    replies: (Array.isArray(comment.replies) ? comment.replies : [])
+      .filter((reply) => reply && typeof reply === 'object')
+      .map((reply) => normalizeComment({ ...reply, replies: [] }, currentUserId))
+      .filter((reply) => reply.id > 0 && reply.body)
+  };
+}
+
+async function lessonDiscussion(req, token, courseId, lessonId) {
+  let currentUserId = null;
+  try {
+    const profile = objectFrom(await getRequestProfile(req, token));
+    currentUserId = positiveInteger(profile.id || profile.user_id);
+  } catch {
+    // Without the member's id nothing is offered for deletion.
+  }
+  try {
+    const rows = listFrom(await callCourse(token, 'GET', `/${encodeURIComponent(courseId)}/lessons/${encodeURIComponent(lessonId)}/discussions`));
+    return {
+      available: true,
+      comments: rows
+        .filter((row) => row && typeof row === 'object')
+        .map((row) => normalizeComment(row, currentUserId))
+        .filter((row) => row.id > 0 && row.body)
+    };
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return { available: false, comments: [] };
+  }
+}
+
+function discussionRedirect(courseId, lessonId, status) {
+  return `/courses/${courseId}/learn?lesson=${encodeURIComponent(lessonId)}&status=${encodeURIComponent(status)}#lesson-discussion`;
+}
+
+// ---------------------------------------------------------------------------
+// Single-lesson editor: release timing, free preview and quiz questions.
+// ---------------------------------------------------------------------------
+
+function lessonEditRedirect(courseId, lessonId, status = '', fragment = '') {
+  const query = status ? `?status=${encodeURIComponent(status)}` : '';
+  return `/courses/instructor/${courseId}/lessons/${lessonId}/edit${query}${fragment}`;
+}
+
+function findLesson(course, lessonId) {
+  const wanted = Number(lessonId);
+  const pools = [
+    ...(Array.isArray(course.sections) ? course.sections.map((section) => section.lessons) : []),
+    course.unassigned_lessons
+  ];
+  for (const pool of pools) {
+    if (!Array.isArray(pool)) continue;
+    const found = pool.find((lesson) => lesson && Number(lesson.id) === wanted);
+    if (found) return found;
+  }
+  return null;
+}
+
+function nonNegativeWholeNumber(value) {
+  const text = trimmed(value);
+  return /^\d{1,4}$/.test(text) ? Number(text) : null;
+}
+
+// Release timing is only read when the lesson editor sent it (`release_fields`),
+// so the builder's add form and older forms never reset a lesson's schedule.
+function releasePayload(body) {
+  if (!checked(Array.isArray(body.release_fields) ? body.release_fields.at(-1) : body.release_fields)) {
+    return { payload: {}, error: null };
+  }
+  const dripType = allowed(body.drip_type, LESSON_DRIP_TYPES, 'none');
+  const previewRaw = Array.isArray(body.is_preview) ? body.is_preview.at(-1) : body.is_preview;
+  const payload = { drip_type: dripType, drip_offset_days: null, drip_date: null, is_preview: checked(previewRaw) };
+  if (dripType === 'days_after_enroll') {
+    const days = nonNegativeWholeNumber(body.drip_offset_days);
+    if (days === null) return { payload, error: 'drip-days-invalid' };
+    payload.drip_offset_days = days;
+  }
+  if (dripType === 'fixed_date') {
+    const date = readDate(body, 'drip_date', { required: true });
+    if (date.error || !date.value) return { payload, error: 'drip-date-invalid' };
+    payload.drip_date = date.value;
+  }
+  return { payload, error: null };
+}
+
+const LESSON_FORM_FIELDS = ['lesson_title', 'content_type', 'body', 'media_url', 'transcript', 'drip_type', 'drip_offset_days',
+  'drip_date-day', 'drip_date-month', 'drip_date-year', 'is_preview', 'quiz_pass_mark', 'quiz_max_attempts'];
+const QUESTION_FORM_FIELDS = ['question_prompt', 'question_type', 'question_options', 'question_correct'];
+
+function stashForm(req, slot, lessonId, fields) {
+  if (!req.session) return;
+  const values = {};
+  fields.forEach((field) => {
+    const raw = req.body[field];
+    values[field] = String(Array.isArray(raw) ? raw.at(-1) : (raw ?? ''));
+  });
+  req.session[slot] = { lessonId: Number(lessonId), values };
+}
+
+function takeForm(req, slot, lessonId) {
+  if (!req.session || !req.session[slot]) return null;
+  const stash = req.session[slot];
+  delete req.session[slot];
+  return Number(stash.lessonId) === Number(lessonId) && stash.values ? stash.values : null;
+}
+
+function quizSettingsFrom(body) {
+  const pass = nonNegativeWholeNumber(body.quiz_pass_mark);
+  const attempts = nonNegativeWholeNumber(body.quiz_max_attempts);
+  return {
+    pass_mark_percent: pass === null ? 70 : Math.min(100, pass),
+    max_attempts: attempts === null ? 0 : attempts
+  };
+}
+
+// React CourseBuilder creates the quiz the first time a quiz lesson is saved.
+async function createLessonQuiz(token, courseId, lessonId, title, body) {
+  return callCourse(token, 'POST', `/${encodeURIComponent(courseId)}/quizzes`, {
+    lesson_id: Number(lessonId),
+    title,
+    ...quizSettingsFrom(body)
+  });
+}
+
+function questionLetter(index) {
+  return String.fromCharCode(97 + index);
+}
+
+// The form a learner answers (learn.njk) reads options as {id, label} and the API
+// marks by comparing option ids, so authored questions are built the same way
+// React CourseBuilder builds them: option ids a, b, c... and `correct` as a list.
+function questionPayload(body) {
+  const prompt = trimmed(body.question_prompt, 2000);
+  if (prompt === '') return { error: 'question-prompt-missing' };
+  const type = allowed(body.question_type, QUESTION_TYPES, 'mcq');
+  const position = nonNegativeWholeNumber(body.question_position);
+  const base = { type, prompt };
+
+  if (type === 'short') {
+    return { payload: { ...base, points: 1, position: position === null ? 0 : position } };
+  }
+
+  let options;
+  if (type === 'truefalse') {
+    options = [
+      { id: 'true', label: translateForRequest('govuk_alpha_courses.lesson_editor.true_label') },
+      { id: 'false', label: translateForRequest('govuk_alpha_courses.lesson_editor.false_label') }
+    ];
+  } else {
+    const labels = String(body.question_options || '').split(/\r?\n/)
+      .map((line) => trimmed(line, 500))
+      .filter(Boolean)
+      .slice(0, QUESTION_OPTION_LIMIT);
+    if (labels.length < 2) return { error: 'question-options-missing' };
+    options = labels.map((label, index) => ({ id: questionLetter(index), label }));
+  }
+
+  const numbers = String(body.question_correct || '').split(/[\s,]+/).filter(Boolean);
+  const picked = [...new Set(numbers.map((value) => (/^\d+$/.test(value) ? Number(value) : NaN)))];
+  const valid = picked.length > 0 && picked.every((n) => Number.isInteger(n) && n >= 1 && n <= options.length);
+  if (!valid || (type !== 'multi' && picked.length !== 1)) return { error: 'question-correct-invalid' };
+
+  return {
+    payload: {
+      ...base,
+      options,
+      correct: picked.sort((a, b) => a - b).map((n) => options[n - 1].id),
+      points: 1,
+      position: position === null ? 0 : position
+    }
+  };
+}
+
+function normalizeQuestion(question) {
+  const options = Array.isArray(question.options) ? question.options : [];
+  return {
+    id: positiveInteger(question.id) || 0,
+    prompt: trimmed(question.prompt, 2000),
+    type: allowed(question.type, [...QUESTION_TYPES, 'essay'], 'short'),
+    options: options.map((option) => trimmed(option && typeof option === 'object' ? option.label : option, 500)).filter(Boolean)
+  };
+}
+
+// Move one id up or down in the order the page showed. The API takes both lists
+// and refuses (409) if the real order has changed since.
+function movedOrder(orderText, itemId, direction) {
+  const expected = String(orderText || '').split(',').map((value) => positiveInteger(value.trim())).filter(Boolean);
+  if (new Set(expected).size !== expected.length) return null;
+  const index = expected.indexOf(Number(itemId));
+  if (index < 0) return null;
+  const target = direction === 'up' ? index - 1 : (direction === 'down' ? index + 1 : -1);
+  if (target < 0 || target >= expected.length) return { expected, ordered: null };
+  const ordered = [...expected];
+  [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+  return { expected, ordered };
+}
+
+async function applyMove(req, res, apiPath, itemId) {
+  const courseId = req.params.id;
+  const builder = `/courses/instructor/${courseId}/edit`;
+  const move = movedOrder(req.body.order, itemId, trimmed(req.body.direction));
+  if (move === null) return redirectTo(res, `${builder}?status=order-failed#curriculum`);
+  if (move.ordered === null) return redirectTo(res, `${builder}#curriculum`);
+
+  return requireCourseAction(req, res, (error) => {
+    const status = error instanceof ApiError && error.status === 409 ? 'order-changed' : 'order-failed';
+    return `${builder}?status=${status}#curriculum`;
+  }, async (token) => {
+    await callCourse(token, 'PUT', apiPath, { expected_ids: move.expected, ordered_ids: move.ordered });
+    return redirectTo(res, `${builder}?status=order-saved#curriculum`);
+  });
+}
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
@@ -942,7 +1218,9 @@ router.get('/instructor/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       visibilities: COURSE_VISIBILITIES.map((value) => ({ value })),
       enrollmentTypes: COURSE_ENROLLMENT_TYPES.map((value) => ({ value })),
       contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value })),
-      builderSections: payload.sections,
+      // Move up / move down send the order the page showed (the API checks it).
+      builderSections: payload.sections.map((section) => ({ ...section, lessonOrder: section.lessons.map((lesson) => lesson.id).join(',') })),
+      sectionOrder: payload.sections.map((section) => section.id).join(','),
       builderUnsectioned: [],
       prerequisiteChoices: choices,
       showCohorts: payload.course.enrollmentType === 'cohort',
@@ -1049,12 +1327,15 @@ router.get('/:id(\\d+)/learn', asyncRoute(async (req, res) => {
       }
     }
 
+    const discussion = currentLesson ? await lessonDiscussion(req, token, req.params.id, currentLesson.id) : null;
+
     return res.render('courses/learn', {
       title: payload.course.title,
       activeNav: 'explore',
       course: payload.course,
       sections: payload.sections,
       currentLesson,
+      discussion,
       progressPercent: Math.round(Number(payload.progress.enrollment.progress_percent || 0)),
       isCompleted: payload.isCompleted,
       status: routeStatus(req.query, LEARN_STATUS_MESSAGES, res.locals.t)
@@ -1426,8 +1707,21 @@ router.post('/instructor/:id(\\d+)/lessons', asyncRoute(async (req, res) => {
   }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'lesson-failed'), async (token) => {
-    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/lessons`, payload);
-    return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-added'));
+    const result = await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/lessons`, payload);
+    if (payload.content_type !== 'quiz') {
+      return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-added'));
+    }
+    // A quiz lesson needs its quiz before questions can be added; the author is
+    // taken straight to the lesson to add them.
+    const lessonId = resultId(result);
+    if (lessonId === null) return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-added'));
+    try {
+      await createLessonQuiz(token, req.params.id, lessonId, payload.title, req.body);
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      return redirectTo(res, lessonEditRedirect(req.params.id, lessonId, 'lesson-quiz-failed'));
+    }
+    return redirectTo(res, lessonEditRedirect(req.params.id, lessonId, 'lesson-added'));
   });
 }));
 
@@ -1436,10 +1730,162 @@ router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/update', asyncRoute(a
   if (payload === null) {
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-title-missing'));
   }
+  const release = releasePayload(req.body);
+  if (release.error) {
+    stashForm(req, 'lessonForm', req.params.lessonId, LESSON_FORM_FIELDS);
+    return redirectTo(res, lessonEditRedirect(req.params.id, req.params.lessonId, release.error));
+  }
 
   return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'lesson-failed'), async (token) => {
-    await callCourse(token, 'PUT', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}`, payload);
+    await callCourse(token, 'PUT', `/${encodeURIComponent(req.params.id)}/lessons/${encodeURIComponent(req.params.lessonId)}`, { ...payload, ...release.payload });
+    if (payload.content_type === 'quiz') {
+      // A lesson changed to a quiz gets its quiz now, unless it already has one.
+      try {
+        const course = objectFrom(await callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}`));
+        const lesson = findLesson(course, req.params.lessonId);
+        const hasQuiz = lesson && (positiveInteger(lesson.quiz_id) || positiveInteger(lesson.quiz && lesson.quiz.id));
+        if (!hasQuiz) await createLessonQuiz(token, req.params.id, req.params.lessonId, payload.title, req.body);
+      } catch (error) {
+        if (redirectOnAuthError(error, res)) return undefined;
+        return redirectTo(res, lessonEditRedirect(req.params.id, req.params.lessonId, 'lesson-quiz-failed'));
+      }
+    }
     return redirectTo(res, instructorEditRedirect(req.params.id, 'lesson-saved'));
+  });
+}));
+
+router.get('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/edit', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (token === null) return undefined;
+
+  try {
+    const course = objectFrom(await callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}`));
+    const rawLesson = findLesson(course, req.params.lessonId);
+    if (!rawLesson) {
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
+    }
+    const lesson = normalizeLesson(rawLesson);
+    const sections = (Array.isArray(course.sections) ? course.sections : [])
+      .map((section) => ({ id: positiveInteger(section.id) || 0, title: trimmed(section.title) }))
+      .filter((section) => section.id > 0);
+
+    // The author's view of a quiz's questions. GET /quizzes/{id} is the only
+    // read the API offers and it requires an enrolment, so for an author who is
+    // not enrolled the list cannot be shown; adding questions still works.
+    let questions = [];
+    let questionsAvailable = true;
+    if (lesson.contentType === 'quiz' && lesson.quizId !== null) {
+      try {
+        const quiz = objectFrom(await callCourse(token, 'GET', `/quizzes/${encodeURIComponent(lesson.quizId)}`));
+        questions = (Array.isArray(quiz.questions) ? quiz.questions : []).map(normalizeQuestion).filter((q) => q.id > 0);
+      } catch (error) {
+        if (isAuthError(error)) throw error;
+        questionsAvailable = false;
+      }
+    }
+
+    const lessonForm = takeForm(req, 'lessonForm', lesson.id);
+    const questionForm = takeForm(req, 'questionForm', lesson.id) || {};
+    const form = lessonForm ? {
+      title: lessonForm.lesson_title,
+      contentType: allowed(lessonForm.content_type, LESSON_CONTENT_TYPES, lesson.contentType),
+      body: lessonForm.body,
+      mediaUrl: lessonForm.media_url,
+      transcript: lessonForm.transcript,
+      dripType: allowed(lessonForm.drip_type, LESSON_DRIP_TYPES, 'none'),
+      dripOffsetDays: lessonForm.drip_offset_days,
+      dripDateParts: { day: lessonForm['drip_date-day'], month: lessonForm['drip_date-month'], year: lessonForm['drip_date-year'] },
+      isPreview: checked(lessonForm.is_preview)
+    } : {
+      title: lesson.title,
+      contentType: lesson.contentType,
+      body: trimmed(rawLesson.body),
+      mediaUrl: lesson.videoUrl || lesson.attachmentUrl || lesson.embedUrl,
+      transcript: lesson.transcript,
+      dripType: lesson.dripType,
+      dripOffsetDays: lesson.dripOffsetDays === null ? '' : String(lesson.dripOffsetDays),
+      dripDateParts: splitDate(lesson.dripDate),
+      isPreview: lesson.isPreview
+    };
+
+    return res.render('courses/lesson-edit', {
+      title: (res.locals.t ? res.locals.t('govuk_alpha_courses.lesson_editor.edit_title') : 'Edit lesson'),
+      activeNav: 'explore',
+      course: { id: positiveInteger(course.id) || Number(req.params.id), title: trimmed(course.title) },
+      lesson,
+      form,
+      sections,
+      contentTypes: LESSON_CONTENT_TYPES,
+      questions,
+      questionsAvailable,
+      questionForm: { type: allowed(questionForm.question_type, QUESTION_TYPES, 'mcq'), ...questionForm },
+      questionTypes: QUESTION_TYPES,
+      status: routeStatus(req.query, LESSON_EDIT_STATUS_MESSAGES, res.locals.t)
+    });
+  } catch (error) {
+    if (handleCourseGetError(error, res)) return undefined;
+    throw error;
+  }
+}));
+
+router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/questions', asyncRoute(async (req, res) => {
+  const { id, lessonId } = req.params;
+  const quizId = positiveInteger(req.body.quiz_id);
+  const built = questionPayload(req.body);
+  if (quizId === null || built.error) {
+    stashForm(req, 'questionForm', lessonId, QUESTION_FORM_FIELDS);
+    return redirectTo(res, lessonEditRedirect(id, lessonId, built.error || 'question-failed', '#add-question'));
+  }
+
+  return requireCourseAction(req, res, () => {
+    stashForm(req, 'questionForm', lessonId, QUESTION_FORM_FIELDS);
+    return lessonEditRedirect(id, lessonId, 'question-failed', '#add-question');
+  }, async (token) => {
+    await callCourse(token, 'POST', `/${encodeURIComponent(id)}/quizzes/${encodeURIComponent(quizId)}/questions`, built.payload);
+    return redirectTo(res, lessonEditRedirect(id, lessonId, 'question-added', '#quiz-questions'));
+  });
+}));
+
+router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/questions/:questionId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const { id, lessonId, questionId } = req.params;
+  const quizId = positiveInteger(req.body.quiz_id);
+  if (quizId === null) return redirectTo(res, lessonEditRedirect(id, lessonId, 'question-failed', '#quiz-questions'));
+
+  return requireCourseAction(req, res, lessonEditRedirect(id, lessonId, 'question-failed', '#quiz-questions'), async (token) => {
+    await callCourse(token, 'DELETE', `/${encodeURIComponent(id)}/quizzes/${encodeURIComponent(quizId)}/questions/${encodeURIComponent(questionId)}`);
+    return redirectTo(res, lessonEditRedirect(id, lessonId, 'question-deleted', '#quiz-questions'));
+  });
+}));
+
+router.post('/instructor/:id(\\d+)/sections/:sectionId(\\d+)/move', asyncRoute(async (req, res) => (
+  applyMove(req, res, `/${encodeURIComponent(req.params.id)}/sections/reorder`, req.params.sectionId)
+)));
+
+router.post('/instructor/:id(\\d+)/lessons/:lessonId(\\d+)/move', asyncRoute(async (req, res) => {
+  const sectionId = positiveInteger(req.body.section_id);
+  if (sectionId === null) return redirectTo(res, `/courses/instructor/${req.params.id}/edit?status=order-failed#curriculum`);
+  return applyMove(req, res, `/${encodeURIComponent(req.params.id)}/sections/${encodeURIComponent(sectionId)}/lessons/reorder`, req.params.lessonId);
+}));
+
+router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/discussions', asyncRoute(async (req, res) => {
+  const { id, lessonId } = req.params;
+  const body = trimmed(req.body.body, 5000);
+  if (body === '') return redirectTo(res, discussionRedirect(id, lessonId, 'comment-required'));
+  const payload = { body };
+  const parentId = positiveInteger(req.body.parent_id);
+  if (parentId !== null) payload.parent_id = parentId;
+
+  return requireCourseAction(req, res, discussionRedirect(id, lessonId, 'comment-failed'), async (token) => {
+    await callCourse(token, 'POST', `/${encodeURIComponent(id)}/lessons/${encodeURIComponent(lessonId)}/discussions`, payload);
+    return redirectTo(res, discussionRedirect(id, lessonId, 'comment-posted'));
+  });
+}));
+
+router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/discussions/:commentId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const { id, lessonId, commentId } = req.params;
+  return requireCourseAction(req, res, discussionRedirect(id, lessonId, 'comment-delete-failed'), async (token) => {
+    await callCourse(token, 'DELETE', `/discussions/${encodeURIComponent(commentId)}`);
+    return redirectTo(res, discussionRedirect(id, lessonId, 'comment-deleted'));
   });
 }));
 

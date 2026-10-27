@@ -69,12 +69,21 @@
 
       {% if isEdit %}
         <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (listing.id | string) + '/photos') }}">{{ t("govuk_alpha_commerce.photos.manage_link") }}</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (listing.id | string) + '/video') }}">{{ t("govuk_alpha_commerce.listing_video.manage_link") }}</a></p>
       {% else %}
         <div class="govuk-form-group{% if fieldErrors.images %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--s" for="images">{{ t("govuk_alpha_commerce.photos.upload_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
           <div id="images-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.photos.upload_hint", { count: 10 }) }}</div>
           {% if fieldErrors.images %}<p id="images-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.images }}</p>{% endif %}
           <input class="govuk-file-upload{% if fieldErrors.images %} govuk-file-upload--error{% endif %}" id="images" name="images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif" aria-describedby="images-hint{% if fieldErrors.images %} images-error{% endif %}">
+        </div>
+
+        {# React CreateMarketplaceListingPage: one optional video, uploaded once the listing exists. #}
+        <div class="govuk-form-group{% if fieldErrors.video %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="video">{{ t("govuk_alpha_commerce.listing_video.label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+          <div id="video-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_video.hint") }}</div>
+          {% if fieldErrors.video %}<p id="video-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.video }}</p>{% endif %}
+          <input class="govuk-file-upload{% if fieldErrors.video %} govuk-file-upload--error{% endif %}" id="video" name="video" type="file" accept="video/mp4,video/webm,video/quicktime" aria-describedby="video-hint{% if fieldErrors.video %} video-error{% endif %}">
         </div>
       {% endif %}
     </fieldset>
@@ -156,6 +165,36 @@
             {% for category in categories %}<option value="{{ category.id }}" {% if listing.categoryId == category.id %}selected{% endif %}>{{ category.name }}</option>{% endfor %}
           </select>
         </div>
+
+        {# Without JavaScript the form cannot redraw itself when the category changes, so
+           this button posts it back and it returns with that category's own fields. #}
+        <div class="govuk-form-group">
+          <div id="show-category-fields-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_template.show_fields_hint") }}</div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="form_action" value="show_category_fields" aria-describedby="show-category-fields-hint">{{ t("govuk_alpha_commerce.listing_template.show_fields_button") }}</button>
+        </div>
+      {% endif %}
+
+      {% if templateFields and templateFields.length %}
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-6" id="template-fields">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.listing_template.heading") }}</legend>
+          {% for field in templateFields %}
+            {% set fieldError = fieldErrors[field.id] if fieldErrors else undefined %}
+            <div class="govuk-form-group{% if fieldError %} govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="{{ field.id }}">{{ field.label }}{% if not field.required %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+              {% if fieldError %}<p id="{{ field.id }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError }}</p>{% endif %}
+              {% if field.type == "select" %}
+                <select class="govuk-select{% if fieldError %} govuk-select--error{% endif %}" id="{{ field.id }}" name="{{ field.inputName }}"{% if fieldError %} aria-describedby="{{ field.id }}-error"{% endif %}>
+                  <option value="">{{ t("govuk_alpha_commerce.listing_template.select_placeholder", { field: field.label }) }}</option>
+                  {% for option in field.options %}<option value="{{ option }}"{% if field.value == option %} selected{% endif %}>{{ option }}</option>{% endfor %}
+                </select>
+              {% elseif field.type == "number" %}
+                <input class="govuk-input govuk-input--width-10{% if fieldError %} govuk-input--error{% endif %}" id="{{ field.id }}" name="{{ field.inputName }}" type="text" inputmode="numeric" value="{{ field.value }}"{% if fieldError %} aria-describedby="{{ field.id }}-error"{% endif %}>
+              {% else %}
+                <input class="govuk-input{% if fieldError %} govuk-input--error{% endif %}" id="{{ field.id }}" name="{{ field.inputName }}" type="text" value="{{ field.value }}" maxlength="500"{% if fieldError %} aria-describedby="{{ field.id }}-error"{% endif %}>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </fieldset>
       {% endif %}
 
       <div class="govuk-form-group">

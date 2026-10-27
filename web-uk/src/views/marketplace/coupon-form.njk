@@ -118,6 +118,23 @@
         <input class="govuk-input govuk-input--width-5" id="max_uses" name="max_uses" type="text" inputmode="numeric" value="{{ coupon.maxUses }}" aria-describedby="max_uses-hint">
       </div>
 
+      <div class="govuk-form-group{% if fieldErrors.max_uses_per_member %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="max_uses_per_member">{{ t("govuk_alpha_commerce.coupon_scope.max_uses_per_member_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="max_uses_per_member-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupon_scope.max_uses_per_member_hint") }}</div>
+        {% if fieldErrors.max_uses_per_member %}<p id="max_uses_per_member-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.max_uses_per_member }}</p>{% endif %}
+        <input class="govuk-input govuk-input--width-5{% if fieldErrors.max_uses_per_member %} govuk-input--error{% endif %}" id="max_uses_per_member" name="max_uses_per_member" type="text" inputmode="numeric" value="{{ coupon.maxUsesPerMember }}" aria-describedby="max_uses_per_member-hint{% if fieldErrors.max_uses_per_member %} max_uses_per_member-error{% endif %}">
+      </div>
+
+      {{ nexusDateInput({
+        name: "valid_from",
+        legend: t("govuk_alpha_commerce.coupon_scope.valid_from_label") ~ " (" ~ t("govuk_alpha_commerce.common.optional") ~ ")",
+        legendClasses: "govuk-fieldset__legend--s",
+        hint: t("govuk_alpha_commerce.coupon_scope.valid_from_hint"),
+        value: coupon.validFromParts,
+        errorMessage: fieldErrors["valid_from-day"] if fieldErrors else undefined,
+        errorFields: ["day", "month", "year"] if (fieldErrors and fieldErrors["valid_from-day"]) else undefined
+      }, t) }}
+
       {#
         Converted by hand: the label wrapped a <span>, which cannot go through the macro's
         legend parameter. The "(optional)" marker is appended to the LEGEND TEXT rather
@@ -143,6 +160,69 @@
         </select>
       </div>
     </fieldset>
+
+    {# React SellerCouponEditPage: which listings or categories the coupon applies to.
+       GOV.UK conditional radios: without JavaScript both lists of choices stay visible. #}
+    {% set scopeError = fieldErrors["applies_to-listing_ids"] or fieldErrors["applies_to-category_ids"] if fieldErrors else undefined %}
+    <div class="govuk-form-group govuk-!-margin-top-4{% if scopeError %} govuk-form-group--error{% endif %}">
+      <fieldset class="govuk-fieldset" aria-describedby="applies_to-hint{% if scopeError %} applies_to-error{% endif %}">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.coupon_scope.applies_to_label") }}</h2>
+        </legend>
+        <div id="applies_to-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupon_scope.applies_to_hint") }}</div>
+        {% if scopeError %}<p id="applies_to-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ scopeError }}</p>{% endif %}
+        <div class="govuk-radios" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="applies_to" name="applies_to" type="radio" value="all_listings"{% if coupon.appliesTo == "all_listings" or not coupon.appliesTo %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="applies_to">{{ t("govuk_alpha_commerce.coupon_scope.all_listings") }}</label>
+          </div>
+
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="applies_to-listing_ids" name="applies_to" type="radio" value="listing_ids"{% if coupon.appliesTo == "listing_ids" %} checked{% endif %} data-aria-controls="conditional-applies_to-listing_ids">
+            <label class="govuk-label govuk-radios__label" for="applies_to-listing_ids">{{ t("govuk_alpha_commerce.coupon_scope.specific_listings") }}</label>
+          </div>
+          <div class="govuk-radios__conditional{% if coupon.appliesTo != 'listing_ids' %} govuk-radios__conditional--hidden{% endif %}" id="conditional-applies_to-listing_ids">
+            {% if scopeListings and scopeListings.length %}
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.coupon_scope.listings_label") }}</legend>
+                <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                  {% for option in scopeListings %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="applies_to_listing_ids-{{ option.id }}" name="applies_to_listing_ids" type="checkbox" value="{{ option.id }}"{% if option.checked %} checked{% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="applies_to_listing_ids-{{ option.id }}">{{ option.label }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% else %}
+              <p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_scope.no_listings") }}</p>
+            {% endif %}
+          </div>
+
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="applies_to-category_ids" name="applies_to" type="radio" value="category_ids"{% if coupon.appliesTo == "category_ids" %} checked{% endif %} data-aria-controls="conditional-applies_to-category_ids">
+            <label class="govuk-label govuk-radios__label" for="applies_to-category_ids">{{ t("govuk_alpha_commerce.coupon_scope.specific_categories") }}</label>
+          </div>
+          <div class="govuk-radios__conditional{% if coupon.appliesTo != 'category_ids' %} govuk-radios__conditional--hidden{% endif %}" id="conditional-applies_to-category_ids">
+            {% if scopeCategories and scopeCategories.length %}
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.coupon_scope.categories_label") }}</legend>
+                <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                  {% for option in scopeCategories %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="applies_to_category_ids-{{ option.id }}" name="applies_to_category_ids" type="checkbox" value="{{ option.id }}"{% if option.checked %} checked{% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="applies_to_category_ids-{{ option.id }}">{{ option.label }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% else %}
+              <p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_scope.no_categories") }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </fieldset>
+    </div>
 
     <div class="govuk-button-group govuk-!-margin-top-4">
       <button class="govuk-button" data-module="govuk-button">{% if isEdit %}{{ t("govuk_alpha_commerce.coupons.submit_edit") }}{% else %}{{ t("govuk_alpha_commerce.coupons.submit_create") }}{% endif %}</button>

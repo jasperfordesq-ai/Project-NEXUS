@@ -10,6 +10,7 @@ const { ApiError, callMarketplaceApi, callMerchantOnboardingApi, uploadMerchantO
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate, readDateTime, parseTime } = require('../lib/date-input');
 const { filesFrom, photoProblem, removeFiles, uploadListingPhotos } = require('../lib/marketplace-photos');
+const { helpers: marketplaceHelpers } = require('./marketplace');
 
 const router = express.Router();
 
@@ -49,8 +50,34 @@ function listingFormValues(body, defaultCurrency) {
     categoryId: positiveInteger(body.category_id),
     deliveryMethod: allowed(body.delivery_method, DELIVERY_METHODS, 'pickup'),
     location: String(body.location || '').slice(0, 255),
-    quantity: positiveInteger(body.quantity) || 1
+    quantity: positiveInteger(body.quantity) || 1,
+    // Category-specific answers, replayed into whichever category's fields are drawn.
+    templateValues: marketplaceHelpers.postedTemplateValues(body)
   };
+}
+
+// "Show details for this category": without JavaScript the form cannot redraw itself
+// when the category changes, so this secondary button posts the form back and it is
+// shown again with that category's fields. Nothing is created or saved.
+function isCategoryRefresh(body) {
+  return trimmed(body && body.form_action) === 'show_category_fields';
+}
+
+/**
+ * Validate the category-specific answers against the chosen category's template.
+ * Returns `{ errors, templateData }`; `templateData` is undefined when the category has
+ * no template, so the payload leaves `template_data` alone.
+ */
+async function categoryTemplateCheck(token, body, { isUpdate = false } = {}) {
+  const fields = await marketplaceHelpers.loadCategoryTemplate(token, body.category_id);
+  if (fields.length === 0) return { errors: [], templateData: undefined };
+  const values = marketplaceHelpers.postedTemplateValues(body);
+  const errors = marketplaceHelpers.templateFieldErrors(fields, values);
+  const filled = marketplaceHelpers.templatePayload(fields, values);
+  // On an edit, emptying every field clears them (null); React could not clear them.
+  let templateData = filled;
+  if (Object.keys(filled).length === 0) templateData = isUpdate ? null : undefined;
+  return { errors, templateData };
 }
 
 function listingValidationErrorKeys(payload) {
@@ -317,7 +344,10 @@ function couponDiscountValue(discountType, raw) {
  * `MerchantCouponService::update` resolves it as
  * `$data['applies_to'] ?? $coupon->applies_to`, so omitting it preserves the seller's
  * scope. `applies_to_ids` is likewise preserved because it is never sent.
- * This page cannot yet choose a scope, so it must not overwrite one.
+ *
+ * Since 27 Oct 2026 the form offers the scope itself (pre-filled from the stored coupon),
+ * so a posted `applies_to` IS sent — see couponScope(). The create-only default above
+ * still applies when nothing is posted.
  */
 function couponPayload(body, isUpdate = false) {
   const discountType = allowed(body.discount_type, COUPON_DISCOUNT_TYPES, 'percent');
@@ -353,7 +383,58 @@ function couponPayload(body, isUpdate = false) {
     payload.valid_until = validUntil;
   }
 
+  // React SellerCouponEditPage (27 Oct 2026): start date and per-member limit. Left blank,
+  // neither is sent — on create Laravel defaults to no start date and one use per member;
+  // on an edit the stored values are kept.
+  const validFrom = readDate(body, 'valid_from').value || '';
+  if (validFrom !== '') {
+    payload.valid_from = validFrom;
+  }
+  const perMember = couponPerMemberLimit(body.max_uses_per_member);
+  if (perMember !== null) {
+    payload.max_uses_per_member = perMember;
+  }
+
+  // Scope. Sent whenever the form posted a choice; a post with no `applies_to` at all
+  // (an older form, a direct post) still leaves the stored scope alone on an edit.
+  const scope = couponScope(body);
+  if (scope.appliesTo !== null) {
+    payload.applies_to = scope.appliesTo;
+    if (scope.appliesTo !== 'all_listings') payload.applies_to_ids = scope.ids;
+  }
+
   return payload;
+}
+
+const COUPON_SCOPES = ['all_listings', 'listing_ids', 'category_ids'];
+// Laravel: applies_to_ids array|max:100, each integer|min:1|distinct.
+const COUPON_SCOPE_MAX_IDS = 100;
+
+function couponPerMemberLimit(raw) {
+  const text = trimmed(raw);
+  if (!/^\d+$/.test(text)) return null;
+  const number = Number(text);
+  return number >= 1 ? number : null;
+}
+
+function idList(value) {
+  const list = Array.isArray(value) ? value : (value === undefined || value === null || value === '' ? [] : [value]);
+  const ids = [];
+  list.forEach((item) => {
+    const id = positiveInteger(item);
+    if (id !== null && !ids.includes(id)) ids.push(id);
+  });
+  return ids.slice(0, COUPON_SCOPE_MAX_IDS);
+}
+
+/** `{ appliesTo, ids }`; `appliesTo` is null when the form posted no scope at all. */
+function couponScope(body) {
+  const raw = trimmed(body.applies_to);
+  if (raw === '') return { appliesTo: null, ids: [] };
+  const appliesTo = allowed(raw, COUPON_SCOPES, 'all_listings');
+  if (appliesTo === 'listing_ids') return { appliesTo, ids: idList(body.applies_to_listing_ids) };
+  if (appliesTo === 'category_ids') return { appliesTo, ids: idList(body.applies_to_category_ids) };
+  return { appliesTo, ids: [] };
 }
 
 function couponFormSessionKey(req, key) {
@@ -378,6 +459,11 @@ function couponFormValues(body) {
     // Three-field GOV.UK date pattern. Re-populates from whichever shape was posted,
     // so a validation re-render does not blank what the member typed.
     validUntilParts: readDate(body, 'valid_until').parts,
+    validFromParts: readDate(body, 'valid_from').parts,
+    maxUsesPerMember: String(body.max_uses_per_member || '').slice(0, 50),
+    appliesTo: allowed(body.applies_to, COUPON_SCOPES, 'all_listings'),
+    appliesToListingIds: idList(body.applies_to_listing_ids),
+    appliesToCategoryIds: idList(body.applies_to_category_ids),
     status: trimmed(body.status, 20)
   };
 }
@@ -396,6 +482,21 @@ function couponValidationErrors(body) {
   // become a coupon that never expires.
   if (readDate(body, 'valid_until').error) {
     errors.push({ key: 'web_uk.date_input.date_invalid' });
+  }
+  if (readDate(body, 'valid_from').error) {
+    errors.push({ key: 'web_uk.date_input.date_invalid', field: 'valid_from-day' });
+  }
+  if (trimmed(body.max_uses_per_member) !== '' && couponPerMemberLimit(body.max_uses_per_member) === null) {
+    errors.push({ key: 'govuk_alpha_commerce.coupon_scope.error_max_uses_per_member', field: 'max_uses_per_member' });
+  }
+  // React refuses a specific scope with nothing chosen (coupon.seller.target_required);
+  // Laravel would refuse it too, with a generic "validation failed".
+  const scope = couponScope(body);
+  if (scope.appliesTo && scope.appliesTo !== 'all_listings' && scope.ids.length === 0) {
+    errors.push({
+      key: 'govuk_alpha_commerce.coupon_scope.error_target_required',
+      field: scope.appliesTo === 'listing_ids' ? 'applies_to-listing_ids' : 'applies_to-category_ids'
+    });
   }
   return errors;
 }
@@ -582,10 +683,35 @@ router.post('/create', asyncRoute(async (req, res) => {
   // Optional photos chosen on the create form (multipart; see server.js). Checked with
   // the other fields so a wrong file type is reported before the listing exists.
   const photos = filesFrom(req);
+  // Optional video (React: one MP4, WebM or MOV up to 50MB), uploaded once the listing exists.
+  const videoFiles = marketplaceHelpers.allVideoFiles(req);
+  const video = marketplaceHelpers.videoFileFrom(req);
+  const discardFiles = () => Promise.all([removeFiles(photos), marketplaceHelpers.removeVideoFiles(videoFiles)]);
+
+  if (isCategoryRefresh(req.body)) {
+    await discardFiles();
+    rememberListingForm(req, 'create', values, []);
+    return redirectTo(res, '/marketplace/create#template-fields');
+  }
+
   const photoError = photos.length > 0 ? photoProblem(photos) : '';
   if (photoError) validationErrors.push(photoError);
+  const videoError = video ? marketplaceHelpers.videoProblem(video) : '';
+  if (videoError) validationErrors.push(videoError);
+
+  let template;
+  try {
+    template = await categoryTemplateCheck(token, req.body);
+  } catch (error) {
+    await discardFiles();
+    if (redirectOnAuthError(error, res)) return undefined;
+    throw error;
+  }
+  validationErrors.push(...template.errors);
+  if (template.templateData !== undefined) payload.template_data = template.templateData;
+
   if (validationErrors.length > 0) {
-    await removeFiles(photos);
+    await discardFiles();
     rememberListingForm(req, 'create', values, validationErrors);
     return redirectTo(res, '/marketplace/create?status=listing-validation');
   }
@@ -605,12 +731,23 @@ router.post('/create', asyncRoute(async (req, res) => {
         if (redirectOnAuthError(uploadError, res)) return undefined;
         // The listing exists; only the photos failed. Send the seller to the photos
         // page to try again, never back to a create form that would duplicate it.
+        await marketplaceHelpers.removeVideoFiles(videoFiles);
         return redirectTo(res, `/marketplace/${id}/photos?status=created-photos-failed`);
       }
     }
+    if (id && video) {
+      try {
+        await marketplaceHelpers.uploadListingVideo(token, id, video);
+      } catch (uploadError) {
+        if (redirectOnAuthError(uploadError, res)) return undefined;
+        // As with photos: the listing exists, so never send the seller back to create it.
+        return redirectTo(res, `/marketplace/${id}/video?status=created-video-failed`);
+      }
+    }
+    await marketplaceHelpers.removeVideoFiles(videoFiles);
     return redirectTo(res, listingRedirect(id || 'mine', pendingModeration ? 'listing-created-pending' : 'listing-created'));
   } catch (error) {
-    await removeFiles(photos);
+    await discardFiles();
     if (redirectOnAuthError(error, res)) return undefined;
     rememberListingForm(req, 'create', values, ['govuk_alpha_commerce.listing_form.error_create']);
     return redirectTo(res, '/marketplace/create?status=listing-create-failed');
@@ -624,7 +761,14 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   const defaultCurrency = tenantCurrency(req);
   const payload = listingPayload(req.body, defaultCurrency, { includeStatus: false });
   const values = listingFormValues(req.body, defaultCurrency);
+  if (isCategoryRefresh(req.body)) {
+    rememberListingForm(req, `edit:${id}`, values, []);
+    return redirectTo(res, `/marketplace/${id}/edit#template-fields`);
+  }
   const validationErrors = listingValidationErrorKeys(payload);
+  const template = await categoryTemplateCheck(token, req.body, { isUpdate: true });
+  validationErrors.push(...template.errors);
+  if (template.templateData !== undefined) payload.template_data = template.templateData;
   if (validationErrors.length > 0) {
     rememberListingForm(req, `edit:${id}`, values, validationErrors);
     return redirectTo(res, `/marketplace/${id}/edit?status=listing-validation`);

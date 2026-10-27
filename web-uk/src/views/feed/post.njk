@@ -7,6 +7,7 @@
 {% from "feed/_comments.njk" import commentList %}
 {% from "feed/_reactions.njk" import POST_REACTIONS, reactionForms %}
 {% from "feed/_item-menu.njk" import itemMenu, translateForm, quoteShare %}
+{% from "feed/_mention-hint.njk" import mentionHint %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
@@ -163,7 +164,7 @@
             <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="return_to" value="{{ returnTo }}">
             <div class="govuk-form-group">
               <label class="govuk-label" for="permalink-comment-{{ item.id }}">{{ t("blog.comment_body_label") }}</label>
-              <div id="permalink-comment-{{ item.id }}-hint" class="govuk-hint">{{ t("feed.comment_hint") }}</div>
+              {{ mentionHint("permalink-comment-" + (item.id | string) + "-hint", t, urlFor, t("feed.comment_hint")) }}
               <textarea class="govuk-textarea" id="permalink-comment-{{ item.id }}" name="content" rows="3" aria-describedby="permalink-comment-{{ item.id }}-hint"></textarea>
             </div>
             <button class="govuk-button" data-module="govuk-button">{{ t("actions.comment") }}</button>

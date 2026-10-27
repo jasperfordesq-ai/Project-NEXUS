@@ -1,0 +1,65 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Lesson discussion (React LessonDiscussion): comments with one level of
+   replies. Replying opens a native details element, so no JavaScript is needed. #}
+{% set discussionAction = '/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/discussions' %}
+
+{% macro discussionComment(comment, isReply) %}
+  <div class="govuk-!-margin-bottom-4{% if isReply %} govuk-!-margin-left-6{% endif %}">
+    <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ comment.authorName or t("govuk_alpha_courses.discussion.unknown_member") }}</strong>{% if comment.postedLabel %} <span class="govuk-body-s nexus-alpha-meta">{{ comment.postedLabel }}</span>{% endif %}</p>
+    <p class="govuk-body govuk-!-margin-bottom-1">{{ comment.body | nl2br | safe }}</p>
+    {% if comment.isOwn %}
+      <form method="post" action="{{ urlFor(discussionAction + '/' + (comment.id | string) + '/delete') }}" class="govuk-!-margin-bottom-2">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_courses.discussion.delete_button") }}</button>
+      </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+<h2 class="govuk-heading-l govuk-!-margin-top-6" id="lesson-discussion">{{ t("govuk_alpha_courses.discussion.heading") }}</h2>
+
+{% if not discussion.available %}
+  <div class="govuk-inset-text">{{ t("govuk_alpha_courses.discussion.unavailable") }}</div>
+{% else %}
+  <form method="post" action="{{ urlFor(discussionAction) }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="discussion-body">{{ t("govuk_alpha_courses.discussion.post_label") }}</label>
+      <textarea class="govuk-textarea" id="discussion-body" name="body" rows="3" maxlength="5000"></textarea>
+    </div>
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_courses.discussion.post_button") }}</button>
+  </form>
+
+  {% if not discussion.comments.length %}
+    <p class="govuk-body">{{ t("govuk_alpha_courses.discussion.empty") }}</p>
+  {% else %}
+    {% for comment in discussion.comments %}
+      <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+        {{ discussionComment(comment, false) }}
+        {% for reply in comment.replies %}
+          {{ discussionComment(reply, true) }}
+        {% endfor %}
+        <details class="govuk-details govuk-!-margin-bottom-0">
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">{{ t("govuk_alpha_courses.discussion.reply_summary") }}<span class="govuk-visually-hidden">: {{ comment.authorName }}</span></span>
+          </summary>
+          <div class="govuk-details__text">
+            <form method="post" action="{{ urlFor(discussionAction) }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="parent_id" value="{{ comment.id }}">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="reply-{{ comment.id }}">{{ t("govuk_alpha_courses.discussion.reply_label") }}</label>
+                <textarea class="govuk-textarea" id="reply-{{ comment.id }}" name="body" rows="2" maxlength="5000"></textarea>
+              </div>
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_courses.discussion.reply_button") }}</button>
+            </form>
+          </div>
+        </details>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endif %}

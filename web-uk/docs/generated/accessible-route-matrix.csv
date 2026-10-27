@@ -27,7 +27,14 @@ extra-web-uk,POST,/clubs/{param}/admin/import,clubs,,,,,,,,,verein/import-result
 extra-web-uk,POST,/clubs/{param}/admin/import/preview,clubs,,,,,,,,,verein/import-preview,,,,web-uk/src/routes/verein.js,
 extra-web-uk,POST,/cookie-consent/hide,cookie-consent,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/coupons/{param}/qr,coupons,,,,,,,,,,,,,web-uk/src/routes/coupons.js,
+extra-web-uk,GET,/courses/instructor/{param}/lessons/{param}/edit,courses,,,,,,,,,courses/lesson-edit,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/{param}/lessons/{param}/discussions,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/{param}/lessons/{param}/discussions/{param}/delete,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
 extra-web-uk,POST,/courses/instructor/{param}/cohorts,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/instructor/{param}/lessons/{param}/move,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/instructor/{param}/lessons/{param}/questions,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/instructor/{param}/lessons/{param}/questions/{param}/delete,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
+extra-web-uk,POST,/courses/instructor/{param}/sections/{param}/move,courses,,,,,,,,,,,,,web-uk/src/routes/courses.js,
 extra-web-uk,POST,/dashboard/location,dashboard,,,,,,,,,,,,,web-uk/src/routes/dashboard.js,
 extra-web-uk,GET,/events/{param}/staff,events,,,,,,,,,events/staff,,,,web-uk/src/routes/event-organiser-tools.js,
 extra-web-uk,GET,/events/{param}/staff/{param}/revoke,events,,,,,,,,,events/staff-revoke,,,,web-uk/src/routes/event-organiser-tools.js,
@@ -43,6 +50,7 @@ extra-web-uk,POST,/events/{param}/tickets/types/new,events,,,,,,,,,,,,,web-uk/sr
 extra-web-uk,POST,/federation/members/{param}/block,federation,,,,,,,,,,,,,web-uk/src/routes/federation-actions.js,
 extra-web-uk,POST,/federation/members/{param}/unblock,federation,,,,,,,,,,,,,web-uk/src/routes/federation-actions.js,
 extra-web-uk,POST,/federation/settings/debit-approvals/{param}/decision,federation,,,,,,,,,,,,,web-uk/src/routes/federation-actions.js,
+extra-web-uk,GET,/feed/mentions,feed,,,,,,,,,feed/mentions,,,,web-uk/src/routes/feed.js,
 extra-web-uk,GET,/feed/posts/{param}/reactions/{param},feed,,,,,,,,,feed/reactors,,,,web-uk/src/routes/feed.js,
 extra-web-uk,GET,/feed/posts/{param}/stats,feed,,,,,,,,,,,,,web-uk/src/routes/feed.js,
 extra-web-uk,POST,/feed/posts/{param}/translate,feed,,,,,,,,,,,,,web-uk/src/routes/feed-actions.js,
@@ -117,6 +125,7 @@ extra-web-uk,POST,/jobs/{param}/close,jobs,,,,,,,,,,,,,web-uk/src/routes/jobs.js
 extra-web-uk,POST,/jobs/{param}/quick-apply,jobs,,,,,,,,,,,,,web-uk/src/routes/jobs.js,
 extra-web-uk,POST,/jobs/{param}/reopen,jobs,,,,,,,,,,,,,web-uk/src/routes/jobs.js,
 extra-web-uk,POST,/jobs/employers/{param}/reviews,jobs,,,,,,,,,,,,,web-uk/src/routes/jobs.js,
+extra-web-uk,POST,/jobs/templates/{param}/delete,jobs,,,,,,,,,,,,,web-uk/src/routes/jobs.js,
 extra-web-uk,GET,/kb/{param}/attachments/{param},kb,,,,,,,,,,,,,web-uk/src/routes/kb.js,
 extra-web-uk,POST,/kb/{param}/feedback,kb,,,,,,,,,,,,,web-uk/src/routes/kb.js,
 extra-web-uk,GET,/legal-acceptance,legal-acceptance,,,,,,,,,legal/accept,,,,web-uk/src/routes/legal-acceptance.js,
@@ -133,6 +142,8 @@ extra-web-uk,POST,/login/two-factor/setup/start,login,,,,,,,,,,,,,web-uk/src/ser
 extra-web-uk,GET,/marketplace/{param}/delete,marketplace,,,,,,,,,confirm-delete,,,,web-uk/src/routes/marketplace-actions.js,
 extra-web-uk,GET,/marketplace/{param}/photos,marketplace,,,,,,,,,marketplace/photos,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,GET,/marketplace/{param}/photos/{param}/remove,marketplace,,,,,,,,,confirm-delete,,,,web-uk/src/routes/marketplace-member-tools.js,
+extra-web-uk,GET,/marketplace/{param}/video,marketplace,,,,,,,,,marketplace/video,,,,web-uk/src/routes/marketplace-member-tools.js,
+extra-web-uk,GET,/marketplace/{param}/video/remove,marketplace,,,,,,,,,confirm-delete,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,GET,/marketplace/borrow,marketplace,,,,,,,,,marketplace/listing-list,,,,web-uk/src/routes/marketplace.js,
 extra-web-uk,GET,/marketplace/reports,marketplace,,,,,,,,,marketplace/reports,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,GET,/marketplace/reports/{param},marketplace,,,,,,,,,marketplace/report-detail,,,,web-uk/src/routes/marketplace-member-tools.js,
@@ -143,6 +154,8 @@ extra-web-uk,GET,/marketplace/shipping/{param}/edit,marketplace,,,,,,,,,marketpl
 extra-web-uk,POST,/marketplace/{param}/photos,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/photos/{param}/main,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/{param}/photos/{param}/remove,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
+extra-web-uk,POST,/marketplace/{param}/video,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
+extra-web-uk,POST,/marketplace/{param}/video/remove,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
 extra-web-uk,POST,/marketplace/offers/{param}/accept-counter,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-actions.js,
 extra-web-uk,POST,/marketplace/offers/{param}/counter,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-actions.js,
 extra-web-uk,POST,/marketplace/reports/{param}/appeal,marketplace,,,,,,,,,,,,,web-uk/src/routes/marketplace-member-tools.js,
@@ -651,7 +664,7 @@ matched,GET,/jobs/responses,jobs,jobs.responses,jobsResponses,jobs-responses,,au
 matched,GET,/jobs/saved,jobs,jobs.saved,savedJobs,jobs-saved,,auth-optional,yes,feature:job_vacancies,service:JobVacancyService,jobs/saved,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,
 matched,GET,/jobs/talent-search,jobs,jobs.talent,jobsTalentSearch,jobs-talent-search,,auth-optional,yes,feature:job_vacancies,service:CandidateSearchService,jobs/talent-search,,web-uk/routes/govuk-alpha-parity/jobs.php,web-uk/app/Http/Controllers/GovukAlpha/Concerns/JobsParity.php,web-uk/src/routes/jobs.js,
 matched,GET,/jobs/talent-search/{param},jobs,jobs.talent.profile,jobsTalentProfile,jobs-talent-profile,number,auth-optional,yes,feature:job_vacancies,service:CandidateSearchService,jobs/talent-profile,,web-uk/routes/govuk-alpha-parity/jobs.php,web-uk/app/Http/Controllers/GovukAlpha/Concerns/JobsParity.php,web-uk/src/routes/jobs.js,
-matched,POST,/jobs,jobs,jobs.store,storeJob,,,auth-optional,yes,feature:job_vacancies,service:JobVacancyService,,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,'throttle:nexus-route-10-per-1m'
+matched,POST,/jobs,jobs,jobs.store,storeJob,,,auth-optional,yes,feature:job_vacancies,service:JobVacancyService,jobs/duplicate,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,'throttle:nexus-route-10-per-1m'
 matched,POST,/jobs/{param}/applications/{param}/status,jobs,jobs.applicants.status,setApplicationStatus,,"number,number",auth-optional,yes,feature:job_vacancies,service:JobVacancyService,,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,'throttle:nexus-route-30-per-1m'
 matched,POST,/jobs/{param}/apply,jobs,jobs.apply,applyJob,,number,auth-optional,yes,feature:job_vacancies,service:JobVacancyService; service:SafeguardingInteractionPolicy,,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,'throttle:nexus-route-10-per-1m'
 matched,POST,/jobs/{param}/delete,jobs,jobs.delete,deleteJob,,number,auth-optional,yes,feature:job_vacancies,service:JobVacancyService,,,web-uk/routes/govuk-alpha.php,web-uk/app/Http/Controllers/GovukAlpha/AlphaController.php,web-uk/src/routes/jobs.js,'throttle:nexus-route-10-per-1m'

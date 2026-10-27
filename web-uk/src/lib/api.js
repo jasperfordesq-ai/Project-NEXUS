@@ -1250,6 +1250,22 @@ async function uploadMarketplaceListingImages(token, listingId, data) {
   });
 }
 
+// Listing video (React CreateMarketplaceListingPage). Laravel takes ONE file under
+// `video` — MP4, WebM or MOV, 50MB or less (MarketplaceListingController::uploadVideo) —
+// and answers 201 with { video_url }.
+async function uploadMarketplaceListingVideo(token, listingId, file) {
+  const form = new globalThis.FormData();
+  if (file && file.buffer) {
+    const blob = new globalThis.Blob([file.buffer], { type: file.contentType || 'application/octet-stream' });
+    form.append('video', blob, file.filename || 'listing-video');
+  }
+  return request(`/api/v2/marketplace/listings/${encodeURIComponent(listingId)}/video`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+}
+
 // Seller onboarding photo (React MerchantOnboardingPage). Laravel takes ONE
 // file under `avatar` or `cover_image` (MerchantOnboardingController::uploadImage)
 // and answers with the stored image's { url }, which step 3 then saves.
@@ -3735,6 +3751,18 @@ async function createFeedPostWithMedia(token, data) {
 }
 
 /**
+ * Members to @mention, by name or username (GET /api/v2/mentions/search — React
+ * MentionInput). The API returns each match's username, which is what the server
+ * reads back out of "@username" in a post or comment.
+ */
+async function searchMentionUsers(token, query, limit = 20) {
+  const params = new URLSearchParams({ q: String(query || ''), limit: String(limit) });
+  return request(`/api/v2/mentions/search?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
  * A feed poll, optionally inside a group (POST /api/v2/feed/polls — React PollTab).
  * Unlike POST /api/v2/polls this keeps `group_id`, so a group poll lands in the
  * group feed (F-069).
@@ -4638,6 +4666,7 @@ module.exports = {
   callMerchantOnboardingApi,
   callCouponApi,
   uploadMarketplaceListingImages,
+  uploadMarketplaceListingVideo,
   callCourseApi,
   getMyCourses,
   callGroupApi,
@@ -4877,6 +4906,7 @@ module.exports = {
   getFeedHashtagPosts,
   createFeedPostV2,
   createFeedPostWithMedia,
+  searchMentionUsers,
   createFeedPoll,
   updateFeedPostV2,
   deleteFeedPostV2,

@@ -164,4 +164,9 @@ return [
         ],
     ],
     'sort_communityrank' => 'Rango de comunidad',
+    // The username other members type after "@" to mention this member (27 Oct 2026).
+    'mention' => [
+        'label' => 'Nombre de usuario',
+        'hint' => 'Escribe :mention en una publicación o un comentario para mencionar a este miembro.',
+    ],
 ];

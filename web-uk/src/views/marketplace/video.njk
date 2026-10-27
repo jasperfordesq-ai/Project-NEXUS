@@ -1,0 +1,53 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.back_to_listing") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if fieldError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="#video">{{ fieldError }}</a></li></ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      {% include "marketplace/_status-banner.njk" %}
+
+      <span class="govuk-caption-xl">{{ item.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.listing_video.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_commerce.listing_video.description") }}</p>
+
+      {% if item.videoUrl %}
+        {% set videoUrl = item.videoUrl %}
+        {% include "marketplace/_listing-video.njk" %}
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/video/remove') }}">{{ t("govuk_alpha_commerce.listing_video.remove") }}</a></p>
+      {% else %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_commerce.listing_video.empty") }}</p>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/video') }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group{% if fieldError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="video">{{ t("govuk_alpha_commerce.listing_video.upload_label") }}</label>
+          <div id="video-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.listing_video.hint") }}</div>
+          {% if fieldError %}<p id="video-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldError }}</p>{% endif %}
+          <input class="govuk-file-upload{% if fieldError %} govuk-file-upload--error{% endif %}" id="video" name="video" type="file" accept="video/mp4,video/webm,video/quicktime" aria-describedby="video-hint{% if fieldError %} video-error{% endif %}">
+        </div>
+        <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.listing_video.upload_submit") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

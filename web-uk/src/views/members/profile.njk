@@ -52,6 +52,10 @@
         <div class="govuk-grid-column-three-quarters">
           <span class="govuk-caption-xl">{{ t("profile.own_caption") if isOwnProfile else t("profile.member_caption") }}</span>
           <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ displayName }}</h1>
+          {% if mentionUsername %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_members.mention.label") }}: <code lang="en" dir="ltr">@{{ mentionUsername }}</code></p>
+            <p class="govuk-hint govuk-!-margin-bottom-2">{{ t("govuk_alpha_members.mention.hint", { mention: "@" + mentionUsername }) }}</p>
+          {% endif %}
           <div class="nexus-alpha-inline-flex-tags govuk-!-margin-bottom-2">
             {% if identityVerified %}{{ govukTag({ text: t("profile.verified"), classes: "govuk-tag--green" }) }}{% endif %}
             {{ govukTag({ text: t("profile.profile_type_" + profileType), classes: "govuk-tag--grey" }) }}

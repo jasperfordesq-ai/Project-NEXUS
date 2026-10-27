@@ -13,6 +13,7 @@ const {
   getComments,
   getFeedPostAnalytics,
   getReactors,
+  searchMentionUsers,
   ApiError
 } = require('../lib/api');
 const { POST_REACTION_TYPES } = require('../lib/feed-reactions');
@@ -349,6 +350,9 @@ function feedNextHref(meta, perPage, selectedType, selectedMode, selectedSubtype
 function feedIndexStatusMessage(status, t) {
   const keys = {
     'post-created': 'states.post-created',
+    'post-scheduled': 'govuk_alpha_feed.compose.scheduled',
+    'post-image-invalid': 'govuk_alpha_feed.compose.image_invalid',
+    'post-schedule-invalid': 'govuk_alpha_feed.compose.schedule_invalid',
     'post-empty': 'states.post_empty',
     'post-failed': 'states.post_failed',
     'post-updated': 'states.post-updated',
@@ -392,7 +396,7 @@ function feedIndexStatusMessage(status, t) {
   };
   const errorStatuses = new Set([
     'translate-failed', 'translate-unavailable', 'translate-same', 'translate-empty',
-    'post-empty', 'post-failed', 'post-update-failed', 'post-delete-failed',
+    'post-empty', 'post-failed', 'post-image-invalid', 'post-schedule-invalid', 'post-update-failed', 'post-delete-failed',
     'like-failed', 'comment-empty', 'comment-too-long', 'comment-failed',
     'comment-update-failed', 'comment-delete-failed', 'moderation-failed',
     'poll-vote-failed', 'reaction-failed', 'share-failed', 'share-own',
@@ -688,6 +692,62 @@ router.get('/hashtag/:tag([A-Za-z0-9_]{1,100})', asyncRoute(async (req, res) => 
   });
 }));
 
+// Which composer field each composer failure points at (GOV.UK error summary link).
+const COMPOSER_ERROR_FIELDS = {
+  'post-empty': 'content',
+  'post-failed': 'content',
+  'post-image-invalid': 'image',
+  'post-schedule-invalid': 'feed-schedule-day'
+};
+
+// The characters MentionService::extractMentions reads after "@". A username outside
+// them cannot be mentioned by typing it, so it is not offered as one.
+const MENTIONABLE_USERNAME = /^[A-Za-z0-9_.-]{1,100}$/;
+
+/**
+ * Find a member's username to @mention them (React MentionInput uses the same
+ * GET /api/v2/mentions/search). Without JavaScript there is no live dropdown, so this
+ * is a small search page. The API applies its own rules: same community, active and
+ * approved members, each member's "show me in member search" choice, blocks both
+ * ways, and never the searcher.
+ */
+router.get('/mentions', asyncRoute(withTokenRefresh(async (req, res) => {
+  const token = tokenFrom(req);
+  const t = res.locals.t;
+  const query = trimmed(req.query.q, 100);
+  let members = [];
+  let errorMessage = '';
+  if (token && query) {
+    try {
+      const data = dataFrom(await searchMentionUsers(token, query));
+      const rows = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+      members = rows.map((row) => {
+        const source = row && typeof row === 'object' ? row : {};
+        const username = trimmed(source.username, 100);
+        return {
+          id: positiveInteger(source.id, null, 1, Number.MAX_SAFE_INTEGER),
+          name: trimmed(source.name || [source.first_name, source.last_name].filter(Boolean).join(' '), 200),
+          username: MENTIONABLE_USERNAME.test(username) ? username : ''
+        };
+      }).filter((row) => row.id && row.name);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) throw error;
+      errorMessage = t('govuk_alpha_feed.mentions.failed');
+    }
+  }
+
+  res.render('feed/mentions', {
+    title: t('govuk_alpha_feed.mentions.title'),
+    activeNav: 'feed',
+    alphaActiveNav: 'feed',
+    query,
+    searched: Boolean(token && query),
+    members,
+    errorMessage,
+    requiresAuth: !token
+  });
+})));
+
 // Laravel deliberately renders the feed shell to signed-out visitors and only
 // calls the protected feed API for authenticated users.
 router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
@@ -748,9 +808,10 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     selectedSubtype,
     cursor,
     status,
-    postErrorMessage: ['post-empty', 'post-failed'].includes(status) && statusMessage
+    postErrorMessage: COMPOSER_ERROR_FIELDS[status] && statusMessage
       ? statusMessage.text
       : '',
+    postErrorField: COMPOSER_ERROR_FIELDS[status] || '',
     // What the member had just typed into the composer, if the post failed. Consumed
     // once, so a later clean visit to the feed shows an empty composer.
     postForm: consumeFormReplay(req, 'feedPost', 'composer'),

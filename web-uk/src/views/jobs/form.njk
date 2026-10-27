@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "_character-count.njk" import characterCount %}
 
@@ -15,6 +16,17 @@
   <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t3.create_caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_title") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_title") }}{% endif %}</h1>
   <p class="govuk-body-l">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_description") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_description") }}{% endif %}</p>
+
+  {% if jobFormNotice %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="job-form-notice-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="job-form-notice-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ jobFormNotice }}</p>
+      </div>
+    </div>
+  {% endif %}
 
   {% if jobFormErrors and jobFormErrors.length %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -31,8 +43,36 @@
     </div>
   {% endif %}
 
+  {% if formMode != "edit" and jobTemplates and jobTemplates.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.posting.templates_heading") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_jobs.posting.templates_hint") }}</p>
+    <dl class="govuk-summary-list">
+      {% for template in jobTemplates %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ template.name }}{% if template.isPublic %} {{ govukTag({ text: t("govuk_alpha_jobs.posting.template_shared_tag"), classes: "govuk-tag--grey" }) }}{% endif %}</dt>
+          <dd class="govuk-summary-list__actions">
+            <ul class="govuk-summary-list__actions-list">
+              <li class="govuk-summary-list__actions-list-item">
+                <a class="govuk-link" href="{{ urlFor('/jobs/create?template=' + (template.id | string)) }}">{{ t("govuk_alpha_jobs.posting.template_use") }}<span class="govuk-visually-hidden"> {{ template.name }}</span></a>
+              </li>
+              {% if template.isOwn %}
+                <li class="govuk-summary-list__actions-list-item">
+                  <form method="post" action="{{ urlFor('/jobs/templates/' + (template.id | string) + '/delete') }}" class="govuk-!-display-inline">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.posting.template_delete") }}<span class="govuk-visually-hidden"> {{ template.name }}</span></button>
+                  </form>
+                </li>
+              {% endif %}
+            </ul>
+          </dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+
   <form method="post" action="{{ urlFor(formAction) }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="posting_extras" value="1">
 
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--m" for="title">{{ t("govuk_alpha.jobs_t3.label_title") }}</label>
@@ -163,6 +203,55 @@
       <input class="govuk-input govuk-!-width-two-thirds" id="contact_email" name="contact_email" type="email" value="{{ jobForm.contact_email or "" }}" maxlength="255" autocomplete="email">
     </div>
 
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="contact_phone">{{ t("govuk_alpha_jobs.posting.contact_phone_label") }}</label>
+      <input class="govuk-input govuk-input--width-20" id="contact_phone" name="contact_phone" type="tel" value="{{ jobForm.contact_phone or "" }}" maxlength="50" autocomplete="tel">
+    </div>
+
+    <div class="govuk-form-group">
+      <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input type="hidden" name="blind_hiring" value="0">
+          <input class="govuk-checkboxes__input" id="blind_hiring" name="blind_hiring" type="checkbox" value="1"{% if jobForm.blind_hiring %} checked{% endif %} aria-describedby="blind_hiring-hint">
+          <label class="govuk-label govuk-checkboxes__label" for="blind_hiring">{{ t("govuk_alpha_jobs.posting.blind_hiring_label") }}</label>
+          <div id="blind_hiring-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_jobs.posting.blind_hiring_hint") }}</div>
+        </div>
+      </div>
+    </div>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-6" aria-describedby="branding-hint">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_jobs.posting.branding_legend") }}</legend>
+      <div id="branding-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.branding_hint") }}</div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="tagline">{{ t("govuk_alpha_jobs.posting.tagline_label") }}</label>
+        <div id="tagline-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.tagline_hint") }}</div>
+        <input class="govuk-input" id="tagline" name="tagline" type="text" value="{{ jobForm.tagline or "" }}" maxlength="160" aria-describedby="tagline-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="video_url">{{ t("govuk_alpha_jobs.posting.video_label") }}</label>
+        <div id="video_url-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.video_hint") }}</div>
+        <input class="govuk-input" id="video_url" name="video_url" type="url" inputmode="url" spellcheck="false" value="{{ jobForm.video_url or "" }}" maxlength="2000" aria-describedby="video_url-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="company_size">{{ t("govuk_alpha_jobs.posting.company_size_label") }}</label>
+        <select class="govuk-select" id="company_size" name="company_size">
+          <option value=""{% if not jobForm.company_size %} selected{% endif %}>{{ t("govuk_alpha_jobs.posting.company_size_none") }}</option>
+          {% for size in companySizes %}
+            <option value="{{ size }}"{% if jobForm.company_size == size %} selected{% endif %}>{{ t("govuk_alpha_jobs.posting.company_size_people", { size: size }) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="benefits">{{ t("govuk_alpha_jobs.posting.benefits_label") }}</label>
+        <div id="benefits-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.benefits_hint") }}</div>
+        <textarea class="govuk-textarea" id="benefits" name="benefits" rows="4" aria-describedby="benefits-hint">{{ jobForm.benefitsText or "" }}</textarea>
+      </div>
+    </fieldset>
+
     <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha.jobs_t3.label_status") }}</legend>
       <div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
@@ -178,5 +267,32 @@
     </fieldset>
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.submit_update") }}{% else %}{{ t("govuk_alpha.jobs_t3.submit_create") }}{% endif %}</button>
+
+    {# After the main button on purpose: pressing Enter in a field submits the
+       first button in the form, and that must post the advert, not a template. #}
+    {% if jobTemplates !== null and jobTemplates !== undefined %}
+      <details class="govuk-details"{% if jobForm.template_name %} open{% endif %}>
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">{{ t("govuk_alpha_jobs.posting.save_template_summary") }}</span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body">{{ t("govuk_alpha_jobs.posting.template_save_note") }}</p>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="template_name">{{ t("govuk_alpha_jobs.posting.template_name_label") }}</label>
+            <div id="template_name-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.posting.template_name_hint") }}</div>
+            <input class="govuk-input" id="template_name" name="template_name" type="text" value="{{ jobForm.template_name or "" }}" maxlength="255" aria-describedby="template_name-hint">
+          </div>
+          <div class="govuk-form-group">
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="template_public" name="template_public" type="checkbox" value="1"{% if jobForm.template_public %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="template_public">{{ t("govuk_alpha_jobs.posting.template_share_label") }}</label>
+              </div>
+            </div>
+          </div>
+          <button type="submit" name="intent" value="save_template" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_jobs.posting.template_save_button") }}</button>
+        </div>
+      </details>
+    {% endif %}
   </form>
 {% endblock %}

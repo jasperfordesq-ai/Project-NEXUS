@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const fs = require('fs/promises');
 const { randomUUID } = require('node:crypto');
-const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
+const { ApiError, callMarketplaceApi, callMerchantOnboardingApi, uploadMarketplaceListingVideo } = require('../lib/api');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { createTranslator, formatLocaleNumber } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -737,6 +738,8 @@ function decorateListing(listing) {
     images,
     primaryImage: images[0] || '',
     cardImage: cardImageUrl(row),
+    // Resolved like an image: Laravel stores `/storage/...`, served by the API host.
+    videoUrl: safeRelativeOrAbsoluteUrl(row.video_url),
     isOwnItem: Boolean(row.is_own || row.is_owner || row.owned_by_current_user),
     // Laravel only returns a moderation-pending listing to its owner, so this
     // flag never marks someone else's listing.
@@ -1118,6 +1121,60 @@ function couponDiscountFormValue(row, discountType) {
   return String(Math.round(numeric) / 100);
 }
 
+const COUPON_SCOPES = ['all_listings', 'listing_ids', 'category_ids'];
+
+function couponTargetIds(value) {
+  let list = value;
+  if (typeof list === 'string') {
+    try { list = JSON.parse(list); } catch { list = []; }
+  }
+  if (!Array.isArray(list)) return [];
+  return [...new Set(list.map(positiveInteger).filter((id) => id !== null))];
+}
+
+/**
+ * Checkbox options for a coupon's scope (React SellerCouponEditPage): the seller's own
+ * active listings (GET listings?user_id=&status=active&limit=100, as React asks) and the
+ * marketplace categories. A target the coupon already has that is no longer in either
+ * list (a sold listing, say) is kept as a ticked option, so saving the form does not
+ * silently drop it.
+ */
+async function couponScopeOptions(req, token, coupon) {
+  const profile = dataFrom(await Promise.resolve(getRequestProfile(req, token)).catch((error) => {
+    if (isAuthError(error)) throw error;
+    return null;
+  })) || {};
+  const userId = positiveInteger(profile.id ?? profile.user_id);
+  const [listingResult, categories] = await Promise.all([
+    userId === null
+      ? Promise.resolve({ data: [] })
+      : callMarketplace(token, 'GET', `/listings?user_id=${encodeURIComponent(userId)}&status=active&limit=100`).catch((error) => {
+        if (isAuthError(error)) throw error;
+        return { data: [] };
+      }),
+    loadCategories(token).catch((error) => {
+      if (isAuthError(error)) throw error;
+      return [];
+    })
+  ]);
+  const t = (key, params) => (typeof req.t === 'function' ? req.t : translateForRequest)(key, params);
+  const options = (rows, selected, labelOf, fallbackKey) => {
+    const list = rows
+      .map((row) => ({ id: positiveInteger(row.id), label: labelOf(row) }))
+      .filter((row) => row.id !== null && row.label);
+    selected.forEach((id) => {
+      if (!list.some((row) => row.id === id)) list.push({ id, label: t(fallbackKey, { id }) });
+    });
+    return list.map((row) => ({ ...row, checked: selected.includes(row.id) }));
+  };
+  return {
+    scopeListings: options(rowsFrom(listingResult), coupon.appliesToListingIds || [],
+      (row) => trimmed(row.title, 200), 'govuk_alpha_commerce.coupon_scope.listing_fallback'),
+    scopeCategories: options(categories, coupon.appliesToCategoryIds || [],
+      (row) => trimmed(row.name, 200), 'govuk_alpha_commerce.coupon_scope.category_fallback')
+  };
+}
+
 function decorateCoupon(coupon, req) {
   const row = coupon && typeof coupon === 'object' ? coupon : {};
   const status = trimmed(row.status) || 'draft';
@@ -1144,6 +1201,11 @@ function decorateCoupon(coupon, req) {
     // Three-field GOV.UK date pattern. Without this an existing coupon's expiry
     // silently disappeared from the edit form.
     validUntilParts: splitDate(dateInput(row.valid_until)),
+    validFromParts: splitDate(dateInput(row.valid_from)),
+    maxUsesPerMember: row.max_uses_per_member ?? '',
+    appliesTo: allowed(row.applies_to, COUPON_SCOPES, 'all_listings'),
+    appliesToListingIds: row.applies_to === 'listing_ids' ? couponTargetIds(row.applies_to_ids) : [],
+    appliesToCategoryIds: row.applies_to === 'category_ids' ? couponTargetIds(row.applies_to_ids) : [],
     status,
     statusLabel: COUPON_STATUS_LABELS[status]
       ? translateMarketplaceMessage(
@@ -1455,11 +1517,13 @@ function priceTypeFilterOptions() {
 }
 
 // The category "details" a listing was created with (React MarketplaceListingPage:
-// template_data). Keys are machine names, shown humanised as React does.
-function templateDetails(listing) {
+// template_data). A key the category's template still defines is shown under the
+// template's own label; any other key is a machine name, shown humanised as React does.
+function templateDetails(listing, templateFields = []) {
   const data = listing && listing.template_data && typeof listing.template_data === 'object' && !Array.isArray(listing.template_data)
     ? listing.template_data
     : {};
+  const labels = new Map(templateFields.map((field) => [field.key, field.label]));
   return Object.entries(data).map(([key, value]) => {
     let text;
     if (value === true) text = translateForRequest('cookie_settings.yes');
@@ -1467,8 +1531,166 @@ function templateDetails(listing) {
     else if (Array.isArray(value)) text = formatRequestList(value.map((item) => trimmed(item, 200)));
     else if (value !== null && typeof value === 'object') text = '';
     else text = trimmed(value, 500);
-    return { label: humanizeLabel(key), value: text };
+    return { label: labels.get(key) || humanizeLabel(key), value: text };
   }).filter((row) => row.label && row.value);
+}
+
+// ---------------------------------------------------------------------------
+// Category-specific listing fields (React CreateMarketplaceListingPage /
+// EditMarketplaceListingPage, 27 Oct 2026).
+//
+// GET categories/{id}/template returns `fields: [{ key, label, type, options?,
+// required? }]` with type text | number | select. React draws one input per field and
+// sends the filled ones as `template_data`. Laravel only checks `template_data` is an
+// array, so the required / number / option rules React applies in the browser are
+// applied here instead, before the round trip.
+//
+// Each field posts as `template_<key>`; keys are restricted to a safe character set so
+// a template can never name a field that collides with the form's own.
+// ---------------------------------------------------------------------------
+
+const TEMPLATE_FIELD_TYPES = ['text', 'number', 'select'];
+const TEMPLATE_VALUE_LIMIT = 500;
+
+function normalizeTemplateFields(raw) {
+  const data = dataFrom(raw);
+  const fields = data && Array.isArray(data.fields) ? data.fields : (Array.isArray(data) ? data : []);
+  const seen = new Set();
+  return fields.map((field) => {
+    const row = field && typeof field === 'object' ? field : {};
+    const key = trimmed(row.key, 64);
+    if (!/^[A-Za-z0-9_-]+$/.test(key) || seen.has(key)) return null;
+    seen.add(key);
+    const options = Array.isArray(row.options)
+      ? row.options.map((option) => trimmed(option, 200)).filter(Boolean)
+      : [];
+    let type = allowed(row.type, TEMPLATE_FIELD_TYPES, 'text');
+    if (type === 'select' && options.length === 0) type = 'text';
+    return {
+      key,
+      label: trimmed(row.label, 200) || humanizeLabel(key),
+      type,
+      options,
+      required: row.required === true || row.required === 1 || row.required === '1',
+      inputName: `template_${key}`,
+      id: `template-${key}`
+    };
+  }).filter(Boolean);
+}
+
+/** Never throws for a missing or unreadable template: the form simply has no extra fields. */
+async function loadCategoryTemplate(token, categoryId) {
+  const id = positiveInteger(categoryId);
+  if (id === null) return [];
+  try {
+    return normalizeTemplateFields(await callMarketplace(token, 'GET', `/categories/${encodeURIComponent(id)}/template`));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return [];
+  }
+}
+
+/** Every `template_<key>` value posted, whatever the category; used to replay a form. */
+function postedTemplateValues(body) {
+  const values = {};
+  Object.entries(body && typeof body === 'object' ? body : {}).forEach(([name, value]) => {
+    const match = /^template_([A-Za-z0-9_-]{1,64})$/.exec(name);
+    if (match) values[match[1]] = String(Array.isArray(value) ? value[0] : (value ?? '')).slice(0, TEMPLATE_VALUE_LIMIT);
+  });
+  return values;
+}
+
+function listingTemplateValues(listing) {
+  const data = listing && listing.template_data && typeof listing.template_data === 'object' && !Array.isArray(listing.template_data)
+    ? listing.template_data
+    : {};
+  const values = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === null || typeof value === 'object') return;
+    values[key] = String(value).slice(0, TEMPLATE_VALUE_LIMIT);
+  });
+  return values;
+}
+
+/** Errors as `{ key, params, field }` — `field` is the element id the summary links to. */
+function templateFieldErrors(fields, values) {
+  const errors = [];
+  fields.forEach((field) => {
+    const value = trimmed(values[field.key]);
+    const params = { field: field.label };
+    if (value === '') {
+      if (field.required) errors.push({ key: 'govuk_alpha_commerce.listing_template.error_required', params, field: field.id });
+      return;
+    }
+    if (field.type === 'number' && !Number.isFinite(Number(value))) {
+      errors.push({ key: 'govuk_alpha_commerce.listing_template.error_number', params, field: field.id });
+    } else if (field.type === 'select' && !field.options.includes(value)) {
+      errors.push({ key: 'govuk_alpha_commerce.listing_template.error_option', params, field: field.id });
+    }
+  });
+  return errors;
+}
+
+/** The filled fields only, as React sends them (strings). Empty object when none. */
+function templatePayload(fields, values) {
+  const payload = {};
+  fields.forEach((field) => {
+    const value = trimmed(values[field.key], TEMPLATE_VALUE_LIMIT);
+    if (value !== '') payload[field.key] = value;
+  });
+  return payload;
+}
+
+function templateFieldsForView(fields, values) {
+  return fields.map((field) => ({ ...field, value: String(values[field.key] ?? '') }));
+}
+
+// ---------------------------------------------------------------------------
+// Listing video (React CreateMarketplaceListingPage: POST listings/{id}/video).
+// Laravel accepts one file under `video`, detected type video/mp4, video/webm or
+// video/quicktime, 50MB or less (MarketplaceListingController::uploadVideo). The same
+// check runs here first so a wrong file is named before the round trip.
+// ---------------------------------------------------------------------------
+
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const VIDEO_EXTENSION_TYPES = { mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime' };
+
+function videoFileFrom(req) {
+  const value = req.files && req.files.video;
+  const file = Array.isArray(value) ? value[0] : value;
+  return file && typeof file === 'object' && typeof file.filepath === 'string' && file.filepath !== '' ? file : null;
+}
+
+function allVideoFiles(req) {
+  const value = req.files && req.files.video;
+  return (Array.isArray(value) ? value : [value]).filter((file) => file && typeof file.filepath === 'string');
+}
+
+/** '' when the file is acceptable, otherwise the translation key of the problem. */
+function videoProblem(file) {
+  if (!file) return 'govuk_alpha_commerce.listing_video.error_none';
+  const match = String(file.originalFilename || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+  const expected = match ? VIDEO_EXTENSION_TYPES[match[1]] : '';
+  if (!expected || String(file.mimetype || '').toLowerCase() !== expected) return 'govuk_alpha_commerce.listing_video.error_type';
+  if (Number(file.size) > MAX_VIDEO_BYTES) return 'govuk_alpha_commerce.listing_video.error_size';
+  return '';
+}
+
+async function removeVideoFiles(files) {
+  await Promise.all(files.filter(Boolean).map((file) => fs.unlink(file.filepath).catch(() => {})));
+}
+
+/** Send the video to Laravel. Always removes the temp file; throws whatever the API throws. */
+async function uploadListingVideo(token, listingId, file) {
+  try {
+    return await uploadMarketplaceListingVideo(token, listingId, {
+      buffer: await fs.readFile(file.filepath),
+      filename: String(file.originalFilename || '').trim() || 'listing-video',
+      contentType: String(file.mimetype || '').trim() || 'application/octet-stream'
+    });
+  } finally {
+    await removeVideoFiles([file]);
+  }
 }
 
 // Seller figures for My listings: only what GET seller/dashboard returns (React MyListingsPage).
@@ -1600,7 +1822,7 @@ function couponFormErrors(req, state) {
     const message = couponErrorMessage(req, error);
     if (!message) return;
     const field = error && typeof error === 'object' && error.key
-      ? COUPON_ERROR_FIELDS[error.key]
+      ? (trimmed(error.field, 80) || COUPON_ERROR_FIELDS[error.key])
       : undefined;
     if (!field) {
       if (formMessage === '') formMessage = message;
@@ -1739,7 +1961,10 @@ const LISTING_ERROR_FIELDS = {
   // Optional photos on the create form (26 Oct 2026).
   'govuk_alpha_commerce.photos.error_too_many': 'images',
   'govuk_alpha_commerce.photos.error_type': 'images',
-  'govuk_alpha_commerce.photos.error_size': 'images'
+  'govuk_alpha_commerce.photos.error_size': 'images',
+  // Optional video on the create form (27 Oct 2026).
+  'govuk_alpha_commerce.listing_video.error_type': 'video',
+  'govuk_alpha_commerce.listing_video.error_size': 'video'
 };
 
 /**
@@ -1759,9 +1984,15 @@ function listingFormErrors(req, state, status) {
   const fieldErrors = {};
   let formMessage = '';
 
-  keys.forEach((key) => {
-    const message = translateMarketplaceMessage(req, key, key);
-    const field = LISTING_ERROR_FIELDS[key];
+  keys.forEach((entry) => {
+    // A category-specific field error carries its own target and the field's label:
+    // `{ key, params: { field }, field: 'template-<key>' }`.
+    const isObject = entry && typeof entry === 'object';
+    const key = isObject ? entry.key : entry;
+    const message = isObject
+      ? (typeof req?.t === 'function' ? req.t : translateForRequest)(key, entry.params || {})
+      : translateMarketplaceMessage(req, key, key);
+    const field = isObject ? trimmed(entry.field, 80) : LISTING_ERROR_FIELDS[key];
     if (!field) {
       if (formMessage === '') formMessage = message;
       return;
@@ -1827,6 +2058,8 @@ router.get('/create', asyncRoute(async (req, res) => {
     const categories = await loadCategories(token);
     const defaultCurrency = tenantCurrency(req);
     const formState = consumeListingFormState(req, 'create');
+    const listing = { ...blankListing(defaultCurrency), ...(formState?.values || {}) };
+    const templateFields = await loadCategoryTemplate(token, listing.categoryId);
     return res.render('marketplace/form', {
       title: 'Create a listing',
       titleKey: 'govuk_alpha_commerce.listing_form.title_create',
@@ -1834,7 +2067,8 @@ router.get('/create', asyncRoute(async (req, res) => {
       activeTab: 'mine',
       mode: 'create',
       isEdit: false,
-      listing: { ...blankListing(defaultCurrency), ...(formState?.values || {}) },
+      listing,
+      templateFields: templateFieldsForView(templateFields, formState?.values?.templateValues || {}),
       categories,
       action: '/marketplace/create',
       ...listingFormErrors(req, formState, req.query.status),
@@ -2286,23 +2520,29 @@ router.get('/coupons/new', asyncRoute(async (req, res) => {
   if (!token) return undefined;
 
   const formState = consumeCouponFormState(req, 'create');
-  return res.render('marketplace/coupon-form', {
-    title: 'Create a coupon',
-    titleKey: 'govuk_alpha_commerce.coupons.title_create',
-    activeNav: 'explore',
-    activeTab: 'sell',
-    mode: 'create',
-    isEdit: false,
-    coupon: {
-      ...decorateCoupon({ discount_type: 'percent', status: 'draft' }, req),
-      ...(formState?.values || {})
-    },
-    action: '/marketplace/coupons/new',
-    discountTypes: couponDiscountTypeOptions(req),
-    statuses: couponStatusOptions(req),
-    ...couponFormErrors(req, formState),
-    status: null
-  });
+  const coupon = {
+    ...decorateCoupon({ discount_type: 'percent', status: 'draft' }, req),
+    ...(formState?.values || {})
+  };
+  try {
+    return res.render('marketplace/coupon-form', {
+      title: 'Create a coupon',
+      titleKey: 'govuk_alpha_commerce.coupons.title_create',
+      activeNav: 'explore',
+      activeTab: 'sell',
+      mode: 'create',
+      isEdit: false,
+      coupon,
+      action: '/marketplace/coupons/new',
+      discountTypes: couponDiscountTypeOptions(req),
+      statuses: couponStatusOptions(req),
+      ...(await couponScopeOptions(req, token, coupon)),
+      ...couponFormErrors(req, formState),
+      status: null
+    });
+  } catch (error) {
+    return renderMarketplaceError(error, res, 'Create a coupon');
+  }
 }));
 
 router.get('/coupons/:id(\\d+)/edit', asyncRoute(async (req, res) => {
@@ -2313,6 +2553,7 @@ router.get('/coupons/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     const coupon = await loadSellerCoupon(token, req.params.id, req);
     const formState = consumeCouponFormState(req, `edit:${coupon.id}`);
     const statusKey = trimmed(req.query.status);
+    const merged = { ...coupon, ...(formState?.values || {}) };
     return res.render('marketplace/coupon-form', {
       title: 'Edit your coupon',
       titleKey: 'govuk_alpha_commerce.coupons.title_edit',
@@ -2320,10 +2561,11 @@ router.get('/coupons/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       activeTab: 'sell',
       mode: 'edit',
       isEdit: true,
-      coupon: { ...coupon, ...(formState?.values || {}) },
+      coupon: merged,
       action: `/marketplace/coupons/${coupon.id}/update`,
       discountTypes: couponDiscountTypeOptions(req),
       statuses: couponStatusOptions(req),
+      ...(await couponScopeOptions(req, token, merged)),
       ...couponFormErrors(req, formState),
       status: ['coupon-saved', 'coupon-save-failed'].includes(statusKey)
         ? statusEntry(req, statusKey)
@@ -2344,6 +2586,9 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       loadCategories(token)
     ]);
     const formState = consumeListingFormState(req, `edit:${listing.id}`);
+    const merged = { ...listing, ...(formState?.values || {}) };
+    const templateFields = await loadCategoryTemplate(token, merged.categoryId);
+    const templateValues = formState?.values?.templateValues || listingTemplateValues(listing);
     return res.render('marketplace/form', {
       title: 'Edit your listing',
       titleKey: 'govuk_alpha_commerce.listing_form.title_edit',
@@ -2351,7 +2596,8 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       activeTab: 'mine',
       mode: 'edit',
       isEdit: true,
-      listing: { ...listing, ...(formState?.values || {}) },
+      listing: merged,
+      templateFields: templateFieldsForView(templateFields, templateValues),
       categories,
       action: `/marketplace/${listing.id}/update`,
       ...listingFormErrors(req, formState, req.query.status),
@@ -2466,11 +2712,15 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
         sellerListings = [];
       }
     }
+    // Label the item details with the category template's own names where it has one.
+    const hasDetails = listing.template_data && typeof listing.template_data === 'object'
+      && Object.keys(listing.template_data).length > 0;
+    const templateFields = hasDetails ? await loadCategoryTemplate(token, listing.categoryId) : [];
     return res.render('marketplace/detail', {
       title: listing.title,
       activeNav: 'explore',
       item: listing,
-      itemDetails: templateDetails(listing),
+      itemDetails: templateDetails(listing, templateFields),
       sellerListings,
       status: statusEntry(req, req.query.status)
     });
@@ -2481,4 +2731,20 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
 module.exports = router;
 // Shared with routes/marketplace-member-tools.js (photos, shipping options, reports).
-module.exports.helpers = { decorateListing, formatMoney, tenantCurrency };
+module.exports.helpers = {
+  decorateListing,
+  formatMoney,
+  tenantCurrency,
+  // Category-specific fields and the listing video (27 Oct 2026), shared with
+  // routes/marketplace-actions.js (create/update) and marketplace-member-tools.js (video page).
+  loadCategoryTemplate,
+  postedTemplateValues,
+  templateFieldErrors,
+  templatePayload,
+  MAX_VIDEO_BYTES,
+  videoFileFrom,
+  allVideoFiles,
+  videoProblem,
+  removeVideoFiles,
+  uploadListingVideo
+};

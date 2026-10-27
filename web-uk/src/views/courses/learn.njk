@@ -180,6 +180,10 @@
             <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.mark_complete") }}</button>
           </form>
         {% endif %}
+
+        {% if discussion %}
+          {% include "courses/_lesson-discussion.njk" %}
+        {% endif %}
       {% endif %}
     </div>
   </div>

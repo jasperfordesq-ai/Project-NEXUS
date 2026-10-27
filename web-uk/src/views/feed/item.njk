@@ -7,6 +7,7 @@
 {% from "feed/_reactions.njk" import POST_REACTIONS, reactionForms %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "feed/_comments.njk" import commentList %}
+{% from "feed/_mention-hint.njk" import mentionHint %}
 
 {% block beforeContent %}
   <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
@@ -133,7 +134,7 @@
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-form-group">
                 <label class="govuk-label" for="item-comment-{{ item.id }}">{{ t("govuk_alpha_feed.item.comment_label") }}</label>
-                <div id="item-comment-{{ item.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_feed.item.comment_hint") }}</div>
+                {{ mentionHint("item-comment-" + (item.id | string) + "-hint", t, urlFor, t("govuk_alpha_feed.item.comment_hint")) }}
                 <textarea class="govuk-textarea" id="item-comment-{{ item.id }}" name="content" rows="3" aria-describedby="item-comment-{{ item.id }}-hint"></textarea>
               </div>
               <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_feed.item.comment_submit") }}</button>

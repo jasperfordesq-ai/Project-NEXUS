@@ -34,8 +34,31 @@ const {
   getUserReviews,
   getMemberEndorsements,
   getAlgorithmInfo,
+  searchMentionUsers,
   ApiError
 } = require('../lib/api');
+
+// The username another member types after "@" to mention this one. GET /v2/users/{id}
+// does not return it; the mention search React's picker uses does, under its own rules
+// (never the searcher, only members who allow member search, no blocked pairs). Shown
+// only when that search returns this exact member, and only when it is made of the
+// characters MentionService::extractMentions reads. Anything else shows nothing.
+async function mentionUsernameFor(token, member) {
+  const query = String(member.first_name || member.name || '').trim().slice(0, 100);
+  if (!token || !query) return '';
+  let result = null;
+  try {
+    result = await searchMentionUsers(token, query);
+  } catch {
+    // Optional detail: a failed lookup leaves the line out, never the profile.
+    return '';
+  }
+  const data = result && typeof result === 'object' && result.data !== undefined ? result.data : result;
+  const rows = Array.isArray(data) ? data : [];
+  const match = rows.find((row) => row && Number(row.id) === Number(member.id));
+  const username = String((match && match.username) || '').trim();
+  return /^[A-Za-z0-9_.-]{1,100}$/.test(username) ? username : '';
+}
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
@@ -1198,6 +1221,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const maxTransfer = walletEnabled && !isOwnProfile && req.token
     ? await walletMaxTransfer(req.token)
     : PLATFORM_MAX_TRANSFER;
+  const mentionUsername = isOwnProfile ? '' : await mentionUsernameFor(req.token, { ...publicUser, id });
   const profileStatus = profileStatusMessage(req, { maxTransfer });
   const flashedSuccess = req.flash ? req.flash('success')[0] : null;
   const flashedError = req.flash ? req.flash('error')[0] : null;
@@ -1206,6 +1230,7 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     title: displayName,
     user,
     displayName,
+    mentionUsername,
     communityName: res.locals.tenantName || res.locals.serviceName || '',
     identityVerified: !!(user.identity_verified || user.id_verified),
     profileType: String(user.profile_type || 'individual') === 'organisation' ? 'organisation' : 'individual',

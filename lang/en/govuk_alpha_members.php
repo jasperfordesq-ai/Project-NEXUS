@@ -183,4 +183,9 @@ return [
         ],
     ],
     'sort_communityrank' => 'Community rank',
+    // The username other members type after "@" to mention this member (27 Oct 2026).
+    'mention' => [
+        'label' => 'Username',
+        'hint' => 'Type :mention in a post or comment to mention this member.',
+    ],
 ];

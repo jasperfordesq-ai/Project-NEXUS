@@ -11,6 +11,8 @@
 {% from "feed/_reactions.njk" import POST_REACTIONS, reactionForms %}
 {% from "feed/_item-menu.njk" import translateForm, quoteShare, whyShown %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
+{% from "feed/_mention-hint.njk" import mentionHint %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -46,7 +48,11 @@
               <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
               <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
+                  {% if postErrorField == "content" %}
                   <li><a href="#content">{{ t("polish_discovery.feed_error_link_text") }}</a> — {{ postErrorMessage }}</li>
+                  {% else %}
+                  <li><a href="#{{ postErrorField }}">{{ postErrorMessage }}</a></li>
+                  {% endif %}
                 </ul>
               </div>
             </div>
@@ -76,18 +82,24 @@
       {% endif %}
       <form method="post" action="{{ urlFor('/feed/posts') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-7" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <div class="govuk-form-group{% if postErrorMessage %} govuk-form-group--error{% endif %}">
+        {% set contentError = postErrorMessage and postErrorField == "content" %}
+        {% set imageError = postErrorMessage and postErrorField == "image" %}
+        {% set scheduleError = postErrorMessage and postErrorField == "feed-schedule-day" %}
+        <div class="govuk-form-group{% if contentError %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--m" for="content">{{ t("feed.post_label") }}</label>
-          <div id="content-hint" class="govuk-hint">{{ t("feed.post_hint") }}</div>
-          {% if postErrorMessage %}
+          {{ mentionHint("content-hint", t, urlFor, t("feed.post_hint")) }}
+          {% if contentError %}
             <p id="content-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ postErrorMessage }}</p>
           {% endif %}
-          <textarea class="govuk-textarea{% if postErrorMessage %} govuk-textarea--error{% endif %}" id="content" name="content" rows="4" aria-describedby="content-hint{% if postErrorMessage %} content-error{% endif %}">{% if postForm %}{{ postForm.content }}{% endif %}</textarea>
+          <textarea class="govuk-textarea{% if contentError %} govuk-textarea--error{% endif %}" id="content" name="content" rows="4" aria-describedby="content-hint{% if contentError %} content-error{% endif %}">{% if postForm %}{{ postForm.content }}{% endif %}</textarea>
         </div>
-        <div class="govuk-form-group">
+        <div class="govuk-form-group{% if imageError %} govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="image">{{ t("feed.image_label") }}</label>
           <div id="image-hint" class="govuk-hint">{{ t("feed.image_hint") }}</div>
-          <input class="govuk-file-upload" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint">
+          {% if imageError %}
+            <p id="image-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ postErrorMessage }}</p>
+          {% endif %}
+          <input class="govuk-file-upload{% if imageError %} govuk-file-upload--error{% endif %}" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint{% if imageError %} image-error{% endif %}">
         </div>
         <div class="govuk-form-group">
           <label class="govuk-label" for="image_alt">{{ t("feed.image_alt_label") }}</label>
@@ -96,6 +108,39 @@
              value — but the alt text the member wrote for it can be. #}
           <input class="govuk-input" id="image_alt" name="image_alt" type="text" maxlength="500" value="{{ postForm.imageAlt if postForm else '' }}" aria-describedby="image-alt-hint">
         </div>
+        {# Up to ten photos per post, as React allows; each photo keeps its own
+           description next to it (the same fields as the group composer). #}
+        {% set imageAlts = (postForm.imageAlts if postForm and postForm.imageAlts else {}) %}
+        <details class="govuk-details" data-module="govuk-details">
+          <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.compose.more_images_summary", { max: 10 }) }}</span></summary>
+          <div class="govuk-details__text">
+            {% for number in range(2, 11) %}
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="image_{{ number }}">{{ t("govuk_alpha_feed.compose.image_n_label", { number: number }) }}</label>
+                <input class="govuk-file-upload" id="image_{{ number }}" name="image_{{ number }}" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+              </div>
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="image_{{ number }}_alt">{{ t("govuk_alpha_feed.compose.image_n_alt_label", { number: number }) }}</label>
+                <input class="govuk-input" id="image_{{ number }}_alt" name="image_{{ number }}_alt" type="text" maxlength="500" value="{{ imageAlts[number] or '' }}">
+              </div>
+            {% endfor %}
+          </div>
+        </details>
+        {% set schedule = (postForm.schedule if postForm and postForm.schedule else null) %}
+        <details class="govuk-details" data-module="govuk-details"{% if scheduleError or (schedule and (schedule.day or schedule.month or schedule.year or schedule.time)) %} open{% endif %}>
+          <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.compose.schedule_summary") }}</span></summary>
+          <div class="govuk-details__text">
+            {{ nexusDateTimeInput({
+              name: "schedule",
+              idPrefix: "feed-schedule",
+              legend: t("govuk_alpha_feed.compose.schedule_legend"),
+              hint: t("govuk_alpha_feed.compose.schedule_hint"),
+              value: schedule,
+              errorMessage: postErrorMessage if scheduleError else undefined,
+              errorFields: ["day", "month", "year"] if scheduleError else []
+            }, t) }}
+          </div>
+        </details>
         {{ govukButton({ text: t("actions.post") }) }}
       </form>
       {% endif %}
@@ -435,7 +480,7 @@
                       {% if cursor %}<input type="hidden" name="cursor" value="{{ cursor }}">{% endif %}
                       <div class="govuk-form-group">
                         <label class="govuk-label" for="comment-{{ post.type }}-{{ post.id }}">{{ t("feed.comment_label") }}</label>
-                        <div id="comment-{{ post.type }}-{{ post.id }}-hint" class="govuk-hint">{{ t("feed.comment_hint") }}</div>
+                        {{ mentionHint("comment-" + post.type + "-" + (post.id | string) + "-hint", t, urlFor, t("feed.comment_hint")) }}
                         <textarea class="govuk-textarea" id="comment-{{ post.type }}-{{ post.id }}" name="content" rows="3" aria-describedby="comment-{{ post.type }}-{{ post.id }}-hint"></textarea>
                       </div>
                       <button class="govuk-button" data-module="govuk-button">{{ t("actions.comment") }}</button>

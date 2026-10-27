@@ -1,0 +1,52 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed') }}" class="govuk-back-link">{{ t("feed_t1.permalink_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_feed.mentions.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_feed.mentions.intro") }}</p>
+
+      {% if requiresAuth %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("states.auth_required") }} <a class="govuk-link" href="{{ urlFor('/login') }}">{{ t("nav.login") }}</a></p></div>
+      {% else %}
+        <form method="get" action="{{ urlFor('/feed/mentions') }}" class="govuk-!-margin-bottom-6">
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" for="mention-search">{{ t("govuk_alpha_feed.mentions.search_label") }}</label>
+            <div id="mention-search-hint" class="govuk-hint">{{ t("govuk_alpha_feed.mentions.search_hint") }}</div>
+            <input class="govuk-input govuk-input--width-20" id="mention-search" name="q" type="search" maxlength="100" value="{{ query }}" aria-describedby="mention-search-hint">
+          </div>
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_feed.mentions.search_button") }}</button>
+        </form>
+
+        {% if errorMessage %}
+          <div class="govuk-inset-text" role="alert"><p class="govuk-body">{{ errorMessage }}</p></div>
+        {% elif searched %}
+          <h2 class="govuk-heading-m">{{ t("govuk_alpha_feed.mentions.results_title") }}</h2>
+          {% if members | length %}
+            <dl class="govuk-summary-list">
+              {% for member in members %}
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key"><a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a></dt>
+                  <dd class="govuk-summary-list__value">
+                    {% if member.username %}<code lang="en" dir="ltr">@{{ member.username }}</code>{% else %}{{ t("govuk_alpha_feed.mentions.no_username") }}{% endif %}
+                  </dd>
+                </div>
+              {% endfor %}
+            </dl>
+          {% else %}
+            <p class="govuk-body">{{ t("govuk_alpha_feed.mentions.no_results") }}</p>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Pass mark and attempt limit for a quiz lesson. The API has no way to change a
+   quiz after it is created, so these are only read when the quiz is created. #}
+<fieldset class="govuk-fieldset govuk-!-margin-bottom-6" aria-describedby="quiz-settings-hint">
+  <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_courses.lesson_editor.quiz_settings_legend") }}</legend>
+  <div id="quiz-settings-hint" class="govuk-hint">{{ t("govuk_alpha_courses.lesson_editor.quiz_settings_hint") }}</div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="quiz_pass_mark">{{ t("govuk_alpha_courses.lesson_editor.pass_mark_label") }}</label>
+    <input class="govuk-input govuk-input--width-3" id="quiz_pass_mark" name="quiz_pass_mark" type="text" inputmode="numeric" spellcheck="false" value="70">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="quiz_max_attempts">{{ t("govuk_alpha_courses.lesson_editor.max_attempts_label") }}</label>
+    <div id="quiz_max_attempts-hint" class="govuk-hint">{{ t("govuk_alpha_courses.lesson_editor.max_attempts_hint") }}</div>
+    <input class="govuk-input govuk-input--width-3" id="quiz_max_attempts" name="quiz_max_attempts" type="text" inputmode="numeric" spellcheck="false" value="0" aria-describedby="quiz_max_attempts-hint">
+  </div>
+</fieldset>

@@ -304,6 +304,110 @@ router.post('/:id(\\d+)/photos/:imageId(\\d+)/main', asyncRoute(async (req, res)
 }));
 
 // ---------------------------------------------------------------------------
+// 1b. Listing video (27 Oct 2026). React uploads one video with a new listing
+// (POST listings/{id}/video); Laravel also has DELETE listings/{id}/video. This page
+// lets the seller add, replace or remove it later, without JavaScript.
+// ---------------------------------------------------------------------------
+
+const VIDEO_STATUS = {
+  uploaded: { type: 'success', key: 'govuk_alpha_commerce.listing_video.status_uploaded' },
+  removed: { type: 'success', key: 'govuk_alpha_commerce.listing_video.status_removed' },
+  'remove-failed': { type: 'error', key: 'govuk_alpha_commerce.listing_video.status_remove_failed' },
+  'created-video-failed': { type: 'error', key: 'govuk_alpha_commerce.listing_video.status_created_video_failed' }
+};
+
+function videoErrorSessionKey(req, id) {
+  return `marketplaceVideoError:${tenantKey(req)}:${id}`;
+}
+
+router.get('/:id(\\d+)/video', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  try {
+    const { item } = await loadOwnListing(token, id);
+    const t = translator(res);
+    const stashed = sessionTake(req, videoErrorSessionKey(req, id));
+    const fieldError = stashed ? (stashed.text || t(stashed.key)) : '';
+    return res.render('marketplace/video', {
+      title: t('govuk_alpha_commerce.listing_video.title'),
+      activeNav: 'explore',
+      activeTab: 'mine',
+      item,
+      fieldError,
+      status: fieldError ? null : statusFrom(res, VIDEO_STATUS, req.query.status)
+    });
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+}));
+
+router.post('/:id(\\d+)/video', asyncRoute(async (req, res) => {
+  const files = helpers.allVideoFiles(req);
+  const token = tokenFrom(req);
+  if (!token) {
+    await helpers.removeVideoFiles(files);
+    return redirectTo(res, '/login?status=auth-required');
+  }
+  const id = Number(req.params.id);
+  const video = helpers.videoFileFrom(req);
+  const problem = helpers.videoProblem(video);
+  if (problem) {
+    await helpers.removeVideoFiles(files);
+    sessionPut(req, videoErrorSessionKey(req, id), { key: problem });
+    return redirectTo(res, `/marketplace/${id}/video`);
+  }
+  try {
+    await helpers.uploadListingVideo(token, id, video);
+    return redirectTo(res, `/marketplace/${id}/video?status=uploaded`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && [403, 404].includes(error.status)) return renderToolError(error, res);
+    // A 422 carries Laravel's own translated reason (wrong type, too large).
+    const text = apiMessage(error);
+    sessionPut(req, videoErrorSessionKey(req, id), text ? { text } : { key: 'govuk_alpha_commerce.listing_video.error_failed' });
+    return redirectTo(res, `/marketplace/${id}/video`);
+  } finally {
+    await helpers.removeVideoFiles(files);
+  }
+}));
+
+router.get('/:id(\\d+)/video/remove', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const t = translator(res);
+  try {
+    const { item } = await loadOwnListing(token, id);
+    if (!item.videoUrl) throw new ApiError('Video not found', 404);
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_commerce.listing_video.remove_heading'),
+    activeNav: 'explore',
+    confirmHeading: t('govuk_alpha_commerce.listing_video.remove_heading'),
+    confirmWarning: t('govuk_alpha_commerce.listing_video.remove_warning'),
+    confirmButton: t('govuk_alpha_commerce.listing_video.remove'),
+    confirmAction: `/marketplace/${id}/video/remove`,
+    cancelHref: `/marketplace/${id}/video`
+  });
+}));
+
+router.post('/:id(\\d+)/video/remove', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  try {
+    await callMarketplaceApi(token, 'DELETE', `/listings/${encodeURIComponent(id)}/video`);
+    return redirectTo(res, `/marketplace/${id}/video?status=removed`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, `/marketplace/${id}/video?status=remove-failed`);
+  }
+}));
+
+// ---------------------------------------------------------------------------
 // 2. Shipping options
 // ---------------------------------------------------------------------------
 

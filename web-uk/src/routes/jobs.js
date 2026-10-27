@@ -40,8 +40,43 @@ const JOB_CV_EXTENSIONS = new Set(['.pdf', '.doc', '.docx']);
 const JOB_FORM_FIELDS = new Set([
   'title', 'description', 'type', 'commitment', 'category', 'location', 'is_remote',
   'skills_required', 'deadline', 'salary_min', 'salary_max', 'salary_currency',
-  'salary_type', 'salary_negotiable', 'hours_per_week', 'time_credits', 'contact_email', 'status'
+  'salary_type', 'salary_negotiable', 'hours_per_week', 'time_credits', 'contact_email', 'status',
+  'contact_phone', 'blind_hiring', 'tagline', 'video_url', 'company_size', 'benefits', 'template_name'
 ]);
+// React CreateJobPage COMPANY_SIZE_OPTIONS; the API stores the chosen string as-is.
+const JOB_COMPANY_SIZES = ['1-10', '11-50', '51-200', '201-500', '500+'];
+// The posting fields React sends beyond the original form. They are only sent
+// when the submitted form actually showed them (`posting_extras=1`), so an older
+// or partial form can never blank a stored tagline or benefit list.
+const JOB_POSTING_EXTRA_FIELDS = ['contact_phone', 'blind_hiring', 'tagline', 'video_url', 'company_size', 'benefits'];
+// Every field the posting form can submit, replayed as hidden inputs on the
+// duplicate-advert page so "post anyway" re-sends exactly what was typed.
+const JOB_FORM_REPLAY_FIELDS = [
+  'title', 'description', 'type', 'commitment', 'category', 'location', 'is_remote', 'skills_required',
+  'deadline', 'deadline-day', 'deadline-month', 'deadline-year', 'salary_min', 'salary_max', 'salary_currency',
+  'salary_type', 'salary_negotiable', 'hours_per_week', 'time_credits', 'contact_email', 'status',
+  'posting_extras', ...JOB_POSTING_EXTRA_FIELDS
+];
+const JOB_TEMPLATE_SUCCESS_MESSAGES = Object.freeze({
+  'template-saved': 'Template saved',
+  'template-deleted': 'Template deleted'
+});
+const JOB_TEMPLATE_ERROR_MESSAGES = Object.freeze({
+  'template-name-required': 'Enter a name for the template.',
+  'template-save-failed': 'The template could not be saved. Please try again.',
+  'template-delete-failed': 'The template could not be deleted. Please try again.'
+});
+const JOB_TEMPLATE_MESSAGE_KEYS = Object.freeze({
+  'template-saved': 'govuk_alpha_jobs.posting.template_saved',
+  'template-deleted': 'govuk_alpha_jobs.posting.template_deleted',
+  'template-name-required': 'govuk_alpha_jobs.posting.template_name_required',
+  'template-save-failed': 'govuk_alpha_jobs.posting.template_save_failed',
+  'template-delete-failed': 'govuk_alpha_jobs.posting.template_delete_failed'
+});
+const JOB_TEMPLATE_ERROR_HREFS = Object.freeze({
+  'template-name-required': '#template_name',
+  'template-save-failed': '#template_name'
+});
 const APPLICATION_STATUSES = [
   'applied',
   'pending',
@@ -707,8 +742,46 @@ function optionalJobNumber(value) {
   return finiteNumber(value, null);
 }
 
+// The API stores benefits as a JSON list; tolerate a JSON string or newline text.
+function benefitsFrom(value) {
+  let list = value;
+  if (typeof list === 'string') {
+    try {
+      const parsed = JSON.parse(list);
+      list = Array.isArray(parsed) ? parsed : list.split(/\r?\n/);
+    } catch {
+      list = list.split(/\r?\n/);
+    }
+  }
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list
+    .map((item) => trimmed(item, 100))
+    .filter((item) => {
+      if (item === '' || seen.has(item)) return false;
+      seen.add(item);
+      return true;
+    })
+    .slice(0, 30);
+}
+
+// Only an http(s) address is ever turned into a link.
+function safeWebUrl(value) {
+  const text = trimmed(value, 2000);
+  if (!/^https?:\/\//i.test(text)) return '';
+  try {
+    return new globalThis.URL(text).href;
+  } catch {
+    return '';
+  }
+}
+
 function decorateJob(job) {
   const organizationName = personName(job.organization);
+  const benefitsList = benefitsFrom(job.benefits);
+  const companySize = JOB_COMPANY_SIZES.includes(trimmed(job.company_size)) ? trimmed(job.company_size) : '';
+  const tagline = trimmed(job.tagline, 160);
+  const videoHref = safeWebUrl(job.video_url);
   const posterName = organizationName || personName(job.creator);
   const viewsCount = Math.trunc(finiteNumber(job.views_count, 0));
   const applicationsCount = Math.trunc(finiteNumber(job.applications_count, 0));
@@ -747,6 +820,12 @@ function decorateJob(job) {
     contactEmail: trimmed(job.contact_email, 255),
     contactPhone: trimmed(job.contact_phone, 50),
     contactPhoneHref: trimmed(job.contact_phone, 50).replace(/[^+\d]/g, ''),
+    // Employer branding, shown as React's JobDescriptionCard "About the company".
+    tagline,
+    videoHref,
+    companySize,
+    benefitsList,
+    hasBranding: Boolean(tagline || videoHref || companySize || benefitsList.length > 0),
     statusLabel: JOB_POSTING_STATUS_LABELS[job.status] || trimmed(job.status) || JOB_POSTING_STATUS_LABELS.open,
     statusTranslationKey: JOB_POSTING_STATUS_LABELS[job.status]
       ? `jobs_t3.status_${job.status}`
@@ -954,8 +1033,64 @@ function jobFormForEdit(job) {
     // repopulating on the edit form — the member's stored date vanished from the field.
     deadlineParts: splitDate(dateInputValue(job.deadline)),
     is_remote: checked(job.is_remote || job.isRemote),
-    salary_negotiable: checked(job.salary_negotiable || job.salaryNegotiable)
+    salary_negotiable: checked(job.salary_negotiable || job.salaryNegotiable),
+    contact_phone: trimmed(job.contact_phone, 50),
+    blind_hiring: checked(job.blind_hiring),
+    tagline: trimmed(job.tagline, 160),
+    video_url: trimmed(job.video_url, 2000),
+    company_size: JOB_COMPANY_SIZES.includes(trimmed(job.company_size)) ? trimmed(job.company_size) : '',
+    benefitsText: benefitsFrom(job.benefits).join('\n')
   };
+}
+
+// A saved template (React applyTemplate) becomes form values. Only the fields a
+// template carries are filled; everything else keeps the form's defaults.
+function jobFormFromTemplate(template) {
+  const values = {};
+  const textFields = ['description', 'skills_required', 'category', 'salary_currency', 'salary_type', 'tagline'];
+  textFields.forEach((field) => {
+    if (template[field] !== null && template[field] !== undefined && trimmed(template[field]) !== '') {
+      values[field] = trimmed(template[field], field === 'description' ? 20000 : 2000);
+    }
+  });
+  ['salary_min', 'salary_max', 'hours_per_week', 'time_credits'].forEach((field) => {
+    if (template[field] !== null && template[field] !== undefined && trimmed(template[field]) !== '') {
+      const number = Number(template[field]);
+      values[field] = Number.isFinite(number) ? String(number) : trimmed(template[field], 100);
+    }
+  });
+  if (JOB_TYPES.includes(template.type)) values.type = template.type;
+  if (JOB_COMMITMENTS.includes(template.commitment)) values.commitment = template.commitment;
+  if (!JOB_SALARY_TYPES.includes(values.salary_type)) delete values.salary_type;
+  values.is_remote = checked(template.is_remote);
+  const benefits = benefitsFrom(template.benefits);
+  if (benefits.length > 0) values.benefitsText = benefits.join('\n');
+  return values;
+}
+
+// POST /v2/jobs/templates, shaped like React handleSaveTemplate. Empty numbers
+// are left out: the API turns an empty string into 0.
+function jobTemplatePayload(body) {
+  const values = jobFormValues(body);
+  const payload = {
+    name: trimmed(body.template_name, 255),
+    is_public: lastCheckbox(body.template_public),
+    type: values.type,
+    commitment: values.commitment,
+    skills_required: values.skills_required,
+    is_remote: values.is_remote,
+    salary_type: values.salary_type,
+    salary_currency: values.salary_currency,
+    description: values.description,
+    tagline: values.tagline,
+    benefits: values.benefits
+  };
+  ['salary_min', 'salary_max', 'hours_per_week', 'time_credits'].forEach((field) => {
+    if (values[field] !== '') payload[field] = values[field];
+  });
+  if (payload.salary_type === '') delete payload.salary_type;
+  if (payload.salary_currency === '') delete payload.salary_currency;
+  return payload;
 }
 
 function profileUserId(result) {
@@ -1694,8 +1829,25 @@ function jobFormValues(body = {}) {
     salary_type: allowed(body.salary_type, JOB_SALARY_TYPES, ''),
     salary_negotiable: checkedOne(body.salary_negotiable),
     contact_email: trimmed(body.contact_email, 255),
-    status: allowed(body.status, JOB_STATUSES, 'open')
+    status: allowed(body.status, JOB_STATUSES, 'open'),
+    contact_phone: trimmed(body.contact_phone, 50),
+    blind_hiring: lastCheckbox(body.blind_hiring),
+    tagline: trimmed(body.tagline, 160),
+    video_url: trimmed(body.video_url, 2000),
+    company_size: allowed(body.company_size, JOB_COMPANY_SIZES, ''),
+    benefits: benefitsFrom(String(body.benefits || '').split(/\r?\n/)),
+    // View-only: the benefits box shows exactly what was typed on a replay.
+    benefitsText: String(body.benefits || '').replace(/\r\n/g, '\n').slice(0, 5000),
+    postingExtras: lastCheckbox(body.posting_extras),
+    template_name: trimmed(body.template_name, 255),
+    template_public: lastCheckbox(body.template_public)
   };
+}
+
+// A hidden "0" followed by a ticked "1" arrives as ['0', '1']; the last one wins.
+function lastCheckbox(value) {
+  const last = Array.isArray(value) ? value[value.length - 1] : value;
+  return String(last || '') === '1';
 }
 
 function jobFormPayload(body) {
@@ -1708,7 +1860,75 @@ function jobFormPayload(body) {
   // Drop the view-only field rather than destructuring it into an unused variable, which
   // lint flags and which needed a disable comment to silence.
   delete values.deadlineParts;
+  delete values.benefitsText;
+  delete values.template_name;
+  delete values.template_public;
+  if (!values.postingExtras) {
+    JOB_POSTING_EXTRA_FIELDS.forEach((field) => { delete values[field]; });
+  }
+  delete values.postingExtras;
   return values.title === '' ? null : values;
+}
+
+// The submitted fields, as name/value pairs, for the duplicate-advert page.
+function jobFormReplayFields(body = {}) {
+  const pairs = [];
+  JOB_FORM_REPLAY_FIELDS.forEach((name) => {
+    const raw = body[name];
+    if (raw === undefined || raw === null) return;
+    const value = Array.isArray(raw) ? raw[raw.length - 1] : raw;
+    pairs.push({ name, value: String(value).slice(0, 20000) });
+  });
+  return pairs;
+}
+
+function jobTemplateMessage(req, status) {
+  return {
+    success: localizedStatusMessage(req, status, JOB_TEMPLATE_SUCCESS_MESSAGES, JOB_TEMPLATE_MESSAGE_KEYS),
+    error: localizedStatusMessage(req, status, JOB_TEMPLATE_ERROR_MESSAGES, JOB_TEMPLATE_MESSAGE_KEYS)
+  };
+}
+
+// Templates the member can use (their own plus shared ones). Switched off (403)
+// or unavailable simply means no template tools are offered.
+async function loadJobTemplates(token, currentUserId) {
+  try {
+    const rows = collectionItems(await callJob(token, 'GET', '/templates'));
+    return rows
+      .filter((row) => row && typeof row === 'object' && positiveInteger(row.id))
+      .map((row) => ({
+        id: positiveInteger(row.id),
+        name: trimmed(row.name, 255) || `#${positiveInteger(row.id)}`,
+        isPublic: checked(row.is_public),
+        isOwn: currentUserId !== null && positiveInteger(row.user_id) === currentUserId
+      }));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return null;
+  }
+}
+
+async function saveJobTemplate(req, res, token, backPath) {
+  const payload = jobTemplatePayload(req.body);
+  if (payload.name === '') {
+    rememberJobForm(req, req.body, [{
+      text: translateStatusMessage(req, JOB_TEMPLATE_MESSAGE_KEYS['template-name-required'], JOB_TEMPLATE_ERROR_MESSAGES['template-name-required']),
+      href: JOB_TEMPLATE_ERROR_HREFS['template-name-required']
+    }]);
+    return redirectTo(res, statusRedirect(backPath, 'template-name-required'));
+  }
+  try {
+    await callJob(token, 'POST', '/templates', payload);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    rememberJobForm(req, req.body, [{
+      text: translateStatusMessage(req, JOB_TEMPLATE_MESSAGE_KEYS['template-save-failed'], JOB_TEMPLATE_ERROR_MESSAGES['template-save-failed']),
+      href: JOB_TEMPLATE_ERROR_HREFS['template-save-failed']
+    }]);
+    return redirectTo(res, statusRedirect(backPath, 'template-save-failed'));
+  }
+  rememberJobForm(req, req.body);
+  return redirectTo(res, statusRedirect(backPath, 'template-saved'));
 }
 
 function rememberJobForm(req, body, errors = []) {
@@ -2036,19 +2256,64 @@ router.get('/mine', asyncRoute(async (req, res) => {
   });
 }));
 
-router.get('/create', (req, res) => {
+router.get('/create', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
   const rememberedErrors = recalledJobFormErrors(req);
+  let jobForm = recalledJobForm(req);
+  let currentUserId = null;
+  try {
+    currentUserId = profileUserId(await getRequestProfile(req, token));
+  } catch {
+    // Without the member's id, shared templates are offered but none can be deleted.
+  }
+
+  let templates = null;
+  let templateLoaded = false;
+  let templateLoadFailed = false;
+  try {
+    templates = await loadJobTemplates(token, currentUserId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+
+  // React applyTemplate: choosing a template fills the form, which the member
+  // then checks and posts. A link (GET) keeps this working without JavaScript.
+  const templateId = positiveInteger(req.query.template);
+  if (templates !== null && templateId !== null) {
+    try {
+      const data = objectFrom(await callJob(token, 'GET', `/templates/${encodeURIComponent(templateId)}`)) || {};
+      const template = data.template && typeof data.template === 'object' ? data.template : data;
+      jobForm = { ...jobForm, ...jobFormFromTemplate(template) };
+      templateLoaded = true;
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      templateLoadFailed = true;
+    }
+  }
+
+  const templateMessage = jobTemplateMessage(req, req.query.status);
+  const errors = rememberedErrors.length > 0 ? rememberedErrors : formErrors(req, req.query.status);
+  if (errors.length === 0 && templateMessage.error) errors.push({ text: templateMessage.error });
+  if (templateLoadFailed) {
+    errors.push({ text: jobTranslation(req, 'govuk_alpha_jobs.posting.template_load_failed', 'That template could not be loaded.') });
+  }
+
   return res.render('jobs/form', {
     title: 'Post an opportunity',
     titleKey: 'jobs_t3.create_title',
     activeNav: 'explore',
     formMode: 'create',
     formAction: '/jobs',
-    jobForm: recalledJobForm(req),
-    jobFormErrors: rememberedErrors.length > 0 ? rememberedErrors : formErrors(req, req.query.status),
+    jobForm,
+    jobFormErrors: errors,
+    jobFormNotice: templateLoaded
+      ? jobTranslation(req, 'govuk_alpha_jobs.posting.template_loaded', 'Template loaded.')
+      : templateMessage.success,
+    jobTemplates: templates,
+    companySizes: JOB_COMPANY_SIZES,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
-});
+}));
 
 router.get('/alerts', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
@@ -2450,6 +2715,15 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   }
 
   const rememberedErrors = recalledJobFormErrors(req);
+  let templates = null;
+  try {
+    templates = await loadJobTemplates(token, profileUserId(profileResult));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+  const templateMessage = jobTemplateMessage(req, req.query.status);
+  const errors = rememberedErrors.length > 0 ? rememberedErrors : formErrors(req, req.query.status);
+  if (errors.length === 0 && templateMessage.error) errors.push({ text: templateMessage.error });
   return res.render('jobs/form', {
     title: 'Edit opportunity',
     titleKey: 'jobs_t3.edit_title',
@@ -2457,7 +2731,11 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     formMode: 'edit',
     formAction: `/jobs/${id}/update`,
     jobForm: { ...jobFormForEdit(job), ...recalledJobForm(req) },
-    jobFormErrors: rememberedErrors.length > 0 ? rememberedErrors : formErrors(req, req.query.status),
+    jobFormErrors: errors,
+    jobFormNotice: templateMessage.success,
+    // On edit only "save as template" is offered; loading one would overwrite the advert.
+    jobTemplates: templates,
+    companySizes: JOB_COMPANY_SIZES,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }));
@@ -2705,6 +2983,16 @@ router.post('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
+  const intent = trimmed(req.body.intent, 40);
+  // "Go back and change it" from the duplicate-advert page.
+  if (intent === 'edit') {
+    rememberJobForm(req, req.body);
+    return redirectTo(res, '/jobs/create');
+  }
+  if (intent === 'save_template') {
+    return saveJobTemplate(req, res, token, '/jobs/create');
+  }
+
   const payload = jobFormPayload(req.body);
   if (payload === null) {
     rememberJobForm(req, req.body);
@@ -2713,6 +3001,34 @@ router.post('/', asyncRoute(async (req, res) => {
   if (readDate(req.body, 'deadline').error) {
     rememberJobForm(req, req.body, [jobDeadlineInvalidError(req)]);
     return redirectTo(res, '/jobs/create');
+  }
+
+  // React warns about a similar open or draft advert before posting. Without
+  // JavaScript that is a page of its own, carrying the whole form forward. The
+  // check is advisory: if it is unavailable, posting carries on.
+  if (!lastCheckbox(req.body.confirm_duplicate)) {
+    let duplicates = [];
+    try {
+      const data = objectFrom(await callJob(token, 'POST', '/check-duplicate', { title: payload.title })) || {};
+      duplicates = (Array.isArray(data.duplicates) ? data.duplicates : [])
+        .filter((row) => row && typeof row === 'object' && positiveInteger(row.id))
+        .map((row) => ({
+          id: positiveInteger(row.id),
+          title: trimmed(row.title, 255),
+          statusTranslationKey: JOB_POSTING_STATUS_LABELS[row.status] ? `jobs_t3.status_${row.status}` : ''
+        }));
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+    }
+    if (duplicates.length > 0) {
+      return res.render('jobs/duplicate', {
+        title: jobTranslation(req, 'govuk_alpha_jobs.posting.duplicate_title', 'A similar opportunity already exists'),
+        activeNav: 'explore',
+        duplicates,
+        replayFields: jobFormReplayFields(req.body),
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+      });
+    }
   }
 
   let result;
@@ -2734,6 +3050,9 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = Number(req.params.id);
+  if (trimmed(req.body.intent, 40) === 'save_template') {
+    return saveJobTemplate(req, res, token, `/jobs/${id}/edit`);
+  }
   const payload = jobFormPayload(req.body);
   if (payload === null) {
     rememberJobForm(req, req.body);
@@ -2753,6 +3072,20 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
     rememberJobForm(req, req.body, apiJobFormErrors(error, fallback));
     return redirectTo(res, statusRedirect(`/jobs/${id}/edit`, 'update-failed'));
   }
+}));
+
+// DELETE /v2/jobs/templates/{id}: the API deletes only the caller's own template.
+router.post('/templates/:templateId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  try {
+    await callJob(token, 'DELETE', `/templates/${encodeURIComponent(req.params.templateId)}`);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect('/jobs/create', 'template-delete-failed'));
+  }
+  return redirectTo(res, statusRedirect('/jobs/create', 'template-deleted'));
 }));
 
 router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {

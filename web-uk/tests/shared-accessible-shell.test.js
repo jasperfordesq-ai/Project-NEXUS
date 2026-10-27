@@ -19258,7 +19258,8 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', [`token=${encodeURIComponent(signedToken)}`]);
 
     expect(response.status).toBe(200);
-    expect(api.callJobApi).not.toHaveBeenCalled();
+    // The only read is the member's saved job templates (React CreateJobPage loads them too).
+    expect(api.callJobApi.mock.calls.every(([, method, pathValue]) => method === 'GET' && pathValue === '/templates')).toBe(true);
     expect(response.text).toContain('Post an opportunity');
     expect(response.text).toContain('Share a paid role, volunteer role or time-credit exchange with the community.');
     expect(response.text).toContain('action="/jobs"');
@@ -19461,6 +19462,8 @@ describe('shared accessible frontend shell', () => {
     expect(replay.text).toMatch(/name="deadline-day"[^>]*value="45"|value="45"[^>]*name="deadline-day"/);
 
     // All-blank date parts still mean "no deadline" — unchanged behaviour.
+    // First the duplicate-advert check (nothing similar), then the create.
+    api.callJobApi.mockResolvedValueOnce({ data: { duplicates: [] } });
     api.callJobApi.mockResolvedValueOnce({ data: { id: 91 } });
     const created = await post({ 'deadline-day': '', 'deadline-month': '', 'deadline-year': '' });
     expect(created.headers.location).toBe('/jobs/91?status=created');
@@ -19470,6 +19473,8 @@ describe('shared accessible frontend shell', () => {
   it('replays Laravel field validation errors on the create job form', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
+    // The duplicate-advert check runs first and finds nothing similar.
+    api.callJobApi.mockResolvedValueOnce({ data: { duplicates: [] } });
     api.callJobApi.mockRejectedValueOnce(new api.ApiError('Validation failed', 422, {
       errors: [{ code: 'VALIDATION_ERROR', message: 'Description is required', field: 'description' }]
     }));

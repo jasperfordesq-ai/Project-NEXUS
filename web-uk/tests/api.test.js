@@ -2791,6 +2791,30 @@ describe('API Request Functions', () => {
       }
     });
 
+    it('uploads a marketplace listing video as one `video` multipart part', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { video_url: '/storage/v.mp4' } })
+      });
+
+      await api.uploadMarketplaceListingVideo('test-token', 42, {
+        buffer: Buffer.from('fake video', 'utf8'),
+        filename: 'ride.mp4',
+        contentType: 'video/mp4'
+      });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/marketplace/listings/42/video');
+      expect(options.method).toBe('POST');
+      expect(options.headers.Authorization).toBe('Bearer test-token');
+      expect(options.body).toBeInstanceOf(FormData);
+      const part = options.body.get('video');
+      expect(part).toBeTruthy();
+      expect(part.name).toBe('ride.mp4');
+      expect(part.type).toBe('video/mp4');
+    });
+
     it('should upload marketplace listing images through Laravel multipart data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -6821,6 +6845,22 @@ describe('API Request Functions', () => {
           body: JSON.stringify({ question: 'Q?', options: ['A', 'B'], group_id: 974 })
         })
       );
+    });
+
+    it('should search members to @mention through /api/v2/mentions/search', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: [{ id: 7, username: 'ann_lee' }] })
+      });
+
+      await api.searchMentionUsers('test-token', 'ann lee');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/mentions/search?q=ann+lee&limit=20');
+      expect(options.method || 'GET').toBe('GET');
+      expect(options.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer test-token' }));
+      expect(options.body).toBeUndefined();
     });
 
     it('should call Laravel v2 feed moderation helpers', async () => {

@@ -126,6 +126,25 @@
     <div class="govuk-body">{{ job.description | nl2br | safe }}</div>
   {% endif %}
 
+  {% if job.hasBranding %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.posting.about_company") }}</h2>
+    {% if job.tagline %}
+      <div class="govuk-inset-text">{{ job.tagline }}</div>
+    {% endif %}
+    {% if job.companySize %}
+      <p class="govuk-body"><strong>{{ t("govuk_alpha_jobs.posting.company_size_label") }}:</strong> {{ t("govuk_alpha_jobs.posting.company_size_people", { size: job.companySize }) }}</p>
+    {% endif %}
+    {% if job.benefitsList.length %}
+      <h3 class="govuk-heading-s">{{ t("govuk_alpha_jobs.posting.benefits_label") }}</h3>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for benefit in job.benefitsList %}<li>{{ benefit }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% if job.videoHref %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ job.videoHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.posting.watch_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+    {% endif %}
+  {% endif %}
+
   {% if job.skillsList.length %}
     <h2 class="govuk-heading-m">{{ t("jobs.skills_label") }}</h2>
     <ul class="govuk-list nexus-alpha-tag-list">

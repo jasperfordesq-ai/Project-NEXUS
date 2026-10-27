@@ -2385,7 +2385,8 @@ app.use(
   parseMultipartForm({ maxFileSize: 1024 }),
   safeguardingEmptyMultipartErrorRedirect
 );
-app.use('/feed/posts', parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
+// Up to 10 photos per feed post (React PostTab), each in its own field.
+app.use('/feed/posts', parseMultipartForm({ maxFileSize: 5 * 1024 * 1024, maxTotalFileSize: 50 * 1024 * 1024, maxFiles: 10 }));
 app.use('/events/new', parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
 app.use(/^\/events\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
 // The group form carries two optional images: the avatar and the cover.
@@ -2395,7 +2396,12 @@ app.use(/^\/groups\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 8 * 1024 * 10
 app.use(/^\/groups\/\d+\/feed$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024, maxTotalFileSize: 50 * 1024 * 1024, maxFiles: 10 }));
 app.use('/listings/new', parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
 app.use(/^\/clubs\/\d+\/admin\/import\/preview$/, parseMultipartForm({ maxFileSize: 1024 * 1024 }));
-app.use(/^\/marketplace\/(create|\d+\/photos)$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxTotalFileSize: 60 * 1024 * 1024, maxFiles: 20, multiples: true }));
+app.use(/^\/marketplace\/\d+\/photos$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxTotalFileSize: 60 * 1024 * 1024, maxFiles: 20, multiples: true }));
+// The create form also takes one optional video (Laravel: MP4/WebM/MOV, 50MB), so its
+// per-file cap is the video's; each photo is still held to 10MB by photoProblem() in
+// the route. Total = up to 10 photos + 1 video.
+app.use(/^\/marketplace\/create$/, parseMultipartForm({ maxFileSize: 50 * 1024 * 1024, maxTotalFileSize: 110 * 1024 * 1024, maxFiles: 21, multiples: true }));
+app.use(/^\/marketplace\/\d+\/video$/, parseMultipartForm({ maxFileSize: 50 * 1024 * 1024, maxFiles: 1 }));
 // Seller onboarding takes an optional profile photo and cover image. The view only
 // renders the file inputs while this flag is set, because without the parser above
 // CSRF a multipart post would be refused.

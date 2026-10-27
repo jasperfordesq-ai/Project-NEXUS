@@ -1,0 +1,208 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  One lesson in the course builder (React CourseBuilder LessonRow): its content,
+  when it is released to learners, the free-preview flag and, for a quiz lesson,
+  its questions. Works without JavaScript.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/edit#curriculum') }}">{{ t("govuk_alpha_courses.lesson_editor.back_to_builder") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+  {% if status %}
+    {% if status.type == 'success' %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="lesson-edit-status" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="lesson-edit-status">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ status.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{% if status.href %}<a href="{{ status.href }}">{{ status.message }}</a>{% else %}{{ status.message }}{% endif %}</li></ul></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ course.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_courses.lesson_editor.edit_title") }}</h1>
+
+  <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/update') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="release_fields" value="1">
+    <input type="hidden" name="section_id" value="{{ lesson.section_id or '' }}">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="lesson_title">{{ t("govuk_alpha_commerce.builder.lesson_title_label") }}</label>
+      <input class="govuk-input" id="lesson_title" name="lesson_title" type="text" maxlength="200" value="{{ form.title }}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="content_type">{{ t("govuk_alpha_commerce.builder.content_type_label") }}</label>
+      <select class="govuk-select" id="content_type" name="content_type">
+        {% for contentType in contentTypes %}
+          <option value="{{ contentType }}"{% if form.contentType == contentType %} selected{% endif %}>{% if contentType == 'quiz' %}{{ t("govuk_alpha_commerce.learn.content_type_quiz") }}{% else %}{{ t("govuk_alpha_commerce.builder.content_type_" + contentType) }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_commerce.builder.body_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.body_hint") }}</div>
+      <textarea class="govuk-textarea" id="body" name="body" rows="6" aria-describedby="body-hint">{{ form.body }}</textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="media_url">{{ t("govuk_alpha_commerce.builder.media_url_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="media_url-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.media_url_hint") }}</div>
+      <input class="govuk-input" id="media_url" name="media_url" type="url" inputmode="url" value="{{ form.mediaUrl }}" aria-describedby="media_url-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="transcript">{{ t("govuk_alpha_commerce.builder.transcript_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="transcript-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.transcript_hint") }}</div>
+      <textarea class="govuk-textarea" id="transcript" name="transcript" rows="5" aria-describedby="transcript-hint">{{ form.transcript }}</textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="drip_type-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_courses.lesson_editor.release_legend") }}</legend>
+        <div id="drip_type-hint" class="govuk-hint">{{ t("govuk_alpha_courses.lesson_editor.release_hint") }}</div>
+        <div class="govuk-radios" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="drip_type" name="drip_type" type="radio" value="none"{% if form.dripType == 'none' %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="drip_type">{{ t("govuk_alpha_courses.lesson_editor.drip_none") }}</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="drip_type-days" name="drip_type" type="radio" value="days_after_enroll"{% if form.dripType == 'days_after_enroll' %} checked{% endif %} data-aria-controls="conditional-drip-days">
+            <label class="govuk-label govuk-radios__label" for="drip_type-days">{{ t("govuk_alpha_courses.lesson_editor.drip_days") }}</label>
+          </div>
+          <div class="govuk-radios__conditional{% if form.dripType != 'days_after_enroll' %} govuk-radios__conditional--hidden{% endif %}" id="conditional-drip-days">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="drip_offset_days">{{ t("govuk_alpha_courses.lesson_editor.drip_days_label") }}</label>
+              <input class="govuk-input govuk-input--width-4" id="drip_offset_days" name="drip_offset_days" type="text" inputmode="numeric" spellcheck="false" value="{{ form.dripOffsetDays }}">
+            </div>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="drip_type-date" name="drip_type" type="radio" value="fixed_date"{% if form.dripType == 'fixed_date' %} checked{% endif %} data-aria-controls="conditional-drip-date">
+            <label class="govuk-label govuk-radios__label" for="drip_type-date">{{ t("govuk_alpha_courses.lesson_editor.drip_date") }}</label>
+          </div>
+          <div class="govuk-radios__conditional{% if form.dripType != 'fixed_date' %} govuk-radios__conditional--hidden{% endif %}" id="conditional-drip-date">
+            {{ nexusDateInput({
+              name: "drip_date",
+              legend: t("govuk_alpha_courses.lesson_editor.drip_date_legend"),
+              hint: t("govuk_alpha_courses.lesson_editor.drip_date_hint"),
+              value: form.dripDateParts
+            }, t) }}
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input type="hidden" name="is_preview" value="0">
+          <input class="govuk-checkboxes__input" id="is_preview" name="is_preview" type="checkbox" value="1"{% if form.isPreview %} checked{% endif %} aria-describedby="is_preview-hint">
+          <label class="govuk-label govuk-checkboxes__label" for="is_preview">{{ t("govuk_alpha_courses.lesson_editor.preview_label") }}</label>
+          <div id="is_preview-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_courses.lesson_editor.preview_hint") }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if form.contentType == 'quiz' and not lesson.quizId %}
+      {% include "courses/_quiz-settings.njk" %}
+    {% endif %}
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.save_lesson") }}</button>
+  </form>
+
+  {% if lesson.contentType == 'quiz' %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="quiz-questions">{{ t("govuk_alpha_courses.lesson_editor.quiz_heading") }}</h2>
+
+    {% if not lesson.quizId %}
+      <div class="govuk-inset-text">{{ t("govuk_alpha_courses.lesson_editor.quiz_missing") }}</div>
+    {% else %}
+      {% if not questionsAvailable %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_courses.lesson_editor.questions_unavailable") }}</div>
+      {% elif not questions.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_courses.lesson_editor.no_questions") }}</p>
+      {% else %}
+        <ol class="govuk-list govuk-list--number">
+          {% for question in questions %}
+            <li class="govuk-!-margin-bottom-4">
+              <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ question.prompt }}</strong>
+                {{ govukTag({ text: (t("govuk_alpha_courses.lesson_editor.type_" + question.type) if question.type != 'essay' else t("govuk_alpha_courses.lesson_editor.type_short")), classes: "govuk-tag--grey" }) }}</p>
+              {% if question.options.length %}
+                <ol class="govuk-list govuk-list--bullet">
+                  {% for option in question.options %}<li>{{ option }}</li>{% endfor %}
+                </ol>
+              {% endif %}
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/questions/' + (question.id | string) + '/delete') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="quiz_id" value="{{ lesson.quizId }}">
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.delete_question") }}<span class="govuk-visually-hidden">: {{ question.prompt }}</span></button>
+              </form>
+            </li>
+          {% endfor %}
+        </ol>
+      {% endif %}
+
+      <h3 class="govuk-heading-m" id="add-question">{{ t("govuk_alpha_courses.lesson_editor.add_question_heading") }}</h3>
+      <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/questions') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="quiz_id" value="{{ lesson.quizId }}">
+        <input type="hidden" name="question_position" value="{{ questions.length + 1 }}">
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="question_prompt">{{ t("govuk_alpha_courses.lesson_editor.question_prompt_label") }}</label>
+          <textarea class="govuk-textarea" id="question_prompt" name="question_prompt" rows="2">{{ questionForm.question_prompt or "" }}</textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_courses.lesson_editor.question_type_legend") }}</legend>
+            <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+              {% for type in questionTypes %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="question_type{% if not loop.first %}-{{ type }}{% endif %}" name="question_type" type="radio" value="{{ type }}"{% if questionForm.type == type %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="question_type{% if not loop.first %}-{{ type }}{% endif %}">{{ t("govuk_alpha_courses.lesson_editor.type_" + type) }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="question_options">{{ t("govuk_alpha_courses.lesson_editor.question_options_label") }}</label>
+          <div id="question_options-hint" class="govuk-hint">{{ t("govuk_alpha_courses.lesson_editor.question_options_hint") }}</div>
+          <textarea class="govuk-textarea" id="question_options" name="question_options" rows="4" aria-describedby="question_options-hint">{{ questionForm.question_options or "" }}</textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="question_correct">{{ t("govuk_alpha_courses.lesson_editor.question_correct_label") }}</label>
+          <div id="question_correct-hint" class="govuk-hint">{{ t("govuk_alpha_courses.lesson_editor.question_correct_hint") }}</div>
+          <input class="govuk-input govuk-input--width-10" id="question_correct" name="question_correct" type="text" spellcheck="false" value="{{ questionForm.question_correct or "" }}" aria-describedby="question_correct-hint">
+        </div>
+
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.add_question_button") }}</button>
+      </form>
+    {% endif %}
+  {% endif %}
+    </div>
+  </div>
+{% endblock %}

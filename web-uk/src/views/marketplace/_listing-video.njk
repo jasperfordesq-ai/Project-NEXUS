@@ -1,0 +1,18 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  A listing's video (React MarketplaceListingPage), as a plain native player.
+  Expects `videoUrl`. No autoplay and no JavaScript: the browser's own controls are
+  keyboard- and screen-reader-operable. The download link is offered inside the element
+  for a browser that cannot play it, and again beneath it for anyone who would rather
+  watch it elsewhere. The video has no captions of its own (sellers upload it as-is), so
+  the text alternative points to the written description, which must stand alone.
+#}
+<video class="govuk-!-width-full" controls preload="metadata" src="{{ videoUrl }}">
+  <p class="govuk-body">{{ t("govuk_alpha_commerce.listing_video.player_fallback") }} <a class="govuk-link" href="{{ videoUrl }}">{{ t("govuk_alpha_commerce.listing_video.download") }}</a></p>
+</video>
+<p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="{{ videoUrl }}" download>{{ t("govuk_alpha_commerce.listing_video.download") }}</a></p>
+<p class="govuk-body govuk-hint">{{ t("govuk_alpha_commerce.listing_video.text_alternative") }}</p>

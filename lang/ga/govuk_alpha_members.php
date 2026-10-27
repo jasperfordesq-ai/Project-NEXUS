@@ -164,4 +164,9 @@ return [
         ],
     ],
     'sort_communityrank' => 'Rang sa phobal',
+    // The username other members type after "@" to mention this member (27 Oct 2026).
+    'mention' => [
+        'label' => 'Ainm úsáideora',
+        'hint' => 'Clóscríobh :mention i bpostáil nó i nóta tráchta chun an ball seo a lua.',
+    ],
 ];

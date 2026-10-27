@@ -7,6 +7,7 @@ const express = require('express');
 const fs = require('fs/promises');
 const {
   createFeedPostV2,
+  createFeedPostWithMedia,
   updateFeedPostV2,
   deleteFeedPostV2,
   hideFeedItem,
@@ -31,6 +32,7 @@ const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { POST_REACTION_TYPES, COMMENT_REACTION_TYPES } = require('../lib/feed-reactions');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay } = require('../lib/form-replay');
+const { readDateTime } = require('../lib/date-input');
 
 // The feed composer's replay bucket. One key ('composer') because the composer is a
 // single form at the top of the feed, not per-item.
@@ -195,54 +197,101 @@ function savedStatusFrom(result) {
   return data && data.saved ? 'save-removed' : 'save-added';
 }
 
+// React PostTab: up to 10 photos per post (MediaUploader maxFiles, and the API's
+// PostMediaService::MAX_MEDIA_PER_POST), each with its own alt text. Without
+// JavaScript each photo is its own file field: `image` / `image_alt`, then
+// `image_2` / `image_2_alt` … `image_10` / `image_10_alt` — the same fields as the
+// group composer (routes/groups.js).
+const FEED_POST_MAX_IMAGES = 10;
+const FEED_POST_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+function feedPostImageFields() {
+  return Array.from({ length: FEED_POST_MAX_IMAGES }, (_, index) => (
+    index === 0
+      ? { number: 1, file: 'image', alt: 'image_alt' }
+      : { number: index + 1, file: `image_${index + 1}`, alt: `image_${index + 1}_alt` }
+  ));
+}
+
 router.post('/posts', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
+  const fields = feedPostImageFields();
+  const images = fields
+    .map((field) => ({ upload: uploadedFile(req, field.file), altText: trimmed(req.body[field.alt], 500) }))
+    .filter((entry) => entry.upload);
+  const cleanUp = () => Promise.all(images.map((entry) => removeUploadedFile(entry.upload)));
   if (!token) {
+    await cleanUp();
     return redirectTo(res, FEED_PATH);
   }
 
+  // Plain text, sent as typed: the API stores line breaks and bare links as they are
+  // (HtmlSanitizer::sanitizeMemberPost keeps text; LinkPreviewService reads the URLs).
   const content = trimmed(req.body.content, 5000);
   const imageAlt = trimmed(req.body.image_alt, 500);
-  const image = uploadedFile(req, 'image');
+  // "Publish later" (React PostTab schedule): optional, but half-entered is an error.
+  const schedule = readDateTime(req.body, 'schedule');
   // 🔴 The composer came back blank after any failure, so a post the member had just
-  // written was gone. The picked IMAGE cannot be restored — a browser forbids setting a
-  // file input's value — which is exactly why keeping the words and the alt text matters:
-  // re-choosing a file is a nuisance, retyping the post is the real loss.
+  // written was gone. The picked IMAGES cannot be restored — a browser forbids setting a
+  // file input's value — which is exactly why keeping the words, the alt texts and the
+  // chosen date matters: re-choosing a file is a nuisance, retyping the post is the loss.
   const rememberPost = () => rememberFormReplay(req, FEED_POST_REPLAY, FEED_POST_REPLAY_KEY, {
     content,
-    imageAlt
+    imageAlt,
+    imageAlts: Object.fromEntries(fields.slice(1).map((field) => [field.number, trimmed(req.body[field.alt], 500)])),
+    schedule: schedule.parts || { day: '', month: '', year: '', time: '' }
   });
 
   if (content === '') {
     rememberPost();
-    await removeUploadedFile(image);
+    await cleanUp();
     return redirectTo(res, feedStatusRedirect('post-empty'));
   }
+  if (images.some((entry) => !FEED_POST_IMAGE_TYPES.has(trimmed(entry.upload.mimetype).toLowerCase()))) {
+    rememberPost();
+    await cleanUp();
+    return redirectTo(res, feedStatusRedirect('post-image-invalid'));
+  }
+  if (schedule.error) {
+    rememberPost();
+    await cleanUp();
+    return redirectTo(res, feedStatusRedirect('post-schedule-invalid'));
+  }
 
-  let status = 'post-created';
+  let status = schedule.value ? 'post-scheduled' : 'post-created';
   try {
     const payload = {
       content,
       visibility: 'public'
     };
-    if (imageAlt !== '') {
-      payload.image_alt = imageAlt;
+    if (schedule.value) {
+      // Exactly React's toScheduleIso(): "YYYY-MM-DDTHH:MM:00".
+      payload.publish_status = 'scheduled';
+      payload.scheduled_at = `${schedule.value}:00`;
     }
-    if (image) {
-      payload.file = {
-        buffer: await fs.readFile(image.filepath),
-        filename: trimmed(image.originalFilename) || 'feed-image',
-        contentType: trimmed(image.mimetype) || 'application/octet-stream',
-        size: image.size
-      };
+    const files = await Promise.all(images.map(async (entry) => ({
+      buffer: await fs.readFile(entry.upload.filepath),
+      filename: trimmed(entry.upload.originalFilename) || 'feed-image',
+      contentType: trimmed(entry.upload.mimetype) || 'application/octet-stream',
+      size: entry.upload.size,
+      altText: entry.altText
+    })));
+    if (files.length > 1) {
+      await createFeedPostWithMedia(token, { ...payload, files });
+    } else {
+      if (files.length === 1) {
+        const [{ altText, ...file }] = files;
+        if (altText !== '') payload.image_alt = altText;
+        payload.file = file;
+      }
+      await createFeedPostV2(token, payload);
     }
-    await createFeedPostV2(token, payload);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res, req)) return undefined;
     rememberPost();
     status = 'post-failed';
   } finally {
-    await removeUploadedFile(image);
+    await cleanUp();
   }
 
   return redirectTo(res, feedStatusRedirect(status));

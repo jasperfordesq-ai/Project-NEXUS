@@ -1,0 +1,15 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  A field hint that also says how to @mention a member. The server reads "@username"
+  out of the plain text of a post or comment (MentionService::extractMentions);
+  without JavaScript there is no mention picker, so the hint says what to type and
+  links to the page that finds a member's username. `lead` is the field's own hint,
+  kept first so the field keeps a single hint id for aria-describedby.
+#}
+{% macro mentionHint(id, t, urlFor, lead) %}
+<div id="{{ id }}" class="govuk-hint">{% if lead %}{{ lead }} {% endif %}{{ t("govuk_alpha_feed.mentions.hint") }} <a class="govuk-link" href="{{ urlFor('/feed/mentions') }}">{{ t("govuk_alpha_feed.mentions.find_link") }}</a></div>
+{% endmacro %}
