@@ -102,6 +102,9 @@ return [
         'quiz_attempts' => 'Quizversuche',
     ],
     'status' => [
+        'cohort_added' => 'Kohorte hinzugefügt.',
+        'cohort_failed' => 'Wir konnten die Kohorte nicht hinzufügen. Bitte versuchen Sie es erneut.',
+        'cohort_name_missing' => 'Geben Sie einen Namen für die Kohorte ein.',
         'enrolled' => 'Sie sind jetzt eingeschrieben. Genießen Sie den Kurs.',
         'enrol_required' => 'Melden Sie sich für diesen Kurs an, bevor Sie den Lernbereich öffnen.',
         'review_saved' => 'Vielen Dank – Ihre Bewertung wurde gespeichert.',
@@ -144,5 +147,16 @@ return [
         'lesson_title_missing' => 'Geben Sie einen Titel für die Lektion ein.',
         'graded' => 'Der Versuch wurde bewertet.',
         'grade_failed' => 'Der Versuch konnte nicht bewertet werden. Bitte versuchen Sie es erneut.',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => 'Vorausgesetzte Kurse',
+        'prerequisites_hint' => 'Lernende müssen die angekreuzten Kurse abschließen, bevor sie sich für diesen Kurs anmelden können.',
+        'prerequisites_none' => 'Es gibt noch keine anderen Kurse, die Sie auswählen können.',
+        'cohorts_heading' => 'Kohorten',
+        'cohorts_hint' => 'Lernende in diesem Kurs treten einer Kohorte bei, einer Gruppe, die gemeinsam beginnt und den Kurs gemeinsam durchläuft.',
+        'no_cohorts' => 'Noch keine Kohorten.',
+        'cohort_name' => 'Name der Kohorte',
+        'cohort_starts' => 'Beginnt am :date',
+        'add_cohort' => 'Kohorte hinzufügen',
     ],
 ];

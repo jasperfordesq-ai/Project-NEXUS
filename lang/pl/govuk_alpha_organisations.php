@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Oceń tę organizację',
+        'rating_legend' => 'Ocena',
+        'rating_option' => ':rating na 5',
+        'comment_label' => 'Komentarz (opcjonalnie)',
+        'comment_hint' => 'Podziel się tym, co się sprawdziło lub co inni powinni wiedzieć.',
+        'submit' => 'Wyślij opinię',
+        'saved' => 'Opinia wysłana.',
+        'failed' => 'Nie można wysłać Twojej opinii.',
+        'rating_required' => 'Wybierz ocenę przed wysłaniem.',
+    ],
 ];

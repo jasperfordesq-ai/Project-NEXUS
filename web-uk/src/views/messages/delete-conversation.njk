@@ -1,0 +1,50 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Delete a whole conversation for me or for everyone (React ConversationPage). #}
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/messages/' + (conversationId | string)) }}" class="govuk-back-link">{{ t("govuk_alpha.actions.back_to_messages") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha.states.error_title"),
+          errorList: [{ text: error, href: "#scope" }],
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/messages/' + (conversationId | string) + '/delete') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <span class="govuk-caption-l">{{ t("govuk_alpha_messages.delete_conversation.caption", { name: partnerName }) }}</span>
+        {{ govukRadios({
+          idPrefix: "scope",
+          name: "scope",
+          fieldset: {
+            legend: { text: t("govuk_alpha_messages.delete_conversation.legend"), isPageHeading: true, classes: "govuk-fieldset__legend--l" }
+          },
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: error } if error else undefined,
+          items: [
+            { value: "self", text: t("govuk_alpha_messages.delete_conversation.self"), hint: { text: t("govuk_alpha_messages.delete_conversation.self_hint", { name: partnerName }) } },
+            { value: "everyone", text: t("govuk_alpha_messages.delete_conversation.everyone"), hint: { text: t("govuk_alpha_messages.delete_conversation.everyone_hint", { name: partnerName }) } }
+          ]
+        }) }}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: t("govuk_alpha_messages.delete_conversation.submit"), classes: "govuk-button--warning" }) }}
+          <a class="govuk-link" href="{{ urlFor('/messages/' + (conversationId | string)) }}">{{ t("govuk_alpha_messages.delete_conversation.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

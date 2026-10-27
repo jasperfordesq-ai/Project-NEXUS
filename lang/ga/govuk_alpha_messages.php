@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Ní féidir leat freagairt don teachtaireacht seo.',
         'reaction_failed' => 'Níorbh fhéidir linn do fhreagairt a shábháil.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Scrios an comhrá seo',
+        'title' => 'Scrios an comhrá seo',
+        'caption' => 'Comhrá le :name',
+        'legend' => 'Cé dó ar cheart an comhrá a scriosadh?',
+        'self' => 'Scrios domsa',
+        'self_hint' => 'Baintear as do bhosca isteach é. Is féidir le :name é a fheiceáil fós.',
+        'everyone' => 'Scrios do chách',
+        'everyone_hint' => 'Baintear é duitse agus do :name. Ní féidir é seo a chealú.',
+        'submit' => 'Scrios an comhrá',
+        'cancel' => 'Cealaigh agus fill ar an gcomhrá',
+        'deleted' => 'Scriosadh an comhrá do chách.',
+        'failed' => 'Ár leithscéal, níorbh fhéidir an comhrá a scriosadh. Bain triail eile as níos déanaí.',
+        'error_choose' => 'Roghnaigh cé dó ar cheart an comhrá a scriosadh',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Iarr cabhair ar chomhordaitheoir',
+        'coordinator_hint' => 'Cuirfear in iúl do chomhordaitheoir pobail gur mhaith leat cabhair chun teagmháil a dhéanamh, agus rachaidh sé nó sí i dteagmháil leat.',
+        'coordinator_sent' => 'Cuireadh comhordaitheoir ar an eolas. Beidh sé nó sí i dteagmháil leat chun cabhrú leis an teagmháil a eagrú.',
+        'coordinator_failed' => 'Níorbh fhéidir d’iarratas a sheoladh faoi láthair. Bain triail eile as ar ball.',
+        'vetting_button' => 'Iarr athbhreithniú ar mo ghrinnfhiosrúchán',
+        'vetting_hint' => 'Iarrtar ar do phobal athbhreithniú a dhéanamh ar do ghrinnfhiosrúchán. Feicfidh tú an toradh i socruithe do phróifíle.',
+        'required_checks' => 'Seiceálacha atá ag teastáil',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Maidir le',
+        'type_listing' => 'Liostú',
+        'type_event' => 'Imeacht',
+        'type_job' => 'Post',
+        'type_volunteering' => 'Obair dheonach',
+        'untitled' => ':type uimhir :id',
+    ],
 ];

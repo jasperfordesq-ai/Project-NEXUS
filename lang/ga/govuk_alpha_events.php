@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Tá ócáidí athfhillteacha múchta sa phobal seo. Níor cruthaíodh d’ócáid. Seiceáil na sonraí agus cruthaigh í mar ócáid aonair.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Ar athraigh tú d\'intinn? Is féidir leat do fhreagra a bhaint ionas nach dtaispeánfaidh an imeacht aon fhreagra uait.',
+        'clear_button' => 'Glan mo fhreagra',
+        'cleared' => 'Glanadh do fhreagra.',
         'pending_tag' => 'Iarrtha',
         'pending' => 'D’iarr tú áit. Caithfidh an t-eagraí í a cheadú sula ndeimhneofar d’áit.',
     ],

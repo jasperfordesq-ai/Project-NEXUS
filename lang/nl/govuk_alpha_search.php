@@ -52,6 +52,7 @@ return [
         'popular_add' => 'Voeg :tag toe',
         'apply' => 'Pas filters toe',
         'reset' => 'Filters opnieuw instellen',
+        'type_podcasts' => 'Podcastprogramma\'s',
     ],
     'results' => [
         'count' => '{0} Geen resultaten gevonden|{1} 1 resultaat gevonden|[2,*] :count resultaten gevonden',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'Bekijk lid',
         'view_event' => 'Bekijk evenement',
         'view_group' => 'Groep bekijken',
+        'tab_podcasts' => 'Podcastprogramma\'s (:count)',
+        'section_podcasts' => 'Podcastprogramma\'s',
+        'episode_from' => 'Aflevering van :show',
     ],
     'states' => [
         'no_query_title' => 'Begin met zoeken',

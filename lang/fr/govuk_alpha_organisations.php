@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Donnez votre avis sur cette organisation',
+        'rating_legend' => 'Note',
+        'rating_option' => ':rating sur 5',
+        'comment_label' => 'Commentaire (facultatif)',
+        'comment_hint' => 'Partagez ce qui a bien fonctionné ou ce que les autres devraient savoir.',
+        'submit' => 'Envoyer l\'avis',
+        'saved' => 'Avis envoyé.',
+        'failed' => 'Impossible d\'envoyer votre avis.',
+        'rating_required' => 'Choisissez une note avant d\'envoyer.',
+    ],
 ];

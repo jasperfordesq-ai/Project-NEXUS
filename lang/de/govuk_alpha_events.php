@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Wiederkehrende Veranstaltungen sind in dieser Gemeinschaft ausgeschaltet. Ihre Veranstaltung wurde nicht erstellt. Prüfen Sie die Angaben und erstellen Sie sie als einzelne Veranstaltung.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Haben Sie es sich anders überlegt? Sie können Ihre Antwort entfernen, sodass die Veranstaltung keine Rückmeldung von Ihnen zeigt.',
+        'clear_button' => 'Meine Antwort entfernen',
+        'cleared' => 'Ihre Antwort wurde entfernt.',
         'pending_tag' => 'Angefragt',
         'pending' => 'Sie haben einen Platz angefragt. Die Veranstaltungsleitung muss ihn noch bestätigen, bevor er Ihnen sicher ist.',
     ],

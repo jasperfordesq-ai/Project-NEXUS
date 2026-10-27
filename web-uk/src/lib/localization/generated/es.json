@@ -5039,7 +5039,14 @@
                     "added": "Su habilidad ha sido añadida.",
                     "removed": "Su habilidad ha sido eliminada.",
                     "failed": "No hemos podido actualizar sus habilidades. Vuelva a intentarlo.",
-                    "name_required": "Introduzca el nombre de la habilidad."
+                    "name_required": "Introduzca el nombre de la habilidad.",
+                    "category_label": "Categoría (opcional)",
+                    "category_none": "Sin categoría",
+                    "proficiency_label": "Nivel de competencia",
+                    "proficiency_beginner": "Principiante",
+                    "proficiency_intermediate": "Intermedio",
+                    "proficiency_advanced": "Avanzado",
+                    "proficiency_expert": "Experto"
                 },
                 "sessions": {
                     "title": "Dónde ha iniciado sesión",
@@ -5240,7 +5247,10 @@
                 "two_factor_heading": "Verificación en dos pasos",
                 "two_factor_intro": "Añada una aplicación de autenticación como segundo paso al iniciar sesión.",
                 "two_factor_link": "Configurar o gestionar la verificación en dos pasos",
-                "blocked_link": "Gestionar miembros bloqueados"
+                "blocked_link": "Gestionar miembros bloqueados",
+                "dob_label": "Fecha de nacimiento",
+                "dob_hint": "Opcional. Solo la necesita para verificar su identidad y debe indicar que tiene 18 años o más. Para eliminarla, vacíe las tres casillas.",
+                "dob_locked": "Tu fecha de nacimiento está bloqueada porque tu identidad ha sido verificada."
             },
             "delete_account": {
                 "title": "Elimina tu cuenta",
@@ -6817,7 +6827,16 @@
                 "status_accepted_done": "Aceptaste la oferta.",
                 "status_declined_done": "Rechazaste la oferta.",
                 "status_withdrawn_done": "Retiraste tu oferta.",
-                "status_action_failed": "Lo sentimos, esa acción no se pudo completar."
+                "status_action_failed": "Lo sentimos, esa acción no se pudo completar.",
+                "counter_summary": "Hacer una contraoferta",
+                "counter_amount_label": "Importe de la contraoferta",
+                "counter_amount_hint": "En la moneda del anuncio, por ejemplo 12.50",
+                "counter_message_optional": "Mensaje (opcional)",
+                "counter_message_label": "Mensaje del vendedor",
+                "counter_send": "Enviar contraoferta",
+                "status_countered_done": "Se ha enviado su contraoferta.",
+                "counter_amount_invalid": "Introduzca un importe de contraoferta mayor que cero, con dos decimales como máximo",
+                "counter_failed": "Lo sentimos, no se pudo enviar su contraoferta. Inténtelo de nuevo."
             },
             "orders_buyer": {
                 "title": "mis pedidos",
@@ -7616,6 +7635,35 @@
                 "error_appeal_long": "Tu recurso debe tener 5000 caracteres como máximo",
                 "status_appealed_done": "Tu recurso se ha enviado.",
                 "status_appeal_failed": "Lo sentimos, no se ha podido enviar tu recurso. Inténtalo de nuevo."
+            },
+            "featured": {
+                "heading": "Anuncios destacados"
+            },
+            "filters": {
+                "listing_type": "Tipo de anuncio",
+                "listing_type_any": "Cualquier tipo"
+            },
+            "detail": {
+                "item_details": "Detalles del artículo",
+                "more_from_seller": "Más de :name",
+                "more_from_this_seller": "Más de este vendedor",
+                "view_all_from_seller": "Ver todos los anuncios de este vendedor"
+            },
+            "seller_stats": {
+                "heading": "Resumen de sus ventas",
+                "views": "Total de vistas",
+                "revenue": "Ingresos",
+                "no_revenue": "Aún no hay ingresos por ventas"
+            },
+            "coupon_qr": {
+                "heading": "Canjear en tienda",
+                "intro": "Obtenga un código QR para mostrarlo al personal en la caja. Cada código se puede usar una vez y dura 5 minutos.",
+                "button": "Obtener un código QR",
+                "new_button": "Obtener un nuevo código QR",
+                "alt": "Código QR de este cupón",
+                "scan_at_checkout": "Muestre este código QR al personal en la caja.",
+                "expires_at": "Este código deja de funcionar a las :time.",
+                "failed": "No pudimos crear un código QR para este cupón. Puede que ya se haya usado o que haya caducado. Inténtelo de nuevo."
             }
         },
         "govuk_alpha_connections": {
@@ -7829,6 +7877,9 @@
                 "quiz_attempts": "intentos de prueba"
             },
             "status": {
+                "cohort_added": "Cohorte añadida.",
+                "cohort_failed": "No hemos podido añadir la cohorte. Inténtalo de nuevo.",
+                "cohort_name_missing": "Escribe un nombre para la cohorte.",
                 "enrolled": "Ya estás inscrito. Disfruta el curso.",
                 "enrol_required": "Inscríbete en este curso antes de abrir el área de aprendizaje.",
                 "review_saved": "Gracias, tu reseña ha sido guardada.",
@@ -7871,6 +7922,17 @@
                 "lesson_title_missing": "Introduzca un título para la lección.",
                 "graded": "El intento ha sido calificado.",
                 "grade_failed": "No se pudo calificar el intento. Por favor inténtalo de nuevo."
+            },
+            "authoring": {
+                "prerequisites_legend": "Cursos previos obligatorios",
+                "prerequisites_hint": "Los alumnos deben completar los cursos que marques antes de poder inscribirse en este.",
+                "prerequisites_none": "Todavía no hay otros cursos que puedas elegir.",
+                "cohorts_heading": "Cohortes",
+                "cohorts_hint": "Los alumnos de este curso se unen a una cohorte, un grupo que empieza y avanza por el curso a la vez.",
+                "no_cohorts": "Aún no hay cohortes.",
+                "cohort_name": "Nombre de la cohorte",
+                "cohort_starts": "Empieza el :date",
+                "add_cohort": "Añadir cohorte"
             }
         },
         "govuk_alpha_events": {
@@ -8275,6 +8337,9 @@
                 "recurrence_unavailable": "Los eventos periódicos están desactivados en esta comunidad. Tu evento no se ha creado. Revisa los datos y créalo como un evento único."
             },
             "rsvp": {
+                "clear_hint": "¿Has cambiado de idea? Puedes quitar tu respuesta para que el evento no muestre ninguna respuesta tuya.",
+                "clear_button": "Borrar mi respuesta",
+                "cleared": "Tu respuesta se ha borrado.",
                 "pending_tag": "Solicitado",
                 "pending": "Has solicitado una plaza. La organización tiene que aprobarla antes de que quede confirmada."
             },
@@ -8507,6 +8572,62 @@
                 "posted_by": "Publicación citada por :name",
                 "truncated": "Esta publicación citada ha sido abreviada.",
                 "image_alt": "Imagen adjunta a la publicación citada."
+            },
+            "reactions": {
+                "like": "Me gusta",
+                "love": "Me encanta",
+                "laugh": "Risa",
+                "wow": "Sorpresa",
+                "sad": "Tristeza",
+                "celebrate": "Celebrar",
+                "clap": "Aplaudir",
+                "time_credit": "Crédito de tiempo",
+                "legend": "Reaccionar a esta publicación",
+                "comment_legend": "Reaccionar a este comentario",
+                "see_who": "Ver quién reaccionó con :reaction (:count)",
+                "reactors_title": "Personas que reaccionaron con :reaction",
+                "reactors_total": "Total: :count personas",
+                "reactors_empty": "Todavía nadie ha reaccionado con :reaction.",
+                "unknown_member": "Un miembro de la comunidad",
+                "show_more": "Mostrar más personas"
+            },
+            "post_pages": {
+                "back_to_post": "Volver a la publicación"
+            },
+            "translate": {
+                "button": "Traducir esta publicación",
+                "heading": "Traducción",
+                "hint": "Traducido automáticamente. La publicación original aparece arriba.",
+                "done": "Se ha traducido la publicación.",
+                "failed": "Lo sentimos, no pudimos traducir esta publicación. Inténtalo de nuevo más tarde.",
+                "unavailable": "La traducción no está disponible en esta comunidad.",
+                "same": "Esta publicación ya está en tu idioma.",
+                "empty": "Esta publicación no tiene texto para traducir."
+            },
+            "why_shown": {
+                "label": "¿Por qué estoy viendo esto?",
+                "default_reason": "Clasificado para ti según tu actividad"
+            },
+            "stats": {
+                "link": "Ver estadísticas de la publicación",
+                "title": "Estadísticas de la publicación",
+                "intro": "Solo tú puedes ver estas cifras.",
+                "views": "Vistas",
+                "likes": "Me gusta recibidos",
+                "comments": "Comentarios",
+                "shares": "Compartidos",
+                "reach": "Alcance",
+                "reach_hint": "El alcance es el número de personas distintas que han visto la publicación.",
+                "reactions_breakdown": "Reacciones",
+                "no_reactions": "Aún no hay reacciones.",
+                "forbidden": "Solo la persona que escribió esta publicación puede ver sus estadísticas.",
+                "failed": "Lo sentimos, no pudimos cargar las estadísticas. Inténtalo de nuevo más tarde."
+            },
+            "quote": {
+                "summary": "Compartir con tu propio comentario",
+                "label": "Tu comentario",
+                "hint": "Tu comentario aparece junto a la publicación cuando la compartes.",
+                "submit": "Compartir con comentario"
             }
         },
         "govuk_alpha_gamification": {
@@ -9249,6 +9370,38 @@
                 "error_group_unavailable": "Este grupo no acepta miembros en este momento.",
                 "error_safeguarding": "Las normas de protección de esta comunidad no te permiten unirte a este grupo. Pide ayuda a un coordinador.",
                 "error_safeguarding_unavailable": "Ahora mismo no podemos comprobar las normas de protección de esta comunidad. Inténtalo de nuevo en breve."
+            },
+            "members_page": {
+                "title": "Miembros de :group",
+                "link": "Ver y buscar todos los miembros",
+                "search_label": "Buscar miembros del grupo",
+                "search_hint": "Buscar por nombre o descripción",
+                "search_button": "Buscar miembros",
+                "clear": "Borrar búsqueda",
+                "empty": "Este grupo no tiene miembros que mostrar.",
+                "empty_search": "Ningún miembro coincide con «:query».",
+                "role_admin": "Administrador del grupo",
+                "pagination_label": "Páginas de miembros",
+                "back": "Volver a :group"
+            },
+            "events_page": {
+                "title": "Eventos de :group",
+                "link": "Ver todos los eventos, incluidos los pasados",
+                "filter_label": "Qué eventos",
+                "when_all": "Todos los eventos",
+                "when_upcoming": "Próximos eventos",
+                "when_past": "Eventos pasados",
+                "filter_button": "Mostrar eventos",
+                "empty": "No hay eventos que mostrar.",
+                "pagination_label": "Páginas de eventos"
+            },
+            "recommended": {
+                "title": "Recomendado para ti",
+                "score": ":score % de coincidencia"
+            },
+            "featured": {
+                "title": "Grupos destacados",
+                "more_title": "Más grupos"
             }
         },
         "govuk_alpha_ideation": {
@@ -9701,6 +9854,16 @@
                 "no_skills": "No hay habilidades enumeradas"
             },
             "employer": {
+                "write_review_heading": "Escribir una reseña",
+                "write_review_hint": "Puedes reseñar a un empleador cuando te haya aceptado para una oportunidad.",
+                "review_rating_legend": "Valoración general",
+                "review_rating_option": ":rating de 5",
+                "review_dimension_same": "Igual que la valoración general",
+                "review_comment_label": "Comentario (opcional)",
+                "review_submit": "Enviar reseña",
+                "review_saved": "Gracias. Tu reseña se ha publicado.",
+                "review_failed": "No hemos podido enviar tu reseña. Inténtalo de nuevo.",
+                "review_rating_required": "Elige una valoración general del 1 al 5.",
                 "title": "Perfil de empleador",
                 "description": "Oportunidades abiertas y reseñas para este empleador.",
                 "open_jobs_heading": "Oportunidades abiertas",
@@ -9751,6 +9914,9 @@
                 "status_unknown": "Actualizado"
             },
             "responses": {
+                "add_to_outlook": "Añadir al calendario de Outlook",
+                "download_ics": "Descargar archivo de calendario (.ics)",
+                "states_calendar_failed": "No hemos podido preparar el archivo de calendario. Inténtalo de nuevo.",
                 "add_to_calendar": "Agregar al Calendario de Google",
                 "calendar_event_title": "Entrevista: :title",
                 "title": "Entrevistas y ofertas",
@@ -9877,12 +10043,41 @@
                     "reopen_pending_review": "Tu oportunidad se ha enviado a revisión. Se reabrirá cuando se apruebe.",
                     "status_change_failed": "No pudimos cambiar el estado de esta oportunidad. Inténtalo de nuevo."
                 }
+            },
+            "apply_extras": {
+                "saved_found": "Tu mensaje de solicitud guardado se ha rellenado abajo. Puedes cambiarlo antes de enviarlo.",
+                "quick_apply_hint": "O envía ahora tu mensaje guardado, sin CV.",
+                "quick_apply_button": "Solicitud rápida con el mensaje guardado",
+                "remember_label": "Guardar este mensaje para futuras solicitudes",
+                "cv_skills_heading": "Habilidades detectadas en tu CV",
+                "export_heading": "Los datos de tus solicitudes",
+                "export_hint": "Descarga una copia de la información guardada sobre tus solicitudes de empleo, como archivo JSON.",
+                "export_button": "Descargar mis datos",
+                "export_failed": "No hemos podido preparar tus datos. Inténtalo de nuevo."
             }
+        },
+        "govuk_alpha_kb": {
+            "feedback_question": "¿Fue útil este artículo?",
+            "feedback_yes": "Sí, me ayudó (:count)",
+            "feedback_no": "No, no me ayudó (:count)",
+            "feedback_given_yes": "Indicaste que este artículo te resultó útil. Puedes cambiar tu respuesta.",
+            "feedback_given_no": "Indicaste que este artículo no te resultó útil. Puedes cambiar tu respuesta.",
+            "feedback_thanks": "¡Gracias por tu opinión!",
+            "feedback_failed": "Error al enviar la opinión.",
+            "attachments_heading": "Archivos adjuntos",
+            "categories_label": "Categorías de la base de conocimientos",
+            "all_categories": "Todas las categorías"
         },
         "govuk_alpha_listings": {
             "create": {
                 "skill_tags_label": "Habilidades (opcional)",
-                "skill_tags_hint": "Enumere las habilidades involucradas, separadas por comas, por ejemplo: jardinería, cocina, asesoramiento fiscal. Puedes sumar hasta 10."
+                "skill_tags_hint": "Enumere las habilidades involucradas, separadas por comas, por ejemplo: jardinería, cocina, asesoramiento fiscal. Puedes sumar hasta 10.",
+                "hours_available_label": "Horas disponibles",
+                "hours_available_hint": "Total de horas que estás dispuesto a dar. Déjalo en blanco para sin límite.",
+                "hours_available_range": "Las horas disponibles deben ser al menos 0,5.",
+                "hours_available_below_estimate": "Las horas disponibles no pueden ser inferiores a las horas estimadas.",
+                "remove_image_label": "Eliminar la foto actual",
+                "remove_image_failed": "no se pudo eliminar la foto"
             },
             "nav": {
                 "view_analytics": "Ver análisis de listado"
@@ -10135,7 +10330,8 @@
                     "failed": "No se pudo enviar su denuncia. Inténtelo de nuevo.",
                     "rate_limited": "Ha enviado demasiadas denuncias. Inténtelo de nuevo más tarde."
                 }
-            }
+            },
+            "sort_communityrank": "Rango de comunidad"
         },
         "govuk_alpha_messages": {
             "voice": {
@@ -10273,6 +10469,38 @@
                 "reaction_invalid": "Esa reacción no está disponible.",
                 "reaction_forbidden": "No puedes reaccionar a este mensaje.",
                 "reaction_failed": "No pudimos guardar tu reacción."
+            },
+            "delete_conversation": {
+                "link": "Eliminar esta conversación",
+                "title": "Eliminar esta conversación",
+                "caption": "Conversación con :name",
+                "legend": "¿Para quién se debe eliminar la conversación?",
+                "self": "Eliminar para mí",
+                "self_hint": "Se quita de tu bandeja de entrada. :name todavía puede verla.",
+                "everyone": "Eliminar para todos",
+                "everyone_hint": "Se elimina para ti y para :name. No se puede deshacer.",
+                "submit": "Eliminar conversación",
+                "cancel": "Cancelar y volver a la conversación",
+                "deleted": "La conversación se ha eliminado para todos.",
+                "failed": "Lo sentimos, no pudimos eliminar la conversación. Inténtalo de nuevo más tarde.",
+                "error_choose": "Selecciona para quién se debe eliminar la conversación"
+            },
+            "safeguarding": {
+                "coordinator_button": "Pedir ayuda a un coordinador",
+                "coordinator_hint": "Se informará a un coordinador de la comunidad de que quieres ayuda para ponerte en contacto, y se pondrá en contacto contigo.",
+                "coordinator_sent": "Coordinador notificado. Se pondrá en contacto contigo para ayudar a gestionar el contacto.",
+                "coordinator_failed": "No pudimos enviar tu solicitud en este momento. Por favor, inténtalo de nuevo en breve.",
+                "vetting_button": "Solicitar una revisión de mi verificación",
+                "vetting_hint": "Se pide a tu comunidad que revise tu verificación. Verás el resultado en la configuración de tu perfil.",
+                "required_checks": "Comprobaciones necesarias"
+            },
+            "context": {
+                "regarding": "Referente a",
+                "type_listing": "Anuncio",
+                "type_event": "Evento",
+                "type_job": "Empleo",
+                "type_volunteering": "Voluntariado",
+                "untitled": ":type número :id"
             }
         },
         "govuk_alpha_organisations": {
@@ -10522,6 +10750,17 @@
                         "has_invalid_summary": "Algunas filas no son válidas. Corrígelas en tu CSV y vuelve a ejecutar la vista previa antes de importar."
                     }
                 }
+            },
+            "reviews": {
+                "write_heading": "Valorar esta organización",
+                "rating_legend": "Valoración",
+                "rating_option": ":rating de 5",
+                "comment_label": "Comentario (opcional)",
+                "comment_hint": "Comparte lo que funcionó bien o lo que otras personas deberían saber.",
+                "submit": "Enviar reseña",
+                "saved": "Reseña enviada.",
+                "failed": "No se ha podido enviar tu reseña.",
+                "rating_required": "Elige una valoración antes de enviarla."
             }
         },
         "govuk_alpha_resources": {
@@ -10845,7 +11084,8 @@
                 "popular": "Etiquetas populares",
                 "popular_add": "Añadir :tag",
                 "apply": "Aplicar filtros",
-                "reset": "Restablecer filtros"
+                "reset": "Restablecer filtros",
+                "type_podcasts": "Pódcasts"
             },
             "results": {
                 "count": "{0} No se encontraron resultados|{1} 1 resultado encontrado|[2,*] :count resultados encontrados",
@@ -10868,7 +11108,10 @@
                 "view_listing": "Ver listado",
                 "view_member": "Ver miembro",
                 "view_event": "Ver evento",
-                "view_group": "Ver grupo"
+                "view_group": "Ver grupo",
+                "tab_podcasts": "Pódcasts (:count)",
+                "section_podcasts": "Pódcasts",
+                "episode_from": "Episodio de :show"
             },
             "states": {
                 "no_query_title": "Comienza tu búsqueda",

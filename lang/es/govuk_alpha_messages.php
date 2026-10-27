@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'No puedes reaccionar a este mensaje.',
         'reaction_failed' => 'No pudimos guardar tu reacción.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Eliminar esta conversación',
+        'title' => 'Eliminar esta conversación',
+        'caption' => 'Conversación con :name',
+        'legend' => '¿Para quién se debe eliminar la conversación?',
+        'self' => 'Eliminar para mí',
+        'self_hint' => 'Se quita de tu bandeja de entrada. :name todavía puede verla.',
+        'everyone' => 'Eliminar para todos',
+        'everyone_hint' => 'Se elimina para ti y para :name. No se puede deshacer.',
+        'submit' => 'Eliminar conversación',
+        'cancel' => 'Cancelar y volver a la conversación',
+        'deleted' => 'La conversación se ha eliminado para todos.',
+        'failed' => 'Lo sentimos, no pudimos eliminar la conversación. Inténtalo de nuevo más tarde.',
+        'error_choose' => 'Selecciona para quién se debe eliminar la conversación',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Pedir ayuda a un coordinador',
+        'coordinator_hint' => 'Se informará a un coordinador de la comunidad de que quieres ayuda para ponerte en contacto, y se pondrá en contacto contigo.',
+        'coordinator_sent' => 'Coordinador notificado. Se pondrá en contacto contigo para ayudar a gestionar el contacto.',
+        'coordinator_failed' => 'No pudimos enviar tu solicitud en este momento. Por favor, inténtalo de nuevo en breve.',
+        'vetting_button' => 'Solicitar una revisión de mi verificación',
+        'vetting_hint' => 'Se pide a tu comunidad que revise tu verificación. Verás el resultado en la configuración de tu perfil.',
+        'required_checks' => 'Comprobaciones necesarias',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Referente a',
+        'type_listing' => 'Anuncio',
+        'type_event' => 'Evento',
+        'type_job' => 'Empleo',
+        'type_volunteering' => 'Voluntariado',
+        'untitled' => ':type número :id',
+    ],
 ];

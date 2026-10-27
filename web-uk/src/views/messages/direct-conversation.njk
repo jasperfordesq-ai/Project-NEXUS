@@ -40,6 +40,14 @@
         </div>
       {% endif %}
 
+      {# What the conversation is about (React MessageContextCard). #}
+      {% if messageContext %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_messages.context.regarding") }}: {{ messageContext.typeLabel }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(messageContext.href) }}">{{ messageContext.title }}</a></p>
+        </div>
+      {% endif %}
+
       {% if not directMessagingEnabled %}
         <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="conversation-disabled-title">
           <div class="govuk-notification-banner__header">
@@ -59,7 +67,32 @@
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="conversation-safeguarding-title">{{ safeguarding.title or t("safeguarding.errors.contact_restricted_title") }}</h2>
           </div>
-          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ safeguarding.detail or safeguarding.message or t("safeguarding.errors.contact_restricted") }}</p></div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">{{ safeguarding.detail or safeguarding.message or t("safeguarding.errors.contact_restricted") }}</p>
+            {% if safeguarding.required_vetting_labels and safeguarding.required_vetting_labels.length %}
+              <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("govuk_alpha_messages.safeguarding.required_checks") }}</p>
+              <ul class="govuk-list govuk-list--bullet">
+                {% for label in safeguarding.required_vetting_labels %}<li>{{ label }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+            {# The two ways forward React offers (ConversationPage): ask a coordinator
+               when the API allows it, and ask for a vetting review when vetting is the
+               reason. The vetting review is the existing profile-settings journey. #}
+            {% if safeguarding.can_request_coordinator %}
+              <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/request-coordinator') }}" class="govuk-!-margin-bottom-4">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <p class="govuk-body">{{ t("govuk_alpha_messages.safeguarding.coordinator_hint") }}</p>
+                {{ govukButton({ text: t("govuk_alpha_messages.safeguarding.coordinator_button"), classes: "govuk-!-margin-bottom-0" }) }}
+              </form>
+            {% endif %}
+            {% if safeguarding.code == "VETTING_REQUIRED" %}
+              <form method="post" action="{{ urlFor('/profile/safeguarding/vetting-review') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <p class="govuk-body">{{ t("govuk_alpha_messages.safeguarding.vetting_hint") }}</p>
+                {{ govukButton({ text: t("govuk_alpha_messages.safeguarding.vetting_button"), classes: "govuk-button--secondary govuk-!-margin-bottom-0" }) }}
+              </form>
+            {% endif %}
+          </div>
         </div>
       {% endif %}
 
@@ -176,6 +209,39 @@
                   {% endif %}
                 {% endif %}
 
+                {# Reactions (React MessageBubble): what others chose, and the six to choose from. #}
+                {% if not message.isDeleted and message.reactionCounts and message.reactionCounts.length %}
+                  <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                    {% for reaction in message.reactionCounts %}
+                      <span class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ t("govuk_alpha_messages.reactions.count_label", { emoji: reaction.emoji, count: reaction.count }) }}</span>
+                    {% endfor %}
+                  </p>
+                {% endif %}
+                {% if canSend and not message.isDeleted and message.id %}
+                  <details class="govuk-details govuk-!-margin-top-2 govuk-!-margin-bottom-2" data-module="govuk-details">
+                    <summary class="govuk-details__summary">
+                      <span class="govuk-details__summary-text">{{ t("govuk_alpha_messages.reactions.heading") }}</span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      <fieldset class="govuk-fieldset">
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_messages.reactions.add_legend") }}</legend>
+                        <div class="govuk-button-group govuk-!-margin-bottom-0">
+                          {% for reaction in message.reactionOptions %}
+                            <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/react') }}" class="govuk-!-display-inline">
+                              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                              <input type="hidden" name="emoji" value="{{ reaction.emoji }}">
+                              <button type="submit" class="govuk-button{% if not reaction.mine %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button">
+                                <span aria-hidden="true">{{ reaction.emoji }}</span>
+                                <span class="govuk-visually-hidden">{% if reaction.mine %}{{ t("govuk_alpha_messages.reactions.remove_with", { emoji: reaction.emoji }) }}{% else %}{{ t("govuk_alpha_messages.reactions.react_with", { emoji: reaction.emoji }) }}{% endif %}</span>
+                              </button>
+                            </form>
+                          {% endfor %}
+                        </div>
+                      </fieldset>
+                    </div>
+                  </details>
+                {% endif %}
+
                 {# Only the receiver of a message may report it, so the link is on the
                    other person's messages only. #}
                 {% if not message.isOwn and not message.isDeleted and message.id %}
@@ -266,6 +332,9 @@
           {% if listingId %}
             <input type="hidden" name="context_type" value="listing">
             <input type="hidden" name="context_id" value="{{ listingId }}">
+          {% elif messageContext and messageContext.fromQuery %}
+            <input type="hidden" name="context_type" value="{{ messageContext.type }}">
+            <input type="hidden" name="context_id" value="{{ messageContext.id }}">
           {% endif %}
           {{ govukTextarea({
             label: { text: t("govuk_alpha.messages.message_label"), classes: "govuk-label--m" },
@@ -300,6 +369,7 @@
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("govuk_alpha.actions.archive_conversation"), classes: "govuk-button--secondary" }) }}
       </form>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/messages/' + (conversation.id | string) + '/delete') }}">{{ t("govuk_alpha_messages.delete_conversation.link") }}</a></p>
 {% endblock %}
 
 {% block bodyEnd %}

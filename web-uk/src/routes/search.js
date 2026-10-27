@@ -12,17 +12,21 @@ const {
   saveSavedSearch,
   deleteSavedSearch,
   runSavedSearch,
+  callPodcastApi,
   ApiError
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
-const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
+const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 
 const router = express.Router();
 
-const SEARCH_TYPES = new Set(['all', 'listings', 'users', 'events', 'groups']);
+// 'podcasts' is accepted by the API (SearchService) and offered only when the community
+// has podcasts on — see podcastsEnabledFor().
+const SEARCH_TYPES = new Set(['all', 'listings', 'users', 'events', 'groups', 'podcasts']);
+const PODCAST_SLUG = /^[A-Za-z0-9][A-Za-z0-9_-]{0,190}$/;
 const SIMPLE_SEARCH_TYPES = new Set(['all', 'listing', 'user', 'event', 'group']);
 const SIMPLE_SEARCH_API_TYPES = {
   all: 'all',
@@ -136,9 +140,16 @@ function shouldRenderNotFound(error) {
   return error instanceof ApiError && error.status === 404;
 }
 
-function advancedSearchState(query) {
+function podcastsEnabledFor(req) {
+  const tenant = req.accessibleRouting && req.accessibleRouting.tenant && typeof req.accessibleRouting.tenant === 'object'
+    ? req.accessibleRouting.tenant
+    : {};
+  return flagEnabled(tenant, 'podcasts', 'features', false);
+}
+
+function advancedSearchState(query, { podcastsEnabled = false } = {}) {
   const params = queryParamsFrom(query);
-  const type = params.type || 'all';
+  const type = (params.type === 'podcasts' && !podcastsEnabled) ? 'all' : (params.type || 'all');
   const sort = params.sort || 'relevance';
   const categoryId = params.category_id || '0';
   const skillsList = normaliseSkills(query.skills);
@@ -168,7 +179,10 @@ function advancedSearchState(query) {
     },
     skillsList,
     activeFilterCount,
-    activeTab: allowed(query.tab, SEARCH_TYPES, 'all')
+    activeTab: (() => {
+      const tab = allowed(query.tab, SEARCH_TYPES, 'all');
+      return tab === 'podcasts' && !podcastsEnabled ? 'all' : tab;
+    })()
   };
 }
 
@@ -215,7 +229,8 @@ function advancedTabHrefs(state) {
     listings: advancedSearchHref(entries, 'listings'),
     users: advancedSearchHref(entries, 'users'),
     events: advancedSearchHref(entries, 'events'),
-    groups: advancedSearchHref(entries, 'groups')
+    groups: advancedSearchHref(entries, 'groups'),
+    podcasts: advancedSearchHref(entries, 'podcasts')
   };
 }
 
@@ -249,8 +264,31 @@ function positiveId(value) {
   return id > 0 ? id : 0;
 }
 
+// A search result names a podcast by slug; this frontend routes podcasts by number. A
+// show's id is in the result; an episode's show id is not, so its link goes through
+// GET /search/podcast-episode, which looks the episode up and redirects.
+function podcastResult(item) {
+  const id = positiveId(item.id);
+  const isEpisode = textFrom(item.type) === 'podcast_episode';
+  const showSlug = textFrom(item.show_slug);
+  const episodeSlug = textFrom(item.episode_slug);
+  let href = '';
+  if (!isEpisode && id) href = `/podcasts/${id}`;
+  if (isEpisode && PODCAST_SLUG.test(showSlug) && PODCAST_SLUG.test(episodeSlug)) {
+    href = `/search/podcast-episode?${new URLSearchParams({ show: showSlug, episode: episodeSlug }).toString()}`;
+  }
+  return {
+    ...item,
+    isEpisode,
+    displayTitle: textFrom(item.title),
+    displaySummary: textFrom(item.summary),
+    displayShowTitle: textFrom(item.show_title),
+    href
+  };
+}
+
 function groupedSearchResults(rows) {
-  const grouped = { listings: [], users: [], events: [], groups: [] };
+  const grouped = { listings: [], users: [], events: [], groups: [], podcasts: [] };
   for (const row of Array.isArray(rows) ? rows : []) {
     const item = objectFrom(row);
     const type = textFrom(item.type);
@@ -284,6 +322,9 @@ function groupedSearchResults(rows) {
         displayLocation: textFrom(item.location),
         linkId: positiveId(item.id)
       });
+    }
+    if (type === 'podcast_show' || type === 'podcast_episode') {
+      grouped.podcasts.push(podcastResult(item));
     }
     if (type === 'group') {
       grouped.groups.push({
@@ -374,7 +415,8 @@ function resultCounts(grouped, total) {
     listings: grouped.listings.length,
     users: grouped.users.length,
     events: grouped.events.length,
-    groups: grouped.groups.length
+    groups: grouped.groups.length,
+    podcasts: grouped.podcasts.length
   };
 }
 
@@ -412,13 +454,35 @@ function savedSearchById(result, id, t) {
   return savedSearchRows(result, t).find((row) => row.id === id) || null;
 }
 
+// An episode search result -> the numbered episode page (see podcastResult()).
+router.get('/podcast-episode', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, '/login?status=auth-required');
+  const show = textFrom(req.query.show);
+  const episode = textFrom(req.query.episode);
+  if (!podcastsEnabledFor(req) || !PODCAST_SLUG.test(show) || !PODCAST_SLUG.test(episode)) {
+    return redirectTo(res, '/podcasts');
+  }
+  try {
+    const result = await callPodcastApi(token, 'GET', `/${encodeURIComponent(show)}/${encodeURIComponent(episode)}`);
+    const data = objectFrom(result && result.data !== undefined ? result.data : result);
+    const showId = positiveId(data.show_id);
+    const episodeId = positiveId(data.id);
+    return redirectTo(res, showId && episodeId ? `/podcasts/${showId}/episodes/${episodeId}` : '/podcasts');
+  } catch (error) {
+    if (redirectAuthIfNeeded(error, res)) return undefined;
+    return redirectTo(res, '/podcasts');
+  }
+}));
+
 router.get('/advanced', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, '/login?status=auth-required');
   }
 
-  const state = advancedSearchState(req.query);
+  const podcastsEnabled = podcastsEnabledFor(req);
+  const state = advancedSearchState(req.query, { podcastsEnabled });
   const hasSearched = state.searchQuery !== '';
   let searchResult = { data: [], meta: { search: { total: 0 } } };
   let savedResult = { data: [] };
@@ -447,6 +511,7 @@ router.get('/advanced', asyncRoute(async (req, res) => {
   }
 
   const grouped = groupedSearchResults(filteredSearchResults(searchResult.data, state));
+  if (!podcastsEnabled) grouped.podcasts = [];
   const total = Object.values(grouped).reduce((sum, rows) => sum + rows.length, 0);
   const counts = resultCounts(grouped, total);
   const savedSearches = savedSearchRows(savedResult, res.locals.t);
@@ -459,6 +524,7 @@ router.get('/advanced', asyncRoute(async (req, res) => {
     tryAgainHref: req.originalUrl,
     ...state,
     tabHrefs: advancedTabHrefs(state),
+    podcastsEnabled,
     hasSearched,
     searchError,
     total,

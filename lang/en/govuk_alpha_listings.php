@@ -13,6 +13,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Skills (optional)',
         'skill_tags_hint' => 'List the skills involved, separated by commas — for example: gardening, cooking, tax advice. You can add up to 10.',
+        'hours_available_label' => 'Hours available',
+        'hours_available_hint' => 'Total hours you are willing to give. Leave blank for no limit.',
+        'hours_available_range' => 'Hours available must be at least 0.5.',
+        'hours_available_below_estimate' => 'Hours available cannot be less than the estimated hours.',
+        'remove_image_label' => 'Remove the current photo',
+        'remove_image_failed' => 'the photo could not be removed',
     ],
     // Gap #12 — owner-only listing analytics panel.
     'analytics' => [

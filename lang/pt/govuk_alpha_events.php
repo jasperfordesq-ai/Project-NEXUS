@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Os eventos recorrentes estão desativados nesta comunidade. O seu evento não foi criado. Verifique os dados e crie-o como um evento único.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Mudou de ideias? Pode retirar a sua resposta para que o evento não mostre nenhuma resposta sua.',
+        'clear_button' => 'Limpar a minha resposta',
+        'cleared' => 'A sua resposta foi limpa.',
         'pending_tag' => 'Pedido',
         'pending' => 'Pediu um lugar. O organizador tem de o aprovar antes de o seu lugar ficar confirmado.',
     ],

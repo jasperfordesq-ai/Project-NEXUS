@@ -5039,7 +5039,14 @@
                     "added": "Cuireadh do scil leis.",
                     "removed": "Baineadh do scil.",
                     "failed": "Níorbh fhéidir do chuid scileanna a nuashonrú. Bain triail eile as.",
-                    "name_required": "Cuir isteach ainm scile."
+                    "name_required": "Cuir isteach ainm scile.",
+                    "category_label": "Catagóir (roghnach)",
+                    "category_none": "Gan chatagóir",
+                    "proficiency_label": "Leibhéal cumais",
+                    "proficiency_beginner": "Tosaitheoir",
+                    "proficiency_intermediate": "Idirmheánach",
+                    "proficiency_advanced": "Ardleibhéal",
+                    "proficiency_expert": "Saineolaí"
                 },
                 "sessions": {
                     "title": "Cá bhfuil tú sínithe isteach",
@@ -5240,7 +5247,10 @@
                 "two_factor_heading": "Fíordheimhniú dhá chéim",
                 "two_factor_intro": "Cuir aip fhíordheimhnithe leis mar chéim dhara nuair a shíníonn tú isteach.",
                 "two_factor_link": "Socraigh nó bainistigh fíordheimhniú dhá chéim",
-                "blocked_link": "Bainistigh comhaltaí blocáilte"
+                "blocked_link": "Bainistigh comhaltaí blocáilte",
+                "dob_label": "Dáta breithe",
+                "dob_hint": "Roghnach. Níl sé ag teastáil uait ach chun d'aitheantas a fhíorú, agus caithfidh sé a léiriú go bhfuil tú 18 mbliana d'aois nó níos sine. Chun é a bhaint, glan na trí bhosca.",
+                "dob_locked": "Tá do dháta breithe faoi ghlas ós rud é gur fíoraíodh d'aitheantas."
             },
             "delete_account": {
                 "title": "Scrios do chuntas",
@@ -6817,7 +6827,16 @@
                 "status_accepted_done": "Ghlac tú leis an tairiscint.",
                 "status_declined_done": "Dhiúltaigh tú an tairiscint.",
                 "status_withdrawn_done": "Tharraing tú do thairiscint siar.",
-                "status_action_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a chur i gcrích."
+                "status_action_failed": "Ár leithscéal, níorbh fhéidir an gníomh sin a chur i gcrích.",
+                "counter_summary": "Déan friththairiscint",
+                "counter_amount_label": "Suim na friththairisceana",
+                "counter_amount_hint": "In airgeadra an liostaithe, mar shampla 12.50",
+                "counter_message_optional": "Teachtaireacht (roghnach)",
+                "counter_message_label": "Teachtaireacht an díoltóra",
+                "counter_send": "Seol an fhriththairiscint",
+                "status_countered_done": "Seoladh do fhriththairiscint.",
+                "counter_amount_invalid": "Cuir isteach suim friththairisceana atá níos mó ná nialas, le dhá ionad deachúlach ar a mhéad",
+                "counter_failed": "Ár leithscéal, níorbh fhéidir do fhriththairiscint a sheoladh. Bain triail eile as."
             },
             "orders_buyer": {
                 "title": "Mo orduithe",
@@ -7616,6 +7635,35 @@
                 "error_appeal_long": "Ní féidir níos mó ná 5,000 carachtar a bheith i d’achomharc",
                 "status_appealed_done": "Seoladh d’achomharc.",
                 "status_appeal_failed": "Ár leithscéal, níorbh fhéidir d’achomharc a sheoladh. Bain triail eile as."
+            },
+            "featured": {
+                "heading": "Liostuithe roghnaithe"
+            },
+            "filters": {
+                "listing_type": "Cineál liostaithe",
+                "listing_type_any": "Gach cineál"
+            },
+            "detail": {
+                "item_details": "Sonraí na hearra",
+                "more_from_seller": "Tuilleadh ó :name",
+                "more_from_this_seller": "Tuilleadh ón díoltóir seo",
+                "view_all_from_seller": "Féach ar liostuithe uile an díoltóra seo"
+            },
+            "seller_stats": {
+                "heading": "Achoimre ar do dhíolacháin",
+                "views": "Amhairc san iomlán",
+                "revenue": "Ioncam",
+                "no_revenue": "Níl aon ioncam díolacháin fós"
+            },
+            "coupon_qr": {
+                "heading": "Fuascail sa siopa",
+                "intro": "Faigh cód QR le taispeáint don fhoireann ag an gcuntar. Is féidir gach cód a úsáid uair amháin agus maireann sé 5 nóiméad.",
+                "button": "Faigh cód QR",
+                "new_button": "Faigh cód QR nua",
+                "alt": "Cód QR don chúpón seo",
+                "scan_at_checkout": "Taispeáin an cód QR seo don fhoireann ag an gcuntar.",
+                "expires_at": "Stopann an cód seo ag obair ag :time.",
+                "failed": "Níorbh fhéidir linn cód QR a chruthú don chúpón seo. B'fhéidir gur úsáideadh cheana é nó go bhfuil sé imithe in éag. Bain triail eile as."
             }
         },
         "govuk_alpha_connections": {
@@ -7829,6 +7877,9 @@
                 "quiz_attempts": "Iarrachtaí tráth na gceist"
             },
             "status": {
+                "cohort_added": "Cuireadh an cohórt leis.",
+                "cohort_failed": "Níorbh fhéidir linn an cohórt a chur leis. Bain triail eile as.",
+                "cohort_name_missing": "Cuir isteach ainm don chohórt.",
                 "enrolled": "Tá tú cláraithe anois. Bain sult as an gcúrsa.",
                 "enrol_required": "Cláraigh ar an gcúrsa seo sula n-osclaíonn tú an limistéar foghlama.",
                 "review_saved": "Go raibh maith agat — sábháladh do léirmheas.",
@@ -7871,6 +7922,17 @@
                 "lesson_title_missing": "Cuir teideal an cheachta isteach.",
                 "graded": "Marcáladh an iarracht.",
                 "grade_failed": "Níorbh fhéidir an iarracht a mharcáil. Bain triail eile as."
+            },
+            "authoring": {
+                "prerequisites_legend": "Cúrsaí réamhriachtanacha",
+                "prerequisites_hint": "Ní mór d'fhoghlaimeoirí na cúrsaí a thiceálann tú a chríochnú sular féidir leo clárú ar an gcúrsa seo.",
+                "prerequisites_none": "Níl aon chúrsaí eile ann fós is féidir leat a roghnú.",
+                "cohorts_heading": "Cohóirt",
+                "cohorts_hint": "Téann foghlaimeoirí ar an gcúrsa seo isteach i gcohórt, grúpa a thosaíonn agus a théann tríd an gcúrsa le chéile.",
+                "no_cohorts": "Níl aon chohórt ann fós.",
+                "cohort_name": "Ainm an chohóirt",
+                "cohort_starts": "Tosaíonn :date",
+                "add_cohort": "Cuir cohórt leis"
             }
         },
         "govuk_alpha_events": {
@@ -8275,6 +8337,9 @@
                 "recurrence_unavailable": "Tá ócáidí athfhillteacha múchta sa phobal seo. Níor cruthaíodh d’ócáid. Seiceáil na sonraí agus cruthaigh í mar ócáid aonair."
             },
             "rsvp": {
+                "clear_hint": "Ar athraigh tú d'intinn? Is féidir leat do fhreagra a bhaint ionas nach dtaispeánfaidh an imeacht aon fhreagra uait.",
+                "clear_button": "Glan mo fhreagra",
+                "cleared": "Glanadh do fhreagra.",
                 "pending_tag": "Iarrtha",
                 "pending": "D’iarr tú áit. Caithfidh an t-eagraí í a cheadú sula ndeimhneofar d’áit."
             },
@@ -8507,6 +8572,62 @@
                 "posted_by": "Postáil luaite le :name",
                 "truncated": "Giorraíodh an postáil luaite seo.",
                 "image_alt": "Íomhá ceangailte leis an bpostáil luaite"
+            },
+            "reactions": {
+                "like": "Is maith liom",
+                "love": "Grá",
+                "laugh": "Gáire",
+                "wow": "Iontas",
+                "sad": "Brón",
+                "celebrate": "Ceiliúradh",
+                "clap": "Bualadh bos",
+                "time_credit": "Creidmheas ama",
+                "legend": "Déan imoibriú ar an bpostáil seo",
+                "comment_legend": "Déan imoibriú ar an trácht seo",
+                "see_who": "Féach cé a rinne imoibriú le :reaction (:count)",
+                "reactors_title": "Daoine a rinne imoibriú le :reaction",
+                "reactors_total": "Iomlán: :count",
+                "reactors_empty": "Níl imoibriú déanta ag aon duine le :reaction fós.",
+                "unknown_member": "Ball den phobal",
+                "show_more": "Taispeáin tuilleadh daoine"
+            },
+            "post_pages": {
+                "back_to_post": "Ar ais chuig an bpostáil"
+            },
+            "translate": {
+                "button": "Aistrigh an phostáil seo",
+                "heading": "Aistriúchán",
+                "hint": "Aistrithe go huathoibríoch. Tá an phostáil bhunaidh thuas.",
+                "done": "Aistríodh an phostáil.",
+                "failed": "Ár leithscéal, níorbh fhéidir an phostáil seo a aistriú. Bain triail eile as níos déanaí.",
+                "unavailable": "Níl aistriúchán ar fáil sa phobal seo.",
+                "same": "Tá an phostáil seo i do theanga cheana féin.",
+                "empty": "Níl aon téacs le haistriú sa phostáil seo."
+            },
+            "why_shown": {
+                "label": "Cén fáth a bhfuil sé seo á thaispeáint dom?",
+                "default_reason": "Tugtar tús áite dó seo bunaithe ar do ghníomhaíocht"
+            },
+            "stats": {
+                "link": "Féach ar staitisticí na postála",
+                "title": "Staitisticí na postála",
+                "intro": "Is tusa amháin a fheiceann na figiúirí seo.",
+                "views": "Amhairc",
+                "likes": "‘Is maith liom’",
+                "comments": "Tráchtanna",
+                "shares": "Comhroinntí",
+                "reach": "Daoine ar sroicheadh",
+                "reach_hint": "Is é an líon daoine ar sroicheadh líon na ndaoine éagsúla a chonaic an phostáil.",
+                "reactions_breakdown": "Imoibrithe",
+                "no_reactions": "Níl aon imoibrithe fós.",
+                "forbidden": "Ní féidir ach leis an duine a scríobh an phostáil seo a staitisticí a fheiceáil.",
+                "failed": "Ár leithscéal, níorbh fhéidir na staitisticí a lódáil. Bain triail eile as níos déanaí."
+            },
+            "quote": {
+                "summary": "Comhroinn le do thrácht féin",
+                "label": "Do thrácht",
+                "hint": "Taispeántar do thrácht leis an bpostáil nuair a chomhroinneann tú í.",
+                "submit": "Comhroinn leis an trácht"
             }
         },
         "govuk_alpha_gamification": {
@@ -9249,6 +9370,38 @@
                 "error_group_unavailable": "Níl an grúpa seo ag glacadh le baill faoi láthair.",
                 "error_safeguarding": "Ní cheadaíonn rialacha cosanta an phobail seo duit dul isteach sa ghrúpa seo. Iarr cabhair ar chomhordaitheoir.",
                 "error_safeguarding_unavailable": "Ní féidir linn rialacha cosanta an phobail seo a sheiceáil faoi láthair. Bain triail eile as ar ball."
+            },
+            "members_page": {
+                "title": "Baill de :group",
+                "link": "Féach ar na baill go léir agus cuardaigh iad",
+                "search_label": "Cuardaigh baill an ghrúpa",
+                "search_hint": "Cuardaigh de réir ainm nó cur síos",
+                "search_button": "Cuardaigh baill",
+                "clear": "Glan an cuardach",
+                "empty": "Níl aon bhaill le taispeáint sa ghrúpa seo.",
+                "empty_search": "Níl aon bhaill a mheaitseálann “:query”.",
+                "role_admin": "Riarthóir an ghrúpa",
+                "pagination_label": "Leathanaigh na mball",
+                "back": "Ar ais chuig :group"
+            },
+            "events_page": {
+                "title": "Imeachtaí in :group",
+                "link": "Féach ar na himeachtaí go léir, lena n-áirítear imeachtaí atá thart",
+                "filter_label": "Cé na himeachtaí",
+                "when_all": "Gach imeacht",
+                "when_upcoming": "Imeachtaí atá le teacht",
+                "when_past": "Imeachtaí atá thart",
+                "filter_button": "Taispeáin imeachtaí",
+                "empty": "Níl aon imeachtaí le taispeáint.",
+                "pagination_label": "Leathanaigh na n-imeachtaí"
+            },
+            "recommended": {
+                "title": "Molta duit",
+                "score": "Meaitseáil :score%"
+            },
+            "featured": {
+                "title": "Grúpaí roghnaithe",
+                "more_title": "Tuilleadh grúpaí"
             }
         },
         "govuk_alpha_ideation": {
@@ -9701,6 +9854,16 @@
                 "no_skills": "Níl aon scileanna liostaithe"
             },
             "employer": {
+                "write_review_heading": "Scríobh léirmheas",
+                "write_review_hint": "Is féidir leat léirmheas a scríobh ar fhostóir nuair a ghlac sé leat le haghaidh deise.",
+                "review_rating_legend": "Rátáil fhoriomlán",
+                "review_rating_option": ":rating as 5",
+                "review_dimension_same": "Mar an gcéanna leis an rátáil fhoriomlán",
+                "review_comment_label": "Trácht (roghnach)",
+                "review_submit": "Seol an léirmheas",
+                "review_saved": "Go raibh maith agat. Foilsíodh do léirmheas.",
+                "review_failed": "Níorbh fhéidir linn do léirmheas a sheoladh. Bain triail eile as.",
+                "review_rating_required": "Roghnaigh rátáil fhoriomlán ó 1 go 5.",
                 "title": "Próifíl fostóra",
                 "description": "Deiseanna oscailte agus athbhreithnithe don fhostóir seo.",
                 "open_jobs_heading": "Deiseanna oscailte",
@@ -9751,6 +9914,9 @@
                 "status_unknown": "Nuashonraithe"
             },
             "responses": {
+                "add_to_outlook": "Cuir le Féilire Outlook",
+                "download_ics": "Íoslódáil comhad féilire (.ics)",
+                "states_calendar_failed": "Níorbh fhéidir linn an comhad féilire a ullmhú. Bain triail eile as.",
                 "add_to_calendar": "Cuir le Google Calendar",
                 "calendar_event_title": "Agallamh: :title",
                 "title": "Agallaimh agus tairiscintí",
@@ -9877,12 +10043,41 @@
                     "reopen_pending_review": "Seoladh do dheis lena hathbhreithniú. Athosclófar í nuair a cheadófar í.",
                     "status_change_failed": "Níorbh fhéidir linn stádas na deise seo a athrú. Bain triail eile as."
                 }
+            },
+            "apply_extras": {
+                "saved_found": "Líonadh do theachtaireacht iarratais shábháilte thíos. Is féidir leat í a athrú sula seolann tú í.",
+                "quick_apply_hint": "Nó seol do theachtaireacht shábháilte anois, gan CV.",
+                "quick_apply_button": "Iarratas tapa leis an teachtaireacht shábháilte",
+                "remember_label": "Sábháil an teachtaireacht seo le húsáid in iarratais amach anseo",
+                "cv_skills_heading": "Scileanna a aimsíodh i do CV",
+                "export_heading": "Sonraí d'iarratas",
+                "export_hint": "Íoslódáil cóip den fhaisnéis a choinnítear faoi d'iarratais ar phoist, mar chomhad JSON.",
+                "export_button": "Íoslódáil mo shonraí",
+                "export_failed": "Níorbh fhéidir linn do shonraí a ullmhú. Bain triail eile as."
             }
+        },
+        "govuk_alpha_kb": {
+            "feedback_question": "An raibh an t-alt seo cabhrach?",
+            "feedback_yes": "Bhí, chabhraigh sé (:count)",
+            "feedback_no": "Ní raibh, níor chabhraigh sé (:count)",
+            "feedback_given_yes": "Dúirt tú go raibh an t-alt seo cabhrach. Is féidir leat do fhreagra a athrú.",
+            "feedback_given_no": "Dúirt tú nach raibh an t-alt seo cabhrach. Is féidir leat do fhreagra a athrú.",
+            "feedback_thanks": "Go raibh maith agat as d'aiseolas!",
+            "feedback_failed": "Theip ar an aiseolas a sheoladh.",
+            "attachments_heading": "Ceangaltáin",
+            "categories_label": "Catagóirí bonn eolais",
+            "all_categories": "Gach catagóir"
         },
         "govuk_alpha_listings": {
             "create": {
                 "skill_tags_label": "Scileanna (roghnach)",
-                "skill_tags_hint": "Déan liosta de na scileanna atá i gceist, scartha le camóga — mar shampla: garraíodóireacht, cócaireacht, comhairle cánach. Is féidir leat suas le 10 a shuimiú."
+                "skill_tags_hint": "Déan liosta de na scileanna atá i gceist, scartha le camóga — mar shampla: garraíodóireacht, cócaireacht, comhairle cánach. Is féidir leat suas le 10 a shuimiú.",
+                "hours_available_label": "Uaireanta ar fáil",
+                "hours_available_hint": "Líon iomlán na n-uaireanta atá tú sásta a thabhairt. Fág bán é mura bhfuil teorainn ann.",
+                "hours_available_range": "Caithfidh na huaireanta atá ar fáil a bheith 0.5 ar a laghad.",
+                "hours_available_below_estimate": "Ní féidir leis na huaireanta atá ar fáil a bheith níos lú ná na huaireanta measta.",
+                "remove_image_label": "Bain an grianghraf reatha",
+                "remove_image_failed": "níorbh fhéidir an grianghraf a bhaint"
             },
             "nav": {
                 "view_analytics": "Féach ar anailísíocht liostála"
@@ -10135,7 +10330,8 @@
                     "failed": "Níorbh fhéidir do thuairisc a sheoladh. Bain triail eile as.",
                     "rate_limited": "Tá an iomarca tuairiscí seolta agat. Bain triail eile as ar ball."
                 }
-            }
+            },
+            "sort_communityrank": "Rang sa phobal"
         },
         "govuk_alpha_messages": {
             "voice": {
@@ -10273,6 +10469,38 @@
                 "reaction_invalid": "Níl an imoibriú sin ar fáil.",
                 "reaction_forbidden": "Ní féidir leat freagairt don teachtaireacht seo.",
                 "reaction_failed": "Níorbh fhéidir linn do fhreagairt a shábháil."
+            },
+            "delete_conversation": {
+                "link": "Scrios an comhrá seo",
+                "title": "Scrios an comhrá seo",
+                "caption": "Comhrá le :name",
+                "legend": "Cé dó ar cheart an comhrá a scriosadh?",
+                "self": "Scrios domsa",
+                "self_hint": "Baintear as do bhosca isteach é. Is féidir le :name é a fheiceáil fós.",
+                "everyone": "Scrios do chách",
+                "everyone_hint": "Baintear é duitse agus do :name. Ní féidir é seo a chealú.",
+                "submit": "Scrios an comhrá",
+                "cancel": "Cealaigh agus fill ar an gcomhrá",
+                "deleted": "Scriosadh an comhrá do chách.",
+                "failed": "Ár leithscéal, níorbh fhéidir an comhrá a scriosadh. Bain triail eile as níos déanaí.",
+                "error_choose": "Roghnaigh cé dó ar cheart an comhrá a scriosadh"
+            },
+            "safeguarding": {
+                "coordinator_button": "Iarr cabhair ar chomhordaitheoir",
+                "coordinator_hint": "Cuirfear in iúl do chomhordaitheoir pobail gur mhaith leat cabhair chun teagmháil a dhéanamh, agus rachaidh sé nó sí i dteagmháil leat.",
+                "coordinator_sent": "Cuireadh comhordaitheoir ar an eolas. Beidh sé nó sí i dteagmháil leat chun cabhrú leis an teagmháil a eagrú.",
+                "coordinator_failed": "Níorbh fhéidir d’iarratas a sheoladh faoi láthair. Bain triail eile as ar ball.",
+                "vetting_button": "Iarr athbhreithniú ar mo ghrinnfhiosrúchán",
+                "vetting_hint": "Iarrtar ar do phobal athbhreithniú a dhéanamh ar do ghrinnfhiosrúchán. Feicfidh tú an toradh i socruithe do phróifíle.",
+                "required_checks": "Seiceálacha atá ag teastáil"
+            },
+            "context": {
+                "regarding": "Maidir le",
+                "type_listing": "Liostú",
+                "type_event": "Imeacht",
+                "type_job": "Post",
+                "type_volunteering": "Obair dheonach",
+                "untitled": ":type uimhir :id"
             }
         },
         "govuk_alpha_organisations": {
@@ -10522,6 +10750,17 @@
                         "has_invalid_summary": "Tá roinnt sraitheanna neamhbhailí. Ceartaigh i do CSV iad agus rith an réamhamharc arís roimh iompórtáil."
                     }
                 }
+            },
+            "reviews": {
+                "write_heading": "Déan léirmheas ar an eagraíocht seo",
+                "rating_legend": "Rátáil",
+                "rating_option": ":rating as 5",
+                "comment_label": "Trácht (roghnach)",
+                "comment_hint": "Roinn an méid a d'oibrigh go maith nó an méid ba cheart a bheith ar eolas ag daoine eile.",
+                "submit": "Seol an léirmheas",
+                "saved": "Seoladh an léirmheas.",
+                "failed": "Níorbh fhéidir do léirmheas a sheoladh.",
+                "rating_required": "Roghnaigh rátáil sula seolann tú an léirmheas."
             }
         },
         "govuk_alpha_resources": {
@@ -10845,7 +11084,8 @@
                 "popular": "Clibeanna coitianta",
                 "popular_add": "Cuir :tag leis",
                 "apply": "Cuir scagairí i bhfeidhm",
-                "reset": "Athshocraigh na scagairí"
+                "reset": "Athshocraigh na scagairí",
+                "type_podcasts": "Podchraoltaí"
             },
             "results": {
                 "count": "{0} Níor aimsíodh aon toradh|{1} Fuarthas 1 thoradh|[2,*] :count torthaí",
@@ -10868,7 +11108,10 @@
                 "view_listing": "Féach ar an liostú",
                 "view_member": "Féach ar bhall",
                 "view_event": "Amharc ar imeacht",
-                "view_group": "Féach ar ghrúpa"
+                "view_group": "Féach ar ghrúpa",
+                "tab_podcasts": "Podchraoltaí (:count)",
+                "section_podcasts": "Podchraoltaí",
+                "episode_from": "Eipeasóid ó :show"
             },
             "states": {
                 "no_query_title": "Tosaigh do chuardach",

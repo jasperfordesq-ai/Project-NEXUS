@@ -102,6 +102,9 @@ return [
         'quiz_attempts' => 'クイズの試行',
     ],
     'status' => [
+        'cohort_added' => 'コホートを追加しました。',
+        'cohort_failed' => 'コホートを追加できませんでした。もう一度お試しください。',
+        'cohort_name_missing' => 'コホートの名前を入力してください。',
         'enrolled' => 'これで登録されました。コースをお楽しみください。',
         'enrol_required' => '学習エリアを開く前に、このコースに登録してください。',
         'review_saved' => 'ありがとうございます - あなたのレビューは保存されました。',
@@ -144,5 +147,16 @@ return [
         'lesson_title_missing' => 'レッスンのタイトルを入力します。',
         'graded' => 'この試みは採点されました。',
         'grade_failed' => '試技は採点できませんでした。もう一度試してください。',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => '前提となるコース',
+        'prerequisites_hint' => '受講者は、このコースに登録する前に、チェックしたコースを修了する必要があります。',
+        'prerequisites_none' => '選択できる他のコースはまだありません。',
+        'cohorts_heading' => 'コホート',
+        'cohorts_hint' => 'このコースの受講者はコホートに参加します。コホートは一緒に開始し、一緒にコースを進めるグループです。',
+        'no_cohorts' => 'まだコホートはありません。',
+        'cohort_name' => 'コホート名',
+        'cohort_starts' => ':date 開始',
+        'add_cohort' => 'コホートを追加',
     ],
 ];

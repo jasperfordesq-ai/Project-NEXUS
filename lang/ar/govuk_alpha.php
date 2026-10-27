@@ -4007,6 +4007,13 @@ return [
             'removed' => 'تمت إزالة مهارتك.',
             'failed' => 'تعذّر تحديث مهاراتك. يرجى المحاولة مجددًا.',
             'name_required' => 'أدخل اسم المهارة.',
+            'category_label' => 'الفئة (اختياري)',
+            'category_none' => 'بدون فئة',
+            'proficiency_label' => 'مستوى الإتقان',
+            'proficiency_beginner' => 'مبتدئ',
+            'proficiency_intermediate' => 'متوسط',
+            'proficiency_advanced' => 'متقدم',
+            'proficiency_expert' => 'خبير',
         ],
         'sessions' => [
             'title' => 'أماكن تسجيل دخولك',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'أضف تطبيق مصادقة كخطوة ثانية عند تسجيل الدخول.',
         'two_factor_link' => 'إعداد التحقق بخطوتين أو إدارته',
         'blocked_link' => 'إدارة الأعضاء المحظورين',
+        'dob_label' => 'تاريخ الميلاد',
+        'dob_hint' => 'اختياري. لا تحتاج إليه إلا للتحقق من هويتك، ويجب أن يُظهر أن عمرك 18 عامًا أو أكثر. لحذفه، امسح الخانات الثلاث.',
+        'dob_locked' => 'تاريخ ميلادك مقفل لأنه تم التحقق من هويتك.',
     ],
     'delete_account' => [
         'title' => 'احذف حسابك',

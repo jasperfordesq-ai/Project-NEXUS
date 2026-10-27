@@ -4007,6 +4007,13 @@ return [
             'removed' => 'Twoja umiejętność została usunięta.',
             'failed' => 'Nie udało się zaktualizować Twoich umiejętności. Spróbuj ponownie.',
             'name_required' => 'Podaj nazwę umiejętności.',
+            'category_label' => 'Kategoria (opcjonalna)',
+            'category_none' => 'Brak kategorii',
+            'proficiency_label' => 'Poziom umiejętności',
+            'proficiency_beginner' => 'Początkujący',
+            'proficiency_intermediate' => 'Średniozaawansowany',
+            'proficiency_advanced' => 'Zaawansowany',
+            'proficiency_expert' => 'Ekspert',
         ],
         'sessions' => [
             'title' => 'Miejsca logowania',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Dodaj aplikację uwierzytelniającą jako drugi krok podczas logowania.',
         'two_factor_link' => 'Skonfiguruj lub zarządzaj weryfikacją dwuetapową',
         'blocked_link' => 'Zarządzaj zablokowanymi członkami',
+        'dob_label' => 'Data urodzenia',
+        'dob_hint' => 'Opcjonalnie. Jest potrzebna tylko do weryfikacji tożsamości i musi wskazywać, że masz co najmniej 18 lat. Aby ją usunąć, wyczyść wszystkie trzy pola.',
+        'dob_locked' => 'Twoja data urodzenia jest zablokowana, ponieważ Twoja tożsamość została zweryfikowana.',
     ],
     'delete_account' => [
         'title' => 'Usuń swoje konto',

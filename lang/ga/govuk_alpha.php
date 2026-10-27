@@ -4009,6 +4009,13 @@ return [
             'removed' => 'Baineadh do scil.',
             'failed' => 'Níorbh fhéidir do chuid scileanna a nuashonrú. Bain triail eile as.',
             'name_required' => 'Cuir isteach ainm scile.',
+            'category_label' => 'Catagóir (roghnach)',
+            'category_none' => 'Gan chatagóir',
+            'proficiency_label' => 'Leibhéal cumais',
+            'proficiency_beginner' => 'Tosaitheoir',
+            'proficiency_intermediate' => 'Idirmheánach',
+            'proficiency_advanced' => 'Ardleibhéal',
+            'proficiency_expert' => 'Saineolaí',
         ],
         'sessions' => [
             'title' => 'Cá bhfuil tú sínithe isteach',
@@ -4210,6 +4217,9 @@ return [
         'two_factor_intro' => 'Cuir aip fhíordheimhnithe leis mar chéim dhara nuair a shíníonn tú isteach.',
         'two_factor_link' => 'Socraigh nó bainistigh fíordheimhniú dhá chéim',
         'blocked_link' => 'Bainistigh comhaltaí blocáilte',
+        'dob_label' => 'Dáta breithe',
+        'dob_hint' => 'Roghnach. Níl sé ag teastáil uait ach chun d\'aitheantas a fhíorú, agus caithfidh sé a léiriú go bhfuil tú 18 mbliana d\'aois nó níos sine. Chun é a bhaint, glan na trí bhosca.',
+        'dob_locked' => 'Tá do dháta breithe faoi ghlas ós rud é gur fíoraíodh d\'aitheantas.',
     ],
     'delete_account' => [
         'title' => 'Scrios do chuntas',

@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'Las normas de protección de esta comunidad no te permiten unirte a este grupo. Pide ayuda a un coordinador.',
         'error_safeguarding_unavailable' => 'Ahora mismo no podemos comprobar las normas de protección de esta comunidad. Inténtalo de nuevo en breve.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Miembros de :group',
+        'link' => 'Ver y buscar todos los miembros',
+        'search_label' => 'Buscar miembros del grupo',
+        'search_hint' => 'Buscar por nombre o descripción',
+        'search_button' => 'Buscar miembros',
+        'clear' => 'Borrar búsqueda',
+        'empty' => 'Este grupo no tiene miembros que mostrar.',
+        'empty_search' => 'Ningún miembro coincide con «:query».',
+        'role_admin' => 'Administrador del grupo',
+        'pagination_label' => 'Páginas de miembros',
+        'back' => 'Volver a :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Eventos de :group',
+        'link' => 'Ver todos los eventos, incluidos los pasados',
+        'filter_label' => 'Qué eventos',
+        'when_all' => 'Todos los eventos',
+        'when_upcoming' => 'Próximos eventos',
+        'when_past' => 'Eventos pasados',
+        'filter_button' => 'Mostrar eventos',
+        'empty' => 'No hay eventos que mostrar.',
+        'pagination_label' => 'Páginas de eventos',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Recomendado para ti',
+        'score' => ':score % de coincidencia',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Grupos destacados',
+        'more_title' => 'Más grupos',
+    ],
 ];

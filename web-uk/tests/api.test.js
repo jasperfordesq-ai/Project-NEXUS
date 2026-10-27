@@ -2820,6 +2820,26 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('removeEventRsvp', () => {
+    it('clears the member\'s RSVP with DELETE /api/v2/events/{id}/rsvp', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { removed: true } })
+      });
+
+      await api.removeEventRsvp('test-token', 501);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/events/501/rsvp',
+        expect.objectContaining({
+          method: 'DELETE',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+  });
+
   describe('getBlogCategories', () => {
     it('reads the blog category list, with the bearer only when signed in', async () => {
       mockFetch.mockResolvedValueOnce({
@@ -7706,6 +7726,38 @@ describe('API Request Functions', () => {
       });
     });
 
+    it('asserts knowledge base feedback and attachment download contracts', async () => {
+      const okJson = { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => ({ data: {} }) };
+      const fileBytes = Buffer.from('attachment bytes', 'utf8');
+      mockFetch
+        .mockResolvedValueOnce(okJson)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: { get: (name) => ({ 'content-type': 'application/pdf', 'content-disposition': 'attachment; filename="guide.pdf"' })[name] || null },
+          arrayBuffer: async () => fileBytes
+        });
+
+      await api.submitKnowledgeBaseFeedback('test-token', 'article/42', true);
+      await expect(api.downloadKnowledgeBaseAttachment('test-token', 42, 'file/7')).resolves.toMatchObject({
+        status: 200,
+        body: fileBytes,
+        headers: { 'content-type': 'application/pdf', 'content-disposition': 'attachment; filename="guide.pdf"' }
+      });
+
+      expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:5000/api/v2/kb/article%2F42/feedback');
+      expect(mockFetch.mock.calls[0][1]).toEqual(expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+      }));
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual({ is_helpful: true });
+      expect(mockFetch.mock.calls[1][0]).toBe('http://localhost:5000/api/v2/kb/42/attachments/file%2F7/download');
+      expect(mockFetch.mock.calls[1][1]).toEqual(expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+      }));
+    });
+
     it('asserts member, onboarding, taxonomy, poll, and exchange read contracts', async () => {
       mockFetch.mockResolvedValue(jsonResponse());
 
@@ -8641,7 +8693,11 @@ describe('API Request Functions', () => {
       ['getIdentityVerificationStatus', (api) => api.getIdentityVerificationStatus('t'), 'GET', '/api/v2/identity/status', undefined, true],
       ['saveIdentityDateOfBirth', (api) => api.saveIdentityDateOfBirth('t', '1980-04-03'), 'POST', '/api/v2/identity/save-dob', { date_of_birth: '1980-04-03' }, true],
       ['createIdentityFeeCheckout', (api) => api.createIdentityFeeCheckout('t', 'https://a.example/verify-identity-optional'), 'POST', '/api/v2/identity/checkout', { return_url: 'https://a.example/verify-identity-optional' }, true],
-      ['startIdentityVerification', (api) => api.startIdentityVerification('t', 'https://a.example/verify-identity-optional/callback'), 'POST', '/api/v2/identity/start', { return_url: 'https://a.example/verify-identity-optional/callback' }, true]
+      ['startIdentityVerification', (api) => api.startIdentityVerification('t', 'https://a.example/verify-identity-optional/callback'), 'POST', '/api/v2/identity/start', { return_url: 'https://a.example/verify-identity-optional/callback' }, true],
+      // Post statistics for the author (27 Oct 2026 feed parity).
+      ['getFeedPostAnalytics', (api) => api.getFeedPostAnalytics('t', 5), 'GET', '/api/v2/feed/posts/5/analytics', undefined, true],
+      ['getAlgorithmInfo', (api) => api.getAlgorithmInfo('t'), 'GET', '/api/v2/config/algorithms', undefined, true],
+      ['deleteListingImage', (api) => api.deleteListingImage('t', 42), 'DELETE', '/api/v2/listings/42/image', undefined, true]
     ];
 
     it.each(cases)('%s calls the Laravel contract', async (_name, call, method, path, body, authed) => {

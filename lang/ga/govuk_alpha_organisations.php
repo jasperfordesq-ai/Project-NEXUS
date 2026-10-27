@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Déan léirmheas ar an eagraíocht seo',
+        'rating_legend' => 'Rátáil',
+        'rating_option' => ':rating as 5',
+        'comment_label' => 'Trácht (roghnach)',
+        'comment_hint' => 'Roinn an méid a d\'oibrigh go maith nó an méid ba cheart a bheith ar eolas ag daoine eile.',
+        'submit' => 'Seol an léirmheas',
+        'saved' => 'Seoladh an léirmheas.',
+        'failed' => 'Níorbh fhéidir do léirmheas a sheoladh.',
+        'rating_required' => 'Roghnaigh rátáil sula seolann tú an léirmheas.',
+    ],
 ];

@@ -48,6 +48,17 @@
         </div>
       {% endif %}
 
+      {% if status == "conversation-deleted" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-deleted-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="messages-deleted-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_messages.delete_conversation.deleted") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
       {% if status == "conversation-archived" or status == "conversation-restored" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-status-title">
           <div class="govuk-notification-banner__header">

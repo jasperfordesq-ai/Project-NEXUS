@@ -1,0 +1,47 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# The reactions React offers (components/social/reactions.ts): eight on posts and
+   feed items, the first six on comments. The routes refuse anything else
+   (src/lib/feed-reactions.js). #}
+{% set POST_REACTIONS = [
+  { type: "like", symbol: "&#128077;" },
+  { type: "love", symbol: "&#10084;&#65039;" },
+  { type: "laugh", symbol: "&#128514;" },
+  { type: "wow", symbol: "&#128558;" },
+  { type: "sad", symbol: "&#128546;" },
+  { type: "celebrate", symbol: "&#127881;" },
+  { type: "clap", symbol: "&#128079;" },
+  { type: "time_credit", symbol: "&#9200;" }
+] %}
+{% set COMMENT_REACTIONS = POST_REACTIONS.slice(0, 6) %}
+
+{#
+  One form per reaction, so it works without JavaScript.
+  - current: the member's reaction (a type) or reactions (a list of types)
+  - counts: { type: count }
+  - hidden: { name: value } hidden inputs (feed state, return_to); empty values are skipped
+  - accessibleName: optional visually hidden context after each label
+#}
+{% macro reactionForms(reactions, action, csrfToken, t, current, counts, hidden, accessibleName, legendKey) %}
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t(legendKey or "govuk_alpha_feed.reactions.legend") }}</legend>
+    <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">
+      {% for reaction in reactions %}
+        {% set active = (current == reaction.type) or (current and current.length and current is not string and reaction.type in current) %}
+        <form method="post" action="{{ action }}" class="nexus-alpha-reaction-form">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% for name, value in (hidden or {}) %}{% if value %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}{% endfor %}
+          <input type="hidden" name="emoji" value="{{ reaction.type }}">
+          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if active %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{{ 'true' if active else 'false' }}">
+            <span aria-hidden="true">{{ reaction.symbol | safe }}</span>
+            {{ t("govuk_alpha_feed.reactions." + reaction.type) }}{% if counts and counts[reaction.type] %} ({{ counts[reaction.type] }}){% endif %}
+            {% if accessibleName %}<span class="govuk-visually-hidden"> {{ accessibleName }}</span>{% endif %}
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  </fieldset>
+{% endmacro %}

@@ -9,6 +9,27 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 
+{% macro groupCard(group, t, tc, urlFor) %}
+  {% set isPrivate = group.visibility != "public" %}
+  {% set memberCount = group.memberCount or group.member_count or 0 %}
+  <article class="nexus-alpha-card">
+    <div class="nexus-alpha-module-row">
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ group.name }}</a></h3>
+      {{ govukTag({
+        text: t("groups.visibility_private") if isPrivate else t("groups.visibility_public"),
+        classes: "govuk-tag--grey" if isPrivate else "govuk-tag--green"
+      }) }}
+    </div>
+    {% if group.typeLabel %}
+      <p class="govuk-body-s govuk-!-margin-bottom-1"><span class="govuk-visually-hidden">{{ t("govuk_alpha_groups.directory.type_label") }}: </span>{{ govukTag({ text: group.typeLabel, classes: "govuk-tag--blue" }) }}</p>
+    {% endif %}
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("groups.members_count", memberCount, { count: memberCount }) }}</p>
+    {% if group.description %}
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ group.description | truncate(160) }}</p>
+    {% endif %}
+  </article>
+{% endmacro %}
+
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("groups.title") }}</h1>
@@ -68,30 +89,39 @@
     <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.search") }}</button>
   </form>
 
-  {% if groups.length == 0 %}
-    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("groups.empty") }}</p></div>
-  {% else %}
-    <div class="nexus-alpha-card-list">
-      {% for group in groups %}
-        {% set isPrivate = group.visibility != "public" %}
-        {% set memberCount = group.memberCount or group.member_count or 0 %}
+  {# "Recommended for you" (React RecommendedGroups): only what the matching API returns. #}
+  {% if recommendedGroups and recommendedGroups.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_groups.recommended.title") }}</h2>
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for match in recommendedGroups %}
         <article class="nexus-alpha-card">
-          <div class="nexus-alpha-module-row">
-            <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ group.name }}</a></h2>
-            {{ govukTag({
-              text: t("groups.visibility_private") if isPrivate else t("groups.visibility_public"),
-              classes: "govuk-tag--grey" if isPrivate else "govuk-tag--green"
-            }) }}
-          </div>
-          {% if group.typeLabel %}
-            <p class="govuk-body-s govuk-!-margin-bottom-1"><span class="govuk-visually-hidden">{{ t("govuk_alpha_groups.directory.type_label") }}: </span>{{ govukTag({ text: group.typeLabel, classes: "govuk-tag--blue" }) }}</p>
-          {% endif %}
-          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("groups.members_count", memberCount, { count: memberCount }) }}</p>
-          {% if group.description %}
-            <p class="govuk-body govuk-!-margin-bottom-0">{{ group.description | truncate(160) }}</p>
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/groups/' + (match.id | string)) }}">{{ match.title }}</a></h3>
+          <p class="govuk-body-s govuk-!-margin-bottom-1">{{ govukTag({ text: t("govuk_alpha_groups.recommended.score", { score: match.score }), classes: "govuk-tag--turquoise" }) }}</p>
+          {% if match.reasons.length %}
+            <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+              {% for reason in match.reasons %}<li>{{ reason }}</li>{% endfor %}
+            </ul>
           {% endif %}
         </article>
       {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if groups.length == 0 %}
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("groups.empty") }}</p></div>
+  {% else %}
+    {# Featured groups first, in their own section (React GroupsPage). #}
+    {% if featuredGroups and featuredGroups.length %}
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_groups.featured.title") }}</h2>
+      <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+        {% for group in featuredGroups %}{{ groupCard(group, t, tc, urlFor) }}{% endfor %}
+      </div>
+      {% if regularGroups.length %}<h2 class="govuk-heading-m">{{ t("govuk_alpha_groups.featured.more_title") }}</h2>{% endif %}
+    {% else %}
+      <h2 class="govuk-visually-hidden">{{ t("groups.title") }}</h2>
+    {% endif %}
+    <div class="nexus-alpha-card-list">
+      {% for group in (regularGroups if regularGroups else groups) %}{{ groupCard(group, t, tc, urlFor) }}{% endfor %}
     </div>
 
     {% if pagination.hasMore and pagination.cursor %}

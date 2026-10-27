@@ -33,6 +33,9 @@
       {% elif status == "rsvp-updated" %}
         {% set eventSuccessId = "rsvp-success-title" %}
         {% set eventSuccessMessage = t("govuk_alpha.events.rsvp_updated") %}
+      {% elif status == "rsvp-cleared" %}
+        {% set eventSuccessId = "rsvp-success-title" %}
+        {% set eventSuccessMessage = t("govuk_alpha_events.rsvp.cleared") %}
       {% elif status in ["event-updated", "event-cancelled", "event-submitted", "event-published"] %}
         {% set eventSuccessId = "event-organiser-success-title" %}
         {% if status == "event-updated" %}{% set eventSuccessMessage = t("govuk_alpha.events.updated") %}
@@ -396,6 +399,8 @@
         </form>{% endif %}
 
         {% if confirmCancellation %}<details class="govuk-details govuk-!-margin-top-7" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("events.rsvp_status.not_going") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("events.rsvp_hint") }}</p><form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="not_going"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">{{ t("actions.rsvp") }}</button></form></div></details>{% endif %}
+
+        {% if currentRsvp in ["interested", "not_going"] and (canChangeEngagement or canWithdraw or canConfirm) %}<form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" class="govuk-!-margin-top-4"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="clear"><p class="govuk-body">{{ t("govuk_alpha_events.rsvp.clear_hint") }}</p><button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_events.rsvp.clear_button") }}</button></form>{% endif %}
       {% elif not isAuthenticated and not (event.isCancelled or event.is_cancelled) and not (event.isPast or event.is_past) %}
         <div class="govuk-inset-text">
           <a class="govuk-link" href="{{ urlFor('/login') }}">{{ t("nav.login") }}</a>. {{ t("events.auth_required_detail", { community: tenantName or serviceName }) }}

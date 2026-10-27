@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Les événements récurrents sont désactivés dans cette communauté. Votre événement n’a pas été créé. Vérifiez les informations et créez-le comme un événement unique.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Vous avez changé d\'avis ? Vous pouvez retirer votre réponse afin que l\'événement n\'affiche aucune réponse de votre part.',
+        'clear_button' => 'Effacer ma réponse',
+        'cleared' => 'Votre réponse a été effacée.',
         'pending_tag' => 'Demandé',
         'pending' => 'Vous avez demandé une place. L’organisateur doit l’approuver avant qu’elle soit confirmée.',
     ],

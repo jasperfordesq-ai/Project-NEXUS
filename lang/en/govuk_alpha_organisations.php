@@ -258,4 +258,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Review this organisation',
+        'rating_legend' => 'Rating',
+        'rating_option' => ':rating out of 5',
+        'comment_label' => 'Comment (optional)',
+        'comment_hint' => 'Share what worked well or what others should know.',
+        'submit' => 'Submit review',
+        'saved' => 'Review submitted.',
+        'failed' => 'Unable to submit your review.',
+        'rating_required' => 'Choose a rating before submitting.',
+    ],
 ];

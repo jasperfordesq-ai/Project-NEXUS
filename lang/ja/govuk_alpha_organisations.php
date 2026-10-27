@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'この組織をレビューする',
+        'rating_legend' => '評価',
+        'rating_option' => '5 段階中 :rating',
+        'comment_label' => 'コメント（任意）',
+        'comment_hint' => 'うまくいったことや、他の人が知っておくべきことを共有してください。',
+        'submit' => 'レビューを送信する',
+        'saved' => 'レビューが送信されました。',
+        'failed' => 'レビューを送信できませんでした。',
+        'rating_required' => '送信する前に評価を選択してください。',
+    ],
 ];

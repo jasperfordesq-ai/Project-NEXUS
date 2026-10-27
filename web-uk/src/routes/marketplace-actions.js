@@ -1026,6 +1026,28 @@ router.post('/offers/:id(\\d+)/accept-counter', asyncRoute(async (req, res) => {
   );
 }));
 
+// The SELLER countering a pending offer with an amount and an optional message, as
+// React's MyOffersPage does (PUT offers/{id}/counter; the API requires amount >= 0.01
+// and a message of at most 500 characters). The buyer then accepts via /accept-counter.
+router.post('/offers/:id(\\d+)/counter', asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const amountText = trimmed(req.body.counter_amount, 32);
+  const amount = Number(amountText);
+  if (!/^\d+(?:\.\d{1,2})?$/.test(amountText) || !Number.isFinite(amount) || amount <= 0) {
+    return redirectTo(res, offersRedirect('received', 'counter-amount-invalid'));
+  }
+  const message = trimmed(req.body.counter_message, 500);
+  return runAction(
+    req,
+    res,
+    'PUT',
+    `/offers/${id}/counter`,
+    message ? { amount, message } : { amount },
+    offersRedirect('received', 'countered'),
+    offersRedirect('received', 'counter-failed')
+  );
+}));
+
 router.post('/offers/:id(\\d+)/decline', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   return runAction(

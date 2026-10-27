@@ -17,6 +17,9 @@ const {
   uploadMessageAttachments,
   callConversationApi,
   callListingApi,
+  callJobApi,
+  callVolunteeringApi,
+  getEvent,
   ApiError
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
@@ -294,7 +297,116 @@ function groupStatus(status, t) {
   };
 }
 
+// The reactions React offers on any message (MessageBubble REACTION_EMOJIS), one-to-one
+// and group alike.
+const MESSAGE_REACTION_EMOJIS = Object.freeze(['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}']);
+
+/**
+ * Adds reaction counts and the member's own choices to each message, from
+ * GET /api/v2/messages/reactions/batch.
+ */
+function withMessageReactions(messages, reactionsByMessage, currentUserId) {
+  return messages.map((message) => {
+    const reactionEntries = listFrom(reactionsByMessage[String(message.id)] || reactionsByMessage[message.id]);
+    const reactionCounts = [];
+    const myEmojis = [];
+    reactionEntries.forEach((reaction) => {
+      const emoji = trimmed(reaction && reaction.emoji, 16);
+      const count = Math.trunc(Number(reaction && reaction.count) || 0);
+      const userIds = listFrom(reaction && reaction.user_ids)
+        .map((userId) => positiveInteger(userId))
+        .filter((userId) => userId !== null);
+      if (emoji && count > 0) reactionCounts.push({ emoji, count });
+      if (emoji && currentUserId !== null && userIds.includes(currentUserId) && !myEmojis.includes(emoji)) {
+        myEmojis.push(emoji);
+      }
+    });
+    return {
+      ...message,
+      reactionCounts,
+      reactionOptions: MESSAGE_REACTION_EMOJIS.map((emoji) => ({ emoji, mine: myEmojis.includes(emoji) }))
+    };
+  });
+}
+
+async function messageReactionsFor(token, messages) {
+  const ids = messages
+    .filter((message) => !message.isDeleted)
+    .map((message) => positiveInteger(message.id))
+    .filter((id) => id !== null);
+  if (ids.length === 0) return {};
+  try {
+    const data = dataFrom(await callMessage(token, 'GET', `/reactions/batch?ids=${ids.join(',')}`));
+    return data && data.reactions && typeof data.reactions === 'object' ? data.reactions : {};
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return {};
+  }
+}
+
+/**
+ * What a conversation is about (React MessageContextCard): a listing, event, job
+ * or volunteering opportunity. Read from ?context_type=&context_id= on a new
+ * conversation, otherwise from the earliest message that carries one.
+ */
+const MESSAGE_CONTEXTS = {
+  listing: {
+    href: (id) => `/listings/${encodeURIComponent(id)}`,
+    load: (token, id) => callListingApi(token, 'GET', `/${encodeURIComponent(id)}`)
+  },
+  event: {
+    href: (id) => `/events/${encodeURIComponent(id)}`,
+    load: (token, id) => getEvent(token, id)
+  },
+  job: {
+    href: (id) => `/jobs/${encodeURIComponent(id)}`,
+    load: (token, id) => callJobApi(token, 'GET', `/${encodeURIComponent(id)}`)
+  },
+  volunteering: {
+    href: (id) => `/volunteering/opportunities/${encodeURIComponent(id)}`,
+    load: (token, id) => callVolunteeringApi(token, 'GET', `/opportunities/${encodeURIComponent(id)}`)
+  }
+};
+
+function messageContextType(value) {
+  const type = trimmed(value, 50).toLowerCase();
+  return Object.prototype.hasOwnProperty.call(MESSAGE_CONTEXTS, type) ? type : '';
+}
+
+function requestedMessageContext(query, messages) {
+  const queryType = messageContextType(query.context_type);
+  const queryId = positiveInteger(query.context_id);
+  if (queryType && queryId !== null) return { type: queryType, id: queryId, fromQuery: true };
+  const carrier = messages.find((message) => messageContextType(message.context_type) && positiveInteger(message.context_id) !== null);
+  return carrier
+    ? { type: messageContextType(carrier.context_type), id: positiveInteger(carrier.context_id), fromQuery: false }
+    : null;
+}
+
+async function loadMessageContext(token, context, t) {
+  if (!context) return null;
+  const config = MESSAGE_CONTEXTS[context.type];
+  let title = '';
+  try {
+    const data = dataFrom(await config.load(token, context.id)) || {};
+    const record = data.listing || data.event || data.job || data.opportunity || data;
+    title = trimmed(record && (record.title || record.name || record.summary), 200);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+  }
+  const typeLabel = t(`govuk_alpha_messages.context.type_${context.type}`);
+  return {
+    ...context,
+    href: config.href(context.id),
+    typeLabel,
+    title: title || t('govuk_alpha_messages.context.untitled', { type: typeLabel, id: context.id })
+  };
+}
+
 const DIRECT_SUCCESS_STATUS_KEYS = {
+  'reaction-added': 'govuk_alpha_messages.status.reaction_added',
+  'reaction-removed': 'govuk_alpha_messages.status.reaction_removed',
+  'coordinator-requested': 'govuk_alpha_messages.safeguarding.coordinator_sent',
   'message-sent': 'govuk_alpha.messages.sent',
   'message-edited': 'govuk_alpha.messages.edited_success',
   'message-deleted': 'govuk_alpha.messages.deleted_success',
@@ -319,7 +431,12 @@ const DIRECT_ERROR_STATUS_KEYS = {
   'voice-failed': 'govuk_alpha_messages.voice.error_failed',
   'message-vetting-required': 'safeguarding.errors.vetting_required_title',
   'message-contact-restricted': 'safeguarding.errors.contact_restricted_title',
-  'message-policy-unavailable': 'safeguarding.errors.policy_unavailable_title'
+  'message-policy-unavailable': 'safeguarding.errors.policy_unavailable_title',
+  'reaction-invalid': 'govuk_alpha_messages.status.reaction_invalid',
+  'reaction-forbidden': 'govuk_alpha_messages.status.reaction_forbidden',
+  'reaction-failed': 'govuk_alpha_messages.status.reaction_failed',
+  'coordinator-request-failed': 'govuk_alpha_messages.safeguarding.coordinator_failed',
+  'conversation-delete-failed': 'govuk_alpha_messages.delete_conversation.failed'
 };
 
 function directStatus(status, t) {
@@ -330,8 +447,8 @@ function directStatus(status, t) {
   return errorKey ? {
     type: 'error',
     message: t(errorKey),
-    href: value.startsWith('message-') && [
-      'message-vetting-required', 'message-contact-restricted', 'message-policy-unavailable'
+    href: [
+      'message-vetting-required', 'message-contact-restricted', 'message-policy-unavailable', 'coordinator-request-failed'
     ].includes(value) ? '#safeguarding-notice' : '#body'
   } : null;
 }
@@ -536,6 +653,14 @@ async function renderDirectConversation(req, res, userId) {
   const normalized = directConversationFrom(messagesResult, userId, currentUserId, res.locals.t);
   const restriction = dataFrom(restrictionResult) || {};
   const listing = listingResult ? dataFrom(listingResult) : null;
+  // Reactions on one-to-one messages (React ConversationPage + MessageBubble);
+  // web-uk had them for group conversations only until 27 Oct 2026.
+  const reactionsByMessage = await messageReactionsFor(req.token, normalized.messages);
+  normalized.messages = withMessageReactions(normalized.messages, reactionsByMessage, currentUserId);
+  // A listing passed as ?listing= keeps its own card; anything else gets the
+  // React MessageContextCard equivalent.
+  const contextRequest = listing ? null : requestedMessageContext(req.query, normalized.messages);
+  const messageContext = await loadMessageContext(req.token, contextRequest, res.locals.t);
   const query = trimmed(req.query.q);
   const olderParams = new URLSearchParams();
   if (listingId !== null) olderParams.set('listing', String(listingId));
@@ -569,6 +694,8 @@ async function renderDirectConversation(req, res, userId) {
     olderHref,
     listing,
     listingId,
+    messageContext,
+    messageReactionEmojis: MESSAGE_REACTION_EMOJIS,
     query,
     directStatus: directStatus(req.query.status, res.locals.t),
     currentUser: profile,
@@ -656,6 +783,101 @@ router.post('/:id(\\d+)/archive', asyncRoute(async (req, res) => {
   }
 
   return redirectTo(res, statusRedirect('/messages', status));
+}));
+
+/**
+ * Delete a whole conversation, for me or for everyone (React ConversationPage
+ * "Delete for me" / "Delete for everyone", DELETE /api/v2/messages/conversations/{id}
+ * with scope). "For me" is what the archive button already does; the page asks
+ * which, because deleting for everyone cannot be undone.
+ */
+async function conversationPartnerName(req, res, id) {
+  try {
+    const result = await callMessage(req.token, 'GET', `/${encodeURIComponent(id)}?per_page=1`);
+    invalidateMessageUnreadCount(req.token);
+    return directConversationFrom(result, id, null, res.locals.t).conversation.otherUser.name;
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return res.locals.t('members.unknown_member');
+  }
+}
+
+async function renderDeleteConversation(req, res, id, error = '') {
+  const name = await conversationPartnerName(req, res, id);
+  return res.status(error ? 400 : 200).render('messages/delete-conversation', {
+    title: res.locals.t('govuk_alpha_messages.delete_conversation.title'),
+    conversationId: id,
+    partnerName: name,
+    error,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+router.get('/:id(\\d+)/delete', requireAuth, asyncRoute(async (req, res) => (
+  renderDeleteConversation(req, res, Number(req.params.id))
+), { notFoundTitle: 'Conversation not found' }));
+
+router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const scope = ['self', 'everyone'].includes(req.body.scope) ? req.body.scope : '';
+  if (!scope) {
+    return renderDeleteConversation(req, res, id, res.locals.t('govuk_alpha_messages.delete_conversation.error_choose'));
+  }
+
+  try {
+    await callMessage(token, 'DELETE', `/conversations/${encodeURIComponent(id)}`, { scope });
+  } catch (error) {
+    if (redirectOnAuthError(error, req, res)) return undefined;
+    return redirectTo(res, messageRedirect(id, 'conversation-delete-failed'));
+  }
+
+  invalidateMessageUnreadCount(token);
+  return redirectTo(res, statusRedirect('/messages', scope === 'everyone' ? 'conversation-deleted' : 'conversation-archived'));
+}));
+
+// Ask a coordinator to help arrange contact from a safeguarding-restricted
+// conversation (React requestCoordinatorHelp). The API re-checks the restriction.
+router.post('/:id(\\d+)/request-coordinator', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  let status = 'coordinator-requested';
+  try {
+    await callMessage(token, 'POST', `/${encodeURIComponent(id)}/request-coordinator`, {});
+  } catch (error) {
+    if (redirectOnAuthError(error, req, res)) return undefined;
+    status = 'coordinator-request-failed';
+  }
+
+  return redirectTo(res, messageRedirect(id, status, '#safeguarding-notice'));
+}));
+
+// React to a one-to-one message (POST /api/v2/messages/{id}/reactions toggles).
+router.post('/:userId(\\d+)/m/:messageId(\\d+)/react', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const userId = Number(req.params.userId);
+  const messageId = Number(req.params.messageId);
+  const emoji = trimmed(req.body.emoji, 16);
+  if (!MESSAGE_REACTION_EMOJIS.includes(emoji)) {
+    return redirectTo(res, messageRedirect(userId, 'reaction-invalid', `#m-${messageId}`));
+  }
+
+  let status = 'reaction-added';
+  try {
+    const data = dataFrom(await callMessage(token, 'POST', `/${encodeURIComponent(messageId)}/reactions`, { emoji }));
+    status = data && data.action === 'removed' ? 'reaction-removed' : 'reaction-added';
+  } catch (error) {
+    if (redirectOnAuthError(error, req, res)) return undefined;
+    status = error instanceof ApiError && error.status === 403 ? 'reaction-forbidden' : 'reaction-failed';
+  }
+
+  return redirectTo(res, messageRedirect(userId, status, `#m-${messageId}`));
 }));
 
 router.post('/:id(\\d+)/restore', asyncRoute(async (req, res) => {
@@ -1092,7 +1314,7 @@ router.get('/groups/:conversationId(\\d+)', requireAuth, asyncRoute(async (req, 
   const visibleMessages = searchQuery
     ? messages.filter(message => String(message.body || message.content || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : messages;
-  const groupReactionEmojis = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+  const groupReactionEmojis = MESSAGE_REACTION_EMOJIS;
   const renderedMessages = visibleMessages.map(message => {
     const reactionEntries = listFrom(reactionsByMessage[String(message.id)] || reactionsByMessage[message.id]);
     const reactionCounts = [];
@@ -1229,7 +1451,9 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
   const conversationId = req.params.id;
   const recipientId = Number(conversationId);
   const attachments = uploadedFiles(req, 'attachments');
-  const contextType = trimmed(req.body.context_type, 50) === 'listing' ? 'listing' : '';
+  // What the conversation is about: a listing, event, job or volunteering
+  // opportunity (React sends the same context with the first message).
+  const contextType = messageContextType(req.body.context_type);
   const contextId = contextType ? positiveInteger(req.body.context_id) : null;
 
   if (!content && attachments.length === 0) {

@@ -4007,6 +4007,13 @@ return [
             'removed' => 'スキルが削除されました。',
             'failed' => 'スキルを更新できませんでした。もう一度お試しください。',
             'name_required' => 'スキル名を入力してください。',
+            'category_label' => 'カテゴリ（任意）',
+            'category_none' => 'カテゴリなし',
+            'proficiency_label' => '習熟度',
+            'proficiency_beginner' => '初級',
+            'proficiency_intermediate' => '中級',
+            'proficiency_advanced' => '上級',
+            'proficiency_expert' => 'エキスパート',
         ],
         'sessions' => [
             'title' => 'サインイン中の場所',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'サインイン時の2段階目として認証アプリを追加してください。',
         'two_factor_link' => '2段階認証を設定または管理する',
         'blocked_link' => 'ブロックしたメンバーを管理',
+        'dob_label' => '生年月日',
+        'dob_hint' => '任意です。本人確認にのみ必要で、18歳以上であることを示す必要があります。削除するには、3つの欄をすべて空にしてください。',
+        'dob_locked' => '本人確認が完了しているため、生年月日はロックされています。',
     ],
     'delete_account' => [
         'title' => 'アカウントを削除する',

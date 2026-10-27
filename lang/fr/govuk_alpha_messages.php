@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Vous ne pouvez pas réagir à ce message.',
         'reaction_failed' => 'Nous n\'avons pas pu enregistrer votre réaction.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Supprimer cette conversation',
+        'title' => 'Supprimer cette conversation',
+        'caption' => 'Conversation avec :name',
+        'legend' => 'Pour qui la conversation doit-elle être supprimée ?',
+        'self' => 'Supprimer pour moi',
+        'self_hint' => 'Elle est retirée de votre boîte de réception. :name peut toujours la voir.',
+        'everyone' => 'Supprimer pour tout le monde',
+        'everyone_hint' => 'Elle est supprimée pour vous et pour :name. Cette action est irréversible.',
+        'submit' => 'Supprimer la conversation',
+        'cancel' => 'Annuler et revenir à la conversation',
+        'deleted' => 'La conversation a été supprimée pour tout le monde.',
+        'failed' => 'Désolé, nous n’avons pas pu supprimer la conversation. Réessayez plus tard.',
+        'error_choose' => 'Choisissez pour qui la conversation doit être supprimée',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Demander l’aide d’un coordinateur',
+        'coordinator_hint' => 'Un coordinateur de la communauté sera informé que vous souhaitez de l’aide pour prendre contact, et vous contactera.',
+        'coordinator_sent' => 'Coordinateur prévenu. Il vous contactera pour vous aider à organiser le contact.',
+        'coordinator_failed' => 'Nous n’avons pas pu envoyer votre demande pour le moment. Veuillez réessayer dans quelques instants.',
+        'vetting_button' => 'Demander un réexamen de ma vérification',
+        'vetting_hint' => 'Votre communauté est invitée à réexaminer votre vérification. Vous verrez le résultat dans les paramètres de votre profil.',
+        'required_checks' => 'Vérifications nécessaires',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Concernant',
+        'type_listing' => 'Annonce',
+        'type_event' => 'Événement',
+        'type_job' => 'Emploi',
+        'type_volunteering' => 'Bénévolat',
+        'untitled' => ':type numéro :id',
+    ],
 ];

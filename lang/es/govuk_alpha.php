@@ -4007,6 +4007,13 @@ return [
             'removed' => 'Su habilidad ha sido eliminada.',
             'failed' => 'No hemos podido actualizar sus habilidades. Vuelva a intentarlo.',
             'name_required' => 'Introduzca el nombre de la habilidad.',
+            'category_label' => 'Categoría (opcional)',
+            'category_none' => 'Sin categoría',
+            'proficiency_label' => 'Nivel de competencia',
+            'proficiency_beginner' => 'Principiante',
+            'proficiency_intermediate' => 'Intermedio',
+            'proficiency_advanced' => 'Avanzado',
+            'proficiency_expert' => 'Experto',
         ],
         'sessions' => [
             'title' => 'Dónde ha iniciado sesión',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Añada una aplicación de autenticación como segundo paso al iniciar sesión.',
         'two_factor_link' => 'Configurar o gestionar la verificación en dos pasos',
         'blocked_link' => 'Gestionar miembros bloqueados',
+        'dob_label' => 'Fecha de nacimiento',
+        'dob_hint' => 'Opcional. Solo la necesita para verificar su identidad y debe indicar que tiene 18 años o más. Para eliminarla, vacíe las tres casillas.',
+        'dob_locked' => 'Tu fecha de nacimiento está bloqueada porque tu identidad ha sido verificada.',
     ],
     'delete_account' => [
         'title' => 'Elimina tu cuenta',

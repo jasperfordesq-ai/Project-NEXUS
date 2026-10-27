@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'このメッセージには反応できません。',
         'reaction_failed' => 'あなたの反応を保存できませんでした。',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'この会話を削除する',
+        'title' => 'この会話を削除する',
+        'caption' => ':nameさんとの会話',
+        'legend' => '誰に対して会話を削除しますか？',
+        'self' => '自分のために削除',
+        'self_hint' => 'あなたの受信箱から削除されます。:nameさんは引き続き見ることができます。',
+        'everyone' => '全員のために削除',
+        'everyone_hint' => 'あなたと:nameさんの両方から削除されます。元に戻すことはできません。',
+        'submit' => '会話を削除',
+        'cancel' => 'キャンセルして会話に戻る',
+        'deleted' => '会話は全員に対して削除されました。',
+        'failed' => '申し訳ありませんが、会話を削除できませんでした。後でもう一度お試しください。',
+        'error_choose' => '誰に対して会話を削除するか選択してください',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'コーディネーターにサポートを依頼する',
+        'coordinator_hint' => '連絡を取りたいことがコミュニティのコーディネーターに伝えられ、担当者からご連絡します。',
+        'coordinator_sent' => 'コーディネーターに通知しました。連絡の調整についてご連絡します。',
+        'coordinator_failed' => '現在、依頼を送信できませんでした。しばらくしてからもう一度お試しください。',
+        'vetting_button' => '自分の審査の見直しを依頼する',
+        'vetting_hint' => 'コミュニティにあなたの審査の見直しが依頼されます。結果はプロフィール設定で確認できます。',
+        'required_checks' => '必要な確認',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => '件名',
+        'type_listing' => 'リスティング',
+        'type_event' => 'イベント',
+        'type_job' => '求人',
+        'type_volunteering' => 'ボランティア',
+        'untitled' => ':type 番号 :id',
+    ],
 ];

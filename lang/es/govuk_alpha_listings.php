@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Habilidades (opcional)',
         'skill_tags_hint' => 'Enumere las habilidades involucradas, separadas por comas, por ejemplo: jardinería, cocina, asesoramiento fiscal. Puedes sumar hasta 10.',
+        'hours_available_label' => 'Horas disponibles',
+        'hours_available_hint' => 'Total de horas que estás dispuesto a dar. Déjalo en blanco para sin límite.',
+        'hours_available_range' => 'Las horas disponibles deben ser al menos 0,5.',
+        'hours_available_below_estimate' => 'Las horas disponibles no pueden ser inferiores a las horas estimadas.',
+        'remove_image_label' => 'Eliminar la foto actual',
+        'remove_image_failed' => 'no se pudo eliminar la foto',
     ],
     'nav' => [
         'view_analytics' => 'Ver análisis de listado',

@@ -106,4 +106,72 @@ return [
         'truncated' => 'Giorraíodh an postáil luaite seo.',
         'image_alt' => 'Íomhá ceangailte leis an bpostáil luaite',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'Is maith liom',
+        'love' => 'Grá',
+        'laugh' => 'Gáire',
+        'wow' => 'Iontas',
+        'sad' => 'Brón',
+        'celebrate' => 'Ceiliúradh',
+        'clap' => 'Bualadh bos',
+        'time_credit' => 'Creidmheas ama',
+        'legend' => 'Déan imoibriú ar an bpostáil seo',
+        'comment_legend' => 'Déan imoibriú ar an trácht seo',
+        'see_who' => 'Féach cé a rinne imoibriú le :reaction (:count)',
+        'reactors_title' => 'Daoine a rinne imoibriú le :reaction',
+        'reactors_total' => 'Iomlán: :count',
+        'reactors_empty' => 'Níl imoibriú déanta ag aon duine le :reaction fós.',
+        'unknown_member' => 'Ball den phobal',
+        'show_more' => 'Taispeáin tuilleadh daoine',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'Ar ais chuig an bpostáil',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'Aistrigh an phostáil seo',
+        'heading' => 'Aistriúchán',
+        'hint' => 'Aistrithe go huathoibríoch. Tá an phostáil bhunaidh thuas.',
+        'done' => 'Aistríodh an phostáil.',
+        'failed' => 'Ár leithscéal, níorbh fhéidir an phostáil seo a aistriú. Bain triail eile as níos déanaí.',
+        'unavailable' => 'Níl aistriúchán ar fáil sa phobal seo.',
+        'same' => 'Tá an phostáil seo i do theanga cheana féin.',
+        'empty' => 'Níl aon téacs le haistriú sa phostáil seo.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'Cén fáth a bhfuil sé seo á thaispeáint dom?',
+        'default_reason' => 'Tugtar tús áite dó seo bunaithe ar do ghníomhaíocht',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'Féach ar staitisticí na postála',
+        'title' => 'Staitisticí na postála',
+        'intro' => 'Is tusa amháin a fheiceann na figiúirí seo.',
+        'views' => 'Amhairc',
+        'likes' => '‘Is maith liom’',
+        'comments' => 'Tráchtanna',
+        'shares' => 'Comhroinntí',
+        'reach' => 'Daoine ar sroicheadh',
+        'reach_hint' => 'Is é an líon daoine ar sroicheadh líon na ndaoine éagsúla a chonaic an phostáil.',
+        'reactions_breakdown' => 'Imoibrithe',
+        'no_reactions' => 'Níl aon imoibrithe fós.',
+        'forbidden' => 'Ní féidir ach leis an duine a scríobh an phostáil seo a staitisticí a fheiceáil.',
+        'failed' => 'Ár leithscéal, níorbh fhéidir na staitisticí a lódáil. Bain triail eile as níos déanaí.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'Comhroinn le do thrácht féin',
+        'label' => 'Do thrácht',
+        'hint' => 'Taispeántar do thrácht leis an bpostáil nuair a chomhroinneann tú í.',
+        'submit' => 'Comhroinn leis an trácht',
+    ],
 ];

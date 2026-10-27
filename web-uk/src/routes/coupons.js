@@ -7,6 +7,7 @@ const express = require('express');
 const { callCouponApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { qrSvg } = require('../lib/qr-svg');
 
 const router = express.Router();
 
@@ -115,6 +116,31 @@ router.get('/', asyncRoute(async (req, res) => {
   });
 }, { redirectOn401: loginRedirect() }));
 
+// The one-time "redeem in store" token (React CouponDetailPage). It lives five minutes
+// (MerchantCouponService::generateQrToken) and is a credential, so it rides the session,
+// never the URL, and is dropped once it has expired.
+function qrSessionKey(id) {
+  return `couponQr:${id}`;
+}
+
+function formatTime(value) {
+  const date = new Date(trimmed(value));
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(getRequestIntlLocale(), { hour: 'numeric', minute: '2-digit' }).format(date);
+}
+
+function storedQr(req, id) {
+  const stored = req.session && req.session[qrSessionKey(id)];
+  if (!stored || typeof stored !== 'object') return null;
+  const expires = new Date(trimmed(stored.expires_at));
+  if (!trimmed(stored.token) || Number.isNaN(expires.getTime()) || expires.getTime() <= Date.now()) {
+    delete req.session[qrSessionKey(id)];
+    return null;
+  }
+  const svg = qrSvg(stored.token);
+  return svg ? { token: stored.token, svg, expiresText: formatTime(stored.expires_at) } : null;
+}
+
 router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -126,8 +152,29 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   return res.render('coupons/detail', {
     title: coupon.title,
     activeNav: 'explore',
-    coupon
+    coupon,
+    qr: storedQr(req, id),
+    qrError: trimmed(req.query.status) === 'qr-failed' ? res.locals.t('govuk_alpha_commerce.coupon_qr.failed') : '',
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Coupon not found' }));
+
+router.post('/:id(\\d+)/qr', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = positiveInteger(req.params.id);
+  try {
+    const payload = itemFrom(await callCouponApi(token, 'POST', `/${encodeURIComponent(id)}/qr`, {}));
+    if (!trimmed(payload.token)) throw new Error('No QR token returned');
+    if (req.session) {
+      req.session[qrSessionKey(id)] = { token: trimmed(payload.token), expires_at: trimmed(payload.expires_at) };
+    }
+    return redirectTo(res, `/coupons/${id}#redeem-in-store`);
+  } catch (error) {
+    if (error && error.status === 401) return redirectTo(res, loginRedirect());
+    return redirectTo(res, `/coupons/${id}?status=qr-failed#redeem-in-store`);
+  }
+}, { redirectOn401: loginRedirect() }));
 
 module.exports = router;

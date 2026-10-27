@@ -163,4 +163,5 @@ return [
             'rate_limited' => 'U hebt te veel meldingen verstuurd. Probeer het later opnieuw.',
         ],
     ],
+    'sort_communityrank' => 'Gemeenschapsrang',
 ];

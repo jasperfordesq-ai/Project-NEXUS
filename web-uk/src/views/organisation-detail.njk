@@ -116,7 +116,22 @@
     <div class="govuk-inset-text">{{ t("govuk_alpha.org_depth.opportunities_empty") }}</div>
   {% endif %}
 
-  <h2 class="govuk-heading-l">{{ t("govuk_alpha.org_depth.reviews_heading") }}</h2>
+  <h2 class="govuk-heading-l" id="reviews">{{ t("govuk_alpha.org_depth.reviews_heading") }}</h2>
+  {% if reviewForm and reviewForm.successText %}
+    {% set notificationMessage = reviewForm.successText %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+  {% if reviewForm and reviewForm.errorText %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li>{% if reviewForm.status == "review-rating-required" %}<a href="#rating">{{ reviewForm.errorText }}</a>{% else %}{{ reviewForm.errorText }}{% endif %}</li></ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
   {% if reviews and reviews.length %}
     <div class="nexus-alpha-card-list">
       {% for review in reviews %}
@@ -143,5 +158,33 @@
     </div>
   {% else %}
     <div class="govuk-inset-text">{{ t("govuk_alpha.org_depth.reviews_empty") }}</div>
+  {% endif %}
+
+  {% if reviewForm and organisation.id %}
+    {% set ratingError = reviewForm.status == "review-rating-required" %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-7" id="write-review">{{ t("govuk_alpha_organisations.reviews.write_heading") }}</h2>
+    <form method="post" action="{{ urlFor('/organisations/' + (organisation.id | string) + '/reviews') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if ratingError %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset"{% if ratingError %} aria-describedby="rating-error"{% endif %}>
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_organisations.reviews.rating_legend") }}</legend>
+          {% if ratingError %}<p id="rating-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ reviewForm.errorText }}</p>{% endif %}
+          <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
+            {% for score in [1, 2, 3, 4, 5] %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{% if loop.first %}rating{% else %}rating-{{ score }}{% endif %}" name="rating" type="radio" value="{{ score }}">
+                <label class="govuk-label govuk-radios__label" for="{% if loop.first %}rating{% else %}rating-{{ score }}{% endif %}">{{ t("govuk_alpha_organisations.reviews.rating_option", { rating: score }) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="review-comment">{{ t("govuk_alpha_organisations.reviews.comment_label") }}</label>
+        <div id="review-comment-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.reviews.comment_hint") }}</div>
+        <textarea class="govuk-textarea" id="review-comment" name="comment" rows="4" maxlength="2000" aria-describedby="review-comment-hint"></textarea>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_organisations.reviews.submit") }}</button>
+    </form>
   {% endif %}
 {% endblock %}

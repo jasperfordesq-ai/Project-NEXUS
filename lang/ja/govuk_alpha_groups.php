@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'このコミュニティの保護ルールにより、このグループには参加できません。コーディネーターに相談してください。',
         'error_safeguarding_unavailable' => '現在、このコミュニティの保護ルールを確認できません。しばらくしてからもう一度お試しください。',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => ':groupのメンバー',
+        'link' => 'すべてのメンバーを表示・検索する',
+        'search_label' => 'グループメンバーを検索',
+        'search_hint' => '名前または紹介文で検索',
+        'search_button' => 'メンバーを検索',
+        'clear' => '検索をクリア',
+        'empty' => 'このグループには表示できるメンバーがいません。',
+        'empty_search' => '「:query」に一致するメンバーはいません。',
+        'role_admin' => 'グループ管理者',
+        'pagination_label' => 'メンバーのページ',
+        'back' => ':groupに戻る',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => ':groupのイベント',
+        'link' => '過去のイベントを含むすべてのイベントを見る',
+        'filter_label' => '表示するイベント',
+        'when_all' => 'すべてのイベント',
+        'when_upcoming' => '今後のイベント',
+        'when_past' => '過去のイベント',
+        'filter_button' => 'イベントを表示',
+        'empty' => '表示するイベントはありません。',
+        'pagination_label' => 'イベントのページ',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'あなたにおすすめ',
+        'score' => ':score%一致',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => '注目のグループ',
+        'more_title' => 'その他のグループ',
+    ],
 ];

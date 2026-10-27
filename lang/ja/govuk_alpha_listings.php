@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'スキル（オプション）',
         'skill_tags_hint' => '関連するスキルをカンマで区切ってリストします。例: ガーデニング、料理、税金に関するアドバイス。最大 10 個まで追加できます。',
+        'hours_available_label' => '提供可能な時間',
+        'hours_available_hint' => '提供できる合計時間です。上限を設けない場合は空欄にしてください。',
+        'hours_available_range' => '提供可能な時間は 0.5 以上にしてください。',
+        'hours_available_below_estimate' => '提供可能な時間を想定時間より少なく設定することはできません。',
+        'remove_image_label' => '現在の写真を削除する',
+        'remove_image_failed' => '写真を削除できませんでした',
     ],
     'nav' => [
         'view_analytics' => 'リスティング分析を表示する',

@@ -106,4 +106,72 @@ return [
         'truncated' => 'Esta postagem citada foi encurtada.',
         'image_alt' => 'Imagem anexada à postagem citada',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'Gosto',
+        'love' => 'Adoro',
+        'laugh' => 'Riso',
+        'wow' => 'Uau',
+        'sad' => 'Triste',
+        'celebrate' => 'Celebrar',
+        'clap' => 'Aplaudir',
+        'time_credit' => 'Crédito de tempo',
+        'legend' => 'Reagir a esta publicação',
+        'comment_legend' => 'Reagir a este comentário',
+        'see_who' => 'Ver quem reagiu com :reaction (:count)',
+        'reactors_title' => 'Pessoas que reagiram com :reaction',
+        'reactors_total' => 'Total: :count pessoas',
+        'reactors_empty' => 'Ainda ninguém reagiu com :reaction.',
+        'unknown_member' => 'Um membro da comunidade',
+        'show_more' => 'Mostrar mais pessoas',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'Voltar à publicação',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'Traduzir esta publicação',
+        'heading' => 'Tradução',
+        'hint' => 'Traduzido automaticamente. A publicação original aparece acima.',
+        'done' => 'A publicação foi traduzida.',
+        'failed' => 'Lamentamos, não foi possível traduzir esta publicação. Tente novamente mais tarde.',
+        'unavailable' => 'A tradução não está disponível nesta comunidade.',
+        'same' => 'Esta publicação já está no seu idioma.',
+        'empty' => 'Esta publicação não tem texto para traduzir.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'Porque estou a ver isto?',
+        'default_reason' => 'Classificado para si com base na sua atividade',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'Ver estatísticas da publicação',
+        'title' => 'Estatísticas da publicação',
+        'intro' => 'Só você pode ver estes números.',
+        'views' => 'Visualizações',
+        'likes' => 'Gostos',
+        'comments' => 'Comentários',
+        'shares' => 'Partilhas',
+        'reach' => 'Alcance',
+        'reach_hint' => 'O alcance é o número de pessoas diferentes que viram a publicação.',
+        'reactions_breakdown' => 'Reações',
+        'no_reactions' => 'Ainda não há reações.',
+        'forbidden' => 'Só a pessoa que escreveu esta publicação pode ver as suas estatísticas.',
+        'failed' => 'Lamentamos, não foi possível carregar as estatísticas. Tente novamente mais tarde.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'Partilhar com o seu comentário',
+        'label' => 'O seu comentário',
+        'hint' => 'O seu comentário aparece com a publicação quando a partilha.',
+        'submit' => 'Partilhar com comentário',
+    ],
 ];

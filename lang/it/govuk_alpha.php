@@ -4007,6 +4007,13 @@ return [
             'removed' => 'La tua competenza è stata rimossa.',
             'failed' => 'Non è stato possibile aggiornare le tue competenze. Riprova.',
             'name_required' => 'Inserisci il nome di una competenza.',
+            'category_label' => 'Categoria (opzionale)',
+            'category_none' => 'Nessuna categoria',
+            'proficiency_label' => 'Livello di competenza',
+            'proficiency_beginner' => 'Principiante',
+            'proficiency_intermediate' => 'Intermedio',
+            'proficiency_advanced' => 'Avanzato',
+            'proficiency_expert' => 'Esperto',
         ],
         'sessions' => [
             'title' => 'Dove sei connesso',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Aggiungi un\'app di autenticazione come secondo passaggio durante l\'accesso.',
         'two_factor_link' => 'Configura o gestisci la verifica in due passaggi',
         'blocked_link' => 'Gestisci i membri bloccati',
+        'dob_label' => 'Data di nascita',
+        'dob_hint' => 'Facoltativa. Serve solo per verificare la sua identità e deve indicare che ha almeno 18 anni. Per rimuoverla, svuoti tutte e tre le caselle.',
+        'dob_locked' => 'La data di nascita è bloccata perché la sua identità è stata verificata.',
     ],
     'delete_account' => [
         'title' => 'Elimina il tuo account',

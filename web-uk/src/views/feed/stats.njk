@@ -1,0 +1,62 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Statistics for the author of a feed post (React PostAnalyticsModal). #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed/posts/' + (postId | string)) }}" class="govuk-back-link">{{ t("govuk_alpha_feed.post_pages.back_to_post") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorMessage %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ errorMessage }}</p></div>
+        </div></div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("feed_t1.permalink_heading") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_feed.stats.title") }}</h1>
+
+      {% if stats %}
+        <p class="govuk-body">{{ t("govuk_alpha_feed.stats.intro") }}</p>
+        <dl class="govuk-summary-list">
+          {% for row in [
+            { key: "views", value: stats.views },
+            { key: "likes", value: stats.likes },
+            { key: "comments", value: stats.comments },
+            { key: "shares", value: stats.shares },
+            { key: "reach", value: stats.reach }
+          ] %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_feed.stats." + row.key) }}</dt>
+              <dd class="govuk-summary-list__value">{{ formatLocaleNumber(row.value) if formatLocaleNumber else row.value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+        <p class="govuk-hint">{{ t("govuk_alpha_feed.stats.reach_hint") }}</p>
+
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_feed.stats.reactions_breakdown") }}</h2>
+        {% if stats.reactions.length %}
+          <dl class="govuk-summary-list">
+            {% for reaction in stats.reactions %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ reaction.label }}</dt>
+                <dd class="govuk-summary-list__value">{{ formatLocaleNumber(reaction.count) if formatLocaleNumber else reaction.count }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% else %}
+          <p class="govuk-body">{{ t("govuk_alpha_feed.stats.no_reactions") }}</p>
+        {% endif %}
+      {% endif %}
+
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/feed/posts/' + (postId | string)) }}">{{ t("govuk_alpha_feed.post_pages.back_to_post") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

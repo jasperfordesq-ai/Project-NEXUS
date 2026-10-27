@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Beoordeel deze organisatie',
+        'rating_legend' => 'Beoordeling',
+        'rating_option' => ':rating van de 5',
+        'comment_label' => 'Opmerking (optioneel)',
+        'comment_hint' => 'Deel wat goed werkte of wat anderen zouden moeten weten.',
+        'submit' => 'Beoordeling versturen',
+        'saved' => 'Beoordeling verstuurd.',
+        'failed' => 'Je beoordeling kon niet worden verstuurd.',
+        'rating_required' => 'Kies een beoordeling voordat je die verstuurt.',
+    ],
 ];

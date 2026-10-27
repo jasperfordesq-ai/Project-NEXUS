@@ -52,6 +52,7 @@ return [
         'popular_add' => 'أضف :tag',
         'apply' => 'تطبيق المرشحات',
         'reset' => 'إعادة تعيين المرشحات',
+        'type_podcasts' => 'البودكاست',
     ],
     'results' => [
         'count' => '{0} لم يتم العثور على نتائج|{1} تم العثور على نتيجة واحدة|[2,*] تم العثور على نتائج :count',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'عرض العضو',
         'view_event' => 'عرض الحدث',
         'view_group' => 'عرض المجموعة',
+        'tab_podcasts' => 'البودكاست (:count)',
+        'section_podcasts' => 'البودكاست',
+        'episode_from' => 'حلقة من :show',
     ],
     'states' => [
         'no_query_title' => 'ابدأ بحثك',

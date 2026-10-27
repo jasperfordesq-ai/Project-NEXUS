@@ -5039,7 +5039,14 @@
                     "added": "Ihre Fähigkeit wurde hinzugefügt.",
                     "removed": "Ihre Fähigkeit wurde entfernt.",
                     "failed": "Ihre Fähigkeiten konnten nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
-                    "name_required": "Geben Sie einen Namen für die Fähigkeit ein."
+                    "name_required": "Geben Sie einen Namen für die Fähigkeit ein.",
+                    "category_label": "Kategorie (optional)",
+                    "category_none": "Keine Kategorie",
+                    "proficiency_label": "Kompetenzstufe",
+                    "proficiency_beginner": "Anfänger",
+                    "proficiency_intermediate": "Fortgeschritten",
+                    "proficiency_advanced": "Erweitert",
+                    "proficiency_expert": "Experte"
                 },
                 "sessions": {
                     "title": "Wo Sie angemeldet sind",
@@ -5240,7 +5247,10 @@
                 "two_factor_heading": "Zwei-Schritt-Verifizierung",
                 "two_factor_intro": "Fügen Sie eine Authentifikator-App als zweiten Schritt bei der Anmeldung hinzu.",
                 "two_factor_link": "Zwei-Schritt-Verifizierung einrichten oder verwalten",
-                "blocked_link": "Blockierte Mitglieder verwalten"
+                "blocked_link": "Blockierte Mitglieder verwalten",
+                "dob_label": "Geburtsdatum",
+                "dob_hint": "Optional. Sie benötigen es nur zur Überprüfung Ihrer Identität, und es muss zeigen, dass Sie mindestens 18 Jahre alt sind. Um es zu entfernen, leeren Sie alle drei Felder.",
+                "dob_locked": "Ihr Geburtsdatum ist gesperrt, da Ihre Identität verifiziert wurde."
             },
             "delete_account": {
                 "title": "Löschen Sie Ihr Konto",
@@ -6817,7 +6827,16 @@
                 "status_accepted_done": "Sie haben das Angebot angenommen.",
                 "status_declined_done": "Sie haben das Angebot abgelehnt.",
                 "status_withdrawn_done": "Sie haben Ihr Angebot zurückgezogen.",
-                "status_action_failed": "Leider konnte diese Aktion nicht abgeschlossen werden."
+                "status_action_failed": "Leider konnte diese Aktion nicht abgeschlossen werden.",
+                "counter_summary": "Ein Gegenangebot machen",
+                "counter_amount_label": "Betrag des Gegenangebots",
+                "counter_amount_hint": "In der Währung des Inserats, zum Beispiel 12.50",
+                "counter_message_optional": "Nachricht (optional)",
+                "counter_message_label": "Nachricht des Verkäufers",
+                "counter_send": "Gegenangebot senden",
+                "status_countered_done": "Ihr Gegenangebot wurde gesendet.",
+                "counter_amount_invalid": "Geben Sie einen Gegenangebotsbetrag über null mit höchstens zwei Dezimalstellen ein",
+                "counter_failed": "Ihr Gegenangebot konnte leider nicht gesendet werden. Bitte versuchen Sie es erneut."
             },
             "orders_buyer": {
                 "title": "Meine Bestellungen",
@@ -7616,6 +7635,35 @@
                 "error_appeal_long": "Ihr Widerspruch darf höchstens 5.000 Zeichen lang sein",
                 "status_appealed_done": "Ihr Widerspruch wurde gesendet.",
                 "status_appeal_failed": "Ihr Widerspruch konnte leider nicht gesendet werden. Bitte versuchen Sie es erneut."
+            },
+            "featured": {
+                "heading": "Empfohlene Inserate"
+            },
+            "filters": {
+                "listing_type": "Angebotsart",
+                "listing_type_any": "Alle Arten"
+            },
+            "detail": {
+                "item_details": "Artikeldetails",
+                "more_from_seller": "Mehr von :name",
+                "more_from_this_seller": "Mehr von diesem Verkäufer",
+                "view_all_from_seller": "Alle Inserate dieses Verkäufers anzeigen"
+            },
+            "seller_stats": {
+                "heading": "Ihre Verkaufsübersicht",
+                "views": "Gesamtaufrufe",
+                "revenue": "Umsatz",
+                "no_revenue": "Noch keine Verkaufserlöse"
+            },
+            "coupon_qr": {
+                "heading": "Im Geschäft einlösen",
+                "intro": "Holen Sie sich einen QR-Code, den Sie an der Kasse vorzeigen. Jeder Code kann einmal verwendet werden und gilt 5 Minuten.",
+                "button": "QR-Code abrufen",
+                "new_button": "Neuen QR-Code abrufen",
+                "alt": "QR-Code für diesen Gutschein",
+                "scan_at_checkout": "Zeigen Sie diesen QR-Code beim Bezahlen dem Personal.",
+                "expires_at": "Dieser Code ist bis :time gültig.",
+                "failed": "Wir konnten keinen QR-Code für diesen Gutschein erstellen. Er wurde möglicherweise bereits verwendet oder ist abgelaufen. Bitte versuchen Sie es erneut."
             }
         },
         "govuk_alpha_connections": {
@@ -7829,6 +7877,9 @@
                 "quiz_attempts": "Quizversuche"
             },
             "status": {
+                "cohort_added": "Kohorte hinzugefügt.",
+                "cohort_failed": "Wir konnten die Kohorte nicht hinzufügen. Bitte versuchen Sie es erneut.",
+                "cohort_name_missing": "Geben Sie einen Namen für die Kohorte ein.",
                 "enrolled": "Sie sind jetzt eingeschrieben. Genießen Sie den Kurs.",
                 "enrol_required": "Melden Sie sich für diesen Kurs an, bevor Sie den Lernbereich öffnen.",
                 "review_saved": "Vielen Dank – Ihre Bewertung wurde gespeichert.",
@@ -7871,6 +7922,17 @@
                 "lesson_title_missing": "Geben Sie einen Titel für die Lektion ein.",
                 "graded": "Der Versuch wurde bewertet.",
                 "grade_failed": "Der Versuch konnte nicht bewertet werden. Bitte versuchen Sie es erneut."
+            },
+            "authoring": {
+                "prerequisites_legend": "Vorausgesetzte Kurse",
+                "prerequisites_hint": "Lernende müssen die angekreuzten Kurse abschließen, bevor sie sich für diesen Kurs anmelden können.",
+                "prerequisites_none": "Es gibt noch keine anderen Kurse, die Sie auswählen können.",
+                "cohorts_heading": "Kohorten",
+                "cohorts_hint": "Lernende in diesem Kurs treten einer Kohorte bei, einer Gruppe, die gemeinsam beginnt und den Kurs gemeinsam durchläuft.",
+                "no_cohorts": "Noch keine Kohorten.",
+                "cohort_name": "Name der Kohorte",
+                "cohort_starts": "Beginnt am :date",
+                "add_cohort": "Kohorte hinzufügen"
             }
         },
         "govuk_alpha_events": {
@@ -8275,6 +8337,9 @@
                 "recurrence_unavailable": "Wiederkehrende Veranstaltungen sind in dieser Gemeinschaft ausgeschaltet. Ihre Veranstaltung wurde nicht erstellt. Prüfen Sie die Angaben und erstellen Sie sie als einzelne Veranstaltung."
             },
             "rsvp": {
+                "clear_hint": "Haben Sie es sich anders überlegt? Sie können Ihre Antwort entfernen, sodass die Veranstaltung keine Rückmeldung von Ihnen zeigt.",
+                "clear_button": "Meine Antwort entfernen",
+                "cleared": "Ihre Antwort wurde entfernt.",
                 "pending_tag": "Angefragt",
                 "pending": "Sie haben einen Platz angefragt. Die Veranstaltungsleitung muss ihn noch bestätigen, bevor er Ihnen sicher ist."
             },
@@ -8507,6 +8572,62 @@
                 "posted_by": "Zitierter Beitrag von :name",
                 "truncated": "Dieser zitierte Beitrag wurde gekürzt.",
                 "image_alt": "Bild an den zitierten Beitrag angehängt"
+            },
+            "reactions": {
+                "like": "Gefällt mir",
+                "love": "Liebe",
+                "laugh": "Lachen",
+                "wow": "Erstaunt",
+                "sad": "Traurig",
+                "celebrate": "Feiern",
+                "clap": "Applaus",
+                "time_credit": "Zeitkredit",
+                "legend": "Auf diesen Beitrag reagieren",
+                "comment_legend": "Auf diesen Kommentar reagieren",
+                "see_who": "Sehen, wer mit „:reaction“ reagiert hat (:count)",
+                "reactors_title": "Personen, die mit „:reaction“ reagiert haben",
+                "reactors_total": "Insgesamt: :count",
+                "reactors_empty": "Noch niemand hat mit „:reaction“ reagiert.",
+                "unknown_member": "Ein Mitglied der Gemeinschaft",
+                "show_more": "Weitere Personen anzeigen"
+            },
+            "post_pages": {
+                "back_to_post": "Zurück zum Beitrag"
+            },
+            "translate": {
+                "button": "Diesen Beitrag übersetzen",
+                "heading": "Übersetzung",
+                "hint": "Automatisch übersetzt. Der ursprüngliche Beitrag steht oben.",
+                "done": "Der Beitrag wurde übersetzt.",
+                "failed": "Dieser Beitrag konnte leider nicht übersetzt werden. Versuchen Sie es später erneut.",
+                "unavailable": "In dieser Gemeinschaft ist keine Übersetzung verfügbar.",
+                "same": "Dieser Beitrag ist bereits in Ihrer Sprache.",
+                "empty": "Dieser Beitrag enthält keinen Text zum Übersetzen."
+            },
+            "why_shown": {
+                "label": "Warum sehe ich das?",
+                "default_reason": "Für Sie basierend auf Ihrer Aktivität angezeigt"
+            },
+            "stats": {
+                "link": "Beitragsstatistik anzeigen",
+                "title": "Beitragsstatistik",
+                "intro": "Nur Sie können diese Zahlen sehen.",
+                "views": "Aufrufe",
+                "likes": "Gefällt-mir-Angaben",
+                "comments": "Kommentare",
+                "shares": "Geteilt",
+                "reach": "Reichweite",
+                "reach_hint": "Die Reichweite ist die Zahl der verschiedenen Personen, die den Beitrag gesehen haben.",
+                "reactions_breakdown": "Reaktionen",
+                "no_reactions": "Noch keine Reaktionen.",
+                "forbidden": "Nur die Person, die diesen Beitrag geschrieben hat, kann seine Statistik sehen.",
+                "failed": "Die Statistik konnte leider nicht geladen werden. Versuchen Sie es später erneut."
+            },
+            "quote": {
+                "summary": "Mit eigenem Kommentar teilen",
+                "label": "Ihr Kommentar",
+                "hint": "Ihr Kommentar erscheint zusammen mit dem geteilten Beitrag.",
+                "submit": "Mit Kommentar teilen"
             }
         },
         "govuk_alpha_gamification": {
@@ -9249,6 +9370,38 @@
                 "error_group_unavailable": "Diese Gruppe nimmt derzeit keine Mitglieder auf.",
                 "error_safeguarding": "Die Schutzregeln dieser Gemeinschaft erlauben Ihnen nicht, dieser Gruppe beizutreten. Bitten Sie eine Koordinatorin oder einen Koordinator um Hilfe.",
                 "error_safeguarding_unavailable": "Wir können die Schutzregeln dieser Gemeinschaft gerade nicht prüfen. Bitte versuchen Sie es in Kürze erneut."
+            },
+            "members_page": {
+                "title": "Mitglieder von :group",
+                "link": "Alle Mitglieder ansehen und durchsuchen",
+                "search_label": "Gruppenmitglieder suchen",
+                "search_hint": "Nach Name oder Kurzprofil suchen",
+                "search_button": "Mitglieder suchen",
+                "clear": "Suche zurücksetzen",
+                "empty": "Diese Gruppe hat keine Mitglieder, die angezeigt werden können.",
+                "empty_search": "Keine Mitglieder entsprechen „:query“.",
+                "role_admin": "Gruppenadministrator",
+                "pagination_label": "Mitgliederseiten",
+                "back": "Zurück zu :group"
+            },
+            "events_page": {
+                "title": "Veranstaltungen von :group",
+                "link": "Alle Veranstaltungen ansehen, auch vergangene",
+                "filter_label": "Welche Veranstaltungen",
+                "when_all": "Alle Veranstaltungen",
+                "when_upcoming": "Bevorstehende Veranstaltungen",
+                "when_past": "Vergangene Veranstaltungen",
+                "filter_button": "Veranstaltungen anzeigen",
+                "empty": "Es gibt keine Veranstaltungen, die angezeigt werden können.",
+                "pagination_label": "Veranstaltungsseiten"
+            },
+            "recommended": {
+                "title": "Für Sie empfohlen",
+                "score": ":score % Übereinstimmung"
+            },
+            "featured": {
+                "title": "Hervorgehobene Gruppen",
+                "more_title": "Weitere Gruppen"
             }
         },
         "govuk_alpha_ideation": {
@@ -9701,6 +9854,16 @@
                 "no_skills": "Keine Fähigkeiten aufgeführt"
             },
             "employer": {
+                "write_review_heading": "Bewertung schreiben",
+                "write_review_hint": "Sie können einen Arbeitgeber bewerten, sobald er Sie für eine Stelle angenommen hat.",
+                "review_rating_legend": "Gesamtbewertung",
+                "review_rating_option": ":rating von 5",
+                "review_dimension_same": "Wie die Gesamtbewertung",
+                "review_comment_label": "Kommentar (optional)",
+                "review_submit": "Bewertung absenden",
+                "review_saved": "Vielen Dank. Ihre Bewertung wurde veröffentlicht.",
+                "review_failed": "Wir konnten Ihre Bewertung nicht übermitteln. Bitte versuchen Sie es erneut.",
+                "review_rating_required": "Wählen Sie eine Gesamtbewertung von 1 bis 5.",
                 "title": "Arbeitgeberprofil",
                 "description": "Offene Stellenangebote und Bewertungen für diesen Arbeitgeber.",
                 "open_jobs_heading": "Offene Möglichkeiten",
@@ -9751,6 +9914,9 @@
                 "status_unknown": "Aktualisiert"
             },
             "responses": {
+                "add_to_outlook": "Zum Outlook-Kalender hinzufügen",
+                "download_ics": "Kalenderdatei herunterladen (.ics)",
+                "states_calendar_failed": "Wir konnten die Kalenderdatei nicht vorbereiten. Bitte versuchen Sie es erneut.",
                 "add_to_calendar": "Zu Google Kalender hinzufügen",
                 "calendar_event_title": "Interview: :title",
                 "title": "Interviews und Angebote",
@@ -9877,12 +10043,41 @@
                     "reopen_pending_review": "Ihre Gelegenheit wurde zur Prüfung eingereicht. Sie wird nach der Freigabe wieder geöffnet.",
                     "status_change_failed": "Wir konnten den Status dieser Gelegenheit nicht ändern. Bitte versuchen Sie es erneut."
                 }
+            },
+            "apply_extras": {
+                "saved_found": "Ihre gespeicherte Bewerbungsnachricht wurde unten eingefügt. Sie können sie vor dem Absenden ändern.",
+                "quick_apply_hint": "Oder senden Sie Ihre gespeicherte Nachricht jetzt, ohne Lebenslauf.",
+                "quick_apply_button": "Schnell bewerben mit gespeicherter Nachricht",
+                "remember_label": "Diese Nachricht für künftige Bewerbungen speichern",
+                "cv_skills_heading": "Aus Ihrem Lebenslauf erkannte Fähigkeiten",
+                "export_heading": "Ihre Bewerbungsdaten",
+                "export_hint": "Laden Sie eine Kopie der zu Ihren Bewerbungen gespeicherten Informationen als JSON-Datei herunter.",
+                "export_button": "Meine Daten herunterladen",
+                "export_failed": "Wir konnten Ihre Daten nicht vorbereiten. Bitte versuchen Sie es erneut."
             }
+        },
+        "govuk_alpha_kb": {
+            "feedback_question": "War dieser Artikel hilfreich?",
+            "feedback_yes": "Ja, er hat geholfen (:count)",
+            "feedback_no": "Nein, er hat nicht geholfen (:count)",
+            "feedback_given_yes": "Sie haben angegeben, dass dieser Artikel hilfreich war. Sie können Ihre Antwort ändern.",
+            "feedback_given_no": "Sie haben angegeben, dass dieser Artikel nicht hilfreich war. Sie können Ihre Antwort ändern.",
+            "feedback_thanks": "Vielen Dank für Ihr Feedback!",
+            "feedback_failed": "Feedback konnte nicht gesendet werden.",
+            "attachments_heading": "Anhänge",
+            "categories_label": "Kategorien der Wissensdatenbank",
+            "all_categories": "Alle Kategorien"
         },
         "govuk_alpha_listings": {
             "create": {
                 "skill_tags_label": "Fähigkeiten (optional)",
-                "skill_tags_hint": "Listen Sie die erforderlichen Fähigkeiten auf, getrennt durch Kommas – zum Beispiel: Gartenarbeit, Kochen, Steuerberatung. Sie können bis zu 10 hinzufügen."
+                "skill_tags_hint": "Listen Sie die erforderlichen Fähigkeiten auf, getrennt durch Kommas – zum Beispiel: Gartenarbeit, Kochen, Steuerberatung. Sie können bis zu 10 hinzufügen.",
+                "hours_available_label": "Verfügbare Stunden",
+                "hours_available_hint": "Gesamtzahl der Stunden, die Sie geben möchten. Für kein Limit leer lassen.",
+                "hours_available_range": "Die verfügbaren Stunden müssen mindestens 0,5 betragen.",
+                "hours_available_below_estimate": "Die verfügbaren Stunden dürfen nicht unter den geschätzten Stunden liegen.",
+                "remove_image_label": "Aktuelles Foto entfernen",
+                "remove_image_failed": "das Foto konnte nicht entfernt werden"
             },
             "nav": {
                 "view_analytics": "Eintragsanalysen anzeigen"
@@ -10135,7 +10330,8 @@
                     "failed": "Ihre Meldung konnte nicht gesendet werden. Versuchen Sie es erneut.",
                     "rate_limited": "Sie haben zu viele Meldungen gesendet. Versuchen Sie es später erneut."
                 }
-            }
+            },
+            "sort_communityrank": "Community-Rang"
         },
         "govuk_alpha_messages": {
             "voice": {
@@ -10273,6 +10469,38 @@
                 "reaction_invalid": "Diese Reaktion ist nicht verfügbar.",
                 "reaction_forbidden": "Sie können auf diese Nachricht nicht reagieren.",
                 "reaction_failed": "Wir konnten Ihre Reaktion nicht speichern."
+            },
+            "delete_conversation": {
+                "link": "Diese Unterhaltung löschen",
+                "title": "Diese Unterhaltung löschen",
+                "caption": "Unterhaltung mit :name",
+                "legend": "Für wen soll die Unterhaltung gelöscht werden?",
+                "self": "Für mich löschen",
+                "self_hint": "Sie wird aus Ihrem Posteingang entfernt. :name kann sie weiterhin sehen.",
+                "everyone": "Für alle löschen",
+                "everyone_hint": "Sie wird für Sie und für :name entfernt. Das kann nicht rückgängig gemacht werden.",
+                "submit": "Unterhaltung löschen",
+                "cancel": "Abbrechen und zur Unterhaltung zurückkehren",
+                "deleted": "Die Unterhaltung wurde für alle gelöscht.",
+                "failed": "Die Unterhaltung konnte leider nicht gelöscht werden. Versuchen Sie es später erneut.",
+                "error_choose": "Wählen Sie aus, für wen die Unterhaltung gelöscht werden soll"
+            },
+            "safeguarding": {
+                "coordinator_button": "Einen Koordinator um Hilfe bitten",
+                "coordinator_hint": "Ein Koordinator der Gemeinschaft erfährt, dass Sie Hilfe bei der Kontaktaufnahme wünschen, und meldet sich bei Ihnen.",
+                "coordinator_sent": "Koordinator benachrichtigt. Er meldet sich, um den Kontakt zu vermitteln.",
+                "coordinator_failed": "Ihre Anfrage konnte gerade nicht gesendet werden. Bitte versuchen Sie es in Kürze erneut.",
+                "vetting_button": "Überprüfung meiner Sicherheitsprüfung anfordern",
+                "vetting_hint": "Ihre Gemeinschaft wird gebeten, Ihre Sicherheitsprüfung zu überprüfen. Das Ergebnis sehen Sie in Ihren Profileinstellungen.",
+                "required_checks": "Erforderliche Prüfungen"
+            },
+            "context": {
+                "regarding": "Bezüglich",
+                "type_listing": "Anzeige",
+                "type_event": "Veranstaltung",
+                "type_job": "Stelle",
+                "type_volunteering": "Freiwilligenarbeit",
+                "untitled": ":type Nummer :id"
             }
         },
         "govuk_alpha_organisations": {
@@ -10522,6 +10750,17 @@
                         "has_invalid_summary": "Einige Zeilen sind ungültig. Beheben Sie diese in Ihrer CSV und führen Sie die Vorschau vor dem Import erneut aus."
                     }
                 }
+            },
+            "reviews": {
+                "write_heading": "Diese Organisation bewerten",
+                "rating_legend": "Bewertung",
+                "rating_option": ":rating von 5",
+                "comment_label": "Kommentar (optional)",
+                "comment_hint": "Teilen Sie mit, was gut funktioniert hat oder was andere wissen sollten.",
+                "submit": "Bewertung abgeben",
+                "saved": "Bewertung eingereicht.",
+                "failed": "Ihre Bewertung konnte nicht übermittelt werden.",
+                "rating_required": "Wählen Sie vor dem Absenden eine Bewertung."
             }
         },
         "govuk_alpha_resources": {
@@ -10845,7 +11084,8 @@
                 "popular": "Beliebte Tags",
                 "popular_add": "Fügen Sie :tag hinzu",
                 "apply": "Wenden Sie Filter an",
-                "reset": "Filter zurücksetzen"
+                "reset": "Filter zurücksetzen",
+                "type_podcasts": "Podcast-Sendungen"
             },
             "results": {
                 "count": "{0} Keine Ergebnisse gefunden|{1} 1 Ergebnis gefunden|[2,*] :count Ergebnisse gefunden",
@@ -10868,7 +11108,10 @@
                 "view_listing": "Eintrag anzeigen",
                 "view_member": "Mitglied anzeigen",
                 "view_event": "Veranstaltung ansehen",
-                "view_group": "Gruppe anzeigen"
+                "view_group": "Gruppe anzeigen",
+                "tab_podcasts": "Podcast-Sendungen (:count)",
+                "section_podcasts": "Podcast-Sendungen",
+                "episode_from": "Episode von :show"
             },
             "states": {
                 "no_query_title": "Starten Sie Ihre Suche",

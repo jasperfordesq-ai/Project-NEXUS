@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'Ní cheadaíonn rialacha cosanta an phobail seo duit dul isteach sa ghrúpa seo. Iarr cabhair ar chomhordaitheoir.',
         'error_safeguarding_unavailable' => 'Ní féidir linn rialacha cosanta an phobail seo a sheiceáil faoi láthair. Bain triail eile as ar ball.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Baill de :group',
+        'link' => 'Féach ar na baill go léir agus cuardaigh iad',
+        'search_label' => 'Cuardaigh baill an ghrúpa',
+        'search_hint' => 'Cuardaigh de réir ainm nó cur síos',
+        'search_button' => 'Cuardaigh baill',
+        'clear' => 'Glan an cuardach',
+        'empty' => 'Níl aon bhaill le taispeáint sa ghrúpa seo.',
+        'empty_search' => 'Níl aon bhaill a mheaitseálann “:query”.',
+        'role_admin' => 'Riarthóir an ghrúpa',
+        'pagination_label' => 'Leathanaigh na mball',
+        'back' => 'Ar ais chuig :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Imeachtaí in :group',
+        'link' => 'Féach ar na himeachtaí go léir, lena n-áirítear imeachtaí atá thart',
+        'filter_label' => 'Cé na himeachtaí',
+        'when_all' => 'Gach imeacht',
+        'when_upcoming' => 'Imeachtaí atá le teacht',
+        'when_past' => 'Imeachtaí atá thart',
+        'filter_button' => 'Taispeáin imeachtaí',
+        'empty' => 'Níl aon imeachtaí le taispeáint.',
+        'pagination_label' => 'Leathanaigh na n-imeachtaí',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Molta duit',
+        'score' => 'Meaitseáil :score%',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Grúpaí roghnaithe',
+        'more_title' => 'Tuilleadh grúpaí',
+    ],
 ];

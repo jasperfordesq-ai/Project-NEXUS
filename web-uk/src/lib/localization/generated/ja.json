@@ -5039,7 +5039,14 @@
                     "added": "スキルが追加されました。",
                     "removed": "スキルが削除されました。",
                     "failed": "スキルを更新できませんでした。もう一度お試しください。",
-                    "name_required": "スキル名を入力してください。"
+                    "name_required": "スキル名を入力してください。",
+                    "category_label": "カテゴリ（任意）",
+                    "category_none": "カテゴリなし",
+                    "proficiency_label": "習熟度",
+                    "proficiency_beginner": "初級",
+                    "proficiency_intermediate": "中級",
+                    "proficiency_advanced": "上級",
+                    "proficiency_expert": "エキスパート"
                 },
                 "sessions": {
                     "title": "サインイン中の場所",
@@ -5240,7 +5247,10 @@
                 "two_factor_heading": "2段階認証",
                 "two_factor_intro": "サインイン時の2段階目として認証アプリを追加してください。",
                 "two_factor_link": "2段階認証を設定または管理する",
-                "blocked_link": "ブロックしたメンバーを管理"
+                "blocked_link": "ブロックしたメンバーを管理",
+                "dob_label": "生年月日",
+                "dob_hint": "任意です。本人確認にのみ必要で、18歳以上であることを示す必要があります。削除するには、3つの欄をすべて空にしてください。",
+                "dob_locked": "本人確認が完了しているため、生年月日はロックされています。"
             },
             "delete_account": {
                 "title": "アカウントを削除する",
@@ -6817,7 +6827,16 @@
                 "status_accepted_done": "あなたはその申し出を受け入れました。",
                 "status_declined_done": "あなたはその申し出を断りました。",
                 "status_withdrawn_done": "あなたは申し出を撤回しました。",
-                "status_action_failed": "申し訳ありませんが、そのアクションは完了できませんでした。"
+                "status_action_failed": "申し訳ありませんが、そのアクションは完了できませんでした。",
+                "counter_summary": "カウンターオファーを出す",
+                "counter_amount_label": "カウンターオファーの金額",
+                "counter_amount_hint": "出品と同じ通貨で入力してください（例：12.50）",
+                "counter_message_optional": "メッセージ（任意）",
+                "counter_message_label": "出品者からのメッセージ",
+                "counter_send": "カウンターオファーを送信",
+                "status_countered_done": "カウンターオファーを送信しました。",
+                "counter_amount_invalid": "0より大きいカウンターオファーの金額を、小数点以下2桁までで入力してください",
+                "counter_failed": "申し訳ありません。カウンターオファーを送信できませんでした。もう一度お試しください。"
             },
             "orders_buyer": {
                 "title": "私の注文",
@@ -7616,6 +7635,35 @@
                 "error_appeal_long": "異議申し立ては 5,000 文字以内で入力してください",
                 "status_appealed_done": "異議申し立てを送信しました。",
                 "status_appeal_failed": "申し訳ありません。異議申し立てを送信できませんでした。もう一度お試しください。"
+            },
+            "featured": {
+                "heading": "注目のリスティング"
+            },
+            "filters": {
+                "listing_type": "出品の種類",
+                "listing_type_any": "すべての種類"
+            },
+            "detail": {
+                "item_details": "商品の詳細",
+                "more_from_seller": ":name の他のアイテム",
+                "more_from_this_seller": "この出品者の他のアイテム",
+                "view_all_from_seller": "この出品者の出品をすべて見る"
+            },
+            "seller_stats": {
+                "heading": "販売の概要",
+                "views": "総閲覧数",
+                "revenue": "売上",
+                "no_revenue": "まだ販売収入はありません"
+            },
+            "coupon_qr": {
+                "heading": "店舗で利用",
+                "intro": "レジでスタッフに見せるQRコードを取得します。各コードは1回だけ使え、有効期間は5分です。",
+                "button": "QRコードを取得",
+                "new_button": "新しいQRコードを取得",
+                "alt": "このクーポンのQRコード",
+                "scan_at_checkout": "レジでこのQRコードをスタッフに見せてください。",
+                "expires_at": "このコードは :time に無効になります。",
+                "failed": "このクーポンのQRコードを作成できませんでした。すでに使用済みか、期限切れの可能性があります。もう一度お試しください。"
             }
         },
         "govuk_alpha_connections": {
@@ -7829,6 +7877,9 @@
                 "quiz_attempts": "クイズの試行"
             },
             "status": {
+                "cohort_added": "コホートを追加しました。",
+                "cohort_failed": "コホートを追加できませんでした。もう一度お試しください。",
+                "cohort_name_missing": "コホートの名前を入力してください。",
                 "enrolled": "これで登録されました。コースをお楽しみください。",
                 "enrol_required": "学習エリアを開く前に、このコースに登録してください。",
                 "review_saved": "ありがとうございます - あなたのレビューは保存されました。",
@@ -7871,6 +7922,17 @@
                 "lesson_title_missing": "レッスンのタイトルを入力します。",
                 "graded": "この試みは採点されました。",
                 "grade_failed": "試技は採点できませんでした。もう一度試してください。"
+            },
+            "authoring": {
+                "prerequisites_legend": "前提となるコース",
+                "prerequisites_hint": "受講者は、このコースに登録する前に、チェックしたコースを修了する必要があります。",
+                "prerequisites_none": "選択できる他のコースはまだありません。",
+                "cohorts_heading": "コホート",
+                "cohorts_hint": "このコースの受講者はコホートに参加します。コホートは一緒に開始し、一緒にコースを進めるグループです。",
+                "no_cohorts": "まだコホートはありません。",
+                "cohort_name": "コホート名",
+                "cohort_starts": ":date 開始",
+                "add_cohort": "コホートを追加"
             }
         },
         "govuk_alpha_events": {
@@ -8275,6 +8337,9 @@
                 "recurrence_unavailable": "このコミュニティでは繰り返しイベントがオフになっています。イベントは作成されていません。内容を確認し、単発のイベントとして作成してください。"
             },
             "rsvp": {
+                "clear_hint": "気が変わりましたか？回答を取り消すと、このイベントにはあなたの回答が表示されなくなります。",
+                "clear_button": "回答を取り消す",
+                "cleared": "回答を取り消しました。",
                 "pending_tag": "申請済み",
                 "pending": "参加枠を申請しました。参加枠が確定するには主催者の承認が必要です。"
             },
@@ -8507,6 +8572,62 @@
                 "posted_by": ":name による投稿を引用",
                 "truncated": "この引用投稿は短縮されました。",
                 "image_alt": "引用した投稿に添付された画像"
+            },
+            "reactions": {
+                "like": "いいね",
+                "love": "大好き",
+                "laugh": "笑い",
+                "wow": "すごい",
+                "sad": "悲しい",
+                "celebrate": "お祝い",
+                "clap": "拍手",
+                "time_credit": "タイムクレジット",
+                "legend": "この投稿に反応する",
+                "comment_legend": "このコメントに反応する",
+                "see_who": "「:reaction」で反応した人を見る（:count）",
+                "reactors_title": "「:reaction」で反応した人",
+                "reactors_total": "合計：:count",
+                "reactors_empty": "まだ誰も「:reaction」で反応していません。",
+                "unknown_member": "コミュニティのメンバー",
+                "show_more": "さらに表示"
+            },
+            "post_pages": {
+                "back_to_post": "投稿に戻る"
+            },
+            "translate": {
+                "button": "この投稿を翻訳する",
+                "heading": "翻訳",
+                "hint": "自動翻訳です。元の投稿は上に表示されています。",
+                "done": "投稿を翻訳しました。",
+                "failed": "申し訳ありませんが、この投稿を翻訳できませんでした。後でもう一度お試しください。",
+                "unavailable": "このコミュニティでは翻訳を利用できません。",
+                "same": "この投稿はすでにあなたの言語です。",
+                "empty": "この投稿には翻訳するテキストがありません。"
+            },
+            "why_shown": {
+                "label": "なぜこれが表示されているのですか？",
+                "default_reason": "あなたの活動に基づいてランク付けされています"
+            },
+            "stats": {
+                "link": "投稿の統計を見る",
+                "title": "投稿の統計",
+                "intro": "これらの数値はあなただけに表示されます。",
+                "views": "閲覧数",
+                "likes": "いいね数",
+                "comments": "コメント数",
+                "shares": "共有数",
+                "reach": "リーチ",
+                "reach_hint": "リーチは、投稿を見た異なる人の数です。",
+                "reactions_breakdown": "反応",
+                "no_reactions": "まだ反応はありません。",
+                "forbidden": "この投稿の統計は、投稿した本人だけが見ることができます。",
+                "failed": "申し訳ありませんが、統計を読み込めませんでした。後でもう一度お試しください。"
+            },
+            "quote": {
+                "summary": "自分のコメントを添えて共有する",
+                "label": "あなたのコメント",
+                "hint": "共有すると、あなたのコメントが投稿と一緒に表示されます。",
+                "submit": "コメントを添えて共有"
             }
         },
         "govuk_alpha_gamification": {
@@ -9249,6 +9370,38 @@
                 "error_group_unavailable": "このグループは現在メンバーを受け付けていません。",
                 "error_safeguarding": "このコミュニティの保護ルールにより、このグループには参加できません。コーディネーターに相談してください。",
                 "error_safeguarding_unavailable": "現在、このコミュニティの保護ルールを確認できません。しばらくしてからもう一度お試しください。"
+            },
+            "members_page": {
+                "title": ":groupのメンバー",
+                "link": "すべてのメンバーを表示・検索する",
+                "search_label": "グループメンバーを検索",
+                "search_hint": "名前または紹介文で検索",
+                "search_button": "メンバーを検索",
+                "clear": "検索をクリア",
+                "empty": "このグループには表示できるメンバーがいません。",
+                "empty_search": "「:query」に一致するメンバーはいません。",
+                "role_admin": "グループ管理者",
+                "pagination_label": "メンバーのページ",
+                "back": ":groupに戻る"
+            },
+            "events_page": {
+                "title": ":groupのイベント",
+                "link": "過去のイベントを含むすべてのイベントを見る",
+                "filter_label": "表示するイベント",
+                "when_all": "すべてのイベント",
+                "when_upcoming": "今後のイベント",
+                "when_past": "過去のイベント",
+                "filter_button": "イベントを表示",
+                "empty": "表示するイベントはありません。",
+                "pagination_label": "イベントのページ"
+            },
+            "recommended": {
+                "title": "あなたにおすすめ",
+                "score": ":score%一致"
+            },
+            "featured": {
+                "title": "注目のグループ",
+                "more_title": "その他のグループ"
             }
         },
         "govuk_alpha_ideation": {
@@ -9701,6 +9854,16 @@
                 "no_skills": "スキルが記載されていない"
             },
             "employer": {
+                "write_review_heading": "レビューを書く",
+                "write_review_hint": "雇用者があなたを採用した後に、その雇用者のレビューを書くことができます。",
+                "review_rating_legend": "総合評価",
+                "review_rating_option": "5 段階中 :rating",
+                "review_dimension_same": "総合評価と同じ",
+                "review_comment_label": "コメント（任意）",
+                "review_submit": "レビューを送信",
+                "review_saved": "ありがとうございます。レビューが公開されました。",
+                "review_failed": "レビューを送信できませんでした。もう一度お試しください。",
+                "review_rating_required": "総合評価を 1 から 5 で選んでください。",
                 "title": "雇用主プロフィール",
                 "description": "この雇用主に対するオープンな機会とレビュー。",
                 "open_jobs_heading": "開かれた機会",
@@ -9751,6 +9914,9 @@
                 "status_unknown": "更新されました"
             },
             "responses": {
+                "add_to_outlook": "Outlook カレンダーに追加",
+                "download_ics": "カレンダーファイルをダウンロード (.ics)",
+                "states_calendar_failed": "カレンダーファイルを準備できませんでした。もう一度お試しください。",
                 "add_to_calendar": "Googleカレンダーに追加",
                 "calendar_event_title": "インタビュー: :title",
                 "title": "インタビューとオファー",
@@ -9877,12 +10043,41 @@
                     "reopen_pending_review": "あなたの機会は審査に送られました。承認されると再開されます。",
                     "status_change_failed": "この機会のステータスを変更できませんでした。もう一度お試しください。"
                 }
+            },
+            "apply_extras": {
+                "saved_found": "保存済みの応募メッセージを下に入力しました。送信前に変更できます。",
+                "quick_apply_hint": "または、履歴書なしで保存済みメッセージを今すぐ送信します。",
+                "quick_apply_button": "保存済みメッセージで簡単応募",
+                "remember_label": "このメッセージを今後の応募のために保存する",
+                "cv_skills_heading": "履歴書から検出されたスキル",
+                "export_heading": "あなたの応募データ",
+                "export_hint": "求人への応募について保存されている情報のコピーを JSON ファイルでダウンロードします。",
+                "export_button": "私のデータをダウンロード",
+                "export_failed": "データを準備できませんでした。もう一度お試しください。"
             }
+        },
+        "govuk_alpha_kb": {
+            "feedback_question": "この記事は役に立ちましたか？",
+            "feedback_yes": "はい、役に立ちました (:count)",
+            "feedback_no": "いいえ、役に立ちませんでした (:count)",
+            "feedback_given_yes": "この記事は役に立ったと回答しました。回答は変更できます。",
+            "feedback_given_no": "この記事は役に立たなかったと回答しました。回答は変更できます。",
+            "feedback_thanks": "フィードバックありがとうございます！",
+            "feedback_failed": "フィードバックの送信に失敗しました。",
+            "attachments_heading": "添付ファイル",
+            "categories_label": "ナレッジベースのカテゴリ",
+            "all_categories": "すべてのカテゴリ"
         },
         "govuk_alpha_listings": {
             "create": {
                 "skill_tags_label": "スキル（オプション）",
-                "skill_tags_hint": "関連するスキルをカンマで区切ってリストします。例: ガーデニング、料理、税金に関するアドバイス。最大 10 個まで追加できます。"
+                "skill_tags_hint": "関連するスキルをカンマで区切ってリストします。例: ガーデニング、料理、税金に関するアドバイス。最大 10 個まで追加できます。",
+                "hours_available_label": "提供可能な時間",
+                "hours_available_hint": "提供できる合計時間です。上限を設けない場合は空欄にしてください。",
+                "hours_available_range": "提供可能な時間は 0.5 以上にしてください。",
+                "hours_available_below_estimate": "提供可能な時間を想定時間より少なく設定することはできません。",
+                "remove_image_label": "現在の写真を削除する",
+                "remove_image_failed": "写真を削除できませんでした"
             },
             "nav": {
                 "view_analytics": "リスティング分析を表示する"
@@ -10135,7 +10330,8 @@
                     "failed": "報告を送信できませんでした。もう一度お試しください。",
                     "rate_limited": "報告の送信回数が多すぎます。しばらくしてからもう一度お試しください。"
                 }
-            }
+            },
+            "sort_communityrank": "コミュニティランク"
         },
         "govuk_alpha_messages": {
             "voice": {
@@ -10273,6 +10469,38 @@
                 "reaction_invalid": "その反応は得られません。",
                 "reaction_forbidden": "このメッセージには反応できません。",
                 "reaction_failed": "あなたの反応を保存できませんでした。"
+            },
+            "delete_conversation": {
+                "link": "この会話を削除する",
+                "title": "この会話を削除する",
+                "caption": ":nameさんとの会話",
+                "legend": "誰に対して会話を削除しますか？",
+                "self": "自分のために削除",
+                "self_hint": "あなたの受信箱から削除されます。:nameさんは引き続き見ることができます。",
+                "everyone": "全員のために削除",
+                "everyone_hint": "あなたと:nameさんの両方から削除されます。元に戻すことはできません。",
+                "submit": "会話を削除",
+                "cancel": "キャンセルして会話に戻る",
+                "deleted": "会話は全員に対して削除されました。",
+                "failed": "申し訳ありませんが、会話を削除できませんでした。後でもう一度お試しください。",
+                "error_choose": "誰に対して会話を削除するか選択してください"
+            },
+            "safeguarding": {
+                "coordinator_button": "コーディネーターにサポートを依頼する",
+                "coordinator_hint": "連絡を取りたいことがコミュニティのコーディネーターに伝えられ、担当者からご連絡します。",
+                "coordinator_sent": "コーディネーターに通知しました。連絡の調整についてご連絡します。",
+                "coordinator_failed": "現在、依頼を送信できませんでした。しばらくしてからもう一度お試しください。",
+                "vetting_button": "自分の審査の見直しを依頼する",
+                "vetting_hint": "コミュニティにあなたの審査の見直しが依頼されます。結果はプロフィール設定で確認できます。",
+                "required_checks": "必要な確認"
+            },
+            "context": {
+                "regarding": "件名",
+                "type_listing": "リスティング",
+                "type_event": "イベント",
+                "type_job": "求人",
+                "type_volunteering": "ボランティア",
+                "untitled": ":type 番号 :id"
             }
         },
         "govuk_alpha_organisations": {
@@ -10522,6 +10750,17 @@
                         "has_invalid_summary": "一部の行が無効です。CSV で修正し、インポート前にプレビューを再実行してください。"
                     }
                 }
+            },
+            "reviews": {
+                "write_heading": "この組織をレビューする",
+                "rating_legend": "評価",
+                "rating_option": "5 段階中 :rating",
+                "comment_label": "コメント（任意）",
+                "comment_hint": "うまくいったことや、他の人が知っておくべきことを共有してください。",
+                "submit": "レビューを送信する",
+                "saved": "レビューが送信されました。",
+                "failed": "レビューを送信できませんでした。",
+                "rating_required": "送信する前に評価を選択してください。"
             }
         },
         "govuk_alpha_resources": {
@@ -10845,7 +11084,8 @@
                 "popular": "人気のタグ",
                 "popular_add": ":tag を追加します",
                 "apply": "フィルターを適用する",
-                "reset": "フィルターをリセットする"
+                "reset": "フィルターをリセットする",
+                "type_podcasts": "ポッドキャスト"
             },
             "results": {
                 "count": "{0} 結果が見つかりません|{1} 1 件の結果が見つかりました|[2,*] :count の結果が見つかりました",
@@ -10868,7 +11108,10 @@
                 "view_listing": "リストを見る",
                 "view_member": "メンバーを見る",
                 "view_event": "イベントを見る",
-                "view_group": "グループを表示する"
+                "view_group": "グループを表示する",
+                "tab_podcasts": "ポッドキャスト (:count)",
+                "section_podcasts": "ポッドキャスト",
+                "episode_from": ":show のエピソード"
             },
             "states": {
                 "no_query_title": "検索を開始してください",

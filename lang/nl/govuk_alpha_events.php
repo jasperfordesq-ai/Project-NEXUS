@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Terugkerende evenementen staan uit in deze gemeenschap. Je evenement is niet aangemaakt. Controleer de gegevens en maak het aan als één evenement.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Van gedachten veranderd? Je kunt je antwoord weghalen, zodat het evenement geen reactie van jou toont.',
+        'clear_button' => 'Mijn antwoord wissen',
+        'cleared' => 'Je antwoord is gewist.',
         'pending_tag' => 'Aangevraagd',
         'pending' => 'Je hebt een plek aangevraagd. De organisator moet die eerst goedkeuren voordat je plek vaststaat.',
     ],

@@ -31,6 +31,7 @@ const { createChoiceTranslator, createTranslator, SUPPORTED_LOCALES } = require(
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
+const { readDate, dateParts, splitDate } = require('../lib/date-input');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -41,6 +42,18 @@ const PROFILE_DIGEST_FREQUENCIES = ['off', 'instant', 'daily', 'monthly'];
 const PROFILE_PRIVACY_OPTIONS = ['public', 'members', 'connections'];
 const PROFILE_TYPES = ['individual', 'organisation'];
 const PROFILE_MATCH_FREQUENCIES = ['daily', 'weekly', 'monthly', 'fortnightly', 'never'];
+// The API's own list (SkillTaxonomyService::addUserSkill); anything else is stored as
+// 'intermediate', which is also React's default in SkillSelector.
+const SKILL_PROFICIENCY_LEVELS = ['beginner', 'intermediate', 'advanced', 'expert'];
+const DEFAULT_SKILL_PROFICIENCY = 'intermediate';
+// Date-of-birth statuses: each points the error summary at the box that needs fixing.
+const DOB_STATUS_FIELDS = {
+  'dob-day-required': ['day'],
+  'dob-month-required': ['month'],
+  'dob-year-required': ['year'],
+  'dob-invalid': ['day', 'month', 'year'],
+  'dob-under-minimum-age': ['day', 'month', 'year']
+};
 const PROFILE_LOCALE_LABELS = {
   en: 'English',
   ga: 'Irish',
@@ -111,6 +124,15 @@ const PROFILE_STATUS_MESSAGES = {
     type: 'error',
     message: 'Upload a JPG, PNG, GIF or WEBP image smaller than 10MB.',
     anchor: 'avatar'
+  },
+  'dob-day-required': { type: 'error', message: 'Enter a day', anchor: 'date_of_birth-day' },
+  'dob-month-required': { type: 'error', message: 'Enter a month', anchor: 'date_of_birth-month' },
+  'dob-year-required': { type: 'error', message: 'Enter a year', anchor: 'date_of_birth-year' },
+  'dob-invalid': { type: 'error', message: 'Enter a real date', anchor: 'date_of_birth-day' },
+  'dob-under-minimum-age': {
+    type: 'error',
+    message: 'You must be 18 or over to use this platform. Please check the date of birth you entered.',
+    anchor: 'date_of_birth-day'
   },
   'email-changed': { type: 'success', message: 'Your email address has been updated.' },
   'email-unchanged': { type: 'info', message: 'That is already your email address.' },
@@ -246,6 +268,11 @@ const PROFILE_STATUS_MESSAGES = {
 const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'profile-updated': 'profile_settings.success',
   'profile-update-failed': 'profile_settings.failed',
+  'dob-day-required': 'web_uk.date_input.day_required',
+  'dob-month-required': 'web_uk.date_input.month_required',
+  'dob-year-required': 'web_uk.date_input.year_required',
+  'dob-invalid': 'web_uk.date_input.date_invalid',
+  'dob-under-minimum-age': 'govuk_alpha_settings.identity.dob_under_minimum_age',
   'data-export-requested': 'states.data-export-requested',
   'data-export-exists': 'states.data-export-exists',
   'data-export-failed': 'states.data-export-failed',
@@ -510,8 +537,33 @@ function storeProfileSettingsForm(req) {
     organization_name: String(req.body.organization_name || ''),
     tagline: String(req.body.tagline || ''),
     bio: String(req.body.bio || ''),
-    location: String(req.body.location || '')
+    location: String(req.body.location || ''),
+    // Only when the form offered a date of birth (it does not for a verified member).
+    date_of_birth: dobOffered(req.body) ? dateParts(req.body, 'date_of_birth') : null
   };
+}
+
+// The three date-of-birth boxes are rendered only while the identity is not verified,
+// so their presence in the post is what says "this member may set a date of birth".
+function dobOffered(body) {
+  const source = body && typeof body === 'object' ? body : {};
+  return ['day', 'month', 'year'].some((part) => Object.prototype.hasOwnProperty.call(source, `date_of_birth-${part}`));
+}
+
+function apiErrorEntries(error) {
+  const data = error instanceof ApiError && error.data && typeof error.data === 'object' ? error.data : {};
+  const entries = Array.isArray(data.errors) ? data.errors.filter((entry) => entry && typeof entry === 'object') : [];
+  return entries.length ? entries : [{ code: data.code, field: data.field }];
+}
+
+// The API's two date-of-birth refusals (MinimumAge::dateOfBirthError), shown on the field.
+function dobStatusFromApiError(error) {
+  for (const entry of apiErrorEntries(error)) {
+    const code = String(entry.code || '').toUpperCase();
+    if (code === 'DATE_OF_BIRTH_UNDER_MINIMUM_AGE') return 'dob-under-minimum-age';
+    if (String(entry.field || '') === 'date_of_birth') return 'dob-invalid';
+  }
+  return null;
 }
 
 function twoFactorRedirect(status) {
@@ -761,8 +813,17 @@ function normalizeSkills(payload) {
     skill_name: skill.skill_name || skill.name || '',
     is_offering: boolValue(skill.is_offering),
     is_requesting: boolValue(skill.is_requesting),
+    proficiency_level: SKILL_PROFICIENCY_LEVELS.includes(skill.proficiency_level || skill.proficiency)
+      ? (skill.proficiency_level || skill.proficiency)
+      : '',
     endorsement_count: Number(skill.endorsement_count || skill.endorsements_count || 0)
   })).filter((skill) => skill.skill_name !== '');
+}
+
+function normalizeSkillCategories(payload) {
+  return arrayFromPayload(payload, ['categories', 'items'])
+    .map((category) => ({ id: positiveInteger(category && category.id), name: trimmed(category && category.name, 120) }))
+    .filter((category) => category.id !== null && category.name !== '');
 }
 
 function numericProfileValue(...values) {
@@ -1127,6 +1188,17 @@ function buildProfileSettingsViewModel(req, data) {
     notificationPrefs: data.notificationPrefs,
     matchPrefs: data.matchPrefs,
     mySkills: data.skills,
+    skillCategories: Array.isArray(data.skillCategories) ? data.skillCategories : [],
+    skillProficiencyLevels: SKILL_PROFICIENCY_LEVELS,
+    defaultSkillProficiency: DEFAULT_SKILL_PROFICIENCY,
+    dob: {
+      locked: data.dobLocked === true,
+      parts: savedForm && savedForm.date_of_birth
+        ? savedForm.date_of_birth
+        : splitDate(profileValue(profile, 'date_of_birth')),
+      error: statusConfig && DOB_STATUS_FIELDS[status] ? statusConfig.message : '',
+      errorFields: DOB_STATUS_FIELDS[status] || []
+    },
     passkeys: data.passkeys,
     sessions: data.sessions,
     safeguarding: data.safeguarding,
@@ -1418,6 +1490,24 @@ router.get('/settings', asyncRoute(async (req, res) => {
     loadFailed = true;
   }
 
+  // React locks the date of birth once the identity is verified (has_id_verified_badge).
+  // If the status cannot be read the field stays editable: the API ignores a verified
+  // member's date of birth anyway (UserService::updateProfile), so nothing can change.
+  try {
+    data.dobLocked = payloadFrom(await callProfile(token, 'GET', '/identity/status')).has_id_verified_badge === true;
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    data.dobLocked = false;
+  }
+
+  // Optional category for a new skill, as React's SkillSelector offers (top level only).
+  try {
+    data.skillCategories = normalizeSkillCategories(payloadFrom(await callProfile(token, 'GET', '/skills/categories')));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    data.skillCategories = [];
+  }
+
   try {
     data.passkeys = normalizePasskeys(payloadFrom(await callWebAuthn(token, 'GET', '/credentials')), req);
   } catch (error) {
@@ -1475,6 +1565,23 @@ router.post('/settings', asyncRoute(async (req, res) => {
     await removeUploadedFile(avatar);
     storeProfileSettingsForm(req);
     return redirectTo(res, profileSettingsRedirect('profile-update-failed'));
+  }
+
+  // Date of birth, as React's settings send it: only while the identity is not verified
+  // (the boxes are not rendered otherwise), and all three boxes empty clears it (null).
+  // Whether a date is acceptable — real, in the past, 18 or over — is the API's decision
+  // (MinimumAge::dateOfBirthError); its refusal is shown on the field below.
+  if (dobOffered(req.body)) {
+    const dob = readDate(req.body, 'date_of_birth');
+    if (dob.error) {
+      await removeUploadedFile(avatar);
+      storeProfileSettingsForm(req);
+      const dobStatus = ['day_required', 'month_required', 'year_required'].includes(dob.error)
+        ? `dob-${dob.error.replace('_required', '')}-required`
+        : 'dob-invalid';
+      return redirectTo(res, profileSettingsRedirect(dobStatus));
+    }
+    profilePayload.date_of_birth = dob.value || null;
   }
 
   let status = 'profile-updated';
@@ -1543,9 +1650,10 @@ router.post('/settings', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    const dobStatus = !avatarUploadFailed && 'date_of_birth' in profilePayload ? dobStatusFromApiError(error) : null;
     status = avatarUploadFailed && error instanceof ApiError && [400, 413, 422].includes(error.status)
       ? 'avatar-invalid'
-      : 'profile-update-failed';
+      : (dobStatus || 'profile-update-failed');
   } finally {
     await removeUploadedFile(avatar);
   }
@@ -1800,10 +1908,18 @@ router.post('/skills/add', asyncRoute(async (req, res) => {
   }
 
   const isRequesting = checked(req.body.is_requesting);
+  const categoryId = positiveInteger(req.body.category_id);
+  // Sent only when the form chose a real level; otherwise the API applies its own
+  // default ('intermediate', the same as React's).
+  const proficiency = SKILL_PROFICIENCY_LEVELS.includes(trimmed(req.body.proficiency_level))
+    ? trimmed(req.body.proficiency_level)
+    : null;
   let status = 'skill-added';
   try {
     await callUserSettings(token, 'POST', '/skills', {
       skill_name: skillName,
+      ...(categoryId !== null ? { category_id: categoryId } : {}),
+      ...(proficiency !== null ? { proficiency_level: proficiency } : {}),
       is_offering: checked(req.body.is_offering) || !isRequesting,
       is_requesting: isRequesting
     });

@@ -52,6 +52,7 @@ return [
         'popular_add' => 'Fügen Sie :tag hinzu',
         'apply' => 'Wenden Sie Filter an',
         'reset' => 'Filter zurücksetzen',
+        'type_podcasts' => 'Podcast-Sendungen',
     ],
     'results' => [
         'count' => '{0} Keine Ergebnisse gefunden|{1} 1 Ergebnis gefunden|[2,*] :count Ergebnisse gefunden',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'Mitglied anzeigen',
         'view_event' => 'Veranstaltung ansehen',
         'view_group' => 'Gruppe anzeigen',
+        'tab_podcasts' => 'Podcast-Sendungen (:count)',
+        'section_podcasts' => 'Podcast-Sendungen',
+        'episode_from' => 'Episode von :show',
     ],
     'states' => [
         'no_query_title' => 'Starten Sie Ihre Suche',

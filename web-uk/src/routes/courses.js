@@ -128,7 +128,10 @@ const FORM_STATUS_MESSAGES = {
   'lesson-saved': { type: 'success', key: 'lesson_saved' },
   'lesson-deleted': { type: 'success', key: 'lesson_deleted' },
   'lesson-failed': { type: 'error', key: 'lesson_failed' },
-  'lesson-title-missing': { type: 'error', key: 'lesson_title_missing' }
+  'lesson-title-missing': { type: 'error', key: 'lesson_title_missing' },
+  'cohort-added': { type: 'success', key: 'cohort_added' },
+  'cohort-failed': { type: 'error', key: 'cohort_failed' },
+  'cohort-name-missing': { type: 'error', key: 'cohort_name_missing' }
 };
 const GRADING_STATUS_MESSAGES = {
   graded: { type: 'success', key: 'graded' },
@@ -626,6 +629,44 @@ async function courseCategories(token) {
   return listFrom(await callCourse(token, 'GET', '/categories')).map(normalizeCategory).filter((category) => category.id > 0 && category.name);
 }
 
+// Prerequisite choices for the course form (React CreateCoursePage takes course
+// ids). The API keeps only ids the author may see: their own courses and
+// published, approved community courses, so offer exactly those, plus whatever
+// is already set, and never the course itself.
+async function prerequisiteChoices(token, courseId, currentIds = [], currentTitles = []) {
+  const [mine, community] = await Promise.all([
+    callCourse(token, 'GET', '/mine').catch(() => ({ data: [] })),
+    callCourse(token, 'GET', '?per_page=50').catch(() => ({ data: [] }))
+  ]);
+  const selected = new Set(currentIds.map(Number));
+  const choices = new Map();
+  [...listFrom(mine), ...listFrom(community), ...currentTitles].forEach((row) => {
+    const id = positiveInteger(row && row.id);
+    const title = trimmed(row && row.title);
+    if (!id || id === Number(courseId) || !title || choices.has(id)) return;
+    choices.set(id, { id, title, checked: selected.has(id) });
+  });
+  return [...choices.values()].sort((left, right) => left.title.localeCompare(right.title, getRequestIntlLocale()));
+}
+
+function prerequisiteIdsFrom(body, courseId = null) {
+  const raw = Array.isArray(body.prerequisites) ? body.prerequisites : (body.prerequisites === undefined ? [] : [body.prerequisites]);
+  const ids = raw.map((value) => positiveInteger(String(value).trim())).filter((id) => id && id !== Number(courseId));
+  return [...new Set(ids)];
+}
+
+function normalizeCohort(cohort) {
+  const start = trimmed(cohort && cohort.start_date);
+  const startDate = start ? new Date(start) : null;
+  return {
+    id: positiveInteger(cohort && cohort.id) || 0,
+    name: trimmed(cohort && cohort.name),
+    startLabel: startDate && !Number.isNaN(startDate.getTime())
+      ? startDate.toLocaleDateString(getRequestIntlLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+      : ''
+  };
+}
+
 async function courseDetailPayload(token, id) {
   const [courseResult, prerequisitesResult, reviewsResult, progressResult] = await Promise.all([
     callCourse(token, 'GET', `/${encodeURIComponent(id)}`),
@@ -850,6 +891,8 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
       contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value })),
       builderSections: [],
       builderUnsectioned: [],
+      prerequisiteChoices: await prerequisiteChoices(token, 0),
+      cohorts: [],
       status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
@@ -876,6 +919,15 @@ router.get('/instructor/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     const course = stashedForm
       ? applyCourseFormValues(payload.course, stashedForm)
       : payload.course;
+    const currentPrerequisiteIds = Array.isArray(payload.course.prerequisites)
+      ? payload.course.prerequisites
+      : payload.prerequisites.map((item) => item.id);
+    const [choices, cohortsResult] = await Promise.all([
+      prerequisiteChoices(token, req.params.id, currentPrerequisiteIds, payload.prerequisites),
+      payload.course.enrollmentType === 'cohort'
+        ? callCourse(token, 'GET', `/${encodeURIComponent(req.params.id)}/cohorts`).catch(() => ({ data: [] }))
+        : Promise.resolve(null)
+    ]);
 
     return res.render('courses/form', {
       title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title_edit') : 'Edit your course'),
@@ -892,6 +944,9 @@ router.get('/instructor/:id(\\d+)/edit', asyncRoute(async (req, res) => {
       contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value })),
       builderSections: payload.sections,
       builderUnsectioned: [],
+      prerequisiteChoices: choices,
+      showCohorts: payload.course.enrollmentType === 'cohort',
+      cohorts: listFrom(cohortsResult).map(normalizeCohort).filter((cohort) => cohort.name),
       status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
@@ -1058,7 +1113,7 @@ router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
   }
 }));
 
-function coursePayload(body) {
+function coursePayload(body, courseId = null) {
   const title = trimmed(body.title, 200);
   if (title === '') {
     return null;
@@ -1079,6 +1134,11 @@ function coursePayload(body) {
   }
 
   payload.category_id = positiveInteger(body.category_id);
+  // Only a form that rendered the prerequisite checkboxes may change them, so a
+  // submission without the field never wipes prerequisites by accident.
+  if (String(body.prerequisites_field || '') === '1') {
+    payload.prerequisites = prerequisiteIdsFrom(body, courseId);
+  }
   return payload;
 }
 
@@ -1268,7 +1328,7 @@ router.post('/instructor/new', asyncRoute(async (req, res) => {
 }));
 
 router.post('/instructor/:id(\\d+)/update', asyncRoute(async (req, res) => {
-  const payload = coursePayload(req.body);
+  const payload = coursePayload(req.body, req.params.id);
   if (payload === null) {
     storeCourseForm(req, req.params.id);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'save-failed'));
@@ -1312,6 +1372,19 @@ router.post('/instructor/:id(\\d+)/grading/:attemptId(\\d+)', asyncRoute(async (
   return requireCourseAction(req, res, instructorGradingRedirect(req.params.id, 'grade-failed'), async (token) => {
     await callCourse(token, 'POST', `/attempts/${encodeURIComponent(req.params.attemptId)}/grade`, gradePayload(req.body));
     return redirectTo(res, instructorGradingRedirect(req.params.id, 'graded'));
+  });
+}));
+
+// Add a cohort (React CreateCoursePage). The API checks course ownership.
+router.post('/instructor/:id(\\d+)/cohorts', asyncRoute(async (req, res) => {
+  const name = trimmed(req.body.cohort_name, 200);
+  if (name === '') {
+    return redirectTo(res, instructorEditRedirect(req.params.id, 'cohort-name-missing'));
+  }
+
+  return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'cohort-failed'), async (token) => {
+    await callCourse(token, 'POST', `/${encodeURIComponent(req.params.id)}/cohorts`, { name });
+    return redirectTo(res, instructorEditRedirect(req.params.id, 'cohort-added'));
   });
 }));
 

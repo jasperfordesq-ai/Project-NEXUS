@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Non puoi reagire a questo messaggio.',
         'reaction_failed' => 'Non siamo riusciti a salvare la tua reazione.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Elimina questa conversazione',
+        'title' => 'Elimina questa conversazione',
+        'caption' => 'Conversazione con :name',
+        'legend' => 'Per chi deve essere eliminata la conversazione?',
+        'self' => 'Elimina per me',
+        'self_hint' => 'Viene rimossa dalla tua casella. :name può ancora vederla.',
+        'everyone' => 'Elimina per tutti',
+        'everyone_hint' => 'Viene eliminata per te e per :name. L’operazione non può essere annullata.',
+        'submit' => 'Elimina conversazione',
+        'cancel' => 'Annulla e torna alla conversazione',
+        'deleted' => 'La conversazione è stata eliminata per tutti.',
+        'failed' => 'Spiacenti, non è stato possibile eliminare la conversazione. Riprova più tardi.',
+        'error_choose' => 'Seleziona per chi eliminare la conversazione',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Chiedi aiuto a un coordinatore',
+        'coordinator_hint' => 'Un coordinatore della comunità saprà che desideri aiuto per metterti in contatto e ti contatterà.',
+        'coordinator_sent' => 'Coordinatore avvisato. Ti contatterà per aiutarti a organizzare il contatto.',
+        'coordinator_failed' => 'Non è stato possibile inviare la tua richiesta in questo momento. Riprova tra poco.',
+        'vetting_button' => 'Richiedi una revisione del mio controllo',
+        'vetting_hint' => 'Alla tua comunità viene chiesto di rivedere il tuo controllo. Vedrai l’esito nelle impostazioni del profilo.',
+        'required_checks' => 'Controlli necessari',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Riguardante',
+        'type_listing' => 'Annuncio',
+        'type_event' => 'Evento',
+        'type_job' => 'Lavoro',
+        'type_volunteering' => 'Volontariato',
+        'untitled' => ':type numero :id',
+    ],
 ];

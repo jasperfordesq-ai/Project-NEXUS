@@ -140,6 +140,16 @@ return [
 
     // Employer brand page
     'employer' => [
+        'write_review_heading' => 'Write a review',
+        'write_review_hint' => 'You can review an employer once they have accepted you for an opportunity.',
+        'review_rating_legend' => 'Overall rating',
+        'review_rating_option' => ':rating out of 5',
+        'review_dimension_same' => 'Same as overall rating',
+        'review_comment_label' => 'Comment (optional)',
+        'review_submit' => 'Submit review',
+        'review_saved' => 'Thank you. Your review has been published.',
+        'review_failed' => 'We could not submit your review. Please try again.',
+        'review_rating_required' => 'Choose an overall rating from 1 to 5.',
         'title' => 'Employer profile',
         'description' => 'Open opportunities and reviews for this employer.',
         'open_jobs_heading' => 'Open opportunities',
@@ -194,6 +204,9 @@ return [
         'status_unknown' => 'Updated',
     ],
     'responses' => [
+        'add_to_outlook' => 'Add to Outlook Calendar',
+        'download_ics' => 'Download calendar file (.ics)',
+        'states_calendar_failed' => 'We could not prepare the calendar file. Please try again.',
         'title' => 'Interviews and offers',
         'caption' => 'Your responses from employers',
         'add_to_calendar' => 'Add to Google Calendar',
@@ -326,5 +339,16 @@ return [
             'reopen_pending_review' => 'Your opportunity has been sent for review. It will reopen once it is approved.',
             'status_change_failed' => 'We could not change the status of this opportunity. Please try again.',
         ],
+    ],
+    'apply_extras' => [
+        'saved_found' => 'Your saved application message has been filled in below. You can change it before you send it.',
+        'quick_apply_hint' => 'Or send your saved message now, without a CV.',
+        'quick_apply_button' => 'Quick apply with saved message',
+        'remember_label' => 'Save this message to use in future applications',
+        'cv_skills_heading' => 'Skills detected from your CV',
+        'export_heading' => 'Your application data',
+        'export_hint' => 'Download a copy of the information held about your job applications, as a JSON file.',
+        'export_button' => 'Download my data',
+        'export_failed' => 'We could not prepare your data. Please try again.',
     ],
 ];

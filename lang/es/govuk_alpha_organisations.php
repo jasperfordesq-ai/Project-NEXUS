@@ -252,4 +252,15 @@ return [
             ],
         ],
     ],
+    'reviews' => [
+        'write_heading' => 'Valorar esta organización',
+        'rating_legend' => 'Valoración',
+        'rating_option' => ':rating de 5',
+        'comment_label' => 'Comentario (opcional)',
+        'comment_hint' => 'Comparte lo que funcionó bien o lo que otras personas deberían saber.',
+        'submit' => 'Enviar reseña',
+        'saved' => 'Reseña enviada.',
+        'failed' => 'No se ha podido enviar tu reseña.',
+        'rating_required' => 'Elige una valoración antes de enviarla.',
+    ],
 ];

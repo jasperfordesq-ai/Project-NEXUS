@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'Die Schutzregeln dieser Gemeinschaft erlauben Ihnen nicht, dieser Gruppe beizutreten. Bitten Sie eine Koordinatorin oder einen Koordinator um Hilfe.',
         'error_safeguarding_unavailable' => 'Wir können die Schutzregeln dieser Gemeinschaft gerade nicht prüfen. Bitte versuchen Sie es in Kürze erneut.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Mitglieder von :group',
+        'link' => 'Alle Mitglieder ansehen und durchsuchen',
+        'search_label' => 'Gruppenmitglieder suchen',
+        'search_hint' => 'Nach Name oder Kurzprofil suchen',
+        'search_button' => 'Mitglieder suchen',
+        'clear' => 'Suche zurücksetzen',
+        'empty' => 'Diese Gruppe hat keine Mitglieder, die angezeigt werden können.',
+        'empty_search' => 'Keine Mitglieder entsprechen „:query“.',
+        'role_admin' => 'Gruppenadministrator',
+        'pagination_label' => 'Mitgliederseiten',
+        'back' => 'Zurück zu :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Veranstaltungen von :group',
+        'link' => 'Alle Veranstaltungen ansehen, auch vergangene',
+        'filter_label' => 'Welche Veranstaltungen',
+        'when_all' => 'Alle Veranstaltungen',
+        'when_upcoming' => 'Bevorstehende Veranstaltungen',
+        'when_past' => 'Vergangene Veranstaltungen',
+        'filter_button' => 'Veranstaltungen anzeigen',
+        'empty' => 'Es gibt keine Veranstaltungen, die angezeigt werden können.',
+        'pagination_label' => 'Veranstaltungsseiten',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Für Sie empfohlen',
+        'score' => ':score % Übereinstimmung',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Hervorgehobene Gruppen',
+        'more_title' => 'Weitere Gruppen',
+    ],
 ];

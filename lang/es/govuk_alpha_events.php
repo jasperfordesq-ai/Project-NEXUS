@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Los eventos periódicos están desactivados en esta comunidad. Tu evento no se ha creado. Revisa los datos y créalo como un evento único.',
     ],
     'rsvp' => [
+        'clear_hint' => '¿Has cambiado de idea? Puedes quitar tu respuesta para que el evento no muestre ninguna respuesta tuya.',
+        'clear_button' => 'Borrar mi respuesta',
+        'cleared' => 'Tu respuesta se ha borrado.',
         'pending_tag' => 'Solicitado',
         'pending' => 'Has solicitado una plaza. La organización tiene que aprobarla antes de que quede confirmada.',
     ],

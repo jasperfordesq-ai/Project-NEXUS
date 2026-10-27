@@ -108,7 +108,8 @@ const JOB_RESPONSE_SUCCESS_MESSAGES = {
 };
 const JOB_RESPONSE_ERROR_MESSAGES = {
   'interview-failed': 'Sorry, we could not update that interview. It may have already been responded to.',
-  'offer-failed': 'Sorry, we could not update that offer. It may have expired or already been responded to.'
+  'offer-failed': 'Sorry, we could not update that offer. It may have expired or already been responded to.',
+  'calendar-failed': 'We could not prepare the calendar file. Please try again.'
 };
 const JOB_RESPONSE_MESSAGE_KEYS = Object.freeze({
   'interview-accepted': 'govuk_alpha_jobs.responses.states_interview_accepted',
@@ -116,7 +117,8 @@ const JOB_RESPONSE_MESSAGE_KEYS = Object.freeze({
   'interview-failed': 'govuk_alpha_jobs.responses.states_interview_failed',
   'offer-accepted': 'govuk_alpha_jobs.responses.states_offer_accepted',
   'offer-rejected': 'govuk_alpha_jobs.responses.states_offer_rejected',
-  'offer-failed': 'govuk_alpha_jobs.responses.states_offer_failed'
+  'offer-failed': 'govuk_alpha_jobs.responses.states_offer_failed',
+  'calendar-failed': 'govuk_alpha_jobs.responses.states_calendar_failed'
 });
 const JOB_INTERVIEW_STATUSES = ['proposed', 'accepted', 'declined'];
 const JOB_OFFER_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn', 'expired'];
@@ -198,11 +200,28 @@ const JOB_STATUS_ERROR_MESSAGE_KEYS = Object.freeze({
   'create-failed': 'jobs_t3.error_generic'
 });
 const JOB_APPLICATION_ERROR_MESSAGES = Object.freeze({
-  'withdraw-failed': 'We could not withdraw your application. Please try again.'
+  'withdraw-failed': 'We could not withdraw your application. Please try again.',
+  'export-failed': 'We could not prepare your data. Please try again.'
 });
 const JOB_APPLICATION_ERROR_MESSAGE_KEYS = Object.freeze({
-  'withdraw-failed': 'jobs_t2.states.withdraw-failed'
+  'withdraw-failed': 'jobs_t2.states.withdraw-failed',
+  'export-failed': 'govuk_alpha_jobs.apply_extras.export_failed'
 });
+// Employer review form (React EmployerBrandPage). A refusal from the API carries
+// its own translated reason (not eligible, already reviewed) and is shown instead.
+const EMPLOYER_REVIEW_SUCCESS_MESSAGES = Object.freeze({
+  'review-saved': 'Thank you. Your review has been published.'
+});
+const EMPLOYER_REVIEW_ERROR_MESSAGES = Object.freeze({
+  'review-failed': 'We could not submit your review. Please try again.',
+  'review-rating-required': 'Choose an overall rating from 1 to 5.'
+});
+const EMPLOYER_REVIEW_MESSAGE_KEYS = Object.freeze({
+  'review-saved': 'govuk_alpha_jobs.employer.review_saved',
+  'review-failed': 'govuk_alpha_jobs.employer.review_failed',
+  'review-rating-required': 'govuk_alpha_jobs.employer.review_rating_required'
+});
+const EMPLOYER_REVIEW_DIMENSIONS = ['respect', 'communication', 'flexibility', 'impact'];
 const JOB_ACTION_ERROR_MESSAGES = Object.freeze({
   'apply-failed': 'We could not submit your application. You may have already applied.',
   'save-failed': 'We could not save this opportunity. Please try again.',
@@ -856,6 +875,25 @@ function interviewCalendarHref(interview, req, title, typeLabel, details, durati
   return `https://calendar.google.com/calendar/render?${query.toString()}`;
 }
 
+// The same event as an Outlook web compose deep link, in the shape the API's
+// calendar-links endpoint builds (React MyApplicationsPage offers both).
+function interviewOutlookHref(interview, req, title, typeLabel, details, duration) {
+  const scheduled = new Date(interview.scheduled_at || interview.scheduled_for || '');
+  if (Number.isNaN(scheduled.getTime())) return '';
+
+  const end = new Date(scheduled.getTime() + ((duration || 30) * 60 * 1000));
+  const query = new URLSearchParams({
+    subject: jobTranslation(req, 'govuk_alpha_jobs.responses.calendar_event_title', `Interview: ${title}`, { title }),
+    startdt: scheduled.toISOString(),
+    enddt: end.toISOString(),
+    body: typeLabel,
+    location: details,
+    path: '/calendar/action/compose',
+    rru: 'addevent'
+  });
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${query.toString()}`;
+}
+
 function decorateInterview(interview, req) {
   const status = allowed(interview.status, JOB_INTERVIEW_STATUSES, 'proposed');
   const type = trimmed(interview.interview_type || interview.type);
@@ -878,6 +916,8 @@ function decorateInterview(interview, req) {
     duration,
     details,
     calendarHref: interviewCalendarHref(interview, req, title, typeLabel, details, duration),
+    outlookHref: interviewOutlookHref(interview, req, title, typeLabel, details, duration),
+    icsHref: positiveInteger(interview.id) ? `/jobs/interviews/${positiveInteger(interview.id)}/calendar.ics` : '',
     canRespond: status === 'proposed'
   };
 }
@@ -1705,6 +1745,77 @@ function recalledJobApplication(req, jobId) {
   return Number(value.jobId) === Number(jobId) ? value : {};
 }
 
+// GET /v2/jobs/saved-profile answers { profile: {...} | null }. The community can
+// switch saved profiles off (403); that, or any failure, simply means no profile.
+async function loadSavedProfile(token) {
+  try {
+    const data = objectFrom(await callJob(token, 'GET', '/saved-profile')) || {};
+    const profile = data.profile && typeof data.profile === 'object' ? data.profile : null;
+    if (!profile) return null;
+    const coverText = trimmed(profile.cover_text, 5000);
+    return coverText ? { coverText } : null;
+  } catch {
+    return null;
+  }
+}
+
+// React saves the sent cover message as the member's application profile after
+// every application. Here the member chooses, with a box ticked by default. A
+// failure to save never undoes the application itself.
+async function rememberCoverMessage(token, message) {
+  if (!message) return;
+  try {
+    await callJob(token, 'PUT', '/saved-profile', { headline: '', cover_text: message });
+  } catch {
+    // Non-critical, as in React.
+  }
+}
+
+// After a CV upload React reads the skills the API extracted from it
+// (GET /v2/jobs/applications/{id}/parse-cv) and shows them. They are carried to
+// the detail page in the flash so they never appear in a URL.
+async function rememberCvSkills(req, token, jobId, applicationId) {
+  if (!applicationId || typeof req.flash !== 'function') return;
+  try {
+    const data = objectFrom(await callJob(token, 'GET', `/applications/${encodeURIComponent(applicationId)}/parse-cv`)) || {};
+    const skills = (Array.isArray(data.skills) ? data.skills : [])
+      .map((skill) => trimmed(skill, 120))
+      .filter(Boolean)
+      .slice(0, 50);
+    if (skills.length > 0) req.flash('jobCvSkills', { jobId, skills });
+  } catch {
+    // CV parsing is optional and may be switched off.
+  }
+}
+
+function recalledCvSkills(req, jobId) {
+  if (typeof req.flash !== 'function') return [];
+  const values = req.flash('jobCvSkills');
+  const value = values.length > 0 && values[0] && typeof values[0] === 'object' ? values[0] : {};
+  return Number(value.jobId) === Number(jobId) && Array.isArray(value.skills) ? value.skills : [];
+}
+
+function apiRefusalReason(error) {
+  if (!(error instanceof ApiError)) return '';
+  const data = error.data && typeof error.data === 'object' ? error.data : {};
+  const first = Array.isArray(data.errors) && data.errors[0] && typeof data.errors[0] === 'object' ? data.errors[0] : {};
+  return trimmed(first.message || data.message || '', 500);
+}
+
+function employerReviewPayload(employerId, body) {
+  const rating = Number(body.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return null;
+
+  const payload = { employer_id: employerId, rating, comment: trimmed(body.comment, 2000) };
+  EMPLOYER_REVIEW_DIMENSIONS.forEach((dimension) => {
+    const score = Number(body[dimension]);
+    if (trimmed(body[dimension]) !== '' && Number.isInteger(score) && score >= 1 && score <= 5) {
+      payload[dimension] = score;
+    }
+  });
+  return payload;
+}
+
 function jobCvErrorStatus(file) {
   if (!file) return '';
   if (Number(file.size) > JOB_CV_MAX_BYTES) return 'cv-too-large';
@@ -2076,7 +2187,25 @@ router.get('/employers/:employerId(\\d+)', asyncRoute(async (req, res) => {
   const openJobs = collectionItems(jobsResult).map(decorateJob);
   const employerReviews = reviewRowsFrom(reviewsResult);
 
+  let viewerId = 0;
+  try {
+    viewerId = profileUserId(await getRequestProfile(req, token)) || 0;
+  } catch {
+    // Without the viewer's id the form is still offered; the API refuses a
+    // self-review on its own.
+  }
+  const reviewStatus = trimmed(req.query.status);
+  const refusals = typeof req.flash === 'function' ? req.flash('employerReviewRefusal') : [];
+
   return res.render('jobs/employer-brand', {
+    canReview: viewerId !== employer.id,
+    reviewDimensions: EMPLOYER_REVIEW_DIMENSIONS,
+    csrfToken: req.csrfToken ? req.csrfToken() : '',
+    reviewStatus,
+    reviewSuccessMessage: localizedStatusMessage(req, reviewStatus, EMPLOYER_REVIEW_SUCCESS_MESSAGES, EMPLOYER_REVIEW_MESSAGE_KEYS),
+    reviewErrorMessage: reviewStatus === 'review-failed' && refusals.length > 0 && trimmed(refusals[0])
+      ? trimmed(refusals[0], 500)
+      : localizedStatusMessage(req, reviewStatus, EMPLOYER_REVIEW_ERROR_MESSAGES, EMPLOYER_REVIEW_MESSAGE_KEYS),
     title: employer.name,
     activeNav: 'explore',
     employer,
@@ -2552,12 +2681,19 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
       || (jobOwnerId(job) > 0 && jobOwnerId(job) === profileUserId(profileResult))
   };
   const applicationValues = recalledJobApplication(req, decorated.id);
+  const savedProfile = !decorated.isOwner && !decorated.hasApplied ? await loadSavedProfile(token) : null;
   return res.render('jobs/detail', {
     title: decorated.title,
     activeNav: 'explore',
     job: decorated,
     jobMatch: dataFrom(matchResult),
     applicationValues,
+    savedProfile,
+    // A message the member typed and had refused wins over the saved one.
+    coverLetterValue: applicationValues.cover_letter !== undefined
+      ? applicationValues.cover_letter
+      : (savedProfile ? savedProfile.coverText : ''),
+    cvSkills: recalledCvSkills(req, decorated.id),
     status: req.query.status || '',
     successMessage: statusMessage(req, req.query.status),
     errorMessage: actionErrorMessage(req, req.query.status),
@@ -2686,10 +2822,11 @@ router.post('/:id(\\d+)/apply', asyncRoute(async (req, res) => {
     return redirectTo(res, jobRedirect(id, cvErrorStatus));
   }
 
+  let result;
   try {
     if (file) {
       const buffer = await fs.readFile(file.filepath);
-      await uploadJobApplication(token, id, {
+      result = await uploadJobApplication(token, id, {
         ...payload,
         file: {
           buffer,
@@ -2699,15 +2836,108 @@ router.post('/:id(\\d+)/apply', asyncRoute(async (req, res) => {
         }
       });
     } else {
-      await callJob(token, 'POST', `/${encodeURIComponent(id)}/apply`, payload);
+      result = await callJob(token, 'POST', `/${encodeURIComponent(id)}/apply`, payload);
     }
-    return redirectTo(res, jobRedirect(id, 'applied'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     rememberJobApplication(req, id, req.body);
+    await removeUploadedFile(file);
     return redirectTo(res, jobRedirect(id, 'apply-failed'));
+  }
+
+  // The application is in. Both follow-ups below swallow their own failures.
+  try {
+    if (checkedOne(req.body.remember_message)) {
+      await rememberCoverMessage(token, payload.message);
+    }
+    if (file) {
+      await rememberCvSkills(req, token, id, resultId(result));
+    }
   } finally {
     await removeUploadedFile(file);
+  }
+  return redirectTo(res, jobRedirect(id, 'applied'));
+}));
+
+// Quick apply (React ApplySection): send the member's saved cover message as it
+// stands. The message is read again here rather than trusted from the form.
+router.post('/:id(\\d+)/quick-apply', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const savedProfile = await loadSavedProfile(token);
+  if (!savedProfile) {
+    return redirectTo(res, jobRedirect(id, 'apply-failed'));
+  }
+
+  try {
+    await callJob(token, 'POST', `/${encodeURIComponent(id)}/apply`, { message: savedProfile.coverText });
+    return redirectTo(res, jobRedirect(id, 'applied'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, jobRedirect(id, 'apply-failed'));
+  }
+}));
+
+// Interview calendar file (React InlineInterviewCard / MyApplicationsPage).
+router.get('/interviews/:interviewId(\\d+)/calendar.ics', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let download;
+  try {
+    download = await callJobDownload(token, `/interviews/${encodeURIComponent(Number(req.params.interviewId))}/calendar`);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect('/jobs/responses', 'calendar-failed'));
+  }
+
+  applyDownloadHeaders(res, download.headers || {});
+  if (!res.get('content-type')) res.set('content-type', 'text/calendar; charset=utf-8');
+  if (!res.get('content-disposition')) res.set('content-disposition', 'attachment; filename="interview.ics"');
+  return res.status(download.status || 200).send(download.body);
+}));
+
+// "Download my data" for job applications (React MyApplicationsPage).
+router.get('/applications/export.json', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let data;
+  try {
+    data = dataFrom(await callJob(token, 'GET', '/gdpr-export'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect('/jobs/applications', 'export-failed'));
+  }
+
+  res.set('Cache-Control', 'private, no-store');
+  res.set('Content-Type', 'application/json; charset=utf-8');
+  res.set('Content-Disposition', 'attachment; filename="my-job-data.json"');
+  return res.status(200).send(JSON.stringify(data ?? {}, null, 2));
+}));
+
+// Write an employer review (React EmployerBrandPage).
+router.post('/employers/:employerId(\\d+)/reviews', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const employerId = Number(req.params.employerId);
+  const back = `/jobs/employers/${employerId}`;
+  const payload = employerReviewPayload(employerId, req.body || {});
+  if (!payload) {
+    return redirectTo(res, statusRedirect(back, 'review-rating-required'));
+  }
+
+  try {
+    await callJob(token, 'POST', '/employer-reviews', payload);
+    return redirectTo(res, statusRedirect(back, 'review-saved'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    const reason = apiRefusalReason(error);
+    if (reason && typeof req.flash === 'function') req.flash('employerReviewRefusal', reason);
+    return redirectTo(res, statusRedirect(back, 'review-failed'));
   }
 }));
 

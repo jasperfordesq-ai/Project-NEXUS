@@ -8,6 +8,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "feed/_comments.njk" import commentList %}
+{% from "feed/_reactions.njk" import POST_REACTIONS, reactionForms %}
+{% from "feed/_item-menu.njk" import translateForm, quoteShare, whyShown %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
@@ -168,6 +170,8 @@
         {# Posts list #}
         {% if posts.length > 0 %}
         <div class="nexus-alpha-card-list">
+          {# The feed state every action returns to (filter, mode, page). #}
+          {% set feedState = { type: selectedType, mode: selectedMode, per_page: perPage, subtype: selectedSubtype, cursor: cursor } %}
           {% for post in posts %}
             <article id="feed-item-{{ post.type }}-{{ post.id }}" class="nexus-alpha-card">
               <div class="nexus-alpha-feed-row">
@@ -304,27 +308,7 @@
                 <div class="nexus-alpha-reactions govuk-!-margin-bottom-3">
                   {{ likeForm | safe }}
                   {% if post.reactionTotal > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ tc("feed_t1.reaction_count", post.reactionTotal, { count: post.reactionTotal }) }}</p>{% endif %}
-                  <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("feed_t1.reactions_legend") }}</legend>
-                    <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">
-                      {% for reaction in [{ type: "like", symbol: "&#128077;" }, { type: "love", symbol: "&#10084;" }, { type: "celebrate", symbol: "&#127881;" }] %}
-                        <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/react') }}" class="nexus-alpha-reaction-form">
-                          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                          <input type="hidden" name="type" value="{{ selectedType }}">
-                          <input type="hidden" name="mode" value="{{ selectedMode }}">
-                          <input type="hidden" name="per_page" value="{{ perPage }}">
-                          {% if selectedSubtype %}<input type="hidden" name="subtype" value="{{ selectedSubtype }}">{% endif %}
-                          {% if cursor %}<input type="hidden" name="cursor" value="{{ cursor }}">{% endif %}
-                          <input type="hidden" name="emoji" value="{{ reaction.type }}">
-                          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if post.userReaction == reaction.type %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{{ 'true' if post.userReaction == reaction.type else 'false' }}">
-                            <span aria-hidden="true">{{ reaction.symbol | safe }}</span>
-                            {{ t("feed_t1.reaction_" + reaction.type) }}{% if post.reactionCounts[reaction.type] %} ({{ post.reactionCounts[reaction.type] }}){% endif %}
-                            <span class="govuk-visually-hidden"> {{ t("feed_t1.reaction_for", { name: post.authorName }) }}</span>
-                          </button>
-                        </form>
-                      {% endfor %}
-                    </div>
-                  </fieldset>
+                  {{ reactionForms(POST_REACTIONS, urlFor('/feed/posts/' + (post.id | string) + '/react'), csrfToken, t, post.userReaction, post.reactionCounts, feedState, t("feed_t1.reaction_for", { name: post.authorName })) }}
                 </div>
 
                 <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-3">
@@ -341,7 +325,9 @@
                     <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if post.isBookmarked else 'false' }}">{{ t("feed_t1.unsave_button") if post.isBookmarked else t("feed_t1.save_button") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></button>
                   </form>
                 </div>
+                {% if not post.isOwn and not post.isShared %}{{ quoteShare(post, csrfToken, urlFor, t, feedState) }}{% endif %}
                 {% if post.shareCount > 0 %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">{{ tc("feed_t1.shares_count", post.shareCount, { count: post.shareCount }) }}</p>{% endif %}
+                {{ translateForm(post, csrfToken, urlFor, t) }}
 
                 <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
                   <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/feed/posts/' + (post.id | string)) }}">
@@ -351,6 +337,7 @@
                 </p>
 
                 {% if post.isOwn %}
+                  <p class="govuk-body-s govuk-!-margin-bottom-3"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/feed/posts/' + (post.id | string) + '/stats') }}">{{ t("govuk_alpha_feed.stats.link") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></a></p>
                   <details class="govuk-details" data-module="govuk-details">
                     <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.edit_post") }}</span></summary>
                     <div class="govuk-details__text">
@@ -384,7 +371,20 @@
                 {% endif %}
               {% endif %}
 
+              {% if selectedMode == "ranking" %}{{ whyShown(post, t) }}{% endif %}
+
               {% if currentUserId and not post.isOwn and post.authorId != currentUserId %}
+                {# "Not interested" (React FeedCard), on the list as well as the item page. #}
+                <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">
+                  <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.engagement.not_interested") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></span></summary>
+                  <div class="govuk-details__text">
+                    <p class="govuk-body-s">{{ t("govuk_alpha_feed.engagement.not_interested_hint") }}</p>
+                    <form method="post" action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/not-interested') }}">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% for name, value in feedState %}{% if value %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}{% endfor %}
+                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.engagement.not_interested") }}</button>
+                    </form>
+                  </div>
+                </details>
                 <div class="govuk-!-margin-bottom-3">
                   <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
                     <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.moderation_summary") }}</span></summary>

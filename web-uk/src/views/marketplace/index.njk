@@ -39,6 +39,17 @@
             </div>
           </div>
         {% endif %}
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="price_type">{{ t("govuk_alpha_commerce.filters.listing_type") }}</label>
+            <select class="govuk-select" id="price_type" name="price_type">
+              <option value="">{{ t("govuk_alpha_commerce.filters.listing_type_any") }}</option>
+              {% for option in priceTypeOptions %}
+                <option value="{{ option.value }}"{% if option.value == priceType %} selected{% endif %}>{{ t(option.labelKey) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
       </div>
     </fieldset>
     <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("polish_commerce.marketplace_filter_submit") }}</button>
@@ -56,6 +67,18 @@
         {% endif %}
       {% endfor %}
     </ul>
+  {% endif %}
+
+  {# React MarketplacePage: a featured section while nothing is searched or filtered. #}
+  {% if featured and featured.length %}
+    <section aria-labelledby="featured-heading" class="govuk-!-margin-bottom-6">
+      <h2 class="govuk-heading-m" id="featured-heading">{{ t("govuk_alpha_commerce.featured.heading") }}</h2>
+      <div class="nexus-alpha-card-list">
+        {% for item in featured %}
+          {% include "marketplace/_listing-card.njk" %}
+        {% endfor %}
+      </div>
+    </section>
   {% endif %}
 
   {% if not listings.length %}

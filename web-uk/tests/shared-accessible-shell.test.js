@@ -24748,7 +24748,9 @@ describe('shared accessible frontend shell', () => {
         buffer: expect.any(Buffer)
       })
     }));
-    expect(api.callJobApi).not.toHaveBeenCalled();
+    // The JSON apply route is never used for a CV upload. (Reading the skills
+    // extracted from the CV afterwards, GET /applications/{id}/parse-cv, is.)
+    expect(api.callJobApi).not.toHaveBeenCalledWith('test-token', 'POST', expect.stringMatching(/\/apply$/), expect.anything());
   });
 
   it('rejects invalid job CVs locally and replays the cover letter with field-linked errors', async () => {
@@ -24805,7 +24807,10 @@ describe('shared accessible frontend shell', () => {
     expect(oversizedReplay.text).toContain('<a href="#cv">Your CV must be 5MB or smaller. Your application was not submitted.</a>');
     expect(oversizedReplay.text).toContain('Preserve the oversized-file statement.');
     expect(api.uploadJobApplication).not.toHaveBeenCalled();
-    expect(api.callJobApi).not.toHaveBeenCalled();
+    // Nothing was submitted. (The detail page does read the saved application
+    // profile, GET /saved-profile, to offer quick apply.)
+    expect(api.callJobApi).not.toHaveBeenCalledWith(expect.anything(), 'POST', expect.anything(), expect.anything());
+    expect(api.callJobApi).not.toHaveBeenCalledWith(expect.anything(), 'POST', expect.anything());
   });
 
   it('renders the Laravel event category browse page', async () => {
@@ -31048,7 +31053,9 @@ describe('shared accessible frontend shell', () => {
   it('passes every manual message 401 redirect through request-aware auth cleanup', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'messages.js'), 'utf8');
     expect(source).not.toContain('redirectOnAuthError(error, res)');
-    expect(source.match(/if \(redirectOnAuthError\(error, req, res\)\)/g)).toHaveLength(12);
+    // 15 since 27 Oct 2026: delete a whole conversation, ask a coordinator for help,
+    // and react to a one-to-one message each handle a 401 the same way.
+    expect(source.match(/if \(redirectOnAuthError\(error, req, res\)\)/g)).toHaveLength(15);
     expect(source).toContain('handleApiError(error, req, res, { redirectOn401: loginRedirect() })');
   });
 
@@ -34277,6 +34284,8 @@ describe('shared accessible frontend shell', () => {
           user: { id: 77, name: 'Aisha Khan' }
         }
       })
+      // The detail page also asks for "more from this seller" (27 Oct 2026).
+      .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({
         data: {
           id: 44,
@@ -34289,6 +34298,7 @@ describe('shared accessible frontend shell', () => {
           user: { id: 77, name: 'Aisha Khan' }
         }
       })
+      .mockResolvedValueOnce({ data: [] })
       .mockResolvedValueOnce({
         data: {
           id: 45,
@@ -34299,7 +34309,8 @@ describe('shared accessible frontend shell', () => {
           status: 'active',
           user: { id: 77, name: 'Aisha Khan' }
         }
-      });
+      })
+      .mockResolvedValueOnce({ data: [] });
 
     const hybrid = await request(app)
       .get('/marketplace/43')

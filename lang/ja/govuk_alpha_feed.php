@@ -106,4 +106,72 @@ return [
         'truncated' => 'この引用投稿は短縮されました。',
         'image_alt' => '引用した投稿に添付された画像',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'いいね',
+        'love' => '大好き',
+        'laugh' => '笑い',
+        'wow' => 'すごい',
+        'sad' => '悲しい',
+        'celebrate' => 'お祝い',
+        'clap' => '拍手',
+        'time_credit' => 'タイムクレジット',
+        'legend' => 'この投稿に反応する',
+        'comment_legend' => 'このコメントに反応する',
+        'see_who' => '「:reaction」で反応した人を見る（:count）',
+        'reactors_title' => '「:reaction」で反応した人',
+        'reactors_total' => '合計：:count',
+        'reactors_empty' => 'まだ誰も「:reaction」で反応していません。',
+        'unknown_member' => 'コミュニティのメンバー',
+        'show_more' => 'さらに表示',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => '投稿に戻る',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'この投稿を翻訳する',
+        'heading' => '翻訳',
+        'hint' => '自動翻訳です。元の投稿は上に表示されています。',
+        'done' => '投稿を翻訳しました。',
+        'failed' => '申し訳ありませんが、この投稿を翻訳できませんでした。後でもう一度お試しください。',
+        'unavailable' => 'このコミュニティでは翻訳を利用できません。',
+        'same' => 'この投稿はすでにあなたの言語です。',
+        'empty' => 'この投稿には翻訳するテキストがありません。',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'なぜこれが表示されているのですか？',
+        'default_reason' => 'あなたの活動に基づいてランク付けされています',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => '投稿の統計を見る',
+        'title' => '投稿の統計',
+        'intro' => 'これらの数値はあなただけに表示されます。',
+        'views' => '閲覧数',
+        'likes' => 'いいね数',
+        'comments' => 'コメント数',
+        'shares' => '共有数',
+        'reach' => 'リーチ',
+        'reach_hint' => 'リーチは、投稿を見た異なる人の数です。',
+        'reactions_breakdown' => '反応',
+        'no_reactions' => 'まだ反応はありません。',
+        'forbidden' => 'この投稿の統計は、投稿した本人だけが見ることができます。',
+        'failed' => '申し訳ありませんが、統計を読み込めませんでした。後でもう一度お試しください。',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => '自分のコメントを添えて共有する',
+        'label' => 'あなたのコメント',
+        'hint' => '共有すると、あなたのコメントが投稿と一緒に表示されます。',
+        'submit' => 'コメントを添えて共有',
+    ],
 ];

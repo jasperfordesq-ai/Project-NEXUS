@@ -28,6 +28,45 @@
         {{ article.content | safe }}
       </div>
 
+      {% if article.attachments and article.attachments.length %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_kb.attachments_heading") }}</h2>
+        <ul class="govuk-list">
+          {% for attachment in article.attachments %}
+            <li><a class="govuk-link" href="{{ urlFor(attachment.href) }}" download>{{ attachment.fileName }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="govuk-!-margin-top-6 govuk-!-margin-bottom-6" id="feedback">
+        {% if feedbackStatus and feedbackStatus.type == "success" %}
+          {% set notificationMessage = feedbackStatus.message %}
+          {% set notificationType = "success" %}
+          {% include "partials/notification-banner.njk" %}
+        {% elif feedbackStatus %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ feedbackStatus.message }}</li></ul></div>
+            </div>
+          </div>
+        {% endif %}
+        <form method="post" action="{{ urlFor('/kb/' + (article.id | string) + '/feedback') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_kb.feedback_question") }}</h2></legend>
+            {% if article.myFeedback === true %}
+              <p class="govuk-body">{{ t("govuk_alpha_kb.feedback_given_yes") }}</p>
+            {% elif article.myFeedback === false %}
+              <p class="govuk-body">{{ t("govuk_alpha_kb.feedback_given_no") }}</p>
+            {% endif %}
+            <div class="govuk-button-group">
+              <button type="submit" name="helpful" value="yes" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_kb.feedback_yes", { count: article.helpfulYes }) }}</button>
+              <button type="submit" name="helpful" value="no" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_kb.feedback_no", { count: article.helpfulNo }) }}</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
       {% if article.children and article.children.length %}
         <h2 class="govuk-heading-m">{{ t("kb.related_title") }}</h2>
         <ul class="govuk-list">

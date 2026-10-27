@@ -55,6 +55,7 @@ return [
         'popular_add' => 'Add :tag',
         'apply' => 'Apply filters',
         'reset' => 'Reset filters',
+        'type_podcasts' => 'Podcasts',
     ],
 
     'results' => [
@@ -79,6 +80,9 @@ return [
         'view_member' => 'View member',
         'view_event' => 'View event',
         'view_group' => 'View group',
+        'tab_podcasts' => 'Podcasts (:count)',
+        'section_podcasts' => 'Podcasts',
+        'episode_from' => 'Episode from :show',
     ],
 
     'states' => [

@@ -106,4 +106,72 @@ return [
         'truncated' => 'Questo post citato è stato abbreviato.',
         'image_alt' => 'Immagine allegata al post citato',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'Mi piace',
+        'love' => 'Amore',
+        'laugh' => 'Risata',
+        'wow' => 'Stupore',
+        'sad' => 'Triste',
+        'celebrate' => 'Festeggia',
+        'clap' => 'Applauso',
+        'time_credit' => 'Credito tempo',
+        'legend' => 'Reagisci a questo post',
+        'comment_legend' => 'Reagisci a questo commento',
+        'see_who' => 'Vedi chi ha reagito con :reaction (:count)',
+        'reactors_title' => 'Persone che hanno reagito con :reaction',
+        'reactors_total' => 'Totale: :count',
+        'reactors_empty' => 'Nessuno ha ancora reagito con :reaction.',
+        'unknown_member' => 'Un membro della comunità',
+        'show_more' => 'Mostra altre persone',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'Torna al post',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'Traduci questo post',
+        'heading' => 'Traduzione',
+        'hint' => 'Tradotto automaticamente. Il post originale è mostrato sopra.',
+        'done' => 'Il post è stato tradotto.',
+        'failed' => 'Spiacenti, non è stato possibile tradurre questo post. Riprova più tardi.',
+        'unavailable' => 'La traduzione non è disponibile in questa comunità.',
+        'same' => 'Questo post è già nella tua lingua.',
+        'empty' => 'Questo post non contiene testo da tradurre.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'Perché vedo questo?',
+        'default_reason' => 'Classificato per te in base alla tua attività',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'Visualizza le statistiche del post',
+        'title' => 'Statistiche del post',
+        'intro' => 'Solo tu puoi vedere questi numeri.',
+        'views' => 'Visualizzazioni',
+        'likes' => 'Mi piace ricevuti',
+        'comments' => 'Commenti',
+        'shares' => 'Condivisioni',
+        'reach' => 'Copertura',
+        'reach_hint' => 'La copertura è il numero di persone diverse che hanno visto il post.',
+        'reactions_breakdown' => 'Reazioni',
+        'no_reactions' => 'Ancora nessuna reazione.',
+        'forbidden' => 'Solo chi ha scritto questo post può vederne le statistiche.',
+        'failed' => 'Spiacenti, non è stato possibile caricare le statistiche. Riprova più tardi.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'Condividi con un tuo commento',
+        'label' => 'Il tuo commento',
+        'hint' => 'Il tuo commento compare insieme al post quando lo condividi.',
+        'submit' => 'Condividi con commento',
+    ],
 ];

@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-27T11:48:43.084Z",
+  "generatedAt": "2026-10-27T13:15:54.921Z",
   "provenance": {
-    "generatedAt": "2026-10-27T11:48:43.084Z",
+    "generatedAt": "2026-10-27T13:15:54.921Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "8bac7ee988c58217c772629d0586fa787730d446",
+    "laravelCommitSha": "cc647fa2f8245e65db3df915f6e44d753f533e47",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "8bac7ee988c58217c772629d0586fa787730d446",
+    "webUkRepositoryCommitSha": "cc647fa2f8245e65db3df915f6e44d753f533e47",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-27T11:48:43.084Z",
+    "generatedAt": "2026-10-27T13:15:54.921Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 924,
+    "webUkRoutes": 946,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 214,
+    "extraWebUkRoutes": 236,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -64,6 +64,18 @@
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
+      "coupons": {
+        "matched": 2,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "courses": {
+        "matched": 26,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
       "dashboard": {
         "matched": 1,
         "missing": 0,
@@ -78,6 +90,12 @@
       },
       "federation": {
         "matched": 28,
+        "missing": 0,
+        "extraWebUk": 3,
+        "ignoredInfrastructure": 0
+      },
+      "feed": {
+        "matched": 22,
         "missing": 0,
         "extraWebUk": 3,
         "ignoredInfrastructure": 0
@@ -97,7 +115,7 @@
       "groups": {
         "matched": 36,
         "missing": 0,
-        "extraWebUk": 1,
+        "extraWebUk": 3,
         "ignoredInfrastructure": 0
       },
       "help": {
@@ -108,6 +126,12 @@
       },
       "jobs": {
         "matched": 38,
+        "missing": 0,
+        "extraWebUk": 6,
+        "ignoredInfrastructure": 0
+      },
+      "kb": {
+        "matched": 2,
         "missing": 0,
         "extraWebUk": 2,
         "ignoredInfrastructure": 0
@@ -139,7 +163,13 @@
       "marketplace": {
         "matched": 50,
         "missing": 0,
-        "extraWebUk": 18,
+        "extraWebUk": 19,
+        "ignoredInfrastructure": 0
+      },
+      "matches": {
+        "matched": 4,
+        "missing": 0,
+        "extraWebUk": 2,
         "ignoredInfrastructure": 0
       },
       "me": {
@@ -157,11 +187,17 @@
       "messages": {
         "matched": 18,
         "missing": 0,
-        "extraWebUk": 2,
+        "extraWebUk": 6,
         "ignoredInfrastructure": 0
       },
       "municipality-calendar": {
         "matched": 0,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "organisations": {
+        "matched": 9,
         "missing": 0,
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
@@ -192,6 +228,12 @@
       },
       "robots.txt": {
         "matched": 0,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "search": {
+        "matched": 6,
         "missing": 0,
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
@@ -328,18 +370,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "coupons": {
-        "matched": 2,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "courses": {
-        "matched": 26,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "event-templates": {
         "matched": 4,
         "missing": 0,
@@ -370,12 +400,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "feed": {
-        "matched": 22,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "guide": {
         "matched": 1,
         "missing": 0,
@@ -394,12 +418,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "kb": {
-        "matched": 2,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "leaderboard": {
         "matched": 5,
         "missing": 0,
@@ -408,12 +426,6 @@
       },
       "logout": {
         "matched": 1,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "matches": {
-        "matched": 4,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -438,12 +450,6 @@
       },
       "onboarding": {
         "matched": 4,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "organisations": {
-        "matched": 9,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -492,12 +498,6 @@
       },
       "saved": {
         "matched": 2,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "search": {
-        "matched": 6,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -1116,6 +1116,48 @@
     },
     {
       "method": "POST",
+      "path": "/coupons/{param}/qr",
+      "family": "coupons",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/coupons/{param}/qr",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/coupons.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/courses/instructor/{param}/cohorts",
+      "family": "courses",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/courses/instructor/{param}/cohorts",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/courses.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
       "path": "/dashboard/location",
       "family": "dashboard",
       "status": "extra-web-uk",
@@ -1430,6 +1472,69 @@
       "webUkRouteKind": ""
     },
     {
+      "method": "GET",
+      "path": "/feed/posts/{param}/reactions/{param}",
+      "family": "feed",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/feed/posts/{param}/reactions/{param}",
+      "webUkView": "feed/reactors",
+      "webUkFile": "web-uk/src/routes/feed.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/feed/posts/{param}/stats",
+      "family": "feed",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/feed/posts/{param}/stats",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/feed.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/feed/posts/{param}/translate",
+      "family": "feed",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/feed/posts/{param}/translate",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/feed-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
       "method": "POST",
       "path": "/goals/{param}/buddy-requests/{param}/{param}",
       "family": "goals",
@@ -1469,6 +1574,48 @@
       "webUkPath": "/group-exchanges/{param}/start",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/group-exchange-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/groups/{param}/events",
+      "family": "groups",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/groups/{param}/events",
+      "webUkView": "groups/events",
+      "webUkFile": "web-uk/src/routes/groups.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/groups/{param}/member-list",
+      "family": "groups",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/groups/{param}/member-list",
+      "webUkView": "groups/members",
+      "webUkFile": "web-uk/src/routes/groups.js",
       "webUkRouteKind": ""
     },
     {
@@ -1556,6 +1703,48 @@
       "webUkRouteKind": ""
     },
     {
+      "method": "GET",
+      "path": "/jobs/applications/export.json",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/applications/export.json",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/jobs/interviews/{param}/calendar.ics",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/interviews/{param}/calendar.ics",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
       "method": "POST",
       "path": "/jobs/{param}/close",
       "family": "jobs",
@@ -1572,6 +1761,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/jobs/{param}/close",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/{param}/quick-apply",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/{param}/quick-apply",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/jobs.js",
       "webUkRouteKind": ""
@@ -1595,6 +1805,69 @@
       "webUkPath": "/jobs/{param}/reopen",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/employers/{param}/reviews",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/employers/{param}/reviews",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/kb/{param}/attachments/{param}",
+      "family": "kb",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/kb/{param}/attachments/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/kb.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/kb/{param}/feedback",
+      "family": "kb",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/kb/{param}/feedback",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/kb.js",
       "webUkRouteKind": ""
     },
     {
@@ -2124,6 +2397,27 @@
     },
     {
       "method": "POST",
+      "path": "/marketplace/offers/{param}/counter",
+      "family": "marketplace",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/marketplace/offers/{param}/counter",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/marketplace-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
       "path": "/marketplace/reports/{param}/appeal",
       "family": "marketplace",
       "status": "extra-web-uk",
@@ -2204,6 +2498,48 @@
       "webUkPath": "/marketplace/shipping/{param}/update",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/marketplace-member-tools.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/matches/board/group/{param}/dismiss",
+      "family": "matches",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/matches/board/group/{param}/dismiss",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/matches.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/matches/group/{param}/dismiss",
+      "family": "matches",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/matches/group/{param}/dismiss",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/matches.js",
       "webUkRouteKind": ""
     },
     {
@@ -2355,6 +2691,27 @@
     },
     {
       "method": "GET",
+      "path": "/messages/{param}/delete",
+      "family": "messages",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/messages/{param}/delete",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/messages.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
       "path": "/messages/{param}/m/{param}/report",
       "family": "messages",
       "status": "extra-web-uk",
@@ -2370,6 +2727,48 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/messages/{param}/m/{param}/report",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/messages.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/messages/{param}/delete",
+      "family": "messages",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/messages/{param}/delete",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/messages.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/messages/{param}/m/{param}/react",
+      "family": "messages",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/messages/{param}/m/{param}/react",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/messages.js",
       "webUkRouteKind": ""
@@ -2396,6 +2795,27 @@
       "webUkRouteKind": ""
     },
     {
+      "method": "POST",
+      "path": "/messages/{param}/request-coordinator",
+      "family": "messages",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/messages/{param}/request-coordinator",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/messages.js",
+      "webUkRouteKind": ""
+    },
+    {
       "method": "GET",
       "path": "/municipality-calendar",
       "family": "municipality-calendar",
@@ -2414,6 +2834,27 @@
       "webUkPath": "/municipality-calendar",
       "webUkView": "municipality-calendar/index",
       "webUkFile": "web-uk/src/routes/municipality-calendar.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/organisations/{param}/reviews",
+      "family": "organisations",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/organisations/{param}/reviews",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/server.js",
       "webUkRouteKind": ""
     },
     {
@@ -2876,6 +3317,27 @@
       "webUkPath": "/robots.txt",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/search/podcast-episode",
+      "family": "search",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/search/podcast-episode",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/search.js",
       "webUkRouteKind": ""
     },
     {

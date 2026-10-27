@@ -17,6 +17,7 @@ const {
   getListingCategories,
   setListingSkillTags,
   uploadListingImage,
+  deleteListingImage,
   callListingApi,
   createExchangeRequest,
   getExchangeConfig,
@@ -231,6 +232,10 @@ function listingFormValues(source = {}, listing = null) {
     hours_estimate: values.hours_estimate !== undefined
       ? values.hours_estimate
       : (base.hours_estimate ?? base.estimated_hours ?? ''),
+    // Total hours the member will give; blank = no limit (React ListingForm).
+    hours_available: values.hours_available !== undefined
+      ? values.hours_available
+      : (base.hours_available ?? ''),
     service_type: values.service_type !== undefined ? values.service_type : (base.service_type || 'physical_only'),
     location: values.location !== undefined ? values.location : (base.location || ''),
     skill_tags: skillTags
@@ -245,6 +250,7 @@ function boundedListingFormValues(source = {}) {
     type: trimmed(values.type, 32),
     category_id: trimmed(values.category_id, 32),
     hours_estimate: trimmed(values.hours_estimate, 32),
+    hours_available: trimmed(values.hours_available, 32),
     service_type: trimmed(values.service_type, 64),
     location: trimmed(values.location, 255),
     skill_tags: trimmed(values.skill_tags, 600)
@@ -267,9 +273,11 @@ function consumeListingFormReplay(req, listingId) {
   return replay.listingId === expectedId ? boundedListingFormValues(replay.values) : null;
 }
 
-function listingPayloadFrom(values) {
+// `hoursAvailableSubmitted`: only a form that offered the "hours available" field may
+// set or clear the cap. A post without the field leaves the stored cap alone.
+function listingPayloadFrom(values, { hoursAvailableSubmitted = false } = {}) {
   const hours = trimmed(values.hours_estimate);
-  return {
+  const payload = {
     title: trimmed(values.title),
     description: trimmed(values.description),
     type: trimmed(values.type),
@@ -280,6 +288,16 @@ function listingPayloadFrom(values) {
       : 'physical_only',
     location: trimmed(values.location) || null
   };
+  if (hoursAvailableSubmitted) {
+    // Blank means no limit, stored as NULL. An empty string would be cast to 0 by the
+    // API and read as "no hours left" (the reason React sends null).
+    payload.hours_available = trimmed(values.hours_available) === '' ? null : Number(trimmed(values.hours_available));
+  }
+  return payload;
+}
+
+function hoursAvailableSubmitted(req) {
+  return Boolean(req.body) && Object.prototype.hasOwnProperty.call(req.body, 'hours_available');
 }
 
 function validateListingValues(values, config, allowedTypes, image = null, t = key => key) {
@@ -316,6 +334,19 @@ function validateListingValues(values, config, allowedTypes, image = null, t = k
     const hours = Number(hoursText);
     if (!Number.isFinite(hours) || hours < 0.5 || hours > 2000) {
       add('hours_estimate', t('listings.create.errors.hours_range'));
+    }
+  }
+
+  // Same rules as React's ListingForm and the API (ListingService): optional, at least
+  // half an hour, and never below the hours one exchange takes.
+  const availableText = trimmed(values.hours_available);
+  if (availableText) {
+    const available = Number(availableText);
+    const hours = Number(hoursText);
+    if (!Number.isFinite(available) || available < 0.5) {
+      add('hours_available', t('govuk_alpha_listings.create.hours_available_range'));
+    } else if (hoursText && Number.isFinite(hours) && available < hours) {
+      add('hours_available', t('govuk_alpha_listings.create.hours_available_below_estimate'));
     }
   }
 
@@ -1457,7 +1488,7 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
   }
 
   try {
-    const result = await createListing(req.token, listingPayloadFrom(values));
+    const result = await createListing(req.token, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req) }));
     const listingId = positiveInteger(listingFrom(result).id);
     if (listingId === null) {
       if (req.flash) {
@@ -1614,7 +1645,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
   }
 
   try {
-    await updateListing(req.token, id, listingPayloadFrom(values));
+    await updateListing(req.token, id, listingPayloadFrom(values, { hoursAvailableSubmitted: hoursAvailableSubmitted(req) }));
     const secondaryFailures = [];
     try {
       await setListingSkillTags(req.token, id, skillTagsFrom(values.skill_tags));
@@ -1626,6 +1657,14 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
         await uploadListingCoverImage(req.token, positiveInteger(id), image);
       } catch (error) {
         secondaryFailures.push(error.message || 'the image could not be uploaded');
+      }
+    } else if (req.body.remove_image === '1') {
+      // React ListingForm: remove the current photo without choosing a new one.
+      try {
+        await deleteListingImage(req.token, positiveInteger(id));
+      } catch (error) {
+        if (isAuthError(error)) throw error;
+        secondaryFailures.push(res.locals.t('govuk_alpha_listings.create.remove_image_failed'));
       }
     }
 

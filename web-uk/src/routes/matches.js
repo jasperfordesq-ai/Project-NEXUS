@@ -283,4 +283,31 @@ router.post('/board/:listingId(\\d+)/dismiss', requireAuth, asyncRoute(async (re
   return redirectTo(res, `/matches/board?source=${sourceFrom(req.body)}&status=${status}#matches-top`);
 }, { redirectOn401: '/login?status=auth-required' }));
 
+// React MatchCard also hides GROUP matches: POST /v2/matches/group/{id}/dismiss.
+async function dismissGroupMatch(token, groupId, reason) {
+  return callMatchesApi(token, 'POST', `/group/${encodeURIComponent(groupId)}/dismiss`, { reason });
+}
+
+router.post('/group/:groupId(\\d+)/dismiss', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-dismissed';
+  try {
+    await dismissGroupMatch(req.token, Number(req.params.groupId), reasonFrom(req.body));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-dismiss-failed';
+  }
+  return redirectTo(res, `/matches?status=${status}`);
+}, { redirectOn401: '/login?status=auth-required' }));
+
+router.post('/board/group/:groupId(\\d+)/dismiss', requireAuth, asyncRoute(async (req, res) => {
+  let status = 'match-dismissed';
+  try {
+    await dismissGroupMatch(req.token, Number(req.params.groupId), reasonFrom(req.body));
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    status = 'match-dismiss-failed';
+  }
+  return redirectTo(res, `/matches/board?source=${sourceFrom(req.body)}&status=${status}#matches-top`);
+}, { redirectOn401: '/login?status=auth-required' }));
+
 module.exports = router;

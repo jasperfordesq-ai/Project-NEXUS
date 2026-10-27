@@ -183,19 +183,43 @@
     </div>
   {% else %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="apply">{{ t("jobs.apply_title") }}</h2>
+    {% if cvSkills and cvSkills.length %}
+      <h3 class="govuk-heading-s">{{ t("govuk_alpha_jobs.apply_extras.cv_skills_heading") }}</h3>
+      <ul class="govuk-list nexus-alpha-tag-list">
+        {% for skill in cvSkills %}<li>{{ govukTag({ text: skill, classes: "govuk-tag--blue" }) }}</li>{% endfor %}
+      </ul>
+    {% endif %}
     {% if job.hasApplied %}
       <div class="govuk-inset-text">
         <p class="govuk-body">{{ t("jobs.already_applied") }}</p>
       </div>
     {% else %}
+      {% if savedProfile %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_jobs.apply_extras.saved_found") }}</p>
+          <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/quick-apply') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <p class="govuk-body-s">{{ t("govuk_alpha_jobs.apply_extras.quick_apply_hint") }}</p>
+            <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.apply_extras.quick_apply_button") }}</button>
+          </form>
+        </div>
+      {% endif %}
       <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/apply') }}" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {% call characterCount(5000, characterCountMessages, "cover_letter") %}
         <div class="govuk-form-group">
           <label class="govuk-label" for="cover_letter">{{ t("jobs.cover_letter_label") }}</label>
-          <textarea class="govuk-textarea govuk-js-character-count" id="cover_letter" name="cover_letter" rows="5" maxlength="5000" aria-describedby="cover_letter-info">{{ applicationValues.cover_letter or "" }}</textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="cover_letter" name="cover_letter" rows="5" maxlength="5000" aria-describedby="cover_letter-info">{{ coverLetterValue or "" }}</textarea>
         </div>
         {% endcall %}
+        <div class="govuk-form-group">
+          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="remember_message" name="remember_message" type="checkbox" value="1" checked>
+              <label class="govuk-label govuk-checkboxes__label" for="remember_message">{{ t("govuk_alpha_jobs.apply_extras.remember_label") }}</label>
+            </div>
+          </div>
+        </div>
         <div class="govuk-form-group{% if status in ["cv-invalid", "cv-too-large"] %} govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="cv">{{ t("jobs.cv_label") }}</label>
           <div id="cv-hint" class="govuk-hint">{{ t("jobs.cv_hint") }}</div>

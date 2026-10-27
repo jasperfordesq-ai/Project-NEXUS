@@ -102,6 +102,9 @@ return [
         'quiz_attempts' => 'Quiz-pogingen',
     ],
     'status' => [
+        'cohort_added' => 'Cohort toegevoegd.',
+        'cohort_failed' => 'We konden het cohort niet toevoegen. Probeer het opnieuw.',
+        'cohort_name_missing' => 'Vul een naam voor het cohort in.',
         'enrolled' => 'U bent nu ingeschreven. Geniet van de cursus.',
         'enrol_required' => 'Schrijf u in voor deze cursus voordat u het leergedeelte opent.',
         'review_saved' => 'Bedankt - uw recensie is opgeslagen.',
@@ -144,5 +147,16 @@ return [
         'lesson_title_missing' => 'Voer een titel in voor de les.',
         'graded' => 'De poging is beoordeeld.',
         'grade_failed' => 'De poging kon niet worden beoordeeld. Probeer het opnieuw.',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => 'Verplichte voorafgaande cursussen',
+        'prerequisites_hint' => 'Deelnemers moeten de cursussen die je aanvinkt afronden voordat ze zich voor deze cursus kunnen inschrijven.',
+        'prerequisites_none' => 'Er zijn nog geen andere cursussen die je kunt kiezen.',
+        'cohorts_heading' => 'Cohorten',
+        'cohorts_hint' => 'Deelnemers aan deze cursus komen in een cohort, een groep die samen begint en samen door de cursus gaat.',
+        'no_cohorts' => 'Nog geen cohorten.',
+        'cohort_name' => 'Naam van het cohort',
+        'cohort_starts' => 'Begint op :date',
+        'add_cohort' => 'Cohort toevoegen',
     ],
 ];

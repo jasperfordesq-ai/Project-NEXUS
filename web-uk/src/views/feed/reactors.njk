@@ -1,0 +1,39 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Who reacted to a feed post with one reaction (React ReactionSummary). #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/feed/posts/' + (postId | string)) }}" class="govuk-back-link">{{ t("govuk_alpha_feed.post_pages.back_to_post") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("feed_t1.permalink_heading") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_feed.reactions.reactors_title", { reaction: reactionLabel }) }}</h1>
+
+      {% if reactors.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_feed.reactions.reactors_total", { count: total }) }}</p>
+        <ul class="govuk-list govuk-list--spaced">
+          {% for reactor in reactors %}
+            <li>
+              {% if reactor.avatar %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ reactor.avatar | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+              {% if reactor.id %}<a class="govuk-link" href="{{ urlFor('/members/' + (reactor.id | string)) }}">{{ reactor.name }}</a>{% else %}{{ reactor.name }}{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if nextHref %}
+          <p class="govuk-body"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha_feed.reactions.show_more") }}</a></p>
+        {% endif %}
+      {% else %}
+        <p class="govuk-body">{{ t("govuk_alpha_feed.reactions.reactors_empty", { reaction: reactionLabel }) }}</p>
+      {% endif %}
+
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/feed/posts/' + (postId | string)) }}">{{ t("govuk_alpha_feed.post_pages.back_to_post") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

@@ -182,4 +182,5 @@ return [
             'rate_limited' => 'You have sent too many reports. Try again later.',
         ],
     ],
+    'sort_communityrank' => 'Community rank',
 ];

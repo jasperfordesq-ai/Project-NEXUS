@@ -102,6 +102,9 @@ return [
         'quiz_attempts' => 'Tentativi di quiz',
     ],
     'status' => [
+        'cohort_added' => 'Coorte aggiunta.',
+        'cohort_failed' => 'Non è stato possibile aggiungere la coorte. Riprova.',
+        'cohort_name_missing' => 'Inserisci un nome per la coorte.',
         'enrolled' => 'Ora sei iscritto. Goditi il ​​corso.',
         'enrol_required' => 'Iscriviti a questo corso prima di aprire l\'area di apprendimento.',
         'review_saved' => 'Grazie: la tua recensione è stata salvata.',
@@ -144,5 +147,16 @@ return [
         'lesson_title_missing' => 'Inserisci un titolo per la lezione.',
         'graded' => 'Il tentativo è stato classificato.',
         'grade_failed' => 'Non è stato possibile valutare il tentativo. Per favore riprova.',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => 'Corsi propedeutici',
+        'prerequisites_hint' => 'I partecipanti devono completare i corsi selezionati prima di potersi iscrivere a questo.',
+        'prerequisites_none' => 'Non ci sono ancora altri corsi che puoi scegliere.',
+        'cohorts_heading' => 'Coorti',
+        'cohorts_hint' => 'I partecipanti a questo corso entrano in una coorte, un gruppo che inizia e segue il corso insieme.',
+        'no_cohorts' => 'Nessuna coorte ancora.',
+        'cohort_name' => 'Nome della coorte',
+        'cohort_starts' => 'Inizia il :date',
+        'add_cohort' => 'Aggiungi coorte',
     ],
 ];

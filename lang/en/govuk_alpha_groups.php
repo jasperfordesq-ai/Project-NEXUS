@@ -234,4 +234,44 @@ return [
         'error_safeguarding' => 'This community\'s safeguarding rules do not allow you to join this group. Ask a coordinator for help.',
         'error_safeguarding_unavailable' => 'We cannot check this community\'s safeguarding rules right now. Please try again shortly.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Members of :group',
+        'link' => 'See and search all members',
+        'search_label' => 'Search group members',
+        'search_hint' => 'Search by name or tagline',
+        'search_button' => 'Search members',
+        'clear' => 'Clear search',
+        'empty' => 'This group has no members to show.',
+        'empty_search' => 'No members match “:query”.',
+        'role_admin' => 'Group administrator',
+        'pagination_label' => 'Member pages',
+        'back' => 'Back to :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Events in :group',
+        'link' => 'See all events, including past events',
+        'filter_label' => 'Which events',
+        'when_all' => 'All events',
+        'when_upcoming' => 'Upcoming events',
+        'when_past' => 'Past events',
+        'filter_button' => 'Show events',
+        'empty' => 'There are no events to show.',
+        'pagination_label' => 'Event pages',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Recommended for you',
+        'score' => ':score% match',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Featured groups',
+        'more_title' => 'More groups',
+    ],
 ];

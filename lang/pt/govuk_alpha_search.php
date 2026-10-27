@@ -52,6 +52,7 @@ return [
         'popular_add' => 'Adicionar :tag',
         'apply' => 'Aplicar filtros',
         'reset' => 'Redefinir filtros',
+        'type_podcasts' => 'Programas de áudio',
     ],
     'results' => [
         'count' => '{0} Nenhum resultado encontrado|{1} 1 resultado encontrado|[2,*] :count resultados encontrados',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'Ver membro',
         'view_event' => 'Ver evento',
         'view_group' => 'Ver grupo',
+        'tab_podcasts' => 'Programas de áudio (:count)',
+        'section_podcasts' => 'Programas de áudio',
+        'episode_from' => 'Episódio de :show',
     ],
     'states' => [
         'no_query_title' => 'Comece sua pesquisa',

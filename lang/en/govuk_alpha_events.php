@@ -420,6 +420,9 @@ return [
         'recurrence_unavailable' => 'Repeating events are switched off in this community. Your event has not been created. Check the details and create it as a single event.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Changed your mind? You can remove your answer so the event shows no reply from you.',
+        'clear_button' => 'Clear my answer',
+        'cleared' => 'Your answer has been cleared.',
         'pending_tag' => 'Requested',
         'pending' => 'You have asked for a place. The organiser needs to approve it before your place is confirmed.',
     ],

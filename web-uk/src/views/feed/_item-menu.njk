@@ -1,0 +1,107 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# The per-post menu React offers on the post detail and hashtag pages
+   (PostDetailPage, HashtagPage): delete for the author; hide, mute and report for
+   everyone else. `returnTo` brings the member back to the page they were on
+   (feed-actions.js allowlists the post and hashtag pages). #}
+{% macro itemMenu(item, currentUserId, csrfToken, urlFor, t, returnTo) %}
+  {% if currentUserId and item.id %}
+    {% if item.authorId and item.authorId == currentUserId %}
+      {% if item.type == "post" %}
+        <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">
+          <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.delete_post") }}</span></summary>
+          <div class="govuk-details__text">
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+                {{ t("polish_discovery.delete_post_warning") }}
+              </strong>
+            </div>
+            <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/delete') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% if returnTo %}<input type="hidden" name="return_to" value="{{ returnTo }}">{% endif %}
+              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.delete_post_button") }}</button>
+            </form>
+          </div>
+        </details>
+      {% endif %}
+    {% else %}
+      <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">
+        <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.moderation_summary") }}</span></summary>
+        <div class="govuk-details__text">
+          <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/hide') }}" class="govuk-!-margin-bottom-4">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% if returnTo %}<input type="hidden" name="return_to" value="{{ returnTo }}">{% endif %}
+            <input type="hidden" name="type" value="{{ item.type }}">
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ t("feed.hide_hint") }}</p>
+            <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.hide_button") }}</button>
+          </form>
+          {% if item.authorId %}
+            <form method="post" action="{{ urlFor('/feed/users/' + (item.authorId | string) + '/mute') }}" class="govuk-!-margin-bottom-4">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% if returnTo %}<input type="hidden" name="return_to" value="{{ returnTo }}">{% endif %}
+              <p class="govuk-body govuk-!-margin-bottom-2">{{ t("feed.mute_hint", { name: item.authorName }) }}</p>
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.mute_button") }}<span class="govuk-visually-hidden"> {{ item.authorName }}</span></button>
+            </form>
+          {% endif %}
+          <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/report') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% if returnTo %}<input type="hidden" name="return_to" value="{{ returnTo }}">{% endif %}
+            <input type="hidden" name="type" value="{{ item.type }}">
+            <div class="govuk-form-group govuk-!-margin-bottom-2">
+              <label class="govuk-label" for="menu-report-reason-{{ item.type }}-{{ item.id }}">{{ t("feed.report_reason_label") }}</label>
+              <div class="govuk-hint" id="menu-report-hint-{{ item.type }}-{{ item.id }}">{{ t("feed.report_hint") }}</div>
+              <input class="govuk-input" id="menu-report-reason-{{ item.type }}-{{ item.id }}" name="reason" type="text" maxlength="500" aria-describedby="menu-report-hint-{{ item.type }}-{{ item.id }}" required>
+            </div>
+            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.report_button") }}</button>
+          </form>
+        </div>
+      </details>
+    {% endif %}
+  {% endif %}
+{% endmacro %}
+
+{# "Translate this post" (React FeedCard TranslateButton). #}
+{% macro translateForm(item, csrfToken, urlFor, t) %}
+  {% if item.type == "post" and item.id and item.content %}
+    <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/translate') }}" class="govuk-!-margin-bottom-3">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.translate.button") }}</button>
+    </form>
+  {% endif %}
+{% endmacro %}
+
+{# Share with the member's own comment (React ShareButton "quote"). #}
+{% macro quoteShare(item, csrfToken, urlFor, t, hidden) %}
+  <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.quote.summary") }}</span></summary>
+    <div class="govuk-details__text">
+      <form method="post" action="{{ urlFor('/feed/posts/' + (item.id | string) + '/share') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% for name, value in (hidden or {}) %}{% if value %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}{% endfor %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="quote-comment-{{ item.id }}">{{ t("govuk_alpha_feed.quote.label") }}</label>
+          <div id="quote-comment-{{ item.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_feed.quote.hint") }}</div>
+          <textarea class="govuk-textarea" id="quote-comment-{{ item.id }}" name="comment" rows="3" maxlength="1000" aria-describedby="quote-comment-{{ item.id }}-hint"></textarea>
+        </div>
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.quote.submit") }}</button>
+      </form>
+    </div>
+  </details>
+{% endmacro %}
+
+{# "Why am I seeing this?" (React WhyShown): only in the ranked feed, and only the
+   API's own reasons, with one neutral fallback — never invented. #}
+{% macro whyShown(item, t) %}
+  <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">
+    <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.why_shown.label") }}</span></summary>
+    <div class="govuk-details__text">
+      <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+        {% if item.rankingReasons and item.rankingReasons.length %}
+          {% for reason in item.rankingReasons %}<li>{{ reason }}</li>{% endfor %}
+        {% else %}
+          <li>{{ t("govuk_alpha_feed.why_shown.default_reason") }}</li>
+        {% endif %}
+      </ul>
+    </div>
+  </details>
+{% endmacro %}

@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'Les règles de protection de cette communauté ne vous permettent pas de rejoindre ce groupe. Demandez de l’aide à un coordinateur.',
         'error_safeguarding_unavailable' => 'Nous ne pouvons pas vérifier les règles de protection de cette communauté pour le moment. Veuillez réessayer dans un instant.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Membres de :group',
+        'link' => 'Voir et rechercher tous les membres',
+        'search_label' => 'Rechercher des membres du groupe',
+        'search_hint' => 'Rechercher par nom ou présentation',
+        'search_button' => 'Rechercher des membres',
+        'clear' => 'Effacer la recherche',
+        'empty' => 'Ce groupe n’a aucun membre à afficher.',
+        'empty_search' => 'Aucun membre ne correspond à « :query ».',
+        'role_admin' => 'Administrateur du groupe',
+        'pagination_label' => 'Pages des membres',
+        'back' => 'Retour à :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Événements de :group',
+        'link' => 'Voir tous les événements, y compris les événements passés',
+        'filter_label' => 'Quels événements',
+        'when_all' => 'Tous les événements',
+        'when_upcoming' => 'Événements à venir',
+        'when_past' => 'Événements passés',
+        'filter_button' => 'Afficher les événements',
+        'empty' => 'Aucun événement à afficher.',
+        'pagination_label' => 'Pages des événements',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Recommandé pour vous',
+        'score' => ':score % de correspondance',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Groupes en vedette',
+        'more_title' => 'Autres groupes',
+    ],
 ];

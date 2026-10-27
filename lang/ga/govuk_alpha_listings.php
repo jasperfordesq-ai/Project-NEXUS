@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Scileanna (roghnach)',
         'skill_tags_hint' => 'Déan liosta de na scileanna atá i gceist, scartha le camóga — mar shampla: garraíodóireacht, cócaireacht, comhairle cánach. Is féidir leat suas le 10 a shuimiú.',
+        'hours_available_label' => 'Uaireanta ar fáil',
+        'hours_available_hint' => 'Líon iomlán na n-uaireanta atá tú sásta a thabhairt. Fág bán é mura bhfuil teorainn ann.',
+        'hours_available_range' => 'Caithfidh na huaireanta atá ar fáil a bheith 0.5 ar a laghad.',
+        'hours_available_below_estimate' => 'Ní féidir leis na huaireanta atá ar fáil a bheith níos lú ná na huaireanta measta.',
+        'remove_image_label' => 'Bain an grianghraf reatha',
+        'remove_image_failed' => 'níorbh fhéidir an grianghraf a bhaint',
     ],
     'nav' => [
         'view_analytics' => 'Féach ar anailísíocht liostála',

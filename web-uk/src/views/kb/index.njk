@@ -21,6 +21,18 @@
         <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("kb.search_button") }}</button>
       </form>
 
+      {% if categories and categories.length %}
+        <nav class="govuk-!-margin-bottom-6" aria-labelledby="kb-categories-heading">
+          <h2 class="govuk-heading-s" id="kb-categories-heading">{{ t("govuk_alpha_kb.categories_label") }}</h2>
+          <ul class="govuk-list">
+            <li><a class="govuk-link{% if not activeCategory %} govuk-!-font-weight-bold{% endif %}" href="{{ urlFor('/kb') }}"{% if not activeCategory %} aria-current="page"{% endif %}>{{ t("govuk_alpha_kb.all_categories") }}</a></li>
+            {% for category in categories %}
+              <li><a class="govuk-link{% if activeCategory == category.id %} govuk-!-font-weight-bold{% endif %}" href="{{ urlFor('/kb?category=' + (category.id | string)) }}"{% if activeCategory == category.id %} aria-current="page"{% endif %}>{{ category.label }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+
       <h2 class="govuk-heading-m">{{ t("kb.results_title") }}</h2>
 
       {% if articles and articles.length %}

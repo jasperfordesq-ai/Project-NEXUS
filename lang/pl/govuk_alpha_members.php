@@ -163,4 +163,5 @@ return [
             'rate_limited' => 'Wysłano zbyt wiele zgłoszeń. Spróbuj ponownie później.',
         ],
     ],
+    'sort_communityrank' => 'Ranga społeczności',
 ];

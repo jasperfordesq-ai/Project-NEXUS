@@ -4007,6 +4007,13 @@ return [
             'removed' => 'Ihre Fähigkeit wurde entfernt.',
             'failed' => 'Ihre Fähigkeiten konnten nicht aktualisiert werden. Bitte versuchen Sie es erneut.',
             'name_required' => 'Geben Sie einen Namen für die Fähigkeit ein.',
+            'category_label' => 'Kategorie (optional)',
+            'category_none' => 'Keine Kategorie',
+            'proficiency_label' => 'Kompetenzstufe',
+            'proficiency_beginner' => 'Anfänger',
+            'proficiency_intermediate' => 'Fortgeschritten',
+            'proficiency_advanced' => 'Erweitert',
+            'proficiency_expert' => 'Experte',
         ],
         'sessions' => [
             'title' => 'Wo Sie angemeldet sind',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Fügen Sie eine Authentifikator-App als zweiten Schritt bei der Anmeldung hinzu.',
         'two_factor_link' => 'Zwei-Schritt-Verifizierung einrichten oder verwalten',
         'blocked_link' => 'Blockierte Mitglieder verwalten',
+        'dob_label' => 'Geburtsdatum',
+        'dob_hint' => 'Optional. Sie benötigen es nur zur Überprüfung Ihrer Identität, und es muss zeigen, dass Sie mindestens 18 Jahre alt sind. Um es zu entfernen, leeren Sie alle drei Felder.',
+        'dob_locked' => 'Ihr Geburtsdatum ist gesperrt, da Ihre Identität verifiziert wurde.',
     ],
     'delete_account' => [
         'title' => 'Löschen Sie Ihr Konto',

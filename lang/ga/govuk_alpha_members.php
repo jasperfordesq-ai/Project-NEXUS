@@ -163,4 +163,5 @@ return [
             'rate_limited' => 'Tá an iomarca tuairiscí seolta agat. Bain triail eile as ar ball.',
         ],
     ],
+    'sort_communityrank' => 'Rang sa phobal',
 ];

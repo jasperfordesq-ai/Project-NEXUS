@@ -121,4 +121,72 @@ return [
         'truncated' => 'This quoted post has been shortened.',
         'image_alt' => 'Image attached to the quoted post',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'Like',
+        'love' => 'Love',
+        'laugh' => 'Laugh',
+        'wow' => 'Wow',
+        'sad' => 'Sad',
+        'celebrate' => 'Celebrate',
+        'clap' => 'Clap',
+        'time_credit' => 'Time credit',
+        'legend' => 'React to this post',
+        'comment_legend' => 'React to this comment',
+        'see_who' => 'See who reacted with :reaction (:count)',
+        'reactors_title' => 'People who reacted with :reaction',
+        'reactors_total' => 'Total: :count',
+        'reactors_empty' => 'Nobody has reacted with :reaction yet.',
+        'unknown_member' => 'A community member',
+        'show_more' => 'Show more people',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'Back to the post',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'Translate this post',
+        'heading' => 'Translation',
+        'hint' => 'Translated automatically. The original post is shown above.',
+        'done' => 'The post has been translated.',
+        'failed' => 'Sorry, we could not translate this post. Try again later.',
+        'unavailable' => 'Translation is not available in this community.',
+        'same' => 'This post is already in your language.',
+        'empty' => 'This post has no text to translate.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'Why am I seeing this?',
+        'default_reason' => 'Ranked for you based on your activity',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'View post statistics',
+        'title' => 'Post statistics',
+        'intro' => 'Only you can see these numbers.',
+        'views' => 'Views',
+        'likes' => 'Likes',
+        'comments' => 'Comments',
+        'shares' => 'Shares',
+        'reach' => 'Reach',
+        'reach_hint' => 'Reach is the number of different people who have seen the post.',
+        'reactions_breakdown' => 'Reactions',
+        'no_reactions' => 'No reactions yet.',
+        'forbidden' => 'Only the person who wrote this post can see its statistics.',
+        'failed' => 'Sorry, we could not load the statistics. Try again later.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'Share with your own comment',
+        'label' => 'Your comment',
+        'hint' => 'Your comment appears with the post when you share it.',
+        'submit' => 'Share with comment',
+    ],
 ];

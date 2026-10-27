@@ -23,8 +23,12 @@ const {
   deleteComment,
   toggleReaction,
   toggleFeedLike,
+  getFeedPostV2,
+  callUgcTranslateApi,
   ApiError
 } = require('../lib/api');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
+const { POST_REACTION_TYPES, COMMENT_REACTION_TYPES } = require('../lib/feed-reactions');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay } = require('../lib/form-replay');
 
@@ -35,7 +39,11 @@ const FEED_POST_REPLAY_KEY = 'composer';
 
 const router = express.Router();
 const FEED_PATH = '/feed';
-const FEED_REACTIONS = new Set(['like', 'love', 'celebrate']);
+// Every reaction React offers (components/social/reactions.ts): eight on posts and
+// feed items, the first six on comments (hooks/useSocialInteractions.ts). This was
+// three for both until 27 Oct 2026.
+const FEED_REACTIONS = new Set(POST_REACTION_TYPES);
+const COMMENT_REACTIONS = new Set(COMMENT_REACTION_TYPES);
 
 function tokenFrom(req) {
   return req.signedCookies.token || '';
@@ -113,11 +121,33 @@ function socialReturnPath(req) {
   return SOCIAL_RETURN_PATHS.some((pattern) => pattern.test(value)) ? value : '';
 }
 
+/**
+ * Actions taken on the single-post page or a hashtag page go back to that page
+ * (27 Oct 2026: those pages gained the hide / mute / report / delete menu the
+ * main feed list had). Only these exact shapes are accepted, so this is not an
+ * open redirect. A hide or delete taken on the post page itself goes to the feed
+ * instead, because the post is no longer there to show.
+ */
+const FEED_RETURN_PATHS = [
+  /^\/feed\/posts\/\d+$/,
+  /^\/feed\/hashtag\/[A-Za-z0-9_]{1,100}$/
+];
+const POST_PAGE_PATH = /^\/feed\/posts\/\d+$/;
+
+function feedReturnPath(req, { leavesPost = false } = {}) {
+  const value = trimmed(req?.body?.return_to, 200);
+  if (!FEED_RETURN_PATHS.some((pattern) => pattern.test(value))) return '';
+  if (leavesPost && POST_PAGE_PATH.test(value)) return '';
+  return value;
+}
+
 function socialReturnRedirect(returnPath, status) {
   return `${returnPath}?social=${encodeURIComponent(status)}#comments`;
 }
 
-function feedStatusRedirect(status, req = null) {
+function feedStatusRedirect(status, req = null, options = {}) {
+  const feedPage = feedReturnPath(req, options);
+  if (feedPage) return `${feedPage}?status=${encodeURIComponent(status)}`;
   const returnPath = socialReturnPath(req);
   if (returnPath) return socialReturnRedirect(returnPath, status);
   return `${FEED_PATH}?status=${encodeURIComponent(status)}`;
@@ -125,6 +155,8 @@ function feedStatusRedirect(status, req = null) {
 
 function feedRedirect(req, status = '', targetType = null, targetId = null) {
   if (!status) return FEED_PATH;
+  const feedPage = feedReturnPath(req);
+  if (feedPage) return `${feedPage}?status=${encodeURIComponent(status)}`;
   const returnPath = socialReturnPath(req);
   if (returnPath) return socialReturnRedirect(returnPath, status);
 
@@ -254,7 +286,7 @@ router.post('/posts/:id(\\d+)/delete', asyncRoute(async (req, res) => {
     status = 'post-delete-failed';
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req, { leavesPost: status === 'post-deleted' }));
 }));
 
 router.post('/posts/:id(\\d+)/hide', asyncRoute(async (req, res) => {
@@ -273,7 +305,7 @@ router.post('/posts/:id(\\d+)/hide', asyncRoute(async (req, res) => {
     status = 'moderation-failed';
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req, { leavesPost: status === 'content-hidden' }));
 }));
 
 router.post('/users/:id(\\d+)/mute', asyncRoute(async (req, res) => {
@@ -291,7 +323,7 @@ router.post('/users/:id(\\d+)/mute', asyncRoute(async (req, res) => {
     status = 'moderation-failed';
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req));
 }));
 
 router.post('/posts/:id(\\d+)/report', asyncRoute(async (req, res) => {
@@ -316,7 +348,7 @@ router.post('/posts/:id(\\d+)/report', asyncRoute(async (req, res) => {
     }
   }
 
-  return redirectTo(res, feedStatusRedirect(status));
+  return redirectTo(res, feedStatusRedirect(status, req));
 }));
 
 router.post('/comments/:id(\\d+)/update', asyncRoute(async (req, res) => {
@@ -369,7 +401,7 @@ router.post('/comments/:id(\\d+)/react', asyncRoute(async (req, res) => {
 
   const emoji = trimmed(req.body.emoji);
   let status = 'reaction-failed';
-  if (FEED_REACTIONS.has(emoji)) {
+  if (COMMENT_REACTIONS.has(emoji)) {
     try {
       const result = await toggleReaction(token, {
         target_type: 'comment',
@@ -558,6 +590,60 @@ router.post('/items/:type([a-zA-Z0-9_-]+)/:id(\\d+)/react', asyncRoute(async (re
   }
 
   return redirectTo(res, feedRedirect(req, status, type, id));
+}));
+
+/**
+ * Translate a feed post into the member's language (React FeedCard
+ * TranslateButton, POST /api/v2/ugc-translate with content_type feed_post).
+ * The text is read from the API rather than taken from the form, so what is
+ * translated is the post itself. The result is shown once on the post page.
+ */
+function translateFailureStatus(error) {
+  const code = String(error?.data?.code || error?.data?.errors?.[0]?.code || '').toUpperCase();
+  if (code === 'TRANSLATION_UNAVAILABLE' || code.includes('FEATURE_DISABLED')) return 'translate-unavailable';
+  return 'translate-failed';
+}
+
+router.post('/posts/:id(\\d+)/translate', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  const id = Number(req.params.id);
+  const postPath = `${FEED_PATH}/posts/${id}`;
+  if (!token) {
+    return redirectTo(res, `${postPath}?status=auth-required`);
+  }
+
+  const requestedLocale = trimmed(req.locale || res.locals.locale || 'en', 10);
+  const targetLocale = /^[a-z]{2,3}(?:-[A-Za-z]{2,4})?$/.test(requestedLocale) ? requestedLocale : 'en';
+
+  let status = 'translate-done';
+  try {
+    const post = dataFrom(await getFeedPostV2(token, id)) || {};
+    const sourceText = htmlToPlainText(post.content || '').slice(0, 8000).trim();
+    if (sourceText === '') {
+      status = 'translate-empty';
+    } else {
+      const result = await callUgcTranslateApi(token, {
+        content_type: 'feed_post',
+        content_id: id,
+        source_text: sourceText,
+        target_locale: targetLocale
+      });
+      const translated = trimmed(dataFrom(result)?.translated_text, 10000);
+      if (translated === '') {
+        status = 'translate-unavailable';
+      } else if (translated === sourceText) {
+        status = 'translate-same';
+      } else if (req.session) {
+        req.session.feedTranslation = { postId: id, text: translated, locale: targetLocale };
+      }
+    }
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, `${postPath}?status=auth-required`);
+    status = translateFailureStatus(error);
+  }
+
+  const anchor = status === 'translate-done' ? '#post-translation' : '';
+  return redirectTo(res, `${postPath}?status=${encodeURIComponent(status)}${anchor}`);
 }));
 
 router.post('/polls/:id(\\d+)/vote', asyncRoute(async (req, res) => {

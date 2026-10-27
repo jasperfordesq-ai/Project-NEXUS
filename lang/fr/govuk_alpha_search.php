@@ -52,6 +52,7 @@ return [
         'popular_add' => 'Ajouter :tag',
         'apply' => 'Appliquer des filtres',
         'reset' => 'Réinitialiser les filtres',
+        'type_podcasts' => 'Émissions audio',
     ],
     'results' => [
         'count' => '{0} Aucun résultat trouvé|{1} 1 résultat trouvé|[2,*] :count résultats trouvés',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'Afficher le membre',
         'view_event' => 'Voir l\'événement',
         'view_group' => 'Afficher le groupe',
+        'tab_podcasts' => 'Émissions audio (:count)',
+        'section_podcasts' => 'Émissions audio',
+        'episode_from' => 'Épisode de :show',
     ],
     'states' => [
         'no_query_title' => 'Commencez votre recherche',

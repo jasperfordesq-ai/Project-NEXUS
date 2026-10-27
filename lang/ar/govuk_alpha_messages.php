@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'لا يمكنك الرد على هذه الرسالة.',
         'reaction_failed' => 'لم نتمكن من حفظ رد فعلك.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'حذف هذه المحادثة',
+        'title' => 'حذف هذه المحادثة',
+        'caption' => 'محادثة مع :name',
+        'legend' => 'لمن يجب حذف المحادثة؟',
+        'self' => 'احذف من أجلي',
+        'self_hint' => 'تُزال من صندوق الوارد لديك. لا يزال بإمكان :name رؤيتها.',
+        'everyone' => 'احذف للجميع',
+        'everyone_hint' => 'تُزال لديك ولدى :name. لا يمكن التراجع عن ذلك.',
+        'submit' => 'حذف المحادثة',
+        'cancel' => 'إلغاء والعودة إلى المحادثة',
+        'deleted' => 'تم حذف المحادثة للجميع.',
+        'failed' => 'عذرًا، تعذّر حذف المحادثة. حاول مرة أخرى لاحقًا.',
+        'error_choose' => 'اختر لمن يجب حذف المحادثة',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'اطلب مساعدة منسق',
+        'coordinator_hint' => 'سيُبلَّغ منسق المجتمع بأنك تودّ المساعدة في التواصل، وسيتواصل معك.',
+        'coordinator_sent' => 'تم إخطار المنسق، وسيتواصل معك لمساعدتك في ترتيب التواصل.',
+        'coordinator_failed' => 'تعذّر إرسال طلبك في الوقت الحالي. يرجى المحاولة مرة أخرى بعد قليل.',
+        'vetting_button' => 'طلب مراجعة الفحص الخاص بي',
+        'vetting_hint' => 'يُطلب من مجتمعك مراجعة الفحص الخاص بك. سترى النتيجة في إعدادات ملفك الشخصي.',
+        'required_checks' => 'الفحوصات المطلوبة',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'بخصوص',
+        'type_listing' => 'إعلان',
+        'type_event' => 'فعالية',
+        'type_job' => 'وظيفة',
+        'type_volunteering' => 'تطوع',
+        'untitled' => ':type رقم :id',
+    ],
 ];

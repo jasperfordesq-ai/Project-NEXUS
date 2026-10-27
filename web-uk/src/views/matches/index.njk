@@ -82,8 +82,10 @@
               {% endfor %}
             </ul>
           {% endif %}
-          {% if match.module == 'listing' and match.listingId %}
-            <form method="post" action="{{ urlFor('/matches/' + (match.listingId | string) + '/dismiss') }}" class="govuk-!-margin-top-2">
+          {# React MatchCard hides listing AND group matches. #}
+          {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/' + (match.listingId | string) + '/dismiss' %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/group/' + (match.groupId | string) + '/dismiss' %}{% else %}{% set dismissPath = '' %}{% endif %}
+          {% if dismissPath %}
+            <form method="post" action="{{ urlFor(dismissPath) }}" class="govuk-!-margin-top-2">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="reason" value="not_relevant">
               <button class="govuk-button govuk-button--secondary govuk-!-font-size-16" data-module="govuk-button" type="submit" title="{{ t('polish_listings.matches_dismiss_hint') }}">{{ t("polish_listings.matches_dismiss_label") }}<span class="govuk-visually-hidden">{{ t("polish_listings.matches_dismiss_sr", { title: match.title }) }}</span></button>

@@ -121,6 +121,9 @@ return [
 
     // Route-level status messages (courses.js routeStatus)
     'status' => [
+        'cohort_added' => 'Cohort added.',
+        'cohort_failed' => 'We could not add the cohort. Please try again.',
+        'cohort_name_missing' => 'Enter a name for the cohort.',
         // Course detail
         'enrolled' => 'You are now enrolled. Enjoy the course.',
         'enrol_required' => 'Enrol on this course before opening the learning area.',
@@ -172,5 +175,16 @@ return [
         // Grading
         'graded' => 'The attempt has been graded.',
         'grade_failed' => 'The attempt could not be graded. Please try again.',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => 'Prerequisite courses',
+        'prerequisites_hint' => 'Learners must complete the courses you tick before they can enrol on this one.',
+        'prerequisites_none' => 'There are no other courses you can choose yet.',
+        'cohorts_heading' => 'Cohorts',
+        'cohorts_hint' => 'Learners on this course join a cohort, a group that starts and works through the course together.',
+        'no_cohorts' => 'No cohorts yet.',
+        'cohort_name' => 'Cohort name',
+        'cohort_starts' => 'Starts :date',
+        'add_cohort' => 'Add cohort',
     ],
 ];

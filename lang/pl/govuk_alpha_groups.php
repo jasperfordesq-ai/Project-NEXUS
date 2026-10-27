@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'Zasady ochrony tej społeczności nie pozwalają ci dołączyć do tej grupy. Poproś koordynatora o pomoc.',
         'error_safeguarding_unavailable' => 'Nie możemy teraz sprawdzić zasad ochrony tej społeczności. Spróbuj ponownie za chwilę.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Członkowie grupy :group',
+        'link' => 'Zobacz i przeszukaj wszystkich członków',
+        'search_label' => 'Szukaj członków grupy',
+        'search_hint' => 'Szukaj według nazwy lub opisu',
+        'search_button' => 'Szukaj członków',
+        'clear' => 'Wyczyść wyszukiwanie',
+        'empty' => 'Ta grupa nie ma członków do wyświetlenia.',
+        'empty_search' => 'Brak członków pasujących do „:query”.',
+        'role_admin' => 'Administrator grupy',
+        'pagination_label' => 'Strony członków',
+        'back' => 'Wróć do grupy :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Wydarzenia grupy :group',
+        'link' => 'Zobacz wszystkie wydarzenia, także minione',
+        'filter_label' => 'Które wydarzenia',
+        'when_all' => 'Wszystkie wydarzenia',
+        'when_upcoming' => 'Nadchodzące wydarzenia',
+        'when_past' => 'Minione wydarzenia',
+        'filter_button' => 'Pokaż wydarzenia',
+        'empty' => 'Brak wydarzeń do wyświetlenia.',
+        'pagination_label' => 'Strony wydarzeń',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Polecane dla Ciebie',
+        'score' => 'Dopasowanie: :score%',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Wyróżnione grupy',
+        'more_title' => 'Więcej grup',
+    ],
 ];

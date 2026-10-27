@@ -164,6 +164,9 @@
       {% endfor %}
     </ul>
   {% endif %}
+  {% if groupCanParticipate or not isPrivate %}
+    <p class="govuk-body govuk-!-margin-bottom-6"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/member-list') }}">{{ t("govuk_alpha_groups.members_page.link") }}</a></p>
+  {% endif %}
 
   {% if subGroups and subGroups.length > 0 %}
     <h2 class="govuk-heading-l" id="group-subgroups">{{ t("govuk_alpha_groups.subgroups.heading") }}</h2>
@@ -203,6 +206,9 @@
     <p class="govuk-body">
       <a class="govuk-link" href="{{ urlFor('/events/new?group_id=' + (group.id | string)) }}">{{ t("groups_t1.create_event_link") }}</a>
     </p>
+  {% endif %}
+  {% if groupCanParticipate or not isPrivate %}
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/events') }}">{{ t("govuk_alpha_groups.events_page.link") }}</a></p>
   {% endif %}
   {% if not groupCanParticipate and isPrivate %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.events_members_only") }}</p></div>

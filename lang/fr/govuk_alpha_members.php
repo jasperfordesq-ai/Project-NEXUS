@@ -163,4 +163,5 @@ return [
             'rate_limited' => 'Vous avez envoyé trop de signalements. Réessayez plus tard.',
         ],
     ],
+    'sort_communityrank' => 'Classement de la communauté',
 ];

@@ -1,0 +1,62 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# The whole group member list, searchable and paged (React GroupMembersTab). #}
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/groups/' + (group.id | string)) }}" class="govuk-back-link">{{ t("govuk_alpha_groups.members_page.back", { group: group.name }) }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.members_page.title", { group: group.name }) }}</h1>
+
+  <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/member-list') }}" class="govuk-!-margin-bottom-6">
+    {{ govukInput({
+      id: "q",
+      name: "q",
+      value: query,
+      label: { text: t("govuk_alpha_groups.members_page.search_label"), classes: "govuk-label--s" },
+      hint: { text: t("govuk_alpha_groups.members_page.search_hint") },
+      classes: "govuk-!-width-two-thirds",
+      attributes: { maxlength: "100" }
+    }) }}
+    <div class="govuk-button-group">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_groups.members_page.search_button") }}</button>
+      {% if query %}<a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/member-list') }}">{{ t("govuk_alpha_groups.members_page.clear") }}</a>{% endif %}
+    </div>
+  </form>
+
+  {% if members.length %}
+    <ul class="govuk-list govuk-list--spaced">
+      {% for member in members %}
+        <li>
+          {% if member.avatarUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ member.avatarUrl | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+          {% if member.id %}<a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>{% else %}{{ member.name }}{% endif %}
+          {% if member.isAdmin %}{{ govukTag({ text: t("govuk_alpha_groups.members_page.role_admin"), classes: "govuk-tag--blue" }) }}{% endif %}
+          {% if member.tagline %}<br><span class="govuk-body-s nexus-alpha-meta">{{ member.tagline }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif query %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.members_page.empty_search", { query: query }) }}</p></div>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.members_page.empty") }}</p></div>
+  {% endif %}
+
+  {% if pagination and (pagination.nextHref or pagination.firstHref) %}
+    {{ govukPagination({
+      previous: { text: t("govuk_alpha_commerce.pagination.first"), href: urlFor(pagination.firstHref) } if pagination.firstHref else false,
+      next: { text: t("polish_groups.pagination_next"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false,
+      landmarkLabel: t("govuk_alpha_groups.members_page.pagination_label"),
+      classes: "govuk-pagination--block govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
+{% endblock %}

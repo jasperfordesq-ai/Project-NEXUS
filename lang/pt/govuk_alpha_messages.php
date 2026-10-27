@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Você não pode reagir a esta mensagem.',
         'reaction_failed' => 'Não conseguimos salvar sua reação.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Eliminar esta conversa',
+        'title' => 'Eliminar esta conversa',
+        'caption' => 'Conversa com :name',
+        'legend' => 'Para quem deve a conversa ser eliminada?',
+        'self' => 'Eliminar para mim',
+        'self_hint' => 'É removida da sua caixa de entrada. :name ainda a pode ver.',
+        'everyone' => 'Eliminar para todos',
+        'everyone_hint' => 'É eliminada para si e para :name. Não é possível anular.',
+        'submit' => 'Eliminar conversa',
+        'cancel' => 'Cancelar e voltar à conversa',
+        'deleted' => 'A conversa foi eliminada para todos.',
+        'failed' => 'Lamentamos, não foi possível eliminar a conversa. Tente novamente mais tarde.',
+        'error_choose' => 'Selecione para quem a conversa deve ser eliminada',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Pedir ajuda a um coordenador',
+        'coordinator_hint' => 'Um coordenador da comunidade será informado de que gostaria de ajuda para entrar em contacto e irá contactá-lo.',
+        'coordinator_sent' => 'Coordenador notificado. Entrará em contacto para ajudar a organizar o contacto.',
+        'coordinator_failed' => 'Não foi possível enviar o seu pedido neste momento. Por favor, tente novamente em breve.',
+        'vetting_button' => 'Pedir revisão da minha verificação',
+        'vetting_hint' => 'É pedido à sua comunidade que reveja a sua verificação. Verá o resultado nas definições do seu perfil.',
+        'required_checks' => 'Verificações necessárias',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Referente a',
+        'type_listing' => 'Anúncio',
+        'type_event' => 'Evento',
+        'type_job' => 'Emprego',
+        'type_volunteering' => 'Voluntariado',
+        'untitled' => ':type número :id',
+    ],
 ];

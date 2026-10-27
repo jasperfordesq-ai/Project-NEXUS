@@ -163,4 +163,5 @@ return [
             'rate_limited' => 'Ha enviado demasiadas denuncias. Inténtelo de nuevo más tarde.',
         ],
     ],
+    'sort_communityrank' => 'Rango de comunidad',
 ];

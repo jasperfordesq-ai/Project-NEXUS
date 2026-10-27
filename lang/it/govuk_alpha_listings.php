@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Competenze (facoltativo)',
         'skill_tags_hint' => 'Elenca le competenze coinvolte, separate da virgole, ad esempio: giardinaggio, cucina, consulenza fiscale. Puoi aggiungerne fino a 10.',
+        'hours_available_label' => 'Ore disponibili',
+        'hours_available_hint' => 'Totale delle ore che sei disposto a offrire. Lascia vuoto per nessun limite.',
+        'hours_available_range' => 'Le ore disponibili devono essere almeno 0,5.',
+        'hours_available_below_estimate' => 'Le ore disponibili non possono essere inferiori alle ore stimate.',
+        'remove_image_label' => 'Rimuovi la foto attuale',
+        'remove_image_failed' => 'non è stato possibile rimuovere la foto',
     ],
     'nav' => [
         'view_analytics' => 'Visualizza l\'analisi delle inserzioni',

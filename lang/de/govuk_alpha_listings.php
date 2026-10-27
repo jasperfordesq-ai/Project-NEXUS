@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Fähigkeiten (optional)',
         'skill_tags_hint' => 'Listen Sie die erforderlichen Fähigkeiten auf, getrennt durch Kommas – zum Beispiel: Gartenarbeit, Kochen, Steuerberatung. Sie können bis zu 10 hinzufügen.',
+        'hours_available_label' => 'Verfügbare Stunden',
+        'hours_available_hint' => 'Gesamtzahl der Stunden, die Sie geben möchten. Für kein Limit leer lassen.',
+        'hours_available_range' => 'Die verfügbaren Stunden müssen mindestens 0,5 betragen.',
+        'hours_available_below_estimate' => 'Die verfügbaren Stunden dürfen nicht unter den geschätzten Stunden liegen.',
+        'remove_image_label' => 'Aktuelles Foto entfernen',
+        'remove_image_failed' => 'das Foto konnte nicht entfernt werden',
     ],
     'nav' => [
         'view_analytics' => 'Eintragsanalysen anzeigen',

@@ -280,6 +280,15 @@ return [
         'status_declined_done' => 'You declined the offer.',
         'status_withdrawn_done' => 'You withdrew your offer.',
         'status_action_failed' => 'Sorry, that action could not be completed.',
+        'counter_summary' => 'Make a counter-offer',
+        'counter_amount_label' => 'Counter-offer amount',
+        'counter_amount_hint' => 'In the listing\'s currency, for example 12.50',
+        'counter_message_optional' => 'Message (optional)',
+        'counter_message_label' => 'Seller\'s message',
+        'counter_send' => 'Send counter-offer',
+        'status_countered_done' => 'Your counter-offer has been sent.',
+        'counter_amount_invalid' => 'Enter a counter-offer amount greater than zero, with no more than two decimal places',
+        'counter_failed' => 'Sorry, your counter-offer could not be sent. Please try again.',
     ],
 
     'orders_buyer' => [
@@ -1104,5 +1113,34 @@ return [
         'error_appeal_long' => 'Your appeal must be 5,000 characters or fewer',
         'status_appealed_done' => 'Your appeal has been sent.',
         'status_appeal_failed' => 'Sorry, your appeal could not be sent. Please try again.',
+    ],
+    'featured' => [
+        'heading' => 'Featured listings',
+    ],
+    'filters' => [
+        'listing_type' => 'Listing type',
+        'listing_type_any' => 'Any type',
+    ],
+    'detail' => [
+        'item_details' => 'Item details',
+        'more_from_seller' => 'More from :name',
+        'more_from_this_seller' => 'More from this seller',
+        'view_all_from_seller' => 'View all of this seller\'s listings',
+    ],
+    'seller_stats' => [
+        'heading' => 'Your selling summary',
+        'views' => 'Total views',
+        'revenue' => 'Revenue',
+        'no_revenue' => 'No sales income yet',
+    ],
+    'coupon_qr' => [
+        'heading' => 'Redeem in store',
+        'intro' => 'Get a QR code to show staff at the till. Each code can be used once and lasts 5 minutes.',
+        'button' => 'Get a QR code',
+        'new_button' => 'Get a new QR code',
+        'alt' => 'QR code for this coupon',
+        'scan_at_checkout' => 'Show this QR code to staff at checkout.',
+        'expires_at' => 'This code stops working at :time.',
+        'failed' => 'We could not create a QR code for this coupon. It may already have been used or have expired. Please try again.',
     ],
 ];

@@ -14,6 +14,8 @@ const { splitDate, splitDateTime } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { translateForRequest } = require('../lib/request-translator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
+const { humanizeLabel } = require('../lib/humanize-label');
+const { formatRequestList } = require('../lib/list-format');
 
 const router = express.Router();
 // 🔴 Pinned to English ON PURPOSE, and only for the `translate = fallbackTranslator`
@@ -34,6 +36,8 @@ router.use((req, res, next) => {
 // sold. No price, no offers, no posting; the call to action is a message to the owner.
 const PRICE_TYPES = ['free', 'lend', 'fixed', 'negotiable', 'contact'];
 const CONDITIONS = ['new', 'like_new', 'good', 'fair', 'poor'];
+// The listing types the browse endpoint filters on (React PRICE_TYPE_OPTIONS).
+const PRICE_TYPE_FILTERS = ['fixed', 'negotiable', 'free', 'lend'];
 const DELIVERY_METHODS = ['pickup', 'shipping', 'both', 'community_delivery'];
 const REPORT_REASONS = ['counterfeit', 'illegal', 'unsafe', 'misleading', 'discrimination', 'ip_violation', 'other'];
 const SELLER_TYPES = ['private', 'business'];
@@ -106,7 +110,8 @@ const MARKETPLACE_SUCCESS_MESSAGES = {
   'pickup-confirmed': 'Collection confirmed. The order is marked as collected.',
   'coupon-created': 'Your coupon was created.',
   'coupon-saved': 'Your changes were saved.',
-  'coupon-deleted': 'Your coupon was deleted.'
+  'coupon-deleted': 'Your coupon was deleted.',
+  countered: 'Counter-offer sent.'
 };
 const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   unsaved: 'govuk_alpha_commerce.saved.status_unsaved',
@@ -133,7 +138,8 @@ const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   'pickup-confirmed': 'govuk_alpha_commerce.slots.status_pickup_confirmed',
   'coupon-created': 'govuk_alpha_commerce.coupons.status_coupon_created',
   'coupon-saved': 'govuk_alpha_commerce.coupons.status_coupon_saved',
-  'coupon-deleted': 'govuk_alpha_commerce.coupons.status_coupon_deleted'
+  'coupon-deleted': 'govuk_alpha_commerce.coupons.status_coupon_deleted',
+  countered: 'govuk_alpha_commerce.offers.status_countered_done'
 };
 const MARKETPLACE_ERROR_MESSAGES = {
   'listing-validation': 'Check the listing details and try again.',
@@ -171,7 +177,9 @@ const MARKETPLACE_ERROR_MESSAGES = {
   'coupon-title-required': 'Enter a coupon title',
   'coupon-create-failed': 'Sorry, your coupon could not be created. Please try again.',
   'coupon-save-failed': 'Sorry, your changes could not be saved. Please try again.',
-  'coupon-delete-failed': 'Sorry, your coupon could not be deleted. Please try again.'
+  'coupon-delete-failed': 'Sorry, your coupon could not be deleted. Please try again.',
+  'counter-amount-invalid': 'Enter a counter-offer amount greater than zero, with no more than two decimal places',
+  'counter-failed': 'Sorry, your counter-offer could not be sent. Please try again.'
 };
 const MARKETPLACE_ERROR_MESSAGE_KEYS = {
   'listing-create-failed': 'govuk_alpha_commerce.listing_form.error_create',
@@ -206,7 +214,9 @@ const MARKETPLACE_ERROR_MESSAGE_KEYS = {
   'coupon-title-required': 'govuk_alpha_commerce.coupons.error_title',
   'coupon-create-failed': 'govuk_alpha_commerce.coupons.error_create',
   'coupon-save-failed': 'govuk_alpha_commerce.coupons.status_coupon_save_failed',
-  'coupon-delete-failed': 'govuk_alpha_commerce.coupons.status_coupon_delete_failed'
+  'coupon-delete-failed': 'govuk_alpha_commerce.coupons.status_coupon_delete_failed',
+  'counter-amount-invalid': 'govuk_alpha_commerce.offers.counter_amount_invalid',
+  'counter-failed': 'govuk_alpha_commerce.offers.counter_failed'
 };
 const LISTING_STATUS_TABS = ['active', 'draft', 'sold', 'expired'];
 const OFFER_TABS = ['received', 'sent'];
@@ -812,6 +822,9 @@ function decorateOffer(offer, tab, translate = fallbackTranslator) {
     // offer is now the buyer's move: the seller waits.
     canAct: tab === 'received' ? status === 'pending' : (status === 'pending' || status === 'countered'),
     canAcceptCounter: tab === 'sent' && status === 'countered',
+    // React MyOffersPage: the seller may counter a PENDING offer (amount + message).
+    canCounter: tab === 'received' && status === 'pending',
+    counterMessage: limitText(row.counter_message || row.counterMessage || '', 500),
     canPurchase: tab === 'sent' && status === 'accepted'
   };
 }
@@ -1250,6 +1263,9 @@ function indexQuery(query) {
   const categoryId = positiveInteger(query.category_id);
   if (categoryId !== null) params.set('category_id', String(categoryId));
 
+  const priceType = allowed(query.price_type, PRICE_TYPE_FILTERS, '');
+  if (priceType) params.set('price_type', priceType);
+
   const cursor = trimmed(query.cursor);
   if (cursor) params.set('cursor', cursor);
 
@@ -1294,6 +1310,7 @@ function advancedSearchQuery(query) {
   appendText(params, 'delivery_method', allowed(query.delivery_method, DELIVERY_METHODS, ''));
   const postedWithin = allowed(query.posted_within, ['1', '7', '30', '90'], '');
   appendText(params, 'posted_within', postedWithin);
+  appendText(params, 'price_type', allowed(query.price_type, PRICE_TYPE_FILTERS, ''));
   const sort = allowed(query.sort, ['newest', 'price_asc', 'price_desc', 'popular'], 'newest');
   if (sort !== 'newest') params.append('sort', sort);
   appendText(params, 'cursor', query.cursor);
@@ -1428,12 +1445,55 @@ function advancedSearchState(query) {
     sellerType: allowed(query.seller_type, ['private', 'business'], ''),
     deliveryMethod: allowed(query.delivery_method, DELIVERY_METHODS, ''),
     postedWithin: allowed(query.posted_within, ['1', '7', '30', '90'], ''),
+    priceType: allowed(query.price_type, PRICE_TYPE_FILTERS, ''),
     sort: allowed(query.sort, ['newest', 'price_asc', 'price_desc', 'popular'], 'newest')
+  };
+}
+
+function priceTypeFilterOptions() {
+  return PRICE_TYPE_FILTERS.map((value) => ({ value, labelKey: `govuk_alpha_commerce.listing_form.price_type_${value}` }));
+}
+
+// The category "details" a listing was created with (React MarketplaceListingPage:
+// template_data). Keys are machine names, shown humanised as React does.
+function templateDetails(listing) {
+  const data = listing && listing.template_data && typeof listing.template_data === 'object' && !Array.isArray(listing.template_data)
+    ? listing.template_data
+    : {};
+  return Object.entries(data).map(([key, value]) => {
+    let text;
+    if (value === true) text = translateForRequest('cookie_settings.yes');
+    else if (value === false) text = translateForRequest('cookie_settings.no');
+    else if (Array.isArray(value)) text = formatRequestList(value.map((item) => trimmed(item, 200)));
+    else if (value !== null && typeof value === 'object') text = '';
+    else text = trimmed(value, 500);
+    return { label: humanizeLabel(key), value: text };
+  }).filter((row) => row.label && row.value);
+}
+
+// Seller figures for My listings: only what GET seller/dashboard returns (React MyListingsPage).
+function sellerStatsFrom(result) {
+  const data = objectFrom(result);
+  if (!data) return null;
+  const revenueRows = Array.isArray(data.revenue_by_currency) && data.revenue_by_currency.length
+    ? data.revenue_by_currency
+    : (data.total_revenue !== null && data.total_revenue !== undefined && data.revenue_currency
+      ? [{ total: data.total_revenue, currency: data.revenue_currency }]
+      : []);
+  const count = (value) => new Intl.NumberFormat(getRequestIntlLocale()).format(Number(value) || 0);
+  return {
+    active: count(data.active_listings),
+    sold: count(data.sold_listings),
+    views: count(data.total_views),
+    revenue: revenueRows
+      .map((row) => formatMoney(row && row.total, row && row.currency))
+      .filter(Boolean)
   };
 }
 
 function advancedSearchOptions() {
   return {
+    priceTypeOptions: priceTypeFilterOptions(),
     conditionOptions: CONDITIONS.map((value) => ({ value, label: translateForRequest(CONDITION_KEYS[value]) })),
     deliveryOptions: [
       { value: '', label: 'Any' },
@@ -1724,12 +1784,25 @@ router.get('/', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (!token) return undefined;
 
+  const priceType = allowed(req.query.price_type, PRICE_TYPE_FILTERS, '');
+  // React shows the featured section only while nothing is searched or filtered.
+  const showFeatured = !trimmed(req.query.q) && positiveInteger(req.query.category_id) === null
+    && !priceType && !trimmed(req.query.cursor);
   try {
-    const [listingResult, categories] = await Promise.all([
+    const [listingResult, categories, featuredResult] = await Promise.all([
       callMarketplace(token, 'GET', `/listings?${indexQuery(req.query)}`),
-      loadCategories(token)
+      loadCategories(token),
+      showFeatured
+        ? callMarketplace(token, 'GET', '/listings/featured').catch((error) => {
+          if (isAuthError(error)) throw error;
+          return { data: [] };
+        })
+        : Promise.resolve({ data: [] })
     ]);
     return res.render('marketplace/index', {
+      featured: rowsFrom(featuredResult).map(decorateListing).filter((item) => item.id).slice(0, 4),
+      priceType,
+      priceTypeOptions: priceTypeFilterOptions(),
       title: 'Marketplace & Freecycle',
       titleKey: 'marketplace.title',
       activeNav: 'explore',
@@ -1783,11 +1856,13 @@ router.get('/mine', asyncRoute(async (req, res) => {
       throw new ApiError('Authenticated marketplace profile is missing an id.', 502);
     }
     const tab = allowed(req.query.tab, LISTING_STATUS_TABS, 'active');
-    const listingResult = await callMarketplace(
-      token,
-      'GET',
-      `/listings?${myListingsQuery(currentUserId, tab, req.query)}`
-    );
+    const [listingResult, dashboardResult] = await Promise.all([
+      callMarketplace(token, 'GET', `/listings?${myListingsQuery(currentUserId, tab, req.query)}`),
+      callMarketplace(token, 'GET', '/seller/dashboard').catch((error) => {
+        if (isAuthError(error)) throw error;
+        return null;
+      })
+    ]);
     const { rows: tabListings, meta } = listingRowsFrom(listingResult);
     return res.render('marketplace/manage', {
       title: 'My listings',
@@ -1798,6 +1873,7 @@ router.get('/mine', asyncRoute(async (req, res) => {
       listings: tabListings.filter((listing) => trimmed(listing.status) === tab),
       tab,
       tabs: listingTabs(req, tab),
+      sellerStats: dashboardResult ? sellerStatsFrom(dashboardResult) : null,
       pagination: pageLinks('/marketplace/mine', { tab, cursor: req.query.cursor }, meta),
       status: statusEntry(req, req.query.status)
     });
@@ -2379,10 +2455,23 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
 
   try {
     const listing = await loadListing(token, req.params.id);
+    // React: "More from this seller", four of their listings minus this one.
+    let sellerListings = [];
+    if (listing.sellerId) {
+      try {
+        const result = await callMarketplace(token, 'GET', `/sellers/${encodeURIComponent(listing.sellerId)}/listings?limit=4`);
+        sellerListings = rowsFrom(result).map(decorateListing).filter((item) => item.id && item.id !== listing.id).slice(0, 4);
+      } catch (error) {
+        if (isAuthError(error)) throw error;
+        sellerListings = [];
+      }
+    }
     return res.render('marketplace/detail', {
       title: listing.title,
       activeNav: 'explore',
       item: listing,
+      itemDetails: templateDetails(listing),
+      sellerListings,
       status: statusEntry(req, req.query.status)
     });
   } catch (error) {

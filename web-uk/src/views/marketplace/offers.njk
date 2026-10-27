@@ -63,6 +63,9 @@
           {% if offer.message %}
             <p class="govuk-body govuk-!-margin-bottom-2">{{ offer.message }}</p>
           {% endif %}
+          {% if offer.counterMessage %}
+            <p class="govuk-body govuk-!-margin-bottom-2"><strong>{{ t("govuk_alpha_commerce.offers.counter_message_label") }}:</strong> {{ offer.counterMessage }}</p>
+          {% endif %}
           {% if offer.canAct or offer.canAcceptCounter %}
             <div class="nexus-alpha-actions">
               {% if tab == 'received' %}
@@ -77,6 +80,30 @@
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.decline") }}</button>
                   </form>
+                {% endif %}
+                {# React MyOffersPage: the seller can counter a pending offer. A details
+                   disclosure keeps it HTML-only: it opens without JavaScript. #}
+                {% if offer.canCounter %}
+                  <details class="govuk-details govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                    <summary class="govuk-details__summary">
+                      <span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.offers.counter_summary") }}<span class="govuk-visually-hidden">: {{ offer.listingTitle }}</span></span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      <form method="post" action="{{ urlFor('/marketplace/offers/' + (offer.id | string) + '/counter') }}" novalidate>
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <div class="govuk-form-group">
+                          <label class="govuk-label" for="counter-amount-{{ offer.id }}">{{ t("govuk_alpha_commerce.offers.counter_amount_label") }}</label>
+                          <div id="counter-amount-hint-{{ offer.id }}" class="govuk-hint">{{ t("govuk_alpha_commerce.offers.counter_amount_hint") }}</div>
+                          <input class="govuk-input govuk-input--width-5" id="counter-amount-{{ offer.id }}" name="counter_amount" type="text" inputmode="decimal" spellcheck="false" aria-describedby="counter-amount-hint-{{ offer.id }}">
+                        </div>
+                        <div class="govuk-form-group">
+                          <label class="govuk-label" for="counter-message-{{ offer.id }}">{{ t("govuk_alpha_commerce.offers.counter_message_optional") }}</label>
+                          <textarea class="govuk-textarea" id="counter-message-{{ offer.id }}" name="counter_message" rows="3" maxlength="500"></textarea>
+                        </div>
+                        <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offers.counter_send") }}</button>
+                      </form>
+                    </div>
+                  </details>
                 {% endif %}
               {% else %}
                 {# The buyer accepting the seller's counter binds the COUNTER amount,

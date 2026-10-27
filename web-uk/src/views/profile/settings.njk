@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -115,6 +116,23 @@
             <div id="phone-hint" class="govuk-hint">{{ t("profile_settings.phone_hint") }}</div>
             <input class="govuk-input govuk-!-width-two-thirds" id="phone" name="phone" type="tel" value="{{ profile.phone }}" autocomplete="tel" aria-describedby="phone-hint">
           </div>
+          {# Date of birth, as React's settings offer it: editable until the identity is
+             verified, then locked (the API ignores it from then on). Optional — clearing
+             all three boxes removes it. #}
+          {% if dob.locked %}
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("profile_settings.dob_label") }}</h3>
+            <p class="govuk-body">{{ t("profile_settings.dob_locked") }}</p>
+          {% else %}
+            {{ nexusDateInput({
+              name: "date_of_birth",
+              legend: t("profile_settings.dob_label"),
+              legendClasses: "govuk-fieldset__legend--s",
+              hint: t("profile_settings.dob_hint"),
+              value: dob.parts,
+              errorMessage: dob.error,
+              errorFields: dob.errorFields
+            }, t) }}
+          {% endif %}
         </fieldset>
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
@@ -198,6 +216,7 @@
             {% for skill in mySkills %}
               <li>
                 <span class="govuk-!-font-weight-bold">{{ skill.skill_name }}</span>
+                {% if skill.proficiency_level %}{{ govukTag({ text: t("profile_settings.skills.proficiency_" + skill.proficiency_level), classes: "govuk-tag--grey" }) }}{% endif %}
                 {% if skill.is_offering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--blue" }) }}{% endif %}
                 {% if skill.is_requesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--purple" }) }}{% endif %}
                 {% if skill.endorsement_count > 0 %}{{ govukTag({ text: tc("profile.endorsement_count", skill.endorsement_count), classes: "govuk-tag--green" }) }}{% endif %}
@@ -219,6 +238,25 @@
             <label class="govuk-label" for="skill_name">{{ t("profile_settings.skills.add_label") }}</label>
             <div id="skill-name-hint" class="govuk-hint">{{ t("profile_settings.skills.add_hint") }}</div>
             <input class="govuk-input govuk-!-width-two-thirds" id="skill_name" name="skill_name" type="text" maxlength="100" aria-describedby="skill-name-hint">
+          </div>
+          {% if skillCategories.length %}
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="skill_category_id">{{ t("profile_settings.skills.category_label") }}</label>
+              <select class="govuk-select" id="skill_category_id" name="category_id">
+                <option value="">{{ t("profile_settings.skills.category_none") }}</option>
+                {% for category in skillCategories %}
+                  <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endif %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="proficiency_level">{{ t("profile_settings.skills.proficiency_label") }}</label>
+            <select class="govuk-select" id="proficiency_level" name="proficiency_level">
+              {% for level in skillProficiencyLevels %}
+                <option value="{{ level }}"{% if level == defaultSkillProficiency %} selected{% endif %}>{{ t("profile_settings.skills.proficiency_" + level) }}</option>
+              {% endfor %}
+            </select>
           </div>
           <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.skills.type_legend") }}</legend>

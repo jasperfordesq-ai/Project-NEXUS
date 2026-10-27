@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "feed/_reactions.njk" import POST_REACTIONS, reactionForms %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "feed/_comments.njk" import commentList %}
 
@@ -102,20 +103,7 @@
           </div>
 
           <div class="nexus-alpha-reactions govuk-!-margin-bottom-3">
-            <fieldset class="govuk-fieldset">
-              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("govuk_alpha_feed.engagement.reactions_legend") }}</legend>
-              <div class="govuk-button-group govuk-!-margin-bottom-0">
-                {% for reaction in [{ type: "like", symbol: "&#128077;" }, { type: "love", symbol: "&#10084;" }, { type: "celebrate", symbol: "&#127881;" }] %}
-                  <form method="post" action="{{ urlFor('/feed/items/' + item.type + '/' + (item.id | string) + '/react') }}">
-                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                    <input type="hidden" name="emoji" value="{{ reaction.type }}">
-                    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if item.userReaction == reaction.type %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button">
-                      <span aria-hidden="true">{{ reaction.symbol | safe }}</span> {{ t("feed_t1.reaction_" + reaction.type) }}{% if item.reactionCounts[reaction.type] %} ({{ item.reactionCounts[reaction.type] }}){% endif %}
-                    </button>
-                  </form>
-                {% endfor %}
-              </div>
-            </fieldset>
+            {{ reactionForms(POST_REACTIONS, urlFor('/feed/items/' + item.type + '/' + (item.id | string) + '/react'), csrfToken, t, item.userReaction, item.reactionCounts) }}
           </div>
 
           <details class="govuk-details govuk-!-margin-bottom-3" data-module="govuk-details">

@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Nie możesz zareagować na tę wiadomość.',
         'reaction_failed' => 'Nie udało się zapisać Twojej reakcji.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Usuń tę rozmowę',
+        'title' => 'Usuń tę rozmowę',
+        'caption' => 'Rozmowa z: :name',
+        'legend' => 'Dla kogo usunąć rozmowę?',
+        'self' => 'Usuń dla mnie',
+        'self_hint' => 'Rozmowa zniknie z Twojej skrzynki. :name nadal będzie ją widzieć.',
+        'everyone' => 'Usuń dla wszystkich',
+        'everyone_hint' => 'Rozmowa zostanie usunięta dla Ciebie i dla: :name. Tego nie można cofnąć.',
+        'submit' => 'Usuń rozmowę',
+        'cancel' => 'Anuluj i wróć do rozmowy',
+        'deleted' => 'Rozmowa została usunięta dla wszystkich.',
+        'failed' => 'Przepraszamy, nie udało się usunąć rozmowy. Spróbuj ponownie później.',
+        'error_choose' => 'Wybierz, dla kogo usunąć rozmowę',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Poproś koordynatora o pomoc',
+        'coordinator_hint' => 'Koordynator społeczności dowie się, że chcesz pomocy w nawiązaniu kontaktu, i skontaktuje się z Tobą.',
+        'coordinator_sent' => 'Koordynator został powiadomiony. Skontaktuje się, aby pomóc w nawiązaniu kontaktu.',
+        'coordinator_failed' => 'Nie udało się wysłać Twojej prośby. Spróbuj ponownie za chwilę.',
+        'vetting_button' => 'Poproś o ponowne sprawdzenie mojej weryfikacji',
+        'vetting_hint' => 'Twoja społeczność zostanie poproszona o sprawdzenie Twojej weryfikacji. Wynik zobaczysz w ustawieniach profilu.',
+        'required_checks' => 'Wymagane weryfikacje',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Dotyczy',
+        'type_listing' => 'Ogłoszenie',
+        'type_event' => 'Wydarzenie',
+        'type_job' => 'Praca',
+        'type_volunteering' => 'Wolontariat',
+        'untitled' => ':type numer :id',
+    ],
 ];

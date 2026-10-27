@@ -18,6 +18,7 @@ const {
   deleteEvent,
   getEventRsvps,
   rsvpToEvent,
+  removeEventRsvp,
   votePoll,
   getPolls,
   getPoll,
@@ -203,7 +204,7 @@ function loginRedirect() {
 const EVENTS_PATH = '/events';
 const EVENT_DETAIL_STATUSES = [
   'event-created', 'event-created-image-failed', 'event-updated-image-failed',
-  'rsvp-updated', 'event-updated', 'event-cancelled',
+  'rsvp-updated', 'rsvp-cleared', 'event-updated', 'event-cancelled',
   'event-submitted', 'event-published', 'checkin-success', 'checkin-failed',
   'waitlist-joined', 'waitlist-left', 'waitlist-offer-accepted', 'poll-voted',
   'rsvp-failed', 'rsvp-vetting-required', 'rsvp-policy-unavailable',
@@ -4204,12 +4205,16 @@ router.post('/:id(\\d+)/delete', requireAuth, audit.eventDelete(), asyncRoute(as
 router.post('/:id(\\d+)/rsvp', requireAuth, audit.eventRsvp(), asyncRoute(async (req, res) => {
   const { id } = req.params;
   const requestedStatus = trimmed(req.body.status).toLowerCase();
-  const status = ['going', 'interested', 'not_going'].includes(requestedStatus)
+  // 'clear' returns the member to "no answer" (React clicks the current answer
+  // again, DELETE /v2/events/{id}/rsvp).
+  const status = ['going', 'interested', 'not_going', 'clear'].includes(requestedStatus)
     ? requestedStatus
     : 'going';
 
   try {
-    await (status === 'going'
+    await (status === 'clear'
+      ? removeEventRsvp(req.token, id)
+      : status === 'going'
       ? callEventMutation(req.token, 'POST', `/${encodeURIComponent(id)}/registration/confirm`, undefined, randomUUID())
       : (status === 'not_going'
         ? callEventMutation(req.token, 'POST', `/${encodeURIComponent(id)}/registration/withdraw`, undefined, randomUUID())
@@ -4239,7 +4244,7 @@ router.post('/:id(\\d+)/rsvp', requireAuth, audit.eventRsvp(), asyncRoute(async 
     throw error;
   }
 
-  redirectTo(res, eventPath(id, '?status=rsvp-updated'));
+  redirectTo(res, eventPath(id, status === 'clear' ? '?status=rsvp-cleared' : '?status=rsvp-updated'));
 }));
 
 module.exports = router;

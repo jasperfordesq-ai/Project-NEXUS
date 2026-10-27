@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'U kunt niet reageren op dit bericht.',
         'reaction_failed' => 'We konden je reactie niet opslaan.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Dit gesprek verwijderen',
+        'title' => 'Dit gesprek verwijderen',
+        'caption' => 'Gesprek met :name',
+        'legend' => 'Voor wie moet het gesprek worden verwijderd?',
+        'self' => 'Verwijder voor mij',
+        'self_hint' => 'Het wordt uit je inbox verwijderd. :name kan het nog steeds zien.',
+        'everyone' => 'Verwijder voor iedereen',
+        'everyone_hint' => 'Het wordt verwijderd voor jou en voor :name. Dit kan niet ongedaan worden gemaakt.',
+        'submit' => 'Gesprek verwijderen',
+        'cancel' => 'Annuleren en teruggaan naar het gesprek',
+        'deleted' => 'Het gesprek is voor iedereen verwijderd.',
+        'failed' => 'Sorry, we konden het gesprek niet verwijderen. Probeer het later opnieuw.',
+        'error_choose' => 'Kies voor wie het gesprek moet worden verwijderd',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Een coördinator om hulp vragen',
+        'coordinator_hint' => 'Een coördinator van de gemeenschap hoort dat je hulp wilt bij het leggen van contact en neemt contact met je op.',
+        'coordinator_sent' => 'Coördinator op de hoogte gesteld. Hij of zij neemt contact op om het contact te helpen regelen.',
+        'coordinator_failed' => 'We konden je verzoek op dit moment niet verzenden. Probeer het binnenkort opnieuw.',
+        'vetting_button' => 'Een herbeoordeling van mijn screening aanvragen',
+        'vetting_hint' => 'Je gemeenschap wordt gevraagd je screening te herbeoordelen. Je ziet de uitkomst in je profielinstellingen.',
+        'required_checks' => 'Vereiste controles',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Betreft',
+        'type_listing' => 'Advertentie',
+        'type_event' => 'Evenement',
+        'type_job' => 'Vacature',
+        'type_volunteering' => 'Vrijwilligerswerk',
+        'untitled' => ':type nummer :id',
+    ],
 ];

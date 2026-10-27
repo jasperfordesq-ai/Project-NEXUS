@@ -33,6 +33,7 @@ const {
   getAllBadges,
   getUserReviews,
   getMemberEndorsements,
+  getAlgorithmInfo,
   ApiError
 } = require('../lib/api');
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
@@ -56,6 +57,21 @@ const BLOCKED_MEMBERS_PATH = '/profile/blocked?status=member-unblocked';
 const MEMBER_CONNECTION_ACTIONS = new Set(['connect', 'accept', 'decline', 'cancel', 'remove']);
 const MEMBER_ENDORSEMENT_ACTIONS = new Set(['endorse', 'remove']);
 const MEMBER_DIRECTORY_SORTS = new Set(['name', 'joined', 'rating', 'hours_given']);
+const COMMUNITY_RANK_SORT = 'communityrank';
+
+// React offers (and defaults to) the Community rank sort only when the community has
+// CommunityRank on. If the setting cannot be read, behave as React does: sort by name.
+async function communityRankEnabled(token) {
+  if (!token) return false;
+  try {
+    const result = await getAlgorithmInfo(token);
+    const data = result && typeof result === 'object' && result.data && typeof result.data === 'object' ? result.data : {};
+    return String(data.members && data.members.key || '') === COMMUNITY_RANK_SORT;
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return false;
+  }
+}
 
 function tokenFrom(req) {
   return req.signedCookies.token || '';
@@ -1000,8 +1016,11 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     ? (requestedPage - 1) * limit
     : boundedInteger(req.query.offset, 0, 0, 1000000);
   const searchQuery = String(req.query.q || req.query.search || '').trim().slice(0, 120);
-  const requestedSort = String(req.query.sort || 'name').trim();
-  const sort = MEMBER_DIRECTORY_SORTS.has(requestedSort) ? requestedSort : 'name';
+  const rankEnabled = await communityRankEnabled(token);
+  const defaultSort = rankEnabled ? COMMUNITY_RANK_SORT : 'name';
+  const sortOptions = rankEnabled ? [COMMUNITY_RANK_SORT, ...MEMBER_DIRECTORY_SORTS] : [...MEMBER_DIRECTORY_SORTS];
+  const requestedSort = String(req.query.sort || defaultSort).trim();
+  const sort = sortOptions.includes(requestedSort) ? requestedSort : defaultSort;
   const requestedOrder = String(req.query.order || 'ASC').trim().toUpperCase();
   const order = requestedOrder === 'DESC' ? 'DESC' : 'ASC';
   let memberErrorMessage = null;
@@ -1055,7 +1074,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     })).filter((badge) => badge.name);
     return normalized;
   }).filter((member) => member.id > 0);
-  const hasFilters = !!searchQuery || sort !== 'name' || order !== 'ASC';
+  const hasFilters = !!searchQuery || sort !== defaultSort || order !== 'ASC';
 
   res.render('members/index', {
     title: res.locals.t('members.title'),
@@ -1065,6 +1084,8 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
     connectionMap,
     searchQuery,
     sort,
+    defaultSort,
+    sortOptions,
     order,
     hasFilters,
     coverage,

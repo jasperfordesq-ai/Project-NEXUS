@@ -121,4 +121,8 @@
       </nav>
     {% endif %}
   {% endif %}
+
+  <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("govuk_alpha_jobs.apply_extras.export_heading") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_jobs.apply_extras.export_hint") }}</p>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/jobs/applications/export.json') }}" download>{{ t("govuk_alpha_jobs.apply_extras.export_button") }}</a></p>
 {% endblock %}

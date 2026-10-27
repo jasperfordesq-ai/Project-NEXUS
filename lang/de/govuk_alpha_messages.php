@@ -142,4 +142,42 @@ return [
         'reaction_forbidden' => 'Sie können auf diese Nachricht nicht reagieren.',
         'reaction_failed' => 'Wir konnten Ihre Reaktion nicht speichern.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Diese Unterhaltung löschen',
+        'title' => 'Diese Unterhaltung löschen',
+        'caption' => 'Unterhaltung mit :name',
+        'legend' => 'Für wen soll die Unterhaltung gelöscht werden?',
+        'self' => 'Für mich löschen',
+        'self_hint' => 'Sie wird aus Ihrem Posteingang entfernt. :name kann sie weiterhin sehen.',
+        'everyone' => 'Für alle löschen',
+        'everyone_hint' => 'Sie wird für Sie und für :name entfernt. Das kann nicht rückgängig gemacht werden.',
+        'submit' => 'Unterhaltung löschen',
+        'cancel' => 'Abbrechen und zur Unterhaltung zurückkehren',
+        'deleted' => 'Die Unterhaltung wurde für alle gelöscht.',
+        'failed' => 'Die Unterhaltung konnte leider nicht gelöscht werden. Versuchen Sie es später erneut.',
+        'error_choose' => 'Wählen Sie aus, für wen die Unterhaltung gelöscht werden soll',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Einen Koordinator um Hilfe bitten',
+        'coordinator_hint' => 'Ein Koordinator der Gemeinschaft erfährt, dass Sie Hilfe bei der Kontaktaufnahme wünschen, und meldet sich bei Ihnen.',
+        'coordinator_sent' => 'Koordinator benachrichtigt. Er meldet sich, um den Kontakt zu vermitteln.',
+        'coordinator_failed' => 'Ihre Anfrage konnte gerade nicht gesendet werden. Bitte versuchen Sie es in Kürze erneut.',
+        'vetting_button' => 'Überprüfung meiner Sicherheitsprüfung anfordern',
+        'vetting_hint' => 'Ihre Gemeinschaft wird gebeten, Ihre Sicherheitsprüfung zu überprüfen. Das Ergebnis sehen Sie in Ihren Profileinstellungen.',
+        'required_checks' => 'Erforderliche Prüfungen',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Bezüglich',
+        'type_listing' => 'Anzeige',
+        'type_event' => 'Veranstaltung',
+        'type_job' => 'Stelle',
+        'type_volunteering' => 'Freiwilligenarbeit',
+        'untitled' => ':type Nummer :id',
+    ],
 ];

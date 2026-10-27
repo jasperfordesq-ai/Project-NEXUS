@@ -52,6 +52,7 @@ return [
         'popular_add' => 'Cuir :tag leis',
         'apply' => 'Cuir scagairí i bhfeidhm',
         'reset' => 'Athshocraigh na scagairí',
+        'type_podcasts' => 'Podchraoltaí',
     ],
     'results' => [
         'count' => '{0} Níor aimsíodh aon toradh|{1} Fuarthas 1 thoradh|[2,*] :count torthaí',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'Féach ar bhall',
         'view_event' => 'Amharc ar imeacht',
         'view_group' => 'Féach ar ghrúpa',
+        'tab_podcasts' => 'Podchraoltaí (:count)',
+        'section_podcasts' => 'Podchraoltaí',
+        'episode_from' => 'Eipeasóid ó :show',
     ],
     'states' => [
         'no_query_title' => 'Tosaigh do chuardach',

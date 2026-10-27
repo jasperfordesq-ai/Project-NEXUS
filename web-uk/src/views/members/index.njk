@@ -31,7 +31,7 @@
         </div>
       {% else %}
         <nav class="nexus-alpha-actions govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_members.filters.heading') }}">
-          {% if sort == 'name' and order == 'ASC' %}
+          {% if sort == (defaultSort or 'name') and order == 'ASC' %}
             {{ govukTag({ text: t("govuk_alpha_members.filters.all"), classes: "govuk-tag--blue" }) }}
           {% else %}
             <a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_members.filters.all") }}</a>
@@ -68,8 +68,8 @@
                 <div class="govuk-form-group">
                   <label class="govuk-label" for="sort">{{ t("members.sort_label") }}</label>
                   <select class="govuk-select" id="sort" name="sort">
-                    {% for option in ['name', 'joined', 'rating', 'hours_given'] %}
-                      <option value="{{ option }}"{% if sort == option %} selected{% endif %}>{{ t("members.sort." + option) }}</option>
+                    {% for option in (sortOptions or ['name', 'joined', 'rating', 'hours_given']) %}
+                      <option value="{{ option }}"{% if sort == option %} selected{% endif %}>{{ t("govuk_alpha_members.sort_communityrank") if option == 'communityrank' else t("members.sort." + option) }}</option>
                     {% endfor %}
                   </select>
                 </div>

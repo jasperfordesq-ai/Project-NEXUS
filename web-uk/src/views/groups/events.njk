@@ -1,0 +1,67 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Every group event, past and upcoming, paged (React group events tab). #}
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block beforeContent %}
+  <a href="{{ urlFor('/groups/' + (group.id | string)) }}" class="govuk-back-link">{{ t("govuk_alpha_groups.members_page.back", { group: group.name }) }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.events_page.title", { group: group.name }) }}</h1>
+
+  <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/events') }}" class="govuk-!-margin-bottom-6">
+    {{ govukSelect({
+      id: "when",
+      name: "when",
+      label: { text: t("govuk_alpha_groups.events_page.filter_label"), classes: "govuk-label--s" },
+      items: [
+        { value: "all", text: t("govuk_alpha_groups.events_page.when_all"), selected: when == "all" },
+        { value: "upcoming", text: t("govuk_alpha_groups.events_page.when_upcoming"), selected: when == "upcoming" },
+        { value: "past", text: t("govuk_alpha_groups.events_page.when_past"), selected: when == "past" }
+      ]
+    }) }}
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_groups.events_page.filter_button") }}</button>
+  </form>
+
+  {% if events.length %}
+    <div class="nexus-alpha-card-list">
+      {% for event in events %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-listing-row">
+            {% if event.coverImage %}
+              <div class="nexus-alpha-listing-row__media">
+                <img class="nexus-alpha-card-thumb" src="{{ event.coverImage }}" alt="" width="120" height="90" loading="lazy" decoding="async">
+              </div>
+            {% endif %}
+            <div class="nexus-alpha-listing-row__body">
+              <h2 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a></h2>
+              <dl class="nexus-alpha-inline-list">
+                {% if event.startsAt %}<div><dt>{{ t("groups_t1.event_starts") }}</dt><dd>{{ event.startsAt | formatBladeDateTime }}</dd></div>{% endif %}
+                <div><dt>{{ t("groups_t1.event_location") }}</dt><dd>{{ event.location or t("groups_t1.event_online") }}</dd></div>
+              </dl>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.events_page.empty") }}</p></div>
+  {% endif %}
+
+  {% if pagination and (pagination.nextHref or pagination.firstHref) %}
+    {{ govukPagination({
+      previous: { text: t("govuk_alpha_commerce.pagination.first"), href: urlFor(pagination.firstHref) } if pagination.firstHref else false,
+      next: { text: t("polish_groups.pagination_next"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false,
+      landmarkLabel: t("govuk_alpha_groups.events_page.pagination_label"),
+      classes: "govuk-pagination--block govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
+{% endblock %}

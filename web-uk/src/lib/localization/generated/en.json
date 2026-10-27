@@ -5039,7 +5039,14 @@
                     "added": "Your skill has been added.",
                     "removed": "Your skill has been removed.",
                     "failed": "We could not update your skills. Please try again.",
-                    "name_required": "Enter a skill name."
+                    "name_required": "Enter a skill name.",
+                    "category_label": "Category (optional)",
+                    "category_none": "No category",
+                    "proficiency_label": "Proficiency level",
+                    "proficiency_beginner": "Beginner",
+                    "proficiency_intermediate": "Intermediate",
+                    "proficiency_advanced": "Advanced",
+                    "proficiency_expert": "Expert"
                 },
                 "sessions": {
                     "title": "Where you are signed in",
@@ -5240,7 +5247,10 @@
                 "two_factor_heading": "Two-step verification",
                 "two_factor_intro": "Add an authenticator app as a second step when you sign in.",
                 "two_factor_link": "Set up or manage two-step verification",
-                "blocked_link": "Manage blocked members"
+                "blocked_link": "Manage blocked members",
+                "dob_label": "Date of birth",
+                "dob_hint": "Optional. You only need this to verify your identity, and it must show you are 18 or over. To remove it, clear all three boxes.",
+                "dob_locked": "Your date of birth is locked because your identity has been verified."
             },
             "delete_account": {
                 "title": "Delete your account",
@@ -6817,7 +6827,16 @@
                 "status_accepted_done": "You accepted the offer.",
                 "status_declined_done": "You declined the offer.",
                 "status_withdrawn_done": "You withdrew your offer.",
-                "status_action_failed": "Sorry, that action could not be completed."
+                "status_action_failed": "Sorry, that action could not be completed.",
+                "counter_summary": "Make a counter-offer",
+                "counter_amount_label": "Counter-offer amount",
+                "counter_amount_hint": "In the listing's currency, for example 12.50",
+                "counter_message_optional": "Message (optional)",
+                "counter_message_label": "Seller's message",
+                "counter_send": "Send counter-offer",
+                "status_countered_done": "Your counter-offer has been sent.",
+                "counter_amount_invalid": "Enter a counter-offer amount greater than zero, with no more than two decimal places",
+                "counter_failed": "Sorry, your counter-offer could not be sent. Please try again."
             },
             "orders_buyer": {
                 "title": "My orders",
@@ -7616,6 +7635,35 @@
                 "error_appeal_long": "Your appeal must be 5,000 characters or fewer",
                 "status_appealed_done": "Your appeal has been sent.",
                 "status_appeal_failed": "Sorry, your appeal could not be sent. Please try again."
+            },
+            "featured": {
+                "heading": "Featured listings"
+            },
+            "filters": {
+                "listing_type": "Listing type",
+                "listing_type_any": "Any type"
+            },
+            "detail": {
+                "item_details": "Item details",
+                "more_from_seller": "More from :name",
+                "more_from_this_seller": "More from this seller",
+                "view_all_from_seller": "View all of this seller's listings"
+            },
+            "seller_stats": {
+                "heading": "Your selling summary",
+                "views": "Total views",
+                "revenue": "Revenue",
+                "no_revenue": "No sales income yet"
+            },
+            "coupon_qr": {
+                "heading": "Redeem in store",
+                "intro": "Get a QR code to show staff at the till. Each code can be used once and lasts 5 minutes.",
+                "button": "Get a QR code",
+                "new_button": "Get a new QR code",
+                "alt": "QR code for this coupon",
+                "scan_at_checkout": "Show this QR code to staff at checkout.",
+                "expires_at": "This code stops working at :time.",
+                "failed": "We could not create a QR code for this coupon. It may already have been used or have expired. Please try again."
             }
         },
         "govuk_alpha_connections": {
@@ -7829,6 +7877,9 @@
                 "quiz_attempts": "Quiz attempts"
             },
             "status": {
+                "cohort_added": "Cohort added.",
+                "cohort_failed": "We could not add the cohort. Please try again.",
+                "cohort_name_missing": "Enter a name for the cohort.",
                 "enrolled": "You are now enrolled. Enjoy the course.",
                 "enrol_required": "Enrol on this course before opening the learning area.",
                 "review_saved": "Thank you - your review has been saved.",
@@ -7871,6 +7922,17 @@
                 "lesson_title_missing": "Enter a title for the lesson.",
                 "graded": "The attempt has been graded.",
                 "grade_failed": "The attempt could not be graded. Please try again."
+            },
+            "authoring": {
+                "prerequisites_legend": "Prerequisite courses",
+                "prerequisites_hint": "Learners must complete the courses you tick before they can enrol on this one.",
+                "prerequisites_none": "There are no other courses you can choose yet.",
+                "cohorts_heading": "Cohorts",
+                "cohorts_hint": "Learners on this course join a cohort, a group that starts and works through the course together.",
+                "no_cohorts": "No cohorts yet.",
+                "cohort_name": "Cohort name",
+                "cohort_starts": "Starts :date",
+                "add_cohort": "Add cohort"
             }
         },
         "govuk_alpha_events": {
@@ -8275,6 +8337,9 @@
                 "recurrence_unavailable": "Repeating events are switched off in this community. Your event has not been created. Check the details and create it as a single event."
             },
             "rsvp": {
+                "clear_hint": "Changed your mind? You can remove your answer so the event shows no reply from you.",
+                "clear_button": "Clear my answer",
+                "cleared": "Your answer has been cleared.",
                 "pending_tag": "Requested",
                 "pending": "You have asked for a place. The organiser needs to approve it before your place is confirmed."
             },
@@ -8507,6 +8572,62 @@
                 "posted_by": "Quoted post by :name",
                 "truncated": "This quoted post has been shortened.",
                 "image_alt": "Image attached to the quoted post"
+            },
+            "reactions": {
+                "like": "Like",
+                "love": "Love",
+                "laugh": "Laugh",
+                "wow": "Wow",
+                "sad": "Sad",
+                "celebrate": "Celebrate",
+                "clap": "Clap",
+                "time_credit": "Time credit",
+                "legend": "React to this post",
+                "comment_legend": "React to this comment",
+                "see_who": "See who reacted with :reaction (:count)",
+                "reactors_title": "People who reacted with :reaction",
+                "reactors_total": "Total: :count",
+                "reactors_empty": "Nobody has reacted with :reaction yet.",
+                "unknown_member": "A community member",
+                "show_more": "Show more people"
+            },
+            "post_pages": {
+                "back_to_post": "Back to the post"
+            },
+            "translate": {
+                "button": "Translate this post",
+                "heading": "Translation",
+                "hint": "Translated automatically. The original post is shown above.",
+                "done": "The post has been translated.",
+                "failed": "Sorry, we could not translate this post. Try again later.",
+                "unavailable": "Translation is not available in this community.",
+                "same": "This post is already in your language.",
+                "empty": "This post has no text to translate."
+            },
+            "why_shown": {
+                "label": "Why am I seeing this?",
+                "default_reason": "Ranked for you based on your activity"
+            },
+            "stats": {
+                "link": "View post statistics",
+                "title": "Post statistics",
+                "intro": "Only you can see these numbers.",
+                "views": "Views",
+                "likes": "Likes",
+                "comments": "Comments",
+                "shares": "Shares",
+                "reach": "Reach",
+                "reach_hint": "Reach is the number of different people who have seen the post.",
+                "reactions_breakdown": "Reactions",
+                "no_reactions": "No reactions yet.",
+                "forbidden": "Only the person who wrote this post can see its statistics.",
+                "failed": "Sorry, we could not load the statistics. Try again later."
+            },
+            "quote": {
+                "summary": "Share with your own comment",
+                "label": "Your comment",
+                "hint": "Your comment appears with the post when you share it.",
+                "submit": "Share with comment"
             }
         },
         "govuk_alpha_gamification": {
@@ -9249,6 +9370,38 @@
                 "error_group_unavailable": "This group is not accepting members at the moment.",
                 "error_safeguarding": "This community's safeguarding rules do not allow you to join this group. Ask a coordinator for help.",
                 "error_safeguarding_unavailable": "We cannot check this community's safeguarding rules right now. Please try again shortly."
+            },
+            "members_page": {
+                "title": "Members of :group",
+                "link": "See and search all members",
+                "search_label": "Search group members",
+                "search_hint": "Search by name or tagline",
+                "search_button": "Search members",
+                "clear": "Clear search",
+                "empty": "This group has no members to show.",
+                "empty_search": "No members match “:query”.",
+                "role_admin": "Group administrator",
+                "pagination_label": "Member pages",
+                "back": "Back to :group"
+            },
+            "events_page": {
+                "title": "Events in :group",
+                "link": "See all events, including past events",
+                "filter_label": "Which events",
+                "when_all": "All events",
+                "when_upcoming": "Upcoming events",
+                "when_past": "Past events",
+                "filter_button": "Show events",
+                "empty": "There are no events to show.",
+                "pagination_label": "Event pages"
+            },
+            "recommended": {
+                "title": "Recommended for you",
+                "score": ":score% match"
+            },
+            "featured": {
+                "title": "Featured groups",
+                "more_title": "More groups"
             }
         },
         "govuk_alpha_ideation": {
@@ -9701,6 +9854,16 @@
                 "no_skills": "No skills listed"
             },
             "employer": {
+                "write_review_heading": "Write a review",
+                "write_review_hint": "You can review an employer once they have accepted you for an opportunity.",
+                "review_rating_legend": "Overall rating",
+                "review_rating_option": ":rating out of 5",
+                "review_dimension_same": "Same as overall rating",
+                "review_comment_label": "Comment (optional)",
+                "review_submit": "Submit review",
+                "review_saved": "Thank you. Your review has been published.",
+                "review_failed": "We could not submit your review. Please try again.",
+                "review_rating_required": "Choose an overall rating from 1 to 5.",
                 "title": "Employer profile",
                 "description": "Open opportunities and reviews for this employer.",
                 "open_jobs_heading": "Open opportunities",
@@ -9751,6 +9914,9 @@
                 "status_unknown": "Updated"
             },
             "responses": {
+                "add_to_outlook": "Add to Outlook Calendar",
+                "download_ics": "Download calendar file (.ics)",
+                "states_calendar_failed": "We could not prepare the calendar file. Please try again.",
                 "title": "Interviews and offers",
                 "caption": "Your responses from employers",
                 "add_to_calendar": "Add to Google Calendar",
@@ -9877,7 +10043,30 @@
                     "reopen_pending_review": "Your opportunity has been sent for review. It will reopen once it is approved.",
                     "status_change_failed": "We could not change the status of this opportunity. Please try again."
                 }
+            },
+            "apply_extras": {
+                "saved_found": "Your saved application message has been filled in below. You can change it before you send it.",
+                "quick_apply_hint": "Or send your saved message now, without a CV.",
+                "quick_apply_button": "Quick apply with saved message",
+                "remember_label": "Save this message to use in future applications",
+                "cv_skills_heading": "Skills detected from your CV",
+                "export_heading": "Your application data",
+                "export_hint": "Download a copy of the information held about your job applications, as a JSON file.",
+                "export_button": "Download my data",
+                "export_failed": "We could not prepare your data. Please try again."
             }
+        },
+        "govuk_alpha_kb": {
+            "feedback_question": "Was this article helpful?",
+            "feedback_yes": "Yes, it helped (:count)",
+            "feedback_no": "No, it did not (:count)",
+            "feedback_given_yes": "You said this article was helpful. You can change your answer.",
+            "feedback_given_no": "You said this article was not helpful. You can change your answer.",
+            "feedback_thanks": "Thank you for your feedback!",
+            "feedback_failed": "Failed to submit feedback.",
+            "attachments_heading": "Attachments",
+            "categories_label": "Knowledge base categories",
+            "all_categories": "All categories"
         },
         "govuk_alpha_listings": {
             "nav": {
@@ -9885,7 +10074,13 @@
             },
             "create": {
                 "skill_tags_label": "Skills (optional)",
-                "skill_tags_hint": "List the skills involved, separated by commas — for example: gardening, cooking, tax advice. You can add up to 10."
+                "skill_tags_hint": "List the skills involved, separated by commas — for example: gardening, cooking, tax advice. You can add up to 10.",
+                "hours_available_label": "Hours available",
+                "hours_available_hint": "Total hours you are willing to give. Leave blank for no limit.",
+                "hours_available_range": "Hours available must be at least 0.5.",
+                "hours_available_below_estimate": "Hours available cannot be less than the estimated hours.",
+                "remove_image_label": "Remove the current photo",
+                "remove_image_failed": "the photo could not be removed"
             },
             "analytics": {
                 "title": "Listing analytics",
@@ -10135,7 +10330,8 @@
                     "failed": "Your report could not be sent. Try again.",
                     "rate_limited": "You have sent too many reports. Try again later."
                 }
-            }
+            },
+            "sort_communityrank": "Community rank"
         },
         "govuk_alpha_messages": {
             "voice": {
@@ -10273,6 +10469,38 @@
                 "reaction_invalid": "That reaction is not available.",
                 "reaction_forbidden": "You cannot react to this message.",
                 "reaction_failed": "We could not save your reaction."
+            },
+            "delete_conversation": {
+                "link": "Delete this conversation",
+                "title": "Delete this conversation",
+                "caption": "Conversation with :name",
+                "legend": "Who should the conversation be deleted for?",
+                "self": "Delete for me",
+                "self_hint": "It is removed from your inbox. :name can still see it.",
+                "everyone": "Delete for everyone",
+                "everyone_hint": "It is removed for you and for :name. This cannot be undone.",
+                "submit": "Delete conversation",
+                "cancel": "Cancel and go back to the conversation",
+                "deleted": "The conversation has been deleted for everyone.",
+                "failed": "Sorry, we could not delete the conversation. Try again later.",
+                "error_choose": "Select who the conversation should be deleted for"
+            },
+            "safeguarding": {
+                "coordinator_button": "Ask a coordinator to help",
+                "coordinator_hint": "A community coordinator will be told you would like help getting in touch, and will contact you.",
+                "coordinator_sent": "Coordinator notified. They will be in touch to help arrange contact.",
+                "coordinator_failed": "We could not send your request just now. Please try again shortly.",
+                "vetting_button": "Request a review of my vetting",
+                "vetting_hint": "Your community is asked to review your vetting. You will see the outcome in your profile settings.",
+                "required_checks": "Checks needed"
+            },
+            "context": {
+                "regarding": "Regarding",
+                "type_listing": "Listing",
+                "type_event": "Event",
+                "type_job": "Job",
+                "type_volunteering": "Volunteering",
+                "untitled": ":type number :id"
             }
         },
         "govuk_alpha_organisations": {
@@ -10522,6 +10750,17 @@
                         "has_invalid_summary": "Some rows are invalid. Fix them in your CSV and re-run the preview before importing."
                     }
                 }
+            },
+            "reviews": {
+                "write_heading": "Review this organisation",
+                "rating_legend": "Rating",
+                "rating_option": ":rating out of 5",
+                "comment_label": "Comment (optional)",
+                "comment_hint": "Share what worked well or what others should know.",
+                "submit": "Submit review",
+                "saved": "Review submitted.",
+                "failed": "Unable to submit your review.",
+                "rating_required": "Choose a rating before submitting."
             }
         },
         "govuk_alpha_resources": {
@@ -10845,7 +11084,8 @@
                 "popular": "Popular tags",
                 "popular_add": "Add :tag",
                 "apply": "Apply filters",
-                "reset": "Reset filters"
+                "reset": "Reset filters",
+                "type_podcasts": "Podcasts"
             },
             "results": {
                 "count": "{0} No results found|{1} 1 result found|[2,*] :count results found",
@@ -10868,7 +11108,10 @@
                 "view_listing": "View listing",
                 "view_member": "View member",
                 "view_event": "View event",
-                "view_group": "View group"
+                "view_group": "View group",
+                "tab_podcasts": "Podcasts (:count)",
+                "section_podcasts": "Podcasts",
+                "episode_from": "Episode from :show"
             },
             "states": {
                 "no_query_title": "Start your search",

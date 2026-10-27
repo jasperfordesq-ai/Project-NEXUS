@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'De beschermingsregels van deze gemeenschap staan niet toe dat u lid wordt van deze groep. Vraag een coördinator om hulp.',
         'error_safeguarding_unavailable' => 'We kunnen de beschermingsregels van deze gemeenschap op dit moment niet controleren. Probeer het straks opnieuw.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'Leden van :group',
+        'link' => 'Alle leden bekijken en doorzoeken',
+        'search_label' => 'Groepsleden zoeken',
+        'search_hint' => 'Zoeken op naam of introductie',
+        'search_button' => 'Leden zoeken',
+        'clear' => 'Zoekopdracht wissen',
+        'empty' => 'Deze groep heeft geen leden om te tonen.',
+        'empty_search' => 'Geen leden gevonden voor „:query”.',
+        'role_admin' => 'Groepsbeheerder',
+        'pagination_label' => 'Ledenpagina’s',
+        'back' => 'Terug naar :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'Evenementen van :group',
+        'link' => 'Alle evenementen bekijken, ook eerdere',
+        'filter_label' => 'Welke evenementen',
+        'when_all' => 'Alle evenementen',
+        'when_upcoming' => 'Komende evenementen',
+        'when_past' => 'Eerdere evenementen',
+        'filter_button' => 'Evenementen tonen',
+        'empty' => 'Er zijn geen evenementen om te tonen.',
+        'pagination_label' => 'Evenementpagina’s',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'Aanbevolen voor jou',
+        'score' => ':score% overeenkomst',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'Uitgelichte groepen',
+        'more_title' => 'Meer groepen',
+    ],
 ];

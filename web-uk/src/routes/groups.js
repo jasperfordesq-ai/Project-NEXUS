@@ -22,6 +22,7 @@ const {
   getFeedPosts,
   createFeedPostV2,
   getEvents,
+  callMatchesApi,
   ApiError
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
@@ -1034,13 +1035,17 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   const typeId = positiveInteger(req.query.type);
   if (typeId) filters.type_id = typeId;
 
-  const [groupsResult, groupTypes] = await Promise.all([
+  const [groupsResult, groupTypes, recommendedGroups] = await Promise.all([
     getGroups(req.token, filters),
-    loadDirectoryGroupTypes(req.token)
+    loadDirectoryGroupTypes(req.token),
+    loadRecommendedGroups(req.token)
   ]);
 
   const groups = collectionFrom(groupsResult)
     .map((group) => normalizeGroup(group, positiveInteger(group?.id)));
+  // Featured groups first, in their own section (React GroupsPage).
+  const featuredGroups = groups.filter((group) => group.is_featured === true || group.is_featured === 1 || group.isFeatured === true);
+  const regularGroups = groups.filter((group) => !featuredGroups.includes(group));
   const meta = groupsResult?.meta || {};
   const nextQuery = new URLSearchParams();
   if (searchQuery) nextQuery.set('q', searchQuery);
@@ -1052,6 +1057,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   res.render('groups/index', {
     title: res.locals.t('govuk_alpha.groups.title'),
     groups,
+    featuredGroups,
+    regularGroups,
+    recommendedGroups,
     searchQuery,
     groupsFilter,
     groupTypes,
@@ -1064,6 +1072,33 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     status: trimmed(req.query.status)
   });
 }, { redirectOn401: loginRedirect() }));
+
+/**
+ * "Recommended for you" in the directory (React RecommendedGroups,
+ * GET /api/v2/matches/all?modules=groups&limit=3&min_score=50). Optional: when the
+ * read fails or returns nothing, the section is simply not shown.
+ */
+async function loadRecommendedGroups(token) {
+  try {
+    const data = dataFrom(await callMatchesApi(token, 'GET', '/all?modules=groups&limit=3&min_score=50')) || {};
+    const matches = Array.isArray(data.matches) ? data.matches : [];
+    return matches
+      .map((match) => ({
+        id: positiveInteger(match?.group_id),
+        title: trimmed(match?.title),
+        score: Math.max(0, Math.min(100, Math.round(Number(match?.match_score) || 0))),
+        reasons: Array.isArray(match?.match_reasons)
+          ? match.match_reasons.map((reason) => trimmed(reason)).filter(Boolean).slice(0, 3)
+          : [],
+        imageUrl: resolveBackendMediaUrl(match?.image_url)
+      }))
+      .filter((match) => match.id !== null && match.title !== '')
+      .slice(0, 3);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return [];
+  }
+}
 
 // ---- Group invitation links (React route groups/invite/:token) ------------
 // Organisers mint and email these links from the invite page; this is where a
@@ -1342,6 +1377,125 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     status: trimmed(req.query.status)
   });
 }, { notFoundTitle: 'Group not found' }));
+
+/**
+ * The whole member list, searchable and paged (React GroupMembersTab: `q` and a
+ * cursor). The group page shows the first 100 without a search.
+ *
+ * Deliberately NOT /groups/:id/members: that path was the retired Blade
+ * member-management page and is pinned as "not found" (tests/routes.test.js).
+ */
+router.get('/:id(\\d+)/member-list', requireAuth, asyncRoute(async (req, res) => {
+  const id = req.params.id;
+  const query = trimmed(req.query.q, 100);
+  const cursor = trimmed(req.query.cursor, 200);
+  const apiQuery = new URLSearchParams();
+  apiQuery.set('per_page', '50');
+  if (query) apiQuery.set('q', query);
+  if (cursor) apiQuery.set('cursor', cursor);
+
+  let groupResult;
+  let membersResult;
+  try {
+    [groupResult, membersResult] = await Promise.all([
+      getGroup(req.token, id),
+      callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/members?${apiQuery.toString()}`)
+    ]);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    throw error;
+  }
+
+  const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
+  const members = collectionFrom(membersResult)
+    .map((member) => {
+      const name = trimmed(member?.name)
+        || trimmed(`${trimmed(member?.first_name || member?.firstName)} ${trimmed(member?.last_name || member?.lastName)}`);
+      const role = trimmed(member?.role || member?.membership?.role).toLowerCase();
+      return {
+        id: positiveInteger(member?.user_id || member?.userId || member?.id),
+        name,
+        tagline: trimmed(member?.tagline),
+        avatarUrl: resolveBackendMediaUrl(member?.avatar_url || member?.avatarUrl || member?.avatar),
+        isAdmin: role === 'admin' || role === 'owner'
+      };
+    })
+    .filter((member) => member.name !== '');
+  const meta = membersResult?.meta || dataFrom(membersResult)?.meta || {};
+  const nextCursor = trimmed(meta.cursor || meta.next_cursor || dataFrom(membersResult)?.cursor, 200);
+  const hasMore = meta.has_more === true || dataFrom(membersResult)?.has_more === true;
+  const pageHref = (pageCursor) => {
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (pageCursor) params.set('cursor', pageCursor);
+    const text = params.toString();
+    return `/groups/${id}/member-list${text ? `?${text}` : ''}`;
+  };
+
+  return res.render('groups/members', {
+    title: res.locals.t('govuk_alpha_groups.members_page.title', { group: group.name }),
+    activeNav: 'explore',
+    group,
+    members,
+    query,
+    pagination: {
+      nextHref: hasMore && nextCursor ? pageHref(nextCursor) : '',
+      firstHref: cursor ? pageHref('') : ''
+    }
+  });
+}, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
+
+/**
+ * Every group event, past and upcoming, paged (React group events tab reads
+ * GET /api/v2/events?group_id=&when=all). The group page shows the next five.
+ */
+const GROUP_EVENT_WHEN = ['all', 'upcoming', 'past'];
+
+router.get('/:id(\\d+)/events', requireAuth, asyncRoute(async (req, res) => {
+  const id = req.params.id;
+  const when = allowed(req.query.when, GROUP_EVENT_WHEN, 'all');
+  const cursor = trimmed(req.query.cursor, 200);
+  const params = { group_id: id, when, per_page: 20 };
+  if (cursor) params.cursor = cursor;
+
+  let groupResult;
+  let eventsResult;
+  try {
+    [groupResult, eventsResult] = await Promise.all([
+      getGroup(req.token, id),
+      getEvents(req.token, params)
+    ]);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    throw error;
+  }
+
+  const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
+  const events = collectionFrom(eventsResult)
+    .map((event) => ({
+      id: positiveInteger(event?.id),
+      title: trimmed(event?.title),
+      location: trimmed(event?.location),
+      startsAt: event?.start_time || event?.start_date || event?.starts_at || event?.startsAt || '',
+      coverImage: resolveBackendMediaUrl(event?.cover_image || event?.cover_image_url || event?.coverImage || event?.coverImageUrl)
+    }))
+    .filter((event) => event.id !== null && event.title !== '');
+  const meta = eventsResult?.meta || {};
+  const nextCursor = trimmed(meta.cursor || meta.next_cursor, 200);
+  const pageHref = (pageCursor) => `/groups/${id}/events?when=${when}${pageCursor ? `&cursor=${encodeURIComponent(pageCursor)}` : ''}`;
+
+  return res.render('groups/events', {
+    title: res.locals.t('govuk_alpha_groups.events_page.title', { group: group.name }),
+    activeNav: 'explore',
+    group,
+    events,
+    when,
+    pagination: {
+      nextHref: meta.has_more === true && nextCursor ? pageHref(nextCursor) : '',
+      firstHref: cursor ? pageHref('') : ''
+    }
+  });
+}, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
 
 // Edit group form
 router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {

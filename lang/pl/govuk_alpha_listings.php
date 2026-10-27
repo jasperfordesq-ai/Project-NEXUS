@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Umiejętności (opcjonalnie)',
         'skill_tags_hint' => 'Wymień wymagane umiejętności, oddzielając je przecinkami – na przykład: ogrodnictwo, gotowanie, doradztwo podatkowe. Możesz dodać maksymalnie 10.',
+        'hours_available_label' => 'Dostępne godziny',
+        'hours_available_hint' => 'Łączna liczba godzin, które chcesz przeznaczyć. Pozostaw puste, aby nie ustawiać limitu.',
+        'hours_available_range' => 'Dostępne godziny muszą wynosić co najmniej 0,5.',
+        'hours_available_below_estimate' => 'Dostępne godziny nie mogą być mniejsze niż szacowane godziny.',
+        'remove_image_label' => 'Usuń obecne zdjęcie',
+        'remove_image_failed' => 'nie udało się usunąć zdjęcia',
     ],
     'nav' => [
         'view_analytics' => 'Wyświetl statystyki aukcji',

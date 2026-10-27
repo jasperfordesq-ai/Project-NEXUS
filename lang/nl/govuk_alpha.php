@@ -4007,6 +4007,13 @@ return [
             'removed' => 'Uw vaardigheid is verwijderd.',
             'failed' => 'We konden uw vaardigheden niet bijwerken. Probeer het opnieuw.',
             'name_required' => 'Voer een naam voor de vaardigheid in.',
+            'category_label' => 'Categorie (optioneel)',
+            'category_none' => 'Geen categorie',
+            'proficiency_label' => 'Vaardigheidsniveau',
+            'proficiency_beginner' => 'Beginner',
+            'proficiency_intermediate' => 'Gemiddeld',
+            'proficiency_advanced' => 'Gevorderd',
+            'proficiency_expert' => 'Deskundige',
         ],
         'sessions' => [
             'title' => 'Waar u bent aangemeld',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Voeg een authenticator-app toe als tweede stap bij het aanmelden.',
         'two_factor_link' => 'Verificatie in twee stappen instellen of beheren',
         'blocked_link' => 'Geblokkeerde leden beheren',
+        'dob_label' => 'Geboortedatum',
+        'dob_hint' => 'Optioneel. Je hebt dit alleen nodig om je identiteit te laten verifiëren, en het moet laten zien dat je 18 jaar of ouder bent. Maak alle drie de vakken leeg om het te verwijderen.',
+        'dob_locked' => 'Je geboortedatum is vergrendeld omdat je identiteit is geverifieerd.',
     ],
     'delete_account' => [
         'title' => 'Verwijder uw account',

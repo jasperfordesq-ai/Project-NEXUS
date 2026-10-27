@@ -610,6 +610,14 @@ async function completeOnboarding(token, data) {
   });
 }
 
+// Which ranking each area uses (React's useAlgorithmInfo). The members directory offers
+// a "Community rank" sort, and defaults to it, only when `members.key` is `communityrank`.
+async function getAlgorithmInfo(token) {
+  return request('/api/v2/config/algorithms', {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+}
+
 async function getUsers(token, params = {}) {
   const query = new URLSearchParams();
   if (params.q || params.search) query.set('q', params.q || params.search);
@@ -784,6 +792,14 @@ async function setListingSkillTags(token, id, tags) {
   });
 }
 
+// Remove a listing's photo without replacing it (React ListingForm "remove image").
+async function deleteListingImage(token, id) {
+  return request(`/api/v2/listings/${encodeURIComponent(id)}/image`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function uploadListingImage(token, id, data) {
   const form = new globalThis.FormData();
   const file = data && (data.file || data.image);
@@ -918,6 +934,25 @@ async function getKnowledgeBaseArticle(token = '', id) {
     ? { headers: { Authorization: `Bearer ${token}` } }
     : {};
   return request(`/api/v2/kb/${encodeURIComponent(id)}`, options);
+}
+
+// "Was this helpful?" on a knowledge base article (React KBArticlePage). The API
+// keeps one answer per member and recounts helpful_yes / helpful_no.
+async function submitKnowledgeBaseFeedback(token, id, isHelpful) {
+  return request(`/api/v2/kb/${encodeURIComponent(id)}/feedback`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ is_helpful: !!isHelpful })
+  });
+}
+
+// A knowledge base article's attachment, streamed through web-uk so the member's
+// bearer token never has to reach the browser.
+async function downloadKnowledgeBaseAttachment(token, id, attachmentId) {
+  return downloadRequest(
+    `/api/v2/kb/${encodeURIComponent(id)}/attachments/${encodeURIComponent(attachmentId)}/download`,
+    { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+  );
 }
 
 async function getHelpFaqs(params = {}) {
@@ -3545,6 +3580,14 @@ async function getFeedPostV2(token = '', id) {
   return request(`/api/v2/feed/posts/${encodeURIComponent(id)}`, { headers });
 }
 
+// Statistics for a post's author (GET /api/v2/feed/posts/{id}/analytics; the API
+// answers 403 to anyone else). React PostAnalyticsModal reads the same endpoint.
+async function getFeedPostAnalytics(token, id) {
+  return request(`/api/v2/feed/posts/${encodeURIComponent(id)}/analytics`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function getFeedItemV2(token = '', type, id) {
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
   return request(`/api/v2/feed/items/${encodeURIComponent(type)}/${encodeURIComponent(id)}`, { headers });
@@ -4397,6 +4440,8 @@ async function importVereinMembers(token, organizationId, csv) {
 }
 
 module.exports = {
+  getAlgorithmInfo,
+  deleteListingImage,
   setupRequiredTwoFactor,
   ApiError,
   ApiOfflineError,
@@ -4468,6 +4513,8 @@ module.exports = {
   getOrganisationReviews,
   getKnowledgeBaseArticles,
   getKnowledgeBaseArticle,
+  submitKnowledgeBaseFeedback,
+  downloadKnowledgeBaseAttachment,
   getHelpFaqs,
   getLegalDocument,
   getLegalVersions,
@@ -4723,6 +4770,7 @@ module.exports = {
   // Feed
   getFeedPosts,
   getFeedPostV2,
+  getFeedPostAnalytics,
   getFeedItemV2,
   getFeedHashtags,
   getFeedHashtagPosts,

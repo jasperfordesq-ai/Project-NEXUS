@@ -11,8 +11,11 @@ const {
   getFeedHashtags,
   getFeedHashtagPosts,
   getComments,
+  getFeedPostAnalytics,
+  getReactors,
   ApiError
 } = require('../lib/api');
+const { POST_REACTION_TYPES } = require('../lib/feed-reactions');
 const { withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { consumeFormReplay } = require('../lib/form-replay');
@@ -188,6 +191,11 @@ function normalizeFeedPost(row) {
     reactionTotal,
     userReaction,
     isShared: !!(row && (row.is_shared || row.isShared)),
+    // The API's own ranking explanation (pre-translated strings), shown as
+    // "Why am I seeing this?" in the ranked feed, as React WhyShown does.
+    rankingReasons: Array.isArray(row && row.ranking_reasons)
+      ? row.ranking_reasons.map((reason) => trimmed(reason, 300)).filter(Boolean).slice(0, 10)
+      : [],
     isBookmarked: !!(row && (row.is_bookmarked || row.isBookmarked || row.is_saved || row.isSaved)),
     shareCount: positiveInteger(row && (row.share_count ?? row.shareCount), 0, 0, Number.MAX_SAFE_INTEGER),
     poll: rawPoll ? {
@@ -375,9 +383,15 @@ function feedIndexStatusMessage(status, t) {
     'save-removed': 'feed_t1.status_save_removed',
     'save-failed': 'feed_t1.status_save_failed',
     'not-interested': 'govuk_alpha_feed.states.not_interested',
-    'not-interested-failed': 'govuk_alpha_feed.states.not_interested_failed'
+    'not-interested-failed': 'govuk_alpha_feed.states.not_interested_failed',
+    'translate-done': 'govuk_alpha_feed.translate.done',
+    'translate-failed': 'govuk_alpha_feed.translate.failed',
+    'translate-unavailable': 'govuk_alpha_feed.translate.unavailable',
+    'translate-same': 'govuk_alpha_feed.translate.same',
+    'translate-empty': 'govuk_alpha_feed.translate.empty'
   };
   const errorStatuses = new Set([
+    'translate-failed', 'translate-unavailable', 'translate-same', 'translate-empty',
     'post-empty', 'post-failed', 'post-update-failed', 'post-delete-failed',
     'like-failed', 'comment-empty', 'comment-too-long', 'comment-failed',
     'comment-update-failed', 'comment-delete-failed', 'moderation-failed',
@@ -459,6 +473,16 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
   const currentUserId = token
     ? profileId(await getRequestProfile(req, token).catch(() => null))
     : null;
+  // A translation made on the previous request is shown once (POST
+  // /feed/posts/:id/translate), then forgotten.
+  let translation = null;
+  if (req.session && req.session.feedTranslation) {
+    const stored = req.session.feedTranslation;
+    delete req.session.feedTranslation;
+    if (stored && Number(stored.postId) === id && trimmed(stored.text)) {
+      translation = { text: trimmed(stored.text, 10000), locale: trimmed(stored.locale, 10) || 'en' };
+    }
+  }
 
   res.render('feed/post', {
     title: (res.locals.t ? res.locals.t('govuk_alpha.actions.post') : 'Post'),
@@ -469,9 +493,109 @@ router.get('/posts/:id(\\d+)', asyncRoute(withTokenRefresh(async (req, res) => {
     itemUnavailable,
     comments,
     currentUserId,
+    isOwn: currentUserId !== null && item.authorId === currentUserId,
+    translation,
+    returnTo: `/feed/posts/${id}`,
     requiresAuth: !token,
     statusMessage: feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}), { notFoundTitle: 'Post not found' }));
+
+function signInRedirect(res) {
+  const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
+  return res.redirect(urlFor('/login?status=auth-required'));
+}
+
+/**
+ * Who reacted to a post, one reaction at a time (React ReactionSummary ->
+ * ReactionDetailsModal, GET /api/v2/reactions/post/{id}/users/{type}). Mirrors the
+ * blog likers page.
+ */
+router.get('/posts/:id(\\d+)/reactions/:reaction([a-z_]{1,30})', asyncRoute(withTokenRefresh(async (req, res) => {
+  const id = positiveInteger(req.params.id, 0, 1, Number.MAX_SAFE_INTEGER);
+  const token = tokenFrom(req);
+  if (!token) return signInRedirect(res);
+  const reaction = POST_REACTION_TYPES.includes(req.params.reaction) ? req.params.reaction : 'like';
+  const page = positiveInteger(req.query.page, 1, 1, 1000);
+  const result = await getReactors(token, 'post', id, reaction, { page, per_page: 20 });
+  const meta = collectionMeta(result);
+  const data = dataFrom(result);
+  const rows = Array.isArray(data) ? data : (data && Array.isArray(data.users) ? data.users : []);
+  const t = res.locals.t;
+  const reactors = rows.map((row) => {
+    const source = row && typeof row === 'object' ? row : {};
+    return {
+      id: positiveInteger(source.id || source.user_id, null, 1, Number.MAX_SAFE_INTEGER),
+      name: trimmed(source.name || [source.first_name, source.last_name].filter(Boolean).join(' '), 200)
+        || t('govuk_alpha_feed.reactions.unknown_member'),
+      avatar: resolveBackendMediaUrl(source.avatar_url || source.avatar)
+    };
+  });
+  const reactionLabel = t(`govuk_alpha_feed.reactions.${reaction}`);
+  const hasMore = Boolean(meta.has_more || meta.hasMore);
+
+  res.render('feed/reactors', {
+    title: t('govuk_alpha_feed.reactions.reactors_title', { reaction: reactionLabel }),
+    activeNav: 'feed',
+    alphaActiveNav: 'feed',
+    postId: id,
+    reaction,
+    reactionLabel,
+    reactors,
+    total: positiveInteger(meta.total, reactors.length, 0, Number.MAX_SAFE_INTEGER),
+    nextHref: hasMore ? `/feed/posts/${id}/reactions/${reaction}?page=${page + 1}` : ''
+  });
+}), { notFoundTitle: 'Post not found' }));
+
+/**
+ * Statistics for the author of a post (React PostAnalyticsModal,
+ * GET /api/v2/feed/posts/{id}/analytics). The API answers 403 to anyone who is
+ * not the author or an administrator; that is explained, not hidden.
+ */
+router.get('/posts/:id(\\d+)/stats', asyncRoute(withTokenRefresh(async (req, res) => {
+  const id = positiveInteger(req.params.id, 0, 1, Number.MAX_SAFE_INTEGER);
+  const token = tokenFrom(req);
+  const t = res.locals.t;
+  if (!token) return signInRedirect(res);
+  let stats = null;
+  let errorMessage = '';
+  let statusCode = 200;
+  try {
+    const data = dataFrom(await getFeedPostAnalytics(token, id)) || {};
+    const count = (value) => positiveInteger(value, 0, 0, Number.MAX_SAFE_INTEGER);
+    const breakdown = data.reactions_breakdown && typeof data.reactions_breakdown === 'object'
+      ? data.reactions_breakdown
+      : {};
+    stats = {
+      views: count(data.views_count),
+      likes: count(data.likes_count),
+      comments: count(data.comments_count),
+      shares: count(data.shares_count),
+      reach: count(data.reach_estimate),
+      reactions: Object.entries(breakdown)
+        .filter(([type]) => POST_REACTION_TYPES.includes(type))
+        .map(([type, total]) => ({ type, label: t(`govuk_alpha_feed.reactions.${type}`), count: count(total) }))
+        .filter((row) => row.count > 0)
+    };
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 401 || error.status === 404)) throw error;
+    if (error instanceof ApiError && error.status === 403) {
+      statusCode = 403;
+      errorMessage = t('govuk_alpha_feed.stats.forbidden');
+    } else {
+      statusCode = 502;
+      errorMessage = t('govuk_alpha_feed.stats.failed');
+    }
+  }
+
+  res.status(statusCode).render('feed/stats', {
+    title: t('govuk_alpha_feed.stats.title'),
+    activeNav: 'feed',
+    alphaActiveNav: 'feed',
+    postId: id,
+    stats,
+    errorMessage
   });
 }), { notFoundTitle: 'Post not found' }));
 
@@ -527,8 +651,13 @@ router.get('/hashtag/:tag([A-Za-z0-9_]{1,100})', asyncRoute(async (req, res) => 
   let nextCursor = '';
   let errorMessage = null;
 
+  const hashtagToken = tokenFrom(req);
+  const currentUserId = hashtagToken
+    ? profileId(await getRequestProfile(req, hashtagToken).catch(() => null))
+    : null;
+
   try {
-    const result = await getFeedHashtagPosts(tokenFrom(req), tag, query);
+    const result = await getFeedHashtagPosts(hashtagToken, tag, query);
     const meta = collectionMeta(result);
     items = feedCollectionRows(result).map(normalizeFeedPost).filter(isRenderableFeedPost);
     totalCount = positiveInteger(meta.total_items, items.length, 0, Number.MAX_SAFE_INTEGER);
@@ -551,7 +680,9 @@ router.get('/hashtag/:tag([A-Za-z0-9_]{1,100})', asyncRoute(async (req, res) => 
     perPage,
     nextHref: hasMore && nextCursor ? `/feed/hashtag/${encodeURIComponent(tag)}?cursor=${encodeURIComponent(nextCursor)}&per_page=${perPage}` : '',
     requiresAuth: !tokenFrom(req),
-    statusMessage: feedItemStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
+    currentUserId,
+    returnTo: `/feed/hashtag/${tag}`,
+    statusMessage: feedIndexStatusMessage(trimmed(req.query.status), req.t || res.locals.t),
     errorMessage,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });

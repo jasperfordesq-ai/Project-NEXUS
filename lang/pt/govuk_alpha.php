@@ -4007,6 +4007,13 @@ return [
             'removed' => 'A sua competência foi removida.',
             'failed' => 'Não foi possível atualizar as suas competências. Tente novamente.',
             'name_required' => 'Introduza o nome de uma competência.',
+            'category_label' => 'Categoria (opcional)',
+            'category_none' => 'Sem categoria',
+            'proficiency_label' => 'Nível de proficiência',
+            'proficiency_beginner' => 'Iniciante',
+            'proficiency_intermediate' => 'Intermédio',
+            'proficiency_advanced' => 'Avançado',
+            'proficiency_expert' => 'Especialista',
         ],
         'sessions' => [
             'title' => 'Onde tem sessão iniciada',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Adicione uma aplicação de autenticação como segundo passo ao iniciar sessão.',
         'two_factor_link' => 'Configurar ou gerir a verificação em dois passos',
         'blocked_link' => 'Gerir membros bloqueados',
+        'dob_label' => 'Data de nascimento',
+        'dob_hint' => 'Opcional. Só é necessária para verificar a sua identidade e tem de mostrar que tem 18 anos ou mais. Para a remover, limpe as três caixas.',
+        'dob_locked' => 'A sua data de nascimento está bloqueada porque a sua identidade foi verificada.',
     ],
     'delete_account' => [
         'title' => 'Exclua sua conta',

@@ -4073,6 +4073,13 @@ return [
             'removed' => 'Your skill has been removed.',
             'failed' => 'We could not update your skills. Please try again.',
             'name_required' => 'Enter a skill name.',
+            'category_label' => 'Category (optional)',
+            'category_none' => 'No category',
+            'proficiency_label' => 'Proficiency level',
+            'proficiency_beginner' => 'Beginner',
+            'proficiency_intermediate' => 'Intermediate',
+            'proficiency_advanced' => 'Advanced',
+            'proficiency_expert' => 'Expert',
         ],
         'sessions' => [
             'title' => 'Where you are signed in',
@@ -4274,6 +4281,9 @@ return [
         'two_factor_intro' => 'Add an authenticator app as a second step when you sign in.',
         'two_factor_link' => 'Set up or manage two-step verification',
         'blocked_link' => 'Manage blocked members',
+        'dob_label' => 'Date of birth',
+        'dob_hint' => 'Optional. You only need this to verify your identity, and it must show you are 18 or over. To remove it, clear all three boxes.',
+        'dob_locked' => 'Your date of birth is locked because your identity has been verified.',
     ],
     'delete_account' => [
         'title' => 'Delete your account',

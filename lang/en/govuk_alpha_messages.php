@@ -150,4 +150,42 @@ return [
         'reaction_forbidden' => 'You cannot react to this message.',
         'reaction_failed' => 'We could not save your reaction.',
     ],
+
+    // ---- Delete a whole conversation for me or for everyone (React ConversationPage) ----
+    'delete_conversation' => [
+        'link' => 'Delete this conversation',
+        'title' => 'Delete this conversation',
+        'caption' => 'Conversation with :name',
+        'legend' => 'Who should the conversation be deleted for?',
+        'self' => 'Delete for me',
+        'self_hint' => 'It is removed from your inbox. :name can still see it.',
+        'everyone' => 'Delete for everyone',
+        'everyone_hint' => 'It is removed for you and for :name. This cannot be undone.',
+        'submit' => 'Delete conversation',
+        'cancel' => 'Cancel and go back to the conversation',
+        'deleted' => 'The conversation has been deleted for everyone.',
+        'failed' => 'Sorry, we could not delete the conversation. Try again later.',
+        'error_choose' => 'Select who the conversation should be deleted for',
+    ],
+
+    // ---- Actions from a safeguarding-restricted conversation (React ConversationPage) ----
+    'safeguarding' => [
+        'coordinator_button' => 'Ask a coordinator to help',
+        'coordinator_hint' => 'A community coordinator will be told you would like help getting in touch, and will contact you.',
+        'coordinator_sent' => 'Coordinator notified. They will be in touch to help arrange contact.',
+        'coordinator_failed' => 'We could not send your request just now. Please try again shortly.',
+        'vetting_button' => 'Request a review of my vetting',
+        'vetting_hint' => 'Your community is asked to review your vetting. You will see the outcome in your profile settings.',
+        'required_checks' => 'Checks needed',
+    ],
+
+    // ---- What a conversation is about (React MessageContextCard) ----
+    'context' => [
+        'regarding' => 'Regarding',
+        'type_listing' => 'Listing',
+        'type_event' => 'Event',
+        'type_job' => 'Job',
+        'type_volunteering' => 'Volunteering',
+        'untitled' => ':type number :id',
+    ],
 ];

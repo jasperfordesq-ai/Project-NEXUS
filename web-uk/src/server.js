@@ -2329,6 +2329,11 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
         contactEmail,
         website,
         websiteHref,
+        // The review form (React OrganisationDetailPage) is offered only when the
+        // community's reviews answered; a refused read means reviews are off.
+        reviewForm: reviewsResult.status === 'fulfilled'
+          ? require('./routes/organisation-reviews').organisationReviewView(req, res)
+          : null,
         jobVacanciesEnabled: featureEnabled(req.accessibleRouting?.tenant || {}, 'job_vacancies', true)
       });
     })
@@ -2340,6 +2345,15 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
       return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     });
 });
+
+// Write a review of a volunteering organisation (React OrganisationDetailPage).
+app.post(
+  '/organisations/:id(\\d+)/reviews',
+  requireOrganisationAuth,
+  formLimiter,
+  doubleCsrfProtection,
+  require('./routes/organisation-reviews').submitOrganisationReview
+);
 
 app.use('/resources/upload', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024 }));
 // Gap B13: an expense claim can carry a receipt (PDF, JPG, PNG or WebP, up to 10 MB —
@@ -2451,7 +2465,7 @@ app.use('/exchanges', doubleCsrfProtection, postOnly(formLimiter), exchangeRoute
 app.use('/goals', doubleCsrfProtection, postOnly(formLimiter), goalsRoutes);
 app.use('/ideation', doubleCsrfProtection, postOnly(formLimiter), ideationRoutes, ideationActionRoutes);
 app.use('/group-exchanges', doubleCsrfProtection, postOnly(formLimiter), groupExchangeRoutes, groupExchangeActionRoutes);
-app.use('/kb', requireAuth, kbRoutes);
+app.use('/kb', requireAuth, doubleCsrfProtection, postOnly(formLimiter), kbRoutes);
 app.use(supportRoutes);
 app.use(legalRoutes);
 // The acceptance page POSTs, so it needs CSRF protection. The legal router

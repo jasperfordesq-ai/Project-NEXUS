@@ -4007,6 +4007,13 @@ return [
             'removed' => 'Votre compétence a été supprimée.',
             'failed' => 'Nous n\'avons pas pu mettre à jour vos compétences. Veuillez réessayer.',
             'name_required' => 'Saisissez le nom d\'une compétence.',
+            'category_label' => 'Catégorie (facultatif)',
+            'category_none' => 'Aucune catégorie',
+            'proficiency_label' => 'Niveau de compétence',
+            'proficiency_beginner' => 'Débutant',
+            'proficiency_intermediate' => 'Intermédiaire',
+            'proficiency_advanced' => 'Avancé',
+            'proficiency_expert' => 'Expert',
         ],
         'sessions' => [
             'title' => 'Où vous êtes connecté',
@@ -4208,6 +4215,9 @@ return [
         'two_factor_intro' => 'Ajoutez une application d\'authentification comme deuxième étape lors de votre connexion.',
         'two_factor_link' => 'Configurer ou gérer la vérification en deux étapes',
         'blocked_link' => 'Gérer les membres bloqués',
+        'dob_label' => 'Date de naissance',
+        'dob_hint' => 'Facultatif. Elle n\'est nécessaire que pour vérifier votre identité et doit indiquer que vous avez 18 ans ou plus. Pour la supprimer, videz les trois champs.',
+        'dob_locked' => 'Votre date de naissance est verrouillée car votre identité a été vérifiée.',
     ],
     'delete_account' => [
         'title' => 'Supprimez votre compte',

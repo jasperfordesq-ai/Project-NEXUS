@@ -106,6 +106,12 @@ const REVIEWED_RAW_SITES = {
     why: 'system-generated QR SVG from src/lib/qr-svg.js; the check-in URL is encoded into rectangles, never emitted as text',
     guard: ['src/server.js', "qrSvg: status === 'checked_out' ? null : qrSvg(data?.qr_url),"],
   },
+  // 27 Oct 2026: the coupon "redeem in store" QR (React CouponDetailPage). Same renderer;
+  // the one-time token is encoded into rectangles and not printed beside it.
+  'coupons/detail.njk {{ qr.svg | safe }}': {
+    why: 'system-generated QR SVG from src/lib/qr-svg.js; the one-time coupon token is encoded into rectangles, never emitted as text',
+    guard: ['src/routes/coupons.js', 'const svg = qrSvg(stored.token);'],
+  },
   'public-info/changelog-release.njk {{ release.html | safe }}': {
     why: "build artefact from the repository's own CHANGELOG.md, sanitised at build time",
     guard: ['scripts/build-changelog.js', 'const html = sanitizeCmsHtml('],
@@ -122,20 +128,10 @@ const REVIEWED_RAW_SITES = {
   'feed/index.njk {{ likeForm | safe }}': {
     why: '{% set likeForm %} capture of autoescaped template output',
   },
-  'feed/index.njk {{ reaction.symbol | safe }}': {
-    why: 'literal HTML-entity array hard-coded in the template',
-  },
-  'feed/item.njk {{ reaction.symbol | safe }}': {
-    why: 'literal HTML-entity array hard-coded in the template',
-  },
-  'feed/post.njk {{ reaction.symbol | safe }}': {
-    why: 'literal HTML-entity array hard-coded in the template',
-  },
-  'feed/hashtag.njk {{ reaction.symbol | safe }}': {
-    why: 'literal HTML-entity array hard-coded in the template',
-  },
-  'feed/_comments.njk {{ reaction.symbol | safe }}': {
-    why: 'literal HTML-entity array hard-coded in the template',
+  // 27 Oct 2026: the five per-page copies of the reaction list became one shared
+  // macro (feed/_reactions.njk), so the five reviewed sites became one.
+  'feed/_reactions.njk {{ reaction.symbol | safe }}': {
+    why: 'literal HTML-entity array (POST_REACTIONS) hard-coded in the same template',
   },
 };
 

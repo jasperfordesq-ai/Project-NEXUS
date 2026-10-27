@@ -101,7 +101,9 @@
             </ul>
           {% endif %}
 
-          {% if match.module == 'listing' and match.listingId %}
+          {# React MatchCard hides listing AND group matches. #}
+          {% if match.module == 'listing' and match.listingId %}{% set dismissPath = '/matches/board/' + (match.listingId | string) + '/dismiss' %}{% set dismissKey = match.listingId %}{% elif match.module == 'group' and match.groupId %}{% set dismissPath = '/matches/board/group/' + (match.groupId | string) + '/dismiss' %}{% set dismissKey = 'group-' + (match.groupId | string) %}{% else %}{% set dismissPath = '' %}{% endif %}
+          {% if dismissPath %}
             <div class="govuk-warning-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
               <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
               <strong class="govuk-warning-text__text">
@@ -109,27 +111,27 @@
                 {{ t("govuk_alpha_connections.matches.dismiss_warning") }}
               </strong>
             </div>
-            <form method="post" action="{{ urlFor('/matches/board/' + (match.listingId | string) + '/dismiss') }}">
+            <form method="post" action="{{ urlFor(dismissPath) }}">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="source" value="{{ activeSource }}">
               <fieldset class="govuk-fieldset">
                 <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_connections.matches.dismiss_reason_label") }}</legend>
                 <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="dismiss-{{ match.listingId }}-not-relevant" name="reason" type="radio" value="not_relevant" checked>
-                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ match.listingId }}-not-relevant">{{ t("govuk_alpha_connections.matches.reason_not_relevant") }}</label>
+                    <input class="govuk-radios__input" id="dismiss-{{ dismissKey }}-not-relevant" name="reason" type="radio" value="not_relevant" checked>
+                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ dismissKey }}-not-relevant">{{ t("govuk_alpha_connections.matches.reason_not_relevant") }}</label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="dismiss-{{ match.listingId }}-too-far" name="reason" type="radio" value="too_far">
-                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ match.listingId }}-too-far">{{ t("govuk_alpha_connections.matches.reason_too_far") }}</label>
+                    <input class="govuk-radios__input" id="dismiss-{{ dismissKey }}-too-far" name="reason" type="radio" value="too_far">
+                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ dismissKey }}-too-far">{{ t("govuk_alpha_connections.matches.reason_too_far") }}</label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="dismiss-{{ match.listingId }}-already-done" name="reason" type="radio" value="already_done">
-                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ match.listingId }}-already-done">{{ t("govuk_alpha_connections.matches.reason_already_done") }}</label>
+                    <input class="govuk-radios__input" id="dismiss-{{ dismissKey }}-already-done" name="reason" type="radio" value="already_done">
+                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ dismissKey }}-already-done">{{ t("govuk_alpha_connections.matches.reason_already_done") }}</label>
                   </div>
                   <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="dismiss-{{ match.listingId }}-other" name="reason" type="radio" value="other">
-                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ match.listingId }}-other">{{ t("govuk_alpha_connections.matches.reason_other") }}</label>
+                    <input class="govuk-radios__input" id="dismiss-{{ dismissKey }}-other" name="reason" type="radio" value="other">
+                    <label class="govuk-label govuk-radios__label" for="dismiss-{{ dismissKey }}-other">{{ t("govuk_alpha_connections.matches.reason_other") }}</label>
                   </div>
                 </div>
               </fieldset>

@@ -86,6 +86,19 @@
     {% endif %}
   </dl>
 
+  {# React MarketplaceListingPage: the category details the seller filled in. #}
+  {% if itemDetails and itemDetails.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.detail.item_details") }}</h2>
+    <dl class="govuk-summary-list">
+      {% for row in itemDetails %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ row.label }}</dt>
+          <dd class="govuk-summary-list__value">{{ row.value }}</dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+
   {% if item.id and item.isOwnItem %}
     <div class="govuk-button-group govuk-!-margin-top-4">
       <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/marketplace/' + (item.id | string) + '/edit') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.action_edit") }}</a>
@@ -113,6 +126,20 @@
         <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/report') }}">{{ t("govuk_alpha_commerce.nav.detail_report") }}</a>
       {% endif %}
     </div>
+  {% endif %}
+
+  {# React MarketplaceListingPage: "More from this seller". #}
+  {% if sellerListings and sellerListings.length and item.sellerId %}
+    <section aria-labelledby="more-from-seller-heading" class="govuk-!-margin-top-7">
+      <h2 class="govuk-heading-m" id="more-from-seller-heading">{{ t("govuk_alpha_commerce.detail.more_from_seller", { name: item.sellerName }) if item.sellerName else t("govuk_alpha_commerce.detail.more_from_this_seller") }}</h2>
+      {% set sellerHref = '/marketplace/seller/' + (item.sellerId | string) %}
+      <div class="nexus-alpha-card-list">
+        {% for item in sellerListings %}
+          {% include "marketplace/_listing-card.njk" %}
+        {% endfor %}
+      </div>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(sellerHref) }}">{{ t("govuk_alpha_commerce.detail.view_all_from_seller") }}</a></p>
+    </section>
   {% endif %}
     </div>
   </div>

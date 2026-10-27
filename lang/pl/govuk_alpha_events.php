@@ -408,6 +408,9 @@ return [
         'recurrence_unavailable' => 'Wydarzenia cykliczne są w tej społeczności wyłączone. Twoje wydarzenie nie zostało utworzone. Sprawdź dane i utwórz je jako pojedyncze wydarzenie.',
     ],
     'rsvp' => [
+        'clear_hint' => 'Zmieniłeś zdanie? Możesz usunąć swoją odpowiedź, aby wydarzenie nie pokazywało żadnej odpowiedzi od Ciebie.',
+        'clear_button' => 'Wyczyść moją odpowiedź',
+        'cleared' => 'Twoja odpowiedź została usunięta.',
         'pending_tag' => 'Zgłoszono',
         'pending' => 'Poproszono o miejsce. Organizator musi je zatwierdzić, zanim zostanie potwierdzone.',
     ],

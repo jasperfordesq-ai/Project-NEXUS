@@ -58,6 +58,21 @@
   {% endif %}
 
   <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.employer.reviews_heading") }}</h2>
+  {% if reviewSuccessMessage %}
+    {% set notificationMessage = reviewSuccessMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+  {% if reviewErrorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li>{% if reviewStatus == "review-rating-required" %}<a href="#rating">{{ reviewErrorMessage }}</a>{% else %}{{ reviewErrorMessage }}{% endif %}</li></ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
   {% if reviewStats.totalReviews == 0 %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_jobs.employer.no_reviews") }}</p></div>
   {% else %}
@@ -95,5 +110,41 @@
         </article>
       {% endfor %}
     </div>
+  {% endif %}
+
+  {% if canReview %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-8" id="write-review">{{ t("govuk_alpha_jobs.employer.write_review_heading") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_jobs.employer.write_review_hint") }}</p>
+    <form method="post" action="{{ urlFor('/jobs/employers/' ~ employer.id ~ '/reviews') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if reviewStatus == 'review-rating-required' %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset"{% if reviewStatus == 'review-rating-required' %} aria-describedby="rating-error"{% endif %}>
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_jobs.employer.review_rating_legend") }}</legend>
+          {% if reviewStatus == 'review-rating-required' %}<p id="rating-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ reviewErrorMessage }}</p>{% endif %}
+          <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
+            {% for score in [1, 2, 3, 4, 5] %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{% if loop.first %}rating{% else %}rating-{{ score }}{% endif %}" name="rating" type="radio" value="{{ score }}">
+                <label class="govuk-label govuk-radios__label" for="{% if loop.first %}rating{% else %}rating-{{ score }}{% endif %}">{{ t("govuk_alpha_jobs.employer.review_rating_option", { rating: score }) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      {% for dimension in reviewDimensions %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="review-{{ dimension }}">{{ t("govuk_alpha_jobs.employer.dimension_" ~ dimension) }}</label>
+          <select class="govuk-select" id="review-{{ dimension }}" name="{{ dimension }}">
+            <option value="">{{ t("govuk_alpha_jobs.employer.review_dimension_same") }}</option>
+            {% for score in [1, 2, 3, 4, 5] %}<option value="{{ score }}">{{ t("govuk_alpha_jobs.employer.review_rating_option", { rating: score }) }}</option>{% endfor %}
+          </select>
+        </div>
+      {% endfor %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="review-comment">{{ t("govuk_alpha_jobs.employer.review_comment_label") }}</label>
+        <textarea class="govuk-textarea" id="review-comment" name="comment" rows="4" maxlength="2000"></textarea>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.employer.review_submit") }}</button>
+    </form>
   {% endif %}
 {% endblock %}

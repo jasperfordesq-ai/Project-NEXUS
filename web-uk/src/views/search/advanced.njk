@@ -83,6 +83,7 @@
               <option value="users"{% if filters.type == 'users' %} selected{% endif %}>{{ t("govuk_alpha_search.filters.type_users") }}</option>
               <option value="events"{% if filters.type == 'events' %} selected{% endif %}>{{ t("govuk_alpha_search.filters.type_events") }}</option>
               <option value="groups"{% if filters.type == 'groups' %} selected{% endif %}>{{ t("govuk_alpha_search.filters.type_groups") }}</option>
+              {% if podcastsEnabled %}<option value="podcasts"{% if filters.type == 'podcasts' %} selected{% endif %}>{{ t("govuk_alpha_search.filters.type_podcasts") }}</option>{% endif %}
             </select>
           </div>
 
@@ -242,6 +243,7 @@
         <li><a class="govuk-link{% if activeTab == 'users' %} govuk-!-font-weight-bold{% endif %}"{% if activeTab == 'users' %} aria-current="page"{% endif %} href="{{ urlFor(tabHrefs.users) }}">{{ t("govuk_alpha_search.results.tab_users", { count: counts.users }) }}</a></li>
         <li><a class="govuk-link{% if activeTab == 'events' %} govuk-!-font-weight-bold{% endif %}"{% if activeTab == 'events' %} aria-current="page"{% endif %} href="{{ urlFor(tabHrefs.events) }}">{{ t("govuk_alpha_search.results.tab_events", { count: counts.events }) }}</a></li>
         <li><a class="govuk-link{% if activeTab == 'groups' %} govuk-!-font-weight-bold{% endif %}"{% if activeTab == 'groups' %} aria-current="page"{% endif %} href="{{ urlFor(tabHrefs.groups) }}">{{ t("govuk_alpha_search.results.tab_groups", { count: counts.groups }) }}</a></li>
+        {% if podcastsEnabled %}<li><a class="govuk-link{% if activeTab == 'podcasts' %} govuk-!-font-weight-bold{% endif %}"{% if activeTab == 'podcasts' %} aria-current="page"{% endif %} href="{{ urlFor(tabHrefs.podcasts) }}">{{ t("govuk_alpha_search.results.tab_podcasts", { count: counts.podcasts }) }}</a></li>{% endif %}
       </ul>
     </nav>
 
@@ -314,6 +316,23 @@
               {% if group.displayDescription %}<p class="govuk-body govuk-!-margin-bottom-2">{{ truncate(group.displayDescription, 200) }}</p>{% endif %}
               <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ membersCountLabel(group.displayMembersCount) }}</p>
               {% if group.linkId %}<p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/groups/' + (group.linkId | string)) }}">{{ t("govuk_alpha_search.results.view_group") }}</a></p>{% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
+    {% if podcastsEnabled and (activeTab == 'all' or activeTab == 'podcasts') and displayGrouped.podcasts.length %}
+      <section>
+        {% if activeTab == 'all' %}<h2 class="govuk-heading-m">{{ t("govuk_alpha_search.results.section_podcasts") }}</h2>{% endif %}
+        <div class="nexus-alpha-card-list">
+          {% for podcast in displayGrouped.podcasts %}
+            <article class="nexus-alpha-card">
+              {% set podcastTitle = podcast.displayTitle or t("govuk_alpha_search.results.section_podcasts") %}
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{% if podcast.isEpisode %}{{ t("govuk_alpha_search.results.episode_from", { show: podcast.displayShowTitle }) if podcast.displayShowTitle else t("feed.item_types.podcast_episode") }}{% else %}{{ t("feed.item_types.podcast_show") }}{% endif %}</p>
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if podcast.href %}<a class="govuk-link" href="{{ urlFor(podcast.href) }}">{{ podcastTitle }}</a>{% else %}{{ podcastTitle }}{% endif %}</h3>
+              {% if podcast.displaySummary %}<p class="govuk-body govuk-!-margin-bottom-2">{{ truncate(podcast.displaySummary, 200) }}</p>{% endif %}
+              {% if podcast.href %}<p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(podcast.href) }}">{{ t("feed.view_typed.podcast_episode") if podcast.isEpisode else t("feed.view_typed.podcast_show") }}<span class="govuk-visually-hidden">: {{ podcastTitle }}</span></a></p>{% endif %}
             </article>
           {% endfor %}
         </div>

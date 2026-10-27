@@ -37,6 +37,37 @@
   <h2 class="govuk-heading-m">{{ t("polish_commerce.coupon_redemption_heading") }}</h2>
   <p class="govuk-body">{{ t("polish_commerce.coupon_redemption_body") }}</p>
 
+  {# React CouponDetailPage "Redeem in store": a one-time QR code staff scan at the till.
+     The form works without JavaScript; the QR is drawn on the server. The one-time
+     token is a credential, so it is encoded into the QR only, never printed
+     (src/lib/qr-svg.js). #}
+  <section id="redeem-in-store" aria-labelledby="redeem-in-store-heading" class="govuk-!-margin-bottom-6">
+    <h2 class="govuk-heading-m" id="redeem-in-store-heading">{{ t("govuk_alpha_commerce.coupon_qr.heading") }}</h2>
+    {% if qrError %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ qrError }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+    {% if qr %}
+      <figure class="govuk-!-margin-0 govuk-!-margin-bottom-4" role="img" aria-label="{{ t('govuk_alpha_commerce.coupon_qr.alt') }}">
+        {{ qr.svg | safe }}
+      </figure>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_qr.scan_at_checkout") }}</p>
+      {% if qr.expiresText %}<p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_qr.expires_at", { time: qr.expiresText }) }}</p>{% endif %}
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_qr.intro") }}</p>
+    {% endif %}
+    {% if coupon.id %}
+      <form method="post" action="{{ urlFor('/coupons/' + (coupon.id | string) + '/qr') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button{% if qr %} govuk-button--secondary{% endif %}" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.coupon_qr.new_button") if qr else t("govuk_alpha_commerce.coupon_qr.button") }}</button>
+      </form>
+    {% endif %}
+  </section>
+
   <dl class="govuk-summary-list">
     {% if coupon.merchantName %}
       <div class="govuk-summary-list__row">

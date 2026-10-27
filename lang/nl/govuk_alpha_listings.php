@@ -8,6 +8,12 @@ return [
     'create' => [
         'skill_tags_label' => 'Vaardigheden (optioneel)',
         'skill_tags_hint' => 'Vermeld de betrokken vaardigheden, gescheiden door komma\'s, bijvoorbeeld: tuinieren, koken, belastingadvies. Je kunt er maximaal 10 toevoegen.',
+        'hours_available_label' => 'Beschikbare uren',
+        'hours_available_hint' => 'Totaal aantal uren dat u wilt geven. Laat leeg voor geen limiet.',
+        'hours_available_range' => 'Beschikbare uren moeten minimaal 0,5 zijn.',
+        'hours_available_below_estimate' => 'Beschikbare uren mogen niet lager zijn dan de geschatte uren.',
+        'remove_image_label' => 'Huidige foto verwijderen',
+        'remove_image_failed' => 'de foto kon niet worden verwijderd',
     ],
     'nav' => [
         'view_analytics' => 'Bekijk advertentieanalyses',

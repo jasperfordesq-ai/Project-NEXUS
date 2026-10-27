@@ -52,6 +52,7 @@ return [
         'popular_add' => ':tag を追加します',
         'apply' => 'フィルターを適用する',
         'reset' => 'フィルターをリセットする',
+        'type_podcasts' => 'ポッドキャスト',
     ],
     'results' => [
         'count' => '{0} 結果が見つかりません|{1} 1 件の結果が見つかりました|[2,*] :count の結果が見つかりました',
@@ -75,6 +76,9 @@ return [
         'view_member' => 'メンバーを見る',
         'view_event' => 'イベントを見る',
         'view_group' => 'グループを表示する',
+        'tab_podcasts' => 'ポッドキャスト (:count)',
+        'section_podcasts' => 'ポッドキャスト',
+        'episode_from' => ':show のエピソード',
     ],
     'states' => [
         'no_query_title' => '検索を開始してください',

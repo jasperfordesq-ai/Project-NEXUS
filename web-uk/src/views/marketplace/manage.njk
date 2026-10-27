@@ -23,6 +23,29 @@
     </div>
   {% endif %}
 
+  {# React MyListingsPage: the seller's figures from GET seller/dashboard. #}
+  {% if sellerStats %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.seller_stats.heading") }}</h2>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_listings.tab_active") }}</dt>
+        <dd class="govuk-summary-list__value">{{ sellerStats.active }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.my_listings.tab_sold") }}</dt>
+        <dd class="govuk-summary-list__value">{{ sellerStats.sold }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.seller_stats.views") }}</dt>
+        <dd class="govuk-summary-list__value">{{ sellerStats.views }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.seller_stats.revenue") }}</dt>
+        <dd class="govuk-summary-list__value">{% if sellerStats.revenue.length %}{% for amount in sellerStats.revenue %}{{ amount }}{% if not loop.last %}<br>{% endif %}{% endfor %}{% else %}{{ t("govuk_alpha_commerce.seller_stats.no_revenue") }}{% endif %}</dd>
+      </div>
+    </dl>
+  {% endif %}
+
   <p class="govuk-body">
     <a class="govuk-button" href="{{ urlFor('/marketplace/create') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.create_button") }}</a>
   </p>

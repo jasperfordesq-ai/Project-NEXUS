@@ -131,6 +131,26 @@
           </select>
         </div>
       {% endif %}
+
+      <input type="hidden" name="prerequisites_field" value="1">
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="prerequisites-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_courses.authoring.prerequisites_legend") }}</legend>
+          <div id="prerequisites-hint" class="govuk-hint">{{ t("govuk_alpha_courses.authoring.prerequisites_hint") }}</div>
+          {% if prerequisiteChoices and prerequisiteChoices.length %}
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+              {% for choice in prerequisiteChoices %}
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="{% if loop.first %}prerequisites{% else %}prerequisites-{{ choice.id }}{% endif %}" name="prerequisites" type="checkbox" value="{{ choice.id }}"{% if choice.checked %} checked{% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="{% if loop.first %}prerequisites{% else %}prerequisites-{{ choice.id }}{% endif %}">{{ choice.title }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="govuk-body">{{ t("govuk_alpha_courses.authoring.prerequisites_none") }}</p>
+          {% endif %}
+        </fieldset>
+      </div>
     </fieldset>
 
     <div class="govuk-button-group govuk-!-margin-top-4">
@@ -138,6 +158,29 @@
       <a class="govuk-link" href="{{ urlFor('/courses/instructor') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
     </div>
   </form>
+
+  {% if mode == 'edit' and course.id > 0 and showCohorts %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-6" id="cohorts">{{ t("govuk_alpha_courses.authoring.cohorts_heading") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_courses.authoring.cohorts_hint") }}</p>
+    {% if cohorts and cohorts.length %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for cohort in cohorts %}
+          <li>{{ cohort.name }}{% if cohort.startLabel %} <span class="govuk-hint govuk-!-display-inline">{{ t("govuk_alpha_courses.authoring.cohort_starts", { date: cohort.startLabel }) }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_courses.authoring.no_cohorts") }}</p>
+    {% endif %}
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/cohorts') }}" class="govuk-!-margin-bottom-6" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if status and status.key == 'cohort-name-missing' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="cohort_name">{{ t("govuk_alpha_courses.authoring.cohort_name") }}</label>
+        {% if status and status.key == 'cohort-name-missing' %}<p id="cohort_name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>{% endif %}
+        <input class="govuk-input govuk-!-width-two-thirds{% if status and status.key == 'cohort-name-missing' %} govuk-input--error{% endif %}" id="cohort_name" name="cohort_name" type="text" maxlength="200"{% if status and status.key == 'cohort-name-missing' %} aria-describedby="cohort_name-error"{% endif %}>
+      </div>
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_courses.authoring.add_cohort") }}</button>
+    </form>
+  {% endif %}
 
   {% if mode == 'edit' and course.id > 0 %}
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.instructor.builder_notice_title") }}</h2>

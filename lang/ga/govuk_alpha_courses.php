@@ -121,6 +121,9 @@ return [
 
     // Route-level status messages (courses.js routeStatus)
     'status' => [
+        'cohort_added' => 'Cuireadh an cohórt leis.',
+        'cohort_failed' => 'Níorbh fhéidir linn an cohórt a chur leis. Bain triail eile as.',
+        'cohort_name_missing' => 'Cuir isteach ainm don chohórt.',
         // Course detail
         'enrolled' => 'Tá tú cláraithe anois. Bain sult as an gcúrsa.',
         'enrol_required' => 'Cláraigh ar an gcúrsa seo sula n-osclaíonn tú an limistéar foghlama.',
@@ -172,5 +175,16 @@ return [
         // Grading
         'graded' => 'Marcáladh an iarracht.',
         'grade_failed' => 'Níorbh fhéidir an iarracht a mharcáil. Bain triail eile as.',
+    ],
+    'authoring' => [
+        'prerequisites_legend' => 'Cúrsaí réamhriachtanacha',
+        'prerequisites_hint' => 'Ní mór d\'fhoghlaimeoirí na cúrsaí a thiceálann tú a chríochnú sular féidir leo clárú ar an gcúrsa seo.',
+        'prerequisites_none' => 'Níl aon chúrsaí eile ann fós is féidir leat a roghnú.',
+        'cohorts_heading' => 'Cohóirt',
+        'cohorts_hint' => 'Téann foghlaimeoirí ar an gcúrsa seo isteach i gcohórt, grúpa a thosaíonn agus a théann tríd an gcúrsa le chéile.',
+        'no_cohorts' => 'Níl aon chohórt ann fós.',
+        'cohort_name' => 'Ainm an chohóirt',
+        'cohort_starts' => 'Tosaíonn :date',
+        'add_cohort' => 'Cuir cohórt leis',
     ],
 ];

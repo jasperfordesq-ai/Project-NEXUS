@@ -106,4 +106,72 @@ return [
         'truncated' => 'Dit geciteerde bericht is ingekort.',
         'image_alt' => 'Afbeelding bijgevoegd bij het geciteerde bericht',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'Vind ik leuk',
+        'love' => 'Liefde',
+        'laugh' => 'Lachen',
+        'wow' => 'Wauw',
+        'sad' => 'Verdrietig',
+        'celebrate' => 'Vieren',
+        'clap' => 'Applaus',
+        'time_credit' => 'Tijdkrediet',
+        'legend' => 'Reageer op dit bericht',
+        'comment_legend' => 'Reageer op deze opmerking',
+        'see_who' => 'Bekijk wie reageerde met :reaction (:count)',
+        'reactors_title' => 'Mensen die reageerden met :reaction',
+        'reactors_total' => 'Totaal: :count',
+        'reactors_empty' => 'Nog niemand heeft gereageerd met :reaction.',
+        'unknown_member' => 'Een lid van de gemeenschap',
+        'show_more' => 'Meer mensen tonen',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'Terug naar het bericht',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'Dit bericht vertalen',
+        'heading' => 'Vertaling',
+        'hint' => 'Automatisch vertaald. Het oorspronkelijke bericht staat hierboven.',
+        'done' => 'Het bericht is vertaald.',
+        'failed' => 'Sorry, we konden dit bericht niet vertalen. Probeer het later opnieuw.',
+        'unavailable' => 'Vertalen is niet beschikbaar in deze gemeenschap.',
+        'same' => 'Dit bericht is al in uw taal.',
+        'empty' => 'Dit bericht bevat geen tekst om te vertalen.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'Waarom zie ik dit?',
+        'default_reason' => 'Gerangschikt voor jou op basis van jouw activiteit',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'Berichtstatistieken bekijken',
+        'title' => 'Berichtstatistieken',
+        'intro' => 'Alleen u kunt deze cijfers zien.',
+        'views' => 'Weergaven',
+        'likes' => 'Vind-ik-leuks',
+        'comments' => 'Reacties',
+        'shares' => 'Delingen',
+        'reach' => 'Bereik',
+        'reach_hint' => 'Bereik is het aantal verschillende mensen dat het bericht heeft gezien.',
+        'reactions_breakdown' => 'Reacties per soort',
+        'no_reactions' => 'Nog geen reacties.',
+        'forbidden' => 'Alleen de persoon die dit bericht schreef, kan de statistieken zien.',
+        'failed' => 'Sorry, we konden de statistieken niet laden. Probeer het later opnieuw.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'Delen met je eigen opmerking',
+        'label' => 'Je opmerking',
+        'hint' => 'Je opmerking verschijnt bij het bericht wanneer je het deelt.',
+        'submit' => 'Delen met opmerking',
+    ],
 ];

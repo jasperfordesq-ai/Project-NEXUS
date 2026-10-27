@@ -55,8 +55,12 @@
           {% if interview.details %}
             <p class="govuk-body-s govuk-!-margin-bottom-2"><strong>{{ t("govuk_alpha_jobs.responses.location_label") }}:</strong> {{ interview.details }}</p>
           {% endif %}
-          {% if interview.calendarHref %}
-            <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ interview.calendarHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_calendar") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></p>
+          {% if interview.calendarHref or interview.icsHref %}
+            <ul class="govuk-list govuk-body-s govuk-!-margin-bottom-2">
+              {% if interview.calendarHref %}<li><a class="govuk-link" href="{{ interview.calendarHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_calendar") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></li>{% endif %}
+              {% if interview.outlookHref %}<li><a class="govuk-link" href="{{ interview.outlookHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_outlook") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></li>{% endif %}
+              {% if interview.icsHref and interview.scheduledLabel %}<li><a class="govuk-link" href="{{ urlFor(interview.icsHref) }}" download>{{ t("govuk_alpha_jobs.responses.download_ics") }}</a></li>{% endif %}
+            </ul>
           {% endif %}
           {% if interview.vacancyId %}
             <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ interview.vacancyId) }}">{{ t("govuk_alpha_jobs.responses.view_opportunity") }}</a></p>

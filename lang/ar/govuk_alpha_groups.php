@@ -219,4 +219,44 @@ return [
         'error_safeguarding' => 'لا تسمح قواعد الحماية في هذا المجتمع بانضمامك إلى هذه المجموعة. اطلب المساعدة من أحد المنسّقين.',
         'error_safeguarding_unavailable' => 'لا يمكننا التحقق من قواعد الحماية في هذا المجتمع الآن. يُرجى المحاولة مرة أخرى بعد قليل.',
     ],
+
+    // ---- Searchable, paged group member list (React GroupMembersTab) ----
+    'members_page' => [
+        'title' => 'أعضاء :group',
+        'link' => 'عرض جميع الأعضاء والبحث فيهم',
+        'search_label' => 'ابحث عن أعضاء المجموعة',
+        'search_hint' => 'ابحث بالاسم أو النبذة',
+        'search_button' => 'البحث عن الأعضاء',
+        'clear' => 'مسح البحث',
+        'empty' => 'لا يوجد أعضاء لعرضهم في هذه المجموعة.',
+        'empty_search' => 'لا يوجد أعضاء يطابقون «:query».',
+        'role_admin' => 'مسؤول المجموعة',
+        'pagination_label' => 'صفحات الأعضاء',
+        'back' => 'العودة إلى :group',
+    ],
+
+    // ---- Every group event, past and upcoming (React group events tab) ----
+    'events_page' => [
+        'title' => 'فعاليات :group',
+        'link' => 'عرض جميع الفعاليات، بما فيها السابقة',
+        'filter_label' => 'أي الفعاليات',
+        'when_all' => 'جميع الفعاليات',
+        'when_upcoming' => 'الفعاليات القادمة',
+        'when_past' => 'الفعاليات السابقة',
+        'filter_button' => 'عرض الفعاليات',
+        'empty' => 'لا توجد فعاليات لعرضها.',
+        'pagination_label' => 'صفحات الفعاليات',
+    ],
+
+    // ---- Recommended groups in the directory (React RecommendedGroups) ----
+    'recommended' => [
+        'title' => 'موصى به لك',
+        'score' => 'تطابق بنسبة :score٪',
+    ],
+
+    // ---- Featured groups in the directory (React GroupsPage) ----
+    'featured' => [
+        'title' => 'المجموعات المميزة',
+        'more_title' => 'مزيد من المجموعات',
+    ],
 ];

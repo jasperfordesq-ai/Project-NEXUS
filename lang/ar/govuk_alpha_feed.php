@@ -106,4 +106,72 @@ return [
         'truncated' => 'تم اختصار هذه المشاركة المقتبسة.',
         'image_alt' => 'الصورة مرفقة بالمنشور المقتبس',
     ],
+
+    // ---- Feed reactions, as React offers them (27 Oct 2026 parity) ----
+    'reactions' => [
+        'like' => 'إعجاب',
+        'love' => 'حب',
+        'laugh' => 'ضحك',
+        'wow' => 'رائع',
+        'sad' => 'حزن',
+        'celebrate' => 'احتفال',
+        'clap' => 'تصفيق',
+        'time_credit' => 'رصيد الوقت',
+        'legend' => 'تفاعل مع هذا المنشور',
+        'comment_legend' => 'تفاعل مع هذا التعليق',
+        'see_who' => 'اعرف من تفاعل بـ :reaction (:count)',
+        'reactors_title' => 'الأشخاص الذين تفاعلوا بـ :reaction',
+        'reactors_total' => 'المجموع: :count',
+        'reactors_empty' => 'لم يتفاعل أحد بـ :reaction بعد.',
+        'unknown_member' => 'أحد أعضاء المجتمع',
+        'show_more' => 'عرض المزيد من الأشخاص',
+    ],
+
+    // ---- Shared navigation for the post sub-pages ----
+    'post_pages' => [
+        'back_to_post' => 'العودة إلى المنشور',
+    ],
+
+    // ---- Translate a feed post (React FeedCard TranslateButton) ----
+    'translate' => [
+        'button' => 'ترجمة هذا المنشور',
+        'heading' => 'الترجمة',
+        'hint' => 'تُرجم تلقائيًا. المنشور الأصلي معروض أعلاه.',
+        'done' => 'تمت ترجمة المنشور.',
+        'failed' => 'عذرًا، تعذّرت ترجمة هذا المنشور. حاول مرة أخرى لاحقًا.',
+        'unavailable' => 'الترجمة غير متاحة في هذا المجتمع.',
+        'same' => 'هذا المنشور بلغتك بالفعل.',
+        'empty' => 'لا يحتوي هذا المنشور على نص للترجمة.',
+    ],
+
+    // ---- "Why am I seeing this?" in the ranked feed (React WhyShown) ----
+    'why_shown' => [
+        'label' => 'لماذا أرى هذا؟',
+        'default_reason' => 'مُرتَّب لك بناءً على نشاطك',
+    ],
+
+    // ---- Post statistics for the author (React PostAnalyticsModal) ----
+    'stats' => [
+        'link' => 'عرض إحصاءات المنشور',
+        'title' => 'إحصاءات المنشور',
+        'intro' => 'أنت وحدك من يمكنه رؤية هذه الأرقام.',
+        'views' => 'المشاهدات',
+        'likes' => 'الإعجابات',
+        'comments' => 'التعليقات',
+        'shares' => 'المشاركات',
+        'reach' => 'الوصول',
+        'reach_hint' => 'الوصول هو عدد الأشخاص المختلفين الذين شاهدوا المنشور.',
+        'reactions_breakdown' => 'ردود الفعل',
+        'no_reactions' => 'لا توجد ردود فعل بعد.',
+        'forbidden' => 'لا يمكن رؤية إحصاءات هذا المنشور إلا لمن كتبه.',
+        'failed' => 'عذرًا، تعذّر تحميل الإحصاءات. حاول مرة أخرى لاحقًا.',
+    ],
+
+    // ---- Share a post with your own comment (React ShareButton quote) ----
+    'quote' => [
+        'summary' => 'شارك مع تعليقك الخاص',
+        'label' => 'تعليقك',
+        'hint' => 'يظهر تعليقك مع المنشور عند مشاركته.',
+        'submit' => 'مشاركة مع التعليق',
+    ],
 ];
