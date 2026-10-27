@@ -37,6 +37,7 @@ const {
 } = require('../lib/api');
 const { requireAuth, withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
+const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
@@ -74,7 +75,7 @@ function reviewsEnabledFor(req, res) {
   return flagEnabled(tenant, 'reviews', 'features', true);
 }
 
-function profileStatusMessage(req) {
+function profileStatusMessage(req, params = {}) {
   const statuses = {
     'review-submitted': { type: 'success', key: 'polish_members.write_review_success' },
     'review-invalid': { type: 'error', key: 'reviews_page.submit_invalid' },
@@ -84,6 +85,8 @@ function profileStatusMessage(req) {
     'transfer-failed': { type: 'error', key: 'polish_members.send_credits_error_failed' },
     'transfer-self': { type: 'error', key: 'polish_members.send_credits_error_self' },
     'transfer-insufficient': { type: 'error', key: 'polish_members.send_credits_error_insufficient' },
+    // Same wording, already translated, as the wallet page's over-limit refusal.
+    'transfer-too-large': { type: 'error', key: 'wallet.errors.too_large' },
     'connection-sent': { type: 'success', key: 'states.connection-sent' },
     'connection-accepted': { type: 'success', key: 'states.connection-accepted' },
     'connection-declined': { type: 'success', key: 'states.connection-declined' },
@@ -102,7 +105,9 @@ function profileStatusMessage(req) {
   if (!status) return null;
   return {
     type: status.type,
-    text: typeof req.t === 'function' ? req.t(status.key) : status.key
+    text: typeof req.t === 'function'
+      ? req.t(status.key, { max: params.maxTransfer || PLATFORM_MAX_TRANSFER })
+      : status.key
   };
 }
 
@@ -818,6 +823,13 @@ router.post('/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
     return redirectTo(res, memberUrl(id, 'transfer-failed'));
   }
 
+  // The community's own limit (GET /v2/wallet/config), as /wallet applies it, so
+  // an over-limit amount is refused with the limit named rather than reaching
+  // the API and coming back as a generic failure.
+  if (amount > await walletMaxTransfer(token)) {
+    return redirectTo(res, memberUrl(id, 'transfer-too-large'));
+  }
+
   let status = 'transfer-sent';
   try {
     await transferWalletCredits(token, {
@@ -1161,7 +1173,11 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const reviewSummary = reviewSummaryFrom(reviewsResult);
   const gamification = gamificationFrom(gamificationResult, user);
   const blockStatus = dataFrom(blockStatusResult) || {};
-  const profileStatus = profileStatusMessage(req);
+  const walletEnabled = flagEnabled(tenant, 'wallet', 'modules', true);
+  const maxTransfer = walletEnabled && !isOwnProfile && req.token
+    ? await walletMaxTransfer(req.token)
+    : PLATFORM_MAX_TRANSFER;
+  const profileStatus = profileStatusMessage(req, { maxTransfer });
   const flashedSuccess = req.flash ? req.flash('success')[0] : null;
   const flashedError = req.flash ? req.flash('error')[0] : null;
 
@@ -1194,7 +1210,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     isBlockedBy: !isOwnProfile && !!blockStatus.is_blocked_by,
     reviewsEnabled: reviewsEnabledFor(req, res),
     directMessagingEnabled: flagEnabled(tenant, 'direct_messaging', 'features', true),
-    walletEnabled: flagEnabled(tenant, 'wallet', 'modules', true),
+    walletEnabled,
+    maxTransfer,
     transferIdempotencyKey: randomUUID(),
     successMessage: profileStatus?.type === 'success' ? profileStatus.text : flashedSuccess,
     errorMessage: connectionErrorMessage || (profileStatus?.type === 'error' ? profileStatus.text : flashedError),
@@ -1212,3 +1229,4 @@ module.exports.directoryCoverage = directoryCoverage;
 // Exported for tests — every branch here used to collapse into one "Page not
 // found" page, so the classification is what the regression test pins.
 module.exports.memberProfileRefusal = memberProfileRefusal;
+module.exports.profileStatusMessage = profileStatusMessage;

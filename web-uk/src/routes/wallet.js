@@ -17,6 +17,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { audit } = require('../lib/auditLogger');
+const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
@@ -179,23 +180,6 @@ function transferFailureKey(error) {
   if (code === 'TRANSFER_FAILED' && /not active|inactive/i.test(message)) return 'inactive';
   if (code === 'VALIDATION_ERROR') return 'invalid';
   return 'failed';
-}
-
-// The platform ceiling WalletService enforces when a community sets nothing.
-const PLATFORM_MAX_TRANSFER = 1000;
-
-// The community's effective transfer limit, from the same source transfer()
-// enforces (GET /v2/wallet/config -> WalletService::maxTransferAmount). A
-// failed read must not break the wallet page, so it falls back to the platform
-// ceiling; the API still refuses anything above the real limit.
-async function walletMaxTransfer(token) {
-  try {
-    const config = dataFrom(await callWalletApi(token, 'GET', '/config')) || {};
-    const max = Number(config.max_transfer);
-    return Number.isFinite(max) && max > 0 ? max : PLATFORM_MAX_TRANSFER;
-  } catch {
-    return PLATFORM_MAX_TRANSFER;
-  }
 }
 
 function transferPayload(body = {}, maxTransfer = PLATFORM_MAX_TRANSFER) {

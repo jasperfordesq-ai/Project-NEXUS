@@ -103,8 +103,10 @@
 
       {% if myRsvp and myRsvp.status == "going" %}
         <p class="govuk-body">
+          {% if remindersAvailable !== false %}
           <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/reminders') }}">{{ t("govuk_alpha_events.reminders.manage_link") }}</a>
           <span aria-hidden="true"> · </span>
+          {% endif %}
           <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/check-in/credential') }}">{{ t("event_offline_checkin.attendee.manage_link") }}</a>
         </p>
       {% endif %}

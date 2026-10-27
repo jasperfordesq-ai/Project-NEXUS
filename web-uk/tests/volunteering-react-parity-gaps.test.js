@@ -499,4 +499,17 @@ describe('7. load failures are translated', () => {
     const source = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'routes', 'volunteering-actions.js'), 'utf8');
     expect(source).not.toMatch(/loadError = '[A-Z]/);
   });
+
+  it('no English organisation-name fallback is left in the volunteering routes', () => {
+    const source = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'routes', 'volunteering-actions.js'), 'utf8');
+    expect(source).not.toContain("'Volunteering organisation'");
+    expect(source).not.toMatch(/`Organisation \$\{/);
+  });
+
+  it('a dashboard whose stats fail to load is headed with the translated fallback name', async () => {
+    routeApi({ 'GET /organisations/7/stats': failing });
+    const page = await request(actionsApp).get('/volunteering/organisations/7/dashboard');
+    expect(page.text).toContain(html(t('volunteering.organization')));
+    expect(page.text).not.toContain('Volunteering organisation');
+  });
 });

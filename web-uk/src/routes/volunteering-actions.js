@@ -1939,6 +1939,12 @@ function normalizeSwapRequest(row, t = null) {
   };
 }
 
+// Shown only when the API omits an organisation's name. Translated, never an
+// English literal: the word "Organisation" already exists in all 11 catalogues.
+function organisationFallbackName(t) {
+  return typeof t === 'function' ? t('volunteering.organization') : '';
+}
+
 function normalizeVolunteerOrganizationCard(row, t = null) {
   const organization = row && typeof row === 'object' ? row : {};
   const id = positiveInteger(organization.id);
@@ -1948,7 +1954,7 @@ function normalizeVolunteerOrganizationCard(row, t = null) {
   const websiteHref = /^https?:\/\//i.test(website) ? website : '';
   return {
     id,
-    name: trimmed(organization.name) || `Organisation ${id || ''}`.trim(),
+    name: trimmed(organization.name) || organisationFallbackName(t),
     status: {
       ...statusPresentation(statusValue, VOLUNTEER_ORG_STATUS_LABELS, VOLUNTEER_ORG_STATUS_CLASSES, 'pending'),
       label: Object.hasOwn(VOLUNTEER_ORG_STATUS_LABELS, statusValue) && t
@@ -1999,12 +2005,12 @@ function volunteeringMyOrganisationsNextHref(roleFilter, meta) {
   return `/volunteering/my-organisations?${params.toString()}`;
 }
 
-function normalizeOrgStats(result) {
+function normalizeOrgStats(result, t = null) {
   const data = dataFrom(result);
   const stats = data && typeof data === 'object' ? data : {};
   const orgStatus = trimmed(stats.status) || 'approved';
   return {
-    orgName: trimmed(stats.org_name ?? stats.orgName) || 'Volunteering organisation',
+    orgName: trimmed(stats.org_name ?? stats.orgName) || organisationFallbackName(t),
     orgStatus,
     isApproved: ['approved', 'active'].includes(orgStatus),
     activeOpportunities: Number(stats.active_opportunities ?? stats.activeOpportunities) || 0,
@@ -2206,16 +2212,16 @@ function normalizeExpenseDashboard(expensesResult, organizationsResult, t = null
   };
 }
 
-function normalizeOrganization(row) {
+function normalizeOrganization(row, t = null) {
   const organization = row && typeof row === 'object' ? row : {};
   const id = positiveInteger(organization.id);
   return id === null ? null : {
     id,
-    name: trimmed(organization.name) || `Organisation ${id}`
+    name: trimmed(organization.name) || organisationFallbackName(t)
   };
 }
 
-function normalizeApplication(row) {
+function normalizeApplication(row, t = null) {
   const application = row && typeof row === 'object' ? row : {};
   const opportunity = application.opportunity && typeof application.opportunity === 'object'
     ? application.opportunity
@@ -2233,7 +2239,7 @@ function normalizeApplication(row) {
     organization: normalizeOrganization({
       id: organization.id ?? application.organization_id ?? application.organizationId,
       name: organization.name ?? application.organization_name ?? application.organizationName
-    })
+    }, t)
   };
 }
 
@@ -3054,10 +3060,10 @@ router.get('/organisations/:id(\\d+)/dashboard', asyncRoute(async (req, res) => 
   }
 
   const id = Number(req.params.id);
-  let dashboard = normalizeOrgStats({});
+  let dashboard = normalizeOrgStats({}, res.locals.t);
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`), res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_dashboard');
@@ -3092,14 +3098,14 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
   if (appCursor) applicationsQuery.set('cursor', String(appCursor));
   const hoursQuery = new URLSearchParams({ per_page: '20' });
   if (hoursCursor) hoursQuery.set('cursor', String(hoursCursor));
-  let dashboard = normalizeOrgStats({});
+  let dashboard = normalizeOrgStats({}, res.locals.t);
   let applications = [];
   let hours = [];
   let applicationsMore = '';
   let hoursMore = '';
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`), res.locals.t);
     const applicationsResult = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/applications?${applicationsQuery.toString()}`);
     applications = collectionFrom(applicationsResult)
       .map((application) => normalizeOrgApplication(application, res.locals.t)).filter((application) => application.id);
@@ -3228,12 +3234,12 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
   if (show === 'retired') params.set('status', 'retired');
   if (cursor) params.set('cursor', cursor);
 
-  let dashboard = normalizeOrgStats({});
+  let dashboard = normalizeOrgStats({}, res.locals.t);
   let volunteers = [];
   let nextHref = '';
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`), res.locals.t);
     const result = await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/volunteers?${params.toString()}`);
     volunteers = collectionFrom(result)
       .map((volunteer) => normalizeOrgVolunteer(volunteer, res.locals.t))
@@ -3303,7 +3309,7 @@ router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
     members = collectionFrom(team).map((row) => normalizeOrgTeamMember(row, selfId, t)).filter((member) => member.id);
     canManage = teamData.can_manage === true;
     safeguarding = normalizeSafeguardingLeads(teamData.safeguarding);
-    orgName = normalizeOrgStats(dashboard).orgName;
+    orgName = normalizeOrgStats(dashboard, res.locals.t).orgName;
 
     // People to add: anyone found who is not on the team already.
     if (canManage && query.length >= 2) {
@@ -3371,12 +3377,12 @@ router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
   }
 
   const id = Number(req.params.id);
-  let dashboard = normalizeOrgStats({});
+  let dashboard = normalizeOrgStats({}, res.locals.t);
   let summary = normalizeOrgWalletSummary({});
   let transactions = [];
   let loadError = null;
   try {
-    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
+    dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`), res.locals.t);
     summary = normalizeOrgWalletSummary(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/wallet`));
     transactions = collectionFrom(
       await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/wallet/transactions?per_page=20`)
@@ -3449,7 +3455,7 @@ router.get('/hours', asyncRoute(async (req, res) => {
     logsNextCursor = nextPageCursor(logsResult);
     applications = collectionFrom(
       await callApi(token, 'GET', '/applications?status=approved&per_page=50')
-    ).map(normalizeApplication);
+    ).map((row) => normalizeApplication(row, res.locals.t));
     organizations = hoursOrganizations(
       collectionFrom(await callApi(token, 'GET', '/my-organisations?per_page=50')),
       applications
@@ -3703,7 +3709,7 @@ router.get('/expenses', asyncRoute(async (req, res) => {
     const organizations = await callApi(token, 'GET', '/my-organisations?per_page=50');
     const applications = collectionFrom(
       await callApi(token, 'GET', '/applications?status=approved&per_page=50')
-    ).map(normalizeApplication);
+    ).map((row) => normalizeApplication(row, res.locals.t));
     dashboard = normalizeExpenseDashboard(expenses, organizations, res.locals.t);
     // The API accepts a claim from an organisation that accepted the volunteer onto
     // an opportunity, or one they belong to (userCanClaimAgainstOrganization). Being
@@ -4551,7 +4557,7 @@ router.post('/expenses', asyncRoute(async (req, res) => {
     if (opportunityId !== null) {
       const token = tokenFrom(req);
       const applications = token
-        ? collectionFrom(await callApi(token, 'GET', '/applications?status=approved&per_page=50')).map(normalizeApplication)
+        ? collectionFrom(await callApi(token, 'GET', '/applications?status=approved&per_page=50')).map((row) => normalizeApplication(row, res.locals.t))
         : [];
       const belongs = applications.some((application) => application.status === 'approved'
         && application.opportunity.id === opportunityId

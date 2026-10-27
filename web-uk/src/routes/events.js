@@ -3907,6 +3907,19 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   const myRsvp = myRsvpStatus
     ? { status: myRsvpStatus === 'maybe' ? 'interested' : myRsvpStatus }
     : null;
+  // "Manage reminders" is offered to a going member. No member-facing payload says
+  // whether the community has reminders on, so ask the reminders endpoint, as
+  // React's EventReminderPanel does, and hide the link on its 403 (reminders off).
+  // Any other failure leaves the link: an outage must not hide a working feature.
+  let remindersAvailable = true;
+  if (token && myRsvp && myRsvp.status === 'going') {
+    try {
+      await callApi(token, 'GET', `/${encodeURIComponent(id)}/reminders`);
+    } catch (error) {
+      if (isAuthError(error)) throw error;
+      if (error instanceof ApiError && error.status === 403) remindersAvailable = false;
+    }
+  }
   const attendees = collectionFrom(rsvpsResult).map((row) => eventAttendee(row, res.locals.t));
   const attendeesMeta = collectionMeta(rsvpsResult);
   const attendeesNextCursor = trimmed(attendeesMeta.cursor || attendeesMeta.next_cursor, 2048);
@@ -3921,6 +3934,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   res.render('events/detail', {
     title: event.title,
     event,
+    remindersAvailable,
     eventComments,
     socialStatus: socialStatusFrom(req.query.social),
     currentUserId,

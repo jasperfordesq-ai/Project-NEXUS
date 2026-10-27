@@ -233,6 +233,60 @@ describe('3. reminders switched off in the community', () => {
     const res = await request(app).get('/501/reminders');
     expect(res.status).toBe(200);
     expect(res.text).toContain(t('govuk_alpha_events.reminders.switched_off'));
+  });
+
+  // React's EventReminderPanel asks for the member's reminder preferences and
+  // hides itself on that 403 (E-104); the accessible event page does the same,
+  // so a going member is not offered a link that leads nowhere.
+  const going = [/^GET \/501\/relationship$/, () => ({ data: { registration: { state: 'confirmed' } } })];
+  const reminderHref = '/501/reminders"';
+
+  it('hides "Manage reminders" for a going member when the community has them off', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      going,
+      [/^GET \/501\/reminders$/, () => { throw new api.ApiError('Forbidden', 403, { errors: [{ code: 'FORBIDDEN', message: 'Forbidden' }] }); }],
+    ]);
+    const res = await request(app).get('/501');
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain(t('govuk_alpha_events.reminders.manage_link'));
+    expect(res.text).not.toContain(reminderHref);
+  });
+
+  it('keeps "Manage reminders" when reminders are on', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      going,
+      [/^GET \/501\/reminders$/, () => ({ data: { rules: [], overrides: {}, resolved: { reminders_enabled: true } } })],
+    ]);
+    const res = await request(app).get('/501');
+    expect(res.text).toContain(t('govuk_alpha_events.reminders.manage_link'));
+  });
+
+  it('keeps the link when the check fails for another reason, so an outage hides nothing', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      going,
+      [/^GET \/501\/reminders$/, () => { throw new api.ApiError('down', 503, {}); }],
+    ]);
+    const res = await request(app).get('/501');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(t('govuk_alpha_events.reminders.manage_link'));
+  });
+
+  it('does not ask about reminders for a member who is not going', async () => {
+    routeApi([[/^GET \/501$/, () => SUMMER_EVENT]]);
+    await request(app).get('/501');
+    expect(lastCall('GET', /\/reminders$/)).toBeUndefined();
+  });
+
+  it('still explains the refusal on the reminders page itself', async () => {
+    routeApi([
+      [/^GET \/501\/reminders$/, () => { throw new api.ApiError('Forbidden', 403, { errors: [{ code: 'FORBIDDEN', message: 'Forbidden' }] }); }],
+    ]);
+    const res = await request(app).get('/501/reminders');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(t('govuk_alpha_events.reminders.switched_off'));
     expect(res.text).not.toContain('id="event-reminders-form"');
   });
 });
