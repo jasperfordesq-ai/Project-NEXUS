@@ -1,0 +1,31 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% set pagePath = '/groups/' + (group.id | string) + '/wiki/page/' + (page.slug | urlencode) %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(pagePath) }}">{{ page.title }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.wiki.delete_title") }}</h1>
+      {{ govukWarningText({ text: t("govuk_alpha_group_tools.wiki.delete_confirm", { name: page.title }), iconFallbackText: t("govuk_alpha_groups.common.warning") }) }}
+      <form method="post" action="{{ urlFor(pagePath + '/delete') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-button-group">
+          {{ govukButton({ text: t("govuk_alpha_group_tools.wiki.delete"), classes: "govuk-button--warning" }) }}
+          <a class="govuk-link" href="{{ urlFor(pagePath) }}">{{ t("govuk_alpha_group_tools.common.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set groupFeedHref = urlFor('/groups/' + (group.id | string) + (('?feed_cursor=' + (feedCursor | urlencode)) if feedCursor else '') + '#group-feed') %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ groupFeedHref }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.feed.delete_title") }}</h1>
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+      {{ t("polish_discovery.delete_post_warning") }}
+    </strong>
+  </div>
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/posts/' + (postId | string) + '/delete') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    {% if feedCursor %}<input type="hidden" name="feed_cursor" value="{{ feedCursor }}">{% endif %}
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("feed.delete_post_button") }}</button>
+      <a class="govuk-link" href="{{ groupFeedHref }}">{{ t("actions.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

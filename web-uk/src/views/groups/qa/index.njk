@@ -1,0 +1,91 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set base = '/groups/' + (group.id | string) + '/qa' %}
+
+{% block beforeContent %}
+  {{ tools.toolBackLink(group) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.qa.title") }}</h1>
+
+      {{ govukButton({ text: t("govuk_alpha_group_tools.qa.ask_question"), href: urlFor(base + '/ask') }) }}
+
+      <form method="get" action="{{ urlFor(base) }}" novalidate>
+        {{ govukInput({
+          label: { text: t("govuk_alpha_group_tools.qa.search_label") },
+          id: "q",
+          name: "q",
+          type: "search",
+          value: query,
+          classes: "govuk-!-width-two-thirds"
+        }) }}
+        {{ govukSelect({
+          id: "sort",
+          name: "sort",
+          label: { text: t("govuk_alpha_group_tools.qa.sort_label") },
+          items: sortOptions
+        }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.common.apply"), classes: "govuk-button--secondary" }) }}
+      </form>
+
+      {% if loadFailed %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.qa.load_error") }}</p>
+      {% elif questions.length == 0 %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_tools.qa.no_results") if query else t("govuk_alpha_group_tools.qa.empty_title") }}</h2>
+        {% if not query %}<p class="govuk-body">{{ t("govuk_alpha_group_tools.qa.empty_description") }}</p>{% endif %}
+      {% else %}
+        <ul class="govuk-list">
+          {% for question in questions %}
+            <li class="govuk-!-margin-bottom-6">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor(base + '/' + (question.id | string)) }}">{{ question.title }}</a>
+              </h2>
+              <p class="govuk-body-s govuk-!-margin-bottom-1">
+                {{ t("govuk_alpha_group_tools.qa.votes", { count: question.voteCount }) }} &middot;
+                {{ t("govuk_alpha_group_tools.qa.answer_count", { count: question.answerCount }) }}
+                {% if question.hasAcceptedAnswer %}
+                  {{ govukTag({ text: t("govuk_alpha_group_tools.qa.accepted"), classes: "govuk-tag--green govuk-!-margin-left-1" }) }}
+                {% endif %}
+              </p>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("govuk_alpha_group_tools.qa.asked_by", { name: question.author.name, date: question.createdAtLabel }) }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if nextPageHref or isPaged %}
+        <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ t('govuk_alpha_group_tools.common.pagination') }}">
+          {% if isPaged %}
+            <div class="govuk-pagination__prev">
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(firstPageHref) }}">
+                <span class="govuk-pagination__link-title">{{ t("govuk_alpha_group_tools.common.first_page") }}</span>
+              </a>
+            </div>
+          {% endif %}
+          {% if nextPageHref %}
+            <div class="govuk-pagination__next">
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextPageHref) }}" rel="next">
+                <span class="govuk-pagination__link-title">{{ t("govuk_alpha_group_tools.qa.load_more") }}</span>
+              </a>
+            </div>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

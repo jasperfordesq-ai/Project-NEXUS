@@ -21,20 +21,31 @@ const {
   downloadGroupFile,
   getFeedPosts,
   createFeedPostV2,
+  createFeedPostWithMedia,
+  createFeedPoll,
+  toggleFeedLike,
+  toggleReaction,
+  hideFeedItem,
+  muteFeedUser,
+  reportFeedItem,
+  deleteFeedPostV2,
+  voteFeedPoll,
   getEvents,
   callMatchesApi,
   ApiError
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate } = require('../lib/date-input');
+const { readDate, splitDate, readDateTime, splitDateTime } = require('../lib/date-input');
+const { POST_REACTION_TYPES } = require('../lib/feed-reactions');
 const { audit } = require('../lib/auditLogger');
-const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
-const { formatRequestList } = require('../lib/list-format');
+const { resolveBackendMediaUrl, flagEnabled } = require('../lib/accessible-shell');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { resolveCanCreateEvents } = require('../lib/event-create-permission');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
+const { sectionSwitchedOn: toolSectionOn } = require('../lib/group-tool-access');
+const { sectionSwitchedOn: mediaSectionOn } = require('../lib/group-media-access');
 
 const router = express.Router();
 
@@ -120,6 +131,31 @@ function optionalText(value, limit = null) {
 function positiveInteger(value) {
   const number = Number(value);
   return Number.isInteger(number) && number > 0 ? number : null;
+}
+
+function nonNegativeInteger(value) {
+  const number = Number(value);
+  return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+function routedTenant(req) {
+  const tenant = req?.accessibleRouting?.tenant;
+  return tenant && typeof tenant === 'object' ? tenant : {};
+}
+
+/**
+ * The community's per-section group switches (tenant bootstrap `group_tabs`),
+ * read exactly as React's `hasGroupTab` does: a switch that is not stated is ON
+ * (TenantContext: `groupTabs[tab] ?? true`).
+ */
+function groupTabEnabled(req, key) {
+  const tabs = routedTenant(req).group_tabs;
+  if (!tabs || typeof tabs !== 'object' || !Object.prototype.hasOwnProperty.call(tabs, key)) return true;
+  return tabs[key] !== false && tabs[key] !== 0 && tabs[key] !== '0';
+}
+
+function tenantFeatureEnabled(req, key) {
+  return flagEnabled(routedTenant(req), key, 'features', true);
 }
 
 function checked(value) {
@@ -234,20 +270,6 @@ function groupFieldErrors(errors) {
 function groupTags(value) {
   const raw = Array.isArray(value) ? value : String(value || '').split(',');
   return raw.map((tag) => trimmed(tag)).filter(Boolean);
-}
-
-async function uploadGroupCover(token, groupId, file) {
-  if (!file) return;
-  const buffer = await fs.readFile(file.filepath);
-  await uploadGroupImage(token, groupId, {
-    type: 'cover',
-    file: {
-      buffer,
-      filename: trimmed(file.originalFilename) || 'group-cover',
-      contentType: trimmed(file.mimetype) || 'application/octet-stream',
-      size: file.size
-    }
-  });
 }
 
 function applyDownloadHeaders(res, headers = {}) {
@@ -520,7 +542,50 @@ function normalizeGroupFeedPost(item, unknownAuthor) {
   const createdAt = trimmed(raw.created_at || raw.createdAt);
   const createdDate = createdAt ? new Date(createdAt) : null;
 
+  const id = positiveInteger(raw.id);
+  const type = trimmed(raw.type, 40).toLowerCase() || 'post';
+  const authorId = positiveInteger(author.id || raw.author_id || raw.user_id);
+  const reactions = raw.reactions && typeof raw.reactions === 'object' ? raw.reactions : {};
+  const reactionCounts = reactions.counts && typeof reactions.counts === 'object' ? reactions.counts : {};
+  const reactionTotal = Object.values(reactionCounts)
+    .reduce((total, count) => total + (nonNegativeInteger(count) || 0), 0);
+  const rawPoll = raw.poll_data && typeof raw.poll_data === 'object' ? raw.poll_data : null;
+  const userVoteOptionId = rawPoll ? positiveInteger(rawPoll.user_vote_option_id) : null;
+  const pollOptions = rawPoll && Array.isArray(rawPoll.options)
+    ? rawPoll.options.map((option) => {
+      const optionId = positiveInteger(option?.id);
+      const percentage = Number(option?.percentage);
+      return {
+        id: optionId,
+        label: trimmed(option?.text || option?.label, 500),
+        voteCount: nonNegativeInteger(option?.vote_count) || 0,
+        percentage: Number.isFinite(percentage) ? Math.max(0, Math.min(100, Math.round(percentage))) : null,
+        isUserChoice: userVoteOptionId !== null && optionId === userVoteOptionId
+      };
+    }).filter((option) => option.id !== null)
+    : [];
+
   return {
+    id,
+    type,
+    title: trimmed(raw.title, 200),
+    // Every group feed item links to its own page, where its comments are (React
+    // FeedCard's permalink + comment drawer). Posts have a dedicated page.
+    detailHref: id === null ? '' : (type === 'post' ? `/feed/posts/${id}` : `/feed/item/${encodeURIComponent(type)}/${id}`),
+    authorId,
+    likeCount: nonNegativeInteger(raw.likes_count ?? raw.like_count ?? raw.likeCount) || 0,
+    commentCount: nonNegativeInteger(raw.comments_count ?? raw.comment_count ?? raw.commentCount) || 0,
+    isLiked: checked(raw.is_liked ?? raw.isLiked),
+    reactionCounts,
+    reactionTotal,
+    userReaction: trimmed(reactions.user_reaction || raw.user_reaction, 40),
+    poll: rawPoll ? {
+      options: pollOptions,
+      isActive: checked(rawPoll.is_active),
+      userVoteOptionId,
+      canVote: pollOptions.length > 0 && checked(rawPoll.is_active) && userVoteOptionId === null
+    } : null,
+    mediaExtra: Math.max(0, mediaRows.length - 4),
     authorName: trimmed(author.name || raw.author_name || raw.authorName) || unknownAuthor,
     authorAvatar: resolveBackendMediaUrl(author.avatar_url || author.avatarUrl || raw.author_avatar_url || raw.authorAvatarUrl),
     createdAt: createdDate && !Number.isNaN(createdDate.getTime()) ? createdDate.toISOString() : '',
@@ -1200,21 +1265,89 @@ router.post(`/invite/:token(${GROUP_INVITE_TOKEN})/accept`, requireAuth, asyncRo
 }, { redirectOn401: loginRedirect() }));
 
 // Create group form
-router.get('/new', requireAuth, (req, res) => {
-  res.render('groups/new', {
-    title: res.locals.t('govuk_alpha.groups.create.title'),
-    createFailed: trimmed(req.query.status) === 'group-create-failed',
-    csrfToken: req.csrfToken ? req.csrfToken() : ''
+/**
+ * What the create/edit form may offer (GET /api/v2/groups/form-capabilities —
+ * React getGroupFormCapabilities): allowed visibilities, templates, group types,
+ * the groups this member may nest a new group under, and which optional fields
+ * apply. A failure only removes the optional fields; the core form still works.
+ */
+async function loadGroupFormCapabilities(token) {
+  try {
+    const raw = objectFrom(await callGroupApi(token, 'GET', '/form-capabilities'));
+    const fields = raw.fields && typeof raw.fields === 'object' ? raw.fields : {};
+    const rows = (list) => (Array.isArray(list) ? list : [])
+      .map((row) => ({ id: positiveInteger(row?.id), name: trimmed(row?.name), description: trimmed(row?.description) }))
+      .filter((row) => row.id !== null && row.name !== '');
+    const visibilities = (Array.isArray(raw.allowed_visibility) ? raw.allowed_visibility : [])
+      .filter((value) => ['public', 'private', 'secret'].includes(value));
+    const groupTypes = rows(raw.group_types);
+    const parentCandidates = rows(raw.parent_candidates);
+    return {
+      allowedVisibility: visibilities.length > 0 ? visibilities : ['public', 'private'],
+      templates: rows(raw.templates),
+      groupTypes,
+      parentCandidates,
+      showType: fields.type === true && groupTypes.length > 0,
+      showParent: fields.parent === true && parentCandidates.length > 0,
+      showBranding: fields.branding === true
+    };
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return {
+      allowedVisibility: ['public', 'private'],
+      templates: [],
+      groupTypes: [],
+      parentCandidates: [],
+      showType: false,
+      showParent: false,
+      showBranding: false
+    };
+  }
+}
+
+function groupVisibilityFrom(body, allowedVisibility = ['public', 'private', 'secret']) {
+  if (allowedVisibility.includes(body.visibility)) return body.visibility;
+  return body.is_private === 'true' && allowedVisibility.includes('private') ? 'private' : 'public';
+}
+
+async function uploadGroupImageFile(token, groupId, file, type) {
+  if (!file) return;
+  const buffer = await fs.readFile(file.filepath);
+  await uploadGroupImage(token, groupId, {
+    type,
+    file: {
+      buffer,
+      filename: trimmed(file.originalFilename) || `group-${type}`,
+      contentType: trimmed(file.mimetype) || 'application/octet-stream',
+      size: file.size
+    }
   });
-});
+}
+
+async function renderNewGroupForm(req, res, extra = {}) {
+  const capabilities = await loadGroupFormCapabilities(req.token);
+  return res.render('groups/new', {
+    title: res.locals.t('govuk_alpha.groups.create.title'),
+    capabilities,
+    csrfToken: req.csrfToken ? req.csrfToken() : '',
+    ...extra
+  });
+}
+
+router.get('/new', requireAuth, asyncRoute(async (req, res) => (
+  renderNewGroupForm(req, res, { createFailed: trimmed(req.query.status) === 'group-create-failed' })
+), { redirectOn401: loginRedirect() }));
 
 // Create group
 router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res) => {
   const cover = uploadedFile(req, 'cover');
-  const { name, description, location, tags } = req.body;
-  const visibility = ['public', 'private'].includes(req.body.visibility)
-    ? req.body.visibility
-    : (req.body.is_private === 'true' ? 'private' : 'public');
+  const avatar = uploadedFile(req, 'avatar');
+  const { name, description, location } = req.body;
+  const visibility = groupVisibilityFrom(req.body);
+  const templateId = positiveInteger(req.body.template_id);
+  const typeId = positiveInteger(req.body.type_id);
+  const parentId = positiveInteger(req.body.parent_id);
+  const values = { name, description, location, visibility, template_id: templateId, type_id: typeId, parent_id: parentId };
 
   const errors = [];
 
@@ -1226,45 +1359,37 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
 
   if (errors.length > 0) {
     await removeUploadedFile(cover);
-    return res.render('groups/new', {
-      title: res.locals.t('govuk_alpha.groups.create.title'),
-      errors,
-      fieldErrors: groupFieldErrors(errors),
-      values: { name, description, location, visibility, tags },
-      csrfToken: req.csrfToken ? req.csrfToken() : ''
-    });
+    await removeUploadedFile(avatar);
+    return renderNewGroupForm(req, res, { errors, fieldErrors: groupFieldErrors(errors), values });
   }
 
   try {
-    const tagList = groupTags(tags);
-    // The ': ' glue and list punctuation live in the translated string / Intl,
-    // not in code — Japanese and French punctuate both differently.
-    const tagsLine = res.locals.t('groups.create.tags_line', {
-      label: res.locals.t('groups.create.tags_label'),
-      tags: formatRequestList(tagList)
-    });
-    const descriptionText = trimmed(description);
-    const descriptionWithTags = tagList.length > 0
-      ? trimmed(`${descriptionText}\n\n${tagsLine}`)
-      : descriptionText;
-    const result = await createGroup(req.token, {
+    // There is no group "Tags" field any more: the API has no group tags
+    // (GroupService::create drops `tags`) and React offers none. The old field
+    // only appended a "Tags: …" line to the description.
+    const payload = {
       name: name.trim(),
-      description: descriptionWithTags || null,
+      description: trimmed(description) || null,
       location: location ? location.trim() : null,
       visibility
-    });
+    };
+    if (templateId !== null) payload.template_id = templateId;
+    if (typeId !== null) payload.type_id = typeId;
+    if (parentId !== null) payload.parent_id = parentId;
+    const result = await createGroup(req.token, payload);
 
     const createdGroup = dataFrom(result)?.group || dataFrom(result);
     const groupId = positiveInteger(createdGroup && createdGroup.id);
     if (groupId === null) {
       throw new ApiError('Laravel did not return the created group', 502);
     }
-    if (cover) {
+    for (const [file, type] of [[avatar, 'avatar'], [cover, 'cover']]) {
+      if (!file) continue;
       try {
-        await uploadGroupCover(req.token, groupId, cover);
+        await uploadGroupImageFile(req.token, groupId, file, type);
       } catch {
-        // Laravel Blade treats the optional cover upload as best-effort once
-        // the group exists, so its failure is intentionally silent here too.
+        // Optional images are best-effort once the group exists; the group
+        // photo page can retry them.
       }
     }
     res.redirect(groupRedirect(res, groupId, 'group-created'));
@@ -1277,17 +1402,12 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
     }
     if (error instanceof ApiError && error.status !== 401) {
       const formErrors = groupFormErrors(error, 'Unable to create group');
-      return res.render('groups/new', {
-        title: res.locals.t('govuk_alpha.groups.create.title'),
-        errors: formErrors,
-        fieldErrors: groupFieldErrors(formErrors),
-        values: { name, description, location, visibility, tags },
-        csrfToken: req.csrfToken ? req.csrfToken() : ''
-      });
+      return renderNewGroupForm(req, res, { errors: formErrors, fieldErrors: groupFieldErrors(formErrors), values });
     }
     throw error;
   } finally {
     await removeUploadedFile(cover);
+    await removeUploadedFile(avatar);
   }
 }));
 
@@ -1297,8 +1417,14 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const groupResult = await getGroup(req.token, id);
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const isMember = isActiveGroupMember(group);
+  // React shows the Feed section only while the community's `tab_feed` switch is on
+  // (groupSections.ts); the feed itself is for members (GroupFeedTab).
+  const showFeed = groupTabEnabled(req, 'tab_feed');
+  const feedCursor = trimmed(req.query.feed_cursor, 500);
+  const feedQuery = { group_id: id, per_page: 20 };
+  if (feedCursor) feedQuery.cursor = feedCursor;
 
-  const [membersResult, eventsResult, announcementsResult, feedResult, canCreateEvents] = await Promise.all([
+  const [membersResult, eventsResult, announcementsResult, feedResult, canCreateEvents, profileResult] = await Promise.all([
     getGroupMembers(req.token, id, { per_page: 100 }).catch((error) => {
       if (isAuthError(error)) throw error;
       if (error instanceof ApiError && error.status === 403) return { data: [] };
@@ -1312,15 +1438,23 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     }),
-    isMember
-      ? getFeedPosts(req.token, { group_id: id, per_page: 20 }).catch((error) => {
+    isMember && showFeed
+      ? getFeedPosts(req.token, feedQuery).catch((error) => {
         if (isAuthError(error)) throw error;
         return { data: [] };
       })
       : Promise.resolve({ data: [] }),
     // The community may restrict who creates Events (React 7565bee36).
-    isMember ? resolveCanCreateEvents(req, req.token) : Promise.resolve(false)
+    isMember ? resolveCanCreateEvents(req, req.token) : Promise.resolve(false),
+    // Only to tell the member's own posts (delete) from others' (hide/mute/report).
+    isMember && showFeed
+      ? getRequestProfile(req, req.token).catch((error) => {
+        if (isAuthError(error)) throw error;
+        return {};
+      })
+      : Promise.resolve({})
   ]);
+  const currentUserId = positiveInteger(objectFrom(profileResult)?.id);
 
   const members = collectionFrom(membersResult);
   const memberCountSource = group.member_count ?? group.memberCount;
@@ -1338,7 +1472,16 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     }))
     .filter((event) => event.id !== null && event.title !== '');
   const groupFeed = collectionFrom(feedResult)
-    .map((item) => normalizeGroupFeedPost(item, res.locals.t('govuk_alpha.feed.unknown_author')));
+    .map((item) => normalizeGroupFeedPost(item, res.locals.t('govuk_alpha.feed.unknown_author')))
+    // React excludeGamificationMilestones: badge/level cards are not feed content.
+    .filter((post) => post.id !== null && !['badge_earned', 'level_up'].includes(post.type))
+    .map((post) => ({ ...post, isOwn: currentUserId !== null && post.authorId === currentUserId }));
+  const feedMeta = feedResult && typeof feedResult.meta === 'object' && feedResult.meta ? feedResult.meta : {};
+  const nextFeedCursor = feedMeta.has_more === true ? trimmed(feedMeta.cursor || feedMeta.next_cursor, 500) : '';
+  const feedNextHref = nextFeedCursor
+    ? `/groups/${id}?feed_cursor=${encodeURIComponent(nextFeedCursor)}#group-feed`
+    : '';
+  const status = trimmed(req.query.status);
   const pinnedAnnouncements = collectionFrom(announcementsResult)
     .filter((announcement) => trimmed(announcement?.title) !== '')
     .map(normalizeAnnouncement)
@@ -1358,9 +1501,11 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
   const membershipStatus = trimmed(myMembership?.status || myMembership?.state);
   const isAdmin = isGroupAdmin(group);
   const isPending = membershipStatus === 'pending';
+  const sectionLinks = groupSectionLinks(req.accessibleRouting?.tenant || res.locals.tenant || {}, group.id, { isMember, isAdmin });
   res.render('groups/detail', {
     title: group.name,
     group,
+    sectionLinks,
     displayMemberCount,
     members,
     events,
@@ -1373,10 +1518,212 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     isPending,
     groupCanParticipate: isMember,
     canCreateEvents,
+    showFeed,
+    feedCursor,
+    feedNextHref,
+    feedStatus: groupFeedStatusMessage(status, res.locals.t),
+    // React ComposeHub: the Poll tab is gated on the `polls` feature.
+    canCreatePolls: isMember && tenantFeatureEnabled(req, 'polls'),
+    postReactionTypes: POST_REACTION_TYPES,
     csrfToken: req.csrfToken ? req.csrfToken() : '',
-    status: trimmed(req.query.status)
+    status
   });
 }, { notFoundTitle: 'Group not found' }));
+
+// ---------------------------------------------------------------------------
+// Group feed actions (React GroupFeedTab + FeedCard). Each is a plain form post
+// that returns to the group feed, on the same page of it.
+// ---------------------------------------------------------------------------
+
+const GROUP_FEED_STATUS_KEYS = {
+  'like-added': 'states.like-added',
+  'like-removed': 'states.like-removed',
+  'like-failed': 'states.like-failed',
+  'reaction-added': 'feed_t1.status_reaction_added',
+  'reaction-removed': 'feed_t1.status_reaction_removed',
+  'reaction-failed': 'feed_t1.status_reaction_failed',
+  'content-hidden': 'states.content-hidden',
+  'author-muted': 'states.author-muted',
+  'content-reported': 'states.content-reported',
+  'moderation-failed': 'states.moderation-failed',
+  'post-deleted': 'states.post-deleted',
+  'post-delete-failed': 'states.post-delete-failed',
+  'poll-voted': 'states.poll-voted',
+  'poll-vote-failed': 'states.poll-vote-failed',
+  'poll-created': 'govuk_alpha_groups.poll.states.created',
+  'poll-question-required': 'govuk_alpha_groups.poll.states.question_required',
+  'poll-options-required': 'govuk_alpha_groups.poll.states.options_required',
+  'poll-expiry-invalid': 'govuk_alpha_groups.poll.states.expiry_invalid',
+  'poll-create-failed': 'govuk_alpha_groups.poll.states.create_failed',
+  'group-post-scheduled': 'govuk_alpha_groups.compose.states.scheduled',
+  'group-post-image-invalid': 'govuk_alpha_groups.compose.states.image_invalid',
+  'group-post-schedule-invalid': 'govuk_alpha_groups.compose.states.schedule_invalid'
+};
+const GROUP_FEED_ERROR_STATUSES = new Set([
+  'like-failed', 'reaction-failed', 'moderation-failed', 'post-delete-failed', 'poll-vote-failed',
+  'poll-question-required', 'poll-options-required', 'poll-expiry-invalid', 'poll-create-failed',
+  'group-post-image-invalid', 'group-post-schedule-invalid'
+]);
+// Which field an error status points at, for the error summary link.
+const GROUP_FEED_ERROR_TARGETS = {
+  'poll-question-required': '#group-poll-question',
+  'poll-options-required': '#group-poll-option-1',
+  'poll-expiry-invalid': '#group-poll-expires-day',
+  'group-post-image-invalid': '#group-feed-image',
+  'group-post-schedule-invalid': '#group-feed-schedule-day'
+};
+
+function groupFeedStatusMessage(status, t) {
+  const key = GROUP_FEED_STATUS_KEYS[status];
+  if (!key || typeof t !== 'function') return null;
+  return {
+    type: GROUP_FEED_ERROR_STATUSES.has(status) ? 'error' : 'success',
+    text: t(key),
+    href: GROUP_FEED_ERROR_TARGETS[status] || ''
+  };
+}
+
+function groupFeedRedirect(res, id, status, req = null, fragment = '#group-feed') {
+  const cursor = trimmed(req?.body?.feed_cursor, 500);
+  const cursorPart = cursor ? `&feed_cursor=${encodeURIComponent(cursor)}` : '';
+  return `${urlFor(res, `/groups/${id}`)}?status=${encodeURIComponent(status)}${cursorPart}${fragment}`;
+}
+
+const FEED_TARGET_TYPE = '[a-z_]{1,40}';
+
+async function groupFeedAction(req, res, id, failureStatus, action) {
+  try {
+    const status = await action(req.token);
+    return res.redirect(groupFeedRedirect(res, id, status, req));
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, loginRedirect());
+    const status = typeof failureStatus === 'function' ? failureStatus(error) : failureStatus;
+    return res.redirect(groupFeedRedirect(res, id, status, req));
+  }
+}
+
+router.post(`/:id(\\d+)/feed/items/:type(${FEED_TARGET_TYPE})/:itemId(\\d+)/like`, requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return groupFeedAction(req, res, id, 'like-failed', async (token) => {
+    const result = await toggleFeedLike(token, { target_type: req.params.type, target_id: Number(req.params.itemId) });
+    return dataFrom(result)?.action === 'unliked' ? 'like-removed' : 'like-added';
+  });
+}));
+
+router.post(`/:id(\\d+)/feed/items/:type(${FEED_TARGET_TYPE})/:itemId(\\d+)/react`, requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const emoji = trimmed(req.body.emoji);
+  if (!POST_REACTION_TYPES.includes(emoji)) {
+    return res.redirect(groupFeedRedirect(res, id, 'reaction-failed', req));
+  }
+  return groupFeedAction(req, res, id, 'reaction-failed', async (token) => {
+    const result = await toggleReaction(token, {
+      target_type: req.params.type,
+      target_id: Number(req.params.itemId),
+      reaction_type: emoji
+    });
+    return dataFrom(result)?.action === 'removed' ? 'reaction-removed' : 'reaction-added';
+  });
+}));
+
+router.post(`/:id(\\d+)/feed/items/:type(${FEED_TARGET_TYPE})/:itemId(\\d+)/hide`, requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return groupFeedAction(req, res, id, 'moderation-failed', async (token) => {
+    await hideFeedItem(token, Number(req.params.itemId), { type: req.params.type });
+    return 'content-hidden';
+  });
+}));
+
+router.post(`/:id(\\d+)/feed/items/:type(${FEED_TARGET_TYPE})/:itemId(\\d+)/report`, requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const reason = trimmed(req.body.reason, 1000);
+  if (reason === '') {
+    return res.redirect(groupFeedRedirect(res, id, 'moderation-failed', req));
+  }
+  return groupFeedAction(req, res, id, (error) => (
+    // Already reported by this member: the report stands, so say so.
+    error instanceof ApiError && error.status === 409 ? 'content-reported' : 'moderation-failed'
+  ), async (token) => {
+    await reportFeedItem(token, req.params.type, Number(req.params.itemId), { reason });
+    return 'content-reported';
+  });
+}));
+
+router.post('/:id(\\d+)/feed/users/:userId(\\d+)/mute', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return groupFeedAction(req, res, id, 'moderation-failed', async (token) => {
+    await muteFeedUser(token, Number(req.params.userId));
+    return 'author-muted';
+  });
+}));
+
+router.post('/:id(\\d+)/feed/polls/:pollId(\\d+)/vote', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const optionId = positiveInteger(req.body.option_id);
+  if (optionId === null) {
+    return res.redirect(groupFeedRedirect(res, id, 'poll-vote-failed', req));
+  }
+  return groupFeedAction(req, res, id, 'poll-vote-failed', async (token) => {
+    await voteFeedPoll(token, Number(req.params.pollId), { option_id: optionId });
+    return 'poll-voted';
+  });
+}));
+
+// Deleting a post is irreversible, so it has its own confirmation page.
+router.get('/:id(\\d+)/feed/posts/:postId(\\d+)/delete', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const groupResult = await getGroup(req.token, id);
+  const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), id);
+  return res.render('groups/feed-delete', {
+    title: res.locals.t('govuk_alpha_groups.feed.delete_title'),
+    group,
+    postId: Number(req.params.postId),
+    feedCursor: trimmed(req.query.feed_cursor, 500),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { notFoundTitle: 'Group not found' }));
+
+router.post('/:id(\\d+)/feed/posts/:postId(\\d+)/delete', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  return groupFeedAction(req, res, id, 'post-delete-failed', async (token) => {
+    await deleteFeedPostV2(token, Number(req.params.postId));
+    return 'post-deleted';
+  });
+}));
+
+const GROUP_POLL_MAX_OPTIONS = 6;
+
+// A poll inside the group (React PollTab with `group_id`; POST /v2/feed/polls).
+router.post('/:id(\\d+)/feed/polls', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const pollRedirect = (status) => res.redirect(groupFeedRedirect(res, id, status, null, '#group-poll'));
+  if (!tenantFeatureEnabled(req, 'polls')) {
+    return renderNotFound(res);
+  }
+  const question = trimmed(req.body.question, 500);
+  const options = [];
+  for (let index = 1; index <= GROUP_POLL_MAX_OPTIONS; index += 1) {
+    const option = trimmed(req.body[`option_${index}`], 200);
+    if (option) options.push(option);
+  }
+  if (!question) return pollRedirect('poll-question-required');
+  if (options.length < 2) return pollRedirect('poll-options-required');
+  const expires = readDate(req.body, 'expires_at');
+  if (expires.error) return pollRedirect('poll-expiry-invalid');
+  if (expires.value && new Date(`${expires.value}T23:59:59Z`).getTime() <= Date.now()) {
+    return pollRedirect('poll-expiry-invalid');
+  }
+
+  const payload = { question, options, group_id: id };
+  if (expires.value) payload.expires_at = expires.value;
+  try {
+    await createFeedPoll(req.token, payload);
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, loginRedirect());
+    return pollRedirect('poll-create-failed');
+  }
+  return res.redirect(groupFeedRedirect(res, id, 'poll-created'));
+}));
 
 /**
  * The whole member list, searchable and paged (React GroupMembersTab: `q` and a
@@ -1517,6 +1864,7 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
   res.render('groups/edit', {
     title: `Edit ${group.name}`,
     group,
+    capabilities: await loadGroupFormCapabilities(req.token),
     myMembership,
     isOwner: isGroupOwner(group, profile),
     updateFailed: trimmed(req.query.status) === 'group-update-failed',
@@ -1878,10 +2226,35 @@ router.get('/:id(\\d+)/manage', requireAuth, asyncRoute(async (req, res) => {
 router.post('/:id(\\d+)/edit', requireAuth, audit.groupUpdate(), asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const cover = uploadedFile(req, 'cover');
-  const { name, description, location, tags } = req.body;
-  const visibility = ['public', 'private'].includes(req.body.visibility)
-    ? req.body.visibility
-    : (req.body.is_private === 'true' ? 'private' : 'public');
+  const avatar = uploadedFile(req, 'avatar');
+  const { name, description, location } = req.body;
+  const visibility = groupVisibilityFrom(req.body);
+  // Type, parent group and brand colours are only sent when the form actually
+  // offered them (hidden `has_*` markers), so a blank choice clears the value
+  // instead of an absent field wiping it.
+  const hasType = checked(req.body.has_type);
+  const hasParent = checked(req.body.has_parent);
+  const hasBranding = checked(req.body.has_branding);
+  const colour = (value) => trimmed(value, 20) || null;
+  const formGroup = {
+    id,
+    name,
+    description,
+    location,
+    visibility,
+    type_id: positiveInteger(req.body.type_id),
+    parent_id: positiveInteger(req.body.parent_id),
+    primary_color: colour(req.body.primary_color),
+    accent_color: colour(req.body.accent_color)
+  };
+  const renderEditForm = async (formErrors) => res.render('groups/edit', {
+    title: (res.locals.t ? res.locals.t('govuk_alpha.polish_groups.edit_link') : 'Edit group'),
+    group: formGroup,
+    capabilities: await loadGroupFormCapabilities(req.token),
+    errors: formErrors,
+    fieldErrors: groupFieldErrors(formErrors),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
 
   const errors = [];
 
@@ -1893,29 +2266,31 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.groupUpdate(), asyncRoute(asyn
 
   if (errors.length > 0) {
     await removeUploadedFile(cover);
-    return res.render('groups/edit', {
-      title: (res.locals.t ? res.locals.t('govuk_alpha.polish_groups.edit_link') : 'Edit group'),
-      group: { id, name, description, location, visibility, tagsText: trimmed(tags) },
-      errors,
-      fieldErrors: groupFieldErrors(errors),
-      csrfToken: req.csrfToken ? req.csrfToken() : ''
-    });
+    await removeUploadedFile(avatar);
+    return renderEditForm(errors);
   }
 
   try {
-    await updateGroup(req.token, id, {
+    const payload = {
       name: name.trim(),
       description: description ? description.trim() : null,
       location: location ? location.trim() : null,
-      visibility,
-      tags: groupTags(tags)
-    });
+      visibility
+    };
+    if (hasType) payload.type_id = formGroup.type_id;
+    if (hasParent) payload.parent_id = formGroup.parent_id === id ? null : formGroup.parent_id;
+    if (hasBranding) {
+      payload.primary_color = formGroup.primary_color;
+      payload.accent_color = formGroup.accent_color;
+    }
+    await updateGroup(req.token, id, payload);
 
-    if (cover) {
+    for (const [file, type] of [[avatar, 'avatar'], [cover, 'cover']]) {
+      if (!file) continue;
       try {
-        await uploadGroupCover(req.token, id, cover);
+        await uploadGroupImageFile(req.token, id, file, type);
       } catch {
-        // Match Blade's best-effort optional cover update.
+        // Match Blade's best-effort optional image update.
       }
     }
 
@@ -1931,18 +2306,12 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.groupUpdate(), asyncRoute(asyn
       return renderTooManyRequests(res);
     }
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
-      const formErrors = groupFormErrors(error, 'Unable to update group');
-      return res.render('groups/edit', {
-        title: (res.locals.t ? res.locals.t('govuk_alpha.polish_groups.edit_link') : 'Edit group'),
-        group: { id, name, description, location, visibility, tagsText: trimmed(tags) },
-        errors: formErrors,
-        fieldErrors: groupFieldErrors(formErrors),
-        csrfToken: req.csrfToken ? req.csrfToken() : ''
-      });
+      return renderEditForm(groupFormErrors(error, 'Unable to update group'));
     }
     throw error;
   } finally {
     await removeUploadedFile(cover);
+    await removeUploadedFile(avatar);
   }
 }));
 
@@ -2338,37 +2707,73 @@ router.post('/:id(\\d+)/discussions/:discussionId(\\d+)/reply', requireAuth, asy
   });
 }));
 
+// React PostTab: up to 10 images per post (MediaUploader maxFiles, and the API's
+// PostMediaService::MAX_MEDIA_PER_POST). Without JavaScript each photo is its own
+// file field with its own alt text: `image` / `image_alt`, then `image_2` /
+// `image_2_alt` … `image_10` / `image_10_alt`.
+const GROUP_POST_MAX_IMAGES = 10;
+const GROUP_POST_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+function groupPostImageFields() {
+  return Array.from({ length: GROUP_POST_MAX_IMAGES }, (_, index) => (
+    index === 0 ? { file: 'image', alt: 'image_alt' } : { file: `image_${index + 1}`, alt: `image_${index + 1}_alt` }
+  ));
+}
+
 router.post('/:id(\\d+)/feed', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const content = trimmed(req.body.content, 20000);
-  const image = uploadedFile(req, 'image');
+  const images = groupPostImageFields()
+    .map((field) => ({ upload: uploadedFile(req, field.file), altText: trimmed(req.body[field.alt], 500) }))
+    .filter((entry) => entry.upload);
+  const cleanUp = () => Promise.all(images.map((entry) => removeUploadedFile(entry.upload)));
 
   if (content === '') {
-    await removeUploadedFile(image);
+    await cleanUp();
     return res.redirect(groupRedirect(res, id, 'group-post-empty', '#group-feed'));
+  }
+  if (images.some((entry) => !GROUP_POST_IMAGE_TYPES.has(trimmed(entry.upload.mimetype).toLowerCase()))) {
+    await cleanUp();
+    return res.redirect(groupRedirect(res, id, 'group-post-image-invalid', '#group-feed'));
+  }
+  // "Publish later" (React PostTab schedule): optional, but half-entered is an error.
+  const schedule = readDateTime(req.body, 'schedule');
+  if (schedule.error) {
+    await cleanUp();
+    return res.redirect(groupRedirect(res, id, 'group-post-schedule-invalid', '#group-feed'));
   }
 
   try {
     return await requireGroupAction(req, res, groupRedirect(res, id, 'group-post-failed', '#group-feed'), async (token) => {
-      const file = image ? {
-        buffer: await fs.readFile(image.filepath),
-        filename: image.originalFilename || image.filename || 'group-feed-image',
-        contentType: image.mimetype || image.contentType || 'application/octet-stream'
-      } : null;
+      const files = await Promise.all(images.map(async (entry) => ({
+        buffer: await fs.readFile(entry.upload.filepath),
+        filename: entry.upload.originalFilename || entry.upload.filename || 'group-feed-image',
+        contentType: entry.upload.mimetype || entry.upload.contentType || 'application/octet-stream',
+        altText: entry.altText
+      })));
       const payload = {
         content,
         visibility: 'public',
         group_id: id
       };
-      if (file) {
-        payload.image = file;
-        payload.image_alt = trimmed(req.body.image_alt, 500);
+      if (schedule.value) {
+        payload.publish_status = 'scheduled';
+        payload.scheduled_at = schedule.value;
       }
-      await createFeedPostV2(token, payload);
-      return res.redirect(groupRedirect(res, id, 'group-posted', '#group-feed'));
+      if (files.length > 1) {
+        await createFeedPostWithMedia(token, { ...payload, files });
+      } else {
+        if (files.length === 1) {
+          const [{ altText, ...file }] = files;
+          payload.image = file;
+          payload.image_alt = altText;
+        }
+        await createFeedPostV2(token, payload);
+      }
+      return res.redirect(groupRedirect(res, id, schedule.value ? 'group-post-scheduled' : 'group-posted', '#group-feed'));
     });
   } finally {
-    await removeUploadedFile(image);
+    await cleanUp();
   }
 }));
 
@@ -2406,4 +2811,246 @@ router.post('/:id(\\d+)/requests/:requesterId(\\d+)', requireAuth, asyncRoute(as
   });
 }));
 
+// ---------------------------------------------------------------------------
+// Group automation for group admins (React GroupAutomationTab: requiresAdmin).
+// The welcome message and scheduled posts live here; the API re-checks the
+// admin right itself (GroupAccessService::canConfigure / canIntegrate).
+// ---------------------------------------------------------------------------
+
+async function requireGroupAdminContext(req, res, id) {
+  const context = await groupAccessContext(req, id);
+  if (!isGroupAdmin(context.group, context.profile)) {
+    renderForbidden(res);
+    return null;
+  }
+  return context;
+}
+
+function automationStatus(status, allowed, errors, t) {
+  if (!allowed.includes(status)) return null;
+  return {
+    type: errors.includes(status) ? 'error' : 'success',
+    text: t(`govuk_alpha_groups.automation_states.${status}`)
+  };
+}
+
+router.get('/:id(\\d+)/welcome', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const context = await requireGroupAdminContext(req, res, id);
+  if (!context) return undefined;
+  let config;
+  try {
+    config = objectFrom(await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/welcome`));
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    throw error;
+  }
+  return res.render('groups/welcome', {
+    title: res.locals.t('govuk_alpha_groups.welcome.title'),
+    group: context.group,
+    welcome: { enabled: checked(config.enabled), message: trimmed(config.message) },
+    statusMessage: automationStatus(trimmed(req.query.status), ['welcome-saved', 'welcome-failed'], ['welcome-failed'], res.locals.t),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { notFoundTitle: 'Group not found', redirectOn401: loginRedirect() }));
+
+router.post('/:id(\\d+)/welcome', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const payload = { enabled: checked(req.body.enabled), message: trimmed(req.body.message, 5000) };
+  try {
+    await callGroup(req.token, 'PUT', `/${encodeURIComponent(id)}/welcome`, payload);
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, loginRedirect());
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    return res.redirect(groupSubpageRedirect(res, id, 'welcome', 'welcome-failed'));
+  }
+  return res.redirect(groupSubpageRedirect(res, id, 'welcome', 'welcome-saved'));
+}));
+
+const SCHEDULED_RECURRENCE_PATTERNS = ['daily', 'weekly', 'monthly'];
+
+/**
+ * The API schedules a discussion only while the community's discussion section is
+ * on, and an announcement only while announcements are (GroupScheduledPostService),
+ * so only those types are offered.
+ */
+function scheduledPostTypes(req) {
+  return [
+    groupTabEnabled(req, 'tab_discussion') ? 'discussion' : null,
+    groupTabEnabled(req, 'tab_announcements') ? 'announcement' : null
+  ].filter(Boolean);
+}
+
+function normalizeScheduledPost(row) {
+  const raw = row && typeof row === 'object' ? row : {};
+  const pattern = trimmed(raw.recurrence_pattern);
+  return {
+    id: positiveInteger(raw.id),
+    postType: trimmed(raw.post_type) === 'announcement' ? 'announcement' : 'discussion',
+    title: trimmed(raw.title),
+    content: trimmed(raw.content),
+    scheduledAt: isoDateTime(raw.scheduled_at),
+    scheduledAtLabel: bladeDateTime24Label(raw.scheduled_at),
+    isRecurring: checked(raw.is_recurring),
+    recurrencePattern: SCHEDULED_RECURRENCE_PATTERNS.includes(pattern) ? pattern : ''
+  };
+}
+
+async function loadScheduledPosts(token, id) {
+  return collectionFrom(await callGroup(token, 'GET', `/${encodeURIComponent(id)}/scheduled-posts`))
+    .map(normalizeScheduledPost)
+    .filter((post) => post.id !== null);
+}
+
+async function renderScheduledPosts(req, res, id, context, extra = {}) {
+  let posts;
+  try {
+    posts = await loadScheduledPosts(req.token, id);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    throw error;
+  }
+  const status = trimmed(req.query.status);
+  return res.render('groups/scheduled-posts', {
+    title: res.locals.t('govuk_alpha_groups.scheduled.title'),
+    group: context.group,
+    posts,
+    postTypes: scheduledPostTypes(req),
+    recurrencePatterns: SCHEDULED_RECURRENCE_PATTERNS,
+    values: {},
+    fieldErrors: {},
+    statusMessage: automationStatus(
+      status,
+      ['scheduled-created', 'scheduled-cancelled', 'scheduled-cancel-failed'],
+      ['scheduled-cancel-failed'],
+      res.locals.t
+    ),
+    csrfToken: req.csrfToken ? req.csrfToken() : '',
+    ...extra
+  });
+}
+
+router.get('/:id(\\d+)/scheduled-posts', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const context = await requireGroupAdminContext(req, res, id);
+  if (!context) return undefined;
+  return renderScheduledPosts(req, res, id, context);
+}, { notFoundTitle: 'Group not found', redirectOn401: loginRedirect() }));
+
+router.post('/:id(\\d+)/scheduled-posts', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const context = await requireGroupAdminContext(req, res, id);
+  if (!context) return undefined;
+  const t = res.locals.t;
+  const postTypes = scheduledPostTypes(req);
+  const postType = allowed(req.body.post_type, postTypes, '');
+  const title = trimmed(req.body.title, 255);
+  const content = trimmed(req.body.content, 60000);
+  const when = readDateTime(req.body, 'scheduled_at', { required: true });
+  const isRecurring = checked(req.body.is_recurring);
+  const pattern = allowed(req.body.recurrence_pattern, SCHEDULED_RECURRENCE_PATTERNS, '');
+
+  const errors = [];
+  if (!postType) errors.push({ text: t('govuk_alpha_groups.scheduled.errors.type_required'), href: '#post_type' });
+  if (!title) errors.push({ text: t('govuk_alpha_groups.scheduled.errors.title_required'), href: '#title' });
+  if (!content) errors.push({ text: t('govuk_alpha_groups.scheduled.errors.content_required'), href: '#content' });
+  if (when.error) {
+    errors.push({ text: t(`web_uk.date_input.${when.error}`), href: when.errorFields[0] === 'time' ? '#scheduled_at-time' : '#scheduled_at-day' });
+  } else if (when.value && new Date(`${when.value}:00Z`).getTime() <= Date.now()) {
+    errors.push({ text: t('govuk_alpha_groups.scheduled.errors.when_past'), href: '#scheduled_at-day' });
+  }
+  if (isRecurring && !pattern) {
+    errors.push({ text: t('govuk_alpha_groups.scheduled.errors.pattern_required'), href: '#recurrence_pattern' });
+  }
+
+  const values = {
+    post_type: postType,
+    title,
+    content,
+    scheduled_at_parts: when.parts || splitDateTime(''),
+    is_recurring: isRecurring,
+    recurrence_pattern: pattern
+  };
+  const fieldErrors = Object.fromEntries(errors.map((error) => [error.href.slice(1).replace(/-(day|time)$/, ''), error.text]));
+  if (errors.length > 0) {
+    return renderScheduledPosts(req, res, id, context, { errors, fieldErrors, values });
+  }
+
+  const payload = { post_type: postType, title, content, scheduled_at: when.value, is_recurring: isRecurring };
+  if (isRecurring) payload.recurrence_pattern = pattern;
+  try {
+    await callGroup(req.token, 'POST', `/${encodeURIComponent(id)}/scheduled-posts`, payload);
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, loginRedirect());
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    const apiErrors = error instanceof ApiError && [400, 422].includes(error.status)
+      ? groupFormErrors(error, t('govuk_alpha_groups.automation_states.scheduled-create-failed'))
+      : [{ text: t('govuk_alpha_groups.automation_states.scheduled-create-failed') }];
+    return renderScheduledPosts(req, res, id, context, { errors: apiErrors, fieldErrors: {}, values });
+  }
+  return res.redirect(groupSubpageRedirect(res, id, 'scheduled-posts', 'scheduled-created'));
+}, { notFoundTitle: 'Group not found', redirectOn401: loginRedirect() }));
+
+// Cancelling stops a planned post for good, so it is confirmed on its own page.
+router.get('/:id(\\d+)/scheduled-posts/:postId(\\d+)/cancel', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const postId = Number(req.params.postId);
+  const context = await requireGroupAdminContext(req, res, id);
+  if (!context) return undefined;
+  let posts;
+  try {
+    posts = await loadScheduledPosts(req.token, id);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    throw error;
+  }
+  const post = posts.find((row) => row.id === postId);
+  if (!post) return renderNotFound(res);
+  return res.render('groups/scheduled-post-cancel', {
+    title: res.locals.t('govuk_alpha_groups.scheduled.cancel_title'),
+    group: context.group,
+    post,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}, { notFoundTitle: 'Group not found', redirectOn401: loginRedirect() }));
+
+router.post('/:id(\\d+)/scheduled-posts/:postId(\\d+)/cancel', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const postId = Number(req.params.postId);
+  try {
+    await callGroup(req.token, 'DELETE', `/${encodeURIComponent(id)}/scheduled-posts/${encodeURIComponent(postId)}`);
+  } catch (error) {
+    if (isAuthError(error)) return redirectTo(res, loginRedirect());
+    if (error instanceof ApiError && error.status === 403) return renderForbidden(res);
+    return res.redirect(groupSubpageRedirect(res, id, 'scheduled-posts', 'scheduled-cancel-failed'));
+  }
+  return res.redirect(groupSubpageRedirect(res, id, 'scheduled-posts', 'scheduled-cancelled'));
+}));
+
+// Links to the group sections that live in their own route files (Q&A, wiki,
+// tasks, gallery, challenges, channels, analytics, data export, webhooks).
+// Each link appears only when the community has that section switched on and
+// the viewer has the standing its page requires, so a link never leads to a
+// 403 or 404 (React groupSections.ts gates its tabs the same way).
+function groupSectionLinks(tenant, groupId, { isMember, isAdmin }) {
+  const id = String(groupId);
+  const memberOrAdmin = isMember || isAdmin;
+  const member = [
+    { on: memberOrAdmin && toolSectionOn(tenant, 'qa'), path: `/groups/${id}/qa`, key: 'govuk_alpha_group_tools.qa.title' },
+    { on: memberOrAdmin && toolSectionOn(tenant, 'wiki'), path: `/groups/${id}/wiki`, key: 'govuk_alpha_group_tools.wiki.title' },
+    { on: memberOrAdmin && toolSectionOn(tenant, 'tasks'), path: `/groups/${id}/tasks`, key: 'govuk_alpha_group_tools.tasks.title' },
+    { on: memberOrAdmin && mediaSectionOn(tenant, 'media'), path: `/groups/${id}/gallery`, key: 'govuk_alpha_group_media.gallery.title' },
+    { on: memberOrAdmin && mediaSectionOn(tenant, 'challenges'), path: `/groups/${id}/challenges`, key: 'govuk_alpha_group_media.challenges.title' },
+    { on: isMember && mediaSectionOn(tenant, 'chatrooms'), path: `/groups/${id}/channels`, key: 'govuk_alpha_group_media.channels.title' }
+  ];
+  const admin = [
+    { on: isAdmin && toolSectionOn(tenant, 'analytics'), path: `/groups/${id}/analytics`, key: 'govuk_alpha_group_tools.analytics.title' },
+    { on: isAdmin && toolSectionOn(tenant, 'automation'), path: `/groups/${id}/data-export`, key: 'govuk_alpha_group_tools.data_export.title' },
+    { on: isAdmin && mediaSectionOn(tenant, 'automation'), path: `/groups/${id}/webhooks`, key: 'govuk_alpha_group_media.webhooks.title' }
+  ];
+  const pick = (rows) => rows.filter((row) => row.on).map(({ path, key }) => ({ path, key }));
+  return { member: pick(member), admin: pick(admin) };
+}
+
 module.exports = router;
+module.exports.groupSectionLinks = groupSectionLinks;

@@ -1,0 +1,80 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set base = '/groups/' + (group.id | string) + '/tasks' %}
+{% set dueParts = values.dueDateParts or {} %}
+{% set dueErrorFields = values.dueDateErrorFields or [] %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t("govuk_alpha_group_tools.tasks.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolErrors(errorList) }}
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.tasks.create") }}</h1>
+      <form method="post" action="{{ urlFor(base + '/new') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukInput({
+          label: { text: t("govuk_alpha_group_tools.tasks.title_label"), classes: "govuk-label--m" },
+          id: "title",
+          name: "title",
+          value: values.title,
+          attributes: { maxlength: "255" },
+          errorMessage: { text: errors.title, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if errors.title else undefined
+        }) }}
+        {{ govukTextarea({
+          label: { text: t("govuk_alpha_group_tools.tasks.description_label"), classes: "govuk-label--m" },
+          id: "description",
+          name: "description",
+          rows: 4,
+          value: values.description
+        }) }}
+        {{ govukSelect({
+          id: "status",
+          name: "status",
+          label: { text: t("govuk_alpha_group_tools.tasks.status_label"), classes: "govuk-label--m" },
+          items: statusItems
+        }) }}
+        {{ govukSelect({
+          id: "priority",
+          name: "priority",
+          label: { text: t("govuk_alpha_group_tools.tasks.priority_label"), classes: "govuk-label--m" },
+          items: priorityItems
+        }) }}
+        {{ govukSelect({
+          id: "assigned_to",
+          name: "assigned_to",
+          label: { text: t("govuk_alpha_group_tools.tasks.assigned_to"), classes: "govuk-label--m" },
+          items: assigneeItems
+        }) }}
+        {{ govukDateInput({
+          id: "due_date",
+          namePrefix: "due_date",
+          fieldset: { legend: { text: t("govuk_alpha_group_tools.tasks.due_date"), classes: "govuk-fieldset__legend--m" } },
+          hint: { text: t("web_uk.date_input.hint") },
+          errorMessage: { text: errors.due_date, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if errors.due_date else undefined,
+          items: [
+            { name: "day", label: t("web_uk.date_input.day_label"), classes: "govuk-input--width-2" + (" govuk-input--error" if "day" in dueErrorFields else ""), value: dueParts.day },
+            { name: "month", label: t("web_uk.date_input.month_label"), classes: "govuk-input--width-2" + (" govuk-input--error" if "month" in dueErrorFields else ""), value: dueParts.month },
+            { name: "year", label: t("web_uk.date_input.year_label"), classes: "govuk-input--width-4" + (" govuk-input--error" if "year" in dueErrorFields else ""), value: dueParts.year }
+          ]
+        }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.tasks.create") }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

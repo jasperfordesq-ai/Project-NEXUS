@@ -1,0 +1,132 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.scheduled.title") }}</h1>
+
+  {% if errors and errors.length %}
+    {{ govukErrorSummary({ titleText: t("states.error_title"), errorList: errors, attributes: { tabindex: "-1" } }) }}
+  {% elif statusMessage %}
+    {% if statusMessage.type == "error" %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ statusMessage.text }}</p></div>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="scheduled-status">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="scheduled-status">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusMessage.text }}</p></div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <p class="govuk-body-l">{{ t("govuk_alpha_groups.scheduled.intro") }}</p>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_groups.scheduled.list_heading") }}</h2>
+  {% if posts.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.scheduled.empty") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for post in posts %}
+        <article class="nexus-alpha-card">
+          <p class="govuk-body-s govuk-!-margin-bottom-1">{{ govukTag({ text: t("govuk_alpha_groups.scheduled.type_" + post.postType), classes: "govuk-tag--blue" if post.postType == "announcement" else "govuk-tag--grey" }) }}</p>
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ post.title }}</h3>
+          {% if post.content %}<p class="govuk-body">{{ post.content | truncate(240) }}</p>{% endif %}
+          {{ govukSummaryList({
+            classes: "govuk-summary-list--no-border govuk-!-margin-bottom-2",
+            rows: [
+              { key: { text: t("govuk_alpha_groups.scheduled.publishes_label") }, value: { html: '<time datetime="' + (post.scheduledAt | escape) + '">' + (post.scheduledAtLabel | escape) + '</time>' } },
+              { key: { text: t("govuk_alpha_groups.scheduled.repeats_label") }, value: { text: t("govuk_alpha_groups.scheduled.pattern_" + post.recurrencePattern) if (post.isRecurring and post.recurrencePattern) else t("govuk_alpha_groups.scheduled.repeats_never") } }
+            ]
+          }) }}
+          <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts/' + (post.id | string) + '/cancel') }}">{{ t("govuk_alpha_groups.scheduled.cancel_link") }}<span class="govuk-visually-hidden"> {{ post.title }}</span></a>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_groups.scheduled.add_heading") }}</h2>
+  {% if postTypes.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.scheduled.unavailable") }}</p></div>
+  {% else %}
+    {% set typeItems = [] %}
+    {% for type in postTypes %}
+      {% set typeItems = (typeItems.push({ value: type, text: t("govuk_alpha_groups.scheduled.type_" + type), checked: (values.post_type == type) or (postTypes.length == 1) }), typeItems) %}
+    {% endfor %}
+    {% set patternItems = [] %}
+    {% for pattern in recurrencePatterns %}
+      {% set patternItems = (patternItems.push({ value: pattern, text: t("govuk_alpha_groups.scheduled.pattern_" + pattern), checked: values.recurrence_pattern == pattern }), patternItems) %}
+    {% endfor %}
+    <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {{ govukRadios({
+        idPrefix: "post_type",
+        name: "post_type",
+        fieldset: { legend: { text: t("govuk_alpha_groups.scheduled.type_legend"), classes: "govuk-fieldset__legend--s" } },
+        items: typeItems,
+        errorMessage: { text: fieldErrors.post_type, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if fieldErrors.post_type else undefined
+      }) }}
+      {{ govukInput({
+        id: "title",
+        name: "title",
+        label: { text: t("govuk_alpha_groups.scheduled.title_label"), classes: "govuk-label--s" },
+        value: values.title,
+        attributes: { maxlength: "255" },
+        errorMessage: { text: fieldErrors.title, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if fieldErrors.title else undefined
+      }) }}
+      {{ govukTextarea({
+        id: "content",
+        name: "content",
+        rows: 6,
+        label: { text: t("govuk_alpha_groups.scheduled.content_label"), classes: "govuk-label--s" },
+        value: values.content,
+        errorMessage: { text: fieldErrors.content, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if fieldErrors.content else undefined
+      }) }}
+      {{ nexusDateTimeInput({
+        name: "scheduled_at",
+        legend: t("govuk_alpha_groups.scheduled.when_legend"),
+        hint: t("govuk_alpha_groups.scheduled.when_hint"),
+        value: values.scheduled_at_parts,
+        errorMessage: fieldErrors.scheduled_at,
+        errorFields: ["day", "month", "year"] if fieldErrors.scheduled_at else []
+      }, t) }}
+      {{ govukCheckboxes({
+        name: "is_recurring",
+        classes: "govuk-checkboxes--small",
+        items: [{ value: "1", text: t("govuk_alpha_groups.scheduled.recurring_label"), checked: values.is_recurring }]
+      }) }}
+      {{ govukRadios({
+        idPrefix: "recurrence_pattern",
+        name: "recurrence_pattern",
+        classes: "govuk-radios--small",
+        fieldset: { legend: { text: t("govuk_alpha_groups.scheduled.pattern_legend"), classes: "govuk-fieldset__legend--s" } },
+        hint: { text: t("govuk_alpha_groups.scheduled.pattern_hint") },
+        items: patternItems,
+        errorMessage: { text: fieldErrors.recurrence_pattern, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if fieldErrors.recurrence_pattern else undefined
+      }) }}
+      {{ govukButton({ text: t("govuk_alpha_groups.scheduled.submit") }) }}
+    </form>
+  {% endif %}
+{% endblock %}

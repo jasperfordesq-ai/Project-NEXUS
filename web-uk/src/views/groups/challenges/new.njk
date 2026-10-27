@@ -1,0 +1,94 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/challenges') }}">{{ t("govuk_alpha_group_media.challenges.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set errorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorList and errorList.length %}
+        {{ govukErrorSummary({ titleText: t("govuk_alpha_groups.common.error_title"), errorList: errorList, attributes: { tabindex: "-1" } }) }}
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_media.challenges.new_title") }}</h1>
+
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/challenges/new') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          id: "title",
+          name: "title",
+          label: { text: t("govuk_alpha_group_media.challenges.title_label"), classes: "govuk-label--s" },
+          hint: { text: t("govuk_alpha_group_media.challenges.title_hint") },
+          value: values.title,
+          attributes: { maxlength: "120" },
+          errorMessage: { text: fieldErrors.title, visuallyHiddenText: errorPrefix } if fieldErrors.title else undefined
+        }) }}
+
+        {{ govukTextarea({
+          id: "description",
+          name: "description",
+          label: { text: t("govuk_alpha_group_media.challenges.description_label"), classes: "govuk-label--s" },
+          hint: { text: t("govuk_alpha_group_media.challenges.description_hint") },
+          value: values.description,
+          rows: 4,
+          attributes: { maxlength: "2000" },
+          errorMessage: { text: fieldErrors.description, visuallyHiddenText: errorPrefix } if fieldErrors.description else undefined
+        }) }}
+
+        {{ govukRadios({
+          idPrefix: "metric",
+          name: "metric",
+          fieldset: { legend: { text: t("govuk_alpha_group_media.challenges.metric_legend"), classes: "govuk-fieldset__legend--s" } },
+          items: metricItems,
+          errorMessage: { text: fieldErrors.metric, visuallyHiddenText: errorPrefix } if fieldErrors.metric else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "target_value",
+          name: "target_value",
+          label: { text: t("govuk_alpha_group_media.challenges.target_label"), classes: "govuk-label--s" },
+          hint: { text: t("govuk_alpha_group_media.challenges.target_hint") },
+          value: values.target_value,
+          inputmode: "numeric",
+          spellcheck: false,
+          classes: "govuk-input--width-10",
+          errorMessage: { text: fieldErrors.target_value, visuallyHiddenText: errorPrefix } if fieldErrors.target_value else undefined
+        }) }}
+
+        {{ govukRadios({
+          idPrefix: "reward_xp",
+          name: "reward_xp",
+          fieldset: { legend: { text: t("govuk_alpha_group_media.challenges.reward_legend"), classes: "govuk-fieldset__legend--s" } },
+          hint: { text: t("govuk_alpha_group_media.challenges.reward_hint") },
+          items: rewardItems,
+          errorMessage: { text: fieldErrors.reward_xp, visuallyHiddenText: errorPrefix } if fieldErrors.reward_xp else undefined
+        }) }}
+
+        {{ nexusDateInput({
+          name: "ends_at",
+          legend: t("govuk_alpha_group_media.challenges.ends_legend"),
+          hint: t("govuk_alpha_group_media.challenges.ends_hint"),
+          value: endsParts,
+          errorMessage: fieldErrors["ends_at-day"],
+          errorFields: endsErrorFields
+        }, t) }}
+
+        <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_group_media.challenges.submit") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

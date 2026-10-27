@@ -1,0 +1,89 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set base = '/groups/' + (group.id | string) + '/qa' %}
+{% set questionPath = base + '/' + (question.id | string) %}
+
+{% macro voteForms(type, targetId, userVote, voteCount, label) %}
+  <div class="govuk-button-group govuk-!-margin-bottom-2">
+    <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-margin-right-2">{{ t("govuk_alpha_group_tools.qa.votes", { count: voteCount }) }}</span>
+    <form method="post" action="{{ urlFor(questionPath + '/vote') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="type" value="{{ type }}">
+      <input type="hidden" name="target_id" value="{{ targetId }}">
+      <input type="hidden" name="vote" value="1">
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if userVote == 1 else 'false' }}">
+        {{ t("govuk_alpha_group_tools.qa.upvote") }}<span class="govuk-visually-hidden">: {{ label }}</span>
+      </button>
+    </form>
+    <form method="post" action="{{ urlFor(questionPath + '/vote') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="type" value="{{ type }}">
+      <input type="hidden" name="target_id" value="{{ targetId }}">
+      <input type="hidden" name="vote" value="-1">
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if userVote == -1 else 'false' }}">
+        {{ t("govuk_alpha_group_tools.qa.downvote") }}<span class="govuk-visually-hidden">: {{ label }}</span>
+      </button>
+    </form>
+  </div>
+{% endmacro %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t("govuk_alpha_group_tools.qa.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ question.title }}</h1>
+      <p class="govuk-body-s">{{ t("govuk_alpha_group_tools.qa.asked_by", { name: question.author.name, date: question.createdAtLabel }) }}</p>
+      <div class="govuk-body app-formatted-text">{{ question.body }}</div>
+      {{ voteForms('question', question.id, question.userVote, question.voteCount, question.title) }}
+
+      <h2 class="govuk-heading-l" id="answers">{{ t("govuk_alpha_group_tools.qa.answers_heading", { count: answers.length }) }}</h2>
+      {% if answers.length == 0 %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.qa.no_answers") }}</p>
+      {% else %}
+        {% for answer in answers %}
+          <div class="govuk-!-margin-bottom-6" id="answer-{{ answer.id }}">
+            {% if answer.isAccepted %}
+              {{ govukTag({ text: t("govuk_alpha_group_tools.qa.accepted_answer"), classes: "govuk-tag--green" }) }}
+            {% endif %}
+            <p class="govuk-body-s govuk-!-margin-top-2">{{ t("govuk_alpha_group_tools.qa.answered_by", { name: answer.author.name, date: answer.createdAtLabel }) }}</p>
+            <div class="govuk-body app-formatted-text">{{ answer.body }}</div>
+            {{ voteForms('answer', answer.id, answer.userVote, answer.voteCount, t("govuk_alpha_group_tools.qa.answered_by", { name: answer.author.name, date: answer.createdAtLabel })) }}
+            {% if canAccept and not answer.isAccepted %}
+              <form method="post" action="{{ urlFor(questionPath + '/answers/' + (answer.id | string) + '/accept') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                {{ govukButton({ text: t("govuk_alpha_group_tools.qa.accept_answer"), classes: "govuk-button--secondary" }) }}
+              </form>
+            {% endif %}
+            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{{ urlFor(questionPath + '/answers') }}" id="answer-form" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukTextarea({
+          label: { text: t("govuk_alpha_group_tools.qa.your_answer"), classes: "govuk-label--m", isPageHeading: false },
+          id: "answer-body",
+          name: "body",
+          rows: 6,
+          errorMessage: { text: statusBanner.message, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if (statusBanner and statusBanner.type == "error" and statusBanner.field == "body") else undefined
+        }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.qa.post_answer") }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

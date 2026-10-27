@@ -1,0 +1,119 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  The optional group-form fields React offers (CreateGroupPage, GroupModals), driven by
+  GET /api/v2/groups/form-capabilities so only what the API accepts is shown.
+#}
+
+{% macro visibilityRadios(capabilities, current, t) %}
+  {% set allowedVisibility = (capabilities.allowedVisibility if capabilities else ["public", "private"]) %}
+  <div class="govuk-form-group">
+    <fieldset class="govuk-fieldset" aria-describedby="visibility-hint">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("groups.create.visibility_legend") }}</h2></legend>
+      <div id="visibility-hint" class="govuk-hint">{{ t("groups.create.visibility_hint") }}</div>
+      <div class="govuk-radios" data-module="govuk-radios">
+        {% for option in allowedVisibility %}
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="visibility{% if not loop.first %}-{{ option }}{% endif %}" name="visibility" type="radio" value="{{ option }}"{% if (current == option) or (not current and loop.first) %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="visibility{% if not loop.first %}-{{ option }}{% endif %}">
+              {% if option == "secret" %}{{ t("govuk_alpha_groups.form.visibility_secret_label") }}{% else %}{{ t("groups.create.visibility_" + option + "_label") }}{% endif %}
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+  </div>
+{% endmacro %}
+
+{% macro templateRadios(capabilities, current, t) %}
+  {% if capabilities and capabilities.templates.length > 0 %}
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="template_id-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_groups.form.template_legend") }}</h2></legend>
+        <div id="template_id-hint" class="govuk-hint">{{ t("govuk_alpha_groups.form.template_hint") }}</div>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="template_id" name="template_id" type="radio" value=""{% if not current %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="template_id">{{ t("govuk_alpha_groups.form.template_none") }}</label>
+          </div>
+          {% for template in capabilities.templates %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="template_id-{{ template.id }}" name="template_id" type="radio" value="{{ template.id }}"{% if current == template.id %} checked{% endif %}{% if template.description %} aria-describedby="template_id-{{ template.id }}-hint"{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="template_id-{{ template.id }}">{{ template.name }}</label>
+              {% if template.description %}<div id="template_id-{{ template.id }}-hint" class="govuk-hint govuk-radios__hint">{{ template.description }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro typeAndParent(capabilities, currentType, currentParent, selfId, t, fieldErrors) %}
+  {% if capabilities and capabilities.showType %}
+    <input type="hidden" name="has_type" value="1">
+    <div class="govuk-form-group{% if fieldErrors and fieldErrors.type_id %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="type_id">{{ t("govuk_alpha_groups.form.type_label") }}</label>
+      {% if fieldErrors and fieldErrors.type_id %}<p id="type_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.type_id }}</p>{% endif %}
+      <select class="govuk-select" id="type_id" name="type_id">
+        <option value="">{{ t("govuk_alpha_groups.form.type_none") }}</option>
+        {% for type in capabilities.groupTypes %}
+          <option value="{{ type.id }}"{% if currentType == type.id %} selected{% endif %}>{{ type.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  {% endif %}
+  {% if capabilities and capabilities.showParent %}
+    <input type="hidden" name="has_parent" value="1">
+    <div class="govuk-form-group{% if fieldErrors and fieldErrors.parent_id %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="parent_id">{{ t("govuk_alpha_groups.form.parent_label") }}</label>
+      <div id="parent_id-hint" class="govuk-hint">{{ t("govuk_alpha_groups.form.parent_hint") }}</div>
+      {% if fieldErrors and fieldErrors.parent_id %}<p id="parent_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.parent_id }}</p>{% endif %}
+      <select class="govuk-select" id="parent_id" name="parent_id" aria-describedby="parent_id-hint">
+        <option value="">{{ t("govuk_alpha_groups.form.parent_none") }}</option>
+        {% for parent in capabilities.parentCandidates %}
+          {% if parent.id != selfId %}
+            <option value="{{ parent.id }}"{% if currentParent == parent.id %} selected{% endif %}>{{ parent.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro imageFields(t) %}
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="avatar">{{ t("govuk_alpha_groups.image.avatar_heading") }}</label>
+    <div id="avatar-hint" class="govuk-hint">{{ t("govuk_alpha_groups.image.avatar_description") }} {{ t("govuk_alpha_groups.image.avatar_hint") }}</div>
+    <input class="govuk-file-upload" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="avatar-hint">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="cover">{{ t("groups.create.cover_label") }}</label>
+    <div id="cover-hint" class="govuk-hint">{{ t("groups.create.cover_hint") }}</div>
+    <input class="govuk-file-upload" id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="cover-hint">
+  </div>
+{% endmacro %}
+
+{# Brand colours (React GroupBrandingPicker, edit only). A colour code typed into a
+   plain text field works without JavaScript and for every input method. #}
+{% macro brandingFields(capabilities, group, t, fieldErrors) %}
+  {% if capabilities and capabilities.showBranding %}
+    <input type="hidden" name="has_branding" value="1">
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="branding-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_groups.form.branding_legend") }}</h2></legend>
+        <div id="branding-hint" class="govuk-hint">{{ t("govuk_alpha_groups.form.colour_hint") }}</div>
+        {% for field in [{ name: "primary_color", key: "primary_label" }, { name: "accent_color", key: "accent_label" }] %}
+          <div class="govuk-form-group{% if fieldErrors and fieldErrors[field.name] %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="{{ field.name }}">{{ t("govuk_alpha_groups.form." + field.key) }}</label>
+            {% if fieldErrors and fieldErrors[field.name] %}<p id="{{ field.name }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors[field.name] }}</p>{% endif %}
+            <input class="govuk-input govuk-input--width-10{% if fieldErrors and fieldErrors[field.name] %} govuk-input--error{% endif %}" id="{{ field.name }}" name="{{ field.name }}" type="text" spellcheck="false" autocomplete="off" maxlength="7" value="{{ group[field.name] or '' }}">
+          </div>
+        {% endfor %}
+      </fieldset>
+    </div>
+  {% endif %}
+{% endmacro %}

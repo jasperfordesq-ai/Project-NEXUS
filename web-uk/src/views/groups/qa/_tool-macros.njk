@@ -1,0 +1,40 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Shared by the group Q&A, wiki, tasks, analytics and data export pages. #}
+
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% macro toolStatus(banner) %}
+  {% if banner and banner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: t("govuk_alpha_groups.common.success_title"),
+      text: banner.message
+    }) }}
+  {% elif banner and banner.type == "error" %}
+    {{ govukErrorSummary({
+      attributes: { tabindex: "-1" },
+      titleText: t("govuk_alpha_groups.common.error_title"),
+      descriptionText: banner.message,
+      errorList: []
+    }) }}
+  {% endif %}
+{% endmacro %}
+
+{% macro toolErrors(errorList) %}
+  {% if errorList and errorList.length %}
+    {{ govukErrorSummary({
+      attributes: { tabindex: "-1" },
+      titleText: t("govuk_alpha_groups.common.error_title"),
+      errorList: errorList
+    }) }}
+  {% endif %}
+{% endmacro %}
+
+{% macro toolBackLink(group) %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endmacro %}

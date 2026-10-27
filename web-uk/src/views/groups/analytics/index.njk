@@ -1,0 +1,193 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set base = '/groups/' + (group.id | string) + '/analytics' %}
+{% set k = "govuk_alpha_group_tools.analytics." %}
+
+{% block beforeContent %}
+  {{ tools.toolBackLink(group) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t(k + "title") }}</h1>
+
+      <form method="get" action="{{ urlFor(base) }}" novalidate>
+        {{ govukSelect({ id: "days", name: "days", label: { text: t(k + "range_label") }, items: dayOptions }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.common.apply"), classes: "govuk-button--secondary" }) }}
+      </form>
+
+      <h2 class="govuk-heading-m">{{ t(k + "downloads_heading") }}</h2>
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ urlFor(base + '/export/members') }}" download>{{ t(k + "export_members") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor(base + '/export/activity') }}" download>{{ t(k + "export_activity") }}</a></li>
+      </ul>
+
+      {% if loadFailed %}
+        <p class="govuk-body">{{ t(k + "load_error") }}</p>
+      {% else %}
+        {% set d = dashboard %}
+        <h2 class="govuk-heading-l">{{ t(k + "summary_heading") }}</h2>
+        {{ govukSummaryList({
+          classes: "govuk-!-width-two-thirds",
+          rows: [
+            { key: { text: t(k + "total_members") }, value: { text: d.kpi.totalMembers | string } },
+            { key: { text: t(k + "active_members") }, value: { text: d.kpi.activeMembers | string } },
+            { key: { text: t(k + "participation_rate") }, value: { text: d.kpi.participationRateLabel } },
+            { key: { text: t(k + "avg_posts_day") }, value: { text: d.kpi.avgPostsPerDayLabel } }
+          ]
+        }) }}
+
+        <h2 class="govuk-heading-l">{{ t(k + "comparative_stats") }}</h2>
+        {{ govukSummaryList({
+          classes: "govuk-!-width-two-thirds",
+          rows: [
+            { key: { text: t(k + "your_members") }, value: { text: d.comparative.yourMembers | string } },
+            { key: { text: t(k + "average") + " (" + t(k + "your_members") + ")" }, value: { text: d.comparative.avgMembers | string } },
+            { key: { text: t(k + "your_activity") }, value: { text: d.comparative.yourActivity | string } },
+            { key: { text: t(k + "average") + " (" + t(k + "your_activity") + ")" }, value: { text: d.comparative.avgActivity | string } },
+            { key: { text: t(k + "percentile_rank") }, value: { text: t(k + "percentile_value", { pct: d.comparative.percentileRank }) } }
+          ]
+        }) }}
+
+        <h2 class="govuk-heading-l">{{ t(k + "member_growth") }}</h2>
+        {% if d.growth.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(k + "member_growth") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(k + "member_growth") }}</caption>
+            <thead class="govuk-table__head"><tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(k + "col_date") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_total_members") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_new_members") }}</th>
+            </tr></thead>
+            <tbody class="govuk-table__body">
+              {% for row in d.growth %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.date }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.totalMembers }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.newMembers }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <p class="govuk-body">{{ t(k + "no_growth_data") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l">{{ t(k + "engagement_timeline") }}</h2>
+        {% if d.engagement.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(k + "engagement_timeline") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(k + "engagement_timeline") }}</caption>
+            <thead class="govuk-table__head"><tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(k + "col_date") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_posts") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_discussions") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_active_members") }}</th>
+            </tr></thead>
+            <tbody class="govuk-table__body">
+              {% for row in d.engagement %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.date }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.posts }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.discussions }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.activeMembers }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <p class="govuk-body">{{ t(k + "no_engagement_data") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l">{{ t(k + "top_contributors") }}</h2>
+        {% if d.contributors.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(k + "top_contributors") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(k + "top_contributors") }}</caption>
+            <thead class="govuk-table__head"><tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(k + "col_member") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "chart_posts") }}</th>
+            </tr></thead>
+            <tbody class="govuk-table__body">
+              {% for row in d.contributors %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">
+                    {% if row.userId %}<a class="govuk-link" href="{{ urlFor('/members/' + (row.userId | string)) }}">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}
+                  </th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.postCount }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <p class="govuk-body">{{ t(k + "no_contributors") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l">{{ t(k + "activity_breakdown") }}</h2>
+        {% if d.activity.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(k + "activity_breakdown") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(k + "activity_breakdown") }}</caption>
+            <thead class="govuk-table__head"><tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(k + "col_activity") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "col_count") }}</th>
+            </tr></thead>
+            <tbody class="govuk-table__body">
+              {% for row in d.activity %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.type }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.count }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <p class="govuk-body">{{ t(k + "no_activity_data") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l">{{ t(k + "retention_cohorts") }}</h2>
+        {% if d.retention.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(k + "retention_cohorts") }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(k + "retention_cohorts") }}</caption>
+            <thead class="govuk-table__head"><tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t(k + "col_month") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "col_joined") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "col_still_active") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(k + "col_retention") }}</th>
+            </tr></thead>
+            <tbody class="govuk-table__body">
+              {% for row in d.retention %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.month }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.joined }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.stillActive }}</td>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.retentionLabel }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% else %}
+          <p class="govuk-body">{{ t(k + "no_retention_data") }}</p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

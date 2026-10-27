@@ -28,6 +28,8 @@ const WRAPPERS = {
   callGoalApi: wrapper('/api/v2/goals', 1, 2, 3),
   callCourseApi: wrapper('/api/v2/courses', 1, 2, 3),
   callGroupApi: wrapper('/api/v2/groups', 1, 2, 3),
+  callGroupChatroomApi: wrapper('/api/v2/group-chatrooms', 1, 2, 3),
+  callGroupChatroomMessageApi: wrapper('/api/v2/group-chatroom-messages', 1, 2, 3),
   downloadGroupFile: wrapper('/api/v2/groups', null, 1, null, true, 'GET'),
   callJobApi: wrapper('/api/v2/jobs', 1, 2, 3),
   callAdminJobApi: wrapper('/api/v2/admin/jobs', 1, 2, 3),

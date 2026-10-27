@@ -7,7 +7,7 @@
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "groups/_form-fields.njk" import visibilityRadios, templateRadios, typeAndParent, imageFields, brandingFields %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% block beforeContent %}
@@ -91,44 +91,13 @@
           attributes: { maxlength: "255" }
         }) }}
 
-        {{ govukRadios({
-          name: "visibility",
-          fieldset: {
-            legend: {
-              html: '<h2 class="govuk-fieldset__heading">' + t("groups.create.visibility_legend") + '</h2>',
-              classes: "govuk-fieldset__legend--m"
-            }
-          },
-          hint: { text: t("groups.create.visibility_hint") },
-          items: [
-            {
-              value: "public",
-              text: t("groups.create.visibility_public_label"),
-              checked: group.visibility != 'private'
-            },
-            {
-              value: "private",
-              text: t("groups.create.visibility_private_label"),
-              checked: group.visibility == 'private'
-            }
-          ]
-        }) }}
+        {{ typeAndParent(capabilities, group.type_id, group.parent_id, group.id, t, fieldErrors) }}
 
-        {{ govukInput({
-          label: { text: t("polish_groups.tags_label") },
-          hint: { text: t("polish_groups.tags_hint") },
-          id: "tags",
-          name: "tags",
-          value: group.tagsText or "",
-          classes: "govuk-!-width-two-thirds",
-          attributes: { maxlength: "255" }
-        }) }}
+        {{ visibilityRadios(capabilities, group.visibility, t) }}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="cover">{{ t("groups.create.cover_label") }}</label>
-          <div id="cover-hint" class="govuk-hint">{{ t("groups.create.cover_hint") }}</div>
-          <input class="govuk-file-upload" id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="cover-hint">
-        </div>
+        {{ imageFields(t) }}
+
+        {{ brandingFields(capabilities, group, t, fieldErrors) }}
 
         {{ govukButton({ text: t("groups.edit.submit") }) }}
       </form>

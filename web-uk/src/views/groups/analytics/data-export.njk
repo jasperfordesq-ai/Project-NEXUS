@@ -1,0 +1,48 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set base = '/groups/' + (group.id | string) + '/data-export' %}
+{% set k = "govuk_alpha_group_tools.data_export." %}
+
+{% block beforeContent %}
+  {{ tools.toolBackLink(group) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t(k + "title") }}</h1>
+      <p class="govuk-body">{{ t(k + "description") }}</p>
+
+      {% if exportId %}
+        {% if refreshFailed %}
+          <p class="govuk-body">{{ t(k + "refresh_failed") }}</p>
+        {% elif exportRecord %}
+          {{ govukSummaryList({ rows: exportRows }) }}
+
+          {% if exportRecord.status == "completed" %}
+            {{ govukButton({ text: t(k + "download"), href: urlFor(base + '/' + exportRecord.id + '/download') }) }}
+          {% elif exportRecord.status == "queued" or exportRecord.status == "processing" %}
+            <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(base + '/' + exportRecord.id) }}">{{ t(k + "refresh") }}</a></p>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {% if not exportRecord or exportRecord.status in ["completed", "failed", "expired"] %}
+        <form method="post" action="{{ urlFor(base) }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ govukButton({ text: t(k + "generate_again") if exportRecord else t(k + "generate"), classes: "govuk-button--secondary" if exportRecord else undefined }) }}
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

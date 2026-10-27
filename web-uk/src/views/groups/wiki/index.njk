@@ -1,0 +1,43 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set base = '/groups/' + (group.id | string) + '/wiki' %}
+
+{% block beforeContent %}
+  {{ tools.toolBackLink(group) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.wiki.title") }}</h1>
+
+      {{ govukButton({ text: t("govuk_alpha_group_tools.wiki.new_page"), href: urlFor(base + '/new') }) }}
+
+      {% if loadFailed %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.wiki.load_failed") }}</p>
+      {% elif pages.length == 0 %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.wiki.empty_no_pages") }}</p>
+      {% else %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_tools.wiki.pages") }}</h2>
+        <ul class="govuk-list">
+          {% for page in pages %}
+            <li{% if page.depth %} class="govuk-!-margin-left-{{ page.depth * 3 }}"{% endif %}>
+              <a class="govuk-link" href="{{ urlFor(base + '/page/' + (page.slug | urlencode)) }}">{{ page.title }}</a>
+              {% if not page.isPublished %}{{ govukTag({ text: t("govuk_alpha_group_tools.wiki.draft"), classes: "govuk-tag--grey govuk-!-margin-left-1" }) }}{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

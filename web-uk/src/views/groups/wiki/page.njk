@@ -1,0 +1,36 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+
+{% set base = '/groups/' + (group.id | string) + '/wiki' %}
+{% set pagePath = base + '/page/' + (page.slug | urlencode) %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t("govuk_alpha_group_tools.wiki.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ page.title }}</h1>
+      {% if not page.isPublished %}<p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_group_tools.wiki.draft"), classes: "govuk-tag--grey" }) }}</p>{% endif %}
+      <p class="govuk-body-s">{{ t("govuk_alpha_group_tools.wiki.last_updated", { name: page.authorName, date: page.updatedAtLabel }) }}</p>
+      <div class="govuk-body app-formatted-text">{{ page.content }}</div>
+
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ urlFor(pagePath + '/edit') }}">{{ t("govuk_alpha_group_tools.wiki.edit") }}<span class="govuk-visually-hidden">: {{ page.title }}</span></a></li>
+        <li><a class="govuk-link" href="{{ urlFor(pagePath + '/history') }}">{{ t("govuk_alpha_group_tools.wiki.history") }}<span class="govuk-visually-hidden">: {{ page.title }}</span></a></li>
+        {% if canDelete %}
+          <li><a class="govuk-link" href="{{ urlFor(pagePath + '/delete') }}">{{ t("govuk_alpha_group_tools.wiki.delete") }}<span class="govuk-visually-hidden">: {{ page.title }}</span></a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

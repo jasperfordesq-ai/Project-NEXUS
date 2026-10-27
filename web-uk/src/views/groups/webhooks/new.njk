@@ -1,0 +1,63 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/webhooks') }}">{{ t("govuk_alpha_group_media.webhooks.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set errorPrefix = t("states.error_prefix") | replace(":", "") | trim %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorList and errorList.length %}
+        {{ govukErrorSummary({ titleText: t("govuk_alpha_groups.common.error_title"), errorList: errorList, attributes: { tabindex: "-1" } }) }}
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_media.webhooks.new_title") }}</h1>
+
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/webhooks/new') }}" novalidate autocomplete="off">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          id: "url",
+          name: "url",
+          type: "url",
+          label: { text: t("govuk_alpha_group_media.webhooks.url_label"), classes: "govuk-label--s" },
+          hint: { text: t("govuk_alpha_group_media.webhooks.url_hint") },
+          value: values.url,
+          spellcheck: false,
+          errorMessage: { text: fieldErrors.url, visuallyHiddenText: errorPrefix } if fieldErrors.url else undefined
+        }) }}
+
+        {{ govukCheckboxes({
+          idPrefix: "events",
+          name: "events",
+          fieldset: { legend: { text: t("govuk_alpha_group_media.webhooks.events_legend"), classes: "govuk-fieldset__legend--s" } },
+          hint: { text: t("govuk_alpha_group_media.webhooks.events_hint") },
+          items: eventItems,
+          errorMessage: { text: fieldErrors.events, visuallyHiddenText: errorPrefix } if fieldErrors.events else undefined
+        }) }}
+
+        {{ govukInput({
+          id: "secret",
+          name: "secret",
+          type: "password",
+          label: { text: t("govuk_alpha_group_media.webhooks.secret_label"), classes: "govuk-label--s" },
+          hint: { text: t("govuk_alpha_group_media.webhooks.secret_hint") },
+          autocomplete: "new-password",
+          spellcheck: false
+        }) }}
+
+        <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_group_media.webhooks.submit") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

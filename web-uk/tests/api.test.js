@@ -3942,6 +3942,52 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('group gallery and chat channel helpers', () => {
+    function okJson(body) {
+      return { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => body };
+    }
+
+    it('uploadGroupMedia posts multipart file and caption to the group media endpoint', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ data: { id: 9 } }));
+
+      await api.uploadGroupMedia('test-token', 42, {
+        caption: ' Our stall ',
+        file: { buffer: Buffer.from('png'), filename: 'stall.png', contentType: 'image/png' }
+      });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/groups/42/media');
+      expect(options.method).toBe('POST');
+      expect(options.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer test-token' }));
+      expect(options.body).toBeInstanceOf(FormData);
+      expect(options.body.get('caption')).toBe('Our stall');
+      expect(options.body.get('file').name).toBe('stall.png');
+    });
+
+    it('callGroupChatroomApi addresses /api/v2/group-chatrooms with a JSON body', async () => {
+      mockFetch.mockResolvedValueOnce(okJson({ data: { id: 1 } }));
+
+      await api.callGroupChatroomApi('test-token', 'POST', '/7/messages', { body: 'Hello' });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/group-chatrooms/7/messages');
+      expect(options.method).toBe('POST');
+      expect(options.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer test-token' }));
+      expect(JSON.parse(options.body)).toEqual({ body: 'Hello' });
+    });
+
+    it('callGroupChatroomMessageApi addresses /api/v2/group-chatroom-messages', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true, status: 204, headers: { get: () => null }, json: async () => ({}), text: async () => '' });
+
+      await api.callGroupChatroomMessageApi('test-token', 'DELETE', '12');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/group-chatroom-messages/12');
+      expect(options.method).toBe('DELETE');
+      expect(options.body).toBeUndefined();
+    });
+  });
+
   describe('callUserSettingsApi', () => {
     it('should call Laravel v2 user settings endpoints with auth, method, and optional payload', async () => {
       mockFetch.mockResolvedValueOnce({
@@ -6728,6 +6774,53 @@ describe('API Request Functions', () => {
       expect(options.body.getAll('media[]')).toHaveLength(1);
       expect(options.body.get('alt_texts[]')).toBe('Volunteers planting herbs');
       expect(options.body.get('image')).toBeNull();
+    });
+
+    it('should create a group feed post with several images and their alt texts', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 43 } })
+      });
+
+      await api.createFeedPostWithMedia('test-token', {
+        content: 'Workshop',
+        visibility: 'public',
+        group_id: 974,
+        files: [
+          { buffer: Buffer.from('a'), filename: 'a.png', contentType: 'image/png', altText: 'Bench' },
+          { buffer: Buffer.from('b'), filename: 'b.jpg', contentType: 'image/jpeg', altText: 'Tools' }
+        ]
+      });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/feed/posts');
+      expect(options.method).toBe('POST');
+      expect(options.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer test-token' }));
+      expect(options.body).toBeInstanceOf(FormData);
+      expect(options.body.get('group_id')).toBe('974');
+      expect(options.body.getAll('media[]')).toHaveLength(2);
+      expect(options.body.getAll('alt_texts[]')).toEqual(['Bench', 'Tools']);
+      expect(options.body.get('files')).toBeNull();
+    });
+
+    it('should create a group feed poll through /api/v2/feed/polls', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { id: 9 } })
+      });
+
+      await api.createFeedPoll('test-token', { question: 'Q?', options: ['A', 'B'], group_id: 974 });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/feed/polls',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+          body: JSON.stringify({ question: 'Q?', options: ['A', 'B'], group_id: 974 })
+        })
+      );
     });
 
     it('should call Laravel v2 feed moderation helpers', async () => {

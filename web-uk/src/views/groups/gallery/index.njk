@@ -1,0 +1,104 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set galleryBase = '/groups/' + (group.id | string) + '/gallery' %}
+  {% set fileError = statusBanner and statusBanner.type == "error" and statusBanner.field == "gallery-file" %}
+  {% set captionError = statusBanner and statusBanner.type == "error" and statusBanner.field == "gallery-caption" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_group_media.gallery.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_media.gallery.title") }}</h1>
+
+  {% include "groups/gallery/_status-banner.njk" %}
+
+  <p class="govuk-body">{{ t("govuk_alpha_group_media.gallery.intro") }}</p>
+
+  <form method="get" action="{{ urlFor(galleryBase) }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group govuk-!-margin-bottom-3">
+      <label class="govuk-label govuk-label--s" for="gallery-type">{{ t("govuk_alpha_group_media.gallery.filter_label") }}</label>
+      <select class="govuk-select" id="gallery-type" name="type">
+        {% for filter in filters %}
+          <option value="{{ filter.value }}"{% if type == filter.value %} selected{% endif %}>{{ filter.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+  </form>
+
+  {% if not items.length %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_media.gallery.empty_title") }}</h2>
+      <p class="govuk-body">{{ emptyMessage }}</p>
+    </div>
+  {% else %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for item in items %}
+        {% set itemLabel = item.caption or item.name %}
+        <li class="nexus-alpha-card">
+          {% if item.type == "video" %}
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_group_media.gallery.video_label") }}{% if item.name %}: {{ item.name }}{% endif %}</h2>
+            <video controls preload="metadata" src="{{ urlFor(item.fileUrl) }}" style="max-width:100%">
+              <p class="govuk-body">{{ t("govuk_alpha_group_media.gallery.video_fallback") }}</p>
+            </video>
+            <p class="govuk-body govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor(item.fileUrl) }}">{{ t("govuk_alpha_group_media.gallery.open_video") }}<span class="govuk-visually-hidden"> {{ itemLabel }}</span></a></p>
+          {% else %}
+            <a class="govuk-link" href="{{ urlFor(item.fileUrl) }}">
+              <img src="{{ urlFor(item.fileUrl) }}" alt="{{ itemLabel or t('govuk_alpha_group_media.gallery.photo_alt_fallback') }}" loading="lazy" style="max-width:100%;height:auto">
+              <span class="govuk-visually-hidden">{{ t("govuk_alpha_group_media.gallery.open_full") }}</span>
+            </a>
+          {% endif %}
+          {% if item.caption %}<p class="govuk-body govuk-!-margin-top-2">{{ item.caption }}</p>{% endif %}
+          <p class="govuk-body-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_group_media.gallery.uploaded_by", { name: item.uploaderName or t("govuk_alpha_group_media.common.unknown_member"), date: item.uploadedAtLabel }) }}</p>
+          {% if item.canDelete %}
+            <a class="govuk-link" href="{{ urlFor(galleryBase + '/' + (item.id | string) + '/delete') }}">{{ t("govuk_alpha_group_media.gallery.delete_link") }}<span class="govuk-visually-hidden"> {{ itemLabel }}</span></a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if pagination and (pagination.nextHref or pagination.firstHref) %}
+    {{ govukPagination({
+      previous: { text: t("govuk_alpha_group_media.gallery.newest"), href: urlFor(pagination.firstHref) } if pagination.firstHref else false,
+      next: { text: t("govuk_alpha_group_media.gallery.older"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false,
+      landmarkLabel: t("govuk_alpha_group_media.gallery.pagination_label"),
+      classes: "govuk-pagination--block govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
+
+  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_group_media.gallery.upload_heading") }}</h2>
+
+  <form method="post" action="{{ urlFor(galleryBase) }}" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if fileError %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="gallery-file">{{ t("govuk_alpha_group_media.gallery.file_label") }}</label>
+      <div id="gallery-file-hint" class="govuk-hint">{{ t("govuk_alpha_group_media.gallery.file_hint") }}</div>
+      {% if fileError %}
+        <p class="govuk-error-message" id="gallery-file-error"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+      {% endif %}
+      <input class="govuk-file-upload{% if fileError %} govuk-file-upload--error{% endif %}" id="gallery-file" name="file" type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime" aria-describedby="gallery-file-hint{% if fileError %} gallery-file-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group{% if captionError %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="gallery-caption">{{ t("govuk_alpha_group_media.gallery.caption_label") }}</label>
+      <div id="gallery-caption-hint" class="govuk-hint">{{ t("govuk_alpha_group_media.gallery.caption_hint") }}</div>
+      {% if captionError %}
+        <p class="govuk-error-message" id="gallery-caption-error"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+      {% endif %}
+      <textarea class="govuk-textarea{% if captionError %} govuk-textarea--error{% endif %}" id="gallery-caption" name="caption" rows="2" maxlength="2000" aria-describedby="gallery-caption-hint{% if captionError %} gallery-caption-error{% endif %}"></textarea>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_group_media.gallery.upload_submit") }}</button>
+  </form>
+{% endblock %}

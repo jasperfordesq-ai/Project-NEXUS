@@ -1,0 +1,50 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set base = '/groups/' + (group.id | string) + '/qa' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(base) }}">{{ t("govuk_alpha_group_tools.qa.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolErrors(errorList) }}
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.qa.ask_title") }}</h1>
+
+      <form method="post" action="{{ urlFor(base + '/ask') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukInput({
+          label: { text: t("govuk_alpha_group_tools.qa.question_title_label"), classes: "govuk-label--m" },
+          hint: { text: t("govuk_alpha_group_tools.qa.question_title_hint") },
+          id: "title",
+          name: "title",
+          value: values.title,
+          attributes: { maxlength: "255" },
+          errorMessage: { text: errors.title, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if errors.title else undefined
+        }) }}
+        {{ govukTextarea({
+          label: { text: t("govuk_alpha_group_tools.qa.question_body_label"), classes: "govuk-label--m" },
+          hint: { text: t("govuk_alpha_group_tools.qa.question_body_hint") },
+          id: "body",
+          name: "body",
+          rows: 8,
+          value: values.body,
+          errorMessage: { text: errors.body, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if errors.body else undefined
+        }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.qa.submit_question") }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

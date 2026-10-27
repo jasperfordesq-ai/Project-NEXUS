@@ -1,0 +1,117 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  One chat channel. Not live: the page says so and offers a Refresh link (the
+  website's Pusher updates have no HTML-only equivalent). Messages read oldest
+  first; "Older messages" pages back with the API cursor.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% macro messageActions(message, roomBase, isChannelAdmin, csrfToken, t, urlFor) %}
+  {% if isChannelAdmin or message.isOwn %}
+    <div class="govuk-button-group govuk-!-margin-bottom-0">
+      {% if isChannelAdmin %}
+        <form method="post" action="{{ urlFor(roomBase + '/messages/' + (message.id | string) + ('/unpin' if message.isPinned else '/pin')) }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{% if message.isPinned %}{{ t("govuk_alpha_group_media.channels.unpin") }}{% else %}{{ t("govuk_alpha_group_media.channels.pin") }}{% endif %}<span class="govuk-visually-hidden">: {{ message.authorName }}, {{ message.postedLabel }}</span></button>
+        </form>
+      {% endif %}
+      <a class="govuk-link" href="{{ urlFor(roomBase + '/messages/' + (message.id | string) + '/delete') }}">{{ t("govuk_alpha_group_media.channels.delete_message") }}<span class="govuk-visually-hidden">: {{ message.authorName }}, {{ message.postedLabel }}</span></a>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/channels') }}">{{ t("govuk_alpha_group_media.channels.back_to_channels") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set roomBase = '/groups/' + (group.id | string) + '/channels/' + (room.id | string) %}
+  {% set bodyError = statusBanner and statusBanner.type == "error" and statusBanner.field == "message-body" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_group_media.channels.channel_caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ room.name }}</h1>
+  {% if room.isPrivate %}<p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_group_media.channels.private_tag"), classes: "govuk-tag--grey" }) }}</p>{% endif %}
+  {% if room.description %}<p class="govuk-body-l">{{ room.description }}</p>{% endif %}
+
+  {% include "groups/gallery/_status-banner.njk" %}
+
+  <p class="govuk-body">{{ t("govuk_alpha_group_media.channels.refresh_hint") }}
+    <a class="govuk-link" href="{{ urlFor(roomBase) }}#latest">{{ t("govuk_alpha_group_media.channels.refresh") }}</a>
+  </p>
+
+  {% if pinned.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_media.channels.pinned_heading") }}</h2>
+    <ul class="govuk-list">
+      {% for message in pinned %}
+        <li class="govuk-inset-text govuk-!-margin-top-0">
+          <p class="govuk-body-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_group_media.channels.posted_by", { name: message.authorName or t("govuk_alpha_group_media.common.unknown_member"), date: message.postedLabel }) }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap">{{ message.body }}</p>
+          {% if isChannelAdmin %}
+            <form method="post" action="{{ urlFor(roomBase + '/messages/' + (message.id | string) + '/unpin') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_group_media.channels.unpin") }}<span class="govuk-visually-hidden">: {{ message.authorName }}, {{ message.postedLabel }}</span></button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_group_media.channels.messages_heading") }}</h2>
+
+  {% if olderHref %}
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(olderHref) }}">{{ t("govuk_alpha_group_media.channels.older") }}</a></p>
+  {% endif %}
+
+  {% if not messages.length %}
+    <p class="govuk-body">{{ t("govuk_alpha_group_media.channels.no_messages") }}</p>
+  {% else %}
+    <ol class="govuk-list nexus-alpha-card-list">
+      {% for message in messages %}
+        <li class="nexus-alpha-card"{% if loop.last %} id="latest"{% endif %}>
+          <p class="govuk-body-s govuk-!-margin-bottom-1">
+            <strong>{{ message.authorName or t("govuk_alpha_group_media.common.unknown_member") }}</strong>, {{ message.postedLabel }}
+            {% if message.isPinned %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.pinned_tag"), classes: "govuk-tag--yellow govuk-!-margin-left-1" }) }}{% endif %}
+          </p>
+          <p class="govuk-body govuk-!-margin-bottom-2" style="white-space:pre-wrap">{{ message.body }}</p>
+          {{ messageActions(message, roomBase, isChannelAdmin, csrfToken, t, urlFor) }}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
+  {% if latestHref %}
+    {{ govukPagination({
+      next: { text: t("govuk_alpha_group_media.channels.latest"), href: urlFor(latestHref) },
+      landmarkLabel: t("govuk_alpha_group_media.channels.pagination_label"),
+      classes: "govuk-pagination--block"
+    }) }}
+  {% endif %}
+
+  <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_group_media.channels.post_heading") }}</h2>
+  <form method="post" action="{{ urlFor(roomBase + '/messages') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group{% if bodyError %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="message-body">{{ t("govuk_alpha_group_media.channels.message_label") }}</label>
+      {% if bodyError %}
+        <p class="govuk-error-message" id="message-body-error"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+      {% endif %}
+      <textarea class="govuk-textarea{% if bodyError %} govuk-textarea--error{% endif %}" id="message-body" name="body" rows="3" maxlength="5000"{% if bodyError %} aria-describedby="message-body-error"{% endif %}></textarea>
+    </div>
+    <div class="govuk-button-group">
+      <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_group_media.channels.post_submit") }}</button>
+      <a class="govuk-link" href="{{ urlFor(roomBase) }}#latest">{{ t("govuk_alpha_group_media.channels.refresh") }}</a>
+    </div>
+  </form>
+
+  {% if canDeleteRoom %}
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(roomBase + '/delete') }}">{{ t("govuk_alpha_group_media.channels.delete_channel_link") }}</a></p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,93 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% macro challengeCard(challenge, group, isAdmin, t, urlFor) %}
+  <li class="nexus-alpha-card">
+    <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ challenge.title }}</h3>
+    {% if challenge.description %}<p class="govuk-body">{{ challenge.description }}</p>{% endif %}
+    <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_progress") }}</dt>
+        <dd class="govuk-summary-list__value">{{ t("govuk_alpha_group_media.challenges.progress_value", { current: challenge.current, target: challenge.target, percent: challenge.percent }) }}</dd>
+      </div>
+      {% if challenge.metric %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_metric") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("govuk_alpha_group_media.challenges.metric_" + challenge.metric) }}</dd>
+        </div>
+      {% endif %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_reward") }}</dt>
+        <dd class="govuk-summary-list__value">{% if challenge.reward > 0 %}{{ t("govuk_alpha_group_media.challenges.reward_value", { xp: challenge.reward }) }}{% else %}{{ t("govuk_alpha_group_media.challenges.reward_none") }}{% endif %}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_status") }}</dt>
+        <dd class="govuk-summary-list__value">{{ t("govuk_alpha_group_media.challenges.status_" + challenge.status) }}</dd>
+      </div>
+      {% if challenge.status == "completed" and challenge.completedLabel %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_completed") }}</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.completedLabel }}</dd>
+        </div>
+      {% elif challenge.endsLabel %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_ends") }}</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.endsLabel }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.creatorName %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_group_media.challenges.row_created_by") }}</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.creatorName }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+    {% if isAdmin and challenge.status == "active" %}
+      <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/challenges/' + (challenge.id | string) + '/cancel') }}">{{ t("govuk_alpha_group_media.challenges.cancel_link") }}<span class="govuk-visually-hidden">: {{ challenge.title }}</span></a>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_group_media.challenges.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_media.challenges.title") }}</h1>
+
+  {% include "groups/gallery/_status-banner.njk" %}
+
+  <p class="govuk-body">{{ t("govuk_alpha_group_media.challenges.intro") }}</p>
+
+  {% if isAdmin %}
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/challenges/new') }}">{{ t("govuk_alpha_group_media.challenges.create_link") }}</a>
+  {% endif %}
+
+  {% if not hasAny %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_media.challenges.empty_title") }}</h2>
+      <p class="govuk-body">{% if isAdmin %}{{ t("govuk_alpha_group_media.challenges.empty_admin") }}{% else %}{{ t("govuk_alpha_group_media.challenges.empty_member") }}{% endif %}</p>
+    </div>
+  {% else %}
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_group_media.challenges.active_heading") }}</h2>
+    {% if active.length %}
+      <ul class="govuk-list nexus-alpha-card-list">
+        {% for challenge in active %}{{ challengeCard(challenge, group, isAdmin, t, urlFor) }}{% endfor %}
+      </ul>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_group_media.challenges.no_active") }}</p>
+    {% endif %}
+
+    {% if history.length %}
+      <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_group_media.challenges.history_heading") }}</h2>
+      <ul class="govuk-list nexus-alpha-card-list">
+        {% for challenge in history %}{{ challengeCard(challenge, group, isAdmin, t, urlFor) }}{% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+{% endblock %}

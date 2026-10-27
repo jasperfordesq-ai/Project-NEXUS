@@ -1,0 +1,49 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pagePath = '/groups/' + (group.id | string) + '/wiki/page/' + (page.slug | urlencode) %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(pagePath) }}">{{ page.title }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ tools.toolErrors(errorList) }}
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.wiki.edit_heading", { title: page.title }) }}</h1>
+      <form method="post" action="{{ urlFor(pagePath + '/edit') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukTextarea({
+          label: { text: t("govuk_alpha_group_tools.wiki.content_label"), classes: "govuk-label--m" },
+          id: "content",
+          name: "content",
+          rows: 16,
+          value: values.content,
+          errorMessage: { text: errors.content, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if errors.content else undefined
+        }) }}
+        {{ govukInput({
+          label: { text: t("govuk_alpha_group_tools.wiki.change_summary_label") },
+          id: "change_summary",
+          name: "change_summary",
+          value: values.change_summary,
+          attributes: { maxlength: "255" }
+        }) }}
+        <div class="govuk-button-group">
+          {{ govukButton({ text: t("govuk_alpha_group_tools.wiki.save") }) }}
+          <a class="govuk-link" href="{{ urlFor(pagePath) }}">{{ t("govuk_alpha_group_tools.common.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

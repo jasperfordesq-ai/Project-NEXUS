@@ -1,0 +1,34 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Outcome banner for the group gallery, challenges, channels and webhooks pages.
+  `statusBanner` comes from lib/group-media-pages.js statusBanner(): a GOV.UK
+  success notification banner, or an error summary that links to the field when
+  the problem belongs to one.
+#}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% if statusBanner and statusBanner.type == "success" %}
+  {{ govukNotificationBanner({
+    type: "success",
+    titleText: statusBanner.title,
+    text: statusBanner.message
+  }) }}
+{% elif statusBanner and statusBanner.type == "error" %}
+  <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list">
+          {% if statusBanner.field %}
+            <li><a href="#{{ statusBanner.field }}">{{ statusBanner.message }}</a></li>
+          {% else %}
+            <li>{{ statusBanner.message }}</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endif %}

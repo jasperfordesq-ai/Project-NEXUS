@@ -7,7 +7,7 @@
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
-{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "groups/_form-fields.njk" import visibilityRadios, templateRadios, typeAndParent, imageFields, brandingFields %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -96,44 +96,13 @@
           attributes: { maxlength: "255" }
         }) }}
 
-        {{ govukRadios({
-          name: "visibility",
-          fieldset: {
-            legend: {
-              html: '<h2 class="govuk-fieldset__heading">' + t("groups.create.visibility_legend") + '</h2>',
-              classes: "govuk-fieldset__legend--m"
-            }
-          },
-          hint: { text: t("groups.create.visibility_hint") },
-          items: [
-            {
-              value: "public",
-              text: t("groups.create.visibility_public_label"),
-              checked: not values or values.visibility != 'private'
-            },
-            {
-              value: "private",
-              text: t("groups.create.visibility_private_label"),
-              checked: values.visibility == 'private' if values else false
-            }
-          ]
-        }) }}
+        {{ templateRadios(capabilities, values.template_id if values else null, t) }}
 
-        {{ govukInput({
-          label: { text: t("groups.create.tags_label") },
-          hint: { text: t("groups.create.tags_hint") },
-          id: "tags",
-          name: "tags",
-          value: values.tags if values else "",
-          classes: "govuk-!-width-two-thirds",
-          attributes: { maxlength: "255" }
-        }) }}
+        {{ typeAndParent(capabilities, values.type_id if values else null, values.parent_id if values else null, null, t, fieldErrors) }}
 
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="cover">{{ t("groups.create.cover_label") }}</label>
-          <div id="cover-hint" class="govuk-hint">{{ t("groups.create.cover_hint") }}</div>
-          <input class="govuk-file-upload" id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="cover-hint">
-        </div>
+        {{ visibilityRadios(capabilities, values.visibility if values else null, t) }}
+
+        {{ imageFields(t) }}
 
         {{ govukButton({ text: t("groups.create.submit") }) }}
   </form>

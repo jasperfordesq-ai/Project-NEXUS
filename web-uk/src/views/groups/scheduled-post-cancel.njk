@@ -1,0 +1,37 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts') }}">{{ t("govuk_alpha_groups.scheduled.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.scheduled.cancel_title") }}</h1>
+  <p class="govuk-body"><strong>{{ post.title }}</strong></p>
+  <dl class="govuk-summary-list govuk-summary-list--no-border">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_groups.scheduled.publishes_label") }}</dt>
+      <dd class="govuk-summary-list__value"><time datetime="{{ post.scheduledAt }}">{{ post.scheduledAtLabel }}</time></dd>
+    </div>
+  </dl>
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+      {{ t("govuk_alpha_groups.scheduled.cancel_warning") }}
+    </strong>
+  </div>
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts/' + (post.id | string) + '/cancel') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_groups.scheduled.cancel_confirm") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts') }}">{{ t("govuk_alpha_groups.scheduled.keep") }}</a>
+    </div>
+  </form>
+{% endblock %}

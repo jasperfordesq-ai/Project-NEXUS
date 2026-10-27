@@ -1,0 +1,114 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% import "groups/qa/_tool-macros.njk" as tools with context %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set base = '/groups/' + (group.id | string) + '/tasks' %}
+
+{% block beforeContent %}
+  {{ tools.toolBackLink(group) }}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {{ tools.toolStatus(statusBanner) }}
+      <span class="govuk-caption-xl">{{ group.name }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.tasks.title") }}</h1>
+
+      {{ govukButton({ text: t("govuk_alpha_group_tools.tasks.create"), href: urlFor(base + '/new') }) }}
+
+      {% if stats %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_tools.tasks.stats") }}</h2>
+        {{ govukSummaryList({
+          classes: "govuk-!-width-two-thirds",
+          rows: [
+            { key: { text: t("govuk_alpha_group_tools.tasks.total") }, value: { text: stats.total | string } },
+            { key: { text: t("govuk_alpha_group_tools.tasks.status_todo") }, value: { text: stats.todo | string } },
+            { key: { text: t("govuk_alpha_group_tools.tasks.status_in_progress") }, value: { text: stats.in_progress | string } },
+            { key: { text: t("govuk_alpha_group_tools.tasks.status_done") }, value: { text: stats.done | string } },
+            { key: { text: t("govuk_alpha_group_tools.tasks.overdue") }, value: { text: stats.overdue | string } }
+          ]
+        }) }}
+      {% endif %}
+
+      <form method="get" action="{{ urlFor(base) }}" novalidate>
+        {{ govukSelect({
+          id: "show",
+          name: "show",
+          label: { text: t("govuk_alpha_group_tools.tasks.status_label") },
+          items: filterOptions
+        }) }}
+        {{ govukButton({ text: t("govuk_alpha_group_tools.common.apply"), classes: "govuk-button--secondary" }) }}
+      </form>
+
+      {% if loadFailed %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.tasks.load_failed") }}</p>
+      {% elif tasks.length == 0 %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_tools.tasks.empty_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.tasks.empty_description") }}</p>
+      {% else %}
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t("govuk_alpha_group_tools.tasks.title") }}">
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_group_tools.tasks.title") }}</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_group_tools.tasks.title_label") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_group_tools.tasks.priority_label") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_group_tools.tasks.assigned_to") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_group_tools.tasks.due_date") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_group_tools.tasks.status_label") }}</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for task in tasks %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  <strong>{{ task.title }}</strong>
+                  {% if task.description %}<p class="govuk-body-s govuk-!-margin-bottom-0 app-formatted-text">{{ task.description }}</p>{% endif %}
+                  {% if task.canDelete %}
+                    <p class="govuk-body-s govuk-!-margin-top-1 govuk-!-margin-bottom-0">
+                      <a class="govuk-link" href="{{ urlFor(base + '/' + (task.id | string) + '/delete') }}">{{ t("govuk_alpha_group_tools.tasks.delete") }}<span class="govuk-visually-hidden">: {{ task.title }}</span></a>
+                    </p>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">{{ t("govuk_alpha_group_tools.tasks.priority_" + task.priority) }}</td>
+                <td class="govuk-table__cell">{{ task.assigneeName or t("govuk_alpha_group_tools.tasks.unassigned") }}</td>
+                <td class="govuk-table__cell">
+                  {{ task.dueDateLabel }}
+                  {% if task.overdue %}{{ govukTag({ text: t("govuk_alpha_group_tools.tasks.overdue"), classes: "govuk-tag--red" }) }}{% endif %}
+                </td>
+                <td class="govuk-table__cell">
+                  {% if task.canUpdateStatus %}
+                    <form method="post" action="{{ urlFor(base + '/' + (task.id | string) + '/status') }}">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <div class="govuk-form-group govuk-!-margin-bottom-2">
+                        <label class="govuk-label govuk-visually-hidden" for="task-status-{{ task.id }}">{{ t("govuk_alpha_group_tools.tasks.change_status_for", { title: task.title }) }}</label>
+                        <select class="govuk-select" id="task-status-{{ task.id }}" name="status">
+                          {% for option in statusOptions %}
+                            <option value="{{ option.value }}"{% if option.value == task.status %} selected{% endif %}>{{ option.text }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_group_tools.tasks.update_status") }}<span class="govuk-visually-hidden">: {{ task.title }}</span></button>
+                    </form>
+                  {% else %}
+                    {{ t("govuk_alpha_group_tools.tasks.status_" + task.status) }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -7,6 +7,8 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateInput, nexusDateTimeInput %}
+{% from "groups/_feed-item.njk" import groupFeedItem %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -131,6 +133,11 @@
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/invite') }}">{{ t("govuk_alpha_groups.nav.invite_members") }}</a>
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/image') }}">{{ t("govuk_alpha_groups.nav.group_image") }}</a>
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.manage_link") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/welcome') }}">{{ t("govuk_alpha_groups.welcome.link") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts') }}">{{ t("govuk_alpha_groups.scheduled.link") }}</a>
+      {% for link in (sectionLinks.admin if sectionLinks else []) %}
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor(link.path) }}">{{ t(link.key) }}</a>
+      {% endfor %}
     </div>
   {% endif %}
 
@@ -166,6 +173,17 @@
   {% endif %}
   {% if groupCanParticipate or not isPrivate %}
     <p class="govuk-body govuk-!-margin-bottom-6"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/member-list') }}">{{ t("govuk_alpha_groups.members_page.link") }}</a></p>
+  {% endif %}
+
+  {% if sectionLinks and sectionLinks.member.length %}
+    <nav aria-labelledby="group-sections-heading" class="govuk-!-margin-bottom-6">
+      <h2 class="govuk-heading-m" id="group-sections-heading">{{ t("govuk_alpha_group_tools.sections_heading") }}</h2>
+      <ul class="govuk-list">
+        {% for link in sectionLinks.member %}
+          <li><a class="govuk-link" href="{{ urlFor(link.path) }}">{{ t(link.key) }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
   {% endif %}
 
   {% if subGroups and subGroups.length > 0 %}
@@ -238,8 +256,30 @@
     </div>
   {% endif %}
 
+  {% if showFeed %}
   <h2 class="govuk-heading-l" id="group-feed">{{ t("groups_t1.feed_title") }}</h2>
   <p class="govuk-body">{{ t("groups_t1.feed_description") }}</p>
+  {% if feedStatus %}
+    {% if feedStatus.type == "error" %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h3 class="govuk-error-summary__title">{{ t("states.error_title") }}</h3>
+          <div class="govuk-error-summary__body">
+            {% if feedStatus.href %}
+              <ul class="govuk-list govuk-error-summary__list"><li><a href="{{ feedStatus.href }}">{{ feedStatus.text }}</a></li></ul>
+            {% else %}
+              <p class="govuk-body">{{ feedStatus.text }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="grp-feed-action-status">
+        <div class="govuk-notification-banner__header"><h3 class="govuk-notification-banner__title" id="grp-feed-action-status">{{ t("states.success_title") }}</h3></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ feedStatus.text }}</p></div>
+      </div>
+    {% endif %}
+  {% endif %}
   {% if not groupCanParticipate %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.feed_members_only") }}</p></div>
   {% else %}
@@ -260,31 +300,88 @@
         <div id="group-feed-image-alt-hint" class="govuk-hint">{{ t("groups_t1.compose_image_alt_hint") }}</div>
         <input class="govuk-input" id="group-feed-image-alt" name="image_alt" type="text" maxlength="500" aria-describedby="group-feed-image-alt-hint">
       </div>
+      {# Up to ten photos per post, as React allows; each photo keeps its own
+         description next to it. #}
+      <details class="govuk-details" data-module="govuk-details">
+        <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_groups.compose.more_images_summary", { max: 10 }) }}</span></summary>
+        <div class="govuk-details__text">
+          {% for number in range(2, 11) %}
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="group-feed-image-{{ number }}">{{ t("govuk_alpha_groups.compose.image_n_label", { number: number }) }}</label>
+              <input class="govuk-file-upload" id="group-feed-image-{{ number }}" name="image_{{ number }}" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+            </div>
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="group-feed-image-{{ number }}-alt">{{ t("govuk_alpha_groups.compose.image_n_alt_label", { number: number }) }}</label>
+              <input class="govuk-input" id="group-feed-image-{{ number }}-alt" name="image_{{ number }}_alt" type="text" maxlength="500">
+            </div>
+          {% endfor %}
+        </div>
+      </details>
+      <details class="govuk-details" data-module="govuk-details">
+        <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_groups.compose.schedule_summary") }}</span></summary>
+        <div class="govuk-details__text">
+          {{ nexusDateTimeInput({
+            name: "schedule",
+            idPrefix: "group-feed-schedule",
+            legend: t("govuk_alpha_groups.compose.schedule_legend"),
+            hint: t("govuk_alpha_groups.compose.schedule_hint")
+          }, t) }}
+        </div>
+      </details>
       <button class="govuk-button" data-module="govuk-button">{{ t("groups_t1.compose_submit") }}</button>
     </form>
+
+    {% if canCreatePolls %}
+      <h3 class="govuk-heading-m" id="group-poll">{{ t("govuk_alpha_groups.poll.heading") }}</h3>
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/polls') }}" class="govuk-!-margin-bottom-7">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="group-poll-question">{{ t("govuk_alpha_groups.poll.question_label") }}</label>
+          <input class="govuk-input" id="group-poll-question" name="question" type="text" maxlength="500">
+        </div>
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset" aria-describedby="group-poll-options-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_groups.poll.options_legend") }}</legend>
+            <div id="group-poll-options-hint" class="govuk-hint">{{ t("govuk_alpha_groups.poll.options_hint", { max: 6 }) }}</div>
+            {% for number in range(1, 7) %}
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="group-poll-option-{{ number }}">{{ t("govuk_alpha_groups.poll.option_label", { number: number }) }}</label>
+                <input class="govuk-input govuk-!-width-two-thirds" id="group-poll-option-{{ number }}" name="option_{{ number }}" type="text" maxlength="200">
+              </div>
+            {% endfor %}
+          </fieldset>
+        </div>
+        {{ nexusDateInput({
+          name: "expires_at",
+          idPrefix: "group-poll-expires",
+          legend: t("govuk_alpha_groups.poll.expires_legend"),
+          hint: t("govuk_alpha_groups.poll.expires_hint")
+        }, t) }}
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_groups.poll.submit") }}</button>
+      </form>
+    {% endif %}
 
     {% if groupFeed.length == 0 %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.feed_empty") }}</p></div>
     {% else %}
       <div class="nexus-alpha-card-list">
         {% for post in groupFeed %}
-          <article class="nexus-alpha-card">
-            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
-              {% if post.authorAvatar %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ post.authorAvatar | thumb(64, 64) }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
-              {{ t("groups_t1.feed_posted_by", { name: post.authorName }) }}
-              {% if post.createdAtLabel %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("groups_t1.feed_posted_on_prefix") }}</span> <time datetime="{{ post.createdAt }}">{{ post.createdAtLabel }}</time>{% endif %}
-            </p>
-            {% for paragraph in post.contentParagraphs %}<p class="govuk-body">{{ paragraph }}</p>{% endfor %}
-            {% if post.media.length > 0 %}
-              <ul class="nexus-alpha-feed-media" data-count="{{ post.media.length }}">
-                {% for media in post.media %}
-                  <li><a href="{{ media.fullUrl }}" target="_blank" rel="noopener noreferrer"><span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span><img src="{{ media.thumbnailUrl | thumb(640, 640) }}" width="320" height="320" alt="{{ media.altText or t('groups_t1.image_alt', { group: group.name }) }}" class="nexus-alpha-feed-image" loading="lazy"></a></li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-          </article>
+          {{ groupFeedItem(post, group, feedCursor, csrfToken, urlFor, t, tc) }}
         {% endfor %}
       </div>
+      {% if feedNextHref %}
+        <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('feed.pagination_label') }}">
+          <div class="govuk-pagination__next">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(feedNextHref) }}" rel="next">
+              <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+              <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+              <span class="govuk-visually-hidden">:</span>
+              <span class="govuk-pagination__link-label">{{ t("feed.more_results_label") }}</span>
+            </a>
+          </div>
+        </nav>
+      {% endif %}
     {% endif %}
+  {% endif %}
   {% endif %}
 {% endblock %}

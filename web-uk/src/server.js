@@ -37,6 +37,16 @@ const connectionsRoutes = require('./routes/connections');
 const membersRoutes = require('./routes/members');
 const notificationsRoutes = require('./routes/notifications');
 const groupsRoutes = require('./routes/groups');
+// Group gallery, challenges, chat channels and webhooks — React parity, 27 Oct 2026.
+const groupGalleryRoutes = require('./routes/group-gallery');
+const groupChallengeRoutes = require('./routes/group-challenges');
+const groupChannelRoutes = require('./routes/group-channels');
+const groupWebhookRoutes = require('./routes/group-webhooks');
+// Group collaboration tools (Q&A, wiki, tasks, analytics, data export) — React parity, 27 Oct 2026.
+const groupQaRoutes = require('./routes/group-qa');
+const groupWikiRoutes = require('./routes/group-wiki');
+const groupTaskRoutes = require('./routes/group-tasks');
+const groupAnalyticsRoutes = require('./routes/group-analytics');
 const jobsRoutes = require('./routes/jobs');
 const goalsRoutes = require('./routes/goals');
 const coursesRoutes = require('./routes/courses');
@@ -2378,9 +2388,11 @@ app.use(
 app.use('/feed/posts', parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
 app.use('/events/new', parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
 app.use(/^\/events\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
-app.use('/groups/new', parseMultipartForm({ maxFileSize: 8 * 1024 * 1024 }));
-app.use(/^\/groups\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 8 * 1024 * 1024 }));
-app.use(/^\/groups\/\d+\/feed$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024 }));
+// The group form carries two optional images: the avatar and the cover.
+app.use('/groups/new', parseMultipartForm({ maxFileSize: 8 * 1024 * 1024, maxTotalFileSize: 16 * 1024 * 1024 }));
+app.use(/^\/groups\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 8 * 1024 * 1024, maxTotalFileSize: 16 * 1024 * 1024 }));
+// Up to 10 photos per group post (React PostTab), each in its own field.
+app.use(/^\/groups\/\d+\/feed$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 1024, maxTotalFileSize: 50 * 1024 * 1024, maxFiles: 10 }));
 app.use('/listings/new', parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
 app.use(/^\/clubs\/\d+\/admin\/import\/preview$/, parseMultipartForm({ maxFileSize: 1024 * 1024 }));
 app.use(/^\/marketplace\/(create|\d+\/photos)$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxTotalFileSize: 60 * 1024 * 1024, maxFiles: 20, multiples: true }));
@@ -2405,6 +2417,12 @@ app.use(
   /^\/groups\/\d+\/files$/,
   parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }),
   groupMultipartErrorRedirect('file-too-large', 'file-missing')
+);
+// Group gallery upload: the API takes images and videos up to 50 MB.
+app.use(
+  /^\/groups\/\d+\/gallery$/,
+  parseMultipartForm({ maxFileSize: 50 * 1024 * 1024 }),
+  groupGalleryRoutes.galleryMultipartErrorRedirect
 );
 app.use('/podcasts/studio/new', parseMultipartForm({ maxFileSize: 8 * 1024 * 1024 }));
 app.use(/^\/podcasts\/studio\/\d+\/update$/, parseMultipartForm({ maxFileSize: 250 * 1024 * 1024 }));
@@ -2626,7 +2644,10 @@ app.use('/settings/linked-accounts/message-access', requireAuth, doubleCsrfProte
 // live session purpose is held, so nothing is fetched before a reason is given.
 app.use('/settings/linked-accounts/messages', requireAuth, doubleCsrfProtection, postOnly(formLimiter), supportedMessagesRoutes);
 app.use('/settings', doubleCsrfProtection, settingsRoutes);
-app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
+// The group tool routers share the groups mount so CSRF and the form rate limit run once per request.
+app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes, groupQaRoutes, groupWikiRoutes, groupTaskRoutes, groupAnalyticsRoutes);
+// Gallery, challenges, chat channels, webhooks. POSTs were already rate-limited by the line above.
+app.use('/groups', doubleCsrfProtection, groupGalleryRoutes, groupChallengeRoutes, groupChannelRoutes, groupWebhookRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);
 // Event team and ticket-type management. POSTs were already rate-limited by the line above.
 app.use('/events', requireAuth, doubleCsrfProtection, eventOrganiserToolRoutes);

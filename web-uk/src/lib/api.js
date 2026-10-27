@@ -1536,6 +1536,62 @@ async function downloadGroupFile(token, path = '') {
   });
 }
 
+/**
+ * Upload one photo or video to a group's gallery (POST /api/v2/groups/{id}/media,
+ * GroupMediaController::upload): multipart `file` plus an optional `caption`.
+ */
+async function uploadGroupMedia(token, groupId, data) {
+  const form = new globalThis.FormData();
+  const caption = String(data.caption || '').trim();
+  if (caption) form.append('caption', caption);
+
+  if (data.file && data.file.buffer) {
+    const blob = new globalThis.Blob([data.file.buffer], {
+      type: data.file.contentType || 'application/octet-stream'
+    });
+    form.append('file', blob, data.file.filename || 'group-media');
+  }
+
+  return request(`/api/v2/groups/${encodeURIComponent(groupId)}/media`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+}
+
+/**
+ * Group chat channels addressed by channel id: /api/v2/group-chatrooms{path}
+ * (messages list/post, channel delete — IdeationChallengesController).
+ */
+async function callGroupChatroomApi(token, method, path = '', data = undefined) {
+  const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+  const options = {
+    method,
+    headers: { Authorization: `Bearer ${token}` }
+  };
+
+  if (data !== undefined) {
+    options.body = JSON.stringify(data);
+  }
+
+  return request(`/api/v2/group-chatrooms${normalizedPath}`, options);
+}
+
+/** One group chat message: /api/v2/group-chatroom-messages{path} (delete). */
+async function callGroupChatroomMessageApi(token, method, path = '', data = undefined) {
+  const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+  const options = {
+    method,
+    headers: { Authorization: `Bearer ${token}` }
+  };
+
+  if (data !== undefined) {
+    options.body = JSON.stringify(data);
+  }
+
+  return request(`/api/v2/group-chatroom-messages${normalizedPath}`, options);
+}
+
 async function callJobApi(token, method, path = '', data = undefined) {
   const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
   const options = {
@@ -3649,6 +3705,48 @@ async function createFeedPostV2(token, data) {
   });
 }
 
+/**
+ * A feed post with several images, each with its own alt text (React PostTab:
+ * `media[]` + `alt_texts[]`, up to 10 — PostMediaService::MAX_MEDIA_PER_POST).
+ * `data.files` is a list of { buffer, filename, contentType, altText }; every other
+ * scalar key (content, visibility, group_id, publish_status, scheduled_at) is sent
+ * as a form field.
+ */
+async function createFeedPostWithMedia(token, data) {
+  const form = new globalThis.FormData();
+  for (const [key, value] of Object.entries(data || {})) {
+    if (key === 'files' || value === undefined || value === null) continue;
+    form.append(key, String(value));
+  }
+  for (const file of Array.isArray(data?.files) ? data.files : []) {
+    if (!file || !file.buffer) continue;
+    const blob = new globalThis.Blob([file.buffer], {
+      type: file.contentType || 'application/octet-stream'
+    });
+    form.append('media[]', blob, file.filename || 'feed-image');
+    form.append('alt_texts[]', String(file.altText || ''));
+  }
+
+  return request('/api/v2/feed/posts', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+}
+
+/**
+ * A feed poll, optionally inside a group (POST /api/v2/feed/polls — React PollTab).
+ * Unlike POST /api/v2/polls this keeps `group_id`, so a group poll lands in the
+ * group feed (F-069).
+ */
+async function createFeedPoll(token, data) {
+  return request('/api/v2/feed/polls', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  });
+}
+
 async function updateFeedPostV2(token, id, data) {
   return request(`/api/v2/feed/posts/${encodeURIComponent(id)}`, {
     method: 'PUT',
@@ -4546,6 +4644,9 @@ module.exports = {
   uploadGroupImage,
   uploadGroupFile,
   downloadGroupFile,
+  uploadGroupMedia,
+  callGroupChatroomApi,
+  callGroupChatroomMessageApi,
   callIdeationApi,
   callGroupExchangeApi,
   previewGroupExchange,
@@ -4775,6 +4876,8 @@ module.exports = {
   getFeedHashtags,
   getFeedHashtagPosts,
   createFeedPostV2,
+  createFeedPostWithMedia,
+  createFeedPoll,
   updateFeedPostV2,
   deleteFeedPostV2,
   toggleFeedLike,

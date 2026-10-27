@@ -1,0 +1,60 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set channelsBase = '/groups/' + (group.id | string) + '/channels' %}
+  {% set nameError = statusBanner and statusBanner.type == "error" and statusBanner.field == "channel-name" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_group_media.channels.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_media.channels.title") }}</h1>
+
+  {% include "groups/gallery/_status-banner.njk" %}
+
+  <p class="govuk-body">{{ t("govuk_alpha_group_media.channels.intro") }}</p>
+
+  {% if not rooms.length %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_group_media.channels.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_group_media.channels.empty") }}</p>
+    </div>
+  {% else %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for room in rooms %}
+        <li class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urlFor(channelsBase + '/' + (room.id | string)) }}">{{ room.name }}</a>
+          </h2>
+          {% if room.isDefault %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.default_tag"), classes: "govuk-tag--blue" }) }}{% endif %}
+          {% if room.isPrivate %}{{ govukTag({ text: t("govuk_alpha_group_media.channels.private_tag"), classes: "govuk-tag--grey" }) }}{% endif %}
+          {% if room.description %}<p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ room.description }}</p>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if isChannelAdmin %}
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_group_media.channels.create_heading") }}</h2>
+    <form method="post" action="{{ urlFor(channelsBase) }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if nameError %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="channel-name">{{ t("govuk_alpha_group_media.channels.name_label") }}</label>
+        <div id="channel-name-hint" class="govuk-hint">{{ t("govuk_alpha_group_media.channels.name_hint") }}</div>
+        {% if nameError %}
+          <p class="govuk-error-message" id="channel-name-error"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-20{% if nameError %} govuk-input--error{% endif %}" id="channel-name" name="name" type="text" maxlength="100" aria-describedby="channel-name-hint{% if nameError %} channel-name-error{% endif %}">
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_group_media.channels.create_submit") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

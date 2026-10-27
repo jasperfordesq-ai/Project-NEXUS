@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T13:15:54.921Z
-Laravel commit SHA: `cc647fa2f8245e65db3df915f6e44d753f533e47`
-Web UK repository commit SHA: `cc647fa2f8245e65db3df915f6e44d753f533e47`
+Generated: 2026-10-27T14:09:04.055Z
+Laravel commit SHA: `5e65e22e88be767c9a37f566decd24cbd245ac7c`
+Web UK repository commit SHA: `5e65e22e88be767c9a37f566decd24cbd245ac7c`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 946 |
+| web-uk routes | 1003 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 236 |
+| Extra web-uk routes | 293 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -53,7 +53,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | feed | 22 | 0 | 3 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
-| groups | 36 | 0 | 3 | 0 |
+| groups | 36 | 0 | 60 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
 | help | 1 | 0 | 3 | 0 |
@@ -169,9 +169,66 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/feed/posts/{param}/translate` | feed |  | web-uk/src/routes/feed-actions.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |
 | POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
+| GET | `/groups/{param}/analytics` | groups | groups/analytics/index | web-uk/src/routes/group-analytics.js |
+| GET | `/groups/{param}/analytics/export/{param}` | groups |  | web-uk/src/routes/group-analytics.js |
+| GET | `/groups/{param}/challenges` | groups | groups/challenges/index | web-uk/src/routes/group-challenges.js |
+| GET | `/groups/{param}/challenges/{param}/cancel` | groups | confirm-delete | web-uk/src/routes/group-challenges.js |
+| GET | `/groups/{param}/challenges/new` | groups |  | web-uk/src/routes/group-challenges.js |
+| GET | `/groups/{param}/channels` | groups | groups/channels/index | web-uk/src/routes/group-channels.js |
+| GET | `/groups/{param}/channels/{param}` | groups | groups/channels/room | web-uk/src/routes/group-channels.js |
+| GET | `/groups/{param}/channels/{param}/delete` | groups | confirm-delete | web-uk/src/routes/group-channels.js |
+| GET | `/groups/{param}/channels/{param}/messages/{param}/delete` | groups | confirm-delete | web-uk/src/routes/group-channels.js |
+| GET | `/groups/{param}/data-export` | groups | groups/analytics/data-export | web-uk/src/routes/group-analytics.js |
 | GET | `/groups/{param}/events` | groups | groups/events | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/feed/posts/{param}/delete` | groups | groups/feed-delete | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/gallery` | groups | groups/gallery/index | web-uk/src/routes/group-gallery.js |
+| GET | `/groups/{param}/gallery/{param}/delete` | groups | confirm-delete | web-uk/src/routes/group-gallery.js |
+| GET | `/groups/{param}/gallery/{param}/file` | groups |  | web-uk/src/routes/group-gallery.js |
 | GET | `/groups/{param}/member-list` | groups | groups/members | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/qa` | groups | groups/qa/index | web-uk/src/routes/group-qa.js |
+| GET | `/groups/{param}/qa/{param}` | groups | groups/qa/question | web-uk/src/routes/group-qa.js |
+| GET | `/groups/{param}/qa/ask` | groups |  | web-uk/src/routes/group-qa.js |
+| GET | `/groups/{param}/scheduled-posts` | groups |  | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/scheduled-posts/{param}/cancel` | groups | groups/scheduled-post-cancel | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/tasks` | groups | groups/tasks/index | web-uk/src/routes/group-tasks.js |
+| GET | `/groups/{param}/tasks/{param}/delete` | groups | groups/tasks/delete | web-uk/src/routes/group-tasks.js |
+| GET | `/groups/{param}/tasks/new` | groups |  | web-uk/src/routes/group-tasks.js |
+| GET | `/groups/{param}/webhooks` | groups | groups/webhooks/index | web-uk/src/routes/group-webhooks.js |
+| GET | `/groups/{param}/webhooks/{param}/delete` | groups | confirm-delete | web-uk/src/routes/group-webhooks.js |
+| GET | `/groups/{param}/webhooks/new` | groups |  | web-uk/src/routes/group-webhooks.js |
+| GET | `/groups/{param}/welcome` | groups | groups/welcome | web-uk/src/routes/groups.js |
+| GET | `/groups/{param}/wiki` | groups | groups/wiki/index | web-uk/src/routes/group-wiki.js |
+| GET | `/groups/{param}/wiki/new` | groups |  | web-uk/src/routes/group-wiki.js |
 | POST | `/groups/{param}/cancel-request` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/challenges/{param}/cancel` | groups |  | web-uk/src/routes/group-challenges.js |
+| POST | `/groups/{param}/challenges/new` | groups |  | web-uk/src/routes/group-challenges.js |
+| POST | `/groups/{param}/channels` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/delete` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/messages` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/messages/{param}/delete` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/messages/{param}/pin` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/channels/{param}/messages/{param}/unpin` | groups |  | web-uk/src/routes/group-channels.js |
+| POST | `/groups/{param}/data-export` | groups |  | web-uk/src/routes/group-analytics.js |
+| POST | `/groups/{param}/feed/polls` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/feed/polls/{param}/vote` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/feed/posts/{param}/delete` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/feed/users/{param}/mute` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/gallery` | groups |  | web-uk/src/routes/group-gallery.js |
+| POST | `/groups/{param}/gallery/{param}/delete` | groups |  | web-uk/src/routes/group-gallery.js |
+| POST | `/groups/{param}/qa/{param}/answers` | groups |  | web-uk/src/routes/group-qa.js |
+| POST | `/groups/{param}/qa/{param}/answers/{param}/accept` | groups |  | web-uk/src/routes/group-qa.js |
+| POST | `/groups/{param}/qa/{param}/vote` | groups |  | web-uk/src/routes/group-qa.js |
+| POST | `/groups/{param}/qa/ask` | groups |  | web-uk/src/routes/group-qa.js |
+| POST | `/groups/{param}/scheduled-posts` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/scheduled-posts/{param}/cancel` | groups |  | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/tasks/{param}/delete` | groups |  | web-uk/src/routes/group-tasks.js |
+| POST | `/groups/{param}/tasks/{param}/status` | groups |  | web-uk/src/routes/group-tasks.js |
+| POST | `/groups/{param}/tasks/new` | groups |  | web-uk/src/routes/group-tasks.js |
+| POST | `/groups/{param}/webhooks/{param}/delete` | groups |  | web-uk/src/routes/group-webhooks.js |
+| POST | `/groups/{param}/webhooks/{param}/toggle` | groups |  | web-uk/src/routes/group-webhooks.js |
+| POST | `/groups/{param}/webhooks/new` | groups |  | web-uk/src/routes/group-webhooks.js |
+| POST | `/groups/{param}/welcome` | groups | groups/scheduled-posts | web-uk/src/routes/groups.js |
+| POST | `/groups/{param}/wiki/new` | groups |  | web-uk/src/routes/group-wiki.js |
 | GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}` | help | support/help-section | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |

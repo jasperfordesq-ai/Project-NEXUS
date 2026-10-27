@@ -1,0 +1,35 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set pagePath = '/groups/' + (group.id | string) + '/wiki/page/' + (page.slug | urlencode) %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(pagePath) }}">{{ page.title }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ page.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.wiki.revision_history") }}</h1>
+      {% if loadFailed %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.wiki.revisions_failed") }}</p>
+      {% elif revisions.length == 0 %}
+        <p class="govuk-body">{{ t("govuk_alpha_group_tools.wiki.no_revisions") }}</p>
+      {% else %}
+        <ul class="govuk-list govuk-list--spaced">
+          {% for revision in revisions %}
+            <li>
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ revision.summary or t("govuk_alpha_group_tools.wiki.no_summary") }}</p>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("govuk_alpha_group_tools.wiki.revision_by", { name: revision.editorName, date: revision.createdAtLabel }) }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

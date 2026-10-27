@@ -29211,7 +29211,9 @@ describe('shared accessible frontend shell', () => {
     expect(form.text).toContain('value="private"');
     expect(form.text).toContain('id="location" name="location"');
     expect(form.text).toContain('govuk-input govuk-!-width-two-thirds');
-    expect(form.text).toContain('id="tags" name="tags"');
+    // 27 Oct 2026: the "Tags" field is gone. The API has no group tags, and the
+    // field only appended a "Tags: …" line to the description.
+    expect(form.text).not.toContain('name="tags"');
     expect(form.text).toContain('id="cover" name="cover" type="file"');
     expect(form.text).toContain('Bring members together around a shared interest in Project NEXUS Accessible.');
     expect(form.text).not.toContain('Cancel');
@@ -29243,7 +29245,7 @@ describe('shared accessible frontend shell', () => {
     expect(created.headers.location).toBe('/groups/88?status=group-created');
     expect(api.createGroup).toHaveBeenCalledWith('test-token', {
       name: 'Repair circle',
-      description: 'Share repair skills.\n\nTags (optional): repair, tools',
+      description: 'Share repair skills.',
       location: 'Dublin',
       visibility: 'private'
     });
@@ -29272,7 +29274,7 @@ describe('shared accessible frontend shell', () => {
     expect(edit.text).toMatch(/name="visibility"[^>]*value="private"[^>]*checked/);
     expect(edit.text).toContain('value="Dublin"');
     expect(edit.text).toContain('govuk-input govuk-!-width-two-thirds');
-    expect(edit.text).toContain('value="repair, tools"');
+    expect(edit.text).not.toContain('name="tags"');
     expect(edit.text).toContain('id="cover" name="cover" type="file"');
     expect(edit.text).not.toContain('Cancel');
 
@@ -29319,8 +29321,7 @@ describe('shared accessible frontend shell', () => {
       name: 'Repair circle',
       description: 'Updated description',
       location: 'Cork',
-      visibility: 'public',
-      tags: ['repair', 'sharing']
+      visibility: 'public'
     });
     expect(api.uploadGroupImage).toHaveBeenLastCalledWith('test-token', 88, expect.objectContaining({
       type: 'cover',
@@ -29391,7 +29392,7 @@ describe('shared accessible frontend shell', () => {
     expect(missingName.text).toContain('Keep this description.');
     expect(missingName.text).toContain('value="Dublin"');
     expect(missingName.text).toContain('value="private" checked');
-    expect(missingName.text).toContain('value="repair, tools"');
+    expect(missingName.text).not.toContain('name="tags"');
     expect(api.createGroup).toHaveBeenCalledTimes(1);
 
     api.createGroup.mockRejectedValueOnce(new api.ApiError('Validation failed', 422, {
