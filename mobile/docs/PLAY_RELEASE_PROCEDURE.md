@@ -519,6 +519,31 @@ pane is not signed in to Google, so the Console is driven through Claude in Chro
   Released on Oct 19 9:13 AM" — **22 minutes** after submission. `mobile/live-store-build.json`
   records build 24 and commit `f45952434`.
 
+On **2026-10-27**, build **25 / 1.12.0** went through both steps the same morning, at the owner's
+request, **without a physical-device walk of build 25**. It exists because an over-the-air update
+to build 24 was refused: `expo`, `expo-location` and `expo-sharing` had moved a patch version since
+build 24 (`9ccf73c66`), so the native surface differed and only a store build could carry the
+safeguarding changes deployed on 26 October. It was built by `build-aab-play.sh --version-code 25`
+from `0e8cb523c` (the version bump; `expo.version` 1.11.0 → 1.12.0, which also gives it a new
+runtime version so 1.12.0 updates never reach build 24). The guarded build took **3m 43s**; the
+96,680,077-byte AAB has SHA-256
+`631361CA0CF021DA57D0B5964961374A76EED0ED0CF64D86B32C63A522F0ECD7`. The owner uploaded it; the
+agent did everything else in the owner's Chrome.
+
+- **Console slot, 2026-10-27:** `u/0` was right first time.
+- **Internal testing:** "Ready to release", no quick-checks bar. 0 devices lost on every row
+  (Phone 12,407 / Tablet 6,518 / TV 3 / Chromebook 10 / Android XR 1). New install 33.3 MB
+  (+118 KB), update 2.78 MB. Published **8:19 AM** Console time.
+- **Production:** promote carried the bundle, name `25 (1.12.0)` and notes across, with build 24
+  under "Not included". 100.0% roll-out, all targeted countries, 5 active installs.
+- **Quick checks:** the pre-submit bar opened at "up to 14 minutes", counted down a minute at a
+  time and cleared after **about 7 minutes** with "Your changes can now be sent for review" and no
+  issues listed. After submission (**8:30 AM**) a second bar opened at "up to 14 minutes" and ended
+  within about a minute with "Your changes are now in review".
+- **Released automatically** (managed publishing off): the Production track read "25 (1.12.0) ·
+  Available on Google Play · Released on Oct 27 8:56 AM" — **26 minutes** after submission.
+  `mobile/live-store-build.json` records build 25 and commit `0e8cb523c`.
+
 Two Console behaviours worth knowing before you click:
 
 - On the production review step the button is **"Save"**, and it does *not*
