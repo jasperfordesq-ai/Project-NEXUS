@@ -112,6 +112,7 @@ const RESERVED_CHILD_SEGMENTS = new Set([
   'mobile',
   'mobile-download',
   'municipality-calendar',
+  'network',
   'newsletter',
   'nexus-score',
   'news',
@@ -164,6 +165,7 @@ const RESERVED_CHILD_SEGMENTS = new Set([
   'verify-email',
   'verify-identity',
   'verify-identity-optional',
+  'volunteer-org',
   'volunteering',
   'wallet',
   '.well-known'
