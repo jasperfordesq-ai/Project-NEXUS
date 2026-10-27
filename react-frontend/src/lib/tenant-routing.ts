@@ -37,6 +37,8 @@ export const RESERVED_PATHS = new Set([
   'dashboard', 'feed', 'listings', 'messages', 'compose', 'notifications',
   'wallet', 'profile', 'settings', 'members', 'connections', 'saved',
   'users', 'premium', 'donations',
+  // Old email-link shapes the app still forwards (EmailLinkRedirects.tsx)
+  'network', 'volunteer-org',
   // Feature modules
   'events', 'groups', 'community-groups', 'volunteering', 'organisations',
   'federation', 'blog', 'resources', 'polls', 'goals', 'reviews',

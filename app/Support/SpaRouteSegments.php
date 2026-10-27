@@ -36,7 +36,7 @@ final class SpaRouteSegments
         'integrations', 'jobs', 'join', 'kb', 'landing-page', 'leaderboard', 'legal', 'legal-documents',
         'linked-accounts', 'listings', 'listings-digest', 'login', 'marketplace', 'match-approvals', 'match-debug', 'matches',
         'matching-diagnostic', 'me', 'member-premium', 'members', 'menus', 'messages', 'moderation',
-        'module-configuration', 'monitoring', 'municipality-calendar', 'national', 'native-app', 'newsletter',
+        'module-configuration', 'monitoring', 'municipality-calendar', 'national', 'native-app', 'network', 'newsletter',
         'newsletters', 'nexus-score', 'notifications', 'onboarding', 'onboarding-settings', 'operations',
         'organisations', 'page', 'pages', 'partner', 'partner-analytics', 'partner-timebanks',
         'partner-venues', 'password', 'performance', 'pilot-apply', 'pilot-inquiry', 'plans', 'platform',
@@ -49,7 +49,7 @@ final class SpaRouteSegments
         'support-actions', 'support-reports', 'swaps', 'tenant-features', 'terms', 'tests', 'timebanking',
         'timebanking-guide', 'training', 'translation-config', 'trust-and-safety', 'users', 'venues',
         'verify-certificate', 'verify-email', 'verify-identity', 'verify-identity-optional', 'vetting',
-        'volunteering', 'wallet', 'webp-converter', 'whats-on',
+        'volunteer-org', 'volunteering', 'wallet', 'webp-converter', 'whats-on',
     ];
 
     public static function isKnown(string $segment): bool

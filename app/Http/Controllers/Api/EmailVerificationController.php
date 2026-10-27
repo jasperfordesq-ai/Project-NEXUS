@@ -211,7 +211,7 @@ class EmailVerificationController extends BaseApiController
 
         // Generate and send new verification email. Do not report success or
         // rotate tokens unless the dispatcher accepts the message.
-        if (!$this->sendVerificationEmail($user)) {
+        if (!$this->sendVerificationEmail($user, \App\Support\AuthReturnPath::safe($this->input('return_to')))) {
             return $this->respondWithError(
                 'EMAIL_SEND_FAILED',
                 __('api.verification_email_send_failed'),
@@ -281,7 +281,7 @@ class EmailVerificationController extends BaseApiController
         // constant work for every address; the per-recipient cooldown above only
         // gates the dispatch and is constant work in itself.
         if ($firstInWindow) {
-            SendEmailVerificationResend::dispatch($email, $tenantId);
+            SendEmailVerificationResend::dispatch($email, $tenantId, \App\Support\AuthReturnPath::safe($this->input('return_to')));
         }
 
         return $this->respondWithData($genericResponse);
@@ -346,9 +346,9 @@ class EmailVerificationController extends BaseApiController
      *
      * @param array<string,mixed> $user
      */
-    private function sendVerificationEmail(array $user): bool
+    private function sendVerificationEmail(array $user, ?string $returnTo = null): bool
     {
-        return app(\App\Services\EmailVerificationSender::class)->send($user);
+        return app(\App\Services\EmailVerificationSender::class)->send($user, $returnTo);
     }
 
     /**

@@ -18,6 +18,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingScreen } from '@/components/feedback/LoadingScreen';
 import { api } from '@/lib/api';
+import { extractCollectionItems } from '@/pages/volunteering/extractCollectionItems';
 
 /**
  * Forward to `target`, filling `:param` placeholders from the matched route and
@@ -79,6 +80,42 @@ export function MarketplaceOrderLinkRedirect() {
       cancelled = true;
     };
   }, [id, user?.id]);
+
+  if (!target) return <LoadingScreen />;
+  return <Navigate to={tenantPath(target)} replace />;
+}
+
+/**
+ * `/volunteer-org/wallet` — low-balance alerts linked here without saying which
+ * organisation. Open the wallet of the one organisation the member manages;
+ * with several (or none, or an error), the list of their organisations.
+ */
+export function OrganisationWalletLinkRedirect() {
+  const { tenantPath } = useTenant();
+  const [target, setTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void api
+      .get<unknown>('/v2/volunteering/my-organisations')
+      .then((response) => {
+        if (cancelled) return;
+        const managed = response.success && response.data
+          ? extractCollectionItems<{ id: number; member_role?: string }>(response.data)
+            .filter((org) => org.member_role === 'owner' || org.member_role === 'admin')
+          : [];
+        const [only] = managed;
+        setTarget(managed.length === 1 && only
+          ? `/volunteering/org/${only.id}/dashboard?tab=wallet`
+          : '/volunteering/my-organisations');
+      })
+      .catch(() => {
+        if (!cancelled) setTarget('/volunteering/my-organisations');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!target) return <LoadingScreen />;
   return <Navigate to={tenantPath(target)} replace />;

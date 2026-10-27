@@ -403,7 +403,8 @@ export function LoginPage() {
     if (!email.trim()) return;
     setIsResendingVerification(true);
     try {
-      await api.post('/auth/resend-verification-by-email', { email }, { skipAuth: true });
+      // The new verification link keeps the page the member was going to.
+      await api.post('/auth/resend-verification-by-email', { email, return_to: from !== defaultDestination ? from : undefined }, { skipAuth: true });
       setResendVerificationSent(true);
     } catch {
       // Silently handle — the endpoint always returns success for security

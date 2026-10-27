@@ -19,7 +19,7 @@ import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { FeatureGate } from '@/components/routing/FeatureGate';
 import { LegalSlugRedirect } from '@/components/routing/LegalSlugRedirect';
-import { EmailLinkRedirect, MarketplaceOrderLinkRedirect } from '@/components/routing/EmailLinkRedirects';
+import { EmailLinkRedirect, MarketplaceOrderLinkRedirect, OrganisationWalletLinkRedirect } from '@/components/routing/EmailLinkRedirects';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { FeatureErrorBoundary } from '@/components/feedback/FeatureErrorBoundary';
 import { lazyWithRetry } from './lazyWithRetry';
@@ -1635,6 +1635,8 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Low-balance alerts sent before 27 Oct 2026 linked here without the organisation. */}
+          <Route path="volunteer-org/wallet" element={<OrganisationWalletLinkRedirect />} />
           <Route path="volunteering/my-organisations" element={
             <FeatureGate feature="volunteering" features={['organisations']} fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Volunteering">

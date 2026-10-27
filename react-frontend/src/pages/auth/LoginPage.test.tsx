@@ -701,6 +701,27 @@ describe('LoginPage — awaiting-approval sign-in outcome', () => {
     await user.click(screen.getByText('Sign In'));
   }
 
+  // A new member who reaches the login page from an emailed link and asks for a
+  // fresh verification email: the new link keeps the page they were going to.
+  it('sends the page the member was going to with a verification resend', async () => {
+    const { api } = await import('@/lib/api');
+    mockLocation.search = '?next=%2Ftest%2Fgroups%2F7';
+    try {
+      await submitLogin('AUTH_EMAIL_NOT_VERIFIED');
+      fireEvent.click(await screen.findByText('Resend verification email'));
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith(
+          '/auth/resend-verification-by-email',
+          { email: 'waiting@example.com', return_to: '/test/groups/7' },
+          { skipAuth: true },
+        );
+      });
+    } finally {
+      mockLocation.search = '';
+      sessionStorage.clear();
+    }
+  });
+
   it('leads with the real reason instead of "check your details"', async () => {
     await submitLogin('AUTH_ACCOUNT_PENDING_APPROVAL');
 

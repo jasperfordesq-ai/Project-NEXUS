@@ -116,7 +116,10 @@ export function VerifyEmailPage() {
 
     try {
       setIsResending(true);
-      const res = await api.post('/auth/resend-verification');
+      // The new verification link keeps the page the member was going to.
+      const res = destination
+        ? await api.post('/auth/resend-verification', { return_to: destination })
+        : await api.post('/auth/resend-verification');
       // api.post resolves { success:false } on a 4xx (e.g. rate-limited) WITHOUT
       // throwing, so the catch never fired — gate the "sent" confirmation on a confirmed
       // resend, else show the error so the user isn't left waiting for an email that

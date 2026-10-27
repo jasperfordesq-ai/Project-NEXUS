@@ -302,6 +302,17 @@ describe('VerifyEmailPage — carrying the page the member was going to', () => 
     expect(link.getAttribute('href')).toBe('/test/groups/7');
   });
 
+  it('keeps the page in a replacement verification email', async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
+    vi.mocked(mockApi.post).mockReset();
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: false, error: 'expired' }).mockResolvedValueOnce({ success: true });
+    render(<VerifyEmailPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /resend/i }));
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/auth/resend-verification', { return_to: '/test/groups/7' });
+    });
+  });
+
   it('ignores a ?next= pointing at another site', async () => {
     mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
     window.history.pushState({}, '', '/test/verify-email?token=valid-token&next=https%3A%2F%2Fevil.test');

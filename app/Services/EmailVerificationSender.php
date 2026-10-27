@@ -36,8 +36,10 @@ final class EmailVerificationSender
      * single-use token. Returns whether the dispatch was accepted.
      *
      * @param array<string,mixed> $user user row incl. id, email, first_name, tenant_id, preferred_language
+     * @param string|null $returnTo page the member was on their way to; carried in
+     *                              the link as ?next= when AuthReturnPath accepts it
      */
-    public function send(array $user): bool
+    public function send(array $user, ?string $returnTo = null): bool
     {
         $tenantId = (int) ($user['tenant_id'] ?? TenantContext::getId());
 
@@ -56,6 +58,10 @@ final class EmailVerificationSender
         $appUrl = $tenantRouting['frontend_url'];
         $basePath = $tenantRouting['slug_prefix'];
         $verifyUrl = $appUrl . $basePath . '/verify-email?token=' . $token;
+        $safeReturn = \App\Support\AuthReturnPath::safe($returnTo);
+        if ($safeReturn !== null) {
+            $verifyUrl .= '&next=' . rawurlencode($safeReturn);
+        }
 
         try {
             $tenantName = 'Project NEXUS';

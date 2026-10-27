@@ -23,7 +23,7 @@ vi.mock('@/lib/api', () => ({
   api: { get: (...args: unknown[]) => mockGet(...args) },
 }));
 
-import { EmailLinkRedirect, MarketplaceOrderLinkRedirect } from './EmailLinkRedirects';
+import { EmailLinkRedirect, MarketplaceOrderLinkRedirect, OrganisationWalletLinkRedirect } from './EmailLinkRedirects';
 
 function Landed() {
   const location = useLocation();
@@ -87,5 +87,33 @@ describe('MarketplaceOrderLinkRedirect — /marketplace/orders/{id}', () => {
     renderAt('/marketplace/orders/abc', '/marketplace/orders/:id', <MarketplaceOrderLinkRedirect />);
     expect((await screen.findByTestId('landed')).textContent).toBe('/c/marketplace/orders');
     expect(mockGet).not.toHaveBeenCalled();
+  });
+});
+
+describe('OrganisationWalletLinkRedirect — /volunteer-org/wallet', () => {
+  beforeEach(() => mockGet.mockReset());
+
+  it('opens the wallet of the one organisation the member manages', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [
+      { id: 4, member_role: 'owner' },
+      { id: 9, member_role: 'volunteer' },
+    ] });
+    renderAt('/volunteer-org/wallet', '/volunteer-org/wallet', <OrganisationWalletLinkRedirect />);
+    expect((await screen.findByTestId('landed')).textContent).toBe('/c/volunteering/org/4/dashboard?tab=wallet');
+  });
+
+  it('lists the organisations when the member manages several', async () => {
+    mockGet.mockResolvedValue({ success: true, data: [
+      { id: 4, member_role: 'owner' },
+      { id: 5, member_role: 'admin' },
+    ] });
+    renderAt('/volunteer-org/wallet', '/volunteer-org/wallet', <OrganisationWalletLinkRedirect />);
+    expect((await screen.findByTestId('landed')).textContent).toBe('/c/volunteering/my-organisations');
+  });
+
+  it('lists the organisations when they cannot be loaded', async () => {
+    mockGet.mockResolvedValue({ success: false });
+    renderAt('/volunteer-org/wallet', '/volunteer-org/wallet', <OrganisationWalletLinkRedirect />);
+    expect((await screen.findByTestId('landed')).textContent).toBe('/c/volunteering/my-organisations');
   });
 });

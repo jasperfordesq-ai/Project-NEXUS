@@ -43,6 +43,7 @@ final class SendEmailVerificationResend implements ShouldQueue
     public function __construct(
         public readonly string $email,
         public readonly ?int $requestTenantId,
+        public readonly ?string $returnTo = null,
     ) {
         $this->onQueue('emails');
     }
@@ -71,7 +72,7 @@ final class SendEmailVerificationResend implements ShouldQueue
                 // response. In this queued path, false must escape as a job
                 // failure; otherwise Horizon records success and the declared
                 // three-attempt policy never runs.
-                if (!$sender->send($user)) {
+                if (!$sender->send($user, $this->returnTo)) {
                     throw new \RuntimeException('Verification email dispatch failed.');
                 }
             }

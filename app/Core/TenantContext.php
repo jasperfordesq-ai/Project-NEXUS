@@ -651,6 +651,8 @@ class TenantContext
             'dashboard', 'feed', 'listings', 'messages', 'compose', 'notifications',
             'wallet', 'profile', 'settings', 'members', 'connections', 'saved',
             'users', 'premium', 'donations',
+            // Old email-link shapes the website still forwards (EmailLinkRedirects.tsx)
+            'network', 'volunteer-org',
             // Feature modules
             'events', 'groups', 'community-groups', 'volunteering', 'organisations',
             'federation', 'blog', 'resources', 'polls', 'goals', 'reviews',
