@@ -78,6 +78,12 @@ const PUBLIC_BY_DESIGN = [
   // the live route, not assumed from the name; the anonymous body is the tier
   // price list and nothing member-specific.
   /\/member-premium\/tiers$/,
+  // Registered in routes/api.php's public block beside tenant bootstrap and
+  // platform stats. `AdminConfigController::getAlgorithmInfo()` answers only which
+  // ranking each list uses (a name, a key and a fixed description per feed,
+  // listings, members, matching) — no weights, no member data. The admin-only
+  // config with the weights is `/v2/admin/config/algorithms`, which stays gated.
+  /\/config\/algorithms$/,
 ];
 
 // Endpoints that legitimately return something other than JSON: a CSV statement, an
