@@ -36,6 +36,19 @@ describe('Apple App Site Association generator', () => {
     expect(components.at(-1)).toEqual(expect.objectContaining({ '/': '/*' }));
   });
 
+  // Staff email links carry the community slug first; they must stay in the browser
+  // too, and every exclusion must come before the catch-all that admits member pages.
+  it('keeps community-prefixed staff links out of the native app', () => {
+    const components = buildAssociation('A1B2C3D4E5').applinks.details[0].components;
+    const catchAll = components.findIndex((entry) => entry['/'] === '/*');
+    for (const pathname of ['/*/admin/*', '/*/broker/*', '/*/super-admin/*', '/*/partner-timebanks/*', '/partner-timebanks/*']) {
+      const index = components.findIndex((entry) => entry['/'] === pathname);
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(components[index].exclude).toBe(true);
+      expect(index).toBeLessThan(catchAll);
+    }
+  });
+
   it('refuses placeholders and malformed Team IDs', () => {
     expect(() => buildAssociation('APPLE_TEAM_ID')).toThrow(/exactly 10/);
     expect(() => buildAssociation('123')).toThrow(/exactly 10/);

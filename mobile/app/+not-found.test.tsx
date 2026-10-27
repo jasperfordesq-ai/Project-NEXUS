@@ -19,12 +19,14 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 
 const mockReplace = jest.fn();
 let mockPathname = '/courses/42';
+let mockSearchParams: Record<string, string | string[]> = {};
 
 jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: jest.fn(() => jest.fn()), dispatch: jest.fn(), setOptions: jest.fn() }),
   useFocusEffect: jest.fn(),
   router: { replace: (...args: unknown[]) => mockReplace(...args), back: jest.fn(), canGoBack: jest.fn(() => false) },
   usePathname: () => mockPathname,
+  useGlobalSearchParams: () => mockSearchParams,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -94,6 +96,21 @@ describe('the unmatched-link screen', () => {
     fireEvent.press(screen.getByText('Open in browser'));
 
     expect(mockOpenURL).toHaveBeenCalledWith('https://app.project-nexus.ie/courses/42');
+  });
+
+  // A staff email link (`/{slug}/admin/users?filter=pending`) reaches this screen on a
+  // phone with the app installed. The browser must get the whole address, not just the
+  // path, or the admin lands on the unfiltered page.
+  it('keeps the query string of the link when opening the browser', () => {
+    mockPathname = '/hour-timebank/admin/users';
+    mockSearchParams = { filter: 'pending', unmatched: ['hour-timebank', 'admin', 'users'] };
+    try {
+      render(<NotFoundRoute />);
+      fireEvent.press(screen.getByText('Open in browser'));
+      expect(mockOpenURL).toHaveBeenCalledWith('https://app.project-nexus.ie/hour-timebank/admin/users?filter=pending');
+    } finally {
+      mockSearchParams = {};
+    }
   });
 
   it('still builds a valid URL when the pathname has no leading slash', () => {

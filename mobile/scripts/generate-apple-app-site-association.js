@@ -19,6 +19,17 @@ const BROWSER_ONLY_COMPONENTS = [
   '/admin-legacy/*',
   '/broker/*',
   '/super-admin/*',
+  '/partner-timebanks/*',
+  // Every staff email link carries the community slug first
+  // (`/hour-timebank/admin/users?filter=pending`), which `/admin/*` alone never
+  // matched, so those links opened the app on a "not available in the app" screen.
+  // `*` spans path segments, so a club's web admin pages (`/{slug}/clubs/5/admin/…`)
+  // stay in the browser too — the app has no screen for them.
+  '/*/admin/*',
+  '/*/admin-legacy/*',
+  '/*/broker/*',
+  '/*/super-admin/*',
+  '/*/partner-timebanks/*',
   '/auth/*',
   '/verify-identity/callback*',
 ];

@@ -27,6 +27,36 @@
             "comment": "Keep this browser-owned or staff-only flow out of the native app."
           },
           {
+            "/": "/partner-timebanks/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/admin/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/admin-legacy/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/broker/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/super-admin/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
+            "/": "/*/partner-timebanks/*",
+            "exclude": true,
+            "comment": "Keep this browser-owned or staff-only flow out of the native app."
+          },
+          {
             "/": "/auth/*",
             "exclude": true,
             "comment": "Keep this browser-owned or staff-only flow out of the native app."

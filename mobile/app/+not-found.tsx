@@ -44,7 +44,7 @@
 import { useCallback } from 'react';
 import { Linking, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, usePathname, type Href } from 'expo-router';
+import { router, useGlobalSearchParams, usePathname, type Href } from 'expo-router';
 import { Ionicons } from '@/components/ui/Icon';
 import { Button as HeroButton } from '@/components/ui/NativeButton';
 import { useTranslation } from 'react-i18next';
@@ -55,6 +55,16 @@ import { useTheme } from '@/lib/hooks/useTheme';
 import { APP_URL } from '@/lib/constants';
 
 const WEB_ORIGIN = APP_URL;
+
+function toQueryString(params: Record<string, string | string[] | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (key === 'unmatched' || value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) search.append(key, item);
+  }
+  const text = search.toString();
+  return text ? `?${text}` : '';
+}
 
 export default function NotFoundRoute() {
   return (
@@ -68,6 +78,11 @@ function NotFoundScreen() {
   const { t } = useTranslation(['common']);
   const theme = useTheme();
   const pathname = usePathname();
+  // The link's query string — a staff email's `?filter=pending`, say. Expo Router
+  // keeps it as params, not in the pathname, so it is rebuilt here; `unmatched` is
+  // the router's own name for this catch-all's path segments, not part of the link.
+  const searchParams = useGlobalSearchParams();
+  const query = toQueryString(searchParams);
 
   const openInBrowser = useCallback(() => {
     // The unmatched pathname IS the web path — that is exactly why Expo Router could
@@ -76,8 +91,8 @@ function NotFoundScreen() {
     // Linking.openURL REJECTS on a device with no browser, and an unhandled rejection
     // here would take out the one screen offering a way forward.
     const suffix = pathname?.startsWith('/') ? pathname : `/${pathname ?? ''}`;
-    void Linking.openURL(`${WEB_ORIGIN}${suffix}`).catch(() => undefined);
-  }, [pathname]);
+    void Linking.openURL(`${WEB_ORIGIN}${suffix}${query}`).catch(() => undefined);
+  }, [pathname, query]);
 
   const goHome = useCallback(() => {
     // replace(), not push(): the dead link must not stay in the back stack, or Back
