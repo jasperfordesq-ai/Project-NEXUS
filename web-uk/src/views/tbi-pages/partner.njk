@@ -1,0 +1,87 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Timebank Ireland only (routes/partner.js). Mirrors React PartnerPage.tsx, section
+   for section: hero, Together for Timebanking banner, Timebanking UK partnership,
+   technology partner, the funding gap, why partner (three impact cards), partners and
+   supporters, partnership opportunities, learn more, related pages and the call to
+   action. #}
+{% extends "layouts/base.njk" %}
+{% set ns = "govuk_alpha_partner.page." %}
+
+{% block beforeContent %}
+  {% include "tbi-pages/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(ns + "page_title") }}</h1>
+      <p class="govuk-body-l">{{ t(ns + "hero_subtitle") }}</p>
+
+      <h2 class="govuk-visually-hidden">{{ t(ns + "together_banner_heading") }}</h2>
+      <figure class="nexus-alpha-detail-hero">
+        <img src="/images/Timebanking-UK-and-Timebank-Ireland-Partners.webp" alt="{{ t(ns + 'together_banner_alt') }}" width="1922" height="818" decoding="async">
+      </figure>
+
+      <h2 class="govuk-heading-l">{{ tbukHeading }}</h2>
+      <p class="govuk-body">{{ t(ns + "tbuk_para1") }}</p>
+      <p class="govuk-body">{{ t(ns + "tbuk_para2") }}</p>
+
+      <span class="govuk-caption-m">{{ t(ns + "tech_partner_label") }}</span>
+      <h2 class="govuk-heading-l">{{ t(ns + "tech_partner_heading") }}</h2>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <figure class="nexus-alpha-detail-hero">
+            <img src="/images/project-nexus-logo.webp" alt="{{ t(ns + 'tech_partner_logo_alt') }}" width="900" height="900" loading="lazy" decoding="async">
+          </figure>
+        </div>
+      </div>
+      <p class="govuk-body">{{ t(ns + "tech_partner_description") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "funding_gap_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "funding_gap_para1") }}</p>
+      <p class="govuk-body">{{ t(ns + "funding_gap_para2") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "why_partner_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "why_partner_subtitle") }}</p>
+      {% for card in impactCards %}
+        <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ card.title }}</h3>
+        <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ card.highlight }}</p>
+        <p class="govuk-body">{{ card.description }}</p>
+      {% endfor %}
+
+      <h2 class="govuk-heading-l">{{ t(ns + "our_partners_heading") }}</h2>
+      <figure class="nexus-alpha-detail-hero">
+        <img src="/images/timebank_ireland_west_cork_partnership.webp" alt="{{ t(ns + 'partners_banner_alt') }}" width="700" height="200" loading="lazy" decoding="async">
+      </figure>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "partnership_opportunities_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "partnership_opportunities_subtitle") }}</p>
+      {% for type in partnershipTypes %}
+        <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ type.title }}</h3>
+        <p class="govuk-body">{{ type.description }}</p>
+      {% endfor %}
+
+      <h2 class="govuk-heading-l">{{ t(ns + "learn_more_heading") }}</h2>
+      <ul class="govuk-list govuk-list--spaced">
+        {% for link in learnMore %}
+          <li>
+            <a class="govuk-link" href="{{ urlFor(link.href) }}">{{ link.title }}</a>
+            <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0">{{ link.description }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% include "tbi-pages/_related.njk" %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(ns + "cta_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "cta_subtitle") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ urlFor('/contact') }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_contact") }}</a>
+        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/strategic-plan') }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_view_plan") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

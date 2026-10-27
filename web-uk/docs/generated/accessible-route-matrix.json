@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-27T17:09:34.904Z",
+  "generatedAt": "2026-10-27T17:45:58.113Z",
   "provenance": {
-    "generatedAt": "2026-10-27T17:09:34.904Z",
+    "generatedAt": "2026-10-27T17:45:58.113Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "378dc342fa8aa9d8e0416d68f5019c6368129dc9",
+    "laravelCommitSha": "9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "378dc342fa8aa9d8e0416d68f5019c6368129dc9",
+    "webUkRepositoryCommitSha": "9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-27T17:09:34.904Z",
+    "generatedAt": "2026-10-27T17:45:58.113Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1072,
+    "webUkRoutes": 1074,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 362,
+    "extraWebUkRoutes": 364,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -92,6 +92,12 @@
         "matched": 94,
         "missing": 0,
         "extraWebUk": 11,
+        "ignoredInfrastructure": 0
+      },
+      "explore": {
+        "matched": 1,
+        "missing": 0,
+        "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
       "federation": {
@@ -221,6 +227,12 @@
         "ignoredInfrastructure": 0
       },
       "page": {
+        "matched": 0,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "partner": {
         "matched": 0,
         "missing": 0,
         "extraWebUk": 1,
@@ -420,12 +432,6 @@
       },
       "exchanges": {
         "matched": 4,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "explore": {
-        "matched": 1,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -1673,6 +1679,27 @@
       "webUkPath": "/events/{param}/tickets/types/new",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/event-organiser-tools.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/explore/dismiss",
+      "family": "explore",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/explore/dismiss",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/explore.js",
       "webUkRouteKind": ""
     },
     {
@@ -5201,6 +5228,27 @@
       "webUkPath": "/page/{param}",
       "webUkView": "custom-page",
       "webUkFile": "web-uk/src/routes/static-pages.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "GET",
+      "path": "/partner",
+      "family": "partner",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/partner",
+      "webUkView": "tbi-pages/partner",
+      "webUkFile": "web-uk/src/routes/partner.js",
       "webUkRouteKind": ""
     },
     {

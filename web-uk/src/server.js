@@ -99,6 +99,7 @@ const publicInfoRoutes = require('./routes/public-info');
 // Timebank Ireland's own content pages (React TenantSlugGate slug=hour-timebank);
 // every other community falls through to the ordinary 404.
 const tbiPagesRoutes = require('./routes/tbi-pages');
+const partnerRoutes = require('./routes/partner');
 // Partner API developer documentation (React /developers/*), public.
 const developerRoutes = require('./routes/developers');
 const contactSupportRoutes = require('./routes/contact-support');
@@ -1209,7 +1210,8 @@ app.get('/account', async (req, res) => {
   });
 });
 
-app.use('/explore', exploreRoutes);
+// CSRF + form limiter for Explore's "Not interested" POST (27 Oct 2026).
+app.use('/explore', doubleCsrfProtection, postOnly(formLimiter), exploreRoutes);
 
 const { volunteeringSections } = require('./lib/volunteering-sections');
 
@@ -2513,6 +2515,7 @@ app.use('/whats-on', whatsOnRoutes);
 app.use('/venues', requireAuth, doubleCsrfProtection, postOnly(formLimiter), venuesRoutes);
 app.use(publicInfoRoutes);
 app.use(tbiPagesRoutes);
+app.use(partnerRoutes);
 app.use(developerRoutes);
 app.use(staticPageRoutes);
 

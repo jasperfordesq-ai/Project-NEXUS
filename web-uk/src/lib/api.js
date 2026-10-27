@@ -2384,6 +2384,26 @@ async function getExplore(token) {
   });
 }
 
+// React ExplorePage "For you" tab: GET /v2/explore/for-you?page=N&per_page=15.
+async function getExploreForYou(token, params = {}) {
+  const query = new URLSearchParams();
+  if (params.page) query.set('page', String(params.page));
+  if (params.per_page) query.set('per_page', String(params.per_page));
+  const suffix = query.toString() ? `?${query.toString()}` : '';
+  return request(`/api/v2/explore/for-you${suffix}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// React ExplorePage "Not interested": POST /v2/explore/dismiss { item_type, item_id, reason }.
+async function dismissExploreItem(token, data) {
+  return request('/api/v2/explore/dismiss', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data)
+  });
+}
+
 async function getMemberPremiumTiers(token) {
   return request('/api/v2/member-premium/tiers', {
     headers: { Authorization: `Bearer ${token}` }
@@ -2848,6 +2868,30 @@ async function removeMemberEndorsement(token, userId, skillName) {
 
 async function getMemberEndorsements(token, userId) {
   return request(`/api/v2/members/${encodeURIComponent(userId)}/endorsements`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// React FeedSidebar.tsx: one read for the feed side panel (community stats,
+// suggested listings, top categories, upcoming events, popular groups).
+async function getFeedSidebar(token) {
+  return request('/api/v2/feed/sidebar', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// React TopEndorsedWidget.tsx: GET /v2/members/top-endorsed?limit=5.
+async function getTopEndorsedMembers(token, limit = 5) {
+  const size = Math.max(1, Math.min(50, parseInt(limit, 10) || 5));
+  return request(`/api/v2/members/top-endorsed?limit=${size}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// React ConnectionSuggestionsWidget.tsx: GET /v2/connections/suggestions?limit=8.
+async function getConnectionSuggestions(token, limit = 8) {
+  const size = Math.max(1, Math.min(20, parseInt(limit, 10) || 8));
+  return request(`/api/v2/connections/suggestions?limit=${size}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
@@ -4860,6 +4904,8 @@ module.exports = {
   getAiProviders,
   getAiLimits,
   getExplore,
+  getExploreForYou,
+  dismissExploreItem,
   getMemberPremiumTiers,
   getMemberPremiumMe,
   createMemberPremiumCheckout,
@@ -4902,6 +4948,9 @@ module.exports = {
   endorseMemberSkill,
   removeMemberEndorsement,
   getMemberEndorsements,
+  getFeedSidebar,
+  getTopEndorsedMembers,
+  getConnectionSuggestions,
   acceptConnection,
   declineConnection,
   removeConnection,

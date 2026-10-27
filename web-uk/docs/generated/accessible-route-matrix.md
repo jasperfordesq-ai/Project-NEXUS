@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T17:09:34.904Z
-Laravel commit SHA: `378dc342fa8aa9d8e0416d68f5019c6368129dc9`
-Web UK repository commit SHA: `378dc342fa8aa9d8e0416d68f5019c6368129dc9`
+Generated: 2026-10-27T17:45:58.113Z
+Laravel commit SHA: `9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a`
+Web UK repository commit SHA: `9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1072 |
+| web-uk routes | 1074 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 362 |
+| Extra web-uk routes | 364 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -47,7 +47,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | event-templates | 4 | 0 | 0 | 0 |
 | events | 94 | 0 | 11 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
-| explore | 1 | 0 | 0 | 0 |
+| explore | 1 | 0 | 1 | 0 |
 | faq | 1 | 0 | 0 | 0 |
 | features | 1 | 0 | 0 | 0 |
 | federation | 28 | 0 | 3 | 0 |
@@ -82,6 +82,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | onboarding | 4 | 0 | 0 | 0 |
 | organisations | 9 | 0 | 1 | 0 |
 | page | 0 | 0 | 1 | 0 |
+| partner | 0 | 0 | 1 | 0 |
 | password | 2 | 0 | 0 | 0 |
 | platform | 0 | 0 | 3 | 0 |
 | podcasts | 14 | 0 | 11 | 0 |
@@ -178,6 +179,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/events/{param}/staff/{param}/revoke` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/events/{param}/tickets/types/{param}/edit` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
+| POST | `/explore/dismiss` | explore |  | web-uk/src/routes/explore.js |
 | POST | `/federation/members/{param}/block` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/federation/members/{param}/unblock` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/federation/settings/debit-approvals/{param}/decision` | federation |  | web-uk/src/routes/federation-actions.js |
@@ -346,6 +348,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
 | POST | `/organisations/{param}/reviews` | organisations |  | web-uk/src/server.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
+| GET | `/partner` | partner | tbi-pages/partner | web-uk/src/routes/partner.js |
 | GET | `/platform/disclaimer` | platform |  | web-uk/src/routes/legal.js |
 | GET | `/platform/privacy` | platform |  | web-uk/src/routes/legal.js |
 | GET | `/platform/terms` | platform |  | web-uk/src/routes/legal.js |

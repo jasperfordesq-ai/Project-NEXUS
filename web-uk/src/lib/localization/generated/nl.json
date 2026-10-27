@@ -6245,6 +6245,22 @@
                 "all_events": "Alle evenementen",
                 "my_events_description": "Evenementen die je organiseert of waarvoor je hebt aangegeven te komen.",
                 "my_events_empty": "Je organiseert of bezoekt geen evenementen die hieraan voldoen."
+            },
+            "dashboard_panels": {
+                "community_title": "Gemeenschapspuls",
+                "members": "Leden",
+                "listings": "Advertenties",
+                "events": "Evenementen",
+                "groups": "Groepen",
+                "suggested_title": "Aanbevolen voor jou",
+                "by_owner": "door :name",
+                "all_listings": "Alle advertenties",
+                "categories_title": "Topcategorieën",
+                "endorsed_title": "Meest aanbevolen",
+                "people_title": "Mensen die je misschien kent",
+                "mutual": ":count gemeenschappelijke verbinding|:count gemeenschappelijke verbindingen",
+                "connect_with": "Verbinden met :name",
+                "all_members": "Alle leden"
             }
         },
         "govuk_alpha_activity": {
@@ -8639,6 +8655,146 @@
             "registration": {
                 "answers_already_sent": "Je hebt je antwoorden al verstuurd. Als je dit formulier opnieuw verstuurt, vervangen je nieuwe antwoorden de eerder verstuurde."
             }
+        },
+        "govuk_alpha_explore": {
+            "tabs_label": "Verken inhoudstabbladen",
+            "tabs": {
+                "all": "Alles",
+                "for_you": "Voor jou",
+                "listings": "Vermeldingen",
+                "people": "Mensen",
+                "events": "Evenementen",
+                "groups": "Groepen"
+            },
+            "search_label": "Ontdek vaardigheden, evenementen, groepen",
+            "search_button": "Zoeken",
+            "categories_heading": "Aanbiedingen per categorie bekijken",
+            "see_all": "Alles bekijken",
+            "stats": {
+                "heading": "Uw gemeenschap in cijfers",
+                "members": "Leden",
+                "exchanges_this_month": "Ruilingen Deze Maand",
+                "hours_exchanged": "Uren Gewisseld",
+                "active_listings": "Actieve Aanbiedingen"
+            },
+            "sections": {
+                "trending_posts": {
+                    "title": "Trending Berichten",
+                    "subtitle": "Meest betrokken berichten deze week"
+                },
+                "popular_listings": {
+                    "title": "Populaire Aanbiedingen",
+                    "subtitle": "Meest bekeken aanbiedingen en verzoeken"
+                },
+                "upcoming_events": {
+                    "title": "Aankomende Evenementen",
+                    "subtitle": "Sluit je aan bij jouw gemeenschap"
+                },
+                "active_groups": {
+                    "title": "Actieve Groepen",
+                    "subtitle": "Verbind met gelijkgestemde leden"
+                },
+                "top_contributors": {
+                    "title": "Top Bijdragers",
+                    "subtitle": "Gemeenschapsleiders op basis van ervaring"
+                },
+                "trending_hashtags": {
+                    "title": "Populaire hashtags",
+                    "subtitle": "Populaire onderwerpen in jouw gemeenschap"
+                },
+                "recommended": {
+                    "title": "Aanbevolen Voor Jou",
+                    "subtitle": "Gebaseerd op jouw interesses en activiteit"
+                },
+                "near_you": {
+                    "title": "Bij jou in de buurt",
+                    "subtitle": "Lijsten dicht bij jouw locatie"
+                },
+                "suggested_connections": {
+                    "title": "Mensen die je misschien kent",
+                    "subtitle": "Verbind met leden die jouw interesses delen"
+                },
+                "blog_posts": {
+                    "title": "Van de Blog",
+                    "subtitle": "Laatste verhalen uit jouw gemeenschap"
+                },
+                "volunteering": {
+                    "title": "Vrijwilligersmogelijkheden",
+                    "subtitle": "Maak een verschil in jouw gemeenschap"
+                },
+                "polls": {
+                    "title": "Actieve Peilingen",
+                    "subtitle": "Geef jouw mening over gemeenschaps onderwerpen"
+                },
+                "in_demand_skills": {
+                    "title": "Vaardigheden in Vraag",
+                    "subtitle": "Meest gevraagde vaardigheden in jouw gemeenschap"
+                },
+                "organisations": {
+                    "title": "Organisaties",
+                    "subtitle": "Gemeenschapspartners die impact maken"
+                },
+                "jobs": {
+                    "title": "Vacatures",
+                    "subtitle": "Laatste openingen van gemeenschapspartners"
+                },
+                "resources": {
+                    "title": "Uitgelichte bronnen",
+                    "subtitle": "Gidsen en materialen voor jouw gemeenschap"
+                },
+                "new_members": {
+                    "title": "Welkom Onze Nieuwste Leden",
+                    "subtitle": "Zeg hallo tegen recente nieuwkomers"
+                },
+                "featured_challenges": {
+                    "title": "Uitgelichte Uitdagingen",
+                    "subtitle": "Deel je ideeën en maak impact"
+                }
+            },
+            "meta": {
+                "attending": ":count aanwezig",
+                "members": ":count leden",
+                "level": "Niveau :level",
+                "match": ":score% overeenkomst",
+                "by_author": "door :name",
+                "distance": ":distance km afstand",
+                "read_time": ":count min lezen",
+                "applications": ":count aangemeld",
+                "votes": ":count stemmen",
+                "closes": "Sluit :date",
+                "requesting": ":count vraagt aan",
+                "offering": ":count biedt aan",
+                "opportunities": ":count mogelijkheden",
+                "deadline": "Uiterste datum: :date",
+                "ideas": ":count ideeën",
+                "ends": "Eindigt :date"
+            },
+            "content_types": {
+                "listing": "Aanbieding",
+                "post": "Bericht",
+                "event": "Evenement",
+                "group": "Groep",
+                "member": "Lid",
+                "blog": "Blogartikel"
+            },
+            "dismiss": "Niet geïnteresseerd",
+            "dismissed": "We zullen deze aanbieding niet meer aan u aanbevelen.",
+            "dismiss_failed": "We konden deze aanbeveling niet verbergen. Probeer het later opnieuw.",
+            "for_you": {
+                "empty": "Interactie met aanbiedingen, berichten en evenementen om gepersonaliseerde aanbevelingen te krijgen.",
+                "end_of_feed": "Je bent helemaal bij!",
+                "load_more": "Meer aanbevelingen tonen",
+                "load_error": "We konden uw persoonlijke aanbevelingen niet laden. Probeer het later opnieuw."
+            },
+            "load_error": "We konden de ontdekrubrieken niet laden. Dit kan een tijdelijk probleem zijn. Probeer het later opnieuw.",
+            "empty": {
+                "listings": "Nog geen aanbiedingen om te tonen. Wees de eerste om er een te maken!",
+                "people": "Nog geen leden om te tonen. Nodig iemand uit om lid te worden!",
+                "events": "Geen aankomende evenementen. Maak er een om jouw gemeenschap samen te brengen!",
+                "groups": "Nog geen actieve groepen. Start een groep rond jouw interesses!"
+            },
+            "create_listing": "Aanbieding maken",
+            "create_group": "Groep Aanmaken"
         },
         "govuk_alpha_federation": {
             "banners": {
@@ -11756,6 +11912,70 @@
                 "saved": "Beoordeling verstuurd.",
                 "failed": "Je beoordeling kon niet worden verstuurd.",
                 "rating_required": "Kies een beoordeling voordat je die verstuurt."
+            }
+        },
+        "govuk_alpha_partner": {
+            "page": {
+                "page_title": "Werk Met Ons Samen",
+                "meta_description": "Werk samen met hOUR Timebank om €16 sociale waarde te creëren voor elke €1 die wordt geïnvesteerd. Bedrijfspartnerschappen, sponsoring en onderzoeksgelegenheden.",
+                "breadcrumb_about": "Over",
+                "hero_subtitle": "Sluit je aan bij een bewezen organisatie voor sociale impact. Elke €1 die je investeert genereert €16 meetbare sociale waarde voor gemeenschappen in heel Ierland.",
+                "together_banner_heading": "Samen voor Tijdbankieren",
+                "together_banner_alt": "Samen voor Timebanking – sterkere gemeenschappen, gedeelde waarden, een betere toekomst. Mogelijk gemaakt door Project NEXUS, in samenwerking met Timebanking UK en Timebank Ireland.",
+                "tbuk_para1": "Timebank Ireland en Project NEXUS zijn verheugd een nieuw strategisch en technologisch partnerschap met Timebanking UK aan te kondigen, waarbij twee tijdbankbewegingen rond gedeelde, open-source digitale infrastructuur worden samengebracht. Door dit partnerschap zal Timebanking UK een erkende bijdrager en strategische partner worden in het Project NEXUS-ecosysteem, en helpen vorm te geven aan een federatief platform dat is gebouwd voor lokale uitwisseling, toegankelijkheid, samenwerking tussen gemeenschappen en gemeenschapseigendom op lange termijn.",
+                "tbuk_para2": "Het partnerschap versterkt Project NEXUS als een praktisch, door beweging geleid alternatief voor gesloten burgertechnologie. Door samen te werken met Timebanking UK creëren we een sterkere basis voor tijdbanken in heel Ierland, Groot-Brittannië en daarbuiten: gedeelde standaarden, gedeeld leren en een platform dat is ontworpen rond de werkelijke behoeften van gemeenschappen in plaats van de prioriteiten van commerciële softwareleveranciers.",
+                "funding_gap_heading": "Het Aanpakken van de Financieringskloof",
+                "funding_gap_para1": "Gemeenschapsorganisaties zoals hOUR Timebank leveren buitengewone sociale waarde — maar opereren met een beperkt budget. Onze onafhankelijke studie uit 2023 toont een sociale opbrengst van 16:1, terwijl de kernfinanciering slechts basisoperaties dekt.",
+                "funding_gap_para2": "Strategische partnerschappen kunnen deze kloof overbruggen. Of het nu gaat om bedrijfs-MVO-programma's, onderzoeks-samenwerkingen of directe sponsoring, jouw steun versterkt direct het welzijn van de gemeenschap en bouwt sociale infrastructuur die iedereen ten goede komt.",
+                "why_partner_heading": "Waarom Met Ons Samenwerken?",
+                "why_partner_subtitle": "Onafhankelijk bewijs ondersteunt elke claim die we maken.",
+                "impact_card_0_title": "Uitzonderlijke Sociale Waarde",
+                "impact_card_0_highlight": "€16 voor elke €1",
+                "impact_card_0_description": "Onafhankelijk onderzoek bevestigt een sociale opbrengst van 16:1 op investering. Jouw steun vertaalt zich direct in meetbaar gemeenschapswelzijn.",
+                "impact_card_1_title": "Bewijs en Transparantie",
+                "impact_card_1_highlight": "Onafhankelijke Studie 2023",
+                "impact_card_1_description": "Onze impactcijfers komen uit een rigoureuze, onafhankelijke evaluatie. We bieden volledige transparantie over resultaten, uitgaven en sociale metrics.",
+                "impact_card_2_title": "Strategische Groei",
+                "impact_card_2_highlight": "2.500+ Leden tegen 2029",
+                "impact_card_2_description": "Een 5-jarig roadmap om nationaal op te schalen met gefedereerde gemeenschappen, bedrijfspartnerschappen en digitale betrokkenheid.",
+                "partnership_opportunities_heading": "Partnerschapsmogelijkheden",
+                "partnership_opportunities_subtitle": "Meerdere manieren om een betekenisvol verschil te maken.",
+                "partnership_type_0_title": "Bedrijfspartnerschap",
+                "partnership_type_0_description": "Stem uw CSR-doelen af op tastbare sociale resultaten. Vrijwilligerswerk van medewerkers, gematchte financiering en gebrandmerkte gemeenschapsprojecten.",
+                "partnership_type_1_title": "Sponsoring",
+                "partnership_type_1_description": "Financier een hubcoördinator, sponsor gemeenschapsevenementen of ondersteun ons digitale platform. Elke bijdrage vergroot de sociale opbrengst.",
+                "partnership_type_2_title": "Technologiepartnerschap",
+                "partnership_type_2_description": "Werk samen aan ons open-source platform, bied technische expertise of ondersteun onze programma's voor digitale inclusie.",
+                "partnership_type_3_title": "Onderzoekspartnerschap",
+                "partnership_type_3_description": "Toegang tot een levend lab voor onderzoek naar sociale innovatie. Bestudeer gemeenschapsweerbaarheid, welzijnsmetrics en wederzijdse hulpdynamiek.",
+                "learn_more_heading": "Leer Meer",
+                "learn_more_0_title": "Impactoverzicht",
+                "learn_more_0_description": "Bekijk ons volledige SROI-rapport en uitkomstgegevens",
+                "learn_more_1_title": "Strategisch Plan",
+                "learn_more_1_description": "Onze 5-jarige visie voor groei en federatie",
+                "learn_more_2_title": "Timebanking Gids",
+                "learn_more_2_description": "Leer hoe timebanking werkt",
+                "tech_partner_label": "Technologiepartner",
+                "tech_partner_logo_alt": "Project NEXUS-logo",
+                "tech_partner_heading": "TimeBank Ierland en Project NEXUS",
+                "tech_partner_description": "hOUR Timebank wordt met trots mogelijk gemaakt door Project NEXUS – een open source tijdbankplatform dat is gebouwd om gemeenschappen te helpen vaardigheden uit te wisselen en sociale banden te versterken. Ons technologiepartnerschap zorgt ervoor dat elk lid profiteert van een moderne, toegankelijke en community-first digitale ervaring.",
+                "our_partners_heading": "Onze partners en sympathisanten",
+                "partners_banner_alt": "Partnerlogo's: West Cork Development Partnership, SICAP, Cork County Council, Department of Housing Planning Community and Local Government, Europese structuur- en investeringsfondsen, Europees Sociaal Fonds",
+                "cta_heading": "Laten we Samen Sterkere Gemeenschappen Bouwen",
+                "cta_subtitle": "Of u nu een bedrijf, financier, onderzoeker of gemeenschapsleider bent — er is een partnerschapsmodel dat voor u werkt.",
+                "cta_contact": "Begin een Gesprek",
+                "cta_view_plan": "Bekijk Strategisch Plan"
+            },
+            "nav": {
+                "partner_with_us": "Word partner"
+            },
+            "related": {
+                "link_partner_label": "Word Partner Met Ons",
+                "link_partner_description": "Partnerschapsmogelijkheden"
+            },
+            "links": {
+                "view_all_partnerships": "Bekijk Alle Partnerschappen",
+                "partner_with_us": "Werk Samen met Ons"
             }
         },
         "govuk_alpha_platform_legal": {

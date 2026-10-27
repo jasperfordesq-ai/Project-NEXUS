@@ -15,6 +15,9 @@ const {
   getOnboardingStatus,
   getExchangeAttentionCount,
   getMemberEndorsements,
+  getFeedSidebar,
+  getTopEndorsedMembers,
+  getConnectionSuggestions,
   updateProfile,
   ApiError
 } = require('../lib/api');
@@ -253,6 +256,87 @@ function normalizeEndorsements(result, tc = (key) => key) {
     .slice(0, 6);
 }
 
+// ---- Panels from the React feed side panel (components/feed/sidebar/FeedSidebar.tsx) ----
+// React shows these beside the feed. They live on the dashboard here. Each is
+// optional discovery content: as in React, a panel whose read fails or comes back
+// empty simply is not shown, and it never raises the page-level load-error banner.
+
+function positiveId(value) {
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function normalizeCommunityStats(data) {
+  const stats = data && data.community_stats;
+  if (!stats || typeof stats !== 'object') return null;
+  const items = ['members', 'listings', 'events', 'groups'].map((key) => ({
+    key,
+    href: `/${key}`,
+    countLabel: formatInteger(stats[key])
+  }));
+  return { items };
+}
+
+function normalizeSuggestedListings(data) {
+  const listings = Array.isArray(data && data.suggested_listings) ? data.suggested_listings : [];
+  return listings
+    .map((listing) => ({
+      id: positiveId(listing && listing.id),
+      title: String((listing && listing.title) || '').trim(),
+      type: String(listing && listing.type).toLowerCase() === 'request' ? 'request' : 'offer',
+      ownerName: String((listing && listing.owner_name) || '').trim()
+    }))
+    .filter((listing) => listing.id && listing.title);
+}
+
+function normalizeTopCategories(data) {
+  const categories = Array.isArray(data && data.top_categories) ? data.top_categories : [];
+  return categories
+    .map((category) => ({
+      id: positiveId(category && category.id),
+      name: String((category && category.name) || '').trim(),
+      countLabel: formatInteger(category && category.count)
+    }))
+    .filter((category) => category.id && category.name);
+}
+
+function normalizeTopEndorsed(result, tc = (key) => key) {
+  return collectionFrom(result)
+    .map((member) => {
+      // The API names the member `user_id` (EndorsementService::getTopEndorsedMembers).
+      const id = positiveId(member && (member.user_id ?? member.id));
+      const count = integerFrom(member && member.total_endorsements);
+      return {
+        id,
+        name: String((member && member.name) || '').trim(),
+        countLabel: tc('dashboard.endorsement_count', count)
+      };
+    })
+    .filter((member) => member.id && member.name)
+    .slice(0, 5);
+}
+
+function normalizeConnectionSuggestions(result, tc = (key) => key) {
+  const data = dataFrom(result) || {};
+  const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+  return suggestions
+    .filter((suggestion) => String((suggestion && suggestion.connection_status) || 'none') === 'none')
+    .map((suggestion) => {
+      const mutual = integerFrom(suggestion && suggestion.mutual_connections_count);
+      return {
+        id: positiveId(suggestion && suggestion.id),
+        name: String((suggestion && suggestion.name) || '').trim(),
+        mutualLabel: mutual > 0 ? tc('dashboard_panels.mutual', mutual) : '',
+        sharedSkills: (Array.isArray(suggestion && suggestion.shared_skills) ? suggestion.shared_skills : [])
+          .map((skill) => String(skill || '').trim())
+          .filter(Boolean)
+          .slice(0, 2)
+      };
+    })
+    .filter((suggestion) => suggestion.id && suggestion.name)
+    .slice(0, 5);
+}
+
 function isGoingEvent(event) {
   const rsvp = event && (event.my_rsvp || event.myRsvp);
   if (!rsvp) return true;
@@ -376,14 +460,40 @@ router.get('/', asyncRoute(async (req, res) => {
   const badges = (gamificationBadges.length > 0 ? gamificationBadges : profileBadges).slice(0, 8);
   const balance = walletBalance(balanceData);
   const currentProfileId = profileId(safeProfile);
-  const [exchangeAttentionData, endorsementsData] = await Promise.all([
+  // A side-panel read that fails hides only its own panel. 401 still re-throws so an
+  // expired session is sent to sign in.
+  const quiet = (error) => {
+    if (error instanceof ApiError && error.status === 401) throw error;
+    return null;
+  };
+  // Also absorbs a synchronous throw, so no panel can take the page down.
+  const guarded = (read) => Promise.resolve().then(read).catch(quiet);
+  const sidePanelsOn = dashboardFeatures.feed;
+  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
       ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
     currentProfileId
       ? getMemberEndorsements(req.token, currentProfileId).catch(track({ data: { endorsements: [] } }))
-      : Promise.resolve({ data: { endorsements: [] } })
+      : Promise.resolve({ data: { endorsements: [] } }),
+    sidePanelsOn && (dashboardFeatures.connections || dashboardFeatures.listings)
+      ? guarded(() => getFeedSidebar(req.token))
+      : Promise.resolve(null),
+    sidePanelsOn ? guarded(() => getTopEndorsedMembers(req.token, 5)) : Promise.resolve(null),
+    sidePanelsOn && dashboardFeatures.connections
+      ? guarded(() => getConnectionSuggestions(req.token, 8))
+      : Promise.resolve(null)
   ]);
+  const sidebar = sidebarData ? (dataFrom(sidebarData) || {}) : {};
+  const sidePanels = {
+    communityStats: dashboardFeatures.connections ? normalizeCommunityStats(sidebar) : null,
+    suggestedListings: dashboardFeatures.listings ? normalizeSuggestedListings(sidebar) : [],
+    topCategories: dashboardFeatures.listings ? normalizeTopCategories(sidebar) : [],
+    topEndorsed: topEndorsedData ? normalizeTopEndorsed(topEndorsedData, tc) : [],
+    people: dashboardFeatures.connections && suggestionsData
+      ? normalizeConnectionSuggestions(suggestionsData, tc)
+      : []
+  };
 
   res.render('dashboard/index', {
     title: t('dashboard.title'),
@@ -407,6 +517,7 @@ router.get('/', asyncRoute(async (req, res) => {
     upcomingEvents: collectionFrom(eventsData).filter(Boolean).filter(isGoingEvent).slice(0, 3).map((event) => normalizeEvent(event, t)),
     communityName: res.locals.tenantName || res.locals.serviceName || 'Project NEXUS Accessible',
     dashboardFeatures,
+    sidePanels,
     status: String(req.query.status || ''),
     loadError: loadFailed ? t('states.load_error') : '',
     successMessage: req.flash ? req.flash('success')[0] : null

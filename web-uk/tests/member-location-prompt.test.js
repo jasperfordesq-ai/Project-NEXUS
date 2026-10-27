@@ -52,7 +52,10 @@ jest.mock('../src/lib/api', () => {
     getGamificationProfile: jest.fn(),
     getMyBadges: jest.fn(),
     getExchangeAttentionCount: jest.fn(),
-    getMemberEndorsements: jest.fn()
+    getMemberEndorsements: jest.fn(),
+    getFeedSidebar: jest.fn(),
+    getTopEndorsedMembers: jest.fn(),
+    getConnectionSuggestions: jest.fn()
   };
 });
 

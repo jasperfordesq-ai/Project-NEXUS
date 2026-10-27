@@ -39,22 +39,30 @@ function renderExplore(locale) {
       htmlDirection: locale === 'ar' ? 'rtl' : 'ltr',
       htmlLang: locale,
       isAuthenticated: true,
-      recentListings: [{
-        href: '/listings/1',
-        tagClass: 'govuk-tag--blue',
-        title: 'Dynamic listing title',
-        type: 'offer'
+      activeTab: 'all',
+      tabs: ['all', 'for_you', 'listings'].map((key) => ({
+        key,
+        href: key === 'all' ? '/explore' : `/explore?tab=${key}`,
+        label: t(`govuk_alpha_explore.tabs.${key}`)
+      })),
+      sections: [{
+        key: 'popular_listings',
+        title: t('govuk_alpha_explore.sections.popular_listings.title'),
+        subtitle: t('govuk_alpha_explore.sections.popular_listings.subtitle'),
+        seeAllHref: '/listings?sort=popular',
+        items: [{ href: '/listings/1', title: 'Dynamic listing title', tag: { type: 'offer', tagClass: 'govuk-tag--blue' }, meta: [] }]
+      }, {
+        key: 'upcoming_events',
+        title: t('govuk_alpha_explore.sections.upcoming_events.title'),
+        subtitle: t('govuk_alpha_explore.sections.upcoming_events.subtitle'),
+        seeAllHref: '/events',
+        items: [{ href: '/events/1', title: 'Dynamic event title', tag: null, meta: [] }]
       }],
       serviceName: 'Project NEXUS',
       t,
       tenantName: 'Test Community',
       title: 'Explore',
       titleKey: 'explore.title',
-      upcomingEvents: [{
-        date: '',
-        href: '/events/1',
-        title: 'Dynamic event title'
-      }],
       urlFor: (pathname) => pathname
     }),
     t
@@ -75,10 +83,10 @@ describe('Laravel-first Explore localization', () => {
     expect(html).toContain(t('exchanges.description'));
     expect(html).toContain(t('govuk_alpha_aichat.description'));
     expect(html).toContain(t('polls.description'));
-    expect(html).toContain(t('polish_discovery.explore_listings_title'));
-    expect(html).toContain(t('polish_discovery.explore_view_all_listings'));
-    expect(html).toContain(t('polish_discovery.explore_events_title'));
-    expect(html).toContain(t('polish_discovery.explore_view_all_events'));
+    expect(html).toContain(t('govuk_alpha_explore.sections.popular_listings.title'));
+    expect(html).toContain(t('govuk_alpha_explore.sections.upcoming_events.title'));
+    expect(html).toContain(t('govuk_alpha_explore.see_all'));
+    expect(html).toContain(t('govuk_alpha_explore.tabs.for_you'));
     expect(html).toContain(t('listings.offer'));
   });
 });

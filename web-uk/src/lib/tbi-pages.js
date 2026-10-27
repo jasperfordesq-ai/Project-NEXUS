@@ -25,18 +25,21 @@
 
 const TBI_TENANT_SLUG = 'hour-timebank';
 
-// React's RelatedPages.tsx order, minus /partner (no accessible page exists for
-// it yet). The timebanking guide is /guide here (see seo-meta MAIN_SITE_PATHS).
+// React's RelatedPages.tsx order. The timebanking guide is /guide here (see
+// seo-meta MAIN_SITE_PATHS). /partner is routes/partner.js; its text lives in
+// govuk_alpha_partner rather than govuk_alpha_tbi_pages.
 const TBI_PAGE_PATHS = Object.freeze([
+  '/partner',
   '/social-prescribing',
   '/impact-summary',
   '/impact-report',
   '/strategic-plan'
 ]);
 
-// Footer labels: React's navigation registry entries for the same four pages
+// Footer labels: React's navigation registry entries for the same five pages
 // (navigationRegistry.ts, tenantSlugs ['hour-timebank'], "community pages").
 const NAV_LABEL_KEYS = Object.freeze({
+  '/partner': 'govuk_alpha_partner.nav.partner_with_us',
   '/social-prescribing': 'govuk_alpha_tbi_pages.nav.social_prescribing',
   '/impact-summary': 'govuk_alpha_tbi_pages.nav.our_impact',
   '/impact-report': 'govuk_alpha_tbi_pages.nav.impact_report',
@@ -57,9 +60,16 @@ function requestTenant(req) {
   return tenant && typeof tenant === 'object' ? tenant : null;
 }
 
+// Related Pages labels live in each page's own namespace.
+function relatedKey(id, field) {
+  return id === 'partner'
+    ? `govuk_alpha_partner.related.link_partner_${field}`
+    : `govuk_alpha_tbi_pages.related.link_${id}_${field}`;
+}
+
 /**
  * The Related Pages strip (React RelatedPages.tsx) for one of these pages: the
- * guide plus the other three, each with its label and one-line description.
+ * guide plus the other community pages, each with its label and one-line description.
  */
 function relatedPages(currentPath, t) {
   const links = [
@@ -70,8 +80,8 @@ function relatedPages(currentPath, t) {
     .filter((link) => link.href !== currentPath)
     .map((link) => ({
       href: link.href,
-      label: t(`govuk_alpha_tbi_pages.related.link_${link.id}_label`),
-      description: t(`govuk_alpha_tbi_pages.related.link_${link.id}_description`)
+      label: t(relatedKey(link.id, 'label')),
+      description: t(relatedKey(link.id, 'description'))
     }));
 }
 

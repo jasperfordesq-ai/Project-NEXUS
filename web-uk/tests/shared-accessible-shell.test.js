@@ -1217,13 +1217,16 @@ describe('shared accessible frontend shell', () => {
     api.getClubs.mockResolvedValueOnce({
       data: [{ id: 7, name: 'Velo Club', status: 'active', org_type: 'club' }]
     });
-    api.getListings.mockResolvedValue({ data: [
-      { id: 501, title: 'Borrow a repair kit', type: 'offer' },
-      { id: 502, title: 'Need a folding table', type: 'request' }
-    ] });
-    api.getEvents.mockResolvedValue({ data: [
-      { id: 77, title: 'Community supper', start_date: '2026-08-15T18:00:00Z' }
-    ] });
+    // Since 27 Oct 2026 Explore reads React's one aggregate, GET /v2/explore.
+    api.getExplore.mockResolvedValueOnce({ data: {
+      popular_listings: [
+        { id: 501, title: 'Borrow a repair kit', type: 'offer' },
+        { id: 502, title: 'Need a folding table', type: 'request' }
+      ],
+      upcoming_events: [
+        { id: 77, title: 'Community supper', start_at: '2026-08-15T18:00:00Z' }
+      ]
+    } });
 
     const unsigned = await request(app).get('/explore');
 
@@ -1240,8 +1243,9 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(api.getListings).toHaveBeenCalledWith('test-token', { per_page: 5 });
-    expect(api.getEvents).toHaveBeenCalledWith('test-token', { per_page: 5, when: 'upcoming' });
+    expect(api.getExplore).toHaveBeenCalledWith('test-token');
+    expect(api.getListings).not.toHaveBeenCalled();
+    expect(api.getEvents).not.toHaveBeenCalled();
     expect(api.getClubs).toHaveBeenCalledWith({ per_page: 1 });
     expect(response.text).toContain('Explore');
     expect(response.text).toContain('class="nexus-alpha-card-list');
@@ -1254,11 +1258,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/clubs"');
     expect(response.text).not.toContain('Marketplace');
     expect(response.text).toContain('Partner communities');
-    expect(response.text).toContain('Recent listings');
+    expect(response.text).toContain('Popular Listings');
     expect(response.text).toContain('Borrow a repair kit');
     expect(response.text).toContain('Need a folding table');
     expect(response.text).toContain('href="/listings/501"');
-    expect(response.text).toContain('Upcoming events');
+    expect(response.text).toContain('Upcoming Events');
     expect(response.text).toContain('Community supper');
     expect(response.text).toContain('15 Aug 2026');
     expect(response.text).toContain('href="/events/77"');
@@ -1338,8 +1342,7 @@ describe('shared accessible frontend shell', () => {
 
   it('keeps Explore renderable when Laravel recent listings or upcoming events are unavailable', async () => {
     const api = require('../src/lib/api');
-    api.getListings.mockRejectedValueOnce(new api.ApiError('Listings unavailable', 503));
-    api.getEvents.mockRejectedValueOnce(new api.ApiError('Events unavailable', 503));
+    api.getExplore.mockRejectedValueOnce(new api.ApiError('Explore unavailable', 503));
 
     const response = await request(app)
       .get('/explore?locale=ar')
@@ -1348,10 +1351,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.headers['content-language']).toBe('ar');
     expect(response.text).toContain(createTranslator('ar')('explore.title'));
-    expect(response.text).not.toContain(createTranslator('ar')('polish_discovery.explore_listings_title'));
-    expect(response.text).not.toContain(createTranslator('ar')('polish_discovery.explore_events_title'));
+    expect(response.text).not.toContain(createTranslator('ar')('govuk_alpha_explore.sections.popular_listings.title'));
+    expect(response.text).not.toContain(createTranslator('ar')('govuk_alpha_explore.sections.upcoming_events.title'));
     // The outage is announced rather than read as a genuine empty page.
-    expect(response.text).toContain(createTranslator('ar')('states.load_error'));
+    expect(response.text).toContain(createTranslator('ar')('govuk_alpha_explore.load_error'));
     expect(response.text).toContain('govuk-error-summary');
   });
 
@@ -1366,6 +1369,10 @@ describe('shared accessible frontend shell', () => {
         features: { events: false }
       }
     });
+    api.getExplore.mockResolvedValueOnce({ data: {
+      popular_listings: [{ id: 501, title: 'Borrow a repair kit', type: 'offer' }],
+      upcoming_events: [{ id: 77, title: 'Community supper', start_at: '2026-08-15T18:00:00Z' }]
+    } });
 
     const response = await request(app)
       .get('/acme/accessible/explore')
@@ -1374,13 +1381,15 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(api.getListings).not.toHaveBeenCalled();
     expect(api.getEvents).not.toHaveBeenCalled();
-    expect(response.text).not.toContain('Recent listings');
-    expect(response.text).not.toContain('Upcoming events');
+    expect(response.text).not.toContain('Popular Listings');
+    expect(response.text).not.toContain('Borrow a repair kit');
+    expect(response.text).not.toContain('Upcoming Events');
+    expect(response.text).not.toContain('Community supper');
   });
 
   it('redirects Explore when either Laravel live-content source rejects authentication', async () => {
     const api = require('../src/lib/api');
-    api.getListings.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));
+    api.getExplore.mockRejectedValueOnce(new api.ApiError('Unauthenticated', 401));
 
     const response = await request(app)
       .get('/acme/accessible/explore')
@@ -1388,6 +1397,17 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/acme/accessible/login?status=auth-required');
+  });
+
+  it('refuses an Explore "Not interested" post without a CSRF token', async () => {
+    const response = await request(app)
+      .post('/explore/dismiss')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ item_id: '71', tab: 'all' });
+
+    // The service answers a CSRF failure with Laravel's 419 (page expired).
+    expect(response.status).toBe(419);
   });
 
   it('returns Laravel-style 403 for tenant-mounted default-off feature pages', async () => {

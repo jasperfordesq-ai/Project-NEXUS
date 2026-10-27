@@ -5,6 +5,8 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("explore.caption", { community: tenantName }) }}</span>
@@ -13,57 +15,153 @@
     {{ t("explore.description") }}
   </p>
 
-  {% if loadError %}
+  {% if dismissed %}
+    {{ govukNotificationBanner({ type: "success", text: t("govuk_alpha_explore.dismissed") }) }}
+  {% endif %}
+
+  {% if loadError or aggregateError or dismissFailed %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
       <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
-      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+      <div class="govuk-error-summary__body">
+        {% if aggregateError %}<p class="govuk-body">{{ t("govuk_alpha_explore.load_error") }}</p>{% endif %}
+        {% if dismissFailed %}<p class="govuk-body">{{ t("govuk_alpha_explore.dismiss_failed") }}</p>{% endif %}
+        {% if loadError %}<p class="govuk-body">{{ loadError }}</p>{% endif %}
+      </div>
       </div>
     </div>
   {% endif %}
 
-  <div class="nexus-alpha-card-list govuk-!-margin-top-6">
-    {% for item in alphaExploreLinks %}
-      <article class="nexus-alpha-card">
-        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
-          <a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a>
-        </h2>
-        <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
-      </article>
-    {% endfor %}
-  </div>
-
-  {% if recentListings and recentListings.length %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polish_discovery.explore_listings_title") }}</h2>
-    <ul class="govuk-list govuk-list--spaced govuk-!-margin-bottom-2">
-      {% for listing in recentListings %}
-        <li>
-          {% if listing.href %}
-            <a class="govuk-link" href="{{ urlFor(listing.href) }}">{{ listing.title }}</a>
-          {% else %}
-            {{ listing.title }}
-          {% endif %}
-          {{ govukTag({ text: t("listings." + listing.type), classes: (listing.tagClass) ~ " govuk-!-margin-left-1" }) }}
-        </li>
-      {% endfor %}
-    </ul>
-    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("polish_discovery.explore_view_all_listings") }}</a></p>
+  {% if showSearch %}
+    <form method="get" action="{{ urlFor('/search') }}" class="govuk-!-margin-bottom-4" role="search">
+      <div class="govuk-form-group govuk-!-margin-bottom-2">
+        <label class="govuk-label" for="explore-search">{{ t("govuk_alpha_explore.search_label") }}</label>
+        <input class="govuk-input govuk-!-width-two-thirds" id="explore-search" name="q" type="search">
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_explore.search_button") }}</button>
+    </form>
   {% endif %}
 
-  {% if upcomingEvents and upcomingEvents.length %}
-    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polish_discovery.explore_events_title") }}</h2>
-    <ul class="govuk-list govuk-list--spaced govuk-!-margin-bottom-2">
-      {% for event in upcomingEvents %}
-        <li>
-          {% if event.href %}
-            <a class="govuk-link" href="{{ urlFor(event.href) }}">{{ event.title }}</a>
-          {% else %}
-            {{ event.title }}
-          {% endif %}
-          {% if event.date %}<span class="govuk-body-s nexus-alpha-meta"> - {{ event.date | date }}</span>{% endif %}
+  {% if categories and categories.length %}
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_explore.categories_heading") }}</h2>
+    <ul class="govuk-list nexus-alpha-inline-list govuk-!-margin-bottom-6">
+      {% for category in categories %}
+        <li><a class="govuk-link" href="{{ urlFor('/listings?category=' + category.slug) }}">{{ category.name }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha_explore.tabs_label") }}">
+    <h2 class="govuk-tabs__title">{{ t("govuk_alpha_explore.tabs_label") }}</h2>
+    <ul class="govuk-tabs__list">
+      {% for tab in tabs %}
+        <li class="govuk-tabs__list-item{% if activeTab == tab.key %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor(tab.href) }}"{% if activeTab == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
         </li>
       {% endfor %}
     </ul>
-    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("polish_discovery.explore_view_all_events") }}</a></p>
+  </nav>
+
+  {% if activeTab == 'all' %}
+    <div class="nexus-alpha-card-list">
+      {% for card in alphaExploreLinks %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ card.href }}">{{ card.title }}</a>
+          </h2>
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ card.description }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if stats %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_explore.stats.heading") }}</h2>
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_explore.stats.members") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.members) if formatLocaleNumber else stats.members }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_explore.stats.exchanges_this_month") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.exchanges) if formatLocaleNumber else stats.exchanges }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_explore.stats.hours_exchanged") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.hours) if formatLocaleNumber else stats.hours }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_explore.stats.active_listings") }}</dt>
+        <dd class="govuk-summary-list__value">{{ formatLocaleNumber(stats.listings) if formatLocaleNumber else stats.listings }}</dd>
+      </div>
+    </dl>
+  {% endif %}
+
+  {% if activeTab == 'for_you' and forYou %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="for-you">{{ t("govuk_alpha_explore.tabs.for_you") }}</h2>
+    {% if forYou.failed %}
+      <p class="govuk-body">{{ t("govuk_alpha_explore.for_you.load_error") }}</p>
+    {% elif forYou.items.length %}
+      <ul class="govuk-list govuk-list--spaced">
+        {% for item in forYou.items %}
+          <li>
+            {{ govukTag({ text: item.typeLabel, classes: "govuk-tag--grey govuk-!-margin-right-1" }) }}
+            <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+            {% if item.subtitle or item.meta %}
+              <span class="govuk-body-s nexus-alpha-meta"> - {{ item.subtitle }}{% if item.subtitle and item.meta %}, {% endif %}{{ item.meta }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if forYouNextHref %}
+        {{ loadMoreNext(urlFor(forYouNextHref), t("govuk_alpha_explore.for_you.load_more")) }}
+      {% else %}
+        <p class="govuk-body">{{ t("govuk_alpha_explore.for_you.end_of_feed") }}</p>
+      {% endif %}
+    {% elif forYouPage > 1 %}
+      <p class="govuk-body">{{ t("govuk_alpha_explore.for_you.end_of_feed") }}</p>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_explore.for_you.empty") }}</p>
+    {% endif %}
+  {% endif %}
+
+  {% for section in sections %}
+    <section class="govuk-!-margin-top-7" aria-labelledby="explore-{{ section.key }}">
+      <h2 class="govuk-heading-l govuk-!-margin-bottom-1" id="explore-{{ section.key }}">{{ section.title }}</h2>
+      <p class="govuk-body nexus-alpha-meta">{{ section.subtitle }}</p>
+      <ul class="govuk-list govuk-list--spaced govuk-!-margin-bottom-2">
+        {% for item in section.items %}
+          <li>
+            <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+            {% if item.tag %}
+              {{ govukTag({ text: t("listings." + item.tag.type), classes: item.tag.tagClass ~ " govuk-!-margin-left-1" }) }}
+            {% endif %}
+            {% if item.meta.length %}
+              <span class="govuk-body-s nexus-alpha-meta"> - {{ item.meta | join(", ") }}</span>
+            {% endif %}
+            {% if item.dismissId %}
+              <form method="post" action="{{ urlFor('/explore/dismiss') }}" class="govuk-!-margin-top-1">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="item_id" value="{{ item.dismissId }}">
+                <input type="hidden" name="tab" value="{{ activeTab }}">
+                <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">
+                  {{ t("govuk_alpha_explore.dismiss") }}<span class="govuk-visually-hidden">: {{ item.title }}</span>
+                </button>
+              </form>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(section.seeAllHref) }}">{{ t("govuk_alpha_explore.see_all") }}<span class="govuk-visually-hidden">: {{ section.title }}</span></a></p>
+    </section>
+  {% endfor %}
+
+  {% if emptyState %}
+    <div class="govuk-inset-text govuk-!-margin-top-7">
+      <p class="govuk-body">{{ t("govuk_alpha_explore.empty." + emptyState.key) }}</p>
+      {% if emptyState.ctaHref %}
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor(emptyState.ctaHref) }}">{{ t("govuk_alpha_explore." + emptyState.ctaKey) }}</a></p>
+      {% endif %}
+    </div>
   {% endif %}
 {% endblock %}

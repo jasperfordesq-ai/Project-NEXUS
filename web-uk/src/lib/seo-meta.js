@@ -88,7 +88,8 @@ const MAIN_SITE_PATHS = [
   // Timebank Ireland's own content pages. React serves all four publicly at the
   // same paths for the same single community (PublicAppRoutes.tsx, TenantSlugGate
   // slug="hour-timebank"); no other community has the page on either site.
-  [/^\/(social-prescribing|impact-summary|impact-report|strategic-plan)$/, null]
+  // /partner is the same, from AppRoutes.tsx (PartnerPage, same gate).
+  [/^\/(partner|social-prescribing|impact-summary|impact-report|strategic-plan)$/, null]
   // Only pages a signed-out visitor can open on the main site
   // (react-frontend/src/routes/PublicAppRoutes.tsx). Listings, events,
   // groups, members, courses and the rest need sign-in there; pointing a

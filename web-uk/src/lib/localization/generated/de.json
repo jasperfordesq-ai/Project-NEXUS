@@ -6245,6 +6245,22 @@
                 "all_events": "Alle Veranstaltungen",
                 "my_events_description": "Veranstaltungen, die Sie organisieren oder für die Sie zugesagt haben.",
                 "my_events_empty": "Sie organisieren keine passenden Veranstaltungen und haben für keine zugesagt."
+            },
+            "dashboard_panels": {
+                "community_title": "Gemeinschaftspuls",
+                "members": "Mitglieder",
+                "listings": "Anzeigen",
+                "events": "Veranstaltungen",
+                "groups": "Gruppen",
+                "suggested_title": "Für Sie vorgeschlagen",
+                "by_owner": "von :name",
+                "all_listings": "Alle Anzeigen",
+                "categories_title": "Top-Kategorien",
+                "endorsed_title": "Am meisten empfohlen",
+                "people_title": "Personen, die Sie kennen könnten",
+                "mutual": ":count gemeinsamer Kontakt|:count gemeinsame Kontakte",
+                "connect_with": "Mit :name verbinden",
+                "all_members": "Alle Mitglieder"
             }
         },
         "govuk_alpha_activity": {
@@ -8639,6 +8655,146 @@
             "registration": {
                 "answers_already_sent": "Sie haben Ihre Antworten bereits gesendet. Wenn Sie dieses Formular erneut senden, ersetzen Ihre neuen Antworten die bisherigen."
             }
+        },
+        "govuk_alpha_explore": {
+            "tabs_label": "Entdecken-Inhaltsregister",
+            "tabs": {
+                "all": "Alle",
+                "for_you": "Für Sie",
+                "listings": "Anzeigen",
+                "people": "Personen",
+                "events": "Veranstaltungen",
+                "groups": "Gruppen"
+            },
+            "search_label": "Fähigkeiten, Veranstaltungen, Gruppen entdecken",
+            "search_button": "Suchen",
+            "categories_heading": "Anzeigen nach Kategorie durchsuchen",
+            "see_all": "Alle anzeigen",
+            "stats": {
+                "heading": "Ihre Gemeinschaft in Zahlen",
+                "members": "Mitglieder",
+                "exchanges_this_month": "Tausche diesen Monat",
+                "hours_exchanged": "Getauschte Stunden",
+                "active_listings": "Aktive Anzeigen"
+            },
+            "sections": {
+                "trending_posts": {
+                    "title": "Trendende Beiträge",
+                    "subtitle": "Beliebteste Beiträge dieser Woche"
+                },
+                "popular_listings": {
+                    "title": "Beliebte Anzeigen",
+                    "subtitle": "Meistgesehene Angebote und Gesuche"
+                },
+                "upcoming_events": {
+                    "title": "Bevorstehende Veranstaltungen",
+                    "subtitle": "Treten Sie Ihrer Gemeinschaft bei"
+                },
+                "active_groups": {
+                    "title": "Aktive Gruppen",
+                    "subtitle": "Mit Gleichgesinnten vernetzen"
+                },
+                "top_contributors": {
+                    "title": "Top-Beitragende",
+                    "subtitle": "Gemeinschaftsführer nach Erfahrung"
+                },
+                "trending_hashtags": {
+                    "title": "Trendende Hashtags",
+                    "subtitle": "Beliebte Themen in Ihrer Gemeinschaft"
+                },
+                "recommended": {
+                    "title": "Für Sie empfohlen",
+                    "subtitle": "Basierend auf Ihren Interessen und Aktivitäten"
+                },
+                "near_you": {
+                    "title": "In Ihrer Nähe",
+                    "subtitle": "Anzeigen in der Nähe Ihres Standorts"
+                },
+                "suggested_connections": {
+                    "title": "Personen, die Sie kennen könnten",
+                    "subtitle": "Vernetzen Sie sich mit Mitgliedern, die Ihre Interessen teilen"
+                },
+                "blog_posts": {
+                    "title": "Aus dem Blog",
+                    "subtitle": "Neueste Geschichten aus Ihrer Gemeinschaft"
+                },
+                "volunteering": {
+                    "title": "Freiwilligenmöglichkeiten",
+                    "subtitle": "Machen Sie einen Unterschied in Ihrer Gemeinschaft"
+                },
+                "polls": {
+                    "title": "Aktive Umfragen",
+                    "subtitle": "Sagen Sie Ihre Meinung zu Gemeinschaftsthemen"
+                },
+                "in_demand_skills": {
+                    "title": "Gefragte Fähigkeiten",
+                    "subtitle": "Die meistgefragten Fähigkeiten in Ihrer Gemeinschaft"
+                },
+                "organisations": {
+                    "title": "Organisationen",
+                    "subtitle": "Gemeinschaftspartner mit Wirkung"
+                },
+                "jobs": {
+                    "title": "Stellenangebote",
+                    "subtitle": "Neueste Stellen von Gemeinschaftspartnern"
+                },
+                "resources": {
+                    "title": "Empfohlene Ressourcen",
+                    "subtitle": "Anleitungen und Materialien für Ihre Gemeinschaft"
+                },
+                "new_members": {
+                    "title": "Begrüssen Sie unsere neuesten Mitglieder",
+                    "subtitle": "Begrüssen Sie neue Mitglieder"
+                },
+                "featured_challenges": {
+                    "title": "Empfohlene Herausforderungen",
+                    "subtitle": "Teilen Sie Ihre Ideen und bewirken Sie etwas"
+                }
+            },
+            "meta": {
+                "attending": ":count nehmen teil",
+                "members": ":count Mitglieder",
+                "level": "Stufe :level",
+                "match": ":score% Übereinstimmung",
+                "by_author": "von :name",
+                "distance": ":distance km entfernt",
+                "read_time": ":count Min. Lesezeit",
+                "applications": ":count beworben",
+                "votes": ":count Stimmen",
+                "closes": "Endet am :date",
+                "requesting": ":count suchen",
+                "offering": ":count bieten an",
+                "opportunities": ":count Möglichkeiten",
+                "deadline": "Frist: :date",
+                "ideas": ":count Ideen",
+                "ends": "Endet am :date"
+            },
+            "content_types": {
+                "listing": "Anzeige",
+                "post": "Beitrag",
+                "event": "Veranstaltung",
+                "group": "Gruppe",
+                "member": "Mitglied",
+                "blog": "Blogartikel"
+            },
+            "dismiss": "Nicht interessiert",
+            "dismissed": "Wir werden Ihnen diese Anzeige nicht mehr empfehlen.",
+            "dismiss_failed": "Diese Empfehlung konnte nicht ausgeblendet werden. Versuchen Sie es später erneut.",
+            "for_you": {
+                "empty": "Interagieren Sie mit Inseraten, Beiträgen und Veranstaltungen, um personalisierte Empfehlungen zu erhalten.",
+                "end_of_feed": "Sie sind auf dem neuesten Stand!",
+                "load_more": "Weitere Empfehlungen anzeigen",
+                "load_error": "Ihre persönlichen Empfehlungen konnten nicht geladen werden. Versuchen Sie es später erneut."
+            },
+            "load_error": "Die Entdecken-Bereiche konnten nicht geladen werden. Das kann ein vorübergehendes Problem sein. Versuchen Sie es später erneut.",
+            "empty": {
+                "listings": "Noch keine Inserate vorhanden. Erstellen Sie das erste!",
+                "people": "Noch keine Mitglieder anzuzeigen. Laden Sie jemanden ein!",
+                "events": "Keine bevorstehenden Veranstaltungen. Erstellen Sie eine, um Ihre Gemeinschaft zusammenzubringen!",
+                "groups": "Noch keine aktiven Gruppen. Gründen Sie eine Gruppe zu Ihren Interessen!"
+            },
+            "create_listing": "Inserat erstellen",
+            "create_group": "Gruppe erstellen"
         },
         "govuk_alpha_federation": {
             "banners": {
@@ -11756,6 +11912,70 @@
                 "saved": "Bewertung eingereicht.",
                 "failed": "Ihre Bewertung konnte nicht übermittelt werden.",
                 "rating_required": "Wählen Sie vor dem Absenden eine Bewertung."
+            }
+        },
+        "govuk_alpha_partner": {
+            "page": {
+                "page_title": "Partner werden",
+                "meta_description": "Werden Sie Partner von hOUR Timebank und schaffen Sie €16 sozialen Wert für jeden investierten €1. Unternehmenspartnerschaften, Sponsoring und Forschungsmöglichkeiten.",
+                "breadcrumb_about": "Über uns",
+                "hero_subtitle": "Schliessen Sie sich einer bewährten Organisation für soziale Wirkung an. Jeder von Ihnen investierte €1 generiert €16 messbaren sozialen Wert für Gemeinschaften in ganz Irland.",
+                "together_banner_heading": "Gemeinsam für Timebanking",
+                "together_banner_alt": "Gemeinsam für Timebanking – stärkere Gemeinschaften, gemeinsame Werte, eine bessere Zukunft. Unterstützt durch Project NEXUS, in Zusammenarbeit mit Timebanking UK und Timebank Ireland.",
+                "tbuk_para1": "Timebank Ireland und Project NEXUS freuen sich, eine neue strategische und technologische Partnerschaft mit Timebanking UK bekannt zu geben, die zwei Timebanking-Bewegungen rund um eine gemeinsame digitale Open-Source-Infrastruktur zusammenführt. Durch diese Partnerschaft wird Timebanking UK zu einem anerkannten Mitwirkenden und strategischen Partner im Project NEXUS-Ökosystem und trägt zur Gestaltung einer Verbundplattform bei, die für lokalen Austausch, Zugänglichkeit, gemeinschaftsübergreifende Zusammenarbeit und langfristige Gemeinschaftsverantwortung konzipiert ist.",
+                "tbuk_para2": "Die Partnerschaft stärkt das Projekt NEXUS als praktische, bewegungsgesteuerte Alternative zur geschlossenen Bürgertechnologie. Durch die Zusammenarbeit mit Timebanking UK schaffen wir eine stärkere Grundlage für Zeitbanken in ganz Irland, Großbritannien und darüber hinaus: gemeinsame Standards, gemeinsames Lernen und eine Plattform, die auf die tatsächlichen Bedürfnisse von Communities ausgerichtet ist und nicht auf die Prioritäten kommerzieller Softwareanbieter.",
+                "funding_gap_heading": "Die Finanzierungslücke schliessen",
+                "funding_gap_para1": "Gemeinschaftsorganisationen wie hOUR Timebank liefern ausserordentlichen sozialen Wert — arbeiten aber mit minimalsten Budgets. Unsere unabhängige Studie 2023 zeigt eine soziale Rendite von 16:1, doch die Kernfinanzierung deckt nur den Grundbetrieb.",
+                "funding_gap_para2": "Strategische Partnerschaften können diese Lücke überbrücken. Ob durch CSR-Programme, Forschungskooperationen oder direkte Sponsoring — Ihre Unterstützung verstärkt direkt das Gemeinschaftswohlbefinden und baut soziale Infrastruktur auf, die allen zugutekommt.",
+                "why_partner_heading": "Warum mit uns partnern?",
+                "why_partner_subtitle": "Unabhängige Evidenz untermauert jede unserer Aussagen.",
+                "impact_card_0_title": "Ausserordentlicher sozialer Wert",
+                "impact_card_0_highlight": "€16 für jeden €1",
+                "impact_card_0_description": "Unabhängige Forschung bestätigt eine soziale Rendite von 16:1. Ihre Unterstützung übersetzt sich direkt in messbares Gemeinschaftswohlbefinden.",
+                "impact_card_1_title": "Nachweis und Transparenz",
+                "impact_card_1_highlight": "Unabhängige Studie 2023",
+                "impact_card_1_description": "Unsere Wirkungszahlen stammen aus einer rigorosen, unabhängigen Evaluation. Wir bieten volle Transparenz über Ergebnisse, Ausgaben und soziale Kennzahlen.",
+                "impact_card_2_title": "Strategisches Wachstum",
+                "impact_card_2_highlight": "2.500+ Mitglieder bis 2029",
+                "impact_card_2_description": "Ein 5-Jahres-Fahrplan für nationale Skalierung mit föderierten Gemeinschaften, Unternehmenspartnerschaften und Digital-First-Engagement.",
+                "partnership_opportunities_heading": "Partnerschaftsmöglichkeiten",
+                "partnership_opportunities_subtitle": "Mehrere Wege, einen bedeutsamen Unterschied zu machen.",
+                "partnership_type_0_title": "Unternehmenspartnerschaft",
+                "partnership_type_0_description": "Richten Sie Ihre CSR-Ziele an greifbaren sozialen Ergebnissen aus. Mitarbeiter-Freiwilligenarbeit, Matching-Förderung und gebrandete Gemeinschaftsprojekte.",
+                "partnership_type_1_title": "Sponsoring",
+                "partnership_type_1_description": "Finanzieren Sie einen Hub-Koordinator, sponsern Sie Gemeinschaftsveranstaltungen oder unterstützen Sie unsere digitale Plattform. Jeder Beitrag verstärkt die soziale Rendite.",
+                "partnership_type_2_title": "Technologiepartnerschaft",
+                "partnership_type_2_description": "Arbeiten Sie an unserer Open-Source-Plattform mit, stellen Sie technisches Know-how bereit oder unterstützen Sie unsere Programme für digitale Inklusion.",
+                "partnership_type_3_title": "Forschungspartnerschaft",
+                "partnership_type_3_description": "Zugang zu einem lebendigen Labor für Sozialinnovationsforschung. Untersuchen Sie Gemeinschaftsresilienz, Wohlbefindens-Kennzahlen und die Dynamik gegenseitiger Hilfe.",
+                "learn_more_heading": "Mehr erfahren",
+                "learn_more_0_title": "Wirkungszusammenfassung",
+                "learn_more_0_description": "Sehen Sie unseren vollständigen SROI-Bericht und Ergebnisdaten",
+                "learn_more_1_title": "Strategieplan",
+                "learn_more_1_description": "Unsere 5-Jahres-Vision für Wachstum und Föderation",
+                "learn_more_2_title": "Zeitbank-Ratgeber",
+                "learn_more_2_description": "Erfahren Sie, wie Zeitbanking funktioniert",
+                "tech_partner_label": "Technologiepartner",
+                "tech_partner_logo_alt": "Projekt NEXUS-Logo",
+                "tech_partner_heading": "TimeBank Ireland und Projekt NEXUS",
+                "tech_partner_description": "hOUR Timebank wird stolz von Project NEXUS unterstützt – einer Open-Source-Timebanking-Plattform, die dazu entwickelt wurde, Gemeinschaften beim Austausch von Fähigkeiten und der Stärkung sozialer Bindungen zu unterstützen. Unsere Technologiepartnerschaft stellt sicher, dass jedes Mitglied von einem modernen, zugänglichen und Community-orientierten digitalen Erlebnis profitiert.",
+                "our_partners_heading": "Unsere Partner und Unterstützer",
+                "partners_banner_alt": "Partnerlogos: West Cork Development Partnership, SICAP, Cork County Council, Department of Housing Planning Community and Local Government, Europäische Struktur- und Investitionsfonds, Europäischer Sozialfonds",
+                "cta_heading": "Gemeinsam stärkere Gemeinschaften aufbauen",
+                "cta_subtitle": "Ob Unternehmen, Geldgeber, Forscher oder Gemeinschaftsleiter — es gibt ein Partnerschaftsmodell, das für Sie funktioniert.",
+                "cta_contact": "Gespräch beginnen",
+                "cta_view_plan": "Strategieplan ansehen"
+            },
+            "nav": {
+                "partner_with_us": "Partner werden"
+            },
+            "related": {
+                "link_partner_label": "Partner werden",
+                "link_partner_description": "Partnerschaftsmöglichkeiten"
+            },
+            "links": {
+                "view_all_partnerships": "Alle Partnerschaften ansehen",
+                "partner_with_us": "Partner werden"
             }
         },
         "govuk_alpha_platform_legal": {

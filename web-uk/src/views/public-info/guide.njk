@@ -38,6 +38,11 @@
             <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.browse_listings") }}</a>
           {% endif %}
         {% endif %}
+        {# React TimebankingGuidePage: "Partner With Us" beside the join/browse buttons.
+           Only where /partner exists (hour-timebank, lib/tbi-pages.js). #}
+        {% if showPartnerLink %}
+          <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/partner') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_partner.links.partner_with_us") }}</a>
+        {% endif %}
       </div>
     </div>
   </div>

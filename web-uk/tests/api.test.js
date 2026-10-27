@@ -6287,6 +6287,22 @@ describe('API Request Functions', () => {
       );
     });
 
+    it('reads the feed side panel, top endorsed members and connection suggestions as React does', async () => {
+      const ok = () => ({ ok: true, headers: { get: () => 'application/json' }, json: async () => ({ data: {} }) });
+      mockFetch.mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok());
+
+      await api.getFeedSidebar('test-token');
+      await api.getTopEndorsedMembers('test-token', 5);
+      await api.getConnectionSuggestions('test-token', 8);
+
+      const auth = expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+      });
+      expect(mockFetch).toHaveBeenNthCalledWith(1, 'http://localhost:5000/api/v2/feed/sidebar', auth);
+      expect(mockFetch).toHaveBeenNthCalledWith(2, 'http://localhost:5000/api/v2/members/top-endorsed?limit=5', auth);
+      expect(mockFetch).toHaveBeenNthCalledWith(3, 'http://localhost:5000/api/v2/connections/suggestions?limit=8', auth);
+    });
+
     it('should fetch member endorsements through the Laravel v2 endpoint', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -8746,6 +8762,43 @@ describe('API Request Functions', () => {
           })
         })
       );
+    });
+  });
+
+  describe('getExploreForYou', () => {
+    it('should request the personalised For you page with React paging', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: [], meta: { has_more: false } })
+      });
+
+      await api.getExploreForYou('test-token', { page: 2, per_page: 15 });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/explore/for-you?page=2&per_page=15',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+  });
+
+  describe('dismissExploreItem', () => {
+    it('should POST the React dismiss payload', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: { dismissed: true } })
+      });
+
+      await api.dismissExploreItem('test-token', { item_type: 'listing', item_id: 7, reason: 'not_relevant' });
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/explore/dismiss');
+      expect(options.method).toBe('POST');
+      expect(options.headers.Authorization).toBe('Bearer test-token');
+      expect(JSON.parse(options.body)).toEqual({ item_type: 'listing', item_id: 7, reason: 'not_relevant' });
     });
   });
 

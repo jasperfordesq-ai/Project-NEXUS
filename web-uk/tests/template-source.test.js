@@ -260,12 +260,15 @@ describe('tenant-aware template helper conversion', () => {
       'utf8'
     );
 
-    expect(template).not.toMatch(/href="\/(?:listings|events)/);
-    expect(template).not.toContain('href="{{ listing.href }}"');
-    expect(template).not.toContain('href="{{ event.href }}"');
-    expect(template).toMatch(/urlFor\((?:listing|event)\.href\)/);
-    expect(template).toMatch(/urlFor\(["']\/listings/);
-    expect(template).toMatch(/urlFor\(["']\/events/);
+    // Since 27 Oct 2026 every Explore section, the For you feed, tabs and
+    // "See all" links are generic rows built by routes/explore.js.
+    expect(template).not.toMatch(/href="\/(?:listings|events|explore)/);
+    expect(template).not.toContain('href="{{ item.href }}"');
+    expect(template).toMatch(/urlFor\(item\.href\)/);
+    expect(template).toMatch(/urlFor\(section\.seeAllHref\)/);
+    expect(template).toMatch(/urlFor\(tab\.href\)/);
+    expect(template).toMatch(/urlFor\(["']\/listings\?category=/);
+    expect(template).toMatch(/urlFor\(["']\/explore\/dismiss/);
   });
 
   it('keeps Explore route redirects behind the active tenant URL helper', () => {

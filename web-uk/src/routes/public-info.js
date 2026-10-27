@@ -16,6 +16,7 @@ const {
 } = require('../lib/features-catalogue');
 const { findRelease, listReleases } = require('../lib/changelog');
 const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
+const { isTbiTenant } = require('../lib/tbi-pages');
 
 const router = express.Router();
 
@@ -130,7 +131,9 @@ router.get('/guide', (req, res) => {
     communityName: communityName(res),
     isAuthenticated: res.locals.isAuthenticated,
     listingsEnabled: flagEnabled(tenant, 'listings', 'modules', true),
-    walletEnabled: flagEnabled(tenant, 'wallet', 'modules', true)
+    walletEnabled: flagEnabled(tenant, 'wallet', 'modules', true),
+    // React links /partner here; the page exists only for hour-timebank.
+    showPartnerLink: isTbiTenant(tenant)
   });
 });
 
