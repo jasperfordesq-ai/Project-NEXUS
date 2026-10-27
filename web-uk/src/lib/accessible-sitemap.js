@@ -40,6 +40,7 @@ const { cache } = require('./cache');
 const { listReleases } = require('./changelog');
 const { flagEnabled } = require('./accessible-shell');
 const { AUDIENCES, audiencePath, gateContext, helpPath, visibleSections } = require('./help-guides');
+const { TBI_PAGE_PATHS, isTbiTenant } = require('./tbi-pages');
 const { runWithRequestTenant } = require('./request-tenant-context');
 const {
   buildRobotsTxt,
@@ -80,7 +81,16 @@ const STATIC_PUBLIC_PATHS = [
   '/accessibility',
   '/legal',
   '/account-deletion',
-  '/child-safety'
+  '/child-safety',
+  // The platform provider's own legal documents (routes/legal.js), public.
+  '/platform/terms',
+  '/platform/privacy',
+  '/platform/disclaimer',
+  // Partner API developer documentation (routes/developers.js), public.
+  '/developers',
+  '/developers/auth',
+  '/developers/endpoints',
+  '/developers/webhooks'
 ];
 
 // Legal document type → its URL segment under /legal (legal.js DOCUMENT_PATHS).
@@ -295,6 +305,9 @@ async function candidateEntries(tenant, mode) {
   const entries = [];
   if (mode === 'accessible') {
     entries.push(...STATIC_PUBLIC_PATHS.map((path) => ({ path })));
+    // One community's own content pages (routes/tbi-pages.js): every other
+    // community answers 404 at these paths, so they are listed for it alone.
+    if (isTbiTenant(tenant)) entries.push(...TBI_PAGE_PATHS.map((path) => ({ path })));
     entries.push(...helpGuideEntries(tenant));
     if (routeOpen(tenant, '/blog')) {
       entries.push({ path: '/blog' }, ...(await blogEntries()));

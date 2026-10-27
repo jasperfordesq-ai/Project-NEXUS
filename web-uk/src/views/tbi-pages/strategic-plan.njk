@@ -1,0 +1,179 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Timebank Ireland only (routes/tbi-pages.js). Mirrors React StrategicPlanPage.tsx:
+   the 2026–2030 plan in six numbered sections with a contents list — executive
+   summary, vision and mission, SWOT, the two strategic pillars with their KPI tables,
+   the year 1 roadmap and the risk table — then the download and a contact link.
+   React's coloured badges are GOV.UK tags; each carries its own text, so colour is
+   never the only signal. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set ns = "govuk_alpha_tbi_pages.strategic_plan." %}
+
+{% block beforeContent %}
+  {% include "tbi-pages/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(ns + "page_title") }}</h1>
+      <p class="govuk-body-l govuk-!-font-weight-bold">{{ t(ns + "hero_tagline") }}</p>
+      <p class="govuk-body-l">{{ t(ns + "hero_subtitle") }}</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ planUrl }}">{{ t(ns + "download_plan") }}</a></p>
+
+      <nav aria-labelledby="tbi-contents-heading" class="govuk-!-margin-bottom-8">
+        <h2 class="govuk-heading-m" id="tbi-contents-heading">{{ t(ns + "toc_heading") }}</h2>
+        <ol class="govuk-list govuk-list--number">
+          {% for section in toc %}
+            <li><a class="govuk-link" href="#{{ section.id }}">{{ section.label }}</a></li>
+          {% endfor %}
+        </ol>
+      </nav>
+
+      {# 1. Executive summary #}
+      <section id="executive-summary" aria-labelledby="executive-summary-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(1) }}</span>
+        <h2 class="govuk-heading-l" id="executive-summary-heading">{{ toc[0].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "exec_summary_para") }}</p>
+        <h3 class="govuk-heading-m">{{ t(ns + "goal_1_heading") }}</h3>
+        <p class="govuk-body">{{ t(ns + "goal_1_text") }}</p>
+        <h3 class="govuk-heading-m">{{ t(ns + "goal_2_heading") }}</h3>
+        <p class="govuk-body">{{ t(ns + "goal_2_text") }}</p>
+      </section>
+
+      {# 2. Vision and mission #}
+      <section id="vision-mission" aria-labelledby="vision-mission-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(2) }}</span>
+        <h2 class="govuk-heading-l" id="vision-mission-heading">{{ toc[1].label }}</h2>
+        <h3 class="govuk-heading-m">{{ t(ns + "mission_heading") }}</h3>
+        <p class="govuk-body">{{ t(ns + "mission_text") }}</p>
+        <h3 class="govuk-heading-m">{{ t(ns + "vision_heading") }}</h3>
+        <p class="govuk-body">{{ t(ns + "vision_text") }}</p>
+      </section>
+
+      {# 3. SWOT #}
+      <section id="swot" aria-labelledby="swot-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(3) }}</span>
+        <h2 class="govuk-heading-l" id="swot-heading">{{ toc[2].label }}</h2>
+        {% for quadrant in swot %}
+          <h3 class="govuk-heading-m">{{ quadrant.title }}</h3>
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in quadrant.items %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endfor %}
+      </section>
+
+      {# 4. Strategic pillars #}
+      <section id="pillars" aria-labelledby="pillars-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(4) }}</span>
+        <h2 class="govuk-heading-l" id="pillars-heading">{{ toc[3].label }}</h2>
+        {% for pillar in pillars %}
+          <span class="govuk-caption-m">{{ pillar.label }}</span>
+          <h3 class="govuk-heading-m">{{ pillar.title }}</h3>
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ pillar.caption }}">
+            <table class="govuk-table">
+              <caption class="govuk-table__caption govuk-visually-hidden">{{ pillar.caption }}</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">{{ t(ns + "pillar_initiative_header") }}</th>
+                  <th scope="col" class="govuk-table__header">{{ t(ns + "pillar_priority_header") }}</th>
+                  <th scope="col" class="govuk-table__header">{{ t(ns + "pillar_kpi_header") }}</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for row in pillar.rows %}
+                  <tr class="govuk-table__row">
+                    <th scope="row" class="govuk-table__header">{{ row.initiative }}</th>
+                    <td class="govuk-table__cell">{{ row.priority }}</td>
+                    <td class="govuk-table__cell">{{ row.kpi }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+      </section>
+    </div>
+  </div>
+
+  {# 5. Year 1 roadmap: five columns, so it gets the full width and a scroll region. #}
+  <section id="roadmap" aria-labelledby="roadmap-heading">
+    <span class="govuk-caption-m">{{ sectionLabel(5) }}</span>
+    <h2 class="govuk-heading-l" id="roadmap-heading">{{ toc[4].label }}</h2>
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'aria.year_1_roadmap') }}">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t(ns + "aria.year_1_roadmap") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t(ns + "roadmap_activity_header") }}</th>
+            {% for quarter in quarters %}
+              <th scope="col" class="govuk-table__header">{{ quarter }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in roadmapRows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.activity }}</th>
+              {% for cell in row.cells %}
+                <td class="govuk-table__cell">{% if cell %}{{ govukTag({ text: cell.label, classes: cell.tag }) }}{% else %}&mdash;{% endif %}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <ul class="govuk-list">
+      {% for badge in badgeLegend %}
+        <li class="govuk-!-display-inline-block govuk-!-margin-right-2">{{ govukTag({ text: badge.label, classes: badge.tag }) }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {# 6. Risks: four columns, full width. #}
+  <section id="risks" aria-labelledby="risks-heading">
+    <span class="govuk-caption-m">{{ sectionLabel(6) }}</span>
+    <h2 class="govuk-heading-l" id="risks-heading">{{ toc[5].label }}</h2>
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'aria.risk_and_mitigation') }}">
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t(ns + "aria.risk_and_mitigation") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t(ns + "risk_header") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(ns + "likelihood_header") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(ns + "impact_header") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t(ns + "mitigation_header") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for risk in risks %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ risk.name }}</th>
+              <td class="govuk-table__cell">{{ risk.likelihood }}</td>
+              <td class="govuk-table__cell">{{ risk.impact }}</td>
+              <td class="govuk-table__cell">{{ risk.mitigation }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "tbi-pages/_related.njk" %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(ns + "cta_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "cta_subtitle") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ planUrl }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_download") }}</a>
+        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/contact') }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_contact") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

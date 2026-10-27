@@ -1,0 +1,108 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  One of the PLATFORM's own legal documents (Project NEXUS as platform provider):
+  /platform/terms, /platform/privacy, /platform/disclaimer. React renders the same
+  three documents through PlatformLegalPage; this keeps its order — title and
+  effective date, the provider notice, a contents list, the numbered sections, the
+  related documents, and who to ask.
+
+  🔴 The section bodies are the authoritative ENGLISH text (generated from React's
+  page files, see lib/platform-legal-text.js). When the page language is not English
+  they carry lang="en" dir="ltr", so assistive technology reads them with English
+  pronunciation and an Arabic page does not right-align English paragraphs. Headings
+  and every other string here are translated.
+
+  No `| safe`: the body arrives as structured runs (text, strong, em, link, line
+  break) and every piece of text goes through autoescaping.
+
+  GOV.UK patterns: caption + XL heading, inset text for the notice, a contents list
+  as a numbered list of in-page links, bullet lists, and plain govuk-link links that
+  open in the same tab (the Design System's default).
+#}
+{% extends "layouts/base.njk" %}
+
+{% macro renderText(run) -%}
+  {%- if run.href -%}<a class="govuk-link" href="{{ run.href }}" rel="noopener noreferrer">{{ run.text }}</a>
+  {%- else -%}{{ run.text }}{%- endif -%}
+{%- endmacro %}
+
+{% macro renderRuns(runs) -%}
+  {%- for run in runs -%}
+    {%- if run.br -%}<br>
+    {%- elif run.strong and run.em -%}<strong><em>{{ renderText(run) }}</em></strong>
+    {%- elif run.strong -%}<strong>{{ renderText(run) }}</strong>
+    {%- elif run.em -%}<em>{{ renderText(run) }}</em>
+    {%- else -%}{{ renderText(run) }}{%- endif -%}
+  {%- endfor -%}
+{%- endmacro %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_platform_legal.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ documentTitle }}</h1>
+      <p class="govuk-body-l">{{ documentSubtitle }}</p>
+      <p class="govuk-body">
+        <time datetime="{{ effectiveDateIso }}">{{ t("govuk_alpha_platform_legal.effective_date", { date: effectiveDateLabel }) }}</time>
+      </p>
+
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_platform_legal.provider_notice_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_platform_legal.provider_notice_body", { tenant: communityName }) }}</p>
+        <p class="govuk-body">
+          <strong>{{ t("govuk_alpha_platform_legal.authoritative_notice_title") }}</strong>
+          <br>
+          {{ t("govuk_alpha_platform_legal.authoritative_notice_body") }}
+        </p>
+        <p class="govuk-body govuk-!-margin-bottom-0">
+          <a class="govuk-link" href="{{ urlFor('/legal') }}">{{ t("govuk_alpha_platform_legal.view_tenant_legal", { tenant: communityName }) }}</a>
+        </p>
+      </div>
+
+      <nav class="govuk-!-margin-bottom-8" aria-labelledby="platform-legal-contents">
+        <h2 class="govuk-heading-m" id="platform-legal-contents">{{ t("govuk_alpha_platform_legal.contents") }}</h2>
+        <ol class="govuk-list govuk-list--number">
+          {% for section in sections %}
+            <li><a class="govuk-link" href="#{{ section.id }}">{{ section.title }}</a></li>
+          {% endfor %}
+        </ol>
+      </nav>
+
+      {% for section in sections %}
+        <section aria-labelledby="{{ section.id }}">
+          <h2 class="govuk-heading-l" id="{{ section.id }}">{{ loop.index }}. {{ section.title }}</h2>
+          <div{% if bodyIsForeign %} lang="{{ bodyLanguage }}" dir="ltr"{% endif %}>
+            {% for block in section.blocks %}
+              {% if block.type == "ul" %}
+                <ul class="govuk-list govuk-list--bullet">
+                  {% for item in block.items %}
+                    <li>{{ renderRuns(item) }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="govuk-body">{{ renderRuns(block.runs) }}</p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_platform_legal.related_documents") }}</h2>
+      <ul class="govuk-list">
+        {% for doc in relatedDocuments %}
+          <li><a class="govuk-link" href="{{ urlFor(doc.path) }}">{{ doc.label }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_platform_legal.cta_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_platform_legal.cta_body", { tenant: communityName }) }}</p>
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ platformWebsiteUrl }}" rel="noopener noreferrer">{{ t("govuk_alpha_platform_legal.nexus_website") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("govuk_alpha_platform_legal.contact_tenant", { tenant: communityName }) }}</a></li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}

@@ -75,6 +75,9 @@ const EXEMPT_PREFIXES = [
   '/accessibility',
   '/community-guidelines',
   '/acceptable-use',
+  // The platform provider's own terms, privacy policy and disclaimer: still
+  // documents a member may need to read, and never the thing being accepted.
+  '/platform',
   // Signing out must always work: "I do not accept" has to have an answer.
   '/logout',
   '/login',

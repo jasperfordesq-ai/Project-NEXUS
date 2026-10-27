@@ -1,0 +1,34 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Partner API developer portal home (React DevelopersHomePage). #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_developers.page_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_developers.hero_title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_developers.hero_subtitle") }}</p>
+
+      {% for feature in features %}
+        <h2 class="govuk-heading-s">{{ t("govuk_alpha_developers.feature_" + feature + "_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_developers.feature_" + feature + "_body") }}</p>
+      {% endfor %}
+
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.request_access_cta") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_developers.request_access_body") }}</p>
+        <a href="{{ urlFor('/contact') }}" role="button" draggable="false" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_developers.request_access_cta") }}</a>
+      </div>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.nav.overview") }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for section in sections %}
+          <li><a class="govuk-link" href="{{ urlFor(section.path) }}">{{ t("govuk_alpha_developers.nav." + section.navKey) }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

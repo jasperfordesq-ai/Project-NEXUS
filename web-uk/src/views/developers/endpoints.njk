@@ -1,0 +1,46 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Partner API endpoint reference (React DevelopersEndpointsPage). Methods, paths
+   and scopes are literal technical text from routes/developers.js. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  {% include "developers/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_developers.page_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_developers.nav.endpoints") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_developers.endpoints_intro") }}</p>
+    </div>
+  </div>
+
+  <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_developers.endpoints_table_aria') }}">
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--m">{{ t("govuk_alpha_developers.endpoints_table_aria") }}</caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_developers.method_label") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_developers.path_label") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_developers.scope_label") }}</th>
+        <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_developers.description_label") }}</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {% for endpoint in endpoints %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">{{ govukTag({ text: endpoint.method, classes: "govuk-tag--green" if endpoint.method == "GET" else "govuk-tag--blue" }) }}</td>
+          <td class="govuk-table__cell"><code class="nexus-alpha-code-inline">{{ endpoint.path }}</code></td>
+          <td class="govuk-table__cell">{% if endpoint.scope %}<code class="nexus-alpha-code-inline">{{ endpoint.scope }}</code>{% else %}-{% endif %}</td>
+          <td class="govuk-table__cell">{{ t("govuk_alpha_developers.endpoint_descriptions." + endpoint.descriptionKey) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}

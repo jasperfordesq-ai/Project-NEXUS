@@ -13,9 +13,14 @@ const {
   compareLegalVersions
 } = require('../lib/api');
 const { sanitizeCmsHtml, sanitizeDiffHtml, withHeadingAnchors } = require('../lib/html-sanitizer');
-const { catalogFor, valueInCatalog } = require('../lib/localization');
+const { catalogFor, formatLocaleDate, valueInCatalog } = require('../lib/localization');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { legalPageText } = require('../lib/legal-text');
+const {
+  PLATFORM_LEGAL_LANGUAGE,
+  PLATFORM_LEGAL_PATHS,
+  platformLegalDocument
+} = require('../lib/platform-legal-text');
 const { breadcrumbJsonLdFor, pageDescription } = require('../lib/seo-meta');
 
 const router = express.Router();
@@ -206,7 +211,14 @@ router.get('/legal', (req, res) => {
         title: res.locals.t('legal.documents.accessibility.title'),
         summary: res.locals.t('legal.documents.accessibility.summary')
       }
-    ]
+    ],
+    // The platform's own documents, in their own section exactly as React's legal
+    // hub lists them ("Platform Provider Legal"), so nobody mistakes them for the
+    // community's policies above.
+    platformDocuments: Object.keys(PLATFORM_LEGAL_PATHS).map((key) => ({
+      path: PLATFORM_LEGAL_PATHS[key],
+      title: res.locals.t(`govuk_alpha_platform_legal.hub.${key}`)
+    }))
   });
 });
 
@@ -273,6 +285,72 @@ function staticLegalPage(page, view) {
 
 router.get('/account-deletion', staticLegalPage('account_deletion', 'legal/account-deletion'));
 router.get('/child-safety', staticLegalPage('child_safety', 'legal/child-safety'));
+
+/**
+ * The PLATFORM's own legal documents — Project NEXUS as the platform provider, not
+ * the community. React publishes them at the same three paths (PlatformTermsPage,
+ * PlatformPrivacyPage, PlatformDisclaimerPage), signed in or not.
+ *
+ * 🔴 Two layers, deliberately in two languages. The chrome (title, section headings,
+ * the provider notice, the contents list) is translated from
+ * lang/<locale>/govuk_alpha_platform_legal.php. The substantive legal text is the
+ * authoritative English version, generated from React's page files — see
+ * lib/platform-legal-text.js — and the page says so in the reader's language. The
+ * template marks that body `lang="en"` (and left-to-right) whenever the page
+ * language is anything else, so a screen reader switches voice instead of reading
+ * English with Arabic or Japanese pronunciation rules.
+ *
+ * Nothing here calls the API: React's pages render static text too. These are not
+ * `LegalController` document types, so there is no per-community version to fetch.
+ */
+function platformLegalPage(key) {
+  return (req, res) => {
+    const doc = platformLegalDocument(key);
+    const t = res.locals.t;
+    const locale = res.locals.alphaCurrentLocale || res.locals.locale || 'en';
+    const prefix = `govuk_alpha_platform_legal.documents.${key}`;
+    const pageTitle = t(`${prefix}.page_title`);
+    const sections = doc.sections.map((section) => ({
+      ...section,
+      title: t(`${prefix}.sections.${section.id}`)
+    }));
+
+    return res.render('legal/platform-document', {
+      title: pageTitle,
+      metaDescription: pageDescription(t(`${prefix}.meta_description`)),
+      breadcrumbJsonLd: breadcrumbJsonLdFor(res, legalTrail(res, [{ name: pageTitle, path: PLATFORM_LEGAL_PATHS[key] }])),
+      activeNav: 'legal',
+      communityName: communityName(res),
+      documentKey: key,
+      documentTitle: t(`${prefix}.title`),
+      documentSubtitle: t(`${prefix}.subtitle`),
+      effectiveDateIso: doc.effectiveDate,
+      // Formatted in UTC: the value is a calendar date, and a server west of
+      // Greenwich would otherwise print the day before.
+      effectiveDateLabel: formatLocaleDate(new Date(`${doc.effectiveDate}T00:00:00Z`), locale, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC'
+      }),
+      sections,
+      bodyLanguage: PLATFORM_LEGAL_LANGUAGE,
+      bodyIsForeign: locale !== PLATFORM_LEGAL_LANGUAGE,
+      relatedDocuments: Object.keys(PLATFORM_LEGAL_PATHS)
+        .filter((other) => other !== key)
+        .map((other) => ({
+          path: PLATFORM_LEGAL_PATHS[other],
+          label: t(`govuk_alpha_platform_legal.documents.${other}.link_label`)
+        })),
+      platformWebsiteUrl: 'https://project-nexus.ie'
+    });
+  };
+}
+
+// Literal paths, for the route-matrix generator (see the note further down).
+router.get('/platform/terms', platformLegalPage('terms'));
+router.get('/platform/privacy', platformLegalPage('privacy'));
+router.get('/platform/disclaimer', platformLegalPage('disclaimer'));
 
 // Version history. Laravel's accessible frontend has no equivalent — these are
 // deliberate additions, recorded as extra web-uk routes in the route matrix. They

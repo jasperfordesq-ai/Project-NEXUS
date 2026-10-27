@@ -23,6 +23,20 @@
           </article>
         {% endfor %}
       </section>
+
+      {#
+        The platform provider's own documents, kept apart from the community's
+        policies above as React's legal hub keeps them ("Platform Provider Legal").
+      #}
+      {% if platformDocuments and platformDocuments.length %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("govuk_alpha_platform_legal.hub.section_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_platform_legal.hub.section_desc") }}</p>
+        <ul class="govuk-list">
+          {% for document in platformDocuments %}
+            <li><a class="govuk-link" href="{{ urlFor(document.path) }}">{{ document.title }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

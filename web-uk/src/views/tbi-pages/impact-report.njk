@@ -1,0 +1,209 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Timebank Ireland only (routes/tbi-pages.js). Mirrors React ImpactReportPage.tsx:
+   the 2023 social impact study in seven numbered sections with a contents list,
+   the activity, demographics, SROI and recommendations tables, two case studies,
+   the report downloads and a contact link. React's scroll-spy contents buttons are
+   plain in-page links here, which work without JavaScript. #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% set ns = "govuk_alpha_tbi_pages.impact_report." %}
+
+{% macro caseStudy(label, name, quote) %}
+  <figure class="govuk-!-margin-left-0 govuk-!-margin-right-0 govuk-!-margin-top-6">
+    <figcaption class="govuk-body-s govuk-!-margin-bottom-1">
+      <span class="govuk-caption-s govuk-!-display-block">{{ label }}</span>
+      <cite class="govuk-!-font-weight-bold">{{ name }}</cite>
+    </figcaption>
+    <blockquote class="govuk-inset-text govuk-!-margin-top-1">
+      <p class="govuk-body govuk-!-margin-bottom-0">&ldquo;{{ quote }}&rdquo;</p>
+    </blockquote>
+  </figure>
+{% endmacro %}
+
+{% block beforeContent %}
+  {% include "tbi-pages/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(ns + "hero_title") }}</h1>
+      <p class="govuk-body-l govuk-!-font-weight-bold">{{ t(ns + "hero_org_year") }}</p>
+      <p class="govuk-body-l">{{ t(ns + "hero_description") }}</p>
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ fullReportUrl }}">{{ t(ns + "download_full_report") }}</a></li>
+        <li><a class="govuk-link" href="{{ execSummaryUrl }}">{{ t(ns + "executive_summary_pdf") }}</a></li>
+      </ul>
+
+      <nav aria-labelledby="tbi-contents-heading" class="govuk-!-margin-bottom-8">
+        <h2 class="govuk-heading-m" id="tbi-contents-heading">{{ t(ns + "toc_heading") }}</h2>
+        <ol class="govuk-list govuk-list--number">
+          {% for section in toc %}
+            <li><a class="govuk-link" href="#{{ section.id }}">{{ section.label }}</a></li>
+          {% endfor %}
+        </ol>
+      </nav>
+
+      {# 1. Introduction #}
+      <section id="introduction" aria-labelledby="introduction-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(1) }}</span>
+        <h2 class="govuk-heading-l" id="introduction-heading">{{ toc[0].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "intro_para") }}</p>
+        <h3 class="govuk-heading-m">{{ t(ns + "study_objectives_heading") }}</h3>
+        <ul class="govuk-list govuk-list--bullet">
+          {% for objective in objectives %}
+            <li>{{ objective }}</li>
+          {% endfor %}
+        </ul>
+        {{ caseStudy(t(ns + "case_study_label"), t(ns + "case_study_monica_name"), t(ns + "case_study_monica_quote")) }}
+      </section>
+
+      {# 2. Literature review #}
+      <section id="literature" aria-labelledby="literature-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(2) }}</span>
+        <h2 class="govuk-heading-l" id="literature-heading">{{ toc[1].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "literature_para") }}</p>
+        {% for item in literature %}
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ item.title }}</h3>
+          <p class="govuk-body">{{ item.description }}</p>
+        {% endfor %}
+      </section>
+
+      {# 3. Activity #}
+      <section id="activity" aria-labelledby="activity-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(3) }}</span>
+        <h2 class="govuk-heading-l" id="activity-heading">{{ toc[2].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "activity_para") }}</p>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'aria.activity_statistics') }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ t(ns + "aria.activity_statistics") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t(ns + "activity_metric_header") }}</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(ns + "activity_value_header") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for row in activityRows %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.metric }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{% if loop.last %}<strong>{{ row.value }}</strong>{% else %}{{ row.value }}{% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="govuk-body-s">{{ t(ns + "activity_note") }}</p>
+      </section>
+
+      {# 4. Impact and demographics #}
+      <section id="impact" aria-labelledby="impact-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(4) }}</span>
+        <h2 class="govuk-heading-l" id="impact-heading">{{ toc[3].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "demographics_para") }}</p>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'demographics_heading') }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ t(ns + "demographics_heading") }}</caption>
+            <tbody class="govuk-table__body">
+              {% for band in ageBands %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ band.label }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{{ band.value }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="govuk-heading-m">{{ t(ns + "outcome_connection_heading") }}</h3>
+        <p class="govuk-body"><strong class="govuk-!-font-size-27">{{ connectionFigure }}</strong> {{ t(ns + "outcome_connection_text") }}</p>
+        <h3 class="govuk-heading-m">{{ t(ns + "outcome_wellbeing_heading") }}</h3>
+        <p class="govuk-body"><strong class="govuk-!-font-size-27">{{ wellbeingFigure }}</strong> {{ t(ns + "outcome_wellbeing_text") }}</p>
+
+        {{ caseStudy(t(ns + "case_study_label"), t(ns + "case_study_elaine_name"), t(ns + "case_study_elaine_quote")) }}
+      </section>
+
+      {# 5. SROI #}
+      <section id="sroi" aria-labelledby="sroi-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(5) }}</span>
+        <h2 class="govuk-heading-l" id="sroi-heading">{{ toc[4].label }}</h2>
+        <div class="govuk-inset-text">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ t(ns + "sroi_heading") }}</h3>
+          <p class="govuk-heading-l govuk-!-margin-bottom-1">{{ t(ns + "sroi_result_value") }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t(ns + "sroi_description") }}</p>
+        </div>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'sroi_breakdown_heading') }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">{{ t(ns + "sroi_breakdown_heading") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t(ns + "sroi_component_header") }}</th>
+                <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t(ns + "sroi_value_header") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for row in sroiRows %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">{% if loop.last %}<strong>{{ row.value }}</strong>{% else %}{{ row.value }}{% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="govuk-body">{{ t(ns + "sroi_benchmark_note") }}</p>
+      </section>
+
+      {# 6. Discussion #}
+      <section id="discussion" aria-labelledby="discussion-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(6) }}</span>
+        <h2 class="govuk-heading-l" id="discussion-heading">{{ toc[5].label }}</h2>
+        <p class="govuk-body">{{ t(ns + "discussion_para") }}</p>
+        {% for factor in discussion %}
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ factor.title }}</h3>
+          <p class="govuk-body">{{ factor.description }}</p>
+        {% endfor %}
+      </section>
+
+      {# 7. Recommendations #}
+      <section id="recommendations" aria-labelledby="recommendations-heading">
+        <span class="govuk-caption-m">{{ sectionLabel(7) }}</span>
+        <h2 class="govuk-heading-l" id="recommendations-heading">{{ toc[6].label }}</h2>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t(ns + 'aria.recommendations') }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t(ns + "aria.recommendations") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">#</th>
+                <th scope="col" class="govuk-table__header">{{ t(ns + "rec_header") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t(ns + "rec_priority_header") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for rec in recommendations %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ rec.number }}</td>
+                  <td class="govuk-table__cell">{{ rec.text }}</td>
+                  <td class="govuk-table__cell">{{ govukTag({ text: rec.priority, classes: rec.tag }) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {% include "tbi-pages/_related.njk" %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(ns + "cta_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "cta_subtitle") }}</p>
+      <ul class="govuk-list">
+        <li><a class="govuk-link" href="{{ fullReportUrl }}">{{ t(ns + "cta_full_report") }}</a></li>
+        <li><a class="govuk-link" href="{{ execSummaryUrl }}">{{ t(ns + "cta_exec_summary") }}</a></li>
+      </ul>
+      <p class="govuk-body">{{ t(ns + "cta_questions") }} <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t(ns + "cta_contact") }}</a></p>
+    </div>
+  </div>
+{% endblock %}

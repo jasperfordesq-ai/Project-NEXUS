@@ -1,0 +1,52 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Partner API webhook signing reference (React DevelopersWebhooksPage). The tab
+   labels "Node.js" and "PHP" are product names, literal in React too. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {% include "developers/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_developers.page_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_developers.nav.webhooks") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_developers.webhooks_intro") }}</p>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.webhook_events_title") }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>{{ t("govuk_alpha_developers.webhook_event_wallet_credited") }}</li>
+      </ul>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.webhook_create_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_developers.webhook_create_body") }}</p>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.webhook_signing_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_developers.webhook_signing_body") }}</p>
+    </div>
+  </div>
+
+  <div class="govuk-tabs" data-module="govuk-tabs">
+    <h2 class="govuk-tabs__title">{{ t("govuk_alpha_developers.tabs.verification_examples") }}</h2>
+    <ul class="govuk-tabs__list">
+      <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+        <a class="govuk-tabs__tab" href="#developers-webhooks-node">Node.js</a>
+      </li>
+      <li class="govuk-tabs__list-item">
+        <a class="govuk-tabs__tab" href="#developers-webhooks-php">PHP</a>
+      </li>
+    </ul>
+    <div class="govuk-tabs__panel" id="developers-webhooks-node">
+      <h2 class="govuk-heading-m">Node.js</h2>
+      <pre class="nexus-alpha-code-block" tabindex="0"><code>{{ nodeSnippet }}</code></pre>
+    </div>
+    <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="developers-webhooks-php">
+      <h2 class="govuk-heading-m">PHP</h2>
+      <pre class="nexus-alpha-code-block" tabindex="0"><code>{{ phpSnippet }}</code></pre>
+    </div>
+  </div>
+{% endblock %}

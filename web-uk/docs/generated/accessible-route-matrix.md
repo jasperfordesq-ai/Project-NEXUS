@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T14:51:38.451Z
-Laravel commit SHA: `3cb51e35bc18b52a6983add405ca32a0cbffa526`
-Web UK repository commit SHA: `3cb51e35bc18b52a6983add405ca32a0cbffa526`
+Generated: 2026-10-27T15:19:21.289Z
+Laravel commit SHA: `9ed9baf356df629ac7acf91b816df2867746668b`
+Web UK repository commit SHA: `9ed9baf356df629ac7acf91b816df2867746668b`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1016 |
+| web-uk routes | 1027 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 306 |
+| Extra web-uk routes | 317 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -43,6 +43,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | coupons | 2 | 0 | 1 | 0 |
 | courses | 26 | 0 | 8 | 0 |
 | dashboard | 1 | 0 | 1 | 0 |
+| developers | 0 | 0 | 4 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
 | events | 94 | 0 | 11 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
@@ -59,6 +60,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | help | 1 | 0 | 3 | 0 |
 | home | 2 | 0 | 0 | 0 |
 | ideation | 34 | 0 | 0 | 0 |
+| impact-report | 0 | 0 | 1 | 0 |
+| impact-summary | 0 | 0 | 1 | 0 |
 | jobs | 38 | 0 | 7 | 0 |
 | kb | 2 | 0 | 2 | 0 |
 | leaderboard | 5 | 0 | 0 | 0 |
@@ -80,6 +83,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | organisations | 9 | 0 | 1 | 0 |
 | page | 0 | 0 | 1 | 0 |
 | password | 2 | 0 | 0 | 0 |
+| platform | 0 | 0 | 3 | 0 |
 | podcasts | 14 | 0 | 11 | 0 |
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
@@ -97,6 +101,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | settings | 24 | 0 | 0 | 0 |
 | sitemap.xml | 0 | 0 | 1 | 0 |
 | skills | 1 | 0 | 0 | 0 |
+| social-prescribing | 0 | 0 | 1 | 0 |
+| strategic-plan | 0 | 0 | 1 | 0 |
 | support-actions | 0 | 0 | 2 | 0 |
 | terms | 0 | 0 | 1 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
@@ -135,7 +141,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/caring/reviews/{param}/decide` | caring | caring/reviews | web-uk/src/routes/caring.js |
 | GET | `/changelog` | changelog | public-info/changelog | web-uk/src/routes/public-info.js |
 | GET | `/changelog/{param}` | changelog | public-info/changelog-release | web-uk/src/routes/public-info.js |
-| GET | `/child-safety` | child-safety |  | web-uk/src/routes/legal.js |
+| GET | `/child-safety` | child-safety | legal/platform-document | web-uk/src/routes/legal.js |
 | GET | `/clubs/{param}/admin/dues` | clubs | verein/admin-dues | web-uk/src/routes/verein.js |
 | GET | `/clubs/{param}/admin/dues/{param}/waive` | clubs | verein/admin-waive | web-uk/src/routes/verein.js |
 | GET | `/clubs/{param}/admin/import` | clubs |  | web-uk/src/routes/verein.js |
@@ -157,6 +163,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/courses/instructor/{param}/lessons/{param}/questions/{param}/delete` | courses |  | web-uk/src/routes/courses.js |
 | POST | `/courses/instructor/{param}/sections/{param}/move` | courses |  | web-uk/src/routes/courses.js |
 | POST | `/dashboard/location` | dashboard |  | web-uk/src/routes/dashboard.js |
+| GET | `/developers` | developers | developers/home | web-uk/src/routes/developers.js |
+| GET | `/developers/auth` | developers | developers/auth | web-uk/src/routes/developers.js |
+| GET | `/developers/endpoints` | developers | developers/endpoints | web-uk/src/routes/developers.js |
+| GET | `/developers/webhooks` | developers | developers/webhooks | web-uk/src/routes/developers.js |
 | GET | `/events/{param}/staff` | events | events/staff | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/staff/{param}/revoke` | events | events/staff-revoke | web-uk/src/routes/event-organiser-tools.js |
 | GET | `/events/{param}/tickets/manage` | events | events/ticket-types | web-uk/src/routes/event-organiser-tools.js |
@@ -240,6 +250,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}` | help | support/help-section | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |
+| GET | `/impact-report` | impact-report | tbi-pages/impact-report | web-uk/src/routes/tbi-pages.js |
+| GET | `/impact-summary` | impact-summary | tbi-pages/impact-summary | web-uk/src/routes/tbi-pages.js |
 | GET | `/jobs/applications/export.json` | jobs |  | web-uk/src/routes/jobs.js |
 | GET | `/jobs/interviews/{param}/calendar.ics` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/{param}/close` | jobs |  | web-uk/src/routes/jobs.js |
@@ -301,6 +313,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
 | POST | `/organisations/{param}/reviews` | organisations |  | web-uk/src/server.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
+| GET | `/platform/disclaimer` | platform |  | web-uk/src/routes/legal.js |
+| GET | `/platform/privacy` | platform |  | web-uk/src/routes/legal.js |
+| GET | `/platform/terms` | platform |  | web-uk/src/routes/legal.js |
 | GET | `/podcasts/{param}/episodes/{param}/report` | podcasts |  | web-uk/src/routes/podcast-actions.js |
 | GET | `/podcasts/{param}/episodes/{param}/transcript.txt` | podcasts |  | web-uk/src/routes/podcasts.js |
 | GET | `/podcasts/studio/{param}/archive` | podcasts |  | web-uk/src/routes/podcast-actions.js |
@@ -324,6 +339,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/robots.txt` | robots.txt |  | web-uk/src/server.js |
 | GET | `/search/podcast-episode` | search |  | web-uk/src/routes/search.js |
 | GET | `/sitemap.xml` | sitemap.xml |  | web-uk/src/server.js |
+| GET | `/social-prescribing` | social-prescribing | tbi-pages/social-prescribing | web-uk/src/routes/tbi-pages.js |
+| GET | `/strategic-plan` | strategic-plan | tbi-pages/strategic-plan | web-uk/src/routes/tbi-pages.js |
 | GET | `/support-actions/confirm/{param}` | support-actions |  | web-uk/src/routes/support-action-confirm.js |
 | POST | `/support-actions/confirm/{param}` | support-actions |  | web-uk/src/routes/support-action-confirm.js |
 | GET | `/terms` | terms |  | web-uk/src/routes/legal.js |

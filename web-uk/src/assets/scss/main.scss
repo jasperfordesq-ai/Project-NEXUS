@@ -666,6 +666,33 @@
   }
 }
 
+// Code samples on the developer documentation pages (/developers/*). A sample is
+// literal text whose line breaks matter, so it scrolls inside its own box rather
+// than wrapping or pushing the whole page sideways. tabindex="0" on the <pre>
+// lets a keyboard user scroll it.
+.nexus-alpha-code-block {
+  @include govuk-font($size: 16);
+  margin: 0 0 govuk-spacing(6);
+  padding: govuk-spacing(3);
+  overflow-x: auto;
+  border: 1px solid $govuk-border-colour;
+  background: govuk-colour("black", $variant: "tint-95");
+  color: $govuk-text-colour;
+  font-family: monospace;
+  white-space: pre;
+
+  &:focus {
+    outline: $govuk-focus-width solid $govuk-focus-colour;
+  }
+}
+
+// An endpoint path or scope name inside a table cell: monospace, and allowed to
+// break so a long path does not widen the table past a narrow screen.
+.nexus-alpha-code-inline {
+  font-family: monospace;
+  overflow-wrap: anywhere;
+}
+
 .nexus-alpha-footer__brand-link {
   display: inline-block;
 

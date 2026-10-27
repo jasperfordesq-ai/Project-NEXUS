@@ -1,0 +1,19 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# React RelatedPages.tsx: the timebanking guide and the community's other pages,
+   minus the current one. Built by lib/tbi-pages.js relatedPages(). #}
+{% if related and related.length %}
+  <aside class="govuk-!-margin-top-8" aria-labelledby="tbi-related-heading">
+    <h2 class="govuk-heading-m" id="tbi-related-heading">{{ relatedHeading }}</h2>
+    <ul class="govuk-list govuk-list--spaced">
+      {% for link in related %}
+        <li>
+          <a class="govuk-link" href="{{ urlFor(link.href) }}">{{ link.label }}</a>
+          <span class="govuk-body-s govuk-!-display-block govuk-!-margin-bottom-0">{{ link.description }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </aside>
+{% endif %}

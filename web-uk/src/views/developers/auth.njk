@@ -1,0 +1,46 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Partner API OAuth2 authentication reference (React DevelopersAuthPage). The two
+   samples are GOV.UK Tabs: without JavaScript they read as two headed sections. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {% include "developers/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_developers.page_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_developers.nav.auth") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_developers.auth_intro") }}</p>
+
+      {% for step in steps %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.auth_step" + step + "_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_developers.auth_step" + step + "_body") }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="govuk-tabs" data-module="govuk-tabs">
+    <h2 class="govuk-tabs__title">{{ t("govuk_alpha_developers.tabs.code_examples") }}</h2>
+    <ul class="govuk-tabs__list">
+      <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+        <a class="govuk-tabs__tab" href="#developers-auth-curl">{{ t("govuk_alpha_developers.curl_example") }}</a>
+      </li>
+      <li class="govuk-tabs__list-item">
+        <a class="govuk-tabs__tab" href="#developers-auth-js">{{ t("govuk_alpha_developers.js_example") }}</a>
+      </li>
+    </ul>
+    <div class="govuk-tabs__panel" id="developers-auth-curl">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.curl_example") }}</h2>
+      <pre class="nexus-alpha-code-block" tabindex="0"><code>{{ curlSnippet }}</code></pre>
+    </div>
+    <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="developers-auth-js">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_developers.js_example") }}</h2>
+      <pre class="nexus-alpha-code-block" tabindex="0"><code>{{ jsSnippet }}</code></pre>
+    </div>
+  </div>
+{% endblock %}

@@ -17,6 +17,8 @@
     "check:changelog:released": "node scripts/build-changelog.js --check-released",
     "build:legal-text": "node scripts/build-legal-text.js",
     "check:legal-text": "node scripts/build-legal-text.js --check",
+    "build:platform-legal-text": "node scripts/build-platform-legal-text.js",
+    "check:platform-legal-text": "node scripts/build-platform-legal-text.js --check",
     "watch:css": "sass --quiet-deps --load-path=node_modules/govuk-frontend/dist --watch src/assets/scss/main.scss:public/css/main.css",
     "watch:server": "nodemon src/server.js",
     "brand:check": "node scripts/brand-check.js",

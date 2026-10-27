@@ -1,0 +1,70 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Timebank Ireland only (routes/tbi-pages.js). Mirrors React ImpactSummaryPage.tsx:
+   headline finding, key figures, wellbeing outcomes, public health potential, the
+   two strategic documents, related pages and the call to action. #}
+{% extends "layouts/base.njk" %}
+{% set ns = "govuk_alpha_tbi_pages.impact_summary." %}
+
+{% block beforeContent %}
+  {% include "tbi-pages/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(ns + "page_title") }}</h1>
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-l govuk-!-margin-bottom-0">{{ t(ns + "hero_headline") }}</h2>
+      </div>
+      <p class="govuk-body-l">{{ t(ns + "hero_subtitle") }}</p>
+
+      <dl class="govuk-summary-list">
+        {% for stat in stats %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ stat.value }}</dt>
+            <dd class="govuk-summary-list__value">{{ stat.label }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "wellbeing_heading") }}</h2>
+      {% for figure in wellbeingFigures %}
+        <p class="govuk-body"><strong class="govuk-!-font-size-27">{{ figure.value }}</strong> {{ figure.text }}</p>
+      {% endfor %}
+      <figure class="govuk-!-margin-left-0 govuk-!-margin-right-0">
+        <blockquote class="govuk-inset-text govuk-!-margin-bottom-2">
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t(ns + "wellbeing_quote") }}</p>
+        </blockquote>
+        <figcaption class="govuk-body-s">{{ t(ns + "wellbeing_quote_attribution") }}</figcaption>
+      </figure>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "public_health_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "public_health_para1") }}</p>
+      <p class="govuk-body">{{ t(ns + "public_health_para2") }}</p>
+      <figure class="govuk-!-margin-left-0 govuk-!-margin-right-0">
+        <blockquote class="govuk-inset-text govuk-!-margin-bottom-2">
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t(ns + "public_health_quote") }}</p>
+        </blockquote>
+        <figcaption class="govuk-body-s">{{ t(ns + "public_health_quote_attribution") }}</figcaption>
+      </figure>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "strategic_docs_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "strategic_docs_subtitle") }}</p>
+      <h3 class="govuk-heading-m"><a class="govuk-link" href="{{ urlFor('/impact-report') }}">{{ t(ns + "impact_report_title") }}</a></h3>
+      <p class="govuk-body">{{ t(ns + "impact_report_description") }}</p>
+      <h3 class="govuk-heading-m"><a class="govuk-link" href="{{ urlFor('/strategic-plan') }}">{{ t(ns + "strategic_plan_title") }}</a></h3>
+      <p class="govuk-body">{{ t(ns + "strategic_plan_description") }}</p>
+
+      {% include "tbi-pages/_related.njk" %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(ns + "cta_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "cta_subtitle") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ urlFor('/contact') }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_contact") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

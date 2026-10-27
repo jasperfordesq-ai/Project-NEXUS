@@ -49,6 +49,7 @@ const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');
 const { buildSeoLocals, canonicalUrlFor } = require('./seo-meta');
 const { requestHost } = require('../middleware/tenant-routing');
+const { footerLinks: tbiFooterLinks } = require('./tbi-pages');
 
 const localeOptions = [
   ['en', 'English'],
@@ -534,7 +535,10 @@ function menuPageLinks(pages, location) {
 function withCommunityPageColumns(columns, tenant = {}, t = createTranslator('en')) {
   const menuPages = tenant.menu_pages && typeof tenant.menu_pages === 'object' ? tenant.menu_pages : {};
   const aboutLinks = menuPageLinks(menuPages.about, 'about');
-  const headerLinks = menuPageLinks(menuPages.header, 'header');
+  // React's community-pages column lists its pinned registry pages FIRST, then
+  // the community's own header pages (Navbar.tsx). The only pinned pages are
+  // Timebank Ireland's four content pages (lib/tbi-pages.js), for that community.
+  const headerLinks = [...tbiFooterLinks(tenant, t), ...menuPageLinks(menuPages.header, 'header')];
   const result = columns.map((column) => (
     column.key === 'support' && aboutLinks.length
       ? { ...column, links: [...column.links, ...aboutLinks] }

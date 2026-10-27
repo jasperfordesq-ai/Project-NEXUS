@@ -96,6 +96,11 @@ const supportRoutes = require('./routes/support');
 const legalRoutes = require('./routes/legal');
 const legalAcceptanceRoutes = require('./routes/legal-acceptance');
 const publicInfoRoutes = require('./routes/public-info');
+// Timebank Ireland's own content pages (React TenantSlugGate slug=hour-timebank);
+// every other community falls through to the ordinary 404.
+const tbiPagesRoutes = require('./routes/tbi-pages');
+// Partner API developer documentation (React /developers/*), public.
+const developerRoutes = require('./routes/developers');
 const contactSupportRoutes = require('./routes/contact-support');
 const certificateCheckRoutes = require('./routes/certificate-check');
 const onboardingPostRoutes = require('./routes/onboarding-posts');
@@ -2507,6 +2512,8 @@ app.use('/whats-on', whatsOnRoutes);
 // The partner_venues 403 gate lives in FEATURE_ROUTE_GATES.
 app.use('/venues', requireAuth, doubleCsrfProtection, postOnly(formLimiter), venuesRoutes);
 app.use(publicInfoRoutes);
+app.use(tbiPagesRoutes);
+app.use(developerRoutes);
 app.use(staticPageRoutes);
 
 app.get('/service-unavailable', (req, res) => {

@@ -76,7 +76,19 @@ const MAIN_SITE_PATHS = [
   // Public events advertising. React serves both publicly at the same paths
   // (PublicEventsListPage / PublicEventDetailPage, behind the same events +
   // public_events features routes/whats-on.js checks).
-  [/^\/whats-on(\/\d+)?$/, null]
+  [/^\/whats-on(\/\d+)?$/, null],
+  // The platform provider's own legal documents. React serves all three publicly
+  // at the same paths (PublicAppRoutes.tsx: PlatformTermsPage, PlatformPrivacyPage,
+  // PlatformDisclaimerPage).
+  [/^\/platform\/(terms|privacy|disclaimer)$/, null],
+  // Partner API developer documentation. React serves all four publicly at the
+  // same paths (PublicAppRoutes.tsx: DevelopersHomePage, DevelopersAuthPage,
+  // DevelopersEndpointsPage, DevelopersWebhooksPage).
+  [/^\/developers(\/(auth|endpoints|webhooks))?$/, null],
+  // Timebank Ireland's own content pages. React serves all four publicly at the
+  // same paths for the same single community (PublicAppRoutes.tsx, TenantSlugGate
+  // slug="hour-timebank"); no other community has the page on either site.
+  [/^\/(social-prescribing|impact-summary|impact-report|strategic-plan)$/, null]
   // Only pages a signed-out visitor can open on the main site
   // (react-frontend/src/routes/PublicAppRoutes.tsx). Listings, events,
   // groups, members, courses and the rest need sign-in there; pointing a

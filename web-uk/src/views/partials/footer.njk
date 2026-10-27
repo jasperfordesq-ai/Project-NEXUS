@@ -205,14 +205,20 @@
           {#
             BAND 4 — the licence strip. 🔴 AGPL Section 7(b) attribution, required on
             every page. Do not remove it.
+
+            The two links beside it are the PLATFORM's terms and privacy policy
+            (Project NEXUS as the software's provider), exactly as the React footer's
+            licence strip links them. The community's own terms and privacy policy
+            stay in the Legal column above. They are labelled "Platform …" here so
+            the two pairs are never mistaken for each other.
           #}
           <div class="nexus-alpha-footer__band nexus-alpha-footer__band--center">
             <p class="govuk-body-s govuk-!-margin-bottom-0">
               {{ t("footer.agpl_notice") }}
               <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
-              <a class="govuk-footer__link" href="{{ urlFor('/legal/terms') }}">{{ t("footer.columns.legal.terms") }}</a>
+              <a class="govuk-footer__link" href="{{ urlFor('/platform/terms') }}">{{ t("govuk_alpha_platform_legal.hub.terms") }}</a>
               <span class="nexus-alpha-footer__sep" aria-hidden="true">&middot;</span>
-              <a class="govuk-footer__link" href="{{ urlFor('/legal/privacy') }}">{{ t("footer.columns.legal.privacy") }}</a>
+              <a class="govuk-footer__link" href="{{ urlFor('/platform/privacy') }}">{{ t("govuk_alpha_platform_legal.hub.privacy") }}</a>
             </p>
           </div>
         </div>

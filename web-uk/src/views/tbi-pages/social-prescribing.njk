@@ -1,0 +1,73 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{# Timebank Ireland only (routes/tbi-pages.js). Mirrors React SocialPrescribingPage.tsx:
+   hero, validated outcomes, strategic fit, member testimonial, the four-step referral
+   pathway, related pages and the partnership call to action. #}
+{% extends "layouts/base.njk" %}
+{% set ns = "govuk_alpha_tbi_pages.social_prescribing." %}
+
+{% block beforeContent %}
+  {% include "tbi-pages/_breadcrumbs.njk" %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t(ns + "hero_title") }}</h1>
+      <p class="govuk-body-l">{{ t(ns + "hero_subtitle") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "validated_outcomes_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "validated_outcomes_subtitle") }}</p>
+      <dl class="govuk-summary-list">
+        {% for outcome in outcomes %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ outcome.label }}</dt>
+            <dd class="govuk-summary-list__value">
+              <p class="govuk-heading-m govuk-!-margin-bottom-1">{{ outcome.value }}</p>
+              <p class="govuk-body govuk-!-margin-bottom-0">{{ outcome.description }}</p>
+            </dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      <h3 class="govuk-heading-m">{{ t(ns + "strategic_fit_heading") }}</h3>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for point in strategicFit %}
+          <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+
+      <figure class="govuk-!-margin-left-0 govuk-!-margin-right-0 govuk-!-margin-top-6">
+        <blockquote class="govuk-inset-text govuk-!-margin-bottom-2">
+          <p class="govuk-body-l govuk-!-margin-bottom-0">{{ t(ns + "testimonial_quote") }}</p>
+        </blockquote>
+        <figcaption class="govuk-body">
+          <cite class="govuk-!-font-weight-bold">{{ t(ns + "testimonial_name") }}</cite>
+          <span class="govuk-!-display-block">{{ t(ns + "testimonial_role") }}</span>
+        </figcaption>
+      </figure>
+
+      <h2 class="govuk-heading-l">{{ t(ns + "referral_pathway_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "referral_pathway_subtitle") }}</p>
+      <ol class="govuk-list govuk-list--number govuk-list--spaced">
+        {% for step in steps %}
+          <li>
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ step.title }}</h3>
+            <p class="govuk-body">{{ step.description }}</p>
+          </li>
+        {% endfor %}
+      </ol>
+
+      {% include "tbi-pages/_related.njk" %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t(ns + "cta_heading") }}</h2>
+      <p class="govuk-body">{{ t(ns + "cta_para1") }}</p>
+      <p class="govuk-body">{{ t(ns + "cta_para2") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" href="{{ urlFor('/contact') }}" role="button" draggable="false" data-module="govuk-button">{{ t(ns + "cta_contact") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
