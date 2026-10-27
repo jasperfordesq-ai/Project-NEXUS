@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { getFormattingLocale } from '@/lib/helpers';
+import { getFormattingLocale, resolveUserDisplayName } from '@/lib/helpers';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -146,6 +146,7 @@ interface MemberSearchResult {
   first_name?: string | null;
   last_name?: string | null;
   organization_name?: string | null;
+  profile_type?: string | null;
   avatar_url?: string | null;
 }
 
@@ -157,9 +158,7 @@ interface JobTeamRow {
 }
 
 const personName = (p: MemberSearchResult | null | undefined): string =>
-  (p?.name ?? '').trim()
-  || [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim()
-  || (p?.organization_name ?? '').trim();
+  resolveUserDisplayName(p);
 
 const toTeamMember = (row: JobTeamRow, fallbackPerson?: MemberSearchResult): TeamMember => ({
   id: Number(row.user_id),
