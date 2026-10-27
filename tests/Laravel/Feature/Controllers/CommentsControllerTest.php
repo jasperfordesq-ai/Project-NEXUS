@@ -383,7 +383,9 @@ class CommentsControllerTest extends TestCase
             'tenant_id' => $this->testTenantId,
             'user_id' => $resourceOwner->id,
             'type' => 'comment',
-            'link' => "/resources/{$resourceId}#comment-{$commentId}",
+            // No single-resource page exists on either client (8bac7ee98); the
+            // website forwards old /resources/{id} links to the list.
+            'link' => "/resources#comment-{$commentId}",
         ]);
     }
 
