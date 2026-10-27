@@ -7,9 +7,10 @@
  * Tests for RegisterPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import i18n from 'i18next';
 import { render, screen, waitFor, userEvent } from '@/test/test-utils';
+import { Route, Routes } from 'react-router-dom';
 
 const apiMocks = vi.hoisted(() => ({
   get: vi.fn(),
@@ -279,6 +280,51 @@ describe('RegisterPage', () => {
     for (const link of policyLinks) {
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel') ?? '').toContain('noopener');
+    }
+  });
+});
+
+// A member sent to sign up from the login page with somewhere to go (an emailed
+// link) keeps that destination through sign-up — see lib/auth-return.ts.
+describe('RegisterPage — keeping the page the member was going to', () => {
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+    sessionStorage.clear();
+  });
+
+  it('keeps ?next= on the "Sign in" link and remembers it', async () => {
+    window.history.pushState({}, '', '/test/register?next=%2Ftest%2Fgroups%2F7');
+    render(<RegisterPage />);
+    const link = await screen.findByRole('link', { name: 'Sign in' });
+    expect(link.getAttribute('href')).toBe('/test/login?next=%2Ftest%2Fgroups%2F7');
+    await waitFor(() => {
+      expect(JSON.parse(sessionStorage.getItem('nexus_auth_return') ?? '{}').path).toBe('/test/groups/7');
+    });
+  });
+
+  it('sends an already signed-in member on to that page', async () => {
+    const { useAuth } = await import('@/contexts/AuthContext');
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 1 }, status: 'authenticated', error: null, isAuthenticated: true, isLoading: false,
+      register: vi.fn(), clearError: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>);
+    window.history.pushState({}, '', '/test/register?next=%2Ftest%2Fgroups%2F7');
+    try {
+      // Routes, as in the app: leaving the page unmounts it.
+      render(
+        <Routes>
+          <Route path="/test/register" element={<RegisterPage />} />
+          <Route path="*" element={<p>Somewhere else</p>} />
+        </Routes>,
+      );
+      await screen.findByText('Somewhere else');
+      expect(window.location.pathname + window.location.search).toBe('/test/groups/7');
+    } finally {
+      vi.mocked(useAuth).mockReset();
+      vi.mocked(useAuth).mockReturnValue({
+        user: null, status: 'idle', error: null, isAuthenticated: false, isLoading: false,
+        register: vi.fn(), clearError: vi.fn(),
+      } as unknown as ReturnType<typeof useAuth>);
     }
   });
 });

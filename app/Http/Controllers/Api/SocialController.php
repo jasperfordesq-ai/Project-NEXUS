@@ -966,7 +966,7 @@ class SocialController extends BaseApiController
         try {
             \App\Services\NotificationDispatcher::notifyModerationAdmins(
                 'social_report_created',
-                '/admin/reports',
+                '/broker/moderation/reports', // admin moderation moved to the broker panel; admins can open it
                 'svc_notifications_2.social_report.admin_alert',
                 'emails_misc.moderation.social_subject',
                 'emails_misc.moderation.social_body',

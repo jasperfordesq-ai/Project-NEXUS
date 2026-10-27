@@ -19,6 +19,7 @@ import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { FeatureGate } from '@/components/routing/FeatureGate';
 import { LegalSlugRedirect } from '@/components/routing/LegalSlugRedirect';
+import { EmailLinkRedirect, MarketplaceOrderLinkRedirect } from '@/components/routing/EmailLinkRedirects';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { FeatureErrorBoundary } from '@/components/feedback/FeatureErrorBoundary';
 import { lazyWithRetry } from './lazyWithRetry';
@@ -896,6 +897,9 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Shapes older emails linked to — see EmailLinkRedirects.tsx. */}
+          <Route path="marketplace/listings/:id" element={<EmailLinkRedirect target="/marketplace/:id" />} />
+          <Route path="marketplace/offers" element={<EmailLinkRedirect target="/marketplace/my-offers" />} />
 
           {/* Volunteering, resources, organisations, and ideation include member attribution. */}
           <Route path="volunteering" element={
@@ -919,6 +923,8 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* There is no single-resource page; notification emails linked to one. */}
+          <Route path="resources/:id" element={<EmailLinkRedirect target="/resources" keepQuery={false} />} />
           <Route path="kb" element={
             <FeatureGate feature="resources" fallback={<ComingSoonPage feature={t('coming_soon.features.knowledge_base')} />}>
               <FeatureErrorBoundary featureName="Knowledge Base">
@@ -1107,6 +1113,9 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Settings tabs that emails linked to as paths. */}
+          <Route path="settings/safeguarding" element={<EmailLinkRedirect target="/settings?tab=safeguarding" />} />
+          <Route path="settings/security" element={<EmailLinkRedirect target="/settings?tab=security" />} />
           {/* Read-only supporter view of a supported member's messages
               (consent-gated server-side; the page adds the purpose front
               door). Gated on the messages module like the member's own inbox. */}
@@ -1329,6 +1338,8 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* There is no single-poll page; notification emails linked to one. */}
+          <Route path="polls/:id" element={<EmailLinkRedirect target="/polls" keepQuery={false} />} />
 
           {/* Feature-gated: Job Vacancies (create/edit/manage only â€” view routes are public) */}
           <Route path="jobs/create" element={
@@ -1466,6 +1477,8 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Order emails linked to a single-order page that does not exist. */}
+          <Route path="marketplace/orders/:id" element={<MarketplaceOrderLinkRedirect />} />
           <Route path="marketplace/seller/onboard" element={
             <FeatureGate feature="marketplace" redirect="/dashboard">
               <FeatureErrorBoundary featureName="Marketplace">
@@ -1808,6 +1821,8 @@ export function AppRoutes() {
               </FeatureErrorBoundary>
             </FeatureGate>
           } />
+          {/* Federation connection emails linked to /network. */}
+          <Route path="network" element={<EmailLinkRedirect target="/federation/connections" />} />
 
           {/* Matches â€” cross-module matches page (MA1, requires auth) */}
           <Route path="matches" element={

@@ -624,7 +624,7 @@
             "title_expression": null,
             "body_expression": null,
             "type_expression": "feed_report_created",
-            "link_expression": "/admin/reports",
+            "link_expression": "/broker/moderation/reports",
             "data_expression": null
         },
         {
@@ -754,7 +754,7 @@
             "title_expression": null,
             "body_expression": null,
             "type_expression": "listing_report_created",
-            "link_expression": "/admin/reports",
+            "link_expression": "/broker/moderation/reports",
             "data_expression": null
         },
         {
@@ -897,7 +897,7 @@
             "title_expression": null,
             "body_expression": null,
             "type_expression": "social_report_created",
-            "link_expression": "/admin/reports",
+            "link_expression": "/broker/moderation/reports",
             "data_expression": null
         },
         {
@@ -2392,7 +2392,7 @@
             "title_expression": null,
             "body_expression": null,
             "type_expression": "marketplace_report_filed",
-            "link_expression": "'/admin/marketplace/reports/' . $report->id",
+            "link_expression": "/admin/marketplace/cases",
             "data_expression": null
         },
         {
@@ -2470,7 +2470,7 @@
             "title_expression": null,
             "body_expression": null,
             "type_expression": "member_concern_reported",
-            "link_expression": "/admin/reports",
+            "link_expression": "/broker/moderation/reports",
             "data_expression": null
         },
         {

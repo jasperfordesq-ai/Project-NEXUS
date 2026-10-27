@@ -1704,7 +1704,7 @@ class NotificationDispatcher
         $userName = UserDisplayName::resolve($user);
         $email = $user->email ?? '';
         $isPassed = $status === 'passed';
-        $link = "/admin/members";
+        $link = "/admin/users"; // /admin/members is not a page
 
         $admins = DB::table('users')
             ->where('tenant_id', $tenantId)

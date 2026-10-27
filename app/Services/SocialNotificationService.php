@@ -309,6 +309,11 @@ class SocialNotificationService
      */
     public static function getContentLink($contentType, $contentId): string
     {
+        // Looked up only when needed: the map below is built for every call.
+        if ($contentType === 'challenge_idea') {
+            return self::getIdeaLink((int) $contentId);
+        }
+
         $routes = [
             'post' => '/feed/posts/' . $contentId,
             'feed_post' => '/feed/posts/' . $contentId,
@@ -317,19 +322,41 @@ class SocialNotificationService
             'listing' => '/listings/' . $contentId,
             'event' => '/events/' . $contentId,
             'goal' => '/goals/' . $contentId,
+            // The phone app opens /polls/{id} as the poll itself; the website
+            // forwards it to /polls (EmailLinkRedirects.tsx).
             'poll' => '/polls/' . $contentId,
-            'resource' => '/resources/' . $contentId,
+            // No single-resource page exists on either client: the list.
+            'resource' => '/resources',
             'volunteering' => '/volunteering/opportunities/' . $contentId,
             'volunteer' => '/volunteering/opportunities/' . $contentId,
             'ideation_challenge' => '/ideation/' . $contentId,
             'challenge' => '/ideation/' . $contentId,
-            'challenge_idea' => '/ideation/' . $contentId,
             'review' => '/reviews',
             'job' => '/jobs/' . $contentId,
             'discussion' => self::getDiscussionLink((int) $contentId),
             'comment' => self::getCommentLink((int) $contentId),
         ];
         return $routes[$contentType] ?? '/notifications';
+    }
+
+    /** An idea's page sits under its challenge: /ideation/{challenge}/ideas/{idea}. */
+    private static function getIdeaLink(int $ideaId): string
+    {
+        try {
+            $challengeId = DB::table('challenge_ideas as ci')
+                ->join('ideation_challenges as ic', 'ic.id', '=', 'ci.challenge_id')
+                ->where('ci.id', $ideaId)
+                ->where('ic.tenant_id', TenantContext::getId())
+                ->value('ci.challenge_id');
+
+            if ($challengeId) {
+                return '/ideation/' . (int) $challengeId . '/ideas/' . $ideaId;
+            }
+        } catch (\Throwable $e) {
+            Log::warning("SocialNotificationService::getIdeaLink error: " . $e->getMessage());
+        }
+
+        return '/ideation';
     }
 
     private static function getBlogLink(int $contentId): string

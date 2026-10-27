@@ -1059,7 +1059,7 @@ class ListingsController extends BaseApiController
                 ->where('id', $id)->where('tenant_id', $tenantId)->value('title') ?? ('#' . $id));
             \App\Services\NotificationDispatcher::notifyModerationAdmins(
                 'listing_report_created',
-                '/admin/reports',
+                '/broker/moderation/reports', // admin moderation moved to the broker panel; admins can open it
                 'svc_notifications_2.listing_report.admin_alert',
                 'emails_misc.moderation.listing_subject',
                 'emails_misc.moderation.listing_body',

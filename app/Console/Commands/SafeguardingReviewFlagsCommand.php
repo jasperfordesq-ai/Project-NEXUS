@@ -264,7 +264,7 @@ class SafeguardingReviewFlagsCommand extends Command
                     ->paragraph(__('safeguarding.review.reminder_body', ['community' => $safeCommunity]))
                     ->button(
                         __('safeguarding.review.reminder_cta'),
-                        EmailTemplateBuilder::tenantUrl('/settings/safeguarding')
+                        EmailTemplateBuilder::tenantUrl('/settings?tab=safeguarding')
                     )
                     ->render();
 

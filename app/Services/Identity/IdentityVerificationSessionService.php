@@ -202,7 +202,8 @@ class IdentityVerificationSessionService
                         ->render();
                 } else {
                     $subject  = __('emails.identity_verification.failed_subject');
-                    $ctaUrl   = $baseUrl . $basePath . '/settings/security';
+                    // "Try again" — the verification page; /settings/security is not a page.
+                    $ctaUrl   = $baseUrl . $basePath . '/verify-identity';
 
                     $builder = EmailTemplateBuilder::make()
                         ->theme('brand')

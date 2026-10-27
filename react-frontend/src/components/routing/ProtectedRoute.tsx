@@ -19,7 +19,7 @@ import { AuthUnavailableScreen } from './AuthUnavailableScreen';
 import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
 import { isVisitingManager } from '@/lib/access';
-import { buildLoginTarget } from '@/lib/auth-return';
+import { buildReturnTarget } from '@/lib/auth-return';
 
 const LegalAcceptanceGate = lazy(() =>
   import('@/components/legal/LegalAcceptanceGate').then((module) => ({ default: module.LegalAcceptanceGate }))
@@ -85,7 +85,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Redirect to login if not authenticated, preserving tenant slug prefix
   if (!isAuthenticated) {
     // The whole address (query and fragment too) survives sign-in — see lib/auth-return.ts.
-    const login = buildLoginTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
+    const login = buildReturnTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
     return <Navigate to={login.to} state={login.state} replace />;
   }
 
@@ -134,7 +134,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isGodOrSuperAdmin = user?.is_god || user?.is_super_admin;
   const needsOnboarding = user && !user.onboarding_completed && onboardingEnabled && onboardingMandatory && !isGodOrSuperAdmin;
   if (needsOnboarding && lastSegment !== 'onboarding') {
-    return <Navigate to={tenantPath('/onboarding')} replace />;
+    // Onboarding first, then on to the page the member asked for (an emailed
+    // link, say) rather than the dashboard.
+    const onboarding = buildReturnTarget(tenantPath('/onboarding'), tenantPath(location.pathname) + location.search + location.hash);
+    return <Navigate to={onboarding.to} state={onboarding.state} replace />;
   }
 
   // Legal gate: block protected pages when user has unaccepted legal documents.

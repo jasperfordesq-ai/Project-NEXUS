@@ -339,7 +339,7 @@ class FeedController extends BaseApiController
             try {
                 \App\Services\NotificationDispatcher::notifyModerationAdmins(
                     'feed_report_created',
-                    '/admin/reports',
+                    '/broker/moderation/reports', // admin moderation moved to the broker panel; admins can open it
                     'svc_notifications_2.feed_report.admin_alert',
                     'emails_misc.moderation.feed_subject',
                     'emails_misc.moderation.feed_body',

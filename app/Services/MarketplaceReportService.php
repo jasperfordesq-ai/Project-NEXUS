@@ -107,7 +107,7 @@ class MarketplaceReportService
         try {
             \App\Services\NotificationDispatcher::notifyModerationAdmins(
                 'marketplace_report_filed',
-                '/admin/marketplace/reports/' . $report->id,
+                '/admin/marketplace/cases', // reports tab; there is no per-report admin page
                 'svc_notifications_2.marketplace_report.admin_alert',
                 'emails_misc.moderation.marketplace_subject',
                 'emails_misc.moderation.marketplace_body',

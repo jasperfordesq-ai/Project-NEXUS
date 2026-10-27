@@ -35,15 +35,16 @@ export interface LoginTarget {
 }
 
 /**
- * Build the login address for a member who must sign in to reach `from`.
- * An unsafe or missing `from` yields the plain login address.
+ * Build the address of a step the member must pass through — the login page,
+ * or onboarding after sign-in — that brings them on to `from` afterwards.
+ * An unsafe or missing `from` yields the plain address.
  */
-export function buildLoginTarget(loginPath: string, from: unknown): LoginTarget {
+export function buildReturnTarget(stepPath: string, from: unknown): LoginTarget {
   const safe = safeAuthReturnPath(from, '');
-  if (!safe) return { to: loginPath };
-  const separator = loginPath.includes('?') ? '&' : '?';
+  if (!safe) return { to: stepPath };
+  const separator = stepPath.includes('?') ? '&' : '?';
   return {
-    to: `${loginPath}${separator}${AUTH_RETURN_QUERY_PARAM}=${encodeURIComponent(safe)}`,
+    to: `${stepPath}${separator}${AUTH_RETURN_QUERY_PARAM}=${encodeURIComponent(safe)}`,
     state: { from: safe },
   };
 }

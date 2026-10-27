@@ -5,7 +5,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { buildLoginTarget, type LoginTarget } from '@/lib/auth-return';
+import { buildReturnTarget, type LoginTarget } from '@/lib/auth-return';
 
 /**
  * Login address that brings the member back to the page they are on (or to
@@ -26,7 +26,7 @@ export function useLoginRedirect(tenantPath: (path: string) => string): {
     [tenantPath, location.pathname, location.search, location.hash],
   );
   const loginTarget = useCallback(
-    (from: string = currentPath) => buildLoginTarget(tenantPath('/login'), from),
+    (from: string = currentPath) => buildReturnTarget(tenantPath('/login'), from),
     [tenantPath, currentPath],
   );
   return { currentPath, loginTarget };

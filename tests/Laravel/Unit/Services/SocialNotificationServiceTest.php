@@ -88,6 +88,30 @@ class SocialNotificationServiceTest extends TestCase
         );
     }
 
+    // Email-link audit, 27 Oct 2026: these linked to pages that do not exist.
+    public function test_resource_link_opens_the_list_because_there_is_no_single_resource_page(): void
+    {
+        DB::shouldReceive('table->where->where->value')->andReturnNull();
+
+        $this->assertSame('/resources', SocialNotificationService::getContentLink('resource', 8));
+        // The phone app opens /polls/{id} itself; the website forwards it.
+        $this->assertSame('/polls/6', SocialNotificationService::getContentLink('poll', 6));
+    }
+
+    public function test_idea_link_opens_the_idea_under_its_challenge(): void
+    {
+        DB::shouldReceive('table->join->where->where->value')->once()->andReturn(5);
+
+        $this->assertSame('/ideation/5/ideas/22', SocialNotificationService::getContentLink('challenge_idea', 22));
+    }
+
+    public function test_idea_link_falls_back_to_the_ideation_page_when_the_idea_is_gone(): void
+    {
+        DB::shouldReceive('table->join->where->where->value')->once()->andReturnNull();
+
+        $this->assertSame('/ideation', SocialNotificationService::getContentLink('challenge_idea', 22));
+    }
+
     public function test_unknown_comment_target_fails_closed_to_the_authenticated_inbox(): void
     {
         DB::shouldReceive('table->where->where->select->first')->andReturnNull();

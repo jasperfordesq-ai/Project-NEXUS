@@ -26,7 +26,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion';
 
 import { Separator } from '@/components/ui/Separator';
@@ -60,6 +60,7 @@ import { PageMeta } from '@/components/seo';
 import { useOnboardingConfig } from '@/hooks/useOnboardingConfig';
 import { useToast, useTenant, useAuth } from '@/contexts';
 import { api } from '@/lib/api';
+import { explicitAuthReturn } from '@/lib/auth-return';
 import { AVATAR_UPLOAD_ACCEPT, isAvatarFileTooLarge, isSupportedAvatarFile } from '@/lib/avatarUpload';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
@@ -103,6 +104,11 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const { tenantPath, tenant } = useTenant();
   const { loginTarget } = useLoginRedirect(tenantPath);
+  const location = useLocation();
+  // Where to go once onboarding is done: the page the member was sent here
+  // from (an emailed link reached straight after sign-up or sign-in), else
+  // the dashboard. See lib/auth-return.ts.
+  const afterOnboarding = explicitAuthReturn(location.state, location.search) || tenantPath('/dashboard');
   const toast = useToast();
   const { user, refreshUser } = useAuth();
 
@@ -213,9 +219,9 @@ export function OnboardingPage() {
   useEffect(() => {
     if (isComplete) return; // Let celebration animation play out
     if (user?.onboarding_completed === true) {
-      navigate(tenantPath('/dashboard'), { replace: true });
+      navigate(afterOnboarding, { replace: true });
     }
-  }, [user?.onboarding_completed, navigate, tenantPath, isComplete]);
+  }, [user?.onboarding_completed, navigate, afterOnboarding, isComplete]);
 
   // ── Pre-populate all wizard fields from existing user data (one-shot on mount) ──
   // Loads the member's existing skills (/v2/users/me/skills) into the skills step,
@@ -478,7 +484,7 @@ export function OnboardingPage() {
 
       completionTimerRef.current = setTimeout(() => {
         toast.success(t('toast_welcome_aboard'), t('toast_profile_all_set'));
-        navigate(tenantPath('/dashboard'));
+        navigate(afterOnboarding);
       }, 1800);
     } catch (error) {
       logError('Failed to complete onboarding', error);
@@ -486,7 +492,7 @@ export function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, navigate, tenantPath, loginTarget, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
+  }, [toast, navigate, afterOnboarding, loginTarget, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
 
   // ── Completion handler ───────────────────────────────────────────────────
 

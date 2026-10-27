@@ -109,6 +109,28 @@ describe('ProtectedRoute', () => {
     });
   });
 
+  // An emailed link must survive both sign-in and the onboarding detour.
+  describe('carrying the requested page through sign-in and onboarding', () => {
+    it('sends a signed-out member to login with the page in ?next=', () => {
+      mockPathname = '/exchanges/42';
+      mockUseAuth.mockReturnValue({ isAuthenticated: false, isLoading: false, status: 'unauthenticated', user: null });
+      render(<ProtectedRoute />);
+      expect(screen.getByTestId('navigate').getAttribute('data-to')).toBe('/test/login?next=%2Ftest%2Fexchanges%2F42');
+    });
+
+    it('sends a member who has not finished onboarding there, with the page in ?next=', () => {
+      mockPathname = '/exchanges/42';
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+        status: 'authenticated',
+        user: { id: 1, first_name: 'New', last_name: 'Member', onboarding_completed: false },
+      });
+      render(<ProtectedRoute />);
+      expect(screen.getByTestId('navigate').getAttribute('data-to')).toBe('/test/onboarding?next=%2Ftest%2Fexchanges%2F42');
+    });
+  });
+
   describe('a tenant super admin managing a community below its own', () => {
     // Owner, 12 Oct 2026: "If they're allowed to sign in, they're allowed to
     // sign in to manage those communities." The server has already accepted the

@@ -275,7 +275,7 @@ class ContextualMessageService
             'title' => $row->title,
             'subtitle' => $row->org_name ? 'with ' . $row->org_name : 'Volunteer opportunity',
             'description' => $row->location ?? '',
-            'link' => '/volunteering/' . $row->id,
+            'link' => '/volunteering/opportunities/' . $row->id,
         ];
     }
 

@@ -37,7 +37,7 @@ import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldX from 'lucide-react/icons/shield-x';
 import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
-import { clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
+import { buildReturnTarget, clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -889,7 +889,7 @@ export function LoginPage() {
                   <p className="text-center text-theme-muted text-sm">
                     {t('login.no_account')}{' '}
                     <Link
-                      to={tenantPath('/register')}
+                      to={buildReturnTarget(tenantPath('/register'), explicitDestination).to}
                       className="text-accent dark:text-accent hover:text-accent dark:hover:text-accent font-medium transition-colors"
                     >
                       {t('login.create_account_link')}

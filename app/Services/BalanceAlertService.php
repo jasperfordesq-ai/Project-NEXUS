@@ -258,7 +258,7 @@ class BalanceAlertService
                 if ($owner && !empty($owner->email)) {
                     $sent = (bool) TenantContext::runForTenant(
                         $tenantId,
-                        fn() => LocaleContext::withLocale($owner, fn() => $this->sendBalanceAlertEmail($owner, $org->name, $balance, $alertType))
+                        fn() => LocaleContext::withLocale($owner, fn() => $this->sendBalanceAlertEmail($owner, $organizationId, $org->name, $balance, $alertType))
                     );
                 }
             }
@@ -293,11 +293,13 @@ class BalanceAlertService
         return true;
     }
 
-    private function sendBalanceAlertEmail(object $owner, string $orgName, float $balance, string $alertType): bool
+    private function sendBalanceAlertEmail(object $owner, int $organizationId, string $orgName, float $balance, string $alertType): bool
     {
         $ownerName       = $owner->first_name ?? $owner->name ?? __('emails.common.fallback_manager');
         $balanceFormatted = number_format($balance, 2);
-        $orgLink         = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/volunteer-org/wallet';
+        // The organisation dashboard's wallet tab (/volunteer-org/wallet is not a page).
+        $orgLink         = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix()
+            . '/volunteering/org/' . $organizationId . '/dashboard?tab=wallet';
         $safeOrgName     = htmlspecialchars($orgName, ENT_QUOTES, 'UTF-8');
 
         $isCritical = $alertType === 'critical';

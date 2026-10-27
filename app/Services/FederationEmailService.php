@@ -363,7 +363,7 @@ class FederationEmailService
                         ->previewText($preview)
                         ->greeting($recipientName)
                         ->paragraph($body)
-                        ->button($cta, EmailTemplateBuilder::tenantUrl('/network'))
+                        ->button($cta, EmailTemplateBuilder::tenantUrl('/federation/connections'))
                         ->render();
 
                     $sent = EmailDispatchService::sendRaw($recipient->email, $subject, $html, null, null, null, 'federation_connection', ['tenant_id' => $recipientTenantId]);
@@ -606,7 +606,7 @@ class FederationEmailService
                         }
 
                         $html = $builder
-                            ->button(__('emails.federation.review_request'), EmailTemplateBuilder::tenantUrl('/admin/federation'))
+                            ->button(__('emails.federation.review_request'), EmailTemplateBuilder::tenantUrl('/partner-timebanks/partnerships'))
                             ->render();
 
                         if (!EmailDispatchService::sendRaw($admin->email, $subject, $html, null, null, null, 'federation_partnership', ['tenant_id' => $targetTenantId])) {

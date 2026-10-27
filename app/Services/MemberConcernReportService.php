@@ -152,7 +152,7 @@ final class MemberConcernReportService
         try {
             NotificationDispatcher::notifyModerationAdmins(
                 'member_concern_reported',
-                '/admin/reports',
+                '/broker/moderation/reports', // admin moderation moved to the broker panel; admins can open it
                 $safeguarding
                     ? 'svc_notifications_2.member_concern.safeguarding_alert'
                     : ($targetType === 'message'

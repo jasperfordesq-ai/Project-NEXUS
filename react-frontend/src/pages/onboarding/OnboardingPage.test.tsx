@@ -10,6 +10,7 @@
 import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { Route, Routes } from 'react-router-dom';
 
 // Mock API module
 vi.mock('@/lib/api', () => ({
@@ -306,6 +307,31 @@ describe('OnboardingPage', () => {
     // Component returns null when onboarding_completed is true (redirect pending)
     // The container should only have the provider wrappers, no onboarding content
     expect(container.querySelector('h1')).toBeNull();
+  });
+
+  // A new member who followed an emailed link is sent here first; once done,
+  // they go on to that page rather than the dashboard.
+  it('sends a member who has finished onboarding on to the page in ?next=', async () => {
+    const { useAuth } = await import('@/contexts');
+    vi.mocked(useAuth).mockReturnValue({
+      user: { id: 1, first_name: 'Test', name: 'Test User', onboarding_completed: true },
+      isAuthenticated: true,
+      refreshUser: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>);
+    window.history.pushState({}, '', '/test/onboarding?next=%2Ftest%2Fexchanges%2F42');
+    try {
+      // Routes, as in the app: leaving the page unmounts it.
+      render(
+        <Routes>
+          <Route path="/test/onboarding" element={<OnboardingPage />} />
+          <Route path="*" element={<p>Somewhere else</p>} />
+        </Routes>,
+      );
+      await screen.findByText('Somewhere else');
+      expect(window.location.pathname).toBe('/test/exchanges/42');
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
   });
 
   it('shows Back button on step 2', async () => {

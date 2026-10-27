@@ -16,7 +16,8 @@
  */
 
 import { lazy, Suspense, useState, useEffect, useRef, useCallback, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { buildReturnTarget, clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 
 import { Autocomplete } from '@/components/ui/Autocomplete';
 import { Button } from '@/components/ui/Button';
@@ -300,12 +301,25 @@ export function RegisterPage() {
     }
   }, []);
 
+  // A member sent here from the login page with somewhere to go (an emailed
+  // link) keeps that destination through sign-up — see lib/auth-return.ts.
+  // `location` is already the address field above, hence `routerLocation`.
+  const routerLocation = useLocation();
+  const explicitDestination = explicitAuthReturn(routerLocation.state, routerLocation.search);
+  const defaultDestination = tenantPath('/dashboard');
+  const destination = resolveAuthReturn(routerLocation.state, routerLocation.search, defaultDestination);
+  const loginLink = buildReturnTarget(tenantPath('/login'), explicitDestination).to;
+  useEffect(() => {
+    if (explicitDestination) rememberAuthReturn(explicitDestination);
+  }, [explicitDestination]);
+
   // Redirect after successful registration
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(tenantPath('/dashboard'), { replace: true });
+      clearAuthReturn();
+      navigate(destination, { replace: true });
     }
-  }, [isAuthenticated, navigate, tenantPath]);
+  }, [isAuthenticated, navigate, destination]);
 
   // Clear error when form changes
   useEffect(() => {
@@ -454,18 +468,25 @@ export function RegisterPage() {
       }
       // Check if onboarding is required before redirecting to dashboard
       if ((result as { requiresOnboarding?: boolean }).requiresOnboarding) {
-        navigate(tenantPath('/onboarding'), { replace: true });
+        // Onboarding first, then on to where the member was going.
+        clearAuthReturn();
+        const onboarding = buildReturnTarget(
+          tenantPath('/onboarding'),
+          destination === defaultDestination ? undefined : destination,
+        );
+        navigate(onboarding.to, { replace: true, state: onboarding.state });
         return;
       }
-      // No gates — redirect to dashboard (fully authenticated)
-      navigate(tenantPath('/dashboard'), { replace: true });
+      // No gates — on to where the member was going (fully authenticated)
+      clearAuthReturn();
+      navigate(destination, { replace: true });
     }
   }, [
     formStartTime, clearError, password, passwordConfirm, tenants, selectedTenantId,
     tenant?.id, register, firstName, lastName, email, profileType, organizationName,
     location, latitude, longitude, phone, termsAccepted, newsletterOptIn,
     requiresInviteCode, inviteCode, navigate, tenantPath, passwordCheck.isAcceptable,
-    registrationClosed, registrationPolicyReady,
+    registrationClosed, registrationPolicyReady, destination, defaultDestination,
   ]);
 
   const passwordValid = passwordCheck.isAcceptable;
@@ -1031,7 +1052,7 @@ export function RegisterPage() {
         <div className="space-y-2">
           <p className="text-sm leading-6">{t('register.registration_closed_body')}</p>
           <Link
-            to={tenantPath('/login')}
+            to={loginLink}
             className="inline-flex text-sm font-medium text-theme-warning underline underline-offset-4 hover:text-amber-900 dark:hover:text-amber-100"
           >
             {t('register.registration_closed_login')}
@@ -1324,7 +1345,7 @@ export function RegisterPage() {
                 color="primary"
                 className="mt-6 w-full font-medium"
                 size="lg"
-                onPress={() => navigate(tenantPath('/login'))}
+                onPress={() => navigate(loginLink)}
               >
                 {t('register.go_to_login')}
               </Button>
@@ -1390,7 +1411,7 @@ export function RegisterPage() {
           <p className="text-center text-theme-muted text-sm">
             {t('register.have_account')}{' '}
             <Link
-              to={tenantPath('/login')}
+              to={loginLink}
               className="text-accent dark:text-accent hover:text-accent dark:hover:text-accent font-medium transition-colors"
             >
               {t('register.sign_in_link')}

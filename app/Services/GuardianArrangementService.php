@@ -690,7 +690,7 @@ class GuardianArrangementService
                         'user_id'   => $recipientId,
                         'type'      => 'safeguarding_assignment',
                         'message'   => __($key, ['name' => $wardName]),
-                        'link'      => '/admin/safeguarding',
+                        'link'      => '/broker/safeguarding', // admin safeguarding moved to the broker panel
                         'is_read'   => false,
                     ]);
                 });

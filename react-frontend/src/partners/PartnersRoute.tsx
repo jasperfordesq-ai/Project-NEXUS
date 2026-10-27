@@ -17,7 +17,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
 import { AuthUnavailableScreen } from '@/components/routing/AuthUnavailableScreen';
 import { hasPartnerPanelAccess, isSuperAdminUser } from '@/lib/access';
-import { buildLoginTarget } from '@/lib/auth-return';
+import { buildReturnTarget } from '@/lib/auth-return';
 
 export function PartnersRoute() {
   const { t } = useTranslation('partners');
@@ -35,7 +35,7 @@ export function PartnersRoute() {
 
   if (!isAuthenticated) {
     // The whole address (query and fragment too) survives sign-in — see lib/auth-return.ts.
-    const login = buildLoginTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
+    const login = buildReturnTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
     return <Navigate to={login.to} state={login.state} replace />;
   }
 

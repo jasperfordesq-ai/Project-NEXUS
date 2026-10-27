@@ -127,7 +127,7 @@ class MarketplaceOfferService
                     'emails_misc.marketplace_offer.received_body',
                     ['title' => $listing->title, 'buyer' => $buyerName, 'amount' => $amount],
                     ['title' => $listing->title],
-                    '/marketplace/listings/' . $listingId,
+                    '/marketplace/' . $listingId,
                     'emails_misc.marketplace_offer.received_cta'
                 );
             } catch (\Throwable $e) {
@@ -140,7 +140,7 @@ class MarketplaceOfferService
                 $tenantId,
                 'api_controllers_3.marketplace_offer.received',
                 ['buyer' => self::userName($buyerId), 'amount' => self::formatOfferAmount((float) $offer->amount, (string) $offer->currency), 'title' => $listing->title],
-                '/marketplace/listings/' . $listingId
+                '/marketplace/' . $listingId
             );
 
             return $offer;
@@ -244,7 +244,7 @@ class MarketplaceOfferService
                     'emails_misc.marketplace_offer.declined_body',
                     ['title' => $listing->title ?? ''],
                     ['title' => $listing->title ?? ''],
-                    '/marketplace/listings/' . $offer->marketplace_listing_id,
+                    '/marketplace/' . $offer->marketplace_listing_id,
                     'emails_misc.marketplace_offer.declined_cta'
                 );
             } catch (\Throwable $e) {
@@ -257,7 +257,7 @@ class MarketplaceOfferService
                 $tenantId,
                 'api_controllers_3.marketplace_offer.declined',
                 ['title' => $listing->title ?? ''],
-                '/marketplace/listings/' . $offer->marketplace_listing_id
+                '/marketplace/' . $offer->marketplace_listing_id
             );
 
             return $offer;
@@ -322,7 +322,7 @@ class MarketplaceOfferService
                     'emails_misc.marketplace_offer.countered_body',
                     ['title' => $listing->title ?? '', 'amount' => $amount],
                     ['title' => $listing->title ?? ''],
-                    '/marketplace/offers',
+                    '/marketplace/my-offers',
                     'emails_misc.marketplace_offer.countered_cta'
                 );
             } catch (\Throwable $e) {
@@ -375,7 +375,7 @@ class MarketplaceOfferService
                 $tenantId,
                 'api_controllers_3.marketplace_offer.withdrawn',
                 ['buyer' => self::userName($buyerId), 'title' => $listing->title ?? ''],
-                '/marketplace/listings/' . $offer->marketplace_listing_id
+                '/marketplace/' . $offer->marketplace_listing_id
             );
 
             return $offer;

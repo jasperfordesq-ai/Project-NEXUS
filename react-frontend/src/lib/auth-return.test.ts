@@ -5,7 +5,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  buildLoginTarget,
+  buildReturnTarget,
   clearAuthReturn,
   consumeAuthReturn,
   explicitAuthReturn,
@@ -18,16 +18,16 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('buildLoginTarget', () => {
+describe('buildReturnTarget', () => {
   it('carries the destination in the address and in router state', () => {
-    expect(buildLoginTarget('/hour-timebank/login', '/hour-timebank/exchanges/42?tab=chat#m5')).toEqual({
+    expect(buildReturnTarget('/hour-timebank/login', '/hour-timebank/exchanges/42?tab=chat#m5')).toEqual({
       to: '/hour-timebank/login?next=%2Fhour-timebank%2Fexchanges%2F42%3Ftab%3Dchat%23m5',
       state: { from: '/hour-timebank/exchanges/42?tab=chat#m5' },
     });
   });
 
   it.each(['https://evil.test/x', '//evil.test', undefined, ''])('drops an unsafe destination %s', from => {
-    expect(buildLoginTarget('/login', from)).toEqual({ to: '/login' });
+    expect(buildReturnTarget('/login', from)).toEqual({ to: '/login' });
   });
 });
 
@@ -40,8 +40,8 @@ describe('resolveAuthReturn', () => {
     expect(resolveAuthReturn(null, '?next=%2Fcommunity%2Flistings%2F7%3Fx%3D1', '/feed')).toBe('/community/listings/7?x=1');
   });
 
-  it('round-trips the address built by buildLoginTarget', () => {
-    const target = buildLoginTarget('/c/login', '/c/admin/users?page=2');
+  it('round-trips the address built by buildReturnTarget', () => {
+    const target = buildReturnTarget('/c/login', '/c/admin/users?page=2');
     const search = target.to.slice(target.to.indexOf('?'));
     expect(resolveAuthReturn(null, search, '/feed')).toBe('/c/admin/users?page=2');
   });
