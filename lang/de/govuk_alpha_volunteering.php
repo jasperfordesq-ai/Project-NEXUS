@@ -27,6 +27,8 @@ return [
         'optional' => '(optional)',
         'warning' => 'Warnung',
         'none_yet' => 'Noch keine',
+        'find_opportunities' => 'Möglichkeiten finden',
+        'check_applications' => 'Meine Bewerbungen ansehen',
     ],
     'my_orgs' => [
         'title' => 'Meine Organisationen',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Dashboard öffnen',
         'manage_dashboard_for' => 'Öffnen Sie das Dashboard für :name',
         'awaiting_approval' => 'Warten auf Genehmigung',
-        'awaiting_approval_hint' => 'Ein Administrator überprüft diese Organisation, bevor Sie Opportunities verwalten können.',
+        'awaiting_approval_hint' => 'Die Gemeinschaftsverwaltung prüft diese Organisation. Sie können ihr Dashboard schon jetzt öffnen und sie einrichten, während Sie warten.',
         'more_label' => 'weitere Organisationen',
         'pagination_label' => 'Paginierung meiner Organisation',
+        'pending_setup' => 'Schon jetzt einrichten',
+        'pending_see_all' => 'Ihre Organisationen ansehen',
     ],
     'org_dashboard' => [
         'title' => 'Organisations-Dashboard',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Diese Meldung ist geschlossen, daher können keine Aktualisierungen mehr hinzugefügt werden. Wenn etwas Neues auftaucht, wenden Sie sich an die Administratoren oder Vermittler Ihrer Gemeinschaft.',
         'history_empty' => 'Zu dieser Meldung ist noch nichts geschehen.',
         'status_guide_title' => 'Was die einzelnen Status bedeuten',
+        'team_meaning' => 'Auf dieser Seite bedeutet „Schutzteam“ die Administratoren, Vermittler und Koordinatoren Ihrer Gemeinschaft. Sie alle sehen jede Meldung vollständig.',
     ],
     'shift_manager' => [
         'manage_link' => 'Schichten verwalten',
@@ -1294,6 +1299,11 @@ return [
         'status_user_not_found' => 'Diese Person ist kein aktives Mitglied dieser Gemeinschaft.',
         'status_forbidden' => 'Nur die Inhaber der Organisation und die Gemeinschafts-Admins können das Team ändern.',
         'status_failed' => 'Diese Änderung konnte nicht vorgenommen werden. Versuchen Sie es erneut.',
+        'safeguarding_title' => 'Schutzbeauftragte/r',
+        'safeguarding_lead' => 'Schutzbeauftragte/r',
+        'safeguarding_deputy' => 'Stellvertretung',
+        'safeguarding_nobody' => 'Noch niemand ernannt',
+        'safeguarding_help' => 'Die/der Schutzbeauftragte und die Stellvertretung sehen eine Zusammenfassung jeder Schutzmeldung, die mit dieser Organisation verknüpft ist, und die vollständige Meldung nur, wenn das Schutzpersonal der Gemeinschaft sie teilt. Sie erfahren nie, wer eine Meldung gemacht hat. Gemeinschafts-Admins ernennen sie: Wenden Sie sich an Ihre Gemeinschaft, wenn sich etwas ändern soll.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1542,5 +1552,26 @@ return [
         'shifts_col_when' => 'Wann',
         'shifts_col_where' => 'Wo',
         'shifts_load_error' => 'Wir konnten Ihre Schichten nicht laden. Bitte versuchen Sie es erneut.',
+        'no_organisation' => 'Sie können Stunden erfassen, sobald eine Organisation Sie als Freiwillige oder Freiwilligen bestätigt hat. Suchen Sie sich eine Möglichkeit aus und bewerben Sie sich. Sobald die Organisation Ihre Bewerbung annimmt, können Sie Ihre Zeit hier erfassen.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Wir konnten Ihre dringenden Schichtanfragen nicht laden. Bitte versuchen Sie es erneut.',
+        'group_signups' => 'Wir konnten Ihre Gruppenanmeldungen nicht laden. Bitte versuchen Sie es erneut.',
+        'safeguarding' => 'Wir konnten Ihre Schutzunterlagen nicht laden. Bitte versuchen Sie es erneut.',
+        'organisations' => 'Wir konnten Ihre Ehrenamtsorganisationen nicht laden. Bitte versuchen Sie es erneut.',
+        'recommended' => 'Wir konnten die für Sie empfohlenen Schichten nicht laden. Bitte versuchen Sie es erneut.',
+        'org_dashboard' => 'Das Dashboard der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.',
+        'org_manage' => 'Die Aufgabenliste der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.',
+        'org_settings' => 'Die Einstellungen der Organisation konnten nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.',
+        'org_volunteers' => 'Die Freiwilligen der Organisation konnten nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.',
+        'org_wallet' => 'Das Konto der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.',
+        'hours' => 'Wir konnten Ihre Ehrenamtsstunden nicht laden. Bitte versuchen Sie es erneut.',
+        'donations' => 'Wir konnten Ihre Spenden nicht laden. Bitte versuchen Sie es erneut.',
+        'expenses' => 'Wir konnten Ihre Auslagen nicht laden. Bitte versuchen Sie es erneut.',
+        'create_opportunity' => 'Das Formular zum Erstellen einer Möglichkeit konnte nicht geladen werden. Bitte versuchen Sie es erneut.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'weitere Tauschanfragen',
+        'pagination_label' => 'Seiten der Tauschanfragen',
     ],
 ];

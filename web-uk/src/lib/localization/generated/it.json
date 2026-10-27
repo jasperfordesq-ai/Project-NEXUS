@@ -2816,7 +2816,7 @@
                 "search_empty": "Nessun membro trovato. Prova con un altro nome.",
                 "recipient_heading": "Scegli il destinatario",
                 "amount_label": "Importo (ore)",
-                "amount_hint": "Tra 0,25 e 1000 ore, in incrementi di 0,25.",
+                "amount_hint": "Tra 0,25 e :max ore, in incrementi di 0,25.",
                 "note_label": "Nota (facoltativa)",
                 "note_hint": "Aggiungi una breve nota affinché il membro sappia a cosa servono i crediti.",
                 "send_button": "Invia crediti a :name",
@@ -2837,7 +2837,7 @@
                     "not_found": "Impossibile trovare quel membro in questa comunità.",
                     "self": "Non puoi inviare crediti a te stesso.",
                     "inactive": "Quell'account non è attivo.",
-                    "too_large": "L'importo è troppo elevato. Il massimo è 1000 ore per trasferimento.",
+                    "too_large": "L'importo è troppo elevato. Il massimo è :max ore per trasferimento.",
                     "decimals": "Inserisci l'importo con al massimo due cifre decimali.",
                     "failed": "Il trasferimento non ha potuto essere completato. Riprova."
                 },
@@ -3206,6 +3206,8 @@
                 "group_tag": ":count raggruppato",
                 "actors_label": "Da :names",
                 "actors_and_more": "{0} Da :names|{1} Da :names e 1 altra persona|[2,*] Da :names e :count altre persone",
+                "group_items_summary": "Mostra le notifiche di questo gruppo",
+                "group_items_more": "Non mostrate qui: altre :count.",
                 "delete_all": "Elimina tutte",
                 "delete_all_warning": "Questa operazione rimuove definitivamente tutte le tue notifiche. Non è possibile annullare l'azione.",
                 "types": {
@@ -7225,7 +7227,25 @@
                 "error_business_name": "Inserisci il nome della tua attività",
                 "error_display_name": "Inserisci un nome visualizzato",
                 "status_complete": "I dettagli del tuo venditore sono stati salvati. Ora puoi iniziare a vendere.",
-                "status_failed": "Siamo spiacenti, non è stato possibile salvare i tuoi dati. Per favore riprova."
+                "status_failed": "Siamo spiacenti, non è stato possibile salvare i tuoi dati. Per favore riprova.",
+                "section_hours": "Orari di apertura",
+                "hours_hint": "Seleziona Chiuso per i giorni in cui non sei aperto. Gli orari usano il formato 24 ore, ad esempio 09:00.",
+                "day_mon": "Lunedì",
+                "day_tue": "Martedì",
+                "day_wed": "Mercoledì",
+                "day_thu": "Giovedì",
+                "day_fri": "Venerdì",
+                "day_sat": "Sabato",
+                "day_sun": "Domenica",
+                "closed_label": "Chiuso",
+                "open_time_label": "Orario di apertura",
+                "close_time_label": "Orario di chiusura",
+                "error_hours": "Inserisci un orario di apertura e uno di chiusura per ogni giorno di apertura, oppure seleziona Chiuso",
+                "section_photos": "Foto profilo",
+                "photos_hint": "Facoltativo. Una foto aiuta gli acquirenti a riconoscere il tuo negozio. JPG, PNG, WebP o GIF, fino a 10 MB.",
+                "avatar_label": "Carica foto profilo",
+                "cover_label": "Carica immagine di copertina (opzionale)",
+                "error_cover_needs_photo": "Aggiungi una foto profilo insieme all’immagine di copertina"
             },
             "coupons": {
                 "title": "I miei coupon",
@@ -7860,7 +7880,8 @@
                 "warning": "Avvertimento",
                 "error_prefix": "Errore:",
                 "save": "Salva",
-                "cancel": "Cancellare"
+                "cancel": "Cancellare",
+                "event_time_zone_hint": "Inserisci gli orari nel fuso orario dell’evento (:zone)."
             },
             "safety": {
                 "title": "Sicurezza degli eventi"
@@ -8054,7 +8075,8 @@
                 "reset_success": "Le impostazioni dei promemoria specifici per l'evento sono state rimosse.",
                 "conflict": "Queste impostazioni sono cambiate altrove. Viene mostrata l'ultima versione; rivederlo prima di salvare nuovamente.",
                 "validation_error": "Controlla gli orari e i canali dei promemoria, quindi riprova.",
-                "save_error": "Non è stato possibile salvare le impostazioni del promemoria. Per favore riprova."
+                "save_error": "Non è stato possibile salvare le impostazioni del promemoria. Per favore riprova.",
+                "switched_off": "I promemoria degli eventi sono disattivati in questa comunità, quindi non c’è nulla da impostare per questo evento."
             },
             "create_restricted": {
                 "title": "Qui solo lo staff può creare eventi",
@@ -8239,6 +8261,21 @@
                 "load_failed": "Impossibile caricare il calendario.",
                 "code_label": "Codice del comune",
                 "code_hint": "Il codice ufficiale del comune (es. CAP o codice BFS) — deve coincidere con quello degli altri club per federarsi."
+            },
+            "create": {
+                "recurrence_unavailable": "Gli eventi ricorrenti sono disattivati in questa comunità. Il tuo evento non è stato creato. Controlla i dati e crealo come evento singolo."
+            },
+            "rsvp": {
+                "pending_tag": "Richiesto",
+                "pending": "Hai richiesto un posto. L’organizzatore deve approvarlo prima che il tuo posto sia confermato."
+            },
+            "check_in": {
+                "answers_outstanding_tag": "Risposte mancanti",
+                "answers_outstanding": "Questa persona non ha ancora risposto alle domande di iscrizione obbligatorie. Deve rispondere prima di poter effettuare il check-in."
+            },
+            "listing": {
+                "draft_tag": "Bozza",
+                "pending_review_tag": "In attesa di revisione"
             }
         },
         "govuk_alpha_federation": {
@@ -8343,6 +8380,18 @@
             "safeguarding": {
                 "heading": "Contatto non disponibile",
                 "body": "La politica di tutela della comunità di questo membro non consente un contatto diretto da parte tua. Un coordinatore della comunità può aiutarti."
+            },
+            "debit_approvals": {
+                "heading": "Trasferimenti in attesa della tua approvazione",
+                "note": "L'approvazione non sposta crediti finché il partner non completa il trasferimento.",
+                "load_error": "Impossibile caricare i trasferimenti in sospeso.",
+                "summary": "Approvare il trasferimento di :amount ore a :payee?",
+                "reversal_summary": "Approvare la restituzione di :amount ore a :payee?",
+                "expires": "La richiesta scade il :date",
+                "approve": "Approva trasferimento",
+                "reject": "Rifiuta trasferimento",
+                "saved": "Decisione salvata",
+                "failed": "Impossibile salvare la decisione. Riprova."
             }
         },
         "govuk_alpha_feed": {
@@ -11321,7 +11370,9 @@
                 "error_title": "C'è un problema",
                 "optional": "(opzionale)",
                 "warning": "Avvertimento",
-                "none_yet": "Nessuno ancora"
+                "none_yet": "Nessuno ancora",
+                "find_opportunities": "Trova opportunità",
+                "check_applications": "Controlla le mie candidature"
             },
             "my_orgs": {
                 "title": "Le mie organizzazioni",
@@ -11344,9 +11395,11 @@
                 "manage_dashboard": "Apri il cruscotto",
                 "manage_dashboard_for": "Apri la dashboard per :name",
                 "awaiting_approval": "In attesa di approvazione",
-                "awaiting_approval_hint": "Un amministratore esaminerà questa organizzazione prima che tu possa gestire le opportunità.",
+                "awaiting_approval_hint": "Un amministratore della comunità sta esaminando questa organizzazione. Puoi aprire la sua dashboard e prepararla nell’attesa.",
                 "more_label": "più organizzazioni",
-                "pagination_label": "Impaginazione delle mie organizzazioni"
+                "pagination_label": "Impaginazione delle mie organizzazioni",
+                "pending_setup": "Preparala nell’attesa",
+                "pending_see_all": "Vedi le tue organizzazioni"
             },
             "org_dashboard": {
                 "title": "Cruscotto dell'organizzazione",
@@ -12028,7 +12081,8 @@
                 "what_to_do": "Usate questo spazio per dire al team cosa sa o ha fatto la vostra organizzazione, ad esempio se avete parlato con il volontario o cambiato un turno. Non contattate la persona che ha fatto la segnalazione.",
                 "closed_no_updates": "Questa segnalazione è chiusa, quindi non si possono più aggiungere aggiornamenti. Se emerge qualcosa di nuovo, contattate gli amministratori o i broker della vostra comunità.",
                 "history_empty": "Per questa segnalazione non è ancora successo nulla.",
-                "status_guide_title": "Che cosa significa ogni stato"
+                "status_guide_title": "Che cosa significa ogni stato",
+                "team_meaning": "In questa pagina, «il team di tutela» indica gli amministratori, i broker e i coordinatori della vostra comunità. Tutti vedono ogni segnalazione per intero."
             },
             "shift_manager": {
                 "manage_link": "Gestisci i turni",
@@ -12567,7 +12621,12 @@
                 "status_already": "Questa persona fa già parte del team.",
                 "status_user_not_found": "Questa persona non è un membro attivo di questa comunità.",
                 "status_forbidden": "Solo i proprietari dell’organizzazione e gli amministratori della comunità possono modificare il team.",
-                "status_failed": "Impossibile effettuare questa modifica. Riprova."
+                "status_failed": "Impossibile effettuare questa modifica. Riprova.",
+                "safeguarding_title": "Referente per la tutela",
+                "safeguarding_lead": "Referente per la tutela",
+                "safeguarding_deputy": "Vice",
+                "safeguarding_nobody": "Nessuno nominato per ora",
+                "safeguarding_help": "Il referente e il vice vedono un riepilogo di ogni segnalazione di tutela collegata a questa organizzazione, e la segnalazione completa solo se il personale di tutela della comunità la condivide. Non sanno mai chi ha fatto una segnalazione. Li nominano gli amministratori della comunità: rivolgetevi alla vostra comunità se serve un cambiamento."
             },
             "my_qualifications": {
                 "heading": "Qualifiche",
@@ -12802,7 +12861,28 @@
                 "older_shifts": "Turni precedenti",
                 "shifts_col_when": "Quando",
                 "shifts_col_where": "Dove",
-                "shifts_load_error": "Non è stato possibile caricare i tuoi turni. Riprova."
+                "shifts_load_error": "Non è stato possibile caricare i tuoi turni. Riprova.",
+                "no_organisation": "Potrai registrare le ore quando un’organizzazione ti avrà approvato come volontario. Trova un’opportunità e candidati. Quando l’organizzazione approverà la tua candidatura, potrai registrare qui il tuo tempo."
+            },
+            "load_errors": {
+                "urgent_requests": "Non è stato possibile caricare le tue richieste urgenti di turni. Riprova.",
+                "group_signups": "Non è stato possibile caricare le tue iscrizioni di gruppo. Riprova.",
+                "safeguarding": "Non è stato possibile caricare i tuoi dati sulla tutela. Riprova.",
+                "organisations": "Non è stato possibile caricare le tue organizzazioni di volontariato. Riprova.",
+                "recommended": "Non è stato possibile caricare i turni consigliati per te. Riprova.",
+                "org_dashboard": "Non è stato possibile caricare la dashboard dell’organizzazione. Verifica di gestire questa organizzazione e riprova.",
+                "org_manage": "Non è stato possibile caricare la coda di gestione dell’organizzazione. Verifica di gestire questa organizzazione e riprova.",
+                "org_settings": "Non è stato possibile caricare le impostazioni dell’organizzazione. Verifica di gestire questa organizzazione e riprova.",
+                "org_volunteers": "Non è stato possibile caricare i volontari dell’organizzazione. Verifica di gestire questa organizzazione e riprova.",
+                "org_wallet": "Non è stato possibile caricare il portafoglio dell’organizzazione. Verifica di gestire questa organizzazione e riprova.",
+                "hours": "Non è stato possibile caricare le tue ore di volontariato. Riprova.",
+                "donations": "Non è stato possibile caricare le tue donazioni. Riprova.",
+                "expenses": "Non è stato possibile caricare le tue spese. Riprova.",
+                "create_opportunity": "Non è stato possibile caricare il modulo per creare un’opportunità. Riprova."
+            },
+            "swaps_list": {
+                "more_label": "altre richieste di scambio",
+                "pagination_label": "Pagine delle richieste di scambio"
             }
         },
         "govuk_alpha_wallet": {
@@ -12842,7 +12922,7 @@
                 "search_empty": "Nessun membro corrisponde alla tua ricerca.",
                 "recipient_heading": "Membri corrispondenti",
                 "amount_label": "Importo in ore",
-                "amount_hint": "Ad esempio, 1 o 2.5. Puoi inviare fino a 1000 ore.",
+                "amount_hint": "Ad esempio, 1 o 2.5. Puoi inviare fino a :max ore.",
                 "note_label": "Aggiungi una nota (facoltativo)",
                 "note_hint": "Il destinatario lo vedrà con il trasferimento.",
                 "send_button": "Invia crediti a :name"

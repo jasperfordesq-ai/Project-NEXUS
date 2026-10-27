@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Earráid:',
         'save' => 'Sábháil',
         'cancel' => 'Cealaigh',
+        'event_time_zone_hint' => 'Iontráil na hamanna i gcrios ama na hócáide féin (:zone).',
     ],
     'safety' => [
         'title' => 'Sábháilteacht imeachtaí',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'D\'athraigh na socruithe seo áit eile. Taispeántar an leagan is déanaí; athbhreithnigh é roimh shábháil arís.',
         'validation_error' => 'Seiceáil na hamanna meabhrúcháin agus na cainéil, ansin bain triail eile as.',
         'save_error' => 'Níorbh fhéidir do shocruithe meabhrúchán a shábháil. Bain triail eile as.',
+        'switched_off' => 'Tá meabhrúcháin ócáidí múchta sa phobal seo, mar sin níl aon rud le socrú don ócáid seo.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Níorbh fhéidir an féilire a lódáil.',
         'code_label' => 'Cód bardais',
         'code_hint' => 'Cód oifigiúil an bhardais (m.sh. cód poist nó cód BFS) — caithfidh sé a bheith ag teacht le cód na gcumann comhpháirtíochta.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Tá ócáidí athfhillteacha múchta sa phobal seo. Níor cruthaíodh d’ócáid. Seiceáil na sonraí agus cruthaigh í mar ócáid aonair.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Iarrtha',
+        'pending' => 'D’iarr tú áit. Caithfidh an t-eagraí í a cheadú sula ndeimhneofar d’áit.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Freagraí le tabhairt',
+        'answers_outstanding' => 'Níor fhreagair an duine seo na ceisteanna clárúcháin riachtanacha fós. Caithfidh siad iad a fhreagairt sular féidir iad a chlárú isteach.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Dréacht',
+        'pending_review_tag' => 'Ag fanacht le hathbhreithniú',
     ],
 ];

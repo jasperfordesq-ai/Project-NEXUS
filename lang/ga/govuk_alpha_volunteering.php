@@ -27,6 +27,8 @@ return [
         'optional' => '(roghnach)',
         'warning' => 'Rabhadh',
         'none_yet' => 'Níl aon cheann fós',
+        'find_opportunities' => 'Aimsigh deiseanna',
+        'check_applications' => 'Seiceáil m’iarratais',
     ],
     'my_orgs' => [
         'title' => 'Mo eagraíochtaí',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Oscail painéal',
         'manage_dashboard_for' => 'Oscail an painéal le haghaidh :name',
         'awaiting_approval' => 'Ag feitheamh le ceadú',
-        'awaiting_approval_hint' => 'Déanfaidh riarthóir athbhreithniú ar an eagraíocht seo sula mbeidh tú in ann deiseanna a bhainistiú.',
+        'awaiting_approval_hint' => 'Tá riarthóir pobail ag athbhreithniú na heagraíochta seo. Is féidir leat a painéal a oscailt agus í a shocrú agus tú ag fanacht.',
         'more_label' => 'níos mó eagraíochtaí',
         'pagination_label' => 'Mo leathanach eagraíochtaí',
+        'pending_setup' => 'Socraigh í agus tú ag fanacht',
+        'pending_see_all' => 'Féach ar d’eagraíochtaí',
     ],
     'org_dashboard' => [
         'title' => 'Painéal na heagraíochta',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Tá an tuairisc seo dúnta, mar sin ní féidir nuashonruithe a chur leis a thuilleadh. Má thagann rud nua chun cinn, téigh i dteagmháil le riarthóirí nó bróicéirí do phobail.',
         'history_empty' => 'Níor tharla aon rud ar an tuairisc seo fós.',
         'status_guide_title' => 'Cad is brí le gach stádas',
+        'team_meaning' => 'Ar an leathanach seo, ciallaíonn “an fhoireann chosanta” riarthóirí, bróicéirí agus comhordaitheoirí do phobail. Feiceann siad uile gach tuairisc go hiomlán.',
     ],
     'shift_manager' => [
         'manage_link' => 'Bainistigh sealanna',
@@ -1295,6 +1300,11 @@ return [
         'status_user_not_found' => 'Ní ball gníomhach den phobal seo an duine sin.',
         'status_forbidden' => 'Ní féidir ach le húinéirí na heagraíochta agus le riarthóirí an phobail an fhoireann a athrú.',
         'status_failed' => 'Níorbh fhéidir an t-athrú sin a dhéanamh. Bain triail eile as.',
+        'safeguarding_title' => 'Ceannaire cosanta',
+        'safeguarding_lead' => 'Ceannaire cosanta',
+        'safeguarding_deputy' => 'Leascheannaire',
+        'safeguarding_nobody' => 'Níor ceapadh aon duine fós',
+        'safeguarding_help' => 'Feiceann an ceannaire agus an leascheannaire achoimre ar gach tuairisc chosanta atá nasctha leis an eagraíocht seo, agus an tuairisc iomlán má roinneann foireann chosanta an phobail í amháin. Ní chuirtear in iúl dóibh riamh cé a rinne tuairisc. Is iad riarthóirí an phobail a cheapann iad: fiafraigh de do phobal má tá athrú ag teastáil.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1543,5 +1553,26 @@ return [
         'shifts_col_when' => 'Cathain',
         'shifts_col_where' => 'Cá háit',
         'shifts_load_error' => 'Níorbh fhéidir linn do sheala a lódáil. Bain triail eile as.',
+        'no_organisation' => 'Is féidir leat uaireanta a logáil nuair a bheidh tú ceadaithe mar oibrí deonach ag eagraíocht. Aimsigh deis agus déan iarratas. Nuair a cheadaíonn an eagraíocht d’iarratas, is féidir leat do chuid ama a logáil anseo.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Níorbh fhéidir linn d’iarratais phráinneacha ar sheala a lódáil. Bain triail eile as.',
+        'group_signups' => 'Níorbh fhéidir linn do chlárúcháin ghrúpa a lódáil. Bain triail eile as.',
+        'safeguarding' => 'Níorbh fhéidir linn do thaifid chosanta a lódáil. Bain triail eile as.',
+        'organisations' => 'Níorbh fhéidir linn d’eagraíochtaí obair dheonach a lódáil. Bain triail eile as.',
+        'recommended' => 'Níorbh fhéidir linn na seala a mholtar duit a lódáil. Bain triail eile as.',
+        'org_dashboard' => 'Níorbh fhéidir linn painéal na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.',
+        'org_manage' => 'Níorbh fhéidir linn scuaine bainistíochta na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.',
+        'org_settings' => 'Níorbh fhéidir linn socruithe na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.',
+        'org_volunteers' => 'Níorbh fhéidir linn oibrithe deonacha na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.',
+        'org_wallet' => 'Níorbh fhéidir linn sparán na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.',
+        'hours' => 'Níorbh fhéidir linn d’uaireanta obair dheonach a lódáil. Bain triail eile as.',
+        'donations' => 'Níorbh fhéidir linn do thabhartais a lódáil. Bain triail eile as.',
+        'expenses' => 'Níorbh fhéidir linn do chostais a lódáil. Bain triail eile as.',
+        'create_opportunity' => 'Níorbh fhéidir linn an fhoirm chun deis a chruthú a lódáil. Bain triail eile as.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'tuilleadh iarratas ar mhalartú',
+        'pagination_label' => 'Leathanaigh iarratas ar mhalartú',
     ],
 ];

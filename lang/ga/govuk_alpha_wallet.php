@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Níor mheaitseáil aon bhall le do chuardach.',
         'recipient_heading' => 'Baill mheaitseála',
         'amount_label' => 'Méid in uaireanta',
-        'amount_hint' => 'Mar shampla, 1 nó 2.5. Is féidir leat suas le 1000 uair a sheoladh.',
+        'amount_hint' => 'Mar shampla, 1 nó 2.5. Is féidir leat suas le :max uair a sheoladh.',
         'note_label' => 'Cuir nóta leis (roghnach)',
         'note_hint' => 'Feicfidh an faighteoir é seo leis an aistriú.',
         'send_button' => 'Seol creidmheasanna chuig :name',

@@ -752,6 +752,9 @@ app.use(async (req, res, next) => {
 // above every gate. See the block beside `app.use(generalLimiter)`.
 
 app.use(tenantFeatureGate);
+// Organisation pages also need the `organisations` feature (27 Oct 2026); sets
+// res.locals.organisationsEnabled for the volunteering views' organisation links.
+app.use(require('./lib/volunteering-sections').organisationsFeatureGate);
 
 // 🔴 AFTER tenantFeatureGate and BEFORE the first router, so req.token, urlFor
 // and t all exist and no page renders behind the gate. Laravel is the authority
@@ -2367,6 +2370,11 @@ app.use(/^\/groups\/\d+\/feed$/, parseMultipartForm({ maxFileSize: 5 * 1024 * 10
 app.use('/listings/new', parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
 app.use(/^\/clubs\/\d+\/admin\/import\/preview$/, parseMultipartForm({ maxFileSize: 1024 * 1024 }));
 app.use(/^\/marketplace\/(create|\d+\/photos)$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxTotalFileSize: 60 * 1024 * 1024, maxFiles: 20, multiples: true }));
+// Seller onboarding takes an optional profile photo and cover image. The view only
+// renders the file inputs while this flag is set, because without the parser above
+// CSRF a multipart post would be refused.
+app.locals.marketplaceOnboardingUploads = true;
+app.use('/marketplace/onboarding', parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, maxFiles: 2 }));
 app.use(/^\/listings\/\d+\/edit$/, parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
 app.use(/^\/messages\/\d+$/, parseMultipartForm({ maxFileSize: 10 * 1024 * 1024, multiples: true }));
 app.use(

@@ -47,7 +47,7 @@ return [
         'search_empty' => 'No members matched your search.',
         'recipient_heading' => 'Matching members',
         'amount_label' => 'Amount in hours',
-        'amount_hint' => 'For example, 1 or 2.5. You can send up to 1000 hours.',
+        'amount_hint' => 'For example, 1 or 2.5. You can send up to :max hours.',
         'note_label' => 'Add a note (optional)',
         'note_hint' => 'The recipient will see this with the transfer.',
         'send_button' => 'Send credits to :name',

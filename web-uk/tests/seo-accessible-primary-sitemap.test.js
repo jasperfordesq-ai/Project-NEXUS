@@ -211,9 +211,13 @@ describe('accessible sitemap and robots.txt over HTTP', () => {
     expect(response.text).toContain('<lastmod>2026-10-01</lastmod>');
     // An empty version list is not listed; malformed slugs and ids never are.
     expect(urls).not.toContain(`${base}/legal/privacy/versions`);
-    expect(urls.some((url) => /bad|whats-on\/x/.test(url))).toBe(false);
+    // Help Centre guide slugs (recognition_badges, security_signin, …) are
+    // covered by accessible-sitemap-help-guides.test.js; the word checks below
+    // are about every other page.
+    const pageUrls = urls.filter((url) => !url.includes('/accessible/help/'));
+    expect(pageUrls.some((url) => /bad|whats-on\/x/.test(url))).toBe(false);
     expect(new Set(urls).size).toBe(urls.length);
-    for (const url of urls) {
+    for (const url of pageUrls) {
       expect(url).not.toMatch(/\/(dashboard|login|register|messages|wallet|settings|search)(\/|$)/);
       // /cookies is the consent form; /terms and /privacy are redirects.
       expect(url).not.toMatch(/\/accessible\/(cookies|terms|privacy)$/);
@@ -227,8 +231,9 @@ describe('accessible sitemap and robots.txt over HTTP', () => {
     expect(response.status).toBe(200);
     const urls = locs(response.text);
     expect(urls).toContain('http://127.0.0.1/acme/accessible/about');
-    expect(urls.some((url) => url.includes('/blog'))).toBe(false);
-    expect(urls.some((url) => url.includes('/whats-on'))).toBe(false);
+    const pageUrls = urls.filter((url) => !url.includes('/accessible/help/'));
+    expect(pageUrls.some((url) => url.includes('/blog'))).toBe(false);
+    expect(pageUrls.some((url) => url.includes('/whats-on'))).toBe(false);
     expect(api.getBlogPosts).not.toHaveBeenCalled();
     expect(api.getPublicEvents).not.toHaveBeenCalled();
   });

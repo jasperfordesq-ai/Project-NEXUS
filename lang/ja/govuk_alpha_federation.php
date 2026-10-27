@@ -109,4 +109,18 @@ return [
         'heading' => '連絡できません',
         'body' => 'このメンバーのコミュニティのセーフガーディング方針により、あなたからの直接の連絡は許可されていません。コミュニティのコーディネーターがお手伝いできます。',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => '承認待ちの送金',
+        'note' => '承認しても、パートナーが送金を完了するまで時間クレジットは移動しません。',
+        'load_error' => '保留中の送金を読み込めませんでした。',
+        'summary' => ':payee に :amount 時間を送金することを承認しますか？',
+        'reversal_summary' => ':payee に :amount 時間を返還することを承認しますか？',
+        'expires' => '申請の期限：:date',
+        'approve' => '送金を承認',
+        'reject' => '送金を拒否',
+        'saved' => '決定を保存しました',
+        'failed' => '決定を保存できませんでした。もう一度お試しください。',
+    ],
 ];

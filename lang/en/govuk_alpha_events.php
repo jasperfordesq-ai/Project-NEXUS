@@ -22,6 +22,7 @@ return [
         'error_prefix' => 'Error:',
         'save' => 'Save',
         'cancel' => 'Cancel',
+        'event_time_zone_hint' => 'Enter times in the event’s own time zone (:zone).',
     ],
 
     'safety' => [
@@ -227,6 +228,7 @@ return [
         'conflict' => 'These settings changed elsewhere. The latest version is shown; review it before saving again.',
         'validation_error' => 'Check the reminder times and channels, then try again.',
         'save_error' => 'Your reminder settings could not be saved. Please try again.',
+        'switched_off' => 'Event reminders are switched off in this community, so there is nothing to set up for this event.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -413,5 +415,20 @@ return [
         'load_failed' => 'Could not load calendar.',
         'code_label' => 'Municipality code',
         'code_hint' => 'The official municipality code (e.g. ZIP/postal or BFS code) — must match other clubs to federate.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Repeating events are switched off in this community. Your event has not been created. Check the details and create it as a single event.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Requested',
+        'pending' => 'You have asked for a place. The organiser needs to approve it before your place is confirmed.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Answers outstanding',
+        'answers_outstanding' => 'This person has not answered the required registration questions yet. They need to answer them before they can be checked in.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Draft',
+        'pending_review_tag' => 'Waiting for review',
     ],
 ];

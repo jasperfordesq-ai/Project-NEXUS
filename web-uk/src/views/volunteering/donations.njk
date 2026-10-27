@@ -96,7 +96,7 @@
           </h3>
           {% if day.organizationName %}
             <p class="govuk-body govuk-!-font-weight-bold">
-              {% if day.organizationId %}
+              {% if day.organizationId and organisationsEnabled !== false %}
                 <a class="govuk-link" href="{{ urlFor('/organisations/' ~ day.organizationId) }}">{{ t("govuk_alpha_volunteering.donations.for_organisation", { name: day.organizationName }) }}</a>
               {% else %}
                 {{ t("govuk_alpha_volunteering.donations.for_organisation", { name: day.organizationName }) }}
@@ -168,7 +168,7 @@
               {{ donation.campaignTitle or t("govuk_alpha_volunteering.donations.general_campaign") }}
               {% if donation.organizationName %}
                 <br>
-                {% if donation.organizationId %}
+                {% if donation.organizationId and organisationsEnabled !== false %}
                   <a class="govuk-link" href="{{ urlFor('/organisations/' ~ donation.organizationId) }}">{{ t("govuk_alpha_volunteering.donations.for_organisation", { name: donation.organizationName }) }}</a>
                 {% else %}
                   {{ t("govuk_alpha_volunteering.donations.for_organisation", { name: donation.organizationName }) }}

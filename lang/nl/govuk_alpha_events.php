@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Fout:',
         'save' => 'Redden',
         'cancel' => 'Annuleren',
+        'event_time_zone_hint' => 'Voer tijden in volgens de tijdzone van het evenement (:zone).',
     ],
     'safety' => [
         'title' => 'Veiligheid van evenementen',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'Deze instellingen zijn elders gewijzigd. De nieuwste versie wordt getoond; controleer het voordat u het opnieuw opslaat.',
         'validation_error' => 'Controleer de herinneringstijden en -kanalen en probeer het opnieuw.',
         'save_error' => 'Uw herinneringsinstellingen kunnen niet worden opgeslagen. Probeer het opnieuw.',
+        'switched_off' => 'Herinneringen voor evenementen staan uit in deze gemeenschap, dus er is voor dit evenement niets in te stellen.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Kon kalender niet laden.',
         'code_label' => 'Gemeentecode',
         'code_hint' => 'De officiële gemeentecode (bijv. postcode of BFS-code) — moet overeenkomen met andere clubs om te federeren.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Terugkerende evenementen staan uit in deze gemeenschap. Je evenement is niet aangemaakt. Controleer de gegevens en maak het aan als één evenement.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Aangevraagd',
+        'pending' => 'Je hebt een plek aangevraagd. De organisator moet die eerst goedkeuren voordat je plek vaststaat.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Antwoorden ontbreken',
+        'answers_outstanding' => 'Deze persoon heeft de verplichte registratievragen nog niet beantwoord. Die moeten eerst beantwoord zijn voordat de persoon kan inchecken.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Concept',
+        'pending_review_tag' => 'Wacht op beoordeling',
     ],
 ];

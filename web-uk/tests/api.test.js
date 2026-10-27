@@ -2820,6 +2820,36 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('uploadMerchantOnboardingImage', () => {
+    it('posts a seller photo as multipart to the merchant onboarding image endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: { url: '/uploads/marketplace/sellers/a.webp' } })
+      });
+
+      await api.uploadMerchantOnboardingImage('test-token', 'cover_image', {
+        buffer: Buffer.from('fake seller image', 'utf8'),
+        filename: 'shop.webp',
+        contentType: 'image/webp'
+      });
+
+      const [, options] = mockFetch.mock.calls[0];
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/merchant-onboarding/image',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token'
+          })
+        })
+      );
+      expect(options.body).toBeInstanceOf(FormData);
+      expect(options.body.has('cover_image')).toBe(true);
+      expect(options.body.has('avatar')).toBe(false);
+    });
+  });
+
   describe('callIdeationApi', () => {
     it('should call Laravel v2 ideation action endpoints with auth, method, and payload', async () => {
       mockFetch.mockResolvedValueOnce({

@@ -41,6 +41,8 @@ const { getRequestProfile } = require('../lib/request-profile');
 const { resolveCanCreateEvents } = require('../lib/event-create-permission');
 const { loadTargetComments, socialStatusFrom } = require('../lib/target-comments');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { wallClockToOffsetIso, wallClockToUtc } = require('../lib/event-wall-clock');
+const { rememberApiRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 
 const router = express.Router();
 
@@ -501,6 +503,15 @@ function eventPeopleQuery(query = {}) {
   };
 }
 
+// Roster reads opt in to `registration.required_answers_outstanding` (a yes/no flag,
+// never the answers). Without it a person who cannot be checked in until they answer
+// the required registration questions looked exactly like everyone else.
+function peopleApiParameters(query) {
+  const parameters = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
+  parameters.set('include', 'required_answers');
+  return parameters;
+}
+
 function eventPeoplePath(id, query, page = query.page) {
   const parameters = new URLSearchParams();
   Object.entries({ ...query, page }).forEach(([key, value]) => {
@@ -524,6 +535,7 @@ function eventPerson(row = {}) {
     waitlistPosition: positiveInteger(waitlist.position),
     attendanceState: selectedValue(attendance.state, PEOPLE_FILTERS.attendance_state, 'not_checked_in'),
     attendanceVersion: Math.max(0, Number.parseInt(attendance.version ?? attendance.attendance_version ?? 0, 10) || 0),
+    requiredAnswersOutstanding: registration.required_answers_outstanding === true,
     attendanceActions: {
       check_in: checked(management.check_in),
       check_out: checked(management.check_out),
@@ -712,6 +724,48 @@ function venueAccessibilityView(event, valueOr) {
   };
 }
 
+/**
+ * The event's own time zone, read from the event itself. Organiser times are typed as
+ * a wall clock in this zone and converted here (lib/event-wall-clock.js): the API
+ * refuses a bare local time and any offset that does not match this zone.
+ */
+async function eventTimeZone(token, id) {
+  const event = currentEventDetail(eventFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}`)));
+  return safeTimeZone(event.timezone);
+}
+
+/**
+ * Convert a readDateTime() result into the instant the API wants.
+ * `{ value: null }` when nothing was entered; `{ invalid: true }` when the entry was
+ * malformed or names a time that does not exist in the zone (a clock-change gap).
+ */
+function zonedInstant(read, timeZone, { utc = false } = {}) {
+  if (!read || read.error) return { value: null, invalid: true };
+  if (!read.value) return { value: null, invalid: false };
+  const value = utc ? wallClockToUtc(read.value, timeZone) : wallClockToOffsetIso(read.value, timeZone);
+  return value ? { value, invalid: false } : { value: null, invalid: true };
+}
+
+/**
+ * Keep the API's own explanation of a refusal for the page the POST redirects to.
+ *
+ * Only a 4xx is ever kept (a 5xx body can carry exception text). By default only an
+ * EXPLAINED refusal — one whose first error names a `reason` — is kept: the event APIs
+ * answer every unexplained refusal with a bare "Invalid input", which says less than
+ * the page's own message. RSVP refusals pass `requireReason: false` because their
+ * translated message is the explanation ("This event has already started").
+ */
+function rememberEventRefusal(req, id, page, error, { requireReason = true } = {}) {
+  if (!(error instanceof ApiError) || error.status < 400 || error.status >= 500) return '';
+  const first = Array.isArray(error.data?.errors) ? error.data.errors[0] : null;
+  if (requireReason && !(first && typeof first.reason === 'string' && first.reason.trim())) return '';
+  return rememberApiRefusal(req, `event-${Number(id)}-${page}`, error);
+}
+
+function consumeEventRefusal(req, id, page) {
+  return consumeApiRefusal(req, `event-${Number(id)}-${page}`);
+}
+
 async function callEventMutation(token, method, path, data, idempotencyKey) {
   return callEventApi(token, method, path, data, {
     headers: { 'Idempotency-Key': idempotencyKey }
@@ -765,6 +819,7 @@ function currentEventDetail(event) {
     cancellation_reason: trimmed(schedule.cancellation_reason ?? event.cancellation_reason ?? event.cancellationReason),
     is_cancelled: event.is_cancelled === true || event.isCancelled === true || operationalState === 'cancelled',
     is_archived: event.is_archived === true || event.isArchived === true || publicationState === 'archived',
+    publication_state: publicationState,
     online_link: safeExternalHttpUrl(
       onlineAccess
         ? (trimmed(onlineAccess.reveal_state).toLowerCase() === 'available' ? onlineAccess.join_url : '')
@@ -833,11 +888,13 @@ function agendaSessionPayload(body) {
     description: trimmed(body.description, 4000) || null,
     session_type: selectedValue(body.session_type, ['session', 'keynote', 'workshop', 'panel', 'break', 'networking', 'other'], 'session'),
     visibility: selectedValue(body.visibility, ['public', 'registered', 'staff'], 'public'),
-    // GOV.UK date+time fields recombine to the same local YYYY-MM-DDTHH:MM the native input
-    // posted (API does the timezone; readDateTime also accepts a single value).
-    start_at: readDateTime(body, 'start_at').value || '',
-    end_at: readDateTime(body, 'end_at').value || '',
-    timezone: trimmed(body.timezone, 64) || 'UTC',
+    // GOV.UK date+time fields (readDateTime also accepts a single value) give the wall
+    // clock the organiser typed in the agenda's zone. The API does NOT convert it: it
+    // requires an offset that matches the event's zone (EventSessionService::inputInstant),
+    // so it is converted here. A malformed or non-existent time becomes '' and is refused.
+    start_at: zonedInstant(readDateTime(body, 'start_at'), safeTimeZone(body.timezone)).value || '',
+    end_at: zonedInstant(readDateTime(body, 'end_at'), safeTimeZone(body.timezone)).value || '',
+    timezone: safeTimeZone(body.timezone),
     track_name: trimmed(body.track_name, 160) || null,
     room_name: trimmed(body.room_name, 160) || null,
     capacity: body.capacity === '' ? null : positiveInteger(body.capacity),
@@ -1104,7 +1161,7 @@ router.get('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
   const query = eventPeopleQuery(req.query);
-  const parameters = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
+  const parameters = peopleApiParameters(query);
   const [eventResult, peopleResult] = await Promise.all([
     callApi(token, 'GET', `/${encodeURIComponent(id)}`),
     callApi(token, 'GET', `/${encodeURIComponent(id)}/people?${parameters.toString()}`)
@@ -1148,7 +1205,7 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
     sort: selectedValue(req.query.sort, ['name', 'attendance'], 'name'),
     direction: selectedValue(req.query.direction, ['asc', 'desc'], 'asc')
   };
-  const parameters = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
+  const parameters = peopleApiParameters(query);
   const [eventResult, peopleResult] = await Promise.all([
     callApi(token, 'GET', `/${encodeURIComponent(id)}`),
     callApi(token, 'GET', `/${encodeURIComponent(id)}/people?${parameters.toString()}`)
@@ -1178,6 +1235,7 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
     attendanceStates: PEOPLE_FILTERS.attendance_state,
     attendanceWindow: attendanceWindow(event, res.locals.formatLocaleDate),
     status: trimmed(req.query.status),
+    apiReason: consumeEventRefusal(req, id, 'check-in'),
     // One key per rendered page. The signed-code endpoint requires an idempotency
     // key, so a double-tapped submit replays the same action instead of recording a
     // second one.
@@ -1458,6 +1516,31 @@ function recurringRevisionPatch(body, event) {
   return Object.fromEntries(Object.entries(patch).sort(([left], [right]) => left.localeCompare(right)));
 }
 
+/**
+ * What "Repeat this event" may offer, from GET /v2/events/recurrence-capabilities.
+ *
+ * A community with recurring events switched off gets an empty frequency list
+ * (EventRecurrenceCapabilityService::tenantRecurrenceEnabled), and creating a series
+ * there is refused with 403 — so the create form hides the section instead of letting
+ * an organiser fill it in for a Forbidden page. If the capabilities cannot be read the
+ * section is hidden too: offering what might be refused is the defect being fixed.
+ */
+const RECURRENCE_FORM_FREQUENCIES = ['daily', 'weekly', 'monthly'];
+const RECURRENCE_FORM_END_TYPES = ['after_count', 'on_date'];
+
+async function recurrenceOffer(token) {
+  try {
+    const capabilities = dataFrom(await callApi(token, 'GET', '/recurrence-capabilities')) || {};
+    const offered = (list, allowed) => (Array.isArray(list) ? allowed.filter((value) => list.includes(value)) : []);
+    const frequencies = offered(capabilities.supported_frequencies, RECURRENCE_FORM_FREQUENCIES);
+    const endTypes = offered(capabilities.supported_end_types, RECURRENCE_FORM_END_TYPES);
+    return frequencies.length && endTypes.length ? { frequencies, endTypes } : { frequencies: [], endTypes: [] };
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return { frequencies: [], endTypes: [] };
+  }
+}
+
 function recurrencePayload(body) {
   const frequency = ['daily', 'weekly', 'monthly'].includes(trimmed(body.recurrence_frequency))
     ? trimmed(body.recurrence_frequency)
@@ -1536,6 +1619,9 @@ function attendanceConflictStatus(error) {
     // left to undo. The signed-code form always offers all four actions, so this is the
     // common case there — and "changed elsewhere, roster refreshed" was wrong advice.
     case 'EVENT_REGISTRATION_TRANSITION_INVALID': return 'attendance-not-possible';
+    // The person still has required registration questions to answer. Nothing changed
+    // elsewhere; they must answer first.
+    case 'EVENT_ATTENDANCE_REQUIRED_ANSWERS_OUTSTANDING': return 'attendance-answers-outstanding';
     default: return 'attendance-conflict';
   }
 }
@@ -1599,6 +1685,7 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
       return redirectTo(res, codeInvalid);
     }
     if (error instanceof ApiError && [400, 403, 404, 422].includes(error.status)) {
+      rememberEventRefusal(req, id, 'check-in', error);
       return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-failed'));
     }
     throw error;
@@ -2091,6 +2178,7 @@ router.get('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
     scheduledSessions: sessions.filter((session) => session.status === 'scheduled'),
     cancelledSessions: sessions.filter((session) => session.status === 'cancelled'),
     status: trimmed(req.query.status),
+    apiReason: consumeEventRefusal(req, id, 'agenda'),
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2166,6 +2254,7 @@ router.post('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && [400, 403, 404, 409, 422, 429].includes(error.status)) {
+      rememberEventRefusal(req, id, 'agenda', error);
       return redirectTo(res, eventPath(id, '/agenda?status=agenda-failed'));
     }
     throw error;
@@ -2175,11 +2264,30 @@ router.post('/:id(\\d+)/agenda', requireAuth, asyncRoute(async (req, res) => {
 router.get('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const token = tokenFrom(req);
+  // A 403 here means the community has switched event reminders off
+  // (EventsController::getReminders checks only reminders_enabled before answering 403).
+  // Say so, rather than a Forbidden page for a link the member followed in good faith.
+  let switchedOff = false;
   const [eventResult, preferencesResult] = await Promise.all([
     callApi(token, 'GET', `/${encodeURIComponent(id)}`),
-    callApi(token, 'GET', `/${encodeURIComponent(id)}/reminders`)
+    callApi(token, 'GET', `/${encodeURIComponent(id)}/reminders`).catch((error) => {
+      if (error instanceof ApiError && error.status === 403) {
+        switchedOff = true;
+        return {};
+      }
+      throw error;
+    })
   ]);
   const event = eventFrom(eventResult);
+  if (switchedOff) {
+    res.set('Cache-Control', 'private, no-store');
+    return res.render('events/reminders', {
+      title: res.locals.t('govuk_alpha_events.reminders.title'),
+      activeNav: 'events',
+      event: { id, title: trimmed(event.title) },
+      switchedOff: true
+    });
+  }
   const preferences = dataFrom(preferencesResult) || {};
   const resolved = preferences.resolved || {};
   const overrides = preferences.overrides || {};
@@ -2357,7 +2465,9 @@ async function renderCommunications(req, res, options = {}) {
     } : null,
     preview: options.preview || null,
     draft: options.draft || { variant: 'announcement', segments: ['registration_confirmed'], channels: ['email', 'in_app'], body: '' },
-    status: options.status ?? trimmed(req.query.status), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : ''
+    status: options.status ?? trimmed(req.query.status), apiReason: consumeEventRefusal(req, id, 'communications'),
+    eventTimeZone: safeTimeZone(currentEventDetail(event).timezone),
+    idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }
 
@@ -2373,7 +2483,7 @@ router.post('/:id(\\d+)/communications/preview', requireAuth, asyncRoute(async (
     return renderCommunications(req, res, { draft, preview: dataFrom(result) });
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(Number(req.params.id), '/communications?status=failed'));
+    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, req.params.id, 'communications', error); return redirectTo(res, eventPath(Number(req.params.id), '/communications?status=failed')); }
     throw error;
   }
 }));
@@ -2388,7 +2498,7 @@ router.post('/:id(\\d+)/communications', requireAuth, asyncRoute(async (req, res
     return redirectTo(res, eventPath(id, '/communications?status=created'));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/communications?status=failed'));
+    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'communications', error); return redirectTo(res, eventPath(id, '/communications?status=failed')); }
     throw error;
   }
 }));
@@ -2399,15 +2509,20 @@ async function mutateCommunication(req, res, action) {
   const expectedVersion = positiveInteger(req.body.expected_version);
   const key = trimmed(req.body.idempotency_key, 191);
   const payload = { expected_version: expectedVersion };
-  // GOV.UK date+time fields (scheduled_at-day/-month/-year/-time) recombine to the same
-  // YYYY-MM-DDTHH:MM the native input posted; readDateTime also accepts a single value.
-  // Blank stays null (immediate send, as before); a partly/invalidly typed datetime is a
-  // validation error rather than being silently treated as blank.
-  const scheduleDate = action === 'schedule' ? readDateTime(req.body, 'scheduled_at') : null;
-  if (action === 'schedule') payload.scheduled_at = scheduleDate.value || null;
+  // GOV.UK date+time fields (scheduled_at-day/-month/-year/-time; readDateTime also
+  // accepts a single value) give a wall clock in the EVENT's zone. The API reads only an
+  // ISO instant with seconds and an offset (ScheduleEventBroadcastRequest), so it is
+  // converted here. Blank stays null (send as soon as possible); a partly typed or
+  // non-existent time is a validation error rather than being treated as blank.
+  let scheduleDate = null;
+  if (action === 'schedule') {
+    const read = readDateTime(req.body, 'scheduled_at');
+    scheduleDate = read.error ? { invalid: true, value: null } : (read.value ? zonedInstant(read, await eventTimeZone(tokenFrom(req), id)) : { invalid: false, value: null });
+    payload.scheduled_at = scheduleDate.value;
+  }
   if (action === 'cancel') payload.reason = trimmed(req.body.reason, 501);
   if (!broadcastId || !expectedVersion || !key
-    || (action === 'schedule' && scheduleDate.error)
+    || (action === 'schedule' && scheduleDate.invalid)
     || (action === 'cancel' && (!payload.reason || payload.reason.length > 500))) {
     return redirectTo(res, eventPath(id, '/communications?status=invalid'));
   }
@@ -2420,7 +2535,7 @@ async function mutateCommunication(req, res, action) {
     return redirectTo(res, eventPath(id, `/communications?status=${success}`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/communications?status=failed'));
+    if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'communications', error); return redirectTo(res, eventPath(id, '/communications?status=failed')); }
     throw error;
   }
 }
@@ -2852,11 +2967,14 @@ function consumeRegistrationForm(req, eventId, formId) {
 router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const token = tokenFrom(req); const query = new URLSearchParams();
   for (const collection of ['submissions', 'campaigns', 'guests']) for (const suffix of ['page', 'per_page']) { const key = `${collection}_${suffix}`; if (positiveInteger(req.query[key])) query.set(key, String(positiveInteger(req.query[key]))); }
-  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id, query.size ? `?${query}` : '')]);
+  const [eventResult, state, canSendBulkInvitations] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id, query.size ? `?${query}` : ''), viewerIsCommunityAdmin(req, token)]);
   const activeRegistration = arrayValues(state.attendee?.registrations).find((registration) => ['invited', 'confirmed', 'pending'].includes(trimmed(registration?.registration_state)));
   const replay = consumeRegistrationAnswers(req, id, positiveInteger(state.attendee?.form?.id));
   const settings = state.organizer?.settings;
-  const timezone = trimmed(settings?.event_timezone_snapshot) || 'UTC';
+  // The API reads a window in the event's CURRENT zone, so the form is filled in that
+  // zone too (the snapshot is only a fallback).
+  const eventRow = eventFrom(eventResult);
+  const timezone = safeTimeZone(trimmed(eventRow.schedule?.timezone || eventRow.timezone) || trimmed(settings?.event_timezone_snapshot) || 'UTC');
   const organizer = state.organizer && {
     ...state.organizer,
     settings: settings && {
@@ -2870,30 +2988,33 @@ router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) =
     }
   };
   res.set('Cache-Control', 'private, no-store');
-  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, organizer, registrationPagination: registrationPagination(id, req.query, organizer), activeRegistration, status: trimmed(req.query.status), answerValues: replay.values, answerErrors: replay.errors, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
+  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, organizer, registrationPagination: registrationPagination(id, req.query, organizer), activeRegistration, status: trimmed(req.query.status), apiReason: consumeEventRefusal(req, id, 'registration'), campaignTypes: invitationCampaignTypes(canSendBulkInvitations), eventTimeZone: timezone, answerValues: replay.values, answerErrors: replay.errors, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
 }, { notFoundTitle: 'Event not found' }));
 
 router.post('/:id(\\d+)/registration/settings', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const expectedRevision = Number.parseInt(req.body.expected_revision, 10); const approvalMode = selectedValue(req.body.approval_mode, ['auto', 'manual']); const perMemberLimit = positiveInteger(req.body.per_member_limit); const guestRetentionDays = positiveInteger(req.body.guest_retention_days); const guestsEnabled = checked(req.body.guests_enabled); const maxGuests = guestsEnabled ? positiveInteger(req.body.max_guests_per_registration) : 0;
-  // Optional GOV.UK date+time windows recombine to the same local YYYY-MM-DDTHH:MM the
-  // native input posted (the API converts to UTC using the event timezone; nothing on this
-  // side changes). readDateTime accepts a single value too. A partly-typed datetime is a
-  // validation error rather than being silently cleared.
-  const opensAt = readDateTime(req.body, 'opens_at');
-  const closesAt = readDateTime(req.body, 'closes_at');
-  const cutoffAt = readDateTime(req.body, 'cancellation_cutoff_at');
+  // Optional GOV.UK date+time windows (readDateTime accepts a single value too). The
+  // organiser types a wall clock in the EVENT's zone; the API does NOT convert it — it
+  // requires an ISO instant with seconds and a zone (inputInstant) — so each window is
+  // converted here and sent through the API's explicit `*_utc` alias. A partly typed or
+  // non-existent time is a validation error rather than being silently cleared.
+  const token = tokenFrom(req);
+  const timeZone = await eventTimeZone(token, id);
+  const opensAt = zonedInstant(readDateTime(req.body, 'opens_at'), timeZone, { utc: true });
+  const closesAt = zonedInstant(readDateTime(req.body, 'closes_at'), timeZone, { utc: true });
+  const cutoffAt = zonedInstant(readDateTime(req.body, 'cancellation_cutoff_at'), timeZone, { utc: true });
   if (!key || !Number.isInteger(expectedRevision) || expectedRevision < 0 || !approvalMode || !perMemberLimit || !guestRetentionDays || maxGuests === null
-    || opensAt.error || closesAt.error || cutoffAt.error) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
-  const payload = { approval_mode: approvalMode, opens_at: opensAt.value || null, closes_at: closesAt.value || null, cancellation_cutoff_at: cutoffAt.value || null, per_member_limit: perMemberLimit, guests_enabled: guestsEnabled, max_guests_per_registration: maxGuests, guest_retention_days: guestRetentionDays, expected_revision: expectedRevision };
-  try { await callEventMutation(tokenFrom(req), 'PUT', `/${encodeURIComponent(id)}/registration-product/settings`, payload, key); return redirectTo(res, eventPath(id, '/registration?status=settings-saved')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+    || opensAt.invalid || closesAt.invalid || cutoffAt.invalid) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
+  const payload = { approval_mode: approvalMode, opens_at_utc: opensAt.value, closes_at_utc: closesAt.value, cancellation_cutoff_at_utc: cutoffAt.value, per_member_limit: perMemberLimit, guests_enabled: guestsEnabled, max_guests_per_registration: maxGuests, guest_retention_days: guestRetentionDays, expected_revision: expectedRevision };
+  try { await callEventMutation(token, 'PUT', `/${encodeURIComponent(id)}/registration-product/settings`, payload, key); return redirectTo(res, eventPath(id, '/registration?status=settings-saved')); }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/settings/publish', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const revision = positiveInteger(req.body.expected_revision); const key = trimmed(req.body.idempotency_key, 191);
   if (!revision || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/settings/publish`, { expected_revision: revision }, key); return redirectTo(res, eventPath(id, '/registration?status=settings-published')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 /**
@@ -2987,7 +3108,7 @@ async function transitionRegistrationForm(req, res, action) {
     else await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/forms/${encodeURIComponent(formId)}/fork`, payload, key);
     return redirectTo(res, eventPath(id, `/registration?status=form-${action === 'fork' ? 'forked' : 'published'}`));
   }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }
 router.post('/:id(\\d+)/registration/forms/:formId(\\d+)/publish', requireAuth, asyncRoute(async (req, res) => transitionRegistrationForm(req, res, 'publish')));
 router.post('/:id(\\d+)/registration/forms/:formId(\\d+)/fork', requireAuth, asyncRoute(async (req, res) => transitionRegistrationForm(req, res, 'fork')));
@@ -3038,7 +3159,7 @@ router.post('/:id(\\d+)/registration/invitations/:invitationId(\\d+)/accept', re
   const id = Number(req.params.id); const invitationId = positiveInteger(req.params.invitationId); const key = trimmed(req.body.idempotency_key, 191);
   if (!invitationId || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/invitations/${encodeURIComponent(invitationId)}/accept`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=invitation-accepted')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/guests', requireAuth, asyncRoute(async (req, res) => {
@@ -3047,22 +3168,56 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/guests'
   const notificationConsent = checked(req.body.notification_consent);
   const payload = { expected_registration_version: version, display_name: displayName, email: trimmed(req.body.email, 320) || null, phone: trimmed(req.body.phone, 50) || null, consent_accepted: true, consent_text: res.locals.t('event_registration.accessible.privacy_consent_text'), consent_text_version: '2026-07-12', preferred_locale: res.locals.locale || 'en', notification_consent: notificationConsent, notification_consent_text: notificationConsent ? res.locals.t('event_registration.accessible.notification_consent_text') : null, notification_consent_version: notificationConsent ? '2026-07-12' : null, ticket_entitlement_id: positiveInteger(req.body.ticket_entitlement_id) };
   try { await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/registrations/${encodeURIComponent(registrationId)}/guests`, payload); return redirectTo(res, eventPath(id, '/registration?status=guest-added')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/guests/:guestId(\\d+)/cancel', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const guestId = positiveInteger(req.params.guestId); const revision = positiveInteger(req.body.expected_revision); const reason = trimmed(req.body.reason, 500);
   if (!guestId || !revision || !reason || !checked(req.body.confirm_destructive)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { await callApi(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/guests/${encodeURIComponent(guestId)}/cancel`, { expected_revision: revision, reason }); return redirectTo(res, eventPath(id, '/registration?status=guest-cancelled')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/guests/:guestId(\\d+)/attendance/:action(check_in|check_out|no_show|undo)', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const guestId = positiveInteger(req.params.guestId); const version = Number.parseInt(req.body.expected_version, 10); const key = trimmed(req.body.idempotency_key, 191);
   if (!guestId || !Number.isInteger(version) || version < 0 || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/guests/${encodeURIComponent(guestId)}/attendance/${encodeURIComponent(req.params.action)}`, { expected_version: version, reason: trimmed(req.body.reason, 500) || null }, key); return redirectTo(res, eventPath(id, '/registration?status=attendance-updated')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
+
+// F-161 (E-035): inviting people who are not members (typed emails, a CSV) or the whole
+// community (the audience builder) is for community admins only; the server refuses
+// those types for an ordinary organiser. React hides them (EventRegistrationWorkspace,
+// isAdminTier), so this page does too, rather than offering a refusal.
+const ADMIN_ONLY_CAMPAIGN_TYPES = ['email', 'audience', 'csv'];
+const CAMPAIGN_TYPES = ['member', 'email', 'group', 'audience', 'csv'];
+const ADMIN_TIER_ROLES = ['admin', 'tenant_admin', 'super_admin', 'god'];
+const OPERATIONAL_ROLES = ['broker', 'coordinator'];
+
+// Same rule as middleware/auth.js isAdminTier and React lib/roles isAdminTier: a broker
+// or coordinator is an operational role, never a lesser admin.
+function isCommunityAdmin(user) {
+  if (!user || typeof user !== 'object') return false;
+  const role = trimmed(user.role);
+  if (OPERATIONAL_ROLES.includes(role)) return false;
+  return ADMIN_TIER_ROLES.includes(role) || Boolean(user.is_admin) || Boolean(user.is_super_admin)
+    || Boolean(user.is_tenant_super_admin) || Boolean(user.is_god);
+}
+
+async function viewerIsCommunityAdmin(req, token) {
+  try {
+    const result = await getRequestProfile(req, token);
+    const data = result && typeof result === 'object' && result.data !== undefined ? result.data : result;
+    return isCommunityAdmin(data && typeof data === 'object' && data.user ? data.user : data);
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+    return false;
+  }
+}
+
+function invitationCampaignTypes(canSendBulkInvitations) {
+  return canSendBulkInvitations ? CAMPAIGN_TYPES : CAMPAIGN_TYPES.filter((type) => !ADMIN_ONLY_CAMPAIGN_TYPES.includes(type));
+}
 
 function registrationCampaignSource(type, raw) {
   const values = trimmed(raw, 20000).split(/[\s,;]+/).map((value) => value.trim()).filter(Boolean);
@@ -3076,25 +3231,30 @@ function registrationCampaignSource(type, raw) {
 
 async function renderRegistrationResult(req, res, extras = {}) {
   const id = Number(req.params.id); const token = tokenFrom(req);
-  const [eventResult, state] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id)]);
+  const [eventResult, state, canSendBulkInvitations] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id), viewerIsCommunityAdmin(req, token)]);
   res.set('Cache-Control', 'private, no-store');
-  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, status: null, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '', ...extras });
+  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, status: null, campaignTypes: invitationCampaignTypes(canSendBulkInvitations), eventTimeZone: safeTimeZone(currentEventDetail(eventFrom(eventResult)).timezone), idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '', ...extras });
 }
 
 router.post('/:id(\\d+)/registration/campaigns/preview', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const type = selectedValue(req.body.campaign_type, ['member', 'email', 'group', 'audience', 'csv']); const source = registrationCampaignSource(type, req.body.source);
   if (!key || !type || !source) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/campaigns/preview`, { campaign_type: type, source, default_locale: selectedValue(req.body.default_locale, ['en', 'ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'], 'en') }, key)) || {}; return renderRegistrationResult(req, res, { campaignPreview: result.campaign || result }); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 async function mutateRegistrationCampaign(req, res, action) {
   const id = Number(req.params.id); const campaignId = positiveInteger(req.params.campaignId); const revision = positiveInteger(req.body.expected_revision); const key = trimmed(req.body.idempotency_key, 191); const payload = { expected_revision: revision };
-  // GOV.UK date+time fields recombine to the same YYYY-MM-DDTHH:MM the native input
-  // posted (readDateTime also accepts a single value); both are required, so an empty or
-  // partly/invalidly typed datetime yields '' and is caught by the required check below.
-  if (action === 'issue') payload.expires_at = readDateTime(req.body, 'expires_at').value || '';
-  if (action === 'schedule') payload.scheduled_for = readDateTime(req.body, 'scheduled_for').value || '';
+  // GOV.UK date+time fields (readDateTime also accepts a single value) give a wall clock
+  // in the EVENT's zone. The API requires an ISO instant whose offset matches that zone
+  // (EventInvitationService / EventInvitationCampaignService::inputInstant), so it is
+  // converted here. Both are required: an empty, partly typed or non-existent time
+  // yields '' and is caught by the required check below.
+  if (action === 'issue' || action === 'schedule') {
+    const field = action === 'issue' ? 'expires_at' : 'scheduled_for';
+    const read = readDateTime(req.body, field);
+    payload[field] = read.value && !read.error ? (zonedInstant(read, await eventTimeZone(tokenFrom(req), id)).value || '') : '';
+  }
   if (action === 'cancel') payload.reason = trimmed(req.body.reason, 2000);
   if (!campaignId || !revision || !key || (action === 'issue' && !payload.expires_at) || (action === 'schedule' && !payload.scheduled_for) || (action === 'cancel' && !payload.reason)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try {
@@ -3104,7 +3264,7 @@ async function mutateRegistrationCampaign(req, res, action) {
     const status = { issue: 'campaign-issued', schedule: 'campaign-scheduled', cancel: 'campaign-cancelled' }[action];
     return redirectTo(res, eventPath(id, `/registration?status=${status}`));
   }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }
 router.post('/:id(\\d+)/registration/campaigns/:campaignId(\\d+)/issue', requireAuth, asyncRoute(async (req, res) => mutateRegistrationCampaign(req, res, 'issue')));
 router.post('/:id(\\d+)/registration/campaigns/:campaignId(\\d+)/schedule', requireAuth, asyncRoute(async (req, res) => mutateRegistrationCampaign(req, res, 'schedule')));
@@ -3114,14 +3274,14 @@ router.post('/:id(\\d+)/registration/retention/preview', requireAuth, asyncRoute
   const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const asOf = readDate(req.body, 'as_of').value || '';
   if (!key || !/^\d{4}-\d{2}-\d{2}$/.test(asOf)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/retention/dry-run`, { as_of: asOf }, key)) || {}; return renderRegistrationResult(req, res, { retentionRun: result.run || result }); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/registration/retention/:runId(\\d+)/apply', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id); const runId = positiveInteger(req.params.runId); const key = trimmed(req.body.idempotency_key, 191);
   if (!runId || !key || !checked(req.body.confirm_destructive)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/retention/${encodeURIComponent(runId)}/apply`, {}, key); return redirectTo(res, eventPath(id, '/registration?status=retention-applied')); }
-  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }
+  catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) { rememberEventRefusal(req, id, 'registration', error); return redirectTo(res, eventPath(id, '/registration?status=failed')); } throw error; }
 }));
 
 router.post('/:id(\\d+)/check-in/credential/rotate', requireAuth, asyncRoute(async (req, res) => {
@@ -3514,10 +3674,12 @@ router.get('/new', requireAuth, asyncRoute(async (req, res) => {
     return { data: [] };
   });
   const categories = collectionFrom(categoriesResult);
+  const recurrence = await recurrenceOffer(req.token);
 
   res.render('events/new', {
     title: res.locals.t('govuk_alpha.events.create_title'),
     categories,
+    recurrence,
     setupErrorMessage,
     publicListingEnabled: publicListingEnabled(req),
     // The create handler has always sent group_id to the API; until now nothing
@@ -3594,11 +3756,13 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
       // Non-auth support-data failures remain visible through the validation form.
     }
 
+    const recurrence = await recurrenceOffer(req.token);
     return res.render('events/new', {
       title: res.locals.t('govuk_alpha.events.create_title'),
       errors: errorList,
       values,
       categories,
+      recurrence,
       publicListingEnabled: publicListingEnabled(req),
       // Keep the group across a failed submit, or correcting one field would
       // silently detach the event from the group the member started in.
@@ -3654,6 +3818,13 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     }
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
       return renderFormWithErrors(eventFormErrors(error, 'Unable to create event'));
+    }
+    // A refused SERIES is almost always the community's "recurring events" switch
+    // (EventsController::createRecurring). Explain it on the form, which keeps what the
+    // organiser typed, instead of a Forbidden page.
+    if (error instanceof ApiError && error.status === 403 && checked(is_recurring)) {
+      values.is_recurring = false;
+      return renderFormWithErrors([{ text: res.locals.t('govuk_alpha_events.create.recurrence_unavailable'), href: '#title' }]);
     }
     if (error instanceof ApiError && error.status === 403) {
       return renderForbidden(res, error);
@@ -3720,8 +3891,12 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     }
   }
   const relationship = eventRelationship(relationshipResult, event);
+  // `pending` is a request awaiting the organiser's approval (manual approval mode):
+  // not a place yet, and not "not going" either.
   const relationshipRsvp = relationship?.registrationState === 'confirmed'
     ? 'going'
+    : relationship?.registrationState === 'pending'
+    ? 'pending'
     : (['declined', 'cancelled'].includes(relationship?.registrationState)
       ? 'not_going'
       : (relationship?.engagementState === 'interested' ? 'interested' : ''));
@@ -3762,6 +3937,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     attendeesNextPath,
     isAuthenticated: Boolean(token),
     status: selectedValue(req.query.status, EVENT_DETAIL_STATUSES),
+    apiReason: consumeEventRefusal(req, id, 'detail'),
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -4009,6 +4185,9 @@ router.post('/:id(\\d+)/rsvp', requireAuth, audit.eventRsvp(), asyncRoute(async 
         && code !== 'VETTING_REQUIRED') {
         return renderForbidden(res, error);
       }
+      // The API's own translated message says WHY ("this event has already started"),
+      // where the generic "could not update your RSVP" did not.
+      rememberEventRefusal(req, id, 'detail', error, { requireReason: false });
       const failureStatus = code === 'SAFEGUARDING_POLICY_UNAVAILABLE'
         ? 'rsvp-policy-unavailable'
         : ((code.startsWith('SAFEGUARDING_') || code === 'VETTING_REQUIRED')

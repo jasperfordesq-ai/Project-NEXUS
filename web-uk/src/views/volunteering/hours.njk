@@ -121,6 +121,7 @@
     </div>
   {% endif %}
 
+  {% if organizations.length %}
   <form method="post" action="{{ urlFor('/volunteering/hours') }}" class="govuk-!-margin-top-7">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <fieldset class="govuk-fieldset">
@@ -177,14 +178,26 @@
         <textarea class="govuk-textarea" id="description" name="description" rows="5" aria-describedby="description-hint"></textarea>
       </div>
     </fieldset>
-    <button class="govuk-button" data-module="govuk-button"{% if not organizations.length %} disabled{% endif %}>{{ t("govuk_alpha.actions.log_hours") }}</button>
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.actions.log_hours") }}</button>
   </form>
+  {% elif not loadError %}
+    {# No organisation to log for (React fadb1da29): say why and where to go, instead of
+       an empty required list and a disabled button. #}
+    <h2 class="govuk-heading-m govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.log_hours_title") }}</h2>
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.my_hours.no_organisation") }}</p>
+      <ul class="govuk-list govuk-!-margin-bottom-0">
+        <li><a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha_volunteering.shared.find_opportunities") }}</a></li>
+        {% if applicationsTabEnabled %}<li><a class="govuk-link" href="{{ urlFor('/volunteering?tab=applications') }}">{{ t("govuk_alpha_volunteering.shared.check_applications") }}</a></li>{% endif %}
+      </ul>
+    </div>
+  {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-7" id="logged-hours">{{ t("govuk_alpha.volunteering.recent_hours_title") }}</h2>
   {% if not logs.length %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha.volunteering.empty_hours") }}</p>
-      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.empty_hours_cta") }}</p>
+      {% if organizations.length %}<p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.empty_hours_cta") }}</p>{% endif %}
     </div>
   {% else %}
     <p class="govuk-body">{{ t("govuk_alpha.vol_clarity.status_trail_intro") }}</p>

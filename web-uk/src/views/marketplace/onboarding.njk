@@ -61,7 +61,7 @@
     </div>
   {% endif %}
 
-  <form method="post" action="{{ urlFor('/marketplace/onboarding') }}" novalidate>
+  <form method="post" action="{{ urlFor('/marketplace/onboarding') }}"{% if photoUploadsAvailable %} enctype="multipart/form-data"{% endif %} novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <fieldset class="govuk-fieldset">
@@ -134,6 +134,57 @@
         <input class="govuk-input govuk-input--width-20" id="address_country" name="address_country" type="text" maxlength="120" value="{{ address.country }}" autocomplete="country-name">
       </div>
     </fieldset>
+
+    {# Opening hours (React MerchantOnboardingPage step 2): one fieldset per day,
+       a Closed tick box plus opening and closing times. #}
+    <fieldset class="govuk-fieldset govuk-!-margin-top-4" aria-describedby="hours-hint">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.onboarding.section_hours") }}</h2>
+      </legend>
+      <div id="hours-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.onboarding.hours_hint") }}</div>
+      {% for day in hoursDays %}
+        {% set dayHours = hours[day] %}
+        {% set dayError = fieldErrors["hours_" ~ day ~ "_open"] %}
+        <div class="govuk-form-group{% if dayError %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset"{% if dayError %} aria-describedby="hours_{{ day }}-error"{% endif %}>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.onboarding.day_" ~ day) }}</legend>
+            {% if dayError %}<p id="hours_{{ day }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ dayError }}</p>{% endif %}
+            <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-2" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="hours_{{ day }}_closed" name="hours_{{ day }}_closed" type="checkbox" value="1"{% if dayHours.closed %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="hours_{{ day }}_closed">{{ t("govuk_alpha_commerce.onboarding.closed_label") }}</label>
+              </div>
+            </div>
+            <div class="govuk-!-display-inline-block govuk-!-margin-right-4">
+              <label class="govuk-label" for="hours_{{ day }}_open">{{ t("govuk_alpha_commerce.onboarding.open_time_label") }}</label>
+              <input class="govuk-input govuk-input--width-5{% if dayError %} govuk-input--error{% endif %}" id="hours_{{ day }}_open" name="hours_{{ day }}_open" type="text" autocomplete="off" spellcheck="false" value="{{ dayHours.open }}">
+            </div>
+            <div class="govuk-!-display-inline-block">
+              <label class="govuk-label" for="hours_{{ day }}_close">{{ t("govuk_alpha_commerce.onboarding.close_time_label") }}</label>
+              <input class="govuk-input govuk-input--width-5{% if dayError %} govuk-input--error{% endif %}" id="hours_{{ day }}_close" name="hours_{{ day }}_close" type="text" autocomplete="off" spellcheck="false" value="{{ dayHours.close }}">
+            </div>
+          </fieldset>
+        </div>
+      {% endfor %}
+    </fieldset>
+
+    {% if photoUploadsAvailable %}
+      {# Optional seller photos (React step 3). A cover goes only with a profile photo. #}
+      <fieldset class="govuk-fieldset govuk-!-margin-top-4" aria-describedby="photos-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.onboarding.section_photos") }}</h2>
+        </legend>
+        <div id="photos-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.onboarding.photos_hint") }}</div>
+        {% for photo in [{ field: "avatar", label: t("govuk_alpha_commerce.onboarding.avatar_label") }, { field: "cover_image", label: t("govuk_alpha_commerce.onboarding.cover_label") }] %}
+          {% set photoError = fieldErrors[photo.field] %}
+          <div class="govuk-form-group{% if photoError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--s" for="{{ photo.field }}">{{ photo.label }}</label>
+            {% if photoError %}<p id="{{ photo.field }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ photoError }}</p>{% endif %}
+            <input class="govuk-file-upload{% if photoError %} govuk-file-upload--error{% endif %}" id="{{ photo.field }}" name="{{ photo.field }}" type="file" accept="image/jpeg,image/png,image/webp,image/gif"{% if photoError %} aria-describedby="{{ photo.field }}-error"{% endif %}>
+          </div>
+        {% endfor %}
+      </fieldset>
+    {% endif %}
 
     <div class="govuk-button-group govuk-!-margin-top-4">
       <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.onboarding.submit") }}</button>

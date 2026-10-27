@@ -27,6 +27,8 @@ return [
         'optional' => '(オプション)',
         'warning' => '警告',
         'none_yet' => 'まだありません',
+        'find_opportunities' => '機会を探す',
+        'check_applications' => '自分の応募を確認',
     ],
     'my_orgs' => [
         'title' => '私の組織',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'ダッシュボードを開く',
         'manage_dashboard_for' => ':name のダッシュボードを開きます',
         'awaiting_approval' => '承認待ち',
-        'awaiting_approval_hint' => '機会を管理できるようになる前に、管理者がこの組織を確認します。',
+        'awaiting_approval_hint' => 'コミュニティの管理者がこの団体を確認しています。承認を待つ間に、ダッシュボードを開いて準備を進められます。',
         'more_label' => 'より多くの組織',
         'pagination_label' => '私の組織のページネーション',
+        'pending_setup' => '承認を待つ間に準備する',
+        'pending_see_all' => 'あなたの団体を見る',
     ],
     'org_dashboard' => [
         'title' => '組織ダッシュボード',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'この報告は終了しているため、更新を追加できません。新しいことがあれば、コミュニティの管理者またはブローカーにご連絡ください。',
         'history_empty' => 'この報告では、まだ何も起きていません。',
         'status_guide_title' => '各ステータスの意味',
+        'team_meaning' => 'このページでの「保護チーム」とは、コミュニティの管理者、ブローカー、コーディネーターを指します。全員がすべての報告の全文を見ることができます。',
     ],
     'shift_manager' => [
         'manage_link' => 'シフトを管理',
@@ -1294,6 +1299,11 @@ return [
         'status_user_not_found' => 'その人はこのコミュニティの有効なメンバーではありません。',
         'status_forbidden' => 'チームを変更できるのは団体のオーナーとコミュニティ管理者だけです。',
         'status_failed' => 'その変更はできませんでした。もう一度お試しください。',
+        'safeguarding_title' => '保護責任者',
+        'safeguarding_lead' => '保護責任者',
+        'safeguarding_deputy' => '副責任者',
+        'safeguarding_nobody' => 'まだ任命されていません',
+        'safeguarding_help' => '責任者と副責任者は、この団体に関連する各保護報告の概要を閲覧でき、全文はコミュニティの保護担当スタッフが共有した場合のみ閲覧できます。誰が報告したかは決して伝わりません。任命するのはコミュニティの管理者です。変更が必要な場合はコミュニティにご相談ください。',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1542,5 +1552,26 @@ return [
         'shifts_col_when' => '日時',
         'shifts_col_where' => '場所',
         'shifts_load_error' => 'シフトを読み込めませんでした。もう一度お試しください。',
+        'no_organisation' => '団体からボランティアとして承認されると、時間を記録できるようになります。機会を探して応募してください。団体が応募を承認すると、ここで時間を記録できます。',
+    ],
+    'load_errors' => [
+        'urgent_requests' => '緊急のシフト依頼を読み込めませんでした。もう一度お試しください。',
+        'group_signups' => 'グループ申し込みを読み込めませんでした。もう一度お試しください。',
+        'safeguarding' => '保護に関する記録を読み込めませんでした。もう一度お試しください。',
+        'organisations' => 'あなたのボランティア団体を読み込めませんでした。もう一度お試しください。',
+        'recommended' => 'おすすめのシフトを読み込めませんでした。もう一度お試しください。',
+        'org_dashboard' => '団体のダッシュボードを読み込めませんでした。この団体を管理しているか確認して、もう一度お試しください。',
+        'org_manage' => '団体の管理待ち一覧を読み込めませんでした。この団体を管理しているか確認して、もう一度お試しください。',
+        'org_settings' => '団体の設定を読み込めませんでした。この団体を管理しているか確認して、もう一度お試しください。',
+        'org_volunteers' => '団体のボランティアを読み込めませんでした。この団体を管理しているか確認して、もう一度お試しください。',
+        'org_wallet' => '団体のウォレットを読み込めませんでした。この団体を管理しているか確認して、もう一度お試しください。',
+        'hours' => 'ボランティア時間を読み込めませんでした。もう一度お試しください。',
+        'donations' => '寄付を読み込めませんでした。もう一度お試しください。',
+        'expenses' => '経費を読み込めませんでした。もう一度お試しください。',
+        'create_opportunity' => '機会を作成するフォームを読み込めませんでした。もう一度お試しください。',
+    ],
+    'swaps_list' => [
+        'more_label' => 'さらに交換リクエストを表示',
+        'pagination_label' => '交換リクエストのページ',
     ],
 ];

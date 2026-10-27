@@ -25456,7 +25456,9 @@ describe('shared accessible frontend shell', () => {
       2,
       'test-token',
       'GET',
-      '/42/people?page=1&per_page=25&search=Alex&registration_state=pending&waitlist_state=&attendance_state=&engagement_state=&sort=name&direction=asc'
+      // include=required_answers: the roster flags people who still owe required
+      // registration answers (27 Oct 2026 parity fix).
+      '/42/people?page=1&per_page=25&search=Alex&registration_state=pending&waitlist_state=&attendance_state=&engagement_state=&sort=name&direction=asc&include=required_answers'
     );
 
     api.callEventApi.mockResolvedValueOnce({ data: { succeeded: 1, failed: 0 } });
@@ -25627,7 +25629,7 @@ describe('shared accessible frontend shell', () => {
     expect(rosterSelect).not.toContain('<option value="check_in"');
     expect(response.text).toContain('href="/events/42/check-in?');
     expect(api.callEventApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/42');
-    expect(api.callEventApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/42/people?page=1&per_page=25&search=Alex&attendance_state=checked_in&sort=name&direction=asc');
+    expect(api.callEventApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/42/people?page=1&per_page=25&search=Alex&attendance_state=checked_in&sort=name&direction=asc&include=required_answers');
 
     api.callEventApi.mockResolvedValueOnce({ data: { attendance: { state: 'checked_out', version: 10 } } });
     const agent = request.agent(app);
@@ -26621,7 +26623,9 @@ describe('shared accessible frontend shell', () => {
       });
       expect(response.headers.location).toBe(`/events/42/communications?status=${status}`);
       expect(api.callEventBroadcastApi).toHaveBeenLastCalledWith('test-token', 'POST', `/8/${action}`, {
-        expected_version: 3, ...(action === 'schedule' ? { scheduled_at: '2026-08-01T10:00' } : {}), ...(action === 'cancel' ? { reason: 'Venue unavailable' } : {})
+        // The API reads only an ISO instant with seconds and an offset; the wall clock is
+        // converted in the event's zone (no zone on the fixture, so UTC).
+        expected_version: 3, ...(action === 'schedule' ? { scheduled_at: '2026-08-01T10:00:00+00:00' } : {}), ...(action === 'cancel' ? { reason: 'Venue unavailable' } : {})
       }, { headers: { 'Idempotency-Key': `comm-${action}-123` } });
     }
   });
@@ -26639,7 +26643,7 @@ describe('shared accessible frontend shell', () => {
     });
     expect(response.headers.location).toBe('/events/42/communications?status=scheduled');
     expect(api.callEventBroadcastApi).toHaveBeenLastCalledWith('test-token', 'POST', '/8/schedule', {
-      expected_version: 3, scheduled_at: '2026-08-01T10:00'
+      expected_version: 3, scheduled_at: '2026-08-01T10:00:00+00:00'
     }, { headers: { 'Idempotency-Key': 'comm-schedule-parts' } });
   });
 
@@ -27171,11 +27175,13 @@ describe('shared accessible frontend shell', () => {
 
   it('issues, schedules and cancels Laravel invitation campaigns with exact revisions', async () => {
     const api = require('../src/lib/api'); const agent = request.agent(app); const shell = await agent.get('/contact').set('Cookie', signedCookieHeader()); const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
-    for (const [action, extra, status] of [['issue', { expires_at: '2026-08-30T17:00' }, 'campaign-issued'], ['schedule', { scheduled_for: '2026-08-01T09:00' }, 'campaign-scheduled'], ['cancel', { reason: 'Audience changed' }, 'campaign-cancelled']]) {
+    // Times are sent with the event zone's offset (fixture has no zone, so UTC): the API
+    // requires an ISO instant whose offset matches the event's zone.
+    for (const [action, extra, sent, status] of [['issue', { expires_at: '2026-08-30T17:00' }, { expires_at: '2026-08-30T17:00:00+00:00' }, 'campaign-issued'], ['schedule', { scheduled_for: '2026-08-01T09:00' }, { scheduled_for: '2026-08-01T09:00:00+00:00' }, 'campaign-scheduled'], ['cancel', { reason: 'Audience changed' }, { reason: 'Audience changed' }, 'campaign-cancelled']]) {
       api.callEventApi.mockResolvedValueOnce({ data: { changed: true } });
       const response = await agent.post(`/events/42/registration/campaigns/61/${action}`).set('Cookie', signedCookieHeader()).type('form').send({ _csrf: csrf, idempotency_key: `campaign-${action}-123`, expected_revision: '2', ...extra });
       expect(response.headers.location).toBe(`/events/42/registration?status=${status}`);
-      expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', `/42/registration-product/campaigns/61/${action}`, { expected_revision: 2, ...extra }, { headers: { 'Idempotency-Key': `campaign-${action}-123` } });
+      expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', `/42/registration-product/campaigns/61/${action}`, { expected_revision: 2, ...sent }, { headers: { 'Idempotency-Key': `campaign-${action}-123` } });
     }
   });
 
@@ -27231,7 +27237,7 @@ describe('shared accessible frontend shell', () => {
       'expires_at-day': '30', 'expires_at-month': '8', 'expires_at-year': '2026', 'expires_at-time': '5:00pm'
     });
     expect(response.headers.location).toBe('/events/42/registration?status=campaign-issued');
-    expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/registration-product/campaigns/61/issue', { expected_revision: 2, expires_at: '2026-08-30T17:00' }, { headers: { 'Idempotency-Key': 'campaign-issue-parts' } });
+    expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/registration-product/campaigns/61/issue', { expected_revision: 2, expires_at: '2026-08-30T17:00:00+00:00' }, { headers: { 'Idempotency-Key': 'campaign-issue-parts' } });
   });
 
   it('previews Laravel retention and requires destructive confirmation before apply', async () => {
@@ -27691,6 +27697,10 @@ describe('shared accessible frontend shell', () => {
 
     api.getMyGroups.mockResolvedValueOnce({ data: [] });
     api.getEventCategories.mockResolvedValueOnce({ data: [{ id: 7, name: 'Gardening' }] });
+    // GET /v2/events/recurrence-capabilities decides what "Repeat this event" offers.
+    api.callEventApi.mockResolvedValueOnce({
+      data: { supported_frequencies: ['daily', 'weekly', 'monthly'], supported_end_types: ['after_count', 'on_date'] }
+    });
     api.callEventApi.mockResolvedValueOnce({
       data: {
         template: { id: 42 },
@@ -32994,7 +33004,8 @@ describe('shared accessible frontend shell', () => {
     expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/notifications', {
       email_messages: true,
       email_connections: true,
-      caring_smart_nudges: false,
+      // No caring_smart_nudges: that capability is off by default, so its toggle is
+      // neither shown nor sent (an unsent key leaves the saved choice alone).
       email_listings: false,
       email_events: true,
       email_transactions: false,

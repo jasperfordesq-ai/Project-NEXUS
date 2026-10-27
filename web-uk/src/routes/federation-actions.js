@@ -357,6 +357,46 @@ router.post('/messages', asyncRoute(async (req, res) => {
   return redirectTo(res, backPath(status));
 }));
 
+// Which banner an API refusal of a federated transfer earns (React d2f7efc4).
+// Codes are FederationV2Controller::sendTransaction's. A refusal the API
+// explains in its own (translated) sentence but that has no specific banner
+// here is shown in that sentence ('transfer-refused'); one with no sentence
+// stays the generic 'transfer-failed'.
+const FEDERATION_TRANSFER_REFUSALS = {
+  SAFEGUARDING_CONTACT_RESTRICTED: 'transfer-safeguarding-restricted',
+  VETTING_REQUIRED: 'transfer-safeguarding-restricted',
+  SAFEGUARDING_POLICY_UNAVAILABLE: 'transfer-safeguarding-unavailable',
+  INSUFFICIENT_BALANCE: 'transfer-insufficient',
+  SELF_TRANSACTION: 'transfer-self',
+  SENDER_NOT_OPTED_IN: 'transfer-not-enabled',
+  SENDER_TRANSACTIONS_DISABLED: 'transfer-not-enabled',
+  RECIPIENT_NOT_FOUND: 'transfer-recipient-unavailable',
+  RECIPIENT_TRANSACTIONS_DISABLED: 'transfer-recipient-unavailable',
+  INVALID_AMOUNT: 'transfer-amount-invalid'
+};
+
+// Safeguarding refusals go back to the profile, which carries the community's
+// advisory; the transfer page itself is not offered while contact is refused.
+const FEDERATION_TRANSFER_PROFILE_STATUSES = new Set([
+  'transfer-sent', 'transfer-safeguarding-restricted', 'transfer-safeguarding-unavailable'
+]);
+
+function federationTransferRefusal(error) {
+  if (!(error instanceof ApiError)) return { status: 'transfer-failed', message: '' };
+  const data = error.data && typeof error.data === 'object' ? error.data : {};
+  const errors = Array.isArray(data.errors) ? data.errors : [];
+  const first = errors.find((item) => item && typeof item === 'object') || {};
+  const code = String(first.code || data.code || '').trim().toUpperCase();
+  const field = String(first.field || '').trim();
+  const message = trimmed(typeof first.message === 'string' ? first.message : '', 500);
+
+  if (Object.hasOwn(FEDERATION_TRANSFER_REFUSALS, code)) return { status: FEDERATION_TRANSFER_REFUSALS[code], message: '' };
+  if (code === 'VALIDATION_ERROR' && field === 'amount') return { status: 'transfer-amount-invalid', message: '' };
+  if (code === 'VALIDATION_ERROR' && field === 'description') return { status: 'transfer-description-required', message: '' };
+  if (message !== '' && error.status >= 400 && error.status < 500) return { status: 'transfer-refused', message };
+  return { status: 'transfer-failed', message: '' };
+}
+
 router.post('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -391,10 +431,17 @@ router.post('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
     await callFederation(token, 'POST', '/transactions', payload);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    status = 'transfer-failed';
+    const refusal = federationTransferRefusal(error);
+    status = refusal.status;
+    // The sentence travels in the session, never the URL, and is read once.
+    if (refusal.message && req.session) {
+      req.session.federationTransferRefusal = { memberId: receiverId, message: refusal.message };
+    }
   }
 
-  return redirectTo(res, memberRedirect(receiverId, receiverTenantId, status));
+  return redirectTo(res, FEDERATION_TRANSFER_PROFILE_STATUSES.has(status)
+    ? memberRedirect(receiverId, receiverTenantId, status)
+    : transferRedirect(receiverId, receiverTenantId, status));
 }));
 
 // F-284: a member may block a member of a partner community on the same
@@ -554,6 +601,29 @@ router.post('/opt-out', asyncRoute(async (req, res) => {
   }
 
   return redirectTo(res, statusRedirect('/federation', status));
+}));
+
+// Answer a held federated debit (React a44148956). Only approve | reject reach
+// the API; anything else is a hand-crafted request and is refused here.
+router.post('/settings/debit-approvals/:id(\\d+)/decision', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = positiveInteger(req.params.id);
+  const decision = trimmed(req.body.decision, 16);
+  if (id === null || !['approve', 'reject'].includes(decision)) {
+    return redirectTo(res, `${statusRedirect('/federation/settings', 'debit-decision-failed')}#debit-approvals`);
+  }
+
+  let status = 'debit-decision-saved';
+  try {
+    await callFederation(token, 'POST', `/debit-approvals/${encodeURIComponent(id)}/decision`, { decision });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = 'debit-decision-failed';
+  }
+
+  return redirectTo(res, `${statusRedirect('/federation/settings', status)}#debit-approvals`);
 }));
 
 router.post('/settings', asyncRoute(async (req, res) => {

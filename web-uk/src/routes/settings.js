@@ -280,6 +280,12 @@ function normalizeRelationship(row, t) {
     // re-deriving it here from raw tiers.
     messageAccess: allowedValue(row && row.message_access, ['none', 'pending', 'active'], 'none'),
     messageAccessSince: formatLongDate(row && row.message_access_granted_at),
+    // F-224: a pending link can be asked for from either end, so the API says
+    // whether the answer is this viewer's. null = an API that does not send it;
+    // the view then falls back to "the supported member answers".
+    awaitingYourResponse: row && typeof row.awaiting_your_response === 'boolean'
+      ? row.awaiting_your_response
+      : null,
     permissions: SETTINGS_LINK_PERMISSIONS.reduce((acc, key) => {
       acc[key] = Boolean(permissions[key]);
       return acc;
@@ -885,3 +891,4 @@ router.post('/insurance', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.normalizeRelationship = normalizeRelationship;

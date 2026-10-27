@@ -253,7 +253,7 @@
        are decided. #}
     <div class="govuk-inset-text govuk-!-margin-top-7" data-testid="opportunity-runs-organisation">
       <p class="govuk-body">{{ t("govuk_alpha_volunteering.runs_organisation.note") }}</p>
-      {% if opportunity.organisationId %}
+      {% if opportunity.organisationId and organisationsEnabled !== false %}
         <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ opportunity.organisationId ~ '/manage') }}">{{ t("govuk_alpha_volunteering.runs_organisation.manage_link") }}</a></p>
       {% endif %}
     </div>

@@ -2816,7 +2816,7 @@
                 "search_empty": "No members found. Try a different name.",
                 "recipient_heading": "Choose who to send to",
                 "amount_label": "Amount (hours)",
-                "amount_hint": "Between 0.25 and 1000 hours, in steps of 0.25.",
+                "amount_hint": "Between 0.25 and :max hours, in steps of 0.25.",
                 "note_label": "Note (optional)",
                 "note_hint": "Add a short note so the member knows what the credits are for.",
                 "send_button": "Send credits to :name",
@@ -2837,7 +2837,7 @@
                     "not_found": "That member could not be found in this community.",
                     "self": "You cannot send credits to yourself.",
                     "inactive": "That account is not active.",
-                    "too_large": "That amount is too large. The maximum is 1000 hours per transfer.",
+                    "too_large": "That amount is too large. The maximum is :max hours per transfer.",
                     "decimals": "Enter the amount using at most two decimal places.",
                     "failed": "The transfer could not be completed. Please try again."
                 },
@@ -3206,6 +3206,8 @@
                 "group_tag": ":count grouped",
                 "actors_label": "From :names",
                 "actors_and_more": "{0} From :names|{1} From :names and 1 other|[2,*] From :names and :count others",
+                "group_items_summary": "Show the notifications in this group",
+                "group_items_more": "Not shown here: :count more.",
                 "delete_all": "Delete all",
                 "delete_all_warning": "This permanently removes all your notifications. You cannot undo this.",
                 "types": {
@@ -7225,7 +7227,25 @@
                 "error_business_name": "Enter your business name",
                 "error_display_name": "Enter a display name",
                 "status_complete": "Your seller details were saved. You can now start selling.",
-                "status_failed": "Sorry, your details could not be saved. Please try again."
+                "status_failed": "Sorry, your details could not be saved. Please try again.",
+                "section_hours": "Opening hours",
+                "hours_hint": "Tick Closed for any day you are not open. Times use the 24-hour clock, for example 09:00.",
+                "day_mon": "Monday",
+                "day_tue": "Tuesday",
+                "day_wed": "Wednesday",
+                "day_thu": "Thursday",
+                "day_fri": "Friday",
+                "day_sat": "Saturday",
+                "day_sun": "Sunday",
+                "closed_label": "Closed",
+                "open_time_label": "Opening time",
+                "close_time_label": "Closing time",
+                "error_hours": "Enter an opening and a closing time for each day you are open, or tick Closed",
+                "section_photos": "Profile Photo",
+                "photos_hint": "Optional. A photo helps buyers recognise your shop. JPG, PNG, WebP or GIF, up to 10MB.",
+                "avatar_label": "Upload profile photo",
+                "cover_label": "Upload cover image (optional)",
+                "error_cover_needs_photo": "Add a profile photo to go with the cover image"
             },
             "coupons": {
                 "title": "My coupons",
@@ -7860,7 +7880,8 @@
                 "warning": "Warning",
                 "error_prefix": "Error:",
                 "save": "Save",
-                "cancel": "Cancel"
+                "cancel": "Cancel",
+                "event_time_zone_hint": "Enter times in the event’s own time zone (:zone)."
             },
             "safety": {
                 "title": "Event safety"
@@ -8054,7 +8075,8 @@
                 "reset_success": "Your event-specific reminder settings have been removed.",
                 "conflict": "These settings changed elsewhere. The latest version is shown; review it before saving again.",
                 "validation_error": "Check the reminder times and channels, then try again.",
-                "save_error": "Your reminder settings could not be saved. Please try again."
+                "save_error": "Your reminder settings could not be saved. Please try again.",
+                "switched_off": "Event reminders are switched off in this community, so there is nothing to set up for this event."
             },
             "create_restricted": {
                 "title": "Only staff can create events here",
@@ -8239,6 +8261,21 @@
                 "load_failed": "Could not load calendar.",
                 "code_label": "Municipality code",
                 "code_hint": "The official municipality code (e.g. ZIP/postal or BFS code) — must match other clubs to federate."
+            },
+            "create": {
+                "recurrence_unavailable": "Repeating events are switched off in this community. Your event has not been created. Check the details and create it as a single event."
+            },
+            "rsvp": {
+                "pending_tag": "Requested",
+                "pending": "You have asked for a place. The organiser needs to approve it before your place is confirmed."
+            },
+            "check_in": {
+                "answers_outstanding_tag": "Answers outstanding",
+                "answers_outstanding": "This person has not answered the required registration questions yet. They need to answer them before they can be checked in."
+            },
+            "listing": {
+                "draft_tag": "Draft",
+                "pending_review_tag": "Waiting for review"
             }
         },
         "govuk_alpha_federation": {
@@ -8343,6 +8380,18 @@
             "safeguarding": {
                 "heading": "Contact is not available",
                 "body": "This member’s community safeguarding policy does not allow direct contact from you. A community coordinator can help."
+            },
+            "debit_approvals": {
+                "heading": "Transfers awaiting your approval",
+                "note": "Approving does not move credits until the partner completes the transfer.",
+                "load_error": "Could not load pending transfers.",
+                "summary": "Approve :amount hours to :payee?",
+                "reversal_summary": "Approve returning :amount hours to :payee?",
+                "expires": "Request expires :date",
+                "approve": "Approve transfer",
+                "reject": "Decline transfer",
+                "saved": "Transfer decision saved",
+                "failed": "Could not save your decision. Please try again."
             }
         },
         "govuk_alpha_feed": {
@@ -11321,7 +11370,9 @@
                 "error_title": "There is a problem",
                 "optional": "(optional)",
                 "warning": "Warning",
-                "none_yet": "None yet"
+                "none_yet": "None yet",
+                "find_opportunities": "Find opportunities",
+                "check_applications": "Check my applications"
             },
             "my_orgs": {
                 "title": "My organisations",
@@ -11344,9 +11395,11 @@
                 "manage_dashboard": "Open dashboard",
                 "manage_dashboard_for": "Open the dashboard for :name",
                 "awaiting_approval": "Awaiting approval",
-                "awaiting_approval_hint": "An administrator will review this organisation before you can manage opportunities.",
+                "awaiting_approval_hint": "A community administrator is reviewing this organisation. You can open its dashboard and set it up while you wait.",
                 "more_label": "more organisations",
-                "pagination_label": "My organisations pagination"
+                "pagination_label": "My organisations pagination",
+                "pending_setup": "Set it up while you wait",
+                "pending_see_all": "See your organisations"
             },
             "org_dashboard": {
                 "title": "Organisation dashboard",
@@ -12028,7 +12081,8 @@
                 "what_to_do": "Use this to tell the team what your organisation knows or has done, for example if you have spoken to the volunteer or changed a shift. Do not contact the person who made the report.",
                 "closed_no_updates": "This report is closed, so updates can no longer be added. If something new comes up, contact your community’s administrators or brokers.",
                 "history_empty": "Nothing has happened on this report yet.",
-                "status_guide_title": "What each status means"
+                "status_guide_title": "What each status means",
+                "team_meaning": "In this page, “the safeguarding team” means your community’s administrators, brokers and coordinators. They all see each report in full."
             },
             "shift_manager": {
                 "manage_link": "Manage shifts",
@@ -12567,7 +12621,12 @@
                 "status_already": "That person is already on the team.",
                 "status_user_not_found": "That person is not an active member of this community.",
                 "status_forbidden": "Only the organisation's owners and community admins can change the team.",
-                "status_failed": "That change could not be made. Try again."
+                "status_failed": "That change could not be made. Try again.",
+                "safeguarding_title": "Safeguarding lead",
+                "safeguarding_lead": "Safeguarding lead",
+                "safeguarding_deputy": "Deputy",
+                "safeguarding_nobody": "Nobody appointed yet",
+                "safeguarding_help": "The lead and deputy see a summary of each safeguarding report linked to this organisation, and the full report only if the community's safeguarding staff share it. They are never told who made a report. Community admins appoint them: ask your community if yours needs to change."
             },
             "my_qualifications": {
                 "heading": "Qualifications",
@@ -12802,7 +12861,28 @@
                 "older_shifts": "Earlier shifts",
                 "shifts_col_when": "When",
                 "shifts_col_where": "Where",
-                "shifts_load_error": "We could not load your shifts. Please try again."
+                "shifts_load_error": "We could not load your shifts. Please try again.",
+                "no_organisation": "You can log hours once an organisation has approved you as a volunteer. Find an opportunity and apply. When the organisation approves your application, you can log your time here."
+            },
+            "load_errors": {
+                "urgent_requests": "We could not load your urgent shift requests. Please try again.",
+                "group_signups": "We could not load your group sign-ups. Please try again.",
+                "safeguarding": "We could not load your safeguarding records. Please try again.",
+                "organisations": "We could not load your volunteering organisations. Please try again.",
+                "recommended": "We could not load your recommended shifts. Please try again.",
+                "org_dashboard": "We could not load the organisation dashboard. Check that you manage this organisation and try again.",
+                "org_manage": "We could not load the organisation management queue. Check that you manage this organisation and try again.",
+                "org_settings": "We could not load the organisation settings. Check that you manage this organisation and try again.",
+                "org_volunteers": "We could not load the organisation volunteers. Check that you manage this organisation and try again.",
+                "org_wallet": "We could not load the organisation wallet. Check that you manage this organisation and try again.",
+                "hours": "We could not load your volunteering hours. Please try again.",
+                "donations": "We could not load your donations. Please try again.",
+                "expenses": "We could not load your expenses. Please try again.",
+                "create_opportunity": "We could not load the form for creating an opportunity. Please try again."
+            },
+            "swaps_list": {
+                "more_label": "more swap requests",
+                "pagination_label": "Swap requests pages"
             }
         },
         "govuk_alpha_wallet": {
@@ -12842,7 +12922,7 @@
                 "search_empty": "No members matched your search.",
                 "recipient_heading": "Matching members",
                 "amount_label": "Amount in hours",
-                "amount_hint": "For example, 1 or 2.5. You can send up to 1000 hours.",
+                "amount_hint": "For example, 1 or 2.5. You can send up to :max hours.",
                 "note_label": "Add a note (optional)",
                 "note_hint": "The recipient will see this with the transfer.",
                 "send_button": "Send credits to :name"

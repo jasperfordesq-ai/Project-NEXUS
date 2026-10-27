@@ -320,6 +320,8 @@ router.get('/', asyncRoute(async (req, res) => {
   const t = typeof req.t === 'function' ? req.t : res.locals.t;
   const tc = typeof req.tc === 'function' ? req.tc : res.locals.tc;
   const dashboardFeatures = {
+    // React 5ebc3093: a community with the feed off is never sent to /feed.
+    feed: flagEnabled(tenant, 'feed', 'modules', true),
     listings: flagEnabled(tenant, 'listings', 'modules', true),
     messages: flagEnabled(tenant, 'messages', 'modules', true),
     connections: flagEnabled(tenant, 'connections', 'features', true),
@@ -360,7 +362,9 @@ router.get('/', asyncRoute(async (req, res) => {
     dashboardFeatures.listings
       ? getListings(req.token, { limit: 5 }).catch(track({ data: [] }))
       : Promise.resolve({ data: [] }),
-    getFeedPosts(req.token, { per_page: 5 }).catch(track({ data: [] })),
+    dashboardFeatures.feed
+      ? getFeedPosts(req.token, { per_page: 5 }).catch(track({ data: [] }))
+      : Promise.resolve({ data: [] }),
     dashboardFeatures.events
       ? getMyEvents(req.token).catch(track({ data: [] }))
       : Promise.resolve({ data: [] })

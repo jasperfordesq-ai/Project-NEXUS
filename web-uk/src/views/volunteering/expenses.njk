@@ -75,7 +75,14 @@
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.expenses.form_intro") }}</p>
 
   {% if not dashboard.organizations.length %}
-    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.expenses.no_organisation") }}</div>
+    {# Where to go next (React 9811fcf88), as on My hours. #}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.expenses.no_organisation") }}</p>
+      <ul class="govuk-list govuk-!-margin-bottom-0">
+        <li><a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha_volunteering.shared.find_opportunities") }}</a></li>
+        {% if applicationsTabEnabled %}<li><a class="govuk-link" href="{{ urlFor('/volunteering?tab=applications') }}">{{ t("govuk_alpha_volunteering.shared.check_applications") }}</a></li>{% endif %}
+      </ul>
+    </div>
   {% else %}
     <form method="post" action="{{ urlFor('/volunteering/expenses') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-8">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">

@@ -109,4 +109,18 @@ return [
         'heading' => 'Kontakt niedostępny',
         'body' => 'Zasady ochrony społeczności tego członka nie pozwalają na bezpośredni kontakt z Twojej strony. Koordynator społeczności może pomóc.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Przelewy oczekujące na Twoją zgodę',
+        'note' => 'Zatwierdzenie nie przenosi kredytów, dopóki partner nie zakończy przelewu.',
+        'load_error' => 'Nie udało się wczytać oczekujących przelewów.',
+        'summary' => 'Zatwierdzić przelew :amount godzin do :payee?',
+        'reversal_summary' => 'Zatwierdzić zwrot :amount godzin do :payee?',
+        'expires' => 'Wniosek wygasa :date',
+        'approve' => 'Zatwierdź przelew',
+        'reject' => 'Odrzuć przelew',
+        'saved' => 'Decyzja zapisana',
+        'failed' => 'Nie udało się zapisać decyzji. Spróbuj ponownie.',
+    ],
 ];

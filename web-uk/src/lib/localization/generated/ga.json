@@ -2816,7 +2816,7 @@
                 "search_empty": "Níor aimsíodh aon bhall. Bain triail as ainm difriúil.",
                 "recipient_heading": "Roghnaigh cé chuig a seolfar é",
                 "amount_label": "Méid (uaireanta)",
-                "amount_hint": "Idir 0.25 agus 1000 uair, i gcéimeanna de 0.25.",
+                "amount_hint": "Idir 0.25 agus :max uair, i gcéimeanna de 0.25.",
                 "note_label": "Nóta (roghnach)",
                 "note_hint": "Cuir nóta gearr leis ionas go mbeidh a fhios ag an mball cad atá na creidmheasanna ann.",
                 "send_button": "Seol creidmheasanna chuig :name",
@@ -2837,7 +2837,7 @@
                     "not_found": "Níorbh fhéidir an ball sin a aimsiú sa phobal seo.",
                     "self": "Ní féidir leat creidmheasanna a sheoladh chugat féin.",
                     "inactive": "Níl an cuntas sin gníomhach.",
-                    "too_large": "Tá an méid sin ró-mhór. Is é 1000 uair an chloig an t-uasmhéid in aghaidh an aistrithe.",
+                    "too_large": "Tá an méid sin ró-mhór. Is é :max uair an chloig an t-uasmhéid in aghaidh an aistrithe.",
                     "decimals": "Cuir isteach an méid le dhá dheachúil ar a mhéad.",
                     "failed": "Níorbh fhéidir an t-aistriú a chríochnú. Bain triail eile as."
                 },
@@ -3206,6 +3206,8 @@
                 "group_tag": "grúpáilte le :count",
                 "actors_label": "Ó :names",
                 "actors_and_more": "{0} Ó :names|{1} Ó :names agus duine amháin eile|[2,*] Ó :names agus :count duine eile",
+                "group_items_summary": "Taispeáin na fógraí sa ghrúpa seo",
+                "group_items_more": "Gan taispeáint anseo: :count eile.",
                 "delete_all": "Scrios uile",
                 "delete_all_warning": "Baineann sé seo do chuid fógraí go léir go buan. Ní féidir leat é seo a chealú.",
                 "types": {
@@ -7225,7 +7227,25 @@
                 "error_business_name": "Cuir isteach ainm do ghnó",
                 "error_display_name": "Cuir isteach ainm taispeána",
                 "status_complete": "Sábháladh do shonraí díoltóra. Is féidir leat tosú ag díol anois.",
-                "status_failed": "Ár leithscéal, níorbh fhéidir do shonraí a shábháil. Bain triail eile as."
+                "status_failed": "Ár leithscéal, níorbh fhéidir do shonraí a shábháil. Bain triail eile as.",
+                "section_hours": "Uaireanta oscailte",
+                "hours_hint": "Cuir tic le Dúnta do gach lá nach mbíonn tú ar oscailt. Úsáidtear an clog 24 uair, mar shampla 09:00.",
+                "day_mon": "Luan",
+                "day_tue": "Máirt",
+                "day_wed": "Céadaoin",
+                "day_thu": "Déardaoin",
+                "day_fri": "Aoine",
+                "day_sat": "Satharn",
+                "day_sun": "Domhnach",
+                "closed_label": "Dúnta",
+                "open_time_label": "Am oscailte",
+                "close_time_label": "Am dúnta",
+                "error_hours": "Cuir isteach am oscailte agus am dúnta do gach lá a bhíonn tú ar oscailt, nó cuir tic le Dúnta",
+                "section_photos": "Grianghraf Próifíle",
+                "photos_hint": "Roghnach. Cabhraíonn grianghraf le ceannaitheoirí do shiopa a aithint. JPG, PNG, WebP nó GIF, suas le 10MB.",
+                "avatar_label": "Uaslódáil grianghraf próifíle",
+                "cover_label": "Uaslódáil íomhá clúdaigh (roghnach)",
+                "error_cover_needs_photo": "Cuir grianghraf próifíle leis an íomhá clúdaigh"
             },
             "coupons": {
                 "title": "Mo cúpóin",
@@ -7860,7 +7880,8 @@
                 "warning": "Rabhadh",
                 "error_prefix": "Earráid:",
                 "save": "Sábháil",
-                "cancel": "Cealaigh"
+                "cancel": "Cealaigh",
+                "event_time_zone_hint": "Iontráil na hamanna i gcrios ama na hócáide féin (:zone)."
             },
             "safety": {
                 "title": "Sábháilteacht imeachtaí"
@@ -8054,7 +8075,8 @@
                 "reset_success": "Baineadh do shocruithe meabhrúcháin a bhaineann go sonrach le hócáid.",
                 "conflict": "D'athraigh na socruithe seo áit eile. Taispeántar an leagan is déanaí; athbhreithnigh é roimh shábháil arís.",
                 "validation_error": "Seiceáil na hamanna meabhrúcháin agus na cainéil, ansin bain triail eile as.",
-                "save_error": "Níorbh fhéidir do shocruithe meabhrúchán a shábháil. Bain triail eile as."
+                "save_error": "Níorbh fhéidir do shocruithe meabhrúchán a shábháil. Bain triail eile as.",
+                "switched_off": "Tá meabhrúcháin ócáidí múchta sa phobal seo, mar sin níl aon rud le socrú don ócáid seo."
             },
             "create_restricted": {
                 "title": "Ní féidir ach leis an bhfoireann imeachtaí a chruthú anseo",
@@ -8239,6 +8261,21 @@
                 "load_failed": "Níorbh fhéidir an féilire a lódáil.",
                 "code_label": "Cód bardais",
                 "code_hint": "Cód oifigiúil an bhardais (m.sh. cód poist nó cód BFS) — caithfidh sé a bheith ag teacht le cód na gcumann comhpháirtíochta."
+            },
+            "create": {
+                "recurrence_unavailable": "Tá ócáidí athfhillteacha múchta sa phobal seo. Níor cruthaíodh d’ócáid. Seiceáil na sonraí agus cruthaigh í mar ócáid aonair."
+            },
+            "rsvp": {
+                "pending_tag": "Iarrtha",
+                "pending": "D’iarr tú áit. Caithfidh an t-eagraí í a cheadú sula ndeimhneofar d’áit."
+            },
+            "check_in": {
+                "answers_outstanding_tag": "Freagraí le tabhairt",
+                "answers_outstanding": "Níor fhreagair an duine seo na ceisteanna clárúcháin riachtanacha fós. Caithfidh siad iad a fhreagairt sular féidir iad a chlárú isteach."
+            },
+            "listing": {
+                "draft_tag": "Dréacht",
+                "pending_review_tag": "Ag fanacht le hathbhreithniú"
             }
         },
         "govuk_alpha_federation": {
@@ -8343,6 +8380,18 @@
             "safeguarding": {
                 "heading": "Níl teagmháil ar fáil",
                 "body": "Ní cheadaíonn beartas cosanta phobal an bhaill seo teagmháil dhíreach uait. Is féidir le comhordaitheoir pobail cabhrú."
+            },
+            "debit_approvals": {
+                "heading": "Aistrithe ag fanacht le do chead",
+                "note": "Ní aistreofar creidmheasanna nuair a cheadaíonn tú é go dtí go gcríochnóidh an comhpháirtí an t-aistriú.",
+                "load_error": "Níorbh fhéidir na haistrithe atá ar feitheamh a luchtú.",
+                "summary": "An gceadaíonn tú :amount uair an chloig a aistriú chuig :payee?",
+                "reversal_summary": "An gceadaíonn tú :amount uair an chloig a thabhairt ar ais do :payee?",
+                "expires": "Rachaidh an t-iarratas in éag ar :date",
+                "approve": "Ceadaigh an t-aistriú",
+                "reject": "Diúltaigh don aistriú",
+                "saved": "Sábháladh do chinneadh",
+                "failed": "Níorbh fhéidir do chinneadh a shábháil. Bain triail eile as."
             }
         },
         "govuk_alpha_feed": {
@@ -11321,7 +11370,9 @@
                 "error_title": "Tá fadhb ann",
                 "optional": "(roghnach)",
                 "warning": "Rabhadh",
-                "none_yet": "Níl aon cheann fós"
+                "none_yet": "Níl aon cheann fós",
+                "find_opportunities": "Aimsigh deiseanna",
+                "check_applications": "Seiceáil m’iarratais"
             },
             "my_orgs": {
                 "title": "Mo eagraíochtaí",
@@ -11344,9 +11395,11 @@
                 "manage_dashboard": "Oscail painéal",
                 "manage_dashboard_for": "Oscail an painéal le haghaidh :name",
                 "awaiting_approval": "Ag feitheamh le ceadú",
-                "awaiting_approval_hint": "Déanfaidh riarthóir athbhreithniú ar an eagraíocht seo sula mbeidh tú in ann deiseanna a bhainistiú.",
+                "awaiting_approval_hint": "Tá riarthóir pobail ag athbhreithniú na heagraíochta seo. Is féidir leat a painéal a oscailt agus í a shocrú agus tú ag fanacht.",
                 "more_label": "níos mó eagraíochtaí",
-                "pagination_label": "Mo leathanach eagraíochtaí"
+                "pagination_label": "Mo leathanach eagraíochtaí",
+                "pending_setup": "Socraigh í agus tú ag fanacht",
+                "pending_see_all": "Féach ar d’eagraíochtaí"
             },
             "org_dashboard": {
                 "title": "Painéal na heagraíochta",
@@ -12028,7 +12081,8 @@
                 "what_to_do": "Úsáid é seo chun a insint don fhoireann cad atá ar eolas ag d'eagraíocht nó cad a rinne sí, mar shampla má labhair tú leis an oibrí deonach nó má d'athraigh tú sealad. Ná téigh i dteagmháil leis an duine a rinne an tuairisc.",
                 "closed_no_updates": "Tá an tuairisc seo dúnta, mar sin ní féidir nuashonruithe a chur leis a thuilleadh. Má thagann rud nua chun cinn, téigh i dteagmháil le riarthóirí nó bróicéirí do phobail.",
                 "history_empty": "Níor tharla aon rud ar an tuairisc seo fós.",
-                "status_guide_title": "Cad is brí le gach stádas"
+                "status_guide_title": "Cad is brí le gach stádas",
+                "team_meaning": "Ar an leathanach seo, ciallaíonn “an fhoireann chosanta” riarthóirí, bróicéirí agus comhordaitheoirí do phobail. Feiceann siad uile gach tuairisc go hiomlán."
             },
             "shift_manager": {
                 "manage_link": "Bainistigh sealanna",
@@ -12567,7 +12621,12 @@
                 "status_already": "Tá an duine sin ar an bhfoireann cheana féin.",
                 "status_user_not_found": "Ní ball gníomhach den phobal seo an duine sin.",
                 "status_forbidden": "Ní féidir ach le húinéirí na heagraíochta agus le riarthóirí an phobail an fhoireann a athrú.",
-                "status_failed": "Níorbh fhéidir an t-athrú sin a dhéanamh. Bain triail eile as."
+                "status_failed": "Níorbh fhéidir an t-athrú sin a dhéanamh. Bain triail eile as.",
+                "safeguarding_title": "Ceannaire cosanta",
+                "safeguarding_lead": "Ceannaire cosanta",
+                "safeguarding_deputy": "Leascheannaire",
+                "safeguarding_nobody": "Níor ceapadh aon duine fós",
+                "safeguarding_help": "Feiceann an ceannaire agus an leascheannaire achoimre ar gach tuairisc chosanta atá nasctha leis an eagraíocht seo, agus an tuairisc iomlán má roinneann foireann chosanta an phobail í amháin. Ní chuirtear in iúl dóibh riamh cé a rinne tuairisc. Is iad riarthóirí an phobail a cheapann iad: fiafraigh de do phobal má tá athrú ag teastáil."
             },
             "my_qualifications": {
                 "heading": "Cáilíochtaí",
@@ -12802,7 +12861,28 @@
                 "older_shifts": "Seala níos luaithe",
                 "shifts_col_when": "Cathain",
                 "shifts_col_where": "Cá háit",
-                "shifts_load_error": "Níorbh fhéidir linn do sheala a lódáil. Bain triail eile as."
+                "shifts_load_error": "Níorbh fhéidir linn do sheala a lódáil. Bain triail eile as.",
+                "no_organisation": "Is féidir leat uaireanta a logáil nuair a bheidh tú ceadaithe mar oibrí deonach ag eagraíocht. Aimsigh deis agus déan iarratas. Nuair a cheadaíonn an eagraíocht d’iarratas, is féidir leat do chuid ama a logáil anseo."
+            },
+            "load_errors": {
+                "urgent_requests": "Níorbh fhéidir linn d’iarratais phráinneacha ar sheala a lódáil. Bain triail eile as.",
+                "group_signups": "Níorbh fhéidir linn do chlárúcháin ghrúpa a lódáil. Bain triail eile as.",
+                "safeguarding": "Níorbh fhéidir linn do thaifid chosanta a lódáil. Bain triail eile as.",
+                "organisations": "Níorbh fhéidir linn d’eagraíochtaí obair dheonach a lódáil. Bain triail eile as.",
+                "recommended": "Níorbh fhéidir linn na seala a mholtar duit a lódáil. Bain triail eile as.",
+                "org_dashboard": "Níorbh fhéidir linn painéal na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.",
+                "org_manage": "Níorbh fhéidir linn scuaine bainistíochta na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.",
+                "org_settings": "Níorbh fhéidir linn socruithe na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.",
+                "org_volunteers": "Níorbh fhéidir linn oibrithe deonacha na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.",
+                "org_wallet": "Níorbh fhéidir linn sparán na heagraíochta a lódáil. Seiceáil go mbainistíonn tú an eagraíocht seo agus bain triail eile as.",
+                "hours": "Níorbh fhéidir linn d’uaireanta obair dheonach a lódáil. Bain triail eile as.",
+                "donations": "Níorbh fhéidir linn do thabhartais a lódáil. Bain triail eile as.",
+                "expenses": "Níorbh fhéidir linn do chostais a lódáil. Bain triail eile as.",
+                "create_opportunity": "Níorbh fhéidir linn an fhoirm chun deis a chruthú a lódáil. Bain triail eile as."
+            },
+            "swaps_list": {
+                "more_label": "tuilleadh iarratas ar mhalartú",
+                "pagination_label": "Leathanaigh iarratas ar mhalartú"
             }
         },
         "govuk_alpha_wallet": {
@@ -12842,7 +12922,7 @@
                 "search_empty": "Níor mheaitseáil aon bhall le do chuardach.",
                 "recipient_heading": "Baill mheaitseála",
                 "amount_label": "Méid in uaireanta",
-                "amount_hint": "Mar shampla, 1 nó 2.5. Is féidir leat suas le 1000 uair a sheoladh.",
+                "amount_hint": "Mar shampla, 1 nó 2.5. Is féidir leat suas le :max uair a sheoladh.",
                 "note_label": "Cuir nóta leis (roghnach)",
                 "note_hint": "Feicfidh an faighteoir é seo leis an aistriú.",
                 "send_button": "Seol creidmheasanna chuig :name"

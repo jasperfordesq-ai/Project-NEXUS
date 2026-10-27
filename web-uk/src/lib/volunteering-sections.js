@@ -114,4 +114,47 @@ function volunteeringSections(tenant) {
   };
 }
 
-module.exports = { volunteeringSections, sectionEnabled };
+/**
+ * Organisation pages need the `organisations` feature as well as `volunteering`
+ * (React FeatureGate feature="volunteering" features={['organisations']}, and the API's
+ * VolunteerController::ensureOrganisationFeature answers 403 FEATURE_DISABLED when it is
+ * off). The tenant-wide gate already refuses every page here when volunteering is off,
+ * so this one only adds the second switch. 27 Oct 2026.
+ *
+ * The Explore "Organisations" card stays on volunteering alone (owner decision, React
+ * 5d7ab702); this gate covers the pages and the links inside volunteering.
+ */
+const ORGANISATION_PATH_PREFIXES = [
+  '/organisations',
+  '/volunteering/my-organisations',
+  '/volunteering/organisations',
+  '/volunteering/org'
+];
+
+function organisationsEnabled(tenant) {
+  if (!tenant || typeof tenant !== 'object') return true;
+  // Required lazily: accessible-shell is large and this module is loaded by routes.
+  const { flagEnabled } = require('./accessible-shell');
+  return flagEnabled(tenant, 'organisations', 'features', true);
+}
+
+function isOrganisationPath(pathname = '') {
+  return ORGANISATION_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+/**
+ * Express middleware: tells every view whether organisation links may be shown
+ * (`organisationsEnabled`), and refuses an organisation page with the same 403 the
+ * tenant feature gate uses when the community has switched organisations off.
+ */
+function organisationsFeatureGate(req, res, next) {
+  const enabled = organisationsEnabled(req.accessibleRouting && req.accessibleRouting.tenant);
+  res.locals.organisationsEnabled = enabled;
+  if (enabled || !isOrganisationPath(req.path || '/')) return next();
+  return res.status(403).render('errors/403', {
+    title: res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden',
+    reason: 'feature-disabled'
+  });
+}
+
+module.exports = { volunteeringSections, sectionEnabled, organisationsEnabled, isOrganisationPath, organisationsFeatureGate };

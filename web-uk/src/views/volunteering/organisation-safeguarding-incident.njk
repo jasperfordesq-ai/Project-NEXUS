@@ -40,6 +40,8 @@
     {% if incident.fullReportShared %}{{ govukTag({ text: t("govuk_alpha_volunteering.org_safeguarding.shared_chip"), classes: "govuk-tag--green" }) }}{% endif %}
   </p>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.team_handling") }}</p>
+  {# Who "the safeguarding team" is (React f331badb6). #}
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.team_meaning") }}</p>
   <div class="govuk-inset-text">
     <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("govuk_alpha_volunteering.org_safeguarding.status_now", { status: incident.statusLabel }) }}</p>
     <p class="govuk-body govuk-!-margin-bottom-0">{{ incident.statusHelp }}</p>

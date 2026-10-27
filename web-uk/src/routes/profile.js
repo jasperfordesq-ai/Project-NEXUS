@@ -546,13 +546,60 @@ function validEmail(value) {
   return isValidEmail(value);
 }
 
-function notificationPayload(body) {
+// Which capability each notification toggle belongs to — the same switches
+// React's NotificationsTab reads (4e1e6fec). A toggle for a switched-off
+// capability is not offered, and (below) never saved. Defaults come from the
+// shared flag defaults, so a module that is off unless enabled stays hidden.
+const PROFILE_NOTIFICATION_GATES = Object.freeze({
+  email_messages: [['messages', 'modules']],
+  email_connections: [['connections', 'features']],
+  caring_smart_nudges: [['caring_community', 'features']],
+  federation_notifications_enabled: [['federation', 'features']],
+  email_listings: [['listings', 'modules']],
+  email_events: [['events', 'features']],
+  email_transactions: [['wallet', 'modules']],
+  email_reviews: [['reviews', 'features']],
+  email_gamification_digest: [['gamification', 'features']],
+  email_gamification_milestones: [['gamification', 'features']],
+  email_org_payments: [['volunteering', 'features'], ['organisations', 'features']],
+  email_org_transfers: [['volunteering', 'features'], ['organisations', 'features']],
+  email_org_membership: [['volunteering', 'features'], ['organisations', 'features']],
+  email_org_admin: [['volunteering', 'features'], ['organisations', 'features']]
+});
+
+const PROFILE_NOTIFICATION_GROUPS = Object.freeze({
+  messages: ['email_messages', 'email_connections', 'caring_smart_nudges', 'federation_notifications_enabled'],
+  activity: ['email_listings', 'email_events', 'email_transactions', 'email_reviews'],
+  achievements: ['email_gamification_digest', 'email_gamification_milestones', 'email_digest'],
+  organisation: ['email_org_payments', 'email_org_transfers', 'email_org_membership', 'email_org_admin'],
+  push: ['push_enabled', 'push_campaigns_opted_in']
+});
+
+function notificationKeyEnabled(tenant, key) {
+  const gates = PROFILE_NOTIFICATION_GATES[key];
+  if (!gates) return true;
+  const source = tenant && typeof tenant === 'object' ? tenant : {};
+  return gates.every(([flag, kind]) => flagEnabled(source, flag, kind, true));
+}
+
+// [[group, keys], ...] with switched-off toggles removed and empty groups dropped.
+function notificationGroupKeys(tenant) {
+  return Object.entries(PROFILE_NOTIFICATION_GROUPS)
+    .map(([group, keys]) => [group, keys.filter((key) => notificationKeyEnabled(tenant, key))])
+    .filter(([, keys]) => keys.length > 0);
+}
+
+function notificationPayload(body, tenant = {}) {
   const payload = PROFILE_NOTIFICATION_KEYS.reduce((prefs, key) => {
-    prefs[key] = checked(body[key]);
+    // 🔴 The API updates only the keys it receives. Sending a hidden toggle as
+    // "off" would overwrite the member's real choice for that capability.
+    if (notificationKeyEnabled(tenant, key)) prefs[key] = checked(body[key]);
     return prefs;
   }, {});
 
-  payload.federation_notifications_enabled = checked(body.federation_notifications_enabled);
+  if (notificationKeyEnabled(tenant, 'federation_notifications_enabled')) {
+    payload.federation_notifications_enabled = checked(body.federation_notifications_enabled);
+  }
 
   const digestFrequency = allowedValue(body.digest_frequency, PROFILE_DIGEST_FREQUENCIES, null);
   if (digestFrequency !== null) {
@@ -1154,13 +1201,7 @@ function buildProfileSettingsViewModel(req, data) {
         )
       }
     ].filter(Boolean),
-    notificationGroups: Object.entries({
-      messages: ['email_messages', 'email_connections', 'caring_smart_nudges', 'federation_notifications_enabled'],
-      activity: ['email_listings', 'email_events', 'email_transactions', 'email_reviews'],
-      achievements: ['email_gamification_digest', 'email_gamification_milestones', 'email_digest'],
-      organisation: ['email_org_payments', 'email_org_transfers', 'email_org_membership', 'email_org_admin'],
-      push: ['push_enabled', 'push_campaigns_opted_in']
-    }).map(([group, keys]) => ({
+    notificationGroups: notificationGroupKeys(req?.accessibleRouting?.tenant).map(([group, keys]) => ({
       title: translateStatusMessage(req, `profile_settings.notifications.groups.${group}`, group),
       items: keys.map((key) => ({
         key,
@@ -1606,7 +1647,7 @@ router.post('/notifications', asyncRoute(async (req, res) => {
 
   let status = 'notifications-saved';
   try {
-    const payload = notificationPayload(req.body);
+    const payload = notificationPayload(req.body, req.accessibleRouting?.tenant);
     const digestFrequency = payload.digest_frequency;
     delete payload.digest_frequency;
     await callUserSettings(token, 'PUT', '/notifications', payload);
@@ -2373,3 +2414,5 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
 }));
 
 module.exports = router;
+module.exports.notificationGroupKeys = notificationGroupKeys;
+module.exports.notificationPayload = notificationPayload;

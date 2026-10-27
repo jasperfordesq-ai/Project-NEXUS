@@ -79,6 +79,29 @@ function categoryFromType(value) {
   return 'other';
 }
 
+// A stored notification's text may be a translation key; resolve it if so.
+function notificationText(notification, t) {
+  const rawText = String(notification.message || notification.body || notification.title || '').trim();
+  const translatedText = /^[a-z0-9_]+\.[a-z0-9_.]+$/.test(rawText) ? t(rawText) : rawText;
+  return translatedText !== rawText ? translatedText : rawText;
+}
+
+// React db249f98: a group travels with its own rows (capped server-side, with
+// remaining_count for the rest) so it can be expanded into something.
+function normalizeGroupItems(items, t, formatRelativeTime) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      id: item.id,
+      displayText: notificationText(item, t),
+      link: typeof item.link === 'string' && item.link.trim() !== '' ? item.link.trim() : null,
+      unread: !boolFrom(item.is_read),
+      displayWhen: item.created_at ? formatRelativeTime(item.created_at) : ''
+    }))
+    .filter((item) => item.displayText !== '');
+}
+
 function normalizeNotifications(rows, t, formatRelativeTime) {
   return rows.map((notification) => {
     const grouped = boolFrom(notification.is_grouped);
@@ -99,7 +122,9 @@ function normalizeNotifications(rows, t, formatRelativeTime) {
       categoryLabel: t(`notifications.types.${category}`),
       categoryColour: CATEGORY_COLOURS[category] || CATEGORY_COLOURS.other,
       displayText: translatedText !== rawText ? translatedText : rawText,
-      displayWhen: notification.created_at ? formatRelativeTime(notification.created_at) : ''
+      displayWhen: notification.created_at ? formatRelativeTime(notification.created_at) : '',
+      groupItems: grouped ? normalizeGroupItems(notification.group_items, t, formatRelativeTime) : [],
+      groupItemsHidden: grouped ? Math.max(0, Number(notification.remaining_count) || 0) : 0
     };
   });
 }

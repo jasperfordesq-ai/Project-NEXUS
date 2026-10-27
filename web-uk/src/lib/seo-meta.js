@@ -127,6 +127,13 @@ const PRIVATE_PREFIXES = [
   '/wallet'
 ];
 
+// Prefixes whose CHILD pages are private while the bare page stays public.
+// /verify-certificate/{code} carries one member's certificate code in the
+// address (React 5c76c2c2f); the empty verification form stays indexable.
+const PRIVATE_CHILD_PREFIXES = [
+  '/verify-certificate'
+];
+
 // The subset robots.txt asks crawlers not to fetch at all. Deliberately smaller
 // than PRIVATE_PREFIXES: sign-in and registration pages stay crawlable so a
 // crawler can READ their noindex (a disallowed URL can still be indexed from
@@ -226,6 +233,9 @@ function mainSitePathFor(routePath) {
 function isPrivatePath(routePath) {
   const pathname = trimTrailingSlash(String(routePath || '/').split('?')[0]).toLowerCase();
   if (PRIVATE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    return true;
+  }
+  if (PRIVATE_CHILD_PREFIXES.some((prefix) => pathname.startsWith(`${prefix}/`))) {
     return true;
   }
   const segments = pathname.split('/').filter(Boolean);

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 
+{% from "govuk/components/tag/macro.njk" import govukTag %}
 {% extends "layouts/base.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -227,6 +228,10 @@
               <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
                 <a class="govuk-link nexus-alpha-card__link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a>
               </h3>
+              {#- Only the organiser sees their own unpublished events here; without a tag a
+                  draft looked exactly like a published event. -#}
+              {% if event.publication_state == "draft" %}<p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha_events.listing.draft_tag"), classes: "govuk-tag--grey" }) }}</p>
+              {% elif event.publication_state == "pending_review" %}<p class="govuk-body govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha_events.listing.pending_review_tag"), classes: "govuk-tag--yellow" }) }}</p>{% endif %}
               <dl class="nexus-alpha-inline-list">
                 {% if event.start_label %}<div><dt>{{ t("events.starts") }}</dt><dd>{{ event.start_label }}{% if event.all_day %} · {{ t("events.all_day") }}{% endif %}</dd></div>{% endif %}
                 {% if event.end_label %}<div><dt>{{ t("events.ends") }}</dt><dd>{{ event.end_label }}</dd></div>{% endif %}

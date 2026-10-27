@@ -31,6 +31,7 @@ const { callEventApi, getEvent, getEventPermissions, getUsers, ApiError } = requ
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { readDateTime, splitDateTime } = require('../lib/date-input');
+const { safeTimeZone, wallClockInZone, wallClockToUtc } = require('../lib/event-wall-clock');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 
 const router = express.Router();
@@ -93,57 +94,6 @@ function noStore(res) {
 
 function renderForbidden(res) {
   return res.status(403).render('errors/403', { title: res.locals.t('govuk_alpha.error_pages.403_title') });
-}
-
-function safeTimeZone(value) {
-  const zone = trimmed(value, 64) || 'UTC';
-  try {
-    new Intl.DateTimeFormat(undefined, { timeZone: zone }).format(new Date(0));
-    return zone;
-  } catch {
-    return 'UTC';
-  }
-}
-
-function zoneParts(epoch, timeZone) {
-  // Numeric parts only (Latin digits), never shown to a member.
-  return Object.fromEntries(new Intl.DateTimeFormat(undefined, {
-    timeZone,
-    numberingSystem: 'latn',
-    hourCycle: 'h23',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  }).formatToParts(new Date(epoch)).map((part) => [part.type, part.value]));
-}
-
-/** `YYYY-MM-DDTHH:MM` in the event's own time zone, for prefilling a form. */
-function wallClockInZone(iso, timeZone) {
-  const epoch = Date.parse(trimmed(iso));
-  if (!Number.isFinite(epoch)) return '';
-  const parts = zoneParts(epoch, timeZone);
-  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
-}
-
-/**
- * The UTC instant (`YYYY-MM-DDTHH:MM:SSZ`) of a wall-clock time typed in the
- * event's own time zone. The ticket API refuses a local value whose offset does
- * not match that zone, so the conversion happens here and the `_utc` field is
- * sent. A time that does not exist (inside a clock-change gap) returns null.
- */
-function wallClockToUtc(local, timeZone) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(trimmed(local));
-  if (!match) return null;
-  const target = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]));
-  let guess = target;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const parts = zoneParts(guess, timeZone);
-    const shown = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
-    const next = target - (shown - guess);
-    if (next === guess) break;
-    guess = next;
-  }
-  if (wallClockInZone(new Date(guess).toISOString(), timeZone) !== trimmed(local)) return null;
-  return new Date(guess).toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
 function dateLabel(iso, timeZone) {
@@ -468,7 +418,19 @@ function readTicketForm(body, timezone, t) {
   };
 }
 
-function renderTicketForm(req, res, { event, ticketType = null, values, errors = [], apiFailed = false }) {
+/**
+ * The API's own explanation of a refused ticket-type save ("sales must close before the
+ * event starts"), when it gave one. Only an EXPLAINED 4xx (first error names a `reason`)
+ * is used; a bare "Invalid input" or anything from a 5xx keeps the page's own message.
+ */
+function explainedRefusal(error) {
+  if (!(error instanceof ApiError) || error.status < 400 || error.status >= 500) return '';
+  const first = Array.isArray(error.data?.errors) ? error.data.errors[0] : null;
+  if (!first || typeof first.reason !== 'string' || !first.reason.trim()) return '';
+  return trimmed(first.message, 300);
+}
+
+function renderTicketForm(req, res, { event, ticketType = null, values, errors = [], apiFailed = false, apiReason = '' }) {
   noStore(res);
   return res.status(errors.length || apiFailed ? 422 : 200).render('events/ticket-type-form', {
     title: res.locals.t(ticketType ? 'govuk_alpha_events.ticket_types.edit_title' : 'govuk_alpha_events.ticket_types.create_title'),
@@ -479,6 +441,7 @@ function renderTicketForm(req, res, { event, ticketType = null, values, errors =
     errors,
     fieldErrors: Object.fromEntries(errors.map((error) => [error.field, error.text])),
     apiFailed,
+    apiReason,
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -538,7 +501,7 @@ router.post('/:id(\\d+)/tickets/types/new', requireAuth, asyncRoute(async (req, 
   } catch (error) {
     if (isAuthError(error)) throw error;
     if (error instanceof ApiError && error.status < 500) {
-      return renderTicketForm(req, res, { event: context.event, values: form.values, apiFailed: true });
+      return renderTicketForm(req, res, { event: context.event, values: form.values, apiFailed: true, apiReason: explainedRefusal(error) });
     }
     throw error;
   }
@@ -577,7 +540,7 @@ router.post('/:id(\\d+)/tickets/types/:ticketTypeId(\\d+)/edit', requireAuth, as
   } catch (error) {
     if (isAuthError(error)) throw error;
     if (error instanceof ApiError && error.status < 500) {
-      return renderTicketForm(req, res, { event: context.event, ticketType, values: form.values, apiFailed: true });
+      return renderTicketForm(req, res, { event: context.event, ticketType, values: form.values, apiFailed: true, apiReason: explainedRefusal(error) });
     }
     throw error;
   }

@@ -119,4 +119,18 @@ return [
         'heading' => 'Contact is not available',
         'body' => 'This member’s community safeguarding policy does not allow direct contact from you. A community coordinator can help.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Transfers awaiting your approval',
+        'note' => 'Approving does not move credits until the partner completes the transfer.',
+        'load_error' => 'Could not load pending transfers.',
+        'summary' => 'Approve :amount hours to :payee?',
+        'reversal_summary' => 'Approve returning :amount hours to :payee?',
+        'expires' => 'Request expires :date',
+        'approve' => 'Approve transfer',
+        'reject' => 'Decline transfer',
+        'saved' => 'Transfer decision saved',
+        'failed' => 'Could not save your decision. Please try again.',
+    ],
 ];

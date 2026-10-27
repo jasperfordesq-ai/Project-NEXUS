@@ -125,6 +125,27 @@
           </p>
         {% endif %}
         {% if notification.displayWhen %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ notification.displayWhen }}</p>{% endif %}
+        {% if notification.isGrouped and notification.groupItems and notification.groupItems.length > 0 %}
+          <details class="govuk-details govuk-!-margin-top-2 govuk-!-margin-bottom-0">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">{{ t("notifications.group_items_summary") }}</span>
+            </summary>
+            <div class="govuk-details__text">
+              <ul class="govuk-list govuk-list--spaced">
+                {% for item in notification.groupItems %}
+                  <li>
+                    {% if item.unread %}{{ govukTag({ text: t("notifications.new_tag"), classes: "govuk-tag--blue" }) }}{% endif %}
+                    {% if item.link %}<a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(item.link) }}">{{ item.displayText }}</a>{% else %}{{ item.displayText }}{% endif %}
+                    {% if item.displayWhen %}<span class="govuk-body-s nexus-alpha-meta"> {{ item.displayWhen }}</span>{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+              {% if notification.groupItemsHidden > 0 %}
+                <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("notifications.group_items_more", { count: notification.groupItemsHidden }) }}</p>
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}
       </div>
     {% endfor %}
     </div>

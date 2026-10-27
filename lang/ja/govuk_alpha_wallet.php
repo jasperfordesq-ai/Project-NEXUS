@@ -43,7 +43,7 @@ return [
         'search_empty' => '検索に一致するメンバーはいませんでした。',
         'recipient_heading' => 'メンバーのマッチング',
         'amount_label' => '時間単位の金額',
-        'amount_hint' => 'たとえば、1 または 2.5 です。最大 1000 時間送信できます。',
+        'amount_hint' => 'たとえば、1 または 2.5 です。最大 :max 時間送信できます。',
         'note_label' => 'メモを追加します (オプション)',
         'note_hint' => '受信者には転送時にこれが表示されます。',
         'send_button' => 'クレジットを :name に送信します',

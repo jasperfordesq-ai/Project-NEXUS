@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Błąd:',
         'save' => 'Ratować',
         'cancel' => 'Anulować',
+        'event_time_zone_hint' => 'Wpisz godziny w strefie czasowej wydarzenia (:zone).',
     ],
     'safety' => [
         'title' => 'Bezpieczeństwo wydarzeń',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'Ustawienia te zostały zmienione w innym miejscu. Wyświetlana jest najnowsza wersja; przejrzyj go przed ponownym zapisaniem.',
         'validation_error' => 'Sprawdź godziny i kanały przypomnień, a następnie spróbuj ponownie.',
         'save_error' => 'Nie można zapisać ustawień przypomnień. Spróbuj ponownie.',
+        'switched_off' => 'Przypomnienia o wydarzeniach są w tej społeczności wyłączone, więc dla tego wydarzenia nie ma nic do ustawienia.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Nie udało się załadować kalendarza.',
         'code_label' => 'Kod gminy',
         'code_hint' => 'Oficjalny kod gminy (np. kod pocztowy lub BFS) — musi być zgodny z innymi klubami, aby się sfederować.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Wydarzenia cykliczne są w tej społeczności wyłączone. Twoje wydarzenie nie zostało utworzone. Sprawdź dane i utwórz je jako pojedyncze wydarzenie.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Zgłoszono',
+        'pending' => 'Poproszono o miejsce. Organizator musi je zatwierdzić, zanim zostanie potwierdzone.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Brak odpowiedzi',
+        'answers_outstanding' => 'Ta osoba nie odpowiedziała jeszcze na obowiązkowe pytania rejestracyjne. Musi na nie odpowiedzieć, zanim będzie można ją zameldować.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Szkic',
+        'pending_review_tag' => 'Oczekuje na sprawdzenie',
     ],
 ];

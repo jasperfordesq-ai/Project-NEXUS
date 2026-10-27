@@ -25,7 +25,7 @@
               <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
               <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
-                  <li><a href="#profile_visible_federated">{{ statusBanner.message }}</a></li>
+                  <li><a href="{{ statusBanner.href or '#profile_visible_federated' }}">{{ statusBanner.message }}</a></li>
                 </ul>
               </div>
             </div>
@@ -40,6 +40,31 @@
             </div>
           </div>
         {% endif %}
+      {% endif %}
+
+      {% if debitApprovals and debitApprovals.length %}
+        <section id="debit-approvals" class="govuk-!-margin-bottom-8" aria-labelledby="debit-approvals-heading">
+          <h2 class="govuk-heading-m" id="debit-approvals-heading">{{ t("govuk_alpha_federation.debit_approvals.heading") }}</h2>
+          <p class="govuk-body">{{ t("govuk_alpha_federation.debit_approvals.note") }}</p>
+          <ul class="govuk-list nexus-alpha-card-list">
+            {% for approval in debitApprovals %}
+              <li class="nexus-alpha-card">
+                <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ approval.summary }}</p>
+                {% if approval.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ approval.description }}</p>{% endif %}
+                {% if approval.expires %}<p class="govuk-body-s nexus-alpha-meta">{{ approval.expires }}</p>{% endif %}
+                <form method="post" action="{{ urlFor('/federation/settings/debit-approvals/' ~ approval.id ~ '/decision') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <div class="govuk-button-group govuk-!-margin-bottom-0">
+                    <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true" name="decision" value="approve">{{ t("govuk_alpha_federation.debit_approvals.approve") }}<span class="govuk-visually-hidden">: {{ approval.summary }}</span></button>
+                    <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true" name="decision" value="reject">{{ t("govuk_alpha_federation.debit_approvals.reject") }}<span class="govuk-visually-hidden">: {{ approval.summary }}</span></button>
+                  </div>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% elif debitApprovalsError %}
+        <div id="debit-approvals" class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_federation.debit_approvals.load_error") }}</p></div>
       {% endif %}
 
       {% if not optedIn %}

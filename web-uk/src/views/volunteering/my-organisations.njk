@@ -85,15 +85,18 @@
             <p class="govuk-body govuk-!-margin-top-3">{{ organization.description }}</p>
           {% endif %}
 
-          {% if organization.canManage and organization.isApproved %}
+          {% if organization.canManage %}
+            {# A pending organisation's dashboard works too (React 03646304a): its owner can
+               set it up while a community administrator reviews it. #}
+            {% if not organization.isApproved %}
+              <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-1">
+                {{ govukTag({ text: t("govuk_alpha_volunteering.my_orgs.awaiting_approval"), classes: "govuk-tag--yellow" }) }}
+              </p>
+              <p class="govuk-hint">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval_hint") }}</p>
+            {% endif %}
             <a class="govuk-button govuk-!-margin-top-2 govuk-!-margin-bottom-0" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/volunteering/organisations/' ~ organization.id ~ '/dashboard') }}">
               {{ t("govuk_alpha_volunteering.my_orgs.manage_dashboard") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.my_orgs.manage_dashboard_for", { name: organization.name }) }}</span>
             </a>
-          {% elif organization.canManage %}
-            <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-1">
-              {{ govukTag({ text: t("govuk_alpha_volunteering.my_orgs.awaiting_approval"), classes: "govuk-tag--yellow" }) }}
-            </p>
-            <p class="govuk-hint govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval_hint") }}</p>
           {% endif %}
         </article>
       {% endfor %}

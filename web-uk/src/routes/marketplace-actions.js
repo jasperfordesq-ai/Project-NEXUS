@@ -4,10 +4,11 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const fs = require('fs/promises');
 const { timingSafeEqual } = require('node:crypto');
-const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
+const { ApiError, callMarketplaceApi, callMerchantOnboardingApi, uploadMerchantOnboardingImage } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, readDateTime } = require('../lib/date-input');
+const { readDate, readDateTime, parseTime } = require('../lib/date-input');
 const { filesFrom, photoProblem, removeFiles, uploadListingPhotos } = require('../lib/marketplace-photos');
 
 const router = express.Router();
@@ -421,8 +422,58 @@ function onboardingFormSessionKey(req) {
   return `marketplaceOnboardingForm:${tenantSlug}`;
 }
 
+// Opening hours, as React's wizard sends them: mon..sun -> { open, close } or
+// null for a closed day (MerchantOnboardingService::saveStep2 stores the JSON).
+const ONBOARDING_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+// The GOV.UK single free-text time field, read liberally ("9", "9:30am",
+// "17.30") and normalised to 24-hour HH:MM — lib/date-input's parseTime.
+function onboardingTime(value) {
+  return parseTime(value) || '';
+}
+
+// A post with no hours fields at all (an older form, a hand-made request)
+// leaves the saved hours alone instead of failing validation.
+function onboardingHoursPosted(body) {
+  return ONBOARDING_DAYS.some((day) => ['open', 'close', 'closed']
+    .some((part) => Object.prototype.hasOwnProperty.call(body, `hours_${day}_${part}`)));
+}
+
+function onboardingHoursState(body) {
+  return ONBOARDING_DAYS.reduce((hours, day) => {
+    hours[day] = {
+      closed: Boolean(body[`hours_${day}_closed`]),
+      open: String(body[`hours_${day}_open`] || '').slice(0, 10),
+      close: String(body[`hours_${day}_close`] || '').slice(0, 10)
+    };
+    return hours;
+  }, {});
+}
+
+/** { openingHours, invalidDay } — invalidDay is the first open day missing a valid time. */
+function onboardingOpeningHours(body) {
+  if (!onboardingHoursPosted(body)) return { openingHours: null, invalidDay: null };
+  const openingHours = {};
+  let invalidDay = null;
+  for (const day of ONBOARDING_DAYS) {
+    if (body[`hours_${day}_closed`]) {
+      openingHours[day] = null;
+      continue;
+    }
+    const open = onboardingTime(body[`hours_${day}_open`]);
+    const close = onboardingTime(body[`hours_${day}_close`]);
+    if (!open || !close) {
+      if (invalidDay === null) invalidDay = day;
+      continue;
+    }
+    openingHours[day] = { open, close };
+  }
+  return { openingHours, invalidDay };
+}
+
 function onboardingFormState(body) {
   return {
+    hours: onboardingHoursState(body),
     profile: {
       seller_type: trimmed(body.seller_type, 20),
       display_name: String(body.display_name || '').slice(0, 200),
@@ -465,9 +516,29 @@ function onboardingPayloads(body) {
   return { sellerType, identity, businessAddress };
 }
 
-function rememberOnboardingForm(req, state, errorKeys = []) {
+function rememberOnboardingForm(req, state, errorKeys = [], errorFieldFor = {}) {
   if (!req.session) return;
-  req.session[onboardingFormSessionKey(req)] = { ...state, errorKeys };
+  req.session[onboardingFormSessionKey(req)] = { ...state, errorKeys, errorFieldFor };
+}
+
+// The optional seller photos. Only one file per field reaches Laravel.
+function onboardingPhotoFiles(req) {
+  return {
+    avatar: filesFrom(req, 'avatar')[0] || null,
+    cover: filesFrom(req, 'cover_image')[0] || null
+  };
+}
+
+async function uploadOnboardingPhoto(token, field, file) {
+  const result = await uploadMerchantOnboardingImage(token, field, {
+    buffer: await fs.readFile(file.filepath),
+    filename: String(file.originalFilename || '').trim() || 'seller-photo',
+    contentType: String(file.mimetype || '').trim() || 'application/octet-stream'
+  });
+  const data = result && typeof result === 'object' && result.data && typeof result.data === 'object' ? result.data : result;
+  const url = data && typeof data.url === 'string' ? data.url.trim() : '';
+  if (!url) throw new Error('Seller photo upload returned no address');
+  return url;
 }
 
 function reportFormSessionKey(req, id) {
@@ -1081,22 +1152,51 @@ router.post('/onboarding', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
   const state = onboardingFormState(req.body);
   const { sellerType, identity, businessAddress } = onboardingPayloads(req.body);
+  const { openingHours, invalidDay } = onboardingOpeningHours(req.body);
+  const photos = onboardingPhotoFiles(req);
+  const chosenPhotos = [photos.avatar, photos.cover].filter(Boolean);
   const errorKeys = [];
+  const errorFieldFor = {};
   if (sellerType === 'business' && !identity.business_name) {
     errorKeys.push('govuk_alpha_commerce.onboarding.error_business_name');
   }
   if (!identity.display_name) {
     errorKeys.push('govuk_alpha_commerce.onboarding.error_display_name');
   }
+  if (invalidDay) {
+    errorKeys.push('govuk_alpha_commerce.onboarding.error_hours');
+    errorFieldFor['govuk_alpha_commerce.onboarding.error_hours'] = `hours_${invalidDay}_open`;
+  }
+  // Step 3 needs a profile photo; a cover on its own would be refused there.
+  if (photos.cover && !photos.avatar) {
+    errorKeys.push('govuk_alpha_commerce.onboarding.error_cover_needs_photo');
+    errorFieldFor['govuk_alpha_commerce.onboarding.error_cover_needs_photo'] = 'avatar';
+  }
+  for (const [field, file] of [['avatar', photos.avatar], ['cover_image', photos.cover]]) {
+    const problem = file ? photoProblem([file]) : '';
+    if (problem && !errorKeys.includes(problem)) {
+      errorKeys.push(problem);
+      errorFieldFor[problem] = field;
+    }
+  }
   if (errorKeys.length > 0) {
-    rememberOnboardingForm(req, state, errorKeys);
+    await removeFiles(chosenPhotos);
+    rememberOnboardingForm(req, state, errorKeys, errorFieldFor);
     return redirectTo(res, '/marketplace/onboarding');
   }
 
   try {
     await callMerchantOnboardingApi(token, 'POST', '/step-1', identity);
-    if (Object.keys(businessAddress).length > 0) {
-      await callMerchantOnboardingApi(token, 'POST', '/step-2', { business_address: businessAddress });
+    const step2 = {};
+    if (Object.keys(businessAddress).length > 0) step2.business_address = businessAddress;
+    if (openingHours) step2.opening_hours = openingHours;
+    if (Object.keys(step2).length > 0) await callMerchantOnboardingApi(token, 'POST', '/step-2', step2);
+    // Photos are optional (React skips step 3 without one, and completing does
+    // not need it), so step 3 runs only when a profile photo was chosen.
+    if (photos.avatar) {
+      const step3 = { avatar_url: await uploadOnboardingPhoto(token, 'avatar', photos.avatar) };
+      if (photos.cover) step3.cover_image_url = await uploadOnboardingPhoto(token, 'cover_image', photos.cover);
+      await callMerchantOnboardingApi(token, 'POST', '/step-3', step3);
     }
     await callMerchantOnboardingApi(token, 'POST', '/complete');
     delete req.session[onboardingFormSessionKey(req)];
@@ -1105,6 +1205,8 @@ router.post('/onboarding', asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     rememberOnboardingForm(req, state);
     return redirectTo(res, '/marketplace/onboarding?status=onboarding-failed');
+  } finally {
+    await removeFiles(chosenPhotos);
   }
 }));
 

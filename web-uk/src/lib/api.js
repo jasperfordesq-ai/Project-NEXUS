@@ -1215,6 +1215,23 @@ async function uploadMarketplaceListingImages(token, listingId, data) {
   });
 }
 
+// Seller onboarding photo (React MerchantOnboardingPage). Laravel takes ONE
+// file under `avatar` or `cover_image` (MerchantOnboardingController::uploadImage)
+// and answers with the stored image's { url }, which step 3 then saves.
+async function uploadMerchantOnboardingImage(token, field, file) {
+  const form = new globalThis.FormData();
+  const name = field === 'cover_image' ? 'cover_image' : 'avatar';
+  if (file && file.buffer) {
+    const blob = new globalThis.Blob([file.buffer], { type: file.contentType || 'application/octet-stream' });
+    form.append(name, blob, file.filename || 'seller-photo');
+  }
+  return request('/api/v2/merchant-onboarding/image', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+}
+
 async function uploadEventImage(token, eventId, data) {
   const form = new globalThis.FormData();
   const file = data.file || data.image;
@@ -4805,5 +4822,6 @@ module.exports = {
   remindVereinDues,
   waiveVereinDues,
   previewVereinMemberImport,
-  importVereinMembers
+  importVereinMembers,
+  uploadMerchantOnboardingImage
 };

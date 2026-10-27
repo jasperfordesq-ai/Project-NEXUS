@@ -28,6 +28,8 @@ return [
         'optional' => '(optional)',
         'warning' => 'Warning',
         'none_yet' => 'None yet',
+        'find_opportunities' => 'Find opportunities',
+        'check_applications' => 'Check my applications',
     ],
 
     // My organisations page
@@ -52,9 +54,11 @@ return [
         'manage_dashboard' => 'Open dashboard',
         'manage_dashboard_for' => 'Open the dashboard for :name',
         'awaiting_approval' => 'Awaiting approval',
-        'awaiting_approval_hint' => 'An administrator will review this organisation before you can manage opportunities.',
+        'awaiting_approval_hint' => 'A community administrator is reviewing this organisation. You can open its dashboard and set it up while you wait.',
         'more_label' => 'more organisations',
         'pagination_label' => 'My organisations pagination',
+        'pending_setup' => 'Set it up while you wait',
+        'pending_see_all' => 'See your organisations',
     ],
 
     // Organisation dashboard (overview)
@@ -783,6 +787,7 @@ return [
         'closed_no_updates' => 'This report is closed, so updates can no longer be added. If something new comes up, contact your community’s administrators or brokers.',
         'history_empty' => 'Nothing has happened on this report yet.',
         'status_guide_title' => 'What each status means',
+        'team_meaning' => 'In this page, “the safeguarding team” means your community’s administrators, brokers and coordinators. They all see each report in full.',
     ],
     'shift_manager' => [
         'manage_link' => 'Manage shifts',
@@ -1338,6 +1343,11 @@ return [
         'status_user_not_found' => 'That person is not an active member of this community.',
         'status_forbidden' => 'Only the organisation\'s owners and community admins can change the team.',
         'status_failed' => 'That change could not be made. Try again.',
+        'safeguarding_title' => 'Safeguarding lead',
+        'safeguarding_lead' => 'Safeguarding lead',
+        'safeguarding_deputy' => 'Deputy',
+        'safeguarding_nobody' => 'Nobody appointed yet',
+        'safeguarding_help' => 'The lead and deputy see a summary of each safeguarding report linked to this organisation, and the full report only if the community\'s safeguarding staff share it. They are never told who made a report. Community admins appoint them: ask your community if yours needs to change.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1586,5 +1596,26 @@ return [
         'shifts_col_when' => 'When',
         'shifts_col_where' => 'Where',
         'shifts_load_error' => 'We could not load your shifts. Please try again.',
+        'no_organisation' => 'You can log hours once an organisation has approved you as a volunteer. Find an opportunity and apply. When the organisation approves your application, you can log your time here.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'We could not load your urgent shift requests. Please try again.',
+        'group_signups' => 'We could not load your group sign-ups. Please try again.',
+        'safeguarding' => 'We could not load your safeguarding records. Please try again.',
+        'organisations' => 'We could not load your volunteering organisations. Please try again.',
+        'recommended' => 'We could not load your recommended shifts. Please try again.',
+        'org_dashboard' => 'We could not load the organisation dashboard. Check that you manage this organisation and try again.',
+        'org_manage' => 'We could not load the organisation management queue. Check that you manage this organisation and try again.',
+        'org_settings' => 'We could not load the organisation settings. Check that you manage this organisation and try again.',
+        'org_volunteers' => 'We could not load the organisation volunteers. Check that you manage this organisation and try again.',
+        'org_wallet' => 'We could not load the organisation wallet. Check that you manage this organisation and try again.',
+        'hours' => 'We could not load your volunteering hours. Please try again.',
+        'donations' => 'We could not load your donations. Please try again.',
+        'expenses' => 'We could not load your expenses. Please try again.',
+        'create_opportunity' => 'We could not load the form for creating an opportunity. Please try again.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'more swap requests',
+        'pagination_label' => 'Swap requests pages',
     ],
 ];

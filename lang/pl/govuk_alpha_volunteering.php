@@ -27,6 +27,8 @@ return [
         'optional' => '(fakultatywny)',
         'warning' => 'Ostrzeżenie',
         'none_yet' => 'Jeszcze żaden',
+        'find_opportunities' => 'Znajdź możliwości',
+        'check_applications' => 'Sprawdź moje zgłoszenia',
     ],
     'my_orgs' => [
         'title' => 'Moje organizacje',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Otwórz pulpit nawigacyjny',
         'manage_dashboard_for' => 'Otwórz panel kontrolny :name',
         'awaiting_approval' => 'Oczekiwanie na zatwierdzenie',
-        'awaiting_approval_hint' => 'Administrator sprawdzi tę organizację, zanim będziesz mógł zarządzać możliwościami.',
+        'awaiting_approval_hint' => 'Administrator społeczności sprawdza tę organizację. W czasie oczekiwania możesz otworzyć jej panel i ją przygotować.',
         'more_label' => 'więcej organizacji',
         'pagination_label' => 'Paginacja moich organizacji',
+        'pending_setup' => 'Przygotuj ją w czasie oczekiwania',
+        'pending_see_all' => 'Zobacz swoje organizacje',
     ],
     'org_dashboard' => [
         'title' => 'Panel organizacji',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'To zgłoszenie jest zamknięte, więc nie można już dodawać aktualizacji. Jeśli pojawi się coś nowego, skontaktuj się z administratorami lub brokerami swojej społeczności.',
         'history_empty' => 'W tym zgłoszeniu nic się jeszcze nie wydarzyło.',
         'status_guide_title' => 'Co oznacza każdy status',
+        'team_meaning' => 'Na tej stronie „zespół ds. ochrony” oznacza administratorów, brokerów i koordynatorów Twojej społeczności. Wszyscy widzą każde zgłoszenie w całości.',
     ],
     'shift_manager' => [
         'manage_link' => 'Zarządzaj zmianami',
@@ -1295,6 +1300,11 @@ return [
         'status_user_not_found' => 'Ta osoba nie jest aktywnym członkiem tej społeczności.',
         'status_forbidden' => 'Zespół mogą zmieniać tylko właściciele organizacji i administratorzy społeczności.',
         'status_failed' => 'Nie udało się wprowadzić tej zmiany. Spróbuj ponownie.',
+        'safeguarding_title' => 'Osoba odpowiedzialna za ochronę',
+        'safeguarding_lead' => 'Osoba odpowiedzialna za ochronę',
+        'safeguarding_deputy' => 'Zastępca',
+        'safeguarding_nobody' => 'Nikogo jeszcze nie wyznaczono',
+        'safeguarding_help' => 'Osoba odpowiedzialna i zastępca widzą podsumowanie każdego zgłoszenia dotyczącego ochrony powiązanego z tą organizacją, a pełne zgłoszenie tylko wtedy, gdy personel ds. ochrony społeczności je udostępni. Nigdy nie dowiadują się, kto złożył zgłoszenie. Wyznaczają ich administratorzy społeczności: skontaktuj się ze swoją społecznością, jeśli trzeba to zmienić.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1543,5 +1553,26 @@ return [
         'shifts_col_when' => 'Kiedy',
         'shifts_col_where' => 'Gdzie',
         'shifts_load_error' => 'Nie udało się wczytać Twoich zmian. Spróbuj ponownie.',
+        'no_organisation' => 'Godziny możesz rejestrować, gdy organizacja zatwierdzi Cię jako wolontariusza. Znajdź możliwość i zgłoś się. Gdy organizacja zatwierdzi Twoje zgłoszenie, możesz tu rejestrować swój czas.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Nie udało się wczytać Twoich pilnych próśb o zmiany. Spróbuj ponownie.',
+        'group_signups' => 'Nie udało się wczytać Twoich zapisów grupowych. Spróbuj ponownie.',
+        'safeguarding' => 'Nie udało się wczytać Twoich danych dotyczących ochrony. Spróbuj ponownie.',
+        'organisations' => 'Nie udało się wczytać Twoich organizacji wolontariackich. Spróbuj ponownie.',
+        'recommended' => 'Nie udało się wczytać polecanych dla Ciebie zmian. Spróbuj ponownie.',
+        'org_dashboard' => 'Nie udało się wczytać panelu organizacji. Sprawdź, czy zarządzasz tą organizacją, i spróbuj ponownie.',
+        'org_manage' => 'Nie udało się wczytać kolejki zarządzania organizacją. Sprawdź, czy zarządzasz tą organizacją, i spróbuj ponownie.',
+        'org_settings' => 'Nie udało się wczytać ustawień organizacji. Sprawdź, czy zarządzasz tą organizacją, i spróbuj ponownie.',
+        'org_volunteers' => 'Nie udało się wczytać wolontariuszy organizacji. Sprawdź, czy zarządzasz tą organizacją, i spróbuj ponownie.',
+        'org_wallet' => 'Nie udało się wczytać portfela organizacji. Sprawdź, czy zarządzasz tą organizacją, i spróbuj ponownie.',
+        'hours' => 'Nie udało się wczytać Twoich godzin wolontariatu. Spróbuj ponownie.',
+        'donations' => 'Nie udało się wczytać Twoich darowizn. Spróbuj ponownie.',
+        'expenses' => 'Nie udało się wczytać Twoich wydatków. Spróbuj ponownie.',
+        'create_opportunity' => 'Nie udało się wczytać formularza tworzenia możliwości. Spróbuj ponownie.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'więcej próśb o zamianę',
+        'pagination_label' => 'Strony próśb o zamianę',
     ],
 ];

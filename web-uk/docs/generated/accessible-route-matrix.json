@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-26T21:15:46.527Z",
+  "generatedAt": "2026-10-27T10:10:24.330Z",
   "provenance": {
-    "generatedAt": "2026-10-26T21:15:46.527Z",
+    "generatedAt": "2026-10-27T10:10:24.330Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "356eb65c90b0e361f0d829c54683e8321db8eedb",
+    "laravelCommitSha": "7ac8508b14bc0c6e66b3716dce85599849675430",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "356eb65c90b0e361f0d829c54683e8321db8eedb",
+    "webUkRepositoryCommitSha": "7ac8508b14bc0c6e66b3716dce85599849675430",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-26T21:15:46.527Z",
+    "generatedAt": "2026-10-27T10:10:24.330Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 920,
+    "webUkRoutes": 921,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 210,
+    "extraWebUkRoutes": 211,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -79,7 +79,7 @@
       "federation": {
         "matched": 28,
         "missing": 0,
-        "extraWebUk": 2,
+        "extraWebUk": 3,
         "ignoredInfrastructure": 0
       },
       "goals": {
@@ -1404,6 +1404,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/federation/members/{param}/unblock",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/federation-actions.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/federation/settings/debit-approvals/{param}/decision",
+      "family": "federation",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/federation/settings/debit-approvals/{param}/decision",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/federation-actions.js",
       "webUkRouteKind": ""

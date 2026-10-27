@@ -66,6 +66,11 @@
     </div>
   {% endif %}
 
+  {# Reporting a concern is one press from the landing (training) view too (React 06850f22a). #}
+  {% if subView != "incidents" %}
+    <a class="govuk-button" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/volunteering/incidents#report-incident') }}">{{ t("govuk_alpha_volunteering.safeguarding.report_incident_title") }}</a>
+  {% endif %}
+
   <nav class="govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_volunteering.safeguarding.tab_nav_label') }}">
     <ul class="govuk-list" style="display:flex;gap:1rem;flex-wrap:wrap;list-style:none;padding:0;margin:0;">
       <li>

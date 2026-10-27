@@ -72,7 +72,11 @@ describe('tenant-aware template helper conversion', () => {
     expect(index).toContain('name="near"');
     expect(index).toContain('tc("events.result_count"');
     expect(index).toContain('class="nexus-alpha-card-list"');
-    expect(index).not.toContain('govukTag');
+    // The only tags on the list are the organiser's own unpublished events (draft /
+    // waiting for review, 27 Oct 2026); a published event card carries none.
+    expect((index.match(/govukTag\(/g) || []).length).toBe(2);
+    expect(index).toContain('govuk_alpha_events.listing.draft_tag');
+    expect(index).toContain('govuk_alpha_events.listing.pending_review_tag');
     expect(index).not.toContain('name="group_id"');
   });
 

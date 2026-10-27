@@ -109,4 +109,18 @@ return [
         'heading' => 'Níl teagmháil ar fáil',
         'body' => 'Ní cheadaíonn beartas cosanta phobal an bhaill seo teagmháil dhíreach uait. Is féidir le comhordaitheoir pobail cabhrú.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Aistrithe ag fanacht le do chead',
+        'note' => 'Ní aistreofar creidmheasanna nuair a cheadaíonn tú é go dtí go gcríochnóidh an comhpháirtí an t-aistriú.',
+        'load_error' => 'Níorbh fhéidir na haistrithe atá ar feitheamh a luchtú.',
+        'summary' => 'An gceadaíonn tú :amount uair an chloig a aistriú chuig :payee?',
+        'reversal_summary' => 'An gceadaíonn tú :amount uair an chloig a thabhairt ar ais do :payee?',
+        'expires' => 'Rachaidh an t-iarratas in éag ar :date',
+        'approve' => 'Ceadaigh an t-aistriú',
+        'reject' => 'Diúltaigh don aistriú',
+        'saved' => 'Sábháladh do chinneadh',
+        'failed' => 'Níorbh fhéidir do chinneadh a shábháil. Bain triail eile as.',
+    ],
 ];

@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Er zijn geen leden die aan uw zoekopdracht voldoen.',
         'recipient_heading' => 'Matchende leden',
         'amount_label' => 'Bedrag in uren',
-        'amount_hint' => 'Bijvoorbeeld 1 of 2,5. U kunt maximaal 1000 uur verzenden.',
+        'amount_hint' => 'Bijvoorbeeld 1 of 2,5. U kunt maximaal :max uur verzenden.',
         'note_label' => 'Voeg een notitie toe (optioneel)',
         'note_hint' => 'De ontvanger ziet dit bij de overboeking.',
         'send_button' => 'Stuur credits naar :name',

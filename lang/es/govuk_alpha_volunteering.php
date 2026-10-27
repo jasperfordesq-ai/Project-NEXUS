@@ -27,6 +27,8 @@ return [
         'optional' => '(opcional)',
         'warning' => 'Advertencia',
         'none_yet' => 'Ninguno todavía',
+        'find_opportunities' => 'Buscar oportunidades',
+        'check_applications' => 'Ver mis solicitudes',
     ],
     'my_orgs' => [
         'title' => 'Mis organizaciones',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Abrir panel',
         'manage_dashboard_for' => 'Abra el panel de :name',
         'awaiting_approval' => 'En espera de aprobación',
-        'awaiting_approval_hint' => 'Un administrador revisará esta organización antes de que usted pueda administrar oportunidades.',
+        'awaiting_approval_hint' => 'Un administrador de la comunidad está revisando esta organización. Puede abrir su panel y prepararla mientras espera.',
         'more_label' => 'más organizaciones',
         'pagination_label' => 'Paginación de mis organizaciones.',
+        'pending_setup' => 'Prepárala mientras esperas',
+        'pending_see_all' => 'Ver tus organizaciones',
     ],
     'org_dashboard' => [
         'title' => 'Panel de organización',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Este informe está cerrado, así que ya no se pueden añadir actualizaciones. Si surge algo nuevo, contacte con los administradores o intermediarios de su comunidad.',
         'history_empty' => 'Todavía no ha ocurrido nada en este informe.',
         'status_guide_title' => 'Qué significa cada estado',
+        'team_meaning' => 'En esta página, «el equipo de protección» significa los administradores, intermediarios y coordinadores de su comunidad. Todos ven cada informe completo.',
     ],
     'shift_manager' => [
         'manage_link' => 'Gestionar turnos',
@@ -1295,6 +1300,11 @@ return [
         'status_user_not_found' => 'Esa persona no es miembro activo de esta comunidad.',
         'status_forbidden' => 'Solo los propietarios de la organización y los administradores de la comunidad pueden cambiar el equipo.',
         'status_failed' => 'No se pudo hacer ese cambio. Inténtelo de nuevo.',
+        'safeguarding_title' => 'Responsable de protección',
+        'safeguarding_lead' => 'Responsable de protección',
+        'safeguarding_deputy' => 'Suplente',
+        'safeguarding_nobody' => 'Nadie nombrado todavía',
+        'safeguarding_help' => 'El responsable y el suplente ven un resumen de cada informe de protección vinculado a esta organización, y el informe completo solo si el personal de protección de la comunidad lo comparte. Nunca se les dice quién hizo un informe. Los nombran los administradores de la comunidad: contacte con su comunidad si hay que cambiarlos.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1543,5 +1553,26 @@ return [
         'shifts_col_when' => 'Cuándo',
         'shifts_col_where' => 'Dónde',
         'shifts_load_error' => 'No hemos podido cargar tus turnos. Inténtalo de nuevo.',
+        'no_organisation' => 'Podrá registrar horas cuando una organización le haya aprobado como voluntario. Busque una oportunidad y presente su solicitud. Cuando la organización apruebe su solicitud, podrá registrar aquí su tiempo.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'No pudimos cargar sus solicitudes urgentes de turnos. Inténtelo de nuevo.',
+        'group_signups' => 'No pudimos cargar sus inscripciones de grupo. Inténtelo de nuevo.',
+        'safeguarding' => 'No pudimos cargar sus registros de protección. Inténtelo de nuevo.',
+        'organisations' => 'No pudimos cargar sus organizaciones de voluntariado. Inténtelo de nuevo.',
+        'recommended' => 'No pudimos cargar los turnos recomendados para usted. Inténtelo de nuevo.',
+        'org_dashboard' => 'No pudimos cargar el panel de la organización. Compruebe que gestiona esta organización e inténtelo de nuevo.',
+        'org_manage' => 'No pudimos cargar la cola de gestión de la organización. Compruebe que gestiona esta organización e inténtelo de nuevo.',
+        'org_settings' => 'No pudimos cargar la configuración de la organización. Compruebe que gestiona esta organización e inténtelo de nuevo.',
+        'org_volunteers' => 'No pudimos cargar los voluntarios de la organización. Compruebe que gestiona esta organización e inténtelo de nuevo.',
+        'org_wallet' => 'No pudimos cargar el monedero de la organización. Compruebe que gestiona esta organización e inténtelo de nuevo.',
+        'hours' => 'No pudimos cargar sus horas de voluntariado. Inténtelo de nuevo.',
+        'donations' => 'No pudimos cargar sus donaciones. Inténtelo de nuevo.',
+        'expenses' => 'No pudimos cargar sus gastos. Inténtelo de nuevo.',
+        'create_opportunity' => 'No pudimos cargar el formulario para crear una oportunidad. Inténtelo de nuevo.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'más solicitudes de intercambio',
+        'pagination_label' => 'Páginas de solicitudes de intercambio',
     ],
 ];

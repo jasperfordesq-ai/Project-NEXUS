@@ -71,7 +71,9 @@
       {% if status == "checkin-failed" %}
         {% set eventErrorMessage = t("govuk_alpha.events.polish_events.checkin_failed") %}
       {% elif status == "rsvp-failed" %}
-        {% set eventErrorMessage = t("govuk_alpha.events.rsvp_failed") %}
+        {#- apiReason: the API's own translated refusal ("this event has already started"),
+            stashed by the RSVP handler; never set for a 5xx. -#}
+        {% set eventErrorMessage = apiReason or t("govuk_alpha.events.rsvp_failed") %}
       {% elif status in ["rsvp-vetting-required", "waitlist-vetting-required"] %}
         {% set eventErrorMessage = t("safeguarding.errors.vetting_required_detail") %}
       {% elif status in ["rsvp-policy-unavailable", "waitlist-policy-unavailable"] %}
@@ -92,6 +94,11 @@
 
       {% if eventErrorMessage %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ eventErrorMessage }}</p></div></div></div>
+      {% endif %}
+
+      {% if myRsvp and myRsvp.status == "pending" %}
+        {#- Manual approval: the member asked for a place and the organiser has not decided. -#}
+        <div class="govuk-inset-text">{{ govukTag({ text: t("govuk_alpha_events.rsvp.pending_tag"), classes: "govuk-tag--yellow" }) }} {{ t("govuk_alpha_events.rsvp.pending") }}</div>
       {% endif %}
 
       {% if myRsvp and myRsvp.status == "going" %}

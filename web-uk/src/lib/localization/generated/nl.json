@@ -2816,7 +2816,7 @@
                 "search_empty": "Geen leden gevonden. Probeer een andere naam.",
                 "recipient_heading": "Kies naar wie u wilt sturen",
                 "amount_label": "Bedrag (uren)",
-                "amount_hint": "Tussen 0,25 en 1000 uur, in stappen van 0,25.",
+                "amount_hint": "Tussen 0,25 en :max uur, in stappen van 0,25.",
                 "note_label": "Opmerking (optioneel)",
                 "note_hint": "Voeg een korte opmerking toe zodat het lid weet waarvoor de tegoeden zijn.",
                 "send_button": "Tegoeden sturen naar :name",
@@ -2837,7 +2837,7 @@
                     "not_found": "Dat lid kon niet worden gevonden in deze gemeenschap.",
                     "self": "U kunt geen tegoeden naar uzelf sturen.",
                     "inactive": "Dat account is niet actief.",
-                    "too_large": "Dat bedrag is te groot. Het maximum is 1000 uur per overdracht.",
+                    "too_large": "Dat bedrag is te groot. Het maximum is :max uur per overdracht.",
                     "decimals": "Voer het bedrag in met maximaal twee decimalen.",
                     "failed": "De overdracht kon niet worden voltooid. Probeer het opnieuw."
                 },
@@ -3206,6 +3206,8 @@
                 "group_tag": ":count gegroepeerd",
                 "actors_label": "Van :names",
                 "actors_and_more": "{0} Van :names|{1} Van :names en 1 ander|[2,*] Van :names en :count anderen",
+                "group_items_summary": "Meldingen in deze groep tonen",
+                "group_items_more": "Hier niet getoond: nog :count.",
                 "delete_all": "Alles verwijderen",
                 "delete_all_warning": "Dit verwijdert al uw meldingen permanent. Dit kan niet ongedaan worden gemaakt.",
                 "types": {
@@ -7225,7 +7227,25 @@
                 "error_business_name": "Voer uw bedrijfsnaam in",
                 "error_display_name": "Voer een weergavenaam in",
                 "status_complete": "Uw verkopersgegevens zijn opgeslagen. U kunt nu beginnen met verkopen.",
-                "status_failed": "Sorry, uw gegevens konden niet worden opgeslagen. Probeer het opnieuw."
+                "status_failed": "Sorry, uw gegevens konden niet worden opgeslagen. Probeer het opnieuw.",
+                "section_hours": "Openingstijden",
+                "hours_hint": "Vink Gesloten aan voor elke dag dat u niet open bent. Tijden in 24-uursnotatie, bijvoorbeeld 09:00.",
+                "day_mon": "Maandag",
+                "day_tue": "Dinsdag",
+                "day_wed": "Woensdag",
+                "day_thu": "Donderdag",
+                "day_fri": "Vrijdag",
+                "day_sat": "Zaterdag",
+                "day_sun": "Zondag",
+                "closed_label": "Gesloten",
+                "open_time_label": "Openingstijd",
+                "close_time_label": "Sluitingstijd",
+                "error_hours": "Vul voor elke dag dat u open bent een openings- en sluitingstijd in, of vink Gesloten aan",
+                "section_photos": "Profielfoto",
+                "photos_hint": "Optioneel. Een foto helpt kopers uw winkel te herkennen. JPG, PNG, WebP of GIF, tot 10 MB.",
+                "avatar_label": "Profielfoto uploaden",
+                "cover_label": "Omslagafbeelding uploaden (optioneel)",
+                "error_cover_needs_photo": "Voeg een profielfoto toe bij de omslagafbeelding"
             },
             "coupons": {
                 "title": "Mijn kortingsbonnen",
@@ -7860,7 +7880,8 @@
                 "warning": "Waarschuwing",
                 "error_prefix": "Fout:",
                 "save": "Redden",
-                "cancel": "Annuleren"
+                "cancel": "Annuleren",
+                "event_time_zone_hint": "Voer tijden in volgens de tijdzone van het evenement (:zone)."
             },
             "safety": {
                 "title": "Veiligheid van evenementen"
@@ -8054,7 +8075,8 @@
                 "reset_success": "Je evenementspecifieke herinneringsinstellingen zijn verwijderd.",
                 "conflict": "Deze instellingen zijn elders gewijzigd. De nieuwste versie wordt getoond; controleer het voordat u het opnieuw opslaat.",
                 "validation_error": "Controleer de herinneringstijden en -kanalen en probeer het opnieuw.",
-                "save_error": "Uw herinneringsinstellingen kunnen niet worden opgeslagen. Probeer het opnieuw."
+                "save_error": "Uw herinneringsinstellingen kunnen niet worden opgeslagen. Probeer het opnieuw.",
+                "switched_off": "Herinneringen voor evenementen staan uit in deze gemeenschap, dus er is voor dit evenement niets in te stellen."
             },
             "create_restricted": {
                 "title": "Hier kunnen alleen medewerkers evenementen aanmaken",
@@ -8239,6 +8261,21 @@
                 "load_failed": "Kon kalender niet laden.",
                 "code_label": "Gemeentecode",
                 "code_hint": "De officiële gemeentecode (bijv. postcode of BFS-code) — moet overeenkomen met andere clubs om te federeren."
+            },
+            "create": {
+                "recurrence_unavailable": "Terugkerende evenementen staan uit in deze gemeenschap. Je evenement is niet aangemaakt. Controleer de gegevens en maak het aan als één evenement."
+            },
+            "rsvp": {
+                "pending_tag": "Aangevraagd",
+                "pending": "Je hebt een plek aangevraagd. De organisator moet die eerst goedkeuren voordat je plek vaststaat."
+            },
+            "check_in": {
+                "answers_outstanding_tag": "Antwoorden ontbreken",
+                "answers_outstanding": "Deze persoon heeft de verplichte registratievragen nog niet beantwoord. Die moeten eerst beantwoord zijn voordat de persoon kan inchecken."
+            },
+            "listing": {
+                "draft_tag": "Concept",
+                "pending_review_tag": "Wacht op beoordeling"
             }
         },
         "govuk_alpha_federation": {
@@ -8343,6 +8380,18 @@
             "safeguarding": {
                 "heading": "Contact niet mogelijk",
                 "body": "Het beschermingsbeleid van de gemeenschap van dit lid staat geen direct contact van jou toe. Een coördinator van de gemeenschap kan helpen."
+            },
+            "debit_approvals": {
+                "heading": "Overdrachten die op uw goedkeuring wachten",
+                "note": "Na goedkeuring worden pas tijdtegoeden overgedragen wanneer de partner de overdracht voltooit.",
+                "load_error": "Openstaande overdrachten konden niet worden geladen.",
+                "summary": ":amount uur naar :payee overdragen?",
+                "reversal_summary": ":amount uur teruggeven aan :payee?",
+                "expires": "Verzoek verloopt op :date",
+                "approve": "Overdracht goedkeuren",
+                "reject": "Overdracht afwijzen",
+                "saved": "Beslissing opgeslagen",
+                "failed": "Uw beslissing kon niet worden opgeslagen. Probeer het opnieuw."
             }
         },
         "govuk_alpha_feed": {
@@ -11321,7 +11370,9 @@
                 "error_title": "Er is een probleem",
                 "optional": "(optioneel)",
                 "warning": "Waarschuwing",
-                "none_yet": "Nog geen"
+                "none_yet": "Nog geen",
+                "find_opportunities": "Mogelijkheden zoeken",
+                "check_applications": "Mijn aanmeldingen bekijken"
             },
             "my_orgs": {
                 "title": "Mijn organisaties",
@@ -11344,9 +11395,11 @@
                 "manage_dashboard": "Dashboard openen",
                 "manage_dashboard_for": "Open het dashboard voor :name",
                 "awaiting_approval": "In afwachting van goedkeuring",
-                "awaiting_approval_hint": "Een beheerder beoordeelt deze organisatie voordat u opportunities kunt beheren.",
+                "awaiting_approval_hint": "Een beheerder van de gemeenschap beoordeelt deze organisatie. Je kunt het dashboard alvast openen en de organisatie inrichten terwijl je wacht.",
                 "more_label": "meer organisaties",
-                "pagination_label": "Paginering van mijn organisaties"
+                "pagination_label": "Paginering van mijn organisaties",
+                "pending_setup": "Richt hem alvast in",
+                "pending_see_all": "Je organisaties bekijken"
             },
             "org_dashboard": {
                 "title": "Organisatiedashboard",
@@ -12028,7 +12081,8 @@
                 "what_to_do": "Vertel het team wat uw organisatie weet of heeft gedaan, bijvoorbeeld of u met de vrijwilliger heeft gesproken of een dienst heeft gewijzigd. Neem geen contact op met degene die de melding deed.",
                 "closed_no_updates": "Deze melding is gesloten, dus er kunnen geen updates meer worden toegevoegd. Komt er iets nieuws op, neem dan contact op met de beheerders of brokers van uw gemeenschap.",
                 "history_empty": "Er is nog niets gebeurd met deze melding.",
-                "status_guide_title": "Wat elke status betekent"
+                "status_guide_title": "Wat elke status betekent",
+                "team_meaning": "Op deze pagina betekent “het veiligheidsteam” de beheerders, brokers en coördinatoren van uw gemeenschap. Zij zien elke melding volledig."
             },
             "shift_manager": {
                 "manage_link": "Diensten beheren",
@@ -12567,7 +12621,12 @@
                 "status_already": "Die persoon zit al in het team.",
                 "status_user_not_found": "Die persoon is geen actief lid van deze gemeenschap.",
                 "status_forbidden": "Alleen de eigenaren van de organisatie en de beheerders van de gemeenschap kunnen het team wijzigen.",
-                "status_failed": "Die wijziging kon niet worden doorgevoerd. Probeer het opnieuw."
+                "status_failed": "Die wijziging kon niet worden doorgevoerd. Probeer het opnieuw.",
+                "safeguarding_title": "Veiligheidscontactpersoon",
+                "safeguarding_lead": "Veiligheidscontactpersoon",
+                "safeguarding_deputy": "Plaatsvervanger",
+                "safeguarding_nobody": "Nog niemand aangewezen",
+                "safeguarding_help": "De contactpersoon en plaatsvervanger zien een samenvatting van elke veiligheidsmelding die aan deze organisatie is gekoppeld, en de volledige melding alleen als het veiligheidspersoneel van de gemeenschap die deelt. Ze horen nooit wie een melding deed. Gemeenschapsbeheerders wijzen hen aan: vraag uw gemeenschap als dit moet veranderen."
             },
             "my_qualifications": {
                 "heading": "Kwalificaties",
@@ -12802,7 +12861,28 @@
                 "older_shifts": "Eerdere diensten",
                 "shifts_col_when": "Wanneer",
                 "shifts_col_where": "Waar",
-                "shifts_load_error": "We konden je diensten niet laden. Probeer het opnieuw."
+                "shifts_load_error": "We konden je diensten niet laden. Probeer het opnieuw.",
+                "no_organisation": "Je kunt uren registreren zodra een organisatie je als vrijwilliger heeft goedgekeurd. Zoek een mogelijkheid en meld je aan. Als de organisatie je aanmelding goedkeurt, kun je hier je tijd registreren."
+            },
+            "load_errors": {
+                "urgent_requests": "We konden je dringende dienstverzoeken niet laden. Probeer het opnieuw.",
+                "group_signups": "We konden je groepsaanmeldingen niet laden. Probeer het opnieuw.",
+                "safeguarding": "We konden je veiligheidsgegevens niet laden. Probeer het opnieuw.",
+                "organisations": "We konden je vrijwilligersorganisaties niet laden. Probeer het opnieuw.",
+                "recommended": "We konden de voor jou aanbevolen diensten niet laden. Probeer het opnieuw.",
+                "org_dashboard": "We konden het dashboard van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.",
+                "org_manage": "We konden de beheerlijst van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.",
+                "org_settings": "We konden de instellingen van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.",
+                "org_volunteers": "We konden de vrijwilligers van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.",
+                "org_wallet": "We konden de portemonnee van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.",
+                "hours": "We konden je vrijwilligersuren niet laden. Probeer het opnieuw.",
+                "donations": "We konden je donaties niet laden. Probeer het opnieuw.",
+                "expenses": "We konden je onkosten niet laden. Probeer het opnieuw.",
+                "create_opportunity": "We konden het formulier om een mogelijkheid aan te maken niet laden. Probeer het opnieuw."
+            },
+            "swaps_list": {
+                "more_label": "meer ruilverzoeken",
+                "pagination_label": "Pagina’s met ruilverzoeken"
             }
         },
         "govuk_alpha_wallet": {
@@ -12842,7 +12922,7 @@
                 "search_empty": "Er zijn geen leden die aan uw zoekopdracht voldoen.",
                 "recipient_heading": "Matchende leden",
                 "amount_label": "Bedrag in uren",
-                "amount_hint": "Bijvoorbeeld 1 of 2,5. U kunt maximaal 1000 uur verzenden.",
+                "amount_hint": "Bijvoorbeeld 1 of 2,5. U kunt maximaal :max uur verzenden.",
                 "note_label": "Voeg een notitie toe (optioneel)",
                 "note_hint": "De ontvanger ziet dit bij de overboeking.",
                 "send_button": "Stuur credits naar :name"

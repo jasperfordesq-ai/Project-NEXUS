@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Żaden członek nie pasował do Twojego wyszukiwania.',
         'recipient_heading' => 'Pasujący członkowie',
         'amount_label' => 'Kwota w godzinach',
-        'amount_hint' => 'Na przykład 1 lub 2,5. Możesz wysłać do 1000 godzin.',
+        'amount_hint' => 'Na przykład 1 lub 2,5. Możesz wysłać do :max godzin.',
         'note_label' => 'Dodaj notatkę (opcjonalnie)',
         'note_hint' => 'Odbiorca zobaczy to wraz z przelewem.',
         'send_button' => 'Wyślij kredyty do :name',

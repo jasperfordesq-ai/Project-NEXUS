@@ -109,4 +109,18 @@ return [
         'heading' => 'التواصل غير متاح',
         'body' => 'لا تسمح سياسة الحماية في مجتمع هذا العضو بالتواصل المباشر منك. يمكن لمنسق المجتمع المساعدة.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'التحويلات التي تنتظر موافقتك',
+        'note' => 'الموافقة لا تنقل الأرصدة حتى يكمل الشريك التحويل.',
+        'load_error' => 'تعذر تحميل التحويلات المعلقة.',
+        'summary' => 'هل توافق على تحويل :amount ساعة إلى :payee؟',
+        'reversal_summary' => 'هل توافق على إعادة :amount ساعة إلى :payee؟',
+        'expires' => 'تنتهي صلاحية الطلب في :date',
+        'approve' => 'الموافقة على التحويل',
+        'reject' => 'رفض التحويل',
+        'saved' => 'تم حفظ قرار التحويل',
+        'failed' => 'تعذر حفظ قرارك. يرجى المحاولة مرة أخرى.',
+    ],
 ];

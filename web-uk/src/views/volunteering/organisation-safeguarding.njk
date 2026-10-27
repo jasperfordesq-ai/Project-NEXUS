@@ -12,6 +12,8 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_safeguarding.title") }}</h1>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.intro") }}</p>
+  {# Who "the safeguarding team" is (React f331badb6). #}
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_safeguarding.team_meaning") }}</p>
 
   {% if not items.length %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_safeguarding.empty") }}</div>

@@ -26,6 +26,7 @@ const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { formatApiDateTime, parseApiInstant } = require('../lib/api-instant');
 const { isValidEmail } = require('../lib/inputValidator');
+const { volunteeringSections } = require('../lib/volunteering-sections');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { absoluteUrl } = require('../lib/absolute-url');
 const {
@@ -827,7 +828,7 @@ function waitlistStatus(status, t = null) {
   return config ? { ...config, message: t ? t(config.key) : config.key } : null;
 }
 
-function swapPageStatus(status, t = null) {
+function swapPageStatus(status, t = null, refusal = '') {
   const messages = {
     'swap-requested': { type: 'success', key: 'govuk_alpha.vol_depth.swap_requested_success' },
     'swap-accepted': { type: 'success', key: 'govuk_alpha.vol_depth.swap_accepted_success' },
@@ -848,6 +849,11 @@ function swapPageStatus(status, t = null) {
   };
   const config = messages[status] || null;
   if (!config) return null;
+  // A refused accept, decline or cancel shows the API's own reason when it gave one,
+  // for example that the swap has expired (lib/api-refusal.js; never a 5xx text).
+  if (refusal && ['swap-respond-failed', 'swap-cancel-failed'].includes(status)) {
+    return { ...config, message: refusal };
+  }
   const translated = t ? t(config.key) : config.key;
   return { ...config, message: translated !== config.key ? translated : (config.fallback || translated) };
 }
@@ -2592,7 +2598,7 @@ router.get('/emergency-alerts', asyncRoute(async (req, res) => {
     dashboard = normalizeEmergencyAlertDashboard(result, res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your urgent shift requests. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.urgent_requests');
   }
 
   return res.render('volunteering/emergency-alerts', {
@@ -2619,7 +2625,7 @@ router.get('/group-signups', asyncRoute(async (req, res) => {
       .filter((reservation) => reservation.id);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your group sign-ups. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.group_signups');
   }
 
   return res.render('volunteering/group-signups', {
@@ -2820,7 +2826,7 @@ async function renderSafeguarding(req, res) {
     ).map((incident) => normalizeSafeguardingIncident(incident, res.locals.t));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your safeguarding records. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.safeguarding');
   }
 
   // Only the incident form uses these, and it must still work without them: a member
@@ -2940,10 +2946,20 @@ router.get('/swaps', asyncRoute(async (req, res) => {
   let swaps = [];
   let myShifts = [];
   let loadError = null;
+  // The API pages swap requests, 20 at a time, by an opaque cursor in `meta`
+  // (React 7df3def06). "Load more" follows it; only the first page was ever read.
+  const cursor = pageCursor(req.query.cursor);
+  let nextHref = '';
   try {
-    swaps = collectionFrom(await callApi(token, 'GET', '/swaps'))
+    const swapsResult = cursor
+      ? await callApi(token, 'GET', `/swaps?cursor=${encodeURIComponent(cursor)}`)
+      : await callApi(token, 'GET', '/swaps');
+    swaps = collectionFrom(swapsResult)
       .map((swap) => normalizeSwapRequest(swap, res.locals.t))
       .filter((swap) => swap.id);
+    const swapsMeta = collectionMetaFrom(swapsResult);
+    const nextCursor = swapsMeta.has_more ? pageCursor(swapsMeta.cursor) : '';
+    nextHref = nextCursor ? `/volunteering/swaps?cursor=${encodeURIComponent(nextCursor)}` : '';
     // `per_page`, not `limit`: VolunteerController::myShifts reads per_page (max 50) and
     // ignored `limit`, so only the newest 20 shifts ever reached this page.
     myShifts = upcomingOwnShifts(collectionFrom(await callApi(token, 'GET', '/shifts?per_page=50')), res.locals.t);
@@ -2957,8 +2973,13 @@ router.get('/swaps', asyncRoute(async (req, res) => {
     activeNav: 'volunteering',
     swaps,
     myShifts,
+    nextHref,
     loadError,
-    status: swapPageStatus(trimmed(req.query.status), res.locals.t),
+    status: swapPageStatus(
+      trimmed(req.query.status),
+      res.locals.t,
+      ['swap-respond-failed', 'swap-cancel-failed'].includes(trimmed(req.query.status)) ? consumeApiRefusal(req, 'swaps') : ''
+    ),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { redirectOn401: loginRedirect() }));
@@ -2988,7 +3009,7 @@ router.get('/my-organisations', asyncRoute(async (req, res) => {
     nextHref = volunteeringMyOrganisationsNextHref(roleFilter, collectionMetaFrom(result));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your volunteering organisations. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.organisations');
   }
 
   return res.render('volunteering/my-organisations', {
@@ -3015,7 +3036,7 @@ router.get('/recommended-shifts', asyncRoute(async (req, res) => {
       .filter((shift) => shift.id || shift.opportunityId);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your recommended shifts. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.recommended');
   }
 
   return res.render('volunteering/recommended-shifts', {
@@ -3039,7 +3060,7 @@ router.get('/organisations/:id(\\d+)/dashboard', asyncRoute(async (req, res) => 
     dashboard = normalizeOrgStats(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}/stats`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the organisation dashboard. Check that you manage this organisation and try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_dashboard');
   }
 
   return res.render('volunteering/org-dashboard', {
@@ -3103,7 +3124,7 @@ router.get('/organisations/:id(\\d+)/manage', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the organisation management queue. Check that you manage this organisation and try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_manage');
   }
 
   return res.render('volunteering/org-manage', {
@@ -3179,7 +3200,7 @@ router.get('/organisations/:id(\\d+)/settings', asyncRoute(async (req, res) => {
     organization = normalizeOrgDetail(await callApi(token, 'GET', `/organisations/${encodeURIComponent(id)}`));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the organisation settings. Check that you manage this organisation and try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_settings');
   }
 
   return res.render('volunteering/org-settings', {
@@ -3220,7 +3241,7 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
     nextHref = orgVolunteersNextHref(id, collectionMetaFrom(result), show);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the organisation volunteers. Check that you manage this organisation and try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_volunteers');
   }
 
   // What a retire, reinstate or remove just did, from routes/volunteering-org-roster.js.
@@ -3242,6 +3263,20 @@ router.get('/organisations/:id(\\d+)/volunteers', asyncRoute(async (req, res) =>
   });
 }, { redirectOn401: loginRedirect() }));
 
+/**
+ * The organisation's safeguarding lead and deputy from GET .../members
+ * (`safeguarding: { lead, deputy }`, each `{ user_id, name }` or null; React d6e0a1c06).
+ * Names only; community admins appoint them.
+ */
+function normalizeSafeguardingLeads(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const person = (row) => {
+    const name = row && typeof row === 'object' ? trimmed(row.name) : '';
+    return name ? { id: positiveInteger(row.user_id), name } : null;
+  };
+  return { lead: person(source.lead), deputy: person(source.deputy) };
+}
+
 router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) {
@@ -3254,6 +3289,7 @@ router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
   let orgName = '';
   let members = [];
   let canManage = false;
+  let safeguarding = normalizeSafeguardingLeads(null);
   let results = [];
   let loadError = null;
   try {
@@ -3266,6 +3302,7 @@ router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
     const teamData = dataFrom(team) || {};
     members = collectionFrom(team).map((row) => normalizeOrgTeamMember(row, selfId, t)).filter((member) => member.id);
     canManage = teamData.can_manage === true;
+    safeguarding = normalizeSafeguardingLeads(teamData.safeguarding);
     orgName = normalizeOrgStats(dashboard).orgName;
 
     // People to add: anyone found who is not on the team already.
@@ -3290,6 +3327,7 @@ router.get('/organisations/:id(\\d+)/team', asyncRoute(async (req, res) => {
     orgName: orgName || res.locals.tenantName,
     members,
     canManage,
+    safeguarding,
     query,
     searched: query.length >= 2,
     results,
@@ -3345,7 +3383,7 @@ router.get('/organisations/:id(\\d+)/wallet', asyncRoute(async (req, res) => {
     ).map(normalizeOrgWalletTransaction).filter((transaction) => transaction.id);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the organisation wallet. Check that you manage this organisation and try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.org_wallet');
   }
 
   return res.render('volunteering/org-wallet', {
@@ -3418,7 +3456,7 @@ router.get('/hours', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your volunteering hours. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.hours');
   }
 
   // The shifts the member holds, upcoming and past (GET /v2/volunteering/shifts,
@@ -3473,6 +3511,8 @@ router.get('/hours', asyncRoute(async (req, res) => {
     },
     applications,
     organizations,
+    // Where "Check my applications" may point when there is nothing to log for.
+    applicationsTabEnabled: volunteeringSections(req.accessibleRouting?.tenant).enabled('applications'),
     loadError,
     today: new Date().toISOString().slice(0, 10),
     // Three-field GOV.UK date pattern needs the same default split into parts.
@@ -3581,7 +3621,7 @@ router.get('/donations', asyncRoute(async (req, res) => {
     dashboard = normalizeDonationDashboard(givingDays, donations, res.locals.t);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your donations. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.donations');
   }
 
   return res.render('volunteering/donations', {
@@ -3673,13 +3713,14 @@ router.get('/expenses', asyncRoute(async (req, res) => {
     dashboard.opportunityGroups = expenseOpportunityGroups(applications);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load your expenses. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.expenses');
   }
 
   return res.render('volunteering/expenses', {
     title: res.locals.t('govuk_alpha_volunteering.expenses.title'),
     activeNav: 'volunteering',
     dashboard,
+    applicationsTabEnabled: volunteeringSections(req.accessibleRouting?.tenant).enabled('applications'),
     loadError,
     expenseForm: consumeFormReplay(req, 'volunteering', 'expenses'),
     status: expenseStatus(
@@ -3709,7 +3750,7 @@ router.get('/opportunities/create', asyncRoute(async (req, res) => {
       .filter(Boolean);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    loadError = 'We could not load the create opportunity form. Please try again.';
+    loadError = res.locals.t('govuk_alpha_volunteering.load_errors.create_opportunity');
   }
 
   // Echo back a rejected submission once, so a validation error or API failure
@@ -4149,7 +4190,17 @@ router.post('/swaps/new/:shiftId(\\d+)', asyncRoute(async (req, res) => {
   }
 }, { redirectOn401: loginRedirect() }));
 
-router.post('/swaps/:id(\\d+)/respond', asyncRoute(async (req, res) => {
+/**
+ * Keep the API's reason for a refused swap decision (an expired swap answers 409
+ * DECISION_CONFLICT with a translated sentence). Only a 4xx refusal: a server error's
+ * message is never shown to the member.
+ */
+function rememberSwapRefusal(req, error) {
+  const status = Number(error && error.status);
+  if (status >= 400 && status < 500) rememberApiRefusal(req, 'swaps', error);
+}
+
+router.post('/swaps/:id(\\d+)/respond',asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const action = trimmed(req.body.action) === 'reject' ? 'reject' : 'accept';
   const status = action === 'accept' ? 'swap-accepted' : 'swap-rejected';
@@ -4168,6 +4219,7 @@ router.post('/swaps/:id(\\d+)/respond', asyncRoute(async (req, res) => {
     if (['SAFEGUARDING_CONTACT_RESTRICTED', 'VETTING_REQUIRED'].includes(code)) {
       return redirectTo(res, '/volunteering/swaps?status=swap-safeguarding-restricted');
     }
+    rememberSwapRefusal(req, error);
     return redirectTo(res, '/volunteering/swaps?status=swap-respond-failed');
   }
 }));
@@ -4181,7 +4233,10 @@ router.post('/swaps/:id(\\d+)/cancel', asyncRoute(async (req, res) => {
     `/swaps/${id}`,
     undefined,
     '/volunteering/swaps?status=swap-cancelled',
-    '/volunteering/swaps?status=swap-cancel-failed'
+    (error) => {
+      rememberSwapRefusal(req, error);
+      return '/volunteering/swaps?status=swap-cancel-failed';
+    }
   );
 }));
 

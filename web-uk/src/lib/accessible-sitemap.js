@@ -39,6 +39,7 @@ const api = require('./api');
 const { cache } = require('./cache');
 const { listReleases } = require('./changelog');
 const { flagEnabled } = require('./accessible-shell');
+const { AUDIENCES, audiencePath, gateContext, helpPath, visibleSections } = require('./help-guides');
 const { runWithRequestTenant } = require('./request-tenant-context');
 const {
   buildRobotsTxt,
@@ -255,6 +256,30 @@ async function legalEntries(mode) {
   return entries;
 }
 
+/**
+ * The Help Centre guide pages routes/support.js serves to a signed-out visitor:
+ * each audience page, and every section and article whose module/feature gate
+ * is open for this community. Signed out, the route has no community settings
+ * (helpSettings returns {}), so neither does this; the gates are the same
+ * visibleSections() the route uses, so a listed guide never answers 404.
+ */
+function helpGuideEntries(tenant) {
+  const ctx = gateContext(tenant, {});
+  const entries = [];
+  for (const audience of AUDIENCES) {
+    const sections = visibleSections(audience, ctx);
+    if (sections.length === 0) continue;
+    if (audience !== 'members') entries.push({ path: audiencePath(audience) });
+    for (const section of sections) {
+      entries.push({ path: helpPath(audience, section.id) });
+      for (const article of section.articles) {
+        entries.push({ path: helpPath(audience, section.id, article.id) });
+      }
+    }
+  }
+  return entries;
+}
+
 function changelogEntries() {
   return asList(listReleases())
     .filter((release) => release && !release.isUnreleased && /^[A-Za-z0-9._-]+$/.test(text(release.slug)))
@@ -270,6 +295,7 @@ async function candidateEntries(tenant, mode) {
   const entries = [];
   if (mode === 'accessible') {
     entries.push(...STATIC_PUBLIC_PATHS.map((path) => ({ path })));
+    entries.push(...helpGuideEntries(tenant));
     if (routeOpen(tenant, '/blog')) {
       entries.push({ path: '/blog' }, ...(await blogEntries()));
     }

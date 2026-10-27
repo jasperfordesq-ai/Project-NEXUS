@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Nessun membro corrisponde alla tua ricerca.',
         'recipient_heading' => 'Membri corrispondenti',
         'amount_label' => 'Importo in ore',
-        'amount_hint' => 'Ad esempio, 1 o 2.5. Puoi inviare fino a 1000 ore.',
+        'amount_hint' => 'Ad esempio, 1 o 2.5. Puoi inviare fino a :max ore.',
         'note_label' => 'Aggiungi una nota (facoltativo)',
         'note_hint' => 'Il destinatario lo vedrà con il trasferimento.',
         'send_button' => 'Invia crediti a :name',

@@ -2816,7 +2816,7 @@
                 "search_empty": "Keine Mitglieder gefunden. Versuchen Sie einen anderen Namen.",
                 "recipient_heading": "Wählen Sie, an wen Sie senden möchten",
                 "amount_label": "Betrag (Stunden)",
-                "amount_hint": "Zwischen 0,25 und 1000 Stunden, in Schritten von 0,25.",
+                "amount_hint": "Zwischen 0,25 und :max Stunden, in Schritten von 0,25.",
                 "note_label": "Notiz (optional)",
                 "note_hint": "Fügen Sie eine kurze Notiz hinzu, damit das Mitglied weiß, wofür die Guthaben sind.",
                 "send_button": "Guthaben an :name senden",
@@ -2837,7 +2837,7 @@
                     "not_found": "Dieses Mitglied konnte in dieser Gemeinschaft nicht gefunden werden.",
                     "self": "Sie können sich keine Guthaben an sich selbst senden.",
                     "inactive": "Dieses Konto ist nicht aktiv.",
-                    "too_large": "Dieser Betrag ist zu groß. Das Maximum beträgt 1000 Stunden pro Überweisung.",
+                    "too_large": "Dieser Betrag ist zu groß. Das Maximum beträgt :max Stunden pro Überweisung.",
                     "decimals": "Geben Sie den Betrag mit höchstens zwei Dezimalstellen ein.",
                     "failed": "Die Überweisung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut."
                 },
@@ -3206,6 +3206,8 @@
                 "group_tag": ":count gruppiert",
                 "actors_label": "Von :names",
                 "actors_and_more": "{0} Von :names|{1} Von :names und 1 weiteren Person|[2,*] Von :names und :count weiteren Personen",
+                "group_items_summary": "Benachrichtigungen in dieser Gruppe anzeigen",
+                "group_items_more": "Hier nicht angezeigt: :count weitere.",
                 "delete_all": "Alle löschen",
                 "delete_all_warning": "Dadurch werden alle Ihre Benachrichtigungen dauerhaft entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden.",
                 "types": {
@@ -7225,7 +7227,25 @@
                 "error_business_name": "Geben Sie Ihren Firmennamen ein",
                 "error_display_name": "Geben Sie einen Anzeigenamen ein",
                 "status_complete": "Ihre Verkäuferdaten wurden gespeichert. Sie können jetzt mit dem Verkauf beginnen.",
-                "status_failed": "Leider konnten Ihre Daten nicht gespeichert werden. Bitte versuchen Sie es erneut."
+                "status_failed": "Leider konnten Ihre Daten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+                "section_hours": "Öffnungszeiten",
+                "hours_hint": "Kreuzen Sie „Geschlossen“ für jeden Tag an, an dem Sie nicht geöffnet haben. Uhrzeiten im 24-Stunden-Format, zum Beispiel 09:00.",
+                "day_mon": "Montag",
+                "day_tue": "Dienstag",
+                "day_wed": "Mittwoch",
+                "day_thu": "Donnerstag",
+                "day_fri": "Freitag",
+                "day_sat": "Samstag",
+                "day_sun": "Sonntag",
+                "closed_label": "Geschlossen",
+                "open_time_label": "Öffnungszeit",
+                "close_time_label": "Schließzeit",
+                "error_hours": "Geben Sie für jeden geöffneten Tag eine Öffnungs- und eine Schließzeit ein oder kreuzen Sie „Geschlossen“ an",
+                "section_photos": "Profilbild",
+                "photos_hint": "Optional. Ein Foto hilft Käufern, Ihren Laden wiederzuerkennen. JPG, PNG, WebP oder GIF, bis 10 MB.",
+                "avatar_label": "Profilbild hochladen",
+                "cover_label": "Titelbild hochladen (optional)",
+                "error_cover_needs_photo": "Fügen Sie zum Titelbild ein Profilbild hinzu"
             },
             "coupons": {
                 "title": "Meine Gutscheine",
@@ -7860,7 +7880,8 @@
                 "warning": "Warnung",
                 "error_prefix": "Fehler:",
                 "save": "Speichern",
-                "cancel": "Stornieren"
+                "cancel": "Stornieren",
+                "event_time_zone_hint": "Geben Sie Zeiten in der Zeitzone der Veranstaltung ein (:zone)."
             },
             "safety": {
                 "title": "Veranstaltungssicherheit"
@@ -8054,7 +8075,8 @@
                 "reset_success": "Ihre ereignisspezifischen Erinnerungseinstellungen wurden entfernt.",
                 "conflict": "Diese Einstellungen wurden an anderer Stelle geändert. Die neueste Version wird angezeigt; Überprüfen Sie es, bevor Sie es erneut speichern.",
                 "validation_error": "Überprüfen Sie die Erinnerungszeiten und -kanäle und versuchen Sie es dann erneut.",
-                "save_error": "Ihre Erinnerungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
+                "save_error": "Ihre Erinnerungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+                "switched_off": "Veranstaltungserinnerungen sind in dieser Gemeinschaft ausgeschaltet. Für diese Veranstaltung gibt es daher nichts einzurichten."
             },
             "create_restricted": {
                 "title": "Hier können nur Mitarbeitende Veranstaltungen erstellen",
@@ -8239,6 +8261,21 @@
                 "load_failed": "Kalender konnte nicht geladen werden.",
                 "code_label": "Gemeindecode",
                 "code_hint": "Der offizielle Gemeindecode (z. B. PLZ oder BFS-Code) — muss mit anderen Vereinen übereinstimmen, um föderieren zu können."
+            },
+            "create": {
+                "recurrence_unavailable": "Wiederkehrende Veranstaltungen sind in dieser Gemeinschaft ausgeschaltet. Ihre Veranstaltung wurde nicht erstellt. Prüfen Sie die Angaben und erstellen Sie sie als einzelne Veranstaltung."
+            },
+            "rsvp": {
+                "pending_tag": "Angefragt",
+                "pending": "Sie haben einen Platz angefragt. Die Veranstaltungsleitung muss ihn noch bestätigen, bevor er Ihnen sicher ist."
+            },
+            "check_in": {
+                "answers_outstanding_tag": "Antworten fehlen",
+                "answers_outstanding": "Diese Person hat die Pflichtfragen der Anmeldung noch nicht beantwortet. Sie muss sie beantworten, bevor sie eingecheckt werden kann."
+            },
+            "listing": {
+                "draft_tag": "Entwurf",
+                "pending_review_tag": "Wartet auf Prüfung"
             }
         },
         "govuk_alpha_federation": {
@@ -8343,6 +8380,18 @@
             "safeguarding": {
                 "heading": "Kontakt nicht möglich",
                 "body": "Die Schutzrichtlinie der Gemeinschaft dieses Mitglieds erlaubt keinen direkten Kontakt von Ihnen. Eine Koordinatorin oder ein Koordinator der Gemeinschaft kann helfen."
+            },
+            "debit_approvals": {
+                "heading": "Überweisungen, die auf Ihre Zustimmung warten",
+                "note": "Durch die Genehmigung werden erst dann Zeitguthaben übertragen, wenn der Partner die Überweisung abschließt.",
+                "load_error": "Ausstehende Überweisungen konnten nicht geladen werden.",
+                "summary": ":amount Stunden an :payee überweisen?",
+                "reversal_summary": ":amount Stunden an :payee zurückgeben?",
+                "expires": "Anfrage läuft am :date ab",
+                "approve": "Überweisung genehmigen",
+                "reject": "Überweisung ablehnen",
+                "saved": "Entscheidung gespeichert",
+                "failed": "Ihre Entscheidung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
             }
         },
         "govuk_alpha_feed": {
@@ -11321,7 +11370,9 @@
                 "error_title": "Es gibt ein Problem",
                 "optional": "(optional)",
                 "warning": "Warnung",
-                "none_yet": "Noch keine"
+                "none_yet": "Noch keine",
+                "find_opportunities": "Möglichkeiten finden",
+                "check_applications": "Meine Bewerbungen ansehen"
             },
             "my_orgs": {
                 "title": "Meine Organisationen",
@@ -11344,9 +11395,11 @@
                 "manage_dashboard": "Dashboard öffnen",
                 "manage_dashboard_for": "Öffnen Sie das Dashboard für :name",
                 "awaiting_approval": "Warten auf Genehmigung",
-                "awaiting_approval_hint": "Ein Administrator überprüft diese Organisation, bevor Sie Opportunities verwalten können.",
+                "awaiting_approval_hint": "Die Gemeinschaftsverwaltung prüft diese Organisation. Sie können ihr Dashboard schon jetzt öffnen und sie einrichten, während Sie warten.",
                 "more_label": "weitere Organisationen",
-                "pagination_label": "Paginierung meiner Organisation"
+                "pagination_label": "Paginierung meiner Organisation",
+                "pending_setup": "Schon jetzt einrichten",
+                "pending_see_all": "Ihre Organisationen ansehen"
             },
             "org_dashboard": {
                 "title": "Organisations-Dashboard",
@@ -12028,7 +12081,8 @@
                 "what_to_do": "Teilen Sie dem Team mit, was Ihre Organisation weiß oder getan hat, zum Beispiel ein Gespräch mit der oder dem Freiwilligen oder eine geänderte Schicht. Kontaktieren Sie nicht die Person, die die Meldung gemacht hat.",
                 "closed_no_updates": "Diese Meldung ist geschlossen, daher können keine Aktualisierungen mehr hinzugefügt werden. Wenn etwas Neues auftaucht, wenden Sie sich an die Administratoren oder Vermittler Ihrer Gemeinschaft.",
                 "history_empty": "Zu dieser Meldung ist noch nichts geschehen.",
-                "status_guide_title": "Was die einzelnen Status bedeuten"
+                "status_guide_title": "Was die einzelnen Status bedeuten",
+                "team_meaning": "Auf dieser Seite bedeutet „Schutzteam“ die Administratoren, Vermittler und Koordinatoren Ihrer Gemeinschaft. Sie alle sehen jede Meldung vollständig."
             },
             "shift_manager": {
                 "manage_link": "Schichten verwalten",
@@ -12567,7 +12621,12 @@
                 "status_already": "Diese Person gehört bereits zum Team.",
                 "status_user_not_found": "Diese Person ist kein aktives Mitglied dieser Gemeinschaft.",
                 "status_forbidden": "Nur die Inhaber der Organisation und die Gemeinschafts-Admins können das Team ändern.",
-                "status_failed": "Diese Änderung konnte nicht vorgenommen werden. Versuchen Sie es erneut."
+                "status_failed": "Diese Änderung konnte nicht vorgenommen werden. Versuchen Sie es erneut.",
+                "safeguarding_title": "Schutzbeauftragte/r",
+                "safeguarding_lead": "Schutzbeauftragte/r",
+                "safeguarding_deputy": "Stellvertretung",
+                "safeguarding_nobody": "Noch niemand ernannt",
+                "safeguarding_help": "Die/der Schutzbeauftragte und die Stellvertretung sehen eine Zusammenfassung jeder Schutzmeldung, die mit dieser Organisation verknüpft ist, und die vollständige Meldung nur, wenn das Schutzpersonal der Gemeinschaft sie teilt. Sie erfahren nie, wer eine Meldung gemacht hat. Gemeinschafts-Admins ernennen sie: Wenden Sie sich an Ihre Gemeinschaft, wenn sich etwas ändern soll."
             },
             "my_qualifications": {
                 "heading": "Qualifikationen",
@@ -12802,7 +12861,28 @@
                 "older_shifts": "Frühere Schichten",
                 "shifts_col_when": "Wann",
                 "shifts_col_where": "Wo",
-                "shifts_load_error": "Wir konnten Ihre Schichten nicht laden. Bitte versuchen Sie es erneut."
+                "shifts_load_error": "Wir konnten Ihre Schichten nicht laden. Bitte versuchen Sie es erneut.",
+                "no_organisation": "Sie können Stunden erfassen, sobald eine Organisation Sie als Freiwillige oder Freiwilligen bestätigt hat. Suchen Sie sich eine Möglichkeit aus und bewerben Sie sich. Sobald die Organisation Ihre Bewerbung annimmt, können Sie Ihre Zeit hier erfassen."
+            },
+            "load_errors": {
+                "urgent_requests": "Wir konnten Ihre dringenden Schichtanfragen nicht laden. Bitte versuchen Sie es erneut.",
+                "group_signups": "Wir konnten Ihre Gruppenanmeldungen nicht laden. Bitte versuchen Sie es erneut.",
+                "safeguarding": "Wir konnten Ihre Schutzunterlagen nicht laden. Bitte versuchen Sie es erneut.",
+                "organisations": "Wir konnten Ihre Ehrenamtsorganisationen nicht laden. Bitte versuchen Sie es erneut.",
+                "recommended": "Wir konnten die für Sie empfohlenen Schichten nicht laden. Bitte versuchen Sie es erneut.",
+                "org_dashboard": "Das Dashboard der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.",
+                "org_manage": "Die Aufgabenliste der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.",
+                "org_settings": "Die Einstellungen der Organisation konnten nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.",
+                "org_volunteers": "Die Freiwilligen der Organisation konnten nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.",
+                "org_wallet": "Das Konto der Organisation konnte nicht geladen werden. Prüfen Sie, ob Sie diese Organisation verwalten, und versuchen Sie es erneut.",
+                "hours": "Wir konnten Ihre Ehrenamtsstunden nicht laden. Bitte versuchen Sie es erneut.",
+                "donations": "Wir konnten Ihre Spenden nicht laden. Bitte versuchen Sie es erneut.",
+                "expenses": "Wir konnten Ihre Auslagen nicht laden. Bitte versuchen Sie es erneut.",
+                "create_opportunity": "Das Formular zum Erstellen einer Möglichkeit konnte nicht geladen werden. Bitte versuchen Sie es erneut."
+            },
+            "swaps_list": {
+                "more_label": "weitere Tauschanfragen",
+                "pagination_label": "Seiten der Tauschanfragen"
             }
         },
         "govuk_alpha_wallet": {
@@ -12842,7 +12922,7 @@
                 "search_empty": "Keine Mitglieder stimmten mit Ihrer Suche überein.",
                 "recipient_heading": "Passende Mitglieder",
                 "amount_label": "Betrag in Stunden",
-                "amount_hint": "Zum Beispiel 1 oder 2,5. Sie können bis zu 1000 Stunden senden.",
+                "amount_hint": "Zum Beispiel 1 oder 2,5. Sie können bis zu :max Stunden senden.",
                 "note_label": "Fügen Sie eine Notiz hinzu (optional)",
                 "note_hint": "Dies wird dem Empfänger bei der Überweisung angezeigt.",
                 "send_button": "Senden Sie Credits an :name"

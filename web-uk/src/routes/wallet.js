@@ -181,7 +181,24 @@ function transferFailureKey(error) {
   return 'failed';
 }
 
-function transferPayload(body = {}) {
+// The platform ceiling WalletService enforces when a community sets nothing.
+const PLATFORM_MAX_TRANSFER = 1000;
+
+// The community's effective transfer limit, from the same source transfer()
+// enforces (GET /v2/wallet/config -> WalletService::maxTransferAmount). A
+// failed read must not break the wallet page, so it falls back to the platform
+// ceiling; the API still refuses anything above the real limit.
+async function walletMaxTransfer(token) {
+  try {
+    const config = dataFrom(await callWalletApi(token, 'GET', '/config')) || {};
+    const max = Number(config.max_transfer);
+    return Number.isFinite(max) && max > 0 ? max : PLATFORM_MAX_TRANSFER;
+  } catch {
+    return PLATFORM_MAX_TRANSFER;
+  }
+}
+
+function transferPayload(body = {}, maxTransfer = PLATFORM_MAX_TRANSFER) {
   const recipient = Number(body.recipient_id);
   const amountText = String(body.amount ?? '').trim();
   const amount = Number(amountText);
@@ -196,7 +213,7 @@ function transferPayload(body = {}) {
   if (!Number.isInteger(recipient) || recipient <= 0 || !amountText || !Number.isFinite(amount) || amount <= 0) {
     return { error: 'invalid' };
   }
-  if (amount > 1000) {
+  if (amount > maxTransfer) {
     return { error: 'too-large' };
   }
   if (!/^\d+(?:\.\d{1,2})?$/.test(amountText)) {
@@ -298,7 +315,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   const txType = txFilter === 'earned' ? 'received' : (txFilter === 'spent' ? 'sent' : (txFilter === 'pending' ? 'pending' : undefined));
   const txCursor = typeof req.query.cursor === 'string' ? req.query.cursor.trim() : '';
   const recipientQuery = String(req.query.recipient_q || '').trim();
-  const [balanceData, transactionsData, fundData, recipients] = await Promise.all([
+  const [balanceData, transactionsData, fundData, recipients, maxTransfer] = await Promise.all([
     getBalance(req.token),
     getTransactions(req.token, {
       per_page: 20,
@@ -306,7 +323,8 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
       ...(txCursor ? { cursor: txCursor } : {})
     }),
     callWalletApi(req.token, 'GET', '/community-fund'),
-    walletRecipientsFor(req.token, recipientQuery, res.locals.t)
+    walletRecipientsFor(req.token, recipientQuery, res.locals.t),
+    walletMaxTransfer(req.token)
   ]);
 
   const wallet = normalizeWallet(balanceData);
@@ -340,6 +358,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
     donateForm,
     donateIdempotencyKey: randomUUID(),
+    maxTransfer,
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -391,10 +410,11 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
   const donateTarget = req.query.donate_target === 'user' || (donateForm && donateForm.target === 'user')
     ? 'user'
     : 'community_fund';
-  const [walletRaw, fundRaw, recipients] = await Promise.all([
+  const [walletRaw, fundRaw, recipients, maxTransfer] = await Promise.all([
     callWalletApi(req.token, 'GET', '/balance'),
     callWalletApi(req.token, 'GET', '/community-fund'),
-    walletRecipientsFor(req.token, recipientQuery, res.locals.t)
+    walletRecipientsFor(req.token, recipientQuery, res.locals.t),
+    walletMaxTransfer(req.token)
   ]);
 
   const donateRecipients = transferRecipients(recipients);
@@ -417,6 +437,7 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
     donateRecipient,
     status: walletManageStatus(req.query.status, req.query.error, req.query.donate_error, res.locals.t),
     donateIdempotencyKey: randomUUID(),
+    maxTransfer,
     hoursValue,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -424,7 +445,7 @@ router.get('/manage', requireAuth, asyncRoute(async (req, res) => {
 
 // Process transfer
 router.post('/transfer', requireAuth, audit.walletTransfer(), asyncRoute(async (req, res) => {
-  const normalized = transferPayload(req.body);
+  const normalized = transferPayload(req.body, await walletMaxTransfer(req.token));
   if (normalized.error) {
     storeTransferForm(req);
     return redirectTo(res, transferFailurePath(normalized.error, req.body.recipient_q));

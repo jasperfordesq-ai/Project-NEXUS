@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Aucun membre ne correspond à votre recherche.',
         'recipient_heading' => 'Membres correspondants',
         'amount_label' => 'Montant en heures',
-        'amount_hint' => 'Par exemple, 1 ou 2,5. Vous pouvez envoyer jusqu\'à 1000 heures.',
+        'amount_hint' => 'Par exemple, 1 ou 2,5. Vous pouvez envoyer jusqu\'à :max heures.',
         'note_label' => 'Ajouter une note (facultatif)',
         'note_hint' => 'Le destinataire le verra avec le transfert.',
         'send_button' => 'Envoyer des crédits à :name',

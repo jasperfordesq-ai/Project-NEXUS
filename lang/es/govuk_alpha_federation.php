@@ -109,4 +109,18 @@ return [
         'heading' => 'Contacto no disponible',
         'body' => 'La política de protección de la comunidad de este miembro no permite el contacto directo por tu parte. Un coordinador de la comunidad puede ayudarte.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Transferencias pendientes de tu aprobación',
+        'note' => 'La aprobación no mueve créditos hasta que el socio complete la transferencia.',
+        'load_error' => 'No se pudieron cargar las transferencias pendientes.',
+        'summary' => '¿Aprobar la transferencia de :amount horas a :payee?',
+        'reversal_summary' => '¿Aprobar la devolución de :amount horas a :payee?',
+        'expires' => 'La solicitud vence el :date',
+        'approve' => 'Aprobar transferencia',
+        'reject' => 'Rechazar transferencia',
+        'saved' => 'Decisión guardada',
+        'failed' => 'No se pudo guardar tu decisión. Inténtalo de nuevo.',
+    ],
 ];

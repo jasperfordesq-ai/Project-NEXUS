@@ -197,7 +197,9 @@
       <ul class="govuk-list govuk-list--spaced">
         <li><a class="govuk-link" href="{{ urlFor('/profile') }}">{{ t("dashboard.view_profile") }}</a></li>
         <li><a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("dashboard.edit_profile") }}</a></li>
-        <li><a class="govuk-link" href="{{ urlFor('/feed') }}">{{ t("dashboard.view_feed") }}</a></li>
+        {% if dashboardFeatures.feed %}
+          <li><a class="govuk-link" href="{{ urlFor('/feed') }}">{{ t("dashboard.view_feed") }}</a></li>
+        {% endif %}
         {% if dashboardFeatures.messages %}
           <li><a class="govuk-link" href="{{ urlFor('/messages') }}">{{ t("nav.messages") }}</a></li>
         {% endif %}
@@ -218,6 +220,7 @@
   </div>
 
   <div class="govuk-grid-row govuk-!-margin-top-8">
+    {% if dashboardFeatures.feed %}
     <div class="govuk-grid-column-one-half">
       <h2 class="govuk-heading-l">{{ t("dashboard.recent_feed_title") }}</h2>
       {% if not feedItems or not feedItems.length %}
@@ -242,6 +245,7 @@
         </div>
       {% endif %}
     </div>
+    {% endif %}
 
     <div class="govuk-grid-column-one-half">
       <h2 class="govuk-heading-l">{{ t("dashboard.recent_listings_title") }}</h2>

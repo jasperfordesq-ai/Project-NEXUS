@@ -27,6 +27,8 @@ return [
         'optional' => '(opzionale)',
         'warning' => 'Avvertimento',
         'none_yet' => 'Nessuno ancora',
+        'find_opportunities' => 'Trova opportunità',
+        'check_applications' => 'Controlla le mie candidature',
     ],
     'my_orgs' => [
         'title' => 'Le mie organizzazioni',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Apri il cruscotto',
         'manage_dashboard_for' => 'Apri la dashboard per :name',
         'awaiting_approval' => 'In attesa di approvazione',
-        'awaiting_approval_hint' => 'Un amministratore esaminerà questa organizzazione prima che tu possa gestire le opportunità.',
+        'awaiting_approval_hint' => 'Un amministratore della comunità sta esaminando questa organizzazione. Puoi aprire la sua dashboard e prepararla nell’attesa.',
         'more_label' => 'più organizzazioni',
         'pagination_label' => 'Impaginazione delle mie organizzazioni',
+        'pending_setup' => 'Preparala nell’attesa',
+        'pending_see_all' => 'Vedi le tue organizzazioni',
     ],
     'org_dashboard' => [
         'title' => 'Cruscotto dell\'organizzazione',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Questa segnalazione è chiusa, quindi non si possono più aggiungere aggiornamenti. Se emerge qualcosa di nuovo, contattate gli amministratori o i broker della vostra comunità.',
         'history_empty' => 'Per questa segnalazione non è ancora successo nulla.',
         'status_guide_title' => 'Che cosa significa ogni stato',
+        'team_meaning' => 'In questa pagina, «il team di tutela» indica gli amministratori, i broker e i coordinatori della vostra comunità. Tutti vedono ogni segnalazione per intero.',
     ],
     'shift_manager' => [
         'manage_link' => 'Gestisci i turni',
@@ -1295,6 +1300,11 @@ return [
         'status_user_not_found' => 'Questa persona non è un membro attivo di questa comunità.',
         'status_forbidden' => 'Solo i proprietari dell’organizzazione e gli amministratori della comunità possono modificare il team.',
         'status_failed' => 'Impossibile effettuare questa modifica. Riprova.',
+        'safeguarding_title' => 'Referente per la tutela',
+        'safeguarding_lead' => 'Referente per la tutela',
+        'safeguarding_deputy' => 'Vice',
+        'safeguarding_nobody' => 'Nessuno nominato per ora',
+        'safeguarding_help' => 'Il referente e il vice vedono un riepilogo di ogni segnalazione di tutela collegata a questa organizzazione, e la segnalazione completa solo se il personale di tutela della comunità la condivide. Non sanno mai chi ha fatto una segnalazione. Li nominano gli amministratori della comunità: rivolgetevi alla vostra comunità se serve un cambiamento.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1543,5 +1553,26 @@ return [
         'shifts_col_when' => 'Quando',
         'shifts_col_where' => 'Dove',
         'shifts_load_error' => 'Non è stato possibile caricare i tuoi turni. Riprova.',
+        'no_organisation' => 'Potrai registrare le ore quando un’organizzazione ti avrà approvato come volontario. Trova un’opportunità e candidati. Quando l’organizzazione approverà la tua candidatura, potrai registrare qui il tuo tempo.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Non è stato possibile caricare le tue richieste urgenti di turni. Riprova.',
+        'group_signups' => 'Non è stato possibile caricare le tue iscrizioni di gruppo. Riprova.',
+        'safeguarding' => 'Non è stato possibile caricare i tuoi dati sulla tutela. Riprova.',
+        'organisations' => 'Non è stato possibile caricare le tue organizzazioni di volontariato. Riprova.',
+        'recommended' => 'Non è stato possibile caricare i turni consigliati per te. Riprova.',
+        'org_dashboard' => 'Non è stato possibile caricare la dashboard dell’organizzazione. Verifica di gestire questa organizzazione e riprova.',
+        'org_manage' => 'Non è stato possibile caricare la coda di gestione dell’organizzazione. Verifica di gestire questa organizzazione e riprova.',
+        'org_settings' => 'Non è stato possibile caricare le impostazioni dell’organizzazione. Verifica di gestire questa organizzazione e riprova.',
+        'org_volunteers' => 'Non è stato possibile caricare i volontari dell’organizzazione. Verifica di gestire questa organizzazione e riprova.',
+        'org_wallet' => 'Non è stato possibile caricare il portafoglio dell’organizzazione. Verifica di gestire questa organizzazione e riprova.',
+        'hours' => 'Non è stato possibile caricare le tue ore di volontariato. Riprova.',
+        'donations' => 'Non è stato possibile caricare le tue donazioni. Riprova.',
+        'expenses' => 'Non è stato possibile caricare le tue spese. Riprova.',
+        'create_opportunity' => 'Non è stato possibile caricare il modulo per creare un’opportunità. Riprova.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'altre richieste di scambio',
+        'pagination_label' => 'Pagine delle richieste di scambio',
     ],
 ];

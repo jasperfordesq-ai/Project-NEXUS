@@ -249,10 +249,16 @@
 
         </fieldset>
 
+        {#- "Repeat this event" offers only what GET /v2/events/recurrence-capabilities
+            allows. A community with recurring events switched off offers no frequency,
+            so the section is not shown at all (creating a series there is refused). -#}
+        {% set offeredFrequencies = recurrence.frequencies if recurrence and recurrence.frequencies else [] %}
+        {% set offeredEndTypes = recurrence.endTypes if recurrence and recurrence.endTypes else [] %}
+        {% if offeredFrequencies.length and offeredEndTypes.length %}
         {% set isRecurring = values and values.is_recurring %}
-        {% set recurrenceFrequency = (values.recurrence_frequency if values and values.recurrence_frequency else "weekly") %}
+        {% set recurrenceFrequency = (values.recurrence_frequency if values and values.recurrence_frequency in offeredFrequencies else ("weekly" if "weekly" in offeredFrequencies else offeredFrequencies[0])) %}
         {% set recurrenceInterval = (values.recurrence_interval if values and values.recurrence_interval else "1") %}
-        {% set recurrenceEndsType = (values.recurrence_ends_type if values and values.recurrence_ends_type else "after_count") %}
+        {% set recurrenceEndsType = (values.recurrence_ends_type if values and values.recurrence_ends_type in offeredEndTypes else offeredEndTypes[0]) %}
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
             <h2 class="govuk-fieldset__heading">{{ t("events.polish_events.recurrence_section_title") }}</h2>
@@ -270,22 +276,22 @@
                   <fieldset class="govuk-fieldset">
                     <legend class="govuk-fieldset__legend">{{ t("events.polish_events.recurrence_frequency_legend") }}</legend>
                     <div class="govuk-radios govuk-radios--small" data-module="govuk-radios" id="recurrence_frequency">
-                      <div class="govuk-radios__item">
+                      {% if "daily" in offeredFrequencies %}<div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="freq-daily" name="recurrence_frequency" type="radio" value="daily" data-recurrence-interval="1" {% if recurrenceFrequency == "daily" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="freq-daily">{{ t("events.polish_events.recurrence_freq_daily") }}</label>
-                      </div>
-                      <div class="govuk-radios__item">
+                      </div>{% endif %}
+                      {% if "weekly" in offeredFrequencies %}<div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="freq-weekly" name="recurrence_frequency" type="radio" value="weekly" data-recurrence-interval="1" {% if recurrenceFrequency == "weekly" and recurrenceInterval != "2" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="freq-weekly">{{ t("events.polish_events.recurrence_freq_weekly") }}</label>
                       </div>
                       <div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="freq-biweekly" name="recurrence_frequency" type="radio" value="weekly" data-recurrence-interval="2" {% if recurrenceFrequency == "weekly" and recurrenceInterval == "2" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="freq-biweekly">{{ t("events.polish_events.recurrence_freq_biweekly") }}</label>
-                      </div>
-                      <div class="govuk-radios__item">
+                      </div>{% endif %}
+                      {% if "monthly" in offeredFrequencies %}<div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="freq-monthly" name="recurrence_frequency" type="radio" value="monthly" data-recurrence-interval="1" {% if recurrenceFrequency == "monthly" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="freq-monthly">{{ t("events.polish_events.recurrence_freq_monthly") }}</label>
-                      </div>
+                      </div>{% endif %}
                     </div>
                     <input type="hidden" id="recurrence_interval" name="recurrence_interval" value="{{ recurrenceInterval }}">
                   </fieldset>
@@ -300,34 +306,35 @@
                        aria-allowed-attr, critical). The route reads only the field that
                        matches recurrence_ends_type. #}
                     <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
-                      <div class="govuk-radios__item">
+                      {% if "after_count" in offeredEndTypes %}<div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="rec-end-count" name="recurrence_ends_type" type="radio" value="after_count" {% if recurrenceEndsType == "after_count" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="rec-end-count">{{ t("events.polish_events.recurrence_end_after") }}</label>
-                      </div>
-                      <div class="govuk-radios__item">
+                      </div>{% endif %}
+                      {% if "on_date" in offeredEndTypes %}<div class="govuk-radios__item">
                         <input class="govuk-radios__input" id="rec-end-date" name="recurrence_ends_type" type="radio" value="on_date" {% if recurrenceEndsType == "on_date" %}checked{% endif %}>
                         <label class="govuk-label govuk-radios__label" for="rec-end-date">{{ t("events.polish_events.recurrence_end_on_date") }}</label>
-                      </div>
+                      </div>{% endif %}
                     </div>
-                    <div class="govuk-form-group govuk-!-margin-top-4">
+                    {% if "after_count" in offeredEndTypes %}<div class="govuk-form-group govuk-!-margin-top-4">
                       <label class="govuk-label" for="recurrence_ends_after_count">{{ t("events.polish_events.recurrence_count_label") }}</label>
                       {# The hint says "Between 2 and :max" — interpolate the input's own
                          bound and keep min in step with the wording. #}
                       <div id="rec-count-hint" class="govuk-hint">{{ t("events.polish_events.recurrence_used_when", { option: t("events.polish_events.recurrence_end_after") }) }} {{ t("events.polish_events.recurrence_count_hint", { max: 52 }) }}</div>
                       <input class="govuk-input govuk-input--width-3" id="recurrence_ends_after_count" name="recurrence_ends_after_count" type="number" min="2" max="52" value="{{ values.recurrence_ends_after_count if values and values.recurrence_ends_after_count else '10' }}" aria-describedby="rec-count-hint">
-                    </div>
-                    {{ nexusDateInput({
+                    </div>{% endif %}
+                    {% if "on_date" in offeredEndTypes %}{{ nexusDateInput({
                       name: "recurrence_ends_on_date",
                       legend: t("events.polish_events.recurrence_end_date_label"),
                       hint: t("events.polish_events.recurrence_used_when", { option: t("events.polish_events.recurrence_end_on_date") }) + " " + t("events.polish_events.recurrence_end_date_hint"),
                       value: (values.recurrence_ends_on_date | dateParts) if values else undefined
-                    }, t) }}
+                    }, t) }}{% endif %}
                   </fieldset>
                 </div>
               </div>
             </div>
           </div>
         </fieldset>
+        {% endif %}
 
         {# Venue accessibility — the create form rendered none of this until
            2026-08-13, so the answers could never be captured at the point the

@@ -109,4 +109,18 @@ return [
         'heading' => 'Contact impossible',
         'body' => 'La politique de protection de la communauté de ce membre n’autorise pas de contact direct de votre part. Un coordinateur de la communauté peut vous aider.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Transferts en attente de votre accord',
+        'note' => 'L\'approbation ne déplace aucun crédit tant que le partenaire n\'a pas terminé le transfert.',
+        'load_error' => 'Impossible de charger les transferts en attente.',
+        'summary' => 'Approuver le transfert de :amount heures à :payee ?',
+        'reversal_summary' => 'Approuver le retour de :amount heures à :payee ?',
+        'expires' => 'La demande expire le :date',
+        'approve' => 'Approuver le transfert',
+        'reject' => 'Refuser le transfert',
+        'saved' => 'Décision enregistrée',
+        'failed' => 'Impossible d\'enregistrer votre décision. Veuillez réessayer.',
+    ],
 ];

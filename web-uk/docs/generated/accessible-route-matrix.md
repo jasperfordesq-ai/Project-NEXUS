@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-26T21:15:46.527Z
-Laravel commit SHA: `356eb65c90b0e361f0d829c54683e8321db8eedb`
-Web UK repository commit SHA: `356eb65c90b0e361f0d829c54683e8321db8eedb`
+Generated: 2026-10-27T10:10:24.330Z
+Laravel commit SHA: `7ac8508b14bc0c6e66b3716dce85599849675430`
+Web UK repository commit SHA: `7ac8508b14bc0c6e66b3716dce85599849675430`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 920 |
+| web-uk routes | 921 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 210 |
+| Extra web-uk routes | 211 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -49,7 +49,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | explore | 1 | 0 | 0 | 0 |
 | faq | 1 | 0 | 0 | 0 |
 | features | 1 | 0 | 0 | 0 |
-| federation | 28 | 0 | 2 | 0 |
+| federation | 28 | 0 | 3 | 0 |
 | feed | 22 | 0 | 0 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
@@ -161,6 +161,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/events/{param}/tickets/types/new` | events |  | web-uk/src/routes/event-organiser-tools.js |
 | POST | `/federation/members/{param}/block` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/federation/members/{param}/unblock` | federation |  | web-uk/src/routes/federation-actions.js |
+| POST | `/federation/settings/debit-approvals/{param}/decision` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |
 | POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
 | GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |

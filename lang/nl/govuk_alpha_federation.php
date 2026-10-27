@@ -109,4 +109,18 @@ return [
         'heading' => 'Contact niet mogelijk',
         'body' => 'Het beschermingsbeleid van de gemeenschap van dit lid staat geen direct contact van jou toe. Een coördinator van de gemeenschap kan helpen.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Overdrachten die op uw goedkeuring wachten',
+        'note' => 'Na goedkeuring worden pas tijdtegoeden overgedragen wanneer de partner de overdracht voltooit.',
+        'load_error' => 'Openstaande overdrachten konden niet worden geladen.',
+        'summary' => ':amount uur naar :payee overdragen?',
+        'reversal_summary' => ':amount uur teruggeven aan :payee?',
+        'expires' => 'Verzoek verloopt op :date',
+        'approve' => 'Overdracht goedkeuren',
+        'reject' => 'Overdracht afwijzen',
+        'saved' => 'Beslissing opgeslagen',
+        'failed' => 'Uw beslissing kon niet worden opgeslagen. Probeer het opnieuw.',
+    ],
 ];

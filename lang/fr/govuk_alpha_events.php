@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Erreur:',
         'save' => 'Sauvegarder',
         'cancel' => 'Annuler',
+        'event_time_zone_hint' => 'Saisissez les heures dans le fuseau horaire de l’événement (:zone).',
     ],
     'safety' => [
         'title' => 'Sécurité des événements',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'Ces paramètres ont changé ailleurs. La dernière version est affichée ; vérifiez-le avant de l\'enregistrer à nouveau.',
         'validation_error' => 'Vérifiez les heures et les canaux de rappel, puis réessayez.',
         'save_error' => 'Vos paramètres de rappel n\'ont pas pu être enregistrés. Veuillez réessayer.',
+        'switched_off' => 'Les rappels d’événements sont désactivés dans cette communauté : il n’y a donc rien à configurer pour cet événement.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Impossible de charger le calendrier.',
         'code_label' => 'Code de la commune',
         'code_hint' => 'Le code officiel de la commune (p. ex. code postal ou code OFS) — doit correspondre à celui des autres clubs pour fédérer.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Les événements récurrents sont désactivés dans cette communauté. Votre événement n’a pas été créé. Vérifiez les informations et créez-le comme un événement unique.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Demandé',
+        'pending' => 'Vous avez demandé une place. L’organisateur doit l’approuver avant qu’elle soit confirmée.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Réponses manquantes',
+        'answers_outstanding' => 'Cette personne n’a pas encore répondu aux questions d’inscription obligatoires. Elle doit y répondre avant de pouvoir être enregistrée à l’arrivée.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Brouillon',
+        'pending_review_tag' => 'En attente de validation',
     ],
 ];

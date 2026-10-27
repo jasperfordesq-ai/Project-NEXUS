@@ -27,6 +27,8 @@ return [
         'optional' => '(facultatif)',
         'warning' => 'Avertissement',
         'none_yet' => 'Aucun pour l\'instant',
+        'find_opportunities' => 'Trouver des opportunités',
+        'check_applications' => 'Voir mes candidatures',
     ],
     'my_orgs' => [
         'title' => 'Mes organisations',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Ouvrir le tableau de bord',
         'manage_dashboard_for' => 'Ouvrez le tableau de bord pour :name',
         'awaiting_approval' => 'En attente d\'approbation',
-        'awaiting_approval_hint' => 'Un administrateur examinera cette organisation avant que vous puissiez gérer les opportunités.',
+        'awaiting_approval_hint' => 'Un administrateur de la communauté examine cette organisation. Vous pouvez ouvrir son tableau de bord et la préparer en attendant.',
         'more_label' => 'plus d\'organisations',
         'pagination_label' => 'Pagination de mes organisations',
+        'pending_setup' => 'La préparer en attendant',
+        'pending_see_all' => 'Voir vos organisations',
     ],
     'org_dashboard' => [
         'title' => 'Tableau de bord de l\'organisation',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Ce signalement est clos : il n\'est plus possible d\'ajouter de mises à jour. Si un élément nouveau apparaît, contactez les administrateurs ou les courtiers de votre communauté.',
         'history_empty' => 'Rien ne s\'est encore passé sur ce signalement.',
         'status_guide_title' => 'Ce que signifie chaque statut',
+        'team_meaning' => 'Sur cette page, « l’équipe de protection » désigne les administrateurs, les courtiers et les coordinateurs de votre communauté. Tous voient chaque signalement en entier.',
     ],
     'shift_manager' => [
         'manage_link' => 'Gérer les créneaux',
@@ -1294,6 +1299,11 @@ return [
         'status_user_not_found' => 'Cette personne n’est pas un membre actif de cette communauté.',
         'status_forbidden' => 'Seuls les propriétaires de l’organisation et les administrateurs de la communauté peuvent modifier l’équipe.',
         'status_failed' => 'Cette modification n’a pas pu être effectuée. Réessayez.',
+        'safeguarding_title' => 'Référent protection',
+        'safeguarding_lead' => 'Référent protection',
+        'safeguarding_deputy' => 'Suppléant',
+        'safeguarding_nobody' => 'Personne n’est encore désigné',
+        'safeguarding_help' => 'Le référent et le suppléant voient un résumé de chaque signalement de protection lié à cette organisation, et le signalement complet seulement si l’équipe de protection de la communauté le partage. Ils ne savent jamais qui a fait un signalement. Les administrateurs de la communauté les désignent : contactez votre communauté si cela doit changer.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1542,5 +1552,26 @@ return [
         'shifts_col_when' => 'Quand',
         'shifts_col_where' => 'Où',
         'shifts_load_error' => 'Nous n\'avons pas pu charger vos créneaux. Veuillez réessayer.',
+        'no_organisation' => 'Vous pourrez enregistrer des heures dès qu’une organisation vous aura accepté comme bénévole. Trouvez une opportunité et postulez. Quand l’organisation acceptera votre candidature, vous pourrez enregistrer votre temps ici.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Nous n’avons pas pu charger vos demandes urgentes de créneaux. Veuillez réessayer.',
+        'group_signups' => 'Nous n’avons pas pu charger vos inscriptions de groupe. Veuillez réessayer.',
+        'safeguarding' => 'Nous n’avons pas pu charger vos dossiers de protection. Veuillez réessayer.',
+        'organisations' => 'Nous n’avons pas pu charger vos organisations de bénévolat. Veuillez réessayer.',
+        'recommended' => 'Nous n’avons pas pu charger les créneaux recommandés pour vous. Veuillez réessayer.',
+        'org_dashboard' => 'Nous n’avons pas pu charger le tableau de bord de l’organisation. Vérifiez que vous gérez cette organisation et réessayez.',
+        'org_manage' => 'Nous n’avons pas pu charger la file de gestion de l’organisation. Vérifiez que vous gérez cette organisation et réessayez.',
+        'org_settings' => 'Nous n’avons pas pu charger les paramètres de l’organisation. Vérifiez que vous gérez cette organisation et réessayez.',
+        'org_volunteers' => 'Nous n’avons pas pu charger les bénévoles de l’organisation. Vérifiez que vous gérez cette organisation et réessayez.',
+        'org_wallet' => 'Nous n’avons pas pu charger le portefeuille de l’organisation. Vérifiez que vous gérez cette organisation et réessayez.',
+        'hours' => 'Nous n’avons pas pu charger vos heures de bénévolat. Veuillez réessayer.',
+        'donations' => 'Nous n’avons pas pu charger vos dons. Veuillez réessayer.',
+        'expenses' => 'Nous n’avons pas pu charger vos dépenses. Veuillez réessayer.',
+        'create_opportunity' => 'Nous n’avons pas pu charger le formulaire de création d’une opportunité. Veuillez réessayer.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'autres demandes d’échange',
+        'pagination_label' => 'Pages des demandes d’échange',
     ],
 ];

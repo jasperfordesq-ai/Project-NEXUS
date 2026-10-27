@@ -43,7 +43,7 @@ return [
         'search_empty' => 'Keine Mitglieder stimmten mit Ihrer Suche überein.',
         'recipient_heading' => 'Passende Mitglieder',
         'amount_label' => 'Betrag in Stunden',
-        'amount_hint' => 'Zum Beispiel 1 oder 2,5. Sie können bis zu 1000 Stunden senden.',
+        'amount_hint' => 'Zum Beispiel 1 oder 2,5. Sie können bis zu :max Stunden senden.',
         'note_label' => 'Fügen Sie eine Notiz hinzu (optional)',
         'note_hint' => 'Dies wird dem Empfänger bei der Überweisung angezeigt.',
         'send_button' => 'Senden Sie Credits an :name',

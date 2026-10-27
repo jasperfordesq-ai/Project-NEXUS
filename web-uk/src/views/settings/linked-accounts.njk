@@ -26,7 +26,13 @@
       </strong>
     </p>
 
-    {% if relationship.relationshipId > 0 and mode == "parent" and isPending %}
+    {# F-224: the API says whose answer a pending link waits for; without it, the supported member answers. #}
+    {% if relationship.awaitingYourResponse === true or relationship.awaitingYourResponse === false %}
+      {% set canApprove = relationship.awaitingYourResponse %}
+    {% else %}
+      {% set canApprove = mode == "parent" %}
+    {% endif %}
+    {% if relationship.relationshipId > 0 and isPending and canApprove %}
       <form method="post" action="{{ urlFor('/settings/linked-accounts/approve') }}" class="govuk-!-display-inline-block govuk-!-margin-right-2">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">

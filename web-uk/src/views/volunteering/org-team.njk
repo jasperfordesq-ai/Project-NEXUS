@@ -98,6 +98,20 @@
       </div>
     {% endif %}
 
+    {# Who the organisation's safeguarding lead and deputy are (React d6e0a1c06). #}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.org_team.safeguarding_title") }}</h2>
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_team.safeguarding_lead") }}</dt>
+        <dd class="govuk-summary-list__value">{{ safeguarding.lead.name if safeguarding and safeguarding.lead else t("govuk_alpha_volunteering.org_team.safeguarding_nobody") }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.org_team.safeguarding_deputy") }}</dt>
+        <dd class="govuk-summary-list__value">{{ safeguarding.deputy.name if safeguarding and safeguarding.deputy else t("govuk_alpha_volunteering.org_team.safeguarding_nobody") }}</dd>
+      </div>
+    </dl>
+    <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_team.safeguarding_help") }}</p>
+
     {% if canManage %}
       <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_team.add_title") }}</h2>
       <form method="get" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team') }}" novalidate>

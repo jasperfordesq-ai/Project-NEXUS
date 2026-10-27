@@ -1143,6 +1143,34 @@ function decorateCoupon(coupon, req) {
   };
 }
 
+// Seller opening hours for the form. Saved hours come back as JSON (string or
+// object), mon..sun -> { open, close } | null. A seller with none starts on
+// React's defaults: Monday to Saturday 09:00-18:00, Sunday closed.
+const ONBOARDING_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+function onboardingHours(value) {
+  let saved = value;
+  if (typeof saved === 'string' && saved.trim() !== '') {
+    try {
+      saved = JSON.parse(saved);
+    } catch {
+      saved = null;
+    }
+  }
+  const hasSaved = saved && typeof saved === 'object' && !Array.isArray(saved) && Object.keys(saved).length > 0;
+  return ONBOARDING_DAYS.reduce((hours, day) => {
+    if (!hasSaved) {
+      hours[day] = day === 'sun' ? { closed: true, open: '', close: '' } : { closed: false, open: '09:00', close: '18:00' };
+      return hours;
+    }
+    const entry = saved[day];
+    hours[day] = entry && typeof entry === 'object'
+      ? { closed: false, open: trimmed(entry.open).slice(0, 5), close: trimmed(entry.close).slice(0, 5) }
+      : { closed: true, open: '', close: '' };
+    return hours;
+  }, {});
+}
+
 function onboardingProfile(statusResult) {
   const data = objectFrom(statusResult) || {};
   const profile = objectValue(data.profile);
@@ -1156,6 +1184,7 @@ function onboardingProfile(statusResult) {
   }
   return {
     completed: Boolean(data.onboarding_completed),
+    hours: onboardingHours(profile.opening_hours),
     profile: {
       business_name: trimmed(profile.business_name),
       display_name: trimmed(profile.display_name),
@@ -1575,7 +1604,13 @@ const ONBOARDING_ERROR_FIELDS = {
 };
 
 // Page order, so the summary lists errors the way the member reads the form.
-const ONBOARDING_FIELD_ORDER = ['display_name', 'business_name'];
+const ONBOARDING_FIELD_ORDER = [
+  'display_name',
+  'business_name',
+  ...ONBOARDING_DAYS.map((day) => `hours_${day}_open`),
+  'avatar',
+  'cover_image'
+];
 
 function onboardingFormErrors(req, state) {
   const keys = Array.isArray(state?.errorKeys) ? state.errorKeys : [];
@@ -1585,7 +1620,11 @@ function onboardingFormErrors(req, state) {
   keys.forEach((key) => {
     const message = translateMarketplaceMessage(req, key, key);
     if (!message) return;
-    const field = ONBOARDING_ERROR_FIELDS[key];
+    // The hours and photo errors name their field when they are recorded.
+    const errorFieldFor = state?.errorFieldFor && typeof state.errorFieldFor === 'object' ? state.errorFieldFor : {};
+    const field = (Object.hasOwn(errorFieldFor, key) && ONBOARDING_FIELD_ORDER.includes(errorFieldFor[key]))
+      ? errorFieldFor[key]
+      : ONBOARDING_ERROR_FIELDS[key];
     if (!field) {
       if (formMessage === '') formMessage = message;
       return;
@@ -2076,6 +2115,12 @@ router.get('/onboarding', asyncRoute(async (req, res) => {
       ...onboarding,
       profile: { ...onboarding.profile, ...(formState?.profile || {}) },
       address: { ...onboarding.address, ...(formState?.address || {}) },
+      hours: formState?.hours && typeof formState.hours === 'object' ? { ...onboarding.hours, ...formState.hours } : onboarding.hours,
+      hoursDays: ONBOARDING_DAYS,
+      // File fields need the multipart parser mounted for this path in server.js,
+      // which sets this flag beside it; without it a multipart post would fail
+      // the CSRF check, so the photo fields are simply not offered.
+      photoUploadsAvailable: Boolean(req.app && req.app.locals && req.app.locals.marketplaceOnboardingUploads),
       ...onboardingFormErrors(req, formState),
       status: ['onboarding-complete', 'onboarding-failed'].includes(statusKey)
         ? statusEntry(req, statusKey)

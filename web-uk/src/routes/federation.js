@@ -647,7 +647,7 @@ function statusBanner(status, t) {
   return build ? build() : null;
 }
 
-function memberStatusBanner(status, t) {
+function memberStatusBanner(status, t, refusalMessage = '') {
   const banners = {
     'connect-sent': () => federationBanner('success', 'connect_sent', t),
     'connect-failed': () => federationBanner('error', 'connect_failed', t),
@@ -670,10 +670,22 @@ function memberStatusBanner(status, t) {
   // resolve through Object.prototype to a function that is not a banner.
   const key = trimmed(status);
   const build = Object.hasOwn(banners, key) ? banners[key] : null;
-  return build ? build() : null;
+  if (build) return build();
+  // A refused transfer may land here (safeguarding refusals return to the
+  // profile); it was silently bannerless until 27 Oct 2026.
+  return key.startsWith('transfer-') ? transferStatusBanner(key, t, refusalMessage) : null;
 }
 
-function transferStatusBanner(status, t = (key) => key) {
+// The API's own sentence for a refused transfer, stashed by federation-actions
+// and consumed once, only on the page for the member it was about.
+function takeTransferRefusal(req, memberId) {
+  if (!req.session || !req.session.federationTransferRefusal) return '';
+  const stash = req.session.federationTransferRefusal;
+  delete req.session.federationTransferRefusal;
+  return String(stash.memberId) === String(memberId) ? trimmed(stash.message, 500) : '';
+}
+
+function transferStatusBanner(status, t = (key) => key, refusalMessage = '') {
   const allowed = new Set([
     'transfer-sent', 'transfer-not-enabled', 'transfer-amount-invalid',
     'transfer-description-required', 'transfer-description-too-long',
@@ -681,6 +693,10 @@ function transferStatusBanner(status, t = (key) => key) {
     'transfer-failed', 'transfer-safeguarding-restricted', 'transfer-safeguarding-unavailable'
   ]);
   const normalized = trimmed(status);
+
+  if (normalized === 'transfer-refused') {
+    return { type: 'error', message: trimmed(refusalMessage) || t('fed2.transfer.status.transfer-failed') };
+  }
 
   return allowed.has(normalized) ? {
     type: normalized === 'transfer-sent' ? 'success' : 'error',
@@ -706,8 +722,8 @@ const TRANSFER_ERROR_FIELDS = {
  * Split a transfer status into per-field errors and one page-level message, so the summary
  * can link to the field at fault and the field itself can be marked.
  */
-function transferFormErrors(status, t = (key) => key) {
-  const banner = transferStatusBanner(status, t);
+function transferFormErrors(status, t = (key) => key, refusalMessage = '') {
+  const banner = transferStatusBanner(status, t, refusalMessage);
   if (!banner || banner.type !== 'error') return { errorList: [], fieldErrors: {}, formMessage: '' };
 
   const field = TRANSFER_ERROR_FIELDS[trimmed(status)];
@@ -722,10 +738,38 @@ function transferFormErrors(status, t = (key) => key) {
 function settingsStatusBanner(status, t = (key) => key) {
   const banners = {
     'settings-saved': { type: 'success', message: t('federation.settings.saved') },
-    'settings-failed': { type: 'error', message: t('federation.settings.failed') }
+    'settings-failed': { type: 'error', message: t('federation.settings.failed') },
+    'debit-decision-saved': { type: 'success', message: t('govuk_alpha_federation.debit_approvals.saved') },
+    'debit-decision-failed': { type: 'error', href: '#debit-approvals', message: t('govuk_alpha_federation.debit_approvals.failed') }
   };
 
-  return banners[trimmed(status)] || null;
+  const key = trimmed(status);
+  return Object.hasOwn(banners, key) ? banners[key] : null;
+}
+
+// Federated debit approvals (React a44148956): an external partner's transfer
+// out of this member's account waits for their yes. The API returns only this
+// member's pending, unexpired rows in this community.
+function normalizeDebitApproval(row, { t, formatDate, formatNumber }) {
+  const item = asObject(row);
+  const id = Number(item.id);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  const amountNumber = Number(item.amount);
+  const amount = Number.isFinite(amountNumber)
+    ? (typeof formatNumber === 'function' ? formatNumber(amountNumber, { maximumFractionDigits: 2 }) : String(amountNumber))
+    : trimmed(item.amount);
+  const payee = trimmed(item.payee_label, 255);
+  const expiresAt = trimmed(item.expires_at);
+  return {
+    id,
+    summary: t(item.protocol === 'credit_commons_reversal'
+      ? 'govuk_alpha_federation.debit_approvals.reversal_summary'
+      : 'govuk_alpha_federation.debit_approvals.summary', { amount, payee }),
+    description: trimmed(item.description, 500),
+    expires: expiresAt
+      ? t('govuk_alpha_federation.debit_approvals.expires', { date: typeof formatDate === 'function' ? formatDate(expiresAt) : expiresAt })
+      : ''
+  };
 }
 
 function optInStatusBanner(status, t = (key) => key) {
@@ -1409,6 +1453,22 @@ router.get('/settings', asyncRoute(async (req, res) => {
   const settingsData = asObject(dataFrom(settingsResult));
   const settings = asObject(settingsData.settings);
 
+  let debitApprovals = [];
+  let debitApprovalsError = false;
+  try {
+    const approvalsData = asObject(dataFrom(await callFederationApi(token, 'GET', '/debit-approvals')));
+    debitApprovals = asList(approvalsData.approvals)
+      .map((row) => normalizeDebitApproval(row, {
+        t: res.locals.t,
+        formatDate: res.locals.formatLocaleDate,
+        formatNumber: res.locals.formatLocaleNumber
+      }))
+      .filter(Boolean);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    debitApprovalsError = true;
+  }
+
   return res.render('federation/settings', {
     title: res.locals.t('federation.settings.title'),
     activeNav: 'explore',
@@ -1426,6 +1486,8 @@ router.get('/settings', asyncRoute(async (req, res) => {
       serviceReach: trimmed(settings.service_reach) || 'local_only',
       travelRadiusKm: numberOrZero(settings.travel_radius_km || 25)
     },
+    debitApprovals,
+    debitApprovalsError,
     statusBanner: settingsStatusBanner(req.query.status, res.locals.t)
   });
 }));
@@ -1669,6 +1731,7 @@ router.get('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
   const balanceObject = asObject(balanceData);
   const balance = numberOrZero(balanceObject.balance !== undefined ? balanceObject.balance : balanceData);
 
+  const refusalMessage = takeTransferRefusal(req, id);
   return res.render('federation/transfer', {
     title: res.locals.t('fed2.transfer.title'),
     activeNav: 'explore',
@@ -1677,8 +1740,8 @@ router.get('/members/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
     balance,
     transferIdempotencyKey: randomUUID(),
     viewerEnabled: (bool(settings.federation_optin) || bool(settingsData.enabled)) && bool(settings.transactions_enabled_federated),
-    statusBanner: transferStatusBanner(req.query.status, res.locals.t),
-    ...transferFormErrors(req.query.status, res.locals.t)
+    statusBanner: transferStatusBanner(req.query.status, res.locals.t, refusalMessage),
+    ...transferFormErrors(req.query.status, res.locals.t, refusalMessage)
   });
 }));
 
@@ -1746,7 +1809,7 @@ router.get('/members/:id(\\d+)', asyncRoute(async (req, res) => {
       messagingEnabled: bool(settings.messaging_enabled_federated),
       transactionsEnabled: bool(settings.transactions_enabled_federated)
     },
-    statusBanner: memberStatusBanner(req.query.status, res.locals.t)
+    statusBanner: memberStatusBanner(req.query.status, res.locals.t, takeTransferRefusal(req, id))
   });
 }));
 

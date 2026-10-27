@@ -27,6 +27,8 @@ return [
         'optional' => '(optioneel)',
         'warning' => 'Waarschuwing',
         'none_yet' => 'Nog geen',
+        'find_opportunities' => 'Mogelijkheden zoeken',
+        'check_applications' => 'Mijn aanmeldingen bekijken',
     ],
     'my_orgs' => [
         'title' => 'Mijn organisaties',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Dashboard openen',
         'manage_dashboard_for' => 'Open het dashboard voor :name',
         'awaiting_approval' => 'In afwachting van goedkeuring',
-        'awaiting_approval_hint' => 'Een beheerder beoordeelt deze organisatie voordat u opportunities kunt beheren.',
+        'awaiting_approval_hint' => 'Een beheerder van de gemeenschap beoordeelt deze organisatie. Je kunt het dashboard alvast openen en de organisatie inrichten terwijl je wacht.',
         'more_label' => 'meer organisaties',
         'pagination_label' => 'Paginering van mijn organisaties',
+        'pending_setup' => 'Richt hem alvast in',
+        'pending_see_all' => 'Je organisaties bekijken',
     ],
     'org_dashboard' => [
         'title' => 'Organisatiedashboard',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Deze melding is gesloten, dus er kunnen geen updates meer worden toegevoegd. Komt er iets nieuws op, neem dan contact op met de beheerders of brokers van uw gemeenschap.',
         'history_empty' => 'Er is nog niets gebeurd met deze melding.',
         'status_guide_title' => 'Wat elke status betekent',
+        'team_meaning' => 'Op deze pagina betekent “het veiligheidsteam” de beheerders, brokers en coördinatoren van uw gemeenschap. Zij zien elke melding volledig.',
     ],
     'shift_manager' => [
         'manage_link' => 'Diensten beheren',
@@ -1294,6 +1299,11 @@ return [
         'status_user_not_found' => 'Die persoon is geen actief lid van deze gemeenschap.',
         'status_forbidden' => 'Alleen de eigenaren van de organisatie en de beheerders van de gemeenschap kunnen het team wijzigen.',
         'status_failed' => 'Die wijziging kon niet worden doorgevoerd. Probeer het opnieuw.',
+        'safeguarding_title' => 'Veiligheidscontactpersoon',
+        'safeguarding_lead' => 'Veiligheidscontactpersoon',
+        'safeguarding_deputy' => 'Plaatsvervanger',
+        'safeguarding_nobody' => 'Nog niemand aangewezen',
+        'safeguarding_help' => 'De contactpersoon en plaatsvervanger zien een samenvatting van elke veiligheidsmelding die aan deze organisatie is gekoppeld, en de volledige melding alleen als het veiligheidspersoneel van de gemeenschap die deelt. Ze horen nooit wie een melding deed. Gemeenschapsbeheerders wijzen hen aan: vraag uw gemeenschap als dit moet veranderen.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1542,5 +1552,26 @@ return [
         'shifts_col_when' => 'Wanneer',
         'shifts_col_where' => 'Waar',
         'shifts_load_error' => 'We konden je diensten niet laden. Probeer het opnieuw.',
+        'no_organisation' => 'Je kunt uren registreren zodra een organisatie je als vrijwilliger heeft goedgekeurd. Zoek een mogelijkheid en meld je aan. Als de organisatie je aanmelding goedkeurt, kun je hier je tijd registreren.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'We konden je dringende dienstverzoeken niet laden. Probeer het opnieuw.',
+        'group_signups' => 'We konden je groepsaanmeldingen niet laden. Probeer het opnieuw.',
+        'safeguarding' => 'We konden je veiligheidsgegevens niet laden. Probeer het opnieuw.',
+        'organisations' => 'We konden je vrijwilligersorganisaties niet laden. Probeer het opnieuw.',
+        'recommended' => 'We konden de voor jou aanbevolen diensten niet laden. Probeer het opnieuw.',
+        'org_dashboard' => 'We konden het dashboard van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.',
+        'org_manage' => 'We konden de beheerlijst van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.',
+        'org_settings' => 'We konden de instellingen van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.',
+        'org_volunteers' => 'We konden de vrijwilligers van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.',
+        'org_wallet' => 'We konden de portemonnee van de organisatie niet laden. Controleer of je deze organisatie beheert en probeer het opnieuw.',
+        'hours' => 'We konden je vrijwilligersuren niet laden. Probeer het opnieuw.',
+        'donations' => 'We konden je donaties niet laden. Probeer het opnieuw.',
+        'expenses' => 'We konden je onkosten niet laden. Probeer het opnieuw.',
+        'create_opportunity' => 'We konden het formulier om een mogelijkheid aan te maken niet laden. Probeer het opnieuw.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'meer ruilverzoeken',
+        'pagination_label' => 'Pagina’s met ruilverzoeken',
     ],
 ];

@@ -109,4 +109,18 @@ return [
         'heading' => 'Kontakt nicht möglich',
         'body' => 'Die Schutzrichtlinie der Gemeinschaft dieses Mitglieds erlaubt keinen direkten Kontakt von Ihnen. Eine Koordinatorin oder ein Koordinator der Gemeinschaft kann helfen.',
     ],
+    // Federated debit approvals (React a44148956): an external partner's
+    // transfer out of this member's account waits for their yes.
+    'debit_approvals' => [
+        'heading' => 'Überweisungen, die auf Ihre Zustimmung warten',
+        'note' => 'Durch die Genehmigung werden erst dann Zeitguthaben übertragen, wenn der Partner die Überweisung abschließt.',
+        'load_error' => 'Ausstehende Überweisungen konnten nicht geladen werden.',
+        'summary' => ':amount Stunden an :payee überweisen?',
+        'reversal_summary' => ':amount Stunden an :payee zurückgeben?',
+        'expires' => 'Anfrage läuft am :date ab',
+        'approve' => 'Überweisung genehmigen',
+        'reject' => 'Überweisung ablehnen',
+        'saved' => 'Entscheidung gespeichert',
+        'failed' => 'Ihre Entscheidung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+    ],
 ];

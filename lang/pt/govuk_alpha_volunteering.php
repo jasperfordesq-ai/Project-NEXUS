@@ -27,6 +27,8 @@ return [
         'optional' => '(opcional)',
         'warning' => 'Aviso',
         'none_yet' => 'Nenhum ainda',
+        'find_opportunities' => 'Encontrar oportunidades',
+        'check_applications' => 'Ver as minhas candidaturas',
     ],
     'my_orgs' => [
         'title' => 'Minhas organizações',
@@ -49,9 +51,11 @@ return [
         'manage_dashboard' => 'Abrir painel',
         'manage_dashboard_for' => 'Abra o painel para :name',
         'awaiting_approval' => 'Aguardando aprovação',
-        'awaiting_approval_hint' => 'Um administrador analisará esta organização antes que você possa gerenciar oportunidades.',
+        'awaiting_approval_hint' => 'Um administrador da comunidade está a analisar esta organização. Pode abrir o painel e prepará-la enquanto espera.',
         'more_label' => 'mais organizações',
         'pagination_label' => 'Paginação das minhas organizações',
+        'pending_setup' => 'Prepare-a enquanto espera',
+        'pending_see_all' => 'Ver as suas organizações',
     ],
     'org_dashboard' => [
         'title' => 'Painel da organização',
@@ -740,6 +744,7 @@ return [
         'closed_no_updates' => 'Esta comunicação está encerrada, por isso já não é possível acrescentar atualizações. Se surgir algo novo, contacte os administradores ou mediadores da sua comunidade.',
         'history_empty' => 'Ainda não aconteceu nada nesta comunicação.',
         'status_guide_title' => 'O que significa cada estado',
+        'team_meaning' => 'Nesta página, «a equipa de proteção» significa os administradores, mediadores e coordenadores da sua comunidade. Todos veem cada comunicação por inteiro.',
     ],
     'shift_manager' => [
         'manage_link' => 'Gerir turnos',
@@ -1295,6 +1300,11 @@ return [
         'status_user_not_found' => 'Essa pessoa não é um membro ativo desta comunidade.',
         'status_forbidden' => 'Só os proprietários da organização e os administradores da comunidade podem alterar a equipa.',
         'status_failed' => 'Não foi possível fazer essa alteração. Tente novamente.',
+        'safeguarding_title' => 'Responsável de proteção',
+        'safeguarding_lead' => 'Responsável de proteção',
+        'safeguarding_deputy' => 'Substituto',
+        'safeguarding_nobody' => 'Ainda ninguém nomeado',
+        'safeguarding_help' => 'O responsável e o substituto veem um resumo de cada comunicação de proteção associada a esta organização, e a comunicação completa apenas se a equipa de proteção da comunidade a partilhar. Nunca lhes é dito quem fez uma comunicação. São nomeados pelos administradores da comunidade: contacte a sua comunidade se for preciso mudar.',
     ],
     // A volunteer's own qualifications register, no uploads; wording shared with the website (gap B15, 7 Oct 2026)
     'my_qualifications' => [
@@ -1543,5 +1553,26 @@ return [
         'shifts_col_when' => 'Quando',
         'shifts_col_where' => 'Onde',
         'shifts_load_error' => 'Não foi possível carregar os seus turnos. Tente novamente.',
+        'no_organisation' => 'Pode registar horas depois de uma organização o aprovar como voluntário. Encontre uma oportunidade e candidate-se. Quando a organização aprovar a sua candidatura, pode registar aqui o seu tempo.',
+    ],
+    'load_errors' => [
+        'urgent_requests' => 'Não foi possível carregar os seus pedidos urgentes de turnos. Tente novamente.',
+        'group_signups' => 'Não foi possível carregar as suas inscrições de grupo. Tente novamente.',
+        'safeguarding' => 'Não foi possível carregar os seus registos de proteção. Tente novamente.',
+        'organisations' => 'Não foi possível carregar as suas organizações de voluntariado. Tente novamente.',
+        'recommended' => 'Não foi possível carregar os turnos recomendados para si. Tente novamente.',
+        'org_dashboard' => 'Não foi possível carregar o painel da organização. Verifique se gere esta organização e tente novamente.',
+        'org_manage' => 'Não foi possível carregar a fila de gestão da organização. Verifique se gere esta organização e tente novamente.',
+        'org_settings' => 'Não foi possível carregar as definições da organização. Verifique se gere esta organização e tente novamente.',
+        'org_volunteers' => 'Não foi possível carregar os voluntários da organização. Verifique se gere esta organização e tente novamente.',
+        'org_wallet' => 'Não foi possível carregar a carteira da organização. Verifique se gere esta organização e tente novamente.',
+        'hours' => 'Não foi possível carregar as suas horas de voluntariado. Tente novamente.',
+        'donations' => 'Não foi possível carregar os seus donativos. Tente novamente.',
+        'expenses' => 'Não foi possível carregar as suas despesas. Tente novamente.',
+        'create_opportunity' => 'Não foi possível carregar o formulário para criar uma oportunidade. Tente novamente.',
+    ],
+    'swaps_list' => [
+        'more_label' => 'mais pedidos de troca',
+        'pagination_label' => 'Páginas de pedidos de troca',
     ],
 ];

@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Fehler:',
         'save' => 'Speichern',
         'cancel' => 'Stornieren',
+        'event_time_zone_hint' => 'Geben Sie Zeiten in der Zeitzone der Veranstaltung ein (:zone).',
     ],
     'safety' => [
         'title' => 'Veranstaltungssicherheit',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'Diese Einstellungen wurden an anderer Stelle geändert. Die neueste Version wird angezeigt; Überprüfen Sie es, bevor Sie es erneut speichern.',
         'validation_error' => 'Überprüfen Sie die Erinnerungszeiten und -kanäle und versuchen Sie es dann erneut.',
         'save_error' => 'Ihre Erinnerungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+        'switched_off' => 'Veranstaltungserinnerungen sind in dieser Gemeinschaft ausgeschaltet. Für diese Veranstaltung gibt es daher nichts einzurichten.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Kalender konnte nicht geladen werden.',
         'code_label' => 'Gemeindecode',
         'code_hint' => 'Der offizielle Gemeindecode (z. B. PLZ oder BFS-Code) — muss mit anderen Vereinen übereinstimmen, um föderieren zu können.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Wiederkehrende Veranstaltungen sind in dieser Gemeinschaft ausgeschaltet. Ihre Veranstaltung wurde nicht erstellt. Prüfen Sie die Angaben und erstellen Sie sie als einzelne Veranstaltung.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Angefragt',
+        'pending' => 'Sie haben einen Platz angefragt. Die Veranstaltungsleitung muss ihn noch bestätigen, bevor er Ihnen sicher ist.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Antworten fehlen',
+        'answers_outstanding' => 'Diese Person hat die Pflichtfragen der Anmeldung noch nicht beantwortet. Sie muss sie beantworten, bevor sie eingecheckt werden kann.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Entwurf',
+        'pending_review_tag' => 'Wartet auf Prüfung',
     ],
 ];

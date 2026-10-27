@@ -92,8 +92,8 @@
           <input type="hidden" name="idempotency_key" value="{{ recipient.idempotencyKey }}">
           <div class="govuk-form-group govuk-!-margin-bottom-3">
             <label class="govuk-label" for="amount-{{ recipient.id }}">{{ t("govuk_alpha_wallet.transfer.amount_label") }}</label>
-            <div id="amount-hint-{{ recipient.id }}" class="govuk-hint">{{ t("govuk_alpha_wallet.transfer.amount_hint") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="amount-{{ recipient.id }}" name="amount" type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" aria-describedby="amount-hint-{{ recipient.id }}" required>
+            <div id="amount-hint-{{ recipient.id }}" class="govuk-hint">{{ t("govuk_alpha_wallet.transfer.amount_hint", { max: maxTransfer }) }}</div>
+            <input class="govuk-input govuk-input--width-5" id="amount-{{ recipient.id }}" name="amount" type="number" min="0.25" max="{{ maxTransfer }}" step="0.25" inputmode="decimal" aria-describedby="amount-hint-{{ recipient.id }}" required>
           </div>
           <div class="govuk-form-group govuk-!-margin-bottom-3">
             <label class="govuk-label" for="note-{{ recipient.id }}">{{ t("govuk_alpha_wallet.transfer.note_label") }}</label>

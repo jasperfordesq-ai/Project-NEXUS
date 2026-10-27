@@ -21,6 +21,7 @@ return [
         'error_prefix' => 'Erro:',
         'save' => 'Salvar',
         'cancel' => 'Cancelar',
+        'event_time_zone_hint' => 'Introduza as horas no fuso horário do evento (:zone).',
     ],
     'safety' => [
         'title' => 'Segurança do evento',
@@ -215,6 +216,7 @@ return [
         'conflict' => 'Essas configurações foram alteradas em outro lugar. A versão mais recente é exibida; revise-o antes de salvar novamente.',
         'validation_error' => 'Verifique os horários e canais dos lembretes e tente novamente.',
         'save_error' => 'Não foi possível salvar suas configurações de lembrete. Por favor, tente novamente.',
+        'switched_off' => 'Os lembretes de eventos estão desativados nesta comunidade, por isso não há nada a configurar para este evento.',
     ],
 
     // ---- web-uk parity 26 Oct 2026 (events/groups helper) ----
@@ -401,5 +403,20 @@ return [
         'load_failed' => 'Não foi possível carregar o calendário.',
         'code_label' => 'Código do município',
         'code_hint' => 'O código oficial do município (p. ex. código postal ou BFS) — deve corresponder ao dos outros clubes para federar.',
+    ],
+    'create' => [
+        'recurrence_unavailable' => 'Os eventos recorrentes estão desativados nesta comunidade. O seu evento não foi criado. Verifique os dados e crie-o como um evento único.',
+    ],
+    'rsvp' => [
+        'pending_tag' => 'Pedido',
+        'pending' => 'Pediu um lugar. O organizador tem de o aprovar antes de o seu lugar ficar confirmado.',
+    ],
+    'check_in' => [
+        'answers_outstanding_tag' => 'Respostas em falta',
+        'answers_outstanding' => 'Esta pessoa ainda não respondeu às perguntas de inscrição obrigatórias. Tem de responder antes de poder fazer o check-in.',
+    ],
+    'listing' => [
+        'draft_tag' => 'Rascunho',
+        'pending_review_tag' => 'A aguardar revisão',
     ],
 ];
