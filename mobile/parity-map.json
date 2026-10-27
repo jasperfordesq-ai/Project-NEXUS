@@ -1101,6 +1101,42 @@
     "auth/two-factor/setup": {
       "status": "native",
       "mobile": "login"
+    },
+    "marketplace/listings/:id": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/:id, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "marketplace/offers": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /marketplace/my-offers, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "marketplace/orders/:id": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the buyer’s or seller’s order list, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "network": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /federation/connections, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "polls/:id": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /polls, which is classified separately. The phone app opens the destination, not this address. Mobile handles /polls/{id} deep links itself."
+    },
+    "resources/:id": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /resources, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "settings/safeguarding": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=safeguarding, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "settings/security": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to /settings?tab=security, which is classified separately. The phone app opens the destination, not this address."
+    },
+    "volunteer-org/wallet": {
+      "status": "out-of-scope",
+      "reason": "Website-only forwarder for links in emails already sent (EmailLinkRedirects, 8bac7ee98); it redirects to the organisation wallet tab, which is classified separately. The phone app opens the destination, not this address."
     }
   }
 }
