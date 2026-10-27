@@ -70,6 +70,11 @@
     </dl>
   {% endif %}
 
+  {% if formMode == "edit" and jobForm.id %}
+    {# React shows the hiring team on the edit page; here it is its own page. #}
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ jobForm.id ~ '/team') }}">{{ t("govuk_alpha_jobs.hiring.manage_team_link") }}</a></p>
+  {% endif %}
+
   <form method="post" action="{{ urlFor(formAction) }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="posting_extras" value="1">

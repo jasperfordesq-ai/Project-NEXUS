@@ -8859,3 +8859,127 @@ describe('API Request Functions', () => {
     });
   });
 });
+
+// Supporter "prepare an action" (React SupportPrepareModal) and the instant
+// personal-data download (React DataExportPage). Each helper is asserted
+// directly: literal path, method, body and headers.
+describe('Support preparation and instant data download helpers', () => {
+  let api;
+
+  function jsonOk(body = { data: {} }) {
+    return { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => body };
+  }
+
+  beforeEach(() => {
+    jest.resetModules();
+    mockFetch.mockReset();
+    api = require('../src/lib/api');
+  });
+
+  it('reads the SUPPORTED member\'s wallet, not the supporter\'s', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { balance: 12.5 } }));
+
+    await api.getSupportedMemberWallet('test-token', 'user/77');
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/user%2F77/wallet');
+    expect(options.method || 'GET').toBe('GET');
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+  });
+
+  it('prepares a co-decide action with the exact React body', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { id: 5, status: 'pending' } }));
+
+    await api.prepareSupportAction('test-token', 77, 'credit_transfer', { recipient: 42, amount: 2 });
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/users/me/support-actions');
+    expect(options.method).toBe('POST');
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+    expect(JSON.parse(options.body)).toEqual({
+      supported_user_id: 77,
+      action_type: 'credit_transfer',
+      payload: { recipient: 42, amount: 2 }
+    });
+  });
+
+  it('sends a represent-tier transfer through the proxy endpoint with its idempotency key', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { id: 900 } }));
+
+    await api.transferForSupportedMember('test-token', 77, {
+      recipient: 42, amount: 1.5, description: 'Garden help', idempotency_key: 'abcdef123456'
+    });
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/transfer');
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({
+      recipient: 42, amount: 1.5, description: 'Garden help', idempotency_key: 'abcdef123456'
+    });
+  });
+
+  it('posts a represent-tier listing through the proxy endpoint', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { id: 31 } }));
+
+    await api.createListingForSupportedMember('test-token', 77, { title: 'Dog walking', type: 'offer' });
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/listings');
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body)).toEqual({ title: 'Dog walking', type: 'offer' });
+  });
+
+  it('uploads the listing photo to the supporter route, never the owner-only one', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { image_url: '/uploads/x.jpg' } }));
+
+    await api.uploadSupportedMemberListingImage('test-token', 77, 31, {
+      buffer: Buffer.from('img'), filename: 'dog.jpg', contentType: 'image/jpeg'
+    });
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/listings/31/image');
+    expect(options.method).toBe('POST');
+    expect(options.body).toBeInstanceOf(globalThis.FormData);
+    expect(options.body.get('image')).toBeTruthy();
+    expect(options.headers['Content-Type']).toBeUndefined();
+  });
+
+  it('downloads the data archive by POST, with the token in a header and the key in Idempotency-Key', async () => {
+    const bytes = Buffer.from('{"profile":{}}', 'utf8');
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: {
+        get: (name) => ({
+          'content-type': 'application/json',
+          'content-disposition': 'attachment; filename="personal-data-2026-10-27.json"',
+          'content-length': String(bytes.length)
+        })[name] || null
+      },
+      arrayBuffer: async () => bytes
+    });
+
+    const result = await api.downloadMemberDataExport('test-token', 'json', 'export-key-12345');
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/me/data-export');
+    expect(options.method).toBe('POST');
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+    expect(options.headers['Idempotency-Key']).toBe('export-key-12345');
+    expect(options.headers['Content-Type']).toBe('application/json');
+    expect(JSON.parse(options.body)).toEqual({ format: 'json' });
+    expect(url).not.toContain('test-token');
+    expect(result.body).toEqual(bytes);
+    expect(result.headers['content-disposition']).toBe('attachment; filename="personal-data-2026-10-27.json"');
+  });
+
+  it('reads the export history', async () => {
+    mockFetch.mockResolvedValueOnce(jsonOk({ data: { exports: [] } }));
+
+    await api.getMemberDataExportHistory('test-token');
+
+    const [url, options] = mockFetch.mock.calls[0];
+    expect(url).toBe('http://localhost:5000/api/v2/me/data-export/history');
+    expect(options.headers.Authorization).toBe('Bearer test-token');
+  });
+});

@@ -1,0 +1,27 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor(cancelHref) }}">{{ t("govuk_alpha_jobs.hiring.cancel") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ job.title }}</span>
+      <h1 class="govuk-heading-l">{{ heading }}</h1>
+      <p class="govuk-body">{{ body }}</p>
+      <form method="post" action="{{ urlFor(formAction) }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ confirmLabel }}</button>
+          <a class="govuk-link" href="{{ urlFor(cancelHref) }}">{{ t("govuk_alpha_jobs.hiring.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

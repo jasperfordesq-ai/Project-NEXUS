@@ -3248,6 +3248,87 @@ async function withdrawMessageAccess(token, relationshipId) {
   });
 }
 
+// Supporter "prepare an action" (React SupportPrepareModal). The tier the
+// supporter holds decides the endpoint: co_decide PREPARES (nothing happens
+// until the supported member approves), represent acts through the proxy
+// endpoints straight away. Laravel re-checks the tier on every call.
+
+/** The SUPPORTED member's balance — never the supporter's own. */
+async function getSupportedMemberWallet(token, childUserId) {
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/wallet`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/** co_decide: store the action for the supported member to approve. */
+async function prepareSupportAction(token, supportedUserId, actionType, payload) {
+  return request('/api/v2/users/me/support-actions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      supported_user_id: supportedUserId,
+      action_type: actionType,
+      payload
+    })
+  });
+}
+
+/** represent: move the supported member's credits now (carries idempotency_key). */
+async function transferForSupportedMember(token, childUserId, body) {
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/transfer`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body)
+  });
+}
+
+/** represent: post a listing that belongs to the supported member. */
+async function createListingForSupportedMember(token, childUserId, body) {
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/listings`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body)
+  });
+}
+
+/** represent: the photo for a listing just posted on the member's behalf. */
+async function uploadSupportedMemberListingImage(token, childUserId, listingId, file) {
+  const form = new globalThis.FormData();
+  if (file && file.buffer) {
+    const blob = new globalThis.Blob([file.buffer], { type: file.contentType || 'application/octet-stream' });
+    form.append('image', blob, file.filename || 'listing-image');
+  }
+  return request(
+    `/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/listings/${encodeURIComponent(listingId)}/image`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: form
+    }
+  );
+}
+
+// Instant personal-data download (React DataExportPage). POST, bearer in a
+// header, the archive bytes returned to web-uk so the token never reaches a URL.
+async function downloadMemberDataExport(token, format, idempotencyKey) {
+  return downloadRequest('/api/v2/me/data-export', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json, application/zip, application/octet-stream',
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
+    },
+    body: JSON.stringify({ format })
+  });
+}
+
+async function getMemberDataExportHistory(token) {
+  return request('/api/v2/me/data-export/history', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 /**
  * A supporter's read-only view of a supported member's conversations.
  *
@@ -4863,6 +4944,14 @@ module.exports = {
   getChildActivity,
   requestMessageAccess,
   withdrawMessageAccess,
+  // Supporter prepare-an-action and the instant data download
+  getSupportedMemberWallet,
+  prepareSupportAction,
+  transferForSupportedMember,
+  createListingForSupportedMember,
+  uploadSupportedMemberListingImage,
+  downloadMemberDataExport,
+  getMemberDataExportHistory,
   getSupportedConversations,
   getSupportedThread,
   // Guardian arrangements

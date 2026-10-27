@@ -1,0 +1,20 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Shared GOV.UK error summary for the supporter "prepare" pages. #}
+{% if errors and errors.length %}
+  <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+    <div role="alert">
+      <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+      <div class="govuk-error-summary__body">
+        <ul class="govuk-list govuk-error-summary__list">
+          {% for error in errors %}
+            <li><a href="{{ error.href }}">{{ error.text }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endif %}

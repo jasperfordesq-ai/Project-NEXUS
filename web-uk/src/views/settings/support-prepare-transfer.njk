@@ -1,0 +1,115 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    A supporter prepares a time-credit transfer from the balance of the member
+    they support (React SupportPrepareModal). What pressing the button will do —
+    ask for approval, or move the credits now — is stated before any field.
+    Recipient search is a plain GET form; nothing moves until the check page.
+#}
+
+{% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set amountError = null %}
+{% set recipientError = null %}
+{% for error in errors %}
+  {% if error.href == "#amount" %}{% set amountError = error.text %}{% endif %}
+  {% if error.href == "#recipient_q" %}{% set recipientError = error.text %}{% endif %}
+{% endfor %}
+{% set base = '/settings/support-actions/prepare/' + (supportedUserId | string) + '/transfer' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts') }}#children">{{ t("govuk_alpha_settings.linked.activity_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "settings/_support-prepare-errors.njk" %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_prepare.transfer_title", { name: supportedName }) }}</h1>
+
+      <div class="govuk-inset-text">
+        {{ t("govuk_alpha_settings.support_prepare.explainer_co_decide", { name: supportedName }) if tier == "co_decide" else t("govuk_alpha_settings.support_prepare.explainer_represent", { name: supportedName }) }}
+      </div>
+
+      {% if balance !== null %}
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_prepare.their_balance", { name: supportedName, balance: balance }) }}</p>
+      {% endif %}
+
+      {# Step 1 — who it is for. #}
+      {% if recipient %}
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_prepare.recipient_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ recipient.name }}</dd>
+            <dd class="govuk-summary-list__actions">
+              <a class="govuk-link" href="{{ urlFor(base) }}?recipient_q={{ recipientQuery | urlencode }}">{{ t("govuk_alpha_settings.support_prepare.recipient_change") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_settings.support_prepare.recipient_label") }}</span></a>
+            </dd>
+          </div>
+        </dl>
+      {% else %}
+        <form method="get" action="{{ urlFor(base) }}" novalidate>
+          <div class="govuk-form-group{% if recipientError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--m" for="recipient_q">{{ t("govuk_alpha_settings.support_prepare.recipient_label") }}</label>
+            <div id="recipient_q-hint" class="govuk-hint">{{ t("govuk_alpha_settings.support_prepare.recipient_hint") }}</div>
+            {% if recipientError %}
+              <p id="recipient_q-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ recipientError }}</p>
+            {% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if recipientError %} govuk-input--error{% endif %}" id="recipient_q" name="recipient_q" type="search" value="{{ recipientQuery }}" autocomplete="off" aria-describedby="recipient_q-hint{% if recipientError %} recipient_q-error{% endif %}">
+          </div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("actions.search") }}</button>
+        </form>
+
+        {% if recipientQuery %}
+          {% if recipients.length %}
+            <h2 class="govuk-heading-s">{{ t("wallet.recipient_heading") }}</h2>
+            <ul class="govuk-list">
+              {% for user in recipients %}
+                <li>
+                  <a class="govuk-link" href="{{ urlFor(base) }}?recipient_q={{ recipientQuery | urlencode }}&amp;recipient_id={{ user.id }}">{{ user.name }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="govuk-body">{{ t("wallet.search_empty") }}</p>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {# Step 2 — how much. Posts to the check page; nothing moves yet. #}
+      {% if recipient %}
+        <form method="post" action="{{ urlFor(base + '/review') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="recipient_id" value="{{ recipient.id }}">
+          <input type="hidden" name="recipient_q" value="{{ recipientQuery }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+
+          <div class="govuk-form-group{% if amountError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--m" for="amount">{{ t("govuk_alpha_settings.support_prepare.amount_label") }}</label>
+            {% if maxTransfer %}
+              <div id="amount-hint" class="govuk-hint">{{ t("govuk_alpha_settings.support_prepare.amount_max_hint", { max: maxTransfer }) }}</div>
+            {% endif %}
+            {% if amountError %}
+              <p id="amount-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ amountError }}</p>
+            {% endif %}
+            <input class="govuk-input govuk-input--width-5{% if amountError %} govuk-input--error{% endif %}" id="amount" name="amount" type="text" inputmode="decimal" spellcheck="false" value="{{ values.amount }}" aria-describedby="{% if maxTransfer %}amount-hint{% endif %}{% if amountError %} amount-error{% endif %}">
+          </div>
+
+          {% call characterCount(500, characterCountMessages, "description") %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="description">{{ t("govuk_alpha_settings.support_prepare.description_label") }}</label>
+            <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" maxlength="500" aria-describedby="description-info">{{ values.description }}</textarea>
+          </div>
+          {% endcall %}
+
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("onboarding.continue") }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

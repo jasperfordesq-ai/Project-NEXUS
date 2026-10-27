@@ -40,24 +40,106 @@
       </form>
     {% endif %}
 
-    {% if relationship.relationshipId > 0 and mode == "child" %}
-      <form method="post" action="{{ urlFor('/settings/linked-accounts/permissions') }}">
-        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-        <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
-        <fieldset class="govuk-fieldset govuk-!-margin-bottom-2">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_settings.linked.permissions_heading") }}</legend>
-          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-            {% for permission in permissions %}
+    {# Support levels (React SubAccountsManager). The tiers come from Laravel's
+       own resolution of the stored grant, so this card shows what the supporter
+       can ACTUALLY do — not what a tick box once said. Message access is not a
+       level: it is the consent flow further down. #}
+    {% set tiers = relationship.tiers %}
+    {% if tiers and relationship.relationshipId > 0 and not isPending %}
+      {% set listingsLabelTier = tiers.listings if (tiers.listings == "co_decide" or tiers.listings == "represent") else "none" %}
+      {% set creditsLabelTier = tiers.credits if (tiers.credits == "co_decide" or tiers.credits == "represent") else "none" %}
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_settings.linked.permissions_heading") }}</h3>
+      <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-3">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.permissions.can_view_activity") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("govuk_alpha_settings.linked_messages.state_active") if tiers.activity != "none" else t("govuk_alpha_settings.linked.tiers_option_none") }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.tiers_capability_listings" if mode == "child" else "govuk_alpha_settings.guardians.tiers_capability_listings") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t(("govuk_alpha_settings.linked.tiers_option_" if mode == "child" else "govuk_alpha_settings.guardians.tiers_option_") + listingsLabelTier) }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.tiers_capability_credits" if mode == "child" else "govuk_alpha_settings.guardians.tiers_capability_credits") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t(("govuk_alpha_settings.linked.tiers_option_" if mode == "child" else "govuk_alpha_settings.guardians.tiers_option_") + creditsLabelTier) }}</dd>
+        </div>
+      </dl>
+
+      {% if relationship.staffRecorded %}
+        {% if mode == "child" %}
+          {# A coordinator-recorded arrangement: the member chose these levels on
+             their own guardians page, and only they can change them. #}
+          <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_settings.linked.tiers_set_by_member", { name: relationship.name }) }}</p>
+        {% endif %}
+      {% elif mode == "child" %}
+        {# The supporter may lower or keep a level, never raise it. #}
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/tiers') }}" class="govuk-!-margin-bottom-2">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
+          {% if tiers.activity != "none" %}
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="tier_activity_{{ relationship.relationshipId }}">{{ t("govuk_alpha_settings.linked.permissions.can_view_activity") }}</label>
+              <select class="govuk-select" id="tier_activity_{{ relationship.relationshipId }}" name="tier_activity">
+                <option value="assist" selected>{{ t("govuk_alpha_settings.linked_messages.state_active") }}</option>
+                <option value="none">{{ t("govuk_alpha_settings.linked.tiers_option_none") }}</option>
+              </select>
+            </div>
+          {% endif %}
+          {% for capability in ["listings", "credits"] %}
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="tier_{{ capability }}_{{ relationship.relationshipId }}">{{ t("govuk_alpha_settings.linked.tiers_capability_" + capability) }}</label>
+              <select class="govuk-select" id="tier_{{ capability }}_{{ relationship.relationshipId }}" name="tier_{{ capability }}">
+                {% for tierOption in relationship.supporterTierOptions[capability] %}
+                  <option value="{{ tierOption }}"{% if tierOption == tiers[capability] %} selected{% endif %}>{{ t("govuk_alpha_settings.linked.tiers_option_" + tierOption) }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+          <p class="govuk-body-s">{{ t("govuk_alpha_settings.linked.tiers_co_decide_explainer") }}</p>
+          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.guardians.tiers_save_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
+        </form>
+      {% else %}
+        {# The supported member grants, raises or removes each level. #}
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/member-tiers') }}" class="govuk-!-margin-bottom-2">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_settings.guardians.tiers_title") }}</legend>
+            <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-3" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="perm_{{ relationship.relationshipId }}_{{ permission.value }}" name="{{ permission.field }}" type="checkbox" value="1"{% if relationship.permissions[permission.value] %} checked{% endif %}>
-                <label class="govuk-label govuk-checkboxes__label" for="perm_{{ relationship.relationshipId }}_{{ permission.value }}">{{ permission.label }}</label>
+                <input class="govuk-checkboxes__input" id="tier_activity_{{ relationship.relationshipId }}" name="tier_activity" type="checkbox" value="assist"{% if tiers.activity != "none" %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="tier_activity_{{ relationship.relationshipId }}">{{ t("govuk_alpha_settings.linked.permissions.can_view_activity") }}</label>
+              </div>
+            </div>
+            {% for capability in ["listings", "credits"] %}
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="tier_{{ capability }}_{{ relationship.relationshipId }}">{{ t("govuk_alpha_settings.guardians.tiers_capability_" + capability) }}</label>
+                <select class="govuk-select" id="tier_{{ capability }}_{{ relationship.relationshipId }}" name="tier_{{ capability }}">
+                  {% for tierOption in grantableTiers %}
+                    <option value="{{ tierOption }}"{% if tierOption == tiers[capability] %} selected{% endif %}>{{ t("govuk_alpha_settings.guardians.tiers_option_" + tierOption) }}</option>
+                  {% endfor %}
+                </select>
               </div>
             {% endfor %}
-          </div>
-        </fieldset>
-        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.save_permissions") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
-      </form>
+          </fieldset>
+          <p class="govuk-body-s">{{ t("govuk_alpha_settings.guardians.tiers_explainer") }}</p>
+          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.guardians.tiers_save_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
+        </form>
+      {% endif %}
 
+      {# Acting on the grant: offered only when a level actually permits it. #}
+      {% if mode == "child" and relationship.userId > 0 and (relationship.canPrepareListing or relationship.canPrepareTransfer) %}
+        <div class="govuk-button-group">
+          {% if relationship.canPrepareListing %}
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/listing') }}">{{ t("govuk_alpha_settings.support_prepare.prepare_listing_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
+          {% endif %}
+          {% if relationship.canPrepareTransfer %}
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/transfer') }}">{{ t("govuk_alpha_settings.support_prepare.prepare_transfer_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% if relationship.relationshipId > 0 and mode == "child" %}
       <div class="govuk-warning-text govuk-!-margin-bottom-2">
         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
         <strong class="govuk-warning-text__text">

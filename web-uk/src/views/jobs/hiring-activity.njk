@@ -1,0 +1,49 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ job.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.hiring.activity_title") }}</h1>
+
+  {% if events.length == 0 %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.hiring.activity_empty") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.hiring.activity_empty_hint") }}</p>
+    </div>
+  {% else %}
+    <ol class="govuk-list nexus-alpha-card-list">
+      {% for event in events %}
+        <li class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ event.description }}</p>
+            {{ govukTag({ text: event.typeLabel, classes: event.tagClass }) }}
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {% if event.actor %}{{ t("govuk_alpha_jobs.hiring.activity_by", { actor: event.actor }) }}{% endif %}
+            {% if event.whenLabel %}<time>{{ event.whenLabel }}</time>{% endif %}
+          </p>
+          {% if event.details %}
+            <p class="govuk-body-s govuk-!-margin-bottom-0">{{ event.details }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
+  {% if previousHref or nextHref %}
+    {{ govukPagination({
+      previous: { href: urlFor(previousHref), text: t("govuk_alpha_jobs.hiring.previous_page") } if previousHref else undefined,
+      next: { href: urlFor(nextHref), text: t("govuk_alpha_jobs.hiring.next_page") } if nextHref else undefined
+    }) }}
+  {% endif %}
+{% endblock %}

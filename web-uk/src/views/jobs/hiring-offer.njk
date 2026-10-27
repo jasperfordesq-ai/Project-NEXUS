@@ -1,0 +1,79 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "_date-input.njk" import nexusDateInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "jobs/_hiring-errors.njk" %}
+      <span class="govuk-caption-l">{{ t("govuk_alpha_jobs.hiring.candidate_caption", { name: application.applicantName }) }}</span>
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_jobs.hiring.offer_title") }}</h1>
+      <p class="govuk-body">{{ job.title }}</p>
+
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ application.id ~ '/offer') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          id: "salary_offered",
+          name: "salary_offered",
+          label: { text: t("govuk_alpha_jobs.hiring.offer_salary_label"), classes: "govuk-label--m" },
+          hint: { text: t("govuk_alpha_jobs.hiring.offer_salary_hint") },
+          value: values.salary_offered,
+          inputmode: "decimal",
+          spellcheck: false,
+          classes: "govuk-input--width-10",
+          errorMessage: { text: salaryError, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if salaryError else undefined
+        }) }}
+
+        {{ govukSelect({
+          id: "salary_currency",
+          name: "salary_currency",
+          label: { text: t("govuk_alpha_jobs.hiring.offer_currency_label") },
+          items: currencyOptions
+        }) }}
+
+        {{ govukSelect({
+          id: "salary_type",
+          name: "salary_type",
+          label: { text: t("govuk_alpha_jobs.hiring.offer_period_label") },
+          items: periodOptions
+        }) }}
+
+        {{ nexusDateInput({
+          name: "start_date",
+          legend: t("govuk_alpha_jobs.hiring.offer_start_legend"),
+          legendClasses: "govuk-fieldset__legend--m",
+          hint: t("govuk_alpha_jobs.hiring.offer_start_hint"),
+          value: startParts,
+          errorMessage: startError.message if startError else undefined,
+          errorFields: startError.fields if startError else []
+        }, t) }}
+
+        {{ govukTextarea({
+          id: "message",
+          name: "message",
+          label: { text: t("govuk_alpha_jobs.hiring.offer_message_label"), classes: "govuk-label--m" },
+          hint: { text: t("govuk_alpha_jobs.hiring.offer_message_hint") },
+          value: values.message,
+          attributes: { maxlength: "5000" }
+        }) }}
+
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.offer_submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.hiring.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

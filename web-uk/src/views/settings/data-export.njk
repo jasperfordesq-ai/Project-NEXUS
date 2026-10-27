@@ -1,0 +1,106 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Instant personal-data download (React DataExportPage). A plain form POST:
+    web-uk asks Laravel for the archive with the member's token in a header and
+    sends the file straight back, so the token never appears in a URL and the
+    file is never cached. Past exports are listed below.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if errorMessage %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#format">{{ errorMessage }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.data_export.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_settings.data_export.subtitle") }}</p>
+      <p class="govuk-body">{{ t("govuk_alpha_settings.data_export.intro") }}</p>
+
+      <section id="download" aria-labelledby="download-heading">
+        <form method="post" action="{{ urlFor('/settings/data-export') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading" id="download-heading">{{ t("govuk_alpha_settings.data_export.format_label") }}</h2>
+              </legend>
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for format in formats %}
+                  {% set inputId = "format" if loop.first else "format-" + format.value %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="{{ inputId }}" name="format" type="radio" value="{{ format.value }}"{% if format.checked %} checked{% endif %} aria-describedby="{{ inputId }}-hint">
+                    <label class="govuk-label govuk-radios__label" for="{{ inputId }}">{{ format.label }}</label>
+                    <div id="{{ inputId }}-hint" class="govuk-hint govuk-radios__hint">{{ format.hint }}</div>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+              {{ t("govuk_alpha_settings.data_export.warning") }}
+            </strong>
+          </div>
+
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_settings.data_export.download_button") }}</button>
+        </form>
+      </section>
+
+      <section aria-labelledby="history-heading">
+        <h2 class="govuk-heading-m" id="history-heading">{{ t("govuk_alpha_settings.data_export.history_title") }}</h2>
+        {% if historyError %}
+          <p class="govuk-body">{{ t("states.load_error") }}</p>
+        {% elif not history.length %}
+          <p class="govuk-body">{{ t("govuk_alpha_settings.data_export.history_empty") }}</p>
+        {% else %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_settings.data_export.history_title') }}">
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_settings.data_export.history_title") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.data_export.history_date") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.data_export.history_format") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.data_export.history_size") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for row in history %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ row.requestedLabel }}</td>
+                  <td class="govuk-table__cell">{{ row.format }}</td>
+                  <td class="govuk-table__cell">{{ row.sizeLabel or "—" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Optional photo for a listing a represent-tier supporter has just posted for
+    the member they support. The listing already exists and is theirs; this
+    step only adds a picture. Rendered only when server.js mounts a multipart
+    parser for this path ahead of CSRF (route checks the app setting).
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% set action = '/settings/support-actions/prepare/' + (supportedUserId | string) + '/listing/' + (listingId | string) + '/photo' %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if photoError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#image">{{ t("listings.create.image_hint") }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.support_prepare.listing_title", { name: supportedName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_prepare.photo_title", { name: supportedName }) }}</h1>
+
+      <form method="post" action="{{ urlFor(action) }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group{% if photoError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="image">{{ t("listings.create.image_label") }}</label>
+          <div id="image-hint" class="govuk-hint">{{ t("listings.create.image_hint") }}</div>
+          <input class="govuk-file-upload{% if photoError %} govuk-file-upload--error{% endif %}" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint">
+        </div>
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_settings.support_prepare.photo_submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/settings/support-actions') }}?status=support-done">{{ t("govuk_alpha_settings.support_prepare.photo_skip") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

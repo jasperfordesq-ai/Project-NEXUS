@@ -182,6 +182,8 @@
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/edit') }}">{{ t("jobs_t3.edit_button") }}</a>
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/analytics') }}">{{ t("govuk_alpha_jobs.analytics.title") }}</a>
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/rules') }}">{{ t("govuk_alpha_jobs.hiring.rules_link") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/team') }}">{{ t("govuk_alpha_jobs.hiring.team_link") }}</a>
     </div>
     <div class="govuk-button-group">
       <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}">

@@ -33,9 +33,40 @@
     </div>
   {% endif %}
 
-  <p class="govuk-!-margin-bottom-6">
+  <p class="govuk-!-margin-bottom-4">
     <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("govuk_alpha_jobs.pipeline.view_full_list") }}</a>
   </p>
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.hiring.tools_heading") }}</h2>
+  <ul class="govuk-list govuk-!-margin-bottom-6">
+    <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/activity') }}">{{ t("govuk_alpha_jobs.hiring.activity_link") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/rules') }}">{{ t("govuk_alpha_jobs.hiring.rules_link") }}</a></li>
+    {% if isOwner %}
+      <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/team') }}">{{ t("govuk_alpha_jobs.hiring.team_link") }}</a></li>
+    {% endif %}
+  </ul>
+
+  {% if hasApplications %}
+    {# One bulk form; every candidate's checkbox below joins it through the form
+       attribute, so no form is nested and nothing needs JavaScript. #}
+    <form method="post" id="bulk-status-form" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/bulk-status') }}" class="govuk-!-margin-bottom-6" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <fieldset class="govuk-fieldset" aria-describedby="bulk-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_jobs.hiring.bulk_heading") }}</legend>
+        <div id="bulk-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.hiring.bulk_hint") }}</div>
+        <div class="govuk-form-group govuk-!-margin-bottom-2">
+          <label class="govuk-label" for="bulk_status">{{ t("govuk_alpha_jobs.hiring.bulk_stage_label") }}</label>
+          <select class="govuk-select" id="bulk_status" name="bulk_status">
+            <option value="">{{ t("govuk_alpha_jobs.hiring.bulk_stage_placeholder") }}</option>
+            {% for option in bulkStageOptions %}
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.bulk_button") }}</button>
+      </fieldset>
+    </form>
+  {% endif %}
 
   {% if not hasApplications %}
     <div class="govuk-inset-text">
@@ -57,6 +88,12 @@
           <div class="nexus-alpha-card-list">
           {% for app in column.applications %}
             <article class="nexus-alpha-card">
+              <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-2" data-module="govuk-checkboxes">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="bulk-app-{{ app.id }}" name="application_ids" value="{{ app.id }}" type="checkbox" form="bulk-status-form">
+                  <label class="govuk-label govuk-checkboxes__label" for="bulk-app-{{ app.id }}">{{ t("govuk_alpha_jobs.hiring.bulk_select_label", { name: app.applicantName }) }}</label>
+                </div>
+              </div>
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ app.applicantName }}</h3>
               {% if app.appliedOnLabel %}
                 <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.pipeline.applied_on", { date: app.appliedOnLabel }) }}</p>
@@ -66,6 +103,16 @@
                   <a class="govuk-link" href="{{ urlFor('/jobs/applications/' ~ app.id ~ '/cv') }}">{{ t("govuk_alpha_jobs.pipeline.download_cv") }}</a>: {{ app.cvFilename }}
                 </p>
               {% endif %}
+
+              <ul class="govuk-list govuk-body-s govuk-!-margin-bottom-2">
+                {% if app.canScheduleInterview %}
+                  <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/interview') }}">{{ t("govuk_alpha_jobs.hiring.schedule_interview") }}<span class="govuk-visually-hidden">: {{ app.applicantName }}</span></a></li>
+                {% endif %}
+                {% if app.canSendOffer %}
+                  <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/offer') }}">{{ t("govuk_alpha_jobs.hiring.send_offer") }}<span class="govuk-visually-hidden">: {{ app.applicantName }}</span></a></li>
+                {% endif %}
+                <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/scorecard') }}">{{ t("govuk_alpha_jobs.hiring.score_applicant") }}<span class="govuk-visually-hidden">: {{ app.applicantName }}</span></a></li>
+              </ul>
 
               <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/status') }}" class="govuk-!-margin-top-2">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">

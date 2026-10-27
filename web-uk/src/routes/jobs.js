@@ -14,10 +14,11 @@ const {
   getJobs,
   getJob,
   getUserV2,
+  searchUsers,
   uploadJobApplication
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate } = require('../lib/date-input');
+const { readDate, readDateTime, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
 const { formatRequestList } = require('../lib/list-format');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -191,15 +192,60 @@ const JOB_APPLICANT_MESSAGE_KEYS = Object.freeze({
   'export-failed': 'jobs_t3.states.export-failed'
 });
 const JOB_PIPELINE_SUCCESS_MESSAGES = {
-  'status-updated': 'Candidate moved to the new stage.'
+  'status-updated': 'Candidate moved to the new stage.',
+  'bulk-updated': 'Applications updated',
+  'interview-sent': 'Interview request sent. The candidate is now in the interview stage.',
+  'offer-sent': 'Offer sent. The candidate is now in the offer stage.',
+  'scorecard-saved': 'Scorecard saved'
 };
 const JOB_PIPELINE_ERROR_MESSAGES = {
-  'status-failed': 'Sorry, we could not move that candidate. Please try again.'
+  'status-failed': 'Sorry, we could not move that candidate. Please try again.',
+  'bulk-failed': 'We could not update those applications. Please try again.',
+  'bulk-none-selected': 'Select at least one candidate.',
+  'bulk-stage-required': 'Choose a stage to move the candidates to.'
 };
 const JOB_PIPELINE_MESSAGE_KEYS = Object.freeze({
   'status-updated': 'govuk_alpha_jobs.pipeline.status_moved',
-  'status-failed': 'govuk_alpha_jobs.pipeline.status_failed'
+  'status-failed': 'govuk_alpha_jobs.pipeline.status_failed',
+  'bulk-updated': 'govuk_alpha_jobs.hiring.bulk_updated',
+  'bulk-failed': 'govuk_alpha_jobs.hiring.bulk_failed',
+  'bulk-none-selected': 'govuk_alpha_jobs.hiring.bulk_none_selected',
+  'bulk-stage-required': 'govuk_alpha_jobs.hiring.bulk_stage_required',
+  'interview-sent': 'govuk_alpha_jobs.hiring.interview_sent',
+  'offer-sent': 'govuk_alpha_jobs.hiring.offer_sent',
+  'scorecard-saved': 'govuk_alpha_jobs.hiring.scorecard_saved'
 });
+// Employer hiring tools (React JobKanbanPage / JobPipelineRules / CreateJobPage team).
+// React's bulk bar offers exactly these four stages.
+const JOB_BULK_STAGES = ['screening', 'reviewed', 'interview', 'rejected'];
+// React shows "Schedule interview" on screening/reviewed cards and "Send offer" on
+// interview cards; the API itself only lets the vacancy owner do either.
+const JOB_INTERVIEW_FROM_STAGES = ['screening', 'reviewed'];
+const JOB_OFFER_FROM_STAGES = ['interview'];
+const JOB_INTERVIEW_TYPES = ['video', 'phone', 'in_person'];
+const JOB_INTERVIEW_DURATIONS = [30, 45, 60, 90];
+const JOB_OFFER_CURRENCIES = ['EUR', 'GBP', 'USD'];
+const JOB_SCORECARD_CRITERIA = ['communication', 'technical', 'cultural_fit', 'experience', 'motivation'];
+// JobTeamService stores only these two roles (anything else becomes reviewer).
+const JOB_TEAM_ROLES = ['reviewer', 'manager'];
+const JOB_RULE_TRIGGER_STAGES = ['applied', 'screening', 'reviewed', 'interview'];
+const JOB_RULE_TARGET_STAGES = ['screening', 'reviewed', 'interview', 'rejected'];
+const JOB_RULE_ACTIONS = ['move_stage', 'reject', 'notify_reviewer'];
+const JOB_AUDIT_PER_PAGE = 50;
+const JOB_TEAM_MESSAGE_KEYS = Object.freeze({
+  'team-added': 'govuk_alpha_jobs.hiring.team_added',
+  'team-removed': 'govuk_alpha_jobs.hiring.team_removed',
+  'team-add-failed': 'govuk_alpha_jobs.hiring.team_add_failed',
+  'team-remove-failed': 'govuk_alpha_jobs.hiring.team_remove_failed'
+});
+const JOB_TEAM_SUCCESS = ['team-added', 'team-removed'];
+const JOB_RULE_MESSAGE_KEYS = Object.freeze({
+  'rule-added': 'govuk_alpha_jobs.hiring.rule_added',
+  'rule-deleted': 'govuk_alpha_jobs.hiring.rule_deleted',
+  'rule-add-failed': 'govuk_alpha_jobs.hiring.rule_add_failed',
+  'rule-delete-failed': 'govuk_alpha_jobs.hiring.rule_delete_failed'
+});
+const JOB_RULE_SUCCESS = ['rule-added', 'rule-deleted'];
 const JOB_STATUS_MESSAGES = Object.freeze({
   applied: 'Your application has been submitted.',
   saved: 'Opportunity saved.',
@@ -2782,13 +2828,34 @@ router.get('/:id(\\d+)/pipeline', asyncRoute(async (req, res) => {
     return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
-  const applications = collectionItems(applicationsResult).map((application) => decorateApplicant(application, req));
+  // The owner gets the interview, offer and team tools (the API refuses them to
+  // anyone else); hiring-team members still get scorecards, bulk moves and the log.
+  let profileResult = null;
+  try {
+    profileResult = await getRequestProfile(req, token);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+  const isOwner = jobOwnerId(job) > 0 && jobOwnerId(job) === profileUserId(profileResult);
+  const applications = collectionItems(applicationsResult).map((application) => {
+    const decorated = decorateApplicant(application, req);
+    return {
+      ...decorated,
+      canScheduleInterview: isOwner && JOB_INTERVIEW_FROM_STAGES.includes(decorated.status),
+      canSendOffer: isOwner && JOB_OFFER_FROM_STAGES.includes(decorated.status)
+    };
+  });
 
   return res.render('jobs/pipeline', {
     title: 'Application pipeline',
     titleKey: 'govuk_alpha_jobs.pipeline.title',
     activeNav: 'explore',
     job: decorateJob(job),
+    isOwner,
+    bulkStageOptions: JOB_BULK_STAGES.map((stage) => ({
+      value: stage,
+      label: translateStatusMessage(req, `govuk_alpha_jobs.stage.${stage}`, JOB_APPLICATION_LABELS[stage] || stage)
+    })),
     pipelineColumns: groupPipeline(applications, req),
     hasApplications: applications.length > 0,
     status: req.query.status || '',
@@ -3439,6 +3506,738 @@ router.post('/offers/:offerId(\\d+)/reject', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     return redirectTo(res, statusRedirect('/jobs/responses', 'offer-failed'));
+  }
+}));
+
+// ---------------------------------------------------------------------------
+// Employer hiring tools — parity with React JobKanbanPage (interviews, offers,
+// scorecards, bulk status, activity log), JobPipelineRules and the CreateJobPage
+// hiring team. HTML-first: each React modal is a page with a form, the kanban
+// drag-and-drop is a per-candidate select plus one bulk form, and every removal
+// goes through a confirmation page.
+// ---------------------------------------------------------------------------
+
+function renderErrorPage(req, res, status) {
+  const code = [403, 404, 429].includes(status) ? status : 503;
+  return res.status(code).render(`errors/${code}`, {
+    title: jobTranslation(req, `govuk_alpha.error_pages.${code}_title`, '')
+  });
+}
+
+function apiErrorStatus(error) {
+  return error instanceof ApiError ? error.status : 503;
+}
+
+function hiringText(req, key, replacements = {}) {
+  return jobTranslation(req, `govuk_alpha_jobs.hiring.${key}`, '', replacements);
+}
+
+function stageLabel(req, stage) {
+  return translateStatusMessage(req, `govuk_alpha_jobs.stage.${stage}`, JOB_APPLICATION_LABELS[stage] || statusTitle(stage));
+}
+
+function hiringStatusMessage(req, status, keys, successStatuses) {
+  const key = keys[status];
+  if (!key) return { success: '', error: '' };
+  const text = jobTranslation(req, key, '');
+  return successStatuses.includes(status) ? { success: text, error: '' } : { success: '', error: text };
+}
+
+// Loads the vacancy and the member, and (optionally) one application of it.
+// Returns null after it has already answered the request with an error page.
+async function loadHiringContext(req, res, { appId = null, ownerOnly = false } = {}) {
+  const token = tokenFrom(req);
+  if (!token) {
+    redirectTo(res, loginRedirect());
+    return null;
+  }
+  const id = Number(req.params.id);
+  let job;
+  try {
+    job = dataFrom(await getJob(token, id));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return null;
+    renderErrorPage(req, res, apiErrorStatus(error));
+    return null;
+  }
+  if (!job || typeof job !== 'object' || !job.id) {
+    renderErrorPage(req, res, 404);
+    return null;
+  }
+
+  let profileResult = null;
+  try {
+    profileResult = await getRequestProfile(req, token);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return null;
+  }
+  const profileId = profileUserId(profileResult);
+  const isOwner = jobOwnerId(job) > 0 && jobOwnerId(job) === profileId;
+  if (ownerOnly && !isOwner) {
+    renderErrorPage(req, res, 403);
+    return null;
+  }
+
+  let application = null;
+  if (appId !== null) {
+    let applicationsResult;
+    try {
+      applicationsResult = await callJobApi(token, 'GET', `/${encodeURIComponent(id)}/applications`);
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return null;
+      renderErrorPage(req, res, apiErrorStatus(error));
+      return null;
+    }
+    const raw = collectionItems(applicationsResult).find((row) => positiveInteger(row.id) === appId);
+    if (!raw) {
+      renderErrorPage(req, res, 404);
+      return null;
+    }
+    application = decorateApplicant(raw, req);
+  }
+
+  return { token, id, job: decorateJob(job), isOwner, profileId, application };
+}
+
+function postedList(value) {
+  if (value === undefined || value === null || value === '') return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+// --- 4. Bulk status change -------------------------------------------------
+
+router.post('/:id(\\d+)/applications/bulk-status', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  const pipelinePath = `/jobs/${id}/pipeline`;
+  const applicationIds = [...new Set(postedList(req.body.application_ids).map(positiveInteger).filter(Boolean))].slice(0, 1000);
+  const status = trimmed(req.body.bulk_status);
+
+  if (applicationIds.length === 0) return redirectTo(res, statusRedirect(pipelinePath, 'bulk-none-selected'));
+  if (!JOB_BULK_STAGES.includes(status)) return redirectTo(res, statusRedirect(pipelinePath, 'bulk-stage-required'));
+
+  try {
+    await callJobApi(token, 'POST', `/${encodeURIComponent(id)}/applications/bulk-status`, {
+      application_ids: applicationIds,
+      status
+    });
+    return redirectTo(res, statusRedirect(pipelinePath, 'bulk-updated'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect(pipelinePath, 'bulk-failed'));
+  }
+}));
+
+// --- 1. Interviews ---------------------------------------------------------
+
+function interviewFormValues(body = {}) {
+  const duration = Number(body.duration_mins);
+  return {
+    interview_type: allowed(body.interview_type, JOB_INTERVIEW_TYPES, 'video'),
+    duration_mins: JOB_INTERVIEW_DURATIONS.includes(duration) ? duration : 60,
+    location_notes: trimmed(body.location_notes, 500)
+  };
+}
+
+function renderInterviewForm(req, res, context, { values, whenParts, errors = [], whenError = null, statusCode = 200 }) {
+  return res.status(statusCode).render('jobs/hiring-interview', {
+    title: hiringText(req, 'schedule_interview'),
+    activeNav: 'explore',
+    job: context.job,
+    application: context.application,
+    values,
+    whenParts,
+    whenError,
+    errors,
+    typeOptions: JOB_INTERVIEW_TYPES.map((type) => ({
+      value: type,
+      text: jobTranslation(req, `govuk_alpha_jobs.responses.type_${type}`, type),
+      checked: values.interview_type === type
+    })),
+    durationOptions: JOB_INTERVIEW_DURATIONS.map((mins) => ({
+      value: String(mins),
+      text: hiringText(req, 'duration_minutes', { count: mins }),
+      selected: values.duration_mins === mins
+    })),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+router.get('/:id(\\d+)/applications/:appId(\\d+)/interview', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res, { appId: Number(req.params.appId), ownerOnly: true });
+  if (!context) return undefined;
+  return renderInterviewForm(req, res, context, {
+    values: interviewFormValues({}),
+    whenParts: { day: '', month: '', year: '', time: '' }
+  });
+}));
+
+router.post('/:id(\\d+)/applications/:appId(\\d+)/interview', asyncRoute(async (req, res) => {
+  const appId = Number(req.params.appId);
+  const context = await loadHiringContext(req, res, { appId, ownerOnly: true });
+  if (!context) return undefined;
+
+  const values = interviewFormValues(req.body);
+  const when = readDateTime(req.body, 'scheduled_at', { required: true });
+  if (when.error) {
+    const message = jobTranslation(req, `web_uk.date_input.${when.error}`, '');
+    return renderInterviewForm(req, res, context, {
+      values,
+      whenParts: when.parts,
+      whenError: { message, fields: when.errorFields },
+      errors: [{ text: message, href: when.errorFields.includes('time') ? '#scheduled_at-time' : '#scheduled_at-day' }],
+      statusCode: 400
+    });
+  }
+
+  // 🔴 React posts its datetime-local value as-is: wall-clock time with NO offset,
+  // which Laravel parses in the application time zone. Sending the same string
+  // keeps an interview booked here identical to one booked in React.
+  try {
+    await callJobApi(context.token, 'POST', `/applications/${encodeURIComponent(appId)}/interview`, {
+      interview_type: values.interview_type,
+      scheduled_at: when.value,
+      duration_mins: values.duration_mins,
+      location_notes: values.location_notes
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderInterviewForm(req, res, context, {
+      values,
+      whenParts: when.parts,
+      errors: [{ text: hiringText(req, 'interview_failed'), href: '#scheduled_at-day' }],
+      statusCode: 422
+    });
+  }
+
+  // React then moves the card to the interview column (handleMoveCard).
+  try {
+    await callJobApi(context.token, 'PUT', `/applications/${encodeURIComponent(appId)}`, { status: 'interview' });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+  return redirectTo(res, statusRedirect(`/jobs/${context.id}/pipeline`, 'interview-sent'));
+}));
+
+// --- 2. Offers -------------------------------------------------------------
+
+function offerFormValues(body = {}) {
+  return {
+    salary_offered: trimmed(body.salary_offered, 20),
+    salary_currency: allowed(body.salary_currency, JOB_OFFER_CURRENCIES, 'EUR'),
+    salary_type: allowed(body.salary_type, JOB_SALARY_TYPES, 'annual'),
+    message: trimmed(body.message, 5000)
+  };
+}
+
+function renderOfferForm(req, res, context, { values, startParts, errors = [], salaryError = '', startError = null, statusCode = 200 }) {
+  return res.status(statusCode).render('jobs/hiring-offer', {
+    title: hiringText(req, 'offer_title'),
+    activeNav: 'explore',
+    job: context.job,
+    application: context.application,
+    values,
+    startParts,
+    salaryError,
+    startError,
+    errors,
+    currencyOptions: JOB_OFFER_CURRENCIES.map((code) => ({ value: code, text: code, selected: values.salary_currency === code })),
+    periodOptions: JOB_SALARY_TYPES.map((period) => ({
+      value: period,
+      text: hiringText(req, `period_${period}`),
+      selected: values.salary_type === period
+    })),
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+router.get('/:id(\\d+)/applications/:appId(\\d+)/offer', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res, { appId: Number(req.params.appId), ownerOnly: true });
+  if (!context) return undefined;
+  return renderOfferForm(req, res, context, {
+    values: offerFormValues({}),
+    startParts: { day: '', month: '', year: '' }
+  });
+}));
+
+router.post('/:id(\\d+)/applications/:appId(\\d+)/offer', asyncRoute(async (req, res) => {
+  const appId = Number(req.params.appId);
+  const context = await loadHiringContext(req, res, { appId, ownerOnly: true });
+  if (!context) return undefined;
+
+  const values = offerFormValues(req.body);
+  const start = readDate(req.body, 'start_date');
+  const errors = [];
+  let salaryError = '';
+  let startError = null;
+  if (values.salary_offered !== '' && !(/^\d+(\.\d{1,2})?$/.test(values.salary_offered))) {
+    salaryError = hiringText(req, 'offer_salary_invalid');
+    errors.push({ text: salaryError, href: '#salary_offered' });
+  }
+  if (start.error) {
+    const message = jobTranslation(req, `web_uk.date_input.${start.error}`, '');
+    startError = { message, fields: start.errorFields };
+    errors.push({ text: message, href: '#start_date-day' });
+  }
+  if (errors.length > 0) {
+    return renderOfferForm(req, res, context, { values, startParts: start.parts, errors, salaryError, startError, statusCode: 400 });
+  }
+
+  // The same body React's offer modal posts: empty strings stay empty strings.
+  try {
+    await callJobApi(context.token, 'POST', `/applications/${encodeURIComponent(appId)}/offer`, {
+      salary_offered: values.salary_offered,
+      salary_currency: values.salary_currency,
+      salary_type: values.salary_type,
+      start_date: start.value || '',
+      message: values.message
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderOfferForm(req, res, context, {
+      values,
+      startParts: start.parts,
+      errors: [{ text: hiringText(req, 'offer_failed'), href: '#salary_offered' }],
+      statusCode: 422
+    });
+  }
+
+  try {
+    await callJobApi(context.token, 'PUT', `/applications/${encodeURIComponent(appId)}`, { status: 'offer' });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+  return redirectTo(res, statusRedirect(`/jobs/${context.id}/pipeline`, 'offer-sent'));
+}));
+
+// --- 3. Scorecards ---------------------------------------------------------
+
+function scorecardCriteria(req, scores) {
+  return JOB_SCORECARD_CRITERIA.map((criterion, index) => ({
+    index,
+    name: `score_${index}`,
+    label: hiringText(req, `criterion_${criterion}`),
+    value: scores[index]
+  }));
+}
+
+function renderScorecardForm(req, res, context, { scores, notes, errors = [], fieldErrors = {}, prefilled = false, statusCode = 200 }) {
+  return res.status(statusCode).render('jobs/hiring-scorecard', {
+    title: hiringText(req, 'scorecard_title'),
+    activeNav: 'explore',
+    job: context.job,
+    application: context.application,
+    criteria: scorecardCriteria(req, scores).map((row) => ({ ...row, error: fieldErrors[row.name] || '' })),
+    notes,
+    prefilled,
+    errors,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+router.get('/:id(\\d+)/applications/:appId(\\d+)/scorecard', asyncRoute(async (req, res) => {
+  const appId = Number(req.params.appId);
+  const context = await loadHiringContext(req, res, { appId });
+  if (!context) return undefined;
+
+  // React always opens the scorecard at 5 for every criterion. Here a reviewer
+  // who has already scored sees their OWN saved card (never anyone else's), so
+  // saving again does not silently overwrite it with defaults.
+  let scores = JOB_SCORECARD_CRITERIA.map(() => 5);
+  let notes = '';
+  let prefilled = false;
+  try {
+    const cards = collectionItems(await callJobApi(context.token, 'GET', `/applications/${encodeURIComponent(appId)}/scorecards`));
+    const mine = context.profileId
+      ? cards.find((card) => positiveInteger(card.reviewer_id) === context.profileId)
+      : null;
+    if (mine) {
+      const saved = Array.isArray(mine.criteria) ? mine.criteria : [];
+      scores = scores.map((fallback, index) => {
+        const value = Number(saved[index] && saved[index].score);
+        return Number.isInteger(value) && value >= 1 && value <= 10 ? value : fallback;
+      });
+      notes = trimmed(mine.notes, 5000);
+      prefilled = true;
+    }
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+  }
+
+  return renderScorecardForm(req, res, context, { scores, notes, prefilled });
+}));
+
+router.post('/:id(\\d+)/applications/:appId(\\d+)/scorecard', asyncRoute(async (req, res) => {
+  const appId = Number(req.params.appId);
+  const context = await loadHiringContext(req, res, { appId });
+  if (!context) return undefined;
+
+  const notes = trimmed(req.body.notes, 5000);
+  const errors = [];
+  const fieldErrors = {};
+  const raw = JOB_SCORECARD_CRITERIA.map((criterion, index) => trimmed(req.body[`score_${index}`], 4));
+  const scores = raw.map((value) => (/^\d{1,2}$/.test(value) ? Number(value) : NaN));
+  scores.forEach((score, index) => {
+    if (!(score >= 1 && score <= 10)) {
+      const message = hiringText(req, 'scorecard_score_invalid', {
+        criterion: hiringText(req, `criterion_${JOB_SCORECARD_CRITERIA[index]}`)
+      });
+      fieldErrors[`score_${index}`] = message;
+      errors.push({ text: message, href: `#score_${index}` });
+    }
+  });
+  if (errors.length > 0) {
+    return renderScorecardForm(req, res, context, { scores: raw, notes, errors, fieldErrors, statusCode: 400 });
+  }
+
+  // React sends each criterion's translated label with max_score 10.
+  try {
+    await callJobApi(context.token, 'PUT', `/applications/${encodeURIComponent(appId)}/scorecard`, {
+      criteria: JOB_SCORECARD_CRITERIA.map((criterion, index) => ({
+        label: hiringText(req, `criterion_${criterion}`),
+        score: scores[index],
+        max_score: 10
+      })),
+      notes
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderScorecardForm(req, res, context, {
+      scores,
+      notes,
+      errors: [{ text: hiringText(req, 'scorecard_failed'), href: '#score_0' }],
+      statusCode: 422
+    });
+  }
+  return redirectTo(res, statusRedirect(`/jobs/${context.id}/pipeline`, 'scorecard-saved'));
+}));
+
+// --- 5. Activity log -------------------------------------------------------
+
+router.get('/:id(\\d+)/activity', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res);
+  if (!context) return undefined;
+
+  const page = positiveInteger(req.query.page) || 1;
+  let result;
+  try {
+    result = await callJobApi(context.token, 'GET', `/${encodeURIComponent(context.id)}/audit-trail?page=${page}&limit=${JOB_AUDIT_PER_PAGE}`);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderErrorPage(req, res, apiErrorStatus(error));
+  }
+
+  const meta = (result && typeof result.meta === 'object' && result.meta) || {};
+  const total = Math.max(0, Math.trunc(finiteNumber(meta.total, 0)));
+  // Actor names and candidate labels are shown exactly as the API returns them:
+  // under blind hiring it has already replaced candidate names with "Candidate #N".
+  const events = collectionItems(result).map((event) => {
+    const type = trimmed(event.type);
+    const typeKey = ['status_change', 'interview', 'offer'].includes(type) ? type : 'other';
+    return {
+      description: trimmed(event.description, 1000),
+      actor: trimmed(event.actor, 255),
+      details: trimmed(event.details, 2000),
+      typeLabel: hiringText(req, `event_${typeKey}`),
+      tagClass: typeKey === 'status_change' ? 'govuk-tag--blue' : (typeKey === 'offer' ? 'govuk-tag--yellow' : 'govuk-tag--grey'),
+      whenLabel: formatDateTimeLong(event.timestamp)
+    };
+  });
+  const basePath = `/jobs/${context.id}/activity`;
+
+  return res.render('jobs/hiring-activity', {
+    title: hiringText(req, 'activity_title'),
+    activeNav: 'explore',
+    job: context.job,
+    events,
+    previousHref: page > 1 ? `${basePath}?page=${page - 1}` : '',
+    nextHref: page * JOB_AUDIT_PER_PAGE < total ? `${basePath}?page=${page + 1}` : ''
+  });
+}));
+
+// --- 6. Hiring team --------------------------------------------------------
+
+function teamMemberName(row) {
+  const user = row.user && typeof row.user === 'object' ? row.user : {};
+  if (trimmed(user.profile_type) === 'organisation' && trimmed(user.organization_name)) {
+    return trimmed(user.organization_name, 255);
+  }
+  return trimmed([user.first_name, user.last_name].map((part) => trimmed(part)).filter(Boolean).join(' '), 255)
+    || personName(user)
+    || trimmed(row.name, 255);
+}
+
+function decorateTeamMember(row, req) {
+  const role = JOB_TEAM_ROLES.includes(trimmed(row.role)) ? trimmed(row.role) : 'reviewer';
+  // Name and role only, as React shows: the API row also carries the member's
+  // email address, which is deliberately never rendered.
+  return {
+    userId: positiveInteger(row.user_id) || positiveInteger(row.user && row.user.id) || 0,
+    name: teamMemberName(row),
+    roleLabel: hiringText(req, `role_${role}`)
+  };
+}
+
+async function loadTeam(token, id) {
+  return collectionItems(await callJobApi(token, 'GET', `/${encodeURIComponent(id)}/team`));
+}
+
+router.get('/:id(\\d+)/team', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res, { ownerOnly: true });
+  if (!context) return undefined;
+
+  let members;
+  try {
+    members = (await loadTeam(context.token, context.id)).map((row) => decorateTeamMember(row, req)).filter((m) => m.userId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderErrorPage(req, res, apiErrorStatus(error));
+  }
+
+  const query = trimmed(req.query.q, 100);
+  let searchResults = null;
+  if (query !== '') {
+    const excluded = new Set([...members.map((m) => m.userId), context.profileId].filter(Boolean));
+    try {
+      searchResults = collectionItems(await searchUsers(context.token, query, { limit: 5 }))
+        .map((user) => ({
+          id: positiveInteger(user.id) || 0,
+          name: personName(user) || trimmed([user.first_name, user.last_name].filter(Boolean).join(' '), 255)
+        }))
+        .filter((user) => user.id && user.name && !excluded.has(user.id));
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      searchResults = [];
+    }
+  }
+
+  const message = hiringStatusMessage(req, req.query.status, JOB_TEAM_MESSAGE_KEYS, JOB_TEAM_SUCCESS);
+  return res.render('jobs/hiring-team', {
+    title: hiringText(req, 'team_title'),
+    activeNav: 'explore',
+    job: context.job,
+    members,
+    query,
+    searchResults,
+    roleOptions: JOB_TEAM_ROLES.map((role) => ({ value: role, text: hiringText(req, `role_${role}`) })),
+    successMessage: message.success,
+    errorMessage: message.error,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
+router.post('/:id(\\d+)/team', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const userId = positiveInteger(req.body.user_id);
+  const teamPath = `/jobs/${id}/team`;
+  if (!userId) return redirectTo(res, statusRedirect(teamPath, 'team-add-failed'));
+
+  try {
+    await callJobApi(token, 'POST', `/${encodeURIComponent(id)}/team`, {
+      user_id: userId,
+      role: allowed(req.body.role, JOB_TEAM_ROLES, 'reviewer')
+    });
+    return redirectTo(res, statusRedirect(teamPath, 'team-added'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect(teamPath, 'team-add-failed'));
+  }
+}));
+
+router.get('/:id(\\d+)/team/:userId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res, { ownerOnly: true });
+  if (!context) return undefined;
+  const userId = Number(req.params.userId);
+  let member;
+  try {
+    member = (await loadTeam(context.token, context.id)).map((row) => decorateTeamMember(row, req)).find((m) => m.userId === userId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderErrorPage(req, res, apiErrorStatus(error));
+  }
+  if (!member) return renderErrorPage(req, res, 404);
+
+  return res.render('jobs/hiring-confirm', {
+    title: hiringText(req, 'team_remove_title', { name: member.name }),
+    activeNav: 'explore',
+    job: context.job,
+    heading: hiringText(req, 'team_remove_title', { name: member.name }),
+    body: hiringText(req, 'team_remove_body'),
+    confirmLabel: hiringText(req, 'team_remove_confirm'),
+    formAction: `/jobs/${context.id}/team/${userId}/remove`,
+    cancelHref: `/jobs/${context.id}/team`,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
+router.post('/:id(\\d+)/team/:userId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const userId = Number(req.params.userId);
+  try {
+    await callJobApi(token, 'DELETE', `/${encodeURIComponent(id)}/team/${encodeURIComponent(userId)}`);
+    return redirectTo(res, statusRedirect(`/jobs/${id}/team`, 'team-removed'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect(`/jobs/${id}/team`, 'team-remove-failed'));
+  }
+}));
+
+// --- 7. Automation rules ---------------------------------------------------
+// The API offers list, create and delete only (no update and no enable/disable
+// endpoint), which is exactly what React's JobPipelineRules offers.
+
+function ruleActionLabel(req, rule) {
+  if (rule.action === 'reject') return hiringText(req, 'action_reject');
+  if (rule.action === 'notify_reviewer') return hiringText(req, 'action_notify');
+  return hiringText(req, 'action_move_to', { stage: rule.action_target ? stageLabel(req, rule.action_target) : '' });
+}
+
+function decorateRule(rule, req) {
+  const decorated = {
+    id: positiveInteger(rule.id) || 0,
+    name: trimmed(rule.name, 255),
+    trigger_stage: trimmed(rule.trigger_stage),
+    condition_days: Math.trunc(finiteNumber(rule.condition_days, 0)),
+    action: trimmed(rule.action),
+    action_target: trimmed(rule.action_target)
+  };
+  return {
+    ...decorated,
+    stageLabel: stageLabel(req, decorated.trigger_stage),
+    actionLabel: ruleActionLabel(req, decorated)
+  };
+}
+
+async function loadRules(token, id, req) {
+  return collectionItems(await callJobApi(token, 'GET', `/${encodeURIComponent(id)}/pipeline-rules`))
+    .map((rule) => decorateRule(rule, req))
+    .filter((rule) => rule.id);
+}
+
+function ruleFormValues(body = {}) {
+  return {
+    trigger_stage: allowed(body.trigger_stage, JOB_RULE_TRIGGER_STAGES, 'applied'),
+    condition_days: trimmed(body.condition_days, 6) || '7',
+    action: allowed(body.action, JOB_RULE_ACTIONS, 'move_stage'),
+    action_target: allowed(body.action_target, JOB_RULE_TARGET_STAGES, 'screening')
+  };
+}
+
+async function renderRules(req, res, context, { values, errors = [], daysError = '', statusCode = 200 }) {
+  let rules;
+  try {
+    rules = await loadRules(context.token, context.id, req);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderErrorPage(req, res, apiErrorStatus(error));
+  }
+  const message = hiringStatusMessage(req, req.query.status, JOB_RULE_MESSAGE_KEYS, JOB_RULE_SUCCESS);
+  return res.status(statusCode).render('jobs/hiring-rules', {
+    title: hiringText(req, 'rules_title'),
+    activeNav: 'explore',
+    job: context.job,
+    rules,
+    values,
+    errors,
+    daysError,
+    triggerOptions: JOB_RULE_TRIGGER_STAGES.map((stage) => ({ value: stage, text: stageLabel(req, stage), selected: values.trigger_stage === stage })),
+    targetOptions: JOB_RULE_TARGET_STAGES.map((stage) => ({ value: stage, text: stageLabel(req, stage), selected: values.action_target === stage })),
+    actionOptions: [
+      { value: 'move_stage', text: hiringText(req, 'action_move_option') },
+      { value: 'reject', text: hiringText(req, 'action_reject') },
+      { value: 'notify_reviewer', text: hiringText(req, 'action_notify') }
+    ].map((option) => ({ ...option, checked: values.action === option.value })),
+    successMessage: message.success,
+    errorMessage: message.error,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}
+
+router.get('/:id(\\d+)/rules', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res);
+  if (!context) return undefined;
+  return renderRules(req, res, context, { values: ruleFormValues({}) });
+}));
+
+router.post('/:id(\\d+)/rules', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res);
+  if (!context) return undefined;
+
+  const values = ruleFormValues(req.body);
+  const days = /^\d{1,4}$/.test(values.condition_days) ? Number(values.condition_days) : 0;
+  if (days < 1) {
+    const daysError = hiringText(req, 'rule_days_invalid');
+    return renderRules(req, res, context, { values, daysError, errors: [{ text: daysError, href: '#condition_days' }], statusCode: 400 });
+  }
+
+  const isMove = values.action === 'move_stage';
+  const target = isMove ? values.action_target : null;
+  // React stores a generated, translated name built from the same parts.
+  const name = hiringText(req, 'rule_generated_name', {
+    stage: stageLabel(req, values.trigger_stage),
+    target: isMove ? stageLabel(req, target) : ruleActionLabel(req, { action: values.action }),
+    count: days
+  });
+
+  const rulesPath = `/jobs/${context.id}/rules`;
+  try {
+    await callJobApi(context.token, 'POST', `/${encodeURIComponent(context.id)}/pipeline-rules`, {
+      name,
+      trigger_stage: values.trigger_stage,
+      condition_days: days,
+      action: values.action,
+      action_target: target
+    });
+    return redirectTo(res, statusRedirect(rulesPath, 'rule-added'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect(rulesPath, 'rule-add-failed'));
+  }
+}));
+
+router.get('/:id(\\d+)/rules/:ruleId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const context = await loadHiringContext(req, res);
+  if (!context) return undefined;
+  const ruleId = Number(req.params.ruleId);
+  let rule;
+  try {
+    rule = (await loadRules(context.token, context.id, req)).find((row) => row.id === ruleId);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return renderErrorPage(req, res, apiErrorStatus(error));
+  }
+  if (!rule) return renderErrorPage(req, res, 404);
+
+  return res.render('jobs/hiring-confirm', {
+    title: hiringText(req, 'rule_delete_title'),
+    activeNav: 'explore',
+    job: context.job,
+    heading: hiringText(req, 'rule_delete_title'),
+    body: hiringText(req, 'rule_delete_body', { name: rule.name || rule.actionLabel }),
+    confirmLabel: hiringText(req, 'rule_delete_confirm'),
+    formAction: `/jobs/${context.id}/rules/${ruleId}/delete`,
+    cancelHref: `/jobs/${context.id}/rules`,
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
+  });
+}));
+
+router.post('/:id(\\d+)/rules/:ruleId(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  const id = Number(req.params.id);
+  const ruleId = Number(req.params.ruleId);
+  try {
+    await callJobApi(token, 'DELETE', `/pipeline-rules/${encodeURIComponent(ruleId)}`);
+    return redirectTo(res, statusRedirect(`/jobs/${id}/rules`, 'rule-deleted'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, statusRedirect(`/jobs/${id}/rules`, 'rule-delete-failed'));
   }
 }));
 

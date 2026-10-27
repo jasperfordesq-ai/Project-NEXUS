@@ -1,0 +1,92 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% include "jobs/_hiring-banners.njk" %}
+  <span class="govuk-caption-xl">{{ job.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.hiring.rules_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.hiring.rules_intro") }}</p>
+
+  {% if rules.length == 0 %}
+    <p class="govuk-body">{{ t("govuk_alpha_jobs.hiring.rules_empty") }}</p>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.hiring.rules_title') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.hiring.rules_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.hiring.rule_name_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.hiring.rule_stage_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.hiring.rule_days_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.hiring.rule_action_column") }}</th>
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_jobs.hiring.rule_delete") }}</span></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for rule in rules %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ rule.name }}</td>
+            <td class="govuk-table__cell">{{ rule.stageLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ rule.condition_days }}</td>
+            <td class="govuk-table__cell">{{ rule.actionLabel }}</td>
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/rules/' ~ rule.id ~ '/delete') }}">{{ t("govuk_alpha_jobs.hiring.rule_delete") }}<span class="govuk-visually-hidden"> {{ rule.name }}</span></a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.hiring.rule_add_heading") }}</h2>
+  <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/rules') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    {{ govukSelect({
+      id: "trigger_stage",
+      name: "trigger_stage",
+      label: { text: t("govuk_alpha_jobs.hiring.rule_trigger_label") },
+      items: triggerOptions
+    }) }}
+
+    {{ govukInput({
+      id: "condition_days",
+      name: "condition_days",
+      label: { text: t("govuk_alpha_jobs.hiring.rule_days_label") },
+      hint: { text: t("govuk_alpha_jobs.hiring.rule_days_hint") },
+      value: values.condition_days,
+      inputmode: "numeric",
+      spellcheck: false,
+      classes: "govuk-input--width-4",
+      errorMessage: { text: daysError, visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim } if daysError else undefined
+    }) }}
+
+    {{ govukRadios({
+      name: "action",
+      fieldset: { legend: { text: t("govuk_alpha_jobs.hiring.rule_action_legend"), classes: "govuk-fieldset__legend--s" } },
+      items: actionOptions
+    }) }}
+
+    {{ govukSelect({
+      id: "action_target",
+      name: "action_target",
+      label: { text: t("govuk_alpha_jobs.hiring.rule_target_label") },
+      hint: { text: t("govuk_alpha_jobs.hiring.rule_target_hint") },
+      items: targetOptions
+    }) }}
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.rule_add_button") }}</button>
+  </form>
+{% endblock %}

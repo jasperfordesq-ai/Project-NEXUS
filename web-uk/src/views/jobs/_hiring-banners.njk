@@ -1,0 +1,13 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% if successMessage %}
+  {% set notificationMessage = successMessage %}
+  {% set notificationType = "success" %}
+  {% include "partials/notification-banner.njk" %}
+{% endif %}
+{% if errorMessage and not (errors and errors.length) %}
+  {% set errors = [{ text: errorMessage }] %}
+{% endif %}
+{% include "jobs/_hiring-errors.njk" %}

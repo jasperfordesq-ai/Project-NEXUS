@@ -1,0 +1,80 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% include "jobs/_hiring-banners.njk" %}
+  <span class="govuk-caption-xl">{{ job.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.hiring.team_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.hiring.team_intro") }}</p>
+
+  {% if members.length == 0 %}
+    <p class="govuk-body">{{ t("govuk_alpha_jobs.hiring.team_empty") }}</p>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.hiring.team_title') }}">
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.hiring.team_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.hiring.team_name_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.hiring.team_role_column") }}</th>
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_jobs.hiring.team_action_column") }}</span></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for member in members %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ member.name }}</td>
+            <td class="govuk-table__cell">{{ member.roleLabel }}</td>
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/team/' ~ member.userId ~ '/remove') }}">{{ t("govuk_alpha_jobs.hiring.team_remove") }}<span class="govuk-visually-hidden"> {{ member.name }}</span></a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.hiring.team_add_heading") }}</h2>
+  <form method="get" action="{{ urlFor('/jobs/' ~ job.id ~ '/team') }}" novalidate>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="team-search">{{ t("govuk_alpha_jobs.hiring.team_search_label") }}</label>
+      <div id="team-search-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.hiring.team_search_hint") }}</div>
+      <input class="govuk-input govuk-!-width-one-half" id="team-search" name="q" type="search" value="{{ query }}" maxlength="100" aria-describedby="team-search-hint" spellcheck="false">
+    </div>
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.team_search_button") }}</button>
+  </form>
+
+  {% if searchResults %}
+    {% if searchResults.length == 0 %}
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.hiring.team_no_results") }}</p>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for user in searchResults %}
+          <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/team') }}" class="nexus-alpha-card" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ user.name }}</h3>
+            <div class="govuk-form-group govuk-!-margin-bottom-2">
+              <label class="govuk-label" for="team-role-{{ user.id }}">{{ t("govuk_alpha_jobs.hiring.team_role_label", { name: user.name }) }}</label>
+              <select class="govuk-select" id="team-role-{{ user.id }}" name="role">
+                {% for option in roleOptions %}
+                  <option value="{{ option.value }}">{{ option.text }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.team_add_button") }}<span class="govuk-visually-hidden">: {{ user.name }}</span></button>
+          </form>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

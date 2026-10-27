@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T16:23:42.050Z
-Laravel commit SHA: `ff5a4296bd3c22759d662257ac35ac9dfffd792d`
-Web UK repository commit SHA: `ff5a4296bd3c22759d662257ac35ac9dfffd792d`
+Generated: 2026-10-27T17:09:34.904Z
+Laravel commit SHA: `378dc342fa8aa9d8e0416d68f5019c6368129dc9`
+Web UK repository commit SHA: `378dc342fa8aa9d8e0416d68f5019c6368129dc9`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1044 |
+| web-uk routes | 1072 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 334 |
+| Extra web-uk routes | 362 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -62,7 +62,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | ideation | 34 | 0 | 0 | 0 |
 | impact-report | 0 | 0 | 1 | 0 |
 | impact-summary | 0 | 0 | 1 | 0 |
-| jobs | 38 | 0 | 7 | 0 |
+| jobs | 38 | 0 | 23 | 0 |
 | kb | 2 | 0 | 2 | 0 |
 | leaderboard | 5 | 0 | 0 | 0 |
 | legal | 6 | 0 | 3 | 0 |
@@ -98,7 +98,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | search | 6 | 0 | 1 | 0 |
 | service-unavailable | 0 | 0 | 0 | 1 |
 | session | 0 | 0 | 0 | 1 |
-| settings | 24 | 0 | 0 | 0 |
+| settings | 24 | 0 | 12 | 0 |
 | sitemap.xml | 0 | 0 | 1 | 0 |
 | skills | 1 | 0 | 0 | 0 |
 | social-prescribing | 0 | 0 | 1 | 0 |
@@ -252,11 +252,27 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |
 | GET | `/impact-report` | impact-report | tbi-pages/impact-report | web-uk/src/routes/tbi-pages.js |
 | GET | `/impact-summary` | impact-summary | tbi-pages/impact-summary | web-uk/src/routes/tbi-pages.js |
+| GET | `/jobs/{param}/activity` | jobs | jobs/hiring-activity | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/applications/{param}/interview` | jobs |  | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/applications/{param}/offer` | jobs |  | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/applications/{param}/scorecard` | jobs |  | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/rules` | jobs |  | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/rules/{param}/delete` | jobs | jobs/hiring-confirm | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/team` | jobs | jobs/hiring-team | web-uk/src/routes/jobs.js |
+| GET | `/jobs/{param}/team/{param}/remove` | jobs | jobs/hiring-confirm | web-uk/src/routes/jobs.js |
 | GET | `/jobs/applications/export.json` | jobs |  | web-uk/src/routes/jobs.js |
 | GET | `/jobs/interviews/{param}/calendar.ics` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/applications/{param}/interview` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/applications/{param}/offer` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/applications/{param}/scorecard` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/applications/bulk-status` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/{param}/close` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/{param}/quick-apply` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/{param}/reopen` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/rules` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/rules/{param}/delete` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/team` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/team/{param}/remove` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/employers/{param}/reviews` | jobs |  | web-uk/src/routes/jobs.js |
 | POST | `/jobs/templates/{param}/delete` | jobs |  | web-uk/src/routes/jobs.js |
 | GET | `/kb/{param}/attachments/{param}` | kb |  | web-uk/src/routes/kb.js |
@@ -355,6 +371,18 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/profile/two-factor/setup` | profile |  | web-uk/src/routes/profile.js |
 | GET | `/robots.txt` | robots.txt |  | web-uk/src/server.js |
 | GET | `/search/podcast-episode` | search |  | web-uk/src/routes/search.js |
+| GET | `/settings/data-export` | settings | settings/data-export | web-uk/src/routes/settings.js |
+| GET | `/settings/support-actions/prepare/{param}/listing` | settings |  | web-uk/src/routes/settings-support-actions.js |
+| GET | `/settings/support-actions/prepare/{param}/listing/{param}/photo` | settings | settings/support-prepare-photo | web-uk/src/routes/settings-support-actions.js |
+| GET | `/settings/support-actions/prepare/{param}/transfer` | settings |  | web-uk/src/routes/settings-support-actions.js |
+| POST | `/settings/data-export` | settings |  | web-uk/src/routes/settings.js |
+| POST | `/settings/linked-accounts/member-tiers` | settings |  | web-uk/src/routes/settings.js |
+| POST | `/settings/linked-accounts/tiers` | settings |  | web-uk/src/routes/settings.js |
+| POST | `/settings/support-actions/prepare/{param}/listing` | settings |  | web-uk/src/routes/settings-support-actions.js |
+| POST | `/settings/support-actions/prepare/{param}/listing/{param}/photo` | settings |  | web-uk/src/routes/settings-support-actions.js |
+| POST | `/settings/support-actions/prepare/{param}/listing/review` | settings | settings/support-prepare-listing-check | web-uk/src/routes/settings-support-actions.js |
+| POST | `/settings/support-actions/prepare/{param}/transfer` | settings | settings/support-prepare-listing | web-uk/src/routes/settings-support-actions.js |
+| POST | `/settings/support-actions/prepare/{param}/transfer/review` | settings | settings/support-prepare-transfer-check | web-uk/src/routes/settings-support-actions.js |
 | GET | `/sitemap.xml` | sitemap.xml |  | web-uk/src/server.js |
 | GET | `/social-prescribing` | social-prescribing | tbi-pages/social-prescribing | web-uk/src/routes/tbi-pages.js |
 | GET | `/strategic-plan` | strategic-plan | tbi-pages/strategic-plan | web-uk/src/routes/tbi-pages.js |

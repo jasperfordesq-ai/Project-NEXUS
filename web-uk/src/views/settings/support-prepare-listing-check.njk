@@ -1,0 +1,102 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Check page for a prepared listing. Nothing is posted until the button below.
+    "Change" posts the values back to the form so no text enters a URL.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% set base = '/settings/support-actions/prepare/' + (supportedUserId | string) + '/listing' %}
+
+{% macro hiddenFields(values, csrfToken) %}
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  {% for field in ["title", "type", "category_id", "description", "hours_estimate", "service_type", "location", "skill_tags"] %}
+    <input type="hidden" name="{{ field }}" value="{{ values[field] }}">
+  {% endfor %}
+{% endmacro %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts') }}#children">{{ t("govuk_alpha_settings.linked.activity_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.support_prepare.listing_title", { name: supportedName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("onboarding.confirm.title") }}</h1>
+
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("listings.create.title_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ values.title }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("listings.create.intent_legend") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("listings." + values.type) }}</dd>
+        </div>
+        {% if categoryName %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("listings.create.category_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ categoryName }}</dd>
+          </div>
+        {% endif %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("listings.create.description_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ values.description }}</dd>
+        </div>
+        {% if values.hours_estimate %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("listings.create.hours_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ values.hours_estimate }}</dd>
+          </div>
+        {% endif %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("listings.create.service_type_legend") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("listings.service_types." + values.service_type) }}</dd>
+        </div>
+        {% if values.location %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("listings.create.location_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ values.location }}</dd>
+          </div>
+        {% endif %}
+        {% if values.skill_tags %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.create.skill_tags_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ values.skill_tags }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      {% if tier == "co_decide" %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_settings.support_prepare.explainer_co_decide", { name: supportedName }) }}</div>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_prepare.photo_after_approval") }}</p>
+      {% else %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("govuk_alpha_settings.support_prepare.explainer_represent", { name: supportedName }) }}
+          </strong>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor(base) }}" novalidate>
+        {{ hiddenFields(values, csrfToken) }}
+        <button class="govuk-button" data-module="govuk-button" type="submit" data-prevent-double-click="true">
+          {{ t("govuk_alpha_settings.support_prepare.submit_prepare") if tier == "co_decide" else t("govuk_alpha_settings.support_prepare.submit_direct") }}
+        </button>
+      </form>
+
+      <form method="post" action="{{ urlFor(base + '/review') }}" novalidate>
+        {{ hiddenFields(values, csrfToken) }}
+        <input type="hidden" name="edit" value="1">
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("govuk_alpha_settings.support_prepare.recipient_change") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -635,11 +635,8 @@
         <h2 class="govuk-heading-l" id="data-privacy-heading">{{ t("profile_settings.data_title") }}</h2>
         <p class="govuk-body">{{ t("profile_settings.data_description") }}</p>
         <h3 class="govuk-heading-m" id="data-export">{{ t("profile_settings.data_export_heading") }}</h3>
-        <p class="govuk-body">{{ t("profile_settings.data_export_body") }}</p>
-        <form method="post" action="{{ urlFor('/profile/data-export') }}">
-          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.download_data") }}</button>
-        </form>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.data_export.subtitle") }}</p>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/data-export') }}">{{ t("govuk_alpha_settings.data_export.download_button") }}</a>
         <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ t("profile_settings.delete_heading") }}</h3>
         <p class="govuk-body">{{ t("profile_settings.delete_body") }}</p>
         <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/profile/delete-account') }}">{{ t("actions.delete_account") }}</a>

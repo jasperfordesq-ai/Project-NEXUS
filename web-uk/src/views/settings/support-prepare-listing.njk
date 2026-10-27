@@ -1,0 +1,127 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    A supporter prepares a listing for the member they support (React
+    SupportPrepareModal → ListingForm). The same fields as the member's own
+    listing form, so a supporter never produces a worse listing than the member
+    could. The photo is a separate step after a represent-tier listing exists;
+    on the co_decide path it can only be added after approval, and the page says so.
+#}
+
+{% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
+
+{% set titleError = null %}{% set descriptionError = null %}{% set hoursError = null %}
+{% for error in errors %}
+  {% if error.href == "#title" %}{% set titleError = error.text %}{% endif %}
+  {% if error.href == "#description" %}{% set descriptionError = error.text %}{% endif %}
+  {% if error.href == "#hours_estimate" %}{% set hoursError = error.text %}{% endif %}
+{% endfor %}
+{% set base = '/settings/support-actions/prepare/' + (supportedUserId | string) + '/listing' %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts') }}#children">{{ t("govuk_alpha_settings.linked.activity_back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "settings/_support-prepare-errors.njk" %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.support_prepare.listing_title", { name: supportedName }) }}</h1>
+
+      <div class="govuk-inset-text">
+        {{ t("govuk_alpha_settings.support_prepare.explainer_co_decide", { name: supportedName }) if tier == "co_decide" else t("govuk_alpha_settings.support_prepare.explainer_represent", { name: supportedName }) }}
+      </div>
+
+      <form method="post" action="{{ urlFor(base + '/review') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if titleError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="title">{{ t("listings.create.title_label") }}</label>
+          <div id="title-hint" class="govuk-hint">{{ t("listings.create.title_hint") }}</div>
+          {% if titleError %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ titleError }}</p>{% endif %}
+          <input class="govuk-input{% if titleError %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255" value="{{ values.title }}" aria-describedby="title-hint{% if titleError %} title-error{% endif %}">
+        </div>
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset" aria-describedby="type-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("listings.create.intent_legend") }}</legend>
+            <div id="type-hint" class="govuk-hint">{{ t("listings.create.intent_hint") }}</div>
+            <div class="govuk-radios govuk-radios--inline" data-module="govuk-radios">
+              {% for type in ["offer", "request"] %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="{{ 'type' if loop.first else 'type-' + type }}" name="type" type="radio" value="{{ type }}"{% if values.type == type %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="{{ 'type' if loop.first else 'type-' + type }}">{{ t("listings." + type) }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="category_id">{{ t("listings.create.category_label") }}</label>
+          <div id="category_id-hint" class="govuk-hint">{{ t("listings.create.category_hint") }}</div>
+          <select class="govuk-select" id="category_id" name="category_id" aria-describedby="category_id-hint">
+            <option value="">{{ t("listings.create.category_none") }}</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}"{% if (values.category_id | string) == (category.id | string) %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% call characterCount(10000, characterCountMessages, "description") %}
+        <div class="govuk-form-group{% if descriptionError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="description">{{ t("listings.create.description_label") }}</label>
+          <div id="description-hint" class="govuk-hint">{{ t("listings.create.description_hint") }}</div>
+          {% if descriptionError %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ descriptionError }}</p>{% endif %}
+          <textarea class="govuk-textarea govuk-js-character-count{% if descriptionError %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" maxlength="10000" aria-describedby="description-hint description-info{% if descriptionError %} description-error{% endif %}">{{ values.description }}</textarea>
+        </div>
+        {% endcall %}
+
+        <div class="govuk-form-group{% if hoursError %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--s" for="hours_estimate">{{ t("listings.create.hours_label") }} {{ t("listings.create.optional") }}</label>
+          <div id="hours_estimate-hint" class="govuk-hint">{{ t("listings.create.hours_hint") }}</div>
+          {% if hoursError %}<p id="hours_estimate-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ hoursError }}</p>{% endif %}
+          <input class="govuk-input govuk-input--width-5{% if hoursError %} govuk-input--error{% endif %}" id="hours_estimate" name="hours_estimate" type="text" inputmode="decimal" value="{{ values.hours_estimate }}" aria-describedby="hours_estimate-hint{% if hoursError %} hours_estimate-error{% endif %}">
+        </div>
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("listings.create.service_type_legend") }}</legend>
+            <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+              {% for serviceType in ["physical_only", "remote_only", "hybrid", "location_dependent"] %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="{{ 'service_type' if loop.first else 'service_type-' + serviceType }}" name="service_type" type="radio" value="{{ serviceType }}"{% if values.service_type == serviceType %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="{{ 'service_type' if loop.first else 'service_type-' + serviceType }}">{{ t("listings.service_types." + serviceType) }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="location">{{ t("listings.create.location_label") }} {{ t("listings.create.optional") }}</label>
+          <div id="location-hint" class="govuk-hint">{{ t("listings.create.location_hint") }}</div>
+          <input class="govuk-input" id="location" name="location" type="text" maxlength="255" value="{{ values.location }}" aria-describedby="location-hint">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="skill_tags">{{ t("govuk_alpha_listings.create.skill_tags_label") }}</label>
+          <div id="skill_tags-hint" class="govuk-hint">{{ t("govuk_alpha_listings.create.skill_tags_hint") }}</div>
+          <input class="govuk-input" id="skill_tags" name="skill_tags" type="text" maxlength="600" value="{{ values.skill_tags }}" aria-describedby="skill_tags-hint">
+        </div>
+
+        {% if photoAfterApproval %}
+          <p class="govuk-body">{{ t("govuk_alpha_settings.support_prepare.photo_after_approval") }}</p>
+        {% endif %}
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("onboarding.continue") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

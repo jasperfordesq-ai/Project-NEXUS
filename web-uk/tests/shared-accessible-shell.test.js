@@ -2674,7 +2674,9 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('id="data-privacy-heading"');
     expect(signed.text).toContain('id="data-export"');
     expect(signed.text).toContain('Get a copy of your data');
-    expect(signed.text).toContain('Request your data');
+    // The data copy is the instant download now (React DataExportPage).
+    expect(signed.text).toContain('Download my data');
+    expect(signed.text).toContain('href="/settings/data-export"');
     expect(signed.text).toContain('Delete your account');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
     expect(arabic.status).toBe(200);
@@ -33161,12 +33163,12 @@ describe('shared accessible frontend shell', () => {
     expect(invalidPolicyReviewResponse.headers.location).toBe('/profile/settings?status=safeguarding-policy-review-failed#safeguarding');
     expect(api.callProfileApi).toHaveBeenCalledTimes(callsAfterPolicyReview);
 
+    // The data copy is the instant download now (React DataExportPage); the old
+    // POST only forwards to it and files no staff request.
+    const settingsCallsBeforeExport = api.callUserSettingsApi.mock.calls.length;
     const dataExportResponse = await post('/profile/data-export');
-    expect(dataExportResponse.headers.location).toBe('/profile/settings?status=data-export-requested');
-    expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'POST', '/gdpr-request', {
-      type: 'portability',
-      notes: 'Accessible frontend data export request'
-    });
+    expect(dataExportResponse.headers.location).toBe('/settings/data-export');
+    expect(api.callUserSettingsApi).toHaveBeenCalledTimes(settingsCallsBeforeExport);
 
     api.callProfileApi.mockResolvedValueOnce({
       data: { backup_codes: ['otter-amber', 'cedar-river'] }

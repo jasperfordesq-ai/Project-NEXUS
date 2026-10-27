@@ -2127,23 +2127,16 @@ router.post('/safeguarding/policy-review', asyncRoute(async (req, res) => {
   return redirectTo(res, profileSettingsRedirect(status, '#safeguarding'));
 }));
 
-router.post('/data-export', asyncRoute(async (req, res) => {
+// The data copy is now the instant download at /settings/data-export, as in
+// React (DataExportPage replaced the staff "portability" request; React's
+// privacy tab no longer offers that request type). This POST used to file a
+// GDPR portability request for staff; it now only forwards an old bookmarked
+// or cached form to the download page, and files nothing.
+router.post('/data-export', (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
-
-  let status = 'data-export-requested';
-  try {
-    await callUserSettings(token, 'POST', '/gdpr-request', {
-      type: 'portability',
-      notes: 'Accessible frontend data export request'
-    });
-  } catch (error) {
-    if (redirectOnAuthError(error, res)) return undefined;
-    status = error instanceof ApiError && error.status === 409 ? 'data-export-exists' : 'data-export-failed';
-  }
-
-  return redirectTo(res, profileSettingsRedirect(status));
-}));
+  return redirectTo(res, '/settings/data-export');
+});
 
 router.post('/delete-account', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

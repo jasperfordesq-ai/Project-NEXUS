@@ -2648,6 +2648,11 @@ app.use('/notifications', doubleCsrfProtection, notificationsRoutes);
 // frontend never second-guesses it.
 app.use('/caring', requireAuth, doubleCsrfProtection, postOnly(formLimiter), caringRoutes);
 app.use('/settings/guardians', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsGuardiansRoutes);
+// A supporter adding a photo to a listing they posted for the member they
+// support: the multipart body must be parsed before CSRF reads the token.
+// The photo form only renders while this flag is set.
+app.use(/^\/settings\/support-actions\/prepare\/\d+\/listing\/\d+\/photo$/, parseMultipartForm({ maxFileSize: 25 * 1024 * 1024 }));
+app.set('supportPreparePhotoUploads', true);
 app.use('/settings/support-actions', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsSupportActionRoutes);
 // Mounted at the DEEPER paths on purpose: mounting at /settings/linked-accounts
 // would put this middleware in front of the existing hub page and change it.

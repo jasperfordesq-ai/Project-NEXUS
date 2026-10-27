@@ -3,9 +3,12 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const { randomUUID } = require('crypto');
 const express = require('express');
 const {
   callUserSettingsApi,
+  downloadMemberDataExport,
+  getMemberDataExportHistory,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -81,6 +84,8 @@ const SETTINGS_STATUS_MESSAGES = {
   'link-exists': 'A link with this member already exists.',
   'link-max': 'You have reached the maximum number of linked accounts.',
   'link-failed': 'Sorry, we could not complete that request. Please try again.',
+  'link-tiers-member-approval': 'Only the person you support can give you more access.',
+  'support-not-allowed': 'You cannot do this for them. What you can do may have changed.',
   'message-access-requested': 'They have been asked. Viewing only starts if they say yes.',
   'message-access-withdrawn': 'Stopped. They can no longer view your messages.',
   // Every refusal from the read-only message viewer lands here. Its copy has
@@ -255,8 +260,46 @@ function relationshipRowsFromPayload(payload, keys) {
   return [];
 }
 
+// Support levels (React SubAccountsManager / Laravel SupportTiers). Mirror of
+// SupportTiers::resolve(): the legacy booleans are the floor, an explicit tiers
+// object wins per capability, and anything unrecognised degrades toward LESS
+// power. `messages` is deliberately not resolved here — message access is the
+// separate consent flow, rendered from the server-derived `message_access`.
+const SUPPORT_TIER_RANK = Object.freeze({ none: 0, assist: 1, co_decide: 2, represent: 3 });
+const SUPPORT_TIER_CAPABILITIES = Object.freeze(['activity', 'listings', 'credits']);
+// What a member may grant for listings/credits. `assist` is not offered: it has
+// no listing or credit action behind it, and showing it would present a state
+// that does nothing (React GRANTABLE_ACTION_TIERS).
+const GRANTABLE_ACTION_TIERS = Object.freeze(['none', 'co_decide', 'represent']);
+
+function isSupportTier(value) {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(SUPPORT_TIER_RANK, value);
+}
+
+function resolveSupportTiers(rawPermissions) {
+  const permissions = jsonObjectFrom(rawPermissions);
+  const resolved = {
+    activity: permissions.can_view_activity ? 'assist' : 'none',
+    listings: permissions.can_manage_listings ? 'represent' : 'none',
+    credits: permissions.can_transact ? 'represent' : 'none'
+  };
+  const tiers = permissions.tiers && typeof permissions.tiers === 'object' && !Array.isArray(permissions.tiers)
+    ? permissions.tiers
+    : {};
+  for (const capability of SUPPORT_TIER_CAPABILITIES) {
+    if (isSupportTier(tiers[capability])) resolved[capability] = tiers[capability];
+  }
+  return resolved;
+}
+
+/** A tier that actually lets a supporter prepare or act (co_decide or above). */
+function tierPermitsAction(tier) {
+  return tier === 'co_decide' || tier === 'represent';
+}
+
 function normalizeRelationship(row, t) {
   const permissions = jsonObjectFrom(row && row.permissions);
+  const tiers = resolveSupportTiers(row && row.permissions);
   const first = trimmed(row && row.first_name);
   const last = trimmed(row && row.last_name);
   const composite = `${first} ${last}`.trim();
@@ -289,7 +332,20 @@ function normalizeRelationship(row, t) {
     permissions: SETTINGS_LINK_PERMISSIONS.reduce((acc, key) => {
       acc[key] = Boolean(permissions[key]);
       return acc;
-    }, {})
+    }, {}),
+    tiers,
+    // A coordinator-recorded arrangement: the levels are the supported
+    // member's to set on their guardians page, so no control is offered here.
+    staffRecorded: Boolean(row && row.staff_recorded),
+    // A supporter may only lower or keep a level — raising it belongs to the
+    // supported member (SubAccountService::updatePermissions refuses an
+    // expansion with MEMBER_APPROVAL_REQUIRED).
+    supporterTierOptions: {
+      listings: GRANTABLE_ACTION_TIERS.filter((tier) => SUPPORT_TIER_RANK[tier] <= SUPPORT_TIER_RANK[tiers.listings]),
+      credits: GRANTABLE_ACTION_TIERS.filter((tier) => SUPPORT_TIER_RANK[tier] <= SUPPORT_TIER_RANK[tiers.credits])
+    },
+    canPrepareListing: tierPermitsAction(tiers.listings),
+    canPrepareTransfer: tierPermitsAction(tiers.credits)
   };
 }
 
@@ -526,6 +582,8 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
       'link-exists',
       'link-max',
       'link-failed',
+      'link-tiers-member-approval',
+      'support-not-allowed',
       'link-vetting-required',
       'link-contact-restricted',
       'link-safeguarding-unavailable',
@@ -547,7 +605,8 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
       field: `perm_${permission}`,
       label: res.locals.t(linkPermissionLabelKey(permission)),
       checkedByDefault: permission === 'can_view_activity'
-    }))
+    })),
+    grantableTiers: GRANTABLE_ACTION_TIERS
   });
 }));
 
@@ -710,6 +769,114 @@ router.get('/data-rights', (req, res) => {
   });
 });
 
+/* ---------- Instant personal-data download (React DataExportPage) ---------- */
+
+const DATA_EXPORT_FORMATS = Object.freeze(['json', 'zip']);
+const DATA_EXPORT_ERRORS = Object.freeze({
+  'export-rate-limited': 'govuk_alpha_settings.data_export.error_rate_limit',
+  'export-failed': 'govuk_alpha_settings.data_export.error_build_failed'
+});
+
+function formatBytes(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = value;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size.toFixed(size < 10 && unit > 0 ? 1 : 0)} ${units[unit]}`;
+}
+
+function formatDateTime(value) {
+  const text = trimmed(value);
+  if (text === '') return '';
+  const normalized = text.replace(' ', 'T');
+  const date = new Date(/[zZ]$|[+-]\d{2}:?\d{2}$/.test(normalized) ? normalized : `${normalized}Z`);
+  if (Number.isNaN(date.getTime())) return text;
+  return new Intl.DateTimeFormat(getRequestIntlLocale(), {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+  }).format(date);
+}
+
+// Only a plain filename survives; anything else (paths, quotes, CR/LF) falls
+// back to a neutral name so an upstream value can never inject a header.
+function safeExportFilename(disposition, format) {
+  const match = /filename="?([^";\r\n]+)"?/i.exec(String(disposition || ''));
+  const candidate = match ? match[1].trim() : '';
+  return /^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(json|zip)$/.test(candidate)
+    ? candidate
+    : `personal-data.${format}`;
+}
+
+router.get('/data-export', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  let history = [];
+  let historyError = false;
+  try {
+    const data = dataFrom(await getMemberDataExportHistory(token));
+    history = (Array.isArray(data.exports) ? data.exports : []).map((row) => ({
+      id: positiveInteger(row && row.id) || 0,
+      format: trimmed(row && row.format).toUpperCase(),
+      requestedLabel: formatDateTime(row && row.requested_at),
+      sizeLabel: formatBytes(row && row.file_size_bytes)
+    }));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    historyError = true;
+  }
+
+  const status = typeof req.query.status === 'string' ? req.query.status : '';
+
+  return res.render('settings/data-export', {
+    title: res.locals.t('govuk_alpha_settings.data_export.title'),
+    activeNav: 'account',
+    errorMessage: DATA_EXPORT_ERRORS[status] ? res.locals.t(DATA_EXPORT_ERRORS[status]) : '',
+    pageHasErrors: Boolean(DATA_EXPORT_ERRORS[status]),
+    formats: DATA_EXPORT_FORMATS.map((format) => ({
+      value: format,
+      label: res.locals.t(`govuk_alpha_settings.data_export.format_${format}`),
+      hint: res.locals.t(`govuk_alpha_settings.data_export.format_${format}_help`),
+      checked: format === 'json'
+    })),
+    // Laravel replays an export for a repeated key instead of building a new
+    // one, so a double press cannot use up two of the five daily exports.
+    idempotencyKey: randomUUID(),
+    history,
+    historyError
+  });
+}));
+
+router.post('/data-export', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const format = allowedValue(req.body.format, DATA_EXPORT_FORMATS, 'json');
+  const key = trimmed(req.body.idempotency_key, 191);
+
+  let download;
+  try {
+    download = await downloadMemberDataExport(token, format, key.length >= 8 ? key : null);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    const status = error instanceof ApiError && error.status === 429 ? 'export-rate-limited' : 'export-failed';
+    return redirectTo(res, settingsStatusRedirect('/settings/data-export', status, '#download'));
+  }
+
+  const headers = download.headers || {};
+  res.set('Content-Type', format === 'zip' ? 'application/zip' : 'application/json');
+  res.set('Content-Disposition', `attachment; filename="${safeExportFilename(headers['content-disposition'], format)}"`);
+  // A personal-data archive must never be kept by a shared cache or browser history.
+  res.set('Cache-Control', 'private, no-store');
+  res.set('Pragma', 'no-cache');
+  res.set('X-Content-Type-Options', 'nosniff');
+  return res.status(200).send(download.body);
+}));
+
 router.get('/insurance', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -823,6 +990,86 @@ router.post('/linked-accounts/permissions', asyncRoute(async (req, res) => {
   return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', status, '#children'));
 }));
 
+// The tier fields a support-level form may carry. `messages` is never read:
+// message access is the consent flow, not a level anyone can set here.
+function tierPayloadFrom(body, { activityAsCheckbox = false } = {}) {
+  const tiers = {};
+  if (activityAsCheckbox) {
+    tiers.activity = checked(body.tier_activity) || body.tier_activity === 'assist' ? 'assist' : 'none';
+  } else if (['none', 'assist'].includes(trimmed(body.tier_activity))) {
+    tiers.activity = trimmed(body.tier_activity);
+  }
+  for (const capability of ['listings', 'credits']) {
+    const value = trimmed(body[`tier_${capability}`]);
+    if (GRANTABLE_ACTION_TIERS.includes(value)) tiers[capability] = value;
+  }
+  return tiers;
+}
+
+function apiErrorCodes(error) {
+  const data = error && error.data && typeof error.data === 'object' ? error.data : {};
+  const codes = [data.code, data.error];
+  if (Array.isArray(data.errors)) codes.push(...data.errors.map((item) => item && item.code));
+  return codes.filter((code) => typeof code === 'string').map((code) => code.toUpperCase());
+}
+
+/**
+ * SUPPORTER side (React SubAccountsManager handleTierChange): lower or keep a
+ * level. Raising belongs to the supported member, and Laravel refuses it with
+ * MEMBER_APPROVAL_REQUIRED, which is said plainly rather than as a generic fail.
+ */
+router.post('/linked-accounts/tiers', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const relationshipId = positiveInteger(req.body.relationship_id);
+  const tiers = tierPayloadFrom(req.body);
+  if (relationshipId === null || Object.keys(tiers).length === 0) {
+    return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', 'link-failed', '#children'));
+  }
+
+  let status = 'link-permissions-saved';
+  try {
+    await callSettings(token, 'PUT', `/sub-accounts/${encodeURIComponent(relationshipId)}/permissions`, {
+      permissions: { tiers }
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = apiErrorCodes(error).includes('MEMBER_APPROVAL_REQUIRED')
+      ? 'link-tiers-member-approval'
+      : (error instanceof ApiError && error.status === 404 ? 'link-failed' : linkedFailureStatus(error));
+  }
+
+  return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', status, '#children'));
+}));
+
+/**
+ * SUPPORTED MEMBER side (React handleMemberTierChange): the only party who may
+ * grant or raise a supporter's level. Raising re-runs Laravel's safeguarding
+ * contact check, whose refusal keeps its own message.
+ */
+router.post('/linked-accounts/member-tiers', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const relationshipId = positiveInteger(req.body.relationship_id);
+  if (relationshipId === null) {
+    return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', 'link-failed', '#parents'));
+  }
+
+  let status = 'link-permissions-saved';
+  try {
+    await callSettings(token, 'PUT', `/parent-accounts/${encodeURIComponent(relationshipId)}/permissions`, {
+      tiers: tierPayloadFrom(req.body, { activityAsCheckbox: true })
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    status = error instanceof ApiError && error.status === 404 ? 'link-failed' : linkedFailureStatus(error);
+  }
+
+  return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', status, '#parents'));
+}));
+
 router.post('/linked-accounts/revoke', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -892,3 +1139,6 @@ router.post('/insurance', asyncRoute(async (req, res) => {
 
 module.exports = router;
 module.exports.normalizeRelationship = normalizeRelationship;
+module.exports.resolveSupportTiers = resolveSupportTiers;
+module.exports.tierPermitsAction = tierPermitsAction;
+module.exports.GRANTABLE_ACTION_TIERS = GRANTABLE_ACTION_TIERS;

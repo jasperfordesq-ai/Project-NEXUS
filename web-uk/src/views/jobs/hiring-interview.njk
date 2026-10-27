@@ -1,0 +1,66 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% include "jobs/_hiring-errors.njk" %}
+      <span class="govuk-caption-l">{{ t("govuk_alpha_jobs.hiring.candidate_caption", { name: application.applicantName }) }}</span>
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_jobs.hiring.schedule_interview") }}</h1>
+      <p class="govuk-body">{{ job.title }}</p>
+
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ application.id ~ '/interview') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukRadios({
+          name: "interview_type",
+          fieldset: { legend: { text: t("govuk_alpha_jobs.hiring.interview_type_legend"), classes: "govuk-fieldset__legend--m" } },
+          items: typeOptions
+        }) }}
+
+        {{ nexusDateTimeInput({
+          name: "scheduled_at",
+          legend: t("govuk_alpha_jobs.hiring.interview_when_legend"),
+          legendClasses: "govuk-fieldset__legend--m",
+          hint: t("govuk_alpha_jobs.hiring.interview_when_hint"),
+          value: whenParts,
+          errorMessage: whenError.message if whenError else undefined,
+          errorFields: whenError.fields if whenError else []
+        }, t) }}
+
+        {{ govukSelect({
+          id: "duration_mins",
+          name: "duration_mins",
+          label: { text: t("govuk_alpha_jobs.hiring.interview_duration_label"), classes: "govuk-label--m" },
+          items: durationOptions
+        }) }}
+
+        {{ govukInput({
+          id: "location_notes",
+          name: "location_notes",
+          label: { text: t("govuk_alpha_jobs.hiring.interview_location_label"), classes: "govuk-label--m" },
+          hint: { text: t("govuk_alpha_jobs.hiring.interview_location_hint") },
+          value: values.location_notes,
+          attributes: { maxlength: "500" }
+        }) }}
+
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.hiring.interview_submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.hiring.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
