@@ -293,19 +293,18 @@ describe('CreateJobPage', () => {
                 cursor: null,
                 has_more: false,
               },
-              meta: {},
             });
           }
           if (url.includes('/v2/jobs/5/team')) {
-            return Promise.resolve({ success: true, data: [teamRow], meta: {} });
+            return Promise.resolve({ success: true, data: [teamRow] });
           }
           if (url.includes('/v2/jobs/salary-benchmark')) {
-            return Promise.resolve({ success: false, data: null, meta: {} });
+            return Promise.resolve({ success: false, data: null });
           }
           if (url.includes('/v2/jobs/5')) {
-            return Promise.resolve({ success: true, data: mockVacancy, meta: {} });
+            return Promise.resolve({ success: true, data: mockVacancy });
           }
-          return Promise.resolve({ success: true, data: [], meta: {} });
+          return Promise.resolve({ success: true, data: [] });
         });
         vi.mocked(api.post).mockResolvedValue({
           success: true,

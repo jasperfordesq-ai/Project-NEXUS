@@ -14,7 +14,9 @@ import plAbout from '../../../public/locales/pl/about.json';
  * Dutch and Polish. These must match the accessible frontend's quarter labels
  * in lang/nl/govuk_alpha_tbi_pages.php and lang/pl/govuk_alpha_tbi_pages.php.
  */
-const quarters = (about: { strategic_plan: Record<string, string> }) => [
+const quarters = (about: {
+  strategic_plan: { roadmap_q1: string; roadmap_q2: string; roadmap_q3: string; roadmap_q4: string };
+}) => [
   about.strategic_plan.roadmap_q1,
   about.strategic_plan.roadmap_q2,
   about.strategic_plan.roadmap_q3,
