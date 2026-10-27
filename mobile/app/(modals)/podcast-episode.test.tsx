@@ -4,7 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { RefreshControl } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 const mockShow = jest.fn();
 const mockSeekToSeconds = jest.fn();
@@ -58,6 +59,22 @@ describe('PodcastEpisodeScreen', () => {
     const { findByLabelText } = render(<PodcastEpisodeScreen />);
     fireEvent.press(await findByLabelText('Jump to 12:34 — The exchange'));
     expect(mockSeekToSeconds).toHaveBeenCalledWith(754);
+  });
+
+  /**
+   * Pull-to-refresh used to swap the whole page for a spinner, which unmounted the player
+   * mid-episode and left its sound running with no controls attached to it.
+   */
+  it('keeps the player on screen while the episode refreshes', async () => {
+    const { getByText, UNSAFE_getByType } = render(<PodcastEpisodeScreen />);
+    await waitFor(() => expect(getByText('Full accessible transcript.')).toBeTruthy());
+    jest.mocked(getPodcastEpisode).mockReturnValue(new Promise(() => undefined));
+    const mountedBefore = mockPlayerProps.mock.calls.length;
+
+    act(() => { UNSAFE_getByType(RefreshControl).props.onRefresh(); });
+
+    expect(getByText('Full accessible transcript.')).toBeTruthy();
+    expect(mockPlayerProps.mock.calls.length).toBeGreaterThan(mountedBefore);
   });
 
   it('loads the episode and saves a reaction before updating its label', async () => {

@@ -20,7 +20,13 @@ export function loadAudioPlayer(source: AudioSource, onStatus: (status: AudioSta
       clearTimeout(timer);
       subscription?.remove();
       signal.removeEventListener('abort', abort);
+      // `remove()` only drops the player from expo-audio's registry; the native player keeps
+      // playing (and holding the lock-screen controls) with nothing in the app able to pause it.
+      // `release()` is what expo-audio's own hook uses to actually free it.
+      try { player.pause(); } catch { /* already gone */ }
+      try { player.clearLockScreenControls(); } catch { /* never activated */ }
       player.remove();
+      player.release();
     };
     const fail = (message: string) => {
       release();

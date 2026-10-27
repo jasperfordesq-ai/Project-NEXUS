@@ -111,7 +111,8 @@ function PodcastEpisodeScreenInner() {
     }
   }
 
-  if (state.isLoading) return <SafeAreaView className="flex-1 items-center justify-center bg-background" style={{ flex: 1, backgroundColor: theme.bg }}><LoadingSpinner /></SafeAreaView>;
+  // A refresh keeps the episode on screen: replacing it with a spinner would unmount the player mid-episode.
+  if (state.isLoading && !state.data) return <SafeAreaView className="flex-1 items-center justify-center bg-background" style={{ flex: 1, backgroundColor: theme.bg }}><LoadingSpinner /></SafeAreaView>;
   const episode = state.data;
   return (
     <SafeAreaView className="flex-1 bg-background" style={{ flex: 1 }}>

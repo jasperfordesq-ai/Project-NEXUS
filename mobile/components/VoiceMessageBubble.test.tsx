@@ -45,6 +45,7 @@ const sound = {
   pause: mockPause,
   play: mockPlay,
   remove: mockUnload,
+  release: jest.fn(),
   seekTo: mockSeek,
   isLoaded: true,
   currentStatus: { isLoaded: true, currentTime: 0, duration: 65, playing: false, playbackState: 'readyToPlay' },
