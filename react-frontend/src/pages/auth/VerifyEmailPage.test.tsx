@@ -7,7 +7,7 @@
  * Tests for VerifyEmailPage
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
@@ -258,6 +258,58 @@ describe('VerifyEmailPage', () => {
       await waitFor(() => expect(mockApi.post).toHaveBeenCalled());
       await waitFor(() => expect(screen.queryByRole('status', { busy: true })).not.toBeInTheDocument());
       await waitFor(() => expect(robots()).toBe('noindex, nofollow'));
+    });
+  });
+});
+
+// A new member signed up on the way to an emailed page; the server put that page
+// in the verification link (?next=), usually opened in a new tab.
+describe('VerifyEmailPage — carrying the page the member was going to', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 2, name: 'Test Tenant', slug: 'test', settings: {} },
+      branding: { name: 'Test Community', logo_url: null },
+      tenantPath: (p: string) => `/test${p}`,
+      hasModule: vi.fn(() => true),
+    });
+    vi.mocked(mockApi.post).mockResolvedValueOnce({ success: true });
+    window.history.pushState({}, '', '/test/verify-email?token=valid-token&next=%2Ftest%2Fgroups%2F7');
+    const { useSearchParams } = await import('react-router-dom');
+    vi.mocked(useSearchParams).mockReturnValue([
+      new URLSearchParams('token=valid-token&next=%2Ftest%2Fgroups%2F7'),
+      vi.fn(),
+    ] as ReturnType<typeof useSearchParams>);
+  });
+
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+  });
+
+  it('sends a signed-out member to sign in with the page kept in ?next=', async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    render(<VerifyEmailPage />);
+    await waitFor(() => {
+      expect(screen.getAllByRole('link').map((l) => l.getAttribute('href')))
+        .toContain('/test/login?next=%2Ftest%2Fgroups%2F7');
+    });
+  });
+
+  it('offers a signed-in member a Continue button to that page', async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: { id: 1 } });
+    render(<VerifyEmailPage />);
+    const link = await screen.findByRole('link', { name: 'Continue' });
+    expect(link.getAttribute('href')).toBe('/test/groups/7');
+  });
+
+  it('ignores a ?next= pointing at another site', async () => {
+    mockUseAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    window.history.pushState({}, '', '/test/verify-email?token=valid-token&next=https%3A%2F%2Fevil.test');
+    render(<VerifyEmailPage />);
+    await waitFor(() => {
+      const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+      expect(hrefs).toContain('/test/login');
+      expect(hrefs.join(' ')).not.toContain('evil');
     });
   });
 });

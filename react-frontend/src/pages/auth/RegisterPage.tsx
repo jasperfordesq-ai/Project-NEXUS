@@ -458,6 +458,8 @@ export function RegisterPage() {
       newsletter_opt_in: newsletterOptIn,
       invite_code: requiresInviteCode ? inviteCode.trim().toUpperCase() : undefined,
       form_started_at: formStartTime,
+      // Survives the verification email, which is often opened in a new tab.
+      return_to: destination === defaultDestination ? undefined : destination,
     } as Parameters<typeof register>[0]);
 
     if (result.success) {

@@ -34,8 +34,15 @@ class UserRegistered
 {
     use Dispatchable, InteractsWithSockets;
 
+    /**
+     * @param string|null $returnTo Same-site page the member was on their way
+     *                              to when they signed up (already checked with
+     *                              AuthReturnPath::safe()); the verification
+     *                              link carries it as ?next=.
+     */
     public function __construct(
         public readonly User $user,
         public readonly int $tenantId,
+        public readonly ?string $returnTo = null,
     ) {}
 }

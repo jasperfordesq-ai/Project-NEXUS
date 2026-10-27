@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use App\Support\AuthReturnPath;
 
 /**
  * Sends a welcome notification (email + in-app) when a new user registers.
@@ -98,7 +99,7 @@ class SendWelcomeNotification
 
                 if ($isPending) {
                     $verificationToken = $this->buildVerificationToken();
-                    $verifyUrl = $this->buildVerificationUrl($verificationToken['token']);
+                    $verifyUrl = $this->buildVerificationUrl($verificationToken['token'], $event->returnTo);
 
                     $html = EmailTemplateBuilder::make()
                         ->theme('success')
@@ -234,11 +235,19 @@ class SendWelcomeNotification
         ");
     }
 
-    private function buildVerificationUrl(string $token): string
+    private function buildVerificationUrl(string $token, ?string $returnTo = null): string
     {
         $appUrl = TenantContext::getFrontendUrl();
         $basePath = TenantContext::getSlugPrefix();
+        $url = $appUrl . $basePath . '/verify-email?token=' . $token;
 
-        return $appUrl . $basePath . '/verify-email?token=' . $token;
+        // The page the member was on their way to: the verification link is
+        // usually opened in a new tab, where nothing else remembers it.
+        $safeReturn = AuthReturnPath::safe($returnTo);
+        if ($safeReturn !== null) {
+            $url .= '&next=' . rawurlencode($safeReturn);
+        }
+
+        return $url;
     }
 }

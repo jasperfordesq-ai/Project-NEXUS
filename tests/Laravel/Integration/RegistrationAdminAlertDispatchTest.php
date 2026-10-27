@@ -70,4 +70,42 @@ class RegistrationAdminAlertDispatchTest extends TestCase
                 && (int) $event->user->tenant_id === $this->syntheticTenantId;
         });
     }
+
+    /**
+     * A member signing up on the way to an emailed page: the page reaches the
+     * event (and so the verification link), but only if it is on this site.
+     *
+     * @dataProvider returnToCases
+     */
+    public function test_endpoint_carries_only_a_same_site_return_page_to_the_event(mixed $returnTo, ?string $expected): void
+    {
+        Event::fake([UserRegistered::class]);
+        $email = 'c1-return-' . Str::lower(Str::random(12)) . '@gmail.com';
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'C1ReturnRegistrant',
+            'last_name' => 'Test',
+            'email' => $email,
+            'location' => 'Synthetic test location',
+            'phone' => '+15551234567',
+            'password' => 'Xq7!vM2pLw9zRt4B',
+            'password_confirmation' => 'Xq7!vM2pLw9zRt4B',
+            'terms_accepted' => true,
+            'return_to' => $returnTo,
+        ]);
+
+        $response->assertStatus(201);
+        Event::assertDispatched(UserRegistered::class, fn (UserRegistered $event): bool =>
+            $event->user->email === $email && $event->returnTo === $expected);
+    }
+
+    /** @return array<string, array{0: mixed, 1: ?string}> */
+    public static function returnToCases(): array
+    {
+        return [
+            'emailed page' => ['/hour-timebank/groups/7?tab=members', '/hour-timebank/groups/7?tab=members'],
+            'another site' => ['https://evil.test/phish', null],
+            'protocol-relative' => ['//evil.test', null],
+            'none' => [null, null],
+        ];
+    }
 }

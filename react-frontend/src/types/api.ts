@@ -227,6 +227,9 @@ export interface RegisterRequest {
   // submissions that arrive < 5s later as bot probes (mirrors the client-side
   // gate so a scripted POST can't bypass it).
   form_started_at?: number;
+  // Same-site page the member was on their way to (an emailed link). The
+  // server re-validates it and puts it in the verification link as ?next=.
+  return_to?: string;
 }
 
 export interface RegisterResponse {

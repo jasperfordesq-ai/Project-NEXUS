@@ -591,7 +591,7 @@ class RegistrationService
 
         // Dispatch UserRegistered event (triggers welcome notification, etc.)
         try {
-            event(new UserRegistered($user, $tenantId));
+            event(new UserRegistered($user, $tenantId, \App\Support\AuthReturnPath::safe($data['return_to'] ?? null)));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('UserRegistered event dispatch failed', [
                 'user_id' => null,

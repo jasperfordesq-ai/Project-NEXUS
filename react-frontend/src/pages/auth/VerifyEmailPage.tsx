@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import ArrowLeft from 'lucide-react/icons/arrow-left';
@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { buildReturnTarget, explicitAuthReturn } from '@/lib/auth-return';
 import { api } from '@/lib/api';
 
 type VerifyState = 'loading' | 'success' | 'error';
@@ -39,6 +40,14 @@ export function VerifyEmailPage() {
   const dashboardPath = tenantPath(dashboardEnabled ? '/dashboard' : '/');
   const { isAuthenticated } = useAuth();
   const toast = useToast();
+
+  // A member who signed up on the way to an emailed page gets that page in the
+  // verification link (?next=, added by the server), often in a new tab where
+  // nothing else remembers it. Carry it on to sign-in. See lib/auth-return.ts.
+  const location = useLocation();
+  const destination = explicitAuthReturn(location.state, location.search);
+  const continuePath = destination || dashboardPath;
+  const loginPath = buildReturnTarget(tenantPath('/login'), destination || undefined).to;
 
   /*
    * Whether this member is still waiting on an administrator after verifying.
@@ -193,11 +202,13 @@ export function VerifyEmailPage() {
             )}
 
             {isAuthenticated ? (
-              <Button as={Link} to={dashboardPath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
-                {dashboardEnabled ? t('verify_email.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
+              <Button as={Link} to={continuePath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+                {destination
+                  ? t('register.continue')
+                  : dashboardEnabled ? t('verify_email.go_to_dashboard') : t('not_found.go_home', { ns: 'utility' })}
               </Button>
             ) : (
-              <Button as={Link} to={tenantPath('/login')} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
+              <Button as={Link} to={loginPath} className="w-full bg-gradient-to-r from-accent to-accent-gradient-end text-white">
                 {requiresApproval ? t('verify_email.back_to_login') : t('verify_email.go_to_login')}
               </Button>
             )}
@@ -253,7 +264,7 @@ export function VerifyEmailPage() {
               </p>
             )}
 
-            <Button as={Link} to={isAuthenticated ? dashboardPath : tenantPath('/login')}
+            <Button as={Link} to={isAuthenticated ? continuePath : loginPath}
               variant="flat"
               className="w-full bg-theme-elevated text-theme-primary"
               startContent={<ArrowLeft aria-hidden="true" className="w-4 h-4" />}
