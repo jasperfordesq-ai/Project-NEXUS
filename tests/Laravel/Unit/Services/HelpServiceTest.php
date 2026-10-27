@@ -92,4 +92,71 @@ class HelpServiceTest extends TestCase
         // No fallback when category filter is set
         $this->assertSame([], $result);
     }
+
+    /**
+     * React dbf875e5: FAQ answers are admin-authored HTML, so a search must
+     * match what a member can read, never the markup ("strong", "href").
+     */
+    private function mockFaqRows(array $rows): void
+    {
+        DB::shouldReceive('table')->with('help_faqs')->andReturnSelf();
+        DB::shouldReceive('where')->andReturnSelf();
+        DB::shouldReceive('orderBy')->andReturnSelf();
+        DB::shouldReceive('get')->andReturn(collect($rows));
+    }
+
+    public function test_search_does_not_match_html_markup_in_answers(): void
+    {
+        $this->mockFaqRows([
+            (object) ['id' => 1, 'question' => 'Formatting', 'answer' => '<p><strong>Bold</strong> and <a href="https://example.org">a link</a></p>', 'category' => 'General'],
+        ]);
+
+        $this->assertSame([], $this->service->getFaqs(2, null, 'strong'));
+    }
+
+    public function test_search_ignores_link_targets_and_attributes(): void
+    {
+        $this->mockFaqRows([
+            (object) ['id' => 1, 'question' => 'Links', 'answer' => '<a href="https://example.org/wallet">Read more</a>', 'category' => 'General'],
+        ]);
+
+        $this->assertSame([], $this->service->getFaqs(2, null, 'href'));
+        $this->assertSame([], $this->service->getFaqs(2, null, 'wallet'));
+    }
+
+    public function test_search_matches_visible_answer_text_case_insensitively(): void
+    {
+        $this->mockFaqRows([
+            (object) ['id' => 1, 'question' => 'Formatting', 'answer' => '<p><strong>Bold</strong> text</p>', 'category' => 'General'],
+            (object) ['id' => 2, 'question' => 'Other', 'answer' => '<p>Nothing here</p>', 'category' => 'General'],
+        ]);
+
+        $result = $this->service->getFaqs(2, null, 'BOLD TEXT');
+
+        $this->assertCount(1, $result);
+        $this->assertSame([1], array_column($result[0]['faqs'], 'id'));
+        // The answer itself is returned untouched, markup and all.
+        $this->assertSame('<p><strong>Bold</strong> text</p>', $result[0]['faqs'][0]['answer']);
+    }
+
+    public function test_search_matches_decoded_entities_and_the_question(): void
+    {
+        $this->mockFaqRows([
+            (object) ['id' => 1, 'question' => 'Fees &amp; costs', 'answer' => '<p>None</p>', 'category' => 'General'],
+            (object) ['id' => 2, 'question' => 'Rules', 'answer' => '<p>Give &amp; take</p>', 'category' => 'General'],
+        ]);
+
+        $result = $this->service->getFaqs(2, null, '&');
+
+        $this->assertSame([1, 2], array_column($result[0]['faqs'], 'id'));
+    }
+
+    public function test_search_does_not_merge_words_across_tags(): void
+    {
+        $this->mockFaqRows([
+            (object) ['id' => 1, 'question' => 'List', 'answer' => '<li>first</li><li>second</li>', 'category' => 'General'],
+        ]);
+
+        $this->assertSame([], $this->service->getFaqs(2, null, 'firstsecond'));
+    }
 }

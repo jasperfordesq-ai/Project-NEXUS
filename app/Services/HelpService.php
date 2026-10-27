@@ -32,19 +32,24 @@ class HelpService
             $query->where('category', $categoryId);
         }
 
-        if ($search) {
-            $term = '%' . $search . '%';
-            $query->where(function ($q) use ($term) {
-                $q->where('question', 'LIKE', $term)
-                  ->orWhere('answer', 'LIKE', $term);
-            });
-        }
-
+        // 🔴 Answers are admin-authored HTML. A SQL LIKE on the column matched
+        // the markup, so "strong" or "href" found every formatted answer and a
+        // link's target matched words the member never sees (React dbf875e5
+        // fixed this client-side). The search is therefore applied in PHP to
+        // the visible text of the tenant's published rows, which are few. The
+        // tenant and category scoping above is unchanged.
         $faqs = $query->orderBy('category')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
             ->all();
+
+        $needle = $search !== null ? $this->visibleText($search) : '';
+        if ($needle !== '') {
+            $faqs = array_values(array_filter($faqs, fn ($faq): bool =>
+                mb_stripos($this->visibleText((string) ($faq->question ?? '')), $needle) !== false
+                || mb_stripos($this->visibleText((string) ($faq->answer ?? '')), $needle) !== false));
+        }
 
         // Fallback to global defaults
         if (empty($faqs) && ! $categoryId && ! $search) {
@@ -73,5 +78,18 @@ class HelpService
         }
 
         return array_values($grouped);
+    }
+
+    /**
+     * What a reader sees of an HTML fragment: tags removed (each one treated as
+     * a word break, so "<li>a</li><li>b</li>" never reads "ab"), entities
+     * decoded, whitespace collapsed.
+     */
+    private function visibleText(string $html): string
+    {
+        $text = strip_tags(str_replace('<', ' <', $html));
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim((string) preg_replace('/\s+/u', ' ', $text));
     }
 }
