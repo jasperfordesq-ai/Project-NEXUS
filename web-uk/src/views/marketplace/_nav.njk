@@ -16,6 +16,9 @@
     <li class="govuk-tabs__list-item{% if active == 'saved' %} govuk-tabs__list-item--selected{% endif %}">
       <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/saved') }}" {% if active == 'saved' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.saved") }}</a>
     </li>
+    <li class="govuk-tabs__list-item{% if active == 'lists' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/lists') }}" {% if active == 'lists' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.wish_lists.nav") }}</a>
+    </li>
     <li class="govuk-tabs__list-item{% if active == 'offers' %} govuk-tabs__list-item--selected{% endif %}">
       <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/offers') }}" {% if active == 'offers' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.offers") }}</a>
     </li>
@@ -39,6 +42,9 @@
     </li>
     <li class="govuk-tabs__list-item{% if active == 'onboarding' %} govuk-tabs__list-item--selected{% endif %}">
       <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/onboarding') }}" {% if active == 'onboarding' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.onboarding") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'payouts' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/payouts') }}" {% if active == 'payouts' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.payouts.nav") }}</a>
     </li>
     <li class="govuk-tabs__list-item{% if active == 'shipping' %} govuk-tabs__list-item--selected{% endif %}">
       <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/shipping') }}" {% if active == 'shipping' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.shipping") }}</a>

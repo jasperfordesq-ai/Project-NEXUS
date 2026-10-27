@@ -1,0 +1,87 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  "Near me" — React MarketplaceMapSearchPage without the map (27 Oct 2026). The
+  centre is the location saved in the member's profile; the page never asks the
+  browser for the device's location.
+#}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.nearby.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.nearby.description") }}</p>
+
+  {% if not hasLocation %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.nearby.no_location_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.nearby.no_location_detail") }}</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_commerce.nearby.edit_profile") }}</a></p>
+    </div>
+  {% else %}
+    <form method="get" action="{{ urlFor('/marketplace/nearby') }}" class="govuk-!-margin-bottom-6">
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="q">{{ t("marketplace.search_label") }}</label>
+            <input class="govuk-input" id="q" name="q" type="search" value="{{ query }}">
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-quarter">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="radius">{{ t("near_me.label") }}</label>
+            <select class="govuk-select" id="radius" name="radius">
+              {% for option in radiusOptions %}
+                <option value="{{ option }}"{% if radius == option %} selected{% endif %}>{{ t("near_me.options." + (option | string)) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      {% if categories.length %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="category_id">{{ t("polish_commerce.marketplace_category_label") }}</label>
+          <select class="govuk-select" id="category_id" name="category_id">
+            <option value="">{{ t("polish_commerce.marketplace_category_all") }}</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if category.id == categoryId %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("actions.search") }}</button>
+    </form>
+
+    {% if loadFailed %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ t("govuk_alpha_commerce.nearby.error") }}</p></div>
+        </div>
+      </div>
+    {% elif not listings.length %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("govuk_alpha_commerce.nearby.empty") }}</p>
+      </div>
+    {% else %}
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.marketplace_advanced.results_heading") }}</h2>
+      <div class="nexus-alpha-card-list">
+        {% for item in listings %}
+          <article class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ item.title }}</a></h3>
+              {{ govukTag({ text: item.cardPriceLabel, classes: (item.cardPriceTagClass) }) }}
+            </div>
+            {% if item.distanceLabel %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.distanceLabel }}</p>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

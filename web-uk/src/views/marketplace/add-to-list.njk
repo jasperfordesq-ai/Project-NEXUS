@@ -1,0 +1,51 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Add a listing to one of the member's wish lists, or to a new one (27 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.back_to_listing") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% include "marketplace/_form-error-summary.njk" %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/add-to-list') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group{% if fieldErrors.collection_id or fieldErrors.new_name %} govuk-form-group--error{% endif %}">
+          <fieldset class="govuk-fieldset"{% if fieldErrors.collection_id %} aria-describedby="collection_id-error"{% endif %}>
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.wish_lists.add_heading", { title: item.title }) }}</h1>
+            </legend>
+            {% if fieldErrors.collection_id %}<p id="collection_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_prefix") }}</span> {{ fieldErrors.collection_id }}</p>{% endif %}
+            <div class="govuk-radios" data-module="govuk-radios">
+              {% for list in lists %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="{{ 'collection_id' if loop.first else 'collection_id-' + (list.id | string) }}" name="collection_id" type="radio" value="{{ list.id }}"{% if values.collectionId == (list.id | string) %} checked{% endif %}>
+                  <label class="govuk-label govuk-radios__label" for="{{ 'collection_id' if loop.first else 'collection_id-' + (list.id | string) }}">{{ list.name }}</label>
+                </div>
+              {% endfor %}
+              {% if lists.length %}<div class="govuk-radios__divider">{{ t("govuk_alpha_commerce.wish_lists.add_or") }}</div>{% endif %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{{ 'collection_id-new' if lists.length else 'collection_id' }}" name="collection_id" type="radio" value="new" data-aria-controls="conditional-new-list"{% if values.collectionId == 'new' %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="{{ 'collection_id-new' if lists.length else 'collection_id' }}">{{ t("govuk_alpha_commerce.wish_lists.add_new_option") }}</label>
+              </div>
+              <div class="govuk-radios__conditional" id="conditional-new-list">
+                <div class="govuk-form-group{% if fieldErrors.new_name %} govuk-form-group--error{% endif %}">
+                  <label class="govuk-label" for="new_name">{{ t("govuk_alpha_commerce.wish_lists.name_label") }}</label>
+                  {% if fieldErrors.new_name %}<p id="new_name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_prefix") }}</span> {{ fieldErrors.new_name }}</p>{% endif %}
+                  <input class="govuk-input{% if fieldErrors.new_name %} govuk-input--error{% endif %}" id="new_name" name="new_name" type="text" maxlength="100" value="{{ values.newName }}"{% if fieldErrors.new_name %} aria-describedby="new_name-error"{% endif %}>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+        <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.wish_lists.add_button") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

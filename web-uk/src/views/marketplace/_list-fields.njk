@@ -1,0 +1,24 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Wish list name, description and visibility — shared by create and change. #}
+<div class="govuk-form-group{% if fieldErrors.name %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label" for="name">{{ t("govuk_alpha_commerce.wish_lists.name_label") }}</label>
+  {% if fieldErrors.name %}<p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_prefix") }}</span> {{ fieldErrors.name }}</p>{% endif %}
+  <input class="govuk-input{% if fieldErrors.name %} govuk-input--error{% endif %}" id="name" name="name" type="text" maxlength="100" value="{{ values.name }}"{% if fieldErrors.name %} aria-describedby="name-error"{% endif %}>
+</div>
+<div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">
+  <label class="govuk-label" for="description">{{ t("govuk_alpha_commerce.wish_lists.description_label") }}</label>
+  {% if fieldErrors.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_prefix") }}</span> {{ fieldErrors.description }}</p>{% endif %}
+  <textarea class="govuk-textarea{% if fieldErrors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="3"{% if fieldErrors.description %} aria-describedby="description-error"{% endif %}>{{ values.description }}</textarea>
+</div>
+<div class="govuk-form-group">
+  <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+    <div class="govuk-checkboxes__item">
+      <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1"{% if values.isPublic %} checked{% endif %}>
+      <label class="govuk-label govuk-checkboxes__label" for="is_public">{{ t("govuk_alpha_commerce.wish_lists.public_label") }}</label>
+    </div>
+  </div>
+</div>

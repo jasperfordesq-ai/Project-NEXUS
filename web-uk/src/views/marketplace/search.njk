@@ -8,6 +8,7 @@
 
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
+  {% include "marketplace/_status-banner.njk" %}
 
   <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.marketplace_advanced.title") }}</h1>
@@ -121,6 +122,7 @@
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.marketplace_advanced.submit") }}</button>
     <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/marketplace') }}">{{ t("govuk_alpha_commerce.marketplace_advanced.back_to_browse") }}</a>
   </form>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/nearby') }}">{{ t("govuk_alpha_commerce.nearby.link") }}</a></p>
 
   {% if not listings.length %}
     <div class="govuk-inset-text">
@@ -147,4 +149,39 @@
     </div>
   {% endif %}
   {% include "marketplace/_pagination.njk" %}
+
+  {# Save this search (React/mobile saved searches, 27 Oct 2026). The filters the
+     API stores are carried as hidden fields; the member names the search and
+     chooses how often the API emails them about new matches. #}
+  <div class="govuk-grid-row govuk-!-margin-top-6">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ urlFor('/marketplace/saved-searches') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="q" value="{{ state.query }}">
+        {% if state.categoryId %}<input type="hidden" name="category_id" value="{{ state.categoryId }}">{% endif %}
+        {% if state.priceMin %}<input type="hidden" name="price_min" value="{{ state.priceMin }}">{% endif %}
+        {% if state.priceMax %}<input type="hidden" name="price_max" value="{{ state.priceMax }}">{% endif %}
+        {% if state.selectedConditions.length == 1 %}<input type="hidden" name="condition" value="{{ state.selectedConditions[0] }}">{% endif %}
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.saved_searches.save_heading") }}</h2>
+          </legend>
+          <p class="govuk-body">{{ t("govuk_alpha_commerce.saved_searches.save_hint") }}</p>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="saved_search_name">{{ t("govuk_alpha_commerce.saved_searches.name_label") }}</label>
+            <input class="govuk-input" id="saved_search_name" name="name" type="text" maxlength="100" value="{{ state.query }}">
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="alert_frequency">{{ t("govuk_alpha_commerce.saved_searches.frequency_label") }}</label>
+            <select class="govuk-select" id="alert_frequency" name="alert_frequency">
+              <option value="daily" selected>{{ t("govuk_alpha_commerce.saved_searches.frequency_daily") }}</option>
+              <option value="weekly">{{ t("govuk_alpha_commerce.saved_searches.frequency_weekly") }}</option>
+              <option value="instant">{{ t("govuk_alpha_commerce.saved_searches.frequency_instant") }}</option>
+            </select>
+          </div>
+        </fieldset>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.saved_searches.save_button") }}</button>
+      </form>
+    </div>
+  </div>
 {% endblock %}

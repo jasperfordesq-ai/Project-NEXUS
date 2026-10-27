@@ -112,7 +112,8 @@ const MARKETPLACE_SUCCESS_MESSAGES = {
   'coupon-created': 'Your coupon was created.',
   'coupon-saved': 'Your changes were saved.',
   'coupon-deleted': 'Your coupon was deleted.',
-  countered: 'Counter-offer sent.'
+  countered: 'Counter-offer sent.',
+  'added-to-list': 'The item was added to your wish list.'
 };
 const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   unsaved: 'govuk_alpha_commerce.saved.status_unsaved',
@@ -140,7 +141,8 @@ const MARKETPLACE_SUCCESS_MESSAGE_KEYS = {
   'coupon-created': 'govuk_alpha_commerce.coupons.status_coupon_created',
   'coupon-saved': 'govuk_alpha_commerce.coupons.status_coupon_saved',
   'coupon-deleted': 'govuk_alpha_commerce.coupons.status_coupon_deleted',
-  countered: 'govuk_alpha_commerce.offers.status_countered_done'
+  countered: 'govuk_alpha_commerce.offers.status_countered_done',
+  'added-to-list': 'govuk_alpha_commerce.wish_lists.status_added'
 };
 const MARKETPLACE_ERROR_MESSAGES = {
   'listing-validation': 'Check the listing details and try again.',
@@ -180,9 +182,11 @@ const MARKETPLACE_ERROR_MESSAGES = {
   'coupon-save-failed': 'Sorry, your changes could not be saved. Please try again.',
   'coupon-delete-failed': 'Sorry, your coupon could not be deleted. Please try again.',
   'counter-amount-invalid': 'Enter a counter-offer amount greater than zero, with no more than two decimal places',
-  'counter-failed': 'Sorry, your counter-offer could not be sent. Please try again.'
+  'counter-failed': 'Sorry, your counter-offer could not be sent. Please try again.',
+  'search-name': 'Enter a name for the search'
 };
 const MARKETPLACE_ERROR_MESSAGE_KEYS = {
+  'search-name': 'govuk_alpha_commerce.saved_searches.error_name_required',
   'listing-create-failed': 'govuk_alpha_commerce.listing_form.error_create',
   'listing-save-failed': 'govuk_alpha_commerce.listing_form.error_update',
   'delete-failed': 'govuk_alpha_commerce.my_listings.status_delete_failed',
@@ -2242,11 +2246,97 @@ router.get('/search', asyncRoute(async (req, res) => {
       listings: listings.rows,
       categories,
       state: advancedSearchState(req.query),
+      status: statusEntry(req, req.query.status),
       pagination: pageLinks('/marketplace/search', req.query, listings.meta),
       ...advancedSearchOptions()
     });
   } catch (error) {
     return renderMarketplaceError(error, res, 'Advanced search');
+  }
+}));
+
+// ---------------------------------------------------------------------------
+// "Near me" (React MarketplaceMapSearchPage, 27 Oct 2026) — without the map.
+// The same /listings/nearby parameters React sends (latitude, longitude, radius, q,
+// category_id, limit=100), centred on the location saved in the member's profile.
+// Never the device's location: no JavaScript, no geolocation prompt, nothing guessed.
+// A member with no saved location is sent to add one; there is no default place.
+// ---------------------------------------------------------------------------
+const NEARBY_RADIUS_OPTIONS = [5, 10, 25, 50, 100];
+const NEARBY_DEFAULT_RADIUS = 25;
+
+function profileCoordinate(value, min, max) {
+  if (value === null || value === undefined || String(value).trim() === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+}
+
+router.get('/nearby', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+
+  const t = typeof res.locals.t === 'function' ? res.locals.t : translateForRequest;
+  const requestedRadius = Number(req.query.radius);
+  const radius = NEARBY_RADIUS_OPTIONS.includes(requestedRadius) ? requestedRadius : NEARBY_DEFAULT_RADIUS;
+  const query = trimmed(req.query.q, 255);
+  const categoryId = positiveInteger(req.query.category_id);
+
+  try {
+    const profile = dataFrom(await getRequestProfile(req, token)) || {};
+    const latitude = profileCoordinate(profile.latitude ?? profile.lat, -90, 90);
+    const longitude = profileCoordinate(profile.longitude ?? profile.lng ?? profile.lon, -180, 180);
+    const hasLocation = latitude !== null && longitude !== null;
+    const categories = await loadCategories(token).catch((error) => {
+      if (isAuthError(error)) throw error;
+      return [];
+    });
+
+    let listings = [];
+    let loadFailed = false;
+    if (hasLocation) {
+      const params = new URLSearchParams();
+      params.set('latitude', String(latitude));
+      params.set('longitude', String(longitude));
+      params.set('radius', String(radius));
+      if (query) params.set('q', query);
+      if (categoryId) params.set('category_id', String(categoryId));
+      params.set('limit', '100');
+      try {
+        const result = await callMarketplaceApi(token, 'GET', `/listings/nearby?${params.toString()}`);
+        const formatNumber = typeof res.locals.formatLocaleNumber === 'function'
+          ? res.locals.formatLocaleNumber
+          : (value) => String(value);
+        listings = rowsFrom(result).map((row) => {
+          const item = decorateListing(row);
+          const distance = Number(row && row.distance_km);
+          item.distanceLabel = row && row.distance_km !== null && row.distance_km !== undefined && Number.isFinite(distance)
+            ? t('govuk_alpha_commerce.nearby.distance', {
+              km: formatNumber(Math.round(distance * 10) / 10, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            })
+            : '';
+          return item;
+        }).filter((item) => item.id);
+      } catch (error) {
+        if (isAuthError(error)) throw error;
+        loadFailed = true;
+      }
+    }
+
+    return res.render('marketplace/nearby', {
+      title: t('govuk_alpha_commerce.nearby.title'),
+      activeNav: 'explore',
+      activeTab: 'browse',
+      hasLocation,
+      listings,
+      loadFailed,
+      categories,
+      radius,
+      radiusOptions: NEARBY_RADIUS_OPTIONS,
+      query,
+      categoryId
+    });
+  } catch (error) {
+    return renderMarketplaceError(error, res);
   }
 }));
 

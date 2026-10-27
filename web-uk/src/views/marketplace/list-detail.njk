@@ -1,0 +1,60 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# One wish list: its items, change its details, delete it (27 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/lists') }}">{{ t("govuk_alpha_commerce.wish_lists.back_link") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% include "marketplace/_form-error-summary.njk" %}
+  {% include "marketplace/_status-banner.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.wish_lists.nav") }}</span>
+  <h1 class="govuk-heading-xl">{{ list.name }}</h1>
+  {% if list.description %}<p class="govuk-body-l">{{ list.description }}</p>{% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.wish_lists.items_heading") }}</h2>
+  {% if not items.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_commerce.wish_lists.items_empty") }}</p></div>
+  {% else %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for item in items %}
+        <li class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ item.title }}</a></h3>
+            {{ govukTag({ text: item.cardPriceLabel, classes: (item.cardPriceTagClass) }) }}
+          </div>
+          <form method="post" action="{{ urlFor('/marketplace/lists/' + (list.id | string) + '/items/' + (item.id | string) + '/remove') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.wish_lists.remove_item") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% include "marketplace/_pagination.njk" %}
+
+  <div class="govuk-grid-row govuk-!-margin-top-6">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ urlFor('/marketplace/lists/' + (list.id | string) + '/update') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.wish_lists.edit_heading") }}</h2>
+          </legend>
+          {% include "marketplace/_list-fields.njk" %}
+        </fieldset>
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.wish_lists.save_button") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/marketplace/lists/' + (list.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.wish_lists.delete_link") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

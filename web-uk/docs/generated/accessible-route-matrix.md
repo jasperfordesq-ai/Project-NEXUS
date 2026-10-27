@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T15:19:21.289Z
-Laravel commit SHA: `9ed9baf356df629ac7acf91b816df2867746668b`
-Web UK repository commit SHA: `9ed9baf356df629ac7acf91b816df2867746668b`
+Generated: 2026-10-27T16:23:42.050Z
+Laravel commit SHA: `ff5a4296bd3c22759d662257ac35ac9dfffd792d`
+Web UK repository commit SHA: `ff5a4296bd3c22759d662257ac35ac9dfffd792d`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1027 |
+| web-uk routes | 1044 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 317 |
+| Extra web-uk routes | 334 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -70,7 +70,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | listings | 19 | 0 | 2 | 0 |
 | login | 7 | 0 | 4 | 0 |
 | logout | 1 | 0 | 0 | 0 |
-| marketplace | 50 | 0 | 23 | 0 |
+| marketplace | 50 | 0 | 40 | 0 |
 | matches | 4 | 0 | 2 | 0 |
 | me | 6 | 0 | 4 | 0 |
 | members | 11 | 0 | 3 | 0 |
@@ -272,26 +272,43 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/login/two-factor/setup` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup/complete` | login |  | web-uk/src/server.js |
 | POST | `/login/two-factor/setup/start` | login |  | web-uk/src/server.js |
+| GET | `/marketplace/{param}/add-to-list` | marketplace | marketplace/add-to-list | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-actions.js |
 | GET | `/marketplace/{param}/photos` | marketplace | marketplace/photos | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/{param}/photos/{param}/remove` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/{param}/video` | marketplace | marketplace/video | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/{param}/video/remove` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/borrow` | marketplace | marketplace/listing-list | web-uk/src/routes/marketplace.js |
+| GET | `/marketplace/collections` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/lists` | marketplace | marketplace/lists | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/lists/{param}` | marketplace | marketplace/list-detail | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/lists/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/nearby` | marketplace | marketplace/nearby | web-uk/src/routes/marketplace.js |
+| GET | `/marketplace/payouts` | marketplace | marketplace/payouts | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/reports` | marketplace | marketplace/reports | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/reports/{param}` | marketplace | marketplace/report-detail | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/saved-searches/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
+| GET | `/marketplace/seller/onboard` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/seller/shipping-options` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/shipping` | marketplace | marketplace/shipping | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/shipping/{param}/delete` | marketplace | confirm-delete | web-uk/src/routes/marketplace-member-tools.js |
 | GET | `/marketplace/shipping/{param}/edit` | marketplace | marketplace/shipping-form | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/{param}/add-to-list` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos/{param}/main` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/photos/{param}/remove` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/video` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/{param}/video/remove` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/lists` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/lists/{param}/delete` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/lists/{param}/items/{param}/remove` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/lists/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/offers/{param}/accept-counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
 | POST | `/marketplace/offers/{param}/counter` | marketplace |  | web-uk/src/routes/marketplace-actions.js |
+| POST | `/marketplace/payouts/start` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/reports/{param}/appeal` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/saved-searches` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
+| POST | `/marketplace/saved-searches/{param}/delete` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/shipping` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/shipping/{param}/delete` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |
 | POST | `/marketplace/shipping/{param}/update` | marketplace |  | web-uk/src/routes/marketplace-member-tools.js |

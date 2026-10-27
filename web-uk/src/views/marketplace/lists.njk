@@ -1,0 +1,81 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{# Wish lists and saved searches — React MarketplaceCollectionsPage (27 Oct 2026). #}
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+  {% include "marketplace/_form-error-summary.njk" %}
+  {% include "marketplace/_status-banner.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.wish_lists.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.wish_lists.description") }}</p>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.wish_lists.lists_heading") }}</h2>
+  {% if not lists.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_commerce.wish_lists.empty") }}</p></div>
+  {% else %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for list in lists %}
+        <li class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/lists/' + (list.id | string)) }}">{{ list.name }}</a></h3>
+            {% if list.isPublic %}
+              {{ govukTag({ text: t("govuk_alpha_commerce.wish_lists.public_tag"), classes: "govuk-tag--blue" }) }}
+            {% else %}
+              {{ govukTag({ text: t("govuk_alpha_commerce.wish_lists.private_tag"), classes: "govuk-tag--grey" }) }}
+            {% endif %}
+          </div>
+          {% if list.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ list.description }}</p>{% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_commerce.wish_lists.item_count", { count: formatLocaleNumber(list.itemCount) }) }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="{{ urlFor('/marketplace/lists') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.wish_lists.create_heading") }}</h2>
+          </legend>
+          {% include "marketplace/_list-fields.njk" %}
+        </fieldset>
+        <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.wish_lists.create_button") }}</button>
+      </form>
+    </div>
+  </div>
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.saved_searches.heading") }}</h2>
+  {% if not searches.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.saved_searches.empty") }}</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/marketplace/search') }}">{{ t("govuk_alpha_commerce.marketplace_advanced.title") }}</a></p>
+    </div>
+  {% else %}
+    <dl class="govuk-summary-list">
+      {% for search in searches %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ search.name }}</dt>
+          <dd class="govuk-summary-list__value">
+            {% if search.query %}<p class="govuk-body govuk-!-margin-bottom-1">{{ search.query }}</p>{% endif %}
+            {% if search.alertsLabel %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ search.alertsLabel }}</p>{% endif %}
+          </dd>
+          <dd class="govuk-summary-list__actions">
+            <ul class="govuk-summary-list__actions-list">
+              <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="{{ urlFor(search.href) }}">{{ t("govuk_alpha_commerce.saved_searches.run") }}<span class="govuk-visually-hidden"> — {{ search.name }}</span></a></li>
+              <li class="govuk-summary-list__actions-list-item"><a class="govuk-link" href="{{ urlFor('/marketplace/saved-searches/' + (search.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.saved_searches.delete") }}<span class="govuk-visually-hidden"> — {{ search.name }}</span></a></li>
+            </ul>
+          </dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+{% endblock %}

@@ -24,6 +24,7 @@
  */
 
 const express = require('express');
+const { URL } = require('node:url');
 const { ApiError, callMarketplaceApi } = require('../lib/api');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -750,6 +751,536 @@ router.post('/reports/:id(\\d+)/appeal', asyncRoute(async (req, res) => {
       ? { text, errorText: message }
       : { text, errorKey: 'govuk_alpha_commerce.my_reports.status_appeal_failed' });
     return redirectTo(res, `/marketplace/reports/${id}#appeal_text`);
+  }
+}));
+
+// ---------------------------------------------------------------------------
+// 4. Wish lists and saved searches (27 Oct 2026, React MarketplaceCollectionsPage)
+//
+// React and Laravel call a wish list a "collection". Here it is a "wish list",
+// because this site already uses "My collections" for click-and-collect pickups and
+// two tabs with the same name would be confusing. Same API, same records: a list
+// made in React or the mobile app appears here, and the reverse.
+//
+// React never adds an item or saves a search itself (the mobile app does). The API
+// lets any member do both (`POST /collections/{id}/items`, `POST /saved-searches`),
+// so this site offers "Add to a wish list" on a listing and "Save this search" on
+// advanced search as well.
+// ---------------------------------------------------------------------------
+
+const LIST_NAME_MAX = 100;
+const LIST_DESCRIPTION_MAX = 500;
+const SEARCH_NAME_MAX = 100;
+const ALERT_FREQUENCIES = ['instant', 'daily', 'weekly'];
+const LIST_STATUS = {
+  created: { type: 'success', key: 'govuk_alpha_commerce.wish_lists.status_created' },
+  saved: { type: 'success', key: 'govuk_alpha_commerce.wish_lists.status_saved' },
+  deleted: { type: 'success', key: 'govuk_alpha_commerce.wish_lists.status_deleted' },
+  removed: { type: 'success', key: 'govuk_alpha_commerce.wish_lists.status_removed' },
+  'search-saved': { type: 'success', key: 'govuk_alpha_commerce.saved_searches.status_saved' },
+  'search-deleted': { type: 'success', key: 'govuk_alpha_commerce.saved_searches.status_deleted' },
+  failed: { type: 'error', key: 'govuk_alpha_commerce.wish_lists.status_failed' }
+};
+
+function listFormKey(req, scope) {
+  return `marketplaceWishList:${tenantKey(req)}:${scope}`;
+}
+
+function decorateList(row) {
+  const list = row && typeof row === 'object' ? row : {};
+  return {
+    id: positiveInteger(list.id),
+    name: trimmed(list.name, LIST_NAME_MAX),
+    description: trimmed(list.description, LIST_DESCRIPTION_MAX),
+    isPublic: list.is_public === true || list.is_public === 1 || list.is_public === '1',
+    itemCount: Number.isFinite(Number(list.item_count)) ? Math.max(0, Number(list.item_count)) : 0
+  };
+}
+
+async function loadLists(token) {
+  const result = await callMarketplaceApi(token, 'GET', '/collections');
+  return rowsFrom(result).map(decorateList).filter((list) => list.id);
+}
+
+async function loadOwnList(token, id) {
+  const list = (await loadLists(token)).find((row) => row.id === Number(id));
+  if (!list) throw new ApiError('List not found', 404);
+  return list;
+}
+
+/** The search page address a saved search runs, from the filters the API stored. */
+function savedSearchHref(search) {
+  const params = new URLSearchParams();
+  const filters = search.filters && typeof search.filters === 'object' && !Array.isArray(search.filters) ? search.filters : {};
+  const query = trimmed(search.search_query, 255);
+  if (query) params.set('q', query);
+  const categoryId = positiveInteger(filters.category_id);
+  if (categoryId) params.set('category_id', String(categoryId));
+  ['price_min', 'price_max'].forEach((key) => {
+    const value = Number(filters[key]);
+    if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '' && Number.isFinite(value) && value >= 0) {
+      params.set(key, String(value));
+    }
+  });
+  const condition = trimmed(filters.condition, 40);
+  if (/^[a-z_]+$/.test(condition)) params.append('condition[]', condition);
+  const text = params.toString();
+  return text ? `/marketplace/search?${text}` : '/marketplace/search';
+}
+
+function decorateSavedSearch(row, res) {
+  const t = translator(res);
+  const search = row && typeof row === 'object' ? row : {};
+  const frequency = ALERT_FREQUENCIES.includes(trimmed(search.alert_frequency)) ? trimmed(search.alert_frequency) : '';
+  return {
+    id: positiveInteger(search.id),
+    name: trimmed(search.name, SEARCH_NAME_MAX),
+    query: trimmed(search.search_query, 255),
+    alertsLabel: frequency
+      ? t('govuk_alpha_commerce.saved_searches.alerts', { frequency: t(`govuk_alpha_commerce.saved_searches.frequency_${frequency}`) })
+      : '',
+    href: savedSearchHref(search)
+  };
+}
+
+function listFormValues(body) {
+  return {
+    name: trimmed(body && body.name),
+    description: trimmed(body && body.description),
+    isPublic: ['1', 'true', 'on', 'yes'].includes(trimmed(body && body.is_public).toLowerCase())
+  };
+}
+
+function listFormErrors(values) {
+  const errors = [];
+  if (!values.name) errors.push({ key: 'govuk_alpha_commerce.wish_lists.error_name_required', field: 'name' });
+  else if (values.name.length > LIST_NAME_MAX) errors.push({ key: 'govuk_alpha_commerce.wish_lists.error_name_long', field: 'name' });
+  if (values.description.length > LIST_DESCRIPTION_MAX) {
+    errors.push({ key: 'govuk_alpha_commerce.wish_lists.error_description_long', field: 'description' });
+  }
+  return errors;
+}
+
+function listPayload(values) {
+  return { name: values.name, description: values.description || null, is_public: values.isPublic };
+}
+
+/** GOV.UK error summary + inline messages from a session-carried form state. */
+function formStateErrors(res, state) {
+  const t = translator(res);
+  const fieldErrors = {};
+  const errorList = [];
+  let formMessage = '';
+  (Array.isArray(state && state.errors) ? state.errors : []).forEach((error) => {
+    const message = error.text || t(error.key);
+    if (!error.field) {
+      if (!formMessage) formMessage = message;
+      return;
+    }
+    if (fieldErrors[error.field] === undefined) {
+      fieldErrors[error.field] = message;
+      errorList.push({ text: message, href: `#${error.field}` });
+    }
+  });
+  return { fieldErrors, errorList, formMessage };
+}
+
+router.get('/collections', (req, res) => redirectTo(res, '/marketplace/lists'));
+
+router.get('/lists', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  try {
+    const [lists, searchesResult] = await Promise.all([
+      loadLists(token),
+      callMarketplaceApi(token, 'GET', '/saved-searches')
+    ]);
+    const state = sessionTake(req, listFormKey(req, 'create'));
+    return res.render('marketplace/lists', {
+      title: translator(res)('govuk_alpha_commerce.wish_lists.title'),
+      activeNav: 'explore',
+      activeTab: 'lists',
+      lists,
+      searches: rowsFrom(searchesResult).map((row) => decorateSavedSearch(row, res)).filter((search) => search.id),
+      values: state ? state.values : { name: '', description: '', isPublic: false },
+      ...formStateErrors(res, state),
+      status: state ? null : statusFrom(res, LIST_STATUS, req.query.status)
+    });
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+}));
+
+router.post('/lists', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const values = listFormValues(req.body);
+  const errors = listFormErrors(values);
+  if (errors.length > 0) {
+    sessionPut(req, listFormKey(req, 'create'), { values, errors });
+    return redirectTo(res, `/marketplace/lists#${errors[0].field}`);
+  }
+  try {
+    await callMarketplaceApi(token, 'POST', '/collections', listPayload(values));
+    return redirectTo(res, '/marketplace/lists?status=created');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    const text = apiMessage(error);
+    sessionPut(req, listFormKey(req, 'create'), {
+      values,
+      errors: [text ? { text } : { key: 'govuk_alpha_commerce.wish_lists.status_failed' }]
+    });
+    return redirectTo(res, '/marketplace/lists');
+  }
+}));
+
+router.get('/lists/:id(\\d+)', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  try {
+    const list = await loadOwnList(token, id);
+    const params = new URLSearchParams();
+    params.set('limit', '50');
+    const cursor = trimmed(req.query.cursor, 2048);
+    if (cursor) params.set('cursor', cursor);
+    const result = await callMarketplaceApi(token, 'GET', `/collections/${encodeURIComponent(id)}/items?${params.toString()}`);
+    const meta = result && typeof result === 'object' && result.meta && typeof result.meta === 'object' ? result.meta : {};
+    const items = rowsFrom(result)
+      .map((row) => (row && row.listing && typeof row.listing === 'object' ? helpers.decorateListing(row.listing) : null))
+      .filter((item) => item && item.id);
+    const nextCursor = trimmed(meta.cursor, 2048);
+    const hasMore = meta.has_more === true || meta.has_more === 1 || meta.has_more === 'true';
+    const state = sessionTake(req, listFormKey(req, `edit:${id}`));
+    return res.render('marketplace/list-detail', {
+      title: list.name,
+      activeNav: 'explore',
+      activeTab: 'lists',
+      list,
+      items,
+      pagination: {
+        nextHref: hasMore && nextCursor ? `/marketplace/lists/${id}?cursor=${encodeURIComponent(nextCursor)}` : '',
+        firstHref: cursor ? `/marketplace/lists/${id}` : ''
+      },
+      values: state ? state.values : { name: list.name, description: list.description, isPublic: list.isPublic },
+      ...formStateErrors(res, state),
+      status: state ? null : statusFrom(res, LIST_STATUS, req.query.status)
+    });
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+}));
+
+router.post('/lists/:id(\\d+)/update', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const values = listFormValues(req.body);
+  const errors = listFormErrors(values);
+  if (errors.length > 0) {
+    sessionPut(req, listFormKey(req, `edit:${id}`), { values, errors });
+    return redirectTo(res, `/marketplace/lists/${id}#${errors[0].field}`);
+  }
+  try {
+    await callMarketplaceApi(token, 'PUT', `/collections/${encodeURIComponent(id)}`, listPayload(values));
+    return redirectTo(res, `/marketplace/lists/${id}?status=saved`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && error.status === 404) return renderToolError(error, res);
+    const text = apiMessage(error);
+    sessionPut(req, listFormKey(req, `edit:${id}`), {
+      values,
+      errors: [text ? { text } : { key: 'govuk_alpha_commerce.wish_lists.status_failed' }]
+    });
+    return redirectTo(res, `/marketplace/lists/${id}`);
+  }
+}));
+
+router.post('/lists/:id(\\d+)/items/:listingId(\\d+)/remove', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  try {
+    await callMarketplaceApi(token, 'DELETE', `/collections/${encodeURIComponent(id)}/items/${encodeURIComponent(req.params.listingId)}`);
+    return redirectTo(res, `/marketplace/lists/${id}?status=removed`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, `/marketplace/lists/${id}?status=failed`);
+  }
+}));
+
+router.get('/lists/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const t = translator(res);
+  let list;
+  try {
+    list = await loadOwnList(token, id);
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_commerce.wish_lists.delete_heading', { name: list.name }),
+    activeNav: 'explore',
+    confirmHeading: t('govuk_alpha_commerce.wish_lists.delete_heading', { name: list.name }),
+    confirmWarning: t('govuk_alpha_commerce.wish_lists.delete_warning'),
+    confirmButton: t('govuk_alpha_commerce.wish_lists.delete_button'),
+    confirmAction: `/marketplace/lists/${id}/delete`,
+    cancelHref: `/marketplace/lists/${id}`
+  });
+}));
+
+router.post('/lists/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  try {
+    await callMarketplaceApi(token, 'DELETE', `/collections/${encodeURIComponent(req.params.id)}`);
+    return redirectTo(res, '/marketplace/lists?status=deleted');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, '/marketplace/lists?status=failed');
+  }
+}));
+
+// "Add to a wish list" from a listing page.
+function addFormKey(req, listingId) {
+  return `marketplaceAddToList:${tenantKey(req)}:${listingId}`;
+}
+
+router.get('/:id(\\d+)/add-to-list', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  try {
+    const [listingResult, lists] = await Promise.all([
+      callMarketplaceApi(token, 'GET', `/listings/${encodeURIComponent(id)}`),
+      loadLists(token)
+    ]);
+    const raw = dataFrom(listingResult);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new ApiError('Listing not found', 404);
+    const item = helpers.decorateListing(raw);
+    const state = sessionTake(req, addFormKey(req, id));
+    const t = translator(res);
+    return res.render('marketplace/add-to-list', {
+      title: t('govuk_alpha_commerce.wish_lists.add_heading', { title: item.title }),
+      activeNav: 'explore',
+      activeTab: 'lists',
+      item,
+      lists,
+      values: state ? state.values : { collectionId: lists.length ? '' : 'new', newName: '' },
+      ...formStateErrors(res, state)
+    });
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+}));
+
+router.post('/:id(\\d+)/add-to-list', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const choice = trimmed(req.body.collection_id);
+  const values = { collectionId: choice, newName: trimmed(req.body.new_name) };
+  let errors = [];
+  if (!choice || (choice !== 'new' && !positiveInteger(choice))) {
+    errors = [{ key: 'govuk_alpha_commerce.wish_lists.error_choose', field: 'collection_id' }];
+  } else if (choice === 'new' && !values.newName) {
+    errors = [{ key: 'govuk_alpha_commerce.wish_lists.error_name_required', field: 'new_name' }];
+  } else if (choice === 'new' && values.newName.length > LIST_NAME_MAX) {
+    errors = [{ key: 'govuk_alpha_commerce.wish_lists.error_name_long', field: 'new_name' }];
+  }
+  if (errors.length > 0) {
+    sessionPut(req, addFormKey(req, id), { values, errors });
+    return redirectTo(res, `/marketplace/${id}/add-to-list#${errors[0].field}`);
+  }
+  try {
+    let collectionId = positiveInteger(choice);
+    if (choice === 'new') {
+      const created = dataFrom(await callMarketplaceApi(token, 'POST', '/collections', listPayload({
+        name: values.newName, description: '', isPublic: false
+      })));
+      collectionId = positiveInteger(created && created.id);
+      if (!collectionId) throw new ApiError('List was not created', 500);
+    }
+    await callMarketplaceApi(token, 'POST', `/collections/${encodeURIComponent(collectionId)}/items`, { listing_id: id });
+    return redirectTo(res, `/marketplace/${id}?status=added-to-list`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    const text = apiMessage(error);
+    sessionPut(req, addFormKey(req, id), {
+      values,
+      errors: [text ? { text } : { key: 'govuk_alpha_commerce.wish_lists.status_failed' }]
+    });
+    return redirectTo(res, `/marketplace/${id}/add-to-list`);
+  }
+}));
+
+// Saved searches: save from advanced search, delete with a confirmation page.
+function searchFilters(body) {
+  const filters = {};
+  const categoryId = positiveInteger(body.category_id);
+  if (categoryId) filters.category_id = categoryId;
+  ['price_min', 'price_max'].forEach((key) => {
+    const text = trimmed(body[key]);
+    const value = Number(text);
+    if (text !== '' && Number.isFinite(value) && value >= 0) filters[key] = value;
+  });
+  const condition = trimmed(body.condition, 40);
+  if (/^[a-z_]+$/.test(condition)) filters.condition = condition;
+  return filters;
+}
+
+function searchBackHref(body) {
+  return savedSearchHref({ search_query: body.q, filters: searchFilters(body) });
+}
+
+router.post('/saved-searches', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const body = req.body || {};
+  const query = trimmed(body.q, 255);
+  // A search saved without a name takes its words, as the field is pre-filled with them.
+  const name = trimmed(body.name) || query;
+  if (!name || name.length > SEARCH_NAME_MAX) {
+    const back = searchBackHref(body);
+    return redirectTo(res, `${back}${back.includes('?') ? '&' : '?'}status=search-name#saved_search_name`);
+  }
+  const payload = {
+    name,
+    search_query: query || null,
+    alert_frequency: ALERT_FREQUENCIES.includes(trimmed(body.alert_frequency)) ? trimmed(body.alert_frequency) : 'daily'
+  };
+  const filters = searchFilters(body);
+  if (Object.keys(filters).length > 0) payload.filters = filters;
+  try {
+    await callMarketplaceApi(token, 'POST', '/saved-searches', payload);
+    return redirectTo(res, '/marketplace/lists?status=search-saved');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, '/marketplace/lists?status=failed');
+  }
+}));
+
+router.get('/saved-searches/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  const id = Number(req.params.id);
+  const t = translator(res);
+  let search;
+  try {
+    const result = await callMarketplaceApi(token, 'GET', '/saved-searches');
+    search = rowsFrom(result).map((row) => decorateSavedSearch(row, res)).find((row) => row.id === id);
+    if (!search) throw new ApiError('Saved search not found', 404);
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+  return res.render('confirm-delete', {
+    title: t('govuk_alpha_commerce.saved_searches.delete_heading', { name: search.name }),
+    activeNav: 'explore',
+    confirmHeading: t('govuk_alpha_commerce.saved_searches.delete_heading', { name: search.name }),
+    confirmWarning: t('govuk_alpha_commerce.saved_searches.delete_warning'),
+    confirmButton: t('govuk_alpha_commerce.saved_searches.delete'),
+    confirmAction: `/marketplace/saved-searches/${id}/delete`,
+    cancelHref: '/marketplace/lists'
+  });
+}));
+
+router.post('/saved-searches/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  try {
+    await callMarketplaceApi(token, 'DELETE', `/saved-searches/${encodeURIComponent(req.params.id)}`);
+    return redirectTo(res, '/marketplace/lists?status=search-deleted');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    return redirectTo(res, '/marketplace/lists?status=failed');
+  }
+}));
+
+// ---------------------------------------------------------------------------
+// 5. Seller payouts — Stripe Connect onboarding (27 Oct 2026, React StripeOnboardingPage)
+//
+// Not the merchant-profile wizard at /marketplace/onboarding (business name, logo):
+// this is the Stripe account a seller is paid into. No card or bank detail ever
+// passes through this site — "Set up payouts" posts here, the API creates (or
+// resumes) the Connect account and returns a one-time Stripe-hosted link, and the
+// member is redirected to it. Only an https link on stripe.com is followed.
+//
+// 🔴 The API builds Stripe's return/refresh addresses itself, from the React site
+// (MarketplacePaymentService::generateOnboardingLink uses TenantContext::getFrontendUrl()
+// and takes no return_url). So a member who starts here comes back to the React
+// website's /marketplace/seller/onboard, not to this site. The landing below is ready
+// for the day the API offers an accessible return address; it cannot be fixed here.
+//
+// The API answers `onboarding_url`. React reads `url`, which the API never sends.
+// ---------------------------------------------------------------------------
+
+const PAYOUT_STATUS = {
+  returned: { type: 'success', key: 'govuk_alpha_commerce.payouts.status_returned' },
+  refresh: { type: 'success', key: 'govuk_alpha_commerce.payouts.status_refresh' },
+  'start-failed': { type: 'error', key: 'govuk_alpha_commerce.payouts.error_start' },
+  disabled: { type: 'error', key: 'govuk_alpha_commerce.payouts.disabled' }
+};
+
+function isStripeHostedUrl(value) {
+  try {
+    const url = new URL(String(value || ''));
+    return url.protocol === 'https:' && (url.hostname === 'stripe.com' || url.hostname.endsWith('.stripe.com'));
+  } catch {
+    return false;
+  }
+}
+
+function flag(value) {
+  return value === true || value === 1 || value === '1';
+}
+
+router.get('/seller/onboard', (req, res) => {
+  if (trimmed(req.query.refresh) === '1') return redirectTo(res, '/marketplace/payouts?status=refresh');
+  if (trimmed(req.query.complete) === '1' || trimmed(req.query.return) === '1') {
+    return redirectTo(res, '/marketplace/payouts?status=returned');
+  }
+  return redirectTo(res, '/marketplace/payouts');
+});
+
+router.get('/payouts', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  try {
+    const data = dataFrom(await callMarketplaceApi(token, 'GET', '/seller/onboard/status')) || {};
+    const complete = flag(data.stripe_onboarding_complete);
+    return res.render('marketplace/payouts', {
+      title: translator(res)('govuk_alpha_commerce.payouts.title'),
+      activeNav: 'explore',
+      activeTab: 'payouts',
+      payout: {
+        complete,
+        started: !complete && trimmed(data.stripe_account_id) !== '',
+        chargesEnabled: flag(data.charges_enabled),
+        payoutsEnabled: flag(data.payouts_enabled)
+      },
+      status: statusFrom(res, PAYOUT_STATUS, req.query.status)
+    });
+  } catch (error) {
+    return renderToolError(error, res);
+  }
+}));
+
+router.post('/payouts/start', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (!token) return undefined;
+  try {
+    const data = dataFrom(await callMarketplaceApi(token, 'POST', '/seller/onboard')) || {};
+    const link = trimmed(data.onboarding_url || data.url, 4096);
+    if (!isStripeHostedUrl(link)) return redirectTo(res, '/marketplace/payouts?status=start-failed');
+    return res.redirect(303, link);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return redirectTo(res, '/login?status=auth-required');
+    if (error instanceof ApiError && error.status === 403 && apiErrorCode(error) === 'FEATURE_DISABLED') {
+      return redirectTo(res, '/marketplace/payouts?status=disabled');
+    }
+    return redirectTo(res, '/marketplace/payouts?status=start-failed');
   }
 }));
 
