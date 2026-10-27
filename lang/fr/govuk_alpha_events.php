@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Brouillon',
         'pending_review_tag' => 'En attente de validation',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Vous avez déjà envoyé vos réponses. Si vous renvoyez ce formulaire, vos nouvelles réponses remplaceront celles envoyées précédemment.',
+    ],
 ];

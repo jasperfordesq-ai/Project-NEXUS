@@ -110,8 +110,16 @@ return [
         'delete_aria' => ':name を削除',
         'manage_link' => 'ファイルを表示',
         'nav_files' => 'ファイル',
+        'folder_filter_label' => '表示するフォルダ',
+        'folder_filter_all' => 'すべてのフォルダ',
+        'pagination_label' => 'ファイルのページ',
+    ],
+
+    'membership' => [
+        'cancel_request' => '参加リクエストを取り消す',
     ],
     'states' => [
+        'group-request-cancelled' => '参加リクエストを取り消しました。',
         'invite-link-created' => '新しい招待リンクが生成されました。',
         'invite-link-failed' => '招待リンクを生成できませんでした。もう一度試してください。',
         'invite-emails-sent' => '招待状は送信されました。',

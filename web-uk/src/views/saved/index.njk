@@ -59,6 +59,15 @@
       {% endfor %}
     </ul>
   {% endif %}
+  {% if pagination %}
+    {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+    {{ govukPagination({
+      previous: { text: t("govuk_alpha_saved.pagination.previous"), href: urlFor(pagination.previousHref) } if pagination.previousHref else false,
+      next: { text: t("govuk_alpha_saved.pagination.next"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false,
+      landmarkLabel: t("govuk_alpha_saved.pagination.page_of", { current: pagination.currentPage, last: pagination.lastPage }),
+      classes: "govuk-pagination--block govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
     </div>
   </div>
 {% endblock %}

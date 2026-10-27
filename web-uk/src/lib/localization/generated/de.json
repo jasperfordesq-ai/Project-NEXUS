@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Sie haben diesen Kurs abgeschlossen. Gut gemacht.",
             "no_lessons_available": "Für diesen Kurs sind noch keine Lektionen verfügbar.",
             "not_yet_available": "Noch nicht verfügbar",
+            "continue_learning": "Weiterlernen",
+            "your_course": "Sie haben diesen Kurs erstellt. Bearbeiten Sie ihn, um den Inhalt zu ändern oder ihn zu veröffentlichen.",
+            "prerequisites_required": "Schließen Sie die oben aufgeführten Voraussetzungskurse ab, bevor Sie sich anmelden können.",
+            "locked_until": "Verfügbar ab :date",
+            "pagination_label": "Kursseiten",
+            "previous_page": "Vorherige Seite",
+            "next_page": "Nächste Seite",
             "select_lesson": "Wählen Sie eine Lektion aus der Liste aus, um zu beginnen.",
             "video_unsupported": "Ihr Browser kann dieses Video nicht abspielen. Öffnen Sie es unten in einem neuen Tab.",
             "open_video": "Öffnen Sie das Video",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Vielen Dank – Ihre Bewertung wurde gespeichert.",
                 "insufficient_credits": "Sie verfügen nicht über genügend Zeitguthaben, um sich für diesen Kurs anzumelden.",
                 "enrol_failed": "Wir konnten Sie für diesen Kurs nicht anmelden. Bitte versuchen Sie es erneut.",
+                "not_available": "Für diesen Kurs ist die Anmeldung noch nicht geöffnet.",
+                "prerequisites_not_met": "Sie müssen die Voraussetzungskurse abschließen, bevor Sie sich für diesen Kurs anmelden können.",
                 "certificate_locked": "Sobald Sie den Kurs abgeschlossen haben, können Sie Ihr Zertifikat herunterladen.",
                 "certificate_failed": "Wir konnten Ihr Zertifikat nicht vorlegen. Bitte versuchen Sie es erneut.",
                 "review_invalid": "Bitte wählen Sie eine Bewertung zwischen 1 und 5 Sternen.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Entwurf",
                 "pending_review_tag": "Wartet auf Prüfung"
+            },
+            "registration": {
+                "answers_already_sent": "Sie haben Ihre Antworten bereits gesendet. Wenn Sie dieses Formular erneut senden, ersetzen Ihre neuen Antworten die bisherigen."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Löschen",
                 "delete_aria": ":name löschen",
                 "manage_link": "Dateien anzeigen",
-                "nav_files": "Dateien"
+                "nav_files": "Dateien",
+                "folder_filter_label": "Dateien anzeigen in",
+                "folder_filter_all": "Alle Ordner",
+                "pagination_label": "Dateiseiten"
+            },
+            "membership": {
+                "cancel_request": "Beitrittsanfrage zurückziehen"
             },
             "states": {
+                "group-request-cancelled": "Ihre Beitrittsanfrage wurde zurückgezogen.",
                 "invite-link-created": "Ein neuer Einladungslink wurde generiert.",
                 "invite-link-failed": "Der Einladungslink konnte nicht generiert werden. Bitte versuchen Sie es erneut.",
                 "invite-emails-sent": "Die Einladungen wurden verschickt.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Abgelehnt",
                 "withdrawn": "Zurückgezogen",
                 "unknown": "Andere"
+            },
+            "detail": {
+                "category_label": "Kategorie",
+                "hours_label": "Stunden pro Woche",
+                "time_credits_label": "Zeitgutschriften",
+                "contact_email_label": "Kontakt-E-Mail",
+                "contact_phone_label": "Kontakttelefon",
+                "close_button": "Diese Gelegenheit schließen",
+                "reopen_button": "Diese Gelegenheit wieder öffnen",
+                "states": {
+                    "closed": "Diese Gelegenheit ist geschlossen und nimmt keine Bewerbungen mehr an.",
+                    "reopened": "Diese Gelegenheit ist wieder geöffnet und nimmt Bewerbungen an.",
+                    "reopen_pending_review": "Ihre Gelegenheit wurde zur Prüfung eingereicht. Sie wird nach der Freigabe wieder geöffnet.",
+                    "status_change_failed": "Wir konnten den Status dieser Gelegenheit nicht ändern. Bitte versuchen Sie es erneut."
+                }
             }
         },
         "govuk_alpha_listings": {

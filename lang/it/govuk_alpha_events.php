@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Bozza',
         'pending_review_tag' => 'In attesa di revisione',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Hai già inviato le tue risposte. Se invii di nuovo questo modulo, le nuove risposte sostituiranno quelle inviate in precedenza.',
+    ],
 ];

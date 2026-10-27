@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Elimina :name',
         'manage_link' => 'Visualizza file',
         'nav_files' => 'File',
+        'folder_filter_label' => 'Mostra i file in',
+        'folder_filter_all' => 'Tutte le cartelle',
+        'pagination_label' => 'Pagine dei file',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Annulla la richiesta di adesione',
     ],
     'states' => [
+        'group-request-cancelled' => 'La tua richiesta di adesione è stata annullata.',
         'invite-link-created' => 'È stato generato un nuovo collegamento di invito.',
         'invite-link-failed' => 'Impossibile generare il collegamento di invito. Per favore riprova.',
         'invite-emails-sent' => 'Gli inviti sono stati inviati.',

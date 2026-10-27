@@ -7777,6 +7777,13 @@
             "course_completed_panel": "لقد أكملت هذه الدورة. أحسنت.",
             "no_lessons_available": "هذه الدورة ليس لديها دروس متاحة بعد.",
             "not_yet_available": "غير متوفر بعد",
+            "continue_learning": "تابع التعلم",
+            "your_course": "أنت من أنشأ هذه الدورة. حرّرها لتغيير محتواها أو لنشرها.",
+            "prerequisites_required": "أكمل الدورات المطلوبة مسبقًا المذكورة أعلاه قبل أن تتمكن من التسجيل.",
+            "locked_until": "متاح اعتبارًا من :date",
+            "pagination_label": "صفحات الدورات",
+            "previous_page": "الصفحة السابقة",
+            "next_page": "الصفحة التالية",
             "select_lesson": "اختر درسًا من القائمة للبدء.",
             "video_unsupported": "لا يمكن لمتصفحك تشغيل هذا الفيديو. افتحه في علامة تبويب جديدة أدناه.",
             "open_video": "افتح الفيديو",
@@ -7827,6 +7834,8 @@
                 "review_saved": "شكرًا لك - لقد تم حفظ رأيك.",
                 "insufficient_credits": "ليس لديك اعتمادات زمنية كافية للتسجيل في هذه الدورة.",
                 "enrol_failed": "لم نتمكن من تسجيلك في هذه الدورة. يرجى المحاولة مرة أخرى.",
+                "not_available": "هذه الدورة غير مفتوحة للتسجيل بعد.",
+                "prerequisites_not_met": "عليك إكمال الدورات المطلوبة مسبقًا قبل أن تتمكن من التسجيل في هذه الدورة.",
                 "certificate_locked": "يمكنك تنزيل شهادتك بمجرد الانتهاء من الدورة.",
                 "certificate_failed": "لم نتمكن من إنتاج شهادتك. يرجى المحاولة مرة أخرى.",
                 "review_invalid": "الرجاء اختيار التقييم بين 1 و 5 نجوم.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "مسودة",
                 "pending_review_tag": "بانتظار المراجعة"
+            },
+            "registration": {
+                "answers_already_sent": "لقد أرسلت إجاباتك بالفعل. إذا أرسلت هذا النموذج مرة أخرى، فستحل إجاباتك الجديدة محل الإجابات التي أرسلتها سابقًا."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "حذف",
                 "delete_aria": "حذف :name",
                 "manage_link": "عرض الملفات",
-                "nav_files": "الملفات"
+                "nav_files": "الملفات",
+                "folder_filter_label": "عرض الملفات في",
+                "folder_filter_all": "كل المجلدات",
+                "pagination_label": "صفحات الملفات"
+            },
+            "membership": {
+                "cancel_request": "إلغاء طلب الانضمام"
             },
             "states": {
+                "group-request-cancelled": "تم إلغاء طلب انضمامك.",
                 "invite-link-created": "تم إنشاء رابط دعوة جديد.",
                 "invite-link-failed": "تعذر إنشاء رابط الدعوة. يرجى المحاولة مرة أخرى.",
                 "invite-emails-sent": "تم إرسال الدعوات.",
@@ -9843,6 +9862,21 @@
                 "rejected": "مرفوض",
                 "withdrawn": "انسحبت",
                 "unknown": "آخر"
+            },
+            "detail": {
+                "category_label": "الفئة",
+                "hours_label": "ساعات في الأسبوع",
+                "time_credits_label": "الأرصدة الزمنية",
+                "contact_email_label": "البريد الإلكتروني للتواصل",
+                "contact_phone_label": "هاتف التواصل",
+                "close_button": "أغلق هذه الفرصة",
+                "reopen_button": "أعد فتح هذه الفرصة",
+                "states": {
+                    "closed": "هذه الفرصة مغلقة ولم تعد تقبل الطلبات.",
+                    "reopened": "هذه الفرصة مفتوحة مجددًا وتقبل الطلبات.",
+                    "reopen_pending_review": "أُرسلت فرصتك للمراجعة. ستُعاد فتحها بعد الموافقة عليها.",
+                    "status_change_failed": "تعذّر علينا تغيير حالة هذه الفرصة. يرجى المحاولة مرة أخرى."
+                }
             }
         },
         "govuk_alpha_listings": {

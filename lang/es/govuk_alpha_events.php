@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Borrador',
         'pending_review_tag' => 'Pendiente de revisión',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Ya has enviado tus respuestas. Si vuelves a enviar este formulario, tus nuevas respuestas sustituirán a las que enviaste antes.',
+    ],
 ];

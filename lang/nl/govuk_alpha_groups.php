@@ -110,8 +110,16 @@ return [
         'delete_aria' => ':name verwijderen',
         'manage_link' => 'Bestanden bekijken',
         'nav_files' => 'Bestanden',
+        'folder_filter_label' => 'Bestanden tonen in',
+        'folder_filter_all' => 'Alle mappen',
+        'pagination_label' => 'Bestandspagina’s',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Lidmaatschapsverzoek intrekken',
     ],
     'states' => [
+        'group-request-cancelled' => 'Je lidmaatschapsverzoek is ingetrokken.',
         'invite-link-created' => 'Er is een nieuwe uitnodigingslink gegenereerd.',
         'invite-link-failed' => 'De uitnodigingslink kan niet worden gegenereerd. Probeer het opnieuw.',
         'invite-emails-sent' => 'De uitnodigingen zijn verzonden.',

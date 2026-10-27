@@ -151,10 +151,20 @@
     {% endfor %}
   {% endif %}
 
+  {% if isOwner %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_courses.edit_course") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_courses.your_course") }}</p>
+    <a class="govuk-button" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/edit') }}">{{ t("govuk_alpha_courses.edit_course") }}</a>
+  {% else %}
   <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_courses.join_course") }}</h2>
   {% if isEnrolled %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("courses.enrolled_notice") }}</p>
+    </div>
+    <a class="govuk-button" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/courses/' + (course.id | string) + '/learn') }}">{{ t("govuk_alpha_courses.continue_learning") }}</a>
+  {% elif hasUnmetPrerequisites %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_courses.prerequisites_required") }}</p>
     </div>
   {% else %}
     {% if course.creditCost > 0 %}
@@ -166,6 +176,7 @@
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("courses.enrol_button") }}</button>
     </form>
+  {% endif %}
   {% endif %}
     </div>
   </div>

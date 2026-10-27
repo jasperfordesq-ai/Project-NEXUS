@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Zamknięty w sobie',
         'unknown' => 'Inny',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Kategoria',
+        'hours_label' => 'Liczba godzin tygodniowo',
+        'time_credits_label' => 'Kredyty czasowe',
+        'contact_email_label' => 'Adres e-mail do kontaktu',
+        'contact_phone_label' => 'Telefon kontaktowy',
+        'close_button' => 'Zamknij tę możliwość',
+        'reopen_button' => 'Otwórz ponownie tę możliwość',
+        'states' => [
+            'closed' => 'Ta możliwość jest zamknięta i nie przyjmuje już zgłoszeń.',
+            'reopened' => 'Ta możliwość jest ponownie otwarta i przyjmuje zgłoszenia.',
+            'reopen_pending_review' => 'Twoja możliwość została przesłana do weryfikacji. Zostanie ponownie otwarta po zatwierdzeniu.',
+            'status_change_failed' => 'Nie udało się zmienić statusu tej możliwości. Spróbuj ponownie.',
+        ],
+    ],
 ];

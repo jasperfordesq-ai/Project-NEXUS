@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Dréacht',
         'pending_review_tag' => 'Ag fanacht le hathbhreithniú',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Sheol tú do fhreagraí cheana féin. Má sheolann tú an fhoirm seo arís, cuirfidh do fhreagraí nua in ionad na bhfreagraí a sheol tú roimhe seo.',
+    ],
 ];

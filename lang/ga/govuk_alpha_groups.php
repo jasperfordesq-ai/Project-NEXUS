@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Scrios :name',
         'manage_link' => 'Féach ar chomhaid',
         'nav_files' => 'Comhaid',
+        'folder_filter_label' => 'Taispeáin comhaid i',
+        'folder_filter_all' => 'Gach fillteán',
+        'pagination_label' => 'Leathanaigh comhad',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Cealaigh an t-iarratas ballraíochta',
     ],
     'states' => [
+        'group-request-cancelled' => 'Cealaíodh d’iarratas ballraíochta.',
         'invite-link-created' => 'Gineadh nasc cuirí nua.',
         'invite-link-failed' => 'Níorbh fhéidir nasc an chuiridh a ghiniúint. Bain triail eile as.',
         'invite-emails-sent' => 'Tá na cuirí seolta.',

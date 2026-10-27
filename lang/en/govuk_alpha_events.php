@@ -431,4 +431,7 @@ return [
         'draft_tag' => 'Draft',
         'pending_review_tag' => 'Waiting for review',
     ],
+    'registration' => [
+        'answers_already_sent' => 'You have already sent your answers. If you send this form again, your new answers replace the ones you sent before.',
+    ],
 ];

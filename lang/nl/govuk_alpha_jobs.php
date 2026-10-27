@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Ingetrokken',
         'unknown' => 'Ander',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Categorie',
+        'hours_label' => 'Uren per week',
+        'time_credits_label' => 'Tijdkredieten',
+        'contact_email_label' => 'Contacte-mailadres',
+        'contact_phone_label' => 'Contacttelefoon',
+        'close_button' => 'Deze mogelijkheid sluiten',
+        'reopen_button' => 'Deze mogelijkheid heropenen',
+        'states' => [
+            'closed' => 'Deze mogelijkheid is gesloten en neemt geen sollicitaties meer aan.',
+            'reopened' => 'Deze mogelijkheid is weer open en neemt sollicitaties aan.',
+            'reopen_pending_review' => 'Uw mogelijkheid is ter beoordeling ingediend. Ze gaat weer open zodra ze is goedgekeurd.',
+            'status_change_failed' => 'We konden de status van deze mogelijkheid niet wijzigen. Probeer het opnieuw.',
+        ],
+    ],
 ];

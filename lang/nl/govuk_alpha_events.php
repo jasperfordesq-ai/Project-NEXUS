@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Concept',
         'pending_review_tag' => 'Wacht op beoordeling',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Je hebt je antwoorden al verstuurd. Als je dit formulier opnieuw verstuurt, vervangen je nieuwe antwoorden de eerder verstuurde.',
+    ],
 ];

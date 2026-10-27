@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Rascunho',
         'pending_review_tag' => 'A aguardar revisão',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Já enviou as suas respostas. Se enviar este formulário novamente, as novas respostas substituirão as que enviou antes.',
+    ],
 ];

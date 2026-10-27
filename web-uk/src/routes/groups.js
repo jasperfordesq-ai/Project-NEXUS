@@ -1611,9 +1611,26 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
     return renderForbidden(res);
   }
 
+  // 🔴 Group files listed the first 50 and stopped, and could not be browsed by
+  // folder (until 27 Oct 2026). Laravel pages them with a forward-only cursor and
+  // filters by `folder`; React lists the folders from GET /files/folders.
+  const cursor = trimmed(req.query.cursor, 200);
+  const selectedFolder = trimmed(req.query.folder, 100);
+  const filesQuery = new URLSearchParams();
+  filesQuery.set('per_page', '50');
+  if (cursor) filesQuery.set('cursor', cursor);
+  if (selectedFolder) filesQuery.set('folder', selectedFolder);
+
   let filesResult;
+  let foldersResult;
   try {
-    filesResult = await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/files?per_page=50`);
+    [filesResult, foldersResult] = await Promise.all([
+      callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/files?${filesQuery.toString()}`),
+      callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/files/folders`).catch((error) => {
+        if (isAuthError(error)) throw error;
+        return { data: [] };
+      })
+    ]);
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return renderForbidden(res);
@@ -1631,11 +1648,34 @@ router.get('/:id(\\d+)/files', requireAuth, asyncRoute(async (req, res) => {
       canDelete: isAdmin || (currentUserId !== null && file.uploadedBy === currentUserId)
     }));
 
+  const folders = collectionFrom(foldersResult)
+    .map((row) => ({
+      folder: trimmed(row?.folder, 100),
+      fileCount: Number(row?.file_count) || 0
+    }))
+    .filter((row) => row.folder !== '');
+  const filesData = dataFrom(filesResult) || {};
+  const nextCursor = trimmed(filesData.cursor || filesResult?.meta?.cursor, 200);
+  const hasMore = filesData.has_more === true || filesResult?.meta?.has_more === true;
+  const pageHref = (pageCursor) => {
+    const params = new URLSearchParams();
+    if (selectedFolder) params.set('folder', selectedFolder);
+    if (pageCursor) params.set('cursor', pageCursor);
+    const query = params.toString();
+    return `/groups/${id}/files${query ? `?${query}` : ''}`;
+  };
+
   return res.render('groups/files', {
     title: res.locals.t('govuk_alpha_groups.files.title'),
     activeNav: 'explore',
     group,
     files,
+    folders,
+    selectedFolder,
+    pagination: {
+      nextHref: hasMore && nextCursor ? pageHref(nextCursor) : '',
+      firstHref: cursor ? pageHref('') : ''
+    },
     isAdmin,
     currentUserId,
     uploadForm: consumeFormReplay(req, 'groupFiles', id),
@@ -1824,6 +1864,25 @@ router.post('/:id(\\d+)/join', requireAuth, audit.groupJoin(), asyncRoute(async 
   const pending = membershipState === 'pending' || trimmed(joined.action) === 'requested';
 
   res.redirect(groupRedirect(res, id, pending ? 'group-requested' : 'group-joined'));
+}));
+
+// Cancel a pending join request. Laravel withdraws it through the same
+// DELETE /v2/groups/{id}/membership that leaving uses (action "request_cancelled"),
+// which is what React's "Cancel join request" calls. Until 27 Oct 2026 web-uk only
+// said the request was pending and gave no way to take it back.
+router.post('/:id(\\d+)/cancel-request', requireAuth, audit.groupLeave(), asyncRoute(async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await leaveGroup(req.token, id);
+  } catch (error) {
+    if (error instanceof ApiError && error.status !== 401) {
+      return res.redirect(groupRedirect(res, id, 'group-failed'));
+    }
+    throw error;
+  }
+
+  res.redirect(groupRedirect(res, id, 'group-request-cancelled'));
 }));
 
 // Leave group

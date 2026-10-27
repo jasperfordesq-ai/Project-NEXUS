@@ -211,18 +211,41 @@ router.get('/saved', asyncRoute(async (req, res) => {
 
   const type = selectedSavedType(req.query.type);
   const status = trimmed(req.query.status);
-  const bookmarks = rowsFrom(await getBookmarks(token, {
+  // Saved items showed page 1 of 50 and nothing more (until 27 Oct 2026). Laravel's
+  // GET /v2/bookmarks is page-numbered (meta.current_page / total_pages), so follow it.
+  const requestedPage = Number.parseInt(String(req.query.page || ''), 10);
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const bookmarksResult = await getBookmarks(token, {
     type,
-    page: 1,
+    page,
     per_page: 50
-  }))
+  });
+  const bookmarks = rowsFrom(bookmarksResult)
     .map((item) => normalizeBookmark(item, res.locals.t))
     .filter((item) => item.title || item.type);
+  const meta = metaFrom(bookmarksResult);
+  const currentPage = Number(meta.current_page) > 0 ? Number(meta.current_page) : page;
+  const lastPage = Math.max(currentPage, Number(meta.total_pages) || 0);
+  const pageHref = (number) => {
+    const params = new URLSearchParams();
+    if (type) params.set('type', type);
+    params.set('page', String(number));
+    return `/saved?${params.toString()}`;
+  };
+  const pagination = lastPage > 1
+    ? {
+        currentPage,
+        lastPage,
+        previousHref: currentPage > 1 ? pageHref(currentPage - 1) : '',
+        nextHref: currentPage < lastPage ? pageHref(currentPage + 1) : ''
+      }
+    : null;
 
   return res.render('saved/index', {
     title: res.locals.t('saved.title'),
     activeNav: 'saved',
     bookmarks,
+    pagination,
     savedTypes: SAVED_TYPES,
     selectedType: type,
     status,

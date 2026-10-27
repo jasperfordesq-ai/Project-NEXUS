@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-27T10:38:43.089Z",
+  "generatedAt": "2026-10-27T11:48:43.084Z",
   "provenance": {
-    "generatedAt": "2026-10-27T10:38:43.089Z",
+    "generatedAt": "2026-10-27T11:48:43.084Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "921ed79ebca1134da66776f7c283dd6f7a97fd96",
+    "laravelCommitSha": "8bac7ee988c58217c772629d0586fa787730d446",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "921ed79ebca1134da66776f7c283dd6f7a97fd96",
+    "webUkRepositoryCommitSha": "8bac7ee988c58217c772629d0586fa787730d446",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-27T10:38:43.089Z",
+    "generatedAt": "2026-10-27T11:48:43.084Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 921,
+    "webUkRoutes": 924,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 211,
+    "extraWebUkRoutes": 214,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -94,10 +94,22 @@
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
       },
+      "groups": {
+        "matched": 36,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
       "help": {
         "matched": 1,
         "missing": 0,
         "extraWebUk": 3,
+        "ignoredInfrastructure": 0
+      },
+      "jobs": {
+        "matched": 38,
+        "missing": 0,
+        "extraWebUk": 2,
         "ignoredInfrastructure": 0
       },
       "legal-acceptance": {
@@ -364,12 +376,6 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "groups": {
-        "matched": 36,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
       "guide": {
         "matched": 1,
         "missing": 0,
@@ -384,12 +390,6 @@
       },
       "ideation": {
         "matched": 34,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "jobs": {
-        "matched": 38,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -1472,6 +1472,27 @@
       "webUkRouteKind": ""
     },
     {
+      "method": "POST",
+      "path": "/groups/{param}/cancel-request",
+      "family": "groups",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/groups/{param}/cancel-request",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/groups.js",
+      "webUkRouteKind": ""
+    },
+    {
       "method": "GET",
       "path": "/help/{param}",
       "family": "help",
@@ -1532,6 +1553,48 @@
       "webUkPath": "/help/{param}/{param}/{param}",
       "webUkView": "support/help-article",
       "webUkFile": "web-uk/src/routes/support.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/{param}/close",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/{param}/close",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/jobs/{param}/reopen",
+      "family": "jobs",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/jobs/{param}/reopen",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/jobs.js",
       "webUkRouteKind": ""
     },
     {

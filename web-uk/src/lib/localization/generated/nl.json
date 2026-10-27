@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Je hebt deze cursus afgerond. Goed gedaan.",
             "no_lessons_available": "Voor deze cursus zijn nog geen lessen beschikbaar.",
             "not_yet_available": "Nog niet beschikbaar",
+            "continue_learning": "Verder leren",
+            "your_course": "U hebt deze cursus gemaakt. Bewerk hem om de inhoud te wijzigen of om hem te publiceren.",
+            "prerequisites_required": "Rond de hierboven vermelde vereiste cursussen af voordat u zich kunt inschrijven.",
+            "locked_until": "Beschikbaar vanaf :date",
+            "pagination_label": "Cursuspagina's",
+            "previous_page": "Vorige pagina",
+            "next_page": "Volgende pagina",
             "select_lesson": "Selecteer een les uit de lijst om te beginnen.",
             "video_unsupported": "Uw browser kan deze video niet afspelen. Open het hieronder in een nieuw tabblad.",
             "open_video": "Open de video",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Bedankt - uw recensie is opgeslagen.",
                 "insufficient_credits": "Je hebt niet genoeg tijdskrediet om je in te schrijven voor deze cursus.",
                 "enrol_failed": "We konden u niet inschrijven voor deze cursus. Probeer het opnieuw.",
+                "not_available": "Inschrijven voor deze cursus is nog niet mogelijk.",
+                "prerequisites_not_met": "U moet eerst de vereiste cursussen afronden voordat u zich voor deze cursus kunt inschrijven.",
                 "certificate_locked": "Zodra u de cursus heeft afgerond, kunt u uw certificaat downloaden.",
                 "certificate_failed": "We konden uw certificaat niet overleggen. Probeer het opnieuw.",
                 "review_invalid": "Kies een beoordeling tussen 1 en 5 sterren.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Concept",
                 "pending_review_tag": "Wacht op beoordeling"
+            },
+            "registration": {
+                "answers_already_sent": "Je hebt je antwoorden al verstuurd. Als je dit formulier opnieuw verstuurt, vervangen je nieuwe antwoorden de eerder verstuurde."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Verwijderen",
                 "delete_aria": ":name verwijderen",
                 "manage_link": "Bestanden bekijken",
-                "nav_files": "Bestanden"
+                "nav_files": "Bestanden",
+                "folder_filter_label": "Bestanden tonen in",
+                "folder_filter_all": "Alle mappen",
+                "pagination_label": "Bestandspagina’s"
+            },
+            "membership": {
+                "cancel_request": "Lidmaatschapsverzoek intrekken"
             },
             "states": {
+                "group-request-cancelled": "Je lidmaatschapsverzoek is ingetrokken.",
                 "invite-link-created": "Er is een nieuwe uitnodigingslink gegenereerd.",
                 "invite-link-failed": "De uitnodigingslink kan niet worden gegenereerd. Probeer het opnieuw.",
                 "invite-emails-sent": "De uitnodigingen zijn verzonden.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Afgewezen",
                 "withdrawn": "Ingetrokken",
                 "unknown": "Ander"
+            },
+            "detail": {
+                "category_label": "Categorie",
+                "hours_label": "Uren per week",
+                "time_credits_label": "Tijdkredieten",
+                "contact_email_label": "Contacte-mailadres",
+                "contact_phone_label": "Contacttelefoon",
+                "close_button": "Deze mogelijkheid sluiten",
+                "reopen_button": "Deze mogelijkheid heropenen",
+                "states": {
+                    "closed": "Deze mogelijkheid is gesloten en neemt geen sollicitaties meer aan.",
+                    "reopened": "Deze mogelijkheid is weer open en neemt sollicitaties aan.",
+                    "reopen_pending_review": "Uw mogelijkheid is ter beoordeling ingediend. Ze gaat weer open zodra ze is goedgekeurd.",
+                    "status_change_failed": "We konden de status van deze mogelijkheid niet wijzigen. Probeer het opnieuw."
+                }
             }
         },
         "govuk_alpha_listings": {

@@ -2806,6 +2806,18 @@ router.get('/:id(\\d+)/lifecycle-history', requireAuth, asyncRoute(async (req, r
   });
 }, { notFoundTitle: 'Event not found' }));
 
+// The member's live submission for a registration + form version: React's
+// attendee card picks the same row (effective_slot 1, matching ids).
+function currentAttendeeSubmission(attendee, registrationId, formId) {
+  const row = arrayValues(attendee && attendee.submissions).find((submission) => (
+    positiveInteger(submission?.registration_id) === registrationId
+    && positiveInteger(submission?.form_version_id) === formId
+    && Number(submission?.effective_slot ?? 1) === 1
+  ));
+  if (!row || !positiveInteger(row.id)) return null;
+  return { id: positiveInteger(row.id), status: trimmed(row.status), revision: row.revision };
+}
+
 async function registrationProductState(token, id, query = '') {
   const attendee = dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}/registration-product`)) || {};
   let organizer = null;
@@ -2969,6 +2981,9 @@ router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) =
   for (const collection of ['submissions', 'campaigns', 'guests']) for (const suffix of ['page', 'per_page']) { const key = `${collection}_${suffix}`; if (positiveInteger(req.query[key])) query.set(key, String(positiveInteger(req.query[key]))); }
   const [eventResult, state, canSendBulkInvitations] = await Promise.all([callApi(token, 'GET', `/${encodeURIComponent(id)}`), registrationProductState(token, id, query.size ? `?${query}` : ''), viewerIsCommunityAdmin(req, token)]);
   const activeRegistration = arrayValues(state.attendee?.registrations).find((registration) => ['invited', 'confirmed', 'pending'].includes(trimmed(registration?.registration_state)));
+  const activeSubmission = activeRegistration && state.attendee?.form
+    ? currentAttendeeSubmission(state.attendee, positiveInteger(activeRegistration.id), positiveInteger(state.attendee.form.id))
+    : null;
   const replay = consumeRegistrationAnswers(req, id, positiveInteger(state.attendee?.form?.id));
   const settings = state.organizer?.settings;
   // The API reads a window in the event's CURRENT zone, so the form is filled in that
@@ -2988,7 +3003,7 @@ router.get('/:id(\\d+)/registration', requireAuth, asyncRoute(async (req, res) =
     }
   };
   res.set('Cache-Control', 'private, no-store');
-  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, organizer, registrationPagination: registrationPagination(id, req.query, organizer), activeRegistration, status: trimmed(req.query.status), apiReason: consumeEventRefusal(req, id, 'registration'), campaignTypes: invitationCampaignTypes(canSendBulkInvitations), eventTimeZone: timezone, answerValues: replay.values, answerErrors: replay.errors, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
+  return res.render('events/registration', { title: res.locals.t('event_registration.title'), activeNav: 'events', event: { id, title: trimmed(eventFrom(eventResult).title) }, ...state, organizer, registrationPagination: registrationPagination(id, req.query, organizer), activeRegistration, answersAlreadySent: activeSubmission?.status === 'submitted', status: trimmed(req.query.status), apiReason: consumeEventRefusal(req, id, 'registration'), campaignTypes: invitationCampaignTypes(canSendBulkInvitations), eventTimeZone: timezone, answerValues: replay.values, answerErrors: replay.errors, idempotencyKey: randomUUID(), csrfToken: req.csrfToken ? req.csrfToken() : '' });
 }, { notFoundTitle: 'Event not found' }));
 
 router.post('/:id(\\d+)/registration/settings', requireAuth, asyncRoute(async (req, res) => {
@@ -3117,7 +3132,6 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/forms/:
   const id = Number(req.params.id); const registrationId = positiveInteger(req.params.registrationId); const formId = positiveInteger(req.params.formId); const key = trimmed(req.body.idempotency_key, 180);
   if (!registrationId || !formId || !key) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   let answers = req.body.answers && typeof req.body.answers === 'object' ? { ...req.body.answers } : {};
-  const expectedRevision = req.body.expected_submission_revision === '' || req.body.expected_submission_revision === undefined ? null : Math.max(0, Number.parseInt(req.body.expected_submission_revision, 10));
   try {
     const attendee = dataFrom(await callApi(tokenFrom(req), 'GET', `/${encodeURIComponent(id)}/registration-product`)) || {};
     const registration = arrayValues(attendee.registrations).find((item) => positiveInteger(item?.id) === registrationId);
@@ -3128,6 +3142,19 @@ router.post('/:id(\\d+)/registration/registrations/:registrationId(\\d+)/forms/:
     if (Object.keys(errors).length) {
       rememberRegistrationAnswers(req, id, formId, answers, errors);
       return redirectTo(res, eventPath(id, '/registration?status=invalid#registration-answers'));
+    }
+    // The server keys every save on the member's CURRENT submission revision
+    // (EventRegistrationSubmissionService::saveDraft): none yet -> null; an unsent
+    // draft -> its revision; answers already sent -> refused, so open an amendment
+    // first and save into it, exactly as React's attendee card does.
+    let expectedRevision = null;
+    const current = currentAttendeeSubmission(attendee, registrationId, formId);
+    if (current && current.status === 'draft') {
+      expectedRevision = positiveInteger(current.revision);
+    } else if (current && current.status === 'submitted') {
+      const amended = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/submissions/${encodeURIComponent(current.id)}/amend`, { expected_revision: positiveInteger(current.revision) }, `${key}:amend`)) || {};
+      expectedRevision = positiveInteger((amended.submission || amended).revision);
+      if (!expectedRevision) throw new ApiError('Registration amendment response was incomplete', 502);
     }
     const saved = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${encodeURIComponent(id)}/registration-product/submissions`, { registration_id: registrationId, form_version_id: formId, answers, expected_revision: expectedRevision }, `${key}:draft`)) || {};
     const submission = saved.submission || saved; const submissionId = positiveInteger(submission.id); const revision = positiveInteger(submission.revision);

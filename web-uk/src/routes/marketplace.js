@@ -1227,7 +1227,7 @@ async function loadSellerCoupon(token, id, req) {
   return coupon;
 }
 
-function listingTabs(req, activeTab, counts) {
+function listingTabs(req, activeTab) {
   return LISTING_STATUS_TABS.map((value) => ({
     value,
     label: translateMarketplaceMessage(
@@ -1236,7 +1236,6 @@ function listingTabs(req, activeTab, counts) {
       LISTING_STATUS_LABELS[value]
     ),
     href: `/marketplace/mine?tab=${value}`,
-    count: counts[value] || 0,
     active: activeTab === value
   }));
 }
@@ -1257,8 +1256,18 @@ function indexQuery(query) {
   return params.toString();
 }
 
-function myListingsQuery(userId) {
-  return `limit=100&user_id=${userId}`;
+// 🔴 My listings asked for ONE page of 100 and filtered it here (until 27 Oct 2026), so a
+// seller's 101st listing was unreachable and each tab count was a count of that page.
+// Laravel filters own listings by `status` and pages them with a cursor, which is what
+// React's MyListingsPage asks for; the API returns no per-status totals, so the tabs
+// carry no counts (React shows none either).
+function myListingsQuery(userId, tab, query = {}) {
+  const params = new URLSearchParams();
+  params.set('user_id', String(userId));
+  params.set('status', tab);
+  params.set('limit', '30');
+  appendCursor(params, query);
+  return params.toString();
 }
 
 function categoryListingsQuery(categoryId, query) {
@@ -1404,14 +1413,6 @@ function listingRowsFrom(result) {
     rows: rowsFrom(result).map(decorateListing),
     meta: metaFrom(result)
   };
-}
-
-function countsByStatus(listings) {
-  return listings.reduce((counts, listing) => {
-    const status = trimmed(listing.status);
-    if (Object.prototype.hasOwnProperty.call(counts, status)) counts[status] += 1;
-    return counts;
-  }, { active: 0, draft: 0, sold: 0, expired: 0 });
 }
 
 function advancedSearchState(query) {
@@ -1781,22 +1782,23 @@ router.get('/mine', asyncRoute(async (req, res) => {
     if (currentUserId === null) {
       throw new ApiError('Authenticated marketplace profile is missing an id.', 502);
     }
+    const tab = allowed(req.query.tab, LISTING_STATUS_TABS, 'active');
     const listingResult = await callMarketplace(
       token,
       'GET',
-      `/listings?${myListingsQuery(currentUserId)}`
+      `/listings?${myListingsQuery(currentUserId, tab, req.query)}`
     );
-    const allListings = rowsFrom(listingResult).map(decorateListing);
-    const tab = allowed(req.query.tab, LISTING_STATUS_TABS, 'active');
-    const counts = countsByStatus(allListings);
+    const { rows: tabListings, meta } = listingRowsFrom(listingResult);
     return res.render('marketplace/manage', {
       title: 'My listings',
       titleKey: 'govuk_alpha_commerce.my_listings.title',
       activeNav: 'explore',
       activeTab: 'mine',
-      listings: allListings.filter((listing) => trimmed(listing.status) === tab),
+      // Defensive: the API already filtered by status.
+      listings: tabListings.filter((listing) => trimmed(listing.status) === tab),
       tab,
-      tabs: listingTabs(req, tab, counts),
+      tabs: listingTabs(req, tab),
+      pagination: pageLinks('/marketplace/mine', { tab, cursor: req.query.cursor }, meta),
       status: statusEntry(req, req.query.status)
     });
   } catch (error) {

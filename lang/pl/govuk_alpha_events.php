@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Szkic',
         'pending_review_tag' => 'Oczekuje na sprawdzenie',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Twoje odpowiedzi zostały już wysłane. Jeśli wyślesz ten formularz ponownie, nowe odpowiedzi zastąpią wcześniej wysłane.',
+    ],
 ];

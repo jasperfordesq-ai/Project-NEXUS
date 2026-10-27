@@ -71,5 +71,23 @@
         </article>
       {% endfor %}
     </div>
+    {% if pagination and (pagination.previousHref or pagination.nextHref) %}
+      <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ t('govuk_alpha_courses.pagination_label') }}">
+        {% if pagination.previousHref %}
+          <div class="govuk-pagination__prev">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(pagination.previousHref) }}" rel="prev">
+              <span class="govuk-pagination__link-title">{{ t("govuk_alpha_courses.previous_page") }}</span>
+            </a>
+          </div>
+        {% endif %}
+        {% if pagination.nextHref %}
+          <div class="govuk-pagination__next">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(pagination.nextHref) }}" rel="next">
+              <span class="govuk-pagination__link-title">{{ t("govuk_alpha_courses.next_page") }}</span>
+            </a>
+          </div>
+        {% endif %}
+      </nav>
+    {% endif %}
   {% endif %}
 {% endblock %}

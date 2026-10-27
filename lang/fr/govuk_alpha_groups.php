@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Supprimer :name',
         'manage_link' => 'Voir les fichiers',
         'nav_files' => 'Fichiers',
+        'folder_filter_label' => 'Afficher les fichiers de',
+        'folder_filter_all' => 'Tous les dossiers',
+        'pagination_label' => 'Pages de fichiers',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Annuler la demande d’adhésion',
     ],
     'states' => [
+        'group-request-cancelled' => 'Votre demande d’adhésion a été annulée.',
         'invite-link-created' => 'Un nouveau lien d\'invitation a été généré.',
         'invite-link-failed' => 'Le lien d\'invitation n\'a pas pu être généré. Veuillez réessayer.',
         'invite-emails-sent' => 'Les invitations ont été envoyées.',

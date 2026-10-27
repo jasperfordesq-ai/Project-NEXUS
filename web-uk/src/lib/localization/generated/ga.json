@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Tá an cúrsa seo críochnaithe agat. Maith thú.",
             "no_lessons_available": "Níl aon cheacht ar fáil sa chúrsa seo fós.",
             "not_yet_available": "Níl sé ar fáil fós",
+            "continue_learning": "Lean ort ag foghlaim",
+            "your_course": "Is tusa a chruthaigh an cúrsa seo. Cuir in eagar é chun a ábhar a athrú nó chun é a fhoilsiú.",
+            "prerequisites_required": "Críochnaigh na réamhchúrsaí atá liostaithe thuas sular féidir leat clárú.",
+            "locked_until": "Ar fáil ó :date",
+            "pagination_label": "Leathanaigh chúrsaí",
+            "previous_page": "An leathanach roimhe seo",
+            "next_page": "An chéad leathanach eile",
             "select_lesson": "Roghnaigh ceacht ón liosta chun tosú.",
             "video_unsupported": "Ní féidir le do bhrabhsálaí an físeán seo a sheinm. Oscail i gcluaisín nua thíos é.",
             "open_video": "Oscail an físeán",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Go raibh maith agat — sábháladh do léirmheas.",
                 "insufficient_credits": "Níl go leor creidmheasanna ama agat chun clárú ar an gcúrsa seo.",
                 "enrol_failed": "Níorbh fhéidir linn tú a chlárú ar an gcúrsa seo. Bain triail eile as.",
+                "not_available": "Níl clárú oscailte don chúrsa seo fós.",
+                "prerequisites_not_met": "Ní mór duit na réamhchúrsaí a chríochnú sular féidir leat clárú ar an gcúrsa seo.",
                 "certificate_locked": "Beidh tú in ann do theastas a íoslódáil nuair a bheidh an cúrsa críochnaithe agat.",
                 "certificate_failed": "Níorbh fhéidir linn do theastas a chruthú. Bain triail eile as.",
                 "review_invalid": "Roghnaigh rátáil idir 1 agus 5 réalta.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Dréacht",
                 "pending_review_tag": "Ag fanacht le hathbhreithniú"
+            },
+            "registration": {
+                "answers_already_sent": "Sheol tú do fhreagraí cheana féin. Má sheolann tú an fhoirm seo arís, cuirfidh do fhreagraí nua in ionad na bhfreagraí a sheol tú roimhe seo."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Scrios",
                 "delete_aria": "Scrios :name",
                 "manage_link": "Féach ar chomhaid",
-                "nav_files": "Comhaid"
+                "nav_files": "Comhaid",
+                "folder_filter_label": "Taispeáin comhaid i",
+                "folder_filter_all": "Gach fillteán",
+                "pagination_label": "Leathanaigh comhad"
+            },
+            "membership": {
+                "cancel_request": "Cealaigh an t-iarratas ballraíochta"
             },
             "states": {
+                "group-request-cancelled": "Cealaíodh d’iarratas ballraíochta.",
                 "invite-link-created": "Gineadh nasc cuirí nua.",
                 "invite-link-failed": "Níorbh fhéidir nasc an chuiridh a ghiniúint. Bain triail eile as.",
                 "invite-emails-sent": "Tá na cuirí seolta.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Diúltaithe",
                 "withdrawn": "Tarraingthe siar",
                 "unknown": "Eile"
+            },
+            "detail": {
+                "category_label": "Catagóir",
+                "hours_label": "Uaireanta in aghaidh na seachtaine",
+                "time_credits_label": "Creidmheasanna ama",
+                "contact_email_label": "Ríomhphost teagmhála",
+                "contact_phone_label": "Fón teagmhála",
+                "close_button": "Dún an deis seo",
+                "reopen_button": "Athoscail an deis seo",
+                "states": {
+                    "closed": "Tá an deis seo dúnta agus ní ghlacann sí le hiarratais a thuilleadh.",
+                    "reopened": "Tá an deis seo oscailte arís agus glacann sí le hiarratais.",
+                    "reopen_pending_review": "Seoladh do dheis lena hathbhreithniú. Athosclófar í nuair a cheadófar í.",
+                    "status_change_failed": "Níorbh fhéidir linn stádas na deise seo a athrú. Bain triail eile as."
+                }
             }
         },
         "govuk_alpha_listings": {

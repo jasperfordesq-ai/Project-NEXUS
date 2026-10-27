@@ -476,3 +476,63 @@ describe('8. the organiser\'s own unpublished events are tagged', () => {
     expect(res.text.split(t('govuk_alpha_events.listing.pending_review_tag')).length - 1).toBe(1);
   });
 });
+
+describe('9. registration answers can be changed after they are sent (React amend flow)', () => {
+  // The server refuses a new draft once answers are submitted
+  // (EventRegistrationSubmissionService::saveDraft -> revision_conflict) and also
+  // refuses to save over a draft without its revision. React amends first
+  // (POST …/submissions/{id}/amend), then saves into the new draft and submits.
+  const form = { id: 3, name: 'Your details', questions: [{ stable_key: 'diet', question_type: 'short_text', prompt: 'Dietary needs', is_required: false }] };
+  const registration = { id: 7, registration_state: 'confirmed' };
+  function attendeeWith(submissions) {
+    return [/^GET \/501\/registration-product$/, () => ({ data: { registrations: [registration], form, submissions } })];
+  }
+  const post = (body = {}) => request(app).post('/501/registration/registrations/7/forms/3/submit').type('form')
+    .send({ idempotency_key: 'answers-key-123456', 'answers[diet]': 'Vegetarian', ...body });
+
+  it('amends sent answers, saves into the new draft, and submits it', async () => {
+    routeApi([
+      attendeeWith([{ id: 40, registration_id: 7, form_version_id: 3, effective_slot: 1, status: 'submitted', revision: 2 }]),
+      [/^POST \/501\/registration-product\/submissions\/40\/amend$/, () => ({ data: { submission: { id: 41, status: 'draft', revision: 1 } } })],
+      [/^POST \/501\/registration-product\/submissions$/, () => ({ data: { submission: { id: 41, status: 'draft', revision: 2 } } })],
+      [/^POST \/501\/registration-product\/submissions\/41\/submit$/, () => ({ data: { submission: { id: 41, status: 'submitted', revision: 3 } } })],
+    ]);
+    const res = await post();
+    expect(res.headers.location).toContain('status=answers-submitted');
+    expect(lastCall('POST', /\/40\/amend$/)[3]).toEqual(expect.objectContaining({ expected_revision: 2 }));
+    expect(lastCall('POST', /\/submissions$/)[3]).toEqual(expect.objectContaining({ expected_revision: 1 }));
+    expect(lastCall('POST', /\/41\/submit$/)[3]).toEqual(expect.objectContaining({ expected_revision: 2 }));
+  });
+
+  it('saves over an unsent draft with that draft\'s revision, without amending', async () => {
+    routeApi([
+      attendeeWith([{ id: 40, registration_id: 7, form_version_id: 3, effective_slot: 1, status: 'draft', revision: 3 }]),
+      [/^POST \/501\/registration-product\/submissions$/, () => ({ data: { submission: { id: 40, status: 'draft', revision: 4 } } })],
+    ]);
+    const res = await post();
+    expect(res.headers.location).toContain('status=answers-submitted');
+    expect(lastCall('POST', /\/amend$/)).toBeUndefined();
+    expect(lastCall('POST', /\/submissions$/)[3]).toEqual(expect.objectContaining({ expected_revision: 3 }));
+  });
+
+  it('starts fresh when there are no answers yet', async () => {
+    routeApi([
+      attendeeWith([]),
+      [/^POST \/501\/registration-product\/submissions$/, () => ({ data: { submission: { id: 40, status: 'draft', revision: 1 } } })],
+    ]);
+    await post();
+    expect(lastCall('POST', /\/submissions$/)[3]).toEqual(expect.objectContaining({ expected_revision: null }));
+  });
+
+  it('tells the member their answers are already sent and that sending again replaces them', async () => {
+    routeApi([
+      [/^GET \/501$/, () => SUMMER_EVENT],
+      attendeeWith([{ id: 40, registration_id: 7, form_version_id: 3, effective_slot: 1, status: 'submitted', revision: 2 }]),
+    ]);
+    const res = await request(app).get('/501/registration');
+    expect(res.status).toBe(200);
+    const escaped = t('govuk_alpha_events.registration.answers_already_sent').replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    expect(escaped).not.toContain('govuk_alpha_events.registration');
+    expect(res.text).toContain(escaped);
+  });
+});

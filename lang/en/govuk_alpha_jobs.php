@@ -310,4 +310,21 @@ return [
         'withdrawn' => 'Withdrawn',
         'unknown' => 'Other',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Category',
+        'hours_label' => 'Hours per week',
+        'time_credits_label' => 'Time credits',
+        'contact_email_label' => 'Contact email',
+        'contact_phone_label' => 'Contact phone',
+        'close_button' => 'Close this opportunity',
+        'reopen_button' => 'Reopen this opportunity',
+        'states' => [
+            'closed' => 'This opportunity is closed and no longer accepts applications.',
+            'reopened' => 'This opportunity is open again and accepting applications.',
+            'reopen_pending_review' => 'Your opportunity has been sent for review. It will reopen once it is approved.',
+            'status_change_failed' => 'We could not change the status of this opportunity. Please try again.',
+        ],
+    ],
 ];

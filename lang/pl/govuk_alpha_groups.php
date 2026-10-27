@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Usuń :name',
         'manage_link' => 'Zobacz pliki',
         'nav_files' => 'Pliki',
+        'folder_filter_label' => 'Pokaż pliki w folderze',
+        'folder_filter_all' => 'Wszystkie foldery',
+        'pagination_label' => 'Strony plików',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Anuluj prośbę o dołączenie',
     ],
     'states' => [
+        'group-request-cancelled' => 'Twoja prośba o dołączenie została anulowana.',
         'invite-link-created' => 'Wygenerowano nowy link z zaproszeniem.',
         'invite-link-failed' => 'Nie można wygenerować linku z zaproszeniem. Spróbuj ponownie.',
         'invite-emails-sent' => 'Zaproszenia zostały wysłane.',

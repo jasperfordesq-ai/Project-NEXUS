@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Retirado',
         'unknown' => 'Otro',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Categoría',
+        'hours_label' => 'Horas por semana',
+        'time_credits_label' => 'Créditos de tiempo',
+        'contact_email_label' => 'Correo electrónico de contacto',
+        'contact_phone_label' => 'Teléfono de contacto',
+        'close_button' => 'Cerrar esta oportunidad',
+        'reopen_button' => 'Reabrir esta oportunidad',
+        'states' => [
+            'closed' => 'Esta oportunidad está cerrada y ya no acepta solicitudes.',
+            'reopened' => 'Esta oportunidad vuelve a estar abierta y acepta solicitudes.',
+            'reopen_pending_review' => 'Tu oportunidad se ha enviado a revisión. Se reabrirá cuando se apruebe.',
+            'status_change_failed' => 'No pudimos cambiar el estado de esta oportunidad. Inténtalo de nuevo.',
+        ],
+    ],
 ];

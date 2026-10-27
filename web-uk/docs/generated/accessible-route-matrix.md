@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T10:38:43.089Z
-Laravel commit SHA: `921ed79ebca1134da66776f7c283dd6f7a97fd96`
-Web UK repository commit SHA: `921ed79ebca1134da66776f7c283dd6f7a97fd96`
+Generated: 2026-10-27T11:48:43.084Z
+Laravel commit SHA: `8bac7ee988c58217c772629d0586fa787730d446`
+Web UK repository commit SHA: `8bac7ee988c58217c772629d0586fa787730d446`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 921 |
+| web-uk routes | 924 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 211 |
+| Extra web-uk routes | 214 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -53,13 +53,13 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | feed | 22 | 0 | 0 | 0 |
 | goals | 27 | 0 | 1 | 0 |
 | group-exchanges | 9 | 0 | 1 | 0 |
-| groups | 36 | 0 | 0 | 0 |
+| groups | 36 | 0 | 1 | 0 |
 | guide | 1 | 0 | 0 | 0 |
 | health | 0 | 0 | 0 | 1 |
 | help | 1 | 0 | 3 | 0 |
 | home | 2 | 0 | 0 | 0 |
 | ideation | 34 | 0 | 0 | 0 |
-| jobs | 38 | 0 | 0 | 0 |
+| jobs | 38 | 0 | 2 | 0 |
 | kb | 2 | 0 | 0 | 0 |
 | leaderboard | 5 | 0 | 0 | 0 |
 | legal | 6 | 0 | 3 | 0 |
@@ -164,9 +164,12 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/federation/settings/debit-approvals/{param}/decision` | federation |  | web-uk/src/routes/federation-actions.js |
 | POST | `/goals/{param}/buddy-requests/{param}/{param}` | goals |  | web-uk/src/routes/goals.js |
 | POST | `/group-exchanges/{param}/start` | group-exchanges |  | web-uk/src/routes/group-exchange-actions.js |
+| POST | `/groups/{param}/cancel-request` | groups |  | web-uk/src/routes/groups.js |
 | GET | `/help/{param}` | help |  | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}` | help | support/help-section | web-uk/src/routes/support.js |
 | GET | `/help/{param}/{param}/{param}` | help | support/help-article | web-uk/src/routes/support.js |
+| POST | `/jobs/{param}/close` | jobs |  | web-uk/src/routes/jobs.js |
+| POST | `/jobs/{param}/reopen` | jobs |  | web-uk/src/routes/jobs.js |
 | GET | `/legal-acceptance` | legal-acceptance | legal/accept | web-uk/src/routes/legal-acceptance.js |
 | POST | `/legal-acceptance` | legal-acceptance |  | web-uk/src/routes/legal-acceptance.js |
 | GET | `/legal/{param}/versions` | legal | legal/versions | web-uk/src/routes/legal.js |

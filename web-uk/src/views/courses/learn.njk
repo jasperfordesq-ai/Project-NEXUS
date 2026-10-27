@@ -58,6 +58,7 @@
               <li class="govuk-!-margin-bottom-1">
                 {% if not lesson.available %}
                   <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_courses.not_yet_available") }}</span></span>
+                  {% if lesson.unlockAtLabel %}<span class="govuk-body-s nexus-alpha-meta govuk-!-display-block">{{ t("govuk_alpha_courses.locked_until", { date: lesson.unlockAtLabel }) }}</span>{% endif %}
                 {% elif currentLesson and currentLesson.id == lesson.id %}
                   <strong>{{ lesson.title }}</strong>
                   {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.completed_tag") }}</span>{% endif %}

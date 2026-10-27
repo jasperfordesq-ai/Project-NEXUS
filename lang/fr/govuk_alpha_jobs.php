@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Retiré',
         'unknown' => 'Autre',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Catégorie',
+        'hours_label' => 'Heures par semaine',
+        'time_credits_label' => 'Crédits-temps',
+        'contact_email_label' => 'E-mail de contact',
+        'contact_phone_label' => 'Téléphone de contact',
+        'close_button' => 'Clôturer cette opportunité',
+        'reopen_button' => 'Rouvrir cette opportunité',
+        'states' => [
+            'closed' => 'Cette opportunité est clôturée et n\'accepte plus de candidatures.',
+            'reopened' => 'Cette opportunité est de nouveau ouverte et accepte les candidatures.',
+            'reopen_pending_review' => 'Votre opportunité a été envoyée pour vérification. Elle rouvrira une fois approuvée.',
+            'status_change_failed' => 'Nous n\'avons pas pu modifier le statut de cette opportunité. Veuillez réessayer.',
+        ],
+    ],
 ];

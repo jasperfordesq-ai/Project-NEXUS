@@ -154,10 +154,18 @@ return [
         'delete_aria'       => 'Delete :name',
         'manage_link'       => 'View files',
         'nav_files'         => 'Files',
+        'folder_filter_label' => 'Show files in',
+        'folder_filter_all' => 'All folders',
+        'pagination_label' => 'File pages',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Cancel join request',
     ],
 
     // ---- Status banners (flash messages) -------------------------------
     'states' => [
+        'group-request-cancelled' => 'Your request to join has been cancelled.',
         'invite-link-created' => 'A new invite link was generated.',
         'invite-link-failed' => 'The invite link could not be generated. Please try again.',
         'invite-emails-sent' => 'The invitations have been sent.',

@@ -4560,6 +4560,7 @@ module.exports = {
   deleteSavedCollection,
   deleteSavedItem,
   getBlogPosts,
+  getBlogCategories,
   getBlogPost,
   getComments,
   getReactionSummary,
@@ -4825,3 +4826,12 @@ module.exports = {
   importVereinMembers,
   uploadMerchantOnboardingImage
 };
+
+// Blog categories for the list filter (GET /api/v2/blog/categories — a plain
+// list in `data`, as React BlogPage reads it). Added after the export block so
+// concurrent additions above do not collide.
+async function getBlogCategories(token = '') {
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  return request('/api/v2/blog/categories', { headers });
+}
+

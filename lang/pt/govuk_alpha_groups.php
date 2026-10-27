@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Eliminar :name',
         'manage_link' => 'Ver ficheiros',
         'nav_files' => 'Ficheiros',
+        'folder_filter_label' => 'Mostrar ficheiros em',
+        'folder_filter_all' => 'Todas as pastas',
+        'pagination_label' => 'Páginas de ficheiros',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Cancelar o pedido de adesão',
     ],
     'states' => [
+        'group-request-cancelled' => 'O seu pedido de adesão foi cancelado.',
         'invite-link-created' => 'Um novo link de convite foi gerado.',
         'invite-link-failed' => 'Não foi possível gerar o link de convite. Por favor, tente novamente.',
         'invite-emails-sent' => 'Os convites foram enviados.',

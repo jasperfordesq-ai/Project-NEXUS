@@ -8,6 +8,7 @@ const { sanitizeCmsHtml } = require('../lib/html-sanitizer');
 const { URL } = require('node:url');
 const {
   getBlogPosts,
+  getBlogCategories,
   getBlogPost,
   getComments,
   getReactionSummary,
@@ -311,11 +312,18 @@ router.get('/', asyncRoute(async (req, res) => {
     per_page: 12
   };
 
-  const result = await getBlogPosts(token, params);
+  // GET /v2/blog is a respondWithCollection: `data` is the plain post list and
+  // the paging (has_more, cursor) lives in `meta`. Categories are a separate
+  // read (GET /v2/blog/categories); losing them only hides the filter.
+  const [result, categoriesResult] = await Promise.all([
+    getBlogPosts(token, params),
+    Promise.resolve().then(() => getBlogCategories(token)).catch(() => null)
+  ]);
   const data = dataFrom(result);
   const payload = asObject(data);
+  const meta = metaFrom(result);
   const posts = asList(payload.items || data).map(normalizePost);
-  const categories = asList(payload.categories).map(normalizeCategory).filter((category) => category.id && category.name);
+  const categories = asList(dataFrom(categoriesResult)).map(normalizeCategory).filter((category) => category.id && category.name);
 
   return res.render('blog/index', {
     title: res.locals.t('blog.title'),
@@ -326,8 +334,8 @@ router.get('/', asyncRoute(async (req, res) => {
     categories,
     searchQuery: search,
     categoryId,
-    hasMore: Boolean(payload.has_more || payload.hasMore),
-    nextCursor: trimmed(payload.cursor || payload.next_cursor || payload.nextCursor)
+    hasMore: Boolean(meta.has_more || payload.has_more),
+    nextCursor: trimmed(meta.cursor || meta.next_cursor || payload.cursor)
   });
 }));
 

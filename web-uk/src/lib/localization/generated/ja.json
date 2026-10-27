@@ -7777,6 +7777,13 @@
             "course_completed_panel": "このコースは完了しました。よくやった。",
             "no_lessons_available": "このコースにはまだ受講可能なレッスンがありません。",
             "not_yet_available": "まだ利用できません",
+            "continue_learning": "学習を続ける",
+            "your_course": "このコースはあなたが作成しました。内容を変更したり公開したりするには、コースを編集してください。",
+            "prerequisites_required": "登録するには、上に記載された前提コースを修了してください。",
+            "locked_until": ":date から利用可能",
+            "pagination_label": "コースのページ",
+            "previous_page": "前のページ",
+            "next_page": "次のページ",
             "select_lesson": "リストからレッスンを選択して開始します。",
             "video_unsupported": "お使いのブラウザではこのビデオを再生できません。下の新しいタブで開きます。",
             "open_video": "ビデオを開く",
@@ -7827,6 +7834,8 @@
                 "review_saved": "ありがとうございます - あなたのレビューは保存されました。",
                 "insufficient_credits": "このコースに登録するのに十分な時間単位がありません。",
                 "enrol_failed": "このコースにあなたを登録できませんでした。もう一度試してください。",
+                "not_available": "このコースはまだ登録を受け付けていません。",
+                "prerequisites_not_met": "このコースに登録するには、前提コースを修了する必要があります。",
                 "certificate_locked": "コースを完了すると、証明書をダウンロードできます。",
                 "certificate_failed": "証明書を作成できませんでした。もう一度試してください。",
                 "review_invalid": "1 つ星から 5 つ星までの評価を選択してください。",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "下書き",
                 "pending_review_tag": "審査待ち"
+            },
+            "registration": {
+                "answers_already_sent": "回答はすでに送信済みです。このフォームをもう一度送信すると、新しい回答が以前の回答に置き換わります。"
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "削除",
                 "delete_aria": ":name を削除",
                 "manage_link": "ファイルを表示",
-                "nav_files": "ファイル"
+                "nav_files": "ファイル",
+                "folder_filter_label": "表示するフォルダ",
+                "folder_filter_all": "すべてのフォルダ",
+                "pagination_label": "ファイルのページ"
+            },
+            "membership": {
+                "cancel_request": "参加リクエストを取り消す"
             },
             "states": {
+                "group-request-cancelled": "参加リクエストを取り消しました。",
                 "invite-link-created": "新しい招待リンクが生成されました。",
                 "invite-link-failed": "招待リンクを生成できませんでした。もう一度試してください。",
                 "invite-emails-sent": "招待状は送信されました。",
@@ -9843,6 +9862,21 @@
                 "rejected": "拒否されました",
                 "withdrawn": "撤回されました",
                 "unknown": "他の"
+            },
+            "detail": {
+                "category_label": "カテゴリー",
+                "hours_label": "週あたりの時間数",
+                "time_credits_label": "タイムクレジット",
+                "contact_email_label": "連絡先メールアドレス",
+                "contact_phone_label": "連絡先電話番号",
+                "close_button": "この機会を締め切る",
+                "reopen_button": "この機会を再開する",
+                "states": {
+                    "closed": "この機会は締め切られ、応募を受け付けていません。",
+                    "reopened": "この機会は再開され、応募を受け付けています。",
+                    "reopen_pending_review": "あなたの機会は審査に送られました。承認されると再開されます。",
+                    "status_change_failed": "この機会のステータスを変更できませんでした。もう一度お試しください。"
+                }
             }
         },
         "govuk_alpha_listings": {

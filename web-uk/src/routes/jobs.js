@@ -171,7 +171,10 @@ const JOB_STATUS_MESSAGES = Object.freeze({
   deleted: 'The opportunity has been deleted.',
   created: 'Your opportunity has been posted.',
   updated: 'Your changes have been saved.',
-  renewed: 'The closing date has been extended.'
+  renewed: 'The closing date has been extended.',
+  closed: 'This opportunity is closed and no longer accepts applications.',
+  reopened: 'This opportunity is open again and accepting applications.',
+  'reopen-pending-review': 'Your opportunity has been sent for review. It will reopen once it is approved.'
 });
 const JOB_STATUS_MESSAGE_KEYS = Object.freeze({
   applied: 'jobs.states.applied',
@@ -181,7 +184,10 @@ const JOB_STATUS_MESSAGE_KEYS = Object.freeze({
   deleted: 'jobs_t3.states.deleted',
   created: 'jobs_t3.states.created',
   updated: 'jobs_t3.states.updated',
-  renewed: 'jobs_t3.states.renewed'
+  renewed: 'jobs_t3.states.renewed',
+  closed: 'govuk_alpha_jobs.detail.states.closed',
+  reopened: 'govuk_alpha_jobs.detail.states.reopened',
+  'reopen-pending-review': 'govuk_alpha_jobs.detail.states.reopen_pending_review'
 });
 const JOB_STATUS_ERROR_MESSAGES = Object.freeze({
   'delete-failed': 'We could not delete the opportunity. Please try again.',
@@ -203,7 +209,8 @@ const JOB_ACTION_ERROR_MESSAGES = Object.freeze({
   'renew-failed': 'We could not renew the opportunity. Please try again.',
   'cv-invalid': 'Your CV must be a PDF, DOC or DOCX file. Your application was not submitted.',
   'cv-too-large': 'Your CV must be 5MB or smaller. Your application was not submitted.',
-  'cover-required': 'Please tell the employer why you are a good fit. Your application was not submitted.'
+  'cover-required': 'Please tell the employer why you are a good fit. Your application was not submitted.',
+  'status-change-failed': 'We could not change the status of this opportunity. Please try again.'
 });
 const JOB_ACTION_ERROR_MESSAGE_KEYS = Object.freeze({
   'apply-failed': 'jobs.states.apply-failed',
@@ -211,7 +218,8 @@ const JOB_ACTION_ERROR_MESSAGE_KEYS = Object.freeze({
   'renew-failed': 'jobs_t3.states.renew-failed',
   'cv-invalid': 'jobs.states.cv-invalid',
   'cv-too-large': 'jobs.states.cv-too-large',
-  'cover-required': 'jobs.states.cover-required'
+  'cover-required': 'jobs.states.cover-required',
+  'status-change-failed': 'govuk_alpha_jobs.detail.states.status_change_failed'
 });
 const JOB_FORM_ERROR_MESSAGES = Object.freeze({
   'title-required': 'Enter a title for the opportunity.',
@@ -675,6 +683,11 @@ function skillsFrom(job) {
     .filter(Boolean);
 }
 
+function optionalJobNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  return finiteNumber(value, null);
+}
+
 function decorateJob(job) {
   const organizationName = personName(job.organization);
   const posterName = organizationName || personName(job.creator);
@@ -708,6 +721,13 @@ function decorateJob(job) {
     hasApplied: checked(job.has_applied),
     isSaved: checked(job.is_saved),
     isRemote: checked(job.is_remote),
+    // Shown on the detail as React's JobMetadataSidebar does.
+    categoryLabel: trimmed(job.category, 255),
+    hoursPerWeek: optionalJobNumber(job.hours_per_week),
+    timeCredits: optionalJobNumber(job.time_credits),
+    contactEmail: trimmed(job.contact_email, 255),
+    contactPhone: trimmed(job.contact_phone, 50),
+    contactPhoneHref: trimmed(job.contact_phone, 50).replace(/[^+\d]/g, ''),
     statusLabel: JOB_POSTING_STATUS_LABELS[job.status] || trimmed(job.status) || JOB_POSTING_STATUS_LABELS.open,
     statusTranslationKey: JOB_POSTING_STATUS_LABELS[job.status]
       ? `jobs_t3.status_${job.status}`
@@ -2626,6 +2646,30 @@ router.post('/:id(\\d+)/renew', asyncRoute(async (req, res) => {
     return redirectTo(res, jobRedirect(id, 'renew-failed'));
   }
 }));
+
+// Close / reopen a vacancy — the same PUT /v2/jobs/{id} { status } React's
+// JobOwnerBanner sends. The API checks ownership. Under job moderation a reopen
+// is stored as a draft awaiting review (JobVacancyService F-211), so the
+// returned vacancy decides which confirmation the owner sees.
+async function changeJobStatus(req, res, status) {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+
+  const id = Number(req.params.id);
+  try {
+    const result = await callJob(token, 'PUT', '/' + encodeURIComponent(id), { status });
+    if (status === 'closed') return redirectTo(res, jobRedirect(id, 'closed'));
+    const saved = dataFrom(result);
+    const heldForReview = saved && typeof saved === 'object' && saved.status === 'draft';
+    return redirectTo(res, jobRedirect(id, heldForReview ? 'reopen-pending-review' : 'reopened'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, jobRedirect(id, 'status-change-failed'));
+  }
+}
+
+router.post('/:id(\\d+)/close', asyncRoute(async (req, res) => changeJobStatus(req, res, 'closed')));
+router.post('/:id(\\d+)/reopen', asyncRoute(async (req, res) => changeJobStatus(req, res, 'open')));
 
 router.post('/:id(\\d+)/apply', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

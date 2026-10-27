@@ -291,4 +291,21 @@ return [
         'withdrawn' => '撤回されました',
         'unknown' => '他の',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'カテゴリー',
+        'hours_label' => '週あたりの時間数',
+        'time_credits_label' => 'タイムクレジット',
+        'contact_email_label' => '連絡先メールアドレス',
+        'contact_phone_label' => '連絡先電話番号',
+        'close_button' => 'この機会を締め切る',
+        'reopen_button' => 'この機会を再開する',
+        'states' => [
+            'closed' => 'この機会は締め切られ、応募を受け付けていません。',
+            'reopened' => 'この機会は再開され、応募を受け付けています。',
+            'reopen_pending_review' => 'あなたの機会は審査に送られました。承認されると再開されます。',
+            'status_change_failed' => 'この機会のステータスを変更できませんでした。もう一度お試しください。',
+        ],
+    ],
 ];

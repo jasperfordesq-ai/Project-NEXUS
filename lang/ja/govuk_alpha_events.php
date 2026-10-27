@@ -419,4 +419,7 @@ return [
         'draft_tag' => '下書き',
         'pending_review_tag' => '審査待ち',
     ],
+    'registration' => [
+        'answers_already_sent' => '回答はすでに送信済みです。このフォームをもう一度送信すると、新しい回答が以前の回答に置き換わります。',
+    ],
 ];

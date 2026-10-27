@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'انسحبت',
         'unknown' => 'آخر',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'الفئة',
+        'hours_label' => 'ساعات في الأسبوع',
+        'time_credits_label' => 'الأرصدة الزمنية',
+        'contact_email_label' => 'البريد الإلكتروني للتواصل',
+        'contact_phone_label' => 'هاتف التواصل',
+        'close_button' => 'أغلق هذه الفرصة',
+        'reopen_button' => 'أعد فتح هذه الفرصة',
+        'states' => [
+            'closed' => 'هذه الفرصة مغلقة ولم تعد تقبل الطلبات.',
+            'reopened' => 'هذه الفرصة مفتوحة مجددًا وتقبل الطلبات.',
+            'reopen_pending_review' => 'أُرسلت فرصتك للمراجعة. ستُعاد فتحها بعد الموافقة عليها.',
+            'status_change_failed' => 'تعذّر علينا تغيير حالة هذه الفرصة. يرجى المحاولة مرة أخرى.',
+        ],
+    ],
 ];

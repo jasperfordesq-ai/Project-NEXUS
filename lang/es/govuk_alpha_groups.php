@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'Eliminar :name',
         'manage_link' => 'Ver archivos',
         'nav_files' => 'Archivos',
+        'folder_filter_label' => 'Mostrar archivos en',
+        'folder_filter_all' => 'Todas las carpetas',
+        'pagination_label' => 'Páginas de archivos',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Cancelar la solicitud de ingreso',
     ],
     'states' => [
+        'group-request-cancelled' => 'Se ha cancelado tu solicitud de ingreso.',
         'invite-link-created' => 'Se generó un nuevo enlace de invitación.',
         'invite-link-failed' => 'No se pudo generar el enlace de invitación. Por favor inténtalo de nuevo.',
         'invite-emails-sent' => 'Las invitaciones han sido enviadas.',

@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Zurückgezogen',
         'unknown' => 'Andere',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Kategorie',
+        'hours_label' => 'Stunden pro Woche',
+        'time_credits_label' => 'Zeitgutschriften',
+        'contact_email_label' => 'Kontakt-E-Mail',
+        'contact_phone_label' => 'Kontakttelefon',
+        'close_button' => 'Diese Gelegenheit schließen',
+        'reopen_button' => 'Diese Gelegenheit wieder öffnen',
+        'states' => [
+            'closed' => 'Diese Gelegenheit ist geschlossen und nimmt keine Bewerbungen mehr an.',
+            'reopened' => 'Diese Gelegenheit ist wieder geöffnet und nimmt Bewerbungen an.',
+            'reopen_pending_review' => 'Ihre Gelegenheit wurde zur Prüfung eingereicht. Sie wird nach der Freigabe wieder geöffnet.',
+            'status_change_failed' => 'Wir konnten den Status dieser Gelegenheit nicht ändern. Bitte versuchen Sie es erneut.',
+        ],
+    ],
 ];

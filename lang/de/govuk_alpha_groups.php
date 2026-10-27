@@ -110,8 +110,16 @@ return [
         'delete_aria' => ':name löschen',
         'manage_link' => 'Dateien anzeigen',
         'nav_files' => 'Dateien',
+        'folder_filter_label' => 'Dateien anzeigen in',
+        'folder_filter_all' => 'Alle Ordner',
+        'pagination_label' => 'Dateiseiten',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'Beitrittsanfrage zurückziehen',
     ],
     'states' => [
+        'group-request-cancelled' => 'Ihre Beitrittsanfrage wurde zurückgezogen.',
         'invite-link-created' => 'Ein neuer Einladungslink wurde generiert.',
         'invite-link-failed' => 'Der Einladungslink konnte nicht generiert werden. Bitte versuchen Sie es erneut.',
         'invite-emails-sent' => 'Die Einladungen wurden verschickt.',

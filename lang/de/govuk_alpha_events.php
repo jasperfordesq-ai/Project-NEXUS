@@ -419,4 +419,7 @@ return [
         'draft_tag' => 'Entwurf',
         'pending_review_tag' => 'Wartet auf Prüfung',
     ],
+    'registration' => [
+        'answers_already_sent' => 'Sie haben Ihre Antworten bereits gesendet. Wenn Sie dieses Formular erneut senden, ersetzen Ihre neuen Antworten die bisherigen.',
+    ],
 ];

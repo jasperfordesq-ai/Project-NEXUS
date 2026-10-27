@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Vous avez terminé ce cours. Bien joué.",
             "no_lessons_available": "Ce cours n'a pas encore de leçons disponibles.",
             "not_yet_available": "Pas encore disponible",
+            "continue_learning": "Continuer à apprendre",
+            "your_course": "Vous avez créé ce cours. Modifiez-le pour changer son contenu ou pour le publier.",
+            "prerequisites_required": "Terminez les cours prérequis indiqués ci-dessus avant de pouvoir vous inscrire.",
+            "locked_until": "Disponible à partir du :date",
+            "pagination_label": "Pages des cours",
+            "previous_page": "Page précédente",
+            "next_page": "Page suivante",
             "select_lesson": "Sélectionnez une leçon dans la liste pour commencer.",
             "video_unsupported": "Votre navigateur ne peut pas lire cette vidéo. Ouvrez-le dans un nouvel onglet ci-dessous.",
             "open_video": "Ouvrir la vidéo",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Merci - votre avis a été enregistré.",
                 "insufficient_credits": "Vous ne disposez pas de suffisamment de crédits temps pour vous inscrire à ce cours.",
                 "enrol_failed": "Nous n'avons pas pu vous inscrire à ce cours. Veuillez réessayer.",
+                "not_available": "Les inscriptions à ce cours ne sont pas encore ouvertes.",
+                "prerequisites_not_met": "Vous devez terminer les cours prérequis avant de pouvoir vous inscrire à ce cours.",
                 "certificate_locked": "Vous pouvez télécharger votre certificat une fois que vous avez terminé le cours.",
                 "certificate_failed": "Nous n'avons pas pu produire votre certificat. Veuillez réessayer.",
                 "review_invalid": "Veuillez choisir une note entre 1 et 5 étoiles.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Brouillon",
                 "pending_review_tag": "En attente de validation"
+            },
+            "registration": {
+                "answers_already_sent": "Vous avez déjà envoyé vos réponses. Si vous renvoyez ce formulaire, vos nouvelles réponses remplaceront celles envoyées précédemment."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Supprimer",
                 "delete_aria": "Supprimer :name",
                 "manage_link": "Voir les fichiers",
-                "nav_files": "Fichiers"
+                "nav_files": "Fichiers",
+                "folder_filter_label": "Afficher les fichiers de",
+                "folder_filter_all": "Tous les dossiers",
+                "pagination_label": "Pages de fichiers"
+            },
+            "membership": {
+                "cancel_request": "Annuler la demande d’adhésion"
             },
             "states": {
+                "group-request-cancelled": "Votre demande d’adhésion a été annulée.",
                 "invite-link-created": "Un nouveau lien d'invitation a été généré.",
                 "invite-link-failed": "Le lien d'invitation n'a pas pu être généré. Veuillez réessayer.",
                 "invite-emails-sent": "Les invitations ont été envoyées.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Rejeté",
                 "withdrawn": "Retiré",
                 "unknown": "Autre"
+            },
+            "detail": {
+                "category_label": "Catégorie",
+                "hours_label": "Heures par semaine",
+                "time_credits_label": "Crédits-temps",
+                "contact_email_label": "E-mail de contact",
+                "contact_phone_label": "Téléphone de contact",
+                "close_button": "Clôturer cette opportunité",
+                "reopen_button": "Rouvrir cette opportunité",
+                "states": {
+                    "closed": "Cette opportunité est clôturée et n'accepte plus de candidatures.",
+                    "reopened": "Cette opportunité est de nouveau ouverte et accepte les candidatures.",
+                    "reopen_pending_review": "Votre opportunité a été envoyée pour vérification. Elle rouvrira une fois approuvée.",
+                    "status_change_failed": "Nous n'avons pas pu modifier le statut de cette opportunité. Veuillez réessayer."
+                }
             }
         },
         "govuk_alpha_listings": {

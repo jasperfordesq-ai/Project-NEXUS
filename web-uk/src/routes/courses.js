@@ -9,6 +9,7 @@ const { sanitizeCmsHtml, htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { translateForRequest } = require('../lib/request-translator');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { getRequestProfile } = require('../lib/request-profile');
 
 const router = express.Router();
 
@@ -91,7 +92,9 @@ const COURSE_STATUS_MESSAGES = {
   'certificate-failed': { type: 'error', key: 'certificate_failed' },
   'review-invalid': { type: 'error', key: 'review_invalid' },
   'review-not-enrolled': { type: 'error', key: 'review_not_enrolled' },
-  'review-failed': { type: 'error', key: 'review_failed' }
+  'review-failed': { type: 'error', key: 'review_failed' },
+  'not-available': { type: 'error', key: 'not_available' },
+  'prerequisites-not-met': { type: 'error', key: 'prerequisites_not_met' }
 };
 const LEARN_STATUS_MESSAGES = {
   'lesson-completed': { type: 'success', key: 'lesson_completed' },
@@ -337,9 +340,15 @@ function normalizeCategory(category) {
   };
 }
 
+const COURSES_PER_PAGE = 30;
+
 function courseQueryPath(req) {
   const params = new URLSearchParams();
-  params.set('per_page', '30');
+  params.set('per_page', String(COURSES_PER_PAGE));
+  // GET /v2/courses is page-based (respondWithPaginatedCollection), so the
+  // browse list follows ?page and meta.total_pages rather than stopping at one.
+  const page = positiveInteger(req.query.page) || 1;
+  if (page > 1) params.set('page', String(page));
 
   const q = trimmed(req.query.q);
   const categoryId = positiveInteger(req.query.category || req.query.category_id);
@@ -353,7 +362,29 @@ function courseQueryPath(req) {
     path: `?${params.toString()}`,
     q,
     categoryId,
-    level
+    level,
+    page
+  };
+}
+
+// Previous / next links for the browse list, keeping the member's filters.
+function coursePagination(query, meta) {
+  const currentPage = positiveInteger(meta && meta.current_page) || query.page;
+  const totalPages = positiveInteger(meta && meta.total_pages) || 0;
+  const hasMore = meta && meta.has_more !== undefined ? !!meta.has_more : currentPage < totalPages;
+  const hrefFor = (page) => {
+    const params = new URLSearchParams();
+    if (query.q) params.set('q', query.q);
+    if (query.categoryId !== null) params.set('category', String(query.categoryId));
+    if (query.level) params.set('level', query.level);
+    params.set('page', String(page));
+    return `/courses?${params.toString()}`;
+  };
+  return {
+    currentPage,
+    totalPages,
+    previousHref: currentPage > 1 ? hrefFor(currentPage - 1) : '',
+    nextHref: hasMore ? hrefFor(currentPage + 1) : ''
   };
 }
 
@@ -363,6 +394,7 @@ function progressMaps(progressResult) {
   const availability = Array.isArray(data.availability) ? data.availability : [];
   const completed = new Set();
   const available = new Map();
+  const unlockAt = new Map();
 
   lessonProgress.forEach((row) => {
     const id = positiveInteger(row.lesson_id || row.id);
@@ -372,12 +404,15 @@ function progressMaps(progressResult) {
   availability.forEach((row) => {
     const id = positiveInteger(row.lesson_id || row.id);
     if (id !== null) available.set(id, row.available !== false);
+    // Drip-fed lessons carry the instant they open (CourseLessonService::availability).
+    if (id !== null && row.available === false && row.unlock_at) unlockAt.set(id, String(row.unlock_at));
   });
 
   return {
     enrollment: data.enrollment && typeof data.enrollment === 'object' ? data.enrollment : {},
     completed,
-    available
+    available,
+    unlockAt
   };
 }
 
@@ -400,7 +435,8 @@ function normalizeLesson(lesson, progress = { completed: new Set(), available: n
     attachmentUrl: trimmed(lesson.attachment_url),
     quizId: positiveInteger(lesson.quiz_id) || positiveInteger(lesson.quiz && lesson.quiz.id),
     isCompleted: progress.completed.has(id) || !!lesson.is_completed,
-    available: progress.available.has(id) ? progress.available.get(id) : lesson.available !== false
+    available: progress.available.has(id) ? progress.available.get(id) : lesson.available !== false,
+    unlockAtLabel: progress.unlockAt && progress.unlockAt.has(id) ? reviewDateLabel(progress.unlockAt.get(id)) : ''
   };
 }
 
@@ -605,15 +641,20 @@ async function courseDetailPayload(token, id) {
   const enrollmentStatus = trimmed(progress.enrollment.status);
   const isCompleted = enrollmentStatus === 'completed';
   const canReview = ['active', 'completed'].includes(enrollmentStatus);
+  const prerequisites = listFrom(prerequisitesResult).map((item) => ({
+    id: positiveInteger(item.id) || 0,
+    title: titleFrom(item.title, ''),
+    completed: !!item.completed
+  })).filter((item) => item.title);
 
   return {
     course,
     sections: normalizeSections(course, progress),
-    prerequisites: listFrom(prerequisitesResult).map((item) => ({
-      id: positiveInteger(item.id) || 0,
-      title: titleFrom(item.title, ''),
-      completed: !!item.completed
-    })).filter((item) => item.title),
+    prerequisites,
+    // React disables enrolment while a listed prerequisite is incomplete. The
+    // list omits courses the member cannot open (F-183), so the API can still
+    // refuse with PREREQUISITES_NOT_MET; that refusal has its own message.
+    hasUnmetPrerequisites: prerequisites.some((item) => !item.completed),
     reviews: listFrom(reviewsResult).map(normalizeReview),
     isEnrolled: course.isEnrolled || !!enrollmentStatus,
     isCompleted,
@@ -722,6 +763,7 @@ router.get('/', asyncRoute(async (req, res) => {
       title: (res.locals.t ? res.locals.t('govuk_alpha.courses.title') : 'Courses'),
       activeNav: 'explore',
       courses: listFrom(coursesResult).map(normalizeCourse),
+      pagination: coursePagination(query, coursesResult && coursesResult.meta),
       categories,
       coursesQuery: query.q,
       courseCategoryId: query.categoryId,
@@ -973,13 +1015,43 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   if (token === null) return undefined;
 
   try {
-    const payload = await courseDetailPayload(token, req.params.id);
+    const [payload, profileResult] = await Promise.all([
+      courseDetailPayload(token, req.params.id),
+      getRequestProfile(req, token).catch(() => null)
+    ]);
+    const profile = objectFrom(profileResult);
+    const viewerId = positiveInteger(profile.id);
+    const authorId = positiveInteger(payload.course.author_user_id);
     return res.render('courses/detail', {
       title: payload.course.title,
       activeNav: 'explore',
       ...payload,
+      // Same test React uses: the author manages the course instead of joining it.
+      isOwner: viewerId !== null && viewerId === authorId,
       status: routeStatus(req.query, COURSE_STATUS_MESSAGES, res.locals.t)
     });
+  } catch (error) {
+    if (handleCourseGetError(error, res)) return undefined;
+    throw error;
+  }
+}));
+
+// Course slug links (React accepts /courses/{slug}). GET /v2/courses/{idOrSlug}
+// resolves either, so a slug is looked up once and redirected to the numeric
+// page every other route here is built on. The pattern only admits slug
+// characters (no `*`: Express 4 turns it into `.*`), so an encoded path
+// separator can never reach the API path.
+router.get('/:slug([a-zA-Z0-9_-]+)', asyncRoute(async (req, res) => {
+  const token = requireToken(req, res);
+  if (token === null) return undefined;
+
+  try {
+    const course = objectFrom(await callCourse(token, 'GET', `/${encodeURIComponent(req.params.slug)}`));
+    const id = positiveInteger(course.id);
+    if (id === null) {
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
+    }
+    return redirectTo(res, `/courses/${id}`);
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
     throw error;
@@ -1093,9 +1165,18 @@ function quizAnswers(body) {
 }
 
 function enrolFailureStatus(error) {
-  const code = errorCode(error);
+  const code = errorCode(error) || firstErrorCode(error);
   if (code === 'INSUFFICIENT_CREDITS') return 'insufficient-credits';
+  if (code === 'COURSE_NOT_AVAILABLE') return 'not-available';
+  if (code === 'PREREQUISITES_NOT_MET') return 'prerequisites-not-met';
   return 'enrol-failed';
+}
+
+// respondWithError puts the code in errors[0].code, not error.code.
+function firstErrorCode(error) {
+  if (!(error instanceof ApiError) || !error.data || !Array.isArray(error.data.errors)) return '';
+  const first = error.data.errors.find((entry) => entry && typeof entry === 'object' && entry.code);
+  return first ? String(first.code).toUpperCase() : '';
 }
 
 function reviewFailureStatus(error) {

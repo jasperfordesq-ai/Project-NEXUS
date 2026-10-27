@@ -34,6 +34,22 @@
 
   <p class="govuk-body">{{ t("govuk_alpha_groups.files.intro") }}</p>
 
+  {% if folders and folders.length %}
+    {# Browse by folder without JavaScript: a GET form (27 Oct 2026). #}
+    <form method="get" action="{{ urlFor('/groups/' + (group.id | string) + '/files') }}" class="govuk-!-margin-bottom-6">
+      <div class="govuk-form-group govuk-!-margin-bottom-3">
+        <label class="govuk-label govuk-label--s" for="files-folder-filter">{{ t("govuk_alpha_groups.files.folder_filter_label") }}</label>
+        <select class="govuk-select" id="files-folder-filter" name="folder">
+          <option value=""{% if not selectedFolder %} selected{% endif %}>{{ t("govuk_alpha_groups.files.folder_filter_all") }}</option>
+          {% for folderItem in folders %}
+            <option value="{{ folderItem.folder }}"{% if selectedFolder == folderItem.folder %} selected{% endif %}>{{ folderItem.folder }} ({{ folderItem.fileCount }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.apply_filters") }}</button>
+    </form>
+  {% endif %}
+
   {% if not files.length %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("govuk_alpha_groups.files.empty") }}</p></div>
   {% else %}
@@ -72,6 +88,16 @@
     </div>
   {% endif %}
 
+  {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+  {% if pagination and (pagination.nextHref or pagination.firstHref) %}
+    {{ govukPagination({
+      previous: { text: t("govuk_alpha_commerce.pagination.first"), href: urlFor(pagination.firstHref) } if pagination.firstHref else false,
+      next: { text: t("polish_groups.pagination_next"), href: urlFor(pagination.nextHref) } if pagination.nextHref else false,
+      landmarkLabel: t("govuk_alpha_groups.files.pagination_label"),
+      classes: "govuk-pagination--block govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
+
   <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_groups.files.upload_heading") }}</h2>
 
@@ -90,7 +116,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="file-folder">{{ t("govuk_alpha_groups.files.folder_label") }}</label>
       <div id="file-folder-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.folder_hint") }}</div>
-      <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" value="{{ uploadForm.folder if uploadForm else '' }}" aria-describedby="file-folder-hint">
+      <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" value="{{ uploadForm.folder if uploadForm else (selectedFolder or '') }}" aria-describedby="file-folder-hint">
     </div>
 
     {% call characterCount(500, characterCountMessages, "file-description") %}<div class="govuk-form-group">

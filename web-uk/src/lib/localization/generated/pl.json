@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Ukończyłeś ten kurs. Dobrze zrobiony.",
             "no_lessons_available": "Na tym kursie nie ma jeszcze dostępnych lekcji.",
             "not_yet_available": "Jeszcze niedostępne",
+            "continue_learning": "Kontynuuj naukę",
+            "your_course": "To Ty utworzyłeś ten kurs. Edytuj go, aby zmienić jego treść lub go opublikować.",
+            "prerequisites_required": "Ukończ wymagane kursy wymienione powyżej, zanim będziesz mógł się zapisać.",
+            "locked_until": "Dostępne od :date",
+            "pagination_label": "Strony kursów",
+            "previous_page": "Poprzednia strona",
+            "next_page": "Następna strona",
             "select_lesson": "Aby rozpocząć, wybierz lekcję z listy.",
             "video_unsupported": "Twoja przeglądarka nie może odtworzyć tego filmu. Otwórz go w nowej karcie poniżej.",
             "open_video": "Otwórz wideo",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Dziękujemy – Twoja recenzja została zapisana.",
                 "insufficient_credits": "Nie masz wystarczającej liczby punktów czasowych, aby zapisać się na ten kurs.",
                 "enrol_failed": "Nie mogliśmy zapisać Cię na ten kurs. Spróbuj ponownie.",
+                "not_available": "Zapisy na ten kurs nie są jeszcze otwarte.",
+                "prerequisites_not_met": "Musisz ukończyć wymagane kursy, zanim będziesz mógł zapisać się na ten kurs.",
                 "certificate_locked": "Certyfikat możesz pobrać po ukończeniu kursu.",
                 "certificate_failed": "Nie mogliśmy wystawić Twojego certyfikatu. Spróbuj ponownie.",
                 "review_invalid": "Wybierz ocenę od 1 do 5 gwiazdek.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Szkic",
                 "pending_review_tag": "Oczekuje na sprawdzenie"
+            },
+            "registration": {
+                "answers_already_sent": "Twoje odpowiedzi zostały już wysłane. Jeśli wyślesz ten formularz ponownie, nowe odpowiedzi zastąpią wcześniej wysłane."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Usuń",
                 "delete_aria": "Usuń :name",
                 "manage_link": "Zobacz pliki",
-                "nav_files": "Pliki"
+                "nav_files": "Pliki",
+                "folder_filter_label": "Pokaż pliki w folderze",
+                "folder_filter_all": "Wszystkie foldery",
+                "pagination_label": "Strony plików"
+            },
+            "membership": {
+                "cancel_request": "Anuluj prośbę o dołączenie"
             },
             "states": {
+                "group-request-cancelled": "Twoja prośba o dołączenie została anulowana.",
                 "invite-link-created": "Wygenerowano nowy link z zaproszeniem.",
                 "invite-link-failed": "Nie można wygenerować linku z zaproszeniem. Spróbuj ponownie.",
                 "invite-emails-sent": "Zaproszenia zostały wysłane.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Odrzucony",
                 "withdrawn": "Zamknięty w sobie",
                 "unknown": "Inny"
+            },
+            "detail": {
+                "category_label": "Kategoria",
+                "hours_label": "Liczba godzin tygodniowo",
+                "time_credits_label": "Kredyty czasowe",
+                "contact_email_label": "Adres e-mail do kontaktu",
+                "contact_phone_label": "Telefon kontaktowy",
+                "close_button": "Zamknij tę możliwość",
+                "reopen_button": "Otwórz ponownie tę możliwość",
+                "states": {
+                    "closed": "Ta możliwość jest zamknięta i nie przyjmuje już zgłoszeń.",
+                    "reopened": "Ta możliwość jest ponownie otwarta i przyjmuje zgłoszenia.",
+                    "reopen_pending_review": "Twoja możliwość została przesłana do weryfikacji. Zostanie ponownie otwarta po zatwierdzeniu.",
+                    "status_change_failed": "Nie udało się zmienić statusu tej możliwości. Spróbuj ponownie."
+                }
             }
         },
         "govuk_alpha_listings": {

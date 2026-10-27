@@ -2820,6 +2820,25 @@ describe('API Request Functions', () => {
     });
   });
 
+  describe('getBlogCategories', () => {
+    it('reads the blog category list, with the bearer only when signed in', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => ({ data: [{ id: 1, name: 'News' }] })
+      });
+
+      await api.getBlogCategories('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/blog/categories',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+  });
+
   describe('uploadMerchantOnboardingImage', () => {
     it('posts a seller photo as multipart to the merchant onboarding image endpoint', async () => {
       mockFetch.mockResolvedValueOnce({

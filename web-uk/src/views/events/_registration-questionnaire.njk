@@ -28,6 +28,9 @@
       </div>
     {% endif %}
 
+    {% if answersAlreadySent %}
+      <div class="govuk-inset-text">{{ t("govuk_alpha_events.registration.answers_already_sent") }}</div>
+    {% endif %}
     <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/registrations/' + (active.id | string) + '/forms/' + (attendee.form.id | string) + '/submit') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">

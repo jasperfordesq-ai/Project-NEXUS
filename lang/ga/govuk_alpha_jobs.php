@@ -291,4 +291,21 @@ return [
         'withdrawn' => 'Tarraingthe siar',
         'unknown' => 'Eile',
     ],
+
+    // Opportunity detail: extra details and owner close / reopen
+    'detail' => [
+        'category_label' => 'Catagóir',
+        'hours_label' => 'Uaireanta in aghaidh na seachtaine',
+        'time_credits_label' => 'Creidmheasanna ama',
+        'contact_email_label' => 'Ríomhphost teagmhála',
+        'contact_phone_label' => 'Fón teagmhála',
+        'close_button' => 'Dún an deis seo',
+        'reopen_button' => 'Athoscail an deis seo',
+        'states' => [
+            'closed' => 'Tá an deis seo dúnta agus ní ghlacann sí le hiarratais a thuilleadh.',
+            'reopened' => 'Tá an deis seo oscailte arís agus glacann sí le hiarratais.',
+            'reopen_pending_review' => 'Seoladh do dheis lena hathbhreithniú. Athosclófar í nuair a cheadófar í.',
+            'status_change_failed' => 'Níorbh fhéidir linn stádas na deise seo a athrú. Bain triail eile as.',
+        ],
+    ],
 ];

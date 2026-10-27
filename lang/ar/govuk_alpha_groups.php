@@ -110,8 +110,16 @@ return [
         'delete_aria' => 'حذف :name',
         'manage_link' => 'عرض الملفات',
         'nav_files' => 'الملفات',
+        'folder_filter_label' => 'عرض الملفات في',
+        'folder_filter_all' => 'كل المجلدات',
+        'pagination_label' => 'صفحات الملفات',
+    ],
+
+    'membership' => [
+        'cancel_request' => 'إلغاء طلب الانضمام',
     ],
     'states' => [
+        'group-request-cancelled' => 'تم إلغاء طلب انضمامك.',
         'invite-link-created' => 'تم إنشاء رابط دعوة جديد.',
         'invite-link-failed' => 'تعذر إنشاء رابط الدعوة. يرجى المحاولة مرة أخرى.',
         'invite-emails-sent' => 'تم إرسال الدعوات.',

@@ -142,6 +142,7 @@ jest.mock('../src/lib/api', () => ({
   checkSavedItem: jest.fn().mockResolvedValue({ data: { saved: false } }),
   voteFeedPoll: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   getBlogPosts: jest.fn().mockResolvedValue({ data: [] }),
+  getBlogCategories: jest.fn().mockResolvedValue({ data: [] }),
   getBlogPost: jest.fn().mockResolvedValue({ data: { id: 42, slug: 'community-news', title: 'Community news' } }),
   getComments: jest.fn().mockResolvedValue({ data: { comments: [], count: 0 } }),
   getReactionSummary: jest.fn().mockResolvedValue({ data: { counts: {}, total: 0, user_reaction: null } }),
@@ -14043,14 +14044,13 @@ describe('shared accessible frontend shell', () => {
       updated_at: '2026-07-02T12:00:00Z'
     };
 
+    // GET /v2/blog is a respondWithCollection: a plain list, paging in meta.
+    // Categories are their own read (GET /v2/blog/categories).
     api.getBlogPosts.mockResolvedValue({
-      data: {
-        items: [blogPost],
-        categories: [{ id: 3, name: 'Community' }],
-        has_more: true,
-        cursor: 'next-cursor'
-      }
+      data: [blogPost],
+      meta: { per_page: 12, has_more: true, cursor: 'next-cursor' }
     });
+    api.getBlogCategories.mockResolvedValue({ data: [{ id: 3, name: 'Community' }] });
     api.getBlogPost.mockResolvedValue({ data: blogPost });
     api.getComments.mockResolvedValue({
       data: {
@@ -24136,8 +24136,10 @@ describe('shared accessible frontend shell', () => {
     expect(fieldError.text).toContain('aria-describedby="file-input-hint file-input-error"');
     expect(api.getGroup).toHaveBeenCalledTimes(2);
     expect(api.getGroup).toHaveBeenCalledWith('test-token', '42');
-    expect(api.callGroupApi).toHaveBeenCalledTimes(2);
+    // Each page view also reads the folder list for the folder filter (27 Oct 2026).
+    expect(api.callGroupApi).toHaveBeenCalledTimes(4);
     expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/files?per_page=50');
+    expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/files/folders');
   });
 
   it('proxies Laravel group file downloads for signed-in group members', async () => {
@@ -33903,7 +33905,8 @@ describe('shared accessible frontend shell', () => {
     expect(detail.text).toContain('<strong>4.5</strong> out of 5');
     expect(detail.text).toContain('<strong>Ada Learner</strong> · 2 January 2026');
     expect(detail.text).not.toContain('*****');
-    expect(detail.text).not.toContain('Continue learning');
+    // An enrolled member is sent on to the lesson player, as React does.
+    expect(detail.text).toContain('href="/courses/42/learn"');
 
     const enrolRequired = await request(app)
       .get('/courses/42?status=enrol-required')
@@ -34619,7 +34622,8 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(api.getProfile).toHaveBeenCalledWith('test-token');
-    expect(api.callMarketplaceApi).toHaveBeenCalledWith('test-token', 'GET', '/listings?limit=100&user_id=101');
+    // One tab at a time, paged by cursor, as React asks (27 Oct 2026).
+    expect(api.callMarketplaceApi).toHaveBeenCalledWith('test-token', 'GET', '/listings?user_id=101&status=expired&limit=30');
     expect(response.text).toContain('My listings');
     expect(response.text).toContain('Your items at Project NEXUS Accessible');
     expect(response.text).toContain('Your listing was renewed.');

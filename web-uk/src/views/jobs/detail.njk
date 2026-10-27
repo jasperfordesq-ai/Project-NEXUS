@@ -69,6 +69,24 @@
         <dd class="govuk-summary-list__value">{{ t("jobs.remote") if job.isRemote else job.locationLabel }}</dd>
       </div>
     {% endif %}
+    {% if job.categoryLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.detail.category_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ job.categoryLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if job.hoursPerWeek !== null and job.hoursPerWeek !== undefined %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.detail.hours_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ job.hoursPerWeek }}</dd>
+      </div>
+    {% endif %}
+    {% if job.timeCredits !== null and job.timeCredits !== undefined %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.detail.time_credits_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ job.timeCredits }}</dd>
+      </div>
+    {% endif %}
     {% if job.salaryLabel %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("jobs.salary_label") }}</dt>
@@ -79,6 +97,18 @@
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">{{ t("jobs.deadline_label") }}</dt>
         <dd class="govuk-summary-list__value">{{ job.deadlineLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if job.contactEmail %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.detail.contact_email_label") }}</dt>
+        <dd class="govuk-summary-list__value"><a class="govuk-link" href="mailto:{{ job.contactEmail }}">{{ job.contactEmail }}</a></dd>
+      </div>
+    {% endif %}
+    {% if job.contactPhone %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.detail.contact_phone_label") }}</dt>
+        <dd class="govuk-summary-list__value">{% if job.contactPhoneHref %}<a class="govuk-link" href="tel:{{ job.contactPhoneHref }}">{{ job.contactPhone }}</a>{% else %}{{ job.contactPhone }}{% endif %}</dd>
       </div>
     {% endif %}
     <div class="govuk-summary-list__row">
@@ -103,6 +133,9 @@
         <li>{{ govukTag({ text: skill, classes: "govuk-tag--grey" }) }}</li>
       {% endfor %}
     </ul>
+    {% if not job.isOwner %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/qualified') }}">{{ t("govuk_alpha_jobs.qualification.title") }}</a></p>
+    {% endif %}
   {% endif %}
 
   {% if jobMatch and jobMatch.required_skills and jobMatch.required_skills.length %}
@@ -128,11 +161,26 @@
     <div class="nexus-alpha-actions govuk-!-margin-bottom-2">
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("jobs_t3.manage_button") }}</a>
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/edit') }}">{{ t("jobs_t3.edit_button") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/analytics') }}">{{ t("govuk_alpha_jobs.analytics.title") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/pipeline') }}">{{ t("govuk_alpha_jobs.pipeline.title") }}</a>
     </div>
-    <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}">
-      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t3.renew_button") }}</button>
-    </form>
+    <div class="govuk-button-group">
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t3.renew_button") }}</button>
+      </form>
+      {% if job.status == 'open' %}
+        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/close') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_jobs.detail.close_button") }}</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/reopen') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_jobs.detail.reopen_button") }}</button>
+        </form>
+      {% endif %}
+    </div>
   {% else %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="apply">{{ t("jobs.apply_title") }}</h2>
     {% if job.hasApplied %}

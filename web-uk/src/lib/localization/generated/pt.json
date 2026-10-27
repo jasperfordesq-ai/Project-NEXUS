@@ -7777,6 +7777,13 @@
             "course_completed_panel": "Você concluiu este curso. Bom trabalho.",
             "no_lessons_available": "Este curso ainda não tem aulas disponíveis.",
             "not_yet_available": "Ainda não disponível",
+            "continue_learning": "Continuar a aprender",
+            "your_course": "Foi você que criou este curso. Edite-o para alterar o conteúdo ou para o publicar.",
+            "prerequisites_required": "Conclua os cursos pré-requisitos indicados acima antes de se poder inscrever.",
+            "locked_until": "Disponível a partir de :date",
+            "pagination_label": "Páginas de cursos",
+            "previous_page": "Página anterior",
+            "next_page": "Próxima página",
             "select_lesson": "Selecione uma lição da lista para começar.",
             "video_unsupported": "Seu navegador não pode reproduzir este vídeo. Abra-o em uma nova aba abaixo.",
             "open_video": "Abra o vídeo",
@@ -7827,6 +7834,8 @@
                 "review_saved": "Obrigado - seu comentário foi salvo.",
                 "insufficient_credits": "Você não tem créditos de tempo suficientes para se inscrever neste curso.",
                 "enrol_failed": "Não foi possível inscrever você neste curso. Por favor, tente novamente.",
+                "not_available": "As inscrições neste curso ainda não estão abertas.",
+                "prerequisites_not_met": "Tem de concluir os cursos pré-requisitos antes de se poder inscrever neste curso.",
                 "certificate_locked": "Você pode baixar seu certificado depois de concluir o curso.",
                 "certificate_failed": "Não foi possível produzir seu certificado. Por favor, tente novamente.",
                 "review_invalid": "Escolha uma classificação entre 1 e 5 estrelas.",
@@ -8276,6 +8285,9 @@
             "listing": {
                 "draft_tag": "Rascunho",
                 "pending_review_tag": "A aguardar revisão"
+            },
+            "registration": {
+                "answers_already_sent": "Já enviou as suas respostas. Se enviar este formulário novamente, as novas respostas substituirão as que enviou antes."
             }
         },
         "govuk_alpha_federation": {
@@ -9131,9 +9143,16 @@
                 "delete_button": "Eliminar",
                 "delete_aria": "Eliminar :name",
                 "manage_link": "Ver ficheiros",
-                "nav_files": "Ficheiros"
+                "nav_files": "Ficheiros",
+                "folder_filter_label": "Mostrar ficheiros em",
+                "folder_filter_all": "Todas as pastas",
+                "pagination_label": "Páginas de ficheiros"
+            },
+            "membership": {
+                "cancel_request": "Cancelar o pedido de adesão"
             },
             "states": {
+                "group-request-cancelled": "O seu pedido de adesão foi cancelado.",
                 "invite-link-created": "Um novo link de convite foi gerado.",
                 "invite-link-failed": "Não foi possível gerar o link de convite. Por favor, tente novamente.",
                 "invite-emails-sent": "Os convites foram enviados.",
@@ -9843,6 +9862,21 @@
                 "rejected": "Rejeitado",
                 "withdrawn": "Retirado",
                 "unknown": "Outro"
+            },
+            "detail": {
+                "category_label": "Categoria",
+                "hours_label": "Horas por semana",
+                "time_credits_label": "Créditos de tempo",
+                "contact_email_label": "E-mail de contacto",
+                "contact_phone_label": "Telefone de contacto",
+                "close_button": "Encerrar esta oportunidade",
+                "reopen_button": "Reabrir esta oportunidade",
+                "states": {
+                    "closed": "Esta oportunidade está encerrada e já não aceita candidaturas.",
+                    "reopened": "Esta oportunidade está novamente aberta e a aceitar candidaturas.",
+                    "reopen_pending_review": "A sua oportunidade foi enviada para revisão. Será reaberta depois de aprovada.",
+                    "status_change_failed": "Não foi possível alterar o estado desta oportunidade. Tente novamente."
+                }
             }
         },
         "govuk_alpha_listings": {

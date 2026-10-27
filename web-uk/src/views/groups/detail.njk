@@ -27,6 +27,12 @@
   {% set groupSuccessStates = ["group-joined", "group-requested", "group-left", "group-created", "group-updated"] %}
   {% set groupErrorStates = ["group-failed", "group-safeguarding-restricted", "group-safeguarding-unavailable", "group-update-failed", "group-delete-failed"] %}
   {% set groupFeedSuccessStates = ["group-posted"] %}
+  {% if status == "group-request-cancelled" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="grp-request-status">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="grp-request-status">{{ t("states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha_groups.states.group-request-cancelled") }}</p></div>
+    </div>
+  {% endif %}
   {% set groupFeedErrorStates = ["group-post-empty", "group-post-failed", "group-post-forbidden"] %}
   {% if status in groupSuccessStates %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="grp-status">
@@ -97,6 +103,7 @@
         <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.link") }}</a></li>
         <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/notifications') }}">{{ t("govuk_alpha_groups.nav.notification_settings") }}</a></li>
         <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/files') }}">{{ t("govuk_alpha_groups.files.nav_files") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.title") }}</a></li>
       </ul>
       <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/leave') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -104,6 +111,11 @@
       </form>
     {% elif isPending %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.pending_member") }}</p></div>
+      {# React lets a member withdraw a pending request (27 Oct 2026). #}
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/cancel-request') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukButton({ text: t("govuk_alpha_groups.membership.cancel_request"), classes: "govuk-button--secondary govuk-!-margin-bottom-0" }) }}
+      </form>
     {% else %}
       <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/join') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -118,6 +130,7 @@
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/manage') }}">{{ t("polish_groups.manage_link") }}</a>
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/invite') }}">{{ t("govuk_alpha_groups.nav.invite_members") }}</a>
       <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/image') }}">{{ t("govuk_alpha_groups.nav.group_image") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.manage_link") }}</a>
     </div>
   {% endif %}
 
@@ -134,6 +147,9 @@
         </article>
       {% endfor %}
     </div>
+    {% if isMember %}
+      <p class="govuk-body govuk-!-margin-bottom-6"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.title") }}</a></p>
+    {% endif %}
   {% endif %}
 
   {% if members.length > 0 %}
