@@ -137,9 +137,12 @@ describe('StripeOnboardingPage', () => {
 
   it('redirects to Stripe URL on start onboarding click', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: statusNotStarted });
+    // The real response of MarketplacePaymentController::onboard. This test used
+    // to mock `{ url }`, a shape the API never sends, which hid that the page
+    // read the wrong field and the button never left for Stripe.
     vi.mocked(api.post).mockResolvedValue({
       success: true,
-      data: { url: 'https://connect.stripe.com/onboard/abc' },
+      data: { account_id: 'acct_123', onboarding_url: 'https://connect.stripe.com/onboard/abc' },
     });
 
     render(<StripeOnboardingPage />);

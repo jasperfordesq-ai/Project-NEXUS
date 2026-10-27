@@ -47,8 +47,10 @@ interface OnboardingStatus {
   details_submitted?: boolean;
 }
 
+// MarketplacePaymentController::onboard answers { account_id, onboarding_url }.
 interface OnboardingResponse {
-  url: string;
+  account_id: string;
+  onboarding_url: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,8 +117,8 @@ export function StripeOnboardingPage() {
     setIsStarting(true);
     try {
       const response = await api.post<OnboardingResponse>('/v2/marketplace/seller/onboard');
-      if (response.success && response.data?.url) {
-        window.location.href = response.data.url;
+      if (response.success && response.data?.onboarding_url) {
+        window.location.href = response.data.onboarding_url;
         return;
       }
       toast.error(response.error || t('onboarding.start_error'));
