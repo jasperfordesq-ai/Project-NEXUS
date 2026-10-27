@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -27,6 +27,7 @@ import { PageMeta } from '@/components/seo';
 import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEvent } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 function formatWhen(event: PublicEvent): string {
   if (!event.start_time) return '';
@@ -56,8 +57,8 @@ export default function PublicEventsListPage() {
 
   const { tenantPath, tenant } = useTenant();
   const { isAuthenticated } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const [events, setEvents] = useState<PublicEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -182,7 +183,7 @@ export default function PublicEventsListPage() {
           <p className="text-theme-muted">{t('public.join_prompt')}</p>
           <Button
             color="primary"
-            onPress={() => navigate(tenantPath('/login'), { state: { from: tenantPath(location.pathname) + location.search } })}
+            onPress={() => { const login = loginTarget(); navigate(login.to, { state: login.state }); }}
           >
             {t('public.login_cta')}
           </Button>

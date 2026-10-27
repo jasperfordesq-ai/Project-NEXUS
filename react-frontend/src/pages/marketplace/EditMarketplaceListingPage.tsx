@@ -54,6 +54,7 @@ import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { PlaceAutocompleteInput } from '@/components/location/PlaceAutocompleteInput';
 import type { MarketplaceListingDetail } from '@/types/marketplace';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {
   normalizeSupportedMarketplaceCurrency,
   SUPPORTED_MARKETPLACE_CURRENCIES,
@@ -129,6 +130,7 @@ export function EditMarketplaceListingPage() {
   usePageTitle(t('edit.page_title'));
   const { isAuthenticated, user } = useAuth();
   const { tenant, tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -183,9 +185,10 @@ export function EditMarketplaceListingPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'), { replace: true });
+      const login = loginTarget();
+      navigate(login.to, { replace: true, state: login.state });
     }
-  }, [isAuthenticated, navigate, tenantPath]);
+  }, [isAuthenticated, navigate, loginTarget]);
 
   // Load listing data
   useEffect(() => {

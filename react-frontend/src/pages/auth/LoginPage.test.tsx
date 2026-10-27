@@ -105,11 +105,13 @@ vi.mock('@/contexts/ToastContext', () => ({
 
 // ── Mock react-router-dom ───────────────────────────────────────────────────
 const mockNavigate = vi.fn();
+// Mutable so a test can arrive with ?next= or router state.
+const mockLocation: { state: unknown; pathname: string; search: string } = { state: null, pathname: '/login', search: '' };
 vi.mock('react-router-dom', async () => {
   const React = await import('react');
   return {
     useNavigate: () => mockNavigate,
-    useLocation: () => ({ state: null, pathname: '/login' }),
+    useLocation: () => mockLocation,
     useSearchParams: () => [new URLSearchParams(), vi.fn()],
     Link: ({ children, to, ...props }: { children: ReactNode; to: string; [k: string]: unknown }) =>
       React.createElement('a', { href: to, ...props }, children),
@@ -548,6 +550,58 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/test/feed', { replace: true });
+    });
+  });
+
+  // ─── Email links survive sign-in (lib/auth-return.ts) ─────────────────────
+  describe('returning to the page the member was sent from', () => {
+    afterEach(() => {
+      mockLocation.state = null;
+      mockLocation.search = '';
+      sessionStorage.clear();
+    });
+
+    async function signInWithPasskey() {
+      mockLoginWithBiometric.mockResolvedValue({ success: true });
+      const user = userEvent.setup();
+      render(<LoginPage />);
+      await waitFor(() => expect(screen.getByText('Sign in with a passkey')).toBeDefined());
+      await user.click(screen.getByText('Sign in with a passkey'));
+    }
+
+    it('follows ?next= from an email link instead of the feed', async () => {
+      mockLocation.search = '?next=%2Ftest%2Fexchanges%2F42%3Ftab%3Dchat';
+      await signInWithPasskey();
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/test/exchanges/42?tab=chat', { replace: true });
+      });
+      // Used, then forgotten, so a later ordinary sign-in goes to the feed.
+      expect(sessionStorage.getItem('nexus_auth_return')).toBeNull();
+    });
+
+    it('keeps the destination for a sign-in that leaves the page (Google, SSO, two-step setup)', async () => {
+      mockLocation.search = '?next=%2Ftest%2Fevents%2F9';
+      render(<LoginPage />);
+      await waitFor(() => {
+        expect(JSON.parse(sessionStorage.getItem('nexus_auth_return') ?? '{}').path).toBe('/test/events/9');
+      });
+    });
+
+    it('returns to a destination stored before a Google / SSO round trip', async () => {
+      sessionStorage.setItem('nexus_auth_return', JSON.stringify({ path: '/test/messages/3', at: Date.now() }));
+      await signInWithPasskey();
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/test/messages/3', { replace: true });
+      });
+    });
+
+    it('refuses an off-site ?next= and goes to the feed', async () => {
+      mockLocation.search = '?next=https%3A%2F%2Fevil.test%2Fphish';
+      await signInWithPasskey();
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/test/feed', { replace: true });
+      });
+      expect(mockNavigate).not.toHaveBeenCalledWith(expect.stringContaining('evil'), expect.anything());
     });
   });
 

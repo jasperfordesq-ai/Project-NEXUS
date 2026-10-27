@@ -18,6 +18,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { getFormattingLocale } from '@/lib/helpers';
 import { downloadRecoveryCodes, recoveryCodesFilename } from '@/lib/recoveryCodes';
+import { consumeAuthReturn } from '@/lib/auth-return';
 
 interface Setup { qr_code_url: string; secret: string }
 interface Completion {
@@ -140,7 +141,9 @@ export default function TwoFactorSetupPage() {
     }
     scheduleSessionWarning(completion.expires_in);
     await refreshUser();
-    navigate(tenantPath('/dashboard'), { replace: true });
+    // Back to the page the member was signing in to reach (an email link,
+    // say), not always the dashboard.
+    navigate(consumeAuthReturn(tenantPath('/dashboard')), { replace: true });
   }
 
   return (

@@ -101,6 +101,28 @@ describe('SessionExpiredModal', () => {
     expect(within(footer as HTMLElement).getByRole('button', { name: 'Log In' })).toBeInTheDocument();
   });
 
+  // A member whose session ran out on an emailed page signs in and comes back
+  // to it, rather than to the feed.
+  it('brings the member back to the page they were on after logging in again', async () => {
+    window.history.pushState({}, '', '/exchanges/42?tab=chat');
+    try {
+      render(<SessionExpiredModal />);
+      act(() => {
+        window.dispatchEvent(new CustomEvent('nexus:session_expired'));
+      });
+      const footer = screen.getByText('Dismiss').closest('[data-slot="modal-footer"]') as HTMLElement;
+      act(() => {
+        within(footer).getByRole('button', { name: 'Log In' }).click();
+      });
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/test/login?next=%2Ftest%2Fexchanges%2F42%3Ftab%3Dchat',
+        { state: { from: '/test/exchanges/42?tab=chat' } },
+      );
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   // 12 September 2026: mandatory administrator two-factor went live and every
   // signed-in administrator was refused with AUTH_MFA_REQUIRED. The API client
   // ends the session with reason 'mfa_required'; the modal must say that, not

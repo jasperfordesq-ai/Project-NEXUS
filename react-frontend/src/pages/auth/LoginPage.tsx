@@ -37,7 +37,7 @@ import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldX from 'lucide-react/icons/shield-x';
 import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
-import { safeAuthReturnPath } from '@/lib/safe-auth-return-path';
+import { clearAuthReturn, explicitAuthReturn, rememberAuthReturn, resolveAuthReturn } from '@/lib/auth-return';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -146,8 +146,19 @@ export function LoginPage() {
     ?? authenticationConfig?.['passkeys.conditional_autofill']
     ?? true;
 
-  // Redirect after successful login (preserve tenant slug prefix)
-  const from = safeAuthReturnPath((location.state as { from?: unknown })?.from, tenantPath('/feed'));
+  // Redirect after successful login (preserve tenant slug prefix). The
+  // destination arrives in router state, in ?next= (email links, session
+  // expiry), or from storage when Google / SSO / two-step setup sent the member
+  // back here — see lib/auth-return.ts.
+  const defaultDestination = tenantPath('/feed');
+  const from = resolveAuthReturn(location.state, location.search, defaultDestination);
+  const explicitDestination = explicitAuthReturn(location.state, location.search);
+
+  // Keep the destination for sign-ins that finish elsewhere (Google / SSO
+  // callback, mandatory two-step setup).
+  useEffect(() => {
+    if (explicitDestination) rememberAuthReturn(explicitDestination);
+  }, [explicitDestination]);
 
   // Clear stale auth tokens on mount — login page should always start clean
   useEffect(() => {
@@ -212,6 +223,7 @@ export function LoginPage() {
           result.data.session_binding,
         );
         if (generation && tokenManager.getSessionGeneration() === generation) {
+          clearAuthReturn();
           window.location.href = from;
         }
       }
@@ -330,6 +342,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      clearAuthReturn();
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
@@ -429,6 +442,7 @@ export function LoginPage() {
       if (controller.signal.aborted || selectedTenantIdRef.current !== tenantId) return;
 
       if (result.success) {
+        clearAuthReturn();
         navigate(from, { replace: true });
       } else if (result.errorCode === 'cancelled') {
         // User cancelled; no error is necessary.
@@ -482,6 +496,7 @@ export function LoginPage() {
     });
 
     if (success) {
+      clearAuthReturn();
       navigate(from, { replace: true });
     }
   };

@@ -33,6 +33,7 @@ import { api, SESSION_EXPIRING_EVENT, tokenManager } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // How long to count down in the warning (seconds shown to user)
 const COUNTDOWN_SECONDS = 30;
@@ -58,6 +59,7 @@ export function SessionTimeoutWarning() {
   const { t } = useTranslation('errors');
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const { logout, scheduleSessionWarning, isAuthenticated } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -141,11 +143,13 @@ export function SessionTimeoutWarning() {
       // Only an authoritative credential rejection ends the session.
       handleClose();
       await logout();
-      navigate(tenantPath('/login'));
+      // The session ran out, not a deliberate log-out: come back here.
+      const login = loginTarget();
+      navigate(login.to, { state: login.state });
     } finally {
       setIsExtending(false);
     }
-  }, [handleClose, logout, navigate, tenantPath, scheduleSessionWarning, startCountdown, stopCountdown]);
+  }, [handleClose, logout, navigate, loginTarget, scheduleSessionWarning, startCountdown, stopCountdown]);
 
   const handleLogout = useCallback(async () => {
     handleClose();

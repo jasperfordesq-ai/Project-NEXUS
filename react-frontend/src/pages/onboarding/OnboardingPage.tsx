@@ -66,6 +66,7 @@ import { resolveAvatarUrl } from '@/lib/helpers';
 import { SafeguardingStep } from './SafeguardingStep';
 import { OnboardingSkillsPicker } from './OnboardingSkillsPicker';
 import { MemberLocationField } from '@/components/location/MemberLocationField';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 import {
   EMPTY_MEMBER_LOCATION,
   hasLocationText,
@@ -101,6 +102,7 @@ export function OnboardingPage() {
   usePageTitle(t('page_title'));
   const navigate = useNavigate();
   const { tenantPath, tenant } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const toast = useToast();
   const { user, refreshUser } = useAuth();
 
@@ -462,7 +464,8 @@ export function OnboardingPage() {
           const safeguardingIdx = stepSlugToIndex.get('safeguarding');
           if (safeguardingIdx) goToStep(safeguardingIdx);
         } else if (response.code === 'SESSION_EXPIRED') {
-          navigate(tenantPath('/login'), { replace: true });
+          const login = loginTarget();
+          navigate(login.to, { replace: true, state: login.state });
         } else {
           toast.error(t('toast_setup_failed'), message);
         }
@@ -483,7 +486,7 @@ export function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [toast, navigate, tenantPath, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
+  }, [toast, navigate, tenantPath, loginTarget, refreshUser, goToStep, profileStepIdx, stepSlugToIndex, t, skillsPrefilled]);
 
   // ── Completion handler ───────────────────────────────────────────────────
 

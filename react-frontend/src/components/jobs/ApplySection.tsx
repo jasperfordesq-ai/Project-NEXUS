@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import type { JobVacancy } from './JobDetailTypes';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 interface SavedProfile {
   cv_filename?: string;
@@ -46,6 +47,7 @@ export function ApplySection({
 }: ApplySectionProps) {
   const { t } = useTranslation('jobs');
   const navigate = useNavigate();
+  const { loginTarget } = useLoginRedirect(tenantPath);
 
   const handleQuickApply = async () => {
     if (!vacancy.id || isSubmitting) return;
@@ -72,7 +74,7 @@ export function ApplySection({
       {!isAuthenticated ? (
         <div className="text-center">
           <p className="text-theme-muted mb-3">{t('apply.login_required')}</p>
-          <Button as={Link} to={tenantPath('/login')} color="primary" className="w-full">
+          <Button as={Link} to={loginTarget().to} color="primary" className="w-full">
             {t('apply.button')}
           </Button>
         </div>

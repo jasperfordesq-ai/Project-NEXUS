@@ -19,6 +19,7 @@ import { AuthUnavailableScreen } from './AuthUnavailableScreen';
 import { Button } from '@/components/ui/Button';
 import { useLegalGate } from '@/hooks/useLegalGate';
 import { isVisitingManager } from '@/lib/access';
+import { buildLoginTarget } from '@/lib/auth-return';
 
 const LegalAcceptanceGate = lazy(() =>
   import('@/components/legal/LegalAcceptanceGate').then((module) => ({ default: module.LegalAcceptanceGate }))
@@ -83,7 +84,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Redirect to login if not authenticated, preserving tenant slug prefix
   if (!isAuthenticated) {
-    return <Navigate to={tenantPath('/login')} state={{ from: tenantPath(location.pathname) + location.search }} replace />;
+    // The whole address (query and fragment too) survives sign-in — see lib/auth-return.ts.
+    const login = buildLoginTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
+    return <Navigate to={login.to} state={login.state} replace />;
   }
 
   // Redirect non-admin users away from /admin routes

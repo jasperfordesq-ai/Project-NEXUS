@@ -16,6 +16,7 @@ import { useAuth, useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
 import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 const DonationCheckout = lazy(() =>
   import('@/components/donations/DonationCheckout').then((module) => ({ default: module.DonationCheckout })),
@@ -45,6 +46,7 @@ export function PricingPage() {
   const { t, i18n } = useTranslation('common');
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const navigate = useNavigate();
   const { showToast } = useToast();
   usePageTitle(t('premium.pricing_title'));
@@ -89,7 +91,8 @@ export function PricingPage() {
 
   const handleRegularDonation = async (tier: PremiumTier) => {
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'), { state: { from: tenantPath('/premium') } });
+      const login = loginTarget(tenantPath('/premium'));
+      navigate(login.to, { state: login.state });
       return;
     }
     setSubmittingTierId(tier.id);

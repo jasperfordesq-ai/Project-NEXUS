@@ -19,12 +19,14 @@ import { coursesApi, type Course, type CoursePrerequisite } from '@/lib/api/cour
 import { CourseReviews } from '@/components/courses/CourseReviews';
 import CircleCheck from 'lucide-react/icons/circle-check';
 import Lock from 'lucide-react/icons/lock';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 export default function CourseDetailPage() {
   const { t } = useTranslation('courses');
   const { idOrSlug } = useParams<{ idOrSlug: string }>();
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const { isAuthenticated, user } = useAuth();
   const toast = useToast();
 
@@ -62,7 +64,8 @@ export default function CourseDetailPage() {
   const handleEnroll = async () => {
     if (!course) return;
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'));
+      const login = loginTarget();
+      navigate(login.to, { state: login.state });
       return;
     }
     setEnrolling(true);

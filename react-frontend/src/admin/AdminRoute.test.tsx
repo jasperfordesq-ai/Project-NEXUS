@@ -29,6 +29,9 @@ const { mockAuth, mockTenant } = vi.hoisted(() => ({
   },
 }));
 
+// Mutable so a test can put a query string on the address.
+const mockLocation = { pathname: '/admin', search: '', hash: '' };
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({ ...mockAuth }),
@@ -45,7 +48,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
       <div data-testid="redirect" data-to={to} />
     ),
     Outlet: () => <div data-testid="outlet">children</div>,
-    useLocation: () => ({ pathname: '/admin' }),
+    useLocation: () => mockLocation,
   };
 });
 
@@ -98,7 +101,7 @@ describe('AdminRoute', () => {
     const { AdminRoute } = await import('./AdminRoute');
     render(<AdminRoute />);
     const redirect = screen.getByTestId('redirect');
-    expect(redirect.getAttribute('data-to')).toBe('/test/login');
+    expect(redirect.getAttribute('data-to')).toBe('/test/login?next=%2Ftest%2Fadmin');
   });
 
   it('redirects authenticated member (non-admin) to dashboard', async () => {
@@ -168,12 +171,27 @@ describe('AdminRoute', () => {
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
+  it('keeps the query string of an emailed admin link through sign-in', async () => {
+    mockAuth.isAuthenticated = false;
+    mockLocation.pathname = '/admin/users';
+    mockLocation.search = '?status=pending';
+    try {
+      const { AdminRoute } = await import('./AdminRoute');
+      render(<AdminRoute />);
+      expect(screen.getByTestId('redirect').getAttribute('data-to'))
+        .toBe('/test/login?next=%2Ftest%2Fadmin%2Fusers%3Fstatus%3Dpending');
+    } finally {
+      mockLocation.pathname = '/admin';
+      mockLocation.search = '';
+    }
+  });
+
   it('uses tenantPath for login redirect target', async () => {
     mockAuth.isAuthenticated = false;
     mockTenant.tenantPath = (p: string) => `/hour-timebank${p}`;
     const { AdminRoute } = await import('./AdminRoute');
     render(<AdminRoute />);
     const redirect = screen.getByTestId('redirect');
-    expect(redirect.getAttribute('data-to')).toBe('/hour-timebank/login');
+    expect(redirect.getAttribute('data-to')).toBe('/hour-timebank/login?next=%2Fhour-timebank%2Fadmin');
   });
 });

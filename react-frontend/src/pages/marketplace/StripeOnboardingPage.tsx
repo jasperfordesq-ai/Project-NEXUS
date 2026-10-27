@@ -33,6 +33,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -61,6 +62,7 @@ export function StripeOnboardingPage() {
   usePageTitle(t('onboarding.page_title'));
   const { isAuthenticated } = useAuth();
   const { tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const toast = useToast();
 
   // State
@@ -74,9 +76,10 @@ export function StripeOnboardingPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'), { replace: true });
+      const login = loginTarget();
+      navigate(login.to, { replace: true, state: login.state });
     }
-  }, [isAuthenticated, navigate, tenantPath]);
+  }, [isAuthenticated, navigate, loginTarget]);
 
   // Load onboarding status
   const loadStatus = useCallback(async () => {

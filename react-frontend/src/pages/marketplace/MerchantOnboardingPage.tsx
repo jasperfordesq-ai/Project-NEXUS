@@ -44,6 +44,7 @@ import { logError } from '@/lib/logger';
 import { safeImageSource } from '@/lib/safeImageSource';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -161,6 +162,7 @@ export function MerchantOnboardingPage() {
   const { showToast } = useToast();
   const { hasFeature, tenantPath } = useTenant();
   const navigate = useNavigate();
+  const { loginTarget } = useLoginRedirect(tenantPath);
 
   usePageTitle(t('meta.title'));
 
@@ -223,14 +225,15 @@ export function MerchantOnboardingPage() {
   // ── Auth / feature guard ──────────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'), { replace: true });
+      const login = loginTarget();
+      navigate(login.to, { replace: true, state: login.state });
       return;
     }
     if (!hasFeature('marketplace')) {
       navigate(tenantPath('/marketplace'), { replace: true });
       return;
     }
-  }, [isAuthenticated, navigate, tenantPath, hasFeature]);
+  }, [isAuthenticated, navigate, tenantPath, hasFeature, loginTarget]);
 
   // ── Load existing status ──────────────────────────────────────────────────
   useEffect(() => {

@@ -5,7 +5,7 @@
 
 import { beforeEach, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import TwoFactorSetupPage from './TwoFactorSetupPage';
 import { PageMeta } from '@/components/seo/PageMeta';
 
@@ -49,6 +49,33 @@ it('keeps credentials out of storage until the recovery codes are acknowledged',
   fireEvent.click(screen.getByRole('button', { name: 'I have saved my recovery codes' }));
   await waitFor(() => expect(mocks.user).toHaveBeenCalled());
   expect(mocks.adopt).toHaveBeenCalledWith('test-session', 'access', undefined, undefined, 'binding');
+});
+
+// An administrator who follows an email link, signs in and is made to set up
+// two-step login lands on the emailed page afterwards, not the dashboard.
+it('returns to the page the administrator was signing in to reach', async () => {
+  sessionStorage.setItem('nexus_auth_return', JSON.stringify({ path: '/admin/users?status=pending', at: Date.now() }));
+  try {
+    mocks.post.mockResolvedValueOnce({ success: true, data: { qr_code_url: 'data:image/svg+xml;base64,abc', secret: 'manual-key' } });
+    render(
+      <MemoryRouter initialEntries={['/auth/two-factor/setup']}>
+        <Routes>
+          <Route path="/auth/two-factor/setup" element={<TwoFactorSetupPage />} />
+          <Route path="/admin/users" element={<p>Emailed admin page</p>} />
+          <Route path="/dashboard" element={<p>Dashboard</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const code = await screen.findByRole('textbox', { name: 'Six-digit verification code' });
+    mocks.post.mockResolvedValueOnce({ success: true, data: { login_complete: true, backup_codes: ['recovery-one'], access_token: 'access', session_binding: 'binding', expires_in: 900 } });
+    fireEvent.change(code, { target: { value: '123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Verify and continue' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'I have saved my recovery codes' }));
+    expect(await screen.findByText('Emailed admin page')).toBeInTheDocument();
+    expect(sessionStorage.getItem('nexus_auth_return')).toBeNull();
+  } finally {
+    sessionStorage.clear();
+  }
 });
 
 // Two-factor security review (E-004): cancelling forgets the challenge, and an

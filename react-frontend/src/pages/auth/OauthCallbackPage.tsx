@@ -32,6 +32,7 @@ import {
 import { useTenant } from '@/contexts/TenantContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { consumeAuthReturn } from '@/lib/auth-return';
 
 interface OAuthExchangeResponse {
   requires_2fa?: boolean;
@@ -187,9 +188,11 @@ export function OauthCallbackPage() {
         clearOAuthBrowserVerifier(flow);
         // A completed link returns the member to the settings tab they
         // started from, which confirms the link.
-        window.location.href = tenantPath(isLink
-          ? '/settings?tab=connected-accounts&linked=1'
-          : '/dashboard');
+        // A sign-in returns to the page the member set out for (stored by
+        // the login page before leaving for the provider).
+        window.location.href = isLink
+          ? tenantPath('/settings?tab=connected-accounts&linked=1')
+          : consumeAuthReturn(tenantPath('/dashboard'));
       },
       (failure: unknown) => {
         if (!cancelled) {

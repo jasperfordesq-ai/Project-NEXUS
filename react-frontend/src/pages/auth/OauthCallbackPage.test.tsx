@@ -396,6 +396,25 @@ describe('OauthCallbackPage', () => {
     });
   });
 
+  // The login page stores the emailed destination before leaving for Google or
+  // single sign-on; the callback finishes there instead of the dashboard.
+  it('returns to the page the member set out for before the provider round trip', async () => {
+    sessionStorage.setItem('nexus_auth_return', JSON.stringify({ path: '/test/exchanges/42', at: Date.now() }));
+    try {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(makeResponse({ success: true, token: 'tok' })));
+      mockSearchParams.mockReturnValue(makeBoundCodeParams('valid-code'));
+
+      render(<OauthCallbackPage />);
+
+      await waitFor(() => {
+        expect(capturedHref).toBe('/test/exchanges/42');
+      });
+      expect(sessionStorage.getItem('nexus_auth_return')).toBeNull();
+    } finally {
+      sessionStorage.clear();
+    }
+  });
+
   it('POSTs to the correct exchange endpoint with the code in the body', async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(
       makeResponse({ success: true, token: 'tok', tenant_id: 2 }),

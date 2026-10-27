@@ -67,6 +67,7 @@ import { VerificationBadgeRow } from '@/components/verification/VerificationBadg
 import type { MarketplaceShippingOption } from '@/types/marketplace';
 import { formatMarketplaceCurrency, normalizeMarketplaceListing } from '@/lib/marketplaceNumbers';
 import { toJsonLd } from '@/lib/json-ld';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -367,6 +368,7 @@ export function MarketplaceListingPage() {
   usePageTitle(t('page_title'));
   const { isAuthenticated } = useAuth();
   const { tenant, tenantPath, branding, hasModule, hasFeature } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   // Same gate as SellerProfilePage: without messaging there is nothing behind
   // "Message seller" / "Ask to borrow", so the buttons must not render.
   const canMessage = hasModule('messages') && hasFeature('direct_messaging');
@@ -848,7 +850,7 @@ export function MarketplaceListingPage() {
 
               {!isOwnListing && !isAuthenticated && canMessage && (
                 <p className="text-xs text-muted text-center">
-                  <Link to={tenantPath('/login')} className="text-accent hover:underline">
+                  <Link to={loginTarget().to} className="text-accent hover:underline">
                     {t('listing.sign_in')}
                   </Link>
                   {' '}{t('listing.sign_in_to_contact')}

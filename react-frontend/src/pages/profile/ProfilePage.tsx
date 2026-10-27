@@ -64,6 +64,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getFormattingLocale, resolveAvatarUrl, resolveUserDisplayName, responsiveThumbnailProps } from '@/lib/helpers';
 import type { User as UserType, Listing, Review } from '@/types/api';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 type ConnectionStatus = 'none' | 'pending_sent' | 'pending_received' | 'connected';
 
@@ -142,6 +143,7 @@ export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { tenantPath, hasModule } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const hasConnections = useFeature('connections');
   const hasGamification = useFeature('gamification');
   const hasReviews = useFeature('reviews');
@@ -524,7 +526,8 @@ export function ProfilePage() {
 
   // Redirect unauthenticated /profile/me to login once auth state is resolved
   if (id === 'me' && !isAuthLoading && !isAuthenticated) {
-    return <Navigate to={tenantPath('/login')} replace />;
+    const login = loginTarget();
+    return <Navigate to={login.to} state={login.state} replace />;
   }
 
   if (isLoading || isAuthLoading) {
@@ -784,7 +787,7 @@ export function ProfilePage() {
                     {hasMessages && !isAuthenticated && (
                       <Button
                         as={Link}
-                        to={tenantPath('/login')}
+                        to={loginTarget().to}
                         variant="flat"
                         className="w-full bg-theme-elevated text-theme-primary sm:w-auto"
                         startContent={<MessageSquare className="w-4 h-4" aria-hidden="true" />}

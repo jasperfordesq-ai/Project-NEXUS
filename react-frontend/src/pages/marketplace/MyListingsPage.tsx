@@ -45,6 +45,7 @@ import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeStorage';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo/PageMeta';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -109,6 +110,7 @@ export function MyListingsPage() {
   usePageTitle(t('my_listings.page_title'));
   const { isAuthenticated, user } = useAuth();
   const { tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const toast = useToast();
 
   // State
@@ -133,9 +135,10 @@ export function MyListingsPage() {
   // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate(tenantPath('/login'), { replace: true });
+      const login = loginTarget();
+      navigate(login.to, { replace: true, state: login.state });
     }
-  }, [isAuthenticated, navigate, tenantPath]);
+  }, [isAuthenticated, navigate, loginTarget]);
 
   // Load seller dashboard stats
   useEffect(() => {

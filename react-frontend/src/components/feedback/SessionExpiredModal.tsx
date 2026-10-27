@@ -18,6 +18,7 @@ import { SESSION_EXPIRED_EVENT, tokenManager, type SessionEndReason, type Sessio
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { Button, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 export function SessionExpiredModal() {
   const { t } = useTranslation('errors');
@@ -28,6 +29,7 @@ export function SessionExpiredModal() {
   const [reason, setReason] = useState<SessionEndReason>('expired');
   const navigate = useNavigate();
   const { tenantPath } = useTenant();
+  const { loginTarget } = useLoginRedirect(tenantPath);
   const { status } = useAuth();
   const wasAuthenticated = useRef(false);
 
@@ -72,7 +74,9 @@ export function SessionExpiredModal() {
 
   function handleLogin() {
     setIsOpen(false);
-    navigate(tenantPath('/login'));
+    // Back to this page after signing in again, not the feed.
+    const login = loginTarget();
+    navigate(login.to, { state: login.state });
   }
 
   return (

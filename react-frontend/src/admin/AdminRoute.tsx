@@ -15,6 +15,7 @@ import { useAuth, useTenant } from '@/contexts';
 import { LoadingScreen } from '@/components/feedback';
 import { AuthUnavailableScreen } from '@/components/routing/AuthUnavailableScreen';
 import { hasAdminPanelAccess } from '@/lib/access';
+import { buildLoginTarget } from '@/lib/auth-return';
 
 export function AdminRoute() {
   const { user, isAuthenticated, isLoading, status } = useAuth();
@@ -31,7 +32,9 @@ export function AdminRoute() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={tenantPath('/login')} state={{ from: tenantPath(location.pathname) }} replace />;
+    // The whole address (query and fragment too) survives sign-in — see lib/auth-return.ts.
+    const login = buildLoginTarget(tenantPath('/login'), tenantPath(location.pathname) + location.search + location.hash);
+    return <Navigate to={login.to} state={login.state} replace />;
   }
 
   const isAdmin = hasAdminPanelAccess(user);

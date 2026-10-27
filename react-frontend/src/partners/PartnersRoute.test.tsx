@@ -29,6 +29,9 @@ const { mockAuth, mockTenant } = vi.hoisted(() => ({
   },
 }));
 
+// Mutable so a test can put a query string on the address.
+const mockLocation = { pathname: '/partner-timebanks', search: '', hash: '' };
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({ ...mockAuth }),
@@ -45,7 +48,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
       <div data-testid="redirect" data-to={to} />
     ),
     Outlet: () => <div data-testid="outlet">children</div>,
-    useLocation: () => ({ pathname: '/partner-timebanks' }),
+    useLocation: () => mockLocation,
   };
 });
 
@@ -79,7 +82,7 @@ describe('PartnersRoute', () => {
   it('redirects unauthenticated users to login', async () => {
     const { PartnersRoute } = await import('./PartnersRoute');
     render(<PartnersRoute />);
-    expect(screen.getByTestId('redirect').getAttribute('data-to')).toBe('/test/login');
+    expect(screen.getByTestId('redirect').getAttribute('data-to')).toBe('/test/login?next=%2Ftest%2Fpartner-timebanks');
   });
 
   it('redirects plain members to the member dashboard', async () => {

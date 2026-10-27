@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -35,6 +35,7 @@ import { getFormattingLocale, resolveThumbnailUrl } from '@/lib/helpers';
 import { toJsonLd } from '@/lib/json-ld';
 import { isNotFoundResponse } from '@/lib/not-found';
 import { buildEventStructuredData } from '@/lib/event-structured-data';
+import { useLoginRedirect } from '@/hooks/useLoginRedirect';
 
 /** An address made absolute against this page's origin. */
 function absolute(value: string | undefined, origin: string): string | undefined {
@@ -51,8 +52,8 @@ export default function PublicEventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { tenantPath, tenant, branding } = useTenant();
   const { isAuthenticated } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const { loginTarget } = useLoginRedirect(tenantPath);
 
   const [event, setEvent] = useState<PublicEventDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -262,7 +263,7 @@ export default function PublicEventDetailPage() {
           <p className="text-theme-muted">{t('public.register_prompt')}</p>
           <Button
             color="primary"
-            onPress={() => navigate(tenantPath('/login'), { state: { from: tenantPath(location.pathname) + location.search } })}
+            onPress={() => { const login = loginTarget(); navigate(login.to, { state: login.state }); }}
           >
             {t('public.login_cta')}
           </Button>

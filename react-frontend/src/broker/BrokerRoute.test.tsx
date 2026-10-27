@@ -29,6 +29,9 @@ const { mockAuth, mockTenant } = vi.hoisted(() => ({
   },
 }));
 
+// Mutable so a test can put a query string on the address.
+const mockLocation = { pathname: '/broker', search: '', hash: '' };
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({ ...mockAuth }),
@@ -45,7 +48,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
       <div data-testid="redirect" data-to={to} />
     ),
     Outlet: () => <div data-testid="outlet">children</div>,
-    useLocation: () => ({ pathname: '/broker' }),
+    useLocation: () => mockLocation,
   };
 });
 
@@ -92,7 +95,7 @@ describe('BrokerRoute', () => {
     render(<BrokerRoute />);
     const redirect = screen.getByTestId('redirect');
     expect(redirect).toBeInTheDocument();
-    expect(redirect.getAttribute('data-to')).toBe('/test/login');
+    expect(redirect.getAttribute('data-to')).toBe('/test/login?next=%2Ftest%2Fbroker');
   });
 
   it('redirects authenticated user with no broker role to dashboard', async () => {
