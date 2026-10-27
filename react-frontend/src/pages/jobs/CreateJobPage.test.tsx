@@ -261,6 +261,103 @@ describe('CreateJobPage', () => {
       expect(screen.getByDisplayValue('Existing description')).toBeInTheDocument();
     });
 
+    // 🔴 Hiring team regressions. The page searched `/v2/members/search`, which
+    // is not a route, so nobody could be added. The people-search endpoint is
+    // `GET /v2/users/search` (UsersController::search), answering
+    // `{ data: { items, cursor, has_more } }` — the client unwraps `data`.
+    // The team endpoints answer JobVacancyTeam rows (`user_id`, `role`, nested
+    // `user`), and JobTeamService stores ONLY `reviewer` or `manager`.
+    describe('hiring team', () => {
+      const teamRow = {
+        id: 11, tenant_id: 2, vacancy_id: 5, user_id: 21, role: 'manager', added_by: 1,
+        created_at: '2026-10-01 10:00:00',
+        user: {
+          id: 21, first_name: 'Mary', last_name: 'Manager', profile_type: 'individual',
+          organization_name: null, avatar_url: null, email: 'mary@example.test',
+          avatar: null, tagline: null, name: 'Mary Manager',
+        },
+      };
+      const searchItem = (id: number, first: string, last: string) => ({
+        id, first_name: first, avatar_url: null, organization_name: null, profile_type: 'individual',
+        bio: null, tagline: null, location: null, created_at: '2026-01-01 00:00:00', is_verified: 0,
+        xp: 0, level: 1, status: 'active', onboarding_completed: 1, avatar: null, name: `${first} ${last}`,
+      });
+
+      beforeEach(() => {
+        vi.mocked(api.get).mockImplementation((url: string) => {
+          if (url.includes('/v2/users/search')) {
+            return Promise.resolve({
+              success: true,
+              data: {
+                items: [searchItem(31, 'Ann', 'Search'), searchItem(21, 'Mary', 'Manager')],
+                cursor: null,
+                has_more: false,
+              },
+              meta: {},
+            });
+          }
+          if (url.includes('/v2/jobs/5/team')) {
+            return Promise.resolve({ success: true, data: [teamRow], meta: {} });
+          }
+          if (url.includes('/v2/jobs/salary-benchmark')) {
+            return Promise.resolve({ success: false, data: null, meta: {} });
+          }
+          if (url.includes('/v2/jobs/5')) {
+            return Promise.resolve({ success: true, data: mockVacancy, meta: {} });
+          }
+          return Promise.resolve({ success: true, data: [], meta: {} });
+        });
+        vi.mocked(api.post).mockResolvedValue({
+          success: true,
+          data: { member: { id: 12, tenant_id: 2, vacancy_id: 5, user_id: 31, role: 'reviewer', added_by: 1 } },
+        });
+      });
+
+      const openAddMemberModal = async () => {
+        render(<CreateJobPage />);
+        await waitFor(() => {
+          expect(screen.getByDisplayValue('Existing Vacancy')).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByRole('button', { name: /team\.title/ }));
+        fireEvent.click(await screen.findByRole('button', { name: 'team.add_member' }));
+      };
+
+      it('shows existing team members from the real team row shape', async () => {
+        render(<CreateJobPage />);
+        await waitFor(() => {
+          expect(screen.getByDisplayValue('Existing Vacancy')).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByRole('button', { name: /team\.title/ }));
+        expect(await screen.findByText('Mary Manager')).toBeInTheDocument();
+        // `manager` is the stored role; it is presented as "hiring manager".
+        expect(screen.getByText('team.role_hiring_manager')).toBeInTheDocument();
+      });
+
+      it('searches people through /v2/users/search and adds the picked person', async () => {
+        await openAddMemberModal();
+        fireEvent.change(screen.getByPlaceholderText('team.search_placeholder'), { target: { value: 'ann' } });
+
+        expect(await screen.findByText('Ann Search', {}, { timeout: 2000 })).toBeInTheDocument();
+        expect(vi.mocked(api.get)).toHaveBeenCalledWith('/v2/users/search?q=ann&limit=5');
+        expect(vi.mocked(api.get)).not.toHaveBeenCalledWith(expect.stringContaining('/v2/members/search'));
+        // Already on the team (user_id 21) — not offered again.
+        expect(screen.getAllByText('Mary Manager')).toHaveLength(1);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Ann Search' }));
+        await waitFor(() => {
+          expect(vi.mocked(api.post)).toHaveBeenCalledWith('/v2/jobs/5/team', { user_id: 31, role: 'reviewer' });
+        });
+      });
+
+      it('offers only the roles the API stores: reviewer and manager', async () => {
+        await openAddMemberModal();
+        const roleOptions = Array.from(document.querySelectorAll('select option')).map((o) => (o as HTMLOptionElement).value);
+        expect(roleOptions).toEqual(expect.arrayContaining(['reviewer', 'manager']));
+        expect(roleOptions).not.toContain('interviewer');
+        expect(roleOptions).not.toContain('hiring_manager');
+      });
+    });
+
     it('handles salary benchmark data returned inside the API benchmark envelope', async () => {
       // shouldAdvanceTime lets real time progress so Testing Library's waitFor
       // (which polls on timers) isn't frozen by the fake clock, while

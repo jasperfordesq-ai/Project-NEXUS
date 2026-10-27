@@ -187,6 +187,24 @@ describe('TopEndorsedWidget', () => {
     });
   });
 
+  // The real API shape: EndorsementService::getTopEndorsedMembers() selects
+  // `se.endorsed_id as user_id` — there is NO `id` key — so reading `id`
+  // produced links to /profile/undefined.
+  it('links to the profile from user_id, the key the API actually sends', async () => {
+    mockApi.get.mockResolvedValue(makeResponse([
+      { user_id: 42, name: 'Real Shape', avatar_url: null, total_endorsements: 7, skills_endorsed: 3 },
+    ]));
+    const { TopEndorsedWidget } = await import('./TopEndorsedWidget');
+    render(<TopEndorsedWidget />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Real Shape')).toBeInTheDocument();
+    });
+    const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+    expect(hrefs).toContain('/test/profile/42');
+    expect(hrefs.some((h) => h?.includes('undefined'))).toBe(false);
+  });
+
   it('shows 0 endorsements when total_endorsements is undefined', async () => {
     mockApi.get.mockResolvedValue(makeResponse([makeMember({ total_endorsements: undefined })]));
     const { TopEndorsedWidget } = await import('./TopEndorsedWidget');

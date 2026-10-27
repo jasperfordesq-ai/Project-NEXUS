@@ -162,9 +162,33 @@ describe('TimebankingGuidePage', () => {
     expect(screen.queryByRole('link', { name: /join/i })).not.toBeInTheDocument();
   });
 
-  it('renders the partner CTA', () => {
+  // `/partner` is wrapped in TenantSlugGate slug="hour-timebank" in both route
+  // files, so every other community is bounced off it. The CTA must only be
+  // offered where the page exists — same check the gate uses (tenant.slug).
+  it('renders the partner CTA for the hour-timebank community', () => {
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 2, slug: 'hour-timebank' },
+      branding: { name: 'hOUR Timebank' },
+      tenantPath: (p: string) => `/hour-timebank${p}`,
+      hasModule: vi.fn(() => true),
+    });
     render(<TimebankingGuidePage />);
-    expect(ctaLinksTo('/partner').length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /partner with us/i })).toHaveAttribute(
+      'href',
+      '/hour-timebank/partner',
+    );
+  });
+
+  it('does not render the partner CTA for any other community', () => {
+    mockUseTenant.mockReturnValue({
+      tenant: { id: 7, slug: 'some-other-timebank' },
+      branding: { name: 'Other Timebank' },
+      tenantPath: (p: string) => `/some-other-timebank${p}`,
+      hasModule: vi.fn(() => true),
+    });
+    render(<TimebankingGuidePage />);
+    expect(screen.queryByRole('link', { name: /partner with us/i })).not.toBeInTheDocument();
+    expect(ctaLinksTo('/partner')).toHaveLength(0);
   });
 
   it('renders the related pages section', () => {

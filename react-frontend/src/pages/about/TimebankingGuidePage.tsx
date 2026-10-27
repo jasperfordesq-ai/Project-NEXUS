@@ -123,7 +123,11 @@ const stagger = {
 export function TimebankingGuidePage() {
   const { t } = useTranslation('about');
   usePageTitle(t('timebanking_guide.page_title'));
-  const { tenantPath, hasModule, branding } = useTenant();
+  const { tenant, tenantPath, hasModule, branding } = useTenant();
+  // `/partner` only exists for hour-timebank: both route files wrap it in
+  // TenantSlugGate slug="hour-timebank", which checks `tenant.slug`. Offering
+  // the button anywhere else sends people to a page that bounces them.
+  const showPartnerCta = tenant?.slug === 'hour-timebank';
   const { isAuthenticated } = useAuth();
 
   return (
@@ -370,16 +374,18 @@ export function TimebankingGuidePage() {
                     </Button>
                   )}
 
-                  <Button
-                    as={Link}
-                    to={tenantPath('/partner')}
-                    size="lg"
-                    variant="bordered"
-                    className="w-full sm:w-auto border-theme-default text-theme-primary hover:bg-theme-hover"
-                    startContent={<Handshake className="w-5 h-5" aria-hidden="true" />}
-                  >
-                    {t('timebanking_guide.cta_partner')}
-                  </Button>
+                  {showPartnerCta && (
+                    <Button
+                      as={Link}
+                      to={tenantPath('/partner')}
+                      size="lg"
+                      variant="bordered"
+                      className="w-full sm:w-auto border-theme-default text-theme-primary hover:bg-theme-hover"
+                      startContent={<Handshake className="w-5 h-5" aria-hidden="true" />}
+                    >
+                      {t('timebanking_guide.cta_partner')}
+                    </Button>
+                  )}
                 </div>
               </div>
             </GlassCard>

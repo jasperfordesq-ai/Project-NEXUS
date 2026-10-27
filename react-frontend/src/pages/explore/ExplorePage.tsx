@@ -485,11 +485,18 @@ export default function ExplorePage() {
     if (forYouLoading) return;
     setForYouLoading(true);
     try {
-      const res = await apiClient.get<{ items: ForYouItem[]; total: number }>(`/v2/explore/for-you?page=${page}&per_page=15`);
-      const result = res.data ?? { items: [], total: 0 };
-      const items: ForYouItem[] = result.items ?? [];
+      // The endpoint answers via respondWithPaginatedCollection():
+      // `{ data: [...items], meta: { total, has_more, ... } }`. The client has
+      // already unwrapped `data`, so `res.data` IS the item array and the
+      // paging facts live on `res.meta`.
+      const res = await apiClient.get<ForYouItem[]>(`/v2/explore/for-you?page=${page}&per_page=15`);
+      const items: ForYouItem[] = res.success && Array.isArray(res.data) ? res.data : [];
+      const total = res.meta?.total ?? 0;
       setForYouItems(prev => reset ? items : [...prev, ...items]);
-      setForYouHasMore(items.length > 0 && (reset ? items.length : forYouItems.length + items.length) < (result.total ?? 0));
+      setForYouHasMore(
+        items.length > 0 &&
+        (res.meta?.has_more ?? (reset ? items.length : forYouItems.length + items.length) < total)
+      );
       setForYouPage(page);
     } catch {
       // Non-critical

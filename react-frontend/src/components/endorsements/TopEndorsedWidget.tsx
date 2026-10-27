@@ -27,7 +27,10 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
 
 interface TopEndorsedMember {
-  id: number;
+  /** The key `/v2/members/top-endorsed` sends (`se.endorsed_id as user_id`). */
+  user_id?: number;
+  /** Legacy fallback only — the Laravel endpoint does not send `id`. */
+  id?: number;
   name: string;
   avatar_url?: string;
   total_endorsements?: number;
@@ -85,11 +88,13 @@ export function TopEndorsedWidget({ limit = 5 }: { limit?: number }) {
       <div className="space-y-3">
         {members.map((member, index) => {
           const topSkills = Array.isArray(member.top_skills) ? member.top_skills : [];
+          const memberId = member.user_id ?? member.id;
+          if (memberId == null) return null;
 
           return (
             <Link
-              key={member.id}
-              to={tenantPath(`/profile/${member.id}`)}
+              key={memberId}
+              to={tenantPath(`/profile/${memberId}`)}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-theme-hover transition-colors"
             >
               {/* Rank */}

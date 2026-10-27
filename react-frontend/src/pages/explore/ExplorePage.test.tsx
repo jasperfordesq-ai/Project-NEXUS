@@ -215,7 +215,7 @@ describe('ExplorePage', () => {
     // and by apiClient.get (the default export) for /v2/explore/for-you
     mockApi.get.mockImplementation((url: string) => {
       if (url.includes('/v2/explore/for-you')) {
-        return Promise.resolve({ data: { items: [], total: 0 } });
+        return Promise.resolve({ success: true, data: [], meta: { per_page: 15, total: 0, has_more: false } });
       }
       if (url.includes('/v2/explore')) {
         return Promise.resolve({ success: true, data: makeExploreData() });
@@ -379,6 +379,47 @@ describe('ExplorePage', () => {
   });
 
   /**
+   * 🔴 Regression: `/v2/explore/for-you` answers through
+   * respondWithPaginatedCollection(), i.e. `{ data: [...items], meta: { total,
+   * has_more, ... } }`. The client unwraps `data`, so `res.data` IS the item
+   * array — the page read `res.data.items`, got undefined, and always showed
+   * the empty message.
+   */
+  it('For You tab renders items from the real paginated response shape', async () => {
+    const originalUrl = `${window.location.pathname}${window.location.search}`;
+    window.history.pushState({}, '', '/?tab=for_you');
+
+    try {
+      mockApi.get.mockImplementation((url: string) => {
+        if (url.includes('/v2/explore/for-you')) {
+          return Promise.resolve({
+            success: true,
+            data: [
+              {
+                content_type: 'listing', id: 5, title: 'For You Listing', subtitle: null,
+                image_url: null, meta: null, url: '/listings/5', score: 1, created_at: null,
+              },
+            ],
+            meta: { current_page: 1, per_page: 15, total: 1, total_pages: 1, has_more: false },
+          });
+        }
+        if (url.includes('/v2/explore')) {
+          return Promise.resolve({ success: true, data: makeExploreData() });
+        }
+        return Promise.resolve({ success: true, data: null });
+      });
+
+      const { default: ExplorePage } = await import('./ExplorePage');
+      render(<ExplorePage />);
+
+      expect(await screen.findByText('For You Listing')).toBeInTheDocument();
+      expect(screen.getByText('For You Listing').closest('a')).toHaveAttribute('href', '/test/listings/5');
+    } finally {
+      window.history.pushState({}, '', originalUrl);
+    }
+  });
+
+  /**
    * 🔴 Regression: the empty-listings CTA navigated to `/listings/new`, which is
    * not a route. It did not 404 — `listings/:id` (AppRoutes.tsx) matched it with
    * the literal id "new" and rendered ListingDetailPage's not-found state, so the
@@ -391,7 +432,7 @@ describe('ExplorePage', () => {
     try {
       mockApi.get.mockImplementation((url: string) => {
         if (url.includes('/v2/explore/for-you')) {
-          return Promise.resolve({ data: { items: [], total: 0 } });
+          return Promise.resolve({ success: true, data: [], meta: { per_page: 15, total: 0, has_more: false } });
         }
         if (url.includes('/v2/explore')) {
           return Promise.resolve({

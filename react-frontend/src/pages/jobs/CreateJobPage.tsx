@@ -117,12 +117,56 @@ interface JobTemplate {
   description?: string;
 }
 
+/** A hiring-team member as this page shows it. `id` is the member's USER id. */
 interface TeamMember {
   id: number;
   name: string;
   avatar_url: string | null;
-  role: string;
+  role: JobTeamRole;
 }
+
+/**
+ * The only roles the API stores — JobTeamService::addMember() silently turns
+ * anything else into `reviewer`. `manager` is presented as "hiring manager".
+ */
+const JOB_TEAM_ROLES = ['reviewer', 'manager'] as const;
+type JobTeamRole = (typeof JOB_TEAM_ROLES)[number];
+
+const toJobTeamRole = (role: unknown): JobTeamRole => (role === 'manager' ? 'manager' : 'reviewer');
+
+const JOB_TEAM_ROLE_LABEL_KEYS: Record<JobTeamRole, 'team.role_reviewer' | 'team.role_hiring_manager'> = {
+  reviewer: 'team.role_reviewer',
+  manager: 'team.role_hiring_manager',
+};
+
+/** A person from `GET /v2/users/search` (`{ items: [...] }` once `data` is unwrapped). */
+interface MemberSearchResult {
+  id: number;
+  name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  organization_name?: string | null;
+  avatar_url?: string | null;
+}
+
+/** A row from `GET /v2/jobs/{id}/team` or `POST …/team` (`{ member }`): a JobVacancyTeam record. */
+interface JobTeamRow {
+  user_id: number;
+  role?: string | null;
+  user?: MemberSearchResult | null;
+}
+
+const personName = (p: MemberSearchResult | null | undefined): string =>
+  (p?.name ?? '').trim()
+  || [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim()
+  || (p?.organization_name ?? '').trim();
+
+const toTeamMember = (row: JobTeamRow, fallbackPerson?: MemberSearchResult): TeamMember => ({
+  id: Number(row.user_id),
+  name: personName(row.user) || personName(fallbackPerson),
+  avatar_url: row.user?.avatar_url ?? fallbackPerson?.avatar_url ?? null,
+  role: toJobTeamRole(row.role),
+});
 
 const INITIAL_FORM: JobFormData = {
   title: '',
@@ -186,8 +230,8 @@ export function CreateJobPage() {
   const [isAddingTeamMember, setIsAddingTeamMember] = useState(false);
   const [createdJobId, setCreatedJobId] = useState<string | null>(null);
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
-  const [newMemberRole, setNewMemberRole] = useState<string>('reviewer');
-  const [memberSearchResults, setMemberSearchResults] = useState<Array<{ id: number; name: string; avatar_url: string | null }>>([]);
+  const [newMemberRole, setNewMemberRole] = useState<JobTeamRole>('reviewer');
+  const [memberSearchResults, setMemberSearchResults] = useState<MemberSearchResult[]>([]);
   const [isMemberSearching, setIsMemberSearching] = useState(false);
   const memberSearchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -288,10 +332,10 @@ export function CreateJobPage() {
     const jobId = isEditing ? id : createdJobId;
     if (!jobId) return;
     const controller = new AbortController();
-    api.get<TeamMember[]>(`/v2/jobs/${jobId}/team`)
+    api.get<JobTeamRow[]>(`/v2/jobs/${jobId}/team`)
       .then((res) => {
-        if (!controller.signal.aborted && res.success && res.data) {
-          setTeamMembers(res.data);
+        if (!controller.signal.aborted && res.success && Array.isArray(res.data)) {
+          setTeamMembers(res.data.map((row) => toTeamMember(row)));
         }
       })
       .catch(() => { /* non-critical */ });
@@ -629,13 +673,16 @@ export function CreateJobPage() {
     memberSearchDebounce.current = setTimeout(async () => {
       setIsMemberSearching(true);
       try {
-        const res = await api.get<Array<{ id: number; name: string; avatar_url: string | null }>>(
-          `/v2/members/search?q=${encodeURIComponent(query.trim())}&limit=5`
+        // `/v2/users/search` answers `{ items, cursor, has_more }` once the
+        // client has unwrapped `data`.
+        const res = await api.get<{ items?: MemberSearchResult[] }>(
+          `/v2/users/search?q=${encodeURIComponent(query.trim())}&limit=5`
         );
         if (res.success && res.data) {
-          // Filter out members already on the team
+          const items = Array.isArray(res.data.items) ? res.data.items : [];
+          // Filter out members already on the team (TeamMember.id is the user id)
           const existingIds = new Set(teamMembers.map((m) => m.id));
-          setMemberSearchResults((res.data as Array<{ id: number; name: string; avatar_url: string | null }>).filter((m) => !existingIds.has(m.id)));
+          setMemberSearchResults(items.filter((m) => !existingIds.has(m.id)));
         }
       } catch {
         /* non-critical */
@@ -646,14 +693,15 @@ export function CreateJobPage() {
   }, [teamMembers]);
 
   // Add a member to the hiring team
-  const handleAddTeamMember = useCallback(async (userId: number) => {
+  const handleAddTeamMember = useCallback(async (person: MemberSearchResult) => {
     const jobId = isEditing ? id : createdJobId;
     if (!jobId) return;
     setIsAddingTeamMember(true);
     try {
-      const res = await api.post(`/v2/jobs/${jobId}/team`, { user_id: userId, role: newMemberRole });
+      const res = await api.post<{ member?: JobTeamRow }>(`/v2/jobs/${jobId}/team`, { user_id: person.id, role: newMemberRole });
       if (res.success && res.data) {
-        setTeamMembers((prev) => [...prev, res.data as TeamMember]);
+        const added = toTeamMember(res.data.member ?? { user_id: person.id, role: newMemberRole }, person);
+        setTeamMembers((prev) => [...prev.filter((m) => m.id !== added.id), added]);
         toastRef.current.success(tRef.current('team.added'));
         setTeamSearchInput('');
         setMemberSearchResults([]);
@@ -1331,7 +1379,7 @@ export function CreateJobPage() {
                           <Chip.Label className="text-theme-primary">
                             <span className="flex flex-col leading-tight">
                               <span className="text-sm font-medium">{member.name}</span>
-                              <span className="text-xs text-theme-subtle">{t(`team.role_${member.role}`, member.role)}</span>
+                              <span className="text-xs text-theme-subtle">{t(JOB_TEAM_ROLE_LABEL_KEYS[member.role])}</span>
                             </span>
                           </Chip.Label>
                           <CloseButton
@@ -1661,15 +1709,15 @@ export function CreateJobPage() {
             <Select
               label={t('team.role')}
               selectedKeys={[newMemberRole]}
-              onChange={(e) => setNewMemberRole(e.target.value)}
+              onChange={(e) => setNewMemberRole(toJobTeamRole(e.target.value))}
               classNames={{
                 trigger: 'bg-theme-elevated border-theme-default hover:bg-theme-hover',
                 value: 'text-theme-primary',
               }}
             >
-              <SelectItem key="reviewer" id="reviewer">{t('team.role_reviewer')}</SelectItem>
-              <SelectItem key="interviewer" id="interviewer">{t('team.role_interviewer')}</SelectItem>
-              <SelectItem key="hiring_manager" id="hiring_manager">{t('team.role_hiring_manager')}</SelectItem>
+              {JOB_TEAM_ROLES.map((role) => (
+                <SelectItem key={role} id={role}>{t(JOB_TEAM_ROLE_LABEL_KEYS[role])}</SelectItem>
+              ))}
             </Select>
 
             {/* Search results */}
@@ -1682,18 +1730,18 @@ export function CreateJobPage() {
                   <div
                     key={member.id}
                     className={`flex items-center gap-3 p-2 rounded-lg bg-theme-elevated hover:bg-theme-hover transition-colors ${isAddingTeamMember ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}`}
-                    onClick={() => void handleAddTeamMember(member.id)}
+                    onClick={() => void handleAddTeamMember(member)}
                     role="button"
                     tabIndex={0}
-                    aria-label={member.name}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void handleAddTeamMember(member.id); } }}
+                    aria-label={personName(member)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void handleAddTeamMember(member); } }}
                   >
                     <Avatar
                       src={member.avatar_url || undefined}
-                      name={member.name}
+                      name={personName(member)}
                       size="sm"
                     />
-                    <span className="text-sm font-medium text-theme-primary flex-1">{member.name}</span>
+                    <span className="text-sm font-medium text-theme-primary flex-1">{personName(member)}</span>
                     <Plus className="w-4 h-4 text-theme-subtle" aria-hidden="true" />
                   </div>
                 ))}
