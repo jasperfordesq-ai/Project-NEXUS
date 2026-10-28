@@ -35,7 +35,7 @@
   </div>
 
   <div class="govuk-button-group">
-    <form method="post" action="{{ urlFor('/search/saved/' + (savedSearch.id | string) + '/delete') }}" class="govuk-!-display-inline">
+    <form method="post" action="{{ urlFor('/search/saved/' + (savedSearch.id | string) + '/delete') }}" class="govuk-!-display-inline" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_search.saved.delete_confirm") }}</button>
     </form>

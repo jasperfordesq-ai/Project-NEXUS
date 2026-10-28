@@ -47,7 +47,7 @@
   {% endif %}
       <p class="govuk-body-l">{{ t("govuk_alpha_settings.appearance.description") }}</p>
 
-      <form method="post" action="{{ urlFor('/settings/appearance') }}">
+      <form method="post" action="{{ urlFor('/settings/appearance') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
         <div class="govuk-form-group">

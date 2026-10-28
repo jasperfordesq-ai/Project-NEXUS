@@ -106,7 +106,7 @@
         <p class="govuk-inset-text">{{ t("govuk_alpha_aichat.empty_thread") }}</p>
       {% endif %}
 
-      <form method="post" action="{{ urlFor('/chat') }}" class="govuk-!-margin-top-4">
+      <form method="post" action="{{ urlFor('/chat') }}" class="govuk-!-margin-top-4" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {% if selectedId %}
           <input type="hidden" name="conversation_id" value="{{ selectedId }}">
@@ -114,7 +114,7 @@
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--m" for="message">{{ t("govuk_alpha_aichat.message_label") }}</label>
           <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_aichat.message_hint") }}</div>
-          <textarea class="govuk-textarea" id="message" name="message" rows="4" maxlength="4000" aria-describedby="message-hint" required></textarea>
+          <textarea class="govuk-textarea" id="message" name="message" rows="4" maxlength="4000" aria-describedby="message-hint"></textarea>
         </div>
         {{ govukButton({
           text: t("govuk_alpha_aichat.send")

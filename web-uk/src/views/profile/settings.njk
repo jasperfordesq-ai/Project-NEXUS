@@ -220,7 +220,7 @@
                 {% if skill.is_offering %}{{ govukTag({ text: t("profile.skill_offering"), classes: "govuk-tag--blue" }) }}{% endif %}
                 {% if skill.is_requesting %}{{ govukTag({ text: t("profile.skill_requesting"), classes: "govuk-tag--purple" }) }}{% endif %}
                 {% if skill.endorsement_count > 0 %}{{ govukTag({ text: tc("profile.endorsement_count", skill.endorsement_count), classes: "govuk-tag--green" }) }}{% endif %}
-                <form method="post" action="{{ urlFor('/profile/skills/remove') }}" class="govuk-!-margin-top-1">
+                <form method="post" action="{{ urlFor('/profile/skills/remove') }}" class="govuk-!-margin-top-1" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="user_skill_id" value="{{ skill.id }}">
                   <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.skills.remove_button") }}<span class="govuk-visually-hidden"> {{ skill.skill_name }}</span></button>
@@ -339,7 +339,7 @@
                   <div><dt>{{ t("profile_settings.passkeys.added") }}</dt><dd>{{ passkey.created_label or '—' }}</dd></div>
                   <div><dt>{{ t("profile_settings.passkeys.last_used") }}</dt><dd>{{ passkey.last_used_label or t("profile_settings.passkeys.never") }}</dd></div>
                 </dl>
-                <form method="post" action="{{ urlFor('/profile/passkeys/rename') }}" class="govuk-!-margin-bottom-2">
+                <form method="post" action="{{ urlFor('/profile/passkeys/rename') }}" class="govuk-!-margin-bottom-2" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="credential_id" value="{{ passkey.credential_id }}">
                   <div class="govuk-form-group govuk-!-margin-bottom-2">
@@ -348,7 +348,7 @@
                   </div>
                   <div class="govuk-form-group govuk-!-margin-bottom-2">
                     <label class="govuk-label" for="rename-password-{{ loop.index0 }}">{{ t("profile_settings.current_password_label") }}</label>
-                    <input class="govuk-input govuk-!-width-two-thirds" id="rename-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password" required>
+                    <input class="govuk-input govuk-!-width-two-thirds" id="rename-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password">
                   </div>
                   <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.passkeys.rename_submit") }}</button>
                 </form>
@@ -359,12 +359,12 @@
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                       <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span> {{ t("ux.confirm_irreversible") }}</strong>
                     </div>
-                    <form method="post" action="{{ urlFor('/profile/passkeys/remove') }}">
+                    <form method="post" action="{{ urlFor('/profile/passkeys/remove') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <input type="hidden" name="credential_id" value="{{ passkey.credential_id }}">
                         <div class="govuk-form-group">
                           <label class="govuk-label" for="remove-password-{{ loop.index0 }}">{{ t("profile_settings.current_password_label") }}</label>
-                          <input class="govuk-input govuk-!-width-two-thirds" id="remove-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password" required>
+                          <input class="govuk-input govuk-!-width-two-thirds" id="remove-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password">
                         </div>
                         <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.passkeys.remove_submit") }}<span class="govuk-visually-hidden"> {{ passkey.device_name }}</span></button>
                     </form>
@@ -415,7 +415,7 @@
       <section aria-labelledby="language-heading">
         <h2 class="govuk-heading-l" id="language-heading">{{ t("profile_settings.language_title") }}</h2>
         <p class="govuk-body">{{ t("profile_settings.language_description") }}</p>
-        <form method="post" action="{{ urlFor('/profile/language') }}">
+        <form method="post" action="{{ urlFor('/profile/language') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label" for="language">{{ t("profile_settings.language_label") }}</label>
@@ -434,7 +434,7 @@
       <section id="notifications" aria-labelledby="notifications-heading">
         <h2 class="govuk-heading-l" id="notifications-heading">{{ t("profile_settings.notifications.title") }}</h2>
         <p class="govuk-body">{{ t("profile_settings.notifications.description") }}</p>
-        <form method="post" action="{{ urlFor('/profile/notifications') }}">
+        <form method="post" action="{{ urlFor('/profile/notifications') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {% for group in notificationGroups %}
             <fieldset class="govuk-fieldset govuk-!-margin-top-6">
@@ -478,7 +478,7 @@
       <section id="match-preferences" aria-labelledby="match-preferences-heading">
         <h2 class="govuk-heading-l" id="match-preferences-heading">{{ t("profile_settings.match.title") }}</h2>
         <p class="govuk-body">{{ t("profile_settings.match.description") }}</p>
-        <form method="post" action="{{ urlFor('/profile/match-preferences') }}">
+        <form method="post" action="{{ urlFor('/profile/match-preferences') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label" for="notification_frequency">{{ t("profile_settings.match.frequency_label") }}</label>
@@ -510,7 +510,7 @@
       <section id="personalisation" aria-labelledby="personalisation-heading">
         <h2 class="govuk-heading-l" id="personalisation-heading">{{ t("profile_settings.personalisation.title") }}</h2>
         <p class="govuk-body">{{ t("profile_settings.personalisation.description") }}</p>
-        <form method="post" action="{{ urlFor('/profile/personalisation') }}">
+        <form method="post" action="{{ urlFor('/profile/personalisation') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.personalisation.options_legend") }}</legend>
@@ -550,7 +550,7 @@
             <div class="govuk-notification-banner__content">
               <h3 class="govuk-notification-banner__heading">{{ t("profile_settings.safeguarding.policy_review_title") }}</h3>
               <p class="govuk-body">{{ t("profile_settings.safeguarding.policy_review_body") }}</p>
-              <form method="post" action="{{ urlFor('/profile/safeguarding/policy-review') }}">
+              <form method="post" action="{{ urlFor('/profile/safeguarding/policy-review') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("profile_settings.safeguarding.policy_review_confirm") }}</button>
               </form>
@@ -576,7 +576,7 @@
           {% endif %}
           <div class="govuk-inset-text">{{ t("profile_settings.safeguarding.vetting.no_documents") }}</div>
           {% if vetting.available and vetting.decision != "confirmed" and vetting.policyAvailable %}
-            <form method="post" action="{{ urlFor('/profile/safeguarding/vetting-review') }}">
+            <form method="post" action="{{ urlFor('/profile/safeguarding/vetting-review') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit"{% if vetting.reviewPending %} disabled{% endif %}>{{ t("profile_settings.safeguarding.vetting." ~ ("review_requested_button" if vetting.reviewPending else "request_review_button")) }}</button>
             </form>
@@ -586,7 +586,7 @@
           <div class="govuk-inset-text" id="safeguarding-switch">
             <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ safeguardingSwitch.heading }}</h3>
             {% if safeguardingSwitch.body %}<p class="govuk-body">{{ safeguardingSwitch.body }}</p>{% endif %}
-            <form method="post" action="{{ urlFor('/profile/safeguarding/switch-to-coordinator-introductions') }}">
+            <form method="post" action="{{ urlFor('/profile/safeguarding/switch-to-coordinator-introductions') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ safeguardingSwitch.button }}</button>
             </form>
@@ -614,7 +614,7 @@
                     {% endfor %}
                   </ul>
                 {% endif %}
-                <form method="post" action="{{ urlFor('/profile/safeguarding/revoke') }}">
+                <form method="post" action="{{ urlFor('/profile/safeguarding/revoke') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="option_id" value="{{ option.option_id }}">
                   <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.safeguarding.revoke_button") }}<span class="govuk-visually-hidden"> {{ option.label }}</span></button>
@@ -626,7 +626,7 @@
         {% endif %}
         <h3 class="govuk-heading-m govuk-!-margin-top-6" id="safeguarding-add">{{ t("profile_settings.safeguarding.add.title") }}</h3>
         <p class="govuk-body">{{ t("profile_settings.safeguarding.add.intro") }}</p>
-        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/profile/safeguarding/add') }}">{{ t("profile_settings.safeguarding.add.title") }}</a>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/profile/safeguarding/add') }}" role="button" draggable="false">{{ t("profile_settings.safeguarding.add.title") }}</a>
       </section>
 
       <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
@@ -636,10 +636,10 @@
         <p class="govuk-body">{{ t("profile_settings.data_description") }}</p>
         <h3 class="govuk-heading-m" id="data-export">{{ t("profile_settings.data_export_heading") }}</h3>
         <p class="govuk-body">{{ t("govuk_alpha_settings.data_export.subtitle") }}</p>
-        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/data-export') }}">{{ t("govuk_alpha_settings.data_export.download_button") }}</a>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/data-export') }}" role="button" draggable="false">{{ t("govuk_alpha_settings.data_export.download_button") }}</a>
         <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ t("profile_settings.delete_heading") }}</h3>
         <p class="govuk-body">{{ t("profile_settings.delete_body") }}</p>
-        <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/profile/delete-account') }}">{{ t("actions.delete_account") }}</a>
+        <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/profile/delete-account') }}" role="button" draggable="false">{{ t("actions.delete_account") }}</a>
       </section>
     </div>
   </div>

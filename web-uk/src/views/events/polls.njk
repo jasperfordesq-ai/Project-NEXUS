@@ -43,7 +43,7 @@
       <p class="govuk-body">{{ t("govuk_alpha_events.polls.none_body") }}</p>
     </div>
   {% else %}
-    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/polls') }}">
+    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/polls') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <fieldset class="govuk-fieldset" aria-describedby="event-polls-hint">
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">

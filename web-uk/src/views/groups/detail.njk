@@ -107,19 +107,19 @@
         <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/files') }}">{{ t("govuk_alpha_groups.files.nav_files") }}</a></li>
         <li><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.title") }}</a></li>
       </ul>
-      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/leave') }}">
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/leave') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("groups.leave"), classes: "govuk-button--warning govuk-!-margin-bottom-0" }) }}
       </form>
     {% elif isPending %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.pending_member") }}</p></div>
       {# React lets a member withdraw a pending request (27 Oct 2026). #}
-      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/cancel-request') }}">
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/cancel-request') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("govuk_alpha_groups.membership.cancel_request"), classes: "govuk-button--secondary govuk-!-margin-bottom-0" }) }}
       </form>
     {% else %}
-      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/join') }}">
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/join') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {{ govukButton({ text: t("groups.join"), classes: "govuk-!-margin-bottom-0" }) }}
       </form>
@@ -283,7 +283,7 @@
   {% if not groupCanParticipate %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.feed_members_only") }}</p></div>
   {% else %}
-    <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-7">
+    <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-7" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--m" for="group-feed-content">{{ t("groups_t1.compose_label") }}</label>
@@ -333,7 +333,7 @@
 
     {% if canCreatePolls %}
       <h3 class="govuk-heading-m" id="group-poll">{{ t("govuk_alpha_groups.poll.heading") }}</h3>
-      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/polls') }}" class="govuk-!-margin-bottom-7">
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/polls') }}" class="govuk-!-margin-bottom-7" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-form-group">
           <label class="govuk-label" for="group-poll-question">{{ t("govuk_alpha_groups.poll.question_label") }}</label>

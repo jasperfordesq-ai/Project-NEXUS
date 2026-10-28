@@ -31,7 +31,7 @@
     <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">
       {% for reaction in reactions %}
         {% set active = (current == reaction.type) or (current and current.length and current is not string and reaction.type in current) %}
-        <form method="post" action="{{ action }}" class="nexus-alpha-reaction-form">
+        <form method="post" action="{{ action }}" class="nexus-alpha-reaction-form" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {% for name, value in (hidden or {}) %}{% if value %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}{% endfor %}
           <input type="hidden" name="emoji" value="{{ reaction.type }}">

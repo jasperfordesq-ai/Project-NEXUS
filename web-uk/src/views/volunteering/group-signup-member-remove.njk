@@ -35,7 +35,7 @@
 
       <p class="govuk-body">{{ t(K ~ "remove_member_body") }}</p>
 
-      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}">
+      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-button-group">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "remove_member_confirm") }}<span class="govuk-visually-hidden"> {{ t(K ~ "remove_member_for", { name: member.name }) }}</span></button>

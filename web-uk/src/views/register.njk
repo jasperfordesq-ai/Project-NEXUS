@@ -96,7 +96,7 @@
               name: "invite_code",
               value: values.invite_code,
               errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.invite_code } if fieldErrors.invite_code else undefined,
-              attributes: { autocomplete: "off", required: "required" },
+              attributes: { autocomplete: "off" },
               classes: "govuk-input--width-10"
             }) }}
           {% endif %}
@@ -108,7 +108,7 @@
             autocomplete: "given-name",
             value: values.first_name,
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.first_name } if fieldErrors.first_name else undefined,
-            attributes: { required: "required", maxlength: "100" }
+            attributes: { maxlength: "100" }
           }) }}
 
           {{ govukInput({
@@ -118,7 +118,7 @@
             autocomplete: "family-name",
             value: values.last_name,
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.last_name } if fieldErrors.last_name else undefined,
-            attributes: { required: "required", maxlength: "100" }
+            attributes: { maxlength: "100" }
           }) }}
 
           {{ govukInput({
@@ -130,7 +130,7 @@
             autocomplete: "tel",
             value: values.phone,
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.phone } if fieldErrors.phone else undefined,
-            attributes: { required: "required", maxlength: "30" }
+            attributes: { maxlength: "30" }
           }) }}
 
           {{ govukInput({
@@ -141,7 +141,7 @@
             autocomplete: "address-level2",
             value: values.location,
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.location } if fieldErrors.location else undefined,
-            attributes: { required: "required", maxlength: "255" }
+            attributes: { maxlength: "255" }
           }) }}
           <input type="hidden" id="latitude" name="latitude" value="{{ values.latitude }}">
           <input type="hidden" id="longitude" name="longitude" value="{{ values.longitude }}">
@@ -155,7 +155,7 @@
             spellcheck: false,
             value: values.email,
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.email } if fieldErrors.email else undefined,
-            attributes: { required: "required", maxlength: "255" }
+            attributes: { maxlength: "255" }
           }) }}
 
           {% if not tenantSlug %}
@@ -166,7 +166,7 @@
               name: "tenant_slug",
               value: values.tenant_slug,
               errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.tenant_slug } if fieldErrors.tenant_slug else undefined,
-              attributes: { required: "required" }
+              attributes: {}
             }) }}
           {% else %}
             <input type="hidden" name="tenant_slug" value="{{ tenantSlug }}">
@@ -186,10 +186,7 @@
             autocomplete: "new-password",
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.password } if fieldErrors.password else undefined,
             describedBy: "password-strength-msg",
-            attributes: {
-              required: "required",
-              minlength: "12"
-            }
+            attributes: {}
           }) }}
           <p id="password-strength-msg" class="govuk-body-s govuk-!-margin-top-2" aria-live="polite"
             data-msg-idle="{{ t('auth.password_strength.idle') }}"
@@ -205,7 +202,7 @@
             type: "password",
             autocomplete: "new-password",
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.password_confirmation } if fieldErrors.password_confirmation else undefined,
-            attributes: { required: "required", minlength: "12" }
+            attributes: {}
           }) }}
 
           <div class="govuk-form-group{% if fieldErrors.terms_accepted %} govuk-form-group--error{% endif %}">
@@ -219,7 +216,7 @@
               {% endif %}
               <div class="govuk-checkboxes" data-module="govuk-checkboxes">
                 <div class="govuk-checkboxes__item">
-                  <input class="govuk-checkboxes__input" id="terms_accepted" name="terms_accepted" type="checkbox" value="1" required{% if values.terms_accepted %} checked{% endif %}>
+                  <input class="govuk-checkboxes__input" id="terms_accepted" name="terms_accepted" type="checkbox" value="1"{% if values.terms_accepted %} checked{% endif %}>
                   <label class="govuk-label govuk-checkboxes__label" for="terms_accepted">
                     {% set termsLink %}<a class="govuk-link" href="{{ urlFor('/legal/terms') }}">{{ t("auth.terms_link_text") }}</a>{% endset %}
                     {% set privacyLink %}<a class="govuk-link" href="{{ urlFor('/legal/privacy') }}">{{ t("auth.privacy_link_text") }}</a>{% endset %}

@@ -195,7 +195,7 @@
           <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ section.title }}</h3>
           {# Reordering without drag and drop: move up / move down. #}
           {% if builderSections.length > 1 %}
-            <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/move') }}" class="govuk-button-group govuk-!-margin-bottom-2">
+            <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/move') }}" class="govuk-button-group govuk-!-margin-bottom-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="order" value="{{ sectionOrder }}">
               {% if not loop.first %}<button type="submit" name="direction" value="up" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.move_up") }}<span class="govuk-visually-hidden">: {{ section.title }}</span></button>{% endif %}
@@ -216,7 +216,7 @@
                   </span>
                   <a class="govuk-link" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/edit') }}">{{ t("govuk_alpha_courses.lesson_editor.edit_lesson_link") }}<span class="govuk-visually-hidden">: {{ lesson.title }}</span></a>
                   {% if section.lessons.length > 1 %}
-                    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/move') }}" class="govuk-!-display-inline">
+                    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/move') }}" class="govuk-!-display-inline" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="order" value="{{ section.lessonOrder }}">
                       <input type="hidden" name="section_id" value="{{ section.id }}">
@@ -224,7 +224,7 @@
                       {% if not loop.last %}<button type="submit" name="direction" value="down" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.move_down") }}<span class="govuk-visually-hidden">: {{ lesson.title }}</span></button>{% endif %}
                     </form>
                   {% endif %}
-                  <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/delete') }}" class="govuk-!-display-inline">
+                  <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/delete') }}" class="govuk-!-display-inline" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_lesson_button") }}</button>
                   </form>
@@ -236,7 +236,7 @@
           <details class="govuk-details" data-module="govuk-details">
             <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.builder.rename_section_button") }} / {{ t("govuk_alpha_commerce.builder.delete_section_button") }}</span></summary>
             <div class="govuk-details__text">
-              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/update') }}" class="govuk-!-margin-bottom-3">
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/update') }}" class="govuk-!-margin-bottom-3" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="rename-section-{{ section.id }}">{{ t("govuk_alpha_commerce.builder.rename_section_label") }}</label>
@@ -248,7 +248,7 @@
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_commerce.builder.delete_section_warning") }}</strong>
               </div>
-              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/delete') }}">
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/delete') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_section_button") }}</button>
               </form>
@@ -259,7 +259,7 @@
     {% endif %}
 
     <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ t("govuk_alpha_commerce.builder.add_section_heading") }}</h3>
-    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections') }}" class="govuk-!-margin-bottom-6">
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections') }}" class="govuk-!-margin-bottom-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="section_title">{{ t("govuk_alpha_commerce.builder.section_title_label") }}</label>
@@ -270,7 +270,7 @@
     </form>
 
     <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ t("govuk_alpha_commerce.builder.add_lesson_heading") }}</h3>
-    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons') }}" class="govuk-!-margin-bottom-6">
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons') }}" class="govuk-!-margin-bottom-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="lesson_title">{{ t("govuk_alpha_commerce.builder.lesson_title_label") }}</label>
@@ -325,7 +325,7 @@
     </form>
 
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{% if course.status == 'published' %}{{ t("govuk_alpha_commerce.instructor.action_unpublish") }}{% else %}{{ t("govuk_alpha_commerce.instructor.action_publish") }}{% endif %}</h2>
-    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/' + ('unpublish' if course.status == 'published' else 'publish')) }}">
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/' + ('unpublish' if course.status == 'published' else 'publish')) }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{% if course.status == 'published' %}{{ t("govuk_alpha_commerce.instructor.action_unpublish") }}{% else %}{{ t("govuk_alpha_commerce.instructor.action_publish") }}{% endif %}</button>
     </form>
@@ -345,7 +345,7 @@
         {{ t("govuk_alpha_commerce.instructor.delete_warning") }}
       </strong>
     </div>
-    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/delete') }}">
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/delete') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.instructor.action_delete") }}</button>
     </form>

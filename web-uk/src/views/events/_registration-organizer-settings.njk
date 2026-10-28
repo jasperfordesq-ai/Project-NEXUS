@@ -44,7 +44,7 @@
   }, t) }}
   <div class="govuk-form-group">
     <label class="govuk-label" for="registration-member-limit">{{ t("event_registration.settings.per_member_limit") }}</label>
-    <input class="govuk-input govuk-input--width-3" id="registration-member-limit" name="per_member_limit" type="number" min="1" max="10" value="{{ settings.per_member_limit or 1 }}" required>
+    <input class="govuk-input govuk-input--width-3" id="registration-member-limit" name="per_member_limit" type="text" inputmode="numeric" spellcheck="false" value="{{ settings.per_member_limit or 1 }}">
   </div>
   <div class="govuk-checkboxes" data-module="govuk-checkboxes">
     <div class="govuk-checkboxes__item">
@@ -54,16 +54,16 @@
   </div>
   <div class="govuk-form-group govuk-!-margin-top-4">
     <label class="govuk-label" for="registration-guest-limit">{{ t("event_registration.settings.max_guests") }}</label>
-    <input class="govuk-input govuk-input--width-3" id="registration-guest-limit" name="max_guests_per_registration" type="number" min="1" max="10" value="{{ settings.max_guests_per_registration or 1 }}" required>
+    <input class="govuk-input govuk-input--width-3" id="registration-guest-limit" name="max_guests_per_registration" type="text" inputmode="numeric" spellcheck="false" value="{{ settings.max_guests_per_registration or 1 }}">
   </div>
   <div class="govuk-form-group">
     <label class="govuk-label" for="registration-guest-retention">{{ t("event_registration.settings.guest_retention") }}</label>
-    <input class="govuk-input govuk-input--width-5" id="registration-guest-retention" name="guest_retention_days" type="number" min="1" max="36500" value="{{ settings.guest_retention_days or 30 }}" required>
+    <input class="govuk-input govuk-input--width-5" id="registration-guest-retention" name="guest_retention_days" type="text" inputmode="numeric" spellcheck="false" value="{{ settings.guest_retention_days or 30 }}">
   </div>
   <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.settings.save") }}</button>
 </form>
 {% if settings.status == "draft" %}
-  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/settings/publish') }}">
+  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/settings/publish') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
     <input type="hidden" name="expected_revision" value="{{ settings.revision }}">
@@ -82,13 +82,13 @@
     <div class="govuk-summary-card__content">
       <p class="govuk-body">{{ t("event_registration.forms.version", { version: form.version_number }) }}</p>
       {% if form.status == "draft" %}
-        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string)) }}">{{ t("event_registration.forms.edit") }}</a>
-        <form class="govuk-!-display-inline-block" method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/publish') }}">
+        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("event_registration.forms.edit") }}</a>
+        <form class="govuk-!-display-inline-block" method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/publish') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><input type="hidden" name="expected_form_revision" value="{{ form.revision }}"><input type="hidden" name="expected_settings_revision" value="{{ settings.revision }}">
           <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.forms.publish") }}</button>
         </form>
       {% else %}
-        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/fork') }}">
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/fork') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><input type="hidden" name="expected_settings_revision" value="{{ settings.revision }}">
           <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("event_registration.forms.create_revision") }}</button>
         </form>

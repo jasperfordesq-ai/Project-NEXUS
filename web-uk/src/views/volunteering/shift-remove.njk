@@ -46,7 +46,7 @@
       </div>
 
       <div class="govuk-button-group">
-        <form method="post" action="{{ urlFor(base ~ '/shifts/' ~ shift.id ~ '/remove') }}">
+        <form method="post" action="{{ urlFor(base ~ '/shifts/' ~ shift.id ~ '/remove') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "remove_confirm") }}</button>
         </form>

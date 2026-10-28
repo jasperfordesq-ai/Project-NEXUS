@@ -44,7 +44,7 @@
         </strong>
       </div>
 
-      <form method="post" action="{{ urlFor('/settings/linked-accounts/messages/' + childUserId + '/purpose') }}">
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/messages/' + childUserId + '/purpose') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {% if partnerId %}
           <input type="hidden" name="partner_id" value="{{ partnerId }}">

@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Torna alla pagina iniziale',
         'unsubscribe_missing' => 'Non è stato fornito alcun link di disiscrizione. Utilizza il link presente nell\'email che hai ricevuto.',
         'unsubscribe_invalid' => 'Questo link di disiscrizione non è valido o è scaduto.',
+        'unsubscribe_confirm_body' => 'Seleziona il pulsante per non ricevere più le email della newsletter di questa comunità.',
+        'unsubscribe_confirm_button' => 'Annulla l\'iscrizione',
     ],
     'feed' => [
         'edit_post_hint' => 'Modifica il testo del tuo post.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Salva impostazioni notifiche',
             'saved' => 'Le impostazioni di notifica sono state salvate.',
             'failed' => 'Non è stato possibile salvare le impostazioni di notifica. Riprovare.',
+            'partial' => 'Le impostazioni di notifica sono state salvate, ma non è stato possibile salvare la scelta per il riepilogo di offerte e richieste. Riprovare.',
             'groups' => [
                 'messages' => 'Messaggi e comunità',
                 'activity' => 'La tua attività',

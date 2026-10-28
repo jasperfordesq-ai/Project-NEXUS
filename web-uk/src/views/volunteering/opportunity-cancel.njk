@@ -32,12 +32,12 @@
       </div>
 
       <div class="govuk-button-group">
-        <form method="post" action="{{ urlFor(base ~ '/cancel') }}">
+        <form method="post" action="{{ urlFor(base ~ '/cancel') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "cancel_confirm") }}</button>
         </form>
         {% if not isClosed %}
-          <form method="post" action="{{ urlFor(base ~ '/close') }}">
+          <form method="post" action="{{ urlFor(base ~ '/close') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "close") }}</button>
           </form>

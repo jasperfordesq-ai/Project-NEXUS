@@ -75,7 +75,7 @@
               <td class="govuk-table__cell">
                 <a class="govuk-link govuk-!-margin-right-2" href="{{ urlFor('/groups/' + (group.id | string) + '/files/' + (file.id | string) + '/download') }}" aria-label="{{ t('govuk_alpha_groups.files.download_aria', { name: file.fileName }) }}">{{ t("govuk_alpha_groups.files.download_link") }}</a>
                 {% if file.canDelete %}
-                  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/files/' + (file.id | string) + '/delete') }}" style="display:inline">
+                  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/files/' + (file.id | string) + '/delete') }}" style="display:inline" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_groups.files.delete_aria', { name: file.fileName }) }}">{{ t("govuk_alpha_groups.files.delete_button") }}</button>
                   </form>

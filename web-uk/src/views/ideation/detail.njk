@@ -130,7 +130,7 @@
           {% endif %}
           <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id) }}">{{ t("notifications.types.ideation") }}</a></p>
           {% if challenge.isOpenForVotes %}
-            <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/vote') }}">
+            <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/vote') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-describedby="idea-{{ idea.id }}-title" aria-label="{{ t('govuk_alpha_ideation.idea.vote_aria', { title: idea.title }) }}">{{ t("govuk_alpha_ideation.page.detail_vote_short") }}</button>
             </form>
@@ -146,7 +146,7 @@
 
   {% if challenge.isOpenForIdeas %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="submit">{{ t("ideation.submit_title") }}</h2>
-    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas') }}">
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if status == 'idea-invalid' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="idea_title">{{ t("ideation.idea_title_label") }}</label>

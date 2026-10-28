@@ -87,7 +87,7 @@
             {% if handover.cancelledBy %}<p class="govuk-body-s govuk-!-margin-bottom-1">{{ t(K ~ "handovers.cancelled_by", { name: handover.cancelledBy }) }}</p>{% endif %}
             {% if handover.cancelReason %}<p class="govuk-body-s">{{ t(K ~ "history.reason", { reason: handover.cancelReason }) }}</p>{% endif %}
             {% if handover.canConfirm %}
-              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/handovers/' ~ handover.id ~ '/confirm') }}" class="govuk-!-margin-top-3">
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/handovers/' ~ handover.id ~ '/confirm') }}" class="govuk-!-margin-top-3" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "handovers.confirm_action") }}<span class="govuk-visually-hidden">: {{ handover.amountLabel }}, {{ handover.dateLabel }}</span></button>
               </form>

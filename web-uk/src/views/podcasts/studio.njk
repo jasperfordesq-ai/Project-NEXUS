@@ -38,7 +38,7 @@
   {% if guide %}{% include "podcasts/_studio-guide.njk" %}{% endif %}
 
   {% if canCreateShow %}
-    <a class="govuk-button" href="{{ urlFor('/podcasts/studio/new') }}" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.create_button") }}</a>
+    <a class="govuk-button" href="{{ urlFor('/podcasts/studio/new') }}" data-module="govuk-button" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.create_button") }}</a>
   {% endif %}
 
   {% if not shows.length %}

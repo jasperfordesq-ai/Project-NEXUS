@@ -50,7 +50,7 @@
             </div>
           </div>
         {% endif %}
-        <form method="post" action="{{ urlFor('/kb/' + (article.id | string) + '/feedback') }}">
+        <form method="post" action="{{ urlFor('/kb/' + (article.id | string) + '/feedback') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_kb.feedback_question") }}</h2></legend>

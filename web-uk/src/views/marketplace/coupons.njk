@@ -34,7 +34,7 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.coupons.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.coupons.description") }}</p>
 
-  <a class="govuk-button" href="{{ urlFor('/marketplace/coupons/new') }}" data-module="govuk-button">{{ t("govuk_alpha_commerce.coupons.create_button") }}</a>
+  <a class="govuk-button" href="{{ urlFor('/marketplace/coupons/new') }}" data-module="govuk-button" role="button" draggable="false">{{ t("govuk_alpha_commerce.coupons.create_button") }}</a>
 
   {% if not coupons.length %}
     <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.coupons.empty") }}</p>

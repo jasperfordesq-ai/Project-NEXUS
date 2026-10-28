@@ -114,7 +114,7 @@
           {% endif %}
 
           {% if "approved" in claim.nextSteps %}
-            <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}" class="govuk-!-margin-bottom-4">
+            <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}" class="govuk-!-margin-bottom-4" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="show" value="{{ show }}">
               <input type="hidden" name="decision" value="approved">
@@ -126,7 +126,7 @@
             <details class="govuk-details govuk-!-margin-bottom-0">
               <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "reject_open") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></span></summary>
               <div class="govuk-details__text">
-                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="show" value="{{ show }}">
                   <input type="hidden" name="decision" value="rejected">
@@ -145,7 +145,7 @@
             <details class="govuk-details govuk-!-margin-bottom-0">
               <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "paid_open") }}<span class="govuk-visually-hidden">: {{ claim.volunteerName }}, {{ claim.amountLabel }}</span></span></summary>
               <div class="govuk-details__text">
-                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ claim.id ~ '/review') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="show" value="{{ show }}">
                   <input type="hidden" name="decision" value="paid">

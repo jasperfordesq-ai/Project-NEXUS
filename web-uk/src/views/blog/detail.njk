@@ -44,7 +44,7 @@
 
       <div id="reactions" class="govuk-!-margin-top-4 govuk-!-margin-bottom-2">
         {% if isAuthenticated and post.slug %}
-          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/like') }}" class="govuk-!-display-inline-block">
+          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/like') }}" class="govuk-!-display-inline-block" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button {% if not hasLiked %}govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button">
               {% if hasLiked %}{{ t("blog.unlike") }}{% else %}{{ t("blog.like") }}{% endif %}
@@ -90,7 +90,7 @@
             </ul>
           {% endif %}
 
-          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments') }}" class="govuk-!-margin-top-4">
+          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments') }}" class="govuk-!-margin-top-4" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             {% call characterCount(5000, characterCountMessages, "body") %}
             <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">

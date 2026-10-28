@@ -42,13 +42,13 @@
 
   {% if not job.isOwner %}
     {% if job.isSaved %}
-      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/unsave') }}" class="govuk-!-margin-bottom-4">
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/unsave') }}" class="govuk-!-margin-bottom-4" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="from" value="detail">
         <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t2.unsave_button") }}</button>
       </form>
     {% else %}
-      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/save') }}" class="govuk-!-margin-bottom-4">
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/save') }}" class="govuk-!-margin-bottom-4" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="from" value="detail">
         <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t2.save_button") }}</button>
@@ -186,17 +186,17 @@
       <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/team') }}">{{ t("govuk_alpha_jobs.hiring.team_link") }}</a>
     </div>
     <div class="govuk-button-group">
-      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}">
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t3.renew_button") }}</button>
       </form>
       {% if job.status == 'open' %}
-        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/close') }}">
+        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/close') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_jobs.detail.close_button") }}</button>
         </form>
       {% else %}
-        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/reopen') }}">
+        <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/reopen') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_jobs.detail.reopen_button") }}</button>
         </form>
@@ -218,14 +218,14 @@
       {% if savedProfile %}
         <div class="govuk-inset-text">
           <p class="govuk-body">{{ t("govuk_alpha_jobs.apply_extras.saved_found") }}</p>
-          <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/quick-apply') }}">
+          <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/quick-apply') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <p class="govuk-body-s">{{ t("govuk_alpha_jobs.apply_extras.quick_apply_hint") }}</p>
             <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.apply_extras.quick_apply_button") }}</button>
           </form>
         </div>
       {% endif %}
-      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/apply') }}" enctype="multipart/form-data">
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/apply') }}" enctype="multipart/form-data" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {% call characterCount(5000, characterCountMessages, "cover_letter") %}
         <div class="govuk-form-group">

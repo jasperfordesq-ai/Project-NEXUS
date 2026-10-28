@@ -38,7 +38,7 @@
       {% endif %}
 
       {% if not exportRecord or exportRecord.status in ["completed", "failed", "expired"] %}
-        <form method="post" action="{{ urlFor(base) }}">
+        <form method="post" action="{{ urlFor(base) }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {{ govukButton({ text: t(k + "generate_again") if exportRecord else t(k + "generate"), classes: "govuk-button--secondary" if exportRecord else undefined }) }}
         </form>

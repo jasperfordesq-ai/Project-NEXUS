@@ -50,7 +50,7 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_settings.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_settings.description") }}</p>
 
-  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/settings') }}">
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/settings') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-form-group{% if status and status.field == 'name' %} govuk-form-group--error{% endif %}">
@@ -59,7 +59,7 @@
       {% if status and status.field == 'name' %}
         <p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
       {% endif %}
-      <input class="govuk-input" id="name" name="name" type="text" value="{{ organization.name }}" aria-describedby="name-hint{% if status and status.field == 'name' %} name-error{% endif %}" required>
+      <input class="govuk-input" id="name" name="name" type="text" value="{{ organization.name }}" aria-describedby="name-hint{% if status and status.field == 'name' %} name-error{% endif %}">
     </div>
 
     <div class="govuk-form-group">

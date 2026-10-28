@@ -30,7 +30,7 @@
         </strong>
       </div>
 
-      <form method="post" action="{{ urlFor('/federation/opt-out') }}">
+      <form method="post" action="{{ urlFor('/federation/opt-out') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-button-group">
           <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("federation.optout.submit") }}</button>

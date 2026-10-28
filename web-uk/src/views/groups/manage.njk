@@ -43,7 +43,7 @@
             <div class="nexus-alpha-module-row">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ requestItem.name }}</h3>
             </div>
-            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/requests/' + (requestItem.id | string)) }}">
+            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/requests/' + (requestItem.id | string)) }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group govuk-!-margin-top-2">
                 <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="accept" data-module="govuk-button">{{ t("groups.manage.approve") }}</button>
@@ -70,7 +70,7 @@
             {{ govukTag({ text: member.roleLabel, classes: (member.roleClass) }) }}
           </div>
           {% if not member.isOwner %}
-            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/members/' + (member.id | string)) }}">
+            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/members/' + (member.id | string)) }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group govuk-!-margin-top-2">
                 {% if member.role == "admin" %}

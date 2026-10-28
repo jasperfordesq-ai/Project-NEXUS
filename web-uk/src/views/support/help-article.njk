@@ -59,7 +59,7 @@
       {% endfor %}
 
       {% if article.link %}
-        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor(article.link) }}">{{ ct("open_page") }}</a>
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor(article.link) }}" role="button" draggable="false">{{ ct("open_page") }}</a>
       {% elif article.mainWebsiteOnly %}
         <div class="govuk-inset-text">{{ t("help_centre.main_website_only") }}</div>
       {% endif %}

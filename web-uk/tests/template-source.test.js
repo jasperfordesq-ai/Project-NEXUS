@@ -98,7 +98,7 @@ describe('tenant-aware template helper conversion', () => {
     expect(formSource).toContain('name: "start_time"');
     expect(formSource).toContain('name: "end_time"');
     expect(formSource).not.toMatch(/name(?:=|:)\s*"(?:starts_at|ends_at)_(?:date|time)"/);
-    expect(formSource).toMatch(/id: "description"[\s\S]*?"required": "required"/);
+    expect(formSource).not.toMatch(/"required":/);
     expect(createTemplate).toContain('t("events.caption", { community: tenantName or serviceName })');
     expect(createTemplate).toContain('t("events.create_description")');
     expect(createTemplate).toContain('t("events.create_details_title")');
@@ -916,7 +916,8 @@ describe('tenant-aware template helper conversion', () => {
     );
 
     expect(edit).toContain('{% if isOwner %}');
-    expect(edit).toContain('id="confirm-delete" name="confirm" type="checkbox" value="yes" required');
+    expect(edit).toContain('id="confirm-delete" name="confirm" type="checkbox" value="yes"');
+    expect(edit).not.toMatch(/id="confirm-delete"[^>]*\srequired/);
     expect(edit).toContain('t("groups.delete.warning")');
     expect(edit).toContain("urlFor('/groups/' + (group.id | string) + '/delete')");
     expect(edit).not.toContain('onsubmit="return confirm');
@@ -1746,7 +1747,8 @@ describe('tenant-aware template helper conversion', () => {
   it('keeps both wallet transfer forms behind Blade confirmation checkboxes', () => {
     for (const templatePath of [path.join('wallet', 'index.njk'), path.join('wallet', 'manage.njk')]) {
       const template = fs.readFileSync(path.join(__dirname, '..', 'src', 'views', templatePath), 'utf8');
-      expect(template).toContain('name="confirm" type="checkbox" value="1" required');
+      expect(template).toContain('name="confirm" type="checkbox" value="1"');
+      expect(template).not.toMatch(/name="confirm"[^>]*\srequired/);
       expect(template).toContain('transfer_confirm_label');
     }
   });

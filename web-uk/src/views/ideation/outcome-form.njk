@@ -44,7 +44,7 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_ideation.outcomes.edit_title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_ideation.outcomes.edit_intro") }}</p>
 
-  <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/outcome') }}">
+  <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/outcome') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-form-group">

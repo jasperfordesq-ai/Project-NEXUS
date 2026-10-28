@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Wróć na stronę główną',
         'unsubscribe_missing' => 'Nie podano linku do rezygnacji z subskrypcji. Skorzystaj z linku zawartego w otrzymanym e-mailu.',
         'unsubscribe_invalid' => 'Ten link do rezygnacji z subskrypcji jest nieprawidłowy lub wygasł.',
+        'unsubscribe_confirm_body' => 'Wybierz przycisk, aby przestać otrzymywać e-maile z newsletterem od tej społeczności.',
+        'unsubscribe_confirm_button' => 'Wypisz się',
     ],
     'feed' => [
         'edit_post_hint' => 'Zaktualizuj treść swojego wpisu.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Zapisz ustawienia powiadomień',
             'saved' => 'Twoje ustawienia powiadomień zostały zapisane.',
             'failed' => 'Nie udało się zapisać ustawień powiadomień. Spróbuj ponownie.',
+            'partial' => 'Ustawienia powiadomień zostały zapisane, ale nie udało się zapisać wyboru dotyczącego podsumowania ofert i próśb. Spróbuj ponownie.',
             'groups' => [
                 'messages' => 'Wiadomości i społeczność',
                 'activity' => 'Twoja aktywność',

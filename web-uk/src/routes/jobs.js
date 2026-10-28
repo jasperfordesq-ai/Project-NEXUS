@@ -1896,6 +1896,15 @@ function lastCheckbox(value) {
   return String(last || '') === '1';
 }
 
+// Pay, hours and credits are text boxes (GOV.UK "ask for numbers"), so "abc" can arrive.
+// The API casts a non-number to 0 instead of refusing it, which would publish a 0 salary.
+function jobNumbersInvalid(body = {}) {
+  return ['salary_min', 'salary_max', 'hours_per_week', 'time_credits'].some((field) => {
+    const text = trimmed(body[field], 100);
+    return text !== '' && !(Number.isFinite(Number(text)) && Number(text) >= 0);
+  });
+}
+
 function jobFormPayload(body) {
   // 🔴 `jobFormValues()` is BOTH the API payload and the form's re-render model, so a
   // field added for the view leaks straight into the request body. `deadlineParts` is
@@ -3065,6 +3074,10 @@ router.post('/', asyncRoute(async (req, res) => {
     rememberJobForm(req, req.body);
     return redirectTo(res, statusRedirect('/jobs/create', 'title-required'));
   }
+  if (jobNumbersInvalid(req.body)) {
+    rememberJobForm(req, req.body);
+    return redirectTo(res, statusRedirect('/jobs/create', 'create-failed'));
+  }
   if (readDate(req.body, 'deadline').error) {
     rememberJobForm(req, req.body, [jobDeadlineInvalidError(req)]);
     return redirectTo(res, '/jobs/create');
@@ -3124,6 +3137,10 @@ router.post('/:id(\\d+)/update', asyncRoute(async (req, res) => {
   if (payload === null) {
     rememberJobForm(req, req.body);
     return redirectTo(res, statusRedirect(`/jobs/${id}/edit`, 'title-required'));
+  }
+  if (jobNumbersInvalid(req.body)) {
+    rememberJobForm(req, req.body);
+    return redirectTo(res, statusRedirect(`/jobs/${id}/edit`, 'update-failed'));
   }
   if (readDate(req.body, 'deadline').error) {
     rememberJobForm(req, req.body, [jobDeadlineInvalidError(req)]);

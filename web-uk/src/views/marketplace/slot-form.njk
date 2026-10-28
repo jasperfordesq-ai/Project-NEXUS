@@ -30,7 +30,7 @@
         {{ t("govuk_alpha_commerce.slots.delete_warning") }}
       </strong>
     </div>
-    <form method="post" action="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/delete') }}">
+    <form method="post" action="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/delete') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.action_delete") }}</button>
     </form>

@@ -71,6 +71,6 @@
   {% endif %}
 
   <ul class="govuk-list nexus-alpha-actions govuk-!-margin-top-4">
-    <li><a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/jobs/' ~ qualification.jobId) }}">{{ t("govuk_alpha_jobs.qualification.view_opportunity") }}</a></li>
+    <li><a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/jobs/' ~ qualification.jobId) }}" role="button" draggable="false">{{ t("govuk_alpha_jobs.qualification.view_opportunity") }}</a></li>
   </ul>
 {% endblock %}

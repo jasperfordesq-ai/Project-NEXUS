@@ -54,7 +54,7 @@
       {% endif %}
     </div>
   {% else %}
-    <form method="post" action="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string) + '/apply') }}">
+    <form method="post" action="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string) + '/apply') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       {% call characterCount(2000, characterCountMessages, "message") %}
       <div class="govuk-form-group">

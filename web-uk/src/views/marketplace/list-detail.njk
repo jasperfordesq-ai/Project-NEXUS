@@ -30,7 +30,7 @@
             <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ item.title }}</a></h3>
             {{ govukTag({ text: item.cardPriceLabel, classes: (item.cardPriceTagClass) }) }}
           </div>
-          <form method="post" action="{{ urlFor('/marketplace/lists/' + (list.id | string) + '/items/' + (item.id | string) + '/remove') }}">
+          <form method="post" action="{{ urlFor('/marketplace/lists/' + (list.id | string) + '/items/' + (item.id | string) + '/remove') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.wish_lists.remove_item") }}<span class="govuk-visually-hidden"> — {{ item.title }}</span></button>
           </form>

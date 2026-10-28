@@ -70,7 +70,7 @@
       {{ t("govuk_alpha_volunteering.org_wallet.deposit_warning") }}
     </strong>
   </div>
-  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/wallet/deposit') }}" class="govuk-!-margin-bottom-8">
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/wallet/deposit') }}" class="govuk-!-margin-bottom-8" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {# Moves credits: the key lets the server collapse a double submit into one
        deposit, which the double-click guard alone cannot do without JavaScript. #}
@@ -78,7 +78,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label" for="amount">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_label") }}</label>
       <div id="amount-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_hint") }}</div>
-      <input class="govuk-input govuk-input--width-5" id="amount" name="amount" type="text" inputmode="numeric" pattern="[0-9]*" aria-describedby="amount-hint" required>
+      <input class="govuk-input govuk-input--width-5" id="amount" name="amount" type="text" inputmode="numeric" aria-describedby="amount-hint">
     </div>
     <div class="govuk-form-group">
       <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.org_wallet.deposit_note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>

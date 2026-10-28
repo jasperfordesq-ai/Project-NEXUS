@@ -81,7 +81,7 @@
   </dl>
 
   {% if achievements.dailyReward.canClaim %}
-    <form method="post" action="{{ urlFor('/achievements/daily-reward') }}">
+    <form method="post" action="{{ urlFor('/achievements/daily-reward') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("polish_gamify.daily_reward_button") }}</button>
     </form>
@@ -139,7 +139,7 @@
           <span class="govuk-body-s govuk-!-margin-right-2">{{ challenge.percent }}%</span>
           <progress max="100" value="{{ challenge.percent }}" aria-label="{{ challenge.percent }}%">{{ challenge.percent }}%</progress>
           {% if challenge.claimable %}
-            <form method="post" action="{{ urlFor('/achievements/challenges/' + (challenge.id | string) + '/claim') }}" class="govuk-!-margin-top-2">
+            <form method="post" action="{{ urlFor('/achievements/challenges/' + (challenge.id | string) + '/claim') }}" class="govuk-!-margin-top-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_gamify.challenge_claim_button") }}</button>
             </form>

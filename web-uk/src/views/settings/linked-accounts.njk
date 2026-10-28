@@ -33,7 +33,7 @@
       {% set canApprove = mode == "parent" %}
     {% endif %}
     {% if relationship.relationshipId > 0 and isPending and canApprove %}
-      <form method="post" action="{{ urlFor('/settings/linked-accounts/approve') }}" class="govuk-!-display-inline-block govuk-!-margin-right-2">
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/approve') }}" class="govuk-!-display-inline-block govuk-!-margin-right-2" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
         <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.approve_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
@@ -72,7 +72,7 @@
         {% endif %}
       {% elif mode == "child" %}
         {# The supporter may lower or keep a level, never raise it. #}
-        <form method="post" action="{{ urlFor('/settings/linked-accounts/tiers') }}" class="govuk-!-margin-bottom-2">
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/tiers') }}" class="govuk-!-margin-bottom-2" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
           {% if tiers.activity != "none" %}
@@ -99,7 +99,7 @@
         </form>
       {% else %}
         {# The supported member grants, raises or removes each level. #}
-        <form method="post" action="{{ urlFor('/settings/linked-accounts/member-tiers') }}" class="govuk-!-margin-bottom-2">
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/member-tiers') }}" class="govuk-!-margin-bottom-2" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
           <fieldset class="govuk-fieldset">
@@ -130,10 +130,10 @@
       {% if mode == "child" and relationship.userId > 0 and (relationship.canPrepareListing or relationship.canPrepareTransfer) %}
         <div class="govuk-button-group">
           {% if relationship.canPrepareListing %}
-            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/listing') }}">{{ t("govuk_alpha_settings.support_prepare.prepare_listing_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/listing') }}" role="button" draggable="false">{{ t("govuk_alpha_settings.support_prepare.prepare_listing_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
           {% endif %}
           {% if relationship.canPrepareTransfer %}
-            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/transfer') }}">{{ t("govuk_alpha_settings.support_prepare.prepare_transfer_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/settings/support-actions/prepare/' + (relationship.userId | string) + '/transfer') }}" role="button" draggable="false">{{ t("govuk_alpha_settings.support_prepare.prepare_transfer_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></a>
           {% endif %}
         </div>
       {% endif %}
@@ -190,7 +190,7 @@
           </p>
         {% else %}
           <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_settings.linked_messages.explainer", { name: relationship.name }) }}</p>
-          <form method="post" action="{{ urlFor('/settings/linked-accounts/message-access/request') }}">
+          <form method="post" action="{{ urlFor('/settings/linked-accounts/message-access/request') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
             <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.linked_messages.request_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
@@ -199,7 +199,7 @@
       {% else %}
         {% if relationship.messageAccess == "active" %}
           <p class="govuk-body">{{ t("govuk_alpha_settings.linked_messages.member_disclosure", { name: relationship.name }) }}</p>
-          <form method="post" action="{{ urlFor('/settings/linked-accounts/message-access/withdraw') }}">
+          <form method="post" action="{{ urlFor('/settings/linked-accounts/message-access/withdraw') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
             <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.linked_messages.member_withdraw_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
@@ -216,7 +216,7 @@
     {% endif %}
 
     {% if relationship.relationshipId > 0 %}
-      <form method="post" action="{{ urlFor('/settings/linked-accounts/revoke') }}" class="govuk-!-display-inline-block">
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/revoke') }}" class="govuk-!-display-inline-block" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
         <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.revoke_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
@@ -305,7 +305,7 @@
         <p class="govuk-body">{{ t("govuk_alpha_settings.linked.request_description") }}</p>
         <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_settings.linked.request_max", { count: maxChildren }) }}</p>
 
-        <form method="post" action="{{ urlFor('/settings/linked-accounts/request') }}">
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/request') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
           <div class="govuk-form-group{% if status == 'link-email-invalid' or status == 'link-user-not-found' %} govuk-form-group--error{% endif %}">

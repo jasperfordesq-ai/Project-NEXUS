@@ -36,13 +36,13 @@
 
         <div class="govuk-form-group">
           <label class="govuk-label" for="title">{{ t("goals.title_label") }}</label>
-          <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ goal.rawTitle }}" required>
+          <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ goal.rawTitle }}">
         </div>
 
         <div class="govuk-form-group">
           <label class="govuk-label" for="target_value">{{ t("goals.target_label") }}</label>
           <div id="tv-hint" class="govuk-hint">{{ t("goals.target_hint") }}</div>
-          <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" value="{{ goal.targetValue }}" required aria-describedby="tv-hint">
+          <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="text" spellcheck="false" inputmode="decimal" value="{{ goal.targetValue }}" aria-describedby="tv-hint">
         </div>
 
         {% call characterCount(1000, characterCountMessages, "description") %}
@@ -89,7 +89,7 @@
           {{ t("goals.delete_warning") }}
         </strong>
       </div>
-      <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/delete') }}">
+      <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/delete') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("goals.delete_button") }}</button>
       </form>

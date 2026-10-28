@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-27T17:45:58.113Z",
+  "generatedAt": "2026-10-28T07:56:45.707Z",
   "provenance": {
-    "generatedAt": "2026-10-27T17:45:58.113Z",
+    "generatedAt": "2026-10-28T07:56:45.707Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a",
+    "laravelCommitSha": "ae45172cd75f8df79999edfc86a7b8b736b24965",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a",
+    "webUkRepositoryCommitSha": "ae45172cd75f8df79999edfc86a7b8b736b24965",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-27T17:45:58.113Z",
+    "generatedAt": "2026-10-28T07:56:45.707Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1074,
+    "webUkRoutes": 1075,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 364,
+    "extraWebUkRoutes": 365,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -216,6 +216,12 @@
       },
       "municipality-calendar": {
         "matched": 0,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
+      "newsletter": {
+        "matched": 1,
         "missing": 0,
         "extraWebUk": 1,
         "ignoredInfrastructure": 0
@@ -473,12 +479,6 @@
         "ignoredInfrastructure": 0
       },
       "logout": {
-        "matched": 1,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "newsletter": {
         "matched": 1,
         "missing": 0,
         "extraWebUk": 0,
@@ -5186,6 +5186,27 @@
       "webUkPath": "/municipality-calendar",
       "webUkView": "municipality-calendar/index",
       "webUkFile": "web-uk/src/routes/municipality-calendar.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/newsletter/unsubscribe",
+      "family": "newsletter",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/newsletter/unsubscribe",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/public-info.js",
       "webUkRouteKind": ""
     },
     {
@@ -19121,7 +19142,7 @@
       "gates": "",
       "apiNeeds": "api:NewsletterController::unsubscribe",
       "webUkPath": "/newsletter/unsubscribe",
-      "webUkView": "public-info/newsletter-unsubscribe",
+      "webUkView": "",
       "webUkFile": "web-uk/src/routes/public-info.js"
     },
     {

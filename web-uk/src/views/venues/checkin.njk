@@ -57,7 +57,7 @@
            that prefetch this URL record nothing. #}
         <p class="govuk-body-l">{{ t("govuk_alpha_venues.checkin.intro") }}</p>
 
-        <form method="post" action="{{ urlFor('/venues/checkin/' + token) }}">
+        <form method="post" action="{{ urlFor('/venues/checkin/' + token) }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
           {% if status === 'needs_venue' %}

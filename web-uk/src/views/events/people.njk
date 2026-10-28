@@ -26,7 +26,7 @@
 
   {% if canManageAttendance %}
     <nav class="govuk-button-group" aria-label="{{ t('govuk_alpha.events.operations_navigation') }}">
-      <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/check-in') }}">{{ t("govuk_alpha.events.check_in_title") }}</a>
+      <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/check-in') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha.events.check_in_title") }}</a>
     </nav>
   {% endif %}
 
@@ -55,7 +55,7 @@
   {% if people.length == 0 %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("govuk_alpha.events.people_empty") }}</div>
   {% else %}
-    {% if canManageRegistration %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/people') }}">{% endif %}
+    {% if canManageRegistration %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/people') }}" novalidate>{% endif %}
       {% if canManageRegistration %}<input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">{% endif %}
       {# govuk-table styles are CLASS-scoped: a bare <th>/<td>/<tr> inside it gets
          no padding, no row rule and no bold header — this was the one table in
@@ -66,9 +66,9 @@
         </table>
       </div>
       {% if canManageRegistration %}<fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.people_action_title") }}</h2></legend>
-        <div class="govuk-form-group"><label class="govuk-label" for="people-action">{{ t("govuk_alpha.events.people_action_label") }}</label><select class="govuk-select" id="people-action" name="action" required>{% for action in ["approve", "reject", "cancel"] %}<option value="{{ action }}">{{ t("govuk_alpha.events.people_actions." + action) }}</option>{% endfor %}</select></div>
+        <div class="govuk-form-group"><label class="govuk-label" for="people-action">{{ t("govuk_alpha.events.people_action_label") }}</label><select class="govuk-select" id="people-action" name="action">{% for action in ["approve", "reject", "cancel"] %}<option value="{{ action }}">{{ t("govuk_alpha.events.people_actions." + action) }}</option>{% endfor %}</select></div>
         <div class="govuk-form-group"><label class="govuk-label" for="people-reason">{{ t("govuk_alpha.events.people_reason_label") }}</label><div id="people-reason-hint" class="govuk-hint">{{ t("govuk_alpha.events.people_reason_hint") }}</div><textarea class="govuk-textarea" id="people-reason" name="reason" rows="3" aria-describedby="people-reason-hint"></textarea></div>
-        <div class="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="people-confirmation" name="confirmation" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="people-confirmation">{{ t("govuk_alpha.events.people_confirmation") }}</label></div></div>
+        <div class="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="people-confirmation" name="confirmation" type="checkbox" value="1"><label class="govuk-label govuk-checkboxes__label" for="people-confirmation">{{ t("govuk_alpha.events.people_confirmation") }}</label></div></div>
         <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("govuk_alpha.events.people_apply_action") }}</button>
       </fieldset></form>{% endif %}
   {% endif %}

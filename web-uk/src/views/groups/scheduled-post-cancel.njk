@@ -27,7 +27,7 @@
       {{ t("govuk_alpha_groups.scheduled.cancel_warning") }}
     </strong>
   </div>
-  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts/' + (post.id | string) + '/cancel') }}">
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/scheduled-posts/' + (post.id | string) + '/cancel') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <div class="govuk-button-group">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_groups.scheduled.cancel_confirm") }}</button>

@@ -61,7 +61,7 @@
       <p class="govuk-body">{{ t("govuk_alpha_commerce.coupon_qr.intro") }}</p>
     {% endif %}
     {% if coupon.id %}
-      <form method="post" action="{{ urlFor('/coupons/' + (coupon.id | string) + '/qr') }}">
+      <form method="post" action="{{ urlFor('/coupons/' + (coupon.id | string) + '/qr') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <button class="govuk-button{% if qr %} govuk-button--secondary{% endif %}" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.coupon_qr.new_button") if qr else t("govuk_alpha_commerce.coupon_qr.button") }}</button>
       </form>

@@ -93,7 +93,7 @@
                  reason field — never required, because requiring somebody to
                  justify refusing a safeguarding arrangement is pressure to agree. #}
               {% if 'consented' in guardian.allowedActions %}
-                <form method="post" action="{{ urlFor('/settings/guardians/respond') }}" class="govuk-!-margin-bottom-3">
+                <form method="post" action="{{ urlFor('/settings/guardians/respond') }}" class="govuk-!-margin-bottom-3" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
                   <input type="hidden" name="action" value="consented">
@@ -111,7 +111,7 @@
                 <p class="govuk-body-s">{{ t("govuk_alpha_settings.guardians.tiers_intro", { name: guardianName }) }}</p>
 
                 {% for capability in guardian.capabilities %}
-                  <form method="post" action="{{ urlFor('/settings/guardians/permissions') }}" class="govuk-!-margin-bottom-3">
+                  <form method="post" action="{{ urlFor('/settings/guardians/permissions') }}" class="govuk-!-margin-bottom-3" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
                     <input type="hidden" name="capability" value="{{ capability.key }}">
@@ -138,7 +138,7 @@
 
               {% for negative in ['declined', 'withdrawn'] %}
                 {% if negative in guardian.allowedActions %}
-                  <form method="post" action="{{ urlFor('/settings/guardians/respond') }}">
+                  <form method="post" action="{{ urlFor('/settings/guardians/respond') }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
                     <input type="hidden" name="action" value="{{ negative }}">

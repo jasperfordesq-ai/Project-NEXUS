@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Voltar à página inicial',
         'unsubscribe_missing' => 'Não foi fornecido nenhum link de cancelamento de subscrição. Utilize o link no e-mail que recebeu.',
         'unsubscribe_invalid' => 'Este link de cancelamento de subscrição é inválido ou expirou.',
+        'unsubscribe_confirm_body' => 'Selecione o botão para deixar de receber os e-mails da newsletter desta comunidade.',
+        'unsubscribe_confirm_button' => 'Cancelar subscrição',
     ],
     'feed' => [
         'edit_post_hint' => 'Atualize o texto da sua publicação.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Guardar definições de notificações',
             'saved' => 'As suas definições de notificações foram guardadas.',
             'failed' => 'Não foi possível guardar as suas definições de notificações. Por favor, tente novamente.',
+            'partial' => 'As suas definições de notificações foram guardadas, mas não foi possível guardar a sua escolha para o resumo de ofertas e pedidos. Por favor, tente novamente.',
             'groups' => [
                 'messages' => 'Mensagens e comunidade',
                 'activity' => 'A sua atividade',

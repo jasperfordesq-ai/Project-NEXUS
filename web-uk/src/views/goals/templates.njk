@@ -69,7 +69,7 @@
                   <p class="govuk-body-s nexus-alpha-meta">{{ t("goals.template_target", { target: template.targetText }) }}</p>
                 {% endif %}
 
-                <form method="post" action="{{ urlFor('/goals/templates/' + (template.id | string)) }}">
+                <form method="post" action="{{ urlFor('/goals/templates/' + (template.id | string)) }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <div class="govuk-form-group">
                     <label class="govuk-label" for="title-{{ template.id }}">{{ t("goals.template_title_override_label") }}</label>

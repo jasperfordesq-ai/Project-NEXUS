@@ -92,17 +92,17 @@
     </div>
   </div>
 
-  <form method="post" action="{{ urlFor('/goals') }}" class="govuk-grid-row">
+  <form method="post" action="{{ urlFor('/goals') }}" class="govuk-grid-row" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-form-group">
         <label class="govuk-label" for="title">{{ t("goals.title_label") }}</label>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="255" required value="{{ goalForm.title or '' }}">
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ goalForm.title or '' }}">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="target_value">{{ t("goals.target_label") }}</label>
         <div id="tv-hint" class="govuk-hint">{{ t("goals.target_hint") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" required aria-describedby="tv-hint" value="{{ goalForm.targetValue or '' }}">
+        <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="text" spellcheck="false" inputmode="decimal" aria-describedby="tv-hint" value="{{ goalForm.targetValue or '' }}">
       </div>
       {% call characterCount(1000, characterCountMessages, "description") %}
       <div class="govuk-form-group">

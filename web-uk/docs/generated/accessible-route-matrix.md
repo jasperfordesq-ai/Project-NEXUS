@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-10-27T17:45:58.113Z
-Laravel commit SHA: `9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a`
-Web UK repository commit SHA: `9b1eab6e7fa0688a3261a7a2bbddb9ac14a5676a`
+Generated: 2026-10-28T07:56:45.707Z
+Laravel commit SHA: `ae45172cd75f8df79999edfc86a7b8b736b24965`
+Web UK repository commit SHA: `ae45172cd75f8df79999edfc86a7b8b736b24965`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 1074 |
+| web-uk routes | 1075 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 364 |
+| Extra web-uk routes | 365 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -76,7 +76,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | members | 11 | 0 | 3 | 0 |
 | messages | 18 | 0 | 6 | 0 |
 | municipality-calendar | 0 | 0 | 1 | 0 |
-| newsletter | 1 | 0 | 0 | 0 |
+| newsletter | 1 | 0 | 1 | 0 |
 | nexus-score | 2 | 0 | 0 | 0 |
 | notifications | 6 | 0 | 0 | 0 |
 | onboarding | 4 | 0 | 0 | 0 |
@@ -346,6 +346,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/messages/{param}/m/{param}/report` | messages |  | web-uk/src/routes/messages.js |
 | POST | `/messages/{param}/request-coordinator` | messages |  | web-uk/src/routes/messages.js |
 | GET | `/municipality-calendar` | municipality-calendar | municipality-calendar/index | web-uk/src/routes/municipality-calendar.js |
+| POST | `/newsletter/unsubscribe` | newsletter |  | web-uk/src/routes/public-info.js |
 | POST | `/organisations/{param}/reviews` | organisations |  | web-uk/src/server.js |
 | GET | `/page/{param}` | page | custom-page | web-uk/src/routes/static-pages.js |
 | GET | `/partner` | partner | tbi-pages/partner | web-uk/src/routes/partner.js |

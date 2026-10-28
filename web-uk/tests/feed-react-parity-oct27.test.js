@@ -280,7 +280,7 @@ describe('4-5, 7-8. the main feed list', () => {
   it('lets a member share with their own comment', async () => {
     feedWith([post()]);
     const res = await request(buildApp()).get('/feed');
-    expect(res.text).toMatch(/<form method="post" action="\/feed\/posts\/5\/share">[\s\S]*?name="comment"/);
+    expect(res.text).toMatch(/<form method="post" action="\/feed\/posts\/5\/share" novalidate>[\s\S]*?name="comment"/);
     expect(res.text).toContain(t('govuk_alpha_feed.quote.submit'));
   });
 

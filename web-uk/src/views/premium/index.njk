@@ -54,7 +54,7 @@
               {% endfor %}
             </ul>
           {% endif %}
-          <form method="post" action="{{ urlFor('/premium/subscribe') }}">
+          <form method="post" action="{{ urlFor('/premium/subscribe') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="tier_id" value="{{ tier.id }}">
             {% if tier.monthlyPrice and tier.yearlyPrice %}

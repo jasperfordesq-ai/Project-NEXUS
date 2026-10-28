@@ -51,7 +51,7 @@
       {% endif %}
 
       <h2 class="govuk-heading-m govuk-!-margin-top-6" id="add-comment">{{ t("govuk_alpha_listings.comments.add_heading") }}</h2>
-      <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/comments') }}" class="govuk-!-margin-top-2">
+      <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/comments') }}" class="govuk-!-margin-top-2" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         {% call characterCount(5000, characterCountMessages, "body") %}
         <div class="govuk-form-group{% if status and status.anchor == 'body' %} govuk-form-group--error{% endif %}">

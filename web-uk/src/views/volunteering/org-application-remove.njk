@@ -14,7 +14,7 @@
 {% block content %}
   <h1 class="govuk-heading-xl">{{ t(OM ~ "remove_title", { name: application.applicant.name, opportunity: application.opportunity.title }) }}</h1>
   <p class="govuk-body">{{ t(OM ~ "remove_body") }}</p>
-  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id ~ '/remove') }}">
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id ~ '/remove') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <div class="govuk-button-group">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(OM ~ "remove_confirm") }}</button>

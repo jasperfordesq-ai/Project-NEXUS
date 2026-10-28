@@ -71,7 +71,7 @@
           <details class="govuk-details" data-module="govuk-details">
             <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.orders.action_ship") }}</span></summary>
             <div class="govuk-details__text">
-              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/ship') }}">
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/ship') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="tracking_number_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.ship_tracking_label") }}</label>
@@ -102,14 +102,14 @@
               {{ t("govuk_alpha_commerce.orders.confirm_warning") }}
             </strong>
           </div>
-          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/confirm') }}" class="govuk-!-margin-bottom-2">
+          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/confirm') }}" class="govuk-!-margin-bottom-2" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_confirm") }}</button>
           </form>
         {% endif %}
 
         {% if order.canPay %}
-          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/pay') }}" class="govuk-!-margin-bottom-2">
+          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/pay') }}" class="govuk-!-margin-bottom-2" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.pay_by_card") }}</button>
           </form>
@@ -127,7 +127,7 @@
                   {{ t("govuk_alpha_commerce.orders.cancel_warning") }}
                 </strong>
               </div>
-              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/cancel') }}">
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/cancel') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="reason_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.cancel_reason_label") }}</label>
@@ -143,7 +143,7 @@
           <details class="govuk-details" data-module="govuk-details">
             <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.orders.action_rate") }}</span></summary>
             <div class="govuk-details__text">
-              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/rate') }}">
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/rate') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <div class="govuk-form-group">
                   <fieldset class="govuk-fieldset">

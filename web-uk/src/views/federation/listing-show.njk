@@ -78,7 +78,7 @@
     <div class="govuk-button-group">
       <a class="govuk-link" href="{{ urlFor(listing.memberHref) }}">{{ t("federation.listings_browse.view_profile") }}</a>
       {% if listing.canContact %}
-        <a class="govuk-button" href="{{ urlFor(listing.memberHref) }}" data-module="govuk-button">{{ t("federation.listings_browse.contact_author") }}</a>
+        <a class="govuk-button" href="{{ urlFor(listing.memberHref) }}" data-module="govuk-button" role="button" draggable="false">{{ t("federation.listings_browse.contact_author") }}</a>
       {% endif %}
     </div>
   {% endif %}

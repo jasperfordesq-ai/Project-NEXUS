@@ -104,9 +104,7 @@
           attributes: {
             "data-validate": "required",
             "data-label": t("events.description_label"),
-            "data-required-message": t("states.validation.required", { field: t("events.description_label") }),
-            "required": "required"
-          }
+            "data-required-message": t("states.validation.required", { field: t("events.description_label") })}
         }) }}
 
         {% set selectedCategoryId = values.category_id if values else "" %}
@@ -320,7 +318,7 @@
                       {# The hint says "Between 2 and :max" — interpolate the input's own
                          bound and keep min in step with the wording. #}
                       <div id="rec-count-hint" class="govuk-hint">{{ t("events.polish_events.recurrence_used_when", { option: t("events.polish_events.recurrence_end_after") }) }} {{ t("events.polish_events.recurrence_count_hint", { max: 52 }) }}</div>
-                      <input class="govuk-input govuk-input--width-3" id="recurrence_ends_after_count" name="recurrence_ends_after_count" type="number" min="2" max="52" value="{{ values.recurrence_ends_after_count if values and values.recurrence_ends_after_count else '10' }}" aria-describedby="rec-count-hint">
+                      <input class="govuk-input govuk-input--width-3" id="recurrence_ends_after_count" name="recurrence_ends_after_count" type="text" inputmode="numeric" spellcheck="false" value="{{ values.recurrence_ends_after_count if values and values.recurrence_ends_after_count else '10' }}" aria-describedby="rec-count-hint">
                     </div>{% endif %}
                     {% if "on_date" in offeredEndTypes %}{{ nexusDateInput({
                       name: "recurrence_ends_on_date",

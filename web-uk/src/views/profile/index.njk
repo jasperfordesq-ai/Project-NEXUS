@@ -34,7 +34,7 @@
         <p class="govuk-body-l govuk-!-margin-top-2">{{ profile.tagline }}</p>
       {% endif %}
       <div class="govuk-button-group govuk-!-margin-top-4">
-        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}">{{ t("actions.edit_profile") }}</a>
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false">{{ t("actions.edit_profile") }}</a>
       </div>
     </div>
   </div>

@@ -149,7 +149,7 @@
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.checkin_title") }}</h2>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.wellbeing.checkin_hint") }}</p>
-  <form method="post" action="{{ urlFor('/volunteering/wellbeing/checkin') }}" class="govuk-!-margin-bottom-8">
+  <form method="post" action="{{ urlFor('/volunteering/wellbeing/checkin') }}" class="govuk-!-margin-bottom-8" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {% set moodInError = status and status.field == "mood" %}
     <div class="govuk-form-group{% if moodInError %} govuk-form-group--error{% endif %}">

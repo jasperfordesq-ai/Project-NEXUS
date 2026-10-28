@@ -22,7 +22,7 @@
       {{ t("polish_discovery.delete_post_warning") }}
     </strong>
   </div>
-  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/posts/' + (postId | string) + '/delete') }}">
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed/posts/' + (postId | string) + '/delete') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {% if feedCursor %}<input type="hidden" name="feed_cursor" value="{{ feedCursor }}">{% endif %}
     <div class="govuk-button-group">

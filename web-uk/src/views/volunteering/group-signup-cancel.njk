@@ -45,7 +45,7 @@
         </strong>
       </div>
 
-      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}">
+      <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-button-group">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "cancel_button") }}<span class="govuk-visually-hidden"> {{ t(K ~ "cancel_button_for", { group: reservation.groupName }) }}</span></button>

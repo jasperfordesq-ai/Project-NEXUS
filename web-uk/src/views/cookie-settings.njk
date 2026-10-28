@@ -27,7 +27,7 @@
       <h2 class="govuk-heading-m">{{ t("cookie_settings.essential_heading") }}</h2>
       <p class="govuk-body">{{ t("cookie_settings.essential_body") }}</p>
 
-      <form method="post" action="{{ urlFor('/cookie-consent') }}">
+      <form method="post" action="{{ urlFor('/cookie-consent') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="cookies" value="save">
 

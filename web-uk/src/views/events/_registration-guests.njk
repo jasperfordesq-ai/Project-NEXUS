@@ -9,7 +9,7 @@
     <input type="hidden" name="expected_registration_version" value="{{ active.registration_version }}">
     <div class="govuk-form-group">
       <label class="govuk-label" for="guest-name">{{ t("event_registration.accessible.guest_name") }}</label>
-      <input class="govuk-input" id="guest-name" name="display_name" type="text" required>
+      <input class="govuk-input" id="guest-name" name="display_name" type="text">
     </div>
     <div class="govuk-form-group">
       <label class="govuk-label" for="guest-email">{{ t("event_registration.accessible.guest_email") }}</label>
@@ -21,11 +21,11 @@
     </div>
     <div class="govuk-form-group">
       <label class="govuk-label" for="guest-ticket">{{ t("event_registration.accessible.ticket_entitlement") }}</label>
-      <input class="govuk-input govuk-input--width-10" id="guest-ticket" name="ticket_entitlement_id" type="number" min="1">
+      <input class="govuk-input govuk-input--width-10" id="guest-ticket" name="ticket_entitlement_id" type="text" inputmode="numeric" spellcheck="false">
     </div>
     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
       <div class="govuk-checkboxes__item">
-        <input class="govuk-checkboxes__input" id="guest-consent" name="consent_accepted" type="checkbox" value="1" required aria-describedby="guest-consent-hint">
+        <input class="govuk-checkboxes__input" id="guest-consent" name="consent_accepted" type="checkbox" value="1" aria-describedby="guest-consent-hint">
         <label class="govuk-label govuk-checkboxes__label" for="guest-consent">{{ t("event_registration.accessible.privacy_consent_label") }}</label>
         <div id="guest-consent-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.privacy_consent_text") }}</div>
       </div>
@@ -49,14 +49,14 @@
         <dd class="govuk-summary-list__value">{{ t("event_registration.statuses." + guest.status) }}</dd>
         {% if guest.status == 'captured' %}
           <dd class="govuk-summary-list__actions">
-            <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/guests/' + (guest.id | string) + '/cancel') }}">
+            <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/guests/' + (guest.id | string) + '/cancel') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="expected_revision" value="{{ guest.revision }}">
               <label class="govuk-label" for="guest-cancel-reason-{{ guest.id }}">{{ t("event_registration.guests.cancel_reason") }}</label>
-              <input class="govuk-input" id="guest-cancel-reason-{{ guest.id }}" name="reason" type="text" required>
+              <input class="govuk-input" id="guest-cancel-reason-{{ guest.id }}" name="reason" type="text">
               <div class="govuk-checkboxes govuk-!-margin-top-3">
                 <div class="govuk-checkboxes__item">
-                  <input class="govuk-checkboxes__input" id="guest-cancel-confirm-{{ guest.id }}" name="confirm_destructive" type="checkbox" value="1" required>
+                  <input class="govuk-checkboxes__input" id="guest-cancel-confirm-{{ guest.id }}" name="confirm_destructive" type="checkbox" value="1">
                   <label class="govuk-label govuk-checkboxes__label" for="guest-cancel-confirm-{{ guest.id }}">{{ t("event_registration.guests.cancel_confirm_body", { name: guestName }) }}</label>
                 </div>
               </div>

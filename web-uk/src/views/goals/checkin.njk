@@ -38,14 +38,14 @@
   <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.checkin.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_goals.checkin.intro") }}</p>
 
-  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/checkin') }}" class="govuk-grid-row">
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/checkin') }}" class="govuk-grid-row" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--m" for="progress_percent">{{ t("govuk_alpha_goals.checkin.progress_label") }}</label>
         <div id="progress-hint" class="govuk-hint">{{ t("govuk_alpha_goals.checkin.progress_help") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="progress_percent" name="progress_percent" type="number" min="0" max="100" step="1" inputmode="numeric" value="{{ currentPercent }}" aria-describedby="progress-hint">
+        <input class="govuk-input govuk-input--width-5" id="progress_percent" name="progress_percent" type="text" spellcheck="false" inputmode="numeric" value="{{ currentPercent }}" aria-describedby="progress-hint">
       </div>
 
       <fieldset class="govuk-fieldset govuk-form-group">

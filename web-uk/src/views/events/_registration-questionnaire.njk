@@ -31,7 +31,7 @@
     {% if answersAlreadySent %}
       <div class="govuk-inset-text">{{ t("govuk_alpha_events.registration.answers_already_sent") }}</div>
     {% endif %}
-    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/registrations/' + (active.id | string) + '/forms/' + (attendee.form.id | string) + '/submit') }}">
+    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/registrations/' + (active.id | string) + '/forms/' + (attendee.form.id | string) + '/submit') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
       {% for question in attendee.form.questions %}
@@ -53,7 +53,7 @@
               <div class="{{ 'govuk-radios' if type == 'single_choice' else 'govuk-checkboxes' }}" data-module="{{ 'govuk-radios' if type == 'single_choice' else 'govuk-checkboxes' }}">
                 {% for choice in question.choice_options %}
                   <div class="{{ 'govuk-radios__item' if type == 'single_choice' else 'govuk-checkboxes__item' }}">
-                    <input class="{{ 'govuk-radios__input' if type == 'single_choice' else 'govuk-checkboxes__input' }}" id="answer-{{ key }}-{{ loop.index }}" name="answers[{{ key }}]{% if type == 'multiple_choice' %}[]{% endif %}" type="{{ 'radio' if type == 'single_choice' else 'checkbox' }}" value="{{ choice }}"{% if type == 'single_choice' and required and loop.first %} required{% endif %}{% if (type == 'single_choice' and value == choice) or (type == 'multiple_choice' and choice in selectedChoices) %} checked{% endif %}>
+                    <input class="{{ 'govuk-radios__input' if type == 'single_choice' else 'govuk-checkboxes__input' }}" id="answer-{{ key }}-{{ loop.index }}" name="answers[{{ key }}]{% if type == 'multiple_choice' %}[]{% endif %}" type="{{ 'radio' if type == 'single_choice' else 'checkbox' }}" value="{{ choice }}"{% if (type == 'single_choice' and value == choice) or (type == 'multiple_choice' and choice in selectedChoices) %} checked{% endif %}>
                     <label class="{{ 'govuk-label govuk-radios__label' if type == 'single_choice' else 'govuk-label govuk-checkboxes__label' }}" for="answer-{{ key }}-{{ loop.index }}">{{ choice }}</label>
                   </div>
                 {% endfor %}
@@ -63,7 +63,7 @@
             {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="answer-{{ key }}" name="answers[{{ key }}]" type="checkbox" value="1"{% if required %} required{% endif %}{% if value %} checked{% endif %} aria-describedby="{% if question.displayed_text %}answer-{{ key }}-hint {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}">
+                <input class="govuk-checkboxes__input" id="answer-{{ key }}" name="answers[{{ key }}]" type="checkbox" value="1"{% if value %} checked{% endif %} aria-describedby="{% if question.displayed_text %}answer-{{ key }}-hint {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}">
                 <label class="govuk-label govuk-checkboxes__label" for="answer-{{ key }}">{{ question.prompt }}</label>
                 {% if question.displayed_text %}<div id="answer-{{ key }}-hint" class="govuk-hint govuk-checkboxes__hint">{{ question.displayed_text }}</div>{% endif %}
               </div>
@@ -72,12 +72,12 @@
             <label class="govuk-label govuk-label--m" for="answer-{{ key }}">{{ question.prompt }}</label>
             {% if question.help_text %}<div class="govuk-hint" id="answer-{{ key }}-hint">{{ question.help_text }}</div>{% endif %}
             {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
-            <input class="govuk-input{% if replayErrors[key] %} govuk-input--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" type="text" value="{{ value or '' }}"{% if required %} required{% endif %}{% if rules.min_length %} minlength="{{ rules.min_length }}"{% endif %} maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if question.help_text and replayErrors[key] %} {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>
+            <input class="govuk-input{% if replayErrors[key] %} govuk-input--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" type="text" value="{{ value or '' }}" maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>
           {% else %}
             <label class="govuk-label govuk-label--m" for="answer-{{ key }}">{{ question.prompt }}</label>
             {% if question.help_text %}<div class="govuk-hint" id="answer-{{ key }}-hint">{{ question.help_text }}</div>{% endif %}
             {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
-            <textarea class="govuk-textarea{% if replayErrors[key] %} govuk-textarea--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" rows="5"{% if required %} required{% endif %}{% if rules.min_length %} minlength="{{ rules.min_length }}"{% endif %} maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if question.help_text and replayErrors[key] %} {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>{{ value or '' }}</textarea>
+            <textarea class="govuk-textarea{% if replayErrors[key] %} govuk-textarea--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" rows="5" maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>{{ value or '' }}</textarea>
           {% endif %}
         </div>
       {% endfor %}

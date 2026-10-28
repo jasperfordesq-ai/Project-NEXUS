@@ -80,14 +80,14 @@
   <p class="govuk-body">{{ t("govuk_alpha.organisations.register_note") }}</p>
   <p class="govuk-body">{{ t("govuk_alpha.organisations.register_intro") }}</p>
 
-  <form method="post" action="{{ urlFor('/organisations') }}" class="govuk-grid-row">
+  <form method="post" action="{{ urlFor('/organisations') }}" class="govuk-grid-row" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-form-group{% if fieldErrors["name"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="name">{{ t("govuk_alpha.organisations.name_label") }}</label>
         {% if fieldErrors["name"] %}<p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["name"] }}</p>{% endif %}
-        <input class="govuk-input{% if fieldErrors["name"] %} govuk-input--error{% endif %}" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}"{% if fieldErrors["name"] %} aria-describedby="name-error"{% endif %} required>
+        <input class="govuk-input{% if fieldErrors["name"] %} govuk-input--error{% endif %}" id="name" name="name" type="text" maxlength="255" value="{{ values.name or '' }}"{% if fieldErrors["name"] %} aria-describedby="name-error"{% endif %}>
       </div>
 
       {% call characterCount(2000, characterCountMessages, "description") %}
@@ -95,14 +95,14 @@
         <label class="govuk-label" for="description">{{ t("govuk_alpha.organisations.description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.organisations.description_hint") }}</div>
         {% if fieldErrors["description"] %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["description"] }}</p>{% endif %}
-        <textarea class="govuk-textarea govuk-js-character-count{% if fieldErrors["description"] %} govuk-textarea--error{% endif %}" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint{% if fieldErrors["description"] %} description-error{% endif %} description-info" required>{{ values.description or '' }}</textarea>
+        <textarea class="govuk-textarea govuk-js-character-count{% if fieldErrors["description"] %} govuk-textarea--error{% endif %}" id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-hint{% if fieldErrors["description"] %} description-error{% endif %} description-info">{{ values.description or '' }}</textarea>
       </div>
       {% endcall %}
 
       <div class="govuk-form-group{% if fieldErrors["email"] %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="email">{{ t("govuk_alpha.organisations.email_label") }}</label>
         {% if fieldErrors["email"] %}<p id="email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["email"] }}</p>{% endif %}
-        <input class="govuk-input{% if fieldErrors["email"] %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}"{% if fieldErrors["email"] %} aria-describedby="email-error"{% endif %} required>
+        <input class="govuk-input{% if fieldErrors["email"] %} govuk-input--error{% endif %}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}"{% if fieldErrors["email"] %} aria-describedby="email-error"{% endif %}>
       </div>
 
       <div class="govuk-form-group{% if fieldErrors["website"] %} govuk-form-group--error{% endif %}">
@@ -128,7 +128,7 @@
           {% if fieldErrors["agreed_terms"] %}<p id="agreed_terms-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors["agreed_terms"] }}</p>{% endif %}
           <div class="govuk-checkboxes" data-module="govuk-checkboxes">
             <div class="govuk-checkboxes__item">
-              <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %} required>
+              <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %}>
               <label class="govuk-label govuk-checkboxes__label" for="agreed_terms">{{ t("govuk_alpha.organisations.terms_agree") }}</label>
             </div>
           </div>

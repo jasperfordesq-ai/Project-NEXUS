@@ -45,7 +45,7 @@
           <p class="govuk-body">{{ t("govuk_alpha_events.translate.empty") }}</p>
         </div>
       {% else %}
-        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/translate') }}">
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/translate') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="source_text" value="{{ sourceText }}">
           <div class="govuk-form-group">

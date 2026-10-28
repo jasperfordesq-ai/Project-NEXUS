@@ -15,7 +15,7 @@
 {% macro voteForms(type, targetId, userVote, voteCount, label) %}
   <div class="govuk-button-group govuk-!-margin-bottom-2">
     <span class="govuk-body govuk-!-margin-bottom-0 govuk-!-margin-right-2">{{ t("govuk_alpha_group_tools.qa.votes", { count: voteCount }) }}</span>
-    <form method="post" action="{{ urlFor(questionPath + '/vote') }}">
+    <form method="post" action="{{ urlFor(questionPath + '/vote') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="type" value="{{ type }}">
       <input type="hidden" name="target_id" value="{{ targetId }}">
@@ -24,7 +24,7 @@
         {{ t("govuk_alpha_group_tools.qa.upvote") }}<span class="govuk-visually-hidden">: {{ label }}</span>
       </button>
     </form>
-    <form method="post" action="{{ urlFor(questionPath + '/vote') }}">
+    <form method="post" action="{{ urlFor(questionPath + '/vote') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="type" value="{{ type }}">
       <input type="hidden" name="target_id" value="{{ targetId }}">
@@ -63,7 +63,7 @@
             <div class="govuk-body app-formatted-text">{{ answer.body }}</div>
             {{ voteForms('answer', answer.id, answer.userVote, answer.voteCount, t("govuk_alpha_group_tools.qa.answered_by", { name: answer.author.name, date: answer.createdAtLabel })) }}
             {% if canAccept and not answer.isAccepted %}
-              <form method="post" action="{{ urlFor(questionPath + '/answers/' + (answer.id | string) + '/accept') }}">
+              <form method="post" action="{{ urlFor(questionPath + '/answers/' + (answer.id | string) + '/accept') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 {{ govukButton({ text: t("govuk_alpha_group_tools.qa.accept_answer"), classes: "govuk-button--secondary" }) }}
               </form>

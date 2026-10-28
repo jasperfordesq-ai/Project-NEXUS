@@ -65,7 +65,7 @@
   <p class="govuk-body">{{ t("govuk_alpha_group_media.challenges.intro") }}</p>
 
   {% if isAdmin %}
-    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/challenges/new') }}">{{ t("govuk_alpha_group_media.challenges.create_link") }}</a>
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/challenges/new') }}" role="button" draggable="false">{{ t("govuk_alpha_group_media.challenges.create_link") }}</a>
   {% endif %}
 
   {% if not hasAny %}

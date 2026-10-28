@@ -77,7 +77,7 @@
 
               <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions.nothing_without_you") }}</p>
 
-              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}" class="govuk-!-margin-bottom-3">
+              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}" class="govuk-!-margin-bottom-3" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="action_id" value="{{ action.id }}">
                 <input type="hidden" name="answer" value="approve">
@@ -87,7 +87,7 @@
               </form>
 
               {# Declining offers a reason and never requires one. #}
-              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}">
+              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="action_id" value="{{ action.id }}">
                 <input type="hidden" name="answer" value="decline">
@@ -122,7 +122,7 @@
               </dd>
               <dd class="govuk-summary-list__actions">
                 {% if action.state === 'pending' %}
-                  <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}">
+                  <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="action_id" value="{{ action.id }}">
                     <input type="hidden" name="answer" value="withdraw">

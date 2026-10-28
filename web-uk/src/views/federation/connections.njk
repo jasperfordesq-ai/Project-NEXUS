@@ -106,11 +106,11 @@
 
                   {% if connection.isReceived %}
                     <div class="govuk-button-group">
-                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/accept') }}">
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/accept') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.accept") }}</button>
                       </form>
-                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/reject') }}">
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/reject') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.reject") }}</button>
                       </form>
@@ -118,7 +118,7 @@
                   {% elif connection.isAccepted %}
                     <div class="govuk-button-group">
                       <a class="govuk-link" href="{{ urlFor(connection.href) }}">{{ t("fed2.connections.message") }}</a>
-                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/remove') }}">
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/remove') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.remove") }}</button>
                       </form>

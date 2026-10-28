@@ -44,14 +44,14 @@
           <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="title">{{ t("govuk_alpha_events.recurring_edit.title_label") }}</label>
             {% if fieldErrors.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_events.common.error_prefix") }}</span> {{ fieldErrors.title }}</p>{% endif %}
-            <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" value="{{ event.title }}" maxlength="255"{% if fieldErrors.title %} aria-describedby="title-error"{% endif %} required>
+            <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" value="{{ event.title }}" maxlength="255"{% if fieldErrors.title %} aria-describedby="title-error"{% endif %}>
           </div>
 
           <div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="description">{{ t("govuk_alpha_events.recurring_edit.description_label") }}</label>
             <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_events.recurring_edit.description_hint") }}</div>
             {% if fieldErrors.description %}<p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_events.common.error_prefix") }}</span> {{ fieldErrors.description }}</p>{% endif %}
-            <textarea class="govuk-textarea{% if fieldErrors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" aria-describedby="description-hint{% if fieldErrors.description %} description-error{% endif %}" required>{{ event.description }}</textarea>
+            <textarea class="govuk-textarea{% if fieldErrors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="6" aria-describedby="description-hint{% if fieldErrors.description %} description-error{% endif %}">{{ event.description }}</textarea>
           </div>
 
           <div class="govuk-form-group{% if fieldErrors.start_time %} govuk-form-group--error{% endif %}">
@@ -133,7 +133,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="max_attendees">{{ t("govuk_alpha.events.max_attendees_label") }}</label>
             <div id="max-attendees-hint" class="govuk-hint">{{ t("govuk_alpha.events.max_attendees_hint") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="max_attendees" name="max_attendees" type="number" min="1" step="1" value="{{ event.maxAttendees or '' }}" aria-describedby="max-attendees-hint">
+            <input class="govuk-input govuk-input--width-5" id="max_attendees" name="max_attendees" type="text" inputmode="numeric" spellcheck="false" value="{{ event.maxAttendees or '' }}" aria-describedby="max-attendees-hint">
           </div>
         </fieldset>
 

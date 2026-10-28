@@ -88,7 +88,7 @@
              for "0" is not dropped as falsy, and the same care applies in
              Nunjucks, where "0" is also falsy. #}
           <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
-             href="{{ urlFor('/whats-on') }}?when={{ when | urlencode }}{% if search !== '' %}&amp;q={{ search | urlencode }}{% endif %}&amp;cursor={{ nextCursor | urlencode }}">
+             href="{{ urlFor('/whats-on') }}?when={{ when | urlencode }}{% if search !== '' %}&amp;q={{ search | urlencode }}{% endif %}&amp;cursor={{ nextCursor | urlencode }}" role="button" draggable="false">
             {{ t("govuk_alpha_whats_on.index.more") }}
           </a>
         {% endif %}

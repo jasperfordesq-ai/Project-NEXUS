@@ -54,22 +54,22 @@
             <li><code>{{ code }}</code></li>
           {% endfor %}
         </ul>
-        <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}">{{ t("security_2fa.done") }}</a>
+        <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}" role="button" draggable="false">{{ t("security_2fa.done") }}</a>
       {% elif enabled %}
         <p class="govuk-body-l">{{ t("security_2fa.is_on") }}</p>
         <p class="govuk-body">{{ backupCodesRemainingLabel }}</p>
         {% if devicesRevoked %}<p class="govuk-inset-text" role="status">{{ t('mfa_recovery.revoked') }}</p>{% endif %}
         <h2 class="govuk-heading-m">{{ t('mfa_recovery.title') }}</h2>
         <p class="govuk-body">{{ t('mfa_recovery.warning') }}</p>
-        <form method="post" action="{{ urlFor('/profile/two-factor/recovery-codes') }}">
+        <form method="post" action="{{ urlFor('/profile/two-factor/recovery-codes') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label" for="recovery-code">{{ t('mfa_recovery.code') }}</label>
-            <input class="govuk-input govuk-input--width-10" id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+            <input class="govuk-input govuk-input--width-10" id="recovery-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
           </div>
           <button class="govuk-button">{{ t('mfa_recovery.replace') }}</button>
         </form>
-        <form method="post" action="{{ urlFor('/profile/two-factor/revoke-devices') }}">
+        <form method="post" action="{{ urlFor('/profile/two-factor/revoke-devices') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--secondary">{{ t('mfa_recovery.revoke') }}</button>
         </form>
@@ -77,7 +77,7 @@
         {% if enforcementRequired %}<p class="govuk-inset-text">{{ t('mandatory_2fa.required') }}</p>{% else %}
         <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("security_2fa.disable_heading") }}</h2>
         <p class="govuk-body">{{ t("security_2fa.disable_intro") }}</p>
-        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/disable') }}">
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/disable') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label" for="password">{{ t("security_2fa.password_label") }}</label>
@@ -87,7 +87,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="disable-code">{{ t("security_2fa.code_label") }}</label>
             <div id="disable-code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="disable-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-describedby="disable-code-hint">
+            <input class="govuk-input govuk-input--width-10" id="disable-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="disable-code-hint">
           </div>
           <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("security_2fa.disable_button") }}</button>
         </form>
@@ -109,12 +109,12 @@
           <p class="govuk-body"><code class="nexus-alpha-totp-secret">{{ setup.secret }}</code></p>
         </div>
 
-        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/verify') }}" class="govuk-!-margin-top-4">
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/verify') }}" class="govuk-!-margin-top-4" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--m" for="code">{{ t("security_2fa.code_label") }}</label>
             <div id="code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-describedby="code-hint">
+            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint">
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("security_2fa.verify_button") }}</button>
         </form>
@@ -124,12 +124,12 @@
         {% endif %}
         <p class="govuk-body-l">{{ t("security_2fa.setup_intro") }}</p>
         {# F-115: setup generates a new secret, so it starts from a POST, never a GET. #}
-        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/setup') }}">
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/setup') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {# E-035 F-170: turning two-step verification on needs your password. #}
           <div class="govuk-form-group">
             <label class="govuk-label" for="setup-password">{{ t("security_2fa.password_label") }}</label>
-            <input class="govuk-input govuk-input--width-20" id="setup-password" name="current_password" type="password" autocomplete="current-password" spellcheck="false" required>
+            <input class="govuk-input govuk-input--width-20" id="setup-password" name="current_password" type="password" autocomplete="current-password" spellcheck="false">
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("mandatory_2fa.title") }}</button>
         </form>

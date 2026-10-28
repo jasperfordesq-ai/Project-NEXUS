@@ -35,7 +35,7 @@
   <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.buddy.title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_goals.buddy.intro") }}</p>
 
-  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-actions') }}" class="govuk-grid-row">
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-actions') }}" class="govuk-grid-row" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-column-two-thirds">

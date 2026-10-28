@@ -67,8 +67,8 @@
       </form>
 
       <div class="govuk-button-group">
-        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/polls/parity/create') }}">{{ t("polish_discovery.polls_create_summary") }}</a>
-        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/polls/parity/manage') }}">{{ t("govuk_alpha_gamification.nav.manage_polls") }}</a>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/polls/parity/create') }}" draggable="false">{{ t("polish_discovery.polls_create_summary") }}</a>
+        <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/polls/parity/manage') }}" draggable="false">{{ t("govuk_alpha_gamification.nav.manage_polls") }}</a>
       </div>
 
       <details class="govuk-details govuk-!-margin-bottom-6" data-module="govuk-details">
@@ -118,11 +118,11 @@
               {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
               {% if poll.pollType == "ranked" %}
-                <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.nav.rank_this_poll") }}{% endif %}</a>
+                <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}" draggable="false">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.nav.rank_this_poll") }}{% endif %}</a>
               {% elif not poll.options.length %}
                 <div class="govuk-inset-text"><p class="govuk-body">{{ t("polls.no_options") }}</p></div>
               {% elif not poll.hasVoted %}
-                <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/vote') }}">
+                <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/vote') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <fieldset class="govuk-fieldset" aria-describedby="poll-{{ poll.id }}-hint">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("polls.choose_label") }}</legend>
@@ -151,7 +151,7 @@
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                       <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>{{ t("ux.confirm_irreversible") }}</strong>
                     </div>
-                    <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/delete') }}">
+                    <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/delete') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("ux.confirm_delete_button") }}</button>
                     </form>
@@ -196,7 +196,7 @@
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                       <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>{{ t("ux.confirm_irreversible") }}</strong>
                     </div>
-                    <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/delete') }}">
+                    <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/delete') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("ux.confirm_delete_button") }}</button>
                     </form>

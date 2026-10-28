@@ -57,7 +57,7 @@
               </li>
               {% if template.isOwn %}
                 <li class="govuk-summary-list__actions-list-item">
-                  <form method="post" action="{{ urlFor('/jobs/templates/' + (template.id | string) + '/delete') }}" class="govuk-!-display-inline">
+                  <form method="post" action="{{ urlFor('/jobs/templates/' + (template.id | string) + '/delete') }}" class="govuk-!-display-inline" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.posting.template_delete") }}<span class="govuk-visually-hidden"> {{ template.name }}</span></button>
                   </form>
@@ -75,14 +75,14 @@
     <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ jobForm.id ~ '/team') }}">{{ t("govuk_alpha_jobs.hiring.manage_team_link") }}</a></p>
   {% endif %}
 
-  <form method="post" action="{{ urlFor(formAction) }}">
+  <form method="post" action="{{ urlFor(formAction) }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="posting_extras" value="1">
 
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--m" for="title">{{ t("govuk_alpha.jobs_t3.label_title") }}</label>
       <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha.jobs_t3.hint_title") }}</div>
-      <input class="govuk-input" id="title" name="title" type="text" value="{{ jobForm.title or "" }}" maxlength="255" aria-describedby="title-hint" required>
+      <input class="govuk-input" id="title" name="title" type="text" value="{{ jobForm.title or "" }}" maxlength="255" aria-describedby="title-hint">
     </div>
 
     {% call characterCount(5000, characterCountMessages, "description") %}
@@ -151,13 +151,13 @@
         <div class="govuk-grid-column-one-third">
           <div class="govuk-form-group">
             <label class="govuk-label" for="salary_min">{{ t("jobs_t3.label_salary_min") }}</label>
-            <input class="govuk-input" id="salary_min" name="salary_min" type="number" min="0" step="any" value="{{ jobForm.salary_min or "" }}" inputmode="decimal">
+            <input class="govuk-input" id="salary_min" name="salary_min" type="text" spellcheck="false" value="{{ jobForm.salary_min or "" }}" inputmode="decimal">
           </div>
         </div>
         <div class="govuk-grid-column-one-third">
           <div class="govuk-form-group">
             <label class="govuk-label" for="salary_max">{{ t("jobs_t3.label_salary_max") }}</label>
-            <input class="govuk-input" id="salary_max" name="salary_max" type="number" min="0" step="any" value="{{ jobForm.salary_max or "" }}" inputmode="decimal">
+            <input class="govuk-input" id="salary_max" name="salary_max" type="text" spellcheck="false" value="{{ jobForm.salary_max or "" }}" inputmode="decimal">
           </div>
         </div>
         <div class="govuk-grid-column-one-third">
@@ -192,13 +192,13 @@
       <div class="govuk-grid-column-one-half">
         <div class="govuk-form-group">
           <label class="govuk-label" for="hours_per_week">{{ t("jobs_t3.label_hours") }}</label>
-          <input class="govuk-input govuk-input--width-5" id="hours_per_week" name="hours_per_week" type="number" min="0" step="any" value="{{ jobForm.hours_per_week or "" }}" inputmode="decimal">
+          <input class="govuk-input govuk-input--width-5" id="hours_per_week" name="hours_per_week" type="text" spellcheck="false" value="{{ jobForm.hours_per_week or "" }}" inputmode="decimal">
         </div>
       </div>
       <div class="govuk-grid-column-one-half">
         <div class="govuk-form-group">
           <label class="govuk-label" for="time_credits">{{ t("jobs_t3.label_credits") }}</label>
-          <input class="govuk-input govuk-input--width-5" id="time_credits" name="time_credits" type="number" min="0" step="any" value="{{ jobForm.time_credits or "" }}" inputmode="decimal">
+          <input class="govuk-input govuk-input--width-5" id="time_credits" name="time_credits" type="text" spellcheck="false" value="{{ jobForm.time_credits or "" }}" inputmode="decimal">
         </div>
       </div>
     </div>

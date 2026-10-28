@@ -112,7 +112,7 @@
             <details class="govuk-details govuk-!-margin-bottom-2">
               <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "confirm.title") }}<span class="govuk-visually-hidden">: {{ item.volunteerName }}, {{ item.typeLabel }}</span></span></summary>
               <div class="govuk-details__text">
-                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/confirm') }}">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/confirm') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="show" value="{{ show }}">
                   <input type="hidden" name="q" value="{{ q }}">
@@ -140,7 +140,7 @@
             <details class="govuk-details govuk-!-margin-bottom-0">
               <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t(K ~ "withdraw.title") }}<span class="govuk-visually-hidden">: {{ item.volunteerName }}, {{ item.typeLabel }}</span></span></summary>
               <div class="govuk-details__text">
-                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/withdraw') }}">
+                <form method="post" action="{{ urlFor(base ~ '/' ~ item.id ~ '/withdraw') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="show" value="{{ show }}">
                   <input type="hidden" name="q" value="{{ q }}">

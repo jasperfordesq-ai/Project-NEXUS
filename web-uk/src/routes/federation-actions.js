@@ -206,6 +206,16 @@ function federationSettingsPayload(body) {
   };
 }
 
+// The travel radius is a text box (GOV.UK "ask for numbers"), so "abc" or 9999 can arrive.
+// Blank keeps the default; anything typed must be a whole number of km from 0 to 500, and
+// is refused instead of being replaced by 25 or clamped to 500.
+function travelRadiusInvalid(value) {
+  const text = trimmed(value, 20);
+  if (text === '') return false;
+  const number = Number(text);
+  return !(Number.isInteger(number) && number >= 0 && number <= 500);
+}
+
 function referenceMessageId(value) {
   const id = positiveInteger(value);
   return id === null ? undefined : id;
@@ -531,6 +541,9 @@ router.post('/onboarding', asyncRoute(async (req, res) => {
     ]) {
       settings[key] = checked(req.body[key]);
     }
+    if (travelRadiusInvalid(req.body.travel_radius_km)) {
+      return redirectTo(res, '/federation/onboarding?step=communication&status=optin-failed');
+    }
     settings.service_reach = allowedServiceReach(req.body.service_reach);
     settings.travel_radius_km = boundedInteger(req.body.travel_radius_km, 0, 500, 25);
   } else if (step === 'confirm' && !storedBag) {
@@ -561,6 +574,9 @@ router.post('/opt-in', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const submittedPreferences = checked(req.body.preferences_submitted);
+  if (submittedPreferences && travelRadiusInvalid(req.body.travel_radius_km)) {
+    return redirectTo(res, statusRedirect('/federation', 'optin-failed'));
+  }
   const payload = submittedPreferences
     ? federationSettingsPayload(req.body)
     : {
@@ -630,6 +646,9 @@ router.post('/settings', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
+  if (travelRadiusInvalid(req.body.travel_radius_km)) {
+    return redirectTo(res, statusRedirect('/federation/settings', 'settings-failed'));
+  }
   let status = 'settings-saved';
   try {
     await callFederation(token, 'PUT', '/settings', federationSettingsPayload(req.body));

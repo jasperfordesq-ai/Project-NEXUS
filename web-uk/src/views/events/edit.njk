@@ -72,9 +72,7 @@
               "data-validate": "required maxLength:255",
               "data-label": t("events.title_label"),
               "data-required-message": t("states.validation.required", { field: t("events.title_label") }),
-              "data-max-length-message": t("states.validation.max_length", { field: t("events.title_label"), max: 255 }),
-              "required": "required"
-            }
+              "data-max-length-message": t("states.validation.max_length", { field: t("events.title_label"), max: 255 })}
           }) }}
 
                     {{ govukTextarea({
@@ -88,9 +86,7 @@
             attributes: {
               "data-validate": "required",
               "data-label": t("events.description_label"),
-              "data-required-message": t("states.validation.required", { field: t("events.description_label") }),
-              "required": "required"
-            }
+              "data-required-message": t("states.validation.required", { field: t("events.description_label") })}
           }) }}
 
           {% set selectedCategoryId = event.category_id or event.categoryId or "" %}

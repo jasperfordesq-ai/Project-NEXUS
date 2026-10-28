@@ -151,15 +151,15 @@
           {% endif %}
           <div class="nexus-alpha-actions govuk-!-margin-top-2">
             {% if episode.canPublish %}
-              <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/publish') }}" class="govuk-!-display-inline">
+              <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/publish') }}" class="govuk-!-display-inline" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_publish") }}</button>
               </form>
             {% endif %}
             {% if episode.canArchive %}
-              <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/archive') }}">{{ t("govuk_alpha_commerce.podcast_studio.archive_episode_button") }}</a>
+              <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/archive') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.archive_episode_button") }}</a>
             {% endif %}
-            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</a>
+            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</a>
           </div>
           <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/update') }}" enctype="multipart/form-data" class="govuk-!-margin-top-4" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -190,7 +190,7 @@
 
   {% if show.status != "published" %}
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.action_publish_heading") }}</h2>
-    <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/publish') }}">
+    <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/publish') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.podcast_studio.action_publish") }}</button>
     </form>
@@ -199,14 +199,14 @@
   {% if show.status != "archived" %}
     <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_warning") }}</p>
-    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/archive') }}">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_button") }}</a>
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/archive') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.archive_show_button") }}</a>
   {% endif %}
 
   {# A link to a confirmation page, as for one episode: deleting the whole show used to
      happen straight from this button. #}
   <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.podcast_studio.delete_heading") }}</h2>
   <p class="govuk-body">{{ t("govuk_alpha_commerce.podcast_studio.delete_warning") }}</p>
-  <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/delete') }}">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</a>
+  <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.action_delete") }}</a>
     </div>
   </div>
 {% endblock %}

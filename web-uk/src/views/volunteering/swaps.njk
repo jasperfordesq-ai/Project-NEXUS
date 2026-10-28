@@ -115,7 +115,7 @@
           {% endif %}
 
           {% if swap.direction == "received" and swap.status.value == "pending" %}
-            <form method="post" action="{{ urlFor('/volunteering/swaps/' ~ swap.id ~ '/respond') }}">
+            <form method="post" action="{{ urlFor('/volunteering/swaps/' ~ swap.id ~ '/respond') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group">
                 <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="accept" data-module="govuk-button">{{ t("vol_depth.swap_accept") }}</button>
@@ -123,7 +123,7 @@
               </div>
             </form>
           {% elif swap.direction == "sent" and (swap.status.value == "pending" or swap.status.value == "admin_pending") %}
-            <form method="post" action="{{ urlFor('/volunteering/swaps/' ~ swap.id ~ '/cancel') }}">
+            <form method="post" action="{{ urlFor('/volunteering/swaps/' ~ swap.id ~ '/cancel') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("vol_depth.swap_cancel") }}</button>
             </form>

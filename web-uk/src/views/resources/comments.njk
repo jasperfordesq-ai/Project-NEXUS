@@ -17,7 +17,7 @@
     <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
 
     {% if currentUserId and comment.userId == currentUserId %}
-      <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/' + (comment.id | string) + '/delete') }}" class="govuk-!-display-inline">
+      <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/' + (comment.id | string) + '/delete') }}" class="govuk-!-display-inline" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t("govuk_alpha_resources.social.delete_comment_aria") }}">{{ t("govuk_alpha_resources.social.delete_comment") }}</button>
       </form>
@@ -70,7 +70,7 @@
           <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-2">
             {% for reactionType, reactionLabel in reactionLabels %}
               {% set typeCount = reactions.counts[reactionType] or 0 %}
-              <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/react') }}" class="nexus-alpha-reaction-form">
+              <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/react') }}" class="nexus-alpha-reaction-form" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="emoji" value="{{ reactionType }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if reactions.userReaction == reactionType %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{% if reactions.userReaction == reactionType %}true{% else %}false{% endif %}">
@@ -100,7 +100,7 @@
         {% endif %}
 
         <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_resources.social.add_comment_heading") }}</h3>
-        <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/add') }}">
+        <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/add') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           {% call characterCount(5000, characterCountMessages, "body") %}
           <div class="govuk-form-group{% if status and status.anchor == 'body' %} govuk-form-group--error{% endif %}">

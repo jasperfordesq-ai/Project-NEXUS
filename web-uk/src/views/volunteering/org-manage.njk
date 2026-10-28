@@ -115,7 +115,7 @@
               </p>
             {% endif %}
           {% else %}
-          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}">
+          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             {# The handler has always sent org_note with the decision (and the
                applicant sees it on their application) — the form never offered it. #}
@@ -180,7 +180,7 @@
           {% if log.isOwn %}
             <div class="govuk-inset-text govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="org-hours-own-{{ log.id }}">{{ t("govuk_alpha_volunteering.own_hours.note") }}</div>
           {% else %}
-          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/hours/' ~ log.id) }}">
+          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/hours/' ~ log.id) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-1">{{ t("govuk_alpha.vol_clarity.org_hours_action_hint") }}</p>
             <div class="govuk-button-group govuk-!-margin-top-0">

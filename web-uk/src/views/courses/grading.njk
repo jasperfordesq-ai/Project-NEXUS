@@ -67,7 +67,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--s" for="score_percent_{{ attempt.id }}">{{ t("govuk_alpha_courses.score_label") }}</label>
             <div id="score_percent_{{ attempt.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_courses.score_hint") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="score_percent_{{ attempt.id }}" name="score_percent" type="number" min="0" max="100" value="{{ attempt.scorePercent }}" aria-describedby="score_percent_{{ attempt.id }}-hint">
+            <input class="govuk-input govuk-input--width-5" id="score_percent_{{ attempt.id }}" name="score_percent" type="text" inputmode="numeric" spellcheck="false" value="{{ attempt.scorePercent }}" aria-describedby="score_percent_{{ attempt.id }}-hint">
           </div>
 
           <div class="govuk-form-group">

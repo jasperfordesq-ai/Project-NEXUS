@@ -48,7 +48,7 @@
   {% if not isSelf %}
     <h2 class="govuk-heading-l">{{ t("govuk_alpha_saved.send.heading_to", { name: ownerLabel }) }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_saved.send.intro") }}</p>
-    <form method="post" action="{{ urlFor('/users/' + (owner.id | string) + '/appreciations') }}">
+    <form method="post" action="{{ urlFor('/users/' + (owner.id | string) + '/appreciations') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       {% call characterCount(500, characterCountMessages, "appreciation-message") %}
       <div class="govuk-form-group{% if messageError %} govuk-form-group--error{% endif %}">
@@ -98,7 +98,7 @@
               {% for reaction in reactionTypes %}
                 {% set reactionLabel = t("govuk_alpha_saved.react." ~ reaction.value) %}
                 {% set isMine = appreciation.myReaction == reaction.value %}
-                <form method="post" action="{{ urlFor('/appreciations/' + (appreciation.id | string) + '/react') }}" class="nexus-alpha-linkform govuk-!-display-inline-block">
+                <form method="post" action="{{ urlFor('/appreciations/' + (appreciation.id | string) + '/react') }}" class="nexus-alpha-linkform govuk-!-display-inline-block" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="reaction_type" value="{{ reaction.value }}">
                   <input type="hidden" name="owner_id" value="{{ owner.id }}">

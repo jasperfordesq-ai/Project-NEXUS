@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Fill ar an leathanach baile',
         'unsubscribe_missing' => 'Níor soláthraíodh nasc dí-liostáil. Úsáid an nasc sa ríomhphost a fuair tú.',
         'unsubscribe_invalid' => 'Tá an nasc dí-liostáil seo neamhbhailí nó tá sé éagtha.',
+        'unsubscribe_confirm_body' => 'Roghnaigh an cnaipe chun stop a chur le ríomhphoist nuachtlitreach a fháil ón bpobal seo.',
+        'unsubscribe_confirm_button' => 'Díliostáil',
     ],
     'feed' => [
         'edit_post_hint' => 'Nuashonraigh focal do phoist.',
@@ -4063,6 +4065,7 @@ return [
             'save' => 'Sábháil socruithe fógraí',
             'saved' => 'Tá do shocruithe fógraí sábháilte.',
             'failed' => 'Níorbh fhéidir linn do shocruithe fógraí a shábháil. Bain triail eile as.',
+            'partial' => 'Sábháladh do shocruithe fógraí, ach níorbh fhéidir do rogha don achoimre tairiscintí agus iarratas a shábháil. Bain triail eile as.',
             'groups' => [
                 'messages' => 'Teachtaireachtaí agus pobal',
                 'activity' => 'Do ghníomhaíocht',

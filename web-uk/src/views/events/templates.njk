@@ -35,7 +35,7 @@
 
   <nav aria-label="{{ t('event_templates.filter_label') }}" class="govuk-button-group">
     {% for value in ['active', 'archived', 'all'] %}
-      <a class="govuk-button{% if filter != value %} govuk-button--secondary{% endif %}" href="{{ urlFor('/events/templates?filter=' + value) }}">{{ t("event_templates.filters." + value) }}</a>
+      <a class="govuk-button{% if filter != value %} govuk-button--secondary{% endif %}" href="{{ urlFor('/events/templates?filter=' + value) }}" role="button" draggable="false" data-module="govuk-button">{{ t("event_templates.filters." + value) }}</a>
     {% endfor %}
   </nav>
 
@@ -64,9 +64,9 @@
             </div>
           </dl>
           <div class="govuk-button-group">
-            {% if template.capabilities.materialize %}<a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}">{{ t("event_templates.use_template") }}</a>{% endif %}
-            {% if template.capabilities.revise %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/' + (template.source_event.id | string) + '/template-preview?template_id=' + (template.id | string)) }}">{{ t("event_templates.refresh") }}</a>{% endif %}
-            {% if template.capabilities.view_audit %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?filter=' + filter + (('&library_cursor=' + (cursor | urlencode)) if cursor else '')) }}">{{ t("event_templates.audit_link") }}</a>{% endif %}
+            {% if template.capabilities.materialize %}<a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}" role="button" draggable="false">{{ t("event_templates.use_template") }}</a>{% endif %}
+            {% if template.capabilities.revise %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/' + (template.source_event.id | string) + '/template-preview?template_id=' + (template.id | string)) }}" role="button" draggable="false">{{ t("event_templates.refresh") }}</a>{% endif %}
+            {% if template.capabilities.view_audit %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?filter=' + filter + (('&library_cursor=' + (cursor | urlencode)) if cursor else '')) }}" role="button" draggable="false">{{ t("event_templates.audit_link") }}</a>{% endif %}
           </div>
         </li>
       {% endfor %}

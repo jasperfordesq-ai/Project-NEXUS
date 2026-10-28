@@ -299,6 +299,10 @@ function listingPayload(body, defaultCurrency = 'EUR', { includeStatus = true } 
   const quantity = positiveInteger(body.quantity);
   if (quantity !== null) {
     payload.quantity = quantity;
+  } else if (trimmed(body.quantity) !== '') {
+    // Typed but not a whole number: let the API refuse it (integer, at least 1) rather than
+    // dropping it and creating a listing with the default quantity.
+    payload.quantity = trimmed(body.quantity, 20);
   }
 
   return payload;
@@ -312,7 +316,9 @@ function pickupSlotPayload(body, { defaultActive = true } = {}) {
     // composed single value, so an old client or a direct API-shape post still works.
     slot_start: readDateTime(body, 'slot_start').value || '',
     slot_end: readDateTime(body, 'slot_end').value || '',
-    capacity: capacity === null ? 1 : Math.min(capacity, 1000),
+    // Blank means 1. A typed value that is not a whole number from 1 to 1000 goes to the API
+    // as typed so it is refused (integer, 1 to 1000), not turned into 1 or clamped to 1000.
+    capacity: trimmed(body.capacity) === '' ? 1 : (capacity !== null && capacity <= 1000 ? capacity : trimmed(body.capacity, 20)),
     is_recurring: checked(body.is_recurring),
     is_active: body.is_active === undefined ? defaultActive : checked(body.is_active)
   };
@@ -882,6 +888,12 @@ router.post('/:id(\\d+)/buy', asyncRoute(async (req, res) => {
   const idempotencyKey = trimmed(req.body.idempotency_key, 100);
   const expectedKey = trimmed(req.session && req.session[directBuySessionKey(id)], 100);
   if (idempotencyKey.length < 16 || !expectedKey || !matchingKey(idempotencyKey, expectedKey)) {
+    return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
+  }
+  // Quantity is a text box, so "abc", 0 or 5000 can arrive. A purchase must never quietly
+  // become a purchase of 1: a blank box means 1, anything typed must be a whole number 1-999.
+  const typedQuantity = trimmed(req.body.quantity);
+  if (typedQuantity !== '' && (positiveInteger(typedQuantity) === null || positiveInteger(typedQuantity) > 999)) {
     return fail('govuk_alpha_commerce.buy.error_generic', 'quantity');
   }
 

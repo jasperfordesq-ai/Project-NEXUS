@@ -143,7 +143,7 @@
                 <p class="govuk-hint">{{ t("govuk_alpha.messages.sent_label") }} {{ conversation.lastMessageAt | formatBladeDateTime }}</p>
               {% endif %}
               {% if showArchived %}
-                <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/restore') }}">
+                <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/restore') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   {{ govukButton({ text: t("actions.restore_conversation"), classes: "govuk-button--secondary" }) }}
                 </form>

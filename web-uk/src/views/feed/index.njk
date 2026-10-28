@@ -280,7 +280,7 @@
 
               {% if post.type == "poll" and post.poll and post.poll.options.length > 0 %}
                 {% if post.poll.canVote %}
-                  <form method="post" action="{{ urlFor('/feed/polls/' + (post.id | string) + '/vote') }}" class="govuk-!-margin-bottom-3">
+                  <form method="post" action="{{ urlFor('/feed/polls/' + (post.id | string) + '/vote') }}" class="govuk-!-margin-bottom-3" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="type" value="{{ selectedType }}">
                     <input type="hidden" name="mode" value="{{ selectedMode }}">
@@ -292,7 +292,7 @@
                       <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
                         {% for option in post.poll.options %}
                           <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="poll-{{ post.id }}-opt-{{ option.id }}" name="option_id" type="radio" value="{{ option.id }}" required>
+                            <input class="govuk-radios__input" id="poll-{{ post.id }}-opt-{{ option.id }}" name="option_id" type="radio" value="{{ option.id }}">
                             <label class="govuk-label govuk-radios__label" for="poll-{{ post.id }}-opt-{{ option.id }}">{{ option.label }}</label>
                           </div>
                         {% endfor %}
@@ -330,7 +330,7 @@
                  both "respond to this post" to a member, so they share a row on posts.
                  Non-post items keep the standalone Like group (they have no reactions). #}
               {% set likeForm %}
-                <form action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/like') }}" method="post">
+                <form action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/like') }}" method="post" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="type" value="{{ selectedType }}">
                   <input type="hidden" name="mode" value="{{ selectedMode }}">
@@ -358,13 +358,13 @@
 
                 <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-3">
                   {% if not post.isOwn %}
-                    <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/share') }}">
+                    <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/share') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="type" value="{{ selectedType }}"><input type="hidden" name="mode" value="{{ selectedMode }}"><input type="hidden" name="per_page" value="{{ perPage }}">{% if selectedSubtype %}<input type="hidden" name="subtype" value="{{ selectedSubtype }}">{% endif %}{% if cursor %}<input type="hidden" name="cursor" value="{{ cursor }}">{% endif %}
                       <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if post.isShared else 'false' }}">{{ t("feed_t1.unshare_button") if post.isShared else t("feed_t1.share_button") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></button>
                     </form>
                   {% endif %}
-                  <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/save') }}">
+                  <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/save') }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="type" value="{{ selectedType }}"><input type="hidden" name="mode" value="{{ selectedMode }}"><input type="hidden" name="per_page" value="{{ perPage }}">{% if selectedSubtype %}<input type="hidden" name="subtype" value="{{ selectedSubtype }}">{% endif %}{% if cursor %}<input type="hidden" name="cursor" value="{{ cursor }}">{% endif %}
                     <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if post.isBookmarked else 'false' }}">{{ t("feed_t1.unsave_button") if post.isBookmarked else t("feed_t1.save_button") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></button>
@@ -386,12 +386,12 @@
                   <details class="govuk-details" data-module="govuk-details">
                     <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.edit_post") }}</span></summary>
                     <div class="govuk-details__text">
-                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/update') }}">
+                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/update') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <div class="govuk-form-group">
                           <label class="govuk-label" for="edit-post-{{ post.id }}">{{ t("feed.edit_post_label") }}</label>
                           <div id="edit-post-{{ post.id }}-hint" class="govuk-hint">{{ t("feed.edit_post_hint") }}</div>
-                          <textarea class="govuk-textarea" id="edit-post-{{ post.id }}" name="content" rows="4" aria-describedby="edit-post-{{ post.id }}-hint" required>{{ post.content }}</textarea>
+                          <textarea class="govuk-textarea" id="edit-post-{{ post.id }}" name="content" rows="4" aria-describedby="edit-post-{{ post.id }}-hint">{{ post.content }}</textarea>
                         </div>
                         <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.save_changes") }}</button>
                       </form>
@@ -407,7 +407,7 @@
                           {{ t("polish_discovery.delete_post_warning") }}
                         </strong>
                       </div>
-                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/delete') }}">
+                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/delete') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.delete_post_button") }}</button>
                       </form>
@@ -424,7 +424,7 @@
                   <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_feed.engagement.not_interested") }}<span class="govuk-visually-hidden"> {{ postHeading }}</span></span></summary>
                   <div class="govuk-details__text">
                     <p class="govuk-body-s">{{ t("govuk_alpha_feed.engagement.not_interested_hint") }}</p>
-                    <form method="post" action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/not-interested') }}">
+                    <form method="post" action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/not-interested') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">{% for name, value in feedState %}{% if value %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endif %}{% endfor %}
                       <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_feed.engagement.not_interested") }}</button>
                     </form>
@@ -434,26 +434,26 @@
                   <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
                     <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.moderation_summary") }}</span></summary>
                     <div class="govuk-details__text">
-                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/hide') }}" class="govuk-!-margin-bottom-4">
+                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/hide') }}" class="govuk-!-margin-bottom-4" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <input type="hidden" name="type" value="{{ post.type }}">
                         <p class="govuk-body govuk-!-margin-bottom-2">{{ t("feed.hide_hint") }}</p>
                         <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.hide_button") }}</button>
                       </form>
                       {% if post.authorId %}
-                        <form method="post" action="{{ urlFor('/feed/users/' + (post.authorId | string) + '/mute') }}" class="govuk-!-margin-bottom-4">
+                        <form method="post" action="{{ urlFor('/feed/users/' + (post.authorId | string) + '/mute') }}" class="govuk-!-margin-bottom-4" novalidate>
                           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                           <p class="govuk-body govuk-!-margin-bottom-2">{{ t("feed.mute_hint", { name: post.authorName }) }}</p>
                           <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.mute_button") }}<span class="govuk-visually-hidden"> {{ post.authorName }}</span></button>
                         </form>
                       {% endif %}
-                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/report') }}">
+                      <form method="post" action="{{ urlFor('/feed/posts/' + (post.id | string) + '/report') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <input type="hidden" name="type" value="{{ post.type }}">
                         <div class="govuk-form-group govuk-!-margin-bottom-2">
                           <label class="govuk-label" for="report-reason-{{ post.type }}-{{ post.id }}">{{ t("feed.report_reason_label") }}</label>
                           <div class="govuk-hint" id="report-hint-{{ post.type }}-{{ post.id }}">{{ t("feed.report_hint") }}</div>
-                          <input class="govuk-input" id="report-reason-{{ post.type }}-{{ post.id }}" name="reason" type="text" maxlength="500" aria-describedby="report-hint-{{ post.type }}-{{ post.id }}" required>
+                          <input class="govuk-input" id="report-reason-{{ post.type }}-{{ post.id }}" name="reason" type="text" maxlength="500" aria-describedby="report-hint-{{ post.type }}-{{ post.id }}">
                         </div>
                         <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.report_button") }}</button>
                       </form>
@@ -471,7 +471,7 @@
                     {% else %}
                       <p class="govuk-body">{{ t("feed.no_comments") }}</p>
                     {% endif %}
-                    <form method="post" action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/comments') }}">
+                    <form method="post" action="{{ urlFor('/feed/items/' + post.type + '/' + (post.id | string) + '/comments') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="type" value="{{ selectedType }}">
                       <input type="hidden" name="mode" value="{{ selectedMode }}">

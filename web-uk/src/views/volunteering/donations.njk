@@ -205,7 +205,7 @@
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.donations.pledge_intro") }}</p>
   <p class="govuk-body" id="donate-card-intro">{{ t("govuk_alpha_volunteering.donations.card_intro") }}</p>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.donations.currency_fixed_hint", { currency: tenantCurrency }) }}</p>
-  <form id="donate" method="post" action="{{ urlFor('/volunteering/donations#donate') }}" class="govuk-!-margin-bottom-8">
+  <form id="donate" method="post" action="{{ urlFor('/volunteering/donations#donate') }}" class="govuk-!-margin-bottom-8" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     {# Single-use: a second submit of this page can never open a second card payment. #}
     <input type="hidden" name="form_token" value="{{ donationFormToken }}">

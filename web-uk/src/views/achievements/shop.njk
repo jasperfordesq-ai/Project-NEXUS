@@ -80,7 +80,7 @@
           {% if item.owned %}
             {{ govukTag({ text: t("govuk_alpha_gamification.shop.owned"), classes: "govuk-tag--green" }) }}
           {% elif item.canPurchase %}
-            <form method="post" action="{{ urlFor('/achievements/shop/purchase') }}">
+            <form method="post" action="{{ urlFor('/achievements/shop/purchase') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="item_id" value="{{ item.id }}">
               <input type="hidden" name="idempotency_key" value="{{ purchaseOperationKey }}-{{ item.id }}">

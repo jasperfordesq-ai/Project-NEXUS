@@ -10,13 +10,13 @@
 
   <div class="govuk-form-group">
     <label class="govuk-label govuk-label--s" for="{{ prefix }}-title">{{ t("govuk_alpha.events.agenda.fields.title") }}</label>
-    <input class="govuk-input" id="{{ prefix }}-title" name="title" type="text" maxlength="255" value="{{ session.title or '' }}" required>
+    <input class="govuk-input" id="{{ prefix }}-title" name="title" type="text" maxlength="255" value="{{ session.title or '' }}">
   </div>
 
   <div class="govuk-form-group">
     <label class="govuk-label govuk-label--s" for="{{ prefix }}-capacity">{{ t("event_agenda.capacity_label") }}</label>
     <div id="{{ prefix }}-capacity-hint" class="govuk-hint">{{ t("event_agenda.capacity_hint") }}</div>
-    <input class="govuk-input govuk-input--width-5" id="{{ prefix }}-capacity" name="capacity" type="number" min="1" max="100000" inputmode="numeric" aria-describedby="{{ prefix }}-capacity-hint" value="{{ session.capacity.limit if session.capacity and session.capacity.limit else '' }}">
+    <input class="govuk-input govuk-input--width-5" id="{{ prefix }}-capacity" name="capacity" type="text" spellcheck="false" inputmode="numeric" aria-describedby="{{ prefix }}-capacity-hint" value="{{ session.capacity.limit if session.capacity and session.capacity.limit else '' }}">
   </div>
 
   <div class="govuk-form-group">
@@ -27,12 +27,12 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="{{ prefix }}-type">{{ t("govuk_alpha.events.agenda.fields.type") }}</label>
-      <select class="govuk-select" id="{{ prefix }}-type" name="session_type" required>{% for value in ["session", "keynote", "workshop", "panel", "break", "networking", "other"] %}<option value="{{ value }}"{% if (session.type or 'session') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.types." + value) }}</option>{% endfor %}</select>
+      <select class="govuk-select" id="{{ prefix }}-type" name="session_type">{% for value in ["session", "keynote", "workshop", "panel", "break", "networking", "other"] %}<option value="{{ value }}"{% if (session.type or 'session') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.types." + value) }}</option>{% endfor %}</select>
     </div></div>
     <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="{{ prefix }}-visibility">{{ t("govuk_alpha.events.agenda.fields.visibility") }}</label>
       <div class="govuk-hint">{{ t("govuk_alpha.events.agenda.visibility_hint") }}</div>
-      <select class="govuk-select" id="{{ prefix }}-visibility" name="visibility" required>{% for value in ["public", "registered", "staff"] %}<option value="{{ value }}"{% if (session.visibility or 'public') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.visibilities." + value) }}</option>{% endfor %}</select>
+      <select class="govuk-select" id="{{ prefix }}-visibility" name="visibility">{% for value in ["public", "registered", "staff"] %}<option value="{{ value }}"{% if (session.visibility or 'public') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.visibilities." + value) }}</option>{% endfor %}</select>
     </div></div>
   </div>
 

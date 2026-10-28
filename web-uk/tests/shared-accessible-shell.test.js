@@ -2117,29 +2117,57 @@ describe('shared accessible frontend shell', () => {
 
   it('renders the Laravel-style newsletter unsubscribe states', async () => {
     const api = require('../src/lib/api');
+    api.callNewsletterApi.mockReset();
     api.callNewsletterApi.mockResolvedValueOnce({ data: { success: true } });
     api.callNewsletterApi.mockRejectedValueOnce(new api.ApiError('Invalid token', 422, {}));
 
-    const missing = await request(app).get('/newsletter/unsubscribe');
-    const success = await request(app).get('/newsletter/unsubscribe?token=valid-token');
-    const invalid = await request(app).get('/newsletter/unsubscribe?token=expired-token');
+    const agent = request.agent(app);
+    const missing = await agent.get('/newsletter/unsubscribe');
+    const confirm = await agent.get('/newsletter/unsubscribe?token=valid-token');
 
     expect(missing.status).toBe(200);
     expect(missing.text).toContain('Unsubscribe from emails');
     expect(missing.text).toContain('No unsubscribe link was provided. Use the link in the email you received.');
     expect(missing.text).toContain('Return to the home page');
 
+    // Opening the link must NOT unsubscribe: mail scanners follow every link in
+    // an email, so the GET only shows a confirmation form.
+    expect(confirm.status).toBe(200);
+    expect(api.callNewsletterApi).not.toHaveBeenCalled();
+    expect(confirm.text).not.toContain('govuk-panel--confirmation');
+    expect(confirm.text).toContain('Unsubscribe from emails');
+    expect(confirm.text).toMatch(/<form[^>]+method="post"[^>]+novalidate/);
+    expect(confirm.text).toContain('name="token" value="valid-token"');
+    expect(confirm.text).toContain('Select the button to stop receiving newsletter emails from this community.');
+    const csrf = confirm.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    const success = await agent
+      .post('/newsletter/unsubscribe')
+      .type('form')
+      .send({ _csrf: csrf, token: 'valid-token' });
     expect(success.status).toBe(200);
     expect(success.text).toContain('govuk-panel--confirmation');
     expect(success.text).toContain('You have been unsubscribed');
     expect(success.text).toContain('You will no longer receive newsletter emails from this community.');
     expect(success.text).toContain('You may still receive essential account and security emails.');
-    expect(api.callNewsletterApi).toHaveBeenNthCalledWith(1, 'GET', '?token=valid-token');
+    expect(api.callNewsletterApi).toHaveBeenNthCalledWith(1, 'POST', '', { token: 'valid-token' });
 
+    const invalid = await agent
+      .post('/newsletter/unsubscribe')
+      .type('form')
+      .send({ _csrf: csrf, token: 'expired-token' });
     expect(invalid.status).toBe(200);
     expect(invalid.text).toContain('This unsubscribe link is invalid or has expired.');
-    expect(api.callNewsletterApi).toHaveBeenNthCalledWith(2, 'GET', '?token=expired-token');
+    expect(api.callNewsletterApi).toHaveBeenNthCalledWith(2, 'POST', '', { token: 'expired-token' });
     expect(invalid.text).not.toContain('shared accessible frontend preparation page');
+
+    // A POST with no token is the missing state and never reaches Laravel.
+    const blank = await agent
+      .post('/newsletter/unsubscribe')
+      .type('form')
+      .send({ _csrf: csrf, token: '   ' });
+    expect(blank.text).toContain('No unsubscribe link was provided. Use the link in the email you received.');
+    expect(api.callNewsletterApi).toHaveBeenCalledTimes(2);
   });
 
   it('renders the Laravel-style email verification states', async () => {
@@ -2235,7 +2263,13 @@ describe('shared accessible frontend shell', () => {
 
     const offline = await request(app).get('/verify-email?token=good-token');
     const serverError = await request(app).get('/verify-email?token=good-token');
-    const rateLimited = await request(app).get('/newsletter/unsubscribe?token=good-token');
+    const unsubscribeAgent = request.agent(app);
+    const unsubscribePage = await unsubscribeAgent.get('/newsletter/unsubscribe?token=good-token');
+    const unsubscribeCsrf = unsubscribePage.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const rateLimited = await unsubscribeAgent
+      .post('/newsletter/unsubscribe')
+      .type('form')
+      .send({ _csrf: unsubscribeCsrf, token: 'good-token' });
 
     for (const response of [offline, serverError, rateLimited]) {
       expect(response.status).toBe(200);
@@ -5283,7 +5317,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="messaging_enabled_federated" name="messaging_enabled_federated"');
     expect(response.text).toContain('id="transactions_enabled_federated" name="transactions_enabled_federated"');
     expect(response.text).toContain('<option value="travel_ok" selected>');
-    expect(response.text).toContain('id="travel_radius_km" name="travel_radius_km" type="number"');
+    expect(response.text).toContain('id="travel_radius_km" name="travel_radius_km" type="text"');
     expect(response.text).toContain('value="35"');
     expect(response.text).toContain('href="/federation/opt-out"');
     expect(response.text).not.toContain('Laravel Blade route');
@@ -5352,7 +5386,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="messaging_enabled_federated" name="messaging_enabled_federated"');
     expect(response.text).toContain('id="transactions_enabled_federated" name="transactions_enabled_federated"');
     expect(response.text).toContain('<option value="local_only" selected>');
-    expect(response.text).toContain('id="travel_radius_km" name="travel_radius_km" type="number"');
+    expect(response.text).toContain('id="travel_radius_km" name="travel_radius_km" type="text"');
     expect(response.text).toContain('Communities you could connect with');
     expect(response.text).toContain('North Timebank');
     expect(response.text).toContain('Location: Derry');
@@ -7000,7 +7034,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('method="post" action="/password/reset"');
     expect(response.text).toContain('name="token" value="reset-token"');
     expect(response.text).toMatch(/<input[^>]*id="password"[^>]*spellcheck="false"[^>]*>/);
-    expect(response.text).toMatch(/<input[^>]*id="password_confirmation"[^>]*spellcheck="false"[^>]*required(?:="required")?[^>]*>/);
+    expect(response.text).toMatch(/<input[^>]*id="password_confirmation"[^>]*spellcheck="false"[^>]*>/);
   });
 
   it('renders Laravel\'s reset-password form when the token query is absent', async () => {
@@ -7813,7 +7847,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('name="recipient_id" value="77"');
     expect(response.text).toMatch(/name="idempotency_key" value="[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"/i);
     expect(response.text).toContain('id="note-77" name="note"');
-    expect(response.text).toContain('id="confirm-77" name="confirm" type="checkbox" value="1" required');
+    expect(response.text).toContain('id="confirm-77" name="confirm" type="checkbox" value="1"');
     expect(response.text).toContain('I understand the credits move immediately and this cannot be undone.');
     expect(response.text).toContain('Donate credits');
     expect(response.text).toContain('It is not a money donation.');
@@ -9510,7 +9544,7 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('href="/goals/42/social"');
     expect(signed.text).toContain('href="/goals/42/history"');
     expect(signed.text).toContain('method="post" action="/goals/42/progress"');
-    expect(signed.text).toContain('id="increment" name="increment" type="number" min="0.25" step="0.25"');
+    expect(signed.text).toContain('id="increment" name="increment" type="text"');
     expect(signed.text).toContain('method="post" action="/goals/42/complete"');
     expect(signed.text).toContain('The first bed is looking great.');
     expect(signed.text).toContain('Alex Morgan');
@@ -9850,7 +9884,7 @@ describe('shared accessible frontend shell', () => {
     }
     expect(signed.text).toContain('method="post" action="/goals/42/edit"');
     expect(signed.text).toContain('id="title" name="title" type="text" maxlength="255" value="Learn bicycle repair"');
-    expect(signed.text).toContain('id="target_value" name="target_value" type="number"');
+    expect(signed.text).toContain('id="target_value" name="target_value" type="text"');
     expect(signed.text).toContain('value="6"');
     expect(signed.text).toContain('Complete the local bike maintenance course.');
     // 🔴 Was `type="date"`. Converted to the GOV.UK three-field pattern, because GDS is
@@ -9925,7 +9959,7 @@ describe('shared accessible frontend shell', () => {
       expect(signed.text).toContain(t(key));
     }
     expect(signed.text).toContain('method="post" action="/goals/42/checkin"');
-    expect(signed.text).toContain('id="progress_percent" name="progress_percent" type="number" min="0" max="100" step="1" inputmode="numeric" value="30"');
+    expect(signed.text).toContain('id="progress_percent" name="progress_percent" type="text" spellcheck="false" inputmode="numeric" value="30"');
     expect(signed.text).toContain('id="mood-motivated" name="mood" type="radio" value="motivated"');
     expect(signed.text).toContain(t('govuk_alpha_goals.checkin.history_progress', { percent: 30 }));
     expect(signed.text).toContain(t('govuk_alpha_goals.checkin.history_mood', {
@@ -12264,7 +12298,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Repair a radio');
     expect(response.text).toContain('Shared a repair update');
     expect(response.text).toContain('Please ask first.');
-    expect(response.text).toContain('id="profile-transfer-confirm" name="confirm" type="checkbox" value="1" required');
+    expect(response.text).toContain('id="profile-transfer-confirm" name="confirm" type="checkbox" value="1"');
     expect(response.text).toContain('I understand the credits move immediately and this cannot be undone.');
     expect(response.text).toContain('action="/acme/accessible/members/77/unblock"');
     expect(response.text).not.toContain('action="/acme/accessible/members/77/block"');
@@ -15369,7 +15403,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain('action="/acme/accessible/feed/polls/42/vote"');
-    expect(response.text).toContain('id="poll-42-opt-5" name="option_id" type="radio" value="5" required');
+    expect(response.text).toContain('id="poll-42-opt-5" name="option_id" type="radio" value="5"');
     expect(response.text).toContain('Bike repair');
     expect(response.text).toContain('Sewing');
     expect(response.text).toContain('name="type" value="polls"');
@@ -16261,9 +16295,9 @@ describe('shared accessible frontend shell', () => {
     }
     expect(create.text).toContain('community repair');
     expect(create.text).not.toContain('Community repair');
-    expect(create.text).toMatch(/id="poll-question"[^>]* required/);
-    expect(create.text).toMatch(/id="poll-option-1"[^>]* required/);
-    expect(create.text).toMatch(/id="poll-option-2"[^>]* required/);
+    expect(create.text).toMatch(/id="poll-question"/);
+    expect(create.text).toMatch(/id="poll-option-1"/);
+    expect(create.text).toMatch(/id="poll-option-2"/);
     expect(create.text).not.toMatch(/id="poll-option-3"[^>]* required/);
     // Was `min="YYYY-MM-DD"` on a native date input. That input was converted to the
     // GOV.UK three-field pattern on 2026-08-19 and its `min` guard moved to the server.
@@ -16866,7 +16900,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('action="/reviews"');
     expect(response.text).toContain('name="receiver_id" value="77"');
     expect(response.text).toContain('name="transaction_id" value="88"');
-    expect(response.text).toContain('id="rating-1-5" name="rating" type="radio" value="5" required');
+    expect(response.text).toContain('id="rating-1-5" name="rating" type="radio" value="5"');
     expect(response.text).not.toContain('id="rating-1-5" name="rating" type="radio" value="5" checked');
     expect(response.text).toContain('<span class="govuk-visually-hidden">5 out of 5</span>');
     expect(response.text).toContain('action="/reviews/92/delete"');
@@ -26314,7 +26348,7 @@ describe('shared accessible frontend shell', () => {
     expect(page.status).toBe(200);
     expect(page.text).toContain('action="/events/42/cancel"');
     expect(page.text).toContain('id="cancel-reason" name="reason"');
-    expect(page.text).toContain('id="cancel-reason" name="reason" rows="3" maxlength="4000" required');
+    expect(page.text).toContain('id="cancel-reason" name="reason" rows="3" maxlength="4000"');
     expect(csrfMatch).not.toBeNull();
     const idempotencyMatch = page.text.match(/name="idempotency_key" value="([^"]+)"/);
     expect(idempotencyMatch).not.toBeNull();
@@ -26963,7 +26997,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('<option value="sensitive" selected>');
     expect(response.text).toContain('id="question-0-help" name="questions[0][help_text]" rows="2">Choose every option that applies.</textarea>');
     expect(response.text).toContain('id="question-0-required" name="questions[0][is_required]" type="checkbox" value="1" checked');
-    expect(response.text).toContain('id="question-0-min" name="questions[0][min_length]" type="number" min="0" value="1"');
+    expect(response.text).toContain('id="question-0-min" name="questions[0][min_length]" type="text"');
     expect(response.text).toContain('id="question-0-displayed-version" name="questions[0][displayed_text_version]" type="text" value="2026-07"');
     expect(response.text).toContain('id="question-0-condition-key" name="questions[0][condition_key]" type="text" value="attendance"');
     expect(response.text).toContain('<option value="contains" selected>');
@@ -27054,7 +27088,7 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('Tell us what you need.');
     expect(page.text).toContain('/registration/registrations/11/forms/8/submit');
     expect(page.text).not.toContain('/registration/registrations/10/forms/8/submit');
-    expect(page.text).toMatch(/id="answer-short_reason"[^>]*required[^>]*minlength="5"[^>]*maxlength="10"/);
+    expect(page.text).toMatch(/id="answer-short_reason"[^>]*maxlength="10"/);
     expect(page.text).toMatch(/id="answer-long_notes"[^>]*maxlength="100"/);
     expect(page.text).toContain('class="govuk-radios__input"');
     expect(page.text).toContain('class="govuk-checkboxes__input"');
@@ -27065,7 +27099,7 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('/events/42/registration/invitations/71/accept');
     expect(page.text).not.toContain('/events/42/registration/invitations/72/accept');
     expect(page.text).toContain('id="guest-phone" name="phone" type="tel"');
-    expect(page.text).toContain('id="guest-ticket" name="ticket_entitlement_id" type="number" min="1"');
+    expect(page.text).toContain('id="guest-ticket" name="ticket_entitlement_id" type="text"');
     expect(page.text).toContain('id="guest-notifications" name="notification_consent"');
     expect(page.text).toContain('id="guest-cancel-reason-91"');
     expect(page.text).toContain('id="guest-cancel-confirm-91"');
@@ -29484,7 +29518,7 @@ describe('shared accessible frontend shell', () => {
     expect(edit.status).toBe(200);
     expect(csrfMatch).not.toBeNull();
     expect(edit.text).toContain('Deleting this group is permanent.');
-    expect(edit.text).toMatch(/id="confirm-delete" name="confirm" type="checkbox" value="yes" required/);
+    expect(edit.text).toMatch(/id="confirm-delete" name="confirm" type="checkbox" value="yes"/);
     expect(edit.text).toContain('action="/groups/88/delete"');
     expect(edit.text).not.toContain('onsubmit="return confirm');
 
@@ -30407,11 +30441,15 @@ describe('shared accessible frontend shell', () => {
       prep_time: '30',
       message: '   '
     });
-    expect(castExchangeResponse.headers.location).toBe('/exchanges/88?status=exchange-created');
+    // The boxes are text fields now (GOV.UK 'ask for numbers'): a value that is not a number in
+    // range is refused with the existing error, not turned into 0.25 hours and a 30-hour prep.
+    expect(castExchangeResponse.headers.location).toBe('/listings/42/exchange-request?status=exchange-failed');
+    expect(api.createExchangeRequest).toHaveBeenCalledTimes(1);
     expect(api.createExchangeRequest).toHaveBeenLastCalledWith('test-token', {
       listing_id: 42,
-      proposed_hours: 0.25,
-      prep_time: 30
+      proposed_hours: 2.5,
+      prep_time: 0.5,
+      message: 'Could you help next week?'
     });
 
     const reportResponse = await post('/listings/42/report', {
@@ -33027,6 +33065,41 @@ describe('shared accessible frontend shell', () => {
       language: 'ga'
     });
 
+    // G5: the save reads the member's stored choices, then writes them in ONE atomic
+    // request (PUT /users/me/notification-settings), so a failure part-way can no
+    // longer leave half the settings saved. Choices this page does not offer keep
+    // their stored values instead of being overwritten.
+    const storedNotifications = {
+      email_messages: false,
+      email_listings: true,
+      email_digest: false,
+      email_connections: false,
+      email_transactions: true,
+      email_reviews: false,
+      email_events: false,
+      email_gamification_digest: true,
+      email_gamification_milestones: true,
+      email_org_payments: true,
+      email_org_transfers: true,
+      email_org_membership: true,
+      email_org_admin: true,
+      caring_smart_nudges: true,
+      federation_notifications_enabled: false,
+      push_enabled: false,
+      push_campaigns_opted_in: true,
+      push_show_message_preview: true
+    };
+    const settingsReads = async (token, method, pathValue) => {
+      if (method === 'GET' && pathValue === '/notifications') return { data: storedNotifications };
+      if (method === 'GET' && pathValue === '/match-preferences') {
+        return { data: { notification_frequency: 'fortnightly', notify_hot_matches: false, notify_mutual_matches: true } };
+      }
+      return { data: { id: 42 } };
+    };
+    api.callUserSettingsApi.mockReset().mockImplementation(settingsReads);
+    api.callProfileApi.mockClear();
+    const writesTo = (mockFn) => mockFn.mock.calls.filter(([, method]) => method !== 'GET');
+
     const notificationsResponse = await post('/profile/notifications', {
       email_messages: 'on',
       email_connections: 'on',
@@ -33038,45 +33111,97 @@ describe('shared accessible frontend shell', () => {
       digest_frequency: 'daily'
     });
     expect(notificationsResponse.headers.location).toBe('/profile/settings?status=notifications-saved#notifications');
-    expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/notifications', {
-      email_messages: true,
-      email_connections: true,
-      // No caring_smart_nudges: that capability is off by default, so its toggle is
-      // neither shown nor sent (an unsent key leaves the saved choice alone).
-      email_listings: false,
-      email_events: true,
-      email_transactions: false,
-      email_reviews: true,
-      email_gamification_digest: false,
-      email_gamification_milestones: false,
-      email_digest: true,
-      email_org_payments: false,
-      email_org_transfers: false,
-      email_org_membership: false,
-      email_org_admin: false,
-      push_enabled: true,
-      push_campaigns_opted_in: false,
-      federation_notifications_enabled: true
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'PUT', '/notification-settings', {
+      notifications: {
+        email_messages: true,
+        email_connections: true,
+        // That capability's toggle is switched off for this community, so it is
+        // neither shown nor submitted: the stored choice is carried through unchanged.
+        caring_smart_nudges: true,
+        email_listings: false,
+        email_events: true,
+        email_transactions: false,
+        email_reviews: true,
+        email_gamification_digest: false,
+        email_gamification_milestones: false,
+        email_digest: true,
+        email_org_payments: false,
+        email_org_transfers: false,
+        email_org_membership: false,
+        email_org_admin: false,
+        push_enabled: true,
+        push_campaigns_opted_in: false,
+        // Not offered on this page at all: the stored value is kept.
+        push_show_message_preview: true,
+        federation_notifications_enabled: true
+      },
+      // Match e-mails are saved by their own form; the stored values are re-sent.
+      match_preferences: { notification_frequency: 'fortnightly', notify_hot_matches: false, notify_mutual_matches: true },
+      digest_frequency: 'daily'
     });
-    expect(api.callProfileApi).toHaveBeenLastCalledWith('test-token', 'POST', '/notifications/settings', {
-      context_type: 'global',
-      context_id: 0,
-      frequency: 'daily'
-    });
+    // Exactly one write, and the old separate digest write is gone.
+    expect(writesTo(api.callUserSettingsApi)).toHaveLength(1);
+    expect(writesTo(api.callProfileApi)).toHaveLength(0);
 
-    // The offers & requests round-up frequency is saved through its own endpoint,
-    // and an unknown value is ignored rather than sent.
+    // No digest choice in the form: the stored digest frequency is re-sent.
+    api.callProfileApi.mockResolvedValueOnce({ data: { global_frequency: 'monthly' } });
+    api.callUserSettingsApi.mockClear();
+    await post('/profile/notifications', { email_messages: 'on' });
+    expect(api.callProfileApi).toHaveBeenLastCalledWith('test-token', 'GET', '/notifications/settings');
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'PUT', '/notification-settings', expect.objectContaining({
+      digest_frequency: 'monthly'
+    }));
+
+    // If the stored choices cannot be read, nothing is written and the page says so.
+    api.callUserSettingsApi.mockClear();
+    api.callUserSettingsApi.mockRejectedValueOnce(new api.ApiError('Server error', 500, {}));
+    const readFailed = await post('/profile/notifications', { email_messages: 'on', digest_frequency: 'daily' });
+    expect(readFailed.headers.location).toBe('/profile/settings?status=notifications-failed#notifications');
+    expect(writesTo(api.callUserSettingsApi)).toHaveLength(0);
+
+    // The offers & requests round-up frequency is saved through its own endpoint
+    // (the atomic endpoint does not cover it), and an unknown value is ignored.
+    api.callUserSettingsApi.mockClear();
     const roundUpResponse = await post('/profile/notifications', {
       email_messages: 'on',
+      digest_frequency: 'off',
       listings_digest_frequency: 'weekly'
     });
     expect(roundUpResponse.headers.location).toBe('/profile/settings?status=notifications-saved#notifications');
     expect(api.callUserSettingsApi).toHaveBeenLastCalledWith('test-token', 'PUT', '/listings-digest', {
       frequency: 'weekly'
     });
+    expect(writesTo(api.callUserSettingsApi).map(([, , path]) => path)).toEqual(['/notification-settings', '/listings-digest']);
     api.callUserSettingsApi.mockClear();
-    await post('/profile/notifications', { email_messages: 'on', listings_digest_frequency: 'hourly' });
+    await post('/profile/notifications', { email_messages: 'on', digest_frequency: 'off', listings_digest_frequency: 'hourly' });
     expect(api.callUserSettingsApi.mock.calls.some(([, , path]) => path === '/listings-digest')).toBe(false);
+
+    // Main settings saved but the round-up write failed: say exactly that.
+    api.callUserSettingsApi.mockImplementation(async (token, method, pathValue) => {
+      if (method === 'PUT' && pathValue === '/listings-digest') throw new api.ApiError('Server error', 500, {});
+      return settingsReads(token, method, pathValue);
+    });
+    const partial = await post('/profile/notifications', {
+      email_messages: 'on',
+      digest_frequency: 'off',
+      listings_digest_frequency: 'monthly'
+    });
+    expect(partial.headers.location).toBe('/profile/settings?status=notifications-partial#notifications');
+
+    // The atomic save itself failed: nothing is claimed and the round-up is not attempted.
+    api.callUserSettingsApi.mockClear();
+    api.callUserSettingsApi.mockImplementation(async (token, method, pathValue) => {
+      if (method === 'PUT' && pathValue === '/notification-settings') throw new api.ApiError('Server error', 500, {});
+      return settingsReads(token, method, pathValue);
+    });
+    const atomicFailed = await post('/profile/notifications', {
+      email_messages: 'on',
+      digest_frequency: 'off',
+      listings_digest_frequency: 'monthly'
+    });
+    expect(atomicFailed.headers.location).toBe('/profile/settings?status=notifications-failed#notifications');
+    expect(api.callUserSettingsApi.mock.calls.some(([, , path]) => path === '/listings-digest')).toBe(false);
+    api.callUserSettingsApi.mockReset().mockResolvedValue({ data: { id: 42 } });
 
     api.callWebAuthnApi
       .mockResolvedValueOnce({ data: { security_confirmation_token: 'confirm-rename' } })
@@ -37687,7 +37812,7 @@ describe('shared accessible frontend shell', () => {
     // asserted — the field exists and posts under the same name — via its day field.
     expect(response.text).toContain('name="date-day"');
     expect(response.text).toContain('name="date-year"');
-    expect(response.text).toContain('id="hours" name="hours" type="number"');
+    expect(response.text).toContain('id="hours" name="hours" type="text"');
     expect(response.text).toContain('id="description" name="description"');
     expect(response.text).toContain('Recent hour logs');
     expect(response.text).toContain('3 July 2026');
@@ -38025,7 +38150,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="expense_type" name="expense_type"');
     expect(response.text).toContain('value="travel"');
     expect(response.text).toContain('Travel');
-    expect(response.text).toContain('id="amount" name="amount" type="number"');
+    expect(response.text).toContain('id="amount" name="amount" type="text"');
     expect(response.text).not.toContain('name="currency"');
     expect(response.text).toContain('id="description" name="description"');
     expect(response.text).toContain('Submit claim');

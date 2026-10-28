@@ -52,13 +52,13 @@
             <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id) }}">{{ t(K ~ "show_details") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></a>
             <a class="govuk-link" href="{{ urlFor(base ~ '/' ~ campaign.id ~ '/edit') }}">{{ t(K ~ "change") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></a>
             {% if campaign.canPause %}
-              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/pause') }}">
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/pause') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "pause") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></button>
               </form>
             {% endif %}
             {% if campaign.canResume %}
-              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/resume') }}">
+              <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/resume') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "resume") }}<span class="govuk-visually-hidden">: {{ campaign.title }}</span></button>
               </form>

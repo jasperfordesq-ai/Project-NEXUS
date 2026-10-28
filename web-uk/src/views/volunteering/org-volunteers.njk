@@ -107,7 +107,7 @@
                 <ul class="govuk-list govuk-!-margin-bottom-0">
                   {% if show == "retired" %}
                     <li>
-                      <form method="post" action="{{ urlFor(base ~ '/' ~ volunteer.id ~ '/reinstate') }}">
+                      <form method="post" action="{{ urlFor(base ~ '/' ~ volunteer.id ~ '/reinstate') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                         <input type="hidden" name="name" value="{{ volunteer.name }}">
                         <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t(R ~ "reinstate") }}<span class="govuk-visually-hidden">: {{ volunteer.name }}</span></button>

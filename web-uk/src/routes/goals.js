@@ -1272,6 +1272,11 @@ router.post('/:id(\\d+)/checkin', asyncRoute(async (req, res) => {
 
   const id = Number(req.params.id);
   const progressPercent = boundedPercent(req.body.progress_percent || req.body.progress_value);
+  // A text box now, so "abc" or 150 reaches here. Say so rather than clamping 150 to 100.
+  const typedPercent = Number(trimmed(req.body.progress_percent || req.body.progress_value));
+  if (progressPercent === null || typedPercent < 0 || typedPercent > 100) {
+    return redirectTo(res, goalSubpageRedirect(id, 'checkin', 'checkin-failed'));
+  }
   const mood = allowedValue(req.body.mood, GOAL_CHECKIN_MOODS, null);
   const note = optionalText(req.body.note, 2000);
   const payload = {

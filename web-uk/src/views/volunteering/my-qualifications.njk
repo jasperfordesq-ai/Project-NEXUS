@@ -43,7 +43,7 @@
     <p class="govuk-body govuk-!-margin-bottom-0">{{ t(K ~ "intro_vetting") }} <a class="govuk-link" href="{{ urlFor('/profile/settings#vetting-status') }}">{{ t(K ~ "vetting_link") }}</a></p>
   </div>
 
-  <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/volunteering/qualifications/new') }}">{{ t(K ~ "add") }}</a>
+  <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/volunteering/qualifications/new') }}" role="button" draggable="false">{{ t(K ~ "add") }}</a>
 
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

@@ -61,7 +61,7 @@
       </strong>
     </div>
 
-    <form method="post" action="{{ urlFor('/marketplace/payouts/start') }}">
+    <form method="post" action="{{ urlFor('/marketplace/payouts/start') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--start" data-module="govuk-button" data-prevent-double-click="true">
         {{ t("govuk_alpha_commerce.payouts.continue_button" if payout.started else "govuk_alpha_commerce.payouts.start_button") }}

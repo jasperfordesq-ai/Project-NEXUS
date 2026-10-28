@@ -106,14 +106,14 @@
           {% if entry.shiftId %}
             <div class="govuk-button-group govuk-!-margin-bottom-0">
               {% if entry.isNotified %}
-                <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/claim') }}">
+                <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/claim') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true" data-testid="waitlist-claim-{{ entry.id }}">
                     {{ t("vol_depth.waitlist_claim") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>
                   </button>
                 </form>
               {% endif %}
-              <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/leave') }}">
+              <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/leave') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
                   {{ t("vol_depth.waitlist_leave") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>

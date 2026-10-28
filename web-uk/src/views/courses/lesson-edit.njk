@@ -152,7 +152,7 @@
                   {% for option in question.options %}<li>{{ option }}</li>{% endfor %}
                 </ol>
               {% endif %}
-              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/questions/' + (question.id | string) + '/delete') }}">
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/questions/' + (question.id | string) + '/delete') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="quiz_id" value="{{ lesson.quizId }}">
                 <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_courses.lesson_editor.delete_question") }}<span class="govuk-visually-hidden">: {{ question.prompt }}</span></button>

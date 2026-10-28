@@ -80,7 +80,7 @@
           </strong>
         </div>
 
-        <form method="post" action="{{ urlFor('/federation/members/' + (member.id | string) + '/transfer') }}">
+        <form method="post" action="{{ urlFor('/federation/members/' + (member.id | string) + '/transfer') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="receiver_tenant_id" value="{{ member.tenantId }}">
           <input type="hidden" name="idempotency_key" value="{{ transferIdempotencyKey }}">
@@ -89,7 +89,7 @@
             <label class="govuk-label govuk-label--m" for="amount">{{ t("fed2.transfer.amount_label") }}</label>
             <div id="amount-hint" class="govuk-hint">{{ t("fed2.transfer.amount_hint") }}</div>
             {% if fieldErrors.amount %}<p id="amount-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.amount }}</p>{% endif %}
-            <input class="govuk-input govuk-input--width-5{% if fieldErrors.amount %} govuk-input--error{% endif %}" id="amount" name="amount" type="number" inputmode="numeric" min="1" max="100" step="1" aria-describedby="amount-hint{% if fieldErrors.amount %} amount-error{% endif %}">
+            <input class="govuk-input govuk-input--width-5{% if fieldErrors.amount %} govuk-input--error{% endif %}" id="amount" name="amount" type="text" spellcheck="false" inputmode="numeric" aria-describedby="amount-hint{% if fieldErrors.amount %} amount-error{% endif %}">
           </div>
 
           <div class="govuk-form-group{% if fieldErrors.description %} govuk-form-group--error{% endif %}">

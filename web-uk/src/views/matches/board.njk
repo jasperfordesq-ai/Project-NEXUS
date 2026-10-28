@@ -111,7 +111,7 @@
                 {{ t("govuk_alpha_connections.matches.dismiss_warning") }}
               </strong>
             </div>
-            <form method="post" action="{{ urlFor(dismissPath) }}">
+            <form method="post" action="{{ urlFor(dismissPath) }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="source" value="{{ activeSource }}">
               <fieldset class="govuk-fieldset">

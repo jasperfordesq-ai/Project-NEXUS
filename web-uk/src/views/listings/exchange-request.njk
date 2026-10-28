@@ -84,13 +84,13 @@
     <div class="govuk-form-group">
       <label class="govuk-label" for="proposed_hours">{{ t("exchanges.hours_label") }}</label>
       <div id="proposed-hours-hint" class="govuk-hint">{{ t("exchanges.hours_hint") }}</div>
-      <input class="govuk-input govuk-input--width-5" id="proposed_hours" name="proposed_hours" type="number" min="0.25" max="24" step="0.25" value="{{ suggestedHours }}" aria-describedby="proposed-hours-hint" required>
+      <input class="govuk-input govuk-input--width-5" id="proposed_hours" name="proposed_hours" type="text" inputmode="decimal" spellcheck="false" value="{{ suggestedHours }}" aria-describedby="proposed-hours-hint">
     </div>
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="prep_time">{{ t("exchanges.prep_time_label") }}</label>
       <div id="prep-time-hint" class="govuk-hint">{{ t("exchanges.prep_time_hint") }}</div>
-      <input class="govuk-input govuk-input--width-5" id="prep_time" name="prep_time" type="number" min="0" max="24" step="0.25" aria-describedby="prep-time-hint">
+      <input class="govuk-input govuk-input--width-5" id="prep_time" name="prep_time" type="text" inputmode="decimal" spellcheck="false" aria-describedby="prep-time-hint">
     </div>
 
     <div class="govuk-form-group">

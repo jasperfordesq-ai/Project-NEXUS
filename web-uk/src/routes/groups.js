@@ -2427,8 +2427,13 @@ router.post('/:id(\\d+)/leave', requireAuth, audit.groupLeave(), asyncRoute(asyn
 router.post('/:id(\\d+)/invite/link', requireAuth, asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const expiryDays = positiveInteger(req.body.expiry_days);
+  // Blank means the link never expires. Anything typed must be a whole number of days
+  // from 1 to 90; it is no longer silently turned into "never expires".
+  if (trimmed(req.body.expiry_days) !== '' && (expiryDays === null || expiryDays > 90)) {
+    return res.redirect(groupSubpageRedirect(res, id, 'invite', 'invite-link-failed'));
+  }
   const payload = {
-    expiry_days: expiryDays !== null && expiryDays <= 90 ? expiryDays : null
+    expiry_days: expiryDays
   };
 
   return requireGroupAction(req, res, groupSubpageRedirect(res, id, 'invite', 'invite-link-failed'), async (token) => {

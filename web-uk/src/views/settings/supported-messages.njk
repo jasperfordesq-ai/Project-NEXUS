@@ -63,7 +63,7 @@
           {# Was `open_thread` - 'Conversation with :name' - used as a pagination
              label, so the button read "Conversation with :name". #}
           <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
-             href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId) }}?cursor={{ nextCursor | urlencode }}">
+             href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId) }}?cursor={{ nextCursor | urlencode }}" role="button" draggable="false">
             {{ t("actions.load_more") }}
           </a>
         {% endif %}

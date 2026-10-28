@@ -73,11 +73,11 @@
           <p class="govuk-body-s govuk-!-margin-bottom-3">{{ t("connections.wants_to_connect") }}</p>
           <div class="govuk-button-group">
             {% if connection.acceptAction %}
-              <form method="post" action="{{ urlFor(connection.acceptAction) }}">
+              <form method="post" action="{{ urlFor(connection.acceptAction) }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button" data-module="govuk-button">{{ t("connections.accept_button") }}</button>
               </form>
-              <form method="post" action="{{ urlFor(connection.declineAction) }}">
+              <form method="post" action="{{ urlFor(connection.declineAction) }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("connections.decline_button") }}</button>
               </form>
@@ -111,7 +111,7 @@
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                     <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>{{ t("ux.confirm_irreversible") }}</strong>
                   </div>
-                  <form method="post" action="{{ urlFor(connection.removeAction) }}">
+                  <form method="post" action="{{ urlFor(connection.removeAction) }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("connections.remove_button") }}</button>
                   </form>
@@ -146,7 +146,7 @@
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                     <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>{{ t("ux.confirm_irreversible") }}</strong>
                   </div>
-                  <form method="post" action="{{ urlFor(connection.removeAction) }}">
+                  <form method="post" action="{{ urlFor(connection.removeAction) }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("connections.cancel_button") }}</button>
                   </form>

@@ -26,12 +26,12 @@
         </strong>
       </div>
       <div class="govuk-button-group">
-        <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/end') }}">
+        <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/end') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "end") }}</button>
         </form>
         {% if campaign.canPause %}
-          <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/pause') }}">
+          <form method="post" action="{{ urlFor(base ~ '/' ~ campaign.id ~ '/pause') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "pause") }}</button>
           </form>

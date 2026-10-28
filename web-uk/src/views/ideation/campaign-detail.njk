@@ -54,7 +54,7 @@
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ tc("govuk_alpha.ideation.ideas_count", challenge.ideasCount, { count: challenge.ideasCount }) }}</p>
           {% if ideationIsAdmin %}
-            <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/challenges/' ~ challenge.id ~ '/unlink') }}">
+            <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/challenges/' ~ challenge.id ~ '/unlink') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_ideation.campaigns.unlink_aria', { title: challenge.title }) }}">{{ t("govuk_alpha_ideation.campaigns.unlink") }}</button>
             </form>
@@ -68,7 +68,7 @@
 
   {% if ideationIsAdmin %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="edit">{{ t("govuk_alpha_ideation.campaigns.edit_heading") }}</h2>
-    <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id) }}">
+    <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id) }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if status == 'campaign-invalid' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="campaign_title">{{ t("govuk_alpha_ideation.campaigns.title_label") }}</label>
@@ -112,7 +112,7 @@
           <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
           <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_ideation.campaigns.delete_warning") }}</strong>
         </div>
-        <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/delete') }}">
+        <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/delete') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_ideation.campaigns.delete_confirm") }}</button>
         </form>

@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Zur Startseite zurückkehren',
         'unsubscribe_missing' => 'Es wurde kein Abmeldelink angegeben. Verwenden Sie den Link in der E-Mail, die Sie erhalten haben.',
         'unsubscribe_invalid' => 'Dieser Abmeldelink ist ungültig oder abgelaufen.',
+        'unsubscribe_confirm_body' => 'Wählen Sie die Schaltfläche, um keine Newsletter-E-Mails mehr von dieser Gemeinschaft zu erhalten.',
+        'unsubscribe_confirm_button' => 'Abmelden',
     ],
     'feed' => [
         'edit_post_hint' => 'Ändern Sie den Wortlaut Ihres Beitrags.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Benachrichtigungseinstellungen speichern',
             'saved' => 'Ihre Benachrichtigungseinstellungen wurden gespeichert.',
             'failed' => 'Ihre Benachrichtigungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.',
+            'partial' => 'Ihre Benachrichtigungseinstellungen wurden gespeichert, aber Ihre Auswahl für die Zusammenfassung der Angebote und Anfragen konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
             'groups' => [
                 'messages' => 'Nachrichten und Gemeinschaft',
                 'activity' => 'Ihre Aktivität',

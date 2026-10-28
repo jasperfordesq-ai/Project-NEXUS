@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Volver a la página de inicio',
         'unsubscribe_missing' => 'No se ha proporcionado ningún enlace para darse de baja. Utilice el enlace del correo electrónico que recibió.',
         'unsubscribe_invalid' => 'Este enlace para darse de baja no es válido o ha caducado.',
+        'unsubscribe_confirm_body' => 'Seleccione el botón para dejar de recibir los correos del boletín de esta comunidad.',
+        'unsubscribe_confirm_button' => 'Darse de baja',
     ],
     'feed' => [
         'edit_post_hint' => 'Actualice el texto de su publicación.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Guardar configuración de notificaciones',
             'saved' => 'Su configuración de notificaciones ha sido guardada.',
             'failed' => 'No hemos podido guardar su configuración de notificaciones. Por favor, inténtelo de nuevo.',
+            'partial' => 'Se ha guardado su configuración de notificaciones, pero no hemos podido guardar su elección para el resumen de ofertas y solicitudes. Por favor, inténtelo de nuevo.',
             'groups' => [
                 'messages' => 'Mensajes y comunidad',
                 'activity' => 'Su actividad',

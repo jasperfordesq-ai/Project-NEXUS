@@ -104,7 +104,7 @@
       {% if status !== 'cancelled' %}
         <div class="govuk-inset-text">
           <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_whats_on.show.register_prompt") }}</p>
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}">
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}" role="button" draggable="false">
             {{ t("govuk_alpha_whats_on.show.sign_in_to_register") }}
           </a>
         </div>

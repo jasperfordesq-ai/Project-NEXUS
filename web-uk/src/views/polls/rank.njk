@@ -59,7 +59,7 @@
         </div>
       {% else %}
         <div class="govuk-inset-text">{{ t("govuk_alpha_gamification.ranked.how_it_works") }}</div>
-        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">
+        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_gamification.ranked.legend") }}</legend>

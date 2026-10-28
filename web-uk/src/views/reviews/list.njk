@@ -39,7 +39,7 @@
                   </summary>
                   <div class="govuk-details__text">
                     <p class="govuk-body">{{ t("polish_members.review_delete_confirm") }}</p>
-                    <form method="post" action="{{ urlFor('/reviews/' + (review.id | string) + '/delete') }}">
+                    <form method="post" action="{{ urlFor('/reviews/' + (review.id | string) + '/delete') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_members.review_delete_button") }}</button>
                     </form>

@@ -192,6 +192,11 @@ const PROFILE_STATUS_MESSAGES = {
     message: 'Your notification preferences could not be saved.',
     anchor: 'notifications'
   },
+  'notifications-partial': {
+    type: 'error',
+    message: 'Your notification settings have been saved, but your offers and requests round-up choice could not be saved. Please try again.',
+    anchor: 'notifications'
+  },
   'passkey-renamed': { type: 'success', message: 'Your passkey has been renamed.' },
   'passkey-removed': { type: 'success', message: 'Your passkey has been removed.' },
   'passkey-name-required': { type: 'error', message: 'Enter a passkey name.', anchor: 'passkeys' },
@@ -292,6 +297,7 @@ const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'language-invalid': 'profile_settings.language_invalid',
   'notifications-saved': 'profile_settings.notifications.saved',
   'notifications-failed': 'profile_settings.notifications.failed',
+  'notifications-partial': 'profile_settings.notifications.partial',
   'passkey-renamed': 'profile_settings.passkeys.renamed',
   'passkey-removed': 'profile_settings.passkeys.removed',
   'passkey-name-required': 'profile_settings.passkeys.name_required',
@@ -659,6 +665,64 @@ function notificationPayload(body, tenant = {}) {
   }
 
   return payload;
+}
+
+// Laravel's own defaults (UsersController::notificationPreferences), used only if a
+// stored value is somehow absent from the read.
+const ATOMIC_NOTIFICATION_DEFAULTS = {
+  email_messages: true,
+  email_listings: true,
+  email_digest: false,
+  email_connections: true,
+  email_transactions: true,
+  email_reviews: true,
+  email_events: true,
+  email_gamification_digest: true,
+  email_gamification_milestones: true,
+  email_org_payments: true,
+  email_org_transfers: true,
+  email_org_membership: true,
+  email_org_admin: true,
+  caring_smart_nudges: true,
+  federation_notifications_enabled: true,
+  push_enabled: true,
+  push_campaigns_opted_in: false,
+  push_show_message_preview: false
+};
+
+/**
+ * The complete body for PUT /api/v2/users/me/notification-settings.
+ *
+ * That endpoint rejects a request missing any preference, the match-email
+ * settings or the digest frequency. This page offers only some of them, so the
+ * rest are read back and re-sent unchanged: a hidden or unoffered toggle must keep
+ * the member's real choice, never be overwritten with "off".
+ */
+async function atomicNotificationSettingsPayload(token, body, tenant = {}) {
+  const submitted = notificationPayload(body, tenant);
+  const stored = payloadFrom(await callUserSettings(token, 'GET', '/notifications')) || {};
+  const storedMatch = normalizeMatchPrefs(payloadFrom(await callUserSettings(token, 'GET', '/match-preferences')));
+
+  let digestFrequency = submitted.digest_frequency;
+  delete submitted.digest_frequency;
+  if (!digestFrequency) {
+    digestFrequency = digestFrequencyFrom(payloadFrom(await callProfile(token, 'GET', '/notifications/settings')));
+  }
+
+  const notifications = {};
+  for (const [key, fallback] of Object.entries(ATOMIC_NOTIFICATION_DEFAULTS)) {
+    if (Object.prototype.hasOwnProperty.call(submitted, key)) {
+      notifications[key] = submitted[key];
+    } else {
+      notifications[key] = stored[key] === undefined || stored[key] === null ? fallback : checked(stored[key]);
+    }
+  }
+
+  return {
+    notifications,
+    match_preferences: storedMatch,
+    digest_frequency: digestFrequency
+  };
 }
 
 function payloadFrom(result) {
@@ -1753,26 +1817,38 @@ router.post('/notifications', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  let status = 'notifications-saved';
+  // Read every stored choice first. Laravel's atomic endpoint needs the complete
+  // set, and a read is not a write, so a failure here leaves nothing half-saved.
+  let atomicPayload;
   try {
-    const payload = notificationPayload(req.body, req.accessibleRouting?.tenant);
-    const digestFrequency = payload.digest_frequency;
-    delete payload.digest_frequency;
-    await callUserSettings(token, 'PUT', '/notifications', payload);
-    if (digestFrequency) {
-      await callProfile(token, 'POST', '/notifications/settings', {
-        context_type: 'global',
-        context_id: 0,
-        frequency: digestFrequency
-      });
-    }
-    const listingsDigestFrequency = allowedValue(req.body.listings_digest_frequency, PROFILE_LISTINGS_DIGEST_CHOICES, null);
-    if (listingsDigestFrequency) {
-      await callUserSettings(token, 'PUT', '/listings-digest', { frequency: listingsDigestFrequency });
-    }
+    atomicPayload = await atomicNotificationSettingsPayload(token, req.body, req.accessibleRouting?.tenant);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    status = 'notifications-failed';
+    return redirectTo(res, profileSettingsRedirect('notifications-failed', '#notifications'));
+  }
+
+  // 🔴 This used to be up to three separate writes (preferences, digest, round-up),
+  // so a failure in the middle left some settings saved and some not while the page
+  // said "could not be saved". Laravel's PUT /users/me/notification-settings saves
+  // preferences, match e-mails and the digest in one transaction.
+  try {
+    await callUserSettings(token, 'PUT', '/notification-settings', atomicPayload);
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, profileSettingsRedirect('notifications-failed', '#notifications'));
+  }
+
+  // The offers & requests round-up is a separate Laravel setting the atomic endpoint
+  // does not cover. If it alone fails, say so rather than claiming either outcome.
+  let status = 'notifications-saved';
+  const listingsDigestFrequency = allowedValue(req.body.listings_digest_frequency, PROFILE_LISTINGS_DIGEST_CHOICES, null);
+  if (listingsDigestFrequency) {
+    try {
+      await callUserSettings(token, 'PUT', '/listings-digest', { frequency: listingsDigestFrequency });
+    } catch (error) {
+      if (redirectOnAuthError(error, res)) return undefined;
+      status = 'notifications-partial';
+    }
   }
 
   return redirectTo(res, profileSettingsRedirect(status, '#notifications'));

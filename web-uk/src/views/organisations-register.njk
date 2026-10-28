@@ -45,7 +45,7 @@
 
   <p class="govuk-body-l">{{ t("govuk_alpha_organisations.register.description") }}</p>
 
-  <form method="post" action="{{ urlFor('/organisations/register') }}">
+  <form method="post" action="{{ urlFor('/organisations/register') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-row">
@@ -54,7 +54,7 @@
           <label class="govuk-label" for="name">{{ t("govuk_alpha_organisations.register.name_label") }}</label>
           <div id="name-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.register.name_hint") }}</div>
           {{ errorMessage('name') }}
-          <input class="govuk-input{{ errorClass('name', 'govuk-input--error') }}" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}" aria-describedby="{{ describedBy('name', 'name-hint') }}" required>
+          <input class="govuk-input{{ errorClass('name', 'govuk-input--error') }}" id="name" name="name" type="text" maxlength="255" value="{{ values.name or '' }}" aria-describedby="{{ describedBy('name', 'name-hint') }}">
         </div>
 
         {% call characterCount(2000, characterCountMessages, "description") %}
@@ -62,7 +62,7 @@
           <label class="govuk-label" for="description">{{ t("govuk_alpha_organisations.register.description_label") }}</label>
           <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.register.description_hint") }}</div>
           {{ errorMessage('description') }}
-          <textarea class="govuk-textarea{{ errorClass('description', 'govuk-textarea--error') }} govuk-js-character-count" id="description" name="description" rows="4" minlength="20" maxlength="2000" aria-describedby="{{ describedBy('description', 'description-hint') }} description-info" required>{{ values.description or '' }}</textarea>
+          <textarea class="govuk-textarea{{ errorClass('description', 'govuk-textarea--error') }} govuk-js-character-count" id="description" name="description" rows="4" maxlength="2000" aria-describedby="{{ describedBy('description', 'description-hint') }} description-info">{{ values.description or '' }}</textarea>
         </div>
         {% endcall %}
 
@@ -70,7 +70,7 @@
           <label class="govuk-label" for="email">{{ t("govuk_alpha_organisations.register.email_label") }}</label>
           <div id="email-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.register.email_hint") }}</div>
           {{ errorMessage('email') }}
-          <input class="govuk-input{{ errorClass('email', 'govuk-input--error') }}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" aria-describedby="{{ describedBy('email', 'email-hint') }}" required>
+          <input class="govuk-input{{ errorClass('email', 'govuk-input--error') }}" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" aria-describedby="{{ describedBy('email', 'email-hint') }}">
         </div>
 
         <div class="govuk-form-group{{ errorClass('website', 'govuk-form-group--error') }}">
@@ -97,7 +97,7 @@
             {{ errorMessage('agreed_terms') }}
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %} required>
+                <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %}>
                 <label class="govuk-label govuk-checkboxes__label" for="agreed_terms">{{ t("govuk_alpha_organisations.register.terms_agree") }}</label>
               </div>
             </div>

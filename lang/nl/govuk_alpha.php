@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Terug naar de startpagina',
         'unsubscribe_missing' => 'Er is geen afmeldlink opgegeven. Gebruik de link in de e-mail die u hebt ontvangen.',
         'unsubscribe_invalid' => 'Deze afmeldlink is ongeldig of verlopen.',
+        'unsubscribe_confirm_body' => 'Selecteer de knop om geen nieuwsbrief-e-mails meer van deze gemeenschap te ontvangen.',
+        'unsubscribe_confirm_button' => 'Afmelden',
     ],
     'feed' => [
         'edit_post_hint' => 'Werk de tekst van uw bericht bij.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Meldingsinstellingen opslaan',
             'saved' => 'Uw meldingsinstellingen zijn opgeslagen.',
             'failed' => 'We konden uw meldingsinstellingen niet opslaan. Probeer het opnieuw.',
+            'partial' => 'Uw meldingsinstellingen zijn opgeslagen, maar uw keuze voor het overzicht van aanbiedingen en verzoeken kon niet worden opgeslagen. Probeer het opnieuw.',
             'groups' => [
                 'messages' => 'Berichten en gemeenschap',
                 'activity' => 'Uw activiteit',

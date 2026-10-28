@@ -53,13 +53,13 @@
       {% endif %}
     </div>
   {% else %}
-    <form method="post" action="{{ urlFor('/volunteering/opportunities/create') }}">
+    <form method="post" action="{{ urlFor('/volunteering/opportunities/create') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="organization_id">{{ t("govuk_alpha_volunteering.create_opp.org_label") }}</label>
         <div id="organization_id-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.org_hint") }}</div>
-        <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint" required>
+        <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint">
           <option value="">{{ t("govuk_alpha_volunteering.create_opp.org_select") }}</option>
           {% for organization in organizations %}
             <option value="{{ organization.id }}"{% if form and (organization.id | string) == form.organizationId %} selected{% endif %}>{{ organization.name }}</option>
@@ -70,13 +70,13 @@
       <div class="govuk-form-group">
         <label class="govuk-label" for="title">{{ t("govuk_alpha_volunteering.create_opp.opp_title_label") }}</label>
         <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.opp_title_hint") }}</div>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ form.title if form else '' }}" aria-describedby="title-hint" required>
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ form.title if form else '' }}" aria-describedby="title-hint">
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="description">{{ t("govuk_alpha_volunteering.create_opp.opp_description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.opp_description_hint") }}</div>
-        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint" required>{{ form.description if form else '' }}</textarea>
+        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint">{{ form.description if form else '' }}</textarea>
       </div>
 
       <div class="govuk-form-group">

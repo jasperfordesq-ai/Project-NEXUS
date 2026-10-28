@@ -117,9 +117,9 @@
       <p class="govuk-body">{{ t("about.cta.description") }}</p>
       <div class="govuk-button-group">
         {% if isAuthenticated %}
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/dashboard') }}">{{ t("about.cta.dashboard") }}</a>
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/dashboard') }}" role="button" draggable="false">{{ t("about.cta.dashboard") }}</a>
         {% else %}
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/register') }}">{{ t("about.cta.join") }}</a>
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/register') }}" role="button" draggable="false">{{ t("about.cta.join") }}</a>
         {% endif %}
         <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("about.cta.contact_us") }}</a>
       </div>

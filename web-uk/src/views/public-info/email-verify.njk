@@ -13,7 +13,7 @@
           <div class="govuk-panel__body">{{ t("auth.verify_email_success_body") }}</div>
         </div>
         <p class="govuk-body govuk-!-margin-top-6">
-          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}">{{ t("auth.verify_email_sign_in") }}</a>
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}" role="button" draggable="false">{{ t("auth.verify_email_sign_in") }}</a>
         </p>
       {% else %}
         <h1 class="govuk-heading-xl">{{ t("auth.verify_email_title") }}</h1>

@@ -598,6 +598,8 @@ return [
         'unsubscribe_back_home' => 'Retour à la page d\'accueil',
         'unsubscribe_missing' => 'Aucun lien de désinscription n\'a été fourni. Utilisez le lien figurant dans l\'e-mail que vous avez reçu.',
         'unsubscribe_invalid' => 'Ce lien de désinscription est invalide ou a expiré.',
+        'unsubscribe_confirm_body' => 'Sélectionnez le bouton pour ne plus recevoir les e-mails de la lettre d\'information de cette communauté.',
+        'unsubscribe_confirm_button' => 'Se désinscrire',
     ],
     'feed' => [
         'edit_post_hint' => 'Modifiez la formulation de votre publication.',
@@ -4061,6 +4063,7 @@ return [
             'save' => 'Enregistrer les paramètres de notification',
             'saved' => 'Vos paramètres de notification ont été enregistrés.',
             'failed' => 'Nous n\'avons pas pu enregistrer vos paramètres de notification. Veuillez réessayer.',
+            'partial' => 'Vos paramètres de notification ont été enregistrés, mais votre choix pour le récapitulatif des offres et des demandes n\'a pas pu être enregistré. Veuillez réessayer.',
             'groups' => [
                 'messages' => 'Messages et communauté',
                 'activity' => 'Votre activité',

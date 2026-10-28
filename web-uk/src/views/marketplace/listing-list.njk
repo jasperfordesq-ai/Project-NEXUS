@@ -78,7 +78,7 @@
       {% for item in listings %}
         {% include "marketplace/_listing-card.njk" %}
         {% if mode == 'saved' %}
-          <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/unsave') }}" class="govuk-!-margin-bottom-6">
+          <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/unsave') }}" class="govuk-!-margin-bottom-6" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="redirect_to" value="saved">
             <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.saved.remove") }}</button>

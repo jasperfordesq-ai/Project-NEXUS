@@ -73,7 +73,7 @@
   {% if ideationIsAdmin %}
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="create">{{ t("govuk_alpha_ideation.campaigns.create_heading") }}</h2>
     <p class="govuk-body">{{ t("govuk_alpha_ideation.campaigns.create_intro") }}</p>
-    <form method="post" action="{{ urlFor('/ideation/campaigns') }}">
+    <form method="post" action="{{ urlFor('/ideation/campaigns') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group{% if status == 'campaign-invalid' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="campaign_title">{{ t("govuk_alpha_ideation.campaigns.title_label") }}</label>

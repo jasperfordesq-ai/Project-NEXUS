@@ -53,7 +53,7 @@
             <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.created_on", { date: draft.createdAt }) }}</p>
           {% endif %}
 
-          <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/drafts/' ~ draft.id) }}">
+          <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/drafts/' ~ draft.id) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.edit_heading") }}</h3>
             <div class="govuk-form-group{% if status == 'draft-invalid' %} govuk-form-group--error{% endif %}">

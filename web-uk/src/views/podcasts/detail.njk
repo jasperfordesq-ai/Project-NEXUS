@@ -60,7 +60,7 @@
       <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string)) }}">{{ t("govuk_alpha.podcasts.manage_link") }}</a>
     </p>
   {% else %}
-    <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6">
+    <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
         {% if isSubscribed %}{{ t("govuk_alpha.polish_commerce.podcast_unsubscribe") }}{% else %}{{ t("govuk_alpha.polish_commerce.podcast_subscribe") }}{% endif %}

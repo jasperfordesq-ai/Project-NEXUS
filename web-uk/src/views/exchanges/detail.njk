@@ -134,21 +134,21 @@
     {% if exchange.canAccept or exchange.canStart or exchange.canComplete %}
       <div class="govuk-button-group govuk-!-margin-bottom-6">
         {% if exchange.canAccept %}
-          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
+          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="action" value="accept">
             <button class="govuk-button" data-module="govuk-button">{{ t("actions.accept") }}</button>
           </form>
         {% endif %}
         {% if exchange.canStart %}
-          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
+          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="action" value="start">
             <button class="govuk-button" data-module="govuk-button">{{ t("actions.start_exchange") }}</button>
           </form>
         {% endif %}
         {% if exchange.canComplete %}
-          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
+          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="action" value="complete">
             <button class="govuk-button" data-module="govuk-button">{{ t("actions.mark_ready") }}</button>
@@ -158,13 +158,13 @@
     {% endif %}
 
     {% if exchange.canConfirm %}
-      <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" class="govuk-!-margin-bottom-5">
+      <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" class="govuk-!-margin-bottom-5" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="action" value="confirm">
         <div class="govuk-form-group">
           <label class="govuk-label" for="hours">{{ t("exchanges.confirm_hours_label") }}</label>
           <div id="hours-hint" class="govuk-hint">{{ t("exchanges.confirm_hours_hint") }}</div>
-          <input class="govuk-input govuk-input--width-5" id="hours" name="hours" type="number" min="0.25" max="24" step="0.25" value="{{ exchange.proposedHours or 1 }}" aria-describedby="hours-hint" required>
+          <input class="govuk-input govuk-input--width-5" id="hours" name="hours" type="text" inputmode="decimal" spellcheck="false" value="{{ exchange.proposedHours or 1 }}" aria-describedby="hours-hint">
         </div>
         <button class="govuk-button" data-module="govuk-button">{{ t("actions.confirm_hours") }}</button>
       </form>
@@ -181,7 +181,7 @@
               {{ t("polish_listings.exchange_warning_decline") }}
             </strong>
           </div>
-          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
+          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="action" value="decline">
             <div class="govuk-form-group">
@@ -205,7 +205,7 @@
               {{ t("polish_listings.exchange_warning_cancel") }}
             </strong>
           </div>
-          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">
+          <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string)) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="action" value="cancel">
             <div class="govuk-form-group">
@@ -223,12 +223,12 @@
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="rating">{{ t("exchanges.review_title") }}</h2>
     {% if canReview %}
       <p class="govuk-body">{{ t("exchanges.review_hint") }}</p>
-      <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string) + '/rate') }}">
+      <form method="post" action="{{ urlFor('/exchanges/' + (exchange.id | string) + '/rate') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-form-group">
           <label class="govuk-label" for="rating-select">{{ t("exchanges.review_rating_label") }}</label>
           <div id="rating-hint" class="govuk-hint">{{ t("exchanges.review_rating_hint") }}</div>
-          <select class="govuk-select govuk-input--width-10" id="rating-select" name="rating" aria-describedby="rating-hint" required>
+          <select class="govuk-select govuk-input--width-10" id="rating-select" name="rating" aria-describedby="rating-hint">
             <option value="" disabled selected>{{ t("ux.rating_choose") }}</option>
             {% for ratingValue in [5, 4, 3, 2, 1] %}
               <option value="{{ ratingValue }}">{{ t("exchanges.review_rating_value", { rating: ratingValue }) }}</option>

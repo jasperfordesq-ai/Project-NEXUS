@@ -52,12 +52,12 @@
                 </dl>
                 {% if invite.canRespond %}
                   <div class="govuk-button-group">
-                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}">
+                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="action" value="accept">
                       <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(vi + "accept") }}<span class="govuk-visually-hidden"> {{ invite.targetName }}</span></button>
                     </form>
-                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}">
+                    <form method="post" action="{{ urlFor('/me/verein-invitations/' + (invite.id | string) + '/respond') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <input type="hidden" name="action" value="decline">
                       <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t(vi + "decline") }}<span class="govuk-visually-hidden"> {{ invite.targetName }}</span></button>

@@ -38,7 +38,7 @@
      they are private rather than asking the member to tell organisers through it. #}
   <p class="govuk-body-l">{{ t("volunteering.accessibility_private_description") }}</p>
 
-  <form method="post" action="{{ urlFor('/volunteering/accessibility') }}">
+  <form method="post" action="{{ urlFor('/volunteering/accessibility') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-form-group">

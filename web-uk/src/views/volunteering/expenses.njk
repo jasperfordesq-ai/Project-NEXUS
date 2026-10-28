@@ -84,7 +84,7 @@
       </ul>
     </div>
   {% else %}
-    <form method="post" action="{{ urlFor('/volunteering/expenses') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-8">
+    <form method="post" action="{{ urlFor('/volunteering/expenses') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-8" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
       <div class="govuk-form-group{% if status and status.field == 'organization_id' %} govuk-form-group--error{% endif %}">
@@ -96,7 +96,7 @@
             {{ status.message }}
           </p>
         {% endif %}
-        <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint{% if status and status.field == 'organization_id' %} organization_id-error{% endif %}" required>
+        <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint{% if status and status.field == 'organization_id' %} organization_id-error{% endif %}">
           <option value="">{{ t("govuk_alpha_volunteering.expenses.org_select") }}</option>
           {% for organization in dashboard.organizations %}
             <option value="{{ organization.id }}"{% if expenseForm and expenseForm.organizationId == (organization.id | string) %} selected{% endif %}>{{ organization.name }}</option>
@@ -145,7 +145,7 @@
             {{ status.message }}
           </p>
         {% endif %}
-        <input class="govuk-input govuk-input--width-10" id="amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" aria-describedby="amount-hint{% if status and status.field == 'amount' %} amount-error{% endif %}" value="{{ expenseForm.amount if expenseForm else '' }}" required>
+        <input class="govuk-input govuk-input--width-10" id="amount" name="amount" type="text" spellcheck="false" inputmode="decimal" aria-describedby="amount-hint{% if status and status.field == 'amount' %} amount-error{% endif %}" value="{{ expenseForm.amount if expenseForm else '' }}">
       </div>
 
 
@@ -158,7 +158,7 @@
             {{ status.message }}
           </p>
         {% endif %}
-        <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint{% if status and status.field == 'description' %} description-error{% endif %}" required>{% if expenseForm %}{{ expenseForm.description }}{% endif %}</textarea>
+        <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint{% if status and status.field == 'description' %} description-error{% endif %}">{% if expenseForm %}{{ expenseForm.description }}{% endif %}</textarea>
       </div>
 
       {# Gap B13: an optional receipt, as on the website. A file cannot be kept across

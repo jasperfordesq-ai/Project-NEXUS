@@ -44,7 +44,7 @@
     {% for check in (preview.checklist or []) %}<li>{{ t("event_templates.checks." + check.code) }}</li>{% endfor %}
   </ul>
 
-  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/templates') }}">
+  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/templates') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
     {% if template %}<input type="hidden" name="template_id" value="{{ template.id }}"><input type="hidden" name="expected_version" value="{{ template.current_version }}">{% endif %}

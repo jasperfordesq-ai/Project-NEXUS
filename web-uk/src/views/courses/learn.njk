@@ -133,7 +133,7 @@
             {% elif not quiz.questions or not quiz.questions.length %}
               <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.quiz_no_questions") }}</p></div>
             {% else %}
-              <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/quiz') }}" class="govuk-!-margin-top-2">
+              <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/quiz') }}" class="govuk-!-margin-top-2" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
                 {% for question in quiz.questions %}
@@ -175,7 +175,7 @@
         {% if currentLesson.isCompleted %}
           <p class="govuk-body">{{ govukTag({ text: t("govuk_alpha_courses.lesson_completed"), classes: "govuk-tag--green" }) }}</p>
         {% else %}
-          <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/complete') }}" class="govuk-!-margin-top-4">
+          <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/complete') }}" class="govuk-!-margin-top-4" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.mark_complete") }}</button>
           </form>

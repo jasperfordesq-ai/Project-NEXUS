@@ -23,7 +23,7 @@
         </summary>
         <div class="govuk-details__text">
           <p class="govuk-body">{{ t("polish_members.review_delete_confirm") }}</p>
-          <form method="post" action="{{ urlFor('/reviews/' + (review.id | string) + '/delete') }}">
+          <form method="post" action="{{ urlFor('/reviews/' + (review.id | string) + '/delete') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_members.review_delete_button") }}</button>
           </form>
@@ -115,7 +115,7 @@
                 <input type="hidden" name="receiver_id" value="{{ pending.receiverId }}">
                 <input type="hidden" name="transaction_id" value="{{ pending.transactionId }}">
                 <div class="govuk-form-group">
-                  <fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("reviews_page.rating_legend") }}</legend><div class="govuk-radios govuk-radios--inline govuk-radios--small">{% for star in [5,4,3,2,1] %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="rating-{{ pendingIndex }}-{{ star }}" name="rating" type="radio" value="{{ star }}" required><label class="govuk-label govuk-radios__label" for="rating-{{ pendingIndex }}-{{ star }}"><span aria-hidden="true">{{ star }}</span><span class="govuk-visually-hidden">{{ t("ux.rating_out_of", { rating: star }) }}</span></label></div>{% endfor %}</div></fieldset>
+                  <fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("reviews_page.rating_legend") }}</legend><div class="govuk-radios govuk-radios--inline govuk-radios--small">{% for star in [5,4,3,2,1] %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="rating-{{ pendingIndex }}-{{ star }}" name="rating" type="radio" value="{{ star }}"><label class="govuk-label govuk-radios__label" for="rating-{{ pendingIndex }}-{{ star }}"><span aria-hidden="true">{{ star }}</span><span class="govuk-visually-hidden">{{ t("ux.rating_out_of", { rating: star }) }}</span></label></div>{% endfor %}</div></fieldset>
                 </div>
                 {% call characterCount(2000, characterCountMessages, "comment-" + (loop.index | string)) %}
                 <div class="govuk-form-group">

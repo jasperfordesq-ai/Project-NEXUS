@@ -133,16 +133,16 @@ describe.each([
     mockWallet({ max_transfer: 50 });
     const res = await request(buildApp()).get(url);
     expect(res.status).toBe(200);
-    expect(res.text).toMatch(/id="amount-41"[^>]*max="50"/);
+    expect(res.text).not.toMatch(/id="amount-41"[^>]*\smax=/);
     expect(res.text).toContain('50 hours');
-    expect(res.text).not.toMatch(/id="amount-41"[^>]*max="1000"/);
+    expect(res.text).not.toContain('1000 hours');
   });
 
   it('falls back to 1000 when the config call fails', async () => {
     mockWallet(new Error('down'));
     const res = await request(buildApp()).get(url);
     expect(res.status).toBe(200);
-    expect(res.text).toMatch(/id="amount-41"[^>]*max="1000"/);
+    expect(res.text).toContain('1000 hours');
   });
 });
 

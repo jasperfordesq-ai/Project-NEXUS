@@ -626,6 +626,8 @@ return [
         'unsubscribe_back_home' => 'Return to the home page',
         'unsubscribe_missing' => 'No unsubscribe link was provided. Use the link in the email you received.',
         'unsubscribe_invalid' => 'This unsubscribe link is invalid or has expired.',
+        'unsubscribe_confirm_body' => 'Select the button to stop receiving newsletter emails from this community.',
+        'unsubscribe_confirm_button' => 'Unsubscribe',
     ],
     'feed' => [
         'edit_post_hint' => 'Update the wording of your post.',
@@ -4127,6 +4129,7 @@ return [
             'save' => 'Save notification settings',
             'saved' => 'Your notification settings have been saved.',
             'failed' => 'We could not save your notification settings. Please try again.',
+            'partial' => 'Your notification settings have been saved, but your offers and requests round-up choice could not be saved. Please try again.',
             'groups' => [
                 'messages' => 'Messages and community',
                 'activity' => 'Your activity',

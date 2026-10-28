@@ -36,7 +36,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="capacity">{{ t("govuk_alpha_commerce.slots.capacity_label") }}</label>
       <div id="capacity-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.capacity_hint") }}</div>
-      <input class="govuk-input govuk-input--width-5" id="capacity" name="capacity" type="number" min="1" max="1000" value="{{ slot.capacity }}" aria-describedby="capacity-hint">
+      <input class="govuk-input govuk-input--width-5" id="capacity" name="capacity" type="text" inputmode="numeric" spellcheck="false" value="{{ slot.capacity }}" aria-describedby="capacity-hint">
     </div>
 
     <div class="govuk-form-group">

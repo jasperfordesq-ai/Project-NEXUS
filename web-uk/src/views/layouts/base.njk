@@ -322,7 +322,7 @@
                   hidden
                 ></div>
                 <a id="session-timeout-login-link" href="{{ urlFor('/login') }}" hidden tabindex="-1" aria-hidden="true"></a>
-                <form id="session-timeout-logout-form" method="post" action="{{ urlFor('/logout') }}" hidden>
+                <form id="session-timeout-logout-form" method="post" action="{{ urlFor('/logout') }}" hidden novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="timeout" value="true">
                 </form>

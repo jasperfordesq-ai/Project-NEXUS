@@ -114,7 +114,7 @@
             <div class="govuk-form-group">
               <label class="govuk-label" for="resend_email">{{ t("auth.resend_email_label") }}</label>
               <div id="resend-email-hint" class="govuk-hint">{{ t("auth.resend_verification_hint") }}</div>
-              <input class="govuk-input govuk-!-width-two-thirds" id="resend_email" name="email" type="email" autocomplete="email" value="{{ values.email if values else '' }}" aria-describedby="resend-email-hint" required>
+              <input class="govuk-input govuk-!-width-two-thirds" id="resend_email" name="email" type="email" autocomplete="email" value="{{ values.email if values else '' }}" aria-describedby="resend-email-hint">
             </div>
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("auth.resend_verification_button") }}</button>
           </form>
@@ -144,7 +144,6 @@
             value: values.email if values else "",
             errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: error } if loginStatus == "login-failed" else undefined,
             attributes: {
-              "required": "required",
               "data-validate": "required email",
               "data-label": t("auth.email_label"),
               "data-required-message": t("auth.forgot_invalid"),
@@ -162,7 +161,6 @@
             type: "password",
             autocomplete: "current-password",
             attributes: {
-              "required": "required",
               "data-validate": "required",
               "data-label": t("auth.password_label"),
               "data-required-message": t("auth.login_failed")
@@ -188,7 +186,6 @@
               name: "tenant_slug",
               value: values.tenant_slug if values else "",
               attributes: {
-                "required": "required",
                 "data-validate": "required",
                 "data-label": t("auth.community_code_label"),
                 "data-required-message": t("auth.community_code_required")

@@ -81,7 +81,7 @@
             <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/federation/messages/conversation/' + conversation.partnerId + '?tenant_id=' + conversation.partnerTenantId) }}">{{ t("fed2.messages.view_original") }}</a></p>
           </div>
         {% elif not message.outbound and translateEnabled %}
-          <form method="post" action="{{ urlFor('/federation/messages/translate/' + (message.id | string)) }}" class="govuk-!-margin-top-2">
+          <form method="post" action="{{ urlFor('/federation/messages/translate/' + (message.id | string)) }}" class="govuk-!-margin-top-2" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <input type="hidden" name="partner_id" value="{{ conversation.partnerId }}">
             <input type="hidden" name="partner_tenant_id" value="{{ conversation.partnerTenantId }}">
@@ -93,7 +93,7 @@
   </div>
 
   {% if canReply %}
-    <form method="post" action="{{ urlFor('/federation/messages') }}" class="govuk-!-margin-top-6">
+    <form method="post" action="{{ urlFor('/federation/messages') }}" class="govuk-!-margin-top-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="receiver_id" value="{{ conversation.partnerId }}">
       <input type="hidden" name="receiver_tenant_id" value="{{ conversation.partnerTenantId }}">

@@ -75,7 +75,7 @@
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.submit_edit") }}</button>
 
-    <a class="govuk-button govuk-button--secondary govuk-!-margin-left-3" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.back_to_announcements") }}</a>
+    <a class="govuk-button govuk-button--secondary govuk-!-margin-left-3" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.back_to_announcements") }}</a>
   </form>
     </div>
   </div>

@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <form method="post" action="{{ urlFor('/federation/opt-in') }}">
+  <form method="post" action="{{ urlFor('/federation/opt-in') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <input type="hidden" name="preferences_submitted" value="1">
 
@@ -117,7 +117,7 @@
         <label class="govuk-label" for="travel_radius_km">{{ t("federation.optin.travel_radius_label") }}</label>
         <div id="travel_radius_km-hint" class="govuk-hint">{{ t("federation.optin.travel_radius_hint") }}</div>
         <div class="govuk-input__wrapper">
-          <input class="govuk-input govuk-input--width-5" id="travel_radius_km" name="travel_radius_km" type="number" min="0" max="500" step="1" value="25" aria-describedby="travel_radius_km-hint" spellcheck="false">
+          <input class="govuk-input govuk-input--width-5" id="travel_radius_km" name="travel_radius_km" type="text" inputmode="decimal" value="25" aria-describedby="travel_radius_km-hint" spellcheck="false">
           <div class="govuk-input__suffix" aria-hidden="true">{{ t("federation.optin.travel_radius_suffix") }}</div>
         </div>
       </div>

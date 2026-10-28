@@ -1650,6 +1650,14 @@ router.post('/instructor/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 }));
 
 router.post('/instructor/:id(\\d+)/grading/:attemptId(\\d+)', asyncRoute(async (req, res) => {
+  // The score box is a text field (GOV.UK "ask for numbers"), so the browser no longer
+  // refuses "abc" or 150. A typed score that is not a number from 0 to 100 is an error,
+  // not a clamped or zeroed grade. A blank box keeps its old meaning.
+  const scoreText = trimmed(req.body.score_percent);
+  const score = Number(scoreText);
+  if (scoreText !== '' && (!Number.isFinite(score) || score < 0 || score > 100)) {
+    return redirectTo(res, instructorGradingRedirect(req.params.id, 'grade-failed'));
+  }
   return requireCourseAction(req, res, instructorGradingRedirect(req.params.id, 'grade-failed'), async (token) => {
     await callCourse(token, 'POST', `/attempts/${encodeURIComponent(req.params.attemptId)}/grade`, gradePayload(req.body));
     return redirectTo(res, instructorGradingRedirect(req.params.id, 'graded'));

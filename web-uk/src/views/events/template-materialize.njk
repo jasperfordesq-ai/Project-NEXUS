@@ -38,20 +38,20 @@
       <div class="govuk-form-group">
         <label class="govuk-label" for="template-start-time">{{ t("event_templates.start_label") }}</label>
         <div id="template-time-hint" class="govuk-hint">{{ t("event_templates.timezone_hint", { timezone: fields.timezone or configuration.timezone }) }}</div>
-        <input class="govuk-input govuk-input--width-20" id="template-start-time" name="start_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.start_time or '' }}" aria-describedby="template-time-hint" required>
+        <input class="govuk-input govuk-input--width-20" id="template-start-time" name="start_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.start_time or '' }}" aria-describedby="template-time-hint">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="template-end-time">{{ t("event_templates.end_label") }}</label>
-        <input class="govuk-input govuk-input--width-20" id="template-end-time" name="end_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.end_time or '' }}"{% if allDay %} required{% endif %}>
+        <input class="govuk-input govuk-input--width-20" id="template-end-time" name="end_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.end_time or '' }}">
       </div>
 
       <h2 class="govuk-heading-l">{{ t("event_templates.safe_overrides_title") }}</h2>
       <p class="govuk-body">{{ t("event_templates.safe_overrides_intro") }}</p>
 
-      <div class="govuk-form-group"><label class="govuk-label" for="template-title">{{ t("event_templates.fields.title") }}</label><input class="govuk-input" id="template-title" name="title" maxlength="255" value="{{ fields.title or configuration.title }}" required></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-title">{{ t("event_templates.fields.title") }}</label><input class="govuk-input" id="template-title" name="title" maxlength="255" value="{{ fields.title or configuration.title }}"></div>
       <div class="govuk-form-group"><label class="govuk-label" for="template-location">{{ t("event_templates.fields.location") }}</label><input class="govuk-input" id="template-location" name="location" maxlength="255" value="{{ fields.location or configuration.location or '' }}"></div>
-      <div class="govuk-form-group"><label class="govuk-label" for="template-capacity">{{ t("event_templates.fields.max_attendees") }}</label><input class="govuk-input govuk-input--width-5" id="template-capacity" name="max_attendees" type="number" min="1" value="{{ fields.max_attendees or configuration.max_attendees or '' }}"></div>
-      <div class="govuk-form-group"><label class="govuk-label" for="template-timezone">{{ t("event_templates.fields.timezone") }}</label><input class="govuk-input govuk-input--width-20" id="template-timezone" name="timezone" maxlength="64" value="{{ fields.timezone or configuration.timezone }}" required></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-capacity">{{ t("event_templates.fields.max_attendees") }}</label><input class="govuk-input govuk-input--width-5" id="template-capacity" name="max_attendees" type="text" inputmode="numeric" spellcheck="false" value="{{ fields.max_attendees or configuration.max_attendees or '' }}"></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-timezone">{{ t("event_templates.fields.timezone") }}</label><input class="govuk-input govuk-input--width-20" id="template-timezone" name="timezone" maxlength="64" value="{{ fields.timezone or configuration.timezone }}"></div>
       <button class="govuk-button">{{ t("event_templates.review_draft") }}</button>
     </form>
   {% else %}
@@ -72,7 +72,7 @@
     <h2 class="govuk-heading-l">{{ t("event_templates.never_copied_title") }}</h2>
     <ul class="govuk-list govuk-list--bullet">{% for excluded in ['people', 'invitations', 'forms', 'attendance', 'tickets', 'notifications', 'federation', 'lifecycle'] %}<li>{{ t("event_templates.never_copied." + excluded) }}</li>{% endfor %}</ul>
 
-    <form method="post" action="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}">
+    <form method="post" action="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
       <input type="hidden" name="template_version" value="{{ values.template_version }}"><input type="hidden" name="start_time" value="{{ values.start_time }}"><input type="hidden" name="end_time" value="{{ values.end_time or '' }}">
       <input type="hidden" name="title" value="{{ fields.title }}"><input type="hidden" name="location" value="{{ fields.location or '' }}"><input type="hidden" name="max_attendees" value="{{ fields.max_attendees or '' }}"><input type="hidden" name="timezone" value="{{ fields.timezone }}"><input type="hidden" name="all_day" value="{{ '1' if fields.all_day else '0' }}">

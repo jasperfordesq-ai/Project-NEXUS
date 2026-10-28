@@ -114,7 +114,7 @@
                 {{ t("govuk_alpha_volunteering.emergency.accept_warning") }}
               </strong>
             </div>
-            <form method="post" action="{{ urlFor('/volunteering/emergency-alerts/' ~ alert.id ~ '/respond') }}">
+            <form method="post" action="{{ urlFor('/volunteering/emergency-alerts/' ~ alert.id ~ '/respond') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group">
                 <button class="govuk-button govuk-!-margin-bottom-0" name="response" value="accepted" data-module="govuk-button">{{ t("govuk_alpha_volunteering.emergency.accept_button") }}</button>

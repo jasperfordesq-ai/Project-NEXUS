@@ -87,7 +87,7 @@
                 </td>
                 <td class="govuk-table__cell">
                   {% if task.canUpdateStatus %}
-                    <form method="post" action="{{ urlFor(base + '/' + (task.id | string) + '/status') }}">
+                    <form method="post" action="{{ urlFor(base + '/' + (task.id | string) + '/status') }}" novalidate>
                       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                       <div class="govuk-form-group govuk-!-margin-bottom-2">
                         <label class="govuk-label govuk-visually-hidden" for="task-status-{{ task.id }}">{{ t("govuk_alpha_group_tools.tasks.change_status_for", { title: task.title }) }}</label>

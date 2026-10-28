@@ -66,7 +66,7 @@
             <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ interview.vacancyId) }}">{{ t("govuk_alpha_jobs.responses.view_opportunity") }}</a></p>
           {% endif %}
           {% if interview.canRespond %}
-            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/accept') }}" class="govuk-!-margin-bottom-2">
+            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/accept') }}" class="govuk-!-margin-bottom-2" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <label class="govuk-label govuk-label--s" for="iv-accept-note-{{ interview.id }}">{{ t("govuk_alpha_jobs.responses.note_label") }}</label>
@@ -75,7 +75,7 @@
               </div>
               <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.accept_interview") }}</button>
             </form>
-            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/decline') }}">
+            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/decline') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <label class="govuk-label govuk-label--s" for="iv-decline-note-{{ interview.id }}">{{ t("govuk_alpha_jobs.responses.note_label") }}</label>
@@ -121,11 +121,11 @@
               <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning") }}</span> {{ t("govuk_alpha_jobs.responses.accept_offer_warning") }}</strong>
             </div>
             <div class="nexus-alpha-actions">
-              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/accept') }}" class="nexus-alpha-linkform">
+              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/accept') }}" class="nexus-alpha-linkform" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.accept_offer") }}</button>
               </form>
-              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/reject') }}" class="nexus-alpha-linkform">
+              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/reject') }}" class="nexus-alpha-linkform" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.reject_offer") }}</button>
               </form>

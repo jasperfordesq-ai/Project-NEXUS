@@ -51,7 +51,7 @@
           <label class="govuk-label govuk-label--s" for="poll-question">{{ t("govuk_alpha_gamification.poll_create.question_label") }}</label>
           <div id="poll-question-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.question_hint") }}</div>
           {% if fieldErrors.question %}<p id="poll-question-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.question }}</p>{% endif %}
-          <input class="govuk-input{% if fieldErrors.question %} govuk-input--error{% endif %}" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint{% if fieldErrors.question %} poll-question-error{% endif %}" required maxlength="255" value="{{ form.question or '' }}">
+          <input class="govuk-input{% if fieldErrors.question %} govuk-input--error{% endif %}" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint{% if fieldErrors.question %} poll-question-error{% endif %}" maxlength="255" value="{{ form.question or '' }}">
         </div>
         {% call characterCount(2000, characterCountMessages, "poll-description") %}
         <div class="govuk-form-group">
@@ -81,7 +81,7 @@
             {% for number in [1, 2, 3, 4, 5, 6] %}
               <div class="govuk-form-group govuk-!-margin-bottom-2">
                 <label class="govuk-label" for="poll-option-{{ number }}">{{ t("govuk_alpha_gamification.poll_create.option_label", { num: number }) }}</label>
-                <input class="govuk-input govuk-input--width-30{% if fieldErrors.options and number <= 2 %} govuk-input--error{% endif %}" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255"{% if number <= 2 %} required{% endif %} value="{{ (form.options[number - 1] if form else '') or '' }}">
+                <input class="govuk-input govuk-input--width-30{% if fieldErrors.options and number <= 2 %} govuk-input--error{% endif %}" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255" value="{{ (form.options[number - 1] if form else '') or '' }}">
               </div>
             {% endfor %}
           </fieldset>

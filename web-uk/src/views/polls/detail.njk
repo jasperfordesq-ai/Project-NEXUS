@@ -55,11 +55,11 @@
       {% if poll.description %}<p class="govuk-body">{{ poll.description | nl2br | safe }}</p>{% endif %}
 
       {% if poll.pollType == "ranked" %}
-        <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.rank_link") }}{% endif %}</a>
+        <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}" draggable="false">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.rank_link") }}{% endif %}</a>
       {% elif not poll.options.length %}
         <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_gamification.poll_detail.no_options") }}</p></div>
       {% elif poll.status == "open" and not poll.hasVoted and poll.options.length %}
-        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/vote') }}">
+        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/vote') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <fieldset class="govuk-fieldset" aria-describedby="poll-detail-{{ poll.id }}-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_gamification.poll_detail.vote_link") }}</legend>
@@ -99,7 +99,7 @@
       </p>
 
       <div class="nexus-alpha-actions govuk-!-margin-bottom-4">
-        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/like') }}">
+        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/like') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{% if poll.hasLiked %}true{% else %}false{% endif %}">
             {% if poll.hasLiked %}{{ t("govuk_alpha_gamification.poll_detail.unlike_button") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.like_button") }}{% endif %}
@@ -118,7 +118,7 @@
         <p class="govuk-body">{{ t("govuk_alpha_gamification.poll_detail.no_comments") }}</p>
       {% endif %}
 
-      <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/comment') }}">
+      <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/comment') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-form-group">
           <label class="govuk-label" for="poll-comment-{{ poll.id }}">{{ t("govuk_alpha_gamification.poll_detail.comment_label") }}</label>

@@ -122,7 +122,7 @@
   {% endif %}
 
   {% if organizations.length %}
-  <form method="post" action="{{ urlFor('/volunteering/hours') }}" class="govuk-!-margin-top-7">
+  <form method="post" action="{{ urlFor('/volunteering/hours') }}" class="govuk-!-margin-top-7" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <fieldset class="govuk-fieldset">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
@@ -134,7 +134,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="organization_id">{{ t("govuk_alpha.volunteering.organization_label") }}</label>
             <div id="organization-id-hint" class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_organisation_hint") }}</div>
-            <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization-id-hint" required>
+            <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization-id-hint">
               {% for organization in organizations %}
                 <option value="{{ organization.id }}">{{ organization.name }}</option>
               {% endfor %}
@@ -168,7 +168,7 @@
           <div class="govuk-form-group">
             <label class="govuk-label" for="hours">{{ t("govuk_alpha.volunteering.hours_label") }}</label>
             <div id="log-hours-hint" class="govuk-hint">{{ t("govuk_alpha.volunteering.hours_log_hint") }}</div>
-            <input class="govuk-input govuk-input--width-5" id="hours" name="hours" type="number" min="0.25" max="24" step="0.25" aria-describedby="log-hours-hint" required>
+            <input class="govuk-input govuk-input--width-5" id="hours" name="hours" type="text" inputmode="decimal" spellcheck="false" aria-describedby="log-hours-hint">
           </div>
         </div>
       </div>

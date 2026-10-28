@@ -40,7 +40,7 @@
       </div>
     {% endif %}
 
-    <form method="post" action="{{ urlFor('/feed/items/' + params.item.type + '/' + (params.item.id | string) + '/like') }}" class="govuk-!-margin-bottom-6">
+    <form method="post" action="{{ urlFor('/feed/items/' + params.item.type + '/' + (params.item.id | string) + '/like') }}" class="govuk-!-margin-bottom-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <input type="hidden" name="return_to" value="{{ params.returnTo }}">
       <p class="govuk-hint govuk-!-margin-bottom-2">{{ t(P ~ "like_hint") }}</p>

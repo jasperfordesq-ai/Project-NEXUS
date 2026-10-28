@@ -200,7 +200,7 @@ describe('Help Centre pages', () => {
     // [Listings](/listings) inside the body, and the "Go to this page" button,
     // which React points at /listings/create — here /listings/new.
     expect(response.text).toContain('<a class="govuk-link" href="/listings">Listings</a>');
-    expect(response.text).toContain(`href="/listings/new">${en.centre.open_page}</a>`);
+    expect(response.text).toMatch(new RegExp(`href="/listings/new"[^>]*>${en.centre.open_page}</a>`));
     expect(response.text).toContain('class="govuk-pagination');
     expect(response.text).toContain(en.centre.in_this_section);
   });

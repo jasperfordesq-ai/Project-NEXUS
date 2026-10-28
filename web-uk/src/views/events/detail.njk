@@ -182,7 +182,7 @@
           <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.events.submit_for_review" if publicationAction == "submit" else "govuk_alpha.events.publish_event") }}</span></summary>
           <div class="govuk-details__text">
             <p class="govuk-body">{{ t("govuk_alpha.events.publication_submit_confirm" if publicationAction == "submit" else "govuk_alpha.events.publication_publish_confirm") }}</p>
-            <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/' + publicationAction) }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.submit_for_review" if publicationAction == "submit" else "govuk_alpha.events.publish_event") }}</button></form>
+            <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/' + publicationAction) }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.submit_for_review" if publicationAction == "submit" else "govuk_alpha.events.publish_event") }}</button></form>
           </div>
         </details>
       {% endif %}
@@ -210,12 +210,12 @@
             </summary>
             <div class="govuk-details__text">
               <p class="govuk-body">{{ t("events.cancel_confirm") }}</p>
-              <form action="{{ urlFor('/events/' + (event.id | string) + '/cancel') }}" method="post">
+              <form action="{{ urlFor('/events/' + (event.id | string) + '/cancel') }}" method="post" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
                 <div class="govuk-form-group">
                   <label class="govuk-label" for="cancel-reason">{{ t("events.cancel_reason_label") }}</label>
-                  <textarea class="govuk-textarea" id="cancel-reason" name="reason" rows="3" maxlength="4000" required></textarea>
+                  <textarea class="govuk-textarea" id="cancel-reason" name="reason" rows="3" maxlength="4000"></textarea>
                 </div>
                 {{ govukButton({
                   text: t("events.cancel_event_button"),
@@ -230,12 +230,12 @@
           <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.events.archive_event") }}</span></summary>
           <div class="govuk-details__text">
             <p class="govuk-body">{{ t("govuk_alpha.events.archive_confirm") }}</p>
-            <form action="{{ urlFor('/events/' + (event.id | string) + '/delete') }}" method="post">
+            <form action="{{ urlFor('/events/' + (event.id | string) + '/delete') }}" method="post" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
               <div class="govuk-form-group">
                 <label class="govuk-label" for="archive-reason">{{ t("govuk_alpha.events.archive_reason_label") }}</label>
-                <textarea class="govuk-textarea" id="archive-reason" name="reason" rows="2" maxlength="4000" required></textarea>
+                <textarea class="govuk-textarea" id="archive-reason" name="reason" rows="2" maxlength="4000"></textarea>
               </div>
               {{ govukButton({ text: t("govuk_alpha.events.archive_event_button"), classes: "govuk-button--warning govuk-!-margin-bottom-0" }) }}
             </form>
@@ -370,13 +370,13 @@
 
         {% if relationship and (relationship.offerActive or relationship.waitlistState == "offered") %}
           <section aria-labelledby="waitlist-heading"><h2 class="govuk-heading-m" id="waitlist-heading">{{ t("govuk_alpha.events.waitlist_offer_title") }}</h2><div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.waitlist_offer_description") }}</p></div><div class="govuk-button-group">
-            {% if relationship.canAcceptOffer %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/accept') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="event-{{ event.id }}-waitlist-offer"><button class="govuk-button govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.waitlist_offer_accept") }}</button></form>{% endif %}
-            {% if relationship.canLeaveWaitlist %}<details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.events.waitlist_offer_decline") }}</span></summary><div class="govuk-details__text"><form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/leave') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.waitlist_offer_decline") }}</button></form></div></details>{% endif %}
+            {% if relationship.canAcceptOffer %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/accept') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="event-{{ event.id }}-waitlist-offer"><button class="govuk-button govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.waitlist_offer_accept") }}</button></form>{% endif %}
+            {% if relationship.canLeaveWaitlist %}<details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.events.waitlist_offer_decline") }}</span></summary><div class="govuk-details__text"><form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/leave') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">{{ t("govuk_alpha.events.waitlist_offer_decline") }}</button></form></div></details>{% endif %}
           </div></section>
         {% elif relationship and relationship.waitlistState == "waiting" %}
-          <section aria-labelledby="waitlist-heading"><h2 class="govuk-heading-m" id="waitlist-heading">{{ t("govuk_alpha.events.waitlist_heading") }}</h2><div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-1">{{ t("govuk_alpha.events.waitlist_on_list_note") }}</p>{% if relationship.waitlistPosition %}<p class="govuk-body govuk-!-margin-bottom-0 govuk-!-font-weight-bold">{{ t("govuk_alpha.events.waitlist_position", { position: relationship.waitlistPosition }) }}</p>{% endif %}</div>{% if relationship.canLeaveWaitlist %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/leave') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning">{{ t("govuk_alpha.events.waitlist_leave") }}</button></form>{% endif %}</section>
+          <section aria-labelledby="waitlist-heading"><h2 class="govuk-heading-m" id="waitlist-heading">{{ t("govuk_alpha.events.waitlist_heading") }}</h2><div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-1">{{ t("govuk_alpha.events.waitlist_on_list_note") }}</p>{% if relationship.waitlistPosition %}<p class="govuk-body govuk-!-margin-bottom-0 govuk-!-font-weight-bold">{{ t("govuk_alpha.events.waitlist_position", { position: relationship.waitlistPosition }) }}</p>{% endif %}</div>{% if relationship.canLeaveWaitlist %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist/leave') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning">{{ t("govuk_alpha.events.waitlist_leave") }}</button></form>{% endif %}</section>
         {% elif relationship and relationship.canJoinWaitlist %}
-          <section aria-labelledby="waitlist-heading"><h2 class="govuk-heading-m" id="waitlist-heading">{{ t("govuk_alpha.events.waitlist_heading") }}</h2><p class="govuk-body">{{ t("govuk_alpha.events.waitlist_full_note") }}</p><form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button">{{ t("govuk_alpha.events.waitlist_join") }}</button></form></section>
+          <section aria-labelledby="waitlist-heading"><h2 class="govuk-heading-m" id="waitlist-heading">{{ t("govuk_alpha.events.waitlist_heading") }}</h2><p class="govuk-body">{{ t("govuk_alpha.events.waitlist_full_note") }}</p><form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/waitlist') }}" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button">{{ t("govuk_alpha.events.waitlist_join") }}</button></form></section>
         {% endif %}
 
         {% set canConfirm = relationship and relationship.canConfirm %}
@@ -384,23 +384,23 @@
         {% set canWithdraw = relationship and relationship.canWithdraw %}
         {% set currentRsvp = myRsvp.status if myRsvp else "" %}
         {% set confirmCancellation = currentRsvp in ["going", "interested"] and (canWithdraw or canChangeEngagement) %}
-        {% if relationship and not (relationship.offerActive or relationship.waitlistState == "offered") and (canConfirm or canChangeEngagement or (canWithdraw and not confirmCancellation)) %}<form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" class="govuk-!-margin-top-7">
+        {% if relationship and not (relationship.offerActive or relationship.waitlistState == "offered") and (canConfirm or canChangeEngagement or (canWithdraw and not confirmCancellation)) %}<form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" class="govuk-!-margin-top-7" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <fieldset class="govuk-fieldset" aria-describedby="rsvp-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("events.rsvp_title") }}</h2></legend>
             <div id="rsvp-hint" class="govuk-hint">{{ t("events.rsvp_hint") }}</div>
             <div class="govuk-radios" data-module="govuk-radios">
-              {% if canConfirm %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-going" name="status" type="radio" value="going" required{% if currentRsvp == "going" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-going">{{ t("events.rsvp_status.going") }}</label></div>{% endif %}
-              {% if canChangeEngagement %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-interested" name="status" type="radio" value="interested" required{% if currentRsvp == "interested" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-interested">{{ t("events.rsvp_status.interested") }}</label></div>{% endif %}
-              {% if canWithdraw and not confirmCancellation %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-not_going" name="status" type="radio" value="not_going" required{% if currentRsvp == "not_going" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-not_going">{{ t("events.rsvp_status.not_going") }}</label></div>{% endif %}
+              {% if canConfirm %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-going" name="status" type="radio" value="going"{% if currentRsvp == "going" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-going">{{ t("events.rsvp_status.going") }}</label></div>{% endif %}
+              {% if canChangeEngagement %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-interested" name="status" type="radio" value="interested"{% if currentRsvp == "interested" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-interested">{{ t("events.rsvp_status.interested") }}</label></div>{% endif %}
+              {% if canWithdraw and not confirmCancellation %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="status-not_going" name="status" type="radio" value="not_going"{% if currentRsvp == "not_going" %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="status-not_going">{{ t("events.rsvp_status.not_going") }}</label></div>{% endif %}
             </div>
           </fieldset>
           {{ govukButton({ text: t("actions.rsvp") }) }}
         </form>{% endif %}
 
-        {% if confirmCancellation %}<details class="govuk-details govuk-!-margin-top-7" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("events.rsvp_status.not_going") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("events.rsvp_hint") }}</p><form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="not_going"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">{{ t("actions.rsvp") }}</button></form></div></details>{% endif %}
+        {% if confirmCancellation %}<details class="govuk-details govuk-!-margin-top-7" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("events.rsvp_status.not_going") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("events.rsvp_hint") }}</p><form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="not_going"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0">{{ t("actions.rsvp") }}</button></form></div></details>{% endif %}
 
-        {% if currentRsvp in ["interested", "not_going"] and (canChangeEngagement or canWithdraw or canConfirm) %}<form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" class="govuk-!-margin-top-4"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="clear"><p class="govuk-body">{{ t("govuk_alpha_events.rsvp.clear_hint") }}</p><button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_events.rsvp.clear_button") }}</button></form>{% endif %}
+        {% if currentRsvp in ["interested", "not_going"] and (canChangeEngagement or canWithdraw or canConfirm) %}<form action="{{ urlFor('/events/' + (event.id | string) + '/rsvp') }}" method="post" class="govuk-!-margin-top-4" novalidate><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="status" value="clear"><p class="govuk-body">{{ t("govuk_alpha_events.rsvp.clear_hint") }}</p><button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_events.rsvp.clear_button") }}</button></form>{% endif %}
       {% elif not isAuthenticated and not (event.isCancelled or event.is_cancelled) and not (event.isPast or event.is_past) %}
         <div class="govuk-inset-text">
           <a class="govuk-link" href="{{ urlFor('/login') }}">{{ t("nav.login") }}</a>. {{ t("events.auth_required_detail", { community: tenantName or serviceName }) }}
@@ -423,7 +423,7 @@
               {% if poll.options.length == 0 %}
                 <div class="govuk-inset-text"><p class="govuk-body">{{ t("events.poll_no_options") }}</p></div>
               {% elif poll.isOpen and not poll.hasVoted %}
-                <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/polls/' + (poll.id | string) + '/vote') }}">
+                <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/polls/' + (poll.id | string) + '/vote') }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <fieldset class="govuk-fieldset" aria-describedby="event-poll-{{ poll.id }}-hint">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("events.poll_choose_label") }}</legend>

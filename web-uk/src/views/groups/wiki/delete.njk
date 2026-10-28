@@ -19,7 +19,7 @@
       <span class="govuk-caption-xl">{{ group.name }}</span>
       <h1 class="govuk-heading-xl">{{ t("govuk_alpha_group_tools.wiki.delete_title") }}</h1>
       {{ govukWarningText({ text: t("govuk_alpha_group_tools.wiki.delete_confirm", { name: page.title }), iconFallbackText: t("govuk_alpha_groups.common.warning") }) }}
-      <form method="post" action="{{ urlFor(pagePath + '/delete') }}">
+      <form method="post" action="{{ urlFor(pagePath + '/delete') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <div class="govuk-button-group">
           {{ govukButton({ text: t("govuk_alpha_group_tools.wiki.delete"), classes: "govuk-button--warning" }) }}

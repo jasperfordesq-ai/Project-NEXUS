@@ -25,7 +25,7 @@
     {% endfor %}
   </div>
 
-  <form method="post" action="{{ urlFor('/logout') }}" class="govuk-!-margin-top-8">
+  <form method="post" action="{{ urlFor('/logout') }}" class="govuk-!-margin-top-8" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("account.sign_out") }}</button>
   </form>

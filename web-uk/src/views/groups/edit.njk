@@ -124,7 +124,7 @@
             {% endif %}
             <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="confirm-delete" name="confirm" type="checkbox" value="yes" required{% if deleteConfirmationRequired %} aria-describedby="confirm-delete-error"{% endif %}>
+                <input class="govuk-checkboxes__input" id="confirm-delete" name="confirm" type="checkbox" value="yes"{% if deleteConfirmationRequired %} aria-describedby="confirm-delete-error"{% endif %}>
                 <label class="govuk-label govuk-checkboxes__label" for="confirm-delete">{{ t("groups.delete.confirm_label") }}</label>
               </div>
             </div>

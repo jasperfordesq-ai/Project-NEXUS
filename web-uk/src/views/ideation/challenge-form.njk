@@ -80,7 +80,7 @@
     </details>
   {% endif %}
 
-  <form method="post" action="{{ formAction }}">
+  <form method="post" action="{{ formAction }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">

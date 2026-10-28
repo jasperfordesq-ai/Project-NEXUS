@@ -29,7 +29,7 @@
       </div>
 
       <div class="govuk-button-group">
-        <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/volunteers/' ~ volunteer.id ~ '/' ~ action) }}">
+        <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/volunteers/' ~ volunteer.id ~ '/' ~ action) }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="name" value="{{ volunteer.name }}">
           <input type="hidden" name="show" value="{{ show }}">

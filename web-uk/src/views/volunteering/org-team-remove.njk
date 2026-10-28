@@ -12,7 +12,7 @@
 {% block content %}
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_team.remove_title", { name: member.name }) }}</h1>
   <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_team.remove_body") }}</p>
-  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team/' ~ member.id ~ '/remove') }}">
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/team/' ~ member.id ~ '/remove') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <div class="govuk-button-group">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_team.remove_confirm") }}</button>

@@ -64,7 +64,7 @@
                 <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/edit') }}">{{ t("govuk_alpha_groups.announcements.edit_aria") }}<span class="govuk-visually-hidden"> — {{ announcement.title }}</span></a>
               </li>
               <li class="govuk-summary-card__action">
-                <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/pin') }}" style="display:inline">
+                <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/pin') }}" style="display:inline" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="is_pinned" value="{% if announcement.isPinned %}0{% else %}1{% endif %}">
                   <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{% if announcement.isPinned %}{{ t('govuk_alpha_groups.announcements.unpin_aria') }}{% else %}{{ t('govuk_alpha_groups.announcements.pin_aria') }}{% endif %}">
@@ -73,7 +73,7 @@
                 </form>
               </li>
               <li class="govuk-summary-card__action">
-                <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/delete') }}" style="display:inline">
+                <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/announcements/' + (announcement.id | string) + '/delete') }}" style="display:inline" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.delete_confirm") }}<span class="govuk-visually-hidden"> — {{ announcement.title }}</span></button>
                 </form>

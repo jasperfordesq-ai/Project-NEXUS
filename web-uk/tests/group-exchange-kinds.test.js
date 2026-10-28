@@ -316,7 +316,7 @@ describe('adding a person asks only for what the kind needs', () => {
     const custom = addFormOf(await detailFor('custom', 4));
     const customHours = /<input[^>]*name="hours"[^>]*>/.exec(custom)[0];
     expect(customHours).not.toContain('value="4"');
-    expect(customHours).toMatch(/\srequired/);
+    expect(customHours).not.toMatch(/\srequired/);
   });
 
   it('equal asks for no number at all, weighted asks for a weight', async () => {

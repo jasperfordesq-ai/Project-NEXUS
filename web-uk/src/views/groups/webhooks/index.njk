@@ -19,7 +19,7 @@
   {% include "groups/gallery/_status-banner.njk" %}
 
   <p class="govuk-body">{{ t("govuk_alpha_group_media.webhooks.intro") }}</p>
-  <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor(hooksBase + '/new') }}">{{ t("govuk_alpha_group_media.webhooks.add_link") }}</a>
+  <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor(hooksBase + '/new') }}" role="button" draggable="false">{{ t("govuk_alpha_group_media.webhooks.add_link") }}</a>
 
   {% if not webhooks.length %}
     <p class="govuk-body">{{ t("govuk_alpha_group_media.webhooks.empty") }}</p>
@@ -55,7 +55,7 @@
             </div>
           </dl>
           <div class="govuk-button-group">
-            <form method="post" action="{{ urlFor(hooksBase + '/' + (hook.id | string) + '/toggle') }}">
+            <form method="post" action="{{ urlFor(hooksBase + '/' + (hook.id | string) + '/toggle') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="is_active" value="{{ '0' if hook.isActive else '1' }}">
               <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{% if hook.isActive %}{{ t("govuk_alpha_group_media.webhooks.turn_off") }}{% else %}{{ t("govuk_alpha_group_media.webhooks.turn_on") }}{% endif %}<span class="govuk-visually-hidden">: {{ hook.url }}</span></button>

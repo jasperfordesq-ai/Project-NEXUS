@@ -67,7 +67,7 @@
 
   <div class="govuk-button-group">
     {% if reactionsEnabled %}
-      <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/like') }}">
+      <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/like') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
         <input type="hidden" name="active" value="{% if viewerLikes %}0{% else %}1{% endif %}">
         <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{% if viewerLikes %}{{ t("govuk_alpha.podcasts.unlike_button") }}{% else %}{{ t("govuk_alpha.podcasts.like_button") }}{% endif %}</button>

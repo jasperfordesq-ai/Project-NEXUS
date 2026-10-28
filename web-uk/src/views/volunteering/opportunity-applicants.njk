@@ -88,7 +88,7 @@
             <p class="govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-testid="applicant-status-{{ application.id }}">{{ govukTag({ text: application.statusLabel, classes: application.statusClass }) }}</p>
             {% if application.orgNote %}<p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ application.orgNote }}</p>{% endif %}
           {% else %}
-            <form method="post" action="{{ urlFor(base ~ '/applications/' ~ application.id) }}">
+            <form method="post" action="{{ urlFor(base ~ '/applications/' ~ application.id) }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="show" value="{{ show }}">
               <div class="govuk-form-group govuk-!-margin-bottom-2 govuk-!-margin-top-4">

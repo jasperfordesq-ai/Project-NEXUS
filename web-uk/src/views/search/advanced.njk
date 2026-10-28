@@ -166,7 +166,7 @@
         <span class="govuk-details__summary-text">{{ t("govuk_alpha_search.saved.save_this") }}</span>
       </summary>
       <div class="govuk-details__text">
-        <form method="post" action="{{ urlFor('/search/saved') }}">
+        <form method="post" action="{{ urlFor('/search/saved') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="q" value="{{ searchQuery }}">
           <input type="hidden" name="type" value="{{ filters.type }}">
@@ -201,7 +201,7 @@
               </span>
             </span>
             <span class="nexus-alpha-actions">
-              <form method="post" action="{{ urlFor('/search/saved/' + (saved.id | string) + '/run') }}" class="govuk-!-display-inline">
+              <form method="post" action="{{ urlFor('/search/saved/' + (saved.id | string) + '/run') }}" class="govuk-!-display-inline" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_search.saved.run_aria', { name: saved.name }) }}">{{ t("govuk_alpha_search.saved.run") }}</button>
               </form>

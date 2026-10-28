@@ -1631,7 +1631,9 @@
                 "unsubscribe_success_detail": "アカウントおよびセキュリティに関する重要なメールは引き続き届く場合があります。",
                 "unsubscribe_back_home": "ホームページに戻る",
                 "unsubscribe_missing": "配信停止リンクが提供されていません。受信したメール内のリンクをご利用ください。",
-                "unsubscribe_invalid": "この配信停止リンクは無効か、有効期限が切れています。"
+                "unsubscribe_invalid": "この配信停止リンクは無効か、有効期限が切れています。",
+                "unsubscribe_confirm_body": "ボタンを選択すると、このコミュニティからのニュースレターメールの受信を停止します。",
+                "unsubscribe_confirm_button": "配信を停止する"
             },
             "feed": {
                 "edit_post_hint": "投稿の内容を更新します。",
@@ -5094,6 +5096,7 @@
                     "save": "通知設定を保存",
                     "saved": "通知設定が保存されました。",
                     "failed": "通知設定を保存できませんでした。もう一度お試しください。",
+                    "partial": "通知設定は保存されましたが、オファーとリクエストのまとめの設定を保存できませんでした。もう一度お試しください。",
                     "groups": {
                         "messages": "メッセージとコミュニティ",
                         "activity": "あなたのアクティビティ",

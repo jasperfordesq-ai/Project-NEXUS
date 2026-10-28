@@ -36,7 +36,7 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_depth.certificates_title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha.vol_depth.certificates_description") }}</p>
 
-  <form method="post" action="{{ urlFor('/volunteering/certificates/generate') }}" class="govuk-!-margin-bottom-7">
+  <form method="post" action="{{ urlFor('/volunteering/certificates/generate') }}" class="govuk-!-margin-bottom-7" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.vol_depth.certificate_generate") }}</button>
   </form>
@@ -93,7 +93,7 @@
             </ul>
           {% endif %}
           {% if certificate.downloadPath %}
-            <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor(certificate.downloadPath) }}">{{ t("govuk_alpha.vol_depth.certificate_download") }}</a>
+            <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor(certificate.downloadPath) }}" role="button" draggable="false">{{ t("govuk_alpha.vol_depth.certificate_download") }}</a>
           {% endif %}
           {% if certificate.verificationCode and not certificate.revoked %}
             {# The public check page (gap C1): what someone shown this certificate uses. #}

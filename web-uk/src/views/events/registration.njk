@@ -41,7 +41,7 @@
     </div>
     <div class="govuk-summary-card__content">
       {% if invitation.status == 'issued' %}
-        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/invitations/' + (invitation.id | string) + '/accept') }}">
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/invitations/' + (invitation.id | string) + '/accept') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
           <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("event_registration.accessible.accept_invitation") }}</button>

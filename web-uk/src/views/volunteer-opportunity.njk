@@ -74,7 +74,7 @@
         <p class="govuk-body">{{ t(M ~ ("closed_hint" if opportunity.isClosed else "open_hint")) }}</p>
         <div class="govuk-button-group">
           <a class="govuk-button govuk-button--secondary" href="{{ urlFor(oppBase ~ '/edit') }}" role="button" draggable="false" data-module="govuk-button">{{ t(M ~ "edit") }}</a>
-          <form method="post" action="{{ urlFor(oppBase ~ ('/reopen' if opportunity.isClosed else '/close')) }}">
+          <form method="post" action="{{ urlFor(oppBase ~ ('/reopen' if opportunity.isClosed else '/close')) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(M ~ ("reopen" if opportunity.isClosed else "close")) }}</button>
           </form>
@@ -194,12 +194,12 @@
           {% if opportunity.isApprovedApplicant and shift.id and not shift.isPast %}
             {% if opportunity.signedUpShiftId == shift.id %}
               <p class="govuk-!-margin-bottom-2">{{ govukTag({ text: t("govuk_alpha.volunteering.shift_signed_up"), classes: "govuk-tag--green" }) }}</p>
-              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/cancel') }}">
+              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/cancel') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.cancel_shift") }}</button>
               </form>
             {% elif shift.hasSpace %}
-              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/signup') }}">
+              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/signup') }}" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 {# Gap B11: one shift per opportunity, so with a shift already held this
                    button MOVES the volunteer. Say so, and name the place they give up. #}
@@ -220,7 +220,7 @@
                   <a class="govuk-link" href="{{ urlFor('/volunteering/waitlist') }}">{{ t("govuk_alpha_volunteering.shift_waitlist.view_list") }}</a>
                 </p>
               {% else %}
-                <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/waitlist') }}" class="govuk-!-margin-top-2">
+                <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/waitlist') }}" class="govuk-!-margin-top-2" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_volunteering.shift_waitlist.join") }}<span class="govuk-visually-hidden">: {{ shift.start_time | formatEventDate }}</span></button>
                 </form>
@@ -264,7 +264,7 @@
   {% elif opportunity.isCancelled or opportunity.isClosed %}
     <div class="govuk-inset-text govuk-!-margin-top-7" data-testid="opportunity-not-taking-applications">{{ t("govuk_alpha_volunteering.opp_manage." ~ ("volunteer_cancelled" if opportunity.isCancelled else "volunteer_closed")) }}</div>
   {% else %}
-    <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/apply') }}" class="govuk-!-margin-top-7">
+    <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/apply') }}" class="govuk-!-margin-top-7" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <fieldset class="govuk-fieldset" aria-describedby="apply-hint">
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">

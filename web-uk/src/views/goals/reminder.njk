@@ -47,7 +47,7 @@
     {% endif %}
   </div>
 
-  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder') }}" class="govuk-grid-row">
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder') }}" class="govuk-grid-row" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-grid-column-two-thirds">
@@ -85,7 +85,7 @@
           </strong>
         </div>
 
-        <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder/delete') }}">
+        <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder/delete') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.reminder.remove") }}</button>
         </form>

@@ -40,7 +40,7 @@
   <div class="govuk-form-group{% if fieldErrors.name %} govuk-form-group--error{% endif %}">
     <label class="govuk-label govuk-label--m" for="form-name">{{ t("event_registration.forms.editor.name") }}</label>
     {% if fieldErrors.name %}<p id="form-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.name }}</p>{% endif %}
-    <input class="govuk-input{% if fieldErrors.name %} govuk-input--error{% endif %}" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255"{% if fieldErrors.name %} aria-describedby="form-name-error"{% endif %} required>
+    <input class="govuk-input{% if fieldErrors.name %} govuk-input--error{% endif %}" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255"{% if fieldErrors.name %} aria-describedby="form-name-error"{% endif %}>
   </div>
   {% call characterCount(2000, characterCountMessages, "form-description") %}
   <div class="govuk-form-group">
@@ -97,7 +97,7 @@
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="question-{{ i }}-retention">{{ t("event_registration.forms.editor.retention_days") }}</label>
-        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-retention" name="questions[{{ i }}][retention_days]" type="number" min="1" max="36500" value="{{ row.retention_days or 365 }}">
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-retention" name="questions[{{ i }}][retention_days]" type="text" inputmode="numeric" spellcheck="false" value="{{ row.retention_days or 365 }}">
       </div>
       <div class="govuk-checkboxes" data-module="govuk-checkboxes">
         <div class="govuk-checkboxes__item">
@@ -113,11 +113,11 @@
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="question-{{ i }}-min">{{ t("event_registration.forms.editor.min_length") }}</label>
-        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-min" name="questions[{{ i }}][min_length]" type="number" min="0" value="{{ validation.min_length if validation.min_length is defined else '' }}">
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-min" name="questions[{{ i }}][min_length]" type="text" inputmode="numeric" spellcheck="false" value="{{ validation.min_length if validation.min_length is defined else '' }}">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="question-{{ i }}-max">{{ t("event_registration.forms.editor.max_length") }}</label>
-        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-max" name="questions[{{ i }}][max_length]" type="number" min="0" value="{{ validation.max_length if validation.max_length is defined else '' }}">
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-max" name="questions[{{ i }}][max_length]" type="text" inputmode="numeric" spellcheck="false" value="{{ validation.max_length if validation.max_length is defined else '' }}">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="question-{{ i }}-displayed">{{ t("event_registration.forms.editor.displayed_text") }}</label>

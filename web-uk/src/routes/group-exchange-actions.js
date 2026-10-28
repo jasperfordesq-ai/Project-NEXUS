@@ -272,6 +272,14 @@ router.post('/:id(\\d+)/participants', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const checking = trimmed(req.body.action) === 'preview';
+  // Hours and weight are text boxes, so "abc" or a negative number can arrive. They are
+  // refused here instead of becoming 0 hours or a weight of 1 without telling anyone.
+  const hoursText = trimmed(req.body.hours);
+  const weightText = trimmed(req.body.weight);
+  if ((hoursText !== '' && !(Number.isFinite(Number(hoursText)) && Number(hoursText) >= 0))
+    || (weightText !== '' && !(Number.isFinite(Number(weightText)) && Number(weightText) > 0))) {
+    return redirectTo(res, exchangeRedirect(id, checking ? 'check-failed' : 'add-failed'));
+  }
   let exchange = null;
   try {
     exchange = dataFrom(await callApi(token, 'GET', `/${encodeURIComponent(id)}`));

@@ -114,7 +114,7 @@
                 <li><a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/scorecard') }}">{{ t("govuk_alpha_jobs.hiring.score_applicant") }}<span class="govuk-visually-hidden">: {{ app.applicantName }}</span></a></li>
               </ul>
 
-              <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/status') }}" class="govuk-!-margin-top-2">
+              <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/status') }}" class="govuk-!-margin-top-2" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                   <label class="govuk-label govuk-label--s" for="pl-status-{{ app.id }}">{{ t("govuk_alpha_jobs.pipeline.move_to_label") }}</label>

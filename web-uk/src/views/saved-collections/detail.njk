@@ -77,7 +77,7 @@
             <p class="govuk-body">{{ item.note }}</p>
           {% endif %}
           {% if isOwner and item.id %}
-            <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/items/' + (item.id | string) + '/remove') }}" class="govuk-!-margin-bottom-0">
+            <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/items/' + (item.id | string) + '/remove') }}" class="govuk-!-margin-bottom-0" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{{ t('govuk_alpha_saved.detail.remove_item_label', { title: item.title }) }}">{{ t("govuk_alpha_saved.detail.remove_item") }}</button>
             </form>
@@ -120,7 +120,7 @@
         <span class="govuk-details__summary-text">{{ t("govuk_alpha_saved.edit.heading") }}</span>
       </summary>
       <div class="govuk-details__text">
-        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/update') }}">
+        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/update') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group{% if editNameError %} govuk-form-group--error{% endif %}">
             <label class="govuk-label" for="edit-collection-name">{{ t("govuk_alpha_saved.edit.name_label") }}</label>
@@ -154,7 +154,7 @@
             {{ t("govuk_alpha_saved.edit.delete_warning") }}
           </strong>
         </div>
-        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/delete') }}">
+        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/delete') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" aria-label="{{ t('govuk_alpha_saved.edit.delete_confirm_label', { name: collection.name or t('govuk_alpha_saved.detail.title') }) }}">{{ t("govuk_alpha_saved.edit.delete_submit") }}</button>
         </form>

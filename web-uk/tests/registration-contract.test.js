@@ -361,7 +361,7 @@ describe('Laravel registration contract', () => {
     ]) {
       expect(source).toMatch(new RegExp(`name(?:=|:)\\s*["']${field}["']`));
     }
-    expect(source).toContain('minlength: "12"');
+    expect(source).not.toContain('minlength:');
     expect(source).not.toContain('cf-turnstile');
     expect(source).not.toContain('TURNSTILE');
   });

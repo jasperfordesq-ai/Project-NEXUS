@@ -39,7 +39,7 @@
       {% else %}
         <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
         <p class="govuk-body">{{ t(K ~ "intro") }}</p>
-        <form method="post" action="{{ urlFor(base ~ '/verify') }}">
+        <form method="post" action="{{ urlFor(base ~ '/verify') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "confirm") }}</button>
         </form>
@@ -47,7 +47,7 @@
 
       {% if state == "checked_in" %}
         <p class="govuk-body">{{ t(K ~ "checkout_intro") }}</p>
-        <form method="post" action="{{ urlFor(base ~ '/checkout') }}">
+        <form method="post" action="{{ urlFor(base ~ '/checkout') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="name" value="{{ name }}">
           <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true">{{ t(K ~ "checkout") }}</button>

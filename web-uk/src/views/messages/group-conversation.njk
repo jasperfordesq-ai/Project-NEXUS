@@ -67,7 +67,7 @@
                     <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                     <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>{{ t("govuk_alpha.ux.confirm_irreversible") }}</strong>
                   </div>
-                  <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members/' + (participant.id | string) + '/remove') }}">
+                  <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members/' + (participant.id | string) + '/remove') }}" novalidate>
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_messages.manage.remove_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_messages.manage.remove_hidden", { name: participant.displayName }) }}</span></button>
                   </form>
@@ -148,7 +148,7 @@
                       <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_messages.reactions.add_legend") }}</legend>
                       <div class="govuk-button-group">
                         {% for reaction in message.reactionOptions %}
-                          <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/m/' + (message.id | string) + '/react') }}" class="govuk-!-display-inline">
+                          <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/m/' + (message.id | string) + '/react') }}" class="govuk-!-display-inline" novalidate>
                             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                             <input type="hidden" name="emoji" value="{{ reaction.emoji }}">
                             <button type="submit" class="govuk-button{% if not reaction.mine %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button">
@@ -173,12 +173,12 @@
       {% endif %}
 
       {% if canSend %}
-        <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string)) }}" class="govuk-!-margin-top-6">
+        <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string)) }}" class="govuk-!-margin-top-6" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--m" for="group-body">{{ t("govuk_alpha_messages.conversation.reply_label") }}</label>
             <div id="group-body-hint" class="govuk-hint">{{ t("govuk_alpha_messages.conversation.reply_hint") }}</div>
-            <textarea class="govuk-textarea" id="group-body" name="body" rows="5" aria-describedby="group-body-hint" required></textarea>
+            <textarea class="govuk-textarea" id="group-body" name="body" rows="5" aria-describedby="group-body-hint"></textarea>
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_messages.conversation.send_button") }}</button>
         </form>
@@ -187,14 +187,14 @@
       {% if isAdmin and canSend %}
         <div class="nexus-alpha-card govuk-!-margin-top-6">
           <h2 class="govuk-heading-m">{{ t("govuk_alpha_messages.manage.heading") }}</h2>
-          <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members') }}">
+          <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members') }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <fieldset class="govuk-fieldset">
               <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_messages.manage.add_legend") }}</legend>
               <div class="govuk-form-group">
                 <label class="govuk-label" for="add-user-id">{{ t("govuk_alpha_messages.manage.add_user_label") }}</label>
                 <div id="add-user-hint" class="govuk-hint">{{ t("govuk_alpha_messages.manage.add_hint") }}</div>
-                <input class="govuk-input govuk-input--width-10" id="add-user-id" name="user_id" type="number" min="1" inputmode="numeric" aria-describedby="add-user-hint" required>
+                <input class="govuk-input govuk-input--width-10" id="add-user-id" name="user_id" type="text" spellcheck="false" inputmode="numeric" aria-describedby="add-user-hint">
               </div>
               <p class="govuk-body govuk-!-margin-bottom-2">
                 <a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_messages.manage.add_via_directory") }}</a>
@@ -216,7 +216,7 @@
             {{ t("govuk_alpha_messages.manage.leave_warning") }}
           </strong>
         </div>
-        <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members/' + (currentUserId | string) + '/remove') }}">
+        <form method="post" action="{{ urlFor('/messages/groups/' + (conversation.id | string) + '/members/' + (currentUserId | string) + '/remove') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
           <input type="hidden" name="self_leave" value="1">
           <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_messages.manage.leave_button") }}</button>

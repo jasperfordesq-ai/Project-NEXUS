@@ -211,7 +211,7 @@
 
       <div id="like" class="govuk-!-margin-top-4 govuk-!-margin-bottom-2">
         {% if isAuthenticated and not listing.can_edit %}
-          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/like') }}" class="govuk-!-display-inline-block">
+          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/like') }}" class="govuk-!-display-inline-block" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button {% if not hasLiked %}govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if hasLiked else 'false' }}">{{ t("govuk_alpha_listings.detail.unlike") if hasLiked else t("govuk_alpha_listings.detail.like") }}</button>
           </form>
@@ -221,7 +221,7 @@
 
       <div class="govuk-button-group govuk-!-margin-top-4 govuk-!-margin-bottom-2">
         {% if isAuthenticated and not listing.can_edit %}
-          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + ('/unsave' if isSaved else '/save')) }}">
+          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + ('/unsave' if isSaved else '/save')) }}" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
             <button class="govuk-button govuk-button--secondary" data-module="govuk-button">
               {{ t("polish_listings.unsave_listing") if isSaved else t("polish_listings.save_listing") }}
@@ -261,12 +261,12 @@
         {% elif listing.can_edit %}
           <div class="govuk-inset-text">{{ t("listings.own_listing_detail") }}</div>
           <div class="govuk-button-group">
-            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/edit') }}" role="button" data-module="govuk-button">{{ t("listings.edit.edit_listing") }}</a>
-            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/analytics') }}" role="button" data-module="govuk-button">{{ t("govuk_alpha_listings.nav.view_analytics") }}</a>
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/edit') }}" role="button" data-module="govuk-button" draggable="false">{{ t("listings.edit.edit_listing") }}</a>
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/analytics') }}" role="button" data-module="govuk-button" draggable="false">{{ t("govuk_alpha_listings.nav.view_analytics") }}</a>
           </div>
           {% if listing.status == "expired" %}
             <p class="govuk-hint">{{ t("polish_listings.renew_listing_hint") }}</p>
-            <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/renew') }}">
+            <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/renew') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("polish_listings.renew_listing") }}</button>
             </form>
@@ -280,7 +280,7 @@
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_listings.detail.delete_warning") }}</strong>
               </div>
-              <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/delete') }}">
+              <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/delete') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("ux.confirm_delete_button") }}</button>
               </form>

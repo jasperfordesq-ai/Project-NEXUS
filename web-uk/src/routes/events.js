@@ -1404,7 +1404,9 @@ function eventScopedPayload(body) {
     end_time: trimmed(body.end_time) || null,
     location: trimmed(body.location) || null,
     category_id: categoryId,
-    max_attendees: maxAttendees === null ? null : Math.max(1, maxAttendees),
+    // Typed but not a whole number: send it as typed so the API refuses it (integer, at least 1)
+    // and the error summary shows its message, instead of silently meaning 'no limit'.
+    max_attendees: maxAttendees === null ? (trimmed(body.max_attendees) !== '' ? trimmed(body.max_attendees, 20) : null) : Math.max(1, maxAttendees),
     is_online: checked(body.is_online),
     online_link: trimmed(body.online_link) || null,
     allow_remote_attendance: checked(body.allow_remote_attendance),
@@ -2323,6 +2325,10 @@ router.post('/:id(\\d+)/reminders', requireAuth, asyncRoute(async (req, res) => 
     .map(positiveInteger).filter(Boolean);
   const uniqueOffsets = [...new Set(offsets)].sort((left, right) => right - left);
   const enabled = checked(req.body.reminders_enabled);
+  const customOffsetText = trimmed(req.body.custom_offset);
+  if (customOffsetText !== '' && positiveInteger(customOffsetText) === null) {
+    return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
+  }
   if ((enabled && uniqueOffsets.length === 0) || uniqueOffsets.length > 10 || uniqueOffsets.some((offset) => offset < 5 || offset > 525600)) {
     return redirectTo(res, eventPath(id, '/reminders?status=invalid'));
   }
@@ -2849,6 +2855,24 @@ function registrationPagination(id, sourceQuery, organizer) {
   }));
 }
 
+// The retention, minimum-length and maximum-length boxes are text boxes (GOV.UK "ask for
+// numbers"), so "abc" can arrive. registrationQuestions() drops what it cannot read, which
+// would silently delete a whole question (bad retention) or a limit (bad length), so the
+// editor refuses the save instead. Retention is a whole number of days from 1 to 36500;
+// the two lengths are optional whole numbers of 0 or more.
+function registrationQuestionNumbersInvalid(value) {
+  const rows = value && typeof value === 'object' ? Object.values(value).slice(0, 100) : [];
+  const whole = (text, min, max) => {
+    const number = Number(text);
+    return Number.isInteger(number) && number >= min && (max === null || number <= max);
+  };
+  return rows.some((row) => row && checked(row.enabled) && (
+    !whole(trimmed(row.retention_days), 1, 36500)
+    || (trimmed(row.min_length) !== '' && !whole(trimmed(row.min_length), 0, null))
+    || (trimmed(row.max_length) !== '' && !whole(trimmed(row.max_length), 0, null))
+  ));
+}
+
 function registrationQuestions(value) {
   const rows = value && typeof value === 'object' ? Object.values(value).slice(0, 100) : [];
   return rows.filter((row) => row && checked(row.enabled)).map((row, index) => {
@@ -3096,11 +3120,12 @@ async function saveRegistrationForm(req, res) {
   // at the name box, so "you have not enabled a question" read as "your name is wrong".
   // A missing hidden revision or idempotency key is a stale page, not a field error.
   const staleRequest = !key || !settingsRevision || (formId && !formRevision);
-  if (staleRequest || !name || questions.length === 0) {
+  const numbersInvalid = registrationQuestionNumbersInvalid(req.body.questions);
+  if (staleRequest || numbersInvalid || !name || questions.length === 0) {
     rememberRegistrationForm(req, id, formId, replay, {
       nameMissing: !name,
       questionsMissing: questions.length === 0,
-      pageFailure: staleRequest
+      pageFailure: staleRequest || numbersInvalid
     });
     return redirectTo(res, eventPath(id, formId ? `/registration/forms/${formId}?status=invalid` : '/registration/forms/new?status=invalid'));
   }

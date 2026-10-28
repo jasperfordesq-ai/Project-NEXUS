@@ -48,7 +48,7 @@
       <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("fed2.messages.optin_required") }}</h2>
       <p class="govuk-body">{{ t("fed2.messages.optin_required_description") }}</p>
     </div>
-    <a href="{{ urlFor('/federation/opt-in') }}" class="govuk-button" data-module="govuk-button">{{ t("fed2.messages.optin_cta") }}</a>
+    <a href="{{ urlFor('/federation/opt-in') }}" class="govuk-button" data-module="govuk-button" role="button" draggable="false">{{ t("fed2.messages.optin_cta") }}</a>
     {% else %}
       <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.messages.feature_not_enabled") }}</p></div>
     {% endif %}
@@ -58,7 +58,7 @@
         <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("fed2.messages.optin_required") }}</h2>
         <p class="govuk-body">{{ t("fed2.messages.optin_required_description") }}</p>
       </div>
-      <a href="{{ urlFor('/federation/opt-in') }}" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("fed2.messages.optin_cta") }}</a>
+      <a href="{{ urlFor('/federation/opt-in') }}" class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" draggable="false">{{ t("fed2.messages.optin_cta") }}</a>
     {% endif %}
 
   <form method="get" action="{{ urlFor('/federation/messages') }}" class="govuk-!-margin-bottom-4">

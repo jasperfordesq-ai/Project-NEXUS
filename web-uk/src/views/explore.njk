@@ -140,7 +140,7 @@
               <span class="govuk-body-s nexus-alpha-meta"> - {{ item.meta | join(", ") }}</span>
             {% endif %}
             {% if item.dismissId %}
-              <form method="post" action="{{ urlFor('/explore/dismiss') }}" class="govuk-!-margin-top-1">
+              <form method="post" action="{{ urlFor('/explore/dismiss') }}" class="govuk-!-margin-top-1" novalidate>
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="item_id" value="{{ item.dismissId }}">
                 <input type="hidden" name="tab" value="{{ activeTab }}">

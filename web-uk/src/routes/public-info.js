@@ -252,25 +252,47 @@ function tokenFailureState(error) {
   return 'unavailable';
 }
 
-router.get('/newsletter/unsubscribe', async (req, res) => {
-  const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
+function unsubscribeTokenFrom(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function renderNewsletterUnsubscribe(res, state, token = '') {
+  res.render('public-info/newsletter-unsubscribe', {
+    title: translatedTitle(res, 'auth.unsubscribe_title', 'Unsubscribe from emails'),
+    activeNav: '',
+    state,
+    token
+  });
+}
+
+/**
+ * Opening the emailed link only shows a confirmation button.
+ *
+ * 🔴 This GET used to unsubscribe on the spot. Mail-security scanners open every
+ * link in an email before the member sees it, so members were being taken off
+ * the newsletter without ever choosing to. The change happens only on the POST
+ * below, which a link checker does not send (and which carries a CSRF token).
+ */
+router.get('/newsletter/unsubscribe', (req, res) => {
+  const token = unsubscribeTokenFrom(req.query.token);
+  renderNewsletterUnsubscribe(res, token ? 'confirm' : 'missing', token);
+});
+
+router.post('/newsletter/unsubscribe', async (req, res) => {
+  const token = unsubscribeTokenFrom(req.body && req.body.token);
   let state = 'missing';
 
   if (token) {
-    const query = new URLSearchParams({ token });
     try {
-      await callNewsletterApi('GET', `?${query.toString()}`);
+      // Laravel's POST /api/v2/newsletter/unsubscribe reads `token` from the body.
+      await callNewsletterApi('POST', '', { token });
       state = 'success';
     } catch (error) {
       state = tokenFailureState(error);
     }
   }
 
-  res.render('public-info/newsletter-unsubscribe', {
-    title: translatedTitle(res, 'auth.unsubscribe_title', 'Unsubscribe from emails'),
-    activeNav: '',
-    state
-  });
+  renderNewsletterUnsubscribe(res, state, state === 'unavailable' ? token : '');
 });
 
 router.get('/verify-email', async (req, res) => {

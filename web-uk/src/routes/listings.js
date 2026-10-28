@@ -1071,6 +1071,14 @@ router.post('/:listingId(\\d+)/exchange-request', asyncRoute(async (req, res) =>
   const prepTime = trimmed(req.body.prep_time) === ''
     ? null
     : phpFloat(req.body.prep_time);
+  // Both are text boxes (GOV.UK "ask for numbers"), so the browser no longer refuses "abc"
+  // or 99. A value that is not a number in range is an error, not a silently clamped request.
+  const typedHours = Number(trimmed(proposedHoursInput));
+  const typedPrep = Number(trimmed(req.body.prep_time));
+  if (trimmed(proposedHoursInput) === '' || !Number.isFinite(typedHours) || typedHours < 0.25 || typedHours > 24
+    || (prepTime !== null && (!Number.isFinite(typedPrep) || typedPrep < 0 || typedPrep > 24))) {
+    return redirectTo(res, `/listings/${listingId}/exchange-request?status=exchange-failed`);
+  }
   const message = trimmed(req.body.message, 5000);
   const payload = {
     listing_id: listingId,

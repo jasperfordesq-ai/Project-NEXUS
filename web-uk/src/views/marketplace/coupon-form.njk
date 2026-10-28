@@ -239,7 +239,7 @@
         {{ t("govuk_alpha_commerce.coupons.delete_warning") }}
       </strong>
     </div>
-    <form method="post" action="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/delete') }}">
+    <form method="post" action="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/delete') }}" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.coupons.action_delete") }}</button>
     </form>

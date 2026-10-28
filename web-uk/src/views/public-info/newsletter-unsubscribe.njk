@@ -5,6 +5,15 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
+  {# A macro's output is already marked safe, so no `| safe` is needed. Page values are passed in
+     because a macro cannot see csrfToken or urlFor. #}
+  {% macro unsubscribeForm(action, csrf, tokenValue, label) %}
+    <form method="post" action="{{ action }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <input type="hidden" name="token" value="{{ tokenValue }}">
+      <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ label }}</button>
+    </form>
+  {% endmacro %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {% if state == "success" %}
@@ -13,6 +22,14 @@
           <div class="govuk-panel__body">{{ t("auth.unsubscribe_success_body") }}</div>
         </div>
         <p class="govuk-body govuk-!-margin-top-6">{{ t("auth.unsubscribe_success_detail") }}</p>
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ urlFor('/') }}">{{ t("auth.unsubscribe_back_home") }}</a>
+        </p>
+      {% elif state == "confirm" %}
+        <h1 class="govuk-heading-xl">{{ t("auth.unsubscribe_title") }}</h1>
+        <p class="govuk-body">{{ t("auth.unsubscribe_confirm_body") }}</p>
+        <p class="govuk-body">{{ t("auth.unsubscribe_success_detail") }}</p>
+        {{ unsubscribeForm(urlFor('/newsletter/unsubscribe'), csrfToken, token, t("auth.unsubscribe_confirm_button")) }}
         <p class="govuk-body">
           <a class="govuk-link" href="{{ urlFor('/') }}">{{ t("auth.unsubscribe_back_home") }}</a>
         </p>
@@ -36,6 +53,9 @@
             </div>
           </div>
         </div>
+        {% if state == "unavailable" and token %}
+          {{ unsubscribeForm(urlFor('/newsletter/unsubscribe'), csrfToken, token, t("auth.unsubscribe_confirm_button")) }}
+        {% endif %}
         <p class="govuk-body">
           <a class="govuk-link" href="{{ urlFor('/') }}">{{ t("auth.unsubscribe_back_home") }}</a>
         </p>
