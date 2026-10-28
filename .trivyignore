@@ -255,6 +255,16 @@ CVE-2023-54404
 # Remove when node-forge publishes a fixed release. (added 2026-10-02)
 CVE-2026-85393
 
+# ── deepmerge 4.3.1 CVE-2026-93753 (LOW) — prototype poisoning, no fix exists ──
+# 4.3.1 (March 2023) is the latest release and Trivy lists no fixed version.
+# Reachability: mobile/package-lock.json only, single instance. Imported by
+# @expo/config build/Config.js (reads app.json/app.config at build time on the
+# developer machine or EAS) and jest-config (test runner). No file under
+# mobile/src or mobile/app imports it, so it is not in the APK/IPA and never
+# merges member input. Remove when deepmerge publishes a fix or Expo drops it.
+# (added 2026-10-28, E-114)
+CVE-2026-93753
+
 # =============================================================================
 # DELETED at the 2026-08-28 review — kept here as a short record so a future
 # reader does not "rediscover" these and re-add them. Each was removed because
