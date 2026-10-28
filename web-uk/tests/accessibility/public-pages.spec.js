@@ -1920,7 +1920,7 @@ test.describe('representative authenticated-page accessibility gate', () => {
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('h1')).not.toBeEmpty();
       await expect(page.locator('main .govuk-caption-xl')).toHaveText(translate('ar', 'profile.own_caption'));
-      await expect(page.getByRole('link', { name: translate('ar', 'actions.edit_profile'), exact: true })).toHaveCount(1);
+      await expect(page.getByRole('button', { name: translate('ar', 'actions.edit_profile'), exact: true })).toHaveCount(1);
       await expect(page.getByRole('heading', { name: translate('ar', 'profile.activity_title'), exact: true })).toHaveCount(1);
 
       const visibleText = await page.locator('body').innerText();
