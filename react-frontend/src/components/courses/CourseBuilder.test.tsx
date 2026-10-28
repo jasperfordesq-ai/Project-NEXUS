@@ -34,6 +34,7 @@ const mockCoursesApi = vi.hoisted(() => ({
   createLesson: vi.fn(),
   updateLesson: vi.fn(),
   deleteLesson: vi.fn(),
+  reorderLessons: vi.fn(),
   createQuiz: vi.fn(),
   createQuestion: vi.fn(),
 }));
@@ -269,5 +270,82 @@ describe('CourseBuilder — with sections', () => {
     await waitFor(() => {
       expect(mockCoursesApi.deleteLesson).toHaveBeenCalledWith(1, SECTION_1.lessons[0].id);
     });
+  });
+});
+
+describe('CourseBuilder — lesson reorder (atomic reorder endpoint)', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const SECOND_LESSON = { ...SECTION_1.lessons[0]!, id: 101, title: 'Second Lesson', position: 1 };
+  const TWO_LESSONS = { ...SECTION_1, lessons: [SECTION_1.lessons[0]!, SECOND_LESSON] };
+
+  function lessonTitles(): string[] {
+    return screen.getAllByText(/^(First|Second) Lesson/).map((el) => (el.textContent ?? '').split('·')[0]!.trim());
+  }
+
+  it('labels each lesson move button with the lesson it moves', () => {
+    render(<CourseBuilder courseId={1} initialSections={[TWO_LESSONS]} />);
+
+    expect(screen.getByRole('button', { name: 'Move lesson "First Lesson" up' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Move lesson "First Lesson" down' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Move lesson "Second Lesson" up' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Move lesson "Second Lesson" down' })).toBeDisabled();
+  });
+
+  it('moves a lesson down with one reorder call carrying the expected and new order', async () => {
+    mockCoursesApi.reorderLessons.mockResolvedValue({ success: true, data: { ordered_ids: [101, 100] } });
+    render(<CourseBuilder courseId={1} initialSections={[TWO_LESSONS]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move lesson "First Lesson" down' }));
+
+    await waitFor(() => {
+      expect(mockCoursesApi.reorderLessons).toHaveBeenCalledWith(1, 10, {
+        expected_ids: [100, 101],
+        ordered_ids: [101, 100],
+      });
+    });
+    expect(mockCoursesApi.updateLesson).not.toHaveBeenCalled();
+    expect(lessonTitles()).toEqual(['Second Lesson', 'First Lesson']);
+    expect(mockToast.error).not.toHaveBeenCalled();
+  });
+
+  it('moves a lesson up with the keyboard', async () => {
+    mockCoursesApi.reorderLessons.mockResolvedValue({ success: true, data: { ordered_ids: [101, 100] } });
+    const user = userEvent.setup();
+    render(<CourseBuilder courseId={1} initialSections={[TWO_LESSONS]} />);
+
+    screen.getByRole('button', { name: 'Move lesson "Second Lesson" up' }).focus();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(mockCoursesApi.reorderLessons).toHaveBeenCalledWith(1, 10, {
+        expected_ids: [100, 101],
+        ordered_ids: [101, 100],
+      });
+    });
+  });
+
+  it('puts the order back and explains when someone else changed it first (409)', async () => {
+    mockCoursesApi.reorderLessons.mockResolvedValue({ success: false, code: 'COURSE_ORDER_CHANGED' });
+    render(<CourseBuilder courseId={1} initialSections={[TWO_LESSONS]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move lesson "First Lesson" down' }));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'The lesson order was changed somewhere else. Reload the page to see the current order, then try again.',
+      );
+    });
+    expect(lessonTitles()).toEqual(['First Lesson', 'Second Lesson']);
+  });
+
+  it('puts the order back on any other failure', async () => {
+    mockCoursesApi.reorderLessons.mockResolvedValue({ success: false, code: 'REQUEST_FAILED' });
+    render(<CourseBuilder courseId={1} initialSections={[TWO_LESSONS]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move lesson "First Lesson" down' }));
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('Could not save. Please try again.'));
+    expect(lessonTitles()).toEqual(['First Lesson', 'Second Lesson']);
   });
 });

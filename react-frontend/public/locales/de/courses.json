@@ -249,7 +249,10 @@
     "publish_hint": "Ihr Kurs ist ein Entwurf. Veröffentlichen Sie es, um es für Mitglieder sichtbar zu machen und für die Anmeldung freizugeben.",
     "url_placeholder": "Beispiel: https://example.com/file",
     "transcript": "Transkript",
-    "transcript_hint": "Eine schriftliche Fassung des Gesagten. Lernende, die das Video nicht hören oder sehen können, sind darauf angewiesen."
+    "transcript_hint": "Eine schriftliche Fassung des Gesagten. Lernende, die das Video nicht hören oder sehen können, sind darauf angewiesen.",
+    "move_lesson_up": "Lektion „{{title}}“ nach oben verschieben",
+    "move_lesson_down": "Lektion „{{title}}“ nach unten verschieben",
+    "order_changed": "Die Reihenfolge der Lektionen wurde an anderer Stelle geändert. Laden Sie die Seite neu, um die aktuelle Reihenfolge zu sehen, und versuchen Sie es dann erneut."
   },
   "lesson_content": {
     "text": "Text",

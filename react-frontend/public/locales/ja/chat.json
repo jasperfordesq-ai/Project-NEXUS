@@ -44,5 +44,21 @@
   "card_wallet_transactions_one": "過去 30 日間の {{count}} トランザクション",
   "card_wallet_transactions_other": "過去30日間の{{count}}件の取引",
   "limits_left_today_other": "{{count}}が今日残っています",
-  "limits_left_today_one": "{{count}} 今日退席"
+  "limits_left_today_one": "{{count}} 今日退席",
+  "history_button_aria": "過去の会話",
+  "history_title": "過去の会話",
+  "history_loading": "過去の会話を読み込んでいます",
+  "history_empty": "過去の会話はまだありません。",
+  "history_load_error": "過去の会話を読み込めませんでした。もう一度お試しください。",
+  "history_open_error": "会話を開けませんでした。もう一度お試しください。",
+  "history_delete_error": "会話を削除できませんでした。もう一度お試しください。",
+  "history_untitled": "無題の会話",
+  "history_message_count": "メッセージ数: {{total}}",
+  "history_open": "開く",
+  "history_open_aria": "会話「{{title}}」を開く",
+  "history_delete_aria": "会話「{{title}}」を削除",
+  "history_delete_confirm": "この会話を削除しますか？この操作は元に戻せません。",
+  "history_delete_confirm_button": "はい、削除します",
+  "history_cancel": "キャンセル",
+  "history_close": "閉じる"
 }

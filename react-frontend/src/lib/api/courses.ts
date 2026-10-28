@@ -313,4 +313,11 @@ export const coursesApi = {
     api.put<CourseLesson>(`/v2/courses/${courseId}/lessons/${lessonId}`, data),
   deleteLesson: (courseId: number, lessonId: number) =>
     api.delete(`/v2/courses/${courseId}/lessons/${lessonId}`),
+  /**
+   * Atomic lesson reorder within one section. `expected_ids` is the order the
+   * client believes is current; the server answers 409 COURSE_ORDER_CHANGED if
+   * it is not, so two editors cannot silently overwrite each other.
+   */
+  reorderLessons: (courseId: number, sectionId: number, data: { expected_ids: number[]; ordered_ids: number[] }) =>
+    api.put<{ ordered_ids: number[] }>(`/v2/courses/${courseId}/sections/${sectionId}/lessons/reorder`, data),
 };

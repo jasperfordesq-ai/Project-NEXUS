@@ -249,7 +249,10 @@
     "publish_hint": "Your course is a draft. Publish it to make it visible to members and open for enrolment.",
     "url_placeholder": "Example: https://example.com/file",
     "transcript": "Transcript",
-    "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this."
+    "transcript_hint": "A written version of what is said. Learners who cannot hear or watch the video rely on this.",
+    "move_lesson_up": "Move lesson \"{{title}}\" up",
+    "move_lesson_down": "Move lesson \"{{title}}\" down",
+    "order_changed": "The lesson order was changed somewhere else. Reload the page to see the current order, then try again."
   },
   "lesson_content": {
     "text": "Text",

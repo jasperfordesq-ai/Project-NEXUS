@@ -44,5 +44,21 @@
   "card_wallet_transactions_one": "{{count}} Transaktionen in den letzten 30 Tagen",
   "card_wallet_transactions_other": "{{count}} Transaktionen in den letzten 30 Tagen",
   "limits_left_today_one": "{{count}} heute übrig",
-  "limits_left_today_other": "{{count}} heute übrig"
+  "limits_left_today_other": "{{count}} heute übrig",
+  "history_button_aria": "Frühere Unterhaltungen",
+  "history_title": "Frühere Unterhaltungen",
+  "history_loading": "Frühere Unterhaltungen werden geladen",
+  "history_empty": "Sie haben noch keine früheren Unterhaltungen.",
+  "history_load_error": "Ihre früheren Unterhaltungen konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+  "history_open_error": "Die Unterhaltung konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+  "history_delete_error": "Die Unterhaltung konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+  "history_untitled": "Unterhaltung ohne Titel",
+  "history_message_count": "Nachrichten: {{total}}",
+  "history_open": "Öffnen",
+  "history_open_aria": "Unterhaltung „{{title}}“ öffnen",
+  "history_delete_aria": "Unterhaltung „{{title}}“ löschen",
+  "history_delete_confirm": "Diese Unterhaltung löschen? Das kann nicht rückgängig gemacht werden.",
+  "history_delete_confirm_button": "Ja, löschen",
+  "history_cancel": "Abbrechen",
+  "history_close": "Schließen"
 }

@@ -253,7 +253,10 @@
     "publish_hint": "Seu curso é um rascunho. Publique-o para torná-lo visível aos membros e aberto para inscrição.",
     "url_placeholder": "Exemplo: https://example.com/file",
     "transcript": "Transcrição",
-    "transcript_hint": "Uma versão escrita do que é dito. Os alunos que não conseguem ouvir ou ver o vídeo dependem disto."
+    "transcript_hint": "Uma versão escrita do que é dito. Os alunos que não conseguem ouvir ou ver o vídeo dependem disto.",
+    "move_lesson_up": "Mover a lição \"{{title}}\" para cima",
+    "move_lesson_down": "Mover a lição \"{{title}}\" para baixo",
+    "order_changed": "A ordem das lições foi alterada noutro local. Recarregue a página para ver a ordem atual e tente novamente."
   },
   "lesson_content": {
     "text": "Texto",

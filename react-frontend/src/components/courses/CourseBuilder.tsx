@@ -119,19 +119,22 @@ export function CourseBuilder({ courseId, initialSections }: CourseBuilderProps)
   const moveLesson = async (sectionId: number, index: number, dir: -1 | 1) => {
     const section = sections.find((s) => s.id === sectionId);
     if (!section) return;
-    const lessons = [...(section.lessons ?? [])];
+    const current = section.lessons ?? [];
     const target = index + dir;
-    if (target < 0 || target >= lessons.length) return;
+    if (target < 0 || target >= current.length) return;
     const prev = sections;
+    const lessons = [...current];
     [lessons[index], lessons[target]] = [lessons[target]!, lessons[index]!];
     setSections((p) => p.map((s) => (s.id === sectionId ? { ...s, lessons } : s)));
-    const results = await Promise.all([
-      coursesApi.updateLesson(courseId, lessons[index]!.id, { position: index }),
-      coursesApi.updateLesson(courseId, lessons[target]!.id, { position: target }),
-    ]);
-    if (results.some((r) => !r.success)) {
+    // One atomic call with the order we started from, so a concurrent edit is
+    // refused (409) instead of two position writes interleaving.
+    const res = await coursesApi.reorderLessons(courseId, sectionId, {
+      expected_ids: current.map((l) => l.id),
+      ordered_ids: lessons.map((l) => l.id),
+    });
+    if (!res.success) {
       setSections(prev);
-      toast.error(t('builder.save_error'));
+      toast.error(res.code === 'COURSE_ORDER_CHANGED' ? t('builder.order_changed') : t('builder.save_error'));
     }
   };
 
@@ -300,8 +303,8 @@ function LessonRow({ courseId, lesson, isFirst, isLast, onChange, onDelete, onMo
             <span className="ml-2 text-xs text-muted">· {t(`lesson_content.${draft.content_type}`)}</span>
           </span>
         </Button>
-        <Button isIconOnly size="sm" variant="tertiary" aria-label={t('builder.move_up')} isDisabled={isFirst} onPress={() => onMove(-1)}><ChevronUp size={14} /></Button>
-        <Button isIconOnly size="sm" variant="tertiary" aria-label={t('builder.move_down')} isDisabled={isLast} onPress={() => onMove(1)}><ChevronDown size={14} /></Button>
+        <Button isIconOnly size="sm" variant="tertiary" aria-label={t('builder.move_lesson_up', { title: draft.title || t('builder.untitled_lesson') })} isDisabled={isFirst} onPress={() => onMove(-1)}><ChevronUp size={14} aria-hidden="true" /></Button>
+        <Button isIconOnly size="sm" variant="tertiary" aria-label={t('builder.move_lesson_down', { title: draft.title || t('builder.untitled_lesson') })} isDisabled={isLast} onPress={() => onMove(1)}><ChevronDown size={14} aria-hidden="true" /></Button>
         <Button isIconOnly size="sm" variant="tertiary" aria-label={t('builder.delete_lesson')} onPress={onDelete}><Trash2 size={14} /></Button>
       </div>
 

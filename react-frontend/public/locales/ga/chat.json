@@ -50,5 +50,21 @@
   "limits_left_today_many": "{{count}} fágtha inniu",
   "limits_left_today_one": "{{count}} fágtha inniu",
   "limits_left_today_other": "{{count}} fágtha inniu",
-  "limits_left_today_two": "{{count}} fágtha inniu"
+  "limits_left_today_two": "{{count}} fágtha inniu",
+  "history_button_aria": "Comhráite roimhe seo",
+  "history_title": "Comhráite roimhe seo",
+  "history_loading": "Comhráite roimhe seo á lódáil",
+  "history_empty": "Níl aon chomhráite roimhe seo agat fós.",
+  "history_load_error": "Níorbh fhéidir do chomhráite roimhe seo a lódáil. Bain triail eile as.",
+  "history_open_error": "Níorbh fhéidir an comhrá a oscailt. Bain triail eile as.",
+  "history_delete_error": "Níorbh fhéidir an comhrá a scriosadh. Bain triail eile as.",
+  "history_untitled": "Comhrá gan teideal",
+  "history_message_count": "Teachtaireachtaí: {{total}}",
+  "history_open": "Oscail",
+  "history_open_aria": "Oscail an comhrá \"{{title}}\"",
+  "history_delete_aria": "Scrios an comhrá \"{{title}}\"",
+  "history_delete_confirm": "An bhfuil tú cinnte gur mian leat an comhrá seo a scriosadh? Ní féidir é seo a chealú.",
+  "history_delete_confirm_button": "Is ea, scrios é",
+  "history_cancel": "Cealaigh",
+  "history_close": "Dún"
 }

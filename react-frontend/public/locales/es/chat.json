@@ -46,5 +46,21 @@
   "card_wallet_transactions_other": "{{count}} transacciones en los últimos 30 días",
   "limits_left_today_many": "{{count}} restantes hoy",
   "limits_left_today_one": "{{count}} restantes hoy",
-  "limits_left_today_other": "{{count}} restantes hoy"
+  "limits_left_today_other": "{{count}} restantes hoy",
+  "history_button_aria": "Conversaciones anteriores",
+  "history_title": "Conversaciones anteriores",
+  "history_loading": "Cargando conversaciones anteriores",
+  "history_empty": "Todavía no tienes conversaciones anteriores.",
+  "history_load_error": "No se pudieron cargar tus conversaciones anteriores. Inténtalo de nuevo.",
+  "history_open_error": "No se pudo abrir la conversación. Inténtalo de nuevo.",
+  "history_delete_error": "No se pudo eliminar la conversación. Inténtalo de nuevo.",
+  "history_untitled": "Conversación sin título",
+  "history_message_count": "Mensajes: {{total}}",
+  "history_open": "Abrir",
+  "history_open_aria": "Abrir la conversación \"{{title}}\"",
+  "history_delete_aria": "Eliminar la conversación \"{{title}}\"",
+  "history_delete_confirm": "¿Eliminar esta conversación? Esta acción no se puede deshacer.",
+  "history_delete_confirm_button": "Sí, eliminarla",
+  "history_cancel": "Cancelar",
+  "history_close": "Cerrar"
 }

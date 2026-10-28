@@ -44,5 +44,21 @@
   "card_wallet_transactions_one": "{{count}} transactions in last 30 days",
   "card_wallet_transactions_other": "{{count}} transactions in last 30 days",
   "limits_left_today_one": "{{count}} left today",
-  "limits_left_today_other": "{{count}} left today"
+  "limits_left_today_other": "{{count}} left today",
+  "history_button_aria": "Past conversations",
+  "history_title": "Past conversations",
+  "history_loading": "Loading past conversations",
+  "history_empty": "You have no past conversations yet.",
+  "history_load_error": "Could not load your past conversations. Please try again.",
+  "history_open_error": "Could not open the conversation. Please try again.",
+  "history_delete_error": "Could not delete the conversation. Please try again.",
+  "history_untitled": "Untitled conversation",
+  "history_message_count": "Messages: {{total}}",
+  "history_open": "Open",
+  "history_open_aria": "Open conversation \"{{title}}\"",
+  "history_delete_aria": "Delete conversation \"{{title}}\"",
+  "history_delete_confirm": "Delete this conversation? This cannot be undone.",
+  "history_delete_confirm_button": "Yes, delete it",
+  "history_cancel": "Cancel",
+  "history_close": "Close"
 }

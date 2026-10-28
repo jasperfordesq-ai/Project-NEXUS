@@ -249,7 +249,10 @@
     "publish_hint": "Je cursus is een concept. Publiceer het om het zichtbaar te maken voor leden en open te stellen voor inschrijving.",
     "url_placeholder": "Voorbeeld: https://example.com/file",
     "transcript": "Afschrift",
-    "transcript_hint": "Een geschreven versie van wat er wordt gezegd. Cursisten die de video niet kunnen horen of zien, zijn hierop aangewezen."
+    "transcript_hint": "Een geschreven versie van wat er wordt gezegd. Cursisten die de video niet kunnen horen of zien, zijn hierop aangewezen.",
+    "move_lesson_up": "Les \"{{title}}\" omhoog verplaatsen",
+    "move_lesson_down": "Les \"{{title}}\" omlaag verplaatsen",
+    "order_changed": "De volgorde van de lessen is ergens anders gewijzigd. Laad de pagina opnieuw om de huidige volgorde te zien en probeer het daarna opnieuw."
   },
   "lesson_content": {
     "text": "Tekst",

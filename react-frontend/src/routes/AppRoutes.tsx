@@ -62,6 +62,7 @@ const CreateListingPage = lazyWithRetry(() => import('@/pages/listings/CreateLis
 const OwnListingsPage = lazyWithRetry(() => import('@/pages/listings/MyListingsPage'));
 const MessagesPage = lazyWithRetry(() => import('@/pages/messages/MessagesPage'));
 const ConversationPage = lazyWithRetry(() => import('@/pages/messages/ConversationPage'));
+const GroupConversationPage = lazyWithRetry(() => import('@/pages/messages/GroupConversationPage'));
 const WalletPage = lazyWithRetry(() => import('@/pages/wallet/WalletPage'));
 const ProfilePage = lazyWithRetry(() => import('@/pages/profile/ProfilePage'));
 // SOC10 / SOC14 — collections & appreciations
@@ -1046,6 +1047,15 @@ export function AppRoutes() {
             <FeatureGate module="messages" redirect="/dashboard">
               <FeatureErrorBoundary featureName="Messages">
                 <ConversationPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          {/* Group chats have their own route: /messages/:id is the one-to-one
+              thread keyed on the other member's user id. */}
+          <Route path="messages/group/:id" element={
+            <FeatureGate module="messages" redirect="/dashboard">
+              <FeatureErrorBoundary featureName="Messages">
+                <GroupConversationPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />

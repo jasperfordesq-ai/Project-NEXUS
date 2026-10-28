@@ -253,7 +253,10 @@
     "publish_hint": "Il tuo corso è una bozza. Pubblicalo per renderlo visibile ai membri e aprire le iscrizioni.",
     "url_placeholder": "Esempio: https://example.com/file",
     "transcript": "Trascrizione",
-    "transcript_hint": "Una versione scritta di ciò che viene detto. Gli studenti che non possono sentire o vedere il video ne hanno bisogno."
+    "transcript_hint": "Una versione scritta di ciò che viene detto. Gli studenti che non possono sentire o vedere il video ne hanno bisogno.",
+    "move_lesson_up": "Sposta la lezione \"{{title}}\" in alto",
+    "move_lesson_down": "Sposta la lezione \"{{title}}\" in basso",
+    "order_changed": "L'ordine delle lezioni è stato modificato altrove. Ricarica la pagina per vedere l'ordine attuale, poi riprova."
   },
   "lesson_content": {
     "text": "Testo",

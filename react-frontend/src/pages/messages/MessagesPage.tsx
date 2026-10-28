@@ -70,6 +70,28 @@ function getOtherUser(conv: Conversation) {
   };
 }
 
+type MessagesTab = 'inbox' | 'groups' | 'archived';
+
+/** One row of `GET /v2/conversations/groups` (GroupConversationService::getUserGroups). */
+interface GroupConversationSummary {
+  id: number;
+  group_name?: string | null;
+  group_avatar_url?: string | null;
+  participant_count?: number;
+  unread_count?: number;
+  last_message?: {
+    id: number;
+    body?: string | null;
+    sender_id?: number;
+    sender_name?: string;
+    created_at?: string;
+  } | null;
+}
+
+function groupDisplayName(group: GroupConversationSummary, fallback: string): string {
+  return group.group_name?.trim() || fallback;
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -100,8 +122,15 @@ export function MessagesPage() {
   const [isLoadingArchived, setIsLoadingArchived] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'inbox' | 'archived'>('inbox');
+  // `?tab=groups` is where a group chat's back link returns to.
+  const [activeTab, setActiveTab] = useState<MessagesTab>(
+    () => (searchParams.get('tab') === 'groups' ? 'groups' : 'inbox'),
+  );
   const archivedLoadedRef = useRef(false);
+  const [groupConversations, setGroupConversations] = useState<GroupConversationSummary[]>([]);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
+  const [groupsError, setGroupsError] = useState(false);
+  const groupsLoadedRef = useRef(false);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -423,6 +452,33 @@ export function MessagesPage() {
     }
   }
 
+  // Group chats live in their own list: the one-to-one inbox (`/v2/messages`)
+  // is keyed on the other member and carries no group conversations.
+  const loadGroupConversations = useCallback(async () => {
+    setIsLoadingGroups(true);
+    setGroupsError(false);
+    try {
+      const response = await api.get<GroupConversationSummary[]>('/v2/conversations/groups');
+      if (response.success && Array.isArray(response.data)) {
+        setGroupConversations(response.data);
+      } else {
+        setGroupsError(true);
+      }
+    } catch (err) {
+      logError('Failed to load group conversations', err);
+      setGroupsError(true);
+    } finally {
+      setIsLoadingGroups(false);
+      groupsLoadedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'groups' && !groupsLoadedRef.current) {
+      void loadGroupConversations();
+    }
+  }, [activeTab, loadGroupConversations]);
+
   // Load archived conversations when tab changes (only once)
   useEffect(() => {
     if (activeTab === 'archived' && !archivedLoadedRef.current) {
@@ -459,6 +515,12 @@ export function MessagesPage() {
       return otherUser.name.toLowerCase().includes(searchQuery.toLowerCase());
     }),
     [archivedConversations, searchQuery]
+  );
+  const filteredGroupConversations = useMemo(
+    () => groupConversations.filter((group) => groupDisplayName(group, tRef.current('group_chat_title'))
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())),
+    [groupConversations, searchQuery]
   );
   const totalUnread = useMemo(
     () => conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0),
@@ -544,7 +606,7 @@ export function MessagesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Tabs
             selectedKey={activeTab}
-            onSelectionChange={(key) => setActiveTab(key as 'inbox' | 'archived')}
+            onSelectionChange={(key) => setActiveTab(key as MessagesTab)}
             aria-label={t('title')}
             classNames={{
               base: 'w-full sm:w-auto',
@@ -565,6 +627,14 @@ export function MessagesPage() {
                       {totalUnread > 99 ? '99+' : totalUnread}
                     </Chip>
                   )}
+                </div>
+              } />
+            <Tab
+              key="groups"
+              title={
+                <div className="flex min-w-0 items-center gap-2">
+                  <UsersIcon className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                  <span className="truncate">{t('group_tab')}</span>
                 </div>
               } />
             <Tab
@@ -671,7 +741,10 @@ export function MessagesPage() {
         onClose={() => setIsCreateGroupOpen(false)}
         onCreated={(groupId) => {
           setIsCreateGroupOpen(false);
-          navigate(tenantPath(`/messages/${groupId}`));
+          // 🔴 Never `/messages/${groupId}`: that route is the one-to-one thread
+          // keyed on the OTHER MEMBER's user id, so a group id there opens a
+          // private chat with an unrelated member.
+          navigate(tenantPath(`/messages/group/${groupId}`));
         }} />
 
       {/* Conversations List */}
@@ -726,6 +799,32 @@ export function MessagesPage() {
               </motion.div>
             ))}
           </motion.div>
+        )
+      ) : activeTab === 'groups' ? (
+        groupsError ? (
+          <GlassCard role="alert" className="p-8 text-center">
+            <AlertTriangle className="w-12 h-12 text-[var(--color-warning)] mx-auto mb-4" aria-hidden="true" />
+            <p className="text-theme-muted mb-4">{t('groups_load_failed')}</p>
+            <Button
+              className="bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+              startContent={<RefreshCw className="h-4 w-4" aria-hidden="true" />}
+              onPress={() => void loadGroupConversations()}
+            >
+              {t('try_again')}
+            </Button>
+          </GlassCard>
+        ) : isLoadingGroups ? (
+          <ConversationListSkeleton label={t('aria_loading_conversations')} count={3} />
+        ) : filteredGroupConversations.length === 0 ? (
+          <EmptyState
+            icon={<UsersIcon className="w-12 h-12" />}
+            title={hasSearchQuery ? t('search_empty') : t('groups_empty')} />
+        ) : (
+          <div className="space-y-3" data-conversation-list="groups">
+            {filteredGroupConversations.map((group) => (
+              <GroupConversationCard key={group.id} group={group} />
+            ))}
+          </div>
         )
       ) : (
         // Archived view
@@ -817,6 +916,51 @@ function ConversationCard({ conversation }: ConversationCardProps) {
           {unread_count > 0 && (
             <Circle className="w-3 h-3 fill-accent text-accent flex-shrink-0" aria-hidden="true" />
           )}
+        </div>
+      </GlassCard>
+    </Link>
+  );
+}
+
+function GroupConversationCard({ group }: { group: GroupConversationSummary }) {
+  const { t } = useTranslation('messages');
+  const { tenantPath } = useTenant();
+  const name = groupDisplayName(group, t('group_chat_title'));
+  const unread = group.unread_count ?? 0;
+  const last = group.last_message;
+  const lastTime = last?.created_at ? formatRelativeTime(last.created_at) : null;
+
+  return (
+    <Link
+      to={tenantPath(`/messages/group/${group.id}`)}
+      aria-label={t('group_open_aria', { name })}
+      className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <GlassCard className={`p-4 transition-colors hover:bg-theme-hover sm:p-5 ${unread > 0 ? 'border-l-4 border-l-accent' : ''}`}>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Badge content={unread > 9 ? '9+' : unread} color="accent" size="sm" isInvisible={unread === 0} placement="top-right">
+            <Avatar
+              src={group.group_avatar_url ? resolveAvatarUrl(group.group_avatar_url) : undefined}
+              name={name}
+              size="lg"
+              className="ring-2 ring-theme-default"
+            />
+          </Badge>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className={`min-w-0 truncate font-semibold ${unread > 0 ? 'text-theme-primary' : 'text-theme-muted'}`}>{name}</h3>
+              {lastTime && (
+                <span className="max-w-[6.5rem] flex-shrink-0 truncate text-right text-xs text-theme-subtle sm:max-w-none">{lastTime}</span>
+              )}
+            </div>
+            <p className="text-xs text-theme-subtle">{t('group_members', { count: group.participant_count ?? 0 })}</p>
+            {last?.body && (
+              <p className="text-sm line-clamp-1 text-theme-subtle">
+                {last.sender_name && <span className="font-medium text-theme-muted">{last.sender_name} · </span>}
+                <span>{last.body}</span>
+              </p>
+            )}
+          </div>
         </div>
       </GlassCard>
     </Link>

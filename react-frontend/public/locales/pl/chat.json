@@ -48,5 +48,21 @@
   "limits_left_today_few": "Pozostało dziś: {{count}}",
   "limits_left_today_many": "Pozostało dziś: {{count}}",
   "limits_left_today_one": "Pozostało dziś: {{count}}",
-  "limits_left_today_other": "Pozostało dziś: {{count}}"
+  "limits_left_today_other": "Pozostało dziś: {{count}}",
+  "history_button_aria": "Poprzednie rozmowy",
+  "history_title": "Poprzednie rozmowy",
+  "history_loading": "Wczytywanie poprzednich rozmów",
+  "history_empty": "Nie masz jeszcze żadnych poprzednich rozmów.",
+  "history_load_error": "Nie udało się wczytać poprzednich rozmów. Spróbuj ponownie.",
+  "history_open_error": "Nie udało się otworzyć rozmowy. Spróbuj ponownie.",
+  "history_delete_error": "Nie udało się usunąć rozmowy. Spróbuj ponownie.",
+  "history_untitled": "Rozmowa bez tytułu",
+  "history_message_count": "Wiadomości: {{total}}",
+  "history_open": "Otwórz",
+  "history_open_aria": "Otwórz rozmowę „{{title}}”",
+  "history_delete_aria": "Usuń rozmowę „{{title}}”",
+  "history_delete_confirm": "Usunąć tę rozmowę? Tej operacji nie można cofnąć.",
+  "history_delete_confirm_button": "Tak, usuń",
+  "history_cancel": "Anuluj",
+  "history_close": "Zamknij"
 }

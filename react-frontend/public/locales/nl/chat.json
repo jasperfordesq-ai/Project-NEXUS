@@ -44,5 +44,21 @@
   "card_wallet_transactions_one": "{{count}} transacties in de afgelopen 30 dagen",
   "card_wallet_transactions_other": "{{count}} transacties in de afgelopen 30 dagen",
   "limits_left_today_one": "Nog {{count}} over vandaag",
-  "limits_left_today_other": "Nog {{count}} over vandaag"
+  "limits_left_today_other": "Nog {{count}} over vandaag",
+  "history_button_aria": "Eerdere gesprekken",
+  "history_title": "Eerdere gesprekken",
+  "history_loading": "Eerdere gesprekken laden",
+  "history_empty": "Je hebt nog geen eerdere gesprekken.",
+  "history_load_error": "Je eerdere gesprekken konden niet worden geladen. Probeer het opnieuw.",
+  "history_open_error": "Het gesprek kon niet worden geopend. Probeer het opnieuw.",
+  "history_delete_error": "Het gesprek kon niet worden verwijderd. Probeer het opnieuw.",
+  "history_untitled": "Gesprek zonder titel",
+  "history_message_count": "Berichten: {{total}}",
+  "history_open": "Openen",
+  "history_open_aria": "Gesprek \"{{title}}\" openen",
+  "history_delete_aria": "Gesprek \"{{title}}\" verwijderen",
+  "history_delete_confirm": "Dit gesprek verwijderen? Dit kan niet ongedaan worden gemaakt.",
+  "history_delete_confirm_button": "Ja, verwijderen",
+  "history_cancel": "Annuleren",
+  "history_close": "Sluiten"
 }

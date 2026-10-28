@@ -249,7 +249,10 @@
     "publish_hint": "あなたのコースはドラフトです。公開するとメンバーが閲覧できるようになり、登録が可能になります。",
     "url_placeholder": "例: https://example.com/file",
     "transcript": "書き起こし",
-    "transcript_hint": "話されている内容を文字にしたものです。動画を聞いたり見たりできない受講者はこれを頼りにします。"
+    "transcript_hint": "話されている内容を文字にしたものです。動画を聞いたり見たりできない受講者はこれを頼りにします。",
+    "move_lesson_up": "レッスン「{{title}}」を上に移動",
+    "move_lesson_down": "レッスン「{{title}}」を下に移動",
+    "order_changed": "レッスンの順序が別の場所で変更されました。ページを再読み込みして現在の順序を確認してから、もう一度お試しください。"
   },
   "lesson_content": {
     "text": "文章",

@@ -11,7 +11,8 @@ import { safeHref } from '@/lib/safeHref';
  *
  * Full-height chat interface for the AI assistant feature.
  * Uses POST /api/ai/chat for non-streaming responses.
- * Manages conversation history in local state and sends it with each request.
+ * Sends the conversation id with each request; past conversations can be
+ * listed, reopened and deleted from the history dialog (AiChatHistory).
  * Feature-gated by 'ai_chat'.
  */
 
@@ -28,6 +29,7 @@ import AlertCircle from 'lucide-react/icons/circle-alert';
 import Zap from 'lucide-react/icons/zap';
 import ThumbsUp from 'lucide-react/icons/thumbs-up';
 import ThumbsDown from 'lucide-react/icons/thumbs-down';
+import History from 'lucide-react/icons/history';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import api from '@/lib/api';
 import { usePageTitle } from '@/hooks';
@@ -35,6 +37,7 @@ import { useVisualViewport } from '@/hooks/useVisualViewport';
 import { PageMeta } from '@/components/seo';
 import { Link } from 'react-router-dom';
 import { ToolResultCards, isInternalUrl, type ToolInvocation } from './ToolResultCards';
+import { AiChatHistory, parseServerDate, type AiConversationDetail } from './AiChatHistory';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -392,6 +395,7 @@ export default function AiChatPage() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [limits, setLimits] = useState<{ daily_remaining: number; monthly_remaining: number } | null>(null);
   const [starters, setStarters] = useState<string[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -548,6 +552,35 @@ export default function AiChatPage() {
     textareaRef.current?.focus();
   };
 
+  // Reopen a stored conversation: show its user/assistant turns and keep its id,
+  // so the next send continues it (AiChatController::chat accepts the member's
+  // own conversation_id and appends to it).
+  const handleOpenConversation = useCallback((conversation: AiConversationDetail) => {
+    const restored: ChatMessage[] = (conversation.messages ?? [])
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({
+        id: `history-${m.id}`,
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        timestamp: parseServerDate(m.created_at) ?? new Date(),
+        messageId: m.role === 'assistant' ? m.id : null,
+        feedback: null,
+      }));
+    setMessages(restored);
+    setConversationId(conversation.id);
+    setLimits(null);
+    setInput('');
+    setIsHistoryOpen(false);
+  }, []);
+
+  const handleConversationDeleted = useCallback((deletedId: number) => {
+    if (deletedId === conversationId) {
+      setMessages([]);
+      setConversationId(null);
+      setLimits(null);
+    }
+  }, [conversationId]);
+
   // Resolve avatar
   const userAvatarUrl = user?.avatar_url ?? user?.avatar ?? undefined;
 
@@ -595,6 +628,16 @@ export default function AiChatPage() {
               {t('limits_left_today', { count: limits.daily_remaining })}
             </Chip>
           )}
+          <Button
+            size="sm"
+            variant="light"
+            isIconOnly
+            onPress={() => setIsHistoryOpen(true)}
+            aria-label={t('history_button_aria')}
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+          >
+            <History className="w-4 h-4" aria-hidden="true" />
+          </Button>
           {hasMessages && (
             <Button
               size="sm"
@@ -690,6 +733,13 @@ export default function AiChatPage() {
           </p>
         </div>
       </div>
+
+      <AiChatHistory
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onOpenConversation={handleOpenConversation}
+        onConversationDeleted={handleConversationDeleted}
+      />
     </div>
   );
 }

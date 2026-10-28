@@ -52,5 +52,21 @@
   "limits_left_today_one": "{{count}} ترك اليوم",
   "limits_left_today_other": "{{count}} ترك اليوم",
   "limits_left_today_two": "{{count}} ترك اليوم",
-  "limits_left_today_zero": "{{count}} ترك اليوم"
+  "limits_left_today_zero": "{{count}} ترك اليوم",
+  "history_button_aria": "المحادثات السابقة",
+  "history_title": "المحادثات السابقة",
+  "history_loading": "جارٍ تحميل المحادثات السابقة",
+  "history_empty": "لا توجد لديك محادثات سابقة بعد.",
+  "history_load_error": "تعذّر تحميل محادثاتك السابقة. يرجى المحاولة مرة أخرى.",
+  "history_open_error": "تعذّر فتح المحادثة. يرجى المحاولة مرة أخرى.",
+  "history_delete_error": "تعذّر حذف المحادثة. يرجى المحاولة مرة أخرى.",
+  "history_untitled": "محادثة بلا عنوان",
+  "history_message_count": "الرسائل: {{total}}",
+  "history_open": "فتح",
+  "history_open_aria": "فتح المحادثة \"{{title}}\"",
+  "history_delete_aria": "حذف المحادثة \"{{title}}\"",
+  "history_delete_confirm": "هل تريد حذف هذه المحادثة؟ لا يمكن التراجع عن ذلك.",
+  "history_delete_confirm_button": "نعم، احذفها",
+  "history_cancel": "إلغاء",
+  "history_close": "إغلاق"
 }
