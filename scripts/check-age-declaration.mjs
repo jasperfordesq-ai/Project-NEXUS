@@ -103,7 +103,11 @@ const SCREENS = [
     door: 'accessible',
     file: 'web-uk/src/views/register.njk',
     shows: /t\("auth\.terms_label"/,
-    requires: /name="terms_accepted"[^>]*\brequired\b/,
+    // The form is novalidate (GOV.UK pattern, 5a5dbc4b3): the server refuses an
+    // unticked box and shows the error in the member's language. Pinned by
+    // web-uk/tests/registration-contract.test.js (terms_accepted: '').
+    requiresFile: 'web-uk/src/routes/auth.js',
+    requires: /if \(!checkboxValue\(body\.terms_accepted\)\)\s*\{\s*add\('terms_accepted'/,
   },
 ];
 
@@ -112,8 +116,9 @@ for (const screen of SCREENS) {
   if (!screen.shows.test(source)) {
     problems.push(`${screen.door}: ${screen.file} no longer renders the age declaration`);
   }
-  if (!screen.requires.test(source)) {
-    problems.push(`${screen.door}: ${screen.file} no longer requires the tick before submitting`);
+  const requiresFile = screen.requiresFile ?? screen.file;
+  if (!screen.requires.test(screen.requiresFile ? read(requiresFile) : source)) {
+    problems.push(`${screen.door}: ${requiresFile} no longer requires the tick before submitting`);
   }
 }
 

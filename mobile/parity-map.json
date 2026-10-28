@@ -436,6 +436,10 @@
       "status": "native",
       "mobile": "thread"
     },
+    "messages/group/:id": {
+      "status": "gap",
+      "reason": "Group chats (thread, members, add/remove, leave) were added to the website on 28 Oct 2026; the native Messages tab lists one-to-one conversations only and has no group chat screen yet."
+    },
     "messages/new/:userId": {
       "status": "native",
       "mobile": "new-message"
