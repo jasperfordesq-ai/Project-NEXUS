@@ -54,7 +54,9 @@
     "mark_all_failed": "すべてを既読にするのに失敗しました",
     "delete_failed": "通知の削除に失敗しました",
     "deleted": "通知が削除されました",
-    "undo_hint": "元に戻すには「元に戻す」をクリックしてください"
+    "undo_hint": "元に戻すには「元に戻す」をクリックしてください",
+    "all_deleted": "すべての通知を削除しました",
+    "delete_all_failed": "通知を削除できませんでした。もう一度お試しください。"
   },
   "realtime": {
     "new_message": "新しいメッセージ",
@@ -104,5 +106,10 @@
   "and_others_other": "他{{count}}件",
   "unread_badge_one": "{{count}} 新規",
   "filter_unread_one": "未読 ({{count}})",
-  "and_others_one": "および {{count}} 他"
+  "and_others_one": "および {{count}} 他",
+  "delete_all": "すべて削除",
+  "delete_all_title": "すべての通知を削除しますか？",
+  "delete_all_body": "既読・未読を問わず、すべての通知が完全に削除されます。この操作は元に戻せません。",
+  "delete_all_confirm": "すべての通知を削除",
+  "delete_all_cancel": "キャンセル"
 }

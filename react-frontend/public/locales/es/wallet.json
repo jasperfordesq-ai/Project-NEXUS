@@ -169,5 +169,16 @@
   "venue_pass": "mi pase de lugar",
   "pending_in_many": "+{{count}}h pendientes",
   "signed_hours_value_many": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h"
+  "hours_value_many": "{{count}}h",
+  "statement": {
+    "title": "Descargar extracto",
+    "description": "Descargue todas las transacciones de su monedero como hoja de cálculo (archivo CSV). Deje las fechas vacías para incluirlas todas.",
+    "start_label": "Desde",
+    "end_label": "Hasta",
+    "range_invalid": "La fecha de fin debe ser igual o posterior a la fecha de inicio.",
+    "download": "Descargar",
+    "cancel": "Cancelar",
+    "success": "Extracto descargado",
+    "error": "No se pudo descargar su extracto. Inténtelo de nuevo."
+  }
 }

@@ -860,7 +860,19 @@
     "quantity_multiplier_few": "×{{count}}",
     "quantity_multiplier_many": "×{{count}}",
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Anuluj zamówienie",
+      "modal_title": "Anulować to zamówienie?",
+      "modal_body": "Zamówienie zostanie anulowane, a obie strony otrzymają powiadomienie. Tej czynności nie można cofnąć.",
+      "reason_label": "Powód anulowania",
+      "reason_placeholder": "Wyjaśnij drugiej osobie powód",
+      "reason_required": "Podaj powód anulowania.",
+      "confirm": "Anuluj zamówienie",
+      "keep": "Zachowaj zamówienie",
+      "success": "Zamówienie zostało anulowane.",
+      "error": "Nie udało się anulować zamówienia. Spróbuj ponownie."
+    }
   },
   "onboarding": {
     "page_title": "Wdrożenie sprzedawcy - Rynek & Freecycle",

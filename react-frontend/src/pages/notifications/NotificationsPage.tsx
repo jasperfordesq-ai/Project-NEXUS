@@ -7,6 +7,7 @@ import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 /**
@@ -296,6 +297,40 @@ export function NotificationsPage() {
     setLastDeletedNotification(null);
   }
 
+  // Delete every notification (Laravel DELETE /v2/notifications), after an
+  // explicit confirmation — it cannot be undone. Mirrors the accessible site's
+  // "Delete all notifications".
+  const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+
+  async function deleteAllNotifications() {
+    setIsDeletingAll(true);
+    try {
+      const response = await api.delete('/v2/notifications');
+      if (response.success) {
+        // A single delete still waiting on its undo window is covered by this.
+        if (lastDeletedNotification) {
+          clearTimeout(lastDeletedNotification.timeout);
+          lastDeletedNotification.undone();
+          setLastDeletedNotification(null);
+        }
+        setNotifications([]);
+        setHasMore(false);
+        setNextCursor(null);
+        setIsDeleteAllOpen(false);
+        refreshCounts();
+        toastRef.current.success(tRef.current('toast.all_deleted'));
+      } else {
+        toastRef.current.error(response.error || tRef.current('toast.delete_all_failed'));
+      }
+    } catch (error) {
+      logError('Failed to delete all notifications', error);
+      toastRef.current.error(tRef.current('toast.delete_all_failed'));
+    } finally {
+      setIsDeletingAll(false);
+    }
+  }
+
   const filteredNotifications = notifications.filter((n) =>
     filter === 'all' ? true : !n.read_at
   );
@@ -331,6 +366,17 @@ export function NotificationsPage() {
                 {t('mark_all_read')}
               </Button>
             )}
+            {notifications.length > 0 && (
+              <Button
+                variant="flat"
+                size="sm"
+                className="bg-theme-elevated text-danger"
+                startContent={<Trash2 className="w-4 h-4" aria-hidden="true" />}
+                onPress={() => setIsDeleteAllOpen(true)}
+              >
+                {t('delete_all')}
+              </Button>
+            )}
             {hasModule('settings') && <Button
               as={Link}
               to={tenantPath('/settings')}
@@ -345,6 +391,31 @@ export function NotificationsPage() {
           </div>
         </div>
       </header>
+
+      <Modal
+        isOpen={isDeleteAllOpen}
+        onOpenChange={(open) => { if (!open && !isDeletingAll) setIsDeleteAllOpen(false); }}
+        size="md"
+        placement="center"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <Trash2 className="w-5 h-5 text-danger" aria-hidden="true" />
+            {t('delete_all_title')}
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-theme-muted">{t('delete_all_body')}</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" onPress={() => setIsDeleteAllOpen(false)} isDisabled={isDeletingAll}>
+              {t('delete_all_cancel')}
+            </Button>
+            <Button variant="danger" onPress={deleteAllNotifications} isLoading={isDeletingAll}>
+              {t('delete_all_confirm')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Filter — single-select ToggleButtonGroup */}
       <ToggleButtonGroup

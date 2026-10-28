@@ -55,7 +55,9 @@
     "mark_all_failed": "Error al marcar todas como leídas",
     "delete_failed": "Error al eliminar la notificación",
     "deleted": "Notificación eliminada",
-    "undo_hint": "Haga clic en Deshacer para restaurar"
+    "undo_hint": "Haga clic en Deshacer para restaurar",
+    "all_deleted": "Se han eliminado todas las notificaciones",
+    "delete_all_failed": "No se pudieron eliminar sus notificaciones. Inténtelo de nuevo."
   },
   "realtime": {
     "new_message": "Nuevo Mensaje",
@@ -108,5 +110,10 @@
   "filter_unread_other": "Sin leer ({{count}})",
   "and_others_many": "y {{count}} más",
   "and_others_one": "y {{count}} más",
-  "and_others_other": "y {{count}} más"
+  "and_others_other": "y {{count}} más",
+  "delete_all": "Eliminar todas",
+  "delete_all_title": "¿Eliminar todas las notificaciones?",
+  "delete_all_body": "Se eliminarán de forma permanente todas las notificaciones, leídas y no leídas. Esta acción no se puede deshacer.",
+  "delete_all_confirm": "Eliminar todas las notificaciones",
+  "delete_all_cancel": "Cancelar"
 }

@@ -166,5 +166,16 @@
   "signed_hours_value_other": "{{sign}}{{count}}u",
   "hours_value_one": "{{count}}u",
   "hours_value_other": "{{count}}u",
-  "venue_pass": "Mijn locatiepas"
+  "venue_pass": "Mijn locatiepas",
+  "statement": {
+    "title": "Overzicht downloaden",
+    "description": "Download alle transacties in uw portemonnee als spreadsheet (CSV-bestand). Laat de datums leeg om ze allemaal op te nemen.",
+    "start_label": "Van",
+    "end_label": "Tot en met",
+    "range_invalid": "De einddatum moet op of na de begindatum liggen.",
+    "download": "Downloaden",
+    "cancel": "Annuleren",
+    "success": "Overzicht gedownload",
+    "error": "Uw overzicht kon niet worden gedownload. Probeer het opnieuw."
+  }
 }

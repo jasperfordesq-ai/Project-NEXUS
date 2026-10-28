@@ -822,7 +822,19 @@
       "error": "評価の送信に失敗しました"
     },
     "quantity_multiplier_other": "×{{count}}",
-    "quantity_multiplier_one": "x{{count}}"
+    "quantity_multiplier_one": "x{{count}}",
+    "cancel": {
+      "action": "注文をキャンセル",
+      "modal_title": "この注文をキャンセルしますか？",
+      "modal_body": "注文はキャンセルされ、双方に通知されます。この操作は元に戻せません。",
+      "reason_label": "キャンセルの理由",
+      "reason_placeholder": "相手に理由を伝えてください",
+      "reason_required": "キャンセルの理由を入力してください。",
+      "confirm": "注文をキャンセル",
+      "keep": "注文を維持",
+      "success": "注文をキャンセルしました。",
+      "error": "この注文をキャンセルできませんでした。もう一度お試しください。"
+    }
   },
   "onboarding": {
     "page_title": "セラーオンボーディング - マーケットプレイス & Freecycle",

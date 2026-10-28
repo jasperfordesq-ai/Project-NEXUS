@@ -178,5 +178,16 @@
   "hours_value_few": "{{count}}س",
   "hours_value_many": "{{count}}س",
   "hours_value_two": "{{count}}س",
-  "hours_value_zero": "{{count}}س"
+  "hours_value_zero": "{{count}}س",
+  "statement": {
+    "title": "تنزيل كشف الحساب",
+    "description": "نزّل جميع معاملات محفظتك كجدول بيانات (ملف CSV). اترك التواريخ فارغة لتضمينها كلها.",
+    "start_label": "من",
+    "end_label": "إلى",
+    "range_invalid": "يجب أن يكون تاريخ الانتهاء في تاريخ البدء أو بعده.",
+    "download": "تنزيل",
+    "cancel": "إلغاء",
+    "success": "تم تنزيل كشف الحساب",
+    "error": "تعذّر تنزيل كشف حسابك. يرجى المحاولة مرة أخرى."
+  }
 }

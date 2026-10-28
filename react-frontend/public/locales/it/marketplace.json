@@ -841,7 +841,19 @@
     },
     "quantity_multiplier_many": "×{{count}}",
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Annulla ordine",
+      "modal_title": "Annullare questo ordine?",
+      "modal_body": "L'ordine verrà annullato e ne sarete informati entrambi. L'operazione non può essere annullata.",
+      "reason_label": "Motivo dell'annullamento",
+      "reason_placeholder": "Spiega il motivo all'altra persona",
+      "reason_required": "Inserisci un motivo per l'annullamento.",
+      "confirm": "Annulla ordine",
+      "keep": "Mantieni l'ordine",
+      "success": "L'ordine è stato annullato.",
+      "error": "Impossibile annullare questo ordine. Riprova."
+    }
   },
   "onboarding": {
     "page_title": "Onboarding Venditore - Mercato & Freecycle",

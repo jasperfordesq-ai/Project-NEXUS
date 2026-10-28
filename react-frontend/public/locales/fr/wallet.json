@@ -169,5 +169,16 @@
   "venue_pass": "Mon pass salle",
   "pending_in_many": "+{{count}}h en attente",
   "signed_hours_value_many": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h"
+  "hours_value_many": "{{count}}h",
+  "statement": {
+    "title": "Télécharger le relevé",
+    "description": "Téléchargez toutes les transactions de votre portefeuille sous forme de tableur (fichier CSV). Laissez les dates vides pour toutes les inclure.",
+    "start_label": "Du",
+    "end_label": "Au",
+    "range_invalid": "La date de fin doit être identique ou postérieure à la date de début.",
+    "download": "Télécharger",
+    "cancel": "Annuler",
+    "success": "Relevé téléchargé",
+    "error": "Impossible de télécharger votre relevé. Veuillez réessayer."
+  }
 }

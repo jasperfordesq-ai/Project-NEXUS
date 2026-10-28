@@ -879,7 +879,19 @@
     "quantity_multiplier_many": "×{{count}}",
     "quantity_multiplier_one": "×{{count}}",
     "quantity_multiplier_other": "×{{count}}",
-    "quantity_multiplier_two": "×{{count}}"
+    "quantity_multiplier_two": "×{{count}}",
+    "cancel": {
+      "action": "Cealaigh an t-ordú",
+      "modal_title": "An bhfuil tú ag iarraidh an t-ordú seo a chealú?",
+      "modal_body": "Cealófar an t-ordú agus cuirfear an bheirt agaibh ar an eolas. Ní féidir é seo a chealú.",
+      "reason_label": "Cúis leis an gcealú",
+      "reason_placeholder": "Inis don duine eile cén fáth",
+      "reason_required": "Cuir isteach cúis leis an gcealú.",
+      "confirm": "Cealaigh an t-ordú",
+      "keep": "Coinnigh an t-ordú",
+      "success": "Cealaíodh an t-ordú.",
+      "error": "Níorbh fhéidir linn an t-ordú seo a chealú. Bain triail eile as."
+    }
   },
   "onboarding": {
     "page_title": "Socrú an díoltóra - Margadh & Freecycle",

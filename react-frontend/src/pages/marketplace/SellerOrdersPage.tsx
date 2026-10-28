@@ -34,9 +34,11 @@ import Truck from 'lucide-react/icons/truck';
 import Star from 'lucide-react/icons/star';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Clock from 'lucide-react/icons/clock';
+import XCircle from 'lucide-react/icons/circle-x';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/feedback';
 import { OrderStatusBadge } from '@/components/marketplace';
+import { CancelOrderModal, canCancelMarketplaceOrder } from '@/components/marketplace/CancelOrderModal';
 import type { MarketplaceOrderItem } from '@/types/marketplace';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -90,9 +92,11 @@ function formatPrice(price: number, currency: string): string {
 function SellerOrderCard({
   order,
   onMarkShipped,
+  onCancel,
 }: {
   order: MarketplaceOrderItem;
   onMarkShipped: (orderId: number) => void;
+  onCancel: (orderId: number) => void;
 }) {
   const { t } = useTranslation('marketplace');
   const { tenant, tenantPath } = useTenant();
@@ -221,6 +225,16 @@ function SellerOrderCard({
                 {t('orders.seller.buyer_rated')}
               </span>
             )}
+            {canCancelMarketplaceOrder(order.status) && (
+              <Button
+                size="sm"
+                variant="danger-soft"
+                onPress={() => onCancel(order.id)}
+                startContent={<XCircle className="w-3.5 h-3.5" aria-hidden="true" />}
+              >
+                {t('orders.cancel.action')}
+              </Button>
+            )}
             {order.status === 'disputed' && (
               <Button size="sm" variant="danger-soft" isDisabled>
                 {t('orders.seller.dispute_open')}
@@ -258,6 +272,9 @@ export function SellerOrdersPage() {
   const shipModal = useDisclosure();
   const [shipOrderId, setShipOrderId] = useState<number | null>(null);
   const [trackingNumber, setTrackingNumber] = useState('');
+
+  // Cancel order modal
+  const [cancelOrderId, setCancelOrderId] = useState<number | null>(null);
   const [trackingUrl, setTrackingUrl] = useState('');
   const [shippingMethod, setShippingMethod] = useState('standard');
   const [isSubmittingShip, setIsSubmittingShip] = useState(false);
@@ -426,6 +443,7 @@ export function SellerOrdersPage() {
                 key={order.id}
                 order={order}
                 onMarkShipped={handleOpenShipModal}
+                onCancel={(id) => setCancelOrderId(id)}
               />
             ))}
 
@@ -445,6 +463,15 @@ export function SellerOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Cancel order modal */}
+      <CancelOrderModal
+        orderId={cancelOrderId}
+        onClose={() => setCancelOrderId(null)}
+        onCancelled={(id) =>
+          setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)))
+        }
+      />
 
       {/* Ship Order Modal */}
       <Modal isOpen={shipModal.isOpen} onClose={shipModal.onClose} size="md" placement="center">

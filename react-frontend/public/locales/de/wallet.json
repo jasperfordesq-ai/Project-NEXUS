@@ -166,5 +166,16 @@
   "signed_hours_value_other": "{{sign}}{{count}}h",
   "hours_value_one": "{{count}}h",
   "hours_value_other": "{{count}}h",
-  "venue_pass": "Mein Veranstaltungsortpass"
+  "venue_pass": "Mein Veranstaltungsortpass",
+  "statement": {
+    "title": "Kontoauszug herunterladen",
+    "description": "Laden Sie alle Transaktionen Ihrer Brieftasche als Tabelle (CSV-Datei) herunter. Lassen Sie die Datumsfelder leer, um alle einzuschließen.",
+    "start_label": "Von",
+    "end_label": "Bis",
+    "range_invalid": "Das Enddatum muss am oder nach dem Startdatum liegen.",
+    "download": "Herunterladen",
+    "cancel": "Abbrechen",
+    "success": "Kontoauszug heruntergeladen",
+    "error": "Ihr Kontoauszug konnte nicht heruntergeladen werden. Bitte versuchen Sie es erneut."
+  }
 }

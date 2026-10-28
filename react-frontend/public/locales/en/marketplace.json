@@ -822,7 +822,19 @@
       "error": "Failed to submit rating"
     },
     "quantity_multiplier_one": "x{{count}}",
-    "quantity_multiplier_other": "x{{count}}"
+    "quantity_multiplier_other": "x{{count}}",
+    "cancel": {
+      "action": "Cancel order",
+      "modal_title": "Cancel this order?",
+      "modal_body": "The order will be cancelled and both of you will be told. This cannot be undone.",
+      "reason_label": "Reason for cancelling",
+      "reason_placeholder": "Tell the other person why",
+      "reason_required": "Enter a reason for cancelling.",
+      "confirm": "Cancel order",
+      "keep": "Keep order",
+      "success": "The order has been cancelled.",
+      "error": "We could not cancel this order. Please try again."
+    }
   },
   "onboarding": {
     "page_title": "Seller Onboarding - Marketplace & Freecycle",

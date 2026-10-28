@@ -822,7 +822,19 @@
       "error": "Bewertung konnte nicht eingereicht werden"
     },
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Bestellung stornieren",
+      "modal_title": "Diese Bestellung stornieren?",
+      "modal_body": "Die Bestellung wird storniert und Sie beide werden benachrichtigt. Dies kann nicht rückgängig gemacht werden.",
+      "reason_label": "Grund für die Stornierung",
+      "reason_placeholder": "Teilen Sie der anderen Person den Grund mit",
+      "reason_required": "Geben Sie einen Grund für die Stornierung ein.",
+      "confirm": "Bestellung stornieren",
+      "keep": "Bestellung behalten",
+      "success": "Die Bestellung wurde storniert.",
+      "error": "Die Bestellung konnte nicht storniert werden. Bitte versuchen Sie es erneut."
+    }
   },
   "onboarding": {
     "page_title": "Verkäufer-Onboarding – Marktplatz & Freecycle",

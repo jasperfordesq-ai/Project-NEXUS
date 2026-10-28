@@ -841,7 +841,19 @@
     },
     "quantity_multiplier_many": "x{{count}}",
     "quantity_multiplier_one": "x{{count}}",
-    "quantity_multiplier_other": "x{{count}}"
+    "quantity_multiplier_other": "x{{count}}",
+    "cancel": {
+      "action": "Cancelar pedido",
+      "modal_title": "¿Cancelar este pedido?",
+      "modal_body": "El pedido se cancelará y se avisará a ambas partes. Esta acción no se puede deshacer.",
+      "reason_label": "Motivo de la cancelación",
+      "reason_placeholder": "Explique el motivo a la otra persona",
+      "reason_required": "Introduzca un motivo para la cancelación.",
+      "confirm": "Cancelar pedido",
+      "keep": "Mantener pedido",
+      "success": "El pedido se ha cancelado.",
+      "error": "No se pudo cancelar este pedido. Inténtelo de nuevo."
+    }
   },
   "onboarding": {
     "page_title": "Incorporación de Vendedores - Mercado & Freecycle",

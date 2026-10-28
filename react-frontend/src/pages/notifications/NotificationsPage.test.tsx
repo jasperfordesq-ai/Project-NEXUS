@@ -24,6 +24,7 @@ vi.mock('@/lib/api', () => ({
 const notifMocks = vi.hoisted(() => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
+  refreshCounts: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 const mockHasModule = vi.hoisted(() => vi.fn((_module: string) => true));
@@ -42,7 +43,7 @@ vi.mock('@/contexts', () => ({
   useToast: vi.fn(() => notifMocks.toast),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: notifMocks.markAsRead, markAllAsRead: notifMocks.markAllAsRead, hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
+  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: notifMocks.markAsRead, markAllAsRead: notifMocks.markAllAsRead, refreshCounts: notifMocks.refreshCounts, hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
   usePusher: () => ({ channel: null, isConnected: false }),
   usePusherOptional: () => null,
   useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
@@ -349,5 +350,57 @@ describe('NotificationsPage', () => {
     await waitFor(() => expect(screen.getByText('Pat would like someone to get in touch')).toBeInTheDocument());
     expect(container.querySelector('.lucide-heart-pulse')).not.toBeNull();
     expect(container.querySelector('.bg-red-500\\/20')).not.toBeNull();
+  });
+
+  // ─── Clear all notifications (R4) ────────────────────────────────────────
+  // Laravel's DELETE /v2/notifications deletes every notification for the member,
+  // as the accessible site's "Delete all notifications" does.
+  const twoNotifications = () => ({
+    success: true,
+    data: [
+      { id: 1, type: 'message', title: 'New Message', body: 'Clear-all fixture one', message: 'Clear-all fixture one', read_at: null, created_at: '2026-02-19T10:00:00Z' },
+      { id: 2, type: 'listing', title: 'Listing Update', body: 'Clear-all fixture two', message: 'Clear-all fixture two', read_at: '2026-02-19T09:00:00Z', created_at: '2026-02-19T08:00:00Z' },
+    ],
+  });
+
+  it('offers Delete all only when there are notifications', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
+    render(<NotificationsPage />);
+    await waitFor(() => expect(screen.getByText('No notifications')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Delete all' })).not.toBeInTheDocument();
+  });
+
+  it('asks for confirmation, then deletes every notification', async () => {
+    vi.mocked(api.get).mockResolvedValue(twoNotifications());
+    vi.mocked(api.delete).mockResolvedValue({ success: true, data: { deleted: 2 } });
+    render(<NotificationsPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete all' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Delete all notifications?');
+    // Nothing is deleted until the member confirms.
+    expect(api.delete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete all notifications' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/v2/notifications'));
+    await waitFor(() => expect(screen.queryByText('Clear-all fixture one')).not.toBeInTheDocument());
+    expect(screen.queryByText('Clear-all fixture two')).not.toBeInTheDocument();
+    expect(notifMocks.toast.success).toHaveBeenCalledWith('All notifications deleted');
+    expect(notifMocks.refreshCounts).toHaveBeenCalled();
+  });
+
+  it('keeps the list and shows an error when deleting all fails', async () => {
+    vi.mocked(api.get).mockResolvedValue(twoNotifications());
+    vi.mocked(api.delete).mockResolvedValue({ success: false, error: 'Server unavailable' });
+    render(<NotificationsPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete all' }));
+    await screen.findByRole('dialog');
+    fireEvent.click(screen.getByRole('button', { name: 'Delete all notifications' }));
+
+    await waitFor(() => expect(notifMocks.toast.error).toHaveBeenCalledWith('Server unavailable'));
+    expect(screen.getByText('Clear-all fixture one')).toBeInTheDocument();
+    expect(notifMocks.toast.success).not.toHaveBeenCalled();
   });
 });

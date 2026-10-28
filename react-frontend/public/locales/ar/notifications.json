@@ -58,7 +58,9 @@
     "mark_all_failed": "فشل في وضع علامة على الكل كمقروء",
     "delete_failed": "فشل في حذف الإشعار",
     "deleted": "تم حذف الإشعار",
-    "undo_hint": "انقر فوق تراجع للاستعادة"
+    "undo_hint": "انقر فوق تراجع للاستعادة",
+    "all_deleted": "تم حذف جميع الإشعارات",
+    "delete_all_failed": "تعذّر حذف إشعاراتك. يرجى المحاولة مرة أخرى."
   },
   "realtime": {
     "new_message": "رسالة جديدة",
@@ -120,5 +122,10 @@
   "and_others_one": "و{{count}} آخرين",
   "and_others_other": "و{{count}} آخرين",
   "and_others_two": "و{{count}} آخرين",
-  "and_others_zero": "و{{count}} آخرين"
+  "and_others_zero": "و{{count}} آخرين",
+  "delete_all": "حذف الكل",
+  "delete_all_title": "هل تريد حذف جميع الإشعارات؟",
+  "delete_all_body": "سيؤدي هذا إلى إزالة جميع الإشعارات نهائيًا، المقروءة وغير المقروءة. لا يمكن التراجع عن هذا الإجراء.",
+  "delete_all_confirm": "حذف جميع الإشعارات",
+  "delete_all_cancel": "إلغاء"
 }

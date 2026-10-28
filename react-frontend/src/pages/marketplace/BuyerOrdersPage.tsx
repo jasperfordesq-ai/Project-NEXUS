@@ -11,6 +11,7 @@
  * - Order cards with listing image, seller, price, status, date
  * - Context-aware action buttons per order status
  * - Rating modal for completed orders
+ * - Cancel (with a reason) while an order is awaiting payment
  * - Tracking info display for shipped orders
  * - Cursor-based pagination
  * - Auth required
@@ -25,6 +26,7 @@ import Truck from 'lucide-react/icons/truck';
 import Star from 'lucide-react/icons/star';
 import ExternalLink from 'lucide-react/icons/external-link';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
+import XCircle from 'lucide-react/icons/circle-x';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +37,7 @@ import { Tab, Tabs } from '@/components/ui/Tabs';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { EmptyState } from '@/components/feedback';
 import { OrderStatusBadge, RatingModal } from '@/components/marketplace';
+import { CancelOrderModal, canCancelMarketplaceOrder } from '@/components/marketplace/CancelOrderModal';
 import type { MarketplaceOrderItem } from '@/types/marketplace';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
@@ -82,10 +85,12 @@ function OrderCard({
   order,
   onRequestConfirmDelivery,
   onRate,
+  onCancel,
 }: {
   order: MarketplaceOrderItem;
   onRequestConfirmDelivery: (orderId: number) => void;
   onRate: (orderId: number) => void;
+  onCancel: (orderId: number) => void;
 }) {
   const { t } = useTranslation('marketplace');
   const { tenant, tenantPath } = useTenant();
@@ -229,6 +234,16 @@ function OrderCard({
                 {t('orders.buyer.rated')}
               </span>
             )}
+            {canCancelMarketplaceOrder(order.status) && (
+              <Button
+                size="sm"
+                variant="danger-soft"
+                onPress={() => onCancel(order.id)}
+                startContent={<XCircle className="w-3.5 h-3.5" aria-hidden="true" />}
+              >
+                {t('orders.cancel.action')}
+              </Button>
+            )}
             {order.status === 'disputed' && (
               <Button size="sm" variant="danger-soft" isDisabled>
                 {t('orders.buyer.dispute_open')}
@@ -268,6 +283,9 @@ export function BuyerOrdersPage() {
 
   // Confirm delivery modal
   const [confirmDeliveryId, setConfirmDeliveryId] = useState<number | null>(null);
+
+  // Cancel order modal
+  const [cancelOrderId, setCancelOrderId] = useState<number | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -415,6 +433,7 @@ export function BuyerOrdersPage() {
                 order={order}
                 onRequestConfirmDelivery={(id) => setConfirmDeliveryId(id)}
                 onRate={handleOpenRating}
+                onCancel={(id) => setCancelOrderId(id)}
               />
             ))}
 
@@ -470,6 +489,15 @@ export function BuyerOrdersPage() {
           )}
         </ModalContent>
       </Modal>
+
+      {/* Cancel order modal */}
+      <CancelOrderModal
+        orderId={cancelOrderId}
+        onClose={() => setCancelOrderId(null)}
+        onCancelled={(id) =>
+          setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)))
+        }
+      />
 
       {/* Rating modal */}
       {ratingOrderId !== null && (

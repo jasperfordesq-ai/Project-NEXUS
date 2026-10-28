@@ -898,7 +898,19 @@
     "quantity_multiplier_one": "×{{count}}",
     "quantity_multiplier_other": "×{{count}}",
     "quantity_multiplier_two": "×{{count}}",
-    "quantity_multiplier_zero": "×{{count}}"
+    "quantity_multiplier_zero": "×{{count}}",
+    "cancel": {
+      "action": "إلغاء الطلب",
+      "modal_title": "هل تريد إلغاء هذا الطلب؟",
+      "modal_body": "سيتم إلغاء الطلب وإبلاغ الطرفين. لا يمكن التراجع عن هذا الإجراء.",
+      "reason_label": "سبب الإلغاء",
+      "reason_placeholder": "أخبر الطرف الآخر بالسبب",
+      "reason_required": "أدخل سببًا للإلغاء.",
+      "confirm": "إلغاء الطلب",
+      "keep": "الاحتفاظ بالطلب",
+      "success": "تم إلغاء الطلب.",
+      "error": "تعذّر إلغاء هذا الطلب. يرجى المحاولة مرة أخرى."
+    }
   },
   "onboarding": {
     "page_title": "توجيه البائع - السوق & Freecycle",

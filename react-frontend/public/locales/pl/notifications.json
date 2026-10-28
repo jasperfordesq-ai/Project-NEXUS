@@ -56,7 +56,9 @@
     "mark_all_failed": "Nie udało się oznaczyć wszystkich jako przeczytane",
     "delete_failed": "Nie udało się usunąć powiadomienia",
     "deleted": "Powiadomienie usunięte",
-    "undo_hint": "Kliknij Cofnij, aby przywrócić"
+    "undo_hint": "Kliknij Cofnij, aby przywrócić",
+    "all_deleted": "Usunięto wszystkie powiadomienia",
+    "delete_all_failed": "Nie udało się usunąć powiadomień. Spróbuj ponownie."
   },
   "realtime": {
     "new_message": "Nowa wiadomość",
@@ -112,5 +114,10 @@
   "and_others_few": "i {{count}} innych",
   "and_others_many": "i {{count}} innych",
   "and_others_one": "i {{count}} innych",
-  "and_others_other": "i {{count}} innych"
+  "and_others_other": "i {{count}} innych",
+  "delete_all": "Usuń wszystkie",
+  "delete_all_title": "Usunąć wszystkie powiadomienia?",
+  "delete_all_body": "Wszystkie powiadomienia, przeczytane i nieprzeczytane, zostaną trwale usunięte. Tej czynności nie można cofnąć.",
+  "delete_all_confirm": "Usuń wszystkie powiadomienia",
+  "delete_all_cancel": "Anuluj"
 }

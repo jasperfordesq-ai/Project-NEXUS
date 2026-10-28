@@ -57,7 +57,9 @@
     "mark_all_failed": "Theip ar gach fógra a mharcáil mar léite",
     "delete_failed": "Theip ar an bhfógra a scriosadh",
     "deleted": "Scriosadh an fógra",
-    "undo_hint": "Cliceáil Cealaigh a chur ar ais"
+    "undo_hint": "Cliceáil Cealaigh a chur ar ais",
+    "all_deleted": "Scriosadh gach fógra",
+    "delete_all_failed": "Níorbh fhéidir linn d’fhógraí a scriosadh. Bain triail eile as."
   },
   "realtime": {
     "new_message": "Teachtaireacht Nua",
@@ -116,5 +118,10 @@
   "and_others_many": "agus {{count}} eile",
   "and_others_one": "agus {{count}} eile",
   "and_others_other": "agus {{count}} eile",
-  "and_others_two": "agus {{count}} eile"
+  "and_others_two": "agus {{count}} eile",
+  "delete_all": "Scrios gach ceann",
+  "delete_all_title": "An bhfuil tú ag iarraidh gach fógra a scriosadh?",
+  "delete_all_body": "Bainfear gach fógra go buan, léite agus neamhléite. Ní féidir é seo a chealú.",
+  "delete_all_confirm": "Scrios gach fógra",
+  "delete_all_cancel": "Cealaigh"
 }

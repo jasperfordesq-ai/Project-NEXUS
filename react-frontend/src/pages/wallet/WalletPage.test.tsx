@@ -17,6 +17,7 @@ vi.mock('@/lib/api', () => ({
       data: { balance: 10, pending_in: 2, total_spent: 5, total_earned: 15 },
     }),
     post: vi.fn().mockResolvedValue({ success: true }),
+    download: vi.fn().mockResolvedValue(new Blob()),
   },
   tokenManager: { getTenantId: vi.fn() },
 }));
@@ -164,5 +165,73 @@ describe('WalletPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Pending inbound fixture')).toBeInTheDocument();
     });
+  });
+
+  /**
+   * R2: Export used to build a CSV from the rows loaded on screen (the first 50),
+   * so older transactions were silently missing. It now downloads Laravel's full
+   * statement, GET /v2/wallet/statement, optionally limited to a date range.
+   */
+  function mockWalletWithHistory() {
+    vi.mocked(api.get).mockImplementation((url: string) => Promise.resolve(
+      String(url).includes('type=pending')
+        ? { success: true, data: [] }
+        : String(url).includes('/transactions')
+          ? { success: true, data: [{
+            id: 1, type: 'credit', amount: 2, status: 'completed',
+            description: 'Gardening help', created_at: '2026-08-23T09:00:00Z',
+            other_user: { id: 5, name: 'Bob Smith', avatar_url: null },
+          }] }
+          : { success: true, data: { balance: 2, total_earned: 2, total_spent: 0 } },
+    ) as never);
+  }
+
+  async function openStatementDialog() {
+    const exportButton = await screen.findByRole('button', { name: /export/i });
+    await waitFor(() => expect(exportButton).not.toBeDisabled());
+    fireEvent.click(exportButton);
+    return screen.findByRole('dialog');
+  }
+
+  it('downloads the full statement from the server, not just the loaded rows', async () => {
+    mockWalletWithHistory();
+    render(<WalletPage />);
+
+    const dialog = await openStatementDialog();
+    expect(dialog).toHaveTextContent('Download statement');
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+
+    await waitFor(() => expect(api.download).toHaveBeenCalledWith(
+      '/v2/wallet/statement',
+      expect.objectContaining({ filename: expect.stringMatching(/\.csv$/) }),
+    ));
+  });
+
+  it('passes an optional date range to the statement', async () => {
+    mockWalletWithHistory();
+    render(<WalletPage />);
+
+    await openStatementDialog();
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-01-01' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2026-03-31' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+
+    await waitFor(() => expect(api.download).toHaveBeenCalledWith(
+      '/v2/wallet/statement?start_date=2026-01-01&end_date=2026-03-31',
+      expect.any(Object),
+    ));
+  });
+
+  it('refuses a range that ends before it starts', async () => {
+    mockWalletWithHistory();
+    render(<WalletPage />);
+
+    await openStatementDialog();
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-03-31' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '2026-01-01' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
+
+    expect(await screen.findByText('The end date must be on or after the start date.')).toBeInTheDocument();
+    expect(api.download).not.toHaveBeenCalled();
   });
 });

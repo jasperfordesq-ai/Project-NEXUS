@@ -822,7 +822,19 @@
       "error": "Het indienen van de beoordeling is mislukt"
     },
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Bestelling annuleren",
+      "modal_title": "Deze bestelling annuleren?",
+      "modal_body": "De bestelling wordt geannuleerd en jullie krijgen allebei bericht. Dit kan niet ongedaan worden gemaakt.",
+      "reason_label": "Reden voor annulering",
+      "reason_placeholder": "Vertel de ander waarom",
+      "reason_required": "Vul een reden voor de annulering in.",
+      "confirm": "Bestelling annuleren",
+      "keep": "Bestelling behouden",
+      "success": "De bestelling is geannuleerd.",
+      "error": "De bestelling kon niet worden geannuleerd. Probeer het opnieuw."
+    }
   },
   "onboarding": {
     "page_title": "Verkoper Onboarding - Marktplaats & Freecycle",

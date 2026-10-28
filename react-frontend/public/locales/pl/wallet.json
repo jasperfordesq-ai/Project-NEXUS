@@ -172,5 +172,16 @@
   "signed_hours_value_few": "{{sign}}{{count}}godz",
   "signed_hours_value_many": "{{sign}}{{count}}godz",
   "hours_value_few": "{{count}}godz",
-  "hours_value_many": "{{count}}godz"
+  "hours_value_many": "{{count}}godz",
+  "statement": {
+    "title": "Pobierz wyciąg",
+    "description": "Pobierz wszystkie transakcje z portfela jako arkusz kalkulacyjny (plik CSV). Pozostaw daty puste, aby uwzględnić wszystkie.",
+    "start_label": "Od",
+    "end_label": "Do",
+    "range_invalid": "Data końcowa musi być taka sama jak data początkowa lub późniejsza.",
+    "download": "Pobierz",
+    "cancel": "Anuluj",
+    "success": "Wyciąg został pobrany",
+    "error": "Nie udało się pobrać wyciągu. Spróbuj ponownie."
+  }
 }

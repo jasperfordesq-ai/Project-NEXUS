@@ -54,7 +54,9 @@
     "mark_all_failed": "Mislukt om alles als gelezen te markeren",
     "delete_failed": "Mislukt om notificatie te verwijderen",
     "deleted": "Melding verwijderd",
-    "undo_hint": "Klik op Ongedaan maken om te herstellen"
+    "undo_hint": "Klik op Ongedaan maken om te herstellen",
+    "all_deleted": "Alle meldingen verwijderd",
+    "delete_all_failed": "Uw meldingen konden niet worden verwijderd. Probeer het opnieuw."
   },
   "realtime": {
     "new_message": "Nieuw Bericht",
@@ -104,5 +106,10 @@
   "filter_unread_one": "Ongelezen ({{count}})",
   "filter_unread_other": "Ongelezen ({{count}})",
   "and_others_one": "en {{count}} anderen",
-  "and_others_other": "en {{count}} anderen"
+  "and_others_other": "en {{count}} anderen",
+  "delete_all": "Alles verwijderen",
+  "delete_all_title": "Alle meldingen verwijderen?",
+  "delete_all_body": "Hiermee worden alle meldingen, gelezen en ongelezen, definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
+  "delete_all_confirm": "Alle meldingen verwijderen",
+  "delete_all_cancel": "Annuleren"
 }

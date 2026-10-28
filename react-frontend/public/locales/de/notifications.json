@@ -54,7 +54,9 @@
     "mark_all_failed": "Benachrichtigungen konnten nicht als gelesen markiert werden",
     "delete_failed": "Benachrichtigung konnte nicht gelöscht werden",
     "deleted": "Benachrichtigung gelöscht",
-    "undo_hint": "Klicken Sie zum Wiederherstellen auf „Rückgängig“."
+    "undo_hint": "Klicken Sie zum Wiederherstellen auf „Rückgängig“.",
+    "all_deleted": "Alle Benachrichtigungen gelöscht",
+    "delete_all_failed": "Ihre Benachrichtigungen konnten nicht gelöscht werden. Bitte versuchen Sie es erneut."
   },
   "realtime": {
     "new_message": "Neue Nachricht",
@@ -104,5 +106,10 @@
   "filter_unread_one": "Ungelesen ({{count}})",
   "filter_unread_other": "Ungelesen ({{count}})",
   "and_others_one": "und {{count}} weitere",
-  "and_others_other": "und {{count}} weitere"
+  "and_others_other": "und {{count}} weitere",
+  "delete_all": "Alle löschen",
+  "delete_all_title": "Alle Benachrichtigungen löschen?",
+  "delete_all_body": "Damit werden alle Benachrichtigungen, gelesene und ungelesene, dauerhaft entfernt. Dies kann nicht rückgängig gemacht werden.",
+  "delete_all_confirm": "Alle Benachrichtigungen löschen",
+  "delete_all_cancel": "Abbrechen"
 }

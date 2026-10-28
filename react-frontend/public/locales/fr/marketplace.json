@@ -841,7 +841,19 @@
     },
     "quantity_multiplier_many": "×{{count}}",
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Annuler la commande",
+      "modal_title": "Annuler cette commande ?",
+      "modal_body": "La commande sera annulée et vous serez tous les deux prévenus. Cette action est irréversible.",
+      "reason_label": "Motif de l'annulation",
+      "reason_placeholder": "Expliquez la raison à l'autre personne",
+      "reason_required": "Saisissez un motif d'annulation.",
+      "confirm": "Annuler la commande",
+      "keep": "Conserver la commande",
+      "success": "La commande a été annulée.",
+      "error": "Impossible d'annuler cette commande. Veuillez réessayer."
+    }
   },
   "onboarding": {
     "page_title": "Intégration des vendeurs - Marché & Freecycle",

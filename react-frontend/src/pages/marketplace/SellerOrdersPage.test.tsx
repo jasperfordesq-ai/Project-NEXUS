@@ -254,4 +254,61 @@ describe('SellerOrdersPage', () => {
       expect(screen.getByText(/ORD-001/)).toBeInTheDocument();
     });
   });
+
+  // ─── Cancel an order (R1) ────────────────────────────────────────────────
+  // Laravel lets either party cancel an order that has not been paid for
+  // (status pending_payment) and requires a reason; paid orders need a refund.
+  it('offers Cancel order only while the order is awaiting payment', async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder({ status: 'paid' })]));
+    const { SellerOrdersPage } = await import('./SellerOrdersPage');
+    const { unmount } = render(<SellerOrdersPage />);
+    await waitFor(() => expect(screen.getByText('Handmade Candle')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Cancel order' })).not.toBeInTheDocument();
+    unmount();
+
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder({ status: 'pending_payment' })]));
+    render(<SellerOrdersPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel order' })).toBeInTheDocument());
+  });
+
+  it('requires a reason, then cancels through the API and marks the order cancelled', async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder({ status: 'pending_payment' })]));
+    mockApi.put.mockResolvedValue({ success: true, data: { id: 42, status: 'cancelled' } });
+    const { SellerOrdersPage } = await import('./SellerOrdersPage');
+    render(<SellerOrdersPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel order' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Cancel this order?');
+
+    // No reason: the server would reject it, so nothing is sent.
+    const confirm = () => screen.getAllByRole('button', { name: 'Cancel order' }).find((b) => dialog.contains(b))!;
+    fireEvent.click(confirm());
+    expect(await screen.findByText('Enter a reason for cancelling.')).toBeInTheDocument();
+    expect(mockApi.put).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText(/Reason for cancelling/), { target: { value: '  Changed my plans  ' } });
+    fireEvent.click(confirm());
+
+    await waitFor(() =>
+      expect(mockApi.put).toHaveBeenCalledWith('/v2/marketplace/orders/42/cancel', { reason: 'Changed my plans' }),
+    );
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith('The order has been cancelled.'));
+    await waitFor(() => expect(screen.getByTestId('order-status')).toHaveTextContent('cancelled'));
+  });
+
+  it('shows the server message and keeps the order when cancelling is refused', async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeOrder({ status: 'pending_payment' })]));
+    mockApi.put.mockResolvedValue({ success: false, error: 'A paid order needs a refund instead.' });
+    const { SellerOrdersPage } = await import('./SellerOrdersPage');
+    render(<SellerOrdersPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel order' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(screen.getByLabelText(/Reason for cancelling/), { target: { value: 'No longer needed' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Cancel order' }).find((b) => dialog.contains(b))!);
+
+    await waitFor(() => expect(mockToast.error).toHaveBeenCalledWith('A paid order needs a refund instead.'));
+    expect(screen.getByTestId('order-status')).toHaveTextContent('pending_payment');
+  });
 });

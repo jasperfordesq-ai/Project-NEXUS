@@ -169,5 +169,16 @@
   "venue_pass": "Il mio pass per la sede",
   "pending_in_many": "+{{count}}h in attesa",
   "signed_hours_value_many": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h"
+  "hours_value_many": "{{count}}h",
+  "statement": {
+    "title": "Scarica estratto conto",
+    "description": "Scarica tutte le transazioni del tuo portafoglio come foglio di calcolo (file CSV). Lascia vuote le date per includerle tutte.",
+    "start_label": "Dal",
+    "end_label": "Al",
+    "range_invalid": "La data di fine deve essere uguale o successiva alla data di inizio.",
+    "download": "Scarica",
+    "cancel": "Annulla",
+    "success": "Estratto conto scaricato",
+    "error": "Impossibile scaricare il tuo estratto conto. Riprova."
+  }
 }

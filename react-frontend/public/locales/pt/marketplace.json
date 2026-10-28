@@ -841,7 +841,19 @@
     },
     "quantity_multiplier_many": "×{{count}}",
     "quantity_multiplier_one": "×{{count}}",
-    "quantity_multiplier_other": "×{{count}}"
+    "quantity_multiplier_other": "×{{count}}",
+    "cancel": {
+      "action": "Cancelar encomenda",
+      "modal_title": "Cancelar esta encomenda?",
+      "modal_body": "A encomenda será cancelada e ambos serão avisados. Esta ação não pode ser desfeita.",
+      "reason_label": "Motivo do cancelamento",
+      "reason_placeholder": "Explique o motivo à outra pessoa",
+      "reason_required": "Indique um motivo para o cancelamento.",
+      "confirm": "Cancelar encomenda",
+      "keep": "Manter encomenda",
+      "success": "A encomenda foi cancelada.",
+      "error": "Não foi possível cancelar esta encomenda. Tente novamente."
+    }
   },
   "onboarding": {
     "page_title": "Integração de Vendedores - Mercado & Freecycle",

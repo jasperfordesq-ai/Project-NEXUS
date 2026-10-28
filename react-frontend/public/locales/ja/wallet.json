@@ -166,5 +166,16 @@
   "signed_hours_value_other": "{{sign}}{{count}}h",
   "hours_value_one": "{{count}}h",
   "hours_value_other": "{{count}}h",
-  "venue_pass": "私の会場パス"
+  "venue_pass": "私の会場パス",
+  "statement": {
+    "title": "明細をダウンロード",
+    "description": "ウォレットのすべての取引をスプレッドシート（CSVファイル）としてダウンロードします。すべて含めるには日付を空欄のままにしてください。",
+    "start_label": "開始日",
+    "end_label": "終了日",
+    "range_invalid": "終了日は開始日と同じかそれ以降にしてください。",
+    "download": "ダウンロード",
+    "cancel": "キャンセル",
+    "success": "明細をダウンロードしました",
+    "error": "明細をダウンロードできませんでした。もう一度お試しください。"
+  }
 }

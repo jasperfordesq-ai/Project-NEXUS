@@ -4,7 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { getFormattingLocale } from '@/lib/helpers';
-import { toCsv, downloadCsv } from '@/lib/csv';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -35,6 +34,7 @@ import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
 import { EmptyState } from '@/components/feedback';
 import { TransferModal, DonateModal, CommunityFundCard } from '@/components/wallet';
+import { StatementDownloadModal } from '@/components/wallet/StatementDownloadModal';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
@@ -229,29 +229,11 @@ export function WalletPage() {
     pendingOut: balance?.pending_out ?? balance?.pending_outgoing ?? 0,
   }), [balance]);
 
-  // Export transactions to CSV. Descriptions and names are other members'
-  // text, so every cell is formula-neutralised (lib/csv).
-  function handleExport() {
-    if (transactions.length === 0) {
-      toast.info(t('toast.no_data'));
-      return;
-    }
-
-    const csv = toCsv(
-      [t('csv.date'), t('csv.type'), t('csv.amount'), t('csv.description'), t('csv.other_party'), t('csv.status')],
-      transactions.map((tx) => [
-        new Date(tx.created_at).toLocaleDateString(getFormattingLocale()),
-        tx.type === 'credit' ? t('csv.received') : t('csv.sent'),
-        tx.amount,
-        tx.description || '',
-        tx.other_user?.name || tx.other_party?.name || '',
-        tx.status,
-      ]),
-    );
-    downloadCsv(`transactions_${new Date().toISOString().split('T')[0]}.csv`, csv);
-
-    toast.success(t('toast.exported'), t('toast.exported_desc'));
-  }
+  // 🔴 Export used to build a CSV in the browser from `transactions` — only the
+  // rows loaded on screen (the first page), so older history was silently left
+  // out of what looked like a complete export. It now opens a dialog that
+  // downloads Laravel's full statement (GET /v2/wallet/statement).
+  const [isStatementOpen, setIsStatementOpen] = useState(false);
 
   return (
     <>
@@ -436,7 +418,7 @@ export function WalletPage() {
               size="sm"
               className="bg-theme-elevated text-theme-muted"
               startContent={<Download className="w-4 h-4" aria-hidden="true" />}
-              onPress={handleExport}
+              onPress={() => setIsStatementOpen(true)}
               isDisabled={transactions.length === 0}
               aria-label={t('aria.export_csv')}
             >
@@ -523,6 +505,9 @@ export function WalletPage() {
         </GlassCard>
       </motion.div>
       )}
+
+      {/* Full statement download */}
+      <StatementDownloadModal isOpen={isStatementOpen} onClose={() => setIsStatementOpen(false)} />
 
       {/* Transfer Modal */}
       <TransferModal

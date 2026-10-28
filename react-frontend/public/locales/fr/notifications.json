@@ -55,7 +55,9 @@
     "mark_all_failed": "Impossible de tout marquer comme lu",
     "delete_failed": "Impossible de supprimer la notification",
     "deleted": "Notification supprimée",
-    "undo_hint": "Cliquez sur Annuler pour restaurer"
+    "undo_hint": "Cliquez sur Annuler pour restaurer",
+    "all_deleted": "Toutes les notifications ont été supprimées",
+    "delete_all_failed": "Impossible de supprimer vos notifications. Veuillez réessayer."
   },
   "realtime": {
     "new_message": "Nouveau message",
@@ -108,5 +110,10 @@
   "filter_unread_other": "Non lues ({{count}})",
   "and_others_many": "et {{count}} autres",
   "and_others_one": "et {{count}} autres",
-  "and_others_other": "et {{count}} autres"
+  "and_others_other": "et {{count}} autres",
+  "delete_all": "Tout supprimer",
+  "delete_all_title": "Supprimer toutes les notifications ?",
+  "delete_all_body": "Toutes les notifications, lues et non lues, seront définitivement supprimées. Cette action est irréversible.",
+  "delete_all_confirm": "Supprimer toutes les notifications",
+  "delete_all_cancel": "Annuler"
 }

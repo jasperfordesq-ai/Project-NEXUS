@@ -175,5 +175,16 @@
   "signed_hours_value_two": "{{sign}}{{count}}u",
   "hours_value_few": "{{count}}u",
   "hours_value_many": "{{count}}u",
-  "hours_value_two": "{{count}}u"
+  "hours_value_two": "{{count}}u",
+  "statement": {
+    "title": "Íoslódáil ráiteas",
+    "description": "Íoslódáil gach idirbheart i do sparán mar scarbhileog (comhad CSV). Fág na dátaí folamh chun iad go léir a chur san áireamh.",
+    "start_label": "Ó",
+    "end_label": "Go",
+    "range_invalid": "Ní mór don dáta deiridh a bheith ar an dáta tosaigh nó ina dhiaidh.",
+    "download": "Íoslódáil",
+    "cancel": "Cealaigh",
+    "success": "Íoslódáladh an ráiteas",
+    "error": "Níorbh fhéidir linn do ráiteas a íoslódáil. Bain triail eile as."
+  }
 }

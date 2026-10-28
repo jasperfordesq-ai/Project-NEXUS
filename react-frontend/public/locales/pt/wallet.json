@@ -169,5 +169,16 @@
   "venue_pass": "Meu passe para local",
   "pending_in_many": "+{{count}}h pendentes",
   "signed_hours_value_many": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h"
+  "hours_value_many": "{{count}}h",
+  "statement": {
+    "title": "Transferir extrato",
+    "description": "Transfira todas as transações da sua carteira como folha de cálculo (ficheiro CSV). Deixe as datas em branco para incluir todas.",
+    "start_label": "De",
+    "end_label": "Até",
+    "range_invalid": "A data de fim tem de ser igual ou posterior à data de início.",
+    "download": "Transferir",
+    "cancel": "Cancelar",
+    "success": "Extrato transferido",
+    "error": "Não foi possível transferir o seu extrato. Tente novamente."
+  }
 }

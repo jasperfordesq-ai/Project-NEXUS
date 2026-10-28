@@ -54,7 +54,9 @@
     "mark_all_failed": "Failed to mark all as read",
     "delete_failed": "Failed to delete notification",
     "deleted": "Notification deleted",
-    "undo_hint": "Click Undo to restore"
+    "undo_hint": "Click Undo to restore",
+    "all_deleted": "All notifications deleted",
+    "delete_all_failed": "We could not delete your notifications. Please try again."
   },
   "realtime": {
     "new_message": "New Message",
@@ -104,5 +106,10 @@
   "filter_unread_one": "Unread ({{count}})",
   "filter_unread_other": "Unread ({{count}})",
   "and_others_one": "and {{count}} others",
-  "and_others_other": "and {{count}} others"
+  "and_others_other": "and {{count}} others",
+  "delete_all": "Delete all",
+  "delete_all_title": "Delete all notifications?",
+  "delete_all_body": "This permanently removes every notification, read and unread. It cannot be undone.",
+  "delete_all_confirm": "Delete all notifications",
+  "delete_all_cancel": "Cancel"
 }

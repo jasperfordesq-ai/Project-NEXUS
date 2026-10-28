@@ -55,7 +55,9 @@
     "mark_all_failed": "Impossibile segnare tutte come lette",
     "delete_failed": "Impossibile eliminare la notifica",
     "deleted": "Notifica eliminata",
-    "undo_hint": "Fare clic su Annulla per ripristinare"
+    "undo_hint": "Fare clic su Annulla per ripristinare",
+    "all_deleted": "Tutte le notifiche sono state eliminate",
+    "delete_all_failed": "Impossibile eliminare le notifiche. Riprova."
   },
   "realtime": {
     "new_message": "Nuovo Messaggio",
@@ -108,5 +110,10 @@
   "filter_unread_other": "Non lette ({{count}})",
   "and_others_many": "e altri {{count}}",
   "and_others_one": "e altri {{count}}",
-  "and_others_other": "e altri {{count}}"
+  "and_others_other": "e altri {{count}}",
+  "delete_all": "Elimina tutte",
+  "delete_all_title": "Eliminare tutte le notifiche?",
+  "delete_all_body": "Tutte le notifiche, lette e non lette, verranno rimosse definitivamente. L'operazione non può essere annullata.",
+  "delete_all_confirm": "Elimina tutte le notifiche",
+  "delete_all_cancel": "Annulla"
 }
