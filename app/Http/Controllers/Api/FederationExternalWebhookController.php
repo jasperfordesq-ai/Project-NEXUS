@@ -1299,6 +1299,7 @@ class FederationExternalWebhookController extends BaseApiController
             })
             ->where('u.tenant_id', TenantContext::getId())
             ->where('u.status', 'active')
+            ->where('u.onboarding_completed', 1)
             ->limit(100)
             ->get($columns);
 

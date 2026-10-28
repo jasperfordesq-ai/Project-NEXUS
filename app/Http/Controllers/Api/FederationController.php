@@ -335,7 +335,7 @@ class FederationController extends BaseApiController
             $stmt = $db->prepare("
                 SELECT t.id, t.name, t.tagline, t.location_name, t.country_code, t.created_at as partnership_since,
                     (SELECT COUNT(*) FROM federation_user_settings fus JOIN users u ON u.id = fus.user_id
-                     WHERE u.tenant_id = t.id AND fus.federation_optin = 1 AND u.status = 'active') as member_count
+                     WHERE u.tenant_id = t.id AND fus.federation_optin = 1 AND u.status = 'active' AND u.onboarding_completed = 1) as member_count
                 FROM tenants t WHERE t.id = ?
             ");
             $stmt->execute([$partnerTenantId]);
@@ -343,7 +343,7 @@ class FederationController extends BaseApiController
             $stmt = $db->prepare("
                 SELECT t.id, t.name, t.tagline, t.location_name, t.country_code, fp.status as partnership_status, fp.created_at as partnership_since,
                     (SELECT COUNT(*) FROM federation_user_settings fus JOIN users u ON u.id = fus.user_id
-                     WHERE u.tenant_id = t.id AND fus.federation_optin = 1) as member_count
+                     WHERE u.tenant_id = t.id AND fus.federation_optin = 1 AND u.onboarding_completed = 1) as member_count
                 FROM federation_partnerships fp
                 JOIN tenants t ON ((fp.tenant_id = ? AND t.id = fp.partner_tenant_id) OR (fp.partner_tenant_id = ? AND t.id = fp.tenant_id))
                 WHERE fp.status = 'active' ORDER BY t.name ASC
@@ -385,7 +385,7 @@ class FederationController extends BaseApiController
 
         if ($isExternal) {
             $baseCondition = "FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
-                    WHERE u.tenant_id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND u.status = 'active'";
+                    WHERE u.tenant_id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND u.status = 'active' AND u.onboarding_completed = 1";
             $params = [$partnerTenantId];
         } else {
             // FED-005: Check profiles_enabled on partnership to enforce permission boundaries
@@ -395,7 +395,7 @@ class FederationController extends BaseApiController
             // them on the same data.
             $baseCondition = "FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                     JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id))
-                    WHERE fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND u.status = 'active' AND fp.status = 'active' AND fp.profiles_enabled = 1 AND u.tenant_id != ?";
+                    WHERE fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1 AND u.status = 'active' AND u.onboarding_completed = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1 AND u.tenant_id != ?";
             $params = [$partnerTenantId, $partnerTenantId, $partnerTenantId];
         }
 
@@ -469,7 +469,7 @@ class FederationController extends BaseApiController
                        u.created_at, u.tenant_id,
                        fus.service_reach, fus.messaging_enabled_federated, fus.transactions_enabled_federated, t.name as timebank_name
                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
-                WHERE u.id = ? AND u.tenant_id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND u.status = 'active'
+                WHERE u.id = ? AND u.tenant_id = ? AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND u.status = 'active' AND u.onboarding_completed = 1
             ");
             $stmt->execute([$id, $partnerTenantId]);
         } else {
@@ -485,7 +485,7 @@ class FederationController extends BaseApiController
                        fus.service_reach, fus.messaging_enabled_federated, fus.transactions_enabled_federated, t.name as timebank_name
                 FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id JOIN tenants t ON t.id = u.tenant_id
                 JOIN federation_partnerships fp ON ((fp.tenant_id = ? AND fp.partner_tenant_id = u.tenant_id) OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id))
-                WHERE u.id = ? AND u.status = 'active' AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1
+                WHERE u.id = ? AND u.status = 'active' AND u.onboarding_completed = 1 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fp.status = 'active' AND fp.profiles_enabled = 1
             ");
             $stmt->execute([$partnerTenantId, $partnerTenantId, $id]);
         }
@@ -1389,7 +1389,7 @@ class FederationController extends BaseApiController
 
         // Validate the user has show_reviews_federated enabled
         $userCheck = DB::selectOne(
-            "SELECT u.id, fus.show_reviews_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id WHERE u.id = ? AND fus.federation_optin = 1 AND u.status = 'active'",
+            "SELECT u.id, fus.show_reviews_federated FROM users u JOIN federation_user_settings fus ON fus.user_id = u.id WHERE u.id = ? AND fus.federation_optin = 1 AND u.status = 'active' AND u.onboarding_completed = 1",
             [$userId]
         );
         if (!$userCheck || !$userCheck->show_reviews_federated) {

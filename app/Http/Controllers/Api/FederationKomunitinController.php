@@ -1349,6 +1349,7 @@ class FederationKomunitinController extends BaseApiController
             ->join('federation_user_settings as fus', 'fus.user_id', '=', 'users.id')
             ->where('users.tenant_id', $tenantId)
             ->where('users.status', 'active')
+            ->where('users.onboarding_completed', 1)
             ->where('fus.federation_optin', 1)
             ->where('fus.profile_visible_federated', 1)
             ->where('fus.appear_in_federated_search', 1)

@@ -689,7 +689,7 @@ class FederationV2Controller extends BaseApiController
                     (SELECT COUNT(*) FROM users u
                      JOIN federation_user_settings fus2 ON fus2.user_id = u.id AND fus2.federation_optin = 1
                      WHERE u.tenant_id = CASE WHEN fp.tenant_id = ? THEN fp.partner_tenant_id ELSE fp.tenant_id END
-                       AND u.status = 'active') as partner_member_count,
+                       AND u.status = 'active' AND u.onboarding_completed = 1) as partner_member_count,
                     (SELECT COUNT(*) FROM listings li
                      JOIN federation_user_settings fusl ON fusl.user_id = li.user_id
                      WHERE li.tenant_id = CASE WHEN fp.tenant_id = ? THEN fp.partner_tenant_id ELSE fp.tenant_id END
@@ -846,7 +846,7 @@ class FederationV2Controller extends BaseApiController
                     (SELECT COUNT(*) FROM users u
                      JOIN federation_user_settings fus2 ON fus2.user_id = u.id AND fus2.federation_optin = 1
                      WHERE u.tenant_id = CASE WHEN fp.tenant_id = ? THEN fp.partner_tenant_id ELSE fp.tenant_id END
-                       AND u.status = 'active') as partner_member_count,
+                       AND u.status = 'active' AND u.onboarding_completed = 1) as partner_member_count,
                     (SELECT COUNT(*) FROM listings li
                      JOIN federation_user_settings fusl ON fusl.user_id = li.user_id
                      WHERE li.tenant_id = CASE WHEN fp.tenant_id = ? THEN fp.partner_tenant_id ELSE fp.tenant_id END
@@ -1646,6 +1646,9 @@ class FederationV2Controller extends BaseApiController
             }
             [$partnerClause, $partnerParams] = $this->partnerTenantInClause('u.tenant_id', $allowedPartners);
 
+            // F-606: a member who has not finished onboarding is never shown to
+            // another community (owner, 28 Oct 2026). Same rule in member(),
+            // memberReviews(), the partner member counts and FederationSearchService.
             $fromWhere = "
                 FROM users u
                 JOIN federation_user_settings fus ON fus.user_id = u.id
@@ -1657,6 +1660,7 @@ class FederationV2Controller extends BaseApiController
                 WHERE fp.status = 'active' AND fp.profiles_enabled = 1
                 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1 AND fus.appear_in_federated_search = 1
                 AND u.status = 'active' AND u.tenant_id != :tid3
+                AND u.onboarding_completed = 1
             " . $partnerClause;
             $filterParams = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':tid3' => $tenantId], $partnerParams);
 
@@ -1939,7 +1943,7 @@ class FederationV2Controller extends BaseApiController
                 )
                 WHERE u.id = :user_id AND fp.status = 'active' AND fp.profiles_enabled = 1
                 AND fus.federation_optin = 1 AND fus.profile_visible_federated = 1
-                AND u.status = 'active'
+                AND u.status = 'active' AND u.onboarding_completed = 1
             " . $partnerClause;
             $params = array_merge([':tid1' => $tenantId, ':tid2' => $tenantId, ':user_id' => $memberId], $partnerParams);
 
@@ -2319,6 +2323,7 @@ class FederationV2Controller extends BaseApiController
                     OR (fp.partner_tenant_id = ? AND fp.tenant_id = u.tenant_id)
                 )
                 WHERE u.id = ? AND u.tenant_id = ? AND u.status = 'active'
+                  AND u.onboarding_completed = 1
                   AND fus.federation_optin = 1
                   AND fus.profile_visible_federated = 1
                   AND fp.status = 'active'

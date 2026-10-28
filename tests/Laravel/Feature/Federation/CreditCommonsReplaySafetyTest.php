@@ -65,6 +65,7 @@ class CreditCommonsReplaySafetyTest extends TestCase
 
         DB::table('users')->whereIn('id', [$this->payer->id, $this->payee->id])->update([
             'federation_optin' => 1,
+            'onboarding_completed' => 1,
             'balance' => 100.00,
         ]);
 

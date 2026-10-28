@@ -72,6 +72,7 @@ class FederationService
             ->join('federation_user_settings as fus', 'u.id', '=', 'fus.user_id')
             ->where('u.tenant_id', $partnerTenantId)
             ->where('u.status', 'active')
+            ->where('u.onboarding_completed', 1)
             ->where('fus.federation_optin', 1)
             ->where('fus.appear_in_federated_search', 1)
             ->where('fus.profile_visible_federated', 1)

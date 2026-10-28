@@ -93,6 +93,7 @@ class FederationSearchService
                 INNER JOIN federation_user_settings fus ON u.id = fus.user_id
                 WHERE u.tenant_id IN ({$placeholders})
                 AND u.status = 'active'
+                AND u.onboarding_completed = 1
                 AND fus.federation_optin = 1
                 AND fus.profile_visible_federated = 1
                 AND fus.appear_in_federated_search = 1";
@@ -250,6 +251,7 @@ class FederationSearchService
                     INNER JOIN federation_user_settings fus ON u.id = fus.user_id
                     WHERE u.tenant_id IN ({$placeholders})
                     AND u.status = 'active'
+                    AND u.onboarding_completed = 1
                     AND fus.federation_optin = 1
                     AND fus.show_skills_federated = 1
                     AND u.skills IS NOT NULL AND u.skills != ''";
@@ -312,6 +314,7 @@ class FederationSearchService
                     INNER JOIN federation_user_settings fus ON u.id = fus.user_id
                     WHERE u.tenant_id IN ({$placeholders})
                     AND u.status = 'active'
+                    AND u.onboarding_completed = 1
                     AND fus.federation_optin = 1
                     AND fus.show_location_federated = 1
                     AND u.location IS NOT NULL AND u.location != ''";
@@ -543,6 +546,7 @@ class FederationSearchService
                 INNER JOIN federation_user_settings fus ON u.id = fus.user_id
                 WHERE u.tenant_id IN ({$placeholders})
                 AND u.status = 'active'
+                AND u.onboarding_completed = 1
                 AND fus.federation_optin = 1
                 AND fus.profile_visible_federated = 1
                 AND fus.appear_in_federated_search = 1

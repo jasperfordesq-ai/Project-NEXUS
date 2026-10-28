@@ -54,6 +54,7 @@ class FederationExternalWebhookMembersListTest extends TestCase
             'username'   => 'u_' . substr(md5(uniqid('', true)), 0, 12),
             'balance'    => $balance,
             'status'     => 'active',
+            'onboarding_completed' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

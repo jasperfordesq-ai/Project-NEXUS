@@ -188,6 +188,8 @@ class FederationProtocolEndpointsTest extends TestCase
         // to be opted in for this endpoint to reach them at all. The refusal
         // side is covered by
         // tests/Laravel/Feature/Security/E065/F331KomunitinAccountDeleteOptInTest.php.
+        // F-606: and must have finished onboarding, or a partner cannot see it.
+        DB::table('users')->where('id', $userId)->update(['onboarding_completed' => 1]);
         DB::table('federation_user_settings')->updateOrInsert(
             ['user_id' => $userId],
             [

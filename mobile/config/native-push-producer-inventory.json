@@ -576,9 +576,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:2143:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationExternalWebhookController.php:2144:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationExternalWebhookController.php",
-            "line": 2143,
+            "line": 2144,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverUserId",
@@ -589,9 +589,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:2926:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:2931:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 2926,
+            "line": 2931,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverId",
@@ -602,9 +602,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/FederationV2Controller.php:4015:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/FederationV2Controller.php:4020:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/FederationV2Controller.php",
-            "line": 4015,
+            "line": 4020,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $receiverIdInt",
@@ -836,9 +836,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Http/Controllers/Api/PartnerApi/PartnerV1Controller.php:319:NotificationDispatcher::fanOutPush",
+            "id": "app/Http/Controllers/Api/PartnerApi/PartnerV1Controller.php:322:NotificationDispatcher::fanOutPush",
             "file": "app/Http/Controllers/Api/PartnerApi/PartnerV1Controller.php",
-            "line": 319,
+            "line": 322,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $userId",

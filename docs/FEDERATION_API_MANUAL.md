@@ -256,6 +256,11 @@ notifications. Opt-out disables sharing and dispatches data-retraction work for
 previously shared records. Consent does not override tenant, partner, resource,
 or safeguarding policy.
 
+A member who has not finished the onboarding wizard (`users.onboarding_completed`)
+is never shown to another community, whatever their federation settings: not in
+member lists or search, not on a profile or reviews page, not in partner member
+counts, and not to external partners (owner decision, 28 October 2026).
+
 Protocol authentication also binds the tenant from the credential. Every
 partner read, write, ingest, and reconciliation path must preserve that binding.
 

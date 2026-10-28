@@ -173,6 +173,7 @@ class FederationInitialSyncJob implements ShouldQueue
             ->join('federation_user_settings', 'federation_user_settings.user_id', '=', 'users.id')
             ->where('users.tenant_id', $tenantId)
             ->where('users.status', 'active')
+            ->where('users.onboarding_completed', 1)
             ->where('federation_user_settings.federation_optin', 1)
             ->where('federation_user_settings.profile_visible_federated', 1)
             ->count();
