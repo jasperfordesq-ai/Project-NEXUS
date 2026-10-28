@@ -111,14 +111,7 @@ export function ReviewModal({
           <StarRating
             value={rating}
             onChange={setRating}
-            label={(
-              <>
-                {t('review_modal.rating_label')}{' '}
-                <span aria-hidden="true" className="text-[var(--color-error)]">
-                  {t('review_modal.rating_required')}
-                </span>
-              </>
-            )}
+            label={t('review_modal.rating_label')}
             getOptionLabel={(star) => t('review_modal.rate_star', { star })}
             getValueDescription={(star) => [
               t('review_modal.rating_poor'),
@@ -133,12 +126,12 @@ export function ReviewModal({
           />
 
           {/* Comment */}
-          <div className="space-y-2">
-            <label htmlFor="review-comment" className="text-sm font-medium text-theme-primary">
-              {t('review_modal.comment_label')}
-            </label>
+          <div className="flex w-full flex-col gap-1">
             <Textarea
               id="review-comment"
+              label={t('review_modal.comment_label')}
+              fullWidth
+              className="w-full"
               placeholder={t('review_modal.comment_placeholder')}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -146,7 +139,8 @@ export function ReviewModal({
               maxRows={8}
               maxLength={2000}
               classNames={{
-                input: 'bg-transparent text-theme-primary placeholder:text-theme-subtle',
+                label: 'text-sm font-medium text-theme-primary',
+                input: 'w-full text-theme-primary placeholder:text-theme-subtle',
                 inputWrapper: 'bg-theme-elevated border-theme-default',
               }}
             />
