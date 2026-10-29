@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
 const { requireAuth } = require('../middleware/auth');
 const {
@@ -3548,6 +3549,7 @@ router.post('/interviews/:interviewId(\\d+)/accept', asyncRoute(async (req, res)
 router.post('/interviews/:interviewId(\\d+)/decline', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'decline_interview', { cancelHref: '/jobs/responses', button: 'govuk_alpha_jobs.responses.decline_interview' })) return undefined;
 
   const interviewId = Number(req.params.interviewId);
   try {

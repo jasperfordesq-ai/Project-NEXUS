@@ -6270,6 +6270,25 @@
                 "mutual": ":count gemeenschappelijke verbinding|:count gemeenschappelijke verbindingen",
                 "connect_with": "Verbinden met :name",
                 "all_members": "Alle leden"
+            },
+            "confirm_action": {
+                "delete_comment": "Weet je zeker dat je deze reactie wilt verwijderen?",
+                "delete_notification": "Weet je zeker dat je deze melding wilt verwijderen?",
+                "block_member": "Weet je zeker dat je dit lid wilt blokkeren?",
+                "unblock_member": "Weet je zeker dat je dit lid wilt deblokkeren?",
+                "revoke_devices": "Weet je zeker dat je alle vertrouwde apparaten wilt vergeten?",
+                "revoke_devices_warning": "Elk apparaat vraagt de volgende keer dat je inlogt om een code voor tweestapsverificatie.",
+                "remove_skill": "Weet je zeker dat je deze vaardigheid van je profiel wilt verwijderen?",
+                "remove_participant": "Weet je zeker dat je deze persoon uit de groepsuitwisseling wilt verwijderen?",
+                "remove_list_item": "Weet je zeker dat je dit artikel van je lijst wilt verwijderen?",
+                "decline_connection": "Weet je zeker dat je dit connectieverzoek wilt weigeren?",
+                "decline_buddy": "Weet je zeker dat je dit verzoek om doelmaatje wilt weigeren?",
+                "decline_interview": "Weet je zeker dat je dit sollicitatiegesprek wilt weigeren?",
+                "decline_offer": "Weet je zeker dat je dit bod wilt weigeren?",
+                "cancel_join_request": "Weet je zeker dat je je verzoek om lid te worden van deze groep wilt intrekken?",
+                "cancel_shift": "Weet je zeker dat je je plek in deze dienst wilt annuleren?",
+                "withdraw_urgent": "Weet je zeker dat je dit dringende verzoek wilt intrekken?",
+                "cannot_undo": "Je kunt dit niet ongedaan maken."
             }
         },
         "govuk_alpha_activity": {

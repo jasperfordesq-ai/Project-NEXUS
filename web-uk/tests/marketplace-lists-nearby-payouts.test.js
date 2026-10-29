@@ -193,7 +193,7 @@ describe('wish lists and saved searches (React collections page)', () => {
       [['DELETE', /^\/collections\/3\/items\/42$/], { data: { removed: true } }],
       [['PUT', /^\/collections\/3$/], { data: { id: 3 } }]
     ]);
-    const removed = await request(createApp()).post('/marketplace/lists/3/items/42/remove').type('form').send({});
+    const removed = await request(createApp()).post('/marketplace/lists/3/items/42/remove').type('form').send({ confirmed: '1' });
     expect(api.callMarketplaceApi).toHaveBeenCalledWith('test-token', 'DELETE', '/collections/3/items/42');
     expect(removed.headers.location).toBe('/marketplace/lists/3?status=removed');
 

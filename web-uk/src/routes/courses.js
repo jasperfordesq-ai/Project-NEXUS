@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { ApiError, ApiOfflineError, callCourseApi, getMyCourses } = require('../lib/api');
 const { sanitizeCmsHtml, htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -1903,6 +1904,7 @@ router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/discussions', asyncRoute(async (
 }));
 
 router.post('/:id(\\d+)/lessons/:lessonId(\\d+)/discussions/:commentId(\\d+)/delete', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'delete_comment', { cancelHref: `/courses/${req.params.id}/learn?lesson=${req.params.lessonId}`, button: 'govuk_alpha_courses.discussion.delete_button', irreversible: true })) return undefined;
   const { id, lessonId, commentId } = req.params;
   return requireCourseAction(req, res, discussionRedirect(id, lessonId, 'comment-delete-failed'), async (token) => {
     await callCourse(token, 'DELETE', `/discussions/${encodeURIComponent(commentId)}`);

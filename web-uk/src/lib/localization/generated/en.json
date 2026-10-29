@@ -6270,6 +6270,25 @@
                 "mutual": ":count mutual connection|:count mutual connections",
                 "connect_with": "Connect with :name",
                 "all_members": "All members"
+            },
+            "confirm_action": {
+                "delete_comment": "Are you sure you want to delete this comment?",
+                "delete_notification": "Are you sure you want to delete this notification?",
+                "block_member": "Are you sure you want to block this member?",
+                "unblock_member": "Are you sure you want to unblock this member?",
+                "revoke_devices": "Are you sure you want to forget all trusted devices?",
+                "revoke_devices_warning": "Every device will ask for a two-factor code the next time you sign in on it.",
+                "remove_skill": "Are you sure you want to remove this skill from your profile?",
+                "remove_participant": "Are you sure you want to remove this person from the group exchange?",
+                "remove_list_item": "Are you sure you want to remove this item from your list?",
+                "decline_connection": "Are you sure you want to decline this connection request?",
+                "decline_buddy": "Are you sure you want to decline this goal buddy request?",
+                "decline_interview": "Are you sure you want to decline this interview?",
+                "decline_offer": "Are you sure you want to decline this offer?",
+                "cancel_join_request": "Are you sure you want to cancel your request to join this group?",
+                "cancel_shift": "Are you sure you want to cancel your place on this shift?",
+                "withdraw_urgent": "Are you sure you want to withdraw this urgent request?",
+                "cannot_undo": "You cannot undo this."
             }
         },
         "govuk_alpha_activity": {

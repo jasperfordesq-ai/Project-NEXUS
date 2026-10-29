@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 const {
@@ -2394,6 +2395,7 @@ router.post('/:id(\\d+)/join', requireAuth, audit.groupJoin(), asyncRoute(async 
 // which is what React's "Cancel join request" calls. Until 27 Oct 2026 web-uk only
 // said the request was pending and gave no way to take it back.
 router.post('/:id(\\d+)/cancel-request', requireAuth, audit.groupLeave(), asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'cancel_join_request', { cancelHref: `/groups/${req.params.id}`, button: 'govuk_alpha_groups.membership.cancel_request' })) return undefined;
   const { id } = req.params;
 
   try {

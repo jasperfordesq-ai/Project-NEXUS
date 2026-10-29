@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { requireAuth } = require('../middleware/auth');
 const {
   getNotifications,
@@ -284,6 +285,7 @@ router.post('/delete-all', asyncRoute(async (req, res) => {
 
 // Delete notification
 router.post('/:id(\\d+)/delete', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'delete_notification', { cancelHref: '/notifications', button: 'notifications.delete', irreversible: true })) return undefined;
   const { id } = req.params;
 
   try {

@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
 const { timingSafeEqual } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi, uploadMerchantOnboardingImage } = require('../lib/api');
@@ -1205,6 +1206,7 @@ router.post('/offers/:id(\\d+)/counter', asyncRoute(async (req, res) => {
 }));
 
 router.post('/offers/:id(\\d+)/decline', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'decline_offer', { cancelHref: '/marketplace/offers', button: 'govuk_alpha_commerce.offers.decline' })) return undefined;
   const id = Number(req.params.id);
   return runAction(
     req,

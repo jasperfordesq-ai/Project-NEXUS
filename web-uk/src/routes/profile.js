@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
 const { clearAuthCookies, requireAuth } = require('../middleware/auth');
 const {
@@ -2014,6 +2015,7 @@ router.post('/skills/add', asyncRoute(async (req, res) => {
 router.post('/skills/remove', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'remove_skill', { cancelHref: '/profile/settings#skills', button: 'profile_settings.skills.remove_button' })) return undefined;
 
   const skillId = positiveInteger(req.body.user_skill_id);
   if (skillId === null) {
@@ -2464,6 +2466,7 @@ router.post('/two-factor/recovery-codes', asyncRoute(async (req, res) => {
 router.post('/two-factor/revoke-devices', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'revoke_devices', { cancelHref: '/profile/two-factor', button: 'mfa_recovery.revoke', warning: 'govuk_alpha.confirm_action.revoke_devices_warning' })) return undefined;
   try {
     await callProfile(token, 'POST', '/auth/2fa/trusted-devices/revoke', {});
   } catch (error) {

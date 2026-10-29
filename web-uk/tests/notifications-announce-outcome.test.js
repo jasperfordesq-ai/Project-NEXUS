@@ -188,7 +188,7 @@ describe('notifications announce a successful action', () => {
   it('deleting ONE notification announces it', async () => {
     api.deleteNotification.mockResolvedValue({ data: {} });
 
-    const { html } = await submitThenRender(buildApp(), '/7/delete');
+    const { html } = await submitThenRender(buildApp(), '/7/delete', { confirmed: '1' });
 
     expect(bannerText(html)).toContain('Notification deleted.');
   });
@@ -211,7 +211,7 @@ describe('notifications announce a FAILED action instead of reloading in silence
   // Each of these used to flash an error that nothing rendered.
   const failures = [
     ['mark one read', '/7/read', {}, () => api.markNotificationRead],
-    ['delete one', '/7/delete', {}, () => api.deleteNotification],
+    ['delete one', '/7/delete', { confirmed: '1' }, () => api.deleteNotification],
     ['mark all read', '/read-all', {}, () => api.markAllNotificationsRead],
     ['delete all', '/delete-all', {}, () => api.deleteAllNotifications],
     ['mark a group read', '/group/read', { group_key: 'messages' }, () => api.markNotificationGroupRead]
@@ -234,7 +234,7 @@ describe('notifications announce a FAILED action instead of reloading in silence
     const app = buildApp();
     // Swap the translator the way the locale middleware does.
     const agent = request.agent(app);
-    const post = await agent.post('/notifications/7/delete').type('form').send({ _csrf: 'test-csrf-token' });
+    const post = await agent.post('/notifications/7/delete').type('form').send({ confirmed: '1', _csrf: 'test-csrf-token' });
     const page = await agent.get('/notifications');
 
     // The English catalogue is what this harness loads; the point of the

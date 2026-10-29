@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const {
   getConnections,
   getConnectionPendingCountsV2,
@@ -311,6 +312,7 @@ router.post('/:id(\\d+)/accept', asyncRoute(async (req, res) => {
 
 // Decline connection request
 router.post('/:id(\\d+)/decline', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'decline_connection', { cancelHref: '/connections', button: 'connections.decline_button' })) return undefined;
   const { id } = req.params;
 
   try {

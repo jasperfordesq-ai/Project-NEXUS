@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const fs = require('fs/promises');
 const { randomUUID } = require('crypto');
 const {
@@ -3897,6 +3898,7 @@ router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/waitlist', asyncRout
 }));
 
 router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/cancel', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'cancel_shift', { cancelHref: `/volunteering/opportunities/${req.params.id}`, button: 'govuk_alpha.volunteering.cancel_shift' })) return undefined;
   const id = Number(req.params.id);
   const shiftId = Number(req.params.shiftId);
 

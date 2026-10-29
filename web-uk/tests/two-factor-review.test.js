@@ -110,7 +110,7 @@ describe('P5 — the remembered-device cookie is cleared with the same attribute
     process.env.NODE_ENV = 'production';
     api.callProfileApi.mockResolvedValueOnce({ data: { revoked_count: 1 } });
 
-    const response = await request(createApp()).post('/profile/two-factor/revoke-devices').expect(302);
+    const response = await request(createApp()).post('/profile/two-factor/revoke-devices').type('form').send({ confirmed: '1' }).expect(302);
     const cleared = (response.headers['set-cookie'] || []).find((c) => c.startsWith('nexus_trusted_device='));
     expect(cleared).toBeDefined();
     expect(cleared).toMatch(/;\s*Secure/i);
@@ -192,7 +192,7 @@ describe('Resilience — a failed upstream call renders a message, not a crash',
   it('reports a revoke-devices failure on the two-factor page instead of a 500', async () => {
     api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Upstream unavailable', 503));
 
-    const response = await request(createApp()).post('/profile/two-factor/revoke-devices');
+    const response = await request(createApp()).post('/profile/two-factor/revoke-devices').type('form').send({ confirmed: '1' });
     expect(response.status).toBe(302);
     expect(response.headers.location).toContain('/profile/two-factor');
     expect(response.headers.location).toMatch(/status=2fa-devices-revoke-failed/);

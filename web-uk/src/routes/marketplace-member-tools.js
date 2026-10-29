@@ -24,6 +24,7 @@
  */
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { URL } = require('node:url');
 const { ApiError, callMarketplaceApi } = require('../lib/api');
 const { resolveBackendMediaUrl } = require('../lib/accessible-shell');
@@ -999,6 +1000,7 @@ router.post('/lists/:id(\\d+)/update', asyncRoute(async (req, res) => {
 router.post('/lists/:id(\\d+)/items/:listingId(\\d+)/remove', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (!token) return undefined;
+  if (confirmFirst(req, res, 'remove_list_item', { cancelHref: `/marketplace/lists/${req.params.id}`, button: 'govuk_alpha_commerce.wish_lists.remove_item' })) return undefined;
   const id = Number(req.params.id);
   try {
     await callMarketplaceApi(token, 'DELETE', `/collections/${encodeURIComponent(id)}/items/${encodeURIComponent(req.params.listingId)}`);

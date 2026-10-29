@@ -210,7 +210,7 @@ describe('a pending join request can be cancelled', () => {
 
   it('withdraws the request through the membership endpoint React uses and says so', async () => {
     api.leaveGroup.mockResolvedValue({ data: { status: 'none', action: 'request_cancelled' } });
-    const res = await request(app).post('/974/cancel-request').type('form').send({});
+    const res = await request(app).post('/974/cancel-request').type('form').send({ confirmed: '1' });
     expect(api.leaveGroup).toHaveBeenCalledWith('token:test', '974');
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('/groups/974?status=group-request-cancelled');
@@ -225,7 +225,7 @@ describe('a pending join request can be cancelled', () => {
 
   it('reports a failure without claiming success', async () => {
     api.leaveGroup.mockRejectedValue(new api.ApiError('Not a member', 409));
-    const res = await request(app).post('/974/cancel-request').type('form').send({});
+    const res = await request(app).post('/974/cancel-request').type('form').send({ confirmed: '1' });
     expect(res.headers.location).toContain('status=group-failed');
   });
 });

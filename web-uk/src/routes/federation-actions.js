@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { callFederationApi, blockMember, unblockMember, ApiError } = require('../lib/api');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -265,6 +266,7 @@ router.post('/connections/:id(\\d+)/accept', asyncRoute(async (req, res) => {
 router.post('/connections/:id(\\d+)/reject', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'decline_connection', { cancelHref: '/federation/connections', button: 'fed2.connections.reject' })) return undefined;
 
   const id = Number(req.params.id);
   let status = 'connection-rejected';
@@ -470,6 +472,7 @@ function internalPartnerTenantId(value) {
 router.post('/members/:id(\\d+)/block', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'block_member', { cancelHref: `/federation/members/${req.params.id}`, button: 'profile.block.block', warning: 'profile.block.explain' })) return undefined;
 
   const memberId = Number(req.params.id);
   const memberTenantId = internalPartnerTenantId(req.body.member_tenant_id);
@@ -491,6 +494,7 @@ router.post('/members/:id(\\d+)/block', asyncRoute(async (req, res) => {
 router.post('/members/:id(\\d+)/unblock', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
+  if (confirmFirst(req, res, 'unblock_member', { cancelHref: `/federation/members/${req.params.id}`, button: 'profile.block.unblock' })) return undefined;
 
   const memberId = Number(req.params.id);
   const memberTenantId = internalPartnerTenantId(req.body.member_tenant_id);

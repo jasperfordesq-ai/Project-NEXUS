@@ -221,7 +221,7 @@ describe('asking for help', () => {
 describe('withdrawing a request', () => {
   it('deletes it and says so', async () => {
     const agent = request.agent(createVolunteeringApp(routes));
-    const { posted, page } = await postAndFollow(agent, `${MOUNT}/opportunities/131/urgent-requests/9/withdraw`, {});
+    const { posted, page } = await postAndFollow(agent, `${MOUNT}/opportunities/131/urgent-requests/9/withdraw`, { confirmed: '1' });
 
     expect(writes()).toEqual([['test-token', 'DELETE', '/emergency-alerts/9']]);
     expect(posted.headers.location).toBe('/acme/accessible/volunteering/opportunities/131/shifts?status=urgent-withdrawn');
@@ -231,7 +231,7 @@ describe('withdrawing a request', () => {
   it('says when it could not be withdrawn', async () => {
     mockApi({ withdrawError: new api.ApiError('gone', 500, {}) });
     const agent = request.agent(createVolunteeringApp(routes));
-    const { page } = await postAndFollow(agent, `${MOUNT}/opportunities/131/urgent-requests/9/withdraw`, {});
+    const { page } = await postAndFollow(agent, `${MOUNT}/opportunities/131/urgent-requests/9/withdraw`, { confirmed: '1' });
 
     expect(page.text).toContain('govuk-error-summary');
     expect(page.text).toContain(html(t(`${U}withdraw_failed`)));

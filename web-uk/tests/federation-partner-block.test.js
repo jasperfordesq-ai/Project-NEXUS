@@ -193,7 +193,7 @@ describe('blocking a partner-community member', () => {
     const res = await request(createApp())
       .post(`${MOUNT}/members/20/block`)
       .type('form')
-      .send({ member_tenant_id: '9' });
+      .send({ confirmed: '1', member_tenant_id: '9' });
 
     expect(api.blockMember).toHaveBeenCalledWith('test-token', 20);
     expect(res.status).toBe(302);
@@ -211,7 +211,7 @@ describe('blocking a partner-community member', () => {
     const res = await request(createApp())
       .post(`${MOUNT}/members/20/block`)
       .type('form')
-      .send({ member_tenant_id: '9' });
+      .send({ confirmed: '1', member_tenant_id: '9' });
 
     expect(res.headers.location).toBe(`${PREFIX}/federation/members/20?tenant_id=9&status=block-failed`);
   });
@@ -220,7 +220,7 @@ describe('blocking a partner-community member', () => {
     const res = await request(createApp())
       .post(`${MOUNT}/members/20/block`)
       .type('form')
-      .send({ member_tenant_id: 'ext-3' });
+      .send({ confirmed: '1', member_tenant_id: 'ext-3' });
 
     expect(api.blockMember).not.toHaveBeenCalled();
     expect(res.status).toBe(302);
@@ -233,7 +233,7 @@ describe('blocking a partner-community member', () => {
     const res = await request(createApp())
       .post(`${MOUNT}/members/20/unblock`)
       .type('form')
-      .send({ member_tenant_id: '9' });
+      .send({ confirmed: '1', member_tenant_id: '9' });
 
     expect(api.unblockMember).toHaveBeenCalledWith('test-token', 20);
     expect(res.headers.location).toBe(`${PREFIX}/federation/members/20?tenant_id=9&status=member-unblocked`);
@@ -248,7 +248,7 @@ describe('blocking a partner-community member', () => {
       next();
     }, federationActionRoutes);
 
-    const res = await request(app).post(`${MOUNT}/members/20/block`).type('form').send({ member_tenant_id: '9' });
+    const res = await request(app).post(`${MOUNT}/members/20/block`).type('form').send({ confirmed: '1', member_tenant_id: '9' });
 
     expect(api.blockMember).not.toHaveBeenCalled();
     expect(res.headers.location).toBe(`${PREFIX}/login?status=auth-required`);

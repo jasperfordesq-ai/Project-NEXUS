@@ -196,7 +196,7 @@ describe('4. lesson discussions', () => {
 
   it('deletes your own comment', async () => {
     routeApi([[/^DELETE \/discussions\/301$/, { data: { deleted: true } }]]);
-    const res = await request(app).post('/courses/42/lessons/10/discussions/301/delete').type('form').send({});
+    const res = await request(app).post('/courses/42/lessons/10/discussions/301/delete').type('form').send({ confirmed: '1' });
     expect(res.headers.location).toBe('/courses/42/learn?lesson=10&status=comment-deleted#lesson-discussion');
     expect(callsTo('DELETE', '/discussions/301')).toHaveLength(1);
   });
@@ -208,7 +208,7 @@ describe('4. lesson discussions', () => {
   });
 
   it('rejects a non-numeric comment id', async () => {
-    const res = await request(app).post('/courses/42/lessons/10/discussions/abc/delete').type('form').send({});
+    const res = await request(app).post('/courses/42/lessons/10/discussions/abc/delete').type('form').send({ confirmed: '1' });
     expect(res.status).toBe(404);
   });
 });

@@ -6270,6 +6270,25 @@
                 "mutual": ":count wspólne połączenie|:count wspólnych połączeń",
                 "connect_with": "Połącz się z :name",
                 "all_members": "Wszyscy członkowie"
+            },
+            "confirm_action": {
+                "delete_comment": "Czy na pewno chcesz usunąć ten komentarz?",
+                "delete_notification": "Czy na pewno chcesz usunąć to powiadomienie?",
+                "block_member": "Czy na pewno chcesz zablokować tego członka?",
+                "unblock_member": "Czy na pewno chcesz odblokować tego członka?",
+                "revoke_devices": "Czy na pewno chcesz zapomnieć wszystkie zaufane urządzenia?",
+                "revoke_devices_warning": "Każde urządzenie poprosi o kod uwierzytelniania dwuskładnikowego przy następnym logowaniu.",
+                "remove_skill": "Czy na pewno chcesz usunąć tę umiejętność ze swojego profilu?",
+                "remove_participant": "Czy na pewno chcesz usunąć tę osobę z wymiany grupowej?",
+                "remove_list_item": "Czy na pewno chcesz usunąć ten przedmiot z listy?",
+                "decline_connection": "Czy na pewno chcesz odrzucić to zaproszenie do kontaktów?",
+                "decline_buddy": "Czy na pewno chcesz odrzucić tę prośbę o partnera celu?",
+                "decline_interview": "Czy na pewno chcesz odrzucić tę rozmowę kwalifikacyjną?",
+                "decline_offer": "Czy na pewno chcesz odrzucić tę ofertę?",
+                "cancel_join_request": "Czy na pewno chcesz anulować prośbę o dołączenie do tej grupy?",
+                "cancel_shift": "Czy na pewno chcesz zrezygnować z miejsca na tej zmianie?",
+                "withdraw_urgent": "Czy na pewno chcesz wycofać tę pilną prośbę?",
+                "cannot_undo": "Tej czynności nie można cofnąć."
             }
         },
         "govuk_alpha_activity": {

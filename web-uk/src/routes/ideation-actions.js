@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { ApiError, callIdeationApi } = require('../lib/api');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -596,6 +597,7 @@ router.post('/:id(\\d+)/ideas/:ideaId(\\d+)/comments', asyncRoute(async (req, re
 }));
 
 router.post('/:id(\\d+)/ideas/:ideaId(\\d+)/comments/:commentId(\\d+)/delete', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'delete_comment', { cancelHref: `/ideation/${req.params.id}/ideas/${req.params.ideaId}`, button: 'govuk_alpha_ideation.comments.delete', irreversible: true })) return undefined;
   const id = Number(req.params.id);
   const ideaId = Number(req.params.ideaId);
   const commentId = Number(req.params.commentId);

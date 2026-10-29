@@ -48,6 +48,7 @@
  */
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { ApiError, callVolunteeringApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay, consumeFormReplay } = require('../lib/form-replay');
@@ -896,6 +897,7 @@ router.post('/opportunities/:id(\\d+)/shifts/:shiftId(\\d+)/ask-for-help', async
 router.post('/opportunities/:id(\\d+)/urgent-requests/:alertId(\\d+)/withdraw', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, LOGIN);
+  if (confirmFirst(req, res, 'withdraw_urgent', { cancelHref: `${req.baseUrl}/opportunities/${req.params.id}/shifts`, button: 'govuk_alpha_volunteering.urgent_requests.withdraw' })) return undefined;
   const id = Number(req.params.id);
   try {
     await callVolunteeringApi(token, 'DELETE', `/emergency-alerts/${encodeURIComponent(Number(req.params.alertId))}`);

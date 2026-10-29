@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { randomUUID } = require('node:crypto');
 const {
   getUsers,
@@ -703,6 +704,7 @@ router.post('/:id(\\d+)/block', asyncRoute(async (req, res) => {
   if (!token) {
     return redirectTo(res, LOGIN_AUTH_REQUIRED_PATH);
   }
+  if (confirmFirst(req, res, 'block_member', { cancelHref: `/members/${id}`, button: 'profile.block.block', warning: 'profile.block.explain' })) return undefined;
 
   let status = 'member-blocked';
   try {
@@ -779,6 +781,7 @@ router.post('/:id(\\d+)/unblock', asyncRoute(async (req, res) => {
   if (!token) {
     return redirectTo(res, LOGIN_AUTH_REQUIRED_PATH);
   }
+  if (confirmFirst(req, res, 'unblock_member', { cancelHref: String(req.body.from || '').trim() === 'list' ? '/profile/blocked' : `/members/${id}`, button: 'profile.block.unblock' })) return undefined;
 
   try {
     await unblockMember(token, id);

@@ -11871,7 +11871,7 @@ describe('shared accessible frontend shell', () => {
       .post('/connections/32/decline')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1] });
+      .send({ confirmed: '1', _csrf: csrfMatch[1] });
 
     const removeResponse = await agent
       .post('/connections/33/remove')
@@ -12919,7 +12919,7 @@ describe('shared accessible frontend shell', () => {
       .post('/members/77/block')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({
+      .send({ confirmed: '1',
         _csrf: csrfMatch[1],
         reason: ' Spam '
       });
@@ -12944,7 +12944,7 @@ describe('shared accessible frontend shell', () => {
       .post('/members/77/unblock')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({
+      .send({ confirmed: '1',
         _csrf: csrfMatch[1],
         from: 'list'
       });
@@ -13066,7 +13066,7 @@ describe('shared accessible frontend shell', () => {
       .post('/acme/accessible/members/77/unblock')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({
+      .send({ confirmed: '1',
         _csrf: signedCsrfMatch[1],
         from: 'list'
       });
@@ -17504,7 +17504,7 @@ describe('shared accessible frontend shell', () => {
       .post('/notifications/8/delete')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1] });
+      .send({ confirmed: '1', _csrf: csrfMatch[1] });
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe('/notifications');
@@ -22089,7 +22089,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const submitResponse = await post('/ideation/7/ideas', {
       idea_title: ' More benches ',
@@ -22606,7 +22606,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const createResponse = await post('/group-exchanges/new', {
       title: ' Community garden build ',
@@ -24612,7 +24612,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const jobFormBody = {
       title: ' Volunteer Coordinator ',
@@ -32802,7 +32802,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const connectResponse = await post('/federation/connections', {
       receiver_id: '77',
@@ -32988,7 +32988,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ ...(/skills\/remove|revoke-devices/.test(pathName) ? { confirmed: '1' } : {}), _csrf: csrfMatch[1], ...body });
     // F-114: steps that end the session (password change, passkey removal, turning off
     // two-step verification) invalidate the CSRF token, which is bound to the session.
     const refreshCsrf = async () => {
@@ -33436,7 +33436,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const createResponse = await post('/goals', {
       title: ' Walk daily ',
@@ -36093,7 +36093,7 @@ describe('shared accessible frontend shell', () => {
       .post(pathName)
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1], ...body });
+      .send({ confirmed: '1', _csrf: csrfMatch[1], ...body });
 
     const acceptResponse = await post('/marketplace/offers/12/accept');
     expect(acceptResponse.headers.location).toBe('/marketplace/offers?tab=received&status=accepted');
@@ -39288,7 +39288,7 @@ describe('shared accessible frontend shell', () => {
       .post('/volunteering/opportunities/77/shifts/501/cancel')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)
       .type('form')
-      .send({ _csrf: csrfMatch[1] });
+      .send({ confirmed: '1', _csrf: csrfMatch[1] });
     expect(cancelResponse.headers.location).toBe('/volunteering/opportunities/77?status=shift-cancelled');
     expect(api.callVolunteeringApi).toHaveBeenLastCalledWith('test-token', 'DELETE', '/shifts/501/signup');
 

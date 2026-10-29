@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const { ApiError, callGroupExchangeApi, previewGroupExchange } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay } = require('../lib/form-replay');
@@ -303,6 +304,7 @@ router.post('/:id(\\d+)/participants', asyncRoute(async (req, res) => {
 }));
 
 router.post('/:id(\\d+)/participants/:participantUserId(\\d+)/remove', asyncRoute(async (req, res) => {
+  if (confirmFirst(req, res, 'remove_participant', { cancelHref: `/group-exchanges/${req.params.id}`, button: 'group_exchanges.remove_button', irreversible: true })) return undefined;
   const id = Number(req.params.id);
   const participantUserId = Number(req.params.participantUserId);
   return runAction(

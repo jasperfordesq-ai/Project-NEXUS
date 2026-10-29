@@ -4,6 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
+const { confirmFirst } = require('../lib/confirm-action');
 const {
   getGoals,
   getGoal,
@@ -1204,6 +1205,7 @@ router.post('/:id(\\d+)/buddy-requests/:requestId(\\d+)/:decision(accept|decline
   const id = Number(req.params.id);
   const requestId = Number(req.params.requestId);
   const decision = req.params.decision === 'accept' ? 'accept' : 'decline';
+  if (decision === 'decline' && confirmFirst(req, res, 'decline_buddy', { cancelHref: `/goals/${id}`, button: 'goals.buddy_request_decline' })) return undefined;
   try {
     // Literal paths (not a templated action segment) so the API consumer
     // ledger can match each call to its Laravel route.

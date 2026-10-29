@@ -6270,6 +6270,25 @@
                 "mutual": ":count cheangal i gcoiteann|:count ceangal i gcoiteann",
                 "connect_with": "Déan ceangal le :name",
                 "all_members": "Gach ball"
+            },
+            "confirm_action": {
+                "delete_comment": "An bhfuil tú cinnte gur mian leat an trácht seo a scriosadh?",
+                "delete_notification": "An bhfuil tú cinnte gur mian leat an fógra seo a scriosadh?",
+                "block_member": "An bhfuil tú cinnte gur mian leat an ball seo a bhlocáil?",
+                "unblock_member": "An bhfuil tú cinnte gur mian leat an ball seo a dhíbhlocáil?",
+                "revoke_devices": "An bhfuil tú cinnte gur mian leat dearmad a dhéanamh ar gach gléas iontaofa?",
+                "revoke_devices_warning": "Iarrfaidh gach gléas cód dhá fhachtóir ort an chéad uair eile a shíníonn tú isteach air.",
+                "remove_skill": "An bhfuil tú cinnte gur mian leat an scil seo a bhaint de do phróifíl?",
+                "remove_participant": "An bhfuil tú cinnte gur mian leat an duine seo a bhaint den mhalartú grúpa?",
+                "remove_list_item": "An bhfuil tú cinnte gur mian leat an mhír seo a bhaint de do liosta?",
+                "decline_connection": "An bhfuil tú cinnte gur mian leat an t-iarratas ceangail seo a dhiúltú?",
+                "decline_buddy": "An bhfuil tú cinnte gur mian leat an t-iarratas comrádaí sprice seo a dhiúltú?",
+                "decline_interview": "An bhfuil tú cinnte gur mian leat an t-agallamh seo a dhiúltú?",
+                "decline_offer": "An bhfuil tú cinnte gur mian leat an tairiscint seo a dhiúltú?",
+                "cancel_join_request": "An bhfuil tú cinnte gur mian leat d’iarratas ar dhul isteach sa ghrúpa seo a chealú?",
+                "cancel_shift": "An bhfuil tú cinnte gur mian leat d’áit ar an seal seo a chealú?",
+                "withdraw_urgent": "An bhfuil tú cinnte gur mian leat an t-iarratas práinneach seo a tharraingt siar?",
+                "cannot_undo": "Ní féidir é seo a chealú."
             }
         },
         "govuk_alpha_activity": {
