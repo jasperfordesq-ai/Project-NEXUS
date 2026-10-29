@@ -16,7 +16,8 @@ describe('Expo Router query-string compatibility', () => {
       readFileSync(join(dirname(decoderPath), 'package.json'), 'utf8'),
     ) as { version?: string };
 
-    expect(packageJson.version).toBe('0.5.0');
+    // 0.5.1 also fixes GHSA-qr28-fpjm-wq7f (quadratic percent-encoded runs; E-118, 29 Oct 2026).
+    expect(packageJson.version).toBe('0.5.1');
   });
 
   it('preserves the CommonJS interface used by Expo Router and React Navigation', () => {
