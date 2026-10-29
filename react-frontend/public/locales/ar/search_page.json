@@ -212,5 +212,6 @@
   "view_all_podcasts_other": "عرض كل ملفات البودكاست ({{count}})",
   "podcast_show_label": "برنامج بودكاست",
   "podcast_episode_label": "حلقة من {{show}}",
-  "filter_podcasts": "البودكاست"
+  "filter_podcasts": "البودكاست",
+  "load_more": "تحميل المزيد"
 }

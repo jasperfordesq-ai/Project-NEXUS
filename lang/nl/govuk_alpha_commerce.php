@@ -345,6 +345,7 @@ return [
         'status_confirm_failed' => 'Sorry, de levering kon niet worden bevestigd.',
         'status_cancelled_done' => 'De bestelling is geannuleerd.',
         'status_cancel_failed' => 'Sorry, de bestelling kon niet worden geannuleerd.',
+        'status_cancel_reason_invalid' => 'Vul een reden voor de annulering in.',
         'status_rated' => 'Bedankt voor uw beoordeling.',
         'status_rate_failed' => 'Sorry, uw beoordeling kon niet worden opgeslagen.',
         'status_rate_invalid' => 'Kies een beoordeling tussen 1 en 5 sterren.',

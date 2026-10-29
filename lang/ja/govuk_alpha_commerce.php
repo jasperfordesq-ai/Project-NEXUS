@@ -345,6 +345,7 @@ return [
         'status_confirm_failed' => '申し訳ございませんが、配送が確認できませんでした。',
         'status_cancelled_done' => '注文はキャンセルされました。',
         'status_cancel_failed' => '申し訳ありませんが、注文はキャンセルできませんでした。',
+        'status_cancel_reason_invalid' => 'キャンセルの理由を入力してください。',
         'status_rated' => '評価していただきありがとうございます。',
         'status_rate_failed' => '申し訳ありませんが、評価を保存できませんでした。',
         'status_rate_invalid' => '1 つ星から 5 つ星の評価を選択します。',

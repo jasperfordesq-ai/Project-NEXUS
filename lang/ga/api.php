@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Ní bhfuarthas an lá a thabhairt',
     'fed_external_partner_message_rejected' => 'Dhiúltaigh an comhpháirtí seachtrach an teachtaireacht.',
     'fed_review_anonymous' => 'Anaithnid',
+    'review_anonymous' => 'Anaithnid',
     'user_invalid_accent_color' => 'Dath accent neamhbhailí. Úsáid dath heicsidheachúlach mar #6366f1.',
     'user_invalid_font_size' => 'Clómhéid neamhbhailí. Roghnaigh beag, meánach, nó mór.',
     'user_invalid_density' => 'Dlús leagan amach neamhbhailí. Roghnaigh dlúth, compordach, nó fairsing.',

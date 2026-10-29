@@ -86,7 +86,7 @@ class ReviewService
                 // Not even the id: it leads straight to the author's profile.
                 $reviewerRow = [
                     'id'         => null,
-                    'name'       => 'Anonymous',
+                    'name'       => __('api.review_anonymous'),
                     'first_name' => null,
                     'last_name'  => null,
                     'avatar'     => null,
@@ -460,7 +460,7 @@ class ReviewService
 
         $reviewer = $revealReviewer ? $this->shapeMember($review->reviewer, $viewerIsAdmin) : [
             'id'         => null,
-            'name'       => 'Anonymous',
+            'name'       => __('api.review_anonymous'),
             'first_name' => null,
             'avatar'     => null,
             'avatar_url' => null,

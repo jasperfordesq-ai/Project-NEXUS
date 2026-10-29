@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Nie znaleziono dnia wręczenia',
     'fed_external_partner_message_rejected' => 'Partner zewnętrzny odrzucił wiadomość.',
     'fed_review_anonymous' => 'Anonimowy',
+    'review_anonymous' => 'Anonimowy',
     'user_invalid_accent_color' => 'Nieprawidłowy kolor akcentu. Użyj prawidłowego koloru szesnastkowego, takiego jak #6366f1.',
     'user_invalid_font_size' => 'Nieprawidłowy rozmiar czcionki. Wybierz mały, średni lub duży.',
     'user_invalid_density' => 'Nieprawidłowa gęstość układu. Wybierz kompaktowy, wygodny lub przestronny.',

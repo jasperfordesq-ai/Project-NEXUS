@@ -1779,6 +1779,7 @@ return [
     'fed_external_partner_rejected'        => 'External partner rejected the transaction.',
     'fed_external_partner_message_rejected' => 'External partner rejected the message.',
     'fed_review_anonymous'                 => 'Anonymous',
+    'review_anonymous' => 'Anonymous',
 
     // ============================================
     // USER-FACING — USERS / PROFILE (additional)

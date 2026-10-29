@@ -360,6 +360,7 @@ return [
         'status_confirm_failed' => 'Sorry, delivery could not be confirmed.',
         'status_cancelled_done' => 'The order was cancelled.',
         'status_cancel_failed' => 'Sorry, the order could not be cancelled.',
+        'status_cancel_reason_invalid' => 'Enter a reason for cancelling.',
         'status_rated' => 'Thank you for your rating.',
         'status_rate_failed' => 'Sorry, your rating could not be saved.',
         'status_rate_invalid' => 'Choose a rating between 1 and 5 stars.',

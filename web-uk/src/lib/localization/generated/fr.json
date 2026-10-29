@@ -7022,6 +7022,7 @@
                 "status_confirm_failed": "Désolé, la livraison n'a pas pu être confirmée.",
                 "status_cancelled_done": "La commande a été annulée.",
                 "status_cancel_failed": "Désolé, la commande n'a pas pu être annulée.",
+                "status_cancel_reason_invalid": "Saisissez un motif d'annulation.",
                 "status_rated": "Merci pour votre note.",
                 "status_rate_failed": "Désolé, votre note n'a pas pu être enregistrée.",
                 "status_rate_invalid": "Choisissez une note entre 1 et 5 étoiles."

@@ -152,5 +152,6 @@
   "view_all_podcasts_many": "Voir les {{count}} podcasts",
   "podcast_show_label": "Émission de podcast",
   "podcast_episode_label": "Épisode de {{show}}",
-  "filter_podcasts": "Émissions audio"
+  "filter_podcasts": "Émissions audio",
+  "load_more": "Charger plus"
 }

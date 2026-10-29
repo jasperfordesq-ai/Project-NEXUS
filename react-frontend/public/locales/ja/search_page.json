@@ -132,5 +132,6 @@
   "section_events_one": "イベント ({{count}})",
   "section_groups_one": "グループ ({{count}})",
   "members_count_one": "{{count}} メンバーたち",
-  "saved_searches_one": "保存された検索 ({{count}})"
+  "saved_searches_one": "保存された検索 ({{count}})",
+  "load_more": "さらに読み込む"
 }

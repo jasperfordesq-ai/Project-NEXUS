@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Dia de doação não encontrado',
     'fed_external_partner_message_rejected' => 'O parceiro externo rejeitou a mensagem.',
     'fed_review_anonymous' => 'Anónimo',
+    'review_anonymous' => 'Anónimo',
     'user_invalid_accent_color' => 'Cor de destaque inválida. Use uma cor hexadecimal válida, como #6366f1.',
     'user_invalid_font_size' => 'Tamanho de fonte inválido. Escolha pequeno, médio ou grande.',
     'user_invalid_density' => 'Densidade de layout inválida. Escolha compacto, confortável ou espaçoso.',

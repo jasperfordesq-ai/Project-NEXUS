@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Spendetag nicht gefunden',
     'fed_external_partner_message_rejected' => 'Der externe Partner hat die Nachricht abgelehnt.',
     'fed_review_anonymous' => 'Anonym',
+    'review_anonymous' => 'Anonym',
     'user_invalid_accent_color' => 'Ungültige Akzentfarbe. Verwenden Sie eine gültige Hex-Farbe, z. B. #6366f1.',
     'user_invalid_font_size' => 'Ungültige Schriftgröße. Wählen Sie klein, mittel oder groß.',
     'user_invalid_density' => 'Ungültige Layoutdichte. Wählen Sie kompakt, komfortabel oder geräumig.',

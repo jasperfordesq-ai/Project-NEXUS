@@ -10982,10 +10982,12 @@ describe('shared accessible frontend shell', () => {
     expect(unsigned.status).toBe(302);
     expect(unsigned.headers.location).toBe('/acme/accessible/login?status=auth-required');
     expect(response.status).toBe(200);
+    // The page's cursor is forwarded since 29 Oct 2026 (Laravel pages one-type searches).
     expect(api.searchV2).toHaveBeenCalledWith('test-token', {
       q: 'garden',
       type: 'all',
-      per_page: 30
+      per_page: 30,
+      cursor: 'opaque-current'
     });
     expect(response.text).toContain(t('search.title'));
     // This used to assert the platform name and only passed because the page
@@ -11246,7 +11248,10 @@ describe('shared accessible frontend shell', () => {
       per_page: 30,
       category_id: '3',
       sort: 'newest',
-      skills: 'repair,teaching'
+      skills: 'repair,teaching',
+      // Sent since 29 Oct 2026; Laravel applies them.
+      date_from: '2026-07-01',
+      location: 'Town'
     });
     expect(api.getSavedSearches).toHaveBeenCalledWith('test-token');
     expect(api.getListingCategories).toHaveBeenCalledWith('test-token');

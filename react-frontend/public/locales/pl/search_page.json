@@ -172,5 +172,6 @@
   "view_all_podcasts_other": "Zobacz wszystkie podcasty ({{count}})",
   "podcast_show_label": "Program podcastowy",
   "podcast_episode_label": "Odcinek programu {{show}}",
-  "filter_podcasts": "Podcasty"
+  "filter_podcasts": "Podcasty",
+  "load_more": "Wczytaj więcej"
 }

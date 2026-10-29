@@ -5,6 +5,7 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "_date-input.njk" import nexusDateInput %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/search') }}">{{ t("govuk_alpha_search.back_to_search") }}</a>
@@ -338,5 +339,6 @@
         </div>
       </section>
     {% endif %}
+    {% if nextPageHref %}{{ loadMoreNext(urlFor(nextPageHref), t("actions.load_more")) }}{% endif %}
   {% endif %}
 {% endblock %}

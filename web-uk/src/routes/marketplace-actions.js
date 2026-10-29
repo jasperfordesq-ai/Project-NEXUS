@@ -1285,7 +1285,10 @@ router.post('/orders/:id(\\d+)/confirm', asyncRoute(async (req, res) => {
 
 router.post('/orders/:id(\\d+)/cancel', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
-  const reason = trimmed(req.body.reason, 500) || 'Cancelled from the accessible marketplace.';
+  // Laravel requires a reason, and React asks the member for one. Until 29 Oct 2026
+  // a blank reason was replaced with an English sentence the member never wrote.
+  const reason = trimmed(req.body.reason, 500);
+  if (!reason) return redirectTo(res, ordersRedirect(req, 'cancel-reason-invalid'));
   return runAction(
     req,
     res,

@@ -7022,6 +7022,7 @@
                 "status_confirm_failed": "Siamo spiacenti, non è stato possibile confermare la consegna.",
                 "status_cancelled_done": "L'ordine è stato annullato.",
                 "status_cancel_failed": "Siamo spiacenti, non è stato possibile annullare l'ordine.",
+                "status_cancel_reason_invalid": "Inserisci un motivo per l'annullamento.",
                 "status_rated": "Grazie per la tua valutazione",
                 "status_rate_failed": "Siamo spiacenti, non è stato possibile salvare la tua valutazione.",
                 "status_rate_invalid": "Scegli una valutazione compresa tra 1 e 5 stelle."

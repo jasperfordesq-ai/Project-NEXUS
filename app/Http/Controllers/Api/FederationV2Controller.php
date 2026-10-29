@@ -1034,12 +1034,27 @@ class FederationV2Controller extends BaseApiController
                 $sql .= " AND e.tenant_id = :partner_id";
                 $params[':partner_id'] = $partnerId;
             }
+            // Ordered by date (29 Oct 2026; was by id, so a later-created but sooner
+            // event sat further down): upcoming soonest first, otherwise newest first.
+            // The cursor is "start_time|id"; a bare id from an older client still pages.
+            $ascending = $upcoming;
             if ($cursorId) {
-                $sql .= " AND e.id < :cursor_id";
-                $params[':cursor_id'] = (int) $cursorId;
+                $op = $ascending ? '>' : '<';
+                if (str_contains((string) $cursorId, '|')) {
+                    [$cursorStart, $cursorEventId] = explode('|', (string) $cursorId, 2);
+                    $sql .= " AND (e.start_time {$op} :cursor_start OR (e.start_time = :cursor_start2 AND e.id {$op} :cursor_id))";
+                    $params[':cursor_start'] = $cursorStart;
+                    $params[':cursor_start2'] = $cursorStart;
+                    $params[':cursor_id'] = (int) $cursorEventId;
+                } else {
+                    $sql .= " AND e.id {$op} :cursor_id";
+                    $params[':cursor_id'] = (int) $cursorId;
+                }
             }
 
-            $sql .= " ORDER BY e.id DESC LIMIT :limit";
+            $sql .= $ascending
+                ? " ORDER BY e.start_time ASC, e.id ASC LIMIT :limit"
+                : " ORDER BY e.start_time DESC, e.id DESC LIMIT :limit";
             $params[':limit'] = $perPage + 1;
 
             $stmt = DB::getPdo()->prepare($sql);
@@ -1082,7 +1097,7 @@ class FederationV2Controller extends BaseApiController
             $nextCursor = null;
             if ($hasMore && !empty($rows)) {
                 $lastRow = end($rows);
-                $nextCursor = $this->encodeCursor($lastRow['id']);
+                $nextCursor = $this->encodeCursor($lastRow['start_date'] . '|' . $lastRow['id']);
             }
 
             return $this->respondWithCollection($formatted, $nextCursor, $perPage, $hasMore);

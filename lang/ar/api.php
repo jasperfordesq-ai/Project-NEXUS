@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'لم يتم العثور على يوم العطاء',
     'fed_external_partner_message_rejected' => 'رفض الشريك الخارجي الرسالة.',
     'fed_review_anonymous' => 'مجهول',
+    'review_anonymous' => 'مجهول',
     'user_invalid_accent_color' => 'لون التمييز غير صالح. استخدم لونًا سداسيًا عشريًا صالحًا مثل #6366f1.',
     'user_invalid_font_size' => 'حجم الخط غير صالح. اختر صغيرة أو متوسطة أو كبيرة.',
     'user_invalid_density' => 'كثافة التخطيط غير صالحة. اختر مدمجة أو مريحة أو فسيحة.',

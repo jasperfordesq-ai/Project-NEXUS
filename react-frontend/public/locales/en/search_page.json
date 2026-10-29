@@ -132,5 +132,6 @@
   "view_all_podcasts_other": "View all {{count}} podcasts",
   "podcast_show_label": "Podcast show",
   "podcast_episode_label": "Episode from {{show}}",
-  "filter_podcasts": "Podcasts"
+  "filter_podcasts": "Podcasts",
+  "load_more": "Load more"
 }

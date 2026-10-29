@@ -7022,6 +7022,7 @@
                 "status_confirm_failed": "Przepraszamy, nie udało się potwierdzić dostawy.",
                 "status_cancelled_done": "Zamówienie zostało anulowane.",
                 "status_cancel_failed": "Przepraszamy, zamówienie nie mogło zostać anulowane.",
+                "status_cancel_reason_invalid": "Podaj powód anulowania.",
                 "status_rated": "Dziękujemy za ocenę.",
                 "status_rate_failed": "Przepraszamy, nie można zapisać Twojej oceny.",
                 "status_rate_invalid": "Wybierz ocenę od 1 do 5 gwiazdek."

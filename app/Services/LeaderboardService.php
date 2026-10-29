@@ -31,7 +31,7 @@ class LeaderboardService
         'streak'         => 'Login Streak',
     ];
 
-    public const PERIODS = ['all_time', 'monthly', 'weekly'];
+    public const PERIODS = ['all_time', 'season', 'monthly', 'weekly'];
 
     /** Cache TTL for leaderboard queries (60 seconds — short TTL keeps rankings fresh). */
     public const CACHE_TTL_SECONDS = 60;
@@ -288,6 +288,24 @@ class LeaderboardService
                 ];
 
             case 'xp':
+                // A period ranks the XP logged in it (29 Oct 2026); until then every
+                // period showed lifetime XP.
+                if ($dateFilter !== '') {
+                    $dateFilterWithTable = str_replace('AND created_at', 'AND l.created_at', $dateFilter);
+                    return [
+                        'sql' => "SELECT u.id as user_id, u.name, u.first_name, u.last_name, u.avatar_url,
+                                  SUM(l.xp_amount) as score, COALESCE(u.level, 1) as level
+                                  FROM user_xp_log l
+                                  JOIN users u ON u.id = l.user_id AND u.tenant_id = l.tenant_id
+                                  WHERE l.tenant_id = ? AND u.is_approved = 1 AND COALESCE(u.show_on_leaderboard, 1) = 1
+                                  {$dateFilterWithTable}
+                                  GROUP BY u.id, u.name, u.first_name, u.last_name, u.avatar_url, u.level
+                                  HAVING score > 0
+                                  ORDER BY score DESC
+                                  LIMIT {$limit}",
+                        'params' => [$tenantId],
+                    ];
+                }
                 return [
                     'sql' => "SELECT u.id as user_id, u.name, u.first_name, u.last_name, u.avatar_url,
                               COALESCE(u.xp, 0) as score, COALESCE(u.level, 1) as level
@@ -367,6 +385,8 @@ class LeaderboardService
         return match ($period) {
             'weekly' => "AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
             'monthly' => "AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
+            // Seasons are calendar months (LeaderboardSeasonService::createMonthlySeason).
+            'season' => "AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')",
             default => "",
         };
     }

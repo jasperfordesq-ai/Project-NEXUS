@@ -7022,6 +7022,7 @@
                 "status_confirm_failed": "Leider konnte die Lieferung nicht bestätigt werden.",
                 "status_cancelled_done": "Die Bestellung wurde storniert.",
                 "status_cancel_failed": "Leider konnte die Bestellung nicht storniert werden.",
+                "status_cancel_reason_invalid": "Geben Sie einen Grund für die Stornierung ein.",
                 "status_rated": "Vielen Dank für Ihre Bewertung.",
                 "status_rate_failed": "Leider konnte Ihre Bewertung nicht gespeichert werden.",
                 "status_rate_invalid": "Wählen Sie eine Bewertung zwischen 1 und 5 Sternen."

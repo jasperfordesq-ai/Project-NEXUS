@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Geefdag niet gevonden',
     'fed_external_partner_message_rejected' => 'Externe partner heeft het bericht afgewezen.',
     'fed_review_anonymous' => 'Anoniem',
+    'review_anonymous' => 'Anoniem',
     'user_invalid_accent_color' => 'Ongeldige accentkleur. Gebruik een geldige hexadecimale kleur, zoals #6366f1.',
     'user_invalid_font_size' => 'Ongeldige lettergrootte. Kies klein, middelgroot of groot.',
     'user_invalid_density' => 'Ongeldige lay-outdichtheid. Kies voor compact, comfortabel of ruim.',

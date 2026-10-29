@@ -152,5 +152,6 @@
   "view_all_podcasts_many": "Ver todos os {{count}} podcasts",
   "podcast_show_label": "Programa de podcast",
   "podcast_episode_label": "Episódio de {{show}}",
-  "filter_podcasts": "Programas de áudio"
+  "filter_podcasts": "Programas de áudio",
+  "load_more": "Carregar mais"
 }

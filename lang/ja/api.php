@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => '寄付日が見つかりません',
     'fed_external_partner_message_rejected' => '外部パートナーがメッセージを拒否しました。',
     'fed_review_anonymous' => '匿名',
+    'review_anonymous' => '匿名',
     'user_invalid_accent_color' => 'アクセントカラーが無効です。 #6366f1 などの有効な 16 進カラーを使用します。',
     'user_invalid_font_size' => 'フォントサイズが無効です。小、中、または大を選択します。',
     'user_invalid_density' => 'レイアウト密度が無効です。コンパクト、快適、または広々としたものをお選びください。',

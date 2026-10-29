@@ -345,6 +345,7 @@ return [
         'status_confirm_failed' => 'Lo sentimos, no se pudo confirmar la entrega.',
         'status_cancelled_done' => 'El pedido fue cancelado.',
         'status_cancel_failed' => 'Lo sentimos, el pedido no se pudo cancelar.',
+        'status_cancel_reason_invalid' => 'Introduzca un motivo para la cancelación.',
         'status_rated' => 'Gracias por tu calificación.',
         'status_rate_failed' => 'Lo sentimos, su calificación no se pudo guardar.',
         'status_rate_invalid' => 'Elija una calificación entre 1 y 5 estrellas.',

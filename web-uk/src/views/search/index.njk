@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("search.caption", { community: tenantName }) }}</span>
@@ -89,5 +90,6 @@
       {% endif %}
     {% endfor %}
     </div>
+    {% if nextPageHref %}{{ loadMoreNext(urlFor(nextPageHref), t("actions.load_more")) }}{% endif %}
   {% endif %}
 {% endblock %}

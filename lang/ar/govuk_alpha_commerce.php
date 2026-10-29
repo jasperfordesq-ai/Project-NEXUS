@@ -345,6 +345,7 @@ return [
         'status_confirm_failed' => 'عذرا، لا يمكن تأكيد التسليم.',
         'status_cancelled_done' => 'تم إلغاء الطلب.',
         'status_cancel_failed' => 'عذرًا، لا يمكن إلغاء الطلب.',
+        'status_cancel_reason_invalid' => 'أدخل سببًا للإلغاء.',
         'status_rated' => 'شكرا لك على تقييمك.',
         'status_rate_failed' => 'عذرًا، لا يمكن حفظ تقييمك.',
         'status_rate_invalid' => 'اختر تقييمًا يتراوح بين 1 و5 نجوم.',

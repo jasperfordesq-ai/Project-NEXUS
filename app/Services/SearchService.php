@@ -1130,7 +1130,12 @@ class SearchService
         $type  = $filters['type'] ?? 'all';
         $sort  = $filters['sort'] ?? 'relevance';
 
-        if (static::isAvailable()) {
+        // Dates, place and paging are applied by the SQL path only (29 Oct 2026);
+        // the Meilisearch path never supported them.
+        $needsSql = !empty($filters['date_from']) || !empty($filters['date_to'])
+            || !empty($filters['location']) || !empty($filters['cursor']);
+
+        if (!$needsSql && static::isAvailable()) {
             try {
                 $result = $this->unifiedSearchViaMeilisearch($term, $filters, $limit, $type, $sort, $userId);
             } catch (\Throwable $e) {
@@ -1260,6 +1265,29 @@ class SearchService
         $like     = '%' . $term . '%';
         $allItems = [];
 
+        // One type pages with an offset cursor; "all" keeps the top results of
+        // each type, as both websites show them per tab.
+        $paged = $type !== 'all';
+        $offset = 0;
+        if ($paged && !empty($filters['cursor'])) {
+            $decoded = base64_decode((string) $filters['cursor'], true);
+            if (is_string($decoded) && preg_match('/^o:(\d{1,6})$/', $decoded, $m)) {
+                $offset = (int) $m[1];
+            }
+        }
+        $take = $paged ? $limit + 1 : $limit;
+        $placeLike = !empty($filters['location'])
+            ? '%' . addcslashes((string) $filters['location'], '%_\\') . '%'
+            : null;
+        $dateRange = function (Builder $q, string $column) use ($filters): void {
+            if (!empty($filters['date_from'])) {
+                $q->where($column, '>=', $filters['date_from'] . ' 00:00:00');
+            }
+            if (!empty($filters['date_to'])) {
+                $q->where($column, '<=', $filters['date_to'] . ' 23:59:59');
+            }
+        };
+
         if ($type === 'all' || $type === 'listings') {
             $lq = $this->listing->newQuery()
                 ->with(['user:id,first_name,last_name,profile_type,organization_name,avatar_url', 'category:id,name,color'])
@@ -1284,8 +1312,13 @@ class SearchService
                 }
             }
 
+            $dateRange($lq, 'listings.created_at');
+            if ($placeLike !== null) {
+                $lq->where('listings.location', 'LIKE', $placeLike);
+            }
+
             $this->applySortOrder($lq, $sort);
-            foreach ($lq->limit($limit)->get() as $l) {
+            foreach ($lq->offset($offset)->limit($take)->get() as $l) {
                 $allItems[] = [
                     ...$l->toArray(),
                     'type'          => 'listing',
@@ -1308,8 +1341,11 @@ class SearchService
             MemberDirectoryVisibility::applyToEloquent($uq, (int) TenantContext::getId());
             $uq->select('id', 'first_name', 'last_name', 'avatar_url', 'organization_name', 'profile_type', 'bio', 'created_at');
 
+            // Members are never filtered by place: it would reveal a hidden location.
+            $dateRange($uq, 'users.created_at');
+
             $this->applySortOrder($uq, $sort);
-            foreach ($uq->limit($limit)->get() as $u) {
+            foreach ($uq->offset($offset)->limit($take)->get() as $u) {
                 $name = ($u->profile_type === 'organisation' && $u->organization_name)
                     ? $u->organization_name
                     : UserDisplayName::resolve($u);
@@ -1335,8 +1371,13 @@ class SearchService
             EventSearchVisibility::applyToEloquent($eq, (int) TenantContext::getId());
             EventSearchVisibility::applyAudienceToEloquent($eq, (int) TenantContext::getId(), $viewerId);
 
+            $dateRange($eq, 'events.start_time');
+            if ($placeLike !== null) {
+                $eq->where('events.location', 'LIKE', $placeLike);
+            }
+
             $this->applySortOrder($eq, $sort, 'start_time');
-            foreach ($eq->limit($limit)->get() as $e) {
+            foreach ($eq->offset($offset)->limit($take)->get() as $e) {
                 $allItems[] = [...self::eventSearchRow($e), 'type' => 'event'];
             }
         }
@@ -1351,8 +1392,10 @@ class SearchService
                 });
             self::applyGroupSearchVisibility($gq, $viewerId);
 
+            $dateRange($gq, 'groups.created_at');
+
             $this->applySortOrder($gq, $sort);
-            foreach ($gq->limit($limit)->get() as $g) {
+            foreach ($gq->offset($offset)->limit($take)->get() as $g) {
                 $allItems[] = [
                     ...$g->toArray(),
                     'type'          => 'group',
@@ -1367,10 +1410,16 @@ class SearchService
 
         // Same as Meilisearch path — do NOT globally slice. Each type has its
         // own $limit cap, and the frontend handles per-tab display limits.
+        $hasMore = false;
+        if ($paged && count($allItems) > $limit) {
+            $hasMore = true;
+            $allItems = array_slice($allItems, 0, $limit);
+        }
+
         return [
             'items'    => $allItems,
-            'cursor'   => null,
-            'has_more' => false,
+            'cursor'   => $hasMore ? base64_encode('o:' . ($offset + $limit)) : null,
+            'has_more' => $hasMore,
             'total'    => count($allItems),
             'query'    => $term,
         ];

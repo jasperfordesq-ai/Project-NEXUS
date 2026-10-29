@@ -91,6 +91,17 @@ class SearchController extends BaseApiController
         if ($this->query('skills')) {
             $filters['skills'] = $this->query('skills');
         }
+        // Both websites send these; until 29 Oct 2026 they were ignored.
+        foreach (['date_from', 'date_to'] as $dateKey) {
+            $date = $this->query($dateKey);
+            if (is_string($date) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) && strtotime($date) !== false) {
+                $filters[$dateKey] = $date;
+            }
+        }
+        $location = $this->query('location');
+        if (is_string($location) && trim($location) !== '') {
+            $filters['location'] = mb_substr(trim($location), 0, 120);
+        }
 
         $result = $this->searchService->unifiedSearch($query, $userId, $filters);
 

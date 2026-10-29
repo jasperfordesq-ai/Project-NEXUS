@@ -132,6 +132,6 @@ class LeaderboardServiceTest extends TestCase
 
     public function test_periods_constant(): void
     {
-        $this->assertSame(['all_time', 'monthly', 'weekly'], LeaderboardService::PERIODS);
+        $this->assertSame(['all_time', 'season', 'monthly', 'weekly'], LeaderboardService::PERIODS);
     }
 }

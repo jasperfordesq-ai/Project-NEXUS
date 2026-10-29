@@ -50,6 +50,7 @@ import { useFilterDraft } from '@/hooks/useFilterDraft';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import type { Category, Listing, User as UserType, Event, Group } from '@/types/api';
+import { searchNextCursor } from './searchPaging';
 
 interface SearchResults {
   listings: Listing[];
@@ -218,6 +219,10 @@ export function SearchPage() {
     podcasts: enabledTabs.podcasts ? rawResults.podcasts : [],
   };
   const [isLoading, setIsLoading] = useState(false);
+  // A one-type search pages (meta.pagination); "all" shows the top of each type.
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const lastSearchRef = useRef<{ query: string; filters: AdvancedFilters } | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({ ...defaultFilters });
@@ -242,6 +247,7 @@ export function SearchPage() {
       setResults({ listings: [], users: [], events: [], groups: [], podcasts: [] });
       setHasSearched(false);
       setSearchError(null);
+      setNextCursor(null);
       return;
     }
 
@@ -254,12 +260,15 @@ export function SearchPage() {
       setHasSearched(true);
       setSearchError(null);
 
-      const params = buildSearchParams(searchQuery, filters || advancedFilters);
+      const appliedFilters = filters || advancedFilters;
+      const params = buildSearchParams(searchQuery, appliedFilters);
+      lastSearchRef.current = { query: searchQuery, filters: appliedFilters };
 
       const response = await api.get<RawSearchItem[]>(`/v2/search?${params}`);
       if (controller.signal.aborted) return;
       if (response.success && response.data) {
         setResults(groupSearchItems(response.data));
+        setNextCursor(searchNextCursor(response.meta, appliedFilters));
       } else {
         setSearchError(tRef.current('error_message'));
         toastRef.current.error(response.error || tRef.current('toast.search_failed'));
@@ -273,6 +282,35 @@ export function SearchPage() {
       setIsLoading(false);
     }
   }, [advancedFilters]);
+
+  const loadMoreResults = useCallback(async () => {
+    const last = lastSearchRef.current;
+    if (!last || !nextCursor || isLoadingMore) return;
+    const params = buildSearchParams(last.query, last.filters);
+    params.set('cursor', nextCursor);
+    try {
+      setIsLoadingMore(true);
+      const response = await api.get<RawSearchItem[]>(`/v2/search?${params}`);
+      if (response.success && response.data) {
+        const more = groupSearchItems(response.data);
+        setResults((prev) => ({
+          listings: [...prev.listings, ...more.listings],
+          users: [...prev.users, ...more.users],
+          events: [...prev.events, ...more.events],
+          groups: [...prev.groups, ...more.groups],
+          podcasts: [...prev.podcasts, ...more.podcasts],
+        }));
+        setNextCursor(searchNextCursor(response.meta, last.filters));
+      } else {
+        toastRef.current.error(response.error || tRef.current('toast.search_failed'));
+      }
+    } catch (error) {
+      logError('Search load more failed', error);
+      toastRef.current.error(tRef.current('toast.search_failed'));
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [nextCursor, isLoadingMore]);
 
   useEffect(() => {
     const urlQuery = searchParams.get('q');
@@ -930,6 +968,14 @@ export function SearchPage() {
                     </Button>
                   )}
                 </section>
+              )}
+
+              {nextCursor && (
+                <div className="pt-2 text-center">
+                  <Button variant="flat" onPress={loadMoreResults} isLoading={isLoadingMore}>
+                    {t('load_more')}
+                  </Button>
+                </div>
               )}
             </motion.div>
           )}

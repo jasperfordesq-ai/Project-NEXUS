@@ -192,5 +192,6 @@
   "view_all_podcasts_other": "Féach ar na podchraoltaí go léir ({{count}})",
   "podcast_show_label": "Clár podchraolta",
   "podcast_episode_label": "Eipeasóid ó {{show}}",
-  "filter_podcasts": "Podchraoltaí"
+  "filter_podcasts": "Podchraoltaí",
+  "load_more": "Lódáil tuilleadh"
 }

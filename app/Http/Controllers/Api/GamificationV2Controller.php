@@ -221,7 +221,7 @@ class GamificationV2Controller extends BaseApiController
 
         $periodMap = [
             'all' => 'all_time',
-            'season' => 'all_time',
+            'season' => 'season',
             'month' => 'monthly',
             'week' => 'weekly',
         ];

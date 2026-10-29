@@ -1859,6 +1859,7 @@ return [
     'giving_day_not_found' => 'Jour de don introuvable',
     'fed_external_partner_message_rejected' => 'Le partenaire externe a rejeté le message.',
     'fed_review_anonymous' => 'Anonyme',
+    'review_anonymous' => 'Anonyme',
     'user_invalid_accent_color' => 'Couleur d\'accent non valide. Utilisez une couleur hexadécimale valide telle que #6366f1.',
     'user_invalid_font_size' => 'Taille de police invalide. Choisissez petit, moyen ou grand.',
     'user_invalid_density' => 'Densité de mise en page non valide. Choisissez compact, confortable ou spacieux.',

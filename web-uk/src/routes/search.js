@@ -196,8 +196,22 @@ function apiSearchParams(state) {
   if (state.filters.category_id !== '0') params.category_id = state.filters.category_id;
   if (state.filters.sort !== 'relevance') params.sort = state.filters.sort;
   if (state.filters.skills) params.skills = state.filters.skills;
+  // Laravel applies these since 29 Oct 2026; until then they were never sent.
+  if (state.filters.date_from) params.date_from = state.filters.date_from;
+  if (state.filters.date_to) params.date_to = state.filters.date_to;
+  if (state.filters.location) params.location = state.filters.location;
+  if (state.cursor) params.cursor = state.cursor;
 
   return params;
+}
+
+// Laravel pages a search of one type (meta.pagination); "all" shows the top of
+// each type. Returns the next page address, or ''.
+function nextSearchCursor(result, type) {
+  const pagination = result && result.meta && result.meta.pagination;
+  if (type === 'all' || !pagination || !pagination.has_more) return '';
+  const cursor = String(pagination.cursor || '').trim();
+  return /^[A-Za-z0-9+/=]{1,64}$/.test(cursor) ? cursor : '';
 }
 
 function advancedLinkEntries(state) {
@@ -483,6 +497,7 @@ router.get('/advanced', asyncRoute(async (req, res) => {
 
   const podcastsEnabled = podcastsEnabledFor(req);
   const state = advancedSearchState(req.query, { podcastsEnabled });
+  state.cursor = String(req.query.cursor || '').trim().slice(0, 64);
   const hasSearched = state.searchQuery !== '';
   // Laravel refuses a query under 2 characters with 400 (SearchController), which
   // used to show "couldn't load results". Say what is wrong instead.
@@ -531,6 +546,13 @@ router.get('/advanced', asyncRoute(async (req, res) => {
     tryAgainHref: req.originalUrl,
     ...state,
     tabHrefs: advancedTabHrefs(state),
+    nextPageHref: (() => {
+      const cursor = nextSearchCursor(searchResult, state.filters.type);
+      if (!cursor) return '';
+      const query = new URLSearchParams(advancedLinkEntries(state));
+      query.set('cursor', cursor);
+      return `/search/advanced?${query.toString()}`;
+    })(),
     podcastsEnabled,
     hasSearched,
     searchError: searchError || tooShort,
@@ -663,8 +685,10 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   }
 
   try {
-    const params = { q: query, type: SIMPLE_SEARCH_API_TYPES[type], per_page: 30 };
+    const cursor = String(req.query.cursor || '').trim().slice(0, 64);
+    const params = { q: query, type: SIMPLE_SEARCH_API_TYPES[type], per_page: 30, ...(cursor ? { cursor } : {}) };
     const result = await searchV2(req.token, params);
+    const nextCursor = nextSearchCursor(result, params.type);
     const results = simpleSearchResults(result?.data);
     const returnedTotal = results.length;
     const totalResults = intFrom(result?.meta?.search?.total) || returnedTotal;
@@ -675,6 +699,9 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
       type,
       results,
       totalResults,
+      nextPageHref: nextCursor
+        ? `/search?${new URLSearchParams({ q: query, ...(type !== 'all' ? { type } : {}), cursor: nextCursor }).toString()}`
+        : '',
       successMessage: req.flash ? req.flash('success')[0] : null,
       errorMessage: req.flash ? req.flash('error')[0] : null
     });
@@ -696,3 +723,4 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.nextSearchCursor = nextSearchCursor;

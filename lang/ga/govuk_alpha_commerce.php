@@ -348,6 +348,7 @@ return [
         'status_confirm_failed' => 'Ár leithscéal, níorbh fhéidir an seachadadh a dhearbhú.',
         'status_cancelled_done' => 'Cuireadh an t-ordú ar ceal.',
         'status_cancel_failed' => 'Ár leithscéal, níorbh fhéidir an t-ordú a chur ar ceal.',
+        'status_cancel_reason_invalid' => 'Cuir isteach cúis leis an gcealú.',
         'status_rated' => 'Go raibh maith agat as do rátáil.',
         'status_rate_failed' => 'Ár leithscéal, níorbh fhéidir do rátáil a shábháil.',
         'status_rate_invalid' => 'Roghnaigh rátáil idir 1 agus 5 réalta.',
