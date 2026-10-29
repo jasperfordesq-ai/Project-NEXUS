@@ -62,7 +62,10 @@ class ExchangeService
                     'in_progress',
                 ]);
             } elseif ($filters['status'] === 'needs_confirmation') {
-                $query->whereIn('er.status', ['completed', 'pending_confirmation']);
+                // Waiting for someone to confirm the hours, as React's tab means.
+                // `completed` was included until 29 Oct 2026, so a finished
+                // exchange was listed under both "Needs confirmation" and "Completed".
+                $query->where('er.status', 'pending_confirmation');
             } else {
                 $query->where('er.status', $filters['status']);
             }

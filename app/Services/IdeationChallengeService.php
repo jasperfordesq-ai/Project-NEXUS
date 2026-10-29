@@ -140,6 +140,41 @@ class IdeationChallengeService
             }
         }
 
+        // List filters (29 Oct 2026): the controller passed category and search but
+        // nothing applied them, so every filter returned the unfiltered list.
+        if (!empty($filters['category_id'])) {
+            $query->where('c.category_id', (int) $filters['category_id']);
+        }
+        if (!empty($filters['category_slug'])) {
+            $query->whereIn('c.category_id', DB::table('challenge_categories')
+                ->select('id')
+                ->where('tenant_id', $tenantId)
+                ->where('slug', (string) $filters['category_slug']));
+        }
+        if (!empty($filters['search'])) {
+            $like = '%' . addcslashes(mb_substr((string) $filters['search'], 0, 200), '%_\\') . '%';
+            $query->where(fn ($q) => $q->where('c.title', 'like', $like)->orWhere('c.description', 'like', $like));
+        }
+        if (!empty($filters['favorites'])) {
+            if ($viewerId === null) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereExists(fn ($q) => $q->select(DB::raw(1))
+                    ->from('challenge_favorites as cf')
+                    ->whereColumn('cf.challenge_id', 'c.id')
+                    ->where('cf.user_id', $viewerId));
+            }
+        }
+        if (!empty($filters['tags']) && is_array($filters['tags'])) {
+            $tags = $filters['tags'];
+            $query->whereExists(fn ($q) => $q->select(DB::raw(1))
+                ->from('challenge_tag_links as ctl')
+                ->join('challenge_tags as ct', 'ct.id', '=', 'ctl.tag_id')
+                ->whereColumn('ctl.challenge_id', 'c.id')
+                ->where('ct.tenant_id', $tenantId)
+                ->whereIn('ct.name', $tags));
+        }
+
         if ($cursor !== null) {
             $query->where('c.id', '<', (int) base64_decode($cursor));
         }

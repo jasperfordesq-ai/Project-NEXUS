@@ -51,14 +51,15 @@ const ITEMS_PER_PAGE = 20;
  * count probe cannot drift apart. `all` means "no status filter" — the param is
  * omitted rather than sent as `status=all`.
  *
- * NOTE (pre-existing, deliberately untouched here): `limit`/`offset` are ignored
- * by `ExchangesController::index`, which reads `per_page`/`cursor`. See the
- * "Load More" note in the JSX.
+ * `ExchangesController::index` pages with `per_page` and the `cursor` it
+ * returns in `meta.cursor`. Until 29 Oct 2026 this sent `limit`/`offset`, which
+ * the API ignores, so "Load more" fetched page 1 again and duplicated rows.
  */
-function buildExchangesQuery(status: string, offset: number): string {
-  return status !== 'all'
-    ? `?status=${status}&limit=${ITEMS_PER_PAGE}&offset=${offset}`
-    : `?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+function buildExchangesQuery(status: string, cursor: string | null): string {
+  const params = new URLSearchParams({ per_page: String(ITEMS_PER_PAGE) });
+  if (status !== 'all') params.set('status', status);
+  if (cursor) params.set('cursor', cursor);
+  return `?${params.toString()}`;
 }
 
 export function ExchangesPage() {
@@ -86,6 +87,7 @@ export function ExchangesPage() {
   // Refs for race condition prevention
   const abortControllerRef = useRef<AbortController | null>(null);
   const configLoadedRef = useRef(false);
+  const cursorRef = useRef<string | null>(null);
   const tRef = useRef(t);
   tRef.current = t;
   const toastRef = useRef(toast);
@@ -130,8 +132,7 @@ export function ExchangesPage() {
         setIsLoadingMore(true);
       }
 
-      const offset = append ? exchanges.length : 0;
-      const queryString = buildExchangesQuery(selectedTab, offset);
+      const queryString = buildExchangesQuery(selectedTab, append ? cursorRef.current : null);
 
       const response = await api.get<Exchange[]>(`/v2/exchanges${queryString}`);
       if (controller.signal.aborted) return;
@@ -142,7 +143,8 @@ export function ExchangesPage() {
         } else {
           setExchanges(response.data);
         }
-        setHasMore(response.meta?.has_more ?? (response.data?.length ?? 0) >= ITEMS_PER_PAGE);
+        cursorRef.current = response.meta?.cursor ?? null;
+        setHasMore(Boolean(response.meta?.has_more && cursorRef.current));
       } else {
         if (!append) {
           setError(tRef.current('error.load_failed'));
@@ -165,7 +167,7 @@ export function ExchangesPage() {
         setIsLoadingMore(false);
       }
     }
-  }, [selectedTab, exchanges.length]);
+  }, [selectedTab]);
   loadExchangesRef.current = loadExchanges;
 
   // Load more exchanges
@@ -484,11 +486,7 @@ export function ExchangesPage() {
                 );
               })}
 
-              {/* Load More Button
-                  🔴 KNOWN PRE-EXISTING BUG (out of scope for the phone layout):
-                  we send limit/offset but ExchangesController::index reads
-                  per_page/cursor, so appending refetches page 1 and duplicates
-                  rows. Fix with response.meta.cursor, not infinite scroll. */}
+              {/* Load More Button — pages with the API's cursor (see buildExchangesQuery). */}
               {hasMore && (
                 <div className="pt-4 text-center">
                   <Button

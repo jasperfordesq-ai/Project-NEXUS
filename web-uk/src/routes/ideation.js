@@ -502,13 +502,33 @@ router.get('/', asyncRoute(async (req, res) => {
   // Only real challenge filters may reach Laravel's status WHERE clause; any
   // other value (e.g. the challenge-deleted confirmation) is a page message.
   const rawStatus = trimmed(req.query.status);
+  // "favorites" is React's favourites tab: a filter of its own, not a status.
+  const favourites = rawStatus === 'favorites';
   const status = IDEATION_FILTER_STATUSES.includes(rawStatus) ? rawStatus : '';
   const query = trimmed(req.query.q);
+  const category = trimmed(req.query.category, 100);
+  const tag = trimmed(req.query.tag, 100);
+  const [categoriesResult, tagsResult] = await Promise.all([
+    callIdeationApi(token, 'GET', '/ideation-categories').catch(() => ({ data: [] })),
+    callIdeationApi(token, 'GET', '/ideation-tags/popular').catch(() => ({ data: [] }))
+  ]);
+  const categories = collectionFrom(categoriesResult)
+    .map((row) => ({ slug: trimmed(row && row.slug, 100), name: trimmed(row && (row.name || row.title)) }))
+    .filter((row) => row.slug && row.name);
+  const tags = collectionFrom(tagsResult)
+    .map((row) => trimmed(row && row.tag, 100))
+    .filter(Boolean)
+    .slice(0, 15);
   // Laravel reads per_page (default 20) and pages by cursor; `limit` was ignored,
   // so challenges past the first 20 never appeared (29 Oct deep audit M1).
+  // category (slug), favorites and tags are what React sends; Laravel applies them
+  // since 29 Oct 2026 (before that every filter, search included, was ignored).
   const queryString = compactQuery({
     per_page: 30,
     status,
+    favorites: favourites ? 1 : '',
+    category,
+    tags: tag,
     search: query,
     cursor: trimmed(req.query.cursor)
   });
@@ -521,12 +541,16 @@ router.get('/', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha.ideation.title'),
     activeNav: 'explore',
     challenges,
-    activeStatus: status,
+    activeStatus: favourites ? 'favorites' : status,
     activeQuery: query,
+    activeCategory: category,
+    activeTag: tag,
+    categories,
+    tags,
     nextPageHref: result && result.meta && result.meta.has_more && result.meta.cursor
-      ? `/ideation?${compactQuery({ status, q: query, cursor: result.meta.cursor })}`
+      ? `/ideation?${compactQuery({ status: favourites ? 'favorites' : status, q: query, category, tag, cursor: result.meta.cursor })}`
       : '',
-    successMessage: status ? '' : indexStatusMessage(rawStatus, res.locals.t)
+    successMessage: (status || favourites) ? '' : indexStatusMessage(rawStatus, res.locals.t)
   });
 }, { redirectOn401: loginRedirect() }));
 

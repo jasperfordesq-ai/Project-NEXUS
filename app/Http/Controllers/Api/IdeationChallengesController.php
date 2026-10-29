@@ -122,8 +122,21 @@ class IdeationChallengesController extends BaseApiController
         if ($this->query('category_id')) {
             $filters['category_id'] = (int) $this->query('category_id');
         }
+        // React's category picker sends the category slug.
+        if (is_string($this->query('category')) && trim($this->query('category')) !== '') {
+            $filters['category_slug'] = mb_substr(trim($this->query('category')), 0, 100);
+        }
         if ($this->query('search')) {
             $filters['search'] = $this->query('search');
+        }
+        if ($this->queryBool('favorites', false)) {
+            $filters['favorites'] = true;
+        }
+        if (is_string($this->query('tags')) && trim($this->query('tags')) !== '') {
+            $filters['tags'] = array_slice(array_values(array_filter(array_map(
+                static fn (string $tag): string => mb_substr(trim($tag), 0, 100),
+                explode(',', $this->query('tags'))
+            ), static fn (string $tag): bool => $tag !== '')), 0, 10);
         }
         if ($this->query('cursor')) {
             $filters['cursor'] = $this->query('cursor');

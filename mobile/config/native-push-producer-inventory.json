@@ -1551,9 +1551,9 @@
             "data_expression": "['link' => $link, 'type' => 'event_reminder']"
         },
         {
-            "id": "app/Services/ExchangeService.php:267:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeService.php:270:NotificationDispatcher::send",
             "file": "app/Services/ExchangeService.php",
-            "line": 267,
+            "line": 270,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "(int) $listing->user_id",
@@ -1564,9 +1564,9 @@
             "data_expression": "['exchange_id' => $id]"
         },
         {
-            "id": "app/Services/ExchangeService.php:295:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeService.php:298:NotificationDispatcher::send",
             "file": "app/Services/ExchangeService.php",
-            "line": 295,
+            "line": 298,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "(int) $exchange->requester_id",
@@ -1577,9 +1577,9 @@
             "data_expression": "['exchange_id' => $exchangeId]"
         },
         {
-            "id": "app/Services/ExchangeService.php:336:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeService.php:339:NotificationDispatcher::send",
             "file": "app/Services/ExchangeService.php",
-            "line": 336,
+            "line": 339,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "(int) $exchange->requester_id",
@@ -1590,9 +1590,9 @@
             "data_expression": "$data"
         },
         {
-            "id": "app/Services/ExchangeService.php:337:NotificationDispatcher::send",
+            "id": "app/Services/ExchangeService.php:340:NotificationDispatcher::send",
             "file": "app/Services/ExchangeService.php",
-            "line": 337,
+            "line": 340,
             "transport": "NotificationDispatcher::send",
             "role": "producer",
             "recipient_expression": "(int) $exchange->provider_id",
@@ -2032,9 +2032,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1643:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1678:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1643,
+            "line": 1678,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $challenge->user_id",
@@ -2045,9 +2045,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1732:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1767:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1732,
+            "line": 1767,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",
@@ -2058,9 +2058,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1797:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1832:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1797,
+            "line": 1832,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",
@@ -2071,9 +2071,9 @@
             "data_expression": null
         },
         {
-            "id": "app/Services/IdeationChallengeService.php:1882:NotificationDispatcher::fanOutPush",
+            "id": "app/Services/IdeationChallengeService.php:1917:NotificationDispatcher::fanOutPush",
             "file": "app/Services/IdeationChallengeService.php",
-            "line": 1882,
+            "line": 1917,
             "transport": "NotificationDispatcher::fanOutPush",
             "role": "producer",
             "recipient_expression": "(int) $ideaAuthorId",

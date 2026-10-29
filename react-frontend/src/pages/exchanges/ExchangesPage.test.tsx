@@ -228,6 +228,34 @@ describe('ExchangesPage', () => {
     expect(screen.getByText('With Provider User')).toBeInTheDocument();
   });
 
+  it('loads the next page with the cursor the API returned, without repeating rows', async () => {
+    const row = (id: number, title: string) => ({
+      id, requester_id: 1, provider_id: 2, status: 'active', proposed_hours: 1,
+      created_at: '2026-01-15T10:00:00Z', listing: { title },
+      requester: { name: 'Test User', avatar: null }, provider: { name: 'Provider User', avatar: null },
+      requester_confirmed_at: null, provider_confirmed_at: null,
+    });
+    const { api } = await import('@/lib/api');
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.includes('/config')) {
+        return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true }, meta: {} });
+      }
+      if (url.includes('cursor=next-1')) {
+        return Promise.resolve({ success: true, data: [row(2, 'Second page job')], meta: { has_more: false, cursor: null } });
+      }
+      return Promise.resolve({ success: true, data: [row(1, 'First page job')], meta: { has_more: true, cursor: 'next-1' } });
+    });
+
+    render(<ExchangesPage />);
+    await waitFor(() => expect(screen.getByText('First page job')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /load more/i }));
+
+    await waitFor(() => expect(screen.getByText('Second page job')).toBeInTheDocument());
+    expect(screen.getAllByText('First page job')).toHaveLength(1);
+    expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/per_page=20.*cursor=next-1/));
+    expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('offset='));
+  });
+
   it('shows role indicator for requester', async () => {
     const mockExchanges = [
       {
@@ -337,7 +365,7 @@ describe('ExchangesPage', () => {
     it('applies a tapped status immediately and closes the sheet', async () => {
       render(<ExchangesPage />);
       await waitFor(() => {
-        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/exchanges?status=active'));
+        expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/exchanges\?.*status=active/));
       });
       vi.mocked(api.get).mockClear();
 

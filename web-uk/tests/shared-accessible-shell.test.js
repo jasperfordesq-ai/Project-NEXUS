@@ -21173,6 +21173,9 @@ describe('shared accessible frontend shell', () => {
     const api = require('../src/lib/api');
     const staticPageRoutes = require('../src/routes/static-pages');
     api.callIdeationApi
+      // The list page first reads the category and popular-tag filters (29 Oct 2026).
+      .mockResolvedValueOnce({ data: [{ id: 1, slug: 'green-spaces', name: 'Green spaces' }] })
+      .mockResolvedValueOnce({ data: [{ tag: 'parks', count: 2 }] })
       .mockResolvedValueOnce({
         data: {
           items: [
@@ -21259,9 +21262,15 @@ describe('shared accessible frontend shell', () => {
     expect(detail.text).toContain('method="post" action="/ideation/7/ideas/12/vote"');
     expect(detail.text).toContain('method="post" action="/ideation/7/ideas"');
     expect(detail.text).toContain('name="idea_title"');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-challenges?per_page=30&status=open&search=parks');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-challenges/7');
-    expect(api.callIdeationApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/ideation-challenges/7/ideas?per_page=30&sort=votes');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/ideation-categories');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/ideation-tags/popular');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(3, 'test-token', 'GET', '/ideation-challenges?per_page=30&status=open&search=parks');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(4, 'test-token', 'GET', '/ideation-challenges/7');
+    expect(api.callIdeationApi).toHaveBeenNthCalledWith(5, 'test-token', 'GET', '/ideation-challenges/7/ideas?per_page=30&sort=votes');
+    // The filters React offers: favourites, category and tag.
+    expect(index.text).toContain('id="ideation-status-favourites"');
+    expect(index.text).toContain('<option value="green-spaces">Green spaces</option>');
+    expect(index.text).toContain('<option value="parks">parks</option>');
   });
 
   it('renders the Laravel-backed ideation tag browser', async () => {

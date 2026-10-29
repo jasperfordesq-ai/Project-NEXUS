@@ -310,10 +310,13 @@ export function useSocialInteractions(options: SocialInteractionsOptions) {
   const shareToFeed = useCallback(async (content?: string): Promise<boolean> => {
     if (!enabled) return false;
     try {
+      // FeedSocialController::share reads `comment`; this sent `content` until
+      // 29 Oct 2026, so the member's words were silently dropped.
+      const comment = content?.trim() ?? '';
       const res = await api.post('/v2/shares', {
         type: targetType,
         id: targetId,
-        content: content?.trim() ?? '',
+        ...(comment ? { comment } : {}),
       });
       return res.success ?? (res as unknown as { status?: string }).status === 'success';
     } catch (err) {

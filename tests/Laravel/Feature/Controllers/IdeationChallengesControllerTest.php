@@ -50,6 +50,52 @@ class IdeationChallengesControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * The list filters React and the accessible site send (29 Oct 2026). The
+     * controller read `category_id` and `search` but the service never applied
+     * them, and `category` (slug, what React sends), `favorites` and `tags` were
+     * not read at all — every filter returned the unfiltered list.
+     */
+    public function test_index_applies_category_search_favourites_and_tag_filters(): void
+    {
+        $viewer = $this->authenticatedUser();
+        $mk = function (string $title, array $extra = []) use ($viewer): int {
+            return DB::table('ideation_challenges')->insertGetId(array_merge([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $viewer->id,
+                'title' => $title,
+                'description' => 'Filter test challenge.',
+                'status' => 'open',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], $extra));
+        };
+        $categoryId = DB::table('challenge_categories')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'Green spaces', 'slug' => 'green-spaces-f29', 'sort_order' => 0,
+        ]);
+        $inCategory = $mk('Plant trees zqfilter', ['category_id' => $categoryId]);
+        $favourite = $mk('Repair cafe zqfilter');
+        $tagged = $mk('Coding club zqfilter');
+        $plain = $mk('Plain challenge zqfilter');
+        DB::table('challenge_favorites')->insert(['challenge_id' => $favourite, 'user_id' => $viewer->id]);
+        $tagId = DB::table('challenge_tags')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'zq-technology', 'slug' => 'zq-technology', 'tag_type' => 'general',
+        ]);
+        DB::table('challenge_tag_links')->insert(['challenge_id' => $tagged, 'tag_id' => $tagId]);
+
+        $ids = fn (string $query): array => array_map(
+            'intval',
+            array_column($this->apiGet('/v2/ideation-challenges?per_page=100&' . $query)->json('data') ?? [], 'id')
+        );
+
+        $this->assertSame([$inCategory], $ids('category=green-spaces-f29'));
+        $this->assertSame([$inCategory], $ids('category_id=' . $categoryId));
+        $this->assertSame([$favourite], array_values(array_intersect($ids('favorites=1'), [$inCategory, $favourite, $tagged, $plain])));
+        $this->assertSame([$tagged], $ids('tags=zq-technology'));
+        $this->assertSame([$plain], $ids('search=' . urlencode('Plain challenge zqfilter')));
+        $this->assertCount(4, array_intersect($ids(''), [$inCategory, $favourite, $tagged, $plain]), 'control: no filter returns all four');
+    }
+
     public function test_member_cannot_enumerate_draft_challenges_by_filter_or_id(): void
     {
         $viewer = $this->authenticatedUser();

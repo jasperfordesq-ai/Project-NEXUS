@@ -32,7 +32,8 @@
             { value: "open", label: t("govuk_alpha_ideation.status.open"), id: "open" },
             { value: "voting", label: t("govuk_alpha_ideation.status.voting"), id: "voting" },
             { value: "evaluating", label: t("govuk_alpha_ideation.status.evaluating"), id: "evaluating" },
-            { value: "closed", label: t("govuk_alpha_ideation.status.closed"), id: "closed" }
+            { value: "closed", label: t("govuk_alpha_ideation.status.closed"), id: "closed" },
+            { value: "favorites", label: t("govuk_alpha_ideation.page.index_filter_favourites"), id: "favourites" }
           ] %}
           {% for option in statusOptions %}
             <div class="govuk-radios__item">
@@ -43,9 +44,31 @@
         </div>
       </fieldset>
     </div>
+    {% if categories and categories.length %}
+      <div class="govuk-form-group govuk-!-margin-bottom-4">
+        <label class="govuk-label" for="ideation-category">{{ t("govuk_alpha_ideation.page.index_category_label") }}</label>
+        <select class="govuk-select" id="ideation-category" name="category">
+          <option value="">{{ t("govuk_alpha_ideation.page.index_category_all") }}</option>
+          {% for category in categories %}
+            <option value="{{ category.slug }}"{% if activeCategory == category.slug %} selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+    {% if tags and tags.length %}
+      <div class="govuk-form-group govuk-!-margin-bottom-4">
+        <label class="govuk-label" for="ideation-tag">{{ t("govuk_alpha_ideation.page.index_tag_label") }}</label>
+        <select class="govuk-select" id="ideation-tag" name="tag">
+          <option value="">{{ t("govuk_alpha_ideation.page.index_tag_all") }}</option>
+          {% for tag in tags %}
+            <option value="{{ tag }}"{% if activeTag == tag %} selected{% endif %}>{{ tag }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
     <div class="govuk-button-group">
       <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_ideation.page.index_search") }}</button>
-      {% if activeStatus or activeQuery %}
+      {% if activeStatus or activeQuery or activeCategory or activeTag %}
         <a class="govuk-link" href="{{ urlFor('/ideation') }}">{{ t("govuk_alpha_ideation.page.index_clear_filters") }}</a>
       {% endif %}
     </div>

@@ -394,11 +394,23 @@ describe('useSocialInteractions', () => {
       });
 
       expect(success!).toBe(true);
+      // FeedSocialController::share reads `comment` (29 Oct 2026: was `content`).
       expect(mockApi.post).toHaveBeenCalledWith('/v2/shares', {
         type: 'post',
         id: 42,
-        content: 'Check this out',
+        comment: 'Check this out',
       });
+    });
+
+    it('sends no comment field for a plain share', async () => {
+      mockApi.post.mockResolvedValue({ success: true });
+
+      const { result } = renderHook(() => useSocialInteractions(defaultOptions));
+      await act(async () => {
+        await result.current.shareToFeed('   ');
+      });
+
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/shares', { type: 'post', id: 42 });
     });
 
     it('returns false on error', async () => {
