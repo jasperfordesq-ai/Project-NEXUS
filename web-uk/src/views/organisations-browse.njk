@@ -6,10 +6,6 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.browse.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_organisations.browse.description") }}</p>
-
   {% if error %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -22,6 +18,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.browse.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_organisations.browse.description") }}</p>
+
 
   <div class="nexus-alpha-actions govuk-!-margin-bottom-4">
     {% if manageableCount > 0 %}

@@ -103,6 +103,8 @@ const PROFILE_MATCH_FREQUENCY_LABELS = {
 };
 const PROFILE_STATUS_MESSAGES = {
   'profile-updated': { type: 'success', message: 'Your profile has been updated.' },
+  'privacy-updated': { type: 'success', message: 'Privacy settings saved' },
+  'privacy-update-failed': { type: 'error', message: 'Failed to save privacy settings', anchor: 'privacy_profile' },
   'profile-update-failed': {
     type: 'error',
     message: 'Your profile could not be updated. Check the details and try again.',
@@ -274,6 +276,8 @@ const PROFILE_STATUS_MESSAGES = {
 const PROFILE_STATUS_MESSAGE_KEYS = Object.freeze({
   'profile-updated': 'profile_settings.success',
   'profile-update-failed': 'profile_settings.failed',
+  'privacy-updated': 'profile_settings.privacy_saved',
+  'privacy-update-failed': 'profile_settings.privacy_save_failed',
   'dob-day-required': 'web_uk.date_input.day_required',
   'dob-month-required': 'web_uk.date_input.month_required',
   'dob-year-required': 'web_uk.date_input.year_required',
@@ -1678,12 +1682,7 @@ router.post('/settings', asyncRoute(async (req, res) => {
       }
     }
     await callUserSettings(token, 'PUT', '', profilePayload);
-    await callUserSettings(token, 'PUT', '/preferences', {
-      privacy: {
-        privacy_profile: allowedValue(req.body.privacy_profile, PROFILE_PRIVACY_OPTIONS, 'public'),
-        privacy_search: checked(req.body.privacy_search)
-      }
-    });
+    // Privacy has its own form and route (POST /settings/privacy) since 29 Oct 2026.
     // 🔴 Only write the newsletter consent when the member actually changed it.
     //
     // This used to fire on EVERY profile save. If the write failed for any reason the
@@ -1735,6 +1734,25 @@ router.post('/settings', asyncRoute(async (req, res) => {
   return redirectTo(res, status === 'profile-updated'
     ? statusRedirect('/profile', status)
     : profileSettingsRedirect(status));
+}));
+
+// Privacy is saved on its own, as React's Privacy tab does (PUT /v2/users/me/preferences
+// with only `privacy`), so a problem in the profile form cannot hold it back.
+router.post('/settings/privacy', asyncRoute(async (req, res) => {
+  const token = tokenFrom(req);
+  if (!token) return redirectTo(res, loginRedirect());
+  try {
+    await callUserSettings(token, 'PUT', '/preferences', {
+      privacy: {
+        privacy_profile: allowedValue(req.body.privacy_profile, PROFILE_PRIVACY_OPTIONS, 'public'),
+        privacy_search: checked(req.body.privacy_search)
+      }
+    });
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    return redirectTo(res, profileSettingsRedirect('privacy-update-failed'));
+  }
+  return redirectTo(res, profileSettingsRedirect('privacy-updated', '#privacy-heading'));
 }));
 
 router.post('/email', asyncRoute(async (req, res) => {

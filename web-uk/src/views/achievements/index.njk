@@ -10,9 +10,6 @@
   {% set gamificationActiveTab = "" %}
   {% include "partials/gamification-nav.njk" %}
 
-  <span class="govuk-caption-xl">{{ t("achievements.caption", { community: communityName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("achievements.title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -21,6 +18,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("achievements.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("achievements.title") }}</h1>
+
   <p class="govuk-body-l">{{ t("achievements.description") }}</p>
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-4">

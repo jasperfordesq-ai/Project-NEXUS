@@ -7,9 +7,6 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("jobs_t2.saved_caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("jobs_t2.saved_title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -18,11 +15,6 @@
       </div>
     </div>
   {% endif %}
-  <p class="govuk-body-l">{{ t("jobs_t2.saved_description") }}</p>
-
-  {% set jobsActiveTab = "saved" %}
-  {% include "jobs/_nav.njk" %}
-
   {% if status == "unsaved" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-status">
       <div class="govuk-notification-banner__header">
@@ -33,6 +25,14 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("jobs_t2.saved_caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("jobs_t2.saved_title") }}</h1>
+
+  <p class="govuk-body-l">{{ t("jobs_t2.saved_description") }}</p>
+
+  {% set jobsActiveTab = "saved" %}
+  {% include "jobs/_nav.njk" %}
+
 
   {% if jobs.length == 0 %}
     <div class="govuk-inset-text">

@@ -12,9 +12,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.files.caption", { group: group.name }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.files.title") }}</h1>
-
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -31,6 +28,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.files.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.files.title") }}</h1>
+
 
   <p class="govuk-body">{{ t("govuk_alpha_groups.files.intro") }}</p>
 

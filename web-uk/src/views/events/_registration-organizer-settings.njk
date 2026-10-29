@@ -82,7 +82,7 @@
     <div class="govuk-summary-card__content">
       <p class="govuk-body">{{ t("event_registration.forms.version", { version: form.version_number }) }}</p>
       {% if form.status == "draft" %}
-        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("event_registration.forms.edit") }}</a>
+        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("event_registration.forms.edit") }}<span class="govuk-visually-hidden"> {{ form.name }}</span></a>
         <form class="govuk-!-display-inline-block" method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/publish') }}" novalidate>
           <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><input type="hidden" name="expected_form_revision" value="{{ form.revision }}"><input type="hidden" name="expected_settings_revision" value="{{ settings.revision }}">
           <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.forms.publish") }}</button>

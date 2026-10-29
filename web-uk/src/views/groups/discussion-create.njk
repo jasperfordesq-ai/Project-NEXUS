@@ -12,10 +12,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ t("groups.discussions.new_title") }}</h1>
-  <p class="govuk-body-l">{{ t("groups.discussions.new_description") }}</p>
-
   {% if statusBanner and statusBanner.type == "error" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -24,7 +20,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if fieldErrors.title or fieldErrors.content %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -38,6 +33,11 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.discussions.new_title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.discussions.new_description") }}</p>
+
+
 
   <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/new') }}" novalidate>
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">

@@ -9,10 +9,6 @@
 {% block mainContent %}
   {# Community-name caption, matching every sibling page — this previously
      rendered the identical string as caption AND h1. #}
-  <span class="govuk-caption-xl">{{ tenantName or serviceName }}</span>
-  <h1 class="govuk-heading-xl">{{ t("exchanges.title") }}</h1>
-  <p class="govuk-body-l">{{ t("exchanges.description") }}</p>
-
   {% if statusMessage or successMessage %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="exchange-success-title">
       <div class="govuk-notification-banner__header">
@@ -23,7 +19,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="exchange-error-title">
       <div class="govuk-notification-banner__header">
@@ -34,7 +29,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if workflowAvailable and not workflowEnabled %}
     <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="exchange-disabled-title">
       <div class="govuk-notification-banner__header">
@@ -45,6 +39,12 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ tenantName or serviceName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("exchanges.title") }}</h1>
+  <p class="govuk-body-l">{{ t("exchanges.description") }}</p>
+
+
+
 
   <nav aria-label="{{ t('polish_listings.exchanges_tab_filter_label') }}" class="govuk-!-margin-bottom-7">
     <ul class="nexus-alpha-filter-nav">

@@ -29,9 +29,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.wall.caption", { name: ownerLabel }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.wall.heading", { name: ownerLabel }) }}</h1>
-
   {% if status == "appreciation-sent" or status == "reaction-updated" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-wall-status-title">
       <div class="govuk-notification-banner__header">
@@ -42,6 +39,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.wall.caption", { name: ownerLabel }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.wall.heading", { name: ownerLabel }) }}</h1>
+
 
   <p class="govuk-body-l">{{ t("govuk_alpha_saved.wall.description") }}</p>
 

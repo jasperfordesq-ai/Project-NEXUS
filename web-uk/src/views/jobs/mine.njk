@@ -7,9 +7,6 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("jobs_t3.mine_caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("jobs_t3.mine_title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -18,17 +15,11 @@
       </div>
     </div>
   {% endif %}
-  <p class="govuk-body-l">{{ t("jobs_t3.mine_description") }}</p>
-
-  {% set jobsActiveTab = "mine" %}
-  {% include "jobs/_nav.njk" %}
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -41,6 +32,15 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("jobs_t3.mine_caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("jobs_t3.mine_title") }}</h1>
+
+  <p class="govuk-body-l">{{ t("jobs_t3.mine_description") }}</p>
+
+  {% set jobsActiveTab = "mine" %}
+  {% include "jobs/_nav.njk" %}
+
+
 
   <div class="nexus-alpha-actions govuk-!-margin-bottom-6">
     <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/jobs/create') }}" role="button" draggable="false">{{ t("jobs_t3.post_button") }}</a>

@@ -11,9 +11,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.learning_caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ course.title }}</h1>
-
   {% if status %}
     {% if status.type == 'success' %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="course-learn-status" data-module="govuk-notification-banner">
@@ -33,6 +30,9 @@
       </div>
     {% endif %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.learning_caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ course.title }}</h1>
+
 
   <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.learn.progress_label", { percent: progressPercent }) }}</p>
   <progress value="{{ progressPercent }}" max="100" aria-label="{{ t('govuk_alpha_commerce.learn.progress_label', { percent: progressPercent }) }}">{{ progressPercent }}%</progress>

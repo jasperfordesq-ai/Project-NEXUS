@@ -8,10 +8,6 @@
 {% endblock %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ event.title }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.people_title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha.events.people_intro") }}</p>
-
   {% if status == "people-updated" or status == "people-partial" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="people-result-title">
       <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="people-result-title">{{ t("govuk_alpha.states.success_title") }}</h2></div>
@@ -25,6 +21,10 @@
       <div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.people_failed") }}</p></div>
     </div></div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ event.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.people_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.events.people_intro") }}</p>
+
 
   {% if canManageAttendance %}
     <nav class="govuk-button-group" aria-label="{{ t('govuk_alpha.events.operations_navigation') }}">

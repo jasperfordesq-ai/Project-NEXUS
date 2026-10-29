@@ -10,16 +10,11 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ job.title or t("govuk_alpha.jobs.title") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.pipeline.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.pipeline.description") }}</p>
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -32,6 +27,11 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ job.title or t("govuk_alpha.jobs.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.pipeline.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.pipeline.description") }}</p>
+
+
 
   <p class="govuk-!-margin-bottom-4">
     <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("govuk_alpha_jobs.pipeline.view_full_list") }}</a>

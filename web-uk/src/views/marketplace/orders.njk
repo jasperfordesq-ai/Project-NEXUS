@@ -9,10 +9,6 @@
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.orders_seller.caption" if isSeller else "govuk_alpha_commerce.orders_buyer.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.orders_seller.title" if isSeller else "govuk_alpha_commerce.orders_buyer.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.orders_seller.description" if isSeller else "govuk_alpha_commerce.orders_buyer.description") }}</p>
-
   {% if status %}
     <div class="govuk-notification-banner{% if status.type != 'error' %} govuk-notification-banner--success{% endif %}" role="{% if status.type != 'error' %}alert{% else %}region{% endif %}" aria-labelledby="commerce-orders-status" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
@@ -21,6 +17,10 @@
       <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ status.message }}</p></div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.orders_seller.caption" if isSeller else "govuk_alpha_commerce.orders_buyer.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.orders_seller.title" if isSeller else "govuk_alpha_commerce.orders_buyer.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.orders_seller.description" if isSeller else "govuk_alpha_commerce.orders_buyer.description") }}</p>
+
 
   <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_commerce.orders_seller.title' if isSeller else 'govuk_alpha_commerce.orders_buyer.title') }}">
     <ul class="govuk-tabs__list">
@@ -133,7 +133,7 @@
                   <label class="govuk-label govuk-label--s" for="reason_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.cancel_reason_label") }}</label>
                   <input class="govuk-input" id="reason_{{ order.id }}" name="reason" type="text" maxlength="500">
                 </div>
-                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_cancel") }}</button>
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_cancel") }}<span class="govuk-visually-hidden"> {{ order.listingTitle }}</span></button>
               </form>
             </div>
           </details>

@@ -31,12 +31,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.detail.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">
-    <span class="nexus-alpha-avatar" style="background-color: {{ collection.color }}; width: 1.25rem; height: 1.25rem; display: inline-block; border-radius: 50%; vertical-align: middle;" aria-hidden="true"></span>
-    {{ collection.name or t("govuk_alpha_saved.detail.title") }}
-  </h1>
-
   {% if status == "item-removed" or status == "collection-updated" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-detail-status-title">
       <div class="govuk-notification-banner__header">
@@ -47,6 +41,12 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.detail.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">
+    <span class="nexus-alpha-avatar" style="background-color: {{ collection.color }}; width: 1.25rem; height: 1.25rem; display: inline-block; border-radius: 50%; vertical-align: middle;" aria-hidden="true"></span>
+    {{ collection.name or t("govuk_alpha_saved.detail.title") }}
+  </h1>
+
 
   <p class="govuk-body">
     {{ tc("govuk_alpha_saved.detail.count", collection.itemsCount, { count: collection.itemsCount }) }}

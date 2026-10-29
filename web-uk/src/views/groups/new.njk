@@ -21,10 +21,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("groups.create.title") }}</h1>
-  <p class="govuk-body-l">{{ t("groups.create.description", { community: tenantName or serviceName }) }}</p>
-
   {% if createFailed %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -35,7 +31,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if errors and errors.length %}
     {{ govukErrorSummary({
       titleText: t("states.error_title"),
@@ -43,6 +38,11 @@
       attributes: { tabindex: "-1" }
     }) }}
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.create.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.create.description", { community: tenantName or serviceName }) }}</p>
+
+
 
   <form method="post" action="{{ urlFor('/groups/new') }}" enctype="multipart/form-data" novalidate data-validate-form data-validation-error-title="{{ t('states.error_title') }}" data-validation-error-prefix="{{ t('states.error_prefix') }}">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">

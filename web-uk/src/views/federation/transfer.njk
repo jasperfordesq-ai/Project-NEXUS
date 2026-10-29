@@ -14,12 +14,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("fed2.transfer.caption") }}</span>
-      <h1 class="govuk-heading-xl">{{ t("fed2.transfer.title") }}</h1>
-      <p class="govuk-body-l">{{ t("fed2.transfer.description") }}</p>
-
-      {% include "federation/_nav.njk" %}
-
       {% if statusBanner %}
         {% if statusBanner.type == "error" %}
           {# 🔴 This was one hardcoded `href="#amount"` for every error, so "Enter a
@@ -52,6 +46,12 @@
           </div>
         {% endif %}
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("fed2.transfer.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("fed2.transfer.title") }}</h1>
+      <p class="govuk-body-l">{{ t("fed2.transfer.description") }}</p>
+
+      {% include "federation/_nav.njk" %}
+
 
       <dl class="govuk-summary-list govuk-!-margin-bottom-6">
         <div class="govuk-summary-list__row">

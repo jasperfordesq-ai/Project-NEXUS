@@ -75,7 +75,22 @@
   on their own per-field error announcement — already in place — for the primary cue;
   wiring the title prefix for those is a smaller, separate follow-up.)
 #}
-{% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) or (fieldErrors and (fieldErrors | length)) %}
+{#
+  🔴 Added 2026-10-29: a validation outcome carried as a `status` string, or as the
+  `.status` of a `statusBanner` / `statusMessage` object. Same rule as
+  `src/lib/validation-status.js`, which only three routes called: "invalid" or a
+  "-invalid" suffix is something the member must correct; a "-failed" outcome is a
+  transient failure and deliberately does NOT prefix the title (pinned by
+  tests/error-title-prefix-invalid-status.test.js). Applied here so every page that
+  redirects with `?status=x-invalid` gets the prefix, not only the three.
+#}
+{% set statusOutcome = status if (status is string) else '' %}
+{% set bannerOutcome = statusBanner.status if (statusBanner and (statusBanner.status is string)) else '' %}
+{% set messageOutcome = statusMessage.status if (statusMessage and (statusMessage.status is string)) else '' %}
+{% set outcomeInvalid = statusOutcome == 'invalid' or statusOutcome.endsWith('-invalid')
+  or bannerOutcome == 'invalid' or bannerOutcome.endsWith('-invalid')
+  or messageOutcome == 'invalid' or messageOutcome.endsWith('-invalid') %}
+{% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) or (fieldErrors and (fieldErrors | length)) or outcomeInvalid %}
 {% set titleErrorPrefix = ((t('states.error_prefix') if t else 'Error:') ~ ' ') if pageValidationFailed else '' %}
 
 {#

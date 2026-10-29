@@ -17,13 +17,6 @@
     draft: "govuk-tag--grey"
   } %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_ideation.campaigns.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_ideation.campaigns.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_ideation.campaigns.intro") }}</p>
-
-  {% set activeTab = "campaigns" %}
-  {% include "ideation/_nav.njk" %}
-
   {% if status in successStates %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="campaign-status-banner">
       <div class="govuk-notification-banner__header">
@@ -45,6 +38,13 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_ideation.campaigns.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_ideation.campaigns.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_ideation.campaigns.intro") }}</p>
+
+  {% set activeTab = "campaigns" %}
+  {% include "ideation/_nav.njk" %}
+
 
   {% if campaigns and campaigns.length %}
     <div class="nexus-alpha-card-list">

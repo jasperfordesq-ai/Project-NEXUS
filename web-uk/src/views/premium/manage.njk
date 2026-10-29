@@ -13,10 +13,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.premium_manage.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.premium_manage.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>
-
   {% if status %}
     <div class="govuk-notification-banner{% if status.type == 'success' %} govuk-notification-banner--success{% endif %}" role="{% if status.type == 'success' %}alert{% else %}region{% endif %}" aria-labelledby="premium-status" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
@@ -27,6 +23,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.premium_manage.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.premium_manage.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>
+
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-6">
     <div class="govuk-summary-list__row">

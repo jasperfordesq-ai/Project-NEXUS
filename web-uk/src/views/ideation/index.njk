@@ -8,15 +8,15 @@
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or t("govuk_alpha_ideation.page.community_fallback") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("ideation.ideas_title") }}</h1>
-  <p class="govuk-body-l">{{ t("ideation.description") }}</p>
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or t("govuk_alpha_ideation.page.community_fallback") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("ideation.ideas_title") }}</h1>
+  <p class="govuk-body-l">{{ t("ideation.description") }}</p>
+
 
   <form method="get" action="{{ urlFor('/ideation') }}" class="govuk-!-margin-bottom-6">
     <div class="govuk-form-group govuk-!-margin-bottom-4">

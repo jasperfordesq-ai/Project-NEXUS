@@ -29,8 +29,6 @@
         </div>
       {% endif %}
 
-      <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
-
       {% if outcome == 'valid' and match %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-check-result-title" data-testid="certificate-check-valid">
           <div class="govuk-notification-banner__header">
@@ -89,6 +87,8 @@
           </div>
         </div>
       {% endif %}
+      <h1 class="govuk-heading-xl">{{ t(K ~ "title") }}</h1>
+
 
       <p class="govuk-body">{{ t(K ~ "intro") }}</p>
 

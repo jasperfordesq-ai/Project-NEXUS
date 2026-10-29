@@ -14,9 +14,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ discussion.title }}</h1>
-
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -31,7 +28,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if fieldErrors.content %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -40,6 +36,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ discussion.title }}</h1>
+
+
 
   <article class="nexus-alpha-card govuk-!-margin-bottom-4">
     {% if discussion.authorName %}

@@ -21,9 +21,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.collections.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.collections.title") }}</h1>
-
   {% if status == "collection-created" or status == "collection-updated" or status == "collection-deleted" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-collections-status-title">
       <div class="govuk-notification-banner__header">
@@ -43,6 +40,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.collections.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.collections.title") }}</h1>
+
 
   <p class="govuk-body-l">{{ t("govuk_alpha_saved.collections.description") }}</p>
   <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/saved') }}">{{ t("govuk_alpha_saved.collections.back_to_saved") }}</a></p>

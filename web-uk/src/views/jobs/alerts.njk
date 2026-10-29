@@ -7,19 +7,11 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t4.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.jobs_t4.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha.jobs_t4.description") }}</p>
-
-  {% set jobsActiveTab = "alerts" %}
-  {% include "jobs/_nav.njk" %}
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -32,6 +24,14 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t4.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.jobs_t4.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.jobs_t4.description") }}</p>
+
+  {% set jobsActiveTab = "alerts" %}
+  {% include "jobs/_nav.njk" %}
+
+
 
   {% if loadError %}
     <div class="govuk-inset-text">

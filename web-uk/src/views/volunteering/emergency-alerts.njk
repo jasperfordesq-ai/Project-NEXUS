@@ -32,10 +32,6 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("volunteering.title") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.emergency.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.emergency.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -46,6 +42,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.emergency.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.emergency.description") }}</p>
+
 
   {% if not dashboard.alerts.length %}
     <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.nothing_yet_title") }}</h2>{{ t("govuk_alpha_volunteering.emergency.empty") }}</div>

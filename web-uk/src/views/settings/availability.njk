@@ -9,9 +9,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.availability.caption") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.availability.title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -20,8 +17,6 @@
       </div>
     </div>
   {% endif %}
-  <p class="govuk-body-l">{{ t("govuk_alpha_settings.availability.description") }}</p>
-
   {% if statusMessage and successStatus %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="availability-status">
       <div class="govuk-notification-banner__header">
@@ -41,6 +36,11 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.availability.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.availability.title") }}</h1>
+
+  <p class="govuk-body-l">{{ t("govuk_alpha_settings.availability.description") }}</p>
+
 
   <div class="govuk-inset-text" id="availability">{{ t("govuk_alpha_settings.availability.instructions") }}</div>
 

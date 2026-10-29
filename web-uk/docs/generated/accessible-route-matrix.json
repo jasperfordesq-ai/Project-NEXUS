@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-10-29T15:43:54.691Z",
+  "generatedAt": "2026-10-29T17:36:50.398Z",
   "provenance": {
-    "generatedAt": "2026-10-29T15:43:54.691Z",
+    "generatedAt": "2026-10-29T17:36:50.398Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "2d7fb1308eeb5f9b45ada3fa37fedfec4b8175fa",
+    "laravelCommitSha": "7d914f7817aeeaad23c7f0a92508debb2c6c0e34",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "2d7fb1308eeb5f9b45ada3fa37fedfec4b8175fa",
+    "webUkRepositoryCommitSha": "7d914f7817aeeaad23c7f0a92508debb2c6c0e34",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-10-29T15:43:54.691Z",
+    "generatedAt": "2026-10-29T17:36:50.398Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 1083,
+    "webUkRoutes": 1084,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 373,
+    "extraWebUkRoutes": 374,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "account-deletion": {
@@ -271,7 +271,7 @@
       "profile": {
         "matched": 23,
         "missing": 0,
-        "extraWebUk": 8,
+        "extraWebUk": 9,
         "ignoredInfrastructure": 0
       },
       "robots.txt": {
@@ -5856,6 +5856,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/profile/safeguarding/switch-to-coordinator-introductions",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/profile.js",
+      "webUkRouteKind": ""
+    },
+    {
+      "method": "POST",
+      "path": "/profile/settings/privacy",
+      "family": "profile",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/profile/settings/privacy",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/profile.js",
       "webUkRouteKind": ""

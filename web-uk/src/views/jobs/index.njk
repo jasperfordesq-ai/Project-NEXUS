@@ -7,9 +7,6 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("jobs.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("jobs.title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -18,16 +15,19 @@
       </div>
     </div>
   {% endif %}
-  <p class="govuk-body-l">{{ t("jobs.description") }}</p>
-
-  {% set jobsActiveTab = "browse" %}
-  {% include "jobs/_nav.njk" %}
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("jobs.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("jobs.title") }}</h1>
+
+  <p class="govuk-body-l">{{ t("jobs.description") }}</p>
+
+  {% set jobsActiveTab = "browse" %}
+  {% include "jobs/_nav.njk" %}
+
 
   <form method="get" action="{{ urlFor('/jobs') }}" class="govuk-!-margin-bottom-6">
     <div class="govuk-form-group">

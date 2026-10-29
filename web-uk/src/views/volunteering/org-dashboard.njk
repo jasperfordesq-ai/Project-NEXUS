@@ -9,10 +9,6 @@
 {% endblock %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ dashboard.orgName }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_dashboard.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_dashboard.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -21,6 +17,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ dashboard.orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_dashboard.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_dashboard.description") }}</p>
+
 
   {# A pending-approval STATUS is information, not a consequence of an action the
      member is about to take, so it is a notification banner rather than the

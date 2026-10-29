@@ -250,6 +250,7 @@ extra-web-uk,GET,/profile/safeguarding/add/confirm,profile,,,,,,,,,profile/safeg
 extra-web-uk,POST,/profile/safeguarding/add,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,POST,/profile/safeguarding/add/confirm,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,POST,/profile/safeguarding/switch-to-coordinator-introductions,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
+extra-web-uk,POST,/profile/settings/privacy,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,POST,/profile/two-factor/recovery-codes,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,POST,/profile/two-factor/revoke-devices,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,
 extra-web-uk,POST,/profile/two-factor/setup,profile,,,,,,,,,,,,,web-uk/src/routes/profile.js,

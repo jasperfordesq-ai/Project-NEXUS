@@ -11,16 +11,11 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ job.title or t("govuk_alpha.jobs.title") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("jobs_t3.applicants_title") }}</h1>
-  <p class="govuk-body-l">{{ t("jobs_t3.applicants_description") }}</p>
-
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
     {% set notificationType = "success" %}
     {% include "partials/notification-banner.njk" %}
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -33,6 +28,11 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ job.title or t("govuk_alpha.jobs.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("jobs_t3.applicants_title") }}</h1>
+  <p class="govuk-body-l">{{ t("jobs_t3.applicants_description") }}</p>
+
+
 
   {% if analytics %}
     <h2 class="govuk-heading-m">{{ t("jobs_t3.analytics_heading") }}</h2>

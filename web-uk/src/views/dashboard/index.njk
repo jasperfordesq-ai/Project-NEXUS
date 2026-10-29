@@ -268,9 +268,9 @@
     {% endif %}
 
     <div class="govuk-grid-column-one-half">
-      <h2 class="govuk-heading-l">{{ t("dashboard.recent_listings_title") }}</h2>
+      <h2 class="govuk-heading-l">{{ t("dashboard.my_listings_title") }}</h2>
       {% if not listings or not listings.length %}
-        <div class="govuk-inset-text">{{ t("dashboard.empty_listings") }}</div>
+        <div class="govuk-inset-text">{{ t("dashboard.my_listings_empty") }}</div>
       {% else %}
         <div class="nexus-alpha-card-list">
           {% for listing in listings %}
@@ -288,6 +288,7 @@
             </article>
           {% endfor %}
         </div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings/mine') }}">{{ t("dashboard.view_my_listings") }}</a></p>
       {% endif %}
     </div>
   </div>

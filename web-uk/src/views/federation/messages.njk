@@ -11,13 +11,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("fed2.messages.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("fed2.messages.title") }}</h1>
-  <p class="govuk-body-l">{{ t("fed2.messages.description") }}</p>
-
-  {% include "federation/_nav.njk" %}
-
-
   {% if statusBanner %}
     {% if statusBanner.type == "error" %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -41,6 +34,13 @@
       </div>
     {% endif %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("fed2.messages.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("fed2.messages.title") }}</h1>
+  <p class="govuk-body-l">{{ t("fed2.messages.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
 
   {% if not allowed %}
     {% if not viewerCanMessage %}

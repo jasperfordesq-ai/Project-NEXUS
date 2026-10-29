@@ -21,9 +21,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.scheduled.title") }}</h1>
-
   {% if errors and errors.length %}
     {{ govukErrorSummary({ titleText: t("states.error_title"), errorList: errors, attributes: { tabindex: "-1" } }) }}
   {% elif statusMessage %}
@@ -41,6 +38,9 @@
       </div>
     {% endif %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.scheduled.title") }}</h1>
+
 
   <p class="govuk-body-l">{{ t("govuk_alpha_groups.scheduled.intro") }}</p>
 

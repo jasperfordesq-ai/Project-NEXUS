@@ -115,6 +115,7 @@ jest.mock('../src/lib/api', () => ({
   getMembersV2: jest.fn(),
   getMembersNearby: jest.fn(),
   getListings: jest.fn(),
+  getMyListings: jest.fn(),
   getListing: jest.fn(),
   createListing: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   updateListing: jest.fn().mockResolvedValue({ data: { id: 42 } }),
@@ -492,6 +493,7 @@ describe('shared accessible frontend shell', () => {
     api.getMembersV2.mockReset();
     api.getMembersNearby.mockReset();
     api.getListings.mockReset().mockResolvedValue({ data: [] });
+    api.getMyListings.mockReset().mockResolvedValue({ data: [] });
     api.getListing.mockReset().mockResolvedValue({ id: 42, title: 'Listing' });
     api.createListing.mockReset().mockResolvedValue({ data: { id: 42 } });
     api.updateListing.mockReset().mockResolvedValue({ data: { id: 42 } });
@@ -911,7 +913,7 @@ describe('shared accessible frontend shell', () => {
         }
       ]
     });
-    api.getListings.mockResolvedValue({
+    api.getMyListings.mockResolvedValue({
       data: [
         { id: 501, title: 'Borrow a repair kit', type: 'offer', description: 'Hand tools for small repairs.' }
       ]
@@ -954,7 +956,8 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGamificationProfile).toHaveBeenCalledWith('test-token');
     expect(api.getMyBadges).toHaveBeenCalledWith('test-token');
     expect(api.getFeedPosts).toHaveBeenCalledWith('test-token', { per_page: 5 });
-    expect(api.getListings).toHaveBeenCalledWith('test-token', { limit: 5, sort: 'newest', personalised: false });
+    // The dashboard shows the member's own live listings, as React does (29 Oct 2026).
+    expect(api.getMyListings).toHaveBeenCalledWith('test-token', { status: 'live', limit: 5 });
     expect(api.getMyEvents).toHaveBeenCalledWith('test-token');
     expect(api.getExchangeAttentionCount).toHaveBeenCalledWith('test-token');
     expect(api.getMemberEndorsements).toHaveBeenCalledWith('test-token', 101);
@@ -991,7 +994,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/feed/posts/77"');
     expect(response.text).toContain('Neighbour offer');
     expect(response.text).not.toContain('href="/feed/posts/78"');
-    expect(response.text).toContain('Recent listings');
+    expect(response.text).toContain('Your listings');
     expect(response.text).toContain('Borrow a repair kit');
     expect(response.text).toContain('href="/listings/new"');
     expect(response.text).not.toContain('shared accessible frontend preparation page');
@@ -1027,7 +1030,7 @@ describe('shared accessible frontend shell', () => {
         image_url: '/uploads/feed/garden.webp'
       }]
     });
-    api.getListings.mockResolvedValue({
+    api.getMyListings.mockResolvedValue({
       data: [{
         id: 501,
         title: 'Borrow a repair kit',
@@ -1073,7 +1076,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Create a listing');
     expect(response.text).not.toContain('Hours given');
     expect(response.text).not.toContain('Posted by');
-    expect(response.text).not.toContain('Recent listings');
+    expect(response.text).not.toContain('Your listings');
   });
 
   it('honours Laravel dashboard tenant gates before calling or linking disabled features', async () => {
@@ -29353,7 +29356,8 @@ describe('shared accessible frontend shell', () => {
 
     expect(updateFailed.text).toContain('There is a problem saving your changes');
     expect(updateFailed.text).toContain('Your changes could not be saved. Please try again.');
-    expect(updateFailed.text.indexOf('Edit group settings')).toBeLessThan(updateFailed.text.indexOf('There is a problem saving your changes'));
+    // GOV.UK: the error summary comes before the page heading (29 Oct 2026).
+    expect(updateFailed.text.indexOf('There is a problem saving your changes')).toBeLessThan(updateFailed.text.indexOf('Edit group settings'));
     expect(deleteFailed.text).toContain('There is a problem deleting this group');
     expect(deleteFailed.text).toContain('The group could not be deleted. Please try again.');
 
@@ -33024,12 +33028,9 @@ describe('shared accessible frontend shell', () => {
       bio: 'Helps neighbours with maths',
       location: 'London'
     });
-    expect(api.callUserSettingsApi).toHaveBeenNthCalledWith(2, 'test-token', 'PUT', '/preferences', {
-      privacy: {
-        privacy_profile: 'members',
-        privacy_search: true
-      }
-    });
+    // Privacy has its own form since 29 Oct 2026 (as React's Privacy tab), so the
+    // profile save no longer sends it.
+    expect(api.callUserSettingsApi).not.toHaveBeenCalledWith('test-token', 'PUT', '/preferences', expect.anything());
     // By content, not by call position: the route now reads the current consent first, so
     // the ordinal shifted. The behaviour being pinned — an opt-in reaches the dedicated
     // consent API — is unchanged.
@@ -33038,16 +33039,30 @@ describe('shared accessible frontend shell', () => {
       given: true
     });
 
+    const privacyResponse = await post('/profile/settings/privacy', {
+      privacy_profile: 'members',
+      privacy_search: 'on'
+    });
+    expect(privacyResponse.headers.location).toBe('/profile/settings?status=privacy-updated#privacy-heading');
+    api.callUserSettingsApi.mockRejectedValueOnce(new api.ApiError('Invalid', 422, {}));
+    const privacyFailed = await post('/profile/settings/privacy', { privacy_profile: 'members' });
+    expect(privacyFailed.headers.location).toBe('/profile/settings?status=privacy-update-failed');
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'PUT', '/preferences', {
+      privacy: {
+        privacy_profile: 'members',
+        privacy_search: true
+      }
+    });
+
     const emailResponse = await post('/profile/email', {
       email: ' new@example.org ',
       current_password: 'current-password'
     });
     expect(emailResponse.headers.location).toBe('/profile/settings?status=email-reauthentication-unavailable');
-    // 4, not 3: the route now READS the current consent before deciding whether to write
-    // it, so the profile save makes PUT '', PUT '/preferences', GET '/consent' and
-    // PUT '/consent'. The count is asserted to keep the settings save from quietly
+    // 5: the profile save makes PUT '', GET '/consent' and PUT '/consent', and the
+    // two separate privacy saves (one succeeded, one refused) make PUT '/preferences'. The count is asserted to keep the settings save from quietly
     // growing extra upstream calls.
-    expect(api.callUserSettingsApi).toHaveBeenCalledTimes(4);
+    expect(api.callUserSettingsApi).toHaveBeenCalledTimes(5);
 
     const passwordResponse = await post('/profile/password', {
       current_password: 'current-password',

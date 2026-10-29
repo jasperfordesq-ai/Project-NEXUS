@@ -11,9 +11,6 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ event.title }}</span>
-      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.translate.title") }}</h1>
-
       {% if status == "translate-failed" %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
           <div role="alert">
@@ -36,6 +33,9 @@
           <p class="govuk-body">{{ t("govuk_alpha_events.translate.same") }}</p>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.translate.title") }}</h1>
+
 
       <p class="govuk-body-l">{{ t("govuk_alpha_events.translate.intro") }}</p>
 

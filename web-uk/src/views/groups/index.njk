@@ -31,16 +31,16 @@
 {% endmacro %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("groups.title") }}</h1>
-  <p class="govuk-body-l">{{ t("groups.description") }}</p>
-
   {% if status == "group-deleted" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="groups-status">
       <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="groups-status">{{ t("states.success_title") }}</h2></div>
       <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("groups.states.group-deleted") }}</p></div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.description") }}</p>
+
 
   <div class="govuk-button-group">
     <a href="{{ urlFor('/groups/new') }}" class="govuk-button" role="button" draggable="false" data-module="govuk-button">{{ t("polish_groups.create_group_cta") }}</a>

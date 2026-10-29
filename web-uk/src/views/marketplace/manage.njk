@@ -8,10 +8,6 @@
 {% block mainContent %}
   {% include "marketplace/_nav.njk" %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.my_listings.caption", { community: tenantName or serviceName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.my_listings.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.my_listings.description") }}</p>
-
   {% if status %}
     <div class="govuk-notification-banner{% if status.type != 'error' %} govuk-notification-banner--success{% endif %}" role="{% if status.type != 'error' %}alert{% else %}region{% endif %}" aria-labelledby="commerce-status-title" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
@@ -22,6 +18,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.my_listings.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.my_listings.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.my_listings.description") }}</p>
+
 
   {# React MyListingsPage: the seller's figures from GET seller/dashboard. #}
   {% if sellerStats %}
@@ -89,7 +89,7 @@
               <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.action_renew") }}</button>
             </form>
           {% endif %}
-          <a class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor('/marketplace/' + (item.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.my_listings.action_delete") }}</a>
+          <a class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor('/marketplace/' + (item.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.my_listings.action_delete") }}<span class="govuk-visually-hidden"> {{ item.title }}</span></a>
         </div>
       {% endfor %}
     </div>

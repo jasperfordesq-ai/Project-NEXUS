@@ -13,9 +13,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.announcements.edit_heading") }}</h1>
-
   {% if statusBanner and statusBanner.type == "error" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -26,6 +23,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.announcements.edit_heading") }}</h1>
+
 
   {# After a failed save, `announcementForm` holds what the member just typed. Without it
      this form re-rendered the SAVED announcement, so their edits were silently thrown

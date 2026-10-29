@@ -159,7 +159,7 @@
             {% if episode.canArchive %}
               <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/archive') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.archive_episode_button") }}</a>
             {% endif %}
-            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}</a>
+            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/episodes/' + (episode.id | string) + '/delete') }}" role="button" draggable="false">{{ t("govuk_alpha_commerce.podcast_studio.episode_action_delete") }}<span class="govuk-visually-hidden"> {{ episode.title }}</span></a>
           </div>
           <form method="post" action="{{ urlFor('/podcasts/studio/' + (show.id | string) + '/update') }}" enctype="multipart/form-data" class="govuk-!-margin-top-4" novalidate>
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -169,7 +169,7 @@
             {% set episodeFieldSuffix = '-' + (episode.id | string) %}
             {% set episodeFieldVisibilities = episode.visibilityOptions %}
             {% include "podcasts/_episode-fields.njk" %}
-            <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.submit_edit") }}</button>
+            <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.submit_edit") }}<span class="govuk-visually-hidden"> {{ episode.title }}</span></button>
           </form>
         </li>
       {% endfor %}

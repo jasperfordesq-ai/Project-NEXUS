@@ -28,10 +28,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t3.create_caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_title") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_title") }}{% endif %}</h1>
-  <p class="govuk-body-l">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_description") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_description") }}{% endif %}</p>
-
   {% if jobFormNotice %}
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="job-form-notice-title" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
@@ -42,6 +38,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t3.create_caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_title") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_title") }}{% endif %}</h1>
+  <p class="govuk-body-l">{% if formMode == "edit" %}{{ t("govuk_alpha.jobs_t3.edit_description") }}{% else %}{{ t("govuk_alpha.jobs_t3.create_description") }}{% endif %}</p>
+
 
 
   {% if formMode != "edit" and jobTemplates and jobTemplates.length %}

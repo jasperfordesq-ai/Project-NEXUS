@@ -4557,20 +4557,6 @@ async function updateNotificationPreference(token, data) {
   });
 }
 
-async function getPrivacyPreferences(token) {
-  return request('/api/preferences/privacy', {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-}
-
-async function updatePrivacyPreferences(token, data) {
-  return request('/api/preferences/privacy', {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data)
-  });
-}
-
 // ---------------------------------------------------------------------------
 // React-parity pages added 26 Oct 2026. Each mirrors the endpoint the matching
 // React page calls; Laravel stays the authority on every rule and refusal.
@@ -5144,8 +5130,6 @@ module.exports = {
   updatePreferences,
   getNotificationPreferences,
   updateNotificationPreference,
-  getPrivacyPreferences,
-  updatePrivacyPreferences,
   // React-parity pages (26 Oct 2026)
   getSupportActionByEmailToken,
   confirmSupportActionByEmailToken,

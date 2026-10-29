@@ -40,6 +40,7 @@ jest.mock('../src/lib/api', () => {
     invalidateUserCache: jest.fn(),
     getBalance: jest.fn(),
     getListings: jest.fn(),
+    getMyListings: jest.fn(),
     getFeedPosts: jest.fn(),
     getMyEvents: jest.fn(),
     getGamificationProfile: jest.fn(),
@@ -136,6 +137,7 @@ describe('dashboard and a switched-off feed', () => {
     api.getGamificationProfile.mockResolvedValue({ data: null });
     api.getMyBadges.mockResolvedValue({ data: [] });
     api.getListings.mockResolvedValue({ data: [] });
+    api.getMyListings.mockResolvedValue({ data: [] });
     api.getFeedPosts.mockResolvedValue({ data: [] });
     api.getMyEvents.mockResolvedValue({ data: [] });
     api.getExchangeAttentionCount.mockResolvedValue({ data: { count: 0, items: [] } });

@@ -17,13 +17,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("fed2.connections.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("fed2.connections.title") }}</h1>
-  <p class="govuk-body-l">{{ t("fed2.connections.description") }}</p>
-
-  {% include "federation/_nav.njk" %}
-
-
   {% if statusBanner %}
     {% if statusBanner.type == "error" %}
       <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -47,6 +40,13 @@
       </div>
     {% endif %}
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("fed2.connections.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("fed2.connections.title") }}</h1>
+  <p class="govuk-body-l">{{ t("fed2.connections.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
 
   {% if not allowed %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.connections.not_available") }}</p></div>
@@ -112,7 +112,7 @@
                       </form>
                       <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/reject') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.reject") }}</button>
+                        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.reject") }}<span class="govuk-visually-hidden"> {{ connection.name or connection.tenantName }}</span></button>
                       </form>
                     </div>
                   {% elif connection.isAccepted %}
@@ -120,7 +120,7 @@
                       <a class="govuk-link" href="{{ urlFor(connection.href) }}">{{ t("fed2.connections.message") }}</a>
                       <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/remove') }}" novalidate>
                         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                        <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.remove") }}</button>
+                        <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.remove") }}<span class="govuk-visually-hidden"> {{ connection.name or connection.tenantName }}</span></button>
                       </form>
                     </div>
                   {% endif %}

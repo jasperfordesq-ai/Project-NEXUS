@@ -13,9 +13,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ t("groups.discussions.title") }}</h1>
-
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -30,6 +27,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.discussions.title") }}</h1>
+
 
   {#- A pending request and never having asked are different states, and only one
       of them should mention an admin approving anything. -#}

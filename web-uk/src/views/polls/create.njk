@@ -15,10 +15,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_create.caption", { community: tenantName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.poll_create.title") }}</h1>
-      <p class="govuk-body-l">{{ t("govuk_alpha_gamification.poll_create.description") }}</p>
-
       {% if statusBanner and statusBanner.type == "success" %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="poll-create-status-title">
           <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="poll-create-status-title">{{ t("govuk_alpha_gamification.states.success_title") }}</h2></div>
@@ -44,6 +40,10 @@
           </div>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_create.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.poll_create.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_gamification.poll_create.description") }}</p>
+
 
       <form method="post" action="{{ urlFor('/polls/parity/create') }}" novalidate>
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">

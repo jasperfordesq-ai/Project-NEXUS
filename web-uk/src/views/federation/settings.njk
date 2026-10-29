@@ -12,12 +12,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("federation.settings.caption", { community: tenantName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("federation.settings.title") }}</h1>
-      <p class="govuk-body-l">{{ t("federation.settings.description") }}</p>
-
-      {% include "federation/_nav.njk" %}
-
       {% if statusBanner %}
         {% if statusBanner.type == "error" %}
           <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
@@ -41,6 +35,12 @@
           </div>
         {% endif %}
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("federation.settings.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("federation.settings.title") }}</h1>
+      <p class="govuk-body-l">{{ t("federation.settings.description") }}</p>
+
+      {% include "federation/_nav.njk" %}
+
 
       {% if debitApprovals and debitApprovals.length %}
         <section id="debit-approvals" class="govuk-!-margin-bottom-8" aria-labelledby="debit-approvals-heading">

@@ -209,7 +209,7 @@
           {% if idea.isAdmin %}
             <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/comments/' ~ comment.id ~ '/delete') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_ideation.comments.delete") }}</button>
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_ideation.comments.delete") }}<span class="govuk-visually-hidden"> {{ comment.authorName }}</span></button>
             </form>
           {% endif %}
         </article>

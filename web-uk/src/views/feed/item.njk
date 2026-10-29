@@ -17,9 +17,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <span class="govuk-caption-xl">{{ t("govuk_alpha_feed.item.caption", { community: communityName }) }}</span>
-      <h1 class="govuk-heading-xl">{% if item.title %}{{ item.title }}{% else %}{{ t("govuk_alpha_feed.item.heading") }}{% endif %}</h1>
-
       {% if statusMessage %}
         <div class="govuk-notification-banner{% if statusMessage.type == 'success' %} govuk-notification-banner--success{% endif %}" data-module="govuk-notification-banner" role="{% if statusMessage.type == 'success' %}alert{% else %}region{% endif %}" aria-labelledby="item-status-title">
           <div class="govuk-notification-banner__header">
@@ -30,7 +27,6 @@
           </div>
         </div>
       {% endif %}
-
       {% if requiresAuth %}
         <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="item-auth-title">
           <div class="govuk-notification-banner__header">
@@ -44,6 +40,10 @@
           </div>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_feed.item.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{% if item.title %}{{ item.title }}{% else %}{{ t("govuk_alpha_feed.item.heading") }}{% endif %}</h1>
+
+
 
       {% if itemUnavailable %}
         <div class="govuk-inset-text">

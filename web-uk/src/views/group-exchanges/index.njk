@@ -8,10 +8,6 @@
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("group_exchanges.title") }}</h1>
-  <p class="govuk-body-l">{{ t("group_exchanges.description") }}</p>
-
   {% if successMessage %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="ge-list-status">
       <div class="govuk-notification-banner__header">
@@ -22,6 +18,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("group_exchanges.title") }}</h1>
+  <p class="govuk-body-l">{{ t("group_exchanges.description") }}</p>
+
 
   <p class="govuk-body">
     <a class="govuk-button" href="{{ urlFor('/group-exchanges/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("group_exchanges.create_button") }}</a>

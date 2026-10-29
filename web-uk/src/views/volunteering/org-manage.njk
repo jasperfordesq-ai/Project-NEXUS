@@ -11,10 +11,6 @@
 {% endblock %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ orgName }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_org.manage_title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha.vol_org.manage_description") }}</p>
-
   {% if status and status.type == "success" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-manage-success-title">
       <div class="govuk-notification-banner__header">
@@ -32,7 +28,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -41,6 +36,11 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_org.manage_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.vol_org.manage_description") }}</p>
+
+
 
   {# Gap B12: past decisions can be looked back at, by status, and every list pages on. #}
   {% set OM = "govuk_alpha_volunteering.org_manage." %}

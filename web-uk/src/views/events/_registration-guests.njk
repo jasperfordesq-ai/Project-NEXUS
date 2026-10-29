@@ -60,7 +60,7 @@
                   <label class="govuk-label govuk-checkboxes__label" for="guest-cancel-confirm-{{ guest.id }}">{{ t("event_registration.guests.cancel_confirm_body", { name: guestName }) }}</label>
                 </div>
               </div>
-              <button class="govuk-button govuk-button--warning govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("event_registration.guests.cancel") }}</button>
+              <button class="govuk-button govuk-button--warning govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("event_registration.guests.cancel") }}<span class="govuk-visually-hidden"> {{ guestName }}</span></button>
             </form>
           </dd>
         {% endif %}

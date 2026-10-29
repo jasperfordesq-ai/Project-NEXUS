@@ -7,7 +7,7 @@ const express = require('express');
 const { requireAuth } = require('../middleware/auth');
 const {
   getBalance,
-  getListings,
+  getMyListings,
   getFeedPosts,
   getMyEvents,
   getGamificationProfile,
@@ -441,7 +441,10 @@ router.get('/', asyncRoute(async (req, res) => {
     getGamificationProfile(req.token).catch(track({ data: null })),
     getMyBadges(req.token).catch(track({ data: [], meta: { total: 0, available_types: [] } })),
     dashboardFeatures.listings
-      ? getListings(req.token, { limit: 5, sort: 'newest', personalised: false }).catch(track({ data: [] }))
+      // The member's own live listings, as React's "Your listings" panel
+      // (GET /v2/listings/mine?status=live&limit=5). Until 29 Oct 2026 this showed
+      // the newest community listings, which the suggested panel already covers.
+      ? getMyListings(req.token, { status: 'live', limit: 5 }).catch(track({ data: [] }))
       : Promise.resolve({ data: [] }),
     dashboardFeatures.feed
       ? getFeedPosts(req.token, { per_page: 5 }).catch(track({ data: [] }))

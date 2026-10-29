@@ -7,13 +7,6 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.responses.caption") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.responses.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.responses.description") }}</p>
-
-  {% set jobsActiveTab = "responses" %}
-  {% include "jobs/_nav.njk" %}
-
   {% if successMessage %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="responses-status">
       <div class="govuk-notification-banner__header">
@@ -24,7 +17,6 @@
       </div>
     </div>
   {% endif %}
-
   {% if errorMessage %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -35,6 +27,14 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.responses.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.responses.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.responses.description") }}</p>
+
+  {% set jobsActiveTab = "responses" %}
+  {% include "jobs/_nav.njk" %}
+
+
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_jobs.responses.interviews_heading") }}</h2>
   {% if interviews.length == 0 %}

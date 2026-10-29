@@ -14,10 +14,6 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ group.name }}</span>
-  <h1 class="govuk-heading-xl">{{ t("groups.manage.title") }}</h1>
-  <p class="govuk-body-l">{{ t("groups.manage.description") }}</p>
-
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -32,6 +28,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.manage.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.manage.description") }}</p>
+
 
   {% if isPrivate %}
     <h2 class="govuk-heading-l">{{ t("groups.manage.requests_title") }}</h2>
@@ -49,7 +49,7 @@
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group govuk-!-margin-top-2">
                 <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="accept" data-module="govuk-button">{{ t("groups.manage.approve") }}</button>
-                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="reject" data-module="govuk-button">{{ t("groups.manage.reject") }}</button>
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="reject" data-module="govuk-button">{{ t("groups.manage.reject") }}<span class="govuk-visually-hidden"> {{ requestItem.name }}</span></button>
               </div>
             </form>
           </article>
@@ -91,7 +91,7 @@
                 {% else %}
                   <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="promote" data-module="govuk-button">{{ t("groups.manage.promote") }}</button>
                 {% endif %}
-                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="action" value="remove" data-module="govuk-button">{{ t("groups.manage.remove") }}</button>
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="action" value="remove" data-module="govuk-button">{{ t("groups.manage.remove") }}<span class="govuk-visually-hidden"> {{ member.name }}</span></button>
               </div>
             </form>
           {% endif %}

@@ -7,10 +7,6 @@
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block content %}
-  <span class="govuk-caption-xl" id="connections-top">{{ t("connections.caption", { community: communityName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("connections.title") }}</h1>
-  <p class="govuk-body-l">{{ t("connections.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -19,6 +15,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl" id="connections-top">{{ t("connections.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("connections.title") }}</h1>
+  <p class="govuk-body-l">{{ t("connections.description") }}</p>
+
 
   <p class="govuk-body">
     <a class="govuk-link" href="{{ urlFor('/connections/network') }}">{{ t("govuk_alpha_connections.nav.network") }}</a>

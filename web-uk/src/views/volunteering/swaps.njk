@@ -119,13 +119,13 @@
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <div class="govuk-button-group">
                 <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="accept" data-module="govuk-button">{{ t("vol_depth.swap_accept") }}</button>
-                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="action" value="reject" data-module="govuk-button">{{ t("vol_depth.swap_reject") }}</button>
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="action" value="reject" data-module="govuk-button">{{ t("vol_depth.swap_reject") }}<span class="govuk-visually-hidden"> {{ swap.otherShift.title }}</span></button>
               </div>
             </form>
           {% elif swap.direction == "sent" and (swap.status.value == "pending" or swap.status.value == "admin_pending") %}
             <form method="post" action="{{ urlFor('/volunteering/swaps/' ~ swap.id ~ '/cancel') }}" novalidate>
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("vol_depth.swap_cancel") }}</button>
+              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("vol_depth.swap_cancel") }}<span class="govuk-visually-hidden"> {{ swap.otherShift.title }}</span></button>
             </form>
           {% endif %}
         </article>

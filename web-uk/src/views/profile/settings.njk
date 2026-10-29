@@ -14,10 +14,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
-      <h1 class="govuk-heading-xl">{{ t("profile_settings.title") }}</h1>
-      <p class="govuk-body-l">{{ t("profile_settings.description") }}</p>
-
       {% if loadError %}
         <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
           <div role="alert">
@@ -26,6 +22,10 @@
           </div>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("profile_settings.title") }}</h1>
+      <p class="govuk-body-l">{{ t("profile_settings.description") }}</p>
+
 
       <ul class="govuk-list govuk-!-margin-bottom-6">
         {% for item in settingsLinks %}
@@ -165,7 +165,29 @@
           </div>
         </fieldset>
 
-        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="privacy-profile-hint">
+        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="marketing-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="marketing-heading">{{ t("profile_settings.marketing_title") }}</h2>
+          </legend>
+          <div id="marketing-hint" class="govuk-hint">{{ t("profile_settings.marketing_hint") }}</div>
+          <div class="govuk-form-group">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="newsletter_opt_in" name="newsletter_opt_in" type="checkbox" value="1"{% if profile.newsletter_opt_in %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="newsletter_opt_in">{{ t("profile_settings.marketing_label") }}</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button" type="submit">{{ t("actions.save_changes") }}</button>
+      </form>
+
+      {# Saved on its own, as React's Privacy tab does (29 Oct 2026): a problem with the
+         profile fields above can no longer hold back a privacy change. #}
+      <form method="post" action="{{ urlFor('/profile/settings/privacy') }}" class="govuk-!-margin-top-7" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <fieldset class="govuk-fieldset" aria-describedby="privacy-profile-hint">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
             <h2 class="govuk-fieldset__heading" id="privacy-heading">{{ t("profile_settings.privacy_title") }}</h2>
           </legend>
@@ -187,23 +209,7 @@
             </div>
           </div>
         </fieldset>
-
-        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="marketing-hint">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-            <h2 class="govuk-fieldset__heading" id="marketing-heading">{{ t("profile_settings.marketing_title") }}</h2>
-          </legend>
-          <div id="marketing-hint" class="govuk-hint">{{ t("profile_settings.marketing_hint") }}</div>
-          <div class="govuk-form-group">
-            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="newsletter_opt_in" name="newsletter_opt_in" type="checkbox" value="1"{% if profile.newsletter_opt_in %} checked{% endif %}>
-                <label class="govuk-label govuk-checkboxes__label" for="newsletter_opt_in">{{ t("profile_settings.marketing_label") }}</label>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-
-        <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button" type="submit">{{ t("actions.save_changes") }}</button>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("profile_settings.privacy_save") }}</button>
       </form>
 
       <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">

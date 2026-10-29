@@ -13,9 +13,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.image.caption", { group: group.name }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.image.title") }}</h1>
-
   {% if statusBanner and statusBanner.type == "success" %}
     {{ govukNotificationBanner({
       type: "success",
@@ -30,6 +27,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.image.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.image.title") }}</h1>
+
 
   <p class="govuk-body-l">{{ t("govuk_alpha_groups.image.intro") }}</p>
 

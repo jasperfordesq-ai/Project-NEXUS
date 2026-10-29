@@ -6,10 +6,6 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ t("activity.caption", { community: communityName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("activity.title") }}</h1>
-  <p class="govuk-body-l">{{ t("activity.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -18,6 +14,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("activity.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("activity.title") }}</h1>
+  <p class="govuk-body-l">{{ t("activity.description") }}</p>
+
 
   <p class="govuk-body govuk-!-margin-bottom-6">
     <a class="govuk-link" href="{{ urlFor('/activity/insights') }}">{{ t("govuk_alpha_activity.nav.insights") }}</a>

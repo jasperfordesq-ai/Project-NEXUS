@@ -27,10 +27,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ orgName }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_wallet.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_wallet.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -39,6 +35,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_wallet.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_wallet.description") }}</p>
+
 
   <dl class="nexus-alpha-stat-grid">
     <div class="nexus-alpha-stat">

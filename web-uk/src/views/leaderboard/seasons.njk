@@ -10,9 +10,6 @@
 {% endblock %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.seasons.caption", { community: communityName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.seasons.title") }}</h1>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -21,6 +18,9 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.seasons.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.seasons.title") }}</h1>
+
   <p class="govuk-body-l">{{ t("govuk_alpha_gamification.seasons.description") }}</p>
 
   {% set gamificationNavGroup = "leaderboard" %}

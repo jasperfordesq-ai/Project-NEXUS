@@ -12,15 +12,15 @@
 {% endblock %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_events.moderation.caption") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.moderation.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_events.moderation.intro") }}</p>
-
   {% if status == "approved" or status == "rejected" %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="moderation-success-title"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="moderation-success-title">{{ t("govuk_alpha_events.common.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha_events.moderation." + status) }}</p></div></div>
   {% elif status == "action-failed" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("govuk_alpha_events.moderation.action_failed") }}</p></div></div></div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_events.moderation.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.moderation.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_events.moderation.intro") }}</p>
+
 
   <p class="govuk-body">{{ tc("govuk_alpha_events.moderation.pending_count", pagination.total, { count: pagination.total }) }}</p>
   {% if not items.length %}
@@ -38,7 +38,7 @@
             <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.location") }}</dt><dd class="govuk-summary-list__value">{{ event.location or (t("govuk_alpha_events.moderation.online") if event.isOnline else t("govuk_alpha_events.moderation.location_unavailable")) }}</dd></div>
           </dl>
           <h3 class="govuk-heading-s">{{ t("govuk_alpha_events.moderation.description") }}</h3><p class="govuk-body">{{ event.description }}</p>
-          <div class="govuk-button-group"><a class="govuk-button" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/approve') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.approve") }}</a><a class="govuk-button govuk-button--warning" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/reject') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.reject") }}</a></div>
+          <div class="govuk-button-group"><a class="govuk-button" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/approve') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.approve") }}</a><a class="govuk-button govuk-button--warning" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/reject') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.reject") }}<span class="govuk-visually-hidden"> {{ event.title }}</span></a></div>
         </article>
       {% endfor %}
     </div>

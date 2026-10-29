@@ -9,16 +9,9 @@
 {% from "_load-more.njk" import loadMoreNext %}
 
 {% block mainContent %}
-  <span class="govuk-caption-xl">{{ t("explore.caption", { community: tenantName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("explore.title") }}</h1>
-  <p class="govuk-body-l">
-    {{ t("explore.description") }}
-  </p>
-
   {% if dismissed %}
     {{ govukNotificationBanner({ type: "success", text: t("govuk_alpha_explore.dismissed") }) }}
   {% endif %}
-
   {% if loadError or aggregateError or dismissFailed %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -31,6 +24,13 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("explore.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("explore.title") }}</h1>
+  <p class="govuk-body-l">
+    {{ t("explore.description") }}
+  </p>
+
+
 
   {% if showSearch %}
     <form method="get" action="{{ urlFor('/search') }}" class="govuk-!-margin-bottom-4" role="search">

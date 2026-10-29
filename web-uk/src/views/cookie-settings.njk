@@ -8,9 +8,6 @@
 {% block mainContent %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-xl">{{ t("cookie_settings.caption", { service: tenantName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("cookie_settings.title") }}</h1>
-
       {% if status == 'saved' %}
         <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner" aria-labelledby="cookie-saved-title">
           <div class="govuk-notification-banner__header">
@@ -21,6 +18,9 @@
           </div>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("cookie_settings.caption", { service: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("cookie_settings.title") }}</h1>
+
 
       <p class="govuk-body-l">{{ t("cookie_settings.intro") }}</p>
 

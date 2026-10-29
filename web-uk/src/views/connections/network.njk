@@ -28,10 +28,6 @@
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl" id="connections-network-top">{{ t("govuk_alpha_connections.network.caption", { community: communityName }) }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_connections.network.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_connections.network.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" data-disable-auto-focus="true" tabindex="-1">
       <div role="alert">
@@ -40,6 +36,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl" id="connections-network-top">{{ t("govuk_alpha_connections.network.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_connections.network.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_connections.network.description") }}</p>
+
 
   {# 🔴 A summary LIST, not the `network.summary` sentence it replaced. That
      sentence read "You have :total connections, :received requests waiting for
@@ -169,7 +169,7 @@
                 </form>
                 <form method="post" action="{{ urlFor(connection.declineAction) }}" novalidate>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-                  <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_connections.network.decline") }}</button>
+                  <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_connections.network.decline") }}<span class="govuk-visually-hidden"> {{ connection.name }}</span></button>
                 </form>
               {% endif %}
               {% if connection.profileHref %}

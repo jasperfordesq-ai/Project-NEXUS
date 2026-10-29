@@ -15,9 +15,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-      <span class="govuk-caption-xl">{{ t("govuk_alpha_venues.caption") }}</span>
-      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.pass.title") }}</h1>
-
       {% if rotated %}
         <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="venue-pass-rotated-title">
           <div class="govuk-notification-banner__header">
@@ -28,6 +25,9 @@
           </div>
         </div>
       {% endif %}
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_venues.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.pass.title") }}</h1>
+
 
       <p class="govuk-body-l">{{ t("govuk_alpha_venues.pass.intro") }}</p>
 

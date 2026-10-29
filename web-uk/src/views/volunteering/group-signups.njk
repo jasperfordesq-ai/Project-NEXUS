@@ -39,10 +39,6 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-xl">{{ t("govuk_alpha_volunteering.group_signups.caption") }}</span>
-  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.group_signups.title") }}</h1>
-  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.group_signups.description") }}</p>
-
   {% if loadError %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
       <div role="alert">
@@ -53,6 +49,10 @@
       </div>
     </div>
   {% endif %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_volunteering.group_signups.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.group_signups.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.group_signups.description") }}</p>
+
 
   <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/volunteering/group-signups/new') }}" role="button" draggable="false">{{ t("govuk_alpha_volunteering.group_signups.reserve_link") }}</a>
 
