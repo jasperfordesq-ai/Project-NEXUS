@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "_load-more.njk" import loadMoreNext %}
 
 {% block beforeContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.back") }}</a>
@@ -49,7 +50,7 @@
     <div class="govuk-body">{{ discussion.content | striptags | nl2br | safe }}</div>
   </article>
 
-  <h2 class="govuk-heading-l" id="discussion-replies">{{ tc("groups.discussions.replies_count", messages.length, { count: messages.length }) }}</h2>
+  <h2 class="govuk-heading-l" id="discussion-replies">{{ tc("groups.discussions.replies_count", (discussion.replyCount or messages.length), { count: (discussion.replyCount or messages.length) }) }}</h2>
 
   {% if not messages.length %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.no_replies") }}</p></div>
@@ -66,6 +67,7 @@
       </article>
     {% endfor %}
     </div>
+    {% if newerRepliesHref %}{{ loadMoreNext(urlFor(newerRepliesHref), t("actions.load_more")) }}{% endif %}
   {% endif %}
 
   <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string) + '/reply') }}" novalidate>

@@ -91,6 +91,26 @@
     </div>
   {% endif %}
 
+  {% if guardiansPending %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-guardians-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="dashboard-guardians-title">{{ t("states.important") }}</h2></div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("dashboard.guardians_prompt_message") }}</p>
+        <p class="govuk-body"><a class="govuk-notification-banner__link" href="{{ urlFor('/settings/guardians') }}">{{ t("dashboard.guardians_prompt_action") }}</a></p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if supportActionsPending %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-support-actions-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="dashboard-support-actions-title">{{ t("states.important") }}</h2></div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("dashboard.support_actions_prompt_message") }}</p>
+        <p class="govuk-body"><a class="govuk-notification-banner__link" href="{{ urlFor('/settings/support-actions') }}">{{ t("dashboard.support_actions_prompt_action") }}</a></p>
+      </div>
+    </div>
+  {% endif %}
+
   {% if dashboardFeatures.exchangeWorkflow and exchangeAttention and exchangeAttention.count > 0 %}
     <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-reviews-title">
       <div class="govuk-notification-banner__header">

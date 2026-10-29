@@ -1588,6 +1588,29 @@ class EventService
         return true;
     }
 
+    private static function samePlace(string $a, mixed $b): bool
+    {
+        return mb_strtolower(trim($a)) === mb_strtolower(trim((string) $b));
+    }
+
+    /**
+     * Best-effort lookup of a typed event place. Null coordinates mean "not on
+     * the map" rather than failing the save.
+     *
+     * @return array{0: ?float, 1: ?float}
+     */
+    private static function lookUpPlace(string $place): array
+    {
+        try {
+            $coords = GeocodingService::geocode($place);
+        } catch (\Throwable $e) {
+            Log::warning('Event place lookup failed', ['error' => $e->getMessage()]);
+            $coords = null;
+        }
+
+        return $coords ? [(float) $coords['latitude'], (float) $coords['longitude']] : [null, null];
+    }
+
     /**
      * Validate the complete writer contract and return only mutable event
      * attributes. Server-owned lifecycle and occurrence identity fields are
@@ -1866,6 +1889,21 @@ class EventService
                 $normalized[$field] = (bool) $normalized[$field];
             }
         }
+
+        // A place typed without coordinates (the accessible frontend has no map
+        // picker) is looked up, and a changed place without new coordinates moves
+        // the pin — keeping the old one put a moved event on the map at the old
+        // venue. Same rule as ListingService for listings.
+        if (
+            array_key_exists('location', $input)
+            && !array_key_exists('latitude', $input)
+            && !array_key_exists('longitude', $input)
+            && ($isCreate || !self::samePlace((string) ($effective['location'] ?? ''), $existing($event, 'location')))
+        ) {
+            $typed = trim((string) ($effective['location'] ?? ''));
+            [$normalized['latitude'], $normalized['longitude']] = $typed === '' ? [null, null] : self::lookUpPlace($typed);
+        }
+
         foreach (['latitude', 'longitude'] as $field) {
             if (array_key_exists($field, $normalized) && $normalized[$field] !== null) {
                 $normalized[$field] = (float) $normalized[$field];

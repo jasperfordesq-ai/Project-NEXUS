@@ -20,6 +20,7 @@ const { rememberClientRefusal, consumeApiRefusal, firstApiError: apiErrorParts }
 const { audit } = require('../lib/auditLogger');
 const { PLATFORM_MAX_TRANSFER, walletMaxTransfer } = require('../lib/wallet-limits');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { readDate } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -343,6 +344,14 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
     apiRefusal: req.query.status === 'transfer-failed'
       ? consumeApiRefusal(req, 'wallet-transfer')
       : (req.query.status === 'donate-failed' ? consumeApiRefusal(req, 'wallet-donate') : ''),
+    statement: (() => {
+      const range = statementRange(req.query, res.locals.t);
+      return {
+        start: range.start.parts,
+        end: range.end.parts,
+        error: req.query.status === 'statement-invalid' ? range.error : null
+      };
+    })(),
     transferForm,
     donateError: typeof req.query.donate_error === 'string' ? req.query.donate_error : '',
     donateForm,
@@ -353,8 +362,48 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   });
 }));
 
+/**
+ * Read the optional statement date range (GOV.UK three-field dates, or a single
+ * `YYYY-MM-DD` from a bookmarked link). Laravel takes `start_date` / `end_date`
+ * (WalletFeaturesController::statement), the same pair React's statement dialog sends.
+ */
+function statementRange(query, t) {
+  const start = readDate(query, 'start_date');
+  const end = readDate(query, 'end_date');
+  let error = null;
+  if (start.error) {
+    error = { href: '#start_date-day', text: t(`web_uk.date_input.${start.error}`), field: 'start_date', fields: start.errorFields };
+  } else if (end.error) {
+    error = { href: '#end_date-day', text: t(`web_uk.date_input.${end.error}`), field: 'end_date', fields: end.errorFields };
+  } else if (start.value && end.value && end.value < start.value) {
+    // ISO dates compare correctly as strings.
+    error = { href: '#end_date-day', text: t('wallet_t1.statement_range_invalid'), field: 'end_date', fields: ['day', 'month', 'year'] };
+  }
+  return { start, end, error };
+}
+
 router.get('/export.csv', requireAuth, asyncRoute(async (req, res) => {
-  const result = await callWalletDownload(req.token, '/statement');
+  const range = statementRange(req.query, res.locals.t);
+  if (range.error) {
+    const back = new URLSearchParams();
+    for (const name of ['start_date', 'end_date']) {
+      for (const part of ['day', 'month', 'year']) {
+        const value = req.query[`${name}-${part}`];
+        if (typeof value === 'string' && value !== '') back.set(`${name}-${part}`, value.slice(0, 4));
+      }
+    }
+    back.set('status', 'statement-invalid');
+    return redirectTo(res, `/wallet?${back.toString()}#statement`);
+  }
+  const params = new URLSearchParams();
+  if (range.start.value) params.set('start_date', range.start.value);
+  if (range.end.value) params.set('end_date', range.end.value);
+  const query = params.toString();
+  const statementPath = query ? `/statement?${query}` : '/statement';
+  const result = await callWalletDownload(req.token, statementPath);
+  if ((result.status || 200) >= 400) {
+    return redirectTo(res, '/wallet?status=export-failed#statement');
+  }
   res.status(result.status || 200);
   const headers = result.headers || {};
   res.set('Content-Type', headers['content-type'] || 'text/csv; charset=utf-8');

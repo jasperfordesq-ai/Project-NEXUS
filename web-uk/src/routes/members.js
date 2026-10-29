@@ -1186,7 +1186,8 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     }),
     getGamificationProfileByUserId(req.token, Number(id)).catch(trackSection({ data: null })),
     getAllBadges(req.token, { user_id: Number(id) }).catch(trackSection({ data: [], meta: { total: 0, available_types: [] } })),
-    getUserReviews(req.token, id).catch(trackSection({ data: [], summary: null })),
+    // React's profile reads 50 (ProfilePage); Laravel allows up to 100.
+    getUserReviews(req.token, id, 1, 50).catch(trackSection({ data: [], summary: null })),
     getRequestProfile(req, req.token).catch(() => null),
     listingsEnabled ? getUserListings(req.token, id, { limit: 6 }).catch(trackSection({ data: [] })) : Promise.resolve({ data: [] }),
     getUserSkills(req.token, id).catch(trackSection({ data: [] })),

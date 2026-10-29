@@ -30,6 +30,29 @@
         {% include "partials/notification-banner.njk" %}
       {% endif %}
 
+      {% if registrationNext and not show2fa %}
+        <div class="govuk-inset-text">
+          {% if registrationNext == "waitlist" %}
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("auth.register_waitlist_title") }}</h2>
+            {% if waitlistPosition %}<p class="govuk-body govuk-!-margin-bottom-1">{{ t("auth.register_waitlist_position", { position: waitlistPosition }) }}</p>{% endif %}
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ t("auth.register_waitlist_body") }}</p>
+          {% else %}
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("auth.register_approval_title") }}</h2>
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ t("auth.register_approval_body") }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if loginStatus == "pending-approval" and not show2fa %}
+        <div class="govuk-notification-banner" role="region" aria-labelledby="pending-approval-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="pending-approval-title">{{ t("states.important") }}</h2></div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("auth.pending_approval_title") }}</p>
+            <p class="govuk-body">{{ t("auth.pending_approval") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
       {% if error %}
         {% set loginErrorHref = "#email" %}
         {% if not show2fa and loginStatus in ["email-not-verified", "pending-verification"] %}

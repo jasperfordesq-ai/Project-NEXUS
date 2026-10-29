@@ -12,9 +12,14 @@
           <h1 class="govuk-panel__title">{{ t("auth.verify_email_success_title") }}</h1>
           <div class="govuk-panel__body">{{ t("auth.verify_email_success_body") }}</div>
         </div>
+        {% if requiresApproval %}
+          <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("auth.register_approval_title") }}</h2>
+          <p class="govuk-body">{{ t("auth.register_approval_body") }}</p>
+        {% else %}
         <p class="govuk-body govuk-!-margin-top-6">
           <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}" role="button" draggable="false">{{ t("auth.verify_email_sign_in") }}</a>
         </p>
+        {% endif %}
       {% else %}
         <h1 class="govuk-heading-xl">{{ t("auth.verify_email_title") }}</h1>
         <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">

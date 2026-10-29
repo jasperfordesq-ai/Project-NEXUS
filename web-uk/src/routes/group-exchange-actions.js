@@ -8,6 +8,7 @@ const { confirmFirst } = require('../lib/confirm-action');
 const { ApiError, callGroupExchangeApi, previewGroupExchange } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { rememberFormReplay } = require('../lib/form-replay');
+const { rememberClientRefusal } = require('../lib/api-refusal');
 
 const router = express.Router();
 const GROUP_EXCHANGES_PATH = '/group-exchanges';
@@ -95,6 +96,9 @@ async function runAction(req, res, method, path, data, successRedirect, failureR
     return redirectTo(res, redirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    // Laravel names the reason (e.g. GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE);
+    // React shows it, so the detail page shows it in place of the generic line.
+    rememberClientRefusal(req, 'group-exchange-action', error);
     return redirectTo(res, failureRedirect);
   }
 }

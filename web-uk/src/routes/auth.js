@@ -263,7 +263,11 @@ router.get('/login', (req, res) => {
     successMessage: statusMessage(req, status, LOGIN_SUCCESS_STATUS_KEYS)
       || legacySuccessMessage
       || null,
-    error: statusMessage(req, status, LOGIN_ERROR_STATUS_KEYS) || null
+    error: statusMessage(req, status, LOGIN_ERROR_STATUS_KEYS) || null,
+    registrationNext: status === 'register-created' && ['approval', 'waitlist'].includes(String(req.query.next || ''))
+      ? String(req.query.next)
+      : '',
+    waitlistPosition: /^[1-9]\d{0,6}$/.test(String(req.query.position || '')) ? String(req.query.position) : ''
   });
 });
 
@@ -360,6 +364,12 @@ router.post('/login', asyncRoute(async (req, res) => {
       } else if (code === 'AUTH_EMAIL_NOT_VERIFIED') {
         loginStatus = 'email-not-verified';
         errorMessage = translate(req, 'auth.email_not_verified');
+      } else if (code === 'AUTH_ACCOUNT_PENDING_APPROVAL') {
+        // Waiting for a coordinator is not a failed sign-in (React LoginPage
+        // isPendingApproval). Approval-required is the default for a new
+        // community, so "check your details" sent members round in circles.
+        loginStatus = 'pending-approval';
+        errorMessage = null;
       } else if (code === 'AUTH_PENDING_VERIFICATION') {
         loginStatus = 'pending-verification';
         errorMessage = translate(req, 'auth.pending_verification');
@@ -858,8 +868,19 @@ router.post('/register', asyncRoute(async (req, res) => {
   if (validation.longitude !== undefined) payload.longitude = validation.longitude;
 
   try {
-    await register(payload, tenantSlug);
-    return redirectTo(res, '/login?status=register-created');
+    const result = await register(payload, tenantSlug);
+    // Laravel says what happens next (RegistrationService::register):
+    // a waitlist place or an administrator's approval. React shows both.
+    const outcome = (result && (result.data || result)) || {};
+    const next = new URLSearchParams({ status: 'register-created' });
+    if (outcome.requires_waitlist) {
+      next.set('next', 'waitlist');
+      const position = Number(outcome.waitlist_position);
+      if (Number.isInteger(position) && position > 0) next.set('position', String(position));
+    } else if (outcome.requires_approval) {
+      next.set('next', 'approval');
+    }
+    return redirectTo(res, `/login?${next.toString()}`);
   } catch (error) {
     if (error instanceof ApiOfflineError) {
       return renderRegistrationUnavailable(res);
@@ -1028,8 +1049,10 @@ async function handleResetPasswordPost(req, res) {
     const message = translate(req, 'auth.reset_password_required');
     errors.push({ text: message, href: '#password' });
     fieldErrors.password = message;
-  } else if (password.length < 8) {
-    const message = translate(req, 'auth.reset_password_min');
+  } else if (password.length < 12) {
+    // Laravel's minimum (PasswordResetController::MIN_PASSWORD_LENGTH). An 8-11
+    // character password used to pass here and come back as "link invalid".
+    const message = translate(req, 'auth.reset_weak');
     errors.push({ text: message, href: '#password' });
     fieldErrors.password = message;
   }
@@ -1060,6 +1083,22 @@ async function handleResetPasswordPost(req, res) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
       return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
+    }
+
+    // A refusal about the password itself (too short, breached, recently used)
+    // arrives as a 400/422 tagged `field: password` with Laravel's translated
+    // reason. Show that against the field: it is not a broken link.
+    const firstError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
+    if (firstError && firstError.field === 'password' && error.status !== 429) {
+      const message = String(firstError.message || '').trim() || translate(req, 'auth.reset_failed');
+      return res.render('reset-password', {
+        title: translate(req, 'auth.reset_title'),
+        errors: [{ text: message, href: '#password' }],
+        fieldErrors: { password: message },
+        resetToken: token,
+        formAction,
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
+      });
     }
 
     const errorMessage = translate(req, resetErrorKey(error));

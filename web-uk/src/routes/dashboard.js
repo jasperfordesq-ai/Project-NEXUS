@@ -19,6 +19,8 @@ const {
   getTopEndorsedMembers,
   getConnectionSuggestions,
   updateProfile,
+  getMyGuardians,
+  getSupportActions,
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
@@ -469,7 +471,7 @@ router.get('/', asyncRoute(async (req, res) => {
   // Also absorbs a synchronous throw, so no panel can take the page down.
   const guarded = (read) => Promise.resolve().then(read).catch(quiet);
   const sidePanelsOn = dashboardFeatures.feed;
-  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData] = await Promise.all([
+  const [exchangeAttentionData, endorsementsData, sidebarData, topEndorsedData, suggestionsData, guardiansData, supportActionsData] = await Promise.all([
     dashboardFeatures.listings && dashboardFeatures.exchangeWorkflow
       ? getExchangeAttentionCount(req.token).catch(track({ data: { count: 0, items: [] } }))
       : Promise.resolve({ data: { count: 0, items: [] } }),
@@ -482,8 +484,16 @@ router.get('/', asyncRoute(async (req, res) => {
     sidePanelsOn ? guarded(() => getTopEndorsedMembers(req.token, 5)) : Promise.resolve(null),
     sidePanelsOn && dashboardFeatures.connections
       ? guarded(() => getConnectionSuggestions(req.token, 8))
-      : Promise.resolve(null)
+      : Promise.resolve(null),
+    // React's dashboard prompts (GuardianConsentPrompt, SupportActionPrompt):
+    // both read `pending_count` and stay silent when the read fails.
+    guarded(() => getMyGuardians(req.token)),
+    guarded(() => getSupportActions(req.token))
   ]);
+  const pendingCount = (result) => {
+    const value = Number((result && (dataFrom(result) || {}).pending_count) ?? 0);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  };
   const sidebar = sidebarData ? (dataFrom(sidebarData) || {}) : {};
   const sidePanels = {
     communityStats: dashboardFeatures.connections ? normalizeCommunityStats(sidebar) : null,
@@ -496,6 +506,8 @@ router.get('/', asyncRoute(async (req, res) => {
   };
 
   res.render('dashboard/index', {
+    guardiansPending: pendingCount(guardiansData) > 0,
+    supportActionsPending: pendingCount(supportActionsData) > 0,
     title: t('dashboard.title'),
     titleKey: 'dashboard.title',
     activeNav: 'dashboard',

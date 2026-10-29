@@ -407,3 +407,17 @@ describe('episode page', () => {
     expect(response.text).toBe('Hello listeners.');
   });
 });
+
+describe('subscribe says which state the member chose (29 Oct parity)', () => {
+  it('sends subscribed true or false, so a resubmitted form cannot undo itself', async () => {
+    let sent = null;
+    routeApi({ other: { 'POST /5/subscribe': (body) => { sent = body; return { data: { subscribed: true } }; } } });
+    await request(app).post(`${PREFIX}/podcasts/5/subscribe`).type('form').send({ subscribed: '1' });
+    expect(sent).toEqual({ subscribed: true });
+
+    routeApi({ other: { 'POST /5/subscribe': (body) => { sent = body; return { data: { subscribed: false } }; } } });
+    const off = await request(app).post(`${PREFIX}/podcasts/5/subscribe`).type('form').send({ subscribed: '0' });
+    expect(sent).toEqual({ subscribed: false });
+    expect(off.headers.location).toContain('unsubscribed');
+  });
+});

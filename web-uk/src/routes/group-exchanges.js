@@ -7,6 +7,7 @@ const express = require('express');
 const { callGroupExchangeApi, searchUsers } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { consumeFormReplay } = require('../lib/form-replay');
+const { consumeApiRefusal } = require('../lib/api-refusal');
 const { getRequestProfile } = require('../lib/request-profile');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { createChoiceTranslator } = require('../lib/localization');
@@ -297,11 +298,15 @@ function previewView(stash, t, tc) {
   };
 }
 
+const GROUP_EXCHANGE_FILTER_STATES = ['draft', 'pending_participants', 'pending_broker', 'active', 'pending_confirmation', 'completed', 'cancelled'];
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
 
-  const state = ['draft', 'pending', 'active', 'completed', 'cancelled'].includes(trimmed(req.query.state))
+  // Real statuses from the group_exchanges.status enum. `pending` was offered
+  // here but never exists, so that filter always came back empty.
+  const state = GROUP_EXCHANGE_FILTER_STATES.includes(trimmed(req.query.state))
     ? trimmed(req.query.state)
     : '';
   const query = compactQuery({ limit: 50, status: state });
@@ -482,7 +487,8 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     participantResults,
     status,
     successMessage: stateMessage(status, res.locals.t),
-    errorMessage: errorMessage(status, res.locals.t)
+    errorMessage: (errorMessage(status, res.locals.t) && consumeApiRefusal(req, 'group-exchange-action'))
+      || errorMessage(status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Group exchange not found' }));
 

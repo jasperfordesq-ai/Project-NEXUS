@@ -298,11 +298,15 @@ router.post('/newsletter/unsubscribe', async (req, res) => {
 router.get('/verify-email', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
   let state = 'missing';
+  let requiresApproval = false;
 
   if (token) {
     try {
       const result = await verifyEmail(token, routedTenantSlug(req));
       const verified = Boolean(result?.data?.verified ?? result?.verified);
+      // Laravel reports whether a coordinator still has to approve the account
+      // (EmailVerificationController::verifyEmail); signing in would be refused.
+      requiresApproval = Boolean(result?.data?.requires_approval ?? result?.requires_approval);
       // A 200 that reports verified:false IS the backend judging the token.
       state = verified ? 'success' : 'invalid';
     } catch (error) {
@@ -313,7 +317,8 @@ router.get('/verify-email', async (req, res) => {
   res.render('public-info/email-verify', {
     title: translatedTitle(res, 'auth.verify_email_title', 'Verify your email address'),
     activeNav: 'login',
-    state
+    state,
+    requiresApproval
   });
 });
 

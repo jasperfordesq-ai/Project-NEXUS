@@ -341,7 +341,11 @@ router.post('/:id(\\d+)/subscribe', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   let status = 'subscribe-failed';
   try {
-    const result = await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/subscribe`);
+    // Say which state the member chose: with no `subscribed` Laravel toggles
+    // (PodcastController::subscribe), so a resubmitted form undid itself.
+    const wanted = String(req.body?.subscribed ?? '');
+    const body = wanted === '1' || wanted === '0' ? { subscribed: wanted === '1' } : undefined;
+    const result = await callPodcast(token, 'POST', `/${encodeURIComponent(id)}/subscribe`, body);
     const data = dataFrom(result);
     status = data && data.subscribed === false ? 'unsubscribed' : 'subscribed';
   } catch (error) {

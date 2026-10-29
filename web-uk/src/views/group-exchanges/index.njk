@@ -31,8 +31,10 @@
       {% set tabs = [
         { value: "", label: t("group_exchanges.filter_all"), path: "/group-exchanges" },
         { value: "draft", label: t("group_exchanges.statuses.draft"), path: "/group-exchanges?state=draft" },
-        { value: "pending", label: t("group_exchanges.statuses.pending"), path: "/group-exchanges?state=pending" },
+        { value: "pending_participants", label: t("group_exchanges.statuses.pending_participants"), path: "/group-exchanges?state=pending_participants" },
+        { value: "pending_broker", label: t("exchanges.statuses.pending_broker"), path: "/group-exchanges?state=pending_broker" },
         { value: "active", label: t("group_exchanges.statuses.active"), path: "/group-exchanges?state=active" },
+        { value: "pending_confirmation", label: t("exchanges.statuses.pending_confirmation"), path: "/group-exchanges?state=pending_confirmation" },
         { value: "completed", label: t("group_exchanges.statuses.completed"), path: "/group-exchanges?state=completed" },
         { value: "cancelled", label: t("group_exchanges.statuses.cancelled"), path: "/group-exchanges?state=cancelled" }
       ] %}

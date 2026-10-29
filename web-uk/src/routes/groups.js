@@ -2001,8 +2001,12 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
   const groupResult = await getGroup(req.token, id);
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const isMember = isActiveGroupMember(group);
+  // Laravel pages discussions 20 at a time by cursor (GroupsController::discussions).
+  const listCursor = trimmed(req.query.cursor, 500);
+  const listParams = new URLSearchParams({ per_page: '20' });
+  if (listCursor) listParams.set('cursor', listCursor);
   const discussionsResult = isMember
-    ? await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions`).catch((error) => {
+    ? await callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions?${listParams.toString()}`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: { items: [] } };
     })
@@ -2010,6 +2014,8 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
   const discussions = collectionFrom(discussionsResult)
     .map(normalizeDiscussion)
     .filter((discussion) => discussion.id !== null);
+  const listMeta = discussionsResult?.meta || {};
+  const listNextCursor = listMeta.has_more === true ? trimmed(listMeta.cursor || listMeta.next_cursor, 500) : '';
 
   // 🔴 "Not a member" and "waiting for approval" are different things, and this
   // page used to show the pending-approval message to anyone who was not a
@@ -2026,6 +2032,7 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
     isMember,
     isPending,
     discussions,
+    nextHref: listNextCursor ? `/groups/${encodeURIComponent(id)}/discussions?${new URLSearchParams({ cursor: listNextCursor }).toString()}` : '',
     ...discussionStatus(req.query.status, res.locals.t)
   });
 }, { redirectOn401: loginRedirect(), notFoundTitle: 'Group not found' }));
@@ -2052,7 +2059,15 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
   const { id, discussionId } = req.params;
   const [groupResult, discussionResult] = await Promise.all([
     getGroup(req.token, id),
-    callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}`)
+    // Replies come oldest first, 50 per page, with a forward cursor
+    // (GroupsController::discussionMessages). Without the cursor a thread
+    // stopped at its first 50 replies and newer ones never showed.
+    callGroup(req.token, 'GET', `/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}?${(() => {
+      const params = new URLSearchParams({ per_page: '50' });
+      const cursor = trimmed(req.query.cursor, 500);
+      if (cursor) params.set('cursor', cursor);
+      return params.toString();
+    })()}`)
   ]);
   const group = normalizeGroup(dataFrom(groupResult)?.group || dataFrom(groupResult), Number(id));
   const data = dataFrom(discussionResult) || {};
@@ -2072,6 +2087,9 @@ router.get('/:id(\\d+)/discussions/:discussionId(\\d+)', requireAuth, asyncRoute
     group,
     discussion,
     messages,
+    newerRepliesHref: data.has_more === true && trimmed(data.cursor, 500)
+      ? `/groups/${encodeURIComponent(id)}/discussions/${encodeURIComponent(discussionId)}?${new URLSearchParams({ cursor: trimmed(data.cursor, 500) }).toString()}#discussion-replies`
+      : '',
     replyValues: replay.values,
     fieldErrors: replay.errors,
     ...discussionStatus(req.query.status, res.locals.t)

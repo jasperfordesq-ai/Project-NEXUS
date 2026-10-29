@@ -600,3 +600,28 @@ describe('no provider, receiver or transfer wording anywhere a member reads', ()
     expect(visibleText(index.text)).toContain('Share equally');
   });
 });
+
+describe('29 Oct parity: the status filter and refusal reasons', () => {
+  it('filters on the real statuses Laravel stores, including "needs confirmation"', async () => {
+    api.callGroupExchangeApi.mockResolvedValue({ data: { data: [] } });
+    const page = await request(createApp()).get(`${MOUNT}?state=pending_confirmation`);
+    expect(page.status).toBe(200);
+    expect(api.callGroupExchangeApi).toHaveBeenCalledWith('test-token', 'GET', '?limit=50&status=pending_confirmation');
+    expect(page.text).toContain('state=pending_participants');
+    expect(page.text).not.toContain('state=pending"');
+  });
+
+  it('shows Laravel\'s reason when an action is refused', async () => {
+    const app = createApp();
+    const agent = request.agent(app);
+    api.callGroupExchangeApi.mockRejectedValueOnce(new api.ApiError('refused', 422, {
+      errors: [{ code: 'GROUP_EXCHANGE_PARTY_CANNOT_RECEIVE', message: 'Mary cannot receive hours in this community.' }]
+    }));
+    const started = await agent.post(`${MOUNT}/7/start`);
+    expect(started.headers.location).toContain('status=start-failed');
+
+    api.callGroupExchangeApi.mockResolvedValue(exchange({ status: 'draft' }));
+    const page = await agent.get(started.headers.location.replace(/#.*/, ''));
+    expect(visibleText(page.text)).toContain('Mary cannot receive hours in this community.');
+  });
+});

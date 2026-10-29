@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   {# A transient flash status is a notification banner, not the green
@@ -23,7 +24,9 @@
     {% if donateError == "invalid" %}{% set donateMessage = t("wallet_t1.errors.invalid") %}{% elseif donateError == "insufficient" %}{% set donateMessage = t("wallet_t1.errors.insufficient") %}{% elseif donateError == "not-found" %}{% set donateMessage = t("wallet_t1.errors.not_found") %}{% elseif donateError == "self" %}{% set donateMessage = t("wallet_t1.errors.self") %}{% elseif donateError == "too-large" %}{% set donateMessage = t("wallet_t1.errors.too_large") %}{% elseif donateError == "decimals" %}{% set donateMessage = t("wallet.errors.decimals") %}{% elseif apiRefusal %}{% set donateMessage = apiRefusal %}{% endif %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#donate">{{ donateMessage }}</a></li></ul></div></div></div>
   {% elseif status == "export-failed" %}
-    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#transactions">{{ t("wallet_t1.export_failed") }}</a></li></ul></div></div></div>
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#statement">{{ t("wallet_t1.export_failed") }}</a></li></ul></div></div></div>
+  {% elseif status == "statement-invalid" and statement.error %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="{{ statement.error.href }}">{{ statement.error.text }}</a></li></ul></div></div></div>
   {% endif %}
 
   <span class="govuk-caption-xl">{{ t("wallet.caption", { community: communityName }) }}</span>
@@ -93,7 +96,15 @@
 
   <section aria-labelledby="transactions-heading" id="transactions">
     <h2 class="govuk-heading-l govuk-!-margin-top-7" id="transactions-heading">{{ t("wallet.history_title") }}</h2>
-    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/wallet/export.csv') }}" download>{{ t("wallet_t1.export_button") }}</a> <span class="govuk-hint govuk-!-display-inline">— {{ t("wallet_t1.export_description") }}</span></p>
+    <section aria-labelledby="statement-heading" id="statement" class="govuk-!-margin-bottom-6">
+      <h3 class="govuk-heading-m" id="statement-heading">{{ t("wallet_t1.statement_title") }}</h3>
+      <p class="govuk-body">{{ t("wallet_t1.statement_description") }}</p>
+      <form method="get" action="{{ urlFor('/wallet/export.csv') }}" novalidate>
+        {{ nexusDateInput({ name: "start_date", legend: t("wallet_t1.statement_start_label"), hint: t("web_uk.date_input.hint"), value: statement.start, errorMessage: statement.error.text if (statement.error and statement.error.field == "start_date") else "", errorFields: statement.error.fields if (statement.error and statement.error.field == "start_date") else [] }, t) }}
+        {{ nexusDateInput({ name: "end_date", legend: t("wallet_t1.statement_end_label"), hint: t("web_uk.date_input.hint"), value: statement.end, errorMessage: statement.error.text if (statement.error and statement.error.field == "end_date") else "", errorFields: statement.error.fields if (statement.error and statement.error.field == "end_date") else [] }, t) }}
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("wallet_t1.statement_download") }}</button>
+      </form>
+    </section>
     <nav aria-label="{{ t('wallet_t1.filter_heading') }}" class="govuk-!-margin-bottom-4"><ul class="nexus-alpha-filter-nav">
       <li><a class="govuk-link{% if txFilter == 'all' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/wallet') }}#transactions"{% if txFilter == "all" %} aria-current="page"{% endif %}>{{ t("wallet_t1.filter_all") }}</a></li>
       <li><a class="govuk-link{% if txFilter == 'earned' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/wallet?filter=earned') }}#transactions"{% if txFilter == "earned" %} aria-current="page"{% endif %}>{{ t("wallet_t1.filter_earned") }}</a></li>

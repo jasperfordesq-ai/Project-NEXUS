@@ -44,7 +44,9 @@ jest.mock('../src/lib/api', () => {
     getMemberEndorsements: jest.fn(),
     getFeedSidebar: jest.fn(),
     getTopEndorsedMembers: jest.fn(),
-    getConnectionSuggestions: jest.fn()
+    getConnectionSuggestions: jest.fn(),
+    getMyGuardians: jest.fn(),
+    getSupportActions: jest.fn()
   };
 });
 
@@ -302,5 +304,44 @@ describe('dashboard panels from the React feed side panel', () => {
     expect(res.text).not.toContain('id="dashboard-top-categories"');
     expect(res.text).not.toContain('id="dashboard-top-endorsed"');
     expect(res.text).not.toContain('id="dashboard-people"');
+  });
+});
+
+describe('dashboard notices React shows (GuardianConsentPrompt, SupportActionPrompt)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    global.__tenantFlags = {};
+    api.getProfile.mockResolvedValue({ data: { id: 1, first_name: 'Ann' } });
+    api.getBalance.mockResolvedValue({ balance: 0 });
+    api.getOnboardingStatus.mockResolvedValue({ data: { onboarding_completed: true } });
+    api.getGamificationProfile.mockResolvedValue({ data: null });
+    api.getMyBadges.mockResolvedValue({ data: [] });
+    api.getListings.mockResolvedValue({ data: [] });
+    api.getFeedPosts.mockResolvedValue({ data: [] });
+    api.getMyEvents.mockResolvedValue({ data: [] });
+    api.getExchangeAttentionCount.mockResolvedValue({ data: { count: 0, items: [] } });
+    api.getMemberEndorsements.mockResolvedValue({ data: { endorsements: [] } });
+    api.getFeedSidebar.mockResolvedValue(SIDEBAR);
+    api.getTopEndorsedMembers.mockResolvedValue(TOP_ENDORSED);
+    api.getConnectionSuggestions.mockResolvedValue(SUGGESTIONS);
+  });
+
+  it('asks the member to answer a pending guardian arrangement and a prepared support action', async () => {
+    api.getMyGuardians.mockResolvedValue({ data: { pending_count: 1 } });
+    api.getSupportActions.mockResolvedValue({ data: { pending_count: 2 } });
+    const res = await request(buildApp()).get('/dashboard');
+    expect(res.text).toContain(t('dashboard.guardians_prompt_message'));
+    expect(res.text).toContain('href="/settings/guardians"');
+    expect(res.text).toContain(t('dashboard.support_actions_prompt_message'));
+    expect(res.text).toContain('href="/settings/support-actions"');
+  });
+
+  it('stays silent when nothing is pending or the read fails', async () => {
+    api.getMyGuardians.mockResolvedValue({ data: { pending_count: 0 } });
+    api.getSupportActions.mockRejectedValue(new api.ApiError('down', 500));
+    const res = await request(buildApp()).get('/dashboard');
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain(t('dashboard.guardians_prompt_message'));
+    expect(res.text).not.toContain(t('dashboard.support_actions_prompt_message'));
   });
 });

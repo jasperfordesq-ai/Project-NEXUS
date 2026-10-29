@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block beforeContent %}
@@ -61,6 +62,7 @@
           </article>
         {% endfor %}
       </div>
+      {% if nextHref %}{{ loadMoreNext(urlFor(nextHref), t("actions.load_more")) }}{% endif %}
     {% endif %}
   {% endif %}
 {% endblock %}

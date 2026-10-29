@@ -869,8 +869,13 @@ router.get('/buddying', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const params = new URLSearchParams({ per_page: '30' });
+  // Only the member's own buddied list pages here; the full "available" list
+  // pages on /goals/discover, which this section links to.
+  const mentoringParams = new URLSearchParams({ per_page: '30' });
+  const cursor = trimmed(req.query.cursor);
+  if (cursor) mentoringParams.set('cursor', cursor);
   const [buddyingResult, availableResult] = await Promise.all([
-    callGoal(token, 'GET', `/mentoring?${params.toString()}`).catch((error) => {
+    callGoal(token, 'GET', `/mentoring?${mentoringParams.toString()}`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     }),
@@ -889,6 +894,11 @@ router.get('/buddying', asyncRoute(async (req, res) => {
       .map((goal) => normalizeDiscoverGoal(goal, res.locals.t)).filter((goal) => goal.id !== null),
     available: collectionFrom(availableResult)
       .map((goal) => normalizeDiscoverGoal(goal, res.locals.t)).filter((goal) => goal.id !== null),
+    buddyingNextHref: (() => {
+      const meta = metaFrom(buddyingResult);
+      return meta.hasMore && meta.cursor ? `/goals/buddying?${new URLSearchParams({ cursor: meta.cursor }).toString()}#your-buddied-goals` : '';
+    })(),
+    availableHasMore: metaFrom(availableResult).hasMore,
     ...status
   });
 }, { redirectOn401: loginRedirect() }));
@@ -947,7 +957,7 @@ router.get('/:id(\\d+)/checkin', asyncRoute(async (req, res) => {
   const id = req.params.id;
   const [goalResult, checkinResult] = await Promise.all([
     getGoal(token, id),
-    callGoal(token, 'GET', `/${encodeURIComponent(id)}/checkins?limit=20`).catch((error) => {
+    callGoal(token, 'GET', `/${encodeURIComponent(id)}/checkins?per_page=20`).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: [] };
     })
@@ -1055,7 +1065,8 @@ router.get('/:id(\\d+)/history', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const id = req.params.id;
-  const params = new URLSearchParams({ limit: '30' });
+  // Laravel reads `per_page` (GoalsController::history); `limit` was ignored and 50 came back.
+  const params = new URLSearchParams({ per_page: '30' });
   const cursor = trimmed(req.query.cursor);
   if (cursor) params.set('cursor', cursor);
 

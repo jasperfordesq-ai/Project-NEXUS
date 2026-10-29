@@ -62,6 +62,7 @@
   {% else %}
     <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6" novalidate>
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="subscribed" value="{{ '0' if isSubscribed else '1' }}">
       <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
         {% if isSubscribed %}{{ t("govuk_alpha.polish_commerce.podcast_unsubscribe") }}{% else %}{{ t("govuk_alpha.polish_commerce.podcast_subscribe") }}{% endif %}
       </button>

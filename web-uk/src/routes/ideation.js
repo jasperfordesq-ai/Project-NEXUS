@@ -492,7 +492,8 @@ function consumeIdeaCommentForm(req, challengeId, ideaId) {
 const CAMPAIGN_STATUS_VALUES = ['draft', 'active', 'completed', 'archived'];
 
 // The index filter radios offer exactly these values (ideation/index.njk).
-const IDEATION_FILTER_STATUSES = ['open', 'voting', 'closed'];
+// Laravel's member-visible statuses (IdeationChallengeService::MEMBER_VISIBLE_STATUSES).
+const IDEATION_FILTER_STATUSES = ['open', 'voting', 'evaluating', 'closed'];
 
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);

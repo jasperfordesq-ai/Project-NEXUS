@@ -7408,7 +7408,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('Recipient member ID');
     expect(response.text).toContain('This donates your time credits');
     expect(response.text).toContain('Donations are final.');
-    expect(response.text).toContain('href="/wallet/export.csv"');
+    expect(response.text).toContain('action="/wallet/export.csv"');
     expect(response.text).toContain('href="/wallet?filter=pending#transactions"');
     expect(legacyTransactions.status).toBe(404);
     expect(legacyTransactions.text).toContain('Page not found');
@@ -9970,7 +9970,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGoal).toHaveBeenCalledTimes(1);
     expect(api.getGoal).toHaveBeenCalledWith('test-token', '42');
     expect(api.callGoalApi).toHaveBeenCalledTimes(1);
-    expect(api.callGoalApi).toHaveBeenCalledWith('test-token', 'GET', '/42/checkins?limit=20');
+    expect(api.callGoalApi).toHaveBeenCalledWith('test-token', 'GET', '/42/checkins?per_page=20');
   });
 
   it('renders the Laravel goal reminder form for signed-in members', async () => {
@@ -10136,7 +10136,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGoal).toHaveBeenCalledTimes(1);
     expect(api.getGoal).toHaveBeenCalledWith('test-token', '42');
     expect(api.callGoalApi).toHaveBeenCalledTimes(1);
-    expect(api.callGoalApi).toHaveBeenCalledWith('test-token', 'GET', '/42/history?limit=30&cursor=abc');
+    expect(api.callGoalApi).toHaveBeenCalledWith('test-token', 'GET', '/42/history?per_page=30&cursor=abc');
   });
 
   it('renders the Laravel goal insights summary for signed-in viewers', async () => {
@@ -23624,7 +23624,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGroup).toHaveBeenCalledTimes(1);
     expect(api.getGroup).toHaveBeenCalledWith('test-token', '42');
     expect(api.callGroupApi).toHaveBeenCalledTimes(1);
-    expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/discussions');
+    expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/discussions?per_page=20');
   });
 
   it('renders the Laravel group discussion create page for signed-in group members', async () => {
@@ -23842,7 +23842,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.getGroup).toHaveBeenCalledTimes(1);
     expect(api.getGroup).toHaveBeenCalledWith('test-token', '42');
     expect(api.callGroupApi).toHaveBeenCalledTimes(1);
-    expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/discussions/33');
+    expect(api.callGroupApi).toHaveBeenCalledWith('test-token', 'GET', '/42/discussions/33?per_page=50');
 
     api.getGroup.mockResolvedValueOnce({
       data: {
@@ -31811,7 +31811,7 @@ describe('shared accessible frontend shell', () => {
           }
         });
       }
-      if (method === 'GET' && path === '/restriction-status') {
+      if (method === 'GET' && path === '/restriction-status?partner_id=77') {
         return Promise.resolve({
           data: {
             direct_messaging_enabled: true,
@@ -31828,7 +31828,7 @@ describe('shared accessible frontend shell', () => {
 
     expect(response.status).toBe(200);
     expect(api.callMessageApi).toHaveBeenCalledWith('test-token', 'GET', '/77?per_page=50&direction=older&cursor=older-page');
-    expect(api.callMessageApi).toHaveBeenCalledWith('test-token', 'GET', '/restriction-status');
+    expect(api.callMessageApi).toHaveBeenCalledWith('test-token', 'GET', '/restriction-status?partner_id=77');
     expect(api.callListingApi).toHaveBeenCalledWith('test-token', 'GET', '/42');
     expect(response.text).toContain('Conversation with Morgan Lee');
     expect(response.text).toContain('Your message has been sent.');
@@ -31912,7 +31912,7 @@ describe('shared accessible frontend shell', () => {
           }
         };
       }
-      if (method === 'GET' && pathName === '/restriction-status') {
+      if (method === 'GET' && pathName.split('?')[0] === '/restriction-status') {
         return { data: { messaging_disabled: true, restriction_reason: 'Coordinator review' } };
       }
       throw new Error(`Unexpected message API call: ${method} ${pathName}`);

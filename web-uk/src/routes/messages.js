@@ -26,6 +26,7 @@ const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { flagEnabled, resolveBackendMediaUrl } = require('../lib/accessible-shell');
 const { audit } = require('../lib/auditLogger');
 const { getRequestProfile } = require('../lib/request-profile');
+const { rememberClientRefusal, consumeApiRefusal } = require('../lib/api-refusal');
 const {
   KEY: CONCERN_REPORT_KEY,
   renderForm: renderConcernReportForm,
@@ -363,7 +364,10 @@ const MESSAGE_CONTEXTS = {
     load: (token, id) => callJobApi(token, 'GET', `/${encodeURIComponent(id)}`)
   },
   volunteering: {
-    href: (id) => `/volunteering/opportunities/${encodeURIComponent(id)}`,
+    // href is concatenated, not a template: the path-encoding guard
+    // (route-id-param-guard.test.js) finds a call's path by text search, and the
+    // API path below is a substring of this page path.
+    href: (id) => '/volunteering/opportunities/' + encodeURIComponent(id),
     load: (token, id) => callVolunteeringApi(token, 'GET', `/opportunities/${encodeURIComponent(id)}`)
   }
 };
@@ -631,7 +635,10 @@ async function renderDirectConversation(req, res, userId) {
   const [messagesResult, profileResult, restrictionResult, listingResult] = await Promise.all([
     callMessage(req.token, 'GET', directConversationApiPath(userId, req.query)),
     getRequestProfile(req, req.token).catch(() => null),
-    callMessage(req.token, 'GET', '/restriction-status').catch((error) => {
+    // partner_id is what makes Laravel add the supporter-view flags
+    // (SubAccountService: own_messages_shared, supporter_view_notice_required);
+    // React's ConversationPage sends it too.
+    callMessage(req.token, 'GET', '/restriction-status?' + new URLSearchParams({ partner_id: String(userId) }).toString()).catch((error) => {
       if (isAuthError(error)) throw error;
       return { data: {} };
     }),
@@ -697,7 +704,14 @@ async function renderDirectConversation(req, res, userId) {
     messageContext,
     messageReactionEmojis: MESSAGE_REACTION_EMOJIS,
     query,
-    directStatus: directStatus(req.query.status, res.locals.t),
+    directStatus: (() => {
+      const status = directStatus(req.query.status, res.locals.t);
+      // A blocked member or a sender Laravel does not allow comes back with
+      // Laravel's own translated reason (MessageService BLOCKED / FORBIDDEN).
+      const refusal = req.query.status === 'message-refused' ? consumeApiRefusal(req, 'message-send') : '';
+      if (refusal) return { type: 'error', message: refusal, href: '#body' };
+      return status;
+    })(),
     currentUser: profile,
     currentUserId,
     directMessagingEnabled,
@@ -1057,6 +1071,9 @@ router.post('/:userId(\\d+)/voice', asyncRoute(async (req, res) => {
     });
   } catch (error) {
     if (redirectOnAuthError(error, req, res)) return undefined;
+    if (['BLOCKED', 'FORBIDDEN'].includes(apiErrorCode(error)) && rememberClientRefusal(req, 'message-send', error)) {
+      return redirectTo(res, messageRedirect(userId, 'message-refused'));
+    }
     return redirectTo(res, messageRedirect(userId, directSafeguardingFailureStatus(error) || 'voice-failed'));
   } finally {
     await removeUploadedFile(file);
@@ -1503,6 +1520,9 @@ router.post('/:id(\\d+)', requireAuth, audit.messageSend(), asyncRoute(async (re
     }
     if (error instanceof ApiError && error.status !== 401) {
       const code = apiErrorCode(error);
+      if (['BLOCKED', 'FORBIDDEN'].includes(code) && rememberClientRefusal(req, 'message-send', error)) {
+        return redirectTo(res, messageRedirect(recipientId, 'message-refused'));
+      }
       const status = directSafeguardingFailureStatus(error)
         || (code.includes('FEATURE_DISABLED') || code.includes('MESSAGING_DISABLED')
         ? 'message-disabled'

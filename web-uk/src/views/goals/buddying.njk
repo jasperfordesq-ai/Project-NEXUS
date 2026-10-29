@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "_load-more.njk" import loadMoreNext %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
@@ -67,6 +68,7 @@
             </article>
           {% endfor %}
         </div>
+        {% if buddyingNextHref %}{{ loadMoreNext(urlFor(buddyingNextHref), t("actions.load_more"), t("goals.buddying_yours_heading")) }}{% endif %}
       {% endif %}
 
       <h2 class="govuk-heading-l" id="available-goals">{{ t("goals.buddying_available_heading") }}</h2>
@@ -95,6 +97,7 @@
             </article>
           {% endfor %}
         </div>
+        {% if availableHasMore %}{{ loadMoreNext(urlFor('/goals/discover'), t("actions.load_more"), t("goals.buddying_available_heading")) }}{% endif %}
       {% endif %}
     </div>
   </div>

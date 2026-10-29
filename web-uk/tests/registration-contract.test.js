@@ -220,6 +220,16 @@ describe('Laravel registration contract', () => {
     expect(api.register).not.toHaveBeenCalled();
   });
 
+  it('tells the member about a waitlist place or an approval, as Laravel reports them', async () => {
+    api.register.mockResolvedValueOnce({ data: { user: { id: 1 }, requires_verification: true, requires_approval: false, requires_waitlist: true, waitlist_position: 7 } });
+    const waitlist = await request(createApp()).post('/acme/accessible/register').type('form').send(completeBody());
+    expect(waitlist.headers.location).toBe('/acme/accessible/login?status=register-created&next=waitlist&position=7');
+
+    api.register.mockResolvedValueOnce({ data: { user: { id: 2 }, requires_verification: true, requires_approval: true } });
+    const approval = await request(createApp()).post('/acme/accessible/register').type('form').send(completeBody({ email: 'other@example.test' }));
+    expect(approval.headers.location).toBe('/acme/accessible/login?status=register-created&next=approval');
+  });
+
   it('sends the exact v2 payload under mounted tenant authority and never auto-logs in', async () => {
     const response = await request(createApp())
       .post('/acme/accessible/register')
