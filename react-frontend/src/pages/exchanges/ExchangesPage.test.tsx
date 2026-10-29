@@ -236,14 +236,15 @@ describe('ExchangesPage', () => {
       requester_confirmed_at: null, provider_confirmed_at: null,
     });
     const { api } = await import('@/lib/api');
+    const respond = (body: unknown) => Promise.resolve(body) as ReturnType<typeof api.get>;
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url.includes('/config')) {
-        return Promise.resolve({ success: true, data: { exchange_workflow_enabled: true }, meta: {} });
+        return respond({ success: true, data: { exchange_workflow_enabled: true }, meta: {} });
       }
       if (url.includes('cursor=next-1')) {
-        return Promise.resolve({ success: true, data: [row(2, 'Second page job')], meta: { has_more: false, cursor: null } });
+        return respond({ success: true, data: [row(2, 'Second page job')], meta: { has_more: false, cursor: null } });
       }
-      return Promise.resolve({ success: true, data: [row(1, 'First page job')], meta: { has_more: true, cursor: 'next-1' } });
+      return respond({ success: true, data: [row(1, 'First page job')], meta: { has_more: true, cursor: 'next-1' } });
     });
 
     render(<ExchangesPage />);

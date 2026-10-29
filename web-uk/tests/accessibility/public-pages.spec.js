@@ -434,7 +434,8 @@ test.describe('Arabic RTL and narrow reflow gate', () => {
       // The marker is the catalogue's own Arabic heading, so this still proves the page
       // rendered in Arabic.
       { path: `${mountPath}/features?locale=ar`, marker: featuresText('ar').heading },
-      { path: `${mountPath}/faq?locale=ar`, marker: translate('ar', 'faq.q1') }
+      // The FAQ is React's, generated into src/lib/generated/faq.json (29 Oct 2026).
+      { path: `${mountPath}/faq?locale=ar`, marker: require('../../src/lib/generated/faq.json').locales.ar[0].items[0].question }
     ];
     const evidence = [];
 
